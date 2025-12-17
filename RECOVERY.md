@@ -14,14 +14,14 @@ The `docker compose down -v` command deleted the database volumes. All data was 
 
 ### Step 1: Run the Initial Schema Migration
 
-We have a complete baseline migration that creates all tables:
+We have a complete baseline migration that creates all tables with UUID primary keys:
 
 ```bash
 cd ~/elemental-website
-docker compose -f docker-compose.prod.yml exec -T postgres psql -U payload -d payload < migrations/001_initial_schema.sql
+docker compose -f docker-compose.prod.yml exec -T postgres psql -U payload -d payload < migrations/001_initial_schema_uuid.sql
 ```
 
-This will create all tables, indexes, and relationships in one go.
+This will create all tables, indexes, and relationships in one go using UUID primary keys (Payload 3.x default).
 
 ### Step 2: Create Your First Admin User
 
