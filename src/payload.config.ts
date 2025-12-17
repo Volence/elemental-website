@@ -82,8 +82,8 @@ export default buildConfig({
       // During build, connection will fail but that's OK - pages are dynamic
       // Connection will succeed at runtime when DATABASE_URI is properly set
     },
-    // Use integer IDs instead of UUIDs
-    idType: 'serial',
+    // Force integer IDs (serial) instead of UUIDs
+    idType: 'serial' as const,
     // Allow push mode via environment variable for schema initialization
     // Set PAYLOAD_DB_PUSH=true to auto-create tables during initialization
     push: process.env.PAYLOAD_DB_PUSH === 'true' || false,
