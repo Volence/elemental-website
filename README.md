@@ -1,14 +1,20 @@
-# Payload Website Template
+# Elemental Website
 
-This is the official [Payload Website Template](https://github.com/payloadcms/payload/blob/main/templates/website). Use it to power websites, blogs, or portfolios from small to enterprise. This repo includes a fully-working backend, enterprise-grade admin panel, and a beautifully designed, production-ready website.
+A competitive gaming organization CMS built with [Payload](https://github.com/payloadcms/payload).
 
-This template is right for you if you are working on:
+## 📚 Documentation
 
-- A personal or enterprise-grade website, blog, or portfolio
-- A content publishing platform with a fully featured publication workflow
-- Exploring the capabilities of Payload
+**All documentation has been moved to the [`/docs`](./docs/) folder.**
 
-Core features:
+### Quick Links:
+- **[📖 BASELINE.md](./docs/BASELINE.md)** - Clean baseline and setup guide (START HERE)
+- **[🔄 RECOVERY.md](./docs/RECOVERY.md)** - Database recovery procedures  
+- **[🚀 Deployment Guides](./docs/deployment/)** - Production deployment documentation
+- **[📝 All Documentation](./docs/README.md)** - Complete documentation index
+
+---
+
+## Core Features
 
 - [Pre-configured Payload Config](#how-it-works)
 - [Authentication](#users-authentication)
