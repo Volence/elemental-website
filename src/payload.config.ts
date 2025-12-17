@@ -82,6 +82,9 @@ export default buildConfig({
       // During build, connection will fail but that's OK - pages are dynamic
       // Connection will succeed at runtime when DATABASE_URI is properly set
     },
+    // Use integer (SERIAL) IDs instead of UUIDs
+    // This avoids authentication bugs in Payload 3.x with UUID handling
+    idType: 'serial',
     // Allow push mode via environment variable for schema initialization
     // Set PAYLOAD_DB_PUSH=true to auto-create tables during initialization
     // For production, use migrations/001_initial_schema.sql instead
