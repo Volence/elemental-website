@@ -4,16 +4,11 @@ This directory contains SQL migrations for the Elemental Website database schema
 
 ## Migration Files
 
-### 001_initial_schema_uuid.sql (CURRENT)
+### 001_initial_schema.sql
 **Created:** 2025-12-17  
-**Description:** Baseline schema with UUID primary keys
+**Description:** Baseline schema with integer (SERIAL) primary keys
 
-Creates the complete initial database structure using UUID primary keys (Payload 3.x default) including:
-
-### 001_initial_schema.sql (DEPRECATED - DO NOT USE)
-**Description:** Old integer ID schema - replaced by UUID version
-
-The complete database structure includes:
+Creates the complete initial database structure including:
 - User authentication and roles
 - Teams with rosters and staff
 - People (players/staff)
@@ -38,15 +33,15 @@ The complete database structure includes:
 
 ### Development (Local)
 ```bash
-# Using Docker Compose (UUID version)
-docker compose exec -T postgres psql -U payload -d payload < migrations/001_initial_schema_uuid.sql
+# Using Docker Compose
+docker compose exec -T postgres psql -U payload -d payload < migrations/001_initial_schema.sql
 ```
 
 ### Production
 ```bash
-# Run on your production server (UUID version)
+# Run on your production server
 cd ~/elemental-website
-docker compose -f docker-compose.prod.yml exec -T postgres psql -U payload -d payload < migrations/001_initial_schema_uuid.sql
+docker compose -f docker-compose.prod.yml exec -T postgres psql -U payload -d payload < migrations/001_initial_schema.sql
 ```
 
 ## Creating New Migrations
