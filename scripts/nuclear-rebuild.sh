@@ -25,7 +25,7 @@ docker compose -f docker-compose.prod.yml down
 
 # Remove the specific images
 echo "Step 2: Removing Payload images..."
-docker images | grep elemental-website | awk '{print $3}' | xargs -r docker rmi -f
+docker images --format "{{.Repository}}:{{.Tag}}" | grep elemental-website | xargs -r docker rmi -f || true
 
 # Prune EVERYTHING (but keep volumes with database)
 echo "Step 3: Pruning all Docker cache..."
