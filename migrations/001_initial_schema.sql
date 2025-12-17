@@ -20,10 +20,10 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   email VARCHAR(255) NOT NULL UNIQUE,
-  reset_password_token VARCHAR(255),
+  reset_password_token TEXT,
   reset_password_expiration TIMESTAMP WITH TIME ZONE,
-  salt VARCHAR(255),
-  hash VARCHAR(255),
+  salt TEXT,
+  hash TEXT,
   login_attempts INTEGER DEFAULT 0,
   lock_until TIMESTAMP WITH TIME ZONE
 );
