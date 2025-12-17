@@ -7,9 +7,10 @@ A competitive gaming organization CMS built with [Payload](https://github.com/pa
 **All documentation has been moved to the [`/docs`](./docs/) folder.**
 
 ### Quick Links:
-- **[📖 BASELINE.md](./docs/BASELINE.md)** - Clean baseline and setup guide (START HERE)
+- **[🚀 FRESH_START.md](./docs/FRESH_START.md)** - First time setup guide (START HERE)
+- **[📖 BASELINE.md](./docs/BASELINE.md)** - Clean baseline and technical details
 - **[🔄 RECOVERY.md](./docs/RECOVERY.md)** - Database recovery procedures  
-- **[🚀 Deployment Guides](./docs/deployment/)** - Production deployment documentation
+- **[📦 Deployment Guides](./docs/deployment/)** - Production deployment documentation
 - **[📝 All Documentation](./docs/README.md)** - Complete documentation index
 
 ---

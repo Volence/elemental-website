@@ -5,7 +5,8 @@ This folder contains all documentation for the Elemental Website CMS project.
 ## 📚 Documentation Structure
 
 ### Core Documentation
-- **[BASELINE.md](./BASELINE.md)** - Clean baseline state and setup guide (START HERE)
+- **[FRESH_START.md](./FRESH_START.md)** - 🚀 First time setup guide (START HERE)
+- **[BASELINE.md](./BASELINE.md)** - Clean baseline state and technical details
 - **[RECOVERY.md](./RECOVERY.md)** - Database recovery procedures
 - **[ADMIN_FEATURES.md](./ADMIN_FEATURES.md)** - Admin panel features and usage
 
@@ -30,11 +31,12 @@ See [archive/](./archive/) folder - contains troubleshooting docs from the initi
 
 ## 🚀 Quick Start
 
-1. **New to the project?** → Read [BASELINE.md](./BASELINE.md)
-2. **Setting up locally?** → Read [TEST_LOCALLY.md](./TEST_LOCALLY.md)
-3. **Deploying to production?** → Read [deployment/PRODUCTION_DEPLOYMENT.md](./deployment/PRODUCTION_DEPLOYMENT.md)
-4. **Database issues?** → Read [RECOVERY.md](./RECOVERY.md)
-5. **Admin panel questions?** → Read [ADMIN_FEATURES.md](./ADMIN_FEATURES.md)
+1. **First time setup?** → Read [FRESH_START.md](./FRESH_START.md) ⭐
+2. **New to the project?** → Read [BASELINE.md](./BASELINE.md)
+3. **Setting up locally?** → Read [TEST_LOCALLY.md](./TEST_LOCALLY.md)
+4. **Deploying to production?** → Read [deployment/PRODUCTION_DEPLOYMENT.md](./deployment/PRODUCTION_DEPLOYMENT.md)
+5. **Database issues?** → Read [RECOVERY.md](./RECOVERY.md)
+6. **Admin panel questions?** → Read [ADMIN_FEATURES.md](./ADMIN_FEATURES.md)
 
 ## 📁 Related Documentation
 
