@@ -2,7 +2,7 @@ version: '3'
 
 services:
   payload:
-    image: node:18-alpine
+    image: node:22-alpine
     ports:
       - '3000:3000'
     volumes:
@@ -11,21 +11,29 @@ services:
     working_dir: /home/node/app/
     command: sh -c "yarn install && yarn dev"
     depends_on:
-      - mongo
+      - postgres
     env_file:
       - .env
+    environment:
+      - DATABASE_URI=postgresql://payload:payload@postgres:5432/payload
+      - PAYLOAD_DB_PUSH=${PAYLOAD_DB_PUSH:-false}
 
-  mongo:
-    image: mongo:latest
+  postgres:
+    image: postgres:16-alpine
     ports:
-      - '27017:27017'
-    command:
-      - --storageEngine=wiredTiger
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=payload
+      - POSTGRES_PASSWORD=payload
+      - POSTGRES_DB=payload
     volumes:
-      - data:/data/db
-    logging:
-      driver: none
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U payload"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
-  data:
+  postgres_data:
   node_modules:

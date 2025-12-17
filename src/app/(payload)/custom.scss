@@ -1,0 +1,393 @@
+/**
+ * Custom styles for Payload CMS admin panel
+ */
+
+/* ============================================ */
+/* DASHBOARD - Hide default collection cards    */
+/* ============================================ */
+
+/* Hide the default dashboard cards - collections are in sidebar */
+.dashboard__cards,
+.dashboard__group {
+  display: none !important;
+}
+
+/* ============================================ */
+/* SIDEBAR NAVIGATION - Complete Redesign      */
+/* ============================================ */
+
+/* Sidebar container - consistent padding */
+aside,
+.template-default aside,
+.template-default__wrap aside,
+body aside nav {
+  padding: 0.75rem 0.5rem !important;
+}
+
+/* All navigation links - unified base styling (SIDEBAR ONLY - not breadcrumbs) */
+.template-default aside nav a:not(.step-nav a),
+.template-default aside nav button:not(.step-nav button),
+body aside nav a:not(.step-nav a),
+body aside nav button:not(.step-nav button),
+aside nav ul li a,
+aside nav > a,
+aside nav > div > a,
+aside nav > div > button {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  padding: 0.625rem 1rem !important;
+  margin: 0.125rem 0.5rem !important;
+  border-radius: 6px !important;
+  border: none !important;
+  border-left: 3px solid transparent !important;
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.65) !important;
+  font-size: 0.9375rem !important;
+  font-weight: 400 !important;
+  line-height: 1.4 !important;
+  text-decoration: none !important;
+  text-align: left !important;
+  transition: all 0.15s ease !important;
+  cursor: pointer !important;
+  width: calc(100% - 1rem) !important;
+  box-sizing: border-box !important;
+}
+
+/* Dashboard and top-level links in sidebar */
+aside nav a[href="/admin"],
+aside > nav > a,
+aside > nav > div > a {
+  padding-left: 1rem !important;
+}
+
+/* ================================================ */
+/* FORCE SIDEBAR STYLES - Maximum specificity      */
+/* ================================================ */
+
+/* Base styles for all sidebar links */
+html body .template-default aside nav a,
+html body .template-default aside nav button,
+html body aside nav a,
+html body aside nav button {
+  border-left-width: 3px !important;
+  border-left-style: solid !important;
+  border-left-color: transparent !important;
+  padding: 0.625rem 1rem !important;
+  margin: 0.125rem 0.5rem !important;
+  border-radius: 6px !important;
+  transition: all 0.15s ease !important;
+}
+
+/* Hover states with indigo blue accent */
+html body aside nav a:not([aria-current="page"]):hover,
+html body aside nav button:hover,
+html body div aside nav a:not([aria-current="page"]):hover,
+html body div aside nav button:hover {
+  background-color: #6366f114 !important;
+  background: #6366f114 !important;
+  border-left-color: #6366f166 !important;
+}
+
+/* Active/Current page - INDIGO BLUE accent */
+html body aside nav a[aria-current="page"],
+html body aside nav a.active,
+html body aside nav [aria-current="page"],
+html body div aside nav a[aria-current="page"],
+html body div aside nav ul li a[aria-current="page"] {
+  background-color: #6366f11a !important;
+  background: #6366f11a !important;
+  border-left-width: 3px !important;
+  border-left-style: solid !important;
+  border-left-color: #6366f1 !important;
+  color: #a5b4fc !important;
+  font-weight: 600 !important;
+}
+
+/* ULTRA specific override for the border color */
+aside nav a[aria-current="page"],
+aside nav ul li a[aria-current="page"] {
+  border-left-color: #6366f1 !important;
+  border-color: #6366f1 transparent transparent transparent !important;
+}
+
+/* Removed old border-left approach - Payload uses .nav__link-indicator instead */
+
+/* Old selectors removed - using .nav__link structure instead */
+
+/* ================================================ */
+/* PAYLOAD'S ACTUAL NAV STRUCTURE - WORKING!       */
+/* ================================================ */
+
+/* Active state: The indicator div creates the left border */
+.nav__link-indicator {
+  background: #6366f1 !important; /* INDIGO BLUE */
+  width: 3px !important;
+  border-radius: 0 !important;
+}
+
+/* Active state: Container background */
+.nav__link:has(.nav__link-indicator) {
+  background: rgba(99, 102, 241, 0.15) !important; /* INDIGO background */
+  border-radius: 6px !important;
+  margin: 0.125rem 0.5rem !important;
+}
+
+/* Active state: Text color */
+.nav__link:has(.nav__link-indicator) .nav__link-label {
+  color: #a5b4fc !important; /* Light indigo text */
+  font-weight: 600 !important;
+}
+
+/* Hover states for all nav links */
+.nav__link:not(:has(.nav__link-indicator)):hover {
+  background: rgba(99, 102, 241, 0.08) !important;
+  border-radius: 6px !important;
+  margin: 0.125rem 0.5rem !important;
+}
+
+/* All nav links - better spacing */
+.nav__link {
+  padding: 0.625rem 1rem !important;
+  border-radius: 6px !important;
+  transition: all 0.15s ease !important;
+}
+
+/* Group toggle buttons (PEOPLE, ESPORTS, STAFF, SYSTEM) */
+.nav-group__toggle {
+  color: rgba(139, 92, 246, 0.8) !important; /* Purple */
+  font-weight: 600 !important;
+  font-size: 0.6875rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  padding: 0.625rem 1rem !important;
+  margin: 0.5rem 0.5rem 0.25rem !important;
+}
+
+/* Hover state - subtle highlight with accent color (SIDEBAR ONLY) */
+.template-default aside nav a:not(.step-nav a):hover,
+.template-default aside nav button:not(.step-nav button):hover,
+body aside nav a:not(.step-nav a):hover,
+body aside nav button:not(.step-nav button):hover,
+aside nav ul li a:hover,
+aside nav > a:hover,
+aside nav > div > a:hover,
+aside nav > div > button:hover {
+  background-color: rgba(99, 102, 241, 0.08) !important;
+  color: rgba(255, 255, 255, 0.95) !important;
+  border-left-color: rgba(99, 102, 241, 0.3) !important;
+}
+
+/* Active/Selected state - clear highlight with accent color and left border (SIDEBAR ONLY) */
+.template-default aside nav a[class*="active"]:not(.step-nav a),
+.template-default aside nav a[aria-current="page"]:not(.step-nav a),
+body aside nav a[class*="active"]:not(.step-nav a),
+body aside nav a[aria-current="page"]:not(.step-nav a),
+aside nav ul li a[class*="active"],
+aside nav ul li a[aria-current="page"],
+aside nav > a[class*="active"],
+aside nav > div > a[class*="active"] {
+  background-color: rgba(99, 102, 241, 0.12) !important;
+  border-left-color: rgb(99, 102, 241) !important;
+  color: rgb(165, 180, 252) !important;
+  font-weight: 600 !important;
+}
+
+/* Group headers - clean and minimal with accent color */
+html body aside nav button,
+html body aside nav > div > button,
+aside nav button[type="button"],
+aside > div > button {
+  padding: 0.625rem 1rem 0.5rem !important;
+  margin: 0.75rem 0.5rem 0.25rem !important;
+  font-size: 0.6875rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  color: #8b5cf6 !important;
+  background: transparent !important;
+  border-left: 3px solid transparent !important;
+  opacity: 0.8 !important;
+  width: auto !important;
+  text-align: left !important;
+  cursor: pointer !important;
+}
+
+/* Group items - slightly indented */
+[class*="nav-group"] > ul > li > a,
+[class*="nav-group"] [class*="nav-item"],
+[class*="group"] > ul > li > a {
+  padding-left: 1.25rem !important;
+}
+
+/* Icons in navigation - consistent sizing */
+aside nav svg,
+[class*="nav-group"] svg {
+  width: 1.125rem !important;
+  height: 1.125rem !important;
+  flex-shrink: 0 !important;
+  opacity: 0.8 !important;
+}
+
+aside nav a:hover svg,
+aside nav button:hover svg,
+aside nav a[class*="active"] svg {
+  opacity: 1 !important;
+}
+
+/* Chevron icons for expandable groups */
+[class*="nav-group"] button svg,
+[class*="group"] button svg {
+  margin-left: auto !important;
+  width: 0.875rem !important;
+  height: 0.875rem !important;
+  opacity: 0.5 !important;
+  transition: transform 0.2s ease, opacity 0.2s ease !important;
+}
+
+[class*="nav-group"] button:hover svg {
+  opacity: 0.8 !important;
+}
+
+/* Spacing between groups */
+[class*="nav-group"] + [class*="nav-group"],
+[class*="group"] + [class*="group"] {
+  margin-top: 0.5rem !important;
+}
+
+/* First nav item should have less top margin */
+aside nav > a:first-child,
+aside nav > div:first-child {
+  margin-top: 0.25rem !important;
+}
+
+/* Collapsed groups - tighter spacing */
+[class*="nav-group"][class*="collapsed"] {
+  margin-bottom: 0.125rem !important;
+}
+
+/* Remove link underlines and ensure proper display */
+aside nav a,
+[class*="nav-group"] a {
+  text-decoration: none !important;
+  display: flex !important;
+}
+
+/* Logout button - special styling */
+nav button[type="button"]:last-child,
+aside nav > div:last-child button {
+  margin-top: auto !important;
+  color: var(--theme-elevation-700, rgba(255, 255, 255, 0.6)) !important;
+}
+
+nav button[type="button"]:last-child:hover {
+  background-color: rgba(239, 68, 68, 0.1) !important;
+  border-left-color: rgb(239, 68, 68) !important;
+  color: rgb(252, 165, 165) !important;
+}
+
+/* ============================================ */
+/* BREADCRUMB NAVIGATION FIX                    */
+/* ============================================ */
+
+/* Breadcrumb container - proper flexbox display */
+.step-nav,
+nav.step-nav {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Breadcrumb links - reset sidebar styles */
+.step-nav a,
+.step-nav span {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  width: auto !important;
+  gap: 0.25rem !important;
+}
+
+/* Hide the broken SVG icon that JS removes */
+.step-nav svg {
+  display: none !important;
+}
+
+/* Add a home icon using CSS that JavaScript can't remove */
+.step-nav a[href="/admin"]::before {
+  content: "🏠" !important;
+  font-size: 1rem !important;
+  line-height: 1 !important;
+  display: inline-block !important;
+  margin-right: 0.25rem !important;
+}
+
+/* Breadcrumb separators */
+.step-nav > span:not([class*="home"]):not([class*="last"]) {
+  display: inline-block !important;
+  opacity: 0.5 !important;
+}
+
+/* ============================================ */
+/* ARRAY FIELD BUTTON ALIGNMENT FIX            */
+/* ============================================ */
+
+/* Fix alignment for "Add" buttons in array fields */
+.array-field__add-button,
+button[class*="array-actions__button"],
+button[class*="array__add-button"],
+.array-actions button,
+button.array-actions__button {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  line-height: 1.5 !important;
+}
+
+/* Target the btn__icon wrapper - ensure flex alignment */
+span.btn__icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  height: 1.5em !important;
+  width: 1.5em !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  vertical-align: middle !important;
+}
+
+/* Ensure icons inside btn__icon are properly centered */
+span.btn__icon svg,
+.btn__icon .icon--plus,
+.btn__icon svg.icon,
+.btn__icon .icon {
+  display: block !important;
+  line-height: 1 !important;
+  height: 100% !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Fix for all button content alignment */
+button .btn__content,
+.btn__content {
+  display: inline-flex !important;
+  align-items: center !important;
+  line-height: 1.5 !important;
+  gap: 0.5rem !important;
+}
+
+/* Additional fix for flex container */
+button[class*="array"] .btn__content > * {
+  vertical-align: middle !important;
+}

@@ -1,54 +1,57 @@
-import type { Post, ArchiveBlock as ArchiveBlockProps } from '@/payload-types'
-
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import React from 'react'
 import RichText from '@/components/RichText'
+import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
 
 import { CollectionArchive } from '@/components/CollectionArchive'
+import type { CardPageData } from '@/components/Card'
 
-export const ArchiveBlock: React.FC<
-  ArchiveBlockProps & {
-    id?: string
-  }
-> = async (props) => {
-  const { id, categories, introContent, limit: limitFromProps, populateBy, selectedDocs } = props
+type ArchiveBlockProps = {
+  id?: string
+  blockType: 'archive'
+  introContent?: DefaultTypedEditorState
+  populateBy?: 'collection' | 'selection'
+  relationTo?: 'pages'
+  limit?: number
+  selectedDocs?: Array<{
+    relationTo: string
+    value: number | CardPageData
+  }>
+}
+
+export const ArchiveBlock: React.FC<ArchiveBlockProps> = async (props) => {
+  const { id, introContent, limit: limitFromProps, populateBy, selectedDocs } = props
 
   const limit = limitFromProps || 3
 
-  let posts: Post[] = []
+  let pages: CardPageData[] = []
 
   if (populateBy === 'collection') {
     const payload = await getPayload({ config: configPromise })
 
-    const flattenedCategories = categories?.map((category) => {
-      if (typeof category === 'object') return category.id
-      else return category
-    })
-
-    const fetchedPosts = await payload.find({
-      collection: 'posts',
+    const fetchedPages = await payload.find({
+      collection: 'pages',
       depth: 1,
       limit,
-      ...(flattenedCategories && flattenedCategories.length > 0
-        ? {
-            where: {
-              categories: {
-                in: flattenedCategories,
-              },
-            },
-          }
-        : {}),
+      where: {
+        _status: {
+          equals: 'published',
+        },
+      },
     })
 
-    posts = fetchedPosts.docs
+    pages = fetchedPages.docs as CardPageData[]
   } else {
     if (selectedDocs?.length) {
-      const filteredSelectedPosts = selectedDocs.map((post) => {
-        if (typeof post.value === 'object') return post.value
-      }) as Post[]
+      const filteredSelectedPages = selectedDocs
+        .map((doc) => {
+          if (typeof doc.value === 'object') return doc.value
+          return null
+        })
+        .filter((doc): doc is CardPageData => doc !== null)
 
-      posts = filteredSelectedPosts
+      pages = filteredSelectedPages
     }
   }
 
@@ -59,7 +62,7 @@ export const ArchiveBlock: React.FC<
           <RichText className="ms-0 max-w-[48rem]" data={introContent} enableGutter={false} />
         </div>
       )}
-      <CollectionArchive posts={posts} />
+      <CollectionArchive pages={pages} />
     </div>
   )
 }

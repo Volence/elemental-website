@@ -10,19 +10,23 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+# Use pnpm with space optimizations (hoisted mode reduces .pnpm directory size)
+# Copy package.json only (use npm to avoid pnpm lockfile issues)
+COPY package.json ./
 RUN \
-  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-  elif [ -f package-lock.json ]; then npm ci; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
-  else echo "Lockfile not found." && exit 1; \
-  fi
+  echo "Using npm (to avoid pnpm lockfile issues)..." && \
+  rm -rf pnpm-lock.yaml yarn.lock package-lock.json .pnpmfile.cjs node_modules 2>/dev/null || true && \
+  npm install --legacy-peer-deps || exit 1 && \
+  echo "Installing sharp for Alpine Linux ARM64..." && \
+  npm install --os=linux --libc=musl --cpu=arm64 sharp --legacy-peer-deps || exit 1 && \
+  test -d /app/node_modules || (echo "ERROR: node_modules was not created" && exit 1)
 
 
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
+# Copy source code (node_modules excluded via .dockerignore)
 COPY . .
 
 # Next.js collects completely anonymous telemetry data about general usage.
@@ -30,30 +34,54 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
+# Allow DATABASE_URI and PAYLOAD_SECRET to be passed as build args
+ARG DATABASE_URI=""
+ARG PAYLOAD_SECRET="secret"
+ENV DATABASE_URI=${DATABASE_URI}
+ENV PAYLOAD_SECRET=${PAYLOAD_SECRET}
+# NEXT_BUILD_SKIP_DB is set to 1 if DATABASE_URI is empty, 0 if provided
+ENV NEXT_BUILD_SKIP_DB=${DATABASE_URI:+0}${DATABASE_URI:-1}
+
+# Build the application
+# IMPORTANT: Database must be available during build for standalone output to be created
+# Pages are configured as dynamic and will be generated at runtime when the app starts
+# Enable pnpm for Next.js build (it detects pnpm from package.json engines)
 RUN \
-  if [ -f yarn.lock ]; then yarn run build; \
-  elif [ -f package-lock.json ]; then npm run build; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm run build; \
-  else echo "Lockfile not found." && exit 1; \
-  fi
+  corepack enable pnpm && \
+  corepack prepare pnpm@10.11.1 --activate && \
+  npm run build
+
+# Verify standalone output was created (required for production deployment)
+RUN if [ ! -d .next/standalone ]; then \
+  echo "ERROR: .next/standalone directory not found. Build may have failed or database was not available."; \
+  echo "Make sure to build with DATABASE_URI pointing to an accessible postgres instance."; \
+  exit 1; \
+fi
 
 # Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
+ENV NODE_ENV=production
 # Uncomment the following line in case you want to disable telemetry during runtime.
-# ENV NEXT_TELEMETRY_DISABLED 1
+# ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Remove this line if you do not have this folder
-COPY --from=builder /app/public ./public
+# Copy public folder (includes logos and other static assets)
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+
+# Verify logos directory exists and has files
+RUN ls -la /app/public/logos/ | head -10 || echo "Warning: logos directory check failed"
 
 # Set the correct permission for prerender cache
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
+
+# Create uploads directory for volume mounting
+RUN mkdir -p /app/public/uploads
+RUN chown nextjs:nodejs /app/public/uploads
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
@@ -64,8 +92,8 @@ USER nextjs
 
 EXPOSE 3000
 
-ENV PORT 3000
+ENV PORT=3000
 
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/next-config-js/output
-CMD HOSTNAME="0.0.0.0" node server.js
+CMD ["sh", "-c", "HOSTNAME=0.0.0.0 node server.js"]

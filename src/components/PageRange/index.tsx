@@ -5,12 +5,7 @@ const defaultLabels = {
   singular: 'Doc',
 }
 
-const defaultCollectionLabels = {
-  posts: {
-    plural: 'Posts',
-    singular: 'Post',
-  },
-}
+const defaultCollectionLabels = {}
 
 export const PageRange: React.FC<{
   className?: string

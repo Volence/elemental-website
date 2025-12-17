@@ -13,29 +13,9 @@ import { generateMeta } from '@/utilities/generateMeta'
 import PageClient from './page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 
-export async function generateStaticParams() {
-  const payload = await getPayload({ config: configPromise })
-  const pages = await payload.find({
-    collection: 'pages',
-    draft: false,
-    limit: 1000,
-    overrideAccess: false,
-    pagination: false,
-    select: {
-      slug: true,
-    },
-  })
-
-  const params = pages.docs
-    ?.filter((doc) => {
-      return doc.slug !== 'home'
-    })
-    .map(({ slug }) => {
-      return { slug }
-    })
-
-  return params
-}
+// Skip static generation during build - pages will be generated on-demand
+export const dynamic = 'force-dynamic'
+export const dynamicParams = true
 
 type Args = {
   params: Promise<{
@@ -81,33 +61,57 @@ export default async function Page({ params: paramsPromise }: Args) {
 }
 
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
-  const { slug = 'home' } = await paramsPromise
-  // Decode to support slugs with special characters
-  const decodedSlug = decodeURIComponent(slug)
-  const page = await queryPageBySlug({
-    slug: decodedSlug,
-  })
+  // Skip database operations during build
+  if (process.env.NEXT_BUILD_SKIP_DB) {
+    return {
+      title: 'Page | Elemental (ELMT)',
+    }
+  }
 
-  return generateMeta({ doc: page })
+  try {
+    const { slug = 'home' } = await paramsPromise
+    // Decode to support slugs with special characters
+    const decodedSlug = decodeURIComponent(slug)
+    const page = await queryPageBySlug({
+      slug: decodedSlug,
+    })
+
+    return generateMeta({ doc: page })
+  } catch (_error) {
+    // During build, database may not be available
+    return {
+      title: 'Page | Elemental (ELMT)',
+    }
+  }
 }
 
 const queryPageBySlug = cache(async ({ slug }: { slug: string }) => {
-  const { isEnabled: draft } = await draftMode()
+  // Skip database operations during build
+  if (process.env.NEXT_BUILD_SKIP_DB) {
+    return null
+  }
 
-  const payload = await getPayload({ config: configPromise })
+  try {
+    const { isEnabled: draft } = await draftMode()
 
-  const result = await payload.find({
-    collection: 'pages',
-    draft,
-    limit: 1,
-    pagination: false,
-    overrideAccess: draft,
-    where: {
-      slug: {
-        equals: slug,
+    const payload = await getPayload({ config: configPromise })
+
+    const result = await payload.find({
+      collection: 'pages',
+      draft,
+      limit: 1,
+      pagination: false,
+      overrideAccess: draft,
+      where: {
+        slug: {
+          equals: slug,
+        },
       },
-    },
-  })
+    })
 
-  return result.docs?.[0] || null
+    return result.docs?.[0] || null
+  } catch (_error) {
+    // During build, database may not be available
+    return null
+  }
 })

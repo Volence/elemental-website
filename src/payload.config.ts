@@ -6,16 +6,21 @@ import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
 
-import { Categories } from './collections/Categories'
+import { Production } from './collections/Production'
+import { OrganizationStaff } from './collections/OrganizationStaff'
+import { Matches } from './collections/Matches'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
-import { Posts } from './collections/Posts'
+import { People } from './collections/People'
+import { Teams } from './collections/Teams'
 import { Users } from './collections/Users'
+// import { ActivityLog } from './collections/ActivityLog' // Temporarily disabled until migrations are fixed
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
+import { UserRole } from './access/roles'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -29,6 +34,18 @@ export default buildConfig({
       // The `BeforeDashboard` component renders the 'welcome' block that you see after logging into your admin panel.
       // Feel free to delete this at any time. Simply remove the line below.
       beforeDashboard: ['@/components/BeforeDashboard'],
+      // Custom navigation links in the sidebar
+      beforeNavLinks: [
+        '@/components/BeforeDashboard/DashboardNavLink',
+        '@/components/BeforeDashboard/DataConsistencyNavLink#default',
+        '@/components/BeforeDashboard/LogoutButton',
+        '@/components/BeforeDashboard/ReadOnlyStyles#default',
+      ],
+      // Custom logo for admin panel breadcrumbs
+      graphics: {
+        Logo: '@/components/AdminLogo#default',
+        Icon: '@/components/AdminLogo#default',
+      },
     },
     importMap: {
       baseDir: path.resolve(dirname),
@@ -61,10 +78,15 @@ export default buildConfig({
   editor: defaultLexical,
   db: postgresAdapter({
     pool: {
-      connectionString: process.env.DATABASE_URI || '',
+      connectionString: process.env.DATABASE_URI || 'postgresql://build:build@localhost:5432/build',
+      // During build, connection will fail but that's OK - pages are dynamic
+      // Connection will succeed at runtime when DATABASE_URI is properly set
     },
+    // Allow push mode via environment variable for schema initialization
+    // Set PAYLOAD_DB_PUSH=true to auto-create tables during initialization
+    push: process.env.PAYLOAD_DB_PUSH === 'true' || false,
   }),
-  collections: [Pages, Posts, Media, Categories, Users],
+  collections: [Pages, Media, People, Teams, Matches, Production, OrganizationStaff, Users /* ActivityLog temporarily disabled */],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
   plugins: [

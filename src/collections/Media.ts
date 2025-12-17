@@ -16,11 +16,20 @@ const dirname = path.dirname(filename)
 
 export const Media: CollectionConfig = {
   slug: 'media',
+  labels: {
+    singular: 'Media',
+    plural: 'Media',
+  },
   access: {
     create: authenticated,
     delete: authenticated,
     read: anyone,
     update: authenticated,
+  },
+  admin: {
+    description: '🖼️ Upload and manage images, videos, and other media files used across the website.',
+    group: 'Content',
+    hidden: true,
   },
   fields: [
     {

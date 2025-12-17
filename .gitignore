@@ -6,6 +6,9 @@ node_modules
 .next
 .vercel
 
+# TypeScript build artifacts
+*.tsbuildinfo
+
 # Payload default media upload directory
 public/media/
 

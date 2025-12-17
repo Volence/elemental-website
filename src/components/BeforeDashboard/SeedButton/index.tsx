@@ -5,9 +5,10 @@ import { toast } from '@payloadcms/ui'
 
 import './index.scss'
 
-const SuccessMessage: React.FC = () => (
+const SuccessMessage: React.FC<{ teamsOnly?: boolean }> = ({ teamsOnly }) => (
   <div>
-    Database seeded! You can now{' '}
+    {teamsOnly ? 'Teams seeded successfully! ' : 'Database seeded! '}
+    You can now{' '}
     <a target="_blank" href="/">
       visit your website
     </a>
@@ -16,18 +17,17 @@ const SuccessMessage: React.FC = () => (
 
 export const SeedButton: React.FC = () => {
   const [loading, setLoading] = useState(false)
+  const [loadingTeams, setLoadingTeams] = useState(false)
   const [seeded, setSeeded] = useState(false)
+  const [teamsSeeded, setTeamsSeeded] = useState(false)
   const [error, setError] = useState<null | string>(null)
 
-  const handleClick = useCallback(
-    async (e: React.MouseEvent<HTMLButtonElement>) => {
-      e.preventDefault()
+  const handleSeed = useCallback(
+    async (endpoint: string, teamsOnly: boolean = false) => {
+      const setLoadingState = teamsOnly ? setLoadingTeams : setLoading
+      const setSeededState = teamsOnly ? setTeamsSeeded : setSeeded
 
-      if (seeded) {
-        toast.info('Database already seeded.')
-        return
-      }
-      if (loading) {
+      if (loading || loadingTeams) {
         toast.info('Seeding already in progress.')
         return
       }
@@ -36,53 +36,94 @@ export const SeedButton: React.FC = () => {
         return
       }
 
-      setLoading(true)
+      setLoadingState(true)
+      setError(null)
 
       try {
         toast.promise(
           new Promise((resolve, reject) => {
             try {
-              fetch('/next/seed', { method: 'POST', credentials: 'include' })
-                .then((res) => {
+              fetch(endpoint, { method: 'POST', credentials: 'include' })
+                .then(async (res) => {
                   if (res.ok) {
-                    resolve(true)
-                    setSeeded(true)
+                    const data = await res.json()
+                    resolve(data)
+                    setSeededState(true)
                   } else {
-                    reject('An error occurred while seeding.')
+                    const text = await res.text()
+                    reject(text || 'An error occurred while seeding.')
                   }
                 })
                 .catch((error) => {
-                  reject(error)
+                  reject(error.message || 'Network error occurred.')
                 })
             } catch (error) {
-              reject(error)
+              reject(error instanceof Error ? error.message : 'Unknown error')
             }
           }),
           {
-            loading: 'Seeding with data....',
-            success: <SuccessMessage />,
+            loading: teamsOnly ? 'Clearing teams and seeding fresh data...' : 'Seeding with data....',
+            success: <SuccessMessage teamsOnly={teamsOnly} />,
             error: 'An error occurred while seeding.',
           },
         )
       } catch (err) {
         const error = err instanceof Error ? err.message : String(err)
         setError(error)
+        toast.error(error)
+      } finally {
+        setLoadingState(false)
       }
     },
-    [loading, seeded, error],
+    [loading, loadingTeams, error],
   )
 
-  let message = ''
-  if (loading) message = ' (seeding...)'
-  if (seeded) message = ' (done!)'
-  if (error) message = ` (error: ${error})`
+  const handleFullSeed = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.preventDefault()
+      handleSeed('/next/seed', false)
+    },
+    [handleSeed],
+  )
+
+  const handleTeamsSeed = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.preventDefault()
+      handleSeed('/next/seed-teams', true)
+    },
+    [handleSeed],
+  )
 
   return (
     <Fragment>
-      <button className="seedButton" onClick={handleClick}>
-        Seed your database
-      </button>
-      {message}
+      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+        <button 
+          className="seedButton" 
+          onClick={handleTeamsSeed}
+          disabled={loading || loadingTeams}
+          style={{ opacity: (loading || loadingTeams) ? 0.6 : 1 }}
+        >
+          {loadingTeams ? 'Seeding Teams...' : 'Seed Teams Only'}
+        </button>
+        <button 
+          className="seedButton" 
+          onClick={handleFullSeed}
+          disabled={loading || loadingTeams}
+          style={{ opacity: (loading || loadingTeams) ? 0.6 : 1 }}
+        >
+          {loading ? 'Seeding...' : 'Seed Full Database'}
+        </button>
+      </div>
+      {(seeded || teamsSeeded) && (
+        <div style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#28a745' }}>
+          ✓ {teamsSeeded ? 'Teams seeded' : ''} {seeded ? 'Full database seeded' : ''}
+        </div>
+      )}
+      {error && (
+        <div style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#dc3545' }}>
+          ✗ Error: {error}
+        </div>
+      )}
     </Fragment>
   )
 }

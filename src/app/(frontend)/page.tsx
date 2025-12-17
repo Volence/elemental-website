@@ -1,5 +1,125 @@
-import PageTemplate, { generateMetadata } from './[slug]/page'
+import type { Metadata } from 'next'
+import Image from 'next/image'
+import Link from 'next/link'
+import React from 'react'
+import { Button } from '@/components/ui/button'
+import { TeamCard } from '@/components/TeamCard'
+import { getAllTeams } from '@/utilities/getTeams'
 
-export default PageTemplate
+export const dynamic = 'force-dynamic' // Always render dynamically to fetch fresh data
 
-export { generateMetadata }
+export const metadata: Metadata = {
+  title: 'Elemental | ELMT - Overwatch 2 Organization',
+  description: 'Welcome to Elemental (ELMT), a premier Overwatch 2 organization competing at the highest levels.',
+  openGraph: {
+    title: 'Elemental | ELMT - Overwatch 2 Organization',
+    description: 'Welcome to Elemental (ELMT), a premier Overwatch 2 organization competing at the highest levels.',
+  },
+}
+
+// Fisher-Yates shuffle algorithm
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  return shuffled
+}
+
+export default async function HomePage() {
+  // Page is force-dynamic, so it always renders at runtime with fresh data
+  let randomTeams: any[] = []
+  
+  try {
+    // Get 6 random teams to display
+    const allTeams = await getAllTeams()
+    randomTeams = shuffleArray(allTeams).slice(0, 6)
+  } catch (error) {
+    // If teams can't be loaded, continue with empty array
+    // The "Our Teams" section will still render but show no teams
+    console.error('Error loading teams for homepage:', error)
+  }
+
+  return (
+    <main className="flex-1">
+      {/* Hero Section with Banner */}
+      <section className="relative w-full h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/logos/banner.jpg"
+            alt="Elemental Banner"
+            fill
+            priority
+            className="object-cover"
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/50" />
+        </div>
+        <div className="relative z-10 container text-center text-white">
+          <h1 className="text-5xl md:text-7xl font-bold mb-4 drop-shadow-2xl tracking-tight">
+            ELEMENTAL
+          </h1>
+          <p className="text-xl md:text-2xl font-light drop-shadow-lg tracking-wider">
+            ELMT
+          </p>
+        </div>
+      </section>
+
+      {/* About Us Section */}
+      <section className="py-20 bg-background">
+        <div className="container max-w-4xl">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">About Us</h2>
+            <div className="w-24 h-1 bg-primary mx-auto" />
+          </div>
+          <div className="prose prose-lg dark:prose-invert max-w-none">
+            <p className="text-lg leading-relaxed mb-6 text-muted-foreground">
+              Welcome to <strong className="text-foreground">Elemental</strong> (ELMT), a premier Overwatch 2 organization 
+              dedicated to competitive excellence. We bring together talented players and teams 
+              under one banner, competing at the highest levels of the game.
+            </p>
+            <p className="text-lg leading-relaxed mb-6 text-muted-foreground">
+              Our organization is built on a foundation of passion, skill, and teamwork. We 
+              strive to create an environment where players can grow, compete, and achieve their 
+              goals in Overwatch 2.
+            </p>
+            <p className="text-lg leading-relaxed text-muted-foreground">
+              Join us as we continue to make our mark in the competitive Overwatch 2 scene.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Teams Preview Section */}
+      <section className="py-20 bg-card/50">
+        <div className="container">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">Our Teams</h2>
+            <div className="w-24 h-1 bg-primary mx-auto mb-8" />
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
+              Elemental is home to multiple competitive teams, each representing different 
+              elements and playstyles. Explore our roster and follow our journey.
+            </p>
+            <Button asChild size="lg" className="text-lg px-8">
+              <Link href="/teams">View All Teams</Link>
+            </Button>
+          </div>
+          
+          {/* Preview of a few teams */}
+          {randomTeams.length > 0 ? (
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 max-w-4xl mx-auto mt-12">
+              {randomTeams.map((team) => (
+                <TeamCard key={team.slug} team={team} size="small" />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>Teams will be displayed here once they are added.</p>
+            </div>
+          )}
+        </div>
+      </section>
+    </main>
+  )
+}

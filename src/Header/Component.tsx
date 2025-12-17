@@ -5,7 +5,17 @@ import React from 'react'
 import type { Header } from '@/payload-types'
 
 export async function Header() {
-  const headerData: Header = await getCachedGlobal('header', 1)()
+  // Skip database operations during build
+  if (process.env.NEXT_BUILD_SKIP_DB) {
+    return <HeaderClient data={{} as Header} />
+  }
 
-  return <HeaderClient data={headerData} />
+  try {
+    const headerData: Header = await getCachedGlobal('header', 1)()
+    return <HeaderClient data={headerData} />
+  } catch (_error) {
+    // During build, database may not be available or tables may not exist
+    // Return empty header data
+    return <HeaderClient data={{} as Header} />
+  }
 }

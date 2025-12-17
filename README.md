@@ -230,8 +230,8 @@ This command will check for any migrations that have not yet been run and try to
 
 Alternatively, you can use [Docker](https://www.docker.com) to spin up this template locally. To do so, follow these steps:
 
-1. Follow [steps 1 and 2 from above](#development), the docker-compose file will automatically use the `.env` file in your project root
-1. Next run `docker-compose up`
+1. Follow [steps 1 and 2 from above](#development), the docker compose file will automatically use the `.env` file in your project root
+1. Next run `docker compose up`
 1. Follow [steps 4 and 5 from above](#development) to login and create your first admin user
 
 That's it! The Docker instance will help you get up and running quickly while also standardizing the development environment across your teams.
@@ -315,6 +315,17 @@ Before deploying your app, you need to:
 2. You can then deploy Payload as you would any other Node.js or Next.js application either directly on a VPS, DigitalOcean's Apps Platform, via Coolify or more. More guides coming soon.
 
 You can also deploy your app manually, check out the [deployment documentation](https://payloadcms.com/docs/production/deployment) for full details.
+
+## Documentation
+
+Additional documentation for this project is available in the [`docs/`](./docs/) folder:
+
+- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Comprehensive production deployment guide
+- **[docs/ADMIN_STRUCTURE.md](./docs/ADMIN_STRUCTURE.md)** - Admin panel structure and People system guide
+- **[docs/BUILD_FIX.md](./docs/BUILD_FIX.md)** - Build troubleshooting guide
+- **[docs/QUICK_DEPLOY.md](./docs/QUICK_DEPLOY.md)** - Quick deployment reference
+- **[docs/TEST_LOCALLY.md](./docs/TEST_LOCALLY.md)** - Local testing guide
+- **[docs/FIX_NGINX_SSL.md](./docs/FIX_NGINX_SSL.md)** - Nginx SSL configuration guide
 
 ## Questions
 

@@ -1,0 +1,46 @@
+services:
+  payload:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:3000:3000'  # Only bind to localhost (Nginx will proxy)
+    volumes:
+      - uploads:/app/public/uploads
+    env_file:
+      - .env.production
+    environment:
+      - DATABASE_URI=postgresql://payload:${POSTGRES_PASSWORD}@postgres:5432/payload
+      - NODE_ENV=production
+      - PAYLOAD_DB_PUSH=${PAYLOAD_DB_PUSH:-false}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:5432:5432'  # Only bind to localhost
+    environment:
+      - POSTGRES_USER=payload
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=payload
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U payload"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  uploads:

@@ -19,13 +19,17 @@ const collectionLabels = {
     plural: 'Pages',
     singular: 'Page',
   },
-  posts: {
-    plural: 'Posts',
-    singular: 'Post',
-  },
   projects: {
     plural: 'Projects',
     singular: 'Project',
+  },
+  production: {
+    plural: 'Production Staff',
+    singular: 'Production Staff',
+  },
+  'organization-staff': {
+    plural: 'Organization Staff',
+    singular: 'Organization Staff',
   },
 }
 

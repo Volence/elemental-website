@@ -1,8 +1,13 @@
-import type { BannerBlock as BannerBlockProps } from 'src/payload-types'
-
 import { cn } from '@/utilities/ui'
 import React from 'react'
 import RichText from '@/components/RichText'
+import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
+
+type BannerBlockProps = {
+  blockType: 'banner'
+  style?: 'info' | 'warning' | 'error' | 'success'
+  content: DefaultTypedEditorState
+}
 
 type Props = {
   className?: string

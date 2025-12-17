@@ -23,8 +23,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html className={cn(GeistSans.variable, GeistMono.variable)} lang="en" suppressHydrationWarning>
       <head>
         <InitTheme />
-        <link href="/favicon.ico" rel="icon" sizes="32x32" />
-        <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
+        <link href="/logos/org.png" rel="icon" type="image/png" />
+        <link href="/logos/org.png" rel="apple-touch-icon" />
       </head>
       <body>
         <Providers>
@@ -45,6 +45,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
 export const metadata: Metadata = {
   metadataBase: new URL(getServerSideURL()),
+  icons: {
+    icon: '/logos/org.png',
+    apple: '/logos/org.png',
+  },
   openGraph: mergeOpenGraph(),
   twitter: {
     card: 'summary_large_image',

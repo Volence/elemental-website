@@ -1,0 +1,1242 @@
+{
+  "teams": [
+    {
+      "slug": "garden",
+      "name": "Garden",
+      "logo": "/logos/elmt_garden.png",
+      "region": "NA",
+      "rating": "FACEIT Masters",
+      "achievements": [],
+      "manager": [
+        "wk ♡.ᐟ"
+      ],
+      "coaches": [
+        "boomed"
+      ],
+      "captain": [
+        "Aircarter",
+        "FireCarter"
+      ],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "Watercarter",
+          "role": "tank"
+        },
+        {
+          "name": "bion",
+          "role": "dps"
+        },
+        {
+          "name": "Aircarter",
+          "role": "dps"
+        },
+        {
+          "name": "FireCarter",
+          "role": "support"
+        },
+        {
+          "name": "ferusky",
+          "role": "support"
+        }
+      ],
+      "subs": [
+        "Earthcarter",
+        "kermplays",
+        "FireCarti "
+      ]
+    },
+    {
+      "slug": "dragon",
+      "name": "Dragon",
+      "logo": "/logos/elmt_dragon.png",
+      "region": "NA",
+      "rating": "FACEIT Advanced",
+      "achievements": [],
+      "manager": [
+        "Malevolence"
+      ],
+      "coaches": [],
+      "captain": [
+        "ShogunApple"
+      ],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "Minecraft Xaph",
+          "role": "tank"
+        },
+        {
+          "name": "Goosus",
+          "role": "tank"
+        },
+        {
+          "name": "romero",
+          "role": "tank"
+        },
+        {
+          "name": "Yearlyplanet",
+          "role": "dps"
+        },
+        {
+          "name": "Potatomanz101",
+          "role": "dps"
+        },
+        {
+          "name": "Rageicz",
+          "role": "dps"
+        },
+        {
+          "name": "Visper",
+          "role": "dps"
+        },
+        {
+          "name": "ShogunApple",
+          "role": "support"
+        },
+        {
+          "name": "LinnyBalls",
+          "role": "support"
+        },
+        {
+          "name": "Ten ",
+          "role": "support"
+        }
+      ],
+      "subs": []
+    },
+    {
+      "slug": "water",
+      "name": "Water",
+      "logo": "/logos/elmt_water.png",
+      "region": "NA",
+      "rating": "4.5K",
+      "achievements": [],
+      "manager": [
+        "Ant"
+      ],
+      "coaches": [
+        "Hemizphere"
+      ],
+      "captain": [
+        "Jollax"
+      ],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "Videogamer",
+          "role": "tank"
+        },
+        {
+          "name": "Snake",
+          "role": "dps"
+        },
+        {
+          "name": "Jollax",
+          "role": "dps"
+        },
+        {
+          "name": "Acoaz",
+          "role": "support"
+        },
+        {
+          "name": "NervyTitan40",
+          "role": "support"
+        }
+      ],
+      "subs": [
+        "DoubleDinks",
+        "silent",
+        "Avalonux "
+      ]
+    },
+    {
+      "slug": "poison",
+      "name": "Poison",
+      "logo": "/logos/elmt_poison.png",
+      "region": "NA",
+      "rating": "4.2K",
+      "achievements": [],
+      "manager": [
+        "Literally Mayhem (Special Idiot)"
+      ],
+      "coaches": [],
+      "captain": [],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "Trialing",
+          "role": "tank"
+        },
+        {
+          "name": "Hunter",
+          "role": "dps"
+        },
+        {
+          "name": "Shogai",
+          "role": "dps"
+        },
+        {
+          "name": "Trialing",
+          "role": "support"
+        },
+        {
+          "name": "Alex (King Von) ",
+          "role": "support"
+        }
+      ],
+      "subs": []
+    },
+    {
+      "slug": "shade",
+      "name": "Shade",
+      "logo": "/logos/elmt_shade.png",
+      "region": "NA",
+      "rating": "3.5K",
+      "achievements": [],
+      "manager": [
+        "BLKPITY",
+        "Happy The Wise"
+      ],
+      "coaches": [
+        "criffle"
+      ],
+      "captain": [
+        "Newports"
+      ],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "puck",
+          "role": "tank"
+        },
+        {
+          "name": "Newports",
+          "role": "dps"
+        },
+        {
+          "name": "AzuL™",
+          "role": "dps"
+        },
+        {
+          "name": "♡ lily ♡",
+          "role": "support"
+        },
+        {
+          "name": "litemash ",
+          "role": "support"
+        }
+      ],
+      "subs": []
+    },
+    {
+      "slug": "fighting",
+      "name": "Fighting",
+      "logo": "/logos/elmt_fighting.png",
+      "region": "NA",
+      "rating": "3.4K",
+      "achievements": [],
+      "manager": [
+        "Literally Mayhem (Special Idiot)"
+      ],
+      "coaches": [
+        "Tetnis"
+      ],
+      "captain": [
+        "Hemisphere"
+      ],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "jazer121",
+          "role": "tank"
+        },
+        {
+          "name": "Hemisphere",
+          "role": "dps"
+        },
+        {
+          "name": "Geomaster53",
+          "role": "dps"
+        },
+        {
+          "name": "Mako",
+          "role": "support"
+        },
+        {
+          "name": "Sisuyoo",
+          "role": "support"
+        }
+      ],
+      "subs": [
+        "Certified Doom OTP",
+        "salty "
+      ]
+    },
+    {
+      "slug": "reality",
+      "name": "Reality",
+      "logo": "/logos/elmt_reality.png",
+      "region": "NA",
+      "rating": "3.4K",
+      "achievements": [],
+      "manager": [
+        "BLKPITY"
+      ],
+      "coaches": [
+        "Reality"
+      ],
+      "captain": [],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "NightDragon4633",
+          "role": "tank"
+        },
+        {
+          "name": "Akuma",
+          "role": "dps"
+        },
+        {
+          "name": "✰★Pocoyo 𝘜𝘸𝘜✰★",
+          "role": "dps"
+        },
+        {
+          "name": "Mystical",
+          "role": "support"
+        },
+        {
+          "name": "Salt",
+          "role": "support"
+        }
+      ],
+      "subs": [
+        "BLKPITY "
+      ]
+    },
+    {
+      "slug": "normal",
+      "name": "Normal",
+      "logo": "/logos/elmt_normal.png",
+      "region": "NA",
+      "rating": "FACEIT Expert",
+      "achievements": [
+        "Faceit S5 Advanced Champions",
+        "Faceit S6 Expert top 6"
+      ],
+      "manager": [
+        "Creep"
+      ],
+      "coaches": [],
+      "captain": [
+        "Virgin Xaph"
+      ],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "Virgin Xaph",
+          "role": "tank"
+        },
+        {
+          "name": "The Brad (Xaph)",
+          "role": "dps"
+        },
+        {
+          "name": "Xaphan",
+          "role": "dps"
+        },
+        {
+          "name": "exo",
+          "role": "dps"
+        },
+        {
+          "name": "Asian Xaph",
+          "role": "dps"
+        },
+        {
+          "name": "Lightweight Xaph",
+          "role": "support"
+        },
+        {
+          "name": "Fat Xaph",
+          "role": "support"
+        },
+        {
+          "name": "Mookie ",
+          "role": "support"
+        }
+      ],
+      "subs": []
+    },
+    {
+      "slug": "bug",
+      "name": "Bug",
+      "logo": "/logos/elmt_bug.png",
+      "region": "NA",
+      "rating": "3K",
+      "achievements": [],
+      "manager": [
+        "Literally Mayhem (Special Idiot)"
+      ],
+      "coaches": [
+        "Hades #1 Fan (Demi)",
+        "Public Relations"
+      ],
+      "captain": [
+        "Ant 🐜"
+      ],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "Blitz",
+          "role": "tank"
+        },
+        {
+          "name": "Kombat",
+          "role": "tank"
+        },
+        {
+          "name": "Shaw",
+          "role": "dps"
+        },
+        {
+          "name": "Drowsy!",
+          "role": "dps"
+        },
+        {
+          "name": "Scott",
+          "role": "dps"
+        },
+        {
+          "name": "Ant 🐜",
+          "role": "support"
+        },
+        {
+          "name": "Scar",
+          "role": "support"
+        },
+        {
+          "name": "Emma ",
+          "role": "support"
+        }
+      ],
+      "subs": []
+    },
+    {
+      "slug": "steel",
+      "name": "Steel",
+      "logo": "/logos/elmt_steel.png",
+      "region": "NA",
+      "rating": "2.7K",
+      "achievements": [],
+      "manager": [
+        "Avalonux"
+      ],
+      "coaches": [
+        "Alex (KingVon)",
+        "Hunter"
+      ],
+      "captain": [
+        "Dahlia",
+        "~natu~"
+      ],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "Kombat",
+          "role": "tank"
+        },
+        {
+          "name": "Dahlia",
+          "role": "dps"
+        },
+        {
+          "name": "Death",
+          "role": "dps"
+        },
+        {
+          "name": "Pandybri <3",
+          "role": "support"
+        },
+        {
+          "name": "~natu~",
+          "role": "support"
+        }
+      ],
+      "subs": [
+        ". Allie.♡ "
+      ]
+    },
+    {
+      "slug": "pytel",
+      "name": "Pytel",
+      "logo": "/logos/elmt_pytel.png",
+      "region": "EU",
+      "rating": "FACEIT Masters",
+      "achievements": [],
+      "manager": [
+        "Goldblooded"
+      ],
+      "coaches": [],
+      "captain": [
+        "groka",
+        "Kattos"
+      ],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "groka",
+          "role": "tank"
+        },
+        {
+          "name": "Abce",
+          "role": "dps"
+        },
+        {
+          "name": "cheeseburger_ow",
+          "role": "dps"
+        },
+        {
+          "name": "Zupo",
+          "role": "dps"
+        },
+        {
+          "name": "Kattos",
+          "role": "support"
+        },
+        {
+          "name": "k1m",
+          "role": "support"
+        }
+      ],
+      "subs": [
+        "Otakaw "
+      ]
+    },
+    {
+      "slug": "shungite",
+      "name": "Shungite",
+      "logo": "/logos/elmt_shungite.png",
+      "region": "EU",
+      "rating": "FACEIT Expert",
+      "achievements": [],
+      "manager": [
+        "Kippy"
+      ],
+      "coaches": [
+        "Fudgey"
+      ],
+      "captain": [
+        "Stormy"
+      ],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "Wild",
+          "role": "tank"
+        },
+        {
+          "name": "Bogeyed bob",
+          "role": "dps"
+        },
+        {
+          "name": "Swiffle",
+          "role": "dps"
+        },
+        {
+          "name": "Stormy",
+          "role": "support"
+        },
+        {
+          "name": "Typical",
+          "role": "support"
+        }
+      ],
+      "subs": [
+        "Dæxi",
+        "haaladeen "
+      ]
+    },
+    {
+      "slug": "banana-peel",
+      "name": "Banana Peel",
+      "logo": "/logos/elmt_banana-peel.png",
+      "region": "EU",
+      "rating": "FACEIT Expert",
+      "achievements": [],
+      "manager": [],
+      "coaches": [],
+      "captain": [],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "TBD",
+          "role": "tank"
+        },
+        {
+          "name": "TBD",
+          "role": "dps"
+        },
+        {
+          "name": "TBD",
+          "role": "dps"
+        },
+        {
+          "name": "TBD",
+          "role": "support"
+        },
+        {
+          "name": "TBD",
+          "role": "support"
+        }
+      ],
+      "subs": []
+    },
+    {
+      "slug": "rock",
+      "name": "Rock",
+      "logo": "/logos/elmt_rock.png",
+      "region": "EU",
+      "rating": "FACEIT Advanced",
+      "achievements": [
+        "Top 8 Season 6 FACEIT Open"
+      ],
+      "manager": [
+        "JooJ",
+        "Hades"
+      ],
+      "coaches": [],
+      "captain": [
+        "Goldenninjaprime"
+      ],
+      "coCaptain": "Mauro",
+      "roster": [
+        {
+          "name": "Goldenninjaprime",
+          "role": "tank"
+        },
+        {
+          "name": "Apri",
+          "role": "dps"
+        },
+        {
+          "name": "Mauro Hikuasian",
+          "role": "dps"
+        },
+        {
+          "name": "46Kelpie",
+          "role": "support"
+        },
+        {
+          "name": "Euphoria",
+          "role": "support"
+        }
+      ],
+      "subs": [
+        "Evil "
+      ]
+    },
+    {
+      "slug": "stellar",
+      "name": "Stellar",
+      "logo": "/logos/elmt_stellar.png",
+      "region": "EU",
+      "rating": "FACEIT Advanced",
+      "achievements": [],
+      "manager": [
+        "Kymer"
+      ],
+      "coaches": [
+        "Sol"
+      ],
+      "captain": [],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "Solar",
+          "role": "tank"
+        },
+        {
+          "name": "Grimlock",
+          "role": "dps"
+        },
+        {
+          "name": "Gucci",
+          "role": "dps"
+        },
+        {
+          "name": "Z3tliX ",
+          "role": "support"
+        }
+      ],
+      "subs": []
+    },
+    {
+      "slug": "fire",
+      "name": "Fire",
+      "logo": "/logos/elmt_fire.png",
+      "region": "EU",
+      "rating": "4.5K",
+      "achievements": [],
+      "manager": [
+        "Hades"
+      ],
+      "coaches": [],
+      "captain": [
+        "Buzzj23",
+        "Shibal"
+      ],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "Shibal",
+          "role": "tank"
+        },
+        {
+          "name": "Mattie",
+          "role": "dps"
+        },
+        {
+          "name": "palloz",
+          "role": "dps"
+        },
+        {
+          "name": "Buzzj23",
+          "role": "support"
+        },
+        {
+          "name": "Bap demon",
+          "role": "support"
+        }
+      ],
+      "subs": [
+        "malumcrypt",
+        "MadBern "
+      ]
+    },
+    {
+      "slug": "dark",
+      "name": "Dark",
+      "logo": "/logos/elmt_dark.png",
+      "region": "EU",
+      "rating": "4.5K",
+      "achievements": [],
+      "manager": [],
+      "coaches": [],
+      "captain": [],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "TBD",
+          "role": "tank"
+        },
+        {
+          "name": "TBD",
+          "role": "dps"
+        },
+        {
+          "name": "TBD",
+          "role": "dps"
+        },
+        {
+          "name": "TBD",
+          "role": "support"
+        },
+        {
+          "name": "TBD",
+          "role": "support"
+        }
+      ],
+      "subs": []
+    },
+    {
+      "slug": "crust",
+      "name": "Crust",
+      "logo": "/logos/elmt_crust.png",
+      "region": "EU",
+      "rating": "4.5K",
+      "achievements": [],
+      "manager": [
+        "kiki"
+      ],
+      "coaches": [],
+      "captain": [
+        "kiki"
+      ],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "COOKIE",
+          "role": "tank"
+        },
+        {
+          "name": "Seo",
+          "role": "dps"
+        },
+        {
+          "name": "Trial",
+          "role": "dps"
+        },
+        {
+          "name": "SuperGreken",
+          "role": "support"
+        },
+        {
+          "name": "Raresh ",
+          "role": "support"
+        }
+      ],
+      "subs": []
+    },
+    {
+      "slug": "psychic",
+      "name": "Psychic",
+      "logo": "/logos/elmt_psychic.png",
+      "region": "EU",
+      "rating": "4.5K",
+      "achievements": [],
+      "manager": [
+        "Kymer"
+      ],
+      "coaches": [
+        "SuperGreken"
+      ],
+      "captain": [
+        "Rose (TANK ROSEEEEEEE!!!!)",
+        "Scetsis"
+      ],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "Rose (TANK ROSEEEEEEE!!!!)",
+          "role": "tank"
+        },
+        {
+          "name": "Fallen",
+          "role": "dps"
+        },
+        {
+          "name": "3head / Kymer",
+          "role": "dps"
+        },
+        {
+          "name": "Scetsis",
+          "role": "support"
+        },
+        {
+          "name": "xmfe ",
+          "role": "support"
+        }
+      ],
+      "subs": []
+    },
+    {
+      "slug": "ice",
+      "name": "Ice",
+      "logo": "/logos/elmt_ice.png",
+      "region": "EU",
+      "rating": "4.4K",
+      "achievements": [],
+      "manager": [
+        "Hades",
+        "JooJ"
+      ],
+      "coaches": [
+        "FlashAttack"
+      ],
+      "captain": [
+        "Gartgal"
+      ],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "Gartgal",
+          "role": "tank"
+        },
+        {
+          "name": "Enigma",
+          "role": "dps"
+        },
+        {
+          "name": "Sym guy",
+          "role": "dps"
+        },
+        {
+          "name": "Narkas",
+          "role": "support"
+        },
+        {
+          "name": "Thrown",
+          "role": "support"
+        }
+      ],
+      "subs": [
+        "Kymer",
+        "siren "
+      ]
+    },
+    {
+      "slug": "grass",
+      "name": "Grass",
+      "logo": "/logos/elmt_grass.png",
+      "region": "EU",
+      "rating": "4K",
+      "achievements": [],
+      "manager": [
+        "RandomOnions"
+      ],
+      "coaches": [
+        "M43estro"
+      ],
+      "captain": [
+        "Foo"
+      ],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "Nick",
+          "role": "tank"
+        },
+        {
+          "name": "Infrared [Baller]",
+          "role": "tank"
+        },
+        {
+          "name": "Foo",
+          "role": "dps"
+        },
+        {
+          "name": "xMichuKick",
+          "role": "dps"
+        },
+        {
+          "name": "Clappn",
+          "role": "support"
+        },
+        {
+          "name": "Trial ",
+          "role": "support"
+        }
+      ],
+      "subs": []
+    },
+    {
+      "slug": "cosmic",
+      "name": "Cosmic",
+      "logo": "/logos/elmt_cosmic.png",
+      "region": "EU",
+      "rating": "4.2K",
+      "achievements": [],
+      "manager": [],
+      "coaches": [],
+      "captain": [],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "TBD",
+          "role": "tank"
+        },
+        {
+          "name": "TBD",
+          "role": "dps"
+        },
+        {
+          "name": "TBD",
+          "role": "dps"
+        },
+        {
+          "name": "TBD",
+          "role": "support"
+        },
+        {
+          "name": "TBD",
+          "role": "support"
+        }
+      ],
+      "subs": []
+    },
+    {
+      "slug": "ground",
+      "name": "Ground",
+      "logo": "/logos/elmt_ground.png",
+      "region": "EU",
+      "rating": "4.2K",
+      "achievements": [],
+      "manager": [],
+      "coaches": [],
+      "captain": [],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "TBD",
+          "role": "tank"
+        },
+        {
+          "name": "TBD",
+          "role": "dps"
+        },
+        {
+          "name": "TBD",
+          "role": "dps"
+        },
+        {
+          "name": "TBD",
+          "role": "support"
+        },
+        {
+          "name": "TBD",
+          "role": "support"
+        }
+      ],
+      "subs": []
+    },
+    {
+      "slug": "electric",
+      "name": "Electric",
+      "logo": "/logos/elmt_electric.png",
+      "region": "EU",
+      "rating": "3.9K",
+      "achievements": [],
+      "manager": [
+        "Gartgal",
+        "Hope"
+      ],
+      "coaches": [
+        "Buzzj23"
+      ],
+      "captain": [
+        "JooJ"
+      ],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "Fab",
+          "role": "tank"
+        },
+        {
+          "name": "JooJ",
+          "role": "dps"
+        },
+        {
+          "name": "S3lmer",
+          "role": "dps"
+        },
+        {
+          "name": "Plantonium",
+          "role": "support"
+        },
+        {
+          "name": "Paidamwoyo",
+          "role": "support"
+        }
+      ],
+      "subs": [
+        "luckyboy001",
+        "Hope "
+      ]
+    },
+    {
+      "slug": "void",
+      "name": "Void",
+      "logo": "/logos/elmt_void.png",
+      "region": "EU",
+      "rating": "3.5K",
+      "achievements": [],
+      "manager": [
+        "Pofa"
+      ],
+      "coaches": [
+        "storm"
+      ],
+      "captain": [
+        "Peke"
+      ],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "Peke / Mr Randomizer",
+          "role": "tank"
+        },
+        {
+          "name": "roro3434001",
+          "role": "dps"
+        },
+        {
+          "name": "Kami",
+          "role": "dps"
+        },
+        {
+          "name": "Mr Randomizer",
+          "role": "support"
+        },
+        {
+          "name": "Shadow builder / roro3434001",
+          "role": "support"
+        }
+      ],
+      "subs": [
+        "Apicii "
+      ]
+    },
+    {
+      "slug": "star",
+      "name": "Star",
+      "logo": "/logos/elmt_star.png",
+      "region": "EU",
+      "rating": "3.4K",
+      "achievements": [],
+      "manager": [],
+      "coaches": [],
+      "captain": [],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "TBD",
+          "role": "tank"
+        },
+        {
+          "name": "TBD",
+          "role": "dps"
+        },
+        {
+          "name": "TBD",
+          "role": "dps"
+        },
+        {
+          "name": "TBD",
+          "role": "support"
+        },
+        {
+          "name": "TBD",
+          "role": "support"
+        }
+      ],
+      "subs": []
+    },
+    {
+      "slug": "eclipse",
+      "name": "Eclipse",
+      "logo": "/logos/elmt_eclipse.png",
+      "region": "EU",
+      "rating": "3.7K",
+      "achievements": [],
+      "manager": [],
+      "coaches": [],
+      "captain": [],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "TBD",
+          "role": "tank"
+        },
+        {
+          "name": "TBD",
+          "role": "dps"
+        },
+        {
+          "name": "TBD",
+          "role": "dps"
+        },
+        {
+          "name": "TBD",
+          "role": "support"
+        },
+        {
+          "name": "TBD",
+          "role": "support"
+        }
+      ],
+      "subs": []
+    },
+    {
+      "slug": "ghost",
+      "name": "Ghost",
+      "logo": "/logos/elmt_ghost.png",
+      "region": "EU",
+      "rating": "2.8K",
+      "achievements": [],
+      "manager": [
+        "Gartgal"
+      ],
+      "coaches": [
+        "Gartgal",
+        "Enigma"
+      ],
+      "captain": [
+        "Ooga"
+      ],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "Ooga",
+          "role": "tank"
+        },
+        {
+          "name": "Trialing",
+          "role": "dps"
+        },
+        {
+          "name": "Trialing",
+          "role": "dps"
+        },
+        {
+          "name": "Trialing",
+          "role": "support"
+        },
+        {
+          "name": "Trialing",
+          "role": "support"
+        }
+      ],
+      "subs": [
+        "JooJ",
+        "Hades "
+      ]
+    },
+    {
+      "slug": "heaven",
+      "name": "Heaven",
+      "logo": "/logos/elmt_heaven.png",
+      "region": "SA",
+      "rating": "FACEIT Masters",
+      "achievements": [],
+      "manager": [
+        "NoirAngel",
+        "Quirino"
+      ],
+      "coaches": [
+        "TheHalo creeper"
+      ],
+      "captain": [
+        "NoirAngel"
+      ],
+      "coCaptain": null,
+      "roster": [
+        {
+          "name": "manuel.m",
+          "role": "tank"
+        },
+        {
+          "name": "sky",
+          "role": "dps"
+        },
+        {
+          "name": "Lima",
+          "role": "dps"
+        },
+        {
+          "name": "NoirAngel",
+          "role": "support"
+        },
+        {
+          "name": "Trial",
+          "role": "support"
+        }
+      ],
+      "subs": [
+        "Rosita",
+        "Sukka "
+      ]
+    }
+  ]
+}

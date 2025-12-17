@@ -8,6 +8,9 @@ export const Header: GlobalConfig = {
   access: {
     read: () => true,
   },
+  admin: {
+    hidden: true,
+  },
   fields: [
     {
       name: 'navItems',

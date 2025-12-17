@@ -1,0 +1,165 @@
+'use client'
+
+import Link from 'next/link'
+import React from 'react'
+import { TeamLogo } from '@/components/TeamLogo'
+import type { Team } from '@/utilities/getTeams'
+import { Shield, Swords, Heart, Lock, Users, UserCheck } from 'lucide-react'
+
+interface TeamCardProps {
+  team: Team
+  size?: 'small' | 'medium'
+}
+
+export const TeamCard: React.FC<TeamCardProps> = ({ team, size = 'medium' }) => {
+  const logoSize = size === 'small' ? 'w-16 h-16' : 'w-24 h-24'
+  const cardPadding = size === 'small' ? 'p-4' : 'p-6'
+  
+  const rosterCount = team.roster?.length || 0
+  const tankCount = team.roster?.filter(p => p.role === 'tank').length || 0
+  const dpsCount = team.roster?.filter(p => p.role === 'dps').length || 0
+  const supportCount = team.roster?.filter(p => p.role === 'support').length || 0
+
+  const getRoleIcon = (role: string) => {
+    switch (role) {
+      case 'tank':
+        return <Shield className="w-3 h-3 text-blue-500" />
+      case 'dps':
+        return <Swords className="w-3 h-3 text-red-500" />
+      case 'support':
+        return <Heart className="w-3 h-3 text-green-500" />
+      default:
+        return null
+    }
+  }
+
+  return (
+    <div className="relative group">
+      <Link
+        href={`/teams/${team.slug}`}
+        className="flex flex-col items-center"
+      >
+        <div className={`${cardPadding} rounded-xl border border-border bg-card hover:bg-accent/50 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/10 w-full`}>
+          <div className={`relative ${logoSize} mb-4 flex items-center justify-center mx-auto`}>
+            <TeamLogo
+              src={team.logo}
+              alt={`${team.name} Logo`}
+              fill
+              className="object-contain group-hover:scale-110 transition-transform duration-300"
+              sizes={size === 'small' ? '64px' : '96px'}
+            />
+          </div>
+          <h3 className={`text-center font-semibold ${size === 'small' ? 'text-xs' : 'text-sm'} group-hover:text-primary transition-colors duration-300`}>
+            {team.name}
+          </h3>
+        </div>
+      </Link>
+
+      {/* Hover Card */}
+      <div className="absolute z-50 top-full left-1/2 -translate-x-1/2 mt-2 w-80 max-w-[90vw] p-4 rounded-xl border border-border bg-card shadow-2xl opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-200 pointer-events-none hidden md:block">
+        <div className="flex flex-col gap-3">
+          {/* Team Name & Info */}
+          <div className="text-center border-b border-border pb-2">
+            <h4 className="font-bold text-lg mb-1">{team.name}</h4>
+            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+              {team.region && <span>[{team.region}]</span>}
+              {team.rating && <span>[{team.rating}]</span>}
+            </div>
+          </div>
+
+          {/* Staff */}
+          {(team.manager || team.coaches || team.captain || team.coCaptain) && (
+            <div className="space-y-2">
+              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                <Users className="w-3 h-3" />
+                Staff
+              </div>
+              <div className="space-y-1 text-xs">
+                {team.manager && team.manager.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground min-w-[70px]">Manager:</span>
+                    <span className="font-medium">{team.manager.map(m => m.name).join(' & ')}</span>
+                  </div>
+                )}
+                {team.coaches && team.coaches.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground min-w-[70px]">Coaches:</span>
+                    <span className="font-medium">{team.coaches.map(c => c.name).join(' & ')}</span>
+                  </div>
+                )}
+                {team.captain && team.captain.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground min-w-[70px]">Captain:</span>
+                    <span className="font-medium">{team.captain.map(c => c.name).join(' & ')}</span>
+                  </div>
+                )}
+                {team.coCaptain && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground min-w-[70px]">Co-Captain:</span>
+                    <span className="font-medium">{team.coCaptain}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Players List */}
+          {team.roster && team.roster.length > 0 && (
+            <div className="space-y-2">
+              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Players ({rosterCount})
+              </div>
+              <div className="space-y-1.5">
+                {team.roster.map((player, i) => (
+                  <div key={i} className="flex items-center gap-2 text-xs">
+                    <div className="flex-shrink-0">
+                      {getRoleIcon(player.role)}
+                    </div>
+                    <span className="font-medium">{player.name}</span>
+                    <span className="text-muted-foreground uppercase text-[10px] ml-auto">{player.role}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Subs */}
+          {team.subs && team.subs.length > 0 && (
+            <div className="space-y-2">
+              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                <Lock className="w-3 h-3 text-orange-500" />
+                Subs ({team.subs.length})
+              </div>
+              <div className="space-y-1 text-xs">
+                {team.subs.map((sub, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <Lock className="w-3 h-3 text-orange-500 flex-shrink-0" />
+                    <span className="font-medium">{sub.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Achievements Preview */}
+          {team.achievements && team.achievements.length > 0 && (
+            <div className="text-xs">
+              <div className="font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                Achievements
+              </div>
+              <div className="text-muted-foreground line-clamp-2">
+                {team.achievements[0]}
+              </div>
+            </div>
+          )}
+
+          {/* Click hint */}
+          <div className="text-xs text-center text-primary font-medium pt-2 border-t border-border">
+            Click to view details →
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
