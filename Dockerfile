@@ -45,11 +45,8 @@ ENV NEXT_BUILD_SKIP_DB=${DATABASE_URI:+0}${DATABASE_URI:-1}
 # Build the application
 # IMPORTANT: Database must be available during build for standalone output to be created
 # Pages are configured as dynamic and will be generated at runtime when the app starts
-# Enable pnpm for Next.js build (it detects pnpm from package.json engines)
-RUN \
-  corepack enable pnpm && \
-  corepack prepare pnpm@10.11.1 --activate && \
-  npm run build
+# Use npm for build (consistent with install step, avoids pnpm cache issues)
+RUN npm run build
 
 # Verify standalone output was created (required for production deployment)
 RUN if [ ! -d .next/standalone ]; then \
