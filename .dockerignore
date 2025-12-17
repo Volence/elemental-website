@@ -7,10 +7,11 @@ pnpm-debug.log*
 .pnpm-store
 .pnpm-debug.log*
 
-# Lockfiles (use pnpm-lock.yaml if it exists and is valid)
-# pnpm-lock.yaml - Keep this, we'll use the fixed one
+# Lockfiles - exclude ALL lockfiles, let npm create fresh ones during build
+pnpm-lock.yaml
 yarn.lock
 package-lock.json
+.pnpmfile.cjs
 
 # Build outputs
 .next
