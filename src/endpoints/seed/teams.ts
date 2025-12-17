@@ -26,30 +26,44 @@ interface TeamsData {
 }
 
 /**
+ * Format name to slug (same logic as People collection)
+ */
+function formatSlug(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '') // Remove special chars and emojis
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+/**
  * Create or find a person by name and return their ID
+ * Searches by slug first to avoid duplicates (e.g., "Ant" vs "Ant 🐜")
  */
 async function getPersonId(payload: Payload, name: string): Promise<number> {
-  // Use payload directly to avoid circular dependency
   const trimmedName = name.trim()
+  const slug = formatSlug(trimmedName)
   
-  // Try to find existing person
-  const existing = await payload.find({
+  // Try to find existing person by slug first (since slug is unique and auto-generated)
+  // This prevents duplicates when names format to the same slug (e.g., "Ant" vs "Ant 🐜")
+  const existingBySlug = await payload.find({
     collection: 'people',
     where: {
-      name: {
-        equals: trimmedName,
+      slug: {
+        equals: slug,
       },
     },
     limit: 1,
     depth: 0,
   })
   
-  if (existing.docs.length > 0) {
-    const id = existing.docs[0].id
+  if (existingBySlug.docs.length > 0) {
+    const id = existingBySlug.docs[0].id
     return typeof id === 'number' ? id : parseInt(String(id))
   }
   
-  // Create new person
+  // Create new person (slug will be auto-generated from name)
   const newPerson = await payload.create({
     collection: 'people',
     data: {

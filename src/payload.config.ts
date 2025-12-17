@@ -84,9 +84,8 @@ export default buildConfig({
     },
     // Use UUIDs for primary keys (Payload 3.x default)
     // This matches our PostgreSQL schema with UUID columns
-    // Allow push mode via environment variable for schema initialization
-    // Set PAYLOAD_DB_PUSH=true to auto-create tables during initialization
-    push: process.env.PAYLOAD_DB_PUSH === 'true' || false,
+    // Temporarily enable push mode to let Payload create schema
+    push: true,
   }),
   collections: [Pages, Media, People, Teams, Matches, Production, OrganizationStaff, Users /* ActivityLog temporarily disabled */],
   cors: [getServerSideURL()].filter(Boolean),
