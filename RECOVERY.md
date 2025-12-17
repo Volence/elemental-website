@@ -12,31 +12,18 @@ The `docker compose down -v` command deleted the database volumes. All data was 
 
 ## Recovery Steps
 
-### Step 1: Enable Auto-Schema Creation
+### Step 1: Run the Initial Schema Migration
 
-Edit `.env.production` and add:
-
-```bash
-PAYLOAD_DB_PUSH=true
-```
-
-### Step 2: Restart Payload
+We have a complete baseline migration that creates all tables:
 
 ```bash
-docker compose -f docker-compose.prod.yml restart payload
+cd ~/elemental-website
+docker compose -f docker-compose.prod.yml exec -T postgres psql -U payload -d payload < migrations/001_initial_schema.sql
 ```
 
-### Step 3: Wait for Schema Creation
+This will create all tables, indexes, and relationships in one go.
 
-Watch the logs - Payload will create all tables:
-
-```bash
-docker compose -f docker-compose.prod.yml logs -f payload
-```
-
-Look for: "Creating table..." messages
-
-### Step 4: Create Your First Admin User
+### Step 2: Create Your First Admin User
 
 1. Visit: `https://elmt.gg/admin`
 2. You'll see the "Create First User" screen
@@ -48,19 +35,7 @@ Look for: "Creating table..." messages
 
 The first user is automatically assigned Admin role!
 
-### Step 5: Disable Auto-Push (Important!)
-
-After schema is created and first user exists:
-
-```bash
-# Remove PAYLOAD_DB_PUSH=true from .env.production
-sed -i '/PAYLOAD_DB_PUSH=true/d' .env.production
-
-# Restart
-docker compose -f docker-compose.prod.yml restart payload
-```
-
-### Step 6: Re-enter Your Data
+### Step 3: Re-enter Your Data
 
 You'll need to manually re-create:
 - ✅ **People** - All your players/staff/casters
