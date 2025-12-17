@@ -46,11 +46,11 @@
    NODE_ENV=production
    ```
 
-6. **Configure Nginx**
+6. **Configure Nginx** (if using reverse proxy)
    ```bash
-   sudo cp nginx.conf.example /etc/nginx/sites-available/elemental-website
+   # Create Nginx config for elmt.gg
    sudo nano /etc/nginx/sites-available/elemental-website
-   # Domain is elmt.gg
+   # Add reverse proxy to localhost:3000
    sudo ln -s /etc/nginx/sites-available/elemental-website /etc/nginx/sites-enabled/
    sudo nginx -t
    sudo systemctl restart nginx

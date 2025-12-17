@@ -24,7 +24,6 @@ See [deployment/](./deployment/) folder:
 - **[MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md)** - Migration patterns and practices
 - **[QUICK_DEPLOY.md](./QUICK_DEPLOY.md)** - Quick deployment reference
 - **[TEST_LOCALLY.md](./TEST_LOCALLY.md)** - Local testing guide
-- **[FIX_NGINX_SSL.md](./FIX_NGINX_SSL.md)** - Nginx SSL configuration
 
 ### Historical Documentation
 See [archive/](./archive/) folder - contains troubleshooting docs from the initial setup and migration process.
