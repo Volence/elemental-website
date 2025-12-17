@@ -7,14 +7,14 @@ This document describes the clean baseline state of the Elemental Website applic
 **Single Source of Truth**: `migrations/001_initial_schema.sql`
 
 This migration creates the complete PostgreSQL schema with:
-- **Integer primary keys** (SERIAL) - Payload 3.x default
+- **UUID primary keys** - Payload CMS 3.x default behavior
 - All collections: Users, Teams, People, Production, OrganizationStaff, Matches, Pages, Media
 - All relationship tables and indexes
 - Payload internal tables (migrations, preferences, locked documents, etc.)
 
-### Why Integer IDs?
+### Why UUIDs?
 
-Payload CMS 3.x with `push: true` generates **integer (SERIAL)** primary keys by default, not UUIDs. Our baseline migration matches exactly what Payload generates to ensure seamless compatibility.
+Payload CMS 3.x generates **UUID** primary keys by default. Our baseline migration uses UUIDs to match exactly what Payload expects, ensuring seamless compatibility without any ID type conflicts.
 
 ## Seeding
 
