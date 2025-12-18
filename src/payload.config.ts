@@ -79,15 +79,8 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URI || 'postgresql://build:build@localhost:5432/build',
-      // During build, connection will fail but that's OK - pages are dynamic
-      // Connection will succeed at runtime when DATABASE_URI is properly set
     },
-    // Use integer (SERIAL) IDs instead of UUIDs
-    // This avoids authentication bugs in Payload 3.x with UUID handling
-    idType: 'serial',
-    // Allow push mode via environment variable for schema initialization
-    // Set PAYLOAD_DB_PUSH=true to auto-create tables during initialization
-    // For production, use migrations/001_initial_schema.sql instead
+    // Use default UUID IDs (idType: 'serial' is broken in Payload 3.68.0)
     push: process.env.PAYLOAD_DB_PUSH === 'true' || false,
   }),
   collections: [Pages, Media, People, Teams, Matches, Production, OrganizationStaff, Users /* ActivityLog temporarily disabled */],
