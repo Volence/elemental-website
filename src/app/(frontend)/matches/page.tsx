@@ -737,12 +737,12 @@ export default async function MatchesPage({
                         <div className="flex-1">
                           <h3 className="text-lg font-bold mb-2">{renderMatchTitle()}</h3>
                           {/* Score Display for Completed Matches */}
-                          {match.score?.elmtScore !== undefined && match.score?.opponentScore !== undefined && (
+                          {match.score?.elmtScore != null && match.score?.opponentScore != null && (
                             <div className="inline-flex items-center gap-3 px-4 py-2 rounded-lg bg-muted/50">
                               <span className={`font-bold ${
-                                match.score.elmtScore > match.score.opponentScore 
+                                match.score.elmtScore! > match.score.opponentScore! 
                                   ? 'text-green-500' 
-                                  : match.score.elmtScore < match.score.opponentScore 
+                                  : match.score.elmtScore! < match.score.opponentScore! 
                                     ? 'text-red-500' 
                                     : 'text-muted-foreground'
                               }`}>
@@ -750,18 +750,18 @@ export default async function MatchesPage({
                               </span>
                               <span className="text-muted-foreground">-</span>
                               <span className={`font-bold ${
-                                match.score.opponentScore > match.score.elmtScore 
+                                match.score.opponentScore! > match.score.elmtScore! 
                                   ? 'text-green-500' 
-                                  : match.score.opponentScore < match.score.elmtScore 
+                                  : match.score.opponentScore! < match.score.elmtScore! 
                                     ? 'text-red-500' 
                                     : 'text-muted-foreground'
                               }`}>
                                 {match.score.opponentScore}
                               </span>
-                              {match.score.elmtScore > match.score.opponentScore && (
+                              {match.score.elmtScore! > match.score.opponentScore! && (
                                 <span className="text-xs font-semibold text-green-500 uppercase tracking-wide ml-2">WIN</span>
                               )}
-                              {match.score.elmtScore < match.score.opponentScore && (
+                              {match.score.elmtScore! < match.score.opponentScore! && (
                                 <span className="text-xs font-semibold text-red-500 uppercase tracking-wide ml-2">LOSS</span>
                               )}
                             </div>
