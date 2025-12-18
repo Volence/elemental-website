@@ -133,9 +133,9 @@ NODE_ENV=production
 # Optional: Email (if you set up email)
 # PAYLOAD_PUBLIC_EMAIL_FROM=noreply@elmt.gg
 # PAYLOAD_PUBLIC_EMAIL_TRANSPORT=smtp
-# SMTP_HOST=smtp.example.com
+# SMTP_HOST=smtp.yourdomain.com
 # SMTP_PORT=587
-# SMTP_USER=your-email@example.com
+# SMTP_USER=your-email@yourdomain.com
 # SMTP_PASS=your-password
 ```
 
