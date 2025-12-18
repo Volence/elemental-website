@@ -30,6 +30,7 @@ import { default as default_6fd0f10ba03248579d8362f751a831ec } from '@/component
 import { default as default_3be39f37c57c85dcea766fdec96c9113 } from '@/components/BeforeDashboard/TeamManagerInfo'
 import { default as default_18c292333f7a71cfdec38694246f96bb } from '@/components/BeforeDashboard/ReadOnlyStyles'
 import { default as default_1c78329ca40bdaea08398ce17076186a } from '@/components/TeamsListColumns/CellAlignmentStyles'
+import { default as default_3b0c933eeb58b8ba9e1fb354f07641f1 } from '@/components/MatchesListColumns/TitleCell'
 import { RowLabel as RowLabel_ec255a65fa6fa8d1faeb09cf35284224 } from '@/Header/RowLabel'
 import { RowLabel as RowLabel_1f6ff6ff633e3695d348f4f3c58f1466 } from '@/Footer/RowLabel'
 import { default as default_aa0a2d19d38a4839dbd373417e210b89 } from '@/components/AdminLogo'
@@ -73,6 +74,7 @@ export const importMap = {
   "@/components/BeforeDashboard/TeamManagerInfo#default": default_3be39f37c57c85dcea766fdec96c9113,
   "@/components/BeforeDashboard/ReadOnlyStyles#default": default_18c292333f7a71cfdec38694246f96bb,
   "@/components/TeamsListColumns/CellAlignmentStyles#default": default_1c78329ca40bdaea08398ce17076186a,
+  "@/components/MatchesListColumns/TitleCell#default": default_3b0c933eeb58b8ba9e1fb354f07641f1,
   "@/Header/RowLabel#RowLabel": RowLabel_ec255a65fa6fa8d1faeb09cf35284224,
   "@/Footer/RowLabel#RowLabel": RowLabel_1f6ff6ff633e3695d348f4f3c58f1466,
   "@/components/AdminLogo#default": default_aa0a2d19d38a4839dbd373417e210b89,

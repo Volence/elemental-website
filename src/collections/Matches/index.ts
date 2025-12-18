@@ -19,7 +19,7 @@ export const Matches: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'date', 'team', 'status', 'updatedAt'],
+    defaultColumns: ['titleCell', 'date', 'team', 'status', 'updatedAt'],
     description: '⚔️ Manage competitive matches for Elemental teams. Include match details, scores, streams, and VODs.',
     group: 'Esports',
   },
@@ -163,6 +163,16 @@ export const Matches: CollectionConfig = {
               admin: {
                 description: 'Match title (auto-generated from team + opponent if left blank). You can override the auto-generated title by entering a custom one here.',
                 placeholder: 'Leave blank to auto-generate (e.g., "ELMT Dragon vs Opponent Team")',
+              },
+            },
+            {
+              name: 'titleCell',
+              type: 'text',
+              admin: {
+                hidden: true,
+                components: {
+                  Cell: '@/components/MatchesListColumns/TitleCell#default',
+                },
               },
             },
           ],

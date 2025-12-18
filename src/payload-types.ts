@@ -603,6 +603,7 @@ export interface Match {
    * Match title (auto-generated from team + opponent if left blank). You can override the auto-generated title by entering a custom one here.
    */
   title?: string | null;
+  titleCell?: string | null;
   score?: {
     /**
      * ELMT team score
@@ -1265,6 +1266,7 @@ export interface MatchesSelect<T extends boolean = true> {
   season?: T;
   status?: T;
   title?: T;
+  titleCell?: T;
   score?:
     | T
     | {
