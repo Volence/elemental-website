@@ -327,9 +327,11 @@ export const Matches: CollectionConfig = {
       position: 'sidebar',
     }),
   ],
-  hooks: {
-    // afterChange: [createActivityLogHook('matches')], // Temporarily disabled
-    // afterDelete: [createActivityLogDeleteHook('matches')], // Temporarily disabled
-  },
+  // Note: hooks are defined above in the main config (beforeValidate for title generation)
+  // Activity log hooks temporarily disabled:
+  // hooks: {
+  //   afterChange: [createActivityLogHook('matches')],
+  //   afterDelete: [createActivityLogDeleteHook('matches')],
+  // },
 }
 
