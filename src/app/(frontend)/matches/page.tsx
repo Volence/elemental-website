@@ -66,10 +66,10 @@ export default async function MatchesPage() {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  // Get all upcoming matches (from today onwards) and this week's matches
-  let matches
+  // Get upcoming matches (from today onwards)
+  let upcomingMatches
   try {
-    matches = await payload.find({
+    upcomingMatches = await payload.find({
       collection: 'matches',
       where: {
         date: {
@@ -82,10 +82,32 @@ export default async function MatchesPage() {
       overrideAccess: false,
     })
   } catch (error) {
-    // If collection doesn't exist yet or other error, return empty results
-    console.error('Error fetching matches:', error)
-    matches = { docs: [], totalDocs: 0, page: 1, totalPages: 0 }
+    console.error('Error fetching upcoming matches:', error)
+    upcomingMatches = { docs: [], totalDocs: 0, page: 1, totalPages: 0 }
   }
+
+  // Get past matches (before today)
+  let pastMatches
+  try {
+    pastMatches = await payload.find({
+      collection: 'matches',
+      where: {
+        date: {
+          less_than: today.toISOString(),
+        },
+      },
+      sort: '-date', // Most recent first
+      limit: 50,
+      depth: 2,
+      overrideAccess: false,
+    })
+  } catch (error) {
+    console.error('Error fetching past matches:', error)
+    pastMatches = { docs: [], totalDocs: 0, page: 1, totalPages: 0 }
+  }
+  
+  // Alias for backward compatibility
+  const matches = upcomingMatches
 
   // Group matches by day
   const matchesByDay: Record<string, (typeof matches.docs)[number][]> = {}
@@ -114,25 +136,41 @@ export default async function MatchesPage() {
       <div className="container max-w-5xl">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">Match Schedule</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">Matches</h1>
           <div className="w-24 h-1 bg-primary mx-auto mb-6" />
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Upcoming ELMT Broadcast Schedule
+            ELMT Match Schedule & Results
           </p>
-          {matches.docs.length > 0 && (
-            <p className="text-sm text-muted-foreground mt-2">
-              Showing {matches.docs.length} upcoming match{matches.docs.length !== 1 ? 'es' : ''}
-            </p>
-          )}
+          <div className="flex items-center justify-center gap-6 mt-4 text-sm">
+            {matches.docs.length > 0 && (
+              <span className="text-muted-foreground">
+                <strong className="text-primary">{matches.docs.length}</strong> Upcoming
+              </span>
+            )}
+            {pastMatches.docs.length > 0 && (
+              <span className="text-muted-foreground">
+                <strong className="text-muted-foreground">{pastMatches.docs.length}</strong> Completed
+              </span>
+            )}
+          </div>
         </div>
 
-        {matches.docs.length === 0 ? (
-          <div className="text-center py-12">
-            <Calendar className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <p className="text-lg text-muted-foreground">No upcoming matches scheduled.</p>
-          </div>
-        ) : (
-          <div className="space-y-8">
+        {/* Upcoming Matches Section */}
+        <div className="mb-16">
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+            <div className="w-2 h-8 bg-primary rounded-full" />
+            Upcoming Matches
+          </h2>
+          {matches.docs.length === 0 ? (
+            <div className="text-center py-12 bg-card/30 rounded-xl border border-border">
+              <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+              <p className="text-muted-foreground">No upcoming matches scheduled.</p>
+              {pastMatches.docs.length > 0 && (
+                <p className="text-sm text-muted-foreground mt-2">Check out past matches below</p>
+              )}
+            </div>
+          ) : (
+          <div className="space-y-8 mb-16">
             {Object.entries(matchesByDay)
               .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
               .map(([dateKey, dayMatches]) => {
@@ -553,6 +591,193 @@ export default async function MatchesPage() {
                   </div>
                 )
               })}
+          </div>
+          )}
+        </div>
+
+        {/* Past Matches Section */}
+        {pastMatches.docs.length > 0 && (
+          <div>
+            {/* Separator */}
+            <div className="relative my-12">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border"></div>
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-background px-4 text-sm text-muted-foreground">Match History</span>
+              </div>
+            </div>
+
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+              <div className="w-2 h-8 bg-muted rounded-full" />
+              Past Matches
+              <span className="text-sm font-normal text-muted-foreground ml-2">
+                ({pastMatches.docs.length})
+              </span>
+            </h2>
+
+            <div className="space-y-4">
+              {pastMatches.docs
+                .filter((match) => {
+                  if (!match.date) return false
+                  const matchDate = new Date(match.date as string)
+                  return !isNaN(matchDate.getTime())
+                })
+                .map((match) => {
+                  // Safely parse match date
+                  let matchDate: Date
+                  try {
+                    matchDate = new Date(match.date as string)
+                    if (isNaN(matchDate.getTime())) {
+                      matchDate = new Date()
+                    }
+                  } catch (error) {
+                    matchDate = new Date()
+                  }
+                  
+                  // Safely extract team relationship
+                  const team = (match.team && typeof match.team === 'object' && match.team !== null && 
+                               typeof match.team.slug === 'string' && typeof match.team.name === 'string')
+                    ? match.team 
+                    : null
+                  
+                  const displayStatus = getMatchStatus(
+                    match.date as string,
+                    (match.status as 'scheduled' | 'cancelled') || 'scheduled'
+                  )
+
+                  // Parse match title to make ELMT team name clickable
+                  const renderMatchTitle = () => {
+                    const title = match.title || ''
+                    
+                    if (!team || !team.slug || !team.name) {
+                      return <span>{title}</span>
+                    }
+                    
+                    const vsIndex = title.toLowerCase().indexOf(' vs ')
+                    if (vsIndex === -1) {
+                      return <span>{title}</span>
+                    }
+                    
+                    const beforeVs = title.substring(0, vsIndex).trim()
+                    const afterVs = title.substring(vsIndex + 4).trim()
+                    
+                    const normalizedBeforeVs = beforeVs.toLowerCase()
+                    const normalizedTeamName = team.name.toLowerCase()
+                    
+                    if (normalizedBeforeVs === normalizedTeamName || 
+                        normalizedBeforeVs === `elmt ${normalizedTeamName}` ||
+                        normalizedBeforeVs.includes(normalizedTeamName)) {
+                      return (
+                        <span>
+                          <Link 
+                            href={`/teams/${team.slug}`}
+                            className="text-primary hover:underline"
+                          >
+                            {beforeVs}
+                          </Link>
+                          {' vs '}
+                          {afterVs}
+                        </span>
+                      )
+                    }
+                    
+                    return <span>{title}</span>
+                  }
+                  
+                  return (
+                    <div
+                      key={match.id}
+                      className="p-6 rounded-xl border border-border bg-card/50 hover:bg-card transition-colors"
+                    >
+                      {/* Match Title with Status and Score */}
+                      <div className="flex items-start justify-between gap-4 mb-4">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-bold mb-2">{renderMatchTitle()}</h3>
+                          {/* Score Display for Completed Matches */}
+                          {match.score?.elmtScore !== undefined && match.score?.opponentScore !== undefined && (
+                            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-lg bg-muted/50">
+                              <span className={`font-bold ${
+                                match.score.elmtScore > match.score.opponentScore 
+                                  ? 'text-green-500' 
+                                  : match.score.elmtScore < match.score.opponentScore 
+                                    ? 'text-red-500' 
+                                    : 'text-muted-foreground'
+                              }`}>
+                                {match.score.elmtScore}
+                              </span>
+                              <span className="text-muted-foreground">-</span>
+                              <span className={`font-bold ${
+                                match.score.opponentScore > match.score.elmtScore 
+                                  ? 'text-green-500' 
+                                  : match.score.opponentScore < match.score.elmtScore 
+                                    ? 'text-red-500' 
+                                    : 'text-muted-foreground'
+                              }`}>
+                                {match.score.opponentScore}
+                              </span>
+                              {match.score.elmtScore > match.score.opponentScore && (
+                                <span className="text-xs font-semibold text-green-500 uppercase tracking-wide ml-2">WIN</span>
+                              )}
+                              {match.score.elmtScore < match.score.opponentScore && (
+                                <span className="text-xs font-semibold text-red-500 uppercase tracking-wide ml-2">LOSS</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        <span
+                          className={`
+                            px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide shrink-0
+                            ${displayStatus === 'completed' ? 'bg-gray-500/10 text-gray-500 border border-gray-500/20' : ''}
+                            ${displayStatus === 'cancelled' ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20' : ''}
+                          `}
+                        >
+                          {displayStatus}
+                        </span>
+                      </div>
+
+                      {/* Match Info - Condensed for past matches */}
+                      <div className="space-y-2 text-sm">
+                        {/* Date */}
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">
+                            {formatDate(matchDate)}
+                          </span>
+                        </div>
+
+                        {/* Region/League */}
+                        {(match.region || match.league) && (
+                          <div className="flex items-center gap-2">
+                            <Globe className="w-4 h-4 text-muted-foreground" />
+                            <span className="text-muted-foreground">
+                              {match.region || 'TBD'} / {match.league || 'TBD'}
+                              {match.season && ` • ${match.season}`}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* VOD Link (prioritize for past matches) */}
+                        {match.vod && (
+                          <div className="flex items-center gap-2">
+                            <Play className="w-4 h-4 text-muted-foreground" />
+                            <span className="text-muted-foreground">VOD: </span>
+                            <a
+                              href={match.vod}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary hover:underline flex items-center gap-1 font-medium"
+                            >
+                              Watch Replay
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+            </div>
           </div>
         )}
       </div>
