@@ -23,15 +23,24 @@ const CellAlignmentStyles = () => {
         height: 100% !important;
       }
 
-      /* Ensure text cells and their children are aligned */
-      [class*="Table__cell"] > div > div,
-      [class*="Table__cell"] > div > span,
-      [class*="Table__cell"] > div > a,
+      /* Aggressively target ALL nested elements in cells to center them */
+      [class*="Table__cell"] div,
       [class*="Table__cell"] span,
+      [class*="Table__cell"] a,
       [class*="Table__cell"] time {
         display: flex !important;
         align-items: center !important;
         line-height: 1.5 !important;
+      }
+
+      /* Ensure date and status cells (which often have complex nested spans) are centered */
+      [class*="cell-date"],
+      [class*="cell-team"],
+      [class*="cell-status"],
+      [class*="cell-updatedAt"] {
+        display: flex !important;
+        align-items: center !important;
+        min-height: 50px !important;
       }
 
       /* Remove extra margins from cell contents */
