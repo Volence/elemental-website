@@ -578,9 +578,9 @@ export interface Team {
 export interface Match {
   id: number;
   /**
-   * Match title (e.g., "ELMT Garden vs Emote Down Mid")
+   * Match title (auto-generated from team + opponent if left blank). You can override the auto-generated title by entering a custom one here.
    */
-  title: string;
+  title?: string | null;
   /**
    * Which ELMT team is playing. Tip: Only select teams from your organization. This will create a link to the team page on the match schedule.
    */

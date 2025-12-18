@@ -23,6 +23,50 @@ export const Matches: CollectionConfig = {
     description: '⚔️ Manage competitive matches for Elemental teams. Include match details, scores, streams, and VODs.',
     group: 'Esports',
   },
+  hooks: {
+    beforeValidate: [
+      async ({ data, operation, req }) => {
+        // Auto-generate title if not provided
+        if (!data?.title) {
+          try {
+            let teamName = ''
+            let opponentName = data?.opponent || 'TBD'
+            
+            // Fetch the team name if available
+            if (data?.team) {
+              if (typeof data.team === 'number') {
+                const team = await req.payload.findByID({
+                  collection: 'teams',
+                  id: data.team,
+                  depth: 0,
+                })
+                teamName = team?.name || ''
+              } else if (typeof data.team === 'object' && data.team !== null) {
+                teamName = (data.team as any).name || ''
+              }
+            }
+            
+            // Generate title with different formats based on what's available
+            if (teamName && opponentName !== 'TBD') {
+              data.title = `ELMT ${teamName} vs ${opponentName}`
+            } else if (teamName) {
+              data.title = `ELMT ${teamName} vs TBD`
+            } else if (opponentName !== 'TBD') {
+              data.title = `ELMT vs ${opponentName}`
+            } else {
+              data.title = 'ELMT Match'
+            }
+          } catch (error) {
+            console.error('Error auto-generating match title:', error)
+            // Fallback if something goes wrong
+            data.title = data?.opponent ? `ELMT vs ${data.opponent}` : 'ELMT Match'
+          }
+        }
+        
+        return data
+      },
+    ],
+  },
   fields: [
     {
       type: 'tabs',
@@ -34,9 +78,10 @@ export const Matches: CollectionConfig = {
             {
               name: 'title',
               type: 'text',
-              required: true,
+              required: false,
               admin: {
-                description: 'Match title (e.g., "ELMT Garden vs Emote Down Mid")',
+                description: 'Match title (auto-generated from team + opponent if left blank). You can override the auto-generated title by entering a custom one here.',
+                placeholder: 'Leave blank to auto-generate (e.g., "ELMT Dragon vs Opponent Team")',
               },
             },
             {
