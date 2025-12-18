@@ -46,7 +46,6 @@ export async function POST(request: NextRequest) {
     // Direct database insert to bypass Payload's auth logic
     const db = payload.db
     
-    // @ts-expect-error - accessing internal drizzle instance
     const drizzle = db.drizzle
     
     if (!drizzle) {
