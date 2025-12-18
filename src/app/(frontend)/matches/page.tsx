@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import React from 'react'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
-import { Calendar, Clock, Globe, Link as LinkIcon, Mic, Eye, Play, ExternalLink } from 'lucide-react'
+import { Calendar, Clock, Globe, Link as LinkIcon, Mic, Eye, Play, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { SocialLinks } from '@/components/SocialLinks'
 import { isPopulatedPerson, getPersonNameFromRelationship, getSocialLinksFromPerson } from '@/utilities/personHelpers'
@@ -59,9 +59,17 @@ function convertToCET(date: Date): string {
   return formatTime(cetDate) + ' CET'
 }
 
-export default async function MatchesPage() {
+const PAST_MATCHES_PER_PAGE = 12
+
+export default async function MatchesPage({
+  searchParams,
+}: {
+  searchParams: { page?: string }
+}) {
   // Page is force-dynamic, so it always renders at runtime with fresh data
   const payload = await getPayload({ config: configPromise })
+  
+  const currentPage = Math.max(1, parseInt(searchParams.page || '1', 10))
   
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -86,7 +94,7 @@ export default async function MatchesPage() {
     upcomingMatches = { docs: [], totalDocs: 0, page: 1, totalPages: 0 }
   }
 
-  // Get past matches (before today)
+  // Get past matches (before today) with pagination
   let pastMatches
   try {
     pastMatches = await payload.find({
@@ -97,13 +105,14 @@ export default async function MatchesPage() {
         },
       },
       sort: '-date', // Most recent first
-      limit: 50,
+      limit: PAST_MATCHES_PER_PAGE,
+      page: currentPage,
       depth: 2,
       overrideAccess: false,
     })
   } catch (error) {
     console.error('Error fetching past matches:', error)
-    pastMatches = { docs: [], totalDocs: 0, page: 1, totalPages: 0 }
+    pastMatches = { docs: [], totalDocs: 0, page: 1, totalPages: 0, hasNextPage: false, hasPrevPage: false }
   }
   
   // Alias for backward compatibility
@@ -142,14 +151,14 @@ export default async function MatchesPage() {
             ELMT Match Schedule & Results
           </p>
           <div className="flex items-center justify-center gap-6 mt-4 text-sm">
-            {matches.docs.length > 0 && (
+            {matches.totalDocs > 0 && (
               <span className="text-muted-foreground">
-                <strong className="text-primary">{matches.docs.length}</strong> Upcoming
+                <strong className="text-primary">{matches.totalDocs}</strong> Upcoming
               </span>
             )}
-            {pastMatches.docs.length > 0 && (
+            {pastMatches.totalDocs > 0 && (
               <span className="text-muted-foreground">
-                <strong className="text-muted-foreground">{pastMatches.docs.length}</strong> Completed
+                <strong className="text-muted-foreground">{pastMatches.totalDocs}</strong> Completed
               </span>
             )}
           </div>
@@ -612,7 +621,7 @@ export default async function MatchesPage() {
               <div className="w-2 h-8 bg-muted rounded-full" />
               Past Matches
               <span className="text-sm font-normal text-muted-foreground ml-2">
-                ({pastMatches.docs.length})
+                ({pastMatches.totalDocs})
               </span>
             </h2>
 
@@ -777,6 +786,85 @@ export default async function MatchesPage() {
                     </div>
                   )
                 })}
+            </div>
+
+            {/* Pagination Controls */}
+            {pastMatches.totalPages > 1 && (
+              <div className="mt-8 flex items-center justify-center gap-2">
+                {/* Previous Button */}
+                <Link
+                  href={`/matches${currentPage > 1 ? `?page=${currentPage - 1}` : ''}`}
+                  className={`
+                    flex items-center gap-1 px-4 py-2 rounded-lg border transition-colors
+                    ${currentPage === 1 
+                      ? 'border-border bg-card/30 text-muted-foreground cursor-not-allowed pointer-events-none' 
+                      : 'border-border bg-card hover:bg-card/80 text-foreground'
+                    }
+                  `}
+                  aria-disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  <span className="hidden sm:inline">Previous</span>
+                </Link>
+
+                {/* Page Numbers */}
+                <div className="flex items-center gap-2">
+                  {Array.from({ length: pastMatches.totalPages }, (_, i) => i + 1)
+                    .filter(pageNum => {
+                      // Show first page, last page, current page, and pages around current
+                      if (pageNum === 1 || pageNum === pastMatches.totalPages) return true
+                      if (Math.abs(pageNum - currentPage) <= 1) return true
+                      return false
+                    })
+                    .map((pageNum, idx, array) => {
+                      // Add ellipsis if there's a gap
+                      const prevPageNum = array[idx - 1]
+                      const showEllipsis = prevPageNum && pageNum - prevPageNum > 1
+
+                      return (
+                        <React.Fragment key={pageNum}>
+                          {showEllipsis && (
+                            <span className="px-2 text-muted-foreground">...</span>
+                          )}
+                          <Link
+                            href={`/matches${pageNum === 1 ? '' : `?page=${pageNum}`}`}
+                            className={`
+                              w-10 h-10 flex items-center justify-center rounded-lg border transition-colors
+                              ${pageNum === currentPage
+                                ? 'border-primary bg-primary text-primary-foreground font-semibold'
+                                : 'border-border bg-card hover:bg-card/80 text-foreground'
+                              }
+                            `}
+                            aria-current={pageNum === currentPage ? 'page' : undefined}
+                          >
+                            {pageNum}
+                          </Link>
+                        </React.Fragment>
+                      )
+                    })}
+                </div>
+
+                {/* Next Button */}
+                <Link
+                  href={`/matches?page=${currentPage + 1}`}
+                  className={`
+                    flex items-center gap-1 px-4 py-2 rounded-lg border transition-colors
+                    ${currentPage === pastMatches.totalPages
+                      ? 'border-border bg-card/30 text-muted-foreground cursor-not-allowed pointer-events-none'
+                      : 'border-border bg-card hover:bg-card/80 text-foreground'
+                    }
+                  `}
+                  aria-disabled={currentPage === pastMatches.totalPages}
+                >
+                  <span className="hidden sm:inline">Next</span>
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
+            )}
+
+            {/* Match Count Info */}
+            <div className="mt-4 text-center text-sm text-muted-foreground">
+              Showing {pastMatches.docs.length} of {pastMatches.totalDocs} past matches
             </div>
           </div>
         )}
