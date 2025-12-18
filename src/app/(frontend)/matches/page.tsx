@@ -64,12 +64,13 @@ const PAST_MATCHES_PER_PAGE = 12
 export default async function MatchesPage({
   searchParams,
 }: {
-  searchParams: { page?: string }
+  searchParams: Promise<{ page?: string }>
 }) {
   // Page is force-dynamic, so it always renders at runtime with fresh data
   const payload = await getPayload({ config: configPromise })
   
-  const currentPage = Math.max(1, parseInt(searchParams.page || '1', 10))
+  const params = await searchParams
+  const currentPage = Math.max(1, parseInt(params.page || '1', 10))
   
   const today = new Date()
   today.setHours(0, 0, 0, 0)
