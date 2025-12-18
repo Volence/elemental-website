@@ -578,10 +578,6 @@ export interface Team {
 export interface Match {
   id: number;
   /**
-   * Match title (auto-generated from team + opponent if left blank). You can override the auto-generated title by entering a custom one here.
-   */
-  title?: string | null;
-  /**
    * Which ELMT team is playing. Tip: Only select teams from your organization. This will create a link to the team page on the match schedule.
    */
   team: number | Team;
@@ -603,6 +599,10 @@ export interface Match {
    * Upcoming/Live/Completed status is automatically determined based on match date and time
    */
   status: 'scheduled' | 'cancelled';
+  /**
+   * Match title (auto-generated from team + opponent if left blank). You can override the auto-generated title by entering a custom one here.
+   */
+  title?: string | null;
   score?: {
     /**
      * ELMT team score
@@ -1257,7 +1257,6 @@ export interface TeamsSelect<T extends boolean = true> {
  * via the `definition` "matches_select".
  */
 export interface MatchesSelect<T extends boolean = true> {
-  title?: T;
   team?: T;
   opponent?: T;
   date?: T;
@@ -1265,6 +1264,7 @@ export interface MatchesSelect<T extends boolean = true> {
   league?: T;
   season?: T;
   status?: T;
+  title?: T;
   score?:
     | T
     | {

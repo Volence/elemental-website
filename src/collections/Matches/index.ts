@@ -78,15 +78,6 @@ export const Matches: CollectionConfig = {
           description: 'Match details, teams, date, and status',
           fields: [
             {
-              name: 'title',
-              type: 'text',
-              required: false,
-              admin: {
-                description: 'Match title (auto-generated from team + opponent if left blank). You can override the auto-generated title by entering a custom one here.',
-                placeholder: 'Leave blank to auto-generate (e.g., "ELMT Dragon vs Opponent Team")',
-              },
-            },
-            {
               name: 'team',
               type: 'relationship',
               relationTo: 'teams',
@@ -164,6 +155,15 @@ export const Matches: CollectionConfig = {
                   },
                 },
               ],
+            },
+            {
+              name: 'title',
+              type: 'text',
+              required: false,
+              admin: {
+                description: 'Match title (auto-generated from team + opponent if left blank). You can override the auto-generated title by entering a custom one here.',
+                placeholder: 'Leave blank to auto-generate (e.g., "ELMT Dragon vs Opponent Team")',
+              },
             },
           ],
         },
