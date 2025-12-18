@@ -37,6 +37,7 @@ export default buildConfig({
       // Custom navigation links in the sidebar
       beforeNavLinks: [
         '@/components/BeforeDashboard/DashboardNavLink',
+        '@/components/BeforeDashboard/ScheduleGeneratorNavLink#default',
         '@/components/BeforeDashboard/DataConsistencyNavLink#default',
         '@/components/BeforeDashboard/LogoutButton',
         '@/components/BeforeDashboard/ReadOnlyStyles#default',
