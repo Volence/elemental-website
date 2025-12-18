@@ -17,14 +17,12 @@ const CellAlignmentStyles = () => {
       [class*="Table__cell"] > div {
         display: flex !important;
         align-items: center !important;
-        min-height: 50px !important;
       }
 
       /* For cells with nested content (like dates), center the inner wrapper too */
       [class*="Table__cell"] > div > div:first-child {
         display: flex !important;
         align-items: center !important;
-        width: 100% !important;
       }
     `}</style>
   )

@@ -29,13 +29,7 @@ const MatchTitleCell: React.FC<{ rowData: any }> = ({ rowData }) => {
   const matchId = rowData?.id
   
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        minHeight: '50px',
-      }}
-    >
+    <>
       {matchId ? (
         <Link
           href={`/admin/collections/matches/${matchId}`}
@@ -57,7 +51,7 @@ const MatchTitleCell: React.FC<{ rowData: any }> = ({ rowData }) => {
           text-decoration: underline;
         }
       `}</style>
-    </div>
+    </>
   )
 }
 
