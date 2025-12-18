@@ -8,7 +8,10 @@ import { slugField } from 'payload'
 export const Matches: CollectionConfig = {
   slug: 'matches',
   labels: {
-    singular: 'Match',
+    singular: ({ data }: any) => {
+      // Use the title field if available, otherwise show "Match"
+      return data?.title || 'Match'
+    },
     plural: 'Matches',
   },
   access: {
