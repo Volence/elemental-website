@@ -26,8 +26,10 @@ export const Matches: CollectionConfig = {
   hooks: {
     beforeValidate: [
       async ({ data, operation, req }) => {
-        // Auto-generate title if not provided
-        if (!data?.title) {
+        // Auto-generate title if not provided or empty string
+        const titleIsEmpty = !data?.title || (typeof data.title === 'string' && data.title.trim() === '')
+        
+        if (titleIsEmpty) {
           try {
             let teamName = ''
             let opponentName = data?.opponent || 'TBD'
