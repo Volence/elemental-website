@@ -119,8 +119,19 @@ docker compose -f docker-compose.dev.yml restart payload
 ### Known Issues
 
 1. **Production Build Auth Bug**: `next build` + `next start` causes login redirect loops
+   - **Related GitHub Issue**: [#14656](https://github.com/payloadcms/payload/issues/14656) - Similar authentication failure in Server Actions
+   - **Workaround**: Use dev mode (`npm run dev`) in production until resolved
+   
 2. **`idType: 'serial'` Broken**: Setting `idType: 'serial'` in Payload 3.68.0 causes UUID conflicts
+   - The config option is ignored and Payload still generates UUIDs internally
+   - **Workaround**: Use the default UUID ID type, or manually create integer ID schema
+   
 3. **`push: true` Unreliable**: Database schema creation via `push: true` doesn't always work reliably on server
+   - **Related GitHub Issue**: [#7312](https://github.com/payloadcms/payload/issues/7312) - Database connection issues during generation
+   - **Workaround**: Manually apply schema from local working database
+
+4. **Next.js 15 Compatibility**: Payload 3.x requires Next.js 15, but has some rough edges
+   - **Related GitHub Issue**: [#8995](https://github.com/payloadcms/payload/issues/8995) - Next.js 15 requirement not well documented
 
 ### Troubleshooting
 
