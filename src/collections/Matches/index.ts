@@ -34,16 +34,19 @@ export const Matches: CollectionConfig = {
   hooks: {
     beforeValidate: [
       async ({ data, operation, req }) => {
+        // Guard against undefined data
+        if (!data) return data
+        
         // Auto-generate title if not provided or empty string
-        const titleIsEmpty = !data?.title || (typeof data.title === 'string' && data.title.trim() === '')
+        const titleIsEmpty = !data.title || (typeof data.title === 'string' && data.title.trim() === '')
         
         if (titleIsEmpty) {
           try {
             let teamName = ''
-            let opponentName = data?.opponent || 'TBD'
+            let opponentName = data.opponent || 'TBD'
             
             // Fetch the team name if available
-            if (data?.team) {
+            if (data.team) {
               if (typeof data.team === 'number') {
                 const team = await req.payload.findByID({
                   collection: 'teams',
@@ -69,7 +72,7 @@ export const Matches: CollectionConfig = {
           } catch (error) {
             console.error('Error auto-generating match title:', error)
             // Fallback if something goes wrong
-            data.title = data?.opponent ? `ELMT vs ${data.opponent}` : 'ELMT Match'
+            data.title = data.opponent ? `ELMT vs ${data.opponent}` : 'ELMT Match'
           }
         }
         
