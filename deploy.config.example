@@ -1,0 +1,13 @@
+# Deployment Configuration
+# Copy this file to .env.deploy and fill in your actual values
+# .env.deploy is gitignored and will not be committed
+
+# Your production server SSH details
+DEPLOY_SERVER=user@your-server-ip
+DEPLOY_SSH_KEY=/path/to/your/ssh/key
+DEPLOY_PROJECT_DIR=/path/to/project/on/server
+
+# Example:
+# DEPLOY_SERVER=ubuntu@123.456.789.012
+# DEPLOY_SSH_KEY=/home/yourname/.ssh/id_rsa
+# DEPLOY_PROJECT_DIR=/home/ubuntu/elemental-website
