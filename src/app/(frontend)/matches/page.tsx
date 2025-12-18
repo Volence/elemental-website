@@ -222,7 +222,23 @@ export default async function MatchesPage({
 
                         // Parse match title to make ELMT team name clickable
                         const renderMatchTitle = () => {
-                          const title = match.title || ''
+                          let title = match.title || ''
+                          
+                          // If title is empty, generate one from team + opponent
+                          if (!title || title.trim() === '') {
+                            const teamName = team?.name || ''
+                            const opponent = match.opponent || 'TBD'
+                            
+                            if (teamName && opponent !== 'TBD') {
+                              title = `ELMT ${teamName} vs ${opponent}`
+                            } else if (teamName) {
+                              title = `ELMT ${teamName} vs TBD`
+                            } else if (opponent !== 'TBD') {
+                              title = `ELMT vs ${opponent}`
+                            } else {
+                              title = 'ELMT Match'
+                            }
+                          }
                           
                           // If no valid team relationship, just show title as-is
                           if (!team || !team.slug || !team.name) {
@@ -657,7 +673,23 @@ export default async function MatchesPage({
 
                   // Parse match title to make ELMT team name clickable
                   const renderMatchTitle = () => {
-                    const title = match.title || ''
+                    let title = match.title || ''
+                    
+                    // If title is empty, generate one from team + opponent
+                    if (!title || title.trim() === '') {
+                      const teamName = team?.name || ''
+                      const opponent = match.opponent || 'TBD'
+                      
+                      if (teamName && opponent !== 'TBD') {
+                        title = `ELMT ${teamName} vs ${opponent}`
+                      } else if (teamName) {
+                        title = `ELMT ${teamName} vs TBD`
+                      } else if (opponent !== 'TBD') {
+                        title = `ELMT vs ${opponent}`
+                      } else {
+                        title = 'ELMT Match'
+                      }
+                    }
                     
                     if (!team || !team.slug || !team.name) {
                       return <span>{title}</span>
