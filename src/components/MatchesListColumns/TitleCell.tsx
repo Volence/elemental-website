@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import Link from 'next/link'
 
 /**
  * Custom cell component to display match title with auto-generation fallback
@@ -10,7 +11,8 @@ const MatchTitleCell: React.FC<{ rowData: any }> = ({ rowData }) => {
   
   // If title is empty, generate one from team + opponent
   if (!title || title.trim() === '') {
-    const teamName = rowData?.team?.name || ''
+    // Access team name from the populated relationship
+    const teamName = rowData?.team?.value?.name || rowData?.team?.name || ''
     const opponent = rowData?.opponent || 'TBD'
     
     if (teamName && opponent !== 'TBD') {
@@ -24,6 +26,8 @@ const MatchTitleCell: React.FC<{ rowData: any }> = ({ rowData }) => {
     }
   }
   
+  const matchId = rowData?.id
+  
   return (
     <div
       style={{
@@ -32,7 +36,27 @@ const MatchTitleCell: React.FC<{ rowData: any }> = ({ rowData }) => {
         minHeight: '50px',
       }}
     >
-      {title}
+      {matchId ? (
+        <Link
+          href={`/admin/collections/matches/${matchId}`}
+          style={{
+            color: 'var(--theme-text)',
+            textDecoration: 'none',
+            fontWeight: 500,
+          }}
+          className="match-title-link"
+        >
+          {title}
+        </Link>
+      ) : (
+        <span>{title}</span>
+      )}
+      <style jsx global>{`
+        .match-title-link:hover {
+          color: var(--theme-elevation-900);
+          text-decoration: underline;
+        }
+      `}</style>
     </div>
   )
 }
