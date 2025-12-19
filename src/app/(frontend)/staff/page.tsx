@@ -154,7 +154,7 @@ const getRoleIcon = (role: string) => {
     'Moderator': Shield,
     'Event Manager': Calendar,
     'Social Manager': Share2,
-    'Graphics': Image,
+    'Graphics': ImageIcon,
     'Media Editor': Film,
   }
   return iconMap[role] || Users
