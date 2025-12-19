@@ -8,9 +8,11 @@ const ColorPickerField: React.FC = () => {
   const [lightness, setLightness] = useState(50)
   const [supportsEyeDropper, setSupportsEyeDropper] = useState(false)
 
-  // Check if EyeDropper API is supported
+  // Check if EyeDropper API is supported on mount
   useEffect(() => {
-    setSupportsEyeDropper('EyeDropper' in window)
+    if (typeof window !== 'undefined') {
+      setSupportsEyeDropper('EyeDropper' in window)
+    }
   }, [])
 
   // Convert hex to HSL
@@ -137,36 +139,35 @@ const ColorPickerField: React.FC = () => {
         />
         
         {/* Eyedropper Button */}
-        {supportsEyeDropper && (
-          <button
-            type="button"
-            onClick={handleEyeDropper}
-            style={{
-              width: '40px',
-              height: '40px',
-              border: '2px solid var(--theme-elevation-100)',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              backgroundColor: 'var(--theme-elevation-0)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '18px',
-              transition: 'all 0.2s',
-            }}
-            title="Pick color from screen (click logo to sample)"
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--theme-elevation-100)'
-              e.currentTarget.style.borderColor = 'var(--theme-input-border-color-focused)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--theme-elevation-0)'
-              e.currentTarget.style.borderColor = 'var(--theme-elevation-100)'
-            }}
-          >
-            💧
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={handleEyeDropper}
+          style={{
+            width: '40px',
+            height: '40px',
+            border: '2px solid var(--theme-elevation-100)',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            backgroundColor: 'var(--theme-elevation-0)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '18px',
+            transition: 'all 0.2s',
+            opacity: supportsEyeDropper ? 1 : 0.5,
+          }}
+          title={supportsEyeDropper ? "Pick color from screen (click logo to sample)" : "EyeDropper requires Chrome/Edge browser"}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'var(--theme-elevation-100)'
+            e.currentTarget.style.borderColor = 'var(--theme-input-border-color-focused)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'var(--theme-elevation-0)'
+            e.currentTarget.style.borderColor = 'var(--theme-elevation-100)'
+          }}
+        >
+          💧
+        </button>
         
         <TextInput
           value={value || ''}
@@ -239,6 +240,11 @@ const ColorPickerField: React.FC = () => {
         lineHeight: '1.5'
       }}>
         💡 <strong>Tip:</strong> Use the eyedropper (💧) to pick a color directly from your logo! Then adjust the brightness slider to make it lighter or darker. Leave empty to auto-detect.
+        {!supportsEyeDropper && (
+          <div style={{ marginTop: '6px', color: 'var(--theme-error-500)' }}>
+            ⚠️ Eyedropper requires Chrome or Edge browser. Currently using: {typeof navigator !== 'undefined' ? navigator.userAgent.split(' ').slice(-1)[0] : 'unknown'}
+          </div>
+        )}
       </div>
     </div>
   )
