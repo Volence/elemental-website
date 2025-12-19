@@ -239,17 +239,20 @@ export default async function StaffPage() {
   }
 
   return (
-    <div className="pt-24 pb-24 min-h-screen">
+    <div className="pt-8 pb-24 min-h-screen animate-fade-in">
       <div className="container mb-16">
-        <div className="prose dark:prose-invert max-w-none">
-          <h1 className="tracking-tight">Staff</h1>
-          <p className="text-lg text-muted-foreground">
+        <div className="text-center mb-8">
+          <h1 className="text-5xl md:text-6xl font-black mb-4 tracking-tight" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
+            Staff
+          </h1>
+          <div className="w-24 h-1 bg-gradient-to-r from-[hsl(var(--accent-blue))] via-[hsl(var(--accent-green))] to-[hsl(var(--accent-gold))] mx-auto mb-6 shadow-[0_0_20px_rgba(56,189,248,0.4)]" />
+          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
             Meet the dedicated staff members who make Elemental possible - from team management to production.
           </p>
         </div>
       </div>
 
-      <div className="container space-y-12">
+      <div className="container space-y-10">
         {/* Individual Role Categories */}
         {(() => {
           // Define the order for role categories
@@ -265,17 +268,56 @@ export default async function StaffPage() {
                               role === 'HR' ? 'HR Staff' : 
                               role
             
+            // Different colors for different roles
+            const colorMap: Record<string, string> = {
+              'Owner': 'bg-gradient-to-r from-[hsl(var(--accent-gold))] to-yellow-500',
+              'Co-Owner': 'bg-gradient-to-r from-[hsl(var(--accent-gold))] to-yellow-500',
+              'HR': 'bg-gradient-to-r from-[hsl(var(--accent-green))] to-green-500',
+              'Moderator': 'bg-gradient-to-r from-[hsl(var(--accent-blue))] to-blue-500',
+              'Event Manager': 'bg-gradient-to-r from-purple-500 to-pink-500',
+              'Social Manager': 'bg-gradient-to-r from-cyan-500 to-blue-500',
+              'Graphics': 'bg-gradient-to-r from-orange-500 to-red-500',
+              'Media Editor': 'bg-gradient-to-r from-red-500 to-pink-500',
+            }
+            const underlineColor = colorMap[role] || 'bg-primary'
+            
+            // Avatar colors matching underlines
+            const avatarColorMap: Record<string, { from: string, to: string, text: string, ring: string }> = {
+              'Owner': { from: 'from-yellow-500/20', to: 'to-yellow-600/10', text: 'text-yellow-500', ring: 'ring-yellow-500/20' },
+              'Co-Owner': { from: 'from-yellow-500/20', to: 'to-yellow-600/10', text: 'text-yellow-500', ring: 'ring-yellow-500/20' },
+              'HR': { from: 'from-green-500/20', to: 'to-green-600/10', text: 'text-green-500', ring: 'ring-green-500/20' },
+              'Moderator': { from: 'from-blue-500/20', to: 'to-blue-600/10', text: 'text-blue-500', ring: 'ring-blue-500/20' },
+              'Event Manager': { from: 'from-purple-500/20', to: 'to-pink-600/10', text: 'text-purple-500', ring: 'ring-purple-500/20' },
+              'Social Manager': { from: 'from-cyan-500/20', to: 'to-blue-600/10', text: 'text-cyan-500', ring: 'ring-cyan-500/20' },
+              'Graphics': { from: 'from-orange-500/20', to: 'to-red-600/10', text: 'text-orange-500', ring: 'ring-orange-500/20' },
+              'Media Editor': { from: 'from-red-500/20', to: 'to-pink-600/10', text: 'text-red-500', ring: 'ring-red-500/20' },
+            }
+            const avatarColors = avatarColorMap[role] || { from: 'from-primary/20', to: 'to-primary/10', text: 'text-primary', ring: 'ring-primary/20' }
+            
+            // Section backgrounds
+            const sectionBgMap: Record<string, string> = {
+              'Owner': 'bg-yellow-500/5',
+              'Co-Owner': 'bg-yellow-500/5',
+              'HR': 'bg-green-500/5',
+              'Moderator': 'bg-blue-500/5',
+              'Event Manager': 'bg-purple-500/5',
+              'Social Manager': 'bg-cyan-500/5',
+              'Graphics': 'bg-orange-500/5',
+              'Media Editor': 'bg-red-500/5',
+            }
+            const sectionBg = sectionBgMap[role] || 'bg-muted/10'
+            
             return (
-              <div key={role}>
+              <div key={role} className={`p-6 rounded-2xl ${sectionBg}`}>
                 <div className="mb-6">
                   <h2 className="text-3xl md:text-4xl font-bold mb-2 tracking-tight flex items-center gap-3">
                     <Icon className="w-8 h-8" />
                     {displayName}
                   </h2>
-                  <div className="w-24 h-1 bg-primary" />
+                  <div className={`w-24 h-1 ${underlineColor} shadow-lg`} />
                 </div>
                 
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {staff.map((member) => {
                     const name = getStaffName(member)
                     const person = isPopulatedPerson(member.person) ? member.person : null
@@ -285,18 +327,27 @@ export default async function StaffPage() {
                       youtube: member.youtube,
                       instagram: member.instagram,
                     })
+                    const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                    
                     return (
                       <div
                         key={member.id}
-                        className="flex items-center justify-between gap-3 p-4 rounded-lg border border-border hover:bg-accent/50 transition-colors group"
+                        className="flex items-center gap-3 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 hover:border-primary/50 hover:shadow-lg hover:scale-[1.02] transition-all group"
                       >
-                        <Link
-                          href={`/players/${formatPlayerSlug(name)}`}
-                          className="text-sm font-medium group-hover:text-primary transition-colors flex-1"
-                        >
-                          {name}
-                        </Link>
-                        <SocialLinks links={socialLinks} />
+                        <div className={`relative w-12 h-12 rounded-full bg-gradient-to-br ${avatarColors.from} ${avatarColors.to} flex items-center justify-center flex-shrink-0 ring-2 ${avatarColors.ring} group-hover:ring-primary/40 transition-all`}>
+                          <span className={`text-base font-bold ${avatarColors.text}`}>{initials}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <Link
+                            href={`/players/${formatPlayerSlug(name)}`}
+                            className="block text-sm font-bold group-hover:text-primary transition-colors truncate mb-1"
+                          >
+                            {name}
+                          </Link>
+                          <div className="scale-90 origin-left">
+                            <SocialLinks links={socialLinks} />
+                          </div>
+                        </div>
                       </div>
                     )
                   })}
@@ -308,13 +359,13 @@ export default async function StaffPage() {
 
         {/* Production Staff */}
         {productionStaff.length > 0 && (
-          <div>
+          <div className="p-6 rounded-2xl bg-gradient-to-br from-purple-500/5 via-blue-500/5 to-yellow-500/5">
             <div className="mb-6">
               <h2 className="text-3xl md:text-4xl font-bold mb-2 tracking-tight flex items-center gap-3">
                 <Users className="w-8 h-8" />
                 Production Staff
               </h2>
-              <div className="w-24 h-1 bg-primary" />
+              <div className="w-24 h-1 bg-gradient-to-r from-[hsl(var(--accent-blue))] via-purple-500 to-[hsl(var(--accent-gold))] shadow-lg" />
             </div>
             
             <div className="space-y-8">
@@ -323,13 +374,23 @@ export default async function StaffPage() {
                 
                 const Icon = getTypeIcon(type)
                 
+                // Different colors for production types
+                const productionColors: Record<string, { from: string, to: string, text: string, ring: string }> = {
+                  'Caster': { from: 'from-purple-500/20', to: 'to-purple-600/10', text: 'text-purple-500', ring: 'ring-purple-500/20' },
+                  'Observer': { from: 'from-blue-500/20', to: 'to-blue-600/10', text: 'text-blue-500', ring: 'ring-blue-500/20' },
+                  'Producer': { from: 'from-yellow-500/20', to: 'to-yellow-600/10', text: 'text-yellow-500', ring: 'ring-yellow-500/20' },
+                  'Observer/Producer': { from: 'from-cyan-500/20', to: 'to-blue-600/10', text: 'text-cyan-500', ring: 'ring-cyan-500/20' },
+                  'Observer/Producer/Caster': { from: 'from-pink-500/20', to: 'to-purple-600/10', text: 'text-pink-500', ring: 'ring-pink-500/20' },
+                }
+                const avatarColors = productionColors[type] || { from: 'from-primary/20', to: 'to-primary/10', text: 'text-primary', ring: 'ring-primary/20' }
+                
                 return (
                   <div key={type} className="space-y-4">
-                    <h3 className="text-xl font-semibold flex items-center gap-2">
+                    <h3 className="text-xl font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                       <Icon className="w-5 h-5" />
                       {type}
                     </h3>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                       {staff.map((member) => {
                         const name = getStaffName(member)
                         const socialLinks = getSocialLinksFromPerson(member.person, {
@@ -338,18 +399,27 @@ export default async function StaffPage() {
                           youtube: member.youtube,
                           instagram: member.instagram,
                         })
+                        const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                        
                         return (
                           <div
                             key={member.id}
-                            className="flex items-center justify-between gap-3 p-4 rounded-lg border border-border hover:bg-accent/50 transition-colors group"
+                            className="flex items-center gap-3 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 hover:border-primary/50 hover:shadow-lg hover:scale-[1.02] transition-all group"
                           >
-                            <Link
-                              href={`/players/${formatPlayerSlug(name)}`}
-                              className="text-sm font-medium group-hover:text-primary transition-colors flex-1"
-                            >
-                              {name}
-                            </Link>
-                            <SocialLinks links={socialLinks} />
+                            <div className={`relative w-12 h-12 rounded-full bg-gradient-to-br ${avatarColors.from} ${avatarColors.to} flex items-center justify-center flex-shrink-0 ring-2 ${avatarColors.ring} group-hover:ring-primary/40 transition-all`}>
+                              <span className={`text-base font-bold ${avatarColors.text}`}>{initials}</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <Link
+                                href={`/players/${formatPlayerSlug(name)}`}
+                                className="block text-sm font-bold group-hover:text-primary transition-colors truncate mb-1"
+                              >
+                                {name}
+                              </Link>
+                              <div className="scale-90 origin-left">
+                                <SocialLinks links={socialLinks} />
+                              </div>
+                            </div>
                           </div>
                         )
                       })}
@@ -363,70 +433,100 @@ export default async function StaffPage() {
 
         {/* Esports Staff - At the bottom */}
         {/* Always show section header, even if empty, for debugging */}
-        <div>
+        <div className="p-6 rounded-2xl bg-gradient-to-br from-green-500/5 via-blue-500/5 to-yellow-500/5">
           <div className="mb-6">
             <h2 className="text-3xl md:text-4xl font-bold mb-2 tracking-tight flex items-center gap-3">
               <Shield className="w-8 h-8" />
               Esports Staff
             </h2>
-            <div className="w-24 h-1 bg-primary" />
+            <div className="w-24 h-1 bg-gradient-to-r from-[hsl(var(--accent-green))] via-[hsl(var(--accent-blue))] to-[hsl(var(--accent-gold))] shadow-lg" />
           </div>
           
           {(managers.length > 0 || coaches.length > 0 || captains.length > 0) ? (
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="space-y-8">
               {managers.length > 0 && (
                 <div className="space-y-4">
-                  <h3 className="text-xl font-semibold text-muted-foreground uppercase tracking-wider">Managers</h3>
-                  <div className="space-y-2">
-                    {managers.map((manager, i) => (
-                      <div key={i} className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors">
-                        <Link 
-                          href={`/players/${formatPlayerSlug(manager.name)}`}
-                          className="text-sm font-medium hover:text-primary transition-colors"
-                        >
-                          {manager.name}
-                        </Link>
-                        <SocialLinks links={manager} />
-                      </div>
-                    ))}
+                  <h3 className="text-xl font-bold text-muted-foreground uppercase tracking-wider">Managers</h3>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {managers.map((manager, i) => {
+                      const initials = manager.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                      return (
+                        <div key={i} className="flex items-center gap-3 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 hover:border-primary/50 hover:shadow-lg hover:scale-[1.02] transition-all group">
+                          <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-green-500/20 to-green-600/10 flex items-center justify-center flex-shrink-0 ring-2 ring-green-500/20 group-hover:ring-primary/40 transition-all">
+                            <span className="text-base font-bold text-green-500">{initials}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <Link 
+                              href={`/players/${formatPlayerSlug(manager.name)}`}
+                              className="block text-sm font-bold hover:text-primary transition-colors truncate mb-1"
+                            >
+                              {manager.name}
+                            </Link>
+                            <div className="scale-90 origin-left">
+                              <SocialLinks links={manager} />
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )}
               
               {coaches.length > 0 && (
                 <div className="space-y-4">
-                  <h3 className="text-xl font-semibold text-muted-foreground uppercase tracking-wider">Coaches</h3>
-                  <div className="space-y-2">
-                    {coaches.map((coach, i) => (
-                      <div key={i} className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors">
-                        <Link 
-                          href={`/players/${formatPlayerSlug(coach.name)}`}
-                          className="text-sm font-medium hover:text-primary transition-colors"
-                        >
-                          {coach.name}
-                        </Link>
-                        <SocialLinks links={coach} />
-                      </div>
-                    ))}
+                  <h3 className="text-xl font-bold text-muted-foreground uppercase tracking-wider">Coaches</h3>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {coaches.map((coach, i) => {
+                      const initials = coach.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                      return (
+                        <div key={i} className="flex items-center gap-3 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 hover:border-primary/50 hover:shadow-lg hover:scale-[1.02] transition-all group">
+                          <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-blue-500/20 to-blue-600/10 flex items-center justify-center flex-shrink-0 ring-2 ring-blue-500/20 group-hover:ring-primary/40 transition-all">
+                            <span className="text-base font-bold text-blue-500">{initials}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <Link 
+                              href={`/players/${formatPlayerSlug(coach.name)}`}
+                              className="block text-sm font-bold hover:text-primary transition-colors truncate mb-1"
+                            >
+                              {coach.name}
+                            </Link>
+                            <div className="scale-90 origin-left">
+                              <SocialLinks links={coach} />
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )}
               
               {captains.length > 0 && (
                 <div className="space-y-4">
-                  <h3 className="text-xl font-semibold text-muted-foreground uppercase tracking-wider">Captains</h3>
-                  <div className="space-y-2">
-                    {captains.map((captain, i) => (
-                      <div key={i} className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors">
-                        <Link 
-                          href={`/players/${formatPlayerSlug(captain.name)}`}
-                          className="text-sm font-medium hover:text-primary transition-colors"
-                        >
-                          {captain.name}
-                        </Link>
-                        <SocialLinks links={captain} />
-                      </div>
-                    ))}
+                  <h3 className="text-xl font-bold text-muted-foreground uppercase tracking-wider">Captains</h3>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {captains.map((captain, i) => {
+                      const initials = captain.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                      return (
+                        <div key={i} className="flex items-center gap-3 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 hover:border-primary/50 hover:shadow-lg hover:scale-[1.02] transition-all group">
+                          <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500/20 to-yellow-600/10 flex items-center justify-center flex-shrink-0 ring-2 ring-yellow-500/20 group-hover:ring-primary/40 transition-all">
+                            <span className="text-base font-bold text-yellow-500">{initials}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <Link 
+                              href={`/players/${formatPlayerSlug(captain.name)}`}
+                              className="block text-sm font-bold hover:text-primary transition-colors truncate mb-1"
+                            >
+                              {captain.name}
+                            </Link>
+                            <div className="scale-90 origin-left">
+                              <SocialLinks links={captain} />
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )}
