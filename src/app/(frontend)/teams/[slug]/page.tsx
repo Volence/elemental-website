@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import React from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Shield, Swords, Heart, Lock, Users, Trophy, MapPin, Star } from 'lucide-react'
 import { getTeamBySlug } from '@/utilities/getTeams'
 import { TeamLogo } from '@/components/TeamLogo'
@@ -348,8 +349,20 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
                         href={`/players/${formatPlayerSlug(manager.name)}`}
                         className="group flex items-center gap-4 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-background to-background/50 hover:border-primary/50 hover:shadow-lg transition-all"
                       >
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center ring-2 ring-primary/20 group-hover:ring-primary/50 transition-all text-lg font-bold text-primary">
-                          {manager.name.charAt(0)}
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center ring-2 ring-primary/20 group-hover:ring-primary/50 transition-all overflow-hidden">
+                          {manager.photoUrl ? (
+                            <Image
+                              src={manager.photoUrl}
+                              alt={manager.name}
+                              width={48}
+                              height={48}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-lg font-bold text-primary">
+                              {manager.name.charAt(0)}
+                            </span>
+                          )}
                         </div>
                         <span className="flex-1 font-bold group-hover:text-primary transition-colors">
                           {manager.name}
@@ -373,8 +386,20 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
                         href={`/players/${formatPlayerSlug(coach.name)}`}
                         className="group flex items-center gap-4 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-background to-background/50 hover:border-primary/50 hover:shadow-lg transition-all"
                       >
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center ring-2 ring-primary/20 group-hover:ring-primary/50 transition-all text-lg font-bold text-primary">
-                          {coach.name.charAt(0)}
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center ring-2 ring-primary/20 group-hover:ring-primary/50 transition-all overflow-hidden">
+                          {coach.photoUrl ? (
+                            <Image
+                              src={coach.photoUrl}
+                              alt={coach.name}
+                              width={48}
+                              height={48}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-lg font-bold text-primary">
+                              {coach.name.charAt(0)}
+                            </span>
+                          )}
                         </div>
                         <span className="flex-1 font-bold group-hover:text-primary transition-colors">
                           {coach.name}
@@ -398,8 +423,20 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
                         href={`/players/${formatPlayerSlug(captain.name)}`}
                         className="group flex items-center gap-4 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-background to-background/50 hover:border-primary/50 hover:shadow-lg transition-all"
                       >
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center ring-2 ring-primary/20 group-hover:ring-primary/50 transition-all text-lg font-bold text-primary">
-                          {captain.name.charAt(0)}
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center ring-2 ring-primary/20 group-hover:ring-primary/50 transition-all overflow-hidden">
+                          {captain.photoUrl ? (
+                            <Image
+                              src={captain.photoUrl}
+                              alt={captain.name}
+                              width={48}
+                              height={48}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-lg font-bold text-primary">
+                              {captain.name.charAt(0)}
+                            </span>
+                          )}
                         </div>
                         <span className="flex-1 font-bold group-hover:text-primary transition-colors">
                           {captain.name}
@@ -462,10 +499,20 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
                 >
                   {/* Avatar placeholder with role icon */}
                   <div className="relative flex-shrink-0">
-                    <div className={`w-16 h-16 rounded-full bg-gradient-to-br flex items-center justify-center ring-2 transition-all ${getRoleColor(player.role)}`}>
-                      <div className="text-primary">
-                        {getRoleIcon(player.role, 'md')}
-                      </div>
+                    <div className={`w-16 h-16 rounded-full bg-gradient-to-br flex items-center justify-center ring-2 transition-all overflow-hidden ${getRoleColor(player.role)}`}>
+                      {player.photoUrl ? (
+                        <Image
+                          src={player.photoUrl}
+                          alt={player.name}
+                          width={64}
+                          height={64}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="text-primary">
+                          {getRoleIcon(player.role, 'md')}
+                        </div>
+                      )}
                     </div>
                     {/* Role badge on avatar */}
                     <div className="absolute -bottom-1 -right-1 p-1.5 rounded-full bg-card border-2 border-background shadow-lg">
@@ -525,8 +572,20 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
                 >
                   {/* Avatar placeholder */}
                   <div className="relative flex-shrink-0">
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-500/20 to-orange-500/5 flex items-center justify-center ring-2 ring-orange-500/20 group-hover:ring-orange-500/50 transition-all text-xl font-bold text-orange-500">
-                      {sub.name.charAt(0)}
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-500/20 to-orange-500/5 flex items-center justify-center ring-2 ring-orange-500/20 group-hover:ring-orange-500/50 transition-all overflow-hidden">
+                      {sub.photoUrl ? (
+                        <Image
+                          src={sub.photoUrl}
+                          alt={sub.name}
+                          width={56}
+                          height={56}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-xl font-bold text-orange-500">
+                          {sub.name.charAt(0)}
+                        </span>
+                      )}
                     </div>
                     {/* Lock badge on avatar */}
                     <div className="absolute -bottom-1 -right-1 p-1 rounded-full bg-card border-2 border-background">

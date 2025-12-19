@@ -1,7 +1,7 @@
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { sortTeams } from './sortTeams'
-import { isPopulatedPerson, getPersonNameFromRelationship, getSocialLinksFromPerson } from './personHelpers'
+import { isPopulatedPerson, getPersonNameFromRelationship, getSocialLinksFromPerson, getPhotoUrlFromPerson } from './personHelpers'
 import type { Team as PayloadTeam } from '@/payload-types'
 
 // Type aliases for Payload team entry types
@@ -22,6 +22,7 @@ export interface SocialLinks {
 export interface TeamPlayer {
   name: string
   role: 'tank' | 'dps' | 'support'
+  photoUrl?: string | null
   twitter?: string
   twitch?: string
   youtube?: string
@@ -30,6 +31,7 @@ export interface TeamPlayer {
 
 export interface TeamStaff {
   name: string
+  photoUrl?: string | null
   twitter?: string
   twitch?: string
   youtube?: string
@@ -38,6 +40,7 @@ export interface TeamStaff {
 
 export interface TeamSub {
   name: string
+  photoUrl?: string | null
   twitter?: string
   twitch?: string
   youtube?: string
@@ -61,16 +64,17 @@ export interface Team {
 }
 
 /**
- * Helper to extract name and social links from a person entry (uses People relationship)
+ * Helper to extract name, photo, and social links from a person entry (uses People relationship)
  */
-function extractPersonData(entry: TeamEntry): { name: string; socialLinks: { twitter?: string; twitch?: string; youtube?: string; instagram?: string } } {
+function extractPersonData(entry: TeamEntry): { name: string; photoUrl?: string | null; socialLinks: { twitter?: string; twitch?: string; youtube?: string; instagram?: string } } {
   // Person relationship is required - extract from populated person object
   const personName = getPersonNameFromRelationship(entry.person)
   
   if (personName) {
-    // Person is populated, use it - social links are only in the person relationship
+    // Person is populated, use it - social links and photo are only in the person relationship
     return {
       name: personName,
+      photoUrl: getPhotoUrlFromPerson(entry.person),
       socialLinks: getSocialLinksFromPerson(entry.person),
     }
   }
@@ -105,6 +109,7 @@ function extractPersonData(entry: TeamEntry): { name: string; socialLinks: { twi
   // This will be filtered out later
   return {
     name: '',
+    photoUrl: null,
     socialLinks: {},
   }
 }
@@ -138,6 +143,7 @@ function transformPayloadTeam(payloadTeam: PayloadTeam): Team | null {
         const data = extractPersonData(m)
         return {
           name: data.name,
+          photoUrl: data.photoUrl,
           ...data.socialLinks,
         }
       }).filter((m): m is TeamStaff => Boolean(m.name && m.name.trim() !== '')) || [], // Filter out empty names
@@ -145,6 +151,7 @@ function transformPayloadTeam(payloadTeam: PayloadTeam): Team | null {
         const data = extractPersonData(c)
         return {
           name: data.name,
+          photoUrl: data.photoUrl,
           ...data.socialLinks,
         }
       }).filter((c): c is TeamStaff => Boolean(c.name && c.name.trim() !== '')) || [], // Filter out empty names
@@ -152,6 +159,7 @@ function transformPayloadTeam(payloadTeam: PayloadTeam): Team | null {
         const data = extractPersonData(c)
         return {
           name: data.name,
+          photoUrl: data.photoUrl,
           ...data.socialLinks,
         }
       }).filter((c): c is TeamStaff => Boolean(c.name && c.name.trim() !== '')) || [], // Filter out empty names
@@ -174,6 +182,7 @@ function transformPayloadTeam(payloadTeam: PayloadTeam): Team | null {
         return {
           name: data.name,
           role: p.role,
+          photoUrl: data.photoUrl,
           ...data.socialLinks,
         }
       }).filter((p): p is TeamPlayer => Boolean(p.name && p.name.trim() !== '')) || [], // Filter out empty names
@@ -181,6 +190,7 @@ function transformPayloadTeam(payloadTeam: PayloadTeam): Team | null {
         const data = extractPersonData(s)
         return {
           name: data.name,
+          photoUrl: data.photoUrl,
           ...data.socialLinks,
         }
       }).filter((s): s is TeamSub => Boolean(s.name && s.name.trim() !== '')) || [], // Filter out empty names

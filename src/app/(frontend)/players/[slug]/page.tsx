@@ -3,11 +3,13 @@ import React from 'react'
 import { notFound } from 'next/navigation'
 import { getPlayerByName, getAllPlayerNames } from '@/utilities/getPlayer'
 import { SocialLinks } from '@/components/SocialLinks'
-import { Shield, Users, Crown, UserCheck, Calendar, Share2, Image, Film, Mic, Eye, Video } from 'lucide-react'
+import { Shield, Users, Crown, UserCheck, Calendar, Share2, Image as ImageIcon, Film, Mic, Eye, Video } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { TeamLogo } from '@/components/TeamLogo'
 import { formatPlayerSlug } from '@/utilities/getPlayer'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
+import { getMediaUrl } from '@/utilities/getMediaUrl'
 
 type Args = {
   params: Promise<{
@@ -178,10 +180,20 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
               {/* Avatar */}
               <div className="relative flex-shrink-0">
                 <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-primary via-accent-blue to-accent-green p-1 shadow-2xl shadow-primary/20">
-                  <div className="w-full h-full rounded-full bg-card flex items-center justify-center">
-                    <span className="text-5xl md:text-6xl font-black text-primary">
-                      {getInitials(player.name)}
-                    </span>
+                  <div className="w-full h-full rounded-full bg-card flex items-center justify-center overflow-hidden">
+                    {player.photoUrl ? (
+                      <Image
+                        src={player.photoUrl}
+                        alt={player.name}
+                        width={160}
+                        height={160}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-5xl md:text-6xl font-black text-primary">
+                        {getInitials(player.name)}
+                      </span>
+                    )}
                   </div>
                 </div>
                 {/* Glow effect */}

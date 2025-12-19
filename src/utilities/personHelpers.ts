@@ -149,3 +149,20 @@ export function getPhotoIdFromPerson(person: any): number | null | undefined {
   
   return undefined
 }
+
+/**
+ * Get photo URL from a person object
+ * Returns the URL if photo is populated, or null if not available
+ */
+export function getPhotoUrlFromPerson(person: any): string | null {
+  if (!isPopulatedPerson(person) || !person.photo) {
+    return null
+  }
+  
+  // Handle populated Media object with URL
+  if (typeof person.photo === 'object' && person.photo !== null) {
+    return person.photo.url || null
+  }
+  
+  return null
+}

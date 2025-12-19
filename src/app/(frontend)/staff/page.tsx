@@ -4,10 +4,11 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { getAllTeams } from '@/utilities/getTeams'
 import { SocialLinks } from '@/components/SocialLinks'
-import { Users, Mic, Eye, Video, Shield, Crown, UserCheck, MessageSquare, Calendar, Share2, Image, Film } from 'lucide-react'
+import { Users, Mic, Eye, Video, Shield, Crown, UserCheck, MessageSquare, Calendar, Share2, Image as ImageIcon, Film } from 'lucide-react'
 import Link from 'next/link'
+import NextImage from 'next/image'
 import { formatPlayerSlug } from '@/utilities/getPlayer'
-import { getPersonNameFromRelationship, isPopulatedPerson, getSocialLinksFromPerson } from '@/utilities/personHelpers'
+import { getPersonNameFromRelationship, isPopulatedPerson, getSocialLinksFromPerson, getPhotoUrlFromPerson } from '@/utilities/personHelpers'
 
 export const dynamic = 'force-dynamic' // Always render dynamically to fetch fresh data
 
@@ -321,6 +322,7 @@ export default async function StaffPage() {
                   {staff.map((member) => {
                     const name = getStaffName(member)
                     const person = isPopulatedPerson(member.person) ? member.person : null
+                    const photoUrl = getPhotoUrlFromPerson(member.person)
                     const socialLinks = getSocialLinksFromPerson(member.person, {
                       twitter: member.twitter,
                       twitch: member.twitch,
@@ -334,8 +336,18 @@ export default async function StaffPage() {
                         key={member.id}
                         className="flex items-center gap-3 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 hover:border-primary/50 hover:shadow-lg hover:scale-[1.02] transition-all group"
                       >
-                        <div className={`relative w-12 h-12 rounded-full bg-gradient-to-br ${avatarColors.from} ${avatarColors.to} flex items-center justify-center flex-shrink-0 ring-2 ${avatarColors.ring} group-hover:ring-primary/40 transition-all`}>
-                          <span className={`text-base font-bold ${avatarColors.text}`}>{initials}</span>
+                        <div className={`relative w-12 h-12 rounded-full bg-gradient-to-br ${avatarColors.from} ${avatarColors.to} flex items-center justify-center flex-shrink-0 ring-2 ${avatarColors.ring} group-hover:ring-primary/40 transition-all overflow-hidden`}>
+                          {photoUrl ? (
+                            <NextImage
+                              src={photoUrl}
+                              alt={name}
+                              width={48}
+                              height={48}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className={`text-base font-bold ${avatarColors.text}`}>{initials}</span>
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <Link
@@ -393,6 +405,7 @@ export default async function StaffPage() {
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                       {staff.map((member) => {
                         const name = getStaffName(member)
+                        const photoUrl = getPhotoUrlFromPerson(member.person)
                         const socialLinks = getSocialLinksFromPerson(member.person, {
                           twitter: member.twitter,
                           twitch: member.twitch,
@@ -406,8 +419,18 @@ export default async function StaffPage() {
                             key={member.id}
                             className="flex items-center gap-3 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 hover:border-primary/50 hover:shadow-lg hover:scale-[1.02] transition-all group"
                           >
-                            <div className={`relative w-12 h-12 rounded-full bg-gradient-to-br ${avatarColors.from} ${avatarColors.to} flex items-center justify-center flex-shrink-0 ring-2 ${avatarColors.ring} group-hover:ring-primary/40 transition-all`}>
-                              <span className={`text-base font-bold ${avatarColors.text}`}>{initials}</span>
+                            <div className={`relative w-12 h-12 rounded-full bg-gradient-to-br ${avatarColors.from} ${avatarColors.to} flex items-center justify-center flex-shrink-0 ring-2 ${avatarColors.ring} group-hover:ring-primary/40 transition-all overflow-hidden`}>
+                              {photoUrl ? (
+                                <NextImage
+                                  src={photoUrl}
+                                  alt={name}
+                                  width={48}
+                                  height={48}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <span className={`text-base font-bold ${avatarColors.text}`}>{initials}</span>
+                              )}
                             </div>
                             <div className="flex-1 min-w-0">
                               <Link
@@ -452,8 +475,18 @@ export default async function StaffPage() {
                       const initials = manager.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
                       return (
                         <div key={i} className="flex items-center gap-3 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 hover:border-primary/50 hover:shadow-lg hover:scale-[1.02] transition-all group">
-                          <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-green-500/20 to-green-600/10 flex items-center justify-center flex-shrink-0 ring-2 ring-green-500/20 group-hover:ring-primary/40 transition-all">
-                            <span className="text-base font-bold text-green-500">{initials}</span>
+                          <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-green-500/20 to-green-600/10 flex items-center justify-center flex-shrink-0 ring-2 ring-green-500/20 group-hover:ring-primary/40 transition-all overflow-hidden">
+                            {manager.photoUrl ? (
+                              <NextImage
+                                src={manager.photoUrl}
+                                alt={manager.name}
+                                width={48}
+                                height={48}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-base font-bold text-green-500">{initials}</span>
+                            )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <Link 
@@ -481,8 +514,18 @@ export default async function StaffPage() {
                       const initials = coach.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
                       return (
                         <div key={i} className="flex items-center gap-3 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 hover:border-primary/50 hover:shadow-lg hover:scale-[1.02] transition-all group">
-                          <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-blue-500/20 to-blue-600/10 flex items-center justify-center flex-shrink-0 ring-2 ring-blue-500/20 group-hover:ring-primary/40 transition-all">
-                            <span className="text-base font-bold text-blue-500">{initials}</span>
+                          <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-blue-500/20 to-blue-600/10 flex items-center justify-center flex-shrink-0 ring-2 ring-blue-500/20 group-hover:ring-primary/40 transition-all overflow-hidden">
+                            {coach.photoUrl ? (
+                              <NextImage
+                                src={coach.photoUrl}
+                                alt={coach.name}
+                                width={48}
+                                height={48}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-base font-bold text-blue-500">{initials}</span>
+                            )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <Link 
@@ -510,8 +553,18 @@ export default async function StaffPage() {
                       const initials = captain.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
                       return (
                         <div key={i} className="flex items-center gap-3 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 hover:border-primary/50 hover:shadow-lg hover:scale-[1.02] transition-all group">
-                          <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500/20 to-yellow-600/10 flex items-center justify-center flex-shrink-0 ring-2 ring-yellow-500/20 group-hover:ring-primary/40 transition-all">
-                            <span className="text-base font-bold text-yellow-500">{initials}</span>
+                          <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500/20 to-yellow-600/10 flex items-center justify-center flex-shrink-0 ring-2 ring-yellow-500/20 group-hover:ring-primary/40 transition-all overflow-hidden">
+                            {captain.photoUrl ? (
+                              <NextImage
+                                src={captain.photoUrl}
+                                alt={captain.name}
+                                width={48}
+                                height={48}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-base font-bold text-yellow-500">{initials}</span>
+                            )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <Link 

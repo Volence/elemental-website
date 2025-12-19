@@ -1,7 +1,7 @@
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { getAllTeams } from './getTeams'
-import { isPopulatedPerson, getPersonIdFromRelationship, getSocialLinksFromPerson, getPhotoIdFromPerson } from './personHelpers'
+import { isPopulatedPerson, getPersonIdFromRelationship, getSocialLinksFromPerson, getPhotoIdFromPerson, getPhotoUrlFromPerson } from './personHelpers'
 
 export const formatPlayerSlug = (name: string): string => {
   return name
@@ -27,6 +27,7 @@ export interface PlayerInfo {
   slug: string
   bio?: string
   photo?: number | null
+  photoUrl?: string | null
   teams: PlayerTeamInfo[]
   staffRoles: {
     organization?: string[]
@@ -296,6 +297,7 @@ export async function getPlayerByName(name: string): Promise<PlayerInfo | null> 
   // Fetch person's bio and photo from People collection
   let bio: string | undefined = undefined
   let photo: number | null | undefined = undefined
+  let photoUrl: string | null = null
   
   try {
     // Try to find person by slug first (most reliable)
@@ -315,6 +317,7 @@ export async function getPlayerByName(name: string): Promise<PlayerInfo | null> 
       if (isPopulatedPerson(person)) {
         bio = person.bio || undefined
         photo = getPhotoIdFromPerson(person)
+        photoUrl = getPhotoUrlFromPerson(person)
       }
     } else {
       // Fallback: try to find by name (case-insensitive)
@@ -334,6 +337,7 @@ export async function getPlayerByName(name: string): Promise<PlayerInfo | null> 
         if (isPopulatedPerson(person)) {
           bio = person.bio || undefined
           photo = getPhotoIdFromPerson(person)
+          photoUrl = getPhotoUrlFromPerson(person)
         }
       }
     }
@@ -348,6 +352,7 @@ export async function getPlayerByName(name: string): Promise<PlayerInfo | null> 
       slug,
       bio,
       photo,
+      photoUrl,
       teams,
       staffRoles,
       socialLinks,
