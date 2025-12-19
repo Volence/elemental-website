@@ -7,6 +7,7 @@ import { Shield, Users, Crown, UserCheck, Calendar, Share2, Image, Film, Mic, Ey
 import Link from 'next/link'
 import { TeamLogo } from '@/components/TeamLogo'
 import { formatPlayerSlug } from '@/utilities/getPlayer'
+import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 type Args = {
   params: Promise<{
@@ -131,6 +132,16 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
   return (
     <div className="pt-8 pb-24 min-h-screen animate-fade-in">
       <div className="container max-w-4xl">
+        {/* Breadcrumbs */}
+        <div className="mb-6">
+          <Breadcrumbs
+            items={[
+              { label: 'Staff', href: '/staff' },
+              { label: player.name },
+            ]}
+          />
+        </div>
+
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-5xl md:text-6xl font-black mb-4 tracking-tight" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>{player.name}</h1>

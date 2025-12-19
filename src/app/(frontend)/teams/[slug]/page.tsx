@@ -7,6 +7,7 @@ import { getTeamBySlug } from '@/utilities/getTeams'
 import { TeamLogo } from '@/components/TeamLogo'
 import { SocialLinks } from '@/components/SocialLinks'
 import { formatPlayerSlug } from '@/utilities/getPlayer'
+import { Breadcrumbs } from '@/components/Breadcrumbs'
 
 // Skip static generation during build - pages will be generated on-demand
 export const dynamic = 'force-dynamic'
@@ -101,6 +102,16 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
 
   return (
     <div className="pt-8 pb-24 min-h-screen">
+      {/* Breadcrumbs */}
+      <div className="container max-w-7xl mb-6">
+        <Breadcrumbs
+          items={[
+            { label: 'Teams', href: '/teams' },
+            { label: team.name },
+          ]}
+        />
+      </div>
+
       {/* Hero Section */}
       <div className={`relative bg-gradient-to-b ${getRegionColor(team.region)} border-b border-border mb-12 overflow-hidden`}>
         {/* Decorative background pattern */}
