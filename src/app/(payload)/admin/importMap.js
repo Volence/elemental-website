@@ -17,6 +17,7 @@ import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 }
 import { SlugField as SlugField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
 import { default as default_890f375c2e64cfbf8289c4ab4ee8f2a1 } from '@/components/PeopleListColumns/StaffPositionsCell'
 import { default as default_04cdbc390d38c074fb71cb7d83ceaa88 } from '@/components/PeopleListColumns/TeamsCell'
+import { default as default_765c32446158099d5cf3659ccd46167a } from '@/collections/Teams/ColorPickerField'
 import { default as default_befd121dc2c708f29d17ef6cf6b47565 } from '@/components/TeamTabCounts/StaffCount'
 import { default as default_f6633e5ce5f4aebde4e8dd97802e545a } from '@/components/TeamTabCounts/RosterCount'
 import { default as default_6bf23cb42f8cd662b9483def3bfe5de8 } from '@/components/TeamLogoPreview'
@@ -62,6 +63,7 @@ export const importMap = {
   "@payloadcms/ui#SlugField": SlugField_3817bf644402e67bfe6577f60ef982de,
   "@/components/PeopleListColumns/StaffPositionsCell#default": default_890f375c2e64cfbf8289c4ab4ee8f2a1,
   "@/components/PeopleListColumns/TeamsCell#default": default_04cdbc390d38c074fb71cb7d83ceaa88,
+  "@/collections/Teams/ColorPickerField#default": default_765c32446158099d5cf3659ccd46167a,
   "@/components/TeamTabCounts/StaffCount#default": default_befd121dc2c708f29d17ef6cf6b47565,
   "@/components/TeamTabCounts/RosterCount#default": default_f6633e5ce5f4aebde4e8dd97802e545a,
   "@/components/TeamLogoPreview#default": default_6bf23cb42f8cd662b9483def3bfe5de8,

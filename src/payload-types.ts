@@ -479,6 +479,10 @@ export interface Team {
    */
   rating?: string | null;
   /**
+   * Custom theme color for the team page hero background. Pick a color that complements the logo. Leave empty to auto-detect based on team name.
+   */
+  themeColor?: string | null;
+  /**
    * Whether this team is currently active and competing
    */
   active?: boolean | null;
@@ -1210,6 +1214,7 @@ export interface TeamsSelect<T extends boolean = true> {
   logo?: T;
   region?: T;
   rating?: T;
+  themeColor?: T;
   active?: T;
   achievements?:
     | T
