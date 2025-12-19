@@ -1,13 +1,16 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useField, TextInput, FieldLabel } from '@payloadcms/ui'
 
 const ColorPickerField: React.FC = () => {
   const { value, setValue } = useField<string>({ path: 'themeColor' })
+  const logoField = useField<string>({ path: 'logo' })
   const [lightness, setLightness] = useState(50)
   const [supportsEyeDropper, setSupportsEyeDropper] = useState(false)
   const [browserName, setBrowserName] = useState('Unknown')
+  const [isPickingColor, setIsPickingColor] = useState(false)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
 
   // Detect browser name
   const detectBrowser = () => {
@@ -116,19 +119,46 @@ const ColorPickerField: React.FC = () => {
     }
   }
 
-  // Open eyedropper
-  const handleEyeDropper = async () => {
+  // RGB to Hex conversion
+  const rgbToHex = (r: number, g: number, b: number) => {
+    return '#' + [r, g, b].map(x => {
+      const hex = x.toString(16)
+      return hex.length === 1 ? '0' + hex : hex
+    }).join('')
+  }
+
+  // Get color from image at position
+  const getColorFromImage = (img: HTMLImageElement, x: number, y: number) => {
+    const canvas = canvasRef.current
+    if (!canvas) return null
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return null
+
+    // Set canvas size to match image
+    canvas.width = img.naturalWidth
+    canvas.height = img.naturalHeight
+
+    // Draw image to canvas
+    ctx.drawImage(img, 0, 0)
+
+    // Get pixel data
+    const imageData = ctx.getImageData(x, y, 1, 1)
+    const pixel = imageData.data
+
+    return rgbToHex(pixel[0], pixel[1], pixel[2])
+  }
+
+  // Start custom color picker mode
+  const handleCustomEyeDropper = () => {
+    setIsPickingColor(true)
+  }
+
+  // Open native eyedropper (fallback)
+  const handleNativeEyeDropper = async () => {
     if (!supportsEyeDropper) {
-      alert(
-        `EyeDropper API is not available in ${browserName}.\n\n` +
-        `Your browser: ${browserName}\n` +
-        `User Agent: ${typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A'}\n\n` +
-        `If you're using Vivaldi, try:\n` +
-        `1. Check if you're on the latest version\n` +
-        `2. Enable experimental features in vivaldi://flags\n` +
-        `3. Search for "EyeDropper" and enable it\n\n` +
-        `Or use Chrome/Edge which have it enabled by default.`
-      )
+      // Use custom picker instead
+      handleCustomEyeDropper()
       return
     }
 
@@ -172,29 +202,33 @@ const ColorPickerField: React.FC = () => {
         {/* Eyedropper Button */}
         <button
           type="button"
-          onClick={handleEyeDropper}
+          onClick={handleCustomEyeDropper}
           style={{
             width: '40px',
             height: '40px',
             border: '2px solid var(--theme-elevation-100)',
             borderRadius: '4px',
             cursor: 'pointer',
-            backgroundColor: 'var(--theme-elevation-0)',
+            backgroundColor: isPickingColor ? 'var(--theme-success-500)' : 'var(--theme-elevation-0)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: '18px',
             transition: 'all 0.2s',
-            opacity: supportsEyeDropper ? 1 : 0.5,
+            color: isPickingColor ? 'white' : 'inherit',
           }}
-          title={supportsEyeDropper ? "Pick color from screen (click logo to sample)" : "EyeDropper requires Chrome/Edge browser"}
+          title="Click to activate, then click on your logo preview below to pick a color"
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'var(--theme-elevation-100)'
-            e.currentTarget.style.borderColor = 'var(--theme-input-border-color-focused)'
+            if (!isPickingColor) {
+              e.currentTarget.style.backgroundColor = 'var(--theme-elevation-100)'
+              e.currentTarget.style.borderColor = 'var(--theme-input-border-color-focused)'
+            }
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'var(--theme-elevation-0)'
-            e.currentTarget.style.borderColor = 'var(--theme-elevation-100)'
+            if (!isPickingColor) {
+              e.currentTarget.style.backgroundColor = 'var(--theme-elevation-0)'
+              e.currentTarget.style.borderColor = 'var(--theme-elevation-100)'
+            }
           }}
         >
           💧
@@ -256,7 +290,7 @@ const ColorPickerField: React.FC = () => {
         borderRadius: '8px',
         background: `linear-gradient(135deg, ${currentColor}20, ${currentColor}05)`,
         border: `2px solid ${currentColor}30`,
-        marginBottom: '8px',
+        marginBottom: '12px',
         textAlign: 'center',
         fontSize: '11px',
         color: 'var(--theme-elevation-600)',
@@ -264,21 +298,97 @@ const ColorPickerField: React.FC = () => {
       }}>
         Hero Background Preview
       </div>
+
+      {/* Logo Preview for Color Picking */}
+      {logoField.value && (
+        <div style={{ marginBottom: '12px' }}>
+          <div style={{ 
+            fontSize: '12px', 
+            fontWeight: '600',
+            color: 'var(--theme-elevation-800)',
+            marginBottom: '8px'
+          }}>
+            {isPickingColor ? '👆 Click on your logo to pick a color!' : 'Logo Preview'}
+          </div>
+          <div style={{
+            position: 'relative',
+            display: 'inline-block',
+            border: isPickingColor ? '3px solid var(--theme-success-500)' : '2px solid var(--theme-elevation-100)',
+            borderRadius: '8px',
+            padding: '12px',
+            backgroundColor: 'var(--theme-elevation-50)',
+            cursor: isPickingColor ? 'crosshair' : 'default',
+            transition: 'all 0.2s',
+            maxWidth: '200px',
+          }}>
+            <img
+              src={logoField.value}
+              alt="Team Logo"
+              style={{ 
+                display: 'block',
+                maxWidth: '100%',
+                height: 'auto',
+                userSelect: 'none',
+                pointerEvents: isPickingColor ? 'auto' : 'none',
+              }}
+              onClick={(e) => {
+                if (!isPickingColor) return
+                
+                const img = e.currentTarget
+                const rect = img.getBoundingClientRect()
+                const x = Math.floor((e.clientX - rect.left) * (img.naturalWidth / rect.width))
+                const y = Math.floor((e.clientY - rect.top) * (img.naturalHeight / rect.height))
+                
+                const color = getColorFromImage(img, x, y)
+                if (color) {
+                  setValue(color)
+                  setIsPickingColor(false)
+                }
+              }}
+            />
+            {isPickingColor && (
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                pointerEvents: 'none',
+                fontSize: '48px',
+                opacity: 0.3,
+              }}>
+                🎯
+              </div>
+            )}
+          </div>
+          {isPickingColor && (
+            <button
+              type="button"
+              onClick={() => setIsPickingColor(false)}
+              style={{
+                marginTop: '8px',
+                padding: '6px 12px',
+                fontSize: '11px',
+                border: '1px solid var(--theme-elevation-200)',
+                borderRadius: '4px',
+                backgroundColor: 'var(--theme-elevation-0)',
+                cursor: 'pointer',
+              }}
+            >
+              Cancel
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Hidden canvas for color extraction */}
+      <canvas ref={canvasRef} style={{ display: 'none' }} />
       
       <div style={{ 
         fontSize: '12px', 
         color: 'var(--theme-elevation-500)',
         lineHeight: '1.5'
       }}>
-        💡 <strong>Tip:</strong> Use the eyedropper (💧) to pick a color directly from your logo! Then adjust the brightness slider to make it lighter or darker. Leave empty to auto-detect.
-        {!supportsEyeDropper && (
-          <div style={{ marginTop: '6px', color: 'var(--theme-error-500)' }}>
-            ⚠️ Eyedropper not available in {browserName}. 
-            {browserName === 'Vivaldi' && ' Try enabling it in vivaldi://flags or use Chrome/Edge.'}
-            {browserName === 'Firefox' && ' Firefox doesn\'t support this yet. Use Chrome/Edge.'}
-            {browserName === 'Safari' && ' Safari doesn\'t support this yet. Use Chrome/Edge.'}
-          </div>
-        )}
+        💡 <strong>Tip:</strong> Click the eyedropper (💧) button, then click anywhere on your logo preview to pick that color! Adjust the brightness slider to make it lighter or darker. Leave empty to auto-detect.
       </div>
     </div>
   )
