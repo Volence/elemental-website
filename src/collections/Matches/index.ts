@@ -189,18 +189,26 @@ export const Matches: CollectionConfig = {
           ],
         },
         {
-          label: 'Scores',
+          label: 'Score',
           description: 'Match scores and results',
           fields: [
             {
               name: 'score',
               type: 'group',
+              admin: {
+                style: {
+                  borderWidth: 0,
+                  padding: 0,
+                  margin: 0,
+                },
+              },
               fields: [
                 {
                   type: 'row',
                   fields: [
                     {
                       name: 'elmtScore',
+                      label: 'ELMT Score',
                       type: 'number',
                       admin: {
                         description: 'ELMT team score',
@@ -208,6 +216,7 @@ export const Matches: CollectionConfig = {
                     },
                     {
                       name: 'opponentScore',
+                      label: 'Opponent Score',
                       type: 'number',
                       admin: {
                         description: 'Opponent team score',

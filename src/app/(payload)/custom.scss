@@ -46,7 +46,7 @@ h1.list-header__title,
 main h1 {
   position: relative;
   padding-bottom: 0.75rem;
-  margin-bottom: 1.5rem !important;
+  margin-bottom: 0 !important;
 }
 
 .dashboard h1::after,
@@ -120,6 +120,8 @@ aside,
 .template-default aside,
 .nav {
   background-color: #0a0a0a !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.3) !important;
 }
 
 /* Content area background and spacing */
@@ -156,7 +158,13 @@ aside,
 .template-default aside,
 .template-default__wrap aside,
 body aside nav {
-  padding: 0.75rem 0.5rem !important;
+  padding: 1rem 0.5rem 0.75rem !important;
+}
+
+/* Top nav items (Dashboard, Schedule Generator) - slightly more spacing */
+aside nav > a:first-child,
+aside nav > a:nth-child(2) {
+  margin-bottom: 0.25rem !important;
 }
 
 /* All navigation links - unified base styling (SIDEBAR ONLY - not breadcrumbs) */
@@ -177,7 +185,7 @@ aside nav > div > button {
   border: none !important;
   border-left: 3px solid transparent !important;
   background: transparent !important;
-  color: rgba(255, 255, 255, 0.65) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
   font-size: 0.9375rem !important;
   font-weight: 400 !important;
   line-height: 1.4 !important;
@@ -187,6 +195,7 @@ aside nav > div > button {
   cursor: pointer !important;
   width: calc(100% - 1rem) !important;
   box-sizing: border-box !important;
+  position: relative !important;
 }
 
 /* Dashboard and top-level links in sidebar */
@@ -235,8 +244,9 @@ html body div aside nav ul li a[aria-current="page"] {
   border-left-width: 3px !important;
   border-left-style: solid !important;
   border-left-color: #6366f1 !important;
-  color: #a5b4fc !important;
+  color: #c7d2fe !important;
   font-weight: 600 !important;
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.15) !important;
 }
 
 /* ULTRA specific override for the border color */
@@ -296,7 +306,24 @@ aside nav ul li a[aria-current="page"] {
   text-transform: uppercase !important;
   letter-spacing: 0.08em !important;
   padding: 0.625rem 1rem !important;
-  margin: 0.5rem 0.5rem 0.25rem !important;
+  margin: 0.75rem 0.5rem 0.375rem !important;
+}
+
+/* Add subtle divider above group headers for better separation */
+.nav-group__toggle::before {
+  content: '' !important;
+  display: block !important;
+  position: absolute !important;
+  top: -0.375rem !important;
+  left: 1rem !important;
+  right: 1rem !important;
+  height: 1px !important;
+  background: linear-gradient(90deg, transparent 0%, rgba(139, 92, 246, 0.2) 50%, transparent 100%) !important;
+}
+
+/* First group doesn't need a divider */
+.nav-group__toggle:first-of-type::before {
+  display: none !important;
 }
 
 /* Hover state - subtle highlight with accent color (SIDEBAR ONLY) */
@@ -355,19 +382,28 @@ aside > div > button {
   padding-left: 1.25rem !important;
 }
 
-/* Icons in navigation - consistent sizing */
+/* Icons in navigation - consistent sizing and alignment */
 aside nav svg,
 [class*="nav-group"] svg {
   width: 1.125rem !important;
   height: 1.125rem !important;
   flex-shrink: 0 !important;
   opacity: 0.8 !important;
+  vertical-align: middle !important;
+  margin-top: -1px !important; /* Slight adjustment for optical alignment */
 }
 
 aside nav a:hover svg,
 aside nav button:hover svg,
 aside nav a[class*="active"] svg {
   opacity: 1 !important;
+}
+
+/* Ensure icon and text are vertically centered */
+.nav__link {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
 }
 
 /* Chevron icons for expandable groups */
@@ -406,6 +442,27 @@ aside nav a,
 [class*="nav-group"] a {
   text-decoration: none !important;
   display: flex !important;
+}
+
+/* Notification badges in nav links */
+.nav__link [class*="badge"],
+.nav__link [class*="pill"],
+aside nav a [class*="badge"],
+aside nav a [class*="pill"] {
+  margin-left: auto !important;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: white !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  padding: 0.125rem 0.5rem !important;
+  border-radius: 10px !important;
+  min-width: 1.5rem !important;
+  height: 1.5rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
 /* Logout button - special styling */
@@ -576,7 +633,6 @@ table tbody tr:hover,
 [class*="table"] tbody tr:hover {
   background: rgba(99, 102, 241, 0.12) !important;
   box-shadow: 0 0 20px rgba(99, 102, 241, 0.15), inset 0 0 0 1px rgba(99, 102, 241, 0.2) !important;
-  transform: scale(1.005) !important;
   transition: all 0.2s ease !important;
 }
 
@@ -585,6 +641,7 @@ table tbody tr:hover,
 [class*="list-item"] {
   padding: 1rem !important;
   margin-bottom: 0.75rem !important;
+  margin-top: 0.75rem !important;
 }
 
 /* Dashboard widgets - elevated cards with gradient top border */
@@ -721,24 +778,56 @@ table tbody tr:hover,
 
 /* Individual fields that need card treatment - NOT groups, collapsibles, or arrays */
 .field-type:not(.collapsible):not(.group):not(.array-field):not([class*="group"]) {
-  background: transparent !important;
-  border: 1px solid rgba(255, 255, 255, 0.02) !important;
+  background: rgba(255, 255, 255, 0.005) !important;
+  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  border-left: 2px solid rgba(99, 102, 241, 0.2) !important;
   border-radius: 8px !important;
   padding: 1rem !important;
-  margin-bottom: 1rem !important;
+  margin-bottom: 1.5rem !important;
   transition: all 0.2s ease-in-out !important;
 }
 
-/* Groups and collapsibles are just transparent containers - no card styling */
+/* Field type hover - subtle highlight */
+.field-type:not(.collapsible):not(.group):not(.array-field):not([class*="group"]):hover {
+  border-left-color: rgba(99, 102, 241, 0.3) !important;
+  background: rgba(255, 255, 255, 0.01) !important;
+}
+
+/* Groups and collapsibles - visual structure with left accent */
 .field-type.group,
 .field-type.collapsible,
 [class*="group-field"],
 .collapsible {
-  background: transparent !important;
-  border: none !important;
-  padding: 0 !important;
+  background: rgba(255, 255, 255, 0.005) !important;
+  border: 1px solid rgba(255, 255, 255, 0.02) !important;
+  border-left: 2px solid rgba(6, 182, 212, 0.15) !important;
+  border-radius: 8px !important;
+  padding: 1rem !important;
   margin-bottom: 1.5rem !important;
   transition: all 0.3s ease !important;
+}
+
+/* Special case: Hide visual container for single-group-in-tab (like Score tab) */
+.field-type.group:only-child,
+.field-type.group:first-child:last-child {
+  background: transparent !important;
+  border: none !important;
+  border-left: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Hide the group label when it's the only field in a tab */
+.field-type.group:only-child > label:first-child,
+.field-type.group:first-child:last-child > label:first-child {
+  display: none !important;
+}
+
+/* Group hover - subtle highlight */
+.field-type.group:hover,
+[class*="group-field"]:hover {
+  border-left-color: rgba(6, 182, 212, 0.25) !important;
+  background: rgba(255, 255, 255, 0.01) !important;
 }
 
 /* Collapsible collapsed state - distinct visual treatment */
@@ -783,19 +872,198 @@ table tbody tr:hover,
 .field-type .field-type {
   background: transparent !important;
   border: none !important;
+  border-left: none !important;
   padding: 0.75rem 0 !important;
   margin-bottom: 0.75rem !important;
+}
+
+/* Tab content sections - visual structure */
+[class*="tab-content"] > div,
+[class*="panel-content"] > div,
+.render-fields > div > .field-type {
+  margin-bottom: 1.5rem !important;
+}
+
+/* Form sections with headings */
+section.field-type,
+[class*="form-section"] {
+  background: rgba(255, 255, 255, 0.005) !important;
+  border: 1px solid rgba(255, 255, 255, 0.03) !important;
+  border-left: 2px solid rgba(6, 182, 212, 0.2) !important;
+  border-radius: 8px !important;
+  padding: 1.5rem !important;
+  margin-bottom: 2rem !important;
 }
 
 /* Rows inside groups - clean layout with gap */
 .group .row,
 [class*="group"] .row,
-.field-type .row {
+.field-type .row,
+.row-field,
+.field-type.row,
+.field-type[class*="row"] {
   background: transparent !important;
   border: none !important;
   padding: 0 !important;
   gap: 1rem !important;
   display: flex !important;
+  align-items: flex-start !important;
+  flex-wrap: nowrap !important;
+}
+
+/* Row field children - equal width and proper alignment */
+.row-field > .field-type,
+.field-type.row > .field-type,
+.row > .field-type,
+.field-type[class*="row"] > .field-type,
+.field-type[class*="row"] > div {
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Ensure inputs in rows have consistent heights */
+.row-field input,
+.field-type.row input,
+.row input,
+.field-type[class*="row"] input {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Make sure labels in rows align at the top */
+.row-field label,
+.field-type.row label,
+.row label,
+.field-type[class*="row"] label {
+  display: block !important;
+  margin-bottom: 0.5rem !important;
+}
+
+/* React-select controls in rows should also be equal width */
+.row-field .react-select__control,
+.field-type.row .react-select__control,
+.row .react-select__control,
+.field-type[class*="row"] .react-select__control,
+.row__fields .react-select__control,
+div[class*="row__fields"] .react-select__control {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Ensure the select wrapper takes full width */
+.row__fields > .field-type.select,
+div[class*="row__fields"] > .field-type.select,
+.field-type.row .field-type.select {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* Remove any extra margins from fields in rows */
+.row__fields > .field-type,
+div[class*="row__fields"] > .field-type,
+.render-fields--margins-none > .field-type,
+.render-fields.row__fields > *,
+div.row__fields > * {
+  margin: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding: 0 !important;
+}
+
+/* Override any specific field-type margins in rows */
+.field-type.row .field-type,
+.row__fields .field-type.select,
+.row__fields .field-type.text,
+.row__fields .field-type.number {
+  margin: 0 !important;
+}
+
+/* Ensure labels don't affect width calculation */
+.row__fields .field-type label,
+div[class*="row__fields"] .field-type label {
+  display: block !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Payload-specific row field wrappers */
+div[class*="row"] > div[class*="field"],
+div[class*="row-field"] > div[class*="field"] {
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
+}
+
+/* Field wrappers inside rows */
+.render-fields .row > *,
+.render-fields .field-type.row > *,
+.render-fields div[class*="row"] > * {
+  flex: 1 1 0% !important;
+  min-width: 0 !important;
+}
+
+/* Ensure field containers don't overflow */
+.field-type.row > *,
+div[class*="row-field"] > * {
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+
+/* Ultra-specific row field alignment - force equal widths */
+.render-fields .field-type.row,
+.render-fields div[class*="row-field"],
+.field-type.group .field-type.row,
+.collapsible .field-type.row {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 1rem !important;
+  align-items: flex-start !important;
+}
+
+/* Target the nested row__fields container */
+.field-type.row > .render-fields,
+.field-type.row > .row__fields,
+div[class*="row__fields"] {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 1rem !important;
+  align-items: flex-start !important;
+  width: 100% !important;
+  flex: 1 !important;
+}
+
+/* Force all direct children to have equal width */
+.render-fields .field-type.row > .field-type,
+.render-fields div[class*="row-field"] > .field-type,
+.field-type.group .field-type.row > .field-type,
+.collapsible .field-type.row > .field-type,
+.row__fields > .field-type,
+div[class*="row__fields"] > .field-type {
+  flex: 1 1 0px !important;
+  min-width: 0 !important;
+  width: 0 !important;
+  flex-basis: 0 !important;
+  flex-grow: 1 !important;
+  flex-shrink: 1 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* Prevent any :not(:first-child) margins */
+.row__fields > .field-type:not(:first-child),
+div[class*="row__fields"] > .field-type:not(:first-child) {
+  margin-left: 0 !important;
+}
+
+/* Force first and last child to have no extra margins */
+.row__fields > .field-type:first-child,
+.row__fields > .field-type:last-child,
+div[class*="row__fields"] > .field-type:first-child,
+div[class*="row__fields"] > .field-type:last-child {
+  margin: 0 !important;
 }
 
 /* Array fields - cleaner styling */
@@ -1150,18 +1418,32 @@ select,
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   border-radius: 6px !important;
   padding: 0.75rem 1rem !important;
-  padding-top: 0.75rem !important;
   color: rgba(255, 255, 255, 0.9) !important;
   font-size: 0.9375rem !important;
-  line-height: normal !important;
+  line-height: 1.5 !important;
   transition: all 0.2s ease !important;
-  vertical-align: middle !important;
   min-height: 3rem !important;
-  height: 100% !important;
   box-sizing: border-box !important;
-  flex-basis: auto !important;
   width: 100% !important;
-  max-width: 100% !important;
+  display: block !important;
+}
+
+/* Ensure inputs in field-types are properly aligned */
+.field-type input,
+.field-type textarea,
+.field-type select {
+  margin-top: 0.5rem !important;
+}
+
+/* React Select controls in field-types */
+.field-type .react-select__control,
+.field-type [class*="select__control"] {
+  margin-top: 0.5rem !important;
+}
+
+/* Consistent field spacing in forms */
+.render-fields .field-type + .field-type {
+  margin-top: 1.5rem !important;
 }
 
 /* Search inputs specifically - extra padding for icon */
@@ -1373,7 +1655,7 @@ select:disabled {
   align-items: center !important;
   justify-content: space-between !important;
   gap: 1rem !important;
-  margin-bottom: 0.75rem !important;
+  margin-bottom: 0 !important;
 }
 
 /* CREATE NEW buttons - better positioning */
@@ -1400,6 +1682,7 @@ main h1 {
   font-weight: 700 !important;
   letter-spacing: -0.025em !important;
   line-height: 1.2 !important;
+  margin-bottom: 0 !important;
 }
 
 /* Section headings (h2) */
@@ -1435,6 +1718,14 @@ label.field-label,
   color: rgba(255, 255, 255, 0.7) !important;
   margin-bottom: 0.5rem !important;
   display: block !important;
+}
+
+/* Field description text - proper spacing */
+.field-description,
+.field-type .field-description,
+[class*="description"] {
+  margin-top: 0.375rem !important;
+  margin-bottom: 0 !important;
 }
 
 /* Exclude relationship field values and selected items from label styling */
