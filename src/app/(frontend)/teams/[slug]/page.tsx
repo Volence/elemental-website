@@ -97,25 +97,11 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
     }
   }
 
-  // Convert hex color to Tailwind-compatible RGB values
-  const hexToRgb = (hex: string) => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-    return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
-    } : null
-  }
+  // Check if team has custom theme color
+  const hasCustomColor = team.themeColor && team.themeColor.startsWith('#')
 
-  // Get team-specific color from logo
-  const getTeamColor = (teamName: string, teamSlug: string, themeColor?: string) => {
-    // If a custom theme color is set in the database, use it
-    if (themeColor && themeColor.startsWith('#')) {
-      const rgb = hexToRgb(themeColor)
-      if (rgb) {
-        return `from-[rgb(${rgb.r}_${rgb.g}_${rgb.b}_/_0.2)] to-[rgb(${rgb.r}_${rgb.g}_${rgb.b}_/_0.05)]`
-      }
-    }
+  // Get team-specific color classes (only for auto-detected colors)
+  const getTeamColor = (teamName: string, teamSlug: string) => {
 
     const colorMap: Record<string, string> = {
       // Fire teams (red/orange)
@@ -209,7 +195,12 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
       </div>
 
       {/* Hero Section */}
-      <div className={`relative bg-gradient-to-b ${getTeamColor(team.name, slug, team.themeColor)} border-b border-border mb-12 overflow-hidden`}>
+      <div 
+        className={`relative bg-gradient-to-b ${!hasCustomColor ? getTeamColor(team.name, slug) : ''} border-b border-border mb-12 overflow-hidden`}
+        style={hasCustomColor ? {
+          backgroundImage: `linear-gradient(to bottom, ${team.themeColor}33, ${team.themeColor}0d)`
+        } : undefined}
+      >
         {/* Decorative background pattern */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)', backgroundSize: '32px 32px' }} />
