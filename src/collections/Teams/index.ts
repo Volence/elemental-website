@@ -110,7 +110,7 @@ export const Teams: CollectionConfig = {
                 { label: 'South America', value: 'SA' },
                 { label: 'Other', value: 'Other' },
               ],
-              validate: (value: string) => {
+              validate: (value: string | null | undefined) => {
                 if (value === 'EU') {
                   return 'Please change "EU" to "EMEA" - Europe region has been renamed to EMEA (Europe, Middle East, and Africa)'
                 }
@@ -379,7 +379,6 @@ export const Teams: CollectionConfig = {
       name: 'logoPreview',
       type: 'ui',
       admin: {
-        label: 'Logo',
         components: {
           Cell: '@/components/TeamsListColumns/LogoCell#default',
         },
@@ -389,7 +388,6 @@ export const Teams: CollectionConfig = {
       name: 'nameCell',
       type: 'ui',
       admin: {
-        label: 'Name',
         components: {
           Cell: '@/components/TeamsListColumns/NameCell#default',
         },
@@ -399,7 +397,6 @@ export const Teams: CollectionConfig = {
       name: 'regionCell',
       type: 'ui',
       admin: {
-        label: 'Region',
         components: {
           Cell: '@/components/TeamsListColumns/RegionCell#default',
         },
@@ -409,7 +406,6 @@ export const Teams: CollectionConfig = {
       name: 'ratingCell',
       type: 'ui',
       admin: {
-        label: 'Rating',
         components: {
           Cell: '@/components/TeamsListColumns/RatingCell#default',
         },
@@ -419,7 +415,6 @@ export const Teams: CollectionConfig = {
       name: 'status',
       type: 'ui',
       admin: {
-        label: 'Status',
         components: {
           Cell: '@/components/TeamsListColumns/StatusCell#default',
         },
@@ -429,7 +424,6 @@ export const Teams: CollectionConfig = {
       name: 'updatedAtCell',
       type: 'ui',
       admin: {
-        label: 'Updated At',
         components: {
           Cell: '@/components/TeamsListColumns/UpdatedAtCell#default',
         },
