@@ -215,7 +215,7 @@ export default async function StaffPage() {
       collection: 'production',
       limit: 1000,
       pagination: false,
-      depth: 1, // Populate person relationship
+      depth: 2, // Populate person relationship and nested photo relationship
     })
     
     const productionStaff = productionResult.docs
@@ -226,7 +226,7 @@ export default async function StaffPage() {
       collection: 'organization-staff',
       limit: 1000,
       pagination: false,
-      depth: 1, // Populate person relationship
+      depth: 2, // Populate person relationship and nested photo relationship
     })
     
     const orgStaff = orgStaffResult.docs
@@ -323,6 +323,17 @@ export default async function StaffPage() {
                     const name = getStaffName(member)
                     const person = isPopulatedPerson(member.person) ? member.person : null
                     const photoUrl = getPhotoUrlFromPerson(member.person)
+                    
+                    // Debug logging
+                    if (process.env.NODE_ENV === 'development' && name === 'Shogai') {
+                      console.log('[Staff Page] Shogai data:', {
+                        name,
+                        hasPhoto: !!photoUrl,
+                        photoUrl,
+                        person: person ? { name: person.name, photo: person.photo } : null
+                      })
+                    }
+                    
                     const socialLinks = getSocialLinksFromPerson(member.person, {
                       twitter: member.twitter,
                       twitch: member.twitch,

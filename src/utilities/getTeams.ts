@@ -262,7 +262,7 @@ export async function getTeamBySlug(slug: string): Promise<Team | undefined> {
       },
       limit: 1,
       overrideAccess: false,
-      depth: 1, // Populate People relationships
+      depth: 2, // Populate People relationships and their nested photo relationship
     })
 
     if (result.docs.length === 0) {
