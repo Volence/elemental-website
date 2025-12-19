@@ -145,3 +145,5 @@ docker compose -f docker-compose.prod.yml up -d payload
 - **Production Server**: Uses `docker-compose.prod.yml` with standalone Next.js build
 - **Local Development**: Uses `docker-compose.yml` with `npm run dev`
 - **Database**: Never touches postgres container during deployments
+
+
