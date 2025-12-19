@@ -7,11 +7,33 @@ const ColorPickerField: React.FC = () => {
   const { value, setValue } = useField<string>({ path: 'themeColor' })
   const [lightness, setLightness] = useState(50)
   const [supportsEyeDropper, setSupportsEyeDropper] = useState(false)
+  const [browserName, setBrowserName] = useState('Unknown')
+
+  // Detect browser name
+  const detectBrowser = () => {
+    if (typeof navigator === 'undefined') return 'Unknown'
+    
+    const ua = navigator.userAgent
+    if (ua.includes('Vivaldi')) return 'Vivaldi'
+    if (ua.includes('Edg/')) return 'Edge'
+    if (ua.includes('Chrome') && !ua.includes('Edg')) return 'Chrome'
+    if (ua.includes('Firefox')) return 'Firefox'
+    if (ua.includes('Safari') && !ua.includes('Chrome')) return 'Safari'
+    if (ua.includes('OPR') || ua.includes('Opera')) return 'Opera'
+    return 'Chromium-based'
+  }
 
   // Check if EyeDropper API is supported on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setSupportsEyeDropper('EyeDropper' in window)
+      const hasEyeDropper = 'EyeDropper' in window
+      setSupportsEyeDropper(hasEyeDropper)
+      setBrowserName(detectBrowser())
+      
+      // Debug log
+      console.log('ColorPicker - Browser:', detectBrowser())
+      console.log('ColorPicker - EyeDropper support:', hasEyeDropper)
+      console.log('ColorPicker - Window.EyeDropper:', (window as any).EyeDropper)
     }
   }, [])
 
@@ -97,7 +119,16 @@ const ColorPickerField: React.FC = () => {
   // Open eyedropper
   const handleEyeDropper = async () => {
     if (!supportsEyeDropper) {
-      alert('EyeDropper API is not supported in this browser. Please use Chrome, Edge, or another Chromium-based browser.')
+      alert(
+        `EyeDropper API is not available in ${browserName}.\n\n` +
+        `Your browser: ${browserName}\n` +
+        `User Agent: ${typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A'}\n\n` +
+        `If you're using Vivaldi, try:\n` +
+        `1. Check if you're on the latest version\n` +
+        `2. Enable experimental features in vivaldi://flags\n` +
+        `3. Search for "EyeDropper" and enable it\n\n` +
+        `Or use Chrome/Edge which have it enabled by default.`
+      )
       return
     }
 
@@ -242,7 +273,10 @@ const ColorPickerField: React.FC = () => {
         💡 <strong>Tip:</strong> Use the eyedropper (💧) to pick a color directly from your logo! Then adjust the brightness slider to make it lighter or darker. Leave empty to auto-detect.
         {!supportsEyeDropper && (
           <div style={{ marginTop: '6px', color: 'var(--theme-error-500)' }}>
-            ⚠️ Eyedropper requires Chrome or Edge browser. Currently using: {typeof navigator !== 'undefined' ? navigator.userAgent.split(' ').slice(-1)[0] : 'unknown'}
+            ⚠️ Eyedropper not available in {browserName}. 
+            {browserName === 'Vivaldi' && ' Try enabling it in vivaldi://flags or use Chrome/Edge.'}
+            {browserName === 'Firefox' && ' Firefox doesn\'t support this yet. Use Chrome/Edge.'}
+            {browserName === 'Safari' && ' Safari doesn\'t support this yet. Use Chrome/Edge.'}
           </div>
         )}
       </div>
