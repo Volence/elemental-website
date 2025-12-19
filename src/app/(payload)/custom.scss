@@ -520,3 +520,330 @@ button .btn__content,
 button[class*="array"] .btn__content > * {
   vertical-align: middle !important;
 }
+
+/* ============================================ */
+/* CARD & CONTAINER BACKGROUNDS                */
+/* ============================================ */
+
+/* Generic card styling - matches frontend depth */
+.card,
+[class*="card"],
+.dashboard__card,
+.collection-list__item,
+.doc-drawer,
+.field-type,
+.collapsible,
+.array-field__row,
+.blocks-field__row,
+.row-field,
+[class*="drawer"],
+[class*="panel"] {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+/* Card hover states - subtle glow */
+.card:hover,
+[class*="card"]:hover,
+.collection-list__item:hover,
+.array-field__row:hover,
+.blocks-field__row:hover {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(99, 102, 241, 0.2) !important;
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.15) !important;
+}
+
+/* Table rows - subtle striping and hover */
+table tbody tr,
+.table__tr,
+[class*="table"] tbody tr {
+  background: transparent !important;
+  transition: background-color 0.15s ease, box-shadow 0.2s ease !important;
+}
+
+table tbody tr:nth-child(even),
+.table__tr:nth-child(even),
+[class*="table"] tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.015) !important;
+}
+
+table tbody tr:hover,
+.table__tr:hover,
+[class*="table"] tbody tr:hover {
+  background: rgba(99, 102, 241, 0.08) !important;
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.1) !important;
+}
+
+/* Collection list items - enhanced cards */
+.collection-list__item,
+[class*="list-item"] {
+  padding: 1rem !important;
+  margin-bottom: 0.75rem !important;
+}
+
+/* Dashboard widgets - elevated cards */
+.dashboard__card,
+.dashboard .card {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  padding: 1.5rem !important;
+  border-radius: 10px !important;
+}
+
+/* Form fields container - transparent */
+.render-fields {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+/* Nested groups and collapsibles - NO left border for cleaner layout */
+.collapsible__content,
+.group-field {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin-top: 0.5rem !important;
+}
+
+/* Individual fields that need card treatment - NOT groups, collapsibles, or arrays */
+.field-type:not(.collapsible):not(.group):not(.array-field):not([class*="group"]) {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-radius: 8px !important;
+  padding: 1.25rem !important;
+  margin-bottom: 1rem !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+/* Groups and collapsibles are just transparent containers - no card styling */
+.field-type.group,
+.field-type.collapsible,
+[class*="group-field"],
+.collapsible {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin-bottom: 1.5rem !important;
+}
+
+/* Collapsible content area - also transparent */
+.collapsible__content {
+  background: transparent !important;
+  border: none !important;
+  padding: 1rem 0 0 0 !important;
+}
+
+/* Remove all backgrounds from nested content */
+.collapsible .field-type,
+.group-field .field-type,
+.collapsible__content .field-type,
+.array-field .field-type,
+.array-field__row .field-type,
+.group .field-type,
+.row .field-type,
+[class*="group"] .field-type,
+[class*="row"] .field-type,
+.field-type .field-type {
+  background: transparent !important;
+  border: none !important;
+  padding: 0.75rem 0 !important;
+  margin-bottom: 0.75rem !important;
+}
+
+/* Rows inside groups - clean layout with gap */
+.group .row,
+[class*="group"] .row,
+.field-type .row {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  gap: 1rem !important;
+  display: flex !important;
+}
+
+/* Array fields - cleaner styling */
+.array-field,
+.blocks-field {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+/* Array field rows - single clean card */
+.array-field__row,
+.blocks-field__row {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-left: 2px solid rgba(99, 102, 241, 0.3) !important;
+  border-radius: 8px !important;
+  padding: 1.5rem !important;
+  margin-bottom: 1rem !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.array-field__row:hover,
+.blocks-field__row:hover {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-left-color: rgba(99, 102, 241, 0.5) !important;
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.1) !important;
+}
+
+/* Remove nested borders within array rows */
+.array-field__row *,
+.blocks-field__row * {
+  border-left: none !important;
+}
+
+/* Array row header - cleaner */
+.array-field__row-header,
+.blocks-field__row-header {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 0 1rem 0 !important;
+  margin-bottom: 1rem !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Array row content - no extra padding/borders */
+.array-field__row-content,
+.blocks-field__row-content {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+/* Main content sections on edit pages - reduce "floating" feeling */
+.render-fields > .field-type,
+.doc-fields > .field-type,
+main > div > .field-type {
+  margin-bottom: 1.5rem !important;
+}
+
+/* ============================================ */
+/* DRAWER & MODAL IMPROVEMENTS                  */
+/* ============================================ */
+
+/* Drawer/Modal containers */
+.drawer,
+.drawer__content,
+[class*="drawer"],
+.modal,
+[class*="modal"] {
+  background: #0a0a0a !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Drawer header */
+.drawer__header,
+[class*="drawer__header"],
+.modal__header,
+.doc-drawer__header-content,
+.doc-drawer__after-header {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  padding: 1.5rem 2rem !important;
+}
+
+/* Custom view description - extra padding */
+.custom-view-description,
+[class*="description"] {
+  padding: 0.5rem 0.5rem !important;
+  margin: 0.5rem 0 !important;
+}
+
+/* Close button for drawer/modal - properly centered */
+.drawer__header-close,
+.modal__close,
+button[aria-label="Close"],
+button[class*="close"] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 6px !important;
+  padding: 0.5rem !important;
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  transition: all 0.2s ease !important;
+}
+
+.drawer__header-close:hover,
+.modal__close:hover,
+button[aria-label="Close"]:hover {
+  background: rgba(255, 68, 68, 0.15) !important;
+  border-color: rgba(255, 68, 68, 0.3) !important;
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* File upload areas - remove ALL nested boxes */
+.file-field,
+.file-field__upload,
+.upload,
+[class*="file-field"] {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+/* The main upload container - single clean border */
+.file-field__upload > div,
+.upload__wrapper,
+.file-details__wrapper {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(99, 102, 241, 0.25) !important;
+  border-radius: 8px !important;
+  padding: 2rem !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.file-field__upload > div:hover {
+  background: rgba(99, 102, 241, 0.05) !important;
+  border-color: rgba(99, 102, 241, 0.4) !important;
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.1) !important;
+}
+
+/* Remove ALL nested borders in upload areas */
+.file-field *,
+.upload *,
+.file-field__upload * {
+  border: none !important;
+}
+
+/* Restore only the main container border */
+.file-field__upload > div:first-child,
+.upload__wrapper {
+  border: 1px solid rgba(99, 102, 241, 0.25) !important;
+}
+
+/* Upload button group - clean horizontal layout */
+.file-field__upload-actions,
+.upload__actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 1rem !important;
+  margin-bottom: 0 !important;
+}
+
+/* "or" text styling - subtle and clean */
+.file-field__upload-actions span,
+.upload__actions span {
+  color: rgba(255, 255, 255, 0.3) !important;
+  font-size: 0.875rem !important;
+  font-weight: 400 !important;
+  padding: 0 0.5rem !important;
+}
+
+/* Drag and drop text */
+.file-field__drag-text,
+.upload__drag-text {
+  color: rgba(255, 255, 255, 0.4) !important;
+  font-size: 0.875rem !important;
+  margin-top: 1.5rem !important;
+  text-align: right !important;
+}
+
