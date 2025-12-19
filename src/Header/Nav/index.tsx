@@ -40,7 +40,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
   }
 
   return (
-    <nav className="flex gap-4 items-center">
+    <nav className="flex gap-6 items-center">
       {staticNavLinks.map(({ label, href }) => {
         const active = isActive(href)
         return (
@@ -48,7 +48,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
             key={href}
             href={href}
             className={`
-              text-sm font-medium transition-all relative
+              text-sm font-medium transition-all relative py-1
               ${active 
                 ? 'text-primary font-bold' 
                 : 'text-foreground hover:text-primary'

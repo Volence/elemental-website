@@ -30,9 +30,9 @@ export default function SeminarsPage() {
 
         {/* YouTube Playlist Embed */}
         <div className="mb-12">
-          <div className="relative w-full rounded-xl overflow-hidden shadow-xl" style={{ paddingBottom: '56.25%' }}>
+          <div className="relative w-full rounded-xl overflow-hidden shadow-2xl border-2 border-border bg-gradient-to-br from-card to-card/50 p-2" style={{ paddingBottom: 'calc(56.25% + 16px)' }}>
             <iframe
-              className="absolute top-0 left-0 w-full h-full"
+              className="absolute top-2 left-2 right-2 bottom-2 w-[calc(100%-16px)] h-[calc(100%-16px)] rounded-lg"
               src={`https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?list=${YOUTUBE_PLAYLIST_ID}&rel=0&modestbranding=1`}
               title="Elemental Seminars Playlist"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"

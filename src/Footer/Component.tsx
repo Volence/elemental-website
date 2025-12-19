@@ -34,21 +34,48 @@ export async function Footer() {
   if (process.env.NEXT_BUILD_SKIP_DB) {
     return (
       <footer className="mt-auto border-t border-border bg-black dark:bg-card text-white">
-        <div className="container py-12">
-          <div className="flex flex-col gap-8 md:flex-row md:justify-between md:items-start">
+        <div className="h-1 bg-gradient-to-r from-[hsl(var(--accent-blue))] via-[hsl(var(--accent-green))] to-[hsl(var(--accent-gold))] shadow-[0_0_20px_rgba(56,189,248,0.4)]" />
+        <div className="container py-16">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
             <div className="flex flex-col gap-4">
               <Link className="flex items-center" href="/">
-                <Logo />
+                <Logo className="scale-110" />
               </Link>
-              <p className="text-sm text-muted-foreground max-w-xs">
+              <p className="text-base text-muted-foreground max-w-xs leading-relaxed">
                 Elemental (ELMT) - A premier Overwatch 2 organization competing at the highest levels.
               </p>
             </div>
-            <div className="flex items-center">
-              <ThemeSelector />
+            <div className="flex flex-col gap-4">
+              <h3 className="text-lg font-bold text-white uppercase tracking-wider">Quick Links</h3>
+              <nav className="flex flex-col gap-3">
+                <Link href="/teams" className="text-muted-foreground hover:text-primary transition-colors font-medium">Teams</Link>
+                <Link href="/matches" className="text-muted-foreground hover:text-primary transition-colors font-medium">Matches</Link>
+                <Link href="/seminars" className="text-muted-foreground hover:text-primary transition-colors font-medium">Seminars</Link>
+                <Link href="/staff" className="text-muted-foreground hover:text-primary transition-colors font-medium">Staff</Link>
+              </nav>
+            </div>
+            <div className="flex flex-col gap-4">
+              <h3 className="text-lg font-bold text-white uppercase tracking-wider">Follow Us</h3>
+              <div className="flex flex-wrap gap-4">
+                {socialLinks.map(({ name, icon: Icon, href }) => (
+                  <Link
+                    key={name}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center w-12 h-12 rounded-lg bg-muted/10 text-white hover:bg-primary hover:text-primary-foreground transition-all hover:scale-110"
+                    aria-label={name}
+                  >
+                    <Icon className="w-6 h-6" />
+                  </Link>
+                ))}
+              </div>
+              <div className="mt-4">
+                <ThemeSelector />
+              </div>
             </div>
           </div>
-          <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
+          <div className="pt-8 border-t border-border text-center text-sm text-muted-foreground">
             <p>&copy; {new Date().getFullYear()} Elemental (ELMT). All rights reserved.</p>
           </div>
         </div>
@@ -62,51 +89,67 @@ export async function Footer() {
 
   return (
     <footer className="mt-auto border-t border-border bg-black dark:bg-card text-white">
-      <div className="container py-12">
-        <div className="flex flex-col gap-8 md:flex-row md:justify-between md:items-start">
+      {/* Gradient accent line */}
+      <div className="h-1 bg-gradient-to-r from-[hsl(var(--accent-blue))] via-[hsl(var(--accent-green))] to-[hsl(var(--accent-gold))] shadow-[0_0_20px_rgba(56,189,248,0.4)]" />
+      
+      <div className="container py-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+          {/* Column 1: Logo + Description */}
           <div className="flex flex-col gap-4">
             <Link className="flex items-center" href="/">
-              <Logo />
+              <Logo className="scale-110" />
             </Link>
-            <p className="text-sm text-muted-foreground max-w-xs">
+            <p className="text-base text-muted-foreground max-w-xs leading-relaxed">
               Elemental (ELMT) - A premier Overwatch 2 organization competing at the highest levels.
             </p>
           </div>
 
-          <div className="flex flex-col gap-6">
-            {navItems.length > 0 && (
-              <nav className="flex flex-col md:flex-row gap-4">
-                {navItems.map(({ link }, i) => {
-                  return <CMSLink className="text-white hover:text-primary transition-colors" key={i} {...link} />
-                })}
-              </nav>
-            )}
-            
-            <div className="flex flex-col gap-4">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Follow Us</h3>
-              <div className="flex gap-4">
-                {socialLinks.map(({ name, icon: Icon, href }) => (
-                  <Link
-                    key={name}
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-white hover:text-primary transition-colors"
-                    aria-label={name}
-                  >
-                    <Icon className="w-5 h-5" />
-                  </Link>
-                ))}
-              </div>
-            </div>
+          {/* Column 2: Quick Links */}
+          <div className="flex flex-col gap-4">
+            <h3 className="text-lg font-bold text-white uppercase tracking-wider">Quick Links</h3>
+            <nav className="flex flex-col gap-3">
+              <Link href="/teams" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+                Teams
+              </Link>
+              <Link href="/matches" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+                Matches
+              </Link>
+              <Link href="/seminars" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+                Seminars
+              </Link>
+              <Link href="/staff" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+                Staff
+              </Link>
+              {navItems.map(({ link }, i) => {
+                return <CMSLink className="text-muted-foreground hover:text-primary transition-colors font-medium" key={i} {...link} />
+              })}
+            </nav>
           </div>
 
-          <div className="flex items-center">
-            <ThemeSelector />
+          {/* Column 3: Social Media */}
+          <div className="flex flex-col gap-4">
+            <h3 className="text-lg font-bold text-white uppercase tracking-wider">Follow Us</h3>
+            <div className="flex flex-wrap gap-4">
+              {socialLinks.map(({ name, icon: Icon, href }) => (
+                <Link
+                  key={name}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-12 h-12 rounded-lg bg-muted/10 text-white hover:bg-primary hover:text-primary-foreground transition-all hover:scale-110"
+                  aria-label={name}
+                >
+                  <Icon className="w-6 h-6" />
+                </Link>
+              ))}
+            </div>
+            <div className="mt-4">
+              <ThemeSelector />
+            </div>
           </div>
         </div>
         
-        <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
+        <div className="pt-8 border-t border-border text-center text-sm text-muted-foreground">
           <p>&copy; {new Date().getFullYear()} Elemental (ELMT). All rights reserved.</p>
         </div>
       </div>
@@ -117,21 +160,48 @@ export async function Footer() {
     // Return footer with default content
     return (
       <footer className="mt-auto border-t border-border bg-black dark:bg-card text-white">
-        <div className="container py-12">
-          <div className="flex flex-col gap-8 md:flex-row md:justify-between md:items-start">
+        <div className="h-1 bg-gradient-to-r from-[hsl(var(--accent-blue))] via-[hsl(var(--accent-green))] to-[hsl(var(--accent-gold))] shadow-[0_0_20px_rgba(56,189,248,0.4)]" />
+        <div className="container py-16">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
             <div className="flex flex-col gap-4">
               <Link className="flex items-center" href="/">
-                <Logo />
+                <Logo className="scale-110" />
               </Link>
-              <p className="text-sm text-muted-foreground max-w-xs">
+              <p className="text-base text-muted-foreground max-w-xs leading-relaxed">
                 Elemental (ELMT) - A premier Overwatch 2 organization competing at the highest levels.
               </p>
             </div>
-            <div className="flex items-center">
-              <ThemeSelector />
+            <div className="flex flex-col gap-4">
+              <h3 className="text-lg font-bold text-white uppercase tracking-wider">Quick Links</h3>
+              <nav className="flex flex-col gap-3">
+                <Link href="/teams" className="text-muted-foreground hover:text-primary transition-colors font-medium">Teams</Link>
+                <Link href="/matches" className="text-muted-foreground hover:text-primary transition-colors font-medium">Matches</Link>
+                <Link href="/seminars" className="text-muted-foreground hover:text-primary transition-colors font-medium">Seminars</Link>
+                <Link href="/staff" className="text-muted-foreground hover:text-primary transition-colors font-medium">Staff</Link>
+              </nav>
+            </div>
+            <div className="flex flex-col gap-4">
+              <h3 className="text-lg font-bold text-white uppercase tracking-wider">Follow Us</h3>
+              <div className="flex flex-wrap gap-4">
+                {socialLinks.map(({ name, icon: Icon, href }) => (
+                  <Link
+                    key={name}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center w-12 h-12 rounded-lg bg-muted/10 text-white hover:bg-primary hover:text-primary-foreground transition-all hover:scale-110"
+                    aria-label={name}
+                  >
+                    <Icon className="w-6 h-6" />
+                  </Link>
+                ))}
+              </div>
+              <div className="mt-4">
+                <ThemeSelector />
+              </div>
             </div>
           </div>
-          <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
+          <div className="pt-8 border-t border-border text-center text-sm text-muted-foreground">
             <p>&copy; {new Date().getFullYear()} Elemental (ELMT). All rights reserved.</p>
           </div>
         </div>
