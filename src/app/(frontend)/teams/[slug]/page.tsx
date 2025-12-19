@@ -246,7 +246,7 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
               )}
               
               {team.bio && (
-                <div className="mt-6 max-w-2xl">
+                <div className="mt-6 max-w-3xl">
                   <p className="text-lg text-muted-foreground leading-relaxed bg-card/20 backdrop-blur-sm px-5 py-4 rounded-xl border border-white/5">
                     {team.bio}
                   </p>
