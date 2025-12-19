@@ -145,6 +145,17 @@ export default async function MatchesPage({
   const matches = { ...upcomingMatches, docs: filteredUpcoming }
   const filteredPastMatches = { ...pastMatches, docs: filteredPast }
 
+  // Check for live matches (happening right now - within 4 hours of start time)
+  const now = new Date()
+  const liveMatches = matches.docs.filter((match) => {
+    if (!match.date) return false
+    const matchDate = new Date(match.date as string)
+    const hoursSinceStart = (now.getTime() - matchDate.getTime()) / (1000 * 60 * 60)
+    // Consider match live if it started within the last 4 hours and hasn't been marked as completed
+    const hasScore = match.score?.elmtScore != null && match.score?.opponentScore != null
+    return hoursSinceStart >= 0 && hoursSinceStart <= 4 && !hasScore
+  })
+
   // Helper function to group matches by day
   const groupMatchesByDay = (matchDocs: any[]) => {
     const grouped: Record<string, any[]> = {}
@@ -198,13 +209,39 @@ export default async function MatchesPage({
           </div>
         </div>
 
+        {/* Live Now Banner */}
+        {liveMatches.length > 0 && (
+          <div className="mb-8 p-6 rounded-xl bg-gradient-to-r from-red-500/20 via-red-500/10 to-red-500/20 border-2 border-red-500/50 animate-pulse-glow">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+                  <div className="absolute inset-0 w-3 h-3 bg-red-500 rounded-full animate-ping" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-red-500 uppercase tracking-wider">🔴 Live Now</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {liveMatches.length} {liveMatches.length === 1 ? 'match' : 'matches'} in progress
+                  </p>
+                </div>
+              </div>
+              <a 
+                href="#upcoming-matches"
+                className="px-4 py-2 rounded-lg bg-red-500 text-white font-bold hover:bg-red-600 transition-colors"
+              >
+                Watch Now
+              </a>
+            </div>
+          </div>
+        )}
+
         {/* Search Bar */}
         <MatchesSearchBar initialQuery={searchQuery} />
 
         {/* Upcoming Matches Section */}
         {/* Hide section when searching and no results found */}
         {(!searchQuery || matches.docs.length > 0) && (
-        <div className="mb-16 animate-fade-in">
+        <div id="upcoming-matches" className="mb-16 animate-fade-in scroll-mt-24">
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
             <div className="w-2 h-8 bg-primary rounded-full" />
             Upcoming Matches
@@ -405,13 +442,46 @@ export default async function MatchesPage({
                               </div>
                             )}
 
-                            {/* Date & Time */}
-                            <div className="flex items-center gap-2 text-sm">
+                            {/* Date & Time with Countdown */}
+                            <div className="flex items-center gap-2 text-sm flex-wrap">
                               <Clock className="w-4 h-4 text-muted-foreground" />
                               <span className="text-muted-foreground">
                                 {formatDate(matchDate)} - {convertToEST(matchDate)}
                                 {match.region === 'EMEA' ? ` / ${convertToCET(matchDate)}` : ''}
                               </span>
+                              {(() => {
+                                const now = new Date()
+                                const timeUntil = matchDate.getTime() - now.getTime()
+                                
+                                if (timeUntil < 0) return null // Match already started
+                                
+                                const days = Math.floor(timeUntil / (1000 * 60 * 60 * 24))
+                                const hours = Math.floor((timeUntil % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+                                const minutes = Math.floor((timeUntil % (1000 * 60 * 60)) / (1000 * 60))
+                                
+                                let countdownText = ''
+                                if (days > 0) {
+                                  countdownText = `${days}d ${hours}h`
+                                } else if (hours > 0) {
+                                  countdownText = `${hours}h ${minutes}m`
+                                } else if (minutes > 0) {
+                                  countdownText = `${minutes}m`
+                                } else {
+                                  countdownText = 'Starting soon'
+                                }
+                                
+                                const isUrgent = hours < 1 && days === 0 && timeUntil > 0
+                                
+                                return (
+                                  <span className={`ml-2 px-2 py-0.5 rounded text-xs font-bold ${
+                                    isUrgent 
+                                      ? 'bg-orange-500/20 text-orange-500 border border-orange-500/50 animate-pulse' 
+                                      : 'bg-primary/10 text-primary'
+                                  }`}>
+                                    ⏱ {countdownText}
+                                  </span>
+                                )
+                              })()}
                             </div>
 
                             {/* Stream Info */}
