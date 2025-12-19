@@ -114,7 +114,7 @@ export async function GET() {
     const incompleteTeams = teams.docs
       .filter(team => {
         const rosterCount = team.roster?.length || 0
-        return rosterCount < 5 && rosterCount > 0
+        return rosterCount < 5
       })
       .map(team => ({
         id: team.id,
