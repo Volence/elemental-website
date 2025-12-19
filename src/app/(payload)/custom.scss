@@ -39,7 +39,11 @@ main {
 h1.doc-header__title,
 .doc-header h1,
 .collection-list__header h1,
-.edit-view__header h1 {
+.edit-view__header h1,
+.list-header__title,
+h1.list-header__title,
+.route-list h1,
+main h1 {
   position: relative;
   padding-bottom: 0.75rem;
   margin-bottom: 1.5rem !important;
@@ -51,7 +55,11 @@ h1.doc-header__title,
 h1.doc-header__title::after,
 .doc-header h1::after,
 .collection-list__header h1::after,
-.edit-view__header h1::after {
+.edit-view__header h1::after,
+.list-header__title::after,
+h1.list-header__title::after,
+.route-list h1::after,
+main h1::after {
   content: '';
   position: absolute;
   bottom: 0;
