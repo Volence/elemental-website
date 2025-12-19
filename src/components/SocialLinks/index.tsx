@@ -1,5 +1,5 @@
 import React from 'react'
-import { Twitter, Twitch, Youtube, Instagram } from 'lucide-react'
+import { Twitter, Twitch, Youtube, Instagram, Music2, Link as LinkIcon } from 'lucide-react'
 import type { SocialLinks as SocialLinksType } from '@/utilities/getTeams'
 
 interface SocialLinksProps {
@@ -11,9 +11,11 @@ interface SocialLinksProps {
 export const SocialLinks: React.FC<SocialLinksProps> = ({ links, className = '', showLabels = false }) => {
   if (!links) return null
   
-  const { twitter, twitch, youtube, instagram } = links || {}
+  const { twitter, twitch, youtube, instagram, tiktok, customLinks } = links || {}
 
-  if (!twitter && !twitch && !youtube && !instagram) {
+  const hasAnyLinks = twitter || twitch || youtube || instagram || tiktok || (customLinks && customLinks.length > 0)
+  
+  if (!hasAnyLinks) {
     return null
   }
 
@@ -67,6 +69,32 @@ export const SocialLinks: React.FC<SocialLinksProps> = ({ links, className = '',
           {showLabels && <span>Instagram</span>}
         </a>
       )}
+      {tiktok && (
+        <a
+          href={tiktok}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 text-muted-foreground hover:text-[#00F2EA] transition-colors"
+          aria-label="TikTok"
+        >
+          <Music2 className="w-4 h-4" />
+          {showLabels && <span>TikTok</span>}
+        </a>
+      )}
+      {customLinks && customLinks.map((link, index) => (
+        <a
+          key={index}
+          href={link.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
+          aria-label={link.label}
+          title={link.label}
+        >
+          <LinkIcon className="w-4 h-4" />
+          {showLabels && <span>{link.label}</span>}
+        </a>
+      ))}
     </div>
   )
 }

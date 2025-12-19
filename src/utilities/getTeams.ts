@@ -12,11 +12,18 @@ type TeamRoster = NonNullable<PayloadTeam['roster']>[0]
 type TeamSubEntry = NonNullable<PayloadTeam['subs']>[0]
 type TeamEntry = TeamManager | TeamCoach | TeamCaptain | TeamRoster | TeamSubEntry
 
+export interface CustomLink {
+  label: string
+  url: string
+}
+
 export interface SocialLinks {
   twitter?: string
   twitch?: string
   youtube?: string
   instagram?: string
+  tiktok?: string
+  customLinks?: CustomLink[]
 }
 
 export interface TeamPlayer {

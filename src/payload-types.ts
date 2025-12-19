@@ -446,6 +446,26 @@ export interface Person {
      * Instagram profile URL
      */
     instagram?: string | null;
+    /**
+     * TikTok profile URL
+     */
+    tiktok?: string | null;
+    /**
+     * Add any additional social media or personal links with custom labels
+     */
+    customLinks?:
+      | {
+          /**
+           * Display name for this link (e.g., "Discord", "Website", "Linktree")
+           */
+          label: string;
+          /**
+           * Full URL for this link
+           */
+          url: string;
+          id?: string | null;
+        }[]
+      | null;
   };
   /**
    * Internal notes about this person (not displayed publicly)
@@ -1200,6 +1220,14 @@ export interface PeopleSelect<T extends boolean = true> {
         twitch?: T;
         youtube?: T;
         instagram?: T;
+        tiktok?: T;
+        customLinks?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+              id?: T;
+            };
       };
   notes?: T;
   updatedAt?: T;

@@ -111,12 +111,15 @@ export function getSocialLinksFromPerson(
     twitch?: string | null
     youtube?: string | null
     instagram?: string | null
+    tiktok?: string | null
   }
 ): {
   twitter?: string
   twitch?: string
   youtube?: string
   instagram?: string
+  tiktok?: string
+  customLinks?: Array<{ label: string; url: string }>
 } {
   const personSocialLinks = isPopulatedPerson(person) ? person.socialLinks : null
   
@@ -125,6 +128,8 @@ export function getSocialLinksFromPerson(
     twitch: entrySocialLinks?.twitch || personSocialLinks?.twitch || undefined,
     youtube: entrySocialLinks?.youtube || personSocialLinks?.youtube || undefined,
     instagram: entrySocialLinks?.instagram || personSocialLinks?.instagram || undefined,
+    tiktok: entrySocialLinks?.tiktok || personSocialLinks?.tiktok || undefined,
+    customLinks: personSocialLinks?.customLinks || undefined,
   }
 }
 

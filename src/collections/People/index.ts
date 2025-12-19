@@ -110,6 +110,38 @@ export const People: CollectionConfig = {
             description: 'Instagram profile URL',
           },
         },
+        {
+          name: 'tiktok',
+          type: 'text',
+          admin: {
+            description: 'TikTok profile URL',
+          },
+        },
+        {
+          name: 'customLinks',
+          type: 'array',
+          admin: {
+            description: 'Add any additional social media or personal links with custom labels',
+          },
+          fields: [
+            {
+              name: 'label',
+              type: 'text',
+              required: true,
+              admin: {
+                description: 'Display name for this link (e.g., "Discord", "Website", "Linktree")',
+              },
+            },
+            {
+              name: 'url',
+              type: 'text',
+              required: true,
+              admin: {
+                description: 'Full URL for this link',
+              },
+            },
+          ],
+        },
       ],
     },
     {
