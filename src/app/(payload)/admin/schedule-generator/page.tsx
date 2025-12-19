@@ -14,14 +14,17 @@ interface Match {
   season?: string
   stream?: {
     url: string
-    platform: string
+    streamedBy?: string
   }
   faceitLobby?: string
-  productionStaff?: {
-    producers?: any[]
-    casters?: any[]
-  }
-  dragonRoster?: any[]
+  producersObservers?: Array<{
+    staff?: any
+    name?: string
+  }>
+  casters?: Array<{
+    caster?: any
+    name?: string
+  }>
 }
 
 const ScheduleGeneratorPage = () => {
@@ -60,6 +63,22 @@ const ScheduleGeneratorPage = () => {
     })
   }
 
+  const formatDateWithOrdinal = (dateString: string) => {
+    const date = new Date(dateString)
+    const weekday = date.toLocaleDateString('en-US', { weekday: 'long' })
+    const month = date.toLocaleDateString('en-US', { month: 'long' })
+    const day = date.getDate()
+    
+    // Add ordinal suffix (st, nd, rd, th)
+    const ordinal = (n: number) => {
+      const s = ['th', 'st', 'nd', 'rd']
+      const v = n % 100
+      return n + (s[(v - 20) % 10] || s[v] || s[0])
+    }
+    
+    return `${weekday} ${month} ${ordinal(day)}`
+  }
+
   const formatTime = (dateString: string, timezone: 'EST' | 'CET') => {
     const date = new Date(dateString)
     if (timezone === 'EST') {
@@ -79,100 +98,178 @@ const ScheduleGeneratorPage = () => {
     }
   }
 
+  const formatTimeCET24 = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZone: 'Europe/Paris',
+      hour12: false,
+    }).replace(/^0/, '') // Remove leading zero
+  }
+
+  const formatTimeEST12 = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZone: 'America/New_York',
+      hour12: true,
+    }).toLowerCase()
+  }
+
   const getPersonName = (person: any): string => {
     if (!person) return ''
     if (typeof person === 'object' && person.name) return person.name
     return String(person)
   }
 
+  const getProducersObservers = (match: Match): string[] => {
+    if (!match.producersObservers) return []
+    return match.producersObservers
+      .map(po => {
+        if (po.name) return po.name
+        if (po.staff) {
+          // If staff is populated, get person name
+          if (typeof po.staff === 'object' && po.staff.personId) {
+            return getPersonName(po.staff.personId)
+          }
+          return getPersonName(po.staff)
+        }
+        return null
+      })
+      .filter(Boolean) as string[]
+  }
+
+  const getCasterNames = (match: Match): string[] => {
+    if (!match.casters) return []
+    return match.casters
+      .map(c => {
+        if (c.name) return c.name
+        if (c.caster) {
+          // If caster is populated, get person name
+          if (typeof c.caster === 'object' && c.caster.personId) {
+            return getPersonName(c.caster.personId)
+          }
+          return getPersonName(c.caster)
+        }
+        return null
+      })
+      .filter(Boolean) as string[]
+  }
+
   const generateInternalSchedule = () => {
-    let output = '**This Week\'s ELMT Schedule**\n\n'
+    let output = ''
     
     matches.forEach((match, index) => {
       const teamName = typeof match.team === 'object' ? match.team?.name : ''
       const title = match.title || `ELMT ${teamName} vs ${match.opponent}`
       
+      // Date and time line: "Wednesday December 17th 20CET (2pm EST):"
+      const dateLine = `${formatDateWithOrdinal(match.date)} ${formatTimeCET24(match.date)}CET (${formatTimeEST12(match.date)} EST):`
+      output += `${dateLine}\n\n`
+      
+      // Title
       output += `${title}\n`
       
+      // FACEIT Lobby
       if (match.faceitLobby) {
-        output += `Faceit Lobby: ${match.faceitLobby}\n\n`
+        output += `FACEIT Lobby: ${match.faceitLobby}\n\n`
       } else {
-        output += `Faceit Lobby: TBD\n\n`
+        output += `FACEIT Lobby: TBD\n\n`
       }
 
-      // Observers
-      const observers = match.productionStaff?.producers?.map(getPersonName).filter(Boolean) || []
+      // Get production staff
+      const observers = getProducersObservers(match)
+      const casters = getCasterNames(match)
+      
+      // Observer/Producer
       if (observers.length > 0) {
-        output += `Observer: ${observers.map(name => `@${name}`).join(', ')}\n`
+        output += `Observer: ${observers.join(' ')}\n`
       } else {
         output += `Observer: TBD\n`
       }
 
       // Casters
-      const casters = match.productionStaff?.casters?.map(getPersonName).filter(Boolean) || []
       if (casters.length > 0) {
-        output += `Casters: ${casters.map(name => `@${name}`).join(' & ')}\n\n`
+        output += `Casters: ${casters.join(' ')}\n`
       } else {
-        output += `Casters: TBD\n\n`
+        output += `Casters: TBD\n`
       }
 
-      // Players (if roster data exists)
-      if (match.dragonRoster && match.dragonRoster.length > 0) {
-        const players = match.dragonRoster.map((player: any) => {
-          const name = getPersonName(player.personId || player)
-          const pronouns = player.pronouns || 'They/Them'
-          return `${name} (${pronouns})`
-        })
-        output += `Players: ${players.join('  ')}\n`
-      }
-
-      output += '\n' + '—'.repeat(70) + '\n\n'
+      // Separator
+      output += '\n' + '-'.repeat(72) + '\n\n'
     })
 
     return output
   }
 
+  const getTeamEmoji = (teamName: string) => {
+    // Map team names to their custom Discord emoji codes
+    // You can customize these in Discord by right-clicking the emoji and copying the emoji ID
+    const emojiMap: Record<string, string> = {
+      'Fire': '<:fire:1427018330358681710>',
+      'Heaven': '<:heaven:1427024742900174898>',
+      // Add more teams as needed
+    }
+    return emojiMap[teamName] || '🔥' // Default to fire emoji if not found
+  }
+
   const generatePublicAnnouncement = () => {
-    let output = '📅 **This Week\'s ELMT Broadcast Schedule**\n\n'
-    output += '—'.repeat(70) + '\n\n'
+    let output = '📺 **This Week\'s ELMT Broadcast Schedule**\n\n'
+    output += '━'.repeat(47) + '\n'
 
     matches.forEach((match, index) => {
       const teamName = typeof match.team === 'object' ? match.team?.name : ''
       const title = match.title || `ELMT ${teamName} vs ${match.opponent}`
       
-      // Team emoji (you can customize these)
-      const teamEmoji = '🔥'
+      // Get team-specific emoji
+      const teamEmoji = getTeamEmoji(teamName)
       
-      output += `${teamEmoji} **${title}**\n`
-      output += `🌍 ${match.region || 'TBD'} / ${match.league || 'TBD'}`
-      if (match.season) {
-        output += ` • ${match.season}`
-      }
-      output += '\n'
+      output += `## ${teamEmoji} **${title}**\n`
       
-      output += `🕐 ${formatDate(match.date)} — ${formatTime(match.date, 'CET')} CET / ${formatTime(match.date, 'EST')} EST\n`
+      // Region and division
+      const region = match.region || 'TBD'
+      const league = match.league || 'Open'
+      const season = match.season || 'S7 Regular Season'
+      output += `🌍 ${region} / ${league} • ${season}\n`
       
+      // Time with clock emoji and proper formatting
+      const cetTime = formatTimeCET24(match.date).replace(':', ':') // Ensure proper formatting
+      const estTime = formatTimeEST12(match.date).toUpperCase().replace('AM', ' AM').replace('PM', ' PM').replace('  ', ' ')
+      output += `🕒 ${formatDate(match.date)} — ${cetTime} CET / ${estTime}\n`
+      
+      // Stream
       if (match.stream?.url) {
-        output += `📺 Stream: ${match.stream.url}\n`
+        output += `🎥 Stream: ${match.stream.url}\n`
       } else {
-        output += `📺 Stream: https://twitch.tv/elmt_gg\n`
+        output += `🎥 Stream: https://twitch.tv/elmt_gg\n`
       }
 
-      const observers = match.productionStaff?.producers?.map(getPersonName).filter(Boolean) || []
+      // Observer
+      const observers = getProducersObservers(match)
       if (observers.length > 0) {
         output += `👁️ Observer: ${observers.join(', ')}\n`
+      } else {
+        output += `👁️ Observer: TBD\n`
       }
 
-      const casters = match.productionStaff?.casters?.map(getPersonName).filter(Boolean) || []
+      // Casters
+      const casters = getCasterNames(match)
       if (casters.length > 0) {
-        output += `🎙️ Casters: ${casters.join(' & ')}\n`
+        output += `🎤 Casters: ${casters.join(' & ')}\n`
+      } else {
+        output += `🎤 Casters: TBD\n`
       }
 
+      // FACEIT Lobby
       if (match.faceitLobby) {
         output += `🔗 FACEIT Lobby: ${match.faceitLobby}\n`
+      } else {
+        output += `🔗 FACEIT Lobby: TBD\n`
       }
 
-      output += '\n' + '—'.repeat(70) + '\n\n'
+      output += '━'.repeat(47) + '\n'
     })
 
     return output
