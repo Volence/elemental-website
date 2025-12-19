@@ -107,10 +107,15 @@ export const Teams: CollectionConfig = {
               options: [
                 { label: 'North America', value: 'NA' },
                 { label: 'EMEA', value: 'EMEA' },
-                { label: 'Europe (Legacy)', value: 'EU' },
                 { label: 'South America', value: 'SA' },
                 { label: 'Other', value: 'Other' },
               ],
+              validate: (value) => {
+                if (value === 'EU') {
+                  return 'Please change "EU" to "EMEA" - Europe region has been renamed to EMEA (Europe, Middle East, and Africa)'
+                }
+                return true
+              },
             },
             {
               name: 'rating',
