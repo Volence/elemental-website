@@ -42,7 +42,7 @@ export default async function HomePage() {
   }
 
   return (
-    <main className="flex-1">
+    <>
       {/* Hero Section with Banner */}
       <section className="relative w-full h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
@@ -71,7 +71,7 @@ export default async function HomePage() {
         <div className="container max-w-4xl">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">About Us</h2>
-            <div className="w-24 h-1 bg-primary mx-auto" />
+            <div className="w-24 h-1 bg-gradient-to-r from-[hsl(var(--accent-blue))] via-[hsl(var(--accent-green))] to-[hsl(var(--accent-gold))] mx-auto shadow-[0_0_20px_rgba(56,189,248,0.4)]" />
           </div>
           <div className="prose prose-lg dark:prose-invert max-w-none">
             <p className="text-lg leading-relaxed mb-6 text-muted-foreground">
@@ -92,11 +92,11 @@ export default async function HomePage() {
       </section>
 
       {/* Teams Preview Section */}
-      <section className="py-20 bg-card/50">
+      <section className="py-20 bg-card/50 min-h-[60vh]">
         <div className="container">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">Our Teams</h2>
-            <div className="w-24 h-1 bg-primary mx-auto mb-8" />
+            <div className="w-24 h-1 bg-gradient-to-r from-[hsl(var(--accent-blue))] via-[hsl(var(--accent-green))] to-[hsl(var(--accent-gold))] mx-auto mb-8 shadow-[0_0_20px_rgba(56,189,248,0.4)]" />
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
               Elemental is home to multiple competitive teams, each representing different 
               elements and playstyles. Explore our roster and follow our journey.
@@ -110,7 +110,7 @@ export default async function HomePage() {
           {randomTeams.length > 0 ? (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 max-w-4xl mx-auto mt-12">
               {randomTeams.map((team) => (
-                <TeamCard key={team.slug} team={team} size="small" />
+                <TeamCard key={team.slug} team={team} size="small" showHoverCard={false} />
               ))}
             </div>
           ) : (
@@ -120,6 +120,6 @@ export default async function HomePage() {
           )}
         </div>
       </section>
-    </main>
+    </>
   )
 }

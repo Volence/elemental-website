@@ -2,11 +2,13 @@ import type { Metadata } from 'next'
 import React from 'react'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
-import { Calendar, Clock, Globe, Link as LinkIcon, Mic, Eye, Play, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Calendar, Clock, Globe, Link as LinkIcon, Mic, Eye, Play, ExternalLink, ChevronLeft, ChevronRight, Search, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import { SocialLinks } from '@/components/SocialLinks'
 import { isPopulatedPerson, getPersonNameFromRelationship, getSocialLinksFromPerson } from '@/utilities/personHelpers'
 import { getMatchStatus } from '@/utilities/getMatchStatus'
+import { MatchesSearchBar } from '@/components/MatchesSearchBar'
+import { TeamLogo } from '@/components/TeamLogo'
 
 export const dynamic = 'force-dynamic' // Always render dynamically to fetch fresh data
 
@@ -64,13 +66,14 @@ const PAST_MATCHES_PER_PAGE = 12
 export default async function MatchesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>
+  searchParams: Promise<{ page?: string; q?: string }>
 }) {
   // Page is force-dynamic, so it always renders at runtime with fresh data
   const payload = await getPayload({ config: configPromise })
   
   const params = await searchParams
   const currentPage = Math.max(1, parseInt(params.page || '1', 10))
+  const searchQuery = params.q?.toLowerCase() || ''
   
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -116,56 +119,91 @@ export default async function MatchesPage({
     pastMatches = { docs: [], totalDocs: 0, page: 1, totalPages: 0, hasNextPage: false, hasPrevPage: false }
   }
   
-  // Alias for backward compatibility
-  const matches = upcomingMatches
-
-  // Group matches by day
-  const matchesByDay: Record<string, (typeof matches.docs)[number][]> = {}
-  
-  matches.docs.forEach((match) => {
-    if (!match.date) return // Skip matches without dates
+  // Filter matches based on search query
+  const filterMatches = (matchDocs: any[]) => {
+    if (!searchQuery) return matchDocs
     
-    try {
-      const matchDate = new Date(match.date as string)
-      if (isNaN(matchDate.getTime())) return // Skip invalid dates
+    return matchDocs.filter((match) => {
+      if (match.title?.toLowerCase().includes(searchQuery)) return true
+      if (match.opponent?.toLowerCase().includes(searchQuery)) return true
       
-      const dateKey = matchDate.toISOString().split('T')[0]
+      const team = match.team && typeof match.team === 'object' ? match.team : null
+      if (team?.name?.toLowerCase().includes(searchQuery)) return true
+      if (match.region?.toLowerCase().includes(searchQuery)) return true
+      if (match.league?.toLowerCase().includes(searchQuery)) return true
+      if (match.season?.toLowerCase().includes(searchQuery)) return true
       
-      if (!matchesByDay[dateKey]) {
-        matchesByDay[dateKey] = []
+      return false
+    })
+  }
+
+  // Apply search filter
+  const filteredUpcoming = filterMatches(upcomingMatches.docs)
+  const filteredPast = filterMatches(pastMatches.docs)
+
+  // Alias for backward compatibility
+  const matches = { ...upcomingMatches, docs: filteredUpcoming }
+  const filteredPastMatches = { ...pastMatches, docs: filteredPast }
+
+  // Helper function to group matches by day
+  const groupMatchesByDay = (matchDocs: any[]) => {
+    const grouped: Record<string, any[]> = {}
+    
+    matchDocs.forEach((match) => {
+      if (!match.date) return
+      
+      try {
+        const matchDate = new Date(match.date as string)
+        if (isNaN(matchDate.getTime())) return
+        
+        const dateKey = matchDate.toISOString().split('T')[0]
+        
+        if (!grouped[dateKey]) {
+          grouped[dateKey] = []
+        }
+        grouped[dateKey].push(match)
+      } catch (error) {
+        console.error('Invalid date for match:', match.id, error)
       }
-      matchesByDay[dateKey].push(match)
-    } catch (error) {
-      // Skip matches with invalid dates
-      console.error('Invalid date for match:', match.id, error)
-    }
-  })
+    })
+    
+    return grouped
+  }
+  
+  const matchesByDay = groupMatchesByDay(matches.docs)
 
   return (
-    <div className="pt-24 pb-24 min-h-screen">
+    <div className="pt-8 pb-24 min-h-screen">
       <div className="container max-w-5xl">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">Matches</h1>
-          <div className="w-24 h-1 bg-primary mx-auto mb-6" />
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <h1 className="text-5xl md:text-6xl font-black mb-6 tracking-tight" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3)' }}>
+            Matches
+          </h1>
+          <div className="w-32 h-1.5 bg-gradient-to-r from-[hsl(var(--accent-blue))] via-[hsl(var(--accent-green))] to-[hsl(var(--accent-gold))] mx-auto mb-6 shadow-[0_0_30px_rgba(56,189,248,0.5)] rounded-full" />
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
             ELMT Match Schedule & Results
           </p>
-          <div className="flex items-center justify-center gap-6 mt-4 text-sm">
+          <div className="flex items-center justify-center gap-6 mt-6 text-base">
             {matches.totalDocs > 0 && (
-              <span className="text-muted-foreground">
-                <strong className="text-primary">{matches.totalDocs}</strong> Upcoming
+              <span className="px-4 py-2 rounded-lg bg-primary/10 border border-primary/20">
+                <strong className="text-primary font-bold">{matches.totalDocs}</strong> <span className="text-muted-foreground">Upcoming</span>
               </span>
             )}
             {pastMatches.totalDocs > 0 && (
-              <span className="text-muted-foreground">
-                <strong className="text-muted-foreground">{pastMatches.totalDocs}</strong> Completed
+              <span className="px-4 py-2 rounded-lg bg-card border border-border">
+                <strong className="font-bold">{pastMatches.totalDocs}</strong> <span className="text-muted-foreground">Completed</span>
               </span>
             )}
           </div>
         </div>
 
+        {/* Search Bar */}
+        <MatchesSearchBar initialQuery={searchQuery} />
+
         {/* Upcoming Matches Section */}
+        {/* Hide section when searching and no results found */}
+        {(!searchQuery || matches.docs.length > 0) && (
         <div className="mb-16">
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
             <div className="w-2 h-8 bg-primary rounded-full" />
@@ -175,7 +213,7 @@ export default async function MatchesPage({
             <div className="text-center py-12 bg-card/30 rounded-xl border border-border">
               <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
               <p className="text-muted-foreground">No upcoming matches scheduled.</p>
-              {pastMatches.docs.length > 0 && (
+              {filteredPastMatches.docs.length > 0 && (
                 <p className="text-sm text-muted-foreground mt-2">Check out past matches below</p>
               )}
             </div>
@@ -289,23 +327,52 @@ export default async function MatchesPage({
                         return (
                         <div
                           key={match.id}
-                          className="p-6 rounded-xl border border-border bg-card shadow-sm hover:shadow-md transition-shadow"
+                          className="p-8 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-lg hover:shadow-xl hover:border-primary/30 transition-all"
                         >
-                          {/* Match Title with Status Badge */}
-                          <div className="flex items-start justify-between gap-4 mb-4">
-                            <h3 className="text-xl font-bold flex-1">{renderMatchTitle()}</h3>
-                            <span
-                              className={`
-                                px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide shrink-0
-                                ${displayStatus === 'live' ? 'bg-red-500/10 text-red-500 border border-red-500/20' : ''}
-                                ${displayStatus === 'completed' ? 'bg-gray-500/10 text-gray-500 border border-gray-500/20' : ''}
-                                ${displayStatus === 'upcoming' ? 'bg-blue-500/10 text-blue-500 border border-blue-500/20' : ''}
-                                ${displayStatus === 'cancelled' ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20' : ''}
-                              `}
-                            >
-                              {displayStatus}
-                            </span>
+                          {/* Header with Team Logos and Status */}
+                          <div className="flex items-center justify-between gap-6 mb-6">
+                            {/* ELMT Team Logo */}
+                            {team && team.logo && (
+                              <div className="flex items-center gap-4">
+                                <div className="relative w-16 h-16 rounded-lg bg-gradient-to-br from-white/10 to-white/5 ring-2 ring-white/20 p-2 flex-shrink-0">
+                                  <TeamLogo
+                                    src={team.logo}
+                                    alt={`${team.name} Logo`}
+                                    fill
+                                    className="object-contain"
+                                    sizes="64px"
+                                  />
+                                </div>
+                                <div className="text-sm font-bold text-primary">ELMT {team.name}</div>
+                              </div>
+                            )}
+                            
+                            <div className="flex items-center gap-3 flex-shrink-0">
+                              {/* League Badge */}
+                              {match.league && (
+                                <span className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20 text-xs font-bold uppercase tracking-wider flex items-center gap-1">
+                                  <Trophy className="w-3 h-3" />
+                                  {match.league}
+                                </span>
+                              )}
+                              
+                              {/* Status Badge */}
+                              <span
+                                className={`
+                                  px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider
+                                  ${displayStatus === 'live' ? 'bg-red-500/20 text-red-500 border-2 border-red-500/50 animate-pulse' : ''}
+                                  ${displayStatus === 'completed' ? 'bg-gray-500/10 text-gray-500 border border-gray-500/20' : ''}
+                                  ${displayStatus === 'upcoming' ? 'bg-blue-500/15 text-blue-500 border border-blue-500/30' : ''}
+                                  ${displayStatus === 'cancelled' ? 'bg-yellow-500/15 text-yellow-500 border border-yellow-500/30' : ''}
+                                `}
+                              >
+                                {displayStatus}
+                              </span>
+                            </div>
                           </div>
+                          
+                          {/* Match Title */}
+                          <h3 className="text-2xl font-black mb-6">{renderMatchTitle()}</h3>
 
                           {/* Match Info */}
                           <div className="space-y-3">
@@ -596,18 +663,33 @@ export default async function MatchesPage({
                               </div>
                             )}
 
-                            {/* Score (if completed) */}
-                            {displayStatus === 'completed' && match.score?.elmtScore !== undefined && (
-                              <div className="mt-4 p-3 rounded-lg bg-muted/50">
-                                <div className="flex items-center justify-between">
-                                  <span className="font-semibold">
-                                    {team?.name || 'ELMT'}: {match.score.elmtScore}
+                            {/* Score Display (if completed) */}
+                            {displayStatus === 'completed' && match.score?.elmtScore !== undefined && match.score?.opponentScore !== undefined && (
+                              <div className="mt-4 inline-flex items-center gap-3 px-4 py-2 rounded-lg bg-muted/30 border border-border">
+                                <span className={`text-2xl font-bold ${
+                                  match.score.elmtScore > match.score.opponentScore
+                                    ? 'text-green-400/90'
+                                    : match.score.elmtScore < match.score.opponentScore
+                                      ? 'text-red-400/90'
+                                      : 'text-foreground'
+                                }`}>
+                                  {match.score.elmtScore}
+                                </span>
+                                <span className="text-muted-foreground font-medium">-</span>
+                                <span className={`text-2xl font-bold ${
+                                  match.score.opponentScore > match.score.elmtScore
+                                    ? 'text-green-400/90'
+                                    : match.score.opponentScore < match.score.elmtScore
+                                      ? 'text-red-400/90'
+                                      : 'text-foreground'
+                                }`}>
+                                  {match.score.opponentScore}
+                                </span>
+                                {match.score.elmtScore !== match.score.opponentScore && (
+                                  <span className="ml-2 text-xs font-semibold text-muted-foreground uppercase">
+                                    {match.score.elmtScore > match.score.opponentScore ? 'W' : 'L'}
                                   </span>
-                                  <span className="text-muted-foreground">vs</span>
-                                  <span className="font-semibold">
-                                    {match.opponent}: {match.score.opponentScore}
-                                  </span>
-                                </div>
+                                )}
                               </div>
                             )}
                           </div>
@@ -620,11 +702,27 @@ export default async function MatchesPage({
           </div>
           )}
         </div>
+        )}
+
+        {/* Show message when search returns no results in either section */}
+        {searchQuery && matches.docs.length === 0 && filteredPastMatches.docs.length === 0 && (
+          <div className="text-center py-16">
+            <Search className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2">No matches found</h3>
+            <p className="text-muted-foreground mb-4">
+              No matches found for "<span className="font-semibold">{searchQuery}</span>"
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Try searching for a team name, opponent, region, or league
+            </p>
+          </div>
+        )}
 
         {/* Past Matches Section */}
-        {pastMatches.docs.length > 0 && (
+        {filteredPastMatches.docs.length > 0 && (
           <div>
-            {/* Separator */}
+            {/* Separator - only show if there's content above */}
+            {(!searchQuery || matches.docs.length > 0) && (
             <div className="relative my-12">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-border"></div>
@@ -633,6 +731,7 @@ export default async function MatchesPage({
                 <span className="bg-background px-4 text-sm text-muted-foreground">Match History</span>
               </div>
             </div>
+            )}
 
             <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
               <div className="w-2 h-8 bg-muted rounded-full" />
@@ -643,7 +742,7 @@ export default async function MatchesPage({
             </h2>
 
             <div className="space-y-4">
-              {pastMatches.docs
+              {filteredPastMatches.docs
                 .filter((match) => {
                   if (!match.date) return false
                   const matchDate = new Date(match.date as string)
@@ -730,53 +829,76 @@ export default async function MatchesPage({
                   return (
                     <div
                       key={match.id}
-                      className="p-6 rounded-xl border border-border bg-card/50 hover:bg-card transition-colors"
+                      className="p-6 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 hover:border-primary/20 hover:shadow-lg transition-all"
                     >
-                      {/* Match Title with Status and Score */}
-                      <div className="flex items-start justify-between gap-4 mb-4">
-                        <div className="flex-1">
-                          <h3 className="text-lg font-bold mb-2">{renderMatchTitle()}</h3>
-                          {/* Score Display for Completed Matches */}
-                          {match.score?.elmtScore != null && match.score?.opponentScore != null && (
-                            <div className="inline-flex items-center gap-3 px-4 py-2 rounded-lg bg-muted/50">
-                              <span className={`font-bold ${
-                                match.score.elmtScore! > match.score.opponentScore! 
-                                  ? 'text-green-500' 
-                                  : match.score.elmtScore! < match.score.opponentScore! 
-                                    ? 'text-red-500' 
-                                    : 'text-muted-foreground'
-                              }`}>
-                                {match.score.elmtScore}
-                              </span>
-                              <span className="text-muted-foreground">-</span>
-                              <span className={`font-bold ${
-                                match.score.opponentScore! > match.score.elmtScore! 
-                                  ? 'text-green-500' 
-                                  : match.score.opponentScore! < match.score.elmtScore! 
-                                    ? 'text-red-500' 
-                                    : 'text-muted-foreground'
-                              }`}>
-                                {match.score.opponentScore}
-                              </span>
-                              {match.score.elmtScore! > match.score.opponentScore! && (
-                                <span className="text-xs font-semibold text-green-500 uppercase tracking-wide ml-2">WIN</span>
-                              )}
-                              {match.score.elmtScore! < match.score.opponentScore! && (
-                                <span className="text-xs font-semibold text-red-500 uppercase tracking-wide ml-2">LOSS</span>
-                              )}
+                      {/* Header with Team Logo and Badges */}
+                      <div className="flex items-center justify-between gap-4 mb-4">
+                        {/* Team Logo and Title */}
+                        <div className="flex items-center gap-4 flex-1">
+                          {team && team.logo && (
+                            <div className="relative w-12 h-12 rounded-lg bg-gradient-to-br from-white/10 to-white/5 ring-2 ring-white/15 p-1.5 flex-shrink-0">
+                              <TeamLogo
+                                src={team.logo}
+                                alt={`${team.name} Logo`}
+                                fill
+                                className="object-contain"
+                                sizes="48px"
+                              />
                             </div>
                           )}
+                          <div>
+                            <h3 className="text-lg font-bold mb-1">{renderMatchTitle()}</h3>
+                            <div className="flex items-center gap-2">
+                              {match.league && (
+                                <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-bold uppercase">
+                                  {match.league}
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
+                        
+                        {/* Status Badge */}
                         <span
                           className={`
-                            px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide shrink-0
+                            px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wide flex-shrink-0
                             ${displayStatus === 'completed' ? 'bg-gray-500/10 text-gray-500 border border-gray-500/20' : ''}
-                            ${displayStatus === 'cancelled' ? 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20' : ''}
+                            ${displayStatus === 'cancelled' ? 'bg-yellow-500/15 text-yellow-500 border border-yellow-500/30' : ''}
                           `}
                         >
                           {displayStatus}
                         </span>
                       </div>
+                      
+                      {/* Score Display */}
+                      {match.score?.elmtScore != null && match.score?.opponentScore != null && (
+                        <div className="mb-3 inline-flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-muted/30 border border-border">
+                          <span className={`text-xl font-bold ${
+                            match.score.elmtScore! > match.score.opponentScore!
+                              ? 'text-green-400/90'
+                              : match.score.elmtScore! < match.score.opponentScore!
+                                ? 'text-red-400/90'
+                                : 'text-foreground'
+                          }`}>
+                            {match.score.elmtScore}
+                          </span>
+                          <span className="text-muted-foreground font-medium">-</span>
+                          <span className={`text-xl font-bold ${
+                            match.score.opponentScore! > match.score.elmtScore!
+                              ? 'text-green-400/90'
+                              : match.score.opponentScore! < match.score.elmtScore!
+                                ? 'text-red-400/90'
+                                : 'text-foreground'
+                          }`}>
+                            {match.score.opponentScore}
+                          </span>
+                          {match.score.elmtScore! !== match.score.opponentScore! && (
+                            <span className="ml-1 text-xs font-semibold text-muted-foreground uppercase">
+                              {match.score.elmtScore! > match.score.opponentScore! ? 'W' : 'L'}
+                            </span>
+                          )}
+                        </div>
+                      )}
 
                       {/* Match Info - Condensed for past matches */}
                       <div className="space-y-2 text-sm">
@@ -897,7 +1019,8 @@ export default async function MatchesPage({
 
             {/* Match Count Info */}
             <div className="mt-4 text-center text-sm text-muted-foreground">
-              Showing {pastMatches.docs.length} of {pastMatches.totalDocs} past matches
+              Showing {filteredPastMatches.docs.length} of {pastMatches.totalDocs} past matches
+              {searchQuery && ` (filtered)`}
             </div>
           </div>
         )}

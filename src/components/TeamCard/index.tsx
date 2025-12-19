@@ -9,9 +9,10 @@ import { Shield, Swords, Heart, Lock, Users, UserCheck } from 'lucide-react'
 interface TeamCardProps {
   team: Team
   size?: 'small' | 'medium'
+  showHoverCard?: boolean
 }
 
-export const TeamCard: React.FC<TeamCardProps> = ({ team, size = 'medium' }) => {
+export const TeamCard: React.FC<TeamCardProps> = ({ team, size = 'medium', showHoverCard = true }) => {
   const logoSize = size === 'small' ? 'w-16 h-16' : 'w-24 h-24'
   const cardPadding = size === 'small' ? 'p-4' : 'p-6'
   
@@ -34,29 +35,51 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, size = 'medium' }) => 
   }
 
   return (
-    <div className="relative group">
+    <div className="relative group h-full overflow-visible">
       <Link
         href={`/teams/${team.slug}`}
-        className="flex flex-col items-center"
+        className="flex flex-col items-center h-full"
       >
-        <div className={`${cardPadding} rounded-xl border border-border bg-card hover:bg-accent/50 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-primary/10 w-full`}>
-          <div className={`relative ${logoSize} mb-4 flex items-center justify-center mx-auto`}>
+        <div className={`${cardPadding} rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 hover:border-primary/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-primary/20 w-full relative`}>
+          {/* Rating Badge */}
+          {team.rating && (
+            <div className="absolute -top-2 -right-2 px-2 py-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-full shadow-lg z-10">
+              {team.rating}
+            </div>
+          )}
+          
+          <div className={`relative ${logoSize} mb-4 flex items-center justify-center mx-auto rounded-xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm ring-2 ring-white/20 shadow-[0_0_20px_rgba(255,255,255,0.08)] group-hover:shadow-[0_0_30px_rgba(255,255,255,0.15)] group-hover:ring-primary/30 transition-all duration-300`}>
             <TeamLogo
               src={team.logo}
               alt={`${team.name} Logo`}
               fill
-              className="object-contain group-hover:scale-110 transition-transform duration-300"
+              className="object-contain group-hover:scale-110 transition-transform duration-300 drop-shadow-[0_4px_12px_rgba(0,0,0,0.4)]"
               sizes={size === 'small' ? '64px' : '96px'}
             />
           </div>
-          <h3 className={`text-center font-semibold ${size === 'small' ? 'text-xs' : 'text-sm'} group-hover:text-primary transition-colors duration-300`}>
+          
+          <h3 className={`text-center font-bold ${size === 'small' ? 'text-xs' : 'text-sm'} group-hover:text-primary transition-colors duration-300 mb-2`}>
             {team.name}
           </h3>
+          
+          {/* Quick stats bar */}
+          {rosterCount > 0 && (
+            <div className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground">
+              <Users className="w-3 h-3" />
+              <span className="font-medium">{rosterCount}</span>
+            </div>
+          )}
         </div>
       </Link>
 
-      {/* Hover Card */}
-      <div className="absolute z-50 top-full left-1/2 -translate-x-1/2 mt-2 w-80 max-w-[90vw] p-4 rounded-xl border border-border bg-card shadow-2xl opacity-0 scale-95 translate-y-2 group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 transition-all duration-200 pointer-events-none hidden md:block">
+      {/* Hover Card - Fixed positioning prevents it from affecting page layout */}
+      {showHoverCard && (
+      <div className="fixed z-50 w-80 max-w-[90vw] p-4 rounded-xl border border-border bg-card shadow-2xl opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 pointer-events-none hidden md:block"
+           style={{
+             left: '50%',
+             top: '50%',
+             transform: 'translate(-50%, -50%)'
+           }}>
         <div className="flex flex-col gap-3">
           {/* Team Name & Info */}
           <div className="text-center border-b border-border pb-2">
@@ -159,6 +182,7 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, size = 'medium' }) => 
           </div>
         </div>
       </div>
+      )}
     </div>
   )
 }

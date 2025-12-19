@@ -35,7 +35,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           />
 
           <Header />
-          <main className="flex-1">{children}</main>
+          {children}
           <Footer />
         </Providers>
       </body>

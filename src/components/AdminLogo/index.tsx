@@ -8,14 +8,20 @@ import React from 'react'
  */
 const AdminLogo: React.FC = () => {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+    <div style={{ 
+      display: 'flex', 
+      alignItems: 'center', 
+      gap: '0.5rem',
+      height: '100%',
+    }}>
       <img 
         src="/logos/org.png" 
         alt="Elemental"
         style={{
-          height: '32px',
+          height: '24px',
           width: 'auto',
           objectFit: 'contain',
+          display: 'block',
         }}
       />
     </div>

@@ -47,6 +47,12 @@
     --success: 196 52% 74%;
     --warning: 34 89% 85%;
     --error: 10 100% 86%;
+
+    /* Logo-inspired accent colors */
+    --accent-blue: 200 90% 55%;
+    --accent-green: 140 70% 50%;
+    --accent-red: 0 85% 60%;
+    --accent-gold: 45 95% 55%;
   }
 
   [data-theme='dark'] {
@@ -81,6 +87,12 @@
     --success: 196 100% 14%;
     --warning: 34 51% 25%;
     --error: 10 39% 43%;
+
+    /* Logo-inspired accent colors - adjusted for dark mode */
+    --accent-blue: 200 85% 60%;
+    --accent-green: 140 60% 55%;
+    --accent-red: 0 75% 65%;
+    --accent-gold: 45 90% 60%;
   }
 }
 
@@ -89,13 +101,14 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground min-h-[100vh] flex flex-col;
+    @apply bg-background text-foreground;
   }
 }
 
 html {
   opacity: 0;
   scroll-behavior: smooth;
+  background-color: hsl(var(--background));
 }
 
 html[data-theme='dark'],
