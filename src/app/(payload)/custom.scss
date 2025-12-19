@@ -533,8 +533,6 @@ button[class*="array"] .btn__content > * {
 .doc-drawer,
 .field-type,
 .collapsible,
-.array-field__row,
-.blocks-field__row,
 .row-field,
 [class*="drawer"],
 [class*="panel"] {
@@ -547,9 +545,7 @@ button[class*="array"] .btn__content > * {
 /* Card hover states - subtle glow */
 .card:hover,
 [class*="card"]:hover,
-.collection-list__item:hover,
-.array-field__row:hover,
-.blocks-field__row:hover {
+.collection-list__item:hover {
   background: rgba(255, 255, 255, 0.03) !important;
   border-color: rgba(99, 102, 241, 0.2) !important;
   box-shadow: 0 0 20px rgba(99, 102, 241, 0.15) !important;
@@ -610,10 +606,10 @@ table tbody tr:hover,
 
 /* Individual fields that need card treatment - NOT groups, collapsibles, or arrays */
 .field-type:not(.collapsible):not(.group):not(.array-field):not([class*="group"]) {
-  background: rgba(255, 255, 255, 0.02) !important;
-  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.02) !important;
   border-radius: 8px !important;
-  padding: 1.25rem !important;
+  padding: 1rem !important;
   margin-bottom: 1rem !important;
   transition: all 0.2s ease-in-out !important;
 }
@@ -675,9 +671,9 @@ table tbody tr:hover,
 /* Array field rows - single clean card */
 .array-field__row,
 .blocks-field__row {
-  background: rgba(255, 255, 255, 0.02) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  border-left: 2px solid rgba(99, 102, 241, 0.3) !important;
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.02) !important;
+  border-left: 2px solid rgba(99, 102, 241, 0.15) !important;
   border-radius: 8px !important;
   padding: 1.5rem !important;
   margin-bottom: 1rem !important;
@@ -686,8 +682,8 @@ table tbody tr:hover,
 
 .array-field__row:hover,
 .blocks-field__row:hover {
-  background: rgba(255, 255, 255, 0.03) !important;
-  border-left-color: rgba(99, 102, 241, 0.5) !important;
+  background: rgba(255, 255, 255, 0.01) !important;
+  border-left-color: rgba(99, 102, 241, 0.3) !important;
   box-shadow: 0 0 15px rgba(99, 102, 241, 0.1) !important;
 }
 
@@ -705,6 +701,14 @@ table tbody tr:hover,
   padding: 0 0 1rem 0 !important;
   margin-bottom: 1rem !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Collapsible toggle wrapper - subtle gray background */
+.collapsible__toggle-wrap {
+  background: rgba(255, 255, 255, 0.015) !important;
+  border: none !important;
+  padding: 0.5rem 0.5rem 1rem !important;
+  border-radius: 6px !important;
 }
 
 /* Array row content - no extra padding/borders */
@@ -1017,6 +1021,14 @@ select:focus,
   outline: none !important;
 }
 
+/* React Select controls - lighter backgrounds */
+.react-select__control,
+[class*="select__control"],
+[class*="rs__control"] {
+  background: rgba(255, 255, 255, 0.015) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
 /* Search input wrapper */
 .search,
 [class*="search-wrap"],
@@ -1175,6 +1187,18 @@ small {
   line-height: 1.5 !important;
   color: rgba(255, 255, 255, 0.5) !important;
   margin-top: 0.375rem !important;
+}
+
+/* Hide the visible react-select input */
+.rs__input,
+[class*="rs__input"] {
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  position: absolute !important;
 }
 
 /* Body text - comfortable reading */
