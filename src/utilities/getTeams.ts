@@ -145,24 +145,24 @@ function transformPayloadTeam(payloadTeam: PayloadTeam): Team | null {
           name: data.name,
           photoUrl: data.photoUrl,
           ...data.socialLinks,
-        }
-      }).filter((m): m is TeamStaff => Boolean(m.name && m.name.trim() !== '')) || [], // Filter out empty names
+        } as TeamStaff
+      }).filter((m) => Boolean(m.name && m.name.trim() !== '')) || [], // Filter out empty names
       coaches: payloadTeam.coaches?.map((c: TeamCoach) => {
         const data = extractPersonData(c)
         return {
           name: data.name,
           photoUrl: data.photoUrl,
           ...data.socialLinks,
-        }
-      }).filter((c): c is TeamStaff => Boolean(c.name && c.name.trim() !== '')) || [], // Filter out empty names
+        } as TeamStaff
+      }).filter((c) => Boolean(c.name && c.name.trim() !== '')) || [], // Filter out empty names
       captain: payloadTeam.captain?.map((c: TeamCaptain) => {
         const data = extractPersonData(c)
         return {
           name: data.name,
           photoUrl: data.photoUrl,
           ...data.socialLinks,
-        }
-      }).filter((c): c is TeamStaff => Boolean(c.name && c.name.trim() !== '')) || [], // Filter out empty names
+        } as TeamStaff
+      }).filter((c) => Boolean(c.name && c.name.trim() !== '')) || [], // Filter out empty names
       coCaptain: (() => {
         // Handle relationship field (object with name)
         // coCaptain can be a Person relationship or a string (legacy)
@@ -184,16 +184,16 @@ function transformPayloadTeam(payloadTeam: PayloadTeam): Team | null {
           role: p.role,
           photoUrl: data.photoUrl,
           ...data.socialLinks,
-        }
-      }).filter((p): p is TeamPlayer => Boolean(p.name && p.name.trim() !== '')) || [], // Filter out empty names
+        } as TeamPlayer
+      }).filter((p) => Boolean(p.name && p.name.trim() !== '')) || [], // Filter out empty names
       subs: payloadTeam.subs?.map((s: TeamSubEntry) => {
         const data = extractPersonData(s)
         return {
           name: data.name,
           photoUrl: data.photoUrl,
           ...data.socialLinks,
-        }
-      }).filter((s): s is TeamSub => Boolean(s.name && s.name.trim() !== '')) || [], // Filter out empty names
+        } as TeamSub
+      }).filter((s) => Boolean(s.name && s.name.trim() !== '')) || [], // Filter out empty names
     }
   } catch (error) {
     console.error(`[getTeams] Error transforming team ${payloadTeam.slug || payloadTeam.id}:`, error)
