@@ -107,6 +107,7 @@ export const Teams: CollectionConfig = {
               options: [
                 { label: 'North America', value: 'NA' },
                 { label: 'EMEA', value: 'EMEA' },
+                { label: 'Europe (Legacy)', value: 'EU' },
                 { label: 'South America', value: 'SA' },
                 { label: 'Other', value: 'Other' },
               ],
