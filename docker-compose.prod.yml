@@ -7,7 +7,7 @@ services:
     ports:
       - '127.0.0.1:3000:3000'  # Only bind to localhost (Nginx will proxy)
     volumes:
-      - uploads:/app/public/uploads
+      - media:/app/public/media
     env_file:
       - .env.production
     environment:
@@ -43,4 +43,4 @@ services:
 
 volumes:
   postgres_data:
-  uploads:
+  media:

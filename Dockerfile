@@ -76,9 +76,9 @@ RUN ls -la /app/public/logos/ | head -10 || echo "Warning: logos directory check
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
 
-# Create uploads directory for volume mounting
-RUN mkdir -p /app/public/uploads
-RUN chown nextjs:nodejs /app/public/uploads
+# Create media directory for volume mounting (where Payload saves uploads)
+RUN mkdir -p /app/public/media
+RUN chown nextjs:nodejs /app/public/media
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
