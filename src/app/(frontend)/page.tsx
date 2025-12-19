@@ -115,9 +115,10 @@ export default async function HomePage() {
                 const isSoon = daysUntil <= 3
                 
                 return (
-                  <div
+                  <Link
                     key={match.id}
-                    className="p-6 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 hover:border-primary/30 transition-all"
+                    href="/matches"
+                    className="block p-6 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 hover:scale-[1.01] transition-all cursor-pointer"
                   >
                     <div className="flex items-center justify-between gap-6 flex-wrap">
                       {/* Team Info */}
@@ -175,7 +176,7 @@ export default async function HomePage() {
                         )}
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 )
               })}
             </div>
