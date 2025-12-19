@@ -754,11 +754,16 @@ main > div > .field-type {
   margin: 0.5rem 0 !important;
 }
 
+/* Hide mobile nav close button on desktop */
+.nav__mobile-close,
+button.nav__mobile-close {
+  display: none !important;
+}
+
 /* Close button for drawer/modal - properly centered */
 .drawer__header-close,
 .modal__close,
-button[aria-label="Close"],
-button[class*="close"] {
+button[aria-label="Close"]:not(.nav__mobile-close) {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -770,6 +775,11 @@ button[class*="close"] {
   height: 2.5rem !important;
   color: rgba(255, 255, 255, 0.7) !important;
   transition: all 0.2s ease !important;
+}
+
+/* Hide close button in main template (the random X) */
+.template-default__close {
+  display: none !important;
 }
 
 .drawer__header-close:hover,
@@ -944,4 +954,152 @@ button[aria-label="Close"]:hover {
   box-shadow: 0 0 20px currentColor !important;
 }
 
+/* ============================================ */
+/* INPUT FIELDS & SEARCH BOXES                  */
+/* ============================================ */
+
+/* All input fields - consistent styling */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="number"],
+input[type="url"],
+input[type="tel"],
+input[type="date"],
+input[type="datetime-local"],
+textarea,
+select,
+.input,
+[class*="search"] input {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 6px !important;
+  padding: 0.75rem 1rem !important;
+  padding-top: 0.75rem !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-size: 0.9375rem !important;
+  line-height: normal !important;
+  transition: all 0.2s ease !important;
+  vertical-align: middle !important;
+  min-height: 3rem !important;
+  height: 100% !important;
+  box-sizing: border-box !important;
+  flex-basis: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Search inputs specifically - extra padding for icon */
+input[type="search"],
+[class*="search"] input,
+input[placeholder*="Search"],
+input[placeholder*="search"] {
+  padding-left: 2.5rem !important;
+}
+
+/* Input focus state */
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="search"]:focus,
+input[type="number"]:focus,
+input[type="url"]:focus,
+input[type="tel"]:focus,
+input[type="date"]:focus,
+input[type="datetime-local"]:focus,
+textarea:focus,
+select:focus,
+.input:focus {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(99, 102, 241, 0.5) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1), 0 0 15px rgba(99, 102, 241, 0.15) !important;
+  outline: none !important;
+}
+
+/* Search input wrapper */
+.search,
+[class*="search-wrap"],
+[class*="search-container"] {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Placeholder text */
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Disabled inputs */
+input:disabled,
+textarea:disabled,
+select:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+/* ============================================ */
+/* NOTIFICATIONS & BANNERS - Better Spacing     */
+/* ============================================ */
+
+/* Banner/notification boxes - add horizontal padding only, no vertical */
+.banner,
+[class*="banner"],
+.notification,
+[class*="notification"],
+.message,
+[class*="message"] {
+  margin-left: 1.5rem !important;
+  margin-right: 1.5rem !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  max-width: calc(100% - 3rem) !important;
+}
+
+/* Before dashboard - horizontal margins only */
+.before-dashboard {
+  padding-left: 1.5rem !important;
+  padding-right: 1.5rem !important;
+  padding-top: 0 !important;
+}
+
+/* Your Assigned Teams section */
+.before-dashboard > div,
+.before-dashboard section {
+  margin-bottom: 1.5rem !important;
+  padding-top: 0 !important;
+}
+
+/* Collection list sub-header (notification boxes) - remove top padding */
+.collection-list__sub-header,
+[class*="sub-header"] {
+  padding-top: 0 !important;
+}
+
+/* ============================================ */
+/* PAGE HEADERS - Better Button Alignment       */
+/* ============================================ */
+
+/* Collection list header - better layout */
+.collection-list__header,
+.list-header,
+[class*="list-header"],
+.doc-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 1rem !important;
+  margin-bottom: 0.75rem !important;
+}
+
+/* CREATE NEW buttons - better positioning */
+button[class*="create"],
+.collection-list__header button,
+.list-header button,
+[href*="create"],
+a[class*="create"] {
+  margin-top: 0 !important;
+  align-self: center !important;
+}
 
