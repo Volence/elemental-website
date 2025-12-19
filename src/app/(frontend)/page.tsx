@@ -190,12 +190,12 @@ export default async function HomePage() {
       )}
 
       {/* Teams Preview Section */}
-      <section className="py-20 bg-card/50 min-h-[60vh] animate-fade-in">
+      <section className="py-16 bg-card/50 animate-fade-in">
         <div className="container">
-          <div className="text-center mb-12">
+          <div className="text-center mb-10">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">Our Teams</h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-[hsl(var(--accent-blue))] via-[hsl(var(--accent-green))] to-[hsl(var(--accent-gold))] mx-auto mb-8 shadow-[0_0_20px_rgba(56,189,248,0.4)]" />
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
+            <div className="w-24 h-1 bg-gradient-to-r from-[hsl(var(--accent-blue))] via-[hsl(var(--accent-green))] to-[hsl(var(--accent-gold))] mx-auto mb-6 shadow-[0_0_20px_rgba(56,189,248,0.4)]" />
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
               Elemental is home to multiple competitive teams, each representing different 
               elements and playstyles. Explore our roster and follow our journey.
             </p>
@@ -206,7 +206,7 @@ export default async function HomePage() {
           
           {/* Preview of a few teams */}
           {randomTeams.length > 0 ? (
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 max-w-4xl mx-auto mt-12">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 max-w-4xl mx-auto mt-8">
               {randomTeams.map((team) => (
                 <TeamCard key={team.slug} team={team} size="small" showHoverCard={false} />
               ))}
@@ -220,7 +220,7 @@ export default async function HomePage() {
       </section>
 
       {/* About Us Section */}
-      <section className="py-20 bg-background animate-fade-in">
+      <section className="py-16 bg-background animate-fade-in">
         <div className="container max-w-4xl">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">About Us</h2>

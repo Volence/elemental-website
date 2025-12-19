@@ -15,13 +15,15 @@ const YOUTUBE_VIDEO_ID = 'kqX--4KlMXI'
 
 export default function SeminarsPage() {
   return (
-    <div className="pt-24 pb-24 min-h-screen">
+    <div className="pt-8 pb-24 min-h-screen animate-fade-in">
       <div className="container max-w-6xl">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Seminars</h1>
-          <div className="w-24 h-1 bg-primary mx-auto mb-6" />
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <h1 className="text-5xl md:text-6xl font-black mb-4 tracking-tight" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
+            Seminars
+          </h1>
+          <div className="w-24 h-1 bg-gradient-to-r from-[hsl(var(--accent-blue))] via-[hsl(var(--accent-green))] to-[hsl(var(--accent-gold))] mx-auto mb-6 shadow-[0_0_20px_rgba(56,189,248,0.4)]" />
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
             Learn from various Overwatch 2 coaches and content creators on various topics.
           </p>
         </div>

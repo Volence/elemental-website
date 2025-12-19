@@ -129,18 +129,18 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
   }
 
   return (
-    <div className="pt-24 pb-24 min-h-screen">
+    <div className="pt-8 pb-24 min-h-screen animate-fade-in">
       <div className="container max-w-4xl">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">{player.name}</h1>
-          <div className="w-24 h-1 bg-primary mx-auto mb-6" />
+          <h1 className="text-5xl md:text-6xl font-black mb-4 tracking-tight" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>{player.name}</h1>
+          <div className="w-24 h-1 bg-gradient-to-r from-[hsl(var(--accent-blue))] via-[hsl(var(--accent-green))] to-[hsl(var(--accent-gold))] mx-auto mb-6 shadow-[0_0_20px_rgba(56,189,248,0.4)]" />
         </div>
 
         {/* Bio */}
         {player.bio && (
-          <div className="mb-8 p-6 rounded-xl border border-border bg-card shadow-sm">
-            <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">{player.bio}</p>
+          <div className="mb-8 p-6 rounded-xl border-2 border-border bg-card shadow-sm">
+            <p className="text-foreground/90 leading-relaxed whitespace-pre-wrap text-base">{player.bio}</p>
           </div>
         )}
 
@@ -156,8 +156,8 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
 
         {/* Staff Roles */}
         {(player.staffRoles.organization && player.staffRoles.organization.length > 0) || player.staffRoles.production ? (
-          <div className="mb-8 p-6 rounded-xl border border-border bg-card shadow-sm">
-            <h2 className="text-2xl font-bold mb-4">Staff Positions</h2>
+          <div className="mb-8 p-6 rounded-xl border-2 border-border bg-card shadow-sm">
+            <h2 className="text-2xl md:text-3xl font-black mb-4 tracking-tight">Staff Positions</h2>
             <div className="space-y-3">
               {player.staffRoles.organization && player.staffRoles.organization.length > 0 && (
                 <div>
@@ -191,8 +191,8 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
 
         {/* Teams */}
         {player.teams.length > 0 && (
-          <div className="mb-8 p-6 rounded-xl border border-border bg-card shadow-sm">
-            <h2 className="text-2xl font-bold mb-4">Teams</h2>
+          <div className="mb-8 p-6 rounded-xl border-2 border-border bg-card shadow-sm">
+            <h2 className="text-2xl md:text-3xl font-black mb-4 tracking-tight">Teams</h2>
             <div className="space-y-4">
               {player.teams.map((teamInfo) => (
                 <Link
