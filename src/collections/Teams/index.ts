@@ -124,10 +124,7 @@ export const Teams: CollectionConfig = {
               admin: {
                 description: 'Custom theme color for the team page hero background. Pick a color that complements the logo. Leave empty to auto-detect based on team name.',
                 components: {
-                  Field: {
-                    path: '@/collections/Teams/ColorPickerField',
-                    clientProps: {},
-                  },
+                  Field: '@/collections/Teams/ColorPickerField#default',
                 },
               },
             },
