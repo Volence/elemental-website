@@ -493,7 +493,7 @@ export interface Team {
   /**
    * Geographic region where the team competes
    */
-  region?: ('NA' | 'EU' | 'SA' | 'Other') | null;
+  region?: ('NA' | 'EMEA' | 'SA' | 'Other') | null;
   /**
    * Team skill rating or tier (e.g., "4.5K", "FACEIT Masters", "FACEIT Expert", "FACEIT Advanced", "3.5K")
    */
@@ -502,6 +502,10 @@ export interface Team {
    * Custom theme color for the team page hero background. Pick a color that complements the logo. Leave empty to auto-detect based on team name.
    */
   themeColor?: string | null;
+  /**
+   * Optional team bio or description to display on the team page. Great for team history, philosophy, or fun facts!
+   */
+  bio?: string | null;
   /**
    * Whether this team is currently active and competing
    */
@@ -1243,6 +1247,7 @@ export interface TeamsSelect<T extends boolean = true> {
   region?: T;
   rating?: T;
   themeColor?: T;
+  bio?: T;
   active?: T;
   achievements?:
     | T

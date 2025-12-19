@@ -61,6 +61,7 @@ export interface Team {
   region?: string
   rating?: string
   themeColor?: string
+  bio?: string
   achievements?: string[]
   manager?: TeamStaff[]
   coaches?: TeamStaff[]
@@ -145,6 +146,7 @@ function transformPayloadTeam(payloadTeam: PayloadTeam): Team | null {
       region: payloadTeam.region || undefined,
       rating: payloadTeam.rating || undefined,
       themeColor: payloadTeam.themeColor || undefined,
+      bio: payloadTeam.bio || undefined,
       achievements: payloadTeam.achievements?.map((a) => a.achievement).filter((a): a is string => Boolean(a)) || [],
       manager: payloadTeam.manager?.map((m: TeamManager) => {
         const data = extractPersonData(m)

@@ -40,24 +40,27 @@ export default async function TeamsPage() {
   const allTeams = await getAllTeams()
   const teamsByRegion = groupTeamsByRegion(allTeams)
 
-  const regionOrder = ['NA', 'EU', 'SA', 'Other'] as const
+  const regionOrder = ['NA', 'EMEA', 'EU', 'SA', 'Other'] as const
   const regionLabels: Record<string, string> = {
     NA: 'North America',
-    EU: 'Europe',
+    EMEA: 'EMEA',
+    EU: 'EMEA', // Legacy support - display as EMEA
     SA: 'South America',
     Other: 'Other',
   }
 
   const regionColors: Record<string, string> = {
     NA: 'bg-[hsl(var(--accent-blue))]',
-    EU: 'bg-[hsl(var(--accent-green))]',
+    EMEA: 'bg-[hsl(var(--accent-green))]',
+    EU: 'bg-[hsl(var(--accent-green))]', // Legacy support
     SA: 'bg-[hsl(var(--accent-gold))]',
     Other: 'bg-primary',
   }
 
   const regionGlows: Record<string, string> = {
     NA: 'shadow-[0_0_20px_rgba(56,189,248,0.3)]',
-    EU: 'shadow-[0_0_20px_rgba(34,197,94,0.3)]',
+    EMEA: 'shadow-[0_0_20px_rgba(34,197,94,0.3)]',
+    EU: 'shadow-[0_0_20px_rgba(34,197,94,0.3)]', // Legacy support
     SA: 'shadow-[0_0_20px_rgba(251,191,36,0.3)]',
     Other: '',
   }

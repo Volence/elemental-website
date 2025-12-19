@@ -92,7 +92,8 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
   const getRegionColor = (region?: string) => {
     switch (region) {
       case 'NA': return 'from-[hsl(var(--accent-blue))]/20 to-[hsl(var(--accent-blue))]/5'
-      case 'EU': return 'from-[hsl(var(--accent-green))]/20 to-[hsl(var(--accent-green))]/5'
+      case 'EMEA': return 'from-[hsl(var(--accent-green))]/20 to-[hsl(var(--accent-green))]/5'
+      case 'EU': return 'from-[hsl(var(--accent-green))]/20 to-[hsl(var(--accent-green))]/5' // Legacy support
       case 'SA': return 'from-[hsl(var(--accent-gold))]/20 to-[hsl(var(--accent-gold))]/5'
       default: return 'from-primary/20 to-primary/5'
     }
@@ -224,7 +225,7 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
             {/* Team Info */}
             <div className="flex-1 text-center md:text-left">
               <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3)' }}>
-                Team {team.name}
+                ELMT {team.name}
               </h1>
               
               {(team.region || team.rating) && (
@@ -244,8 +245,16 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
                 </div>
               )}
               
+              {team.bio && (
+                <div className="mt-6 max-w-2xl">
+                  <p className="text-lg text-muted-foreground leading-relaxed bg-card/20 backdrop-blur-sm px-5 py-4 rounded-xl border border-white/5">
+                    {team.bio}
+                  </p>
+                </div>
+              )}
+
               {team.achievements && team.achievements.length > 0 && (
-                <div className="space-y-3 max-w-2xl">
+                <div className="space-y-3 max-w-2xl mt-6">
                   <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center justify-center md:justify-start gap-2">
                     <Trophy className="w-4 h-4" />
                     Top Achievements

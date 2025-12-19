@@ -106,7 +106,7 @@ export const Teams: CollectionConfig = {
               },
               options: [
                 { label: 'North America', value: 'NA' },
-                { label: 'Europe', value: 'EU' },
+                { label: 'EMEA', value: 'EMEA' },
                 { label: 'South America', value: 'SA' },
                 { label: 'Other', value: 'Other' },
               ],
@@ -126,6 +126,13 @@ export const Teams: CollectionConfig = {
                 components: {
                   Field: '@/collections/Teams/ColorPickerField#default',
                 },
+              },
+            },
+            {
+              name: 'bio',
+              type: 'textarea',
+              admin: {
+                description: 'Optional team bio or description to display on the team page. Great for team history, philosophy, or fun facts!',
               },
             },
             {
@@ -366,6 +373,7 @@ export const Teams: CollectionConfig = {
       name: 'logoPreview',
       type: 'ui',
       admin: {
+        label: 'Logo',
         components: {
           Cell: '@/components/TeamsListColumns/LogoCell#default',
         },
@@ -375,6 +383,7 @@ export const Teams: CollectionConfig = {
       name: 'nameCell',
       type: 'ui',
       admin: {
+        label: 'Name',
         components: {
           Cell: '@/components/TeamsListColumns/NameCell#default',
         },
@@ -384,6 +393,7 @@ export const Teams: CollectionConfig = {
       name: 'regionCell',
       type: 'ui',
       admin: {
+        label: 'Region',
         components: {
           Cell: '@/components/TeamsListColumns/RegionCell#default',
         },
@@ -393,6 +403,7 @@ export const Teams: CollectionConfig = {
       name: 'ratingCell',
       type: 'ui',
       admin: {
+        label: 'Rating',
         components: {
           Cell: '@/components/TeamsListColumns/RatingCell#default',
         },
@@ -402,6 +413,7 @@ export const Teams: CollectionConfig = {
       name: 'status',
       type: 'ui',
       admin: {
+        label: 'Status',
         components: {
           Cell: '@/components/TeamsListColumns/StatusCell#default',
         },
@@ -411,6 +423,7 @@ export const Teams: CollectionConfig = {
       name: 'updatedAtCell',
       type: 'ui',
       admin: {
+        label: 'Updated At',
         components: {
           Cell: '@/components/TeamsListColumns/UpdatedAtCell#default',
         },
