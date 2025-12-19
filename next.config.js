@@ -13,6 +13,10 @@ const nextConfig = {
   experimental: {
     // Allow build to continue even if some pages fail during static generation
     missingSuspenseWithCSRBailout: false,
+    // Increase Server Actions body size limit for image uploads (default is 1MB)
+    serverActions: {
+      bodySizeLimit: '10mb',
+    },
   },
   images: {
     remotePatterns: [
