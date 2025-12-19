@@ -138,7 +138,7 @@ const ScheduleGeneratorPage = () => {
         console.log(`Producer/Observer ${idx}:`, po)
         
         // First check if there's a manual name
-        if (po.name && typeof po.name === 'string') {
+        if (po.name && typeof po.name === 'string' && po.name.trim()) {
           console.log(`  -> Using manual name: ${po.name}`)
           return po.name
         }
@@ -147,18 +147,19 @@ const ScheduleGeneratorPage = () => {
         if (po.staff) {
           console.log(`  -> Staff object:`, po.staff)
           if (typeof po.staff === 'object') {
-            // Check if personId exists and is populated
-            if (po.staff.personId) {
-              console.log(`  -> PersonId:`, po.staff.personId)
-              if (typeof po.staff.personId === 'object' && po.staff.personId.name) {
-                console.log(`  -> Using personId.name: ${po.staff.personId.name}`)
-                return po.staff.personId.name
-              }
+            // Check for displayName (computed field in Production collection)
+            if (po.staff.displayName && typeof po.staff.displayName === 'string') {
+              console.log(`  -> Using staff.displayName: ${po.staff.displayName}`)
+              return po.staff.displayName
             }
-            // Check if staff itself has a name
-            if (po.staff.name) {
-              console.log(`  -> Using staff.name: ${po.staff.name}`)
-              return po.staff.name
+            
+            // Check if person relationship is populated
+            if (po.staff.person) {
+              console.log(`  -> Person object:`, po.staff.person)
+              if (typeof po.staff.person === 'object' && po.staff.person.name) {
+                console.log(`  -> Using staff.person.name: ${po.staff.person.name}`)
+                return po.staff.person.name
+              }
             }
           }
         }
@@ -176,7 +177,7 @@ const ScheduleGeneratorPage = () => {
         console.log(`Caster ${idx}:`, c)
         
         // First check if there's a manual name
-        if (c.name && typeof c.name === 'string') {
+        if (c.name && typeof c.name === 'string' && c.name.trim()) {
           console.log(`  -> Using manual name: ${c.name}`)
           return c.name
         }
@@ -185,18 +186,19 @@ const ScheduleGeneratorPage = () => {
         if (c.caster) {
           console.log(`  -> Caster object:`, c.caster)
           if (typeof c.caster === 'object') {
-            // Check if personId exists and is populated
-            if (c.caster.personId) {
-              console.log(`  -> PersonId:`, c.caster.personId)
-              if (typeof c.caster.personId === 'object' && c.caster.personId.name) {
-                console.log(`  -> Using personId.name: ${c.caster.personId.name}`)
-                return c.caster.personId.name
-              }
+            // Check for displayName (computed field in Production collection)
+            if (c.caster.displayName && typeof c.caster.displayName === 'string') {
+              console.log(`  -> Using caster.displayName: ${c.caster.displayName}`)
+              return c.caster.displayName
             }
-            // Check if caster itself has a name
-            if (c.caster.name) {
-              console.log(`  -> Using caster.name: ${c.caster.name}`)
-              return c.caster.name
+            
+            // Check if person relationship is populated
+            if (c.caster.person) {
+              console.log(`  -> Person object:`, c.caster.person)
+              if (typeof c.caster.person === 'object' && c.caster.person.name) {
+                console.log(`  -> Using caster.person.name: ${c.caster.person.name}`)
+                return c.caster.person.name
+              }
             }
           }
         }
