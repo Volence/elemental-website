@@ -271,7 +271,7 @@ export default async function StaffPage() {
             // Different colors for different roles
             const colorMap: Record<string, string> = {
               'Owner': 'bg-gradient-to-r from-[hsl(var(--accent-gold))] to-yellow-500',
-              'Co-Owner': 'bg-gradient-to-r from-slate-400 to-gray-500',
+              'Co-Owner': 'bg-gradient-to-r from-red-500 to-orange-500',
               'HR': 'bg-gradient-to-r from-[hsl(var(--accent-green))] to-green-500',
               'Moderator': 'bg-gradient-to-r from-[hsl(var(--accent-blue))] to-blue-500',
               'Event Manager': 'bg-gradient-to-r from-purple-500 to-pink-500',
@@ -284,7 +284,7 @@ export default async function StaffPage() {
             // Avatar colors matching underlines
             const avatarColorMap: Record<string, { from: string, to: string, text: string, ring: string }> = {
               'Owner': { from: 'from-yellow-500/20', to: 'to-yellow-600/10', text: 'text-yellow-500', ring: 'ring-yellow-500/20' },
-              'Co-Owner': { from: 'from-slate-400/20', to: 'to-gray-500/10', text: 'text-slate-400', ring: 'ring-slate-400/20' },
+              'Co-Owner': { from: 'from-red-500/20', to: 'to-orange-600/10', text: 'text-red-500', ring: 'ring-red-500/20' },
               'HR': { from: 'from-green-500/20', to: 'to-green-600/10', text: 'text-green-500', ring: 'ring-green-500/20' },
               'Moderator': { from: 'from-blue-500/20', to: 'to-blue-600/10', text: 'text-blue-500', ring: 'ring-blue-500/20' },
               'Event Manager': { from: 'from-purple-500/20', to: 'to-pink-600/10', text: 'text-purple-500', ring: 'ring-purple-500/20' },
@@ -297,7 +297,7 @@ export default async function StaffPage() {
             // Section backgrounds
             const sectionBgMap: Record<string, string> = {
               'Owner': 'bg-yellow-500/5',
-              'Co-Owner': 'bg-slate-400/5',
+              'Co-Owner': 'bg-red-500/5',
               'HR': 'bg-green-500/5',
               'Moderator': 'bg-blue-500/5',
               'Event Manager': 'bg-purple-500/5',
