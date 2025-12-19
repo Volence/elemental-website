@@ -43,9 +43,15 @@ const ScheduleGeneratorPage = () => {
       today.setHours(0, 0, 0, 0)
 
       const response = await fetch(
-        `/api/matches?where[date][greater_than_equal]=${today.toISOString()}&sort=date&limit=50&depth=2`
+        `/api/matches?where[date][greater_than_equal]=${today.toISOString()}&sort=date&limit=50&depth=3`
       )
       const data = await response.json()
+      
+      // Debug: Log the first match to see data structure
+      if (data.docs && data.docs.length > 0) {
+        console.log('First match data structure:', JSON.stringify(data.docs[0], null, 2))
+      }
+      
       setMatches(data.docs || [])
     } catch (error) {
       console.error('Error fetching matches:', error)
@@ -127,15 +133,36 @@ const ScheduleGeneratorPage = () => {
   const getProducersObservers = (match: Match): string[] => {
     if (!match.producersObservers) return []
     return match.producersObservers
-      .map(po => {
-        if (po.name) return po.name
-        if (po.staff) {
-          // If staff is populated, get person name
-          if (typeof po.staff === 'object' && po.staff.personId) {
-            return getPersonName(po.staff.personId)
-          }
-          return getPersonName(po.staff)
+      .map((po, idx) => {
+        // Debug logging
+        console.log(`Producer/Observer ${idx}:`, po)
+        
+        // First check if there's a manual name
+        if (po.name && typeof po.name === 'string') {
+          console.log(`  -> Using manual name: ${po.name}`)
+          return po.name
         }
+        
+        // Then check if staff relationship is populated
+        if (po.staff) {
+          console.log(`  -> Staff object:`, po.staff)
+          if (typeof po.staff === 'object') {
+            // Check if personId exists and is populated
+            if (po.staff.personId) {
+              console.log(`  -> PersonId:`, po.staff.personId)
+              if (typeof po.staff.personId === 'object' && po.staff.personId.name) {
+                console.log(`  -> Using personId.name: ${po.staff.personId.name}`)
+                return po.staff.personId.name
+              }
+            }
+            // Check if staff itself has a name
+            if (po.staff.name) {
+              console.log(`  -> Using staff.name: ${po.staff.name}`)
+              return po.staff.name
+            }
+          }
+        }
+        console.log(`  -> No name found`)
         return null
       })
       .filter(Boolean) as string[]
@@ -144,18 +171,44 @@ const ScheduleGeneratorPage = () => {
   const getCasterNames = (match: Match): string[] => {
     if (!match.casters) return []
     return match.casters
-      .map(c => {
-        if (c.name) return c.name
-        if (c.caster) {
-          // If caster is populated, get person name
-          if (typeof c.caster === 'object' && c.caster.personId) {
-            return getPersonName(c.caster.personId)
-          }
-          return getPersonName(c.caster)
+      .map((c, idx) => {
+        // Debug logging
+        console.log(`Caster ${idx}:`, c)
+        
+        // First check if there's a manual name
+        if (c.name && typeof c.name === 'string') {
+          console.log(`  -> Using manual name: ${c.name}`)
+          return c.name
         }
+        
+        // Then check if caster relationship is populated
+        if (c.caster) {
+          console.log(`  -> Caster object:`, c.caster)
+          if (typeof c.caster === 'object') {
+            // Check if personId exists and is populated
+            if (c.caster.personId) {
+              console.log(`  -> PersonId:`, c.caster.personId)
+              if (typeof c.caster.personId === 'object' && c.caster.personId.name) {
+                console.log(`  -> Using personId.name: ${c.caster.personId.name}`)
+                return c.caster.personId.name
+              }
+            }
+            // Check if caster itself has a name
+            if (c.caster.name) {
+              console.log(`  -> Using caster.name: ${c.caster.name}`)
+              return c.caster.name
+            }
+          }
+        }
+        console.log(`  -> No name found`)
         return null
       })
       .filter(Boolean) as string[]
+  }
+
+  const getDiscordTimestamp = (dateString: string, format: 't' | 'T' | 'd' | 'D' | 'f' | 'F' | 'R' = 'F'): string => {
+    const timestamp = Math.floor(new Date(dateString).getTime() / 1000)
+    return `<t:${timestamp}:${format}>`
   }
 
   const generateInternalSchedule = () => {
@@ -165,8 +218,9 @@ const ScheduleGeneratorPage = () => {
       const teamName = typeof match.team === 'object' ? match.team?.name : ''
       const title = match.title || `ELMT ${teamName} vs ${match.opponent}`
       
-      // Date and time line: "Wednesday December 17th 20CET (2pm EST):"
-      const dateLine = `${formatDateWithOrdinal(match.date)} ${formatTimeCET24(match.date)}CET (${formatTimeEST12(match.date)} EST):`
+      // Date and time with Discord timestamp for automatic timezone conversion
+      const discordTimestamp = getDiscordTimestamp(match.date, 'F')
+      const dateLine = `${discordTimestamp} (${formatTimeCET24(match.date)}CET / ${formatTimeEST12(match.date)} EST):`
       output += `${dateLine}\n\n`
       
       // Title
@@ -234,10 +288,11 @@ const ScheduleGeneratorPage = () => {
       const season = match.season || 'S7 Regular Season'
       output += `🌍 ${region} / ${league} • ${season}\n`
       
-      // Time with clock emoji and proper formatting
-      const cetTime = formatTimeCET24(match.date).replace(':', ':') // Ensure proper formatting
+      // Time with Discord timestamp (automatically adjusts to user's timezone)
+      const discordTimestamp = getDiscordTimestamp(match.date, 'F')
+      const cetTime = formatTimeCET24(match.date)
       const estTime = formatTimeEST12(match.date).toUpperCase().replace('AM', ' AM').replace('PM', ' PM').replace('  ', ' ')
-      output += `🕒 ${formatDate(match.date)} — ${cetTime} CET / ${estTime}\n`
+      output += `🕒 ${discordTimestamp} (${cetTime} CET / ${estTime})\n`
       
       // Stream
       if (match.stream?.url) {
