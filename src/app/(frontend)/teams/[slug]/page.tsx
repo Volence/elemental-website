@@ -334,10 +334,16 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
               </div>
             </div>
             ) : (
-              <div className="p-8 rounded-xl border-2 border-dashed border-border bg-card/50 text-center">
-                <Shield className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-bold mb-2">No Staff Information</h3>
-                <p className="text-sm text-muted-foreground">Staff information hasn't been added yet.</p>
+              <div className="p-10 rounded-xl border-2 border-dashed border-border bg-gradient-to-br from-card to-card/50 text-center">
+                <Shield className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-40" />
+                <h3 className="text-xl font-bold mb-2">No Staff Information</h3>
+                <p className="text-muted-foreground mb-4">Staff information hasn't been added yet for this team.</p>
+                <Link 
+                  href="/teams"
+                  className="inline-block px-4 py-2 rounded-lg border border-border bg-card hover:bg-accent transition-colors font-medium text-sm"
+                >
+                  View All Teams
+                </Link>
               </div>
             )}
 
@@ -392,10 +398,16 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
               </div>
             </div>
             ) : (
-              <div className="p-8 rounded-xl border-2 border-dashed border-border bg-card/50 text-center">
-                <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                <h3 className="text-lg font-bold mb-2">No Active Roster</h3>
-                <p className="text-sm text-muted-foreground">This team hasn't announced their roster yet.</p>
+              <div className="p-10 rounded-xl border-2 border-dashed border-border bg-gradient-to-br from-card to-card/50 text-center">
+                <Users className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-40" />
+                <h3 className="text-xl font-bold mb-2">No Active Roster</h3>
+                <p className="text-muted-foreground mb-4">This team hasn't announced their roster yet. Check back soon!</p>
+                <Link 
+                  href="/teams"
+                  className="inline-block px-4 py-2 rounded-lg border border-border bg-card hover:bg-accent transition-colors font-medium text-sm"
+                >
+                  View All Teams
+                </Link>
               </div>
             )}
 
