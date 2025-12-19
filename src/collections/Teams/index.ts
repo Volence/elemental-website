@@ -110,7 +110,7 @@ export const Teams: CollectionConfig = {
                 { label: 'South America', value: 'SA' },
                 { label: 'Other', value: 'Other' },
               ],
-              validate: (value) => {
+              validate: (value: string) => {
                 if (value === 'EU') {
                   return 'Please change "EU" to "EMEA" - Europe region has been renamed to EMEA (Europe, Middle East, and Africa)'
                 }
