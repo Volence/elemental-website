@@ -493,7 +493,7 @@ export interface Team {
   /**
    * Geographic region where the team competes
    */
-  region?: ('NA' | 'EMEA' | 'EU' | 'SA' | 'Other') | null;
+  region?: ('NA' | 'EMEA' | 'SA' | 'Other') | null;
   /**
    * Team skill rating or tier (e.g., "4.5K", "FACEIT Masters", "FACEIT Expert", "FACEIT Advanced", "3.5K")
    */

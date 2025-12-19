@@ -85,7 +85,7 @@ export default async function TeamsPage() {
       <div className="container space-y-12 animate-fade-in">
         {regionOrder.map((region) => {
           const teams = teamsByRegion[region]
-          if (teams.length === 0) return null
+          if (!teams || teams.length === 0) return null
 
           return (
             <div key={region} className="scroll-mt-24" id={region.toLowerCase()}>
