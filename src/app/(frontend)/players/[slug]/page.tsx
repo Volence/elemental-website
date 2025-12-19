@@ -129,9 +129,33 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
     notFound()
   }
 
+  // Get player initials for avatar
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((part) => part[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
+  }
+
+  // Get primary role for subtitle
+  const getPrimaryRole = () => {
+    if (player.staffRoles.organization && player.staffRoles.organization.length > 0) {
+      return getRoleLabel(player.staffRoles.organization[0])
+    }
+    if (player.staffRoles.production) {
+      return getRoleLabel(player.staffRoles.production)
+    }
+    if (player.teams.length > 0 && player.teams[0].role) {
+      return player.teams[0].role.charAt(0).toUpperCase() + player.teams[0].role.slice(1)
+    }
+    return 'Player'
+  }
+
   return (
     <div className="pt-8 pb-24 min-h-screen animate-fade-in">
-      <div className="container max-w-4xl">
+      <div className="container max-w-6xl">
         {/* Breadcrumbs */}
         <div className="mb-6">
           <Breadcrumbs
@@ -142,115 +166,235 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
           />
         </div>
 
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl md:text-6xl font-black mb-4 tracking-tight" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>{player.name}</h1>
-          <div className="w-24 h-1 bg-gradient-to-r from-[hsl(var(--accent-blue))] via-[hsl(var(--accent-green))] to-[hsl(var(--accent-gold))] mx-auto mb-6 shadow-[0_0_20px_rgba(56,189,248,0.4)]" />
+        {/* Hero Section */}
+        <div className="relative mb-16 overflow-hidden rounded-2xl">
+          {/* Background Decorations */}
+          <div className="absolute inset-0 bg-gradient-to-br from-card via-card/95 to-card/90" />
+          <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent-blue/5 rounded-full blur-3xl" />
+          
+          <div className="relative px-8 py-12 md:px-12 md:py-16">
+            <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
+              {/* Avatar */}
+              <div className="relative flex-shrink-0">
+                <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-primary via-accent-blue to-accent-green p-1 shadow-2xl shadow-primary/20">
+                  <div className="w-full h-full rounded-full bg-card flex items-center justify-center">
+                    <span className="text-5xl md:text-6xl font-black text-primary">
+                      {getInitials(player.name)}
+                    </span>
+                  </div>
+                </div>
+                {/* Glow effect */}
+                <div className="absolute inset-0 rounded-full bg-primary/20 blur-2xl -z-10 animate-pulse" />
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 text-center md:text-left">
+                <h1 className="text-5xl md:text-6xl lg:text-7xl font-black mb-3 tracking-tight" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}>
+                  {player.name}
+                </h1>
+                <p className="text-xl md:text-2xl text-muted-foreground font-semibold mb-4">
+                  {getPrimaryRole()}
+                </p>
+                
+                {/* Quick Stats */}
+                <div className="flex flex-wrap justify-center md:justify-start gap-3">
+                  {player.teams.length > 0 && (
+                    <div className="px-4 py-2 rounded-lg bg-primary/10 border border-primary/20">
+                      <span className="text-sm font-semibold text-primary">
+                        {player.teams.length} {player.teams.length === 1 ? 'Team' : 'Teams'}
+                      </span>
+                    </div>
+                  )}
+                  {(player.staffRoles.organization && player.staffRoles.organization.length > 0) && (
+                    <div className="px-4 py-2 rounded-lg bg-accent-gold/10 border border-accent-gold/20">
+                      <span className="text-sm font-semibold text-[hsl(var(--accent-gold))]">
+                        Organization Staff
+                      </span>
+                    </div>
+                  )}
+                  {player.staffRoles.production && (
+                    <div className="px-4 py-2 rounded-lg bg-accent-blue/10 border border-accent-blue/20">
+                      <span className="text-sm font-semibold text-[hsl(var(--accent-blue))]">
+                        Production Staff
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Bio */}
-        {player.bio && (
-          <div className="mb-8 p-6 rounded-xl border-2 border-border bg-card shadow-sm">
-            <p className="text-foreground/90 leading-relaxed whitespace-pre-wrap text-base">{player.bio}</p>
-          </div>
-        )}
+        {/* Main Content Grid */}
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Left Column - Main Info */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Bio */}
+            {player.bio && (
+              <div className="p-6 md:p-8 rounded-2xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-lg backdrop-blur-sm hover:border-border/80 transition-all">
+                <h2 className="text-2xl font-black mb-4 flex items-center gap-2">
+                  <Users className="w-6 h-6 text-primary" />
+                  About
+                </h2>
+                <p className="text-foreground/90 leading-relaxed whitespace-pre-wrap text-base">
+                  {player.bio}
+                </p>
+              </div>
+            )}
 
-        {/* Social Links */}
-        {(player.socialLinks.twitter || player.socialLinks.twitch || player.socialLinks.youtube || player.socialLinks.instagram) && (
-          <div className="mb-8 flex justify-center">
-            <SocialLinks 
-              links={player.socialLinks}
-              showLabels={true}
-            />
-          </div>
-        )}
-
-        {/* Staff Roles */}
-        {(player.staffRoles.organization && player.staffRoles.organization.length > 0) || player.staffRoles.production ? (
-          <div className="mb-8 p-6 rounded-xl border-2 border-border bg-card shadow-sm">
-            <h2 className="text-2xl md:text-3xl font-black mb-4 tracking-tight">Staff Positions</h2>
-            <div className="space-y-3">
-              {player.staffRoles.organization && player.staffRoles.organization.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">Organization Staff</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {player.staffRoles.organization.map((role) => {
-                      const RoleIcon = getRoleIcon(role)
-                      return (
-                        <div key={role} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50">
-                          {React.createElement(RoleIcon, { className: 'w-4 h-4' })}
-                          <span className="text-sm font-medium">{getRoleLabel(role)}</span>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
-              
-              {player.staffRoles.production && (
-                <div>
-                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">Production Staff</h3>
-                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50">
-                    {React.createElement(getProductionIcon(player.staffRoles.production), { className: 'w-4 h-4' })}
-                    <span className="text-sm font-medium">{getRoleLabel(player.staffRoles.production)}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        ) : null}
-
-        {/* Teams */}
-        {player.teams.length > 0 && (
-          <div className="mb-8 p-6 rounded-xl border-2 border-border bg-card shadow-sm">
-            <h2 className="text-2xl md:text-3xl font-black mb-4 tracking-tight">Teams</h2>
-            <div className="space-y-4">
-              {player.teams.map((teamInfo) => (
-                <Link
-                  key={teamInfo.teamSlug}
-                  href={`/teams/${teamInfo.teamSlug}`}
-                  className="flex items-center gap-4 p-4 rounded-lg border border-border hover:bg-accent/50 transition-colors group"
-                >
-                  <div className="relative w-12 h-12 flex-shrink-0">
-                    <TeamLogo
-                      src={teamInfo.teamLogo}
-                      alt={`${teamInfo.teamName} Logo`}
-                      fill
-                      className="object-contain"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-lg font-semibold group-hover:text-primary transition-colors">
-                        {teamInfo.teamName}
+            {/* Staff Roles */}
+            {(player.staffRoles.organization && player.staffRoles.organization.length > 0) || player.staffRoles.production ? (
+              <div className="p-6 md:p-8 rounded-2xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-lg backdrop-blur-sm hover:border-border/80 transition-all">
+                <h2 className="text-2xl font-black mb-6 flex items-center gap-2">
+                  <Shield className="w-6 h-6 text-primary" />
+                  Staff Positions
+                </h2>
+                <div className="space-y-6">
+                  {player.staffRoles.organization && player.staffRoles.organization.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <Crown className="w-4 h-4" />
+                        Organization Staff
                       </h3>
-                    </div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {teamInfo.role && (
-                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 py-1 rounded bg-muted/50">
-                          {teamInfo.role}
-                        </span>
-                      )}
-                      {teamInfo.positions && teamInfo.positions.length > 0 && (
-                        <>
-                          {teamInfo.positions.map((position) => (
-                            <span 
-                              key={position}
-                              className="text-xs font-semibold text-primary uppercase tracking-wider px-2 py-1 rounded bg-primary/10"
+                      <div className="grid sm:grid-cols-2 gap-3">
+                        {player.staffRoles.organization.map((role) => {
+                          const RoleIcon = getRoleIcon(role)
+                          return (
+                            <div 
+                              key={role} 
+                              className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-br from-accent-gold/10 to-accent-gold/5 border border-accent-gold/20 hover:border-accent-gold/40 transition-all hover:scale-[1.02]"
                             >
-                              {position === 'co-captain' ? 'Co-Captain' : 
-                               position.charAt(0).toUpperCase() + position.slice(1)}
-                            </span>
-                          ))}
-                        </>
-                      )}
+                              <div className="w-8 h-8 rounded-lg bg-accent-gold/20 flex items-center justify-center flex-shrink-0">
+                                {React.createElement(RoleIcon, { className: 'w-4 h-4 text-[hsl(var(--accent-gold))]' })}
+                              </div>
+                              <span className="font-semibold">{getRoleLabel(role)}</span>
+                            </div>
+                          )
+                        })}
+                      </div>
                     </div>
+                  )}
+                  
+                  {player.staffRoles.production && (
+                    <div>
+                      <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <Video className="w-4 h-4" />
+                        Production Staff
+                      </h3>
+                      <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-br from-accent-blue/10 to-accent-blue/5 border border-accent-blue/20 hover:border-accent-blue/40 transition-all hover:scale-[1.02] w-fit">
+                        <div className="w-8 h-8 rounded-lg bg-accent-blue/20 flex items-center justify-center flex-shrink-0">
+                          {React.createElement(getProductionIcon(player.staffRoles.production), { 
+                            className: 'w-4 h-4 text-[hsl(var(--accent-blue))]' 
+                          })}
+                        </div>
+                        <span className="font-semibold">{getRoleLabel(player.staffRoles.production)}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : null}
+
+            {/* Teams */}
+            {player.teams.length > 0 && (
+              <div className="p-6 md:p-8 rounded-2xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-lg backdrop-blur-sm hover:border-border/80 transition-all">
+                <h2 className="text-2xl font-black mb-6 flex items-center gap-2">
+                  <Shield className="w-6 h-6 text-primary" />
+                  Teams
+                </h2>
+                <div className="space-y-3">
+                  {player.teams.map((teamInfo) => (
+                    <Link
+                      key={teamInfo.teamSlug}
+                      href={`/teams/${teamInfo.teamSlug}`}
+                      className="group flex items-center gap-4 p-5 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all hover:scale-[1.02]"
+                    >
+                      <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-muted/20">
+                        <TeamLogo
+                          src={teamInfo.teamLogo}
+                          alt={`${teamInfo.teamName} Logo`}
+                          fill
+                          className="object-contain p-2"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">
+                          {teamInfo.teamName}
+                        </h3>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {teamInfo.role && (
+                            <span className="text-xs font-bold text-foreground uppercase tracking-wider px-3 py-1.5 rounded-lg bg-muted border border-border">
+                              {teamInfo.role}
+                            </span>
+                          )}
+                          {teamInfo.positions && teamInfo.positions.length > 0 && (
+                            <>
+                              {teamInfo.positions.map((position) => (
+                                <span 
+                                  key={position}
+                                  className="text-xs font-bold text-primary uppercase tracking-wider px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/30"
+                                >
+                                  {position === 'co-captain' ? 'Co-Captain' : 
+                                   position === 'captain' ? 'Captain' :
+                                   position === 'manager' ? 'Manager' :
+                                   position === 'coach' ? 'Coach' :
+                                   position.charAt(0).toUpperCase() + position.slice(1)}
+                                </span>
+                              ))}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right Column - Sidebar */}
+          <div className="space-y-8">
+            {/* Social Links */}
+            {(player.socialLinks.twitter || player.socialLinks.twitch || player.socialLinks.youtube || player.socialLinks.instagram) && (
+              <div className="p-6 rounded-2xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-lg backdrop-blur-sm hover:border-border/80 transition-all">
+                <h2 className="text-xl font-black mb-4 flex items-center gap-2">
+                  <Share2 className="w-5 h-5 text-primary" />
+                  Social Links
+                </h2>
+                <SocialLinks 
+                  links={player.socialLinks}
+                  showLabels={true}
+                />
+              </div>
+            )}
+
+            {/* Quick Info Card */}
+            <div className="p-6 rounded-2xl border-2 border-dashed border-border/50 bg-gradient-to-br from-muted/30 to-muted/10 backdrop-blur-sm">
+              <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4">
+                Quick Info
+              </h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Teams</span>
+                  <span className="font-bold">{player.teams.length}</span>
+                </div>
+                {player.staffRoles.organization && player.staffRoles.organization.length > 0 && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Org Roles</span>
+                    <span className="font-bold">{player.staffRoles.organization.length}</span>
                   </div>
-                </Link>
-              ))}
+                )}
+                {player.staffRoles.production && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Production</span>
+                    <span className="font-bold">Yes</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   )
