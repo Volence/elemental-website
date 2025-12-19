@@ -220,8 +220,7 @@ const ScheduleGeneratorPage = () => {
       
       // Date and time with Discord timestamp for automatic timezone conversion
       const discordTimestamp = getDiscordTimestamp(match.date, 'F')
-      const dateLine = `${discordTimestamp} (${formatTimeCET24(match.date)}CET / ${formatTimeEST12(match.date)} EST):`
-      output += `${dateLine}\n\n`
+      output += `${discordTimestamp}:\n\n`
       
       // Title
       output += `${title}\n`
@@ -290,9 +289,7 @@ const ScheduleGeneratorPage = () => {
       
       // Time with Discord timestamp (automatically adjusts to user's timezone)
       const discordTimestamp = getDiscordTimestamp(match.date, 'F')
-      const cetTime = formatTimeCET24(match.date)
-      const estTime = formatTimeEST12(match.date).toUpperCase().replace('AM', ' AM').replace('PM', ' PM').replace('  ', ' ')
-      output += `🕒 ${discordTimestamp} (${cetTime} CET / ${estTime})\n`
+      output += `🕒 ${discordTimestamp}\n`
       
       // Stream
       if (match.stream?.url) {
