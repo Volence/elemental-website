@@ -847,3 +847,101 @@ button[aria-label="Close"]:hover {
   text-align: right !important;
 }
 
+/* ============================================ */
+/* BADGES & PILLS - Role and Status Indicators */
+/* ============================================ */
+
+/* Generic badge styling - pills with backgrounds */
+.pill,
+.badge,
+[class*="pill"],
+[class*="badge"],
+.chip,
+[class*="chip"],
+.tag {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 0.25rem 0.75rem !important;
+  border-radius: 12px !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Status badges - color coded */
+.pill--status-published,
+.badge--published,
+[class*="status"][class*="published"],
+[class*="completed"] {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.25) 100%) !important;
+  border: 1px solid rgba(34, 197, 94, 0.3) !important;
+  color: rgb(134, 239, 172) !important;
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.2) !important;
+}
+
+.pill--status-draft,
+.badge--draft,
+[class*="status"][class*="draft"],
+[class*="scheduled"],
+[class*="upcoming"] {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.25) 100%) !important;
+  border: 1px solid rgba(59, 130, 246, 0.3) !important;
+  color: rgb(147, 197, 253) !important;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.2) !important;
+}
+
+.pill--status-archived,
+.badge--archived,
+[class*="status"][class*="cancelled"],
+[class*="archived"] {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.25) 100%) !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  color: rgb(252, 165, 165) !important;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.2) !important;
+}
+
+/* Role badges - team staff indicators */
+[class*="manager"],
+.role-manager {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(251, 191, 36, 0.25) 100%) !important;
+  border: 1px solid rgba(251, 191, 36, 0.3) !important;
+  color: rgb(253, 224, 71) !important;
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.2) !important;
+}
+
+[class*="coach"],
+.role-coach {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.25) 100%) !important;
+  border: 1px solid rgba(59, 130, 246, 0.3) !important;
+  color: rgb(147, 197, 253) !important;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.2) !important;
+}
+
+[class*="captain"],
+.role-captain {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.25) 100%) !important;
+  border: 1px solid rgba(34, 197, 94, 0.3) !important;
+  color: rgb(134, 239, 172) !important;
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.2) !important;
+}
+
+[class*="sub"],
+.role-sub {
+  background: linear-gradient(135deg, rgba(156, 163, 175, 0.15) 0%, rgba(156, 163, 175, 0.25) 100%) !important;
+  border: 1px solid rgba(156, 163, 175, 0.3) !important;
+  color: rgb(209, 213, 219) !important;
+  box-shadow: 0 0 12px rgba(156, 163, 175, 0.15) !important;
+}
+
+/* Badge hover effects */
+.pill:hover,
+.badge:hover,
+[class*="pill"]:hover,
+[class*="badge"]:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 0 20px currentColor !important;
+}
+
+
