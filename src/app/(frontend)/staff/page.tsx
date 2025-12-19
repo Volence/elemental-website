@@ -23,22 +23,24 @@ export const metadata: Metadata = {
 
 interface StaffMember {
   name: string
+  photoUrl?: string | null
   twitter?: string
   twitch?: string
   youtube?: string
   instagram?: string
 }
 
-// Deduplicate staff members by name, merging social links
+// Deduplicate staff members by name, merging social links and photos
 function deduplicateStaff(staff: StaffMember[]): StaffMember[] {
   const map = new Map<string, StaffMember>()
   
   staff.forEach((member) => {
     const existing = map.get(member.name)
     if (existing) {
-      // Merge social links, preferring non-empty values
+      // Merge social links and photo, preferring non-empty values
       map.set(member.name, {
         name: member.name,
+        photoUrl: member.photoUrl || existing.photoUrl,
         twitter: member.twitter || existing.twitter,
         twitch: member.twitch || existing.twitch,
         youtube: member.youtube || existing.youtube,
