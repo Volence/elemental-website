@@ -122,13 +122,19 @@ aside,
   background-color: #0a0a0a !important;
 }
 
-/* Content area background */
+/* Content area background and spacing */
 .render-default,
 .dashboard,
 .collection-list,
 .doc-controls,
 main > div {
   background-color: #000000 !important;
+}
+
+/* Dashboard and collection list containers - proper padding */
+.dashboard,
+.collection-list {
+  padding: 1.5rem !important;
 }
 
 /* ============================================ */
@@ -588,11 +594,11 @@ table tbody tr:hover,
   border-radius: 10px !important;
 }
 
-/* Form fields container - transparent */
+/* Form fields container - transparent with proper spacing */
 .render-fields {
   background: transparent !important;
   border: none !important;
-  padding: 0 1.5rem !important;
+  padding: 1.5rem !important;
 }
 
 /* Nested groups and collapsibles - NO left border for cleaner layout */
@@ -719,11 +725,11 @@ table tbody tr:hover,
   padding: 0 !important;
 }
 
-/* Main content sections on edit pages - reduce "floating" feeling */
+/* Main content sections on edit pages - consistent vertical rhythm */
 .render-fields > .field-type,
 .doc-fields > .field-type,
 main > div > .field-type {
-  margin-bottom: 1.5rem !important;
+  margin-bottom: 2rem !important;
 }
 
 /* ============================================ */
@@ -1055,38 +1061,37 @@ select:disabled {
 /* NOTIFICATIONS & BANNERS - Better Spacing     */
 /* ============================================ */
 
-/* Banner/notification boxes - add horizontal padding only, no vertical */
+/* Banner/notification boxes - consistent spacing */
 .banner,
 [class*="banner"],
 .notification,
 [class*="notification"],
 .message,
 [class*="message"] {
-  margin-left: 1.5rem !important;
-  margin-right: 1.5rem !important;
-  margin-top: 0 !important;
-  padding-top: 0 !important;
+  margin: 2rem 1.5rem !important;
+  padding: 1rem 1.5rem !important;
   max-width: calc(100% - 3rem) !important;
 }
 
-/* Before dashboard - horizontal margins only */
+/* Before dashboard - consistent vertical rhythm */
 .before-dashboard {
-  padding-left: 1.5rem !important;
-  padding-right: 1.5rem !important;
-  padding-top: 0 !important;
+  padding: 1.5rem !important;
+  margin-bottom: 2rem !important;
 }
 
-/* Your Assigned Teams section */
+/* Your Assigned Teams section - proper spacing */
 .before-dashboard > div,
 .before-dashboard section {
-  margin-bottom: 1.5rem !important;
-  padding-top: 0 !important;
+  margin-bottom: 2rem !important;
+  padding: 1.5rem !important;
+  border-radius: 8px !important;
 }
 
-/* Collection list sub-header (notification boxes) - remove top padding */
+/* Collection list sub-header (notification boxes) - consistent spacing */
 .collection-list__sub-header,
 [class*="sub-header"] {
-  padding-top: 0 !important;
+  margin-bottom: 2rem !important;
+  padding: 1rem 0 !important;
 }
 
 /* ============================================ */
@@ -1234,5 +1239,31 @@ button,
 .btn {
   font-weight: 500 !important;
   letter-spacing: 0.025em !important;
+}
+
+/* ============================================ */
+/* CONSISTENT SPACING SYSTEM                    */
+/* ============================================ */
+
+/* Major sections - 3rem spacing */
+main > section,
+.dashboard > section,
+.collection-list > section {
+  margin-bottom: 3rem !important;
+}
+
+/* Cards and containers - 2rem spacing */
+.card,
+.dashboard__card,
+.info-box,
+[class*="info-box"] {
+  margin-bottom: 2rem !important;
+}
+
+/* Form groups - 1.5rem spacing */
+.field-group,
+.form-section,
+[class*="form-group"] {
+  margin-bottom: 1.5rem !important;
 }
 
