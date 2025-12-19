@@ -67,7 +67,7 @@ export default async function HomePage() {
       </section>
 
       {/* About Us Section */}
-      <section className="py-20 bg-background">
+      <section className="py-20 bg-background animate-fade-in">
         <div className="container max-w-4xl">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">About Us</h2>
@@ -92,7 +92,7 @@ export default async function HomePage() {
       </section>
 
       {/* Teams Preview Section */}
-      <section className="py-20 bg-card/50 min-h-[60vh]">
+      <section className="py-20 bg-card/50 min-h-[60vh] animate-fade-in">
         <div className="container">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">Our Teams</h2>

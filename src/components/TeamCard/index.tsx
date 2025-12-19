@@ -41,13 +41,6 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, size = 'medium', showH
         className="flex flex-col items-center h-full"
       >
         <div className={`${cardPadding} rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 hover:border-primary/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-primary/20 w-full relative`}>
-          {/* Rating Badge */}
-          {team.rating && (
-            <div className="absolute -top-2 -right-2 px-2 py-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-full shadow-lg z-10">
-              {team.rating}
-            </div>
-          )}
-          
           <div className={`relative ${logoSize} mb-4 flex items-center justify-center mx-auto rounded-xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm ring-2 ring-white/20 shadow-[0_0_20px_rgba(255,255,255,0.08)] group-hover:shadow-[0_0_30px_rgba(255,255,255,0.15)] group-hover:ring-primary/30 transition-all duration-300`}>
             <TeamLogo
               src={team.logo}
@@ -58,17 +51,9 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, size = 'medium', showH
             />
           </div>
           
-          <h3 className={`text-center font-bold ${size === 'small' ? 'text-xs' : 'text-sm'} group-hover:text-primary transition-colors duration-300 mb-2`}>
+          <h3 className={`text-center font-bold ${size === 'small' ? 'text-xs' : 'text-sm'} group-hover:text-primary transition-colors duration-300`}>
             {team.name}
           </h3>
-          
-          {/* Quick stats bar */}
-          {rosterCount > 0 && (
-            <div className="flex items-center justify-center gap-1 text-[10px] text-muted-foreground">
-              <Users className="w-3 h-3" />
-              <span className="font-medium">{rosterCount}</span>
-            </div>
-          )}
         </div>
       </Link>
 

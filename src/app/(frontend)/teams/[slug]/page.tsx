@@ -169,7 +169,7 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
         </div>
       </div>
 
-      <div className="container max-w-7xl">
+      <div className="container max-w-7xl animate-fade-in">
         <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-8">
           {/* Enhanced Sidebar with Stats */}
           <aside className="space-y-6">

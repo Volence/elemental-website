@@ -79,7 +79,7 @@ export default async function TeamsPage() {
         </div>
       </div>
 
-      <div className="container space-y-12">
+      <div className="container space-y-12 animate-fade-in">
         {regionOrder.map((region) => {
           const teams = teamsByRegion[region]
           if (teams.length === 0) return null

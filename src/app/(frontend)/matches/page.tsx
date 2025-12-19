@@ -204,7 +204,7 @@ export default async function MatchesPage({
         {/* Upcoming Matches Section */}
         {/* Hide section when searching and no results found */}
         {(!searchQuery || matches.docs.length > 0) && (
-        <div className="mb-16">
+        <div className="mb-16 animate-fade-in">
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
             <div className="w-2 h-8 bg-primary rounded-full" />
             Upcoming Matches
@@ -360,7 +360,7 @@ export default async function MatchesPage({
                               <span
                                 className={`
                                   px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider
-                                  ${displayStatus === 'live' ? 'bg-red-500/20 text-red-500 border-2 border-red-500/50 animate-pulse' : ''}
+                                  ${displayStatus === 'live' ? 'bg-red-500/20 text-red-500 border-2 border-red-500/50 animate-pulse-glow' : ''}
                                   ${displayStatus === 'completed' ? 'bg-gray-500/10 text-gray-500 border border-gray-500/20' : ''}
                                   ${displayStatus === 'upcoming' ? 'bg-blue-500/15 text-blue-500 border border-blue-500/30' : ''}
                                   ${displayStatus === 'cancelled' ? 'bg-yellow-500/15 text-yellow-500 border border-yellow-500/30' : ''}
