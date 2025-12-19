@@ -19,13 +19,19 @@ export const metadata: Metadata = {
 function groupTeamsByRegion(teams: Awaited<ReturnType<typeof getAllTeams>>) {
   const grouped: Record<string, Awaited<ReturnType<typeof getAllTeams>>[number][]> = {
     NA: [],
-    EU: [],
+    EMEA: [],
     SA: [],
     Other: [],
   }
 
   teams.forEach((team) => {
-    const region = team.region || 'Other'
+    let region = team.region || 'Other'
+    
+    // Map legacy EU to EMEA
+    if (region === 'EU') {
+      region = 'EMEA'
+    }
+    
     if (grouped[region]) {
       grouped[region].push(team)
     } else {
@@ -40,7 +46,7 @@ export default async function TeamsPage() {
   const allTeams = await getAllTeams()
   const teamsByRegion = groupTeamsByRegion(allTeams)
 
-  const regionOrder = ['NA', 'EMEA', 'EU', 'SA', 'Other'] as const
+  const regionOrder = ['NA', 'EMEA', 'SA', 'Other'] as const
   const regionLabels: Record<string, string> = {
     NA: 'North America',
     EMEA: 'EMEA',
