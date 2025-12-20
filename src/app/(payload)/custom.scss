@@ -1204,6 +1204,15 @@ main > div > .field-type {
   }
 }
 
+/* Lock body scroll when mobile nav is open */
+@media (max-width: 767px) {
+  body.nav-open {
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100% !important;
+  }
+}
+
 /* Close button for drawer/modal - properly centered */
 .drawer__header-close,
 .modal__close,
