@@ -1994,48 +1994,23 @@ main > div > section + section::before {
 /* ============================================ */
 
 @media (max-width: 767px) {
-  /* Lock body scroll when mobile nav is open */
-  body.nav-open,
-  html.nav-open {
-    overflow: hidden !important;
+  /* Ensure template and main content take full width on mobile */
+  .template-default {
+    display: flex !important;
+    flex-direction: column !important;
   }
 
-  /* Prevent main content from being pushed */
-  .template-default main,
-  main {
-    transform: none !important;
+  .template-default main {
+    width: 100% !important;
+    max-width: 100% !important;
     margin-left: 0 !important;
-    position: relative !important;
+    margin-right: 0 !important;
+    flex: 1 !important;
   }
 
-  /* Mobile sidebar navigation - overlay style */
-  aside.nav,
-  .template-default aside,
-  aside[class*="nav"] {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    bottom: 0 !important;
-    width: 280px !important;
-    max-width: 85vw !important;
-    height: 100vh !important;
-    height: 100dvh !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    -webkit-overflow-scrolling: touch !important;
-    z-index: 1000 !important;
-    background-color: #0a0a0a !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
-    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5) !important;
-    transform: translateX(-100%) !important;
-    transition: transform 0.3s ease !important;
-  }
-
-  /* When nav is open - slide in */
-  aside.nav.nav--is-open,
-  .template-default aside.nav--is-open,
-  aside[class*="nav"].nav--is-open {
-    transform: translateX(0) !important;
+  /* Lock body scroll when mobile nav is open */
+  body.nav-open {
+    overflow: hidden !important;
   }
 
   /* Backdrop/overlay when mobile nav is open */
@@ -2049,13 +2024,6 @@ main > div > section + section::before {
     background: rgba(0, 0, 0, 0.7) !important;
     z-index: 999 !important;
     backdrop-filter: blur(4px) !important;
-  }
-
-  /* Navigation content padding */
-  aside.nav nav,
-  .template-default aside nav {
-    padding-top: 4rem !important;
-    padding-bottom: 2rem !important;
   }
 }
 
