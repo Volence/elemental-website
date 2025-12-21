@@ -3,8 +3,6 @@
 import React, { Fragment, useCallback, useState } from 'react'
 import { toast } from '@payloadcms/ui'
 
-import './index.scss'
-
 const SuccessMessage: React.FC<{ teamsOnly?: boolean }> = ({ teamsOnly }) => (
   <div>
     {teamsOnly ? 'Teams seeded successfully! ' : 'Database seeded! '}
@@ -96,31 +94,29 @@ export const SeedButton: React.FC = () => {
 
   return (
     <Fragment>
-      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+      <div className="flex gap-3 flex-wrap items-center">
         <button 
-          className="seedButton" 
+          className="appearance-none bg-transparent border-none p-0 underline cursor-pointer hover:opacity-85 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed" 
           onClick={handleTeamsSeed}
           disabled={loading || loadingTeams}
-          style={{ opacity: (loading || loadingTeams) ? 0.6 : 1 }}
         >
           {loadingTeams ? 'Seeding Teams...' : 'Seed Teams Only'}
         </button>
         <button 
-          className="seedButton" 
+          className="appearance-none bg-transparent border-none p-0 underline cursor-pointer hover:opacity-85 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed" 
           onClick={handleFullSeed}
           disabled={loading || loadingTeams}
-          style={{ opacity: (loading || loadingTeams) ? 0.6 : 1 }}
         >
           {loading ? 'Seeding...' : 'Seed Full Database'}
         </button>
       </div>
       {(seeded || teamsSeeded) && (
-        <div style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#28a745' }}>
+        <div className="mt-2 text-sm text-green-600 dark:text-green-400">
           ✓ {teamsSeeded ? 'Teams seeded' : ''} {seeded ? 'Full database seeded' : ''}
         </div>
       )}
       {error && (
-        <div style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#dc3545' }}>
+        <div className="mt-2 text-sm text-red-600 dark:text-red-400">
           ✗ Error: {error}
         </div>
       )}

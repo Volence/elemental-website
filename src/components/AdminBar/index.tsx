@@ -80,10 +80,8 @@ export const AdminBar: React.FC<{
               router.refresh()
             })
           }}
+          className="bg-transparent p-0 relative"
           style={{
-            backgroundColor: 'transparent',
-            padding: 0,
-            position: 'relative',
             zIndex: 'unset',
           }}
         />

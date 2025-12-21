@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState } from 'react'
-import './index.scss'
 
 interface DataConsistencyReport {
   orphanedPeople: Array<{
@@ -65,49 +64,48 @@ const DataConsistencyCheck: React.FC = () => {
   )
 
   return (
-    <div className="dataConsistencyCheck">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+    <div className="mb-6 p-4 rounded border bg-gray-50 border-gray-300 text-gray-800 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
+      <div className="flex justify-between items-center mb-3">
         <div>
           <strong>🔍 Data Consistency Check:</strong> Find orphaned People, teams with missing relationships, and duplicate entries.
         </div>
         <button 
           onClick={runCheck} 
           disabled={loading}
-          className="dataConsistencyCheck__button"
-          style={{ marginLeft: '1rem' }}
+          className="ml-4 px-4 py-2 bg-blue-600 text-white rounded cursor-pointer text-sm transition-colors hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {loading ? 'Checking...' : 'Run Check'}
         </button>
       </div>
 
       {error && (
-        <div className="dataConsistencyCheck__error">
+        <div className="p-3 rounded bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300 mt-2">
           <strong>Error:</strong> {error}
         </div>
       )}
 
       {report && (
-        <div style={{ marginTop: '1rem' }}>
-          <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-            <div style={{ padding: '0.5rem', backgroundColor: '#fff', borderRadius: '4px', minWidth: '120px' }}>
-              <div style={{ fontSize: '0.85rem', color: '#666' }}>Total People</div>
-              <div style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>{report.summary.totalPeople}</div>
+        <div className="mt-4">
+          <div className="flex gap-4 mb-4 flex-wrap">
+            <div className="p-2 bg-white dark:bg-gray-800 rounded min-w-[120px]">
+              <div className="text-sm text-gray-600 dark:text-gray-400">Total People</div>
+              <div className="text-xl font-bold">{report.summary.totalPeople}</div>
             </div>
-            <div style={{ padding: '0.5rem', backgroundColor: report.summary.orphanedCount > 0 ? '#fff3cd' : '#e8f5e9', borderRadius: '4px', minWidth: '120px' }}>
-              <div style={{ fontSize: '0.85rem', color: '#666' }}>Orphaned</div>
-              <div style={{ fontSize: '1.25rem', fontWeight: 'bold', color: report.summary.orphanedCount > 0 ? '#856404' : '#2e7d32' }}>
+            <div className={`p-2 rounded min-w-[120px] ${report.summary.orphanedCount > 0 ? 'bg-yellow-50 dark:bg-yellow-950' : 'bg-green-50 dark:bg-green-950'}`}>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Orphaned</div>
+              <div className={`text-xl font-bold ${report.summary.orphanedCount > 0 ? 'text-yellow-700 dark:text-yellow-300' : 'text-green-700 dark:text-green-300'}`}>
                 {report.summary.orphanedCount}
               </div>
             </div>
-            <div style={{ padding: '0.5rem', backgroundColor: report.summary.teamsWithIssuesCount > 0 ? '#fff3cd' : '#e8f5e9', borderRadius: '4px', minWidth: '120px' }}>
-              <div style={{ fontSize: '0.85rem', color: '#666' }}>Teams w/ Issues</div>
-              <div style={{ fontSize: '1.25rem', fontWeight: 'bold', color: report.summary.teamsWithIssuesCount > 0 ? '#856404' : '#2e7d32' }}>
+            <div className={`p-2 rounded min-w-[120px] ${report.summary.teamsWithIssuesCount > 0 ? 'bg-yellow-50 dark:bg-yellow-950' : 'bg-green-50 dark:bg-green-950'}`}>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Teams w/ Issues</div>
+              <div className={`text-xl font-bold ${report.summary.teamsWithIssuesCount > 0 ? 'text-yellow-700 dark:text-yellow-300' : 'text-green-700 dark:text-green-300'}`}>
                 {report.summary.teamsWithIssuesCount}
               </div>
             </div>
-            <div style={{ padding: '0.5rem', backgroundColor: report.summary.duplicateCount > 0 ? '#fff3cd' : '#e8f5e9', borderRadius: '4px', minWidth: '120px' }}>
-              <div style={{ fontSize: '0.85rem', color: '#666' }}>Duplicates</div>
-              <div style={{ fontSize: '1.25rem', fontWeight: 'bold', color: report.summary.duplicateCount > 0 ? '#856404' : '#2e7d32' }}>
+            <div className={`p-2 rounded min-w-[120px] ${report.summary.duplicateCount > 0 ? 'bg-yellow-50 dark:bg-yellow-950' : 'bg-green-50 dark:bg-green-950'}`}>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Duplicates</div>
+              <div className={`text-xl font-bold ${report.summary.duplicateCount > 0 ? 'text-yellow-700 dark:text-yellow-300' : 'text-green-700 dark:text-green-300'}`}>
                 {report.summary.duplicateCount}
               </div>
             </div>
@@ -116,38 +114,32 @@ const DataConsistencyCheck: React.FC = () => {
           {hasIssues && (
             <button 
               onClick={() => setShowDetails(!showDetails)}
-              className="dataConsistencyCheck__button"
-              style={{ marginBottom: '1rem' }}
+              className="mb-4 px-4 py-2 bg-blue-600 text-white rounded cursor-pointer text-sm transition-colors hover:bg-blue-700"
             >
               {showDetails ? 'Hide Details' : 'Show Details'}
             </button>
           )}
 
           {showDetails && hasIssues && (
-            <div className="dataConsistencyCheck__details-box">
+            <div className="mt-4 max-h-[500px] overflow-y-auto p-4 rounded border bg-white border-gray-300 text-gray-800 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
               {/* Orphaned People */}
               {report.orphanedPeople.length > 0 && (
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <h4 style={{ marginBottom: '0.5rem' }}>
+                <div className="mb-6">
+                  <h4 className="mb-2 font-semibold">
                     🚨 Orphaned People ({report.orphanedPeople.length})
                   </h4>
-                  <p style={{ fontSize: '0.9rem', marginBottom: '0.75rem', opacity: 0.8 }}>
+                  <p className="text-sm mb-3 opacity-80">
                     These People entries are not linked to any team or staff position. They may be unused or need to be linked.
                   </p>
-                  <div style={{ display: 'grid', gap: '0.5rem' }}>
+                  <div className="grid gap-2">
                     {report.orphanedPeople.map((person) => (
                       <div 
                         key={person.id}
-                        className="dataConsistencyCheck__issue-item"
-                        style={{ 
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center'
-                        }}
+                        className="flex justify-between items-center p-3 rounded border bg-yellow-50 border-yellow-400 text-yellow-800 dark:bg-yellow-950 dark:border-yellow-700 dark:text-yellow-200"
                       >
                         <div>
                           <strong>{person.name}</strong>
-                          <span style={{ marginLeft: '0.5rem', opacity: 0.7, fontSize: '0.9rem' }}>
+                          <span className="ml-2 opacity-70 text-sm">
                             ({person.slug})
                           </span>
                         </div>
@@ -155,14 +147,7 @@ const DataConsistencyCheck: React.FC = () => {
                           href={`/admin/collections/people/${person.id}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          style={{ 
-                            padding: '0.25rem 0.5rem', 
-                            backgroundColor: '#2196f3', 
-                            color: '#fff', 
-                            borderRadius: '4px',
-                            textDecoration: 'none',
-                            fontSize: '0.85rem'
-                          }}
+                          className="px-2 py-1 bg-blue-600 text-white rounded no-underline text-sm hover:bg-blue-700 transition-colors"
                         >
                           View
                         </a>
@@ -174,37 +159,36 @@ const DataConsistencyCheck: React.FC = () => {
 
               {/* Teams with Missing Relationships */}
               {report.teamsWithMissingRelationships.length > 0 && (
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <h4 style={{ marginBottom: '0.5rem' }}>
+                <div className="mb-6">
+                  <h4 className="mb-2 font-semibold">
                     ⚠️ Teams with Missing Person Relationships ({report.teamsWithMissingRelationships.length})
                   </h4>
-                  <p style={{ fontSize: '0.9rem', marginBottom: '0.75rem', opacity: 0.8 }}>
+                  <p className="text-sm mb-3 opacity-80">
                     These teams have entries with names but no Person relationship. Consider linking them to People entries.
                   </p>
-                  <div style={{ display: 'grid', gap: '0.5rem' }}>
+                  <div className="grid gap-2">
                     {report.teamsWithMissingRelationships.map((team) => (
                       <div 
                         key={team.teamId}
-                        className="dataConsistencyCheck__issue-item"
+                        className="p-3 rounded border bg-yellow-50 border-yellow-400 text-yellow-800 dark:bg-yellow-950 dark:border-yellow-700 dark:text-yellow-200"
                       >
-                        <div style={{ marginBottom: '0.5rem' }}>
+                        <div className="mb-2">
                           <strong>{team.teamName}</strong>
-                          <span style={{ marginLeft: '0.5rem', opacity: 0.7, fontSize: '0.9rem' }}>
+                          <span className="ml-2 opacity-70 text-sm">
                             ({team.teamSlug})
                           </span>
                           <a 
                             href={`/admin/collections/teams/${team.teamId}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="dataConsistencyCheck__view-link"
-                            style={{ marginLeft: '0.5rem' }}
+                            className="ml-2 px-2 py-1 bg-blue-600 text-white rounded no-underline text-sm inline-block hover:bg-blue-700 transition-colors"
                           >
                             View
                           </a>
                         </div>
-                        <ul style={{ margin: 0, paddingLeft: '1.5rem', fontSize: '0.9rem' }}>
+                        <ul className="m-0 pl-6 text-sm space-y-1">
                           {team.issues.map((issue, idx) => (
-                            <li key={idx} style={{ marginBottom: '0.25rem' }}>{issue}</li>
+                            <li key={idx}>{issue}</li>
                           ))}
                         </ul>
                       </div>
@@ -216,62 +200,48 @@ const DataConsistencyCheck: React.FC = () => {
               {/* Duplicate People */}
               {report.duplicatePeople.length > 0 && (
                 <div>
-                  <h4 style={{ marginBottom: '0.5rem' }}>
+                  <h4 className="mb-2 font-semibold">
                     🔄 Potential Duplicate People ({report.duplicatePeople.length})
                   </h4>
-                  <p style={{ fontSize: '0.9rem', marginBottom: '0.75rem', opacity: 0.8 }}>
+                  <p className="text-sm mb-3 opacity-80">
                     These People entries have very similar names and may be duplicates. Review and consider merging them.
                   </p>
-                  <div style={{ display: 'grid', gap: '0.5rem' }}>
+                  <div className="grid gap-2">
                     {report.duplicatePeople.map((dup, idx) => (
                       <div 
                         key={idx}
-                        className="dataConsistencyCheck__issue-item"
-                        style={{ 
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center'
-                        }}
+                        className="flex justify-between items-center p-3 rounded border bg-yellow-50 border-yellow-400 text-yellow-800 dark:bg-yellow-950 dark:border-yellow-700 dark:text-yellow-200"
                       >
                         <div>
                           <div>
                             <strong>{dup.person1.name}</strong>
-                            <span style={{ marginLeft: '0.5rem', opacity: 0.7, fontSize: '0.9rem' }}>
+                            <span className="ml-2 opacity-70 text-sm">
                               ({dup.person1.slug})
                             </span>
                             <a 
                               href={`/admin/collections/people/${dup.person1.id}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              style={{ 
-                                marginLeft: '0.5rem',
-                                padding: '0.25rem 0.5rem', 
-                                backgroundColor: '#2196f3', 
-                                color: '#fff', 
-                                borderRadius: '4px',
-                                textDecoration: 'none',
-                                fontSize: '0.85rem'
-                              }}
+                              className="ml-2 px-2 py-1 bg-blue-600 text-white rounded no-underline text-sm inline-block hover:bg-blue-700 transition-colors"
                             >
                               View
                             </a>
                           </div>
-                          <div style={{ marginTop: '0.25rem' }}>
+                          <div className="mt-1">
                             <strong>{dup.person2.name}</strong>
-                            <span style={{ marginLeft: '0.5rem', opacity: 0.7, fontSize: '0.9rem' }}>
+                            <span className="ml-2 opacity-70 text-sm">
                               ({dup.person2.slug})
                             </span>
                             <a 
                               href={`/admin/collections/people/${dup.person2.id}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="dataConsistencyCheck__view-link"
-                              style={{ marginLeft: '0.5rem' }}
+                              className="ml-2 px-2 py-1 bg-blue-600 text-white rounded no-underline text-sm inline-block hover:bg-blue-700 transition-colors"
                             >
                               View
                             </a>
                           </div>
-                          <div style={{ marginTop: '0.25rem', fontSize: '0.85rem', color: '#666' }}>
+                          <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                             Similarity: {Math.round(dup.similarity * 100)}%
                           </div>
                         </div>
@@ -282,7 +252,7 @@ const DataConsistencyCheck: React.FC = () => {
               )}
 
               {!hasIssues && (
-                <div className="dataConsistencyCheck__success-message" style={{ padding: '1rem', textAlign: 'center' }}>
+                <div className="p-4 text-center text-green-700 dark:text-green-300">
                   ✅ <strong>No issues found!</strong> Your data is consistent.
                 </div>
               )}
@@ -290,7 +260,7 @@ const DataConsistencyCheck: React.FC = () => {
           )}
 
           {report && !hasIssues && (
-            <div className="dataConsistencyCheck__stat-box--success" style={{ padding: '0.75rem', borderRadius: '4px', marginTop: '0.5rem' }}>
+            <div className="p-3 rounded bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300 mt-2">
               ✅ <strong>All good!</strong> No orphaned People, teams with missing relationships, or duplicate entries found.
             </div>
           )}

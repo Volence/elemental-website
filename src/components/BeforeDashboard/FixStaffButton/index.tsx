@@ -3,8 +3,6 @@
 import React, { Fragment, useCallback, useState } from 'react'
 import { toast } from '@payloadcms/ui'
 
-import './index.scss'
-
 export const FixStaffButton: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const [fixed, setFixed] = useState(false)
@@ -52,10 +50,10 @@ export const FixStaffButton: React.FC = () => {
               <div>
                 Staff relationships fixed! 
                 {data?.results && (
-                  <div style={{ marginTop: '0.5rem', fontSize: '0.9rem' }}>
+                  <div className="mt-2 text-sm">
                     Fixed {data.results.orgStaffFixed} org staff and {data.results.productionStaffFixed} production staff.
                     {data.results.orgStaffErrors.length > 0 || data.results.productionStaffErrors.length > 0 ? (
-                      <div style={{ marginTop: '0.5rem', color: '#856404' }}>
+                      <div className="mt-2 text-yellow-700 dark:text-yellow-300">
                         Some errors occurred - check console for details.
                       </div>
                     ) : null}
@@ -80,20 +78,19 @@ export const FixStaffButton: React.FC = () => {
   return (
     <Fragment>
       <button 
-        className="fixStaffButton" 
+        className="px-4 py-2 bg-blue-600 text-white rounded cursor-pointer text-sm font-medium transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60" 
         onClick={handleFix}
         disabled={loading}
-        style={{ opacity: loading ? 0.6 : 1 }}
       >
         {loading ? 'Fixing...' : 'Fix Staff Relationships'}
       </button>
       {fixed && (
-        <div style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#28a745' }}>
+        <div className="mt-2 text-sm text-green-600 dark:text-green-400">
           ✓ Staff relationships fixed
         </div>
       )}
       {error && (
-        <div style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#dc3545' }}>
+        <div className="mt-2 text-sm text-red-600 dark:text-red-400">
           ✗ Error: {error}
         </div>
       )}
