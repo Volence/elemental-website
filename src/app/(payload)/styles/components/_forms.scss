@@ -24,12 +24,12 @@ select,
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid $admin-border-normal;
   border-radius: $radius-md;
-  padding: $spacing-md $spacing-lg;
+  padding: 0.5rem $spacing-lg;
   color: $admin-text-primary;
   font-size: 0.9375rem;
   line-height: 1.5;
   transition: all $transition-normal;
-  min-height: 3rem;
+  min-height: 2.5rem;
   box-sizing: border-box;
   width: 100%;
   display: block;
@@ -44,6 +44,12 @@ select,
     opacity: 0.5;
     cursor: not-allowed;
   }
+}
+
+// Textareas need more height
+textarea {
+  min-height: 6rem;
+  padding: $spacing-md $spacing-lg;
 }
 
 // Search inputs - extra padding for icon
