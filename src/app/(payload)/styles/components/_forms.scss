@@ -107,10 +107,33 @@ input[placeholder*="search"] {
 
 // Individual fields that need card treatment (NOT groups/collapsibles/arrays)
 .field-type:not(.collapsible):not(.group):not(.array-field):not([class*="group"]) {
-  background: transparent;
-  border: none;
-  padding: $spacing-lg 0;
-  margin-bottom: $spacing-lg;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-xl;
+  transition: all $transition-normal;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+  
+  // Remove borders from inputs inside to avoid double-border effect
+  input,
+  textarea,
+  select,
+  .react-select__control,
+  [class*="select__control"] {
+    border: none;
+    background: rgba(0, 0, 0, 0.2);
+    
+    &:focus,
+    &:focus-within {
+      background: rgba(0, 0, 0, 0.3);
+      box-shadow: 0 0 0 2px rgba($admin-accent-primary, 0.3);
+    }
+  }
 }
 
 // Field inputs and selects spacing
