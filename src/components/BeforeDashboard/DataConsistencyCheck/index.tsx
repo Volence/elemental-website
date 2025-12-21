@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { GradientBorder } from '../GradientBorder'
 
 interface DataConsistencyReport {
   orphanedPeople: Array<{
@@ -64,8 +65,9 @@ const DataConsistencyCheck: React.FC = () => {
   )
 
   return (
-    <div className="mb-6 p-4 rounded border bg-gray-50 border-gray-300 text-gray-800 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
-      <div className="flex justify-between items-center mb-3">
+    <GradientBorder>
+      <div className="p-4 rounded bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
+        <div className="flex justify-between items-center mb-3">
         <div>
           <strong>🔍 Data Consistency Check:</strong> Find orphaned People, teams with missing relationships, and duplicate entries.
         </div>
@@ -266,7 +268,8 @@ const DataConsistencyCheck: React.FC = () => {
           )}
         </div>
       )}
-    </div>
+      </div>
+    </GradientBorder>
   )
 }
 

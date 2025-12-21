@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useAuth } from '@payloadcms/ui'
 import type { User } from '@/payload-types'
 import { UserRole } from '@/access/roles'
+import { GradientBorder } from '../GradientBorder'
 
 interface Stats {
   teams: number
@@ -166,15 +167,15 @@ const QuickStats: React.FC = () => {
   }
 
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-        gap: '1rem',
-        marginBottom: '1.5rem',
-      }}
-    >
-      {statCards.map((stat) => (
+    <GradientBorder>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gap: '1rem',
+        }}
+      >
+        {statCards.map((stat) => (
         <a
           key={stat.label}
           href={stat.link}
@@ -220,7 +221,8 @@ const QuickStats: React.FC = () => {
           </div>
         </a>
       ))}
-    </div>
+      </div>
+    </GradientBorder>
   )
 }
 

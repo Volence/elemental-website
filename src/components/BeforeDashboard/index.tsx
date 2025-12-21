@@ -10,6 +10,7 @@ import DataConsistencyCheck from './DataConsistencyCheck'
 import DataConsistencyDashboard from './DataConsistencyDashboard'
 import QuickStats from './QuickStats'
 import AssignedTeamsDashboard from './AssignedTeamsDashboard'
+import { GradientBorder } from './GradientBorder'
 import { UserRole } from '@/access/roles'
 import type { User } from '@/payload-types'
 
@@ -28,21 +29,25 @@ const BeforeDashboard: React.FC = () => {
       <QuickStats />
       {isAdmin && (
         <>
-          <div className="mb-6 p-4 rounded border bg-yellow-50 border-yellow-400 text-yellow-800 dark:bg-yellow-950 dark:border-yellow-700 dark:text-yellow-200">
-            <strong>🚀 Quick Start:</strong> Seed your database with initial team data from <code className="bg-black/10 dark:bg-white/10 px-1 py-0.5 rounded">teams.json</code>
-            <div className="mt-2 text-sm">
-              <strong>⚠️ Note:</strong> "Seed Teams Only" will <strong>clear all existing teams</strong> and re-seed fresh data. All People entries will be recreated and linked properly.
+          <GradientBorder>
+            <div className="p-4 rounded bg-yellow-50 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-200">
+              <strong>🚀 Quick Start:</strong> Seed your database with initial team data from <code className="bg-black/10 dark:bg-white/10 px-1 py-0.5 rounded">teams.json</code>
+              <div className="mt-2 text-sm">
+                <strong>⚠️ Note:</strong> "Seed Teams Only" will <strong>clear all existing teams</strong> and re-seed fresh data. All People entries will be recreated and linked properly.
+              </div>
+              <div className="mt-3">
+                <SeedButton />
+              </div>
             </div>
-            <div className="mt-3">
-              <SeedButton />
+          </GradientBorder>
+          <GradientBorder>
+            <div className="p-4 rounded bg-blue-50 text-blue-800 dark:bg-blue-950 dark:text-blue-200">
+              <strong>🔧 Fix Staff Relationships:</strong> If staff pages aren't showing roles, this will link Organization Staff and Production Staff entries to People records.
+              <div className="mt-3">
+                <FixStaffButton />
+              </div>
             </div>
-          </div>
-          <div className="mb-6 p-4 rounded border bg-blue-50 border-blue-400 text-blue-800 dark:bg-blue-950 dark:border-blue-700 dark:text-blue-200">
-            <strong>🔧 Fix Staff Relationships:</strong> If staff pages aren't showing roles, this will link Organization Staff and Production Staff entries to People records.
-            <div className="mt-3">
-              <FixStaffButton />
-            </div>
-          </div>
+          </GradientBorder>
           <DataConsistencyCheck />
         </>
       )}

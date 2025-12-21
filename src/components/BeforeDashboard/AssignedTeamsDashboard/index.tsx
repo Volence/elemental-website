@@ -5,6 +5,7 @@ import { useAuth } from '@payloadcms/ui'
 import { usePathname } from 'next/navigation'
 import type { User } from '@/payload-types'
 import { UserRole } from '@/access/roles'
+import { GradientBorder } from '../GradientBorder'
 
 /**
  * Component that displays assigned teams on the dashboard page
@@ -136,15 +137,7 @@ const AssignedTeamsDashboard: React.FC = () => {
   }
   
   return (
-    <div
-      style={{
-        marginBottom: '1.5rem',
-        padding: '1.25rem',
-        backgroundColor: 'var(--theme-elevation-50, rgba(255, 255, 255, 0.02))',
-        border: '1px solid var(--theme-elevation-200, rgba(255, 255, 255, 0.1))',
-        borderRadius: '8px',
-      }}
-    >
+    <GradientBorder>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
         <svg
           width="20"
@@ -239,7 +232,7 @@ const AssignedTeamsDashboard: React.FC = () => {
           </a>
         ))}
       </div>
-    </div>
+    </GradientBorder>
   )
 }
 
