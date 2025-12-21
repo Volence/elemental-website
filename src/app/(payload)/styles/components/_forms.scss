@@ -257,14 +257,13 @@ input[placeholder*="search"] {
   margin-bottom: $spacing-xl;
 }
 
-// Row field children - equal width, remove margins to keep side-by-side
+// Row field children - equal width, remove ALL margins to keep side-by-side
 .row-field > .field-type,
 .field-type.row > .field-type,
 .field-type[class*="row"] > .field-type {
   flex: 1 1 0;
   min-width: 0;
-  margin-bottom: 0 !important;
-  margin-top: 0 !important;
+  margin: 0 !important;
 }
 
 // Row field wrapper
