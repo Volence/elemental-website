@@ -46,6 +46,14 @@ select,
   }
 }
 
+// Date inputs - center the calendar icon
+input[type="date"],
+input[type="datetime-local"] {
+  display: flex;
+  align-items: center;
+  line-height: 1;
+}
+
 // Textareas need more height
 textarea {
   min-height: 6rem;
