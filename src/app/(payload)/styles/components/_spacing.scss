@@ -61,10 +61,13 @@ main > section + section,
   margin-top: $spacing-3xl;
 }
 
-// Exclude row field children from spacing rules
+// Exclude row field children from ALL spacing rules
 .field-type.row > .field-type,
+.field-type.row .field-type,
 .field-type[class*="row"] > .field-type,
-.row-field > .field-type {
+.field-type[class*="row"] .field-type,
+.row-field > .field-type,
+.row-field .field-type {
   margin-top: 0 !important;
   padding-top: 0 !important;
   border-top: none !important;

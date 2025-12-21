@@ -488,9 +488,15 @@ section.field-type,
   margin-bottom: $spacing-2xl;
 }
 
-// Consistent field spacing
-.render-fields .field-type + .field-type {
+// Consistent field spacing (but not for row field children)
+.render-fields .field-type + .field-type:not(.row):not([class*="row"]) {
   margin-top: $spacing-xl;
+}
+
+// Ensure row field children have no spacing
+.field-type.row .field-type,
+.field-type[class*="row"] .field-type {
+  margin-top: 0 !important;
 }
 
 .render-fields > .field-type,
