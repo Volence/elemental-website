@@ -70,16 +70,26 @@ input[placeholder*="search"] {
   }
 }
 
-// Hide the visible react-select input artifact
-.rs__input,
-[class*="rs__input"] {
-  opacity: 0;
-  width: 0;
-  height: 0;
-  padding: 0;
-  margin: 0;
-  border: none;
-  position: absolute;
+// React Select input - ensure text is visible
+.react-select__input,
+[class*="react-select__input"],
+.rs__input input,
+[class*="rs__input"] input {
+  color: $admin-text-primary !important;
+  opacity: 1 !important;
+  caret-color: $admin-accent-primary;
+}
+
+// React Select single value (selected item)
+.react-select__single-value,
+[class*="react-select__single-value"] {
+  color: $admin-text-primary;
+}
+
+// React Select placeholder
+.react-select__placeholder,
+[class*="react-select__placeholder"] {
+  color: $admin-text-muted;
 }
 
 // ============================================
