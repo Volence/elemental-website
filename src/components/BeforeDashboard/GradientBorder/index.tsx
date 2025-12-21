@@ -29,7 +29,7 @@ export const GradientBorder: React.FC<GradientBorderProps> = ({ children, classN
         style={{
           padding: '1.25rem',
           borderRadius: '6px',
-          backgroundColor: 'transparent',
+          backgroundColor: 'var(--theme-bg)',
           position: 'relative',
         }}
       >
