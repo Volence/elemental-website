@@ -107,16 +107,17 @@ input[placeholder*="search"] {
 
 // Individual fields that need card treatment (NOT groups/collapsibles/arrays)
 .field-type:not(.collapsible):not(.group):not(.array-field):not([class*="group"]) {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.005);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-left: 2px solid rgba($admin-accent-primary, 0.2);
   border-radius: $radius-lg;
   padding: $spacing-lg;
   margin-bottom: $spacing-xl;
   transition: all $transition-normal;
   
   &:hover {
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.01);
+    border-left-color: rgba($admin-accent-primary, 0.3);
   }
   
   // Remove borders from inputs inside to avoid double-border effect
@@ -132,6 +133,23 @@ input[placeholder*="search"] {
     &:focus-within {
       background: rgba(0, 0, 0, 0.3);
       box-shadow: 0 0 0 2px rgba($admin-accent-primary, 0.3);
+    }
+  }
+}
+
+// Sidebar fields (like SLUG in doc-controls) - ensure no nested borders
+.doc-controls .field-type,
+[class*="sidebar"] .field-type {
+  input,
+  textarea,
+  select {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.2);
+    
+    &:focus {
+      border-color: rgba($admin-accent-primary, 0.5);
+      background: rgba(0, 0, 0, 0.3);
+      box-shadow: 0 0 0 2px rgba($admin-accent-primary, 0.2);
     }
   }
 }
@@ -236,14 +254,17 @@ input[placeholder*="search"] {
   display: flex;
   align-items: flex-start;
   flex-wrap: nowrap;
+  margin-bottom: $spacing-xl;
 }
 
-// Row field children - equal width
+// Row field children - equal width, remove margins to keep side-by-side
 .row-field > .field-type,
 .field-type.row > .field-type,
 .field-type[class*="row"] > .field-type {
   flex: 1 1 0;
   min-width: 0;
+  margin-bottom: 0 !important;
+  margin-top: 0 !important;
 }
 
 // Row field wrapper
