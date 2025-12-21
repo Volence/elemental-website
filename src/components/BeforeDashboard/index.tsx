@@ -30,10 +30,10 @@ const BeforeDashboard: React.FC = () => {
       {isAdmin && (
         <>
           <GradientBorder>
-            <div className="p-4 rounded bg-yellow-50 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-200">
-              <strong>🚀 Quick Start:</strong> Seed your database with initial team data from <code className="bg-black/10 dark:bg-white/10 px-1 py-0.5 rounded">teams.json</code>
+            <div className="p-4 rounded">
+              <strong className="text-yellow-400">🚀 Quick Start:</strong> Seed your database with initial team data from <code className="bg-black/10 dark:bg-white/10 px-1 py-0.5 rounded">teams.json</code>
               <div className="mt-2 text-sm">
-                <strong>⚠️ Note:</strong> "Seed Teams Only" will <strong>clear all existing teams</strong> and re-seed fresh data. All People entries will be recreated and linked properly.
+                <strong className="text-yellow-400">⚠️ Note:</strong> "Seed Teams Only" will <strong>clear all existing teams</strong> and re-seed fresh data. All People entries will be recreated and linked properly.
               </div>
               <div className="mt-3">
                 <SeedButton />
@@ -41,8 +41,8 @@ const BeforeDashboard: React.FC = () => {
             </div>
           </GradientBorder>
           <GradientBorder>
-            <div className="p-4 rounded bg-blue-50 text-blue-800 dark:bg-blue-950 dark:text-blue-200">
-              <strong>🔧 Fix Staff Relationships:</strong> If staff pages aren't showing roles, this will link Organization Staff and Production Staff entries to People records.
+            <div className="p-4 rounded">
+              <strong className="text-blue-400">🔧 Fix Staff Relationships:</strong> If staff pages aren't showing roles, this will link Organization Staff and Production Staff entries to People records.
               <div className="mt-3">
                 <FixStaffButton />
               </div>

@@ -66,10 +66,10 @@ const DataConsistencyCheck: React.FC = () => {
 
   return (
     <GradientBorder>
-      <div className="p-4 rounded bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
+      <div className="p-4 rounded">
         <div className="flex justify-between items-center mb-3">
         <div>
-          <strong>🔍 Data Consistency Check:</strong> Find orphaned People, teams with missing relationships, and duplicate entries.
+          <strong className="text-gray-300">🔍 Data Consistency Check:</strong> <span className="text-gray-400">Find orphaned People, teams with missing relationships, and duplicate entries.</span>
         </div>
         <button 
           onClick={runCheck} 
