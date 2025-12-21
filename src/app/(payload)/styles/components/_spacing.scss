@@ -44,7 +44,6 @@ main > section,
 // Major section dividers with gradient
 main > section + section,
 .dashboard section + section,
-.before-dashboard > div + div,
 .render-fields > .field-type + .field-type,
 .collection-list section + section {
   border-top: 1px solid transparent;

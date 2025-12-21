@@ -11,7 +11,7 @@
 
 aside,
 .template-default aside {
-  padding: $spacing-lg $spacing-sm $spacing-md;
+  padding: $spacing-md $spacing-sm;
 }
 
 // ============================================
@@ -22,11 +22,11 @@ aside,
   display: flex;
   align-items: center;
   gap: $spacing-md;
-  padding: 0.625rem $spacing-lg;
-  margin: 0.125rem $spacing-sm;
+  padding: 0.625rem $spacing-md;
+  margin: 0.125rem 0;
   border-radius: $radius-md;
   color: $admin-text-secondary;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   font-weight: 400;
   text-decoration: none;
   transition: all $transition-fast;
@@ -60,13 +60,13 @@ aside,
 
 // Active link container
 .nav__link:has(.nav__link-indicator) {
-  background: rgba($admin-accent-primary, 0.15);
+  background: rgba($admin-accent-primary, 0.12);
   border-radius: $radius-md;
-  margin: 0.125rem $spacing-sm;
+  margin: 0.125rem 0;
   
   .nav__link-label {
     color: rgb(165, 180, 252); // Light indigo
-    font-weight: 600;
+    font-weight: 500;
   }
 }
 
@@ -80,41 +80,19 @@ aside,
   font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  padding: 0.625rem $spacing-lg;
-  margin: $spacing-md $spacing-sm $spacing-xs;
+  padding: 0.75rem $spacing-md 0.375rem;
+  margin: $spacing-lg 0 $spacing-xs;
   position: relative;
-  
-  // Gradient divider above group
-  &::before {
-    content: '';
-    display: block;
-    position: absolute;
-    top: -$spacing-xs;
-    left: $spacing-lg;
-    right: $spacing-lg;
-    height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(139, 92, 246, 0.2) 50%,
-      transparent 100%
-    );
-  }
-  
-  // First group doesn't need divider
-  &:first-of-type::before {
-    display: none;
-  }
 }
 
 // Group items - slightly indented
 .nav-group ul li .nav__link {
-  padding-left: 1.25rem;
+  padding-left: $spacing-lg;
 }
 
 // Spacing between groups
 .nav-group + .nav-group {
-  margin-top: $spacing-sm;
+  margin-top: 0;
 }
 
 // ============================================
