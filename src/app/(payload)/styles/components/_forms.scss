@@ -120,34 +120,35 @@ input[placeholder*="search"] {
     border-left-color: rgba($admin-accent-primary, 0.3);
   }
   
-  // Remove borders from inputs inside to avoid double-border effect
+  // Subtle borders for inputs to improve visibility
   input,
   textarea,
   select,
   .react-select__control,
   [class*="select__control"] {
-    border: none;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     background: rgba(0, 0, 0, 0.2);
     
     &:focus,
     &:focus-within {
       background: rgba(0, 0, 0, 0.3);
+      border-color: rgba($admin-accent-primary, 0.4);
       box-shadow: 0 0 0 2px rgba($admin-accent-primary, 0.3);
     }
   }
 }
 
-// Sidebar fields (like SLUG in doc-controls) - ensure no nested borders
+// Sidebar fields (like SLUG in doc-controls) - subtle gray borders
 .doc-controls .field-type,
 [class*="sidebar"] .field-type {
   input,
   textarea,
   select {
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     background: rgba(0, 0, 0, 0.2);
     
     &:focus {
-      border-color: rgba($admin-accent-primary, 0.5);
+      border-color: rgba($admin-accent-primary, 0.4);
       background: rgba(0, 0, 0, 0.3);
       box-shadow: 0 0 0 2px rgba($admin-accent-primary, 0.2);
     }
