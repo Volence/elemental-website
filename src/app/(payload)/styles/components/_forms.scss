@@ -78,6 +78,9 @@ input[placeholder*="search"] {
   color: $admin-text-primary !important;
   opacity: 1 !important;
   caret-color: $admin-accent-primary;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 // React Select single value (selected item)
