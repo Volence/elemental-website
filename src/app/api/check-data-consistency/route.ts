@@ -1,8 +1,5 @@
-import { NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
-import { headers } from 'next/headers'
 import { checkDataConsistency } from '@/utilities/checkDataConsistency'
+import { authenticateRequest, apiErrorResponse, apiSuccessResponse } from '@/utilities/apiAuth'
 
 /**
  * API endpoint to check data consistency
@@ -16,34 +13,15 @@ import { checkDataConsistency } from '@/utilities/checkDataConsistency'
  * Requires authentication.
  */
 export async function GET() {
+  const auth = await authenticateRequest()
+  if (!auth.success) return auth.response
+
+  const { payload } = auth.data
+
   try {
-    const payload = await getPayload({ config: configPromise })
-    const requestHeaders = await headers()
-    
-    // Authenticate the request
-    const { user } = await payload.auth({ headers: requestHeaders })
-    
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 403 }
-      )
-    }
-    
     const report = await checkDataConsistency(payload)
-    
-    return NextResponse.json({
-      success: true,
-      data: report,
-    })
+    return apiSuccessResponse(report)
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to check data consistency'
-    return NextResponse.json(
-      {
-        success: false,
-        error: errorMessage,
-      },
-      { status: 500 }
-    )
+    return apiErrorResponse(error, 'Failed to check data consistency')
   }
 }

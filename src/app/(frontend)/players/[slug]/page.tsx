@@ -3,32 +3,19 @@ import React from 'react'
 import { notFound } from 'next/navigation'
 import { getPlayerByName, getAllPlayerNames } from '@/utilities/getPlayer'
 import { SocialLinks } from '@/components/SocialLinks'
-import { Shield, Users, Crown, UserCheck, Calendar, Share2, Image as ImageIcon, Film, Mic, Eye, Video } from 'lucide-react'
+import { Shield, Crown, Share2, Users, Mic, Eye, Video } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { TeamLogo } from '@/components/TeamLogo'
 import { formatPlayerSlug } from '@/utilities/getPlayer'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { getMediaUrl } from '@/utilities/getMediaUrl'
+import { getOrgRoleIcon, getOrgRoleLabel } from '@/utilities/roleIcons'
 
 type Args = {
   params: Promise<{
     slug: string
   }>
-}
-
-const getRoleIcon = (role: string) => {
-  const iconMap: Record<string, any> = {
-    'owner': Crown,
-    'co-owner': Crown,
-    'hr': UserCheck,
-    'moderator': Shield,
-    'event-manager': Calendar,
-    'social-manager': Share2,
-    'graphics': Image,
-    'media-editor': Film,
-  }
-  return iconMap[role] || Users
 }
 
 const getRoleLabel = (role: string) => {
@@ -271,14 +258,14 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
                       </h3>
                       <div className="grid sm:grid-cols-2 gap-3">
                         {player.staffRoles.organization.map((role) => {
-                          const RoleIcon = getRoleIcon(role)
+                          const roleIcon = getOrgRoleIcon(role, 'md')
                           return (
                             <div 
                               key={role} 
                               className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-br from-accent-gold/10 to-accent-gold/5 border border-accent-gold/20 hover:border-accent-gold/40 transition-all hover:scale-[1.02]"
                             >
                               <div className="w-8 h-8 rounded-lg bg-accent-gold/20 flex items-center justify-center flex-shrink-0">
-                                {React.createElement(RoleIcon, { className: 'w-4 h-4 text-[hsl(var(--accent-gold))]' })}
+                                {roleIcon}
                               </div>
                               <span className="font-semibold">{getRoleLabel(role)}</span>
                             </div>
@@ -296,9 +283,7 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
                       </h3>
                       <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-br from-accent-blue/10 to-accent-blue/5 border border-accent-blue/20 hover:border-accent-blue/40 transition-all hover:scale-[1.02] w-fit">
                         <div className="w-8 h-8 rounded-lg bg-accent-blue/20 flex items-center justify-center flex-shrink-0">
-                          {React.createElement(getProductionIcon(player.staffRoles.production), { 
-                            className: 'w-4 h-4 text-[hsl(var(--accent-blue))]' 
-                          })}
+                          {getProductionIcon(player.staffRoles.production)}
                         </div>
                         <span className="font-semibold">{getRoleLabel(player.staffRoles.production)}</span>
                       </div>

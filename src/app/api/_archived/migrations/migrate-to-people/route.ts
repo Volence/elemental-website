@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server'
-import { headers } from 'next/headers'
-import configPromise from '@payload-config'
-import { getPayload } from 'payload'
 import { createOrFindPerson } from '@/utilities/bulkPeopleOperations'
+import { authenticateRequest, apiSuccessResponse, apiErrorResponse } from '@/utilities/apiAuth'
 
 /**
  * Migration endpoint to convert name-based entries to People relationships
@@ -14,19 +12,12 @@ import { createOrFindPerson } from '@/utilities/bulkPeopleOperations'
  * Requires authentication.
  */
 export async function POST() {
+  const auth = await authenticateRequest()
+  if (!auth.success) return auth.response
+
+  const { payload } = auth.data
+
   try {
-    const payload = await getPayload({ config: configPromise })
-    const requestHeaders = await headers()
-    
-    // Authenticate the request
-    const { user } = await payload.auth({ headers: requestHeaders })
-    
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 403 }
-      )
-    }
     
     const results = {
       teamsUpdated: 0,

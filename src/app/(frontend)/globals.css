@@ -198,4 +198,15 @@ html[data-theme='light'] {
   .animate-shimmer {
     animation: skeleton-shimmer 2s linear infinite;
   }
+
+  /* Hero text shadow - for prominent headings */
+  .text-shadow-hero {
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Background dot pattern - for decorative backgrounds */
+  .bg-dot-pattern {
+    background-image: radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0);
+    background-size: 32px 32px;
+  }
 }

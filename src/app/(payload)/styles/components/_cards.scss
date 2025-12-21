@@ -96,14 +96,14 @@
 // INFO BOXES & BANNERS
 // ============================================
 
-.banner,
-[class*="banner"],
+// Only target Payload UI banners, not custom components like .assigned-teams-banner
+.banner:not([class*="assigned-teams"]):not([class*="team-manager"]),
 .notification,
 [class*="notification"],
 .message,
 [class*="message"],
-.info-box,
-[class*="info-box"] {
+.info-box:not([class*="assigned-teams"]):not([class*="team-manager"]),
+[class*="info-box"]:not([class*="assigned-teams"]):not([class*="team-manager"]) {
   @include gradient-border($gradient: $admin-gradient-primary);
   margin: $spacing-2xl $spacing-xl;
   padding: $spacing-lg $spacing-xl;
@@ -111,9 +111,9 @@
 }
 
 // Info box variant
-.info-box,
-[class*="info-box"],
-[class*="info"][class*="box"] {
+.info-box:not([class*="assigned-teams"]):not([class*="team-manager"]),
+[class*="info-box"]:not([class*="assigned-teams"]):not([class*="team-manager"]),
+[class*="info"][class*="box"]:not([class*="assigned-teams"]):not([class*="team-manager"]) {
   @include gradient-border($gradient: $admin-gradient-info);
   background: rgba(6, 182, 212, 0.05);
 }

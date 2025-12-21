@@ -4,7 +4,8 @@ import Link from 'next/link'
 import React from 'react'
 import { TeamLogo } from '@/components/TeamLogo'
 import type { Team } from '@/utilities/getTeams'
-import { Shield, Swords, Heart, Lock, Users, UserCheck } from 'lucide-react'
+import { Lock, Users, UserCheck } from 'lucide-react'
+import { getGameRoleIcon } from '@/utilities/roleIcons'
 
 interface TeamCardProps {
   team: Team
@@ -20,19 +21,6 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, size = 'medium', showH
   const tankCount = team.roster?.filter(p => p.role === 'tank').length || 0
   const dpsCount = team.roster?.filter(p => p.role === 'dps').length || 0
   const supportCount = team.roster?.filter(p => p.role === 'support').length || 0
-
-  const getRoleIcon = (role: string) => {
-    switch (role) {
-      case 'tank':
-        return <Shield className="w-3 h-3 text-blue-500" />
-      case 'dps':
-        return <Swords className="w-3 h-3 text-red-500" />
-      case 'support':
-        return <Heart className="w-3 h-3 text-green-500" />
-      default:
-        return null
-    }
-  }
 
   return (
     <div className="relative group h-full overflow-visible">
@@ -121,7 +109,7 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, size = 'medium', showH
                 {team.roster.map((player, i) => (
                   <div key={i} className="flex items-center gap-2 text-xs">
                     <div className="flex-shrink-0">
-                      {getRoleIcon(player.role)}
+                      {getGameRoleIcon(player.role, 'sm')}
                     </div>
                     <span className="font-medium">{player.name}</span>
                     <span className="text-muted-foreground uppercase text-[10px] ml-auto">{player.role}</span>

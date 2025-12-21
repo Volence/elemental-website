@@ -40,7 +40,7 @@ const DataConsistencyDashboard: React.FC = () => {
         const response = await fetch('/api/data-consistency-check', {
           credentials: 'include',
         })
-        
+
         if (response.ok) {
           const data = await response.json()
           setIssues(data.issues || [])
@@ -59,23 +59,26 @@ const DataConsistencyDashboard: React.FC = () => {
   if (pathname !== '/admin' && pathname !== '/admin/') return null
   if (issues.length === 0) return null
 
-  const errorCount = issues.filter(i => i.type === 'error').length
-  const warningCount = issues.filter(i => i.type === 'warning').length
+  const errorCount = issues.filter((i) => i.type === 'error').length
+  const warningCount = issues.filter((i) => i.type === 'warning').length
   const totalItemsAffected = issues.reduce((sum, issue) => sum + issue.items.length, 0)
   const isAdmin = user?.role === UserRole.ADMIN
 
+  const severity = errorCount > 0 ? 'error' : 'warning'
+
   return (
     <div
+      className="data-consistency-dashboard"
       style={{
-        marginBottom: '1.5rem',
-        padding: '1.25rem',
-        backgroundColor: errorCount > 0 ? 'var(--theme-error-50, rgba(220, 38, 38, 0.1))' : 'var(--theme-warning-50, rgba(251, 191, 36, 0.1))',
-        border: `2px solid ${errorCount > 0 ? 'var(--theme-error-300)' : 'var(--theme-warning-300)'}`,
-        borderRadius: '8px',
-        borderLeft: `4px solid ${errorCount > 0 ? 'var(--theme-error-500)' : 'var(--theme-warning-500)'}`,
+        backgroundColor:
+          errorCount > 0
+            ? 'var(--theme-error-50, rgba(220, 38, 38, 0.1))'
+            : 'var(--theme-warning-50, rgba(251, 191, 36, 0.1))',
+        borderColor: errorCount > 0 ? 'var(--theme-error-300)' : 'var(--theme-warning-300)',
+        borderLeftColor: errorCount > 0 ? 'var(--theme-error-500)' : 'var(--theme-warning-500)',
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+      <div className="data-consistency-dashboard__header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <svg
             width="20"
@@ -90,12 +93,7 @@ const DataConsistencyDashboard: React.FC = () => {
               fill={errorCount > 0 ? 'var(--theme-error-600)' : 'var(--theme-warning-600)'}
             />
           </svg>
-          <h3 style={{ 
-            margin: 0, 
-            fontSize: '1rem', 
-            fontWeight: 600,
-            color: 'var(--theme-text)'
-          }}>
+          <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: 'var(--theme-text)' }}>
             Data Consistency Issues Found
           </h3>
         </div>
@@ -104,12 +102,14 @@ const DataConsistencyDashboard: React.FC = () => {
       <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1rem', fontSize: '0.875rem' }}>
         {errorCount > 0 && (
           <div style={{ color: 'var(--theme-error-700)' }}>
-            <strong style={{ fontSize: '1.25rem' }}>{errorCount}</strong> critical {errorCount === 1 ? 'error' : 'errors'}
+            <strong style={{ fontSize: '1.25rem' }}>{errorCount}</strong> critical{' '}
+            {errorCount === 1 ? 'error' : 'errors'}
           </div>
         )}
         {warningCount > 0 && (
           <div style={{ color: 'var(--theme-warning-700)' }}>
-            <strong style={{ fontSize: '1.25rem' }}>{warningCount}</strong> {warningCount === 1 ? 'warning' : 'warnings'}
+            <strong style={{ fontSize: '1.25rem' }}>{warningCount}</strong>{' '}
+            {warningCount === 1 ? 'warning' : 'warnings'}
           </div>
         )}
         <div style={{ color: 'var(--theme-text-600)' }}>
@@ -117,18 +117,21 @@ const DataConsistencyDashboard: React.FC = () => {
         </div>
       </div>
 
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column',
-        gap: '0.5rem',
-        padding: '1rem',
-        backgroundColor: 'var(--theme-elevation-0)',
-        border: '1px solid var(--theme-elevation-200)',
-        borderRadius: '6px',
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.5rem',
+          padding: '1rem',
+          backgroundColor: 'var(--theme-elevation-0)',
+          border: '1px solid var(--theme-elevation-200)',
+          borderRadius: '6px',
+        }}
+      >
         {issues.map((issue, i) => (
           <div key={i} style={{ fontSize: '0.875rem', color: 'var(--theme-text-600)' }}>
-            {issue.type === 'error' ? '❌' : '⚠️'} {issue.category}: <strong>{issue.items.length}</strong> affected
+            {issue.type === 'error' ? '❌' : '⚠️'} {issue.category}:{' '}
+            <strong>{issue.items.length}</strong> affected
           </div>
         ))}
       </div>
@@ -136,26 +139,7 @@ const DataConsistencyDashboard: React.FC = () => {
       {isAdmin && (
         <a
           href="/admin/data-consistency"
-          style={{
-            display: 'block',
-            marginTop: '1rem',
-            padding: '0.75rem 1rem',
-            backgroundColor: 'var(--theme-success-500)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            fontSize: '0.875rem',
-            fontWeight: 600,
-            textAlign: 'center',
-            textDecoration: 'none',
-            transition: 'all 0.2s ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'var(--theme-success-600)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'var(--theme-success-500)'
-          }}
+          className="data-consistency-dashboard__link"
         >
           📊 View Detailed Report & Fix Issues
         </a>

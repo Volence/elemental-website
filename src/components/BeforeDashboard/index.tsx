@@ -1,7 +1,6 @@
 'use client'
 
 import { Banner } from '@payloadcms/ui/elements/Banner'
-import { useAuth } from '@payloadcms/ui'
 import React from 'react'
 
 import { SeedButton } from './SeedButton'
@@ -11,13 +10,11 @@ import DataConsistencyDashboard from './DataConsistencyDashboard'
 import QuickStats from './QuickStats'
 import AssignedTeamsDashboard from './AssignedTeamsDashboard'
 import { GradientBorder } from './GradientBorder'
-import { UserRole } from '@/access/roles'
-import type { User } from '@/payload-types'
+import { useIsAdmin, useIsTeamManager } from '@/utilities/adminAuth'
 
 const BeforeDashboard: React.FC = () => {
-  const { user } = useAuth()
-  // @ts-ignore - Payload ClientUser type compatibility issue
-  const isAdmin = user && (user as User).role === UserRole.ADMIN
+  const isAdmin = useIsAdmin()
+  const isTeamManager = useIsTeamManager()
 
   return (
     <div>
@@ -51,8 +48,7 @@ const BeforeDashboard: React.FC = () => {
           <DataConsistencyCheck />
         </>
       )}
-      {/* @ts-ignore - Payload ClientUser type compatibility issue */}
-      {user && (user as User).role === UserRole.TEAM_MANAGER && (
+      {isTeamManager && (
         <div className="mb-4 p-3 rounded border bg-green-50 border-green-400 text-green-800 dark:bg-green-950 dark:border-green-700 dark:text-green-200">
           <strong>👤 Team Manager:</strong> You have access to manage your assigned teams. 
           Visit the <strong>Teams</strong> collection to see which teams you can edit. 

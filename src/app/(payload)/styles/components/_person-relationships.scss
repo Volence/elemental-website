@@ -1,0 +1,98 @@
+/* ============================================
+ * Person Relationships Component
+ * Shows on People edit page
+ * ============================================ */
+
+.person-relationships {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: var(--theme-elevation-50);
+  border: 1px solid var(--theme-elevation-200);
+  border-radius: 6px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  &__icon {
+    flex-shrink: 0;
+  }
+
+  &__title {
+    color: var(--theme-text);
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  &__section {
+    margin-bottom: 0.75rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__section-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--theme-text-700);
+    margin-bottom: 0.5rem;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  &__item {
+    padding-left: 1rem;
+  }
+
+  &__link {
+    color: var(--theme-success-600);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: text-decoration 0.15s ease;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__roles {
+    margin-left: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--theme-text-500);
+  }
+
+  &__staff-list {
+    padding-left: 1rem;
+    font-size: 0.875rem;
+    color: var(--theme-text-600);
+  }
+
+  &__staff-item {
+    margin-bottom: 0.25rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__staff-link {
+    color: var(--theme-success-600);
+    text-decoration: none;
+    transition: text-decoration 0.15s ease;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+

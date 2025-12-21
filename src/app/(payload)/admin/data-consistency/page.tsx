@@ -1,7 +1,7 @@
 import React from 'react'
-import DataConsistencyPage from '@/components/DataConsistencyPage'
+import DataConsistencyView from '@/components/DataConsistencyView'
 
 // Server component - layout should provide admin shell
 export default async function DataConsistencyRoute() {
-  return <DataConsistencyPage />
+  return <DataConsistencyView />
 }

@@ -1,0 +1,119 @@
+/* ============================================
+ * Read-Only Item Styles
+ * Applied to list rows and navigation items based on permissions
+ * ============================================ */
+
+/* Gray out list rows marked as read-only */
+[data-payload-list-row][data-read-only="true"] {
+  opacity: 0.5 !important;
+  filter: grayscale(0.4) !important;
+
+  &:hover {
+    opacity: 0.7 !important;
+    background-color: var(--theme-elevation-50) !important;
+  }
+
+  a,
+  button {
+    cursor: not-allowed !important;
+    pointer-events: auto;
+  }
+}
+
+/* Add visual indicator in the name/title cell */
+[data-payload-list-row][data-read-only="true"] [data-payload-cell="name"]::after,
+[data-payload-list-row][data-read-only="true"] [data-payload-cell="displayName"]::after {
+  content: " (Read-only)";
+  font-size: 0.7rem;
+  color: var(--theme-text-400);
+  font-weight: 400;
+  font-style: italic;
+  margin-left: 0.25rem;
+}
+
+/* Clickable rows styling */
+[data-payload-list-row] {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: var(--theme-elevation-100);
+  }
+}
+
+/* Read-only navigation links */
+[data-read-only-nav-link="true"] {
+  opacity: 0.5;
+  filter: grayscale(0.3);
+  cursor: not-allowed;
+  pointer-events: none;
+
+  &::after {
+    content: " 🔒";
+    font-size: 0.7rem;
+    margin-left: 0.25rem;
+  }
+}
+
+/* Team manager info banner */
+.team-manager-info {
+  margin-bottom: 1rem;
+  padding: 0.875rem 1rem;
+  background-color: var(--theme-elevation-50);
+  border: 1px solid var(--theme-elevation-200);
+  border-radius: 6px;
+  font-size: 0.875rem;
+
+  &__title {
+    font-weight: 600;
+    color: var(--theme-text);
+    margin-bottom: 0.5rem;
+  }
+
+  &__description {
+    color: var(--theme-text-600);
+    line-height: 1.5;
+  }
+
+  &--admin {
+    background-color: var(--theme-blue-50);
+    border-color: var(--theme-blue-200);
+
+    .team-manager-info__title {
+      color: var(--theme-blue-700);
+    }
+  }
+
+  &--team-manager {
+    background-color: var(--theme-success-50);
+    border-color: var(--theme-success-200);
+
+    .team-manager-info__title {
+      color: var(--theme-success-700);
+    }
+  }
+
+  &--staff-manager {
+    background-color: var(--theme-warning-50);
+    border-color: var(--theme-warning-200);
+
+    .team-manager-info__title {
+      color: var(--theme-warning-700);
+    }
+  }
+}
+
+/* Read-only indicator badge */
+.read-only-indicator {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--theme-text-50);
+  margin-left: 0.5rem;
+  opacity: 0.7;
+
+  &__icon {
+    margin-right: 0.25rem;
+  }
+}
+

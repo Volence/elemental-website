@@ -1,46 +1,29 @@
 'use client'
 
 import React from 'react'
-import { useAuth } from '@payloadcms/ui'
 import { usePathname } from 'next/navigation'
-import type { User } from '@/payload-types'
-import { UserRole } from '@/access/roles'
+import { useIsAdmin, useIsTeamManager, useIsStaffManager, useCanManageTeams } from '@/utilities/adminAuth'
 
 /**
  * Component that displays helpful information for Team/Staff Managers on the Teams page
  */
 const TeamManagerInfo: React.FC = () => {
-  const { user } = useAuth()
   const pathname = usePathname()
+  const canManageTeams = useCanManageTeams()
+  const isAdmin = useIsAdmin()
+  const isTeamManager = useIsTeamManager()
+  const isStaffManager = useIsStaffManager()
   
-  if (!user) return null
-  
-  // @ts-ignore - Payload ClientUser type compatibility issue
-  const currentUser = user as User
-  
-  // Only show for Admins, Team Managers, and Staff Managers on Teams page
-  const canShow = currentUser.role === UserRole.ADMIN || currentUser.role === UserRole.TEAM_MANAGER || currentUser.role === UserRole.STAFF_MANAGER
-  if (!canShow || !pathname?.includes('/teams')) {
+  // Only show for users who can manage teams on Teams page
+  if (!canManageTeams || !pathname?.includes('/teams')) {
     return null
   }
   
-  // Different messages based on role
-  const isAdmin = currentUser.role === UserRole.ADMIN
-  const isTeamManager = currentUser.role === UserRole.TEAM_MANAGER
-  const isStaffManager = currentUser.role === UserRole.STAFF_MANAGER
+  // Determine variant class
+  const variant = isAdmin ? 'admin' : isTeamManager ? 'team-manager' : 'staff-manager'
   
   return (
-    <div
-      style={{
-        marginBottom: '1rem',
-        padding: '0.875rem 1rem',
-        backgroundColor: 'var(--theme-elevation-50)',
-        border: '1px solid var(--theme-elevation-200)',
-        borderRadius: '6px',
-        fontSize: '0.875rem',
-        color: 'var(--theme-text-600)',
-      }}
-    >
+    <div className={`team-manager-info team-manager-info--${variant}`}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
         <svg
           width="18"
@@ -58,10 +41,10 @@ const TeamManagerInfo: React.FC = () => {
         <div style={{ flex: 1 }}>
           {isAdmin && (
             <>
-              <strong style={{ color: 'var(--theme-text)', display: 'block', marginBottom: '0.25rem' }}>
+              <strong className="team-manager-info__title">
                 Admin Quick Access
               </strong>
-              <div style={{ lineHeight: '1.5' }}>
+              <div className="team-manager-info__description">
                 Your <strong>assigned teams</strong> are shown above for quick access. 
                 As an Admin, you can edit all teams, but these are the teams you primarily work with.
               </div>
@@ -69,10 +52,10 @@ const TeamManagerInfo: React.FC = () => {
           )}
           {isTeamManager && (
             <>
-              <strong style={{ color: 'var(--theme-text)', display: 'block', marginBottom: '0.25rem' }}>
+              <strong className="team-manager-info__title">
                 Team Manager Access
               </strong>
-              <div style={{ lineHeight: '1.5' }}>
+              <div className="team-manager-info__description">
                 You can <strong>create new teams</strong> and <strong>edit your assigned teams</strong> (shown above). 
                 Other teams are visible but read-only. Click on your assigned teams above to edit them directly.
               </div>
@@ -80,10 +63,10 @@ const TeamManagerInfo: React.FC = () => {
           )}
           {isStaffManager && (
             <>
-              <strong style={{ color: 'var(--theme-text)', display: 'block', marginBottom: '0.25rem' }}>
+              <strong className="team-manager-info__title">
                 Staff Manager Quick Access
               </strong>
-              <div style={{ lineHeight: '1.5' }}>
+              <div className="team-manager-info__description">
                 Your <strong>assigned teams</strong> are shown above for quick access. 
                 As a Staff Manager, you can edit all teams, but these are the teams you primarily work with.
               </div>

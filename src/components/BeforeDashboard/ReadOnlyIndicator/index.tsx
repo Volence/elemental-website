@@ -1,9 +1,7 @@
 'use client'
 
 import React from 'react'
-import { useAuth } from '@payloadcms/ui'
-import type { User } from '@/payload-types'
-import { UserRole } from '@/access/roles'
+import { useAdminUser, useIsAdmin, useIsTeamManager, useIsStaffManager } from '@/utilities/adminAuth'
 
 /**
  * Component to add visual indicators for read-only items in list views
@@ -13,28 +11,28 @@ export const ReadOnlyIndicator: React.FC<{
   rowData?: { id?: number | string; [key: string]: unknown }
   collection?: 'teams' | 'organization-staff' | 'production'
 }> = ({ rowData, collection }) => {
-  const { user } = useAuth()
+  const user = useAdminUser()
+  const isAdmin = useIsAdmin()
+  const isTeamManager = useIsTeamManager()
+  const isStaffManager = useIsStaffManager()
   
   if (!user || !rowData || !rowData.id) return null
   
-  // @ts-ignore - Payload ClientUser type compatibility issue
-  const currentUser = user as User
-  
   // Admins can edit everything
-  if (currentUser.role === UserRole.ADMIN) return null
+  if (isAdmin) return null
   
   let canEdit = false
   
-  if (collection === 'teams' && currentUser.role === UserRole.TEAM_MANAGER) {
+  if (collection === 'teams' && isTeamManager) {
     // Check if this team is in the user's assignedTeams
-    const assignedTeams = currentUser.assignedTeams
+    const assignedTeams = user.assignedTeams
     if (assignedTeams && Array.isArray(assignedTeams)) {
       const teamIds = assignedTeams.map((team: any) => 
         typeof team === 'number' ? team : (team?.id || team)
       )
       canEdit = teamIds.includes(Number(rowData.id))
     }
-  } else if ((collection === 'organization-staff' || collection === 'production') && currentUser.role === UserRole.STAFF_MANAGER) {
+  } else if ((collection === 'organization-staff' || collection === 'production') && isStaffManager) {
     // Staff managers can edit all staff (both organization and production)
     canEdit = true
   }

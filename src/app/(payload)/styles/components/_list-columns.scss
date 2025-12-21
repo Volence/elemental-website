@@ -1,0 +1,202 @@
+/* ============================================
+ * Admin List Column Shared Styles
+ * Used by all custom list column components
+ * ============================================ */
+
+/* Base cell wrapper - provides consistent vertical centering */
+.admin-cell {
+  display: flex;
+  align-items: center;
+  min-height: 50px;
+
+  /* Variants for different alignment needs */
+  &--start {
+    justify-content: flex-start;
+  }
+
+  &--center {
+    justify-content: center;
+  }
+
+  &--end {
+    justify-content: flex-end;
+  }
+}
+
+/* Team logo cell */
+.team-logo-cell {
+  &__container {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    overflow: hidden;
+    background-color: var(--theme-elevation-100);
+    border: 1px solid var(--theme-elevation-300);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+/* Team name cell with link */
+.team-name-cell {
+  &__link {
+    color: var(--theme-text);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.15s ease, text-decoration 0.15s ease;
+
+    &:hover {
+      color: var(--theme-elevation-900);
+      text-decoration: underline;
+    }
+  }
+}
+
+/* Status badge cell */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+
+  &__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+
+  /* Active status */
+  &--active {
+    background-color: var(--theme-success-100);
+    color: var(--theme-success-700);
+    border: 1px solid var(--theme-success-300);
+
+    .status-badge__dot {
+      background-color: var(--theme-success-500);
+    }
+  }
+
+  /* Inactive status */
+  &--inactive {
+    background-color: var(--theme-elevation-200);
+    color: var(--theme-text-500);
+    border: 1px solid var(--theme-elevation-400);
+
+    .status-badge__dot {
+      background-color: var(--theme-text-400);
+    }
+  }
+}
+
+/* Region cell */
+.region-cell {
+  font-size: 0.875rem;
+  color: var(--theme-text);
+}
+
+/* Rating cell */
+.rating-cell {
+  font-family: monospace;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--theme-text);
+}
+
+/* Date cell */
+.date-cell {
+  font-size: 0.875rem;
+  color: var(--theme-text-600);
+}
+
+/* Teams/Staff cell (for People list) */
+.relationships-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__badge {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    background-color: var(--theme-elevation-100);
+    border: 1px solid var(--theme-elevation-200);
+    border-radius: 4px;
+    font-size: 0.7rem;
+    color: var(--theme-text-600);
+  }
+
+  &__empty {
+    color: var(--theme-text-400);
+    font-style: italic;
+  }
+}
+
+/* Match title cell */
+.match-title-cell {
+  &__container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  &__logos {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  &__logo {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+
+  &__vs {
+    font-size: 0.7rem;
+    color: var(--theme-text-400);
+    font-weight: 600;
+  }
+
+  &__text {
+    flex: 1;
+  }
+
+  &__teams {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--theme-text);
+    margin-bottom: 0.125rem;
+  }
+
+  &__event {
+    font-size: 0.7rem;
+    color: var(--theme-text-500);
+  }
+}
+

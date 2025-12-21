@@ -4,41 +4,13 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { notFound } from 'next/navigation'
 import { SocialLinks } from '@/components/SocialLinks'
-import { Crown, UserCheck, Shield, Calendar, Share2, Image, Film, Users } from 'lucide-react'
 import { isPopulatedPerson, getSocialLinksFromPerson } from '@/utilities/personHelpers'
+import { getOrgRoleIcon, getOrgRoleLabel } from '@/utilities/roleIcons'
 
 type Args = {
   params: Promise<{
     slug: string
   }>
-}
-
-const getRoleIcon = (role: string) => {
-  const iconMap: Record<string, any> = {
-    'owner': Crown,
-    'co-owner': Crown,
-    'hr': UserCheck,
-    'moderator': Shield,
-    'event-manager': Calendar,
-    'social-manager': Share2,
-    'graphics': Image,
-    'media-editor': Film,
-  }
-  return iconMap[role] || Users
-}
-
-const getRoleLabel = (role: string) => {
-  const roleMap: Record<string, string> = {
-    'owner': 'Owner',
-    'co-owner': 'Co-Owner',
-    'hr': 'HR',
-    'moderator': 'Moderator',
-    'event-manager': 'Event Manager',
-    'social-manager': 'Social Manager',
-    'graphics': 'Graphics',
-    'media-editor': 'Media Editor',
-  }
-  return roleMap[role] || role
 }
 
 // Skip static generation during build - pages will be generated on-demand
@@ -83,7 +55,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
     // Handle roles array (may be empty for old data)
     const roles = Array.isArray(staffData.roles) ? staffData.roles : []
     const roleLabels = roles.length > 0 
-      ? roles.map((role: string) => getRoleLabel(role)).join(', ')
+      ? roles.map((role: string) => getOrgRoleLabel(role)).join(', ')
       : 'Staff Member'
 
     return {
@@ -126,7 +98,7 @@ export default async function OrganizationStaffPage({ params: paramsPromise }: A
   
   // Handle roles array (may be empty for old data)
   const roles = Array.isArray(staffData.roles) ? staffData.roles : []
-  const roleLabels = roles.map((role: string) => getRoleLabel(role))
+  const roleLabels = roles.map((role: string) => getOrgRoleLabel(role))
 
   return (
     <div className="pt-24 pb-24 min-h-screen">
@@ -138,8 +110,8 @@ export default async function OrganizationStaffPage({ params: paramsPromise }: A
           <div className="flex items-center justify-center gap-2 text-muted-foreground flex-wrap">
             {roles.length > 0 ? (
               roles.map((role: string, index: number) => {
-                const RoleIcon = getRoleIcon(role)
-                const roleLabel = getRoleLabel(role)
+                const RoleIcon = getOrgRoleIcon(role, 'lg')
+                const roleLabel = getOrgRoleLabel(role)
                 return (
                   <React.Fragment key={role}>
                     <div className="flex items-center gap-2">
