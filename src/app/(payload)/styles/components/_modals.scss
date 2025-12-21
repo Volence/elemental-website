@@ -15,7 +15,17 @@
 .modal,
 [class*="modal"] {
   background: $admin-bg-elevated;
-  border: 1px solid $admin-border-normal;
+  border: none;
+}
+
+// Remove all borders from modal/popup children
+.modal *,
+[class*="modal"] *,
+[class*="popup"] *,
+.drawer *,
+[class*="drawer"] * {
+  border-top: none !important;
+  border-bottom: none !important;
 }
 
 // ============================================
@@ -28,7 +38,7 @@
 .doc-drawer__header-content,
 .doc-drawer__after-header {
   background: $admin-bg-card;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: none;
   padding: $spacing-xl $spacing-2xl;
 }
 
