@@ -32,3 +32,33 @@
   padding: $spacing-xl $spacing-2xl;
 }
 
+// Remove gradient underlines from modal/dialog headings
+.modal h1,
+.modal h2,
+.modal h3,
+.modal h4,
+[class*="modal"] h1,
+[class*="modal"] h2,
+[class*="modal"] h3,
+[class*="modal"] h4,
+.drawer h1,
+.drawer h2,
+.drawer h3,
+.drawer h4,
+[class*="drawer"] h1,
+[class*="drawer"] h2,
+[class*="drawer"] h3,
+[class*="drawer"] h4,
+[class*="popup"] h1,
+[class*="popup"] h2,
+[class*="popup"] h3,
+[class*="popup"] h4 {
+  &::after {
+    display: none !important;
+  }
+  background: none !important;
+  background-image: none !important;
+  padding-bottom: 0 !important;
+  margin-bottom: $spacing-md;
+}
+
