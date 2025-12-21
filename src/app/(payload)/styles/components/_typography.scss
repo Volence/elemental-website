@@ -1,0 +1,212 @@
+// ============================================
+// TYPOGRAPHY
+// ============================================
+
+@import '../variables';
+@import '../mixins';
+
+// ============================================
+// HEADING RESETS
+// ============================================
+
+h1, h2, h3, h4, h5, h6 {
+  font-size: unset;
+  font-weight: unset;
+}
+
+// ============================================
+// PAGE HEADINGS WITH GRADIENT UNDERLINES
+// ============================================
+
+// Main page headings (h1)
+h1,
+.collection-list__header h1,
+.list-header h1,
+.doc-header h1,
+h1.doc-header__title,
+.doc-header h1,
+.list-header__title,
+h1.list-header__title,
+main h1 {
+  @include gradient-underline($max-width: 300px, $height: 3px);
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  margin-bottom: 0;
+}
+
+// Dashboard headings (h1, h2)
+.dashboard h1,
+.dashboard h2 {
+  @include gradient-underline($max-width: 300px, $height: 3px);
+  margin-bottom: 0;
+}
+
+// Section headings (h2)
+h2,
+main h2,
+.dashboard h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+  margin-top: $spacing-2xl;
+  margin-bottom: $spacing-lg;
+}
+
+// Subsection headings (h3)
+h3,
+main h3,
+.dashboard h3,
+.before-dashboard h3 {
+  @include gradient-underline($width: 120px, $height: 2.5px);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+  margin-top: $spacing-2xl;
+  margin-bottom: $spacing-lg;
+}
+
+// Banner headings (h4)
+.banner h4,
+.before-dashboard h4 {
+  @include gradient-underline($width: 80px, $height: 2.5px);
+  margin-bottom: 0;
+}
+
+// ============================================
+// FIELD LABELS
+// ============================================
+
+.field-type > label,
+.field-type > .field-label,
+label.field-label,
+.render-fields > .field-type > label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+  color: $admin-text-secondary;
+  margin-bottom: $spacing-sm;
+  display: block;
+}
+
+// Exclude relationship field values from label styling
+.relationship *,
+[class*="relationship"] *,
+[class*="select__"] *,
+.react-select *,
+[class*="pill__"] * {
+  text-transform: none;
+  font-size: inherit;
+  letter-spacing: normal;
+}
+
+// ============================================
+// BODY TEXT & DESCRIPTIONS
+// ============================================
+
+p,
+.body-text,
+main p {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: $admin-text-secondary;
+}
+
+.field-description,
+[class*="description"],
+[class*="helper"],
+.help-text,
+small {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: $admin-text-muted;
+  margin-top: $spacing-xs;
+  margin-bottom: 0;
+}
+
+.custom-view-description {
+  padding: $spacing-sm;
+  margin: $spacing-sm 0;
+}
+
+// ============================================
+// TABLE TYPOGRAPHY
+// ============================================
+
+th,
+.table__th,
+thead th {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: $admin-text-secondary;
+  position: sticky;
+  top: 0;
+  z-index: $z-sticky;
+  background: $admin-bg-base;
+  padding: $spacing-lg;
+  border-bottom: 2px solid transparent;
+  background-image: 
+    linear-gradient($admin-bg-base, $admin-bg-base),
+    $admin-gradient-primary;
+  background-origin: padding-box, border-box;
+  background-clip: padding-box, border-box;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: $admin-gradient-primary;
+    opacity: 0.6;
+  }
+  
+  &:hover {
+    color: $admin-text-primary;
+    
+    &::after {
+      opacity: 1;
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.4);
+    }
+  }
+}
+
+td,
+.table__td,
+tbody td {
+  font-size: 0.9375rem;
+  color: $admin-text-primary;
+}
+
+// ============================================
+// PAGE HEADERS
+// ============================================
+
+.collection-list__header,
+.list-header,
+[class*="list-header"],
+.doc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-lg;
+  margin-bottom: 0;
+}
+
+// CREATE NEW buttons positioning
+button[class*="create"],
+.collection-list__header button,
+.list-header button,
+[href*="create"],
+a[class*="create"] {
+  margin-top: 0;
+  align-self: center;
+}
+

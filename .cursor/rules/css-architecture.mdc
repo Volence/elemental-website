@@ -1,0 +1,38 @@
+---
+alwaysApply: true
+---
+## CSS Architecture Rules
+
+When working with admin panel styles in `src/app/(payload)/styles/`:
+
+1. **No New Monolithic Files**: Never create large CSS/SCSS files. Keep components under 500 lines.
+
+2. **Use Existing Patterns**: 
+   - Colors: Use variables from `_variables.scss` (e.g., `$admin-accent-primary`)
+   - Repeated patterns: Use mixins from `_mixins.scss` (e.g., `@include gradient-border`)
+   - Spacing: Use spacing variables (e.g., `$spacing-lg`)
+
+3. **File Organization**:
+   - New component styles go in `components/_component-name.scss`
+   - Always import new component files in `admin.scss`
+   - Group related styles together
+
+4. **Avoid `!important`**:
+   - Only use `!important` when overriding third-party styles
+   - Use proper specificity instead
+   - If fighting with existing styles, refactor the conflicting rule
+
+5. **Keep Specificity Low**:
+   - Maximum 3 levels of nesting in SCSS
+   - Avoid `html body div.class` chains
+   - Use BEM-style class names for components
+
+6. **Before Adding Styles**:
+   - Check if a mixin already exists for the pattern
+   - Check if a variable exists for the value
+   - Check if similar styles exist in another component file
+
+7. **When Creating New Patterns**:
+   - If a pattern repeats 3+ times, create a mixin
+   - If a value repeats 3+ times, create a variable
+   - Document the mixin/variable purpose in comments

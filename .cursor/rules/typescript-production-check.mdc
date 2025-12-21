@@ -1,0 +1,4 @@
+---
+alwaysApply: true
+---
+Whenever we make changes to any typescript files we make sure there's no errors with production, and if there is we fix them.

@@ -1,0 +1,453 @@
+// ============================================
+// FORMS - INPUTS, FIELDS, ARRAYS
+// ============================================
+
+@import '../variables';
+@import '../mixins';
+
+// ============================================
+// INPUT FIELDS
+// ============================================
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="number"],
+input[type="url"],
+input[type="tel"],
+input[type="date"],
+input[type="datetime-local"],
+textarea,
+select,
+.input {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid $admin-border-normal;
+  border-radius: $radius-md;
+  padding: $spacing-md $spacing-lg;
+  color: $admin-text-primary;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  transition: all $transition-normal;
+  min-height: 3rem;
+  box-sizing: border-box;
+  width: 100%;
+  display: block;
+  
+  @include focus-ring;
+  
+  &::placeholder {
+    color: $admin-text-disabled;
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Search inputs - extra padding for icon
+input[type="search"],
+[class*="search"] input,
+input[placeholder*="Search"],
+input[placeholder*="search"] {
+  padding-left: 2.5rem;
+}
+
+// React Select controls
+.react-select__control,
+[class*="select__control"],
+[class*="rs__control"] {
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid $admin-border-subtle;
+  transition: all $transition-normal;
+  
+  &:focus-within {
+    border-color: rgba($admin-accent-primary, 0.6);
+    box-shadow: 
+      0 0 0 3px rgba($admin-accent-primary, 0.2),
+      0 0 20px rgba($admin-accent-primary, 0.25);
+  }
+}
+
+// Hide the visible react-select input artifact
+.rs__input,
+[class*="rs__input"] {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  padding: 0;
+  margin: 0;
+  border: none;
+  position: absolute;
+}
+
+// ============================================
+// FIELD TYPE CONTAINERS
+// ============================================
+
+.render-fields {
+  background: transparent;
+  border: none;
+  padding: $spacing-xl;
+}
+
+// Individual fields that need card treatment (NOT groups/collapsibles/arrays)
+.field-type:not(.collapsible):not(.group):not(.array-field):not([class*="group"]) {
+  background: rgba(255, 255, 255, 0.005);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-left: 2px solid rgba($admin-accent-primary, 0.2);
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-xl;
+  transition: all $transition-normal;
+  
+  &:hover {
+    border-left-color: rgba($admin-accent-primary, 0.3);
+    background: rgba(255, 255, 255, 0.01);
+  }
+}
+
+// Field inputs and selects spacing
+.field-type input,
+.field-type textarea,
+.field-type select,
+.field-type .react-select__control {
+  margin-top: $spacing-sm;
+}
+
+// ============================================
+// GROUPS & COLLAPSIBLES
+// ============================================
+
+.field-type.group,
+.field-type.collapsible,
+[class*="group-field"],
+.collapsible {
+  background: rgba(255, 255, 255, 0.005);
+  border: 1px solid rgba(255, 255, 255, 0.02);
+  border-left: 2px solid rgba(6, 182, 212, 0.15);
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-xl;
+  transition: all $transition-slow;
+  
+  &:hover {
+    border-left-color: rgba(6, 182, 212, 0.25);
+    background: rgba(255, 255, 255, 0.01);
+  }
+}
+
+// Hide single-group-in-tab visual container (like Score tab)
+.field-type.group:only-child,
+.field-type.group:first-child:last-child {
+  background: transparent;
+  border: none;
+  border-left: none;
+  padding: 0;
+  margin: 0;
+  
+  > label:first-child {
+    display: none;
+  }
+}
+
+// Collapsible states
+.collapsible[class*="collapsed"],
+.collapsible:not([class*="open"]) {
+  background: rgba(255, 255, 255, 0.015);
+  border-left: 3px solid rgba(6, 182, 212, 0.3);
+  padding: $spacing-sm;
+}
+
+.collapsible[class*="open"],
+.collapsible:not([class*="collapsed"]) {
+  background: transparent;
+  border-left: 2px solid rgba(132, 204, 22, 0.2);
+}
+
+.collapsible__content {
+  background: transparent;
+  border: none;
+  padding: $spacing-lg 0 0 0;
+  transition: all $transition-slow;
+}
+
+.collapsible__toggle-wrap {
+  background: rgba(255, 255, 255, 0.015);
+  border: none;
+  padding: $spacing-sm $spacing-sm $spacing-lg;
+  border-radius: $radius-md;
+}
+
+// Remove nested field styling
+.collapsible .field-type,
+.group-field .field-type,
+.collapsible__content .field-type,
+.array-field .field-type,
+.group .field-type,
+.field-type .field-type {
+  background: transparent;
+  border: none;
+  border-left: none;
+  padding: $spacing-md 0;
+  margin-bottom: $spacing-md;
+}
+
+// ============================================
+// ROW FIELDS (Side-by-side layout)
+// ============================================
+
+.row-field,
+.field-type.row,
+.field-type[class*="row"] {
+  background: transparent;
+  border: none;
+  padding: 0;
+  gap: $spacing-lg;
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+}
+
+// Row field children - equal width
+.row-field > .field-type,
+.field-type.row > .field-type,
+.field-type[class*="row"] > .field-type {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+// Row field wrapper
+.row__fields,
+div[class*="row__fields"] {
+  display: flex;
+  flex-direction: row;
+  gap: $spacing-lg;
+  align-items: flex-start;
+  width: 100%;
+  flex: 1;
+  
+  > .field-type {
+    flex: 1 1 0;
+    min-width: 0;
+    margin: 0;
+  }
+  
+  .react-select__control {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+// Ensure inputs in rows match heights
+.row-field input,
+.field-type.row input,
+.field-type[class*="row"] input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+// ============================================
+// ARRAY FIELDS
+// ============================================
+
+.array-field,
+.blocks-field {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+// Array field rows
+.array-field__row,
+.blocks-field__row {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.02);
+  border-left: 3px solid rgba($admin-accent-primary, 0.25);
+  border-radius: $radius-lg;
+  padding: $spacing-xl;
+  margin-bottom: $spacing-lg;
+  transition: all $transition-normal;
+  position: relative;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.015);
+    border-left-color: rgba($admin-accent-primary, 0.4);
+    box-shadow: 0 0 15px rgba($admin-accent-primary, 0.15);
+  }
+}
+
+// Collapsed array rows - gradient left border
+.array-field__row[class*="collapsed"],
+.blocks-field__row[class*="collapsed"],
+.array-field__row:not([class*="open"]),
+.blocks-field__row:not([class*="open"]) {
+  border-left-width: 4px;
+  border-left-color: transparent;
+  background: rgba(255, 255, 255, 0.01);
+  
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, #06b6d4 0%, #6366f1 50%, #84cc16 100%);
+    border-radius: $radius-lg 0 0 $radius-lg;
+    opacity: 0.6;
+  }
+  
+  &:hover::before {
+    opacity: 1;
+    box-shadow: 0 0 15px rgba($admin-accent-primary, 0.3);
+  }
+}
+
+// Array row header
+.array-field__row-header,
+.blocks-field__row-header {
+  background: transparent;
+  border: none;
+  padding: 0 0 $spacing-lg 0;
+  margin-bottom: $spacing-lg;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.array-field__row-content,
+.blocks-field__row-content {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+// Remove nested borders in array rows
+.array-field__row *,
+.blocks-field__row * {
+  border-left: none;
+}
+
+// ============================================
+// ARRAY FIELD BUTTONS
+// ============================================
+
+.array-field__add-button,
+button[class*="array-actions__button"],
+button[class*="array__add-button"],
+.array-actions button,
+button.array-actions__button {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-sm;
+  line-height: 1.5;
+}
+
+// Button icon wrapper alignment
+span.btn__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  height: 1.5em;
+  width: 1.5em;
+  margin: 0;
+  padding: 0;
+  vertical-align: middle;
+  
+  svg {
+    display: block;
+    line-height: 1;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.btn__content {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.5;
+  gap: $spacing-sm;
+}
+
+// ============================================
+// FILE UPLOAD FIELDS
+// ============================================
+
+.file-field,
+.file-field__upload,
+.upload,
+[class*="file-field"] {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+// Main upload container
+.file-field__upload > div,
+.upload__wrapper,
+.file-details__wrapper {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba($admin-accent-primary, 0.25);
+  border-radius: $radius-lg;
+  padding: $spacing-2xl;
+  transition: all $transition-normal;
+  
+  &:hover {
+    background: rgba($admin-accent-primary, 0.05);
+    border-color: rgba($admin-accent-primary, 0.4);
+    box-shadow: 0 0 15px rgba($admin-accent-primary, 0.1);
+  }
+}
+
+// Upload button group
+.file-field__upload-actions,
+.upload__actions {
+  display: flex;
+  align-items: center;
+  gap: $spacing-lg;
+  margin-bottom: 0;
+  
+  span {
+    color: $admin-text-disabled;
+    font-size: 0.875rem;
+    font-weight: 400;
+    padding: 0 $spacing-sm;
+  }
+}
+
+.file-field__drag-text,
+.upload__drag-text {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.875rem;
+  margin-top: $spacing-xl;
+  text-align: right;
+}
+
+// ============================================
+// FORM SECTIONS
+// ============================================
+
+section.field-type,
+[class*="form-section"] {
+  background: rgba(255, 255, 255, 0.005);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-left: 2px solid rgba(6, 182, 212, 0.2);
+  border-radius: $radius-lg;
+  padding: $spacing-xl;
+  margin-bottom: $spacing-2xl;
+}
+
+// Consistent field spacing
+.render-fields .field-type + .field-type {
+  margin-top: $spacing-xl;
+}
+
+.render-fields > .field-type,
+.doc-fields > .field-type,
+main > div > .field-type {
+  margin-bottom: $spacing-2xl;
+}
+

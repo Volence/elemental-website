@@ -1,0 +1,140 @@
+// ============================================
+// BADGES & PILLS
+// ============================================
+
+@import '../variables';
+@import '../mixins';
+
+// ============================================
+// BASE BADGE STYLES
+// ============================================
+
+.pill,
+.badge,
+[class*="pill"],
+[class*="badge"],
+.chip,
+[class*="chip"],
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem $spacing-md;
+  border-radius: $radius-pill;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all $transition-normal;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 20px currentColor;
+  }
+}
+
+// ============================================
+// STATUS BADGES
+// ============================================
+
+// Published/Completed
+.pill--status-published,
+.badge--published,
+[class*="status"][class*="published"],
+[class*="completed"] {
+  background: linear-gradient(
+    135deg,
+    rgba($admin-accent-success, 0.15) 0%,
+    rgba($admin-accent-success, 0.25) 100%
+  );
+  border: 1px solid rgba($admin-accent-success, 0.3);
+  color: rgb(134, 239, 172);
+  box-shadow: 0 0 12px rgba($admin-accent-success, 0.2);
+}
+
+// Draft/Scheduled/Upcoming
+.pill--status-draft,
+.badge--draft,
+[class*="status"][class*="draft"],
+[class*="scheduled"],
+[class*="upcoming"] {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.15) 0%,
+    rgba(59, 130, 246, 0.25) 100%
+  );
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: rgb(147, 197, 253);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+}
+
+// Archived/Cancelled
+.pill--status-archived,
+.badge--archived,
+[class*="status"][class*="cancelled"],
+[class*="archived"] {
+  background: linear-gradient(
+    135deg,
+    rgba($admin-accent-error, 0.15) 0%,
+    rgba($admin-accent-error, 0.25) 100%
+  );
+  border: 1px solid rgba($admin-accent-error, 0.3);
+  color: rgb(252, 165, 165);
+  box-shadow: 0 0 12px rgba($admin-accent-error, 0.2);
+}
+
+// ============================================
+// ROLE BADGES
+// ============================================
+
+// Manager
+[class*="manager"],
+.role-manager {
+  background: linear-gradient(
+    135deg,
+    rgba(251, 191, 36, 0.15) 0%,
+    rgba(251, 191, 36, 0.25) 100%
+  );
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  color: rgb(253, 224, 71);
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.2);
+}
+
+// Coach
+[class*="coach"],
+.role-coach {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.15) 0%,
+    rgba(59, 130, 246, 0.25) 100%
+  );
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: rgb(147, 197, 253);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+}
+
+// Captain
+[class*="captain"],
+.role-captain {
+  background: linear-gradient(
+    135deg,
+    rgba($admin-accent-success, 0.15) 0%,
+    rgba($admin-accent-success, 0.25) 100%
+  );
+  border: 1px solid rgba($admin-accent-success, 0.3);
+  color: rgb(134, 239, 172);
+  box-shadow: 0 0 12px rgba($admin-accent-success, 0.2);
+}
+
+// Substitute
+[class*="sub"],
+.role-sub {
+  background: linear-gradient(
+    135deg,
+    rgba(156, 163, 175, 0.15) 0%,
+    rgba(156, 163, 175, 0.25) 100%
+  );
+  border: 1px solid rgba(156, 163, 175, 0.3);
+  color: rgb(209, 213, 219);
+  box-shadow: 0 0 12px rgba(156, 163, 175, 0.15);
+}
+

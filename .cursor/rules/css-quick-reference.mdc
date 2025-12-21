@@ -1,0 +1,66 @@
+---
+alwaysApply: false
+---
+## Admin Panel CSS Quick Reference
+
+When working with `src/app/(payload)/styles/`:
+
+### File Structure
+```
+styles/
+├── admin.scss              # Main import file
+├── _variables.scss         # All theme tokens
+├── _mixins.scss           # Reusable patterns
+├── _base.scss             # Foundation
+└── components/
+    ├── _navigation.scss   # Sidebar & nav
+    ├── _cards.scss        # Card patterns
+    ├── _forms.scss        # Form fields
+    ├── _typography.scss   # Text styles
+    ├── _buttons.scss      # Button styles
+    ├── _badges.scss       # Status badges
+    ├── _modals.scss       # Drawers/modals
+    └── _spacing.scss      # Layout
+```
+
+### Available Mixins
+- `@include gradient-border($gradient, $width, $bg-color, $radius)` - Gradient borders
+- `@include card-base` - Basic card styling
+- `@include card-hover($color, $intensity)` - Card hover effects
+- `@include focus-ring($color)` - Input focus states
+- `@include hover-glow($color, $lift)` - Glow on hover
+- `@include gradient-underline($gradient, $width, $max-width, $height, $glow)` - Heading underlines
+- `@include stat-card($type)` - Status cards (success/warning/error/info)
+- `@include button-base` - Button foundation
+
+### Available Variables
+
+**Colors**:
+- `$admin-accent-primary` (indigo), `$admin-accent-success` (green)
+- `$admin-accent-warning` (amber), `$admin-accent-error` (red)
+- `$admin-accent-info` (cyan)
+
+**Gradients**:
+- `$admin-gradient-primary`, `$admin-gradient-success`
+- `$admin-gradient-warning`, `$admin-gradient-error`, `$admin-gradient-info`
+
+**Spacing**: `$spacing-xs` through `$spacing-3xl` (0.25rem to 3rem)
+
+**Radius**: `$radius-sm` through `$radius-pill` (4px to 12px)
+
+**Transitions**: `$transition-fast`, `$transition-normal`, `$transition-slow`
+
+### Common Tasks
+
+**Add new component styles**:
+1. Create `components/_my-component.scss`
+2. Import in `admin.scss`: `@import './components/my-component';`
+3. Use existing variables and mixins
+
+**Add new color**:
+1. Add to `_variables.scss` as `rgb()` color
+2. Use throughout with `$variable-name` or `rgba($variable-name, 0.5)`
+
+**Add new reusable pattern**:
+1. Create mixin in `_mixins.scss`
+2. Use `@include mixin-name` where needed

@@ -1,0 +1,110 @@
+// ============================================
+// BASE ADMIN STYLES
+// ============================================
+
+@import './variables';
+
+// ============================================
+// BACKGROUNDS
+// ============================================
+
+body,
+.template-default,
+.template-default__wrap,
+main {
+  background-color: $admin-bg-base;
+}
+
+aside,
+.template-default aside,
+.nav {
+  background-color: $admin-bg-elevated;
+  border-right: 1px solid $admin-border-subtle;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.3);
+}
+
+.render-default,
+.dashboard,
+.collection-list,
+.doc-controls,
+main > div,
+form {
+  background-color: $admin-bg-base;
+}
+
+// Fix create-first-user page background
+section,
+.template-default section,
+[class*="account"],
+[class*="create-first-user"] {
+  background-color: $admin-bg-base;
+}
+
+// Button container backgrounds
+.form-submit,
+[class*="form__submit"],
+[class*="form-actions"],
+form > div:last-child {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+// ============================================
+// THEME LOADER FIX
+// ============================================
+
+html {
+  opacity: 0;
+  scroll-behavior: smooth;
+  background-color: $admin-bg-base;
+}
+
+html[data-theme='dark'],
+html[data-theme='light'] {
+  opacity: 1;
+}
+
+// ============================================
+// DASHBOARD CLEANUP
+// ============================================
+
+// Hide default dashboard cards (collections in sidebar instead)
+.dashboard__cards,
+.dashboard__group {
+  display: none;
+}
+
+.dashboard,
+.collection-list {
+  padding: $spacing-xl;
+}
+
+// ============================================
+// UI CLEANUP
+// ============================================
+
+// Hide broken template close button
+.template-default__close {
+  display: none;
+}
+
+// Mobile nav - lock body scroll when open
+@media (max-width: 767px) {
+  body.nav-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+  }
+  
+  .nav__mobile-close {
+    display: block;
+  }
+}
+
+@media (min-width: 768px) {
+  .nav__mobile-close {
+    display: none;
+  }
+}
+

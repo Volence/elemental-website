@@ -1,0 +1,97 @@
+// ============================================
+// SPACING & DIVIDERS
+// ============================================
+
+@import '../variables';
+
+// ============================================
+// CONSISTENT SPACING SYSTEM
+// ============================================
+
+// Major sections
+main > section,
+.dashboard > section,
+.collection-list > section {
+  margin-bottom: $spacing-3xl;
+}
+
+// Cards and containers
+.card,
+.dashboard__card,
+.info-box,
+[class*="info-box"] {
+  margin-bottom: $spacing-2xl;
+}
+
+// Form groups
+.field-group,
+.form-section,
+[class*="form-group"] {
+  margin-bottom: $spacing-xl;
+}
+
+// Collection list sub-header spacing
+.collection-list__sub-header,
+[class*="sub-header"] {
+  margin-bottom: $spacing-2xl;
+  padding: $spacing-lg 0;
+}
+
+// ============================================
+// SECTION DIVIDERS
+// ============================================
+
+// Major section dividers with gradient
+main > section + section,
+.dashboard section + section,
+.before-dashboard > div + div,
+.render-fields > .field-type + .field-type,
+.collection-list section + section {
+  border-top: 1px solid transparent;
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(6, 182, 212, 0.15) 10%,
+    rgba(132, 204, 22, 0.15) 90%,
+    transparent 100%
+  );
+  background-size: 100% 1px;
+  background-repeat: no-repeat;
+  background-position: top;
+  padding-top: $spacing-3xl;
+  margin-top: $spacing-3xl;
+}
+
+// Subsection dividers - more subtle
+.before-dashboard section + section,
+.dashboard > div + div,
+[class*="form-section"] + [class*="form-section"] {
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+  padding-top: $spacing-2xl;
+  margin-top: $spacing-2xl;
+}
+
+// Content sections with gradient dividers
+.doc-fields > section + section,
+main > div > section + section {
+  position: relative;
+  padding-top: $spacing-2xl;
+  margin-top: $spacing-2xl;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(6, 182, 212, 0.2) 20%,
+      rgba(132, 204, 22, 0.2) 80%,
+      transparent 100%
+    );
+  }
+}
+

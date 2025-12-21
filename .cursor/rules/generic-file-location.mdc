@@ -1,0 +1,4 @@
+---
+alwaysApply: true
+---
+If a markdown file is created, it get put into the project doc/ directory, and if a script is made it gets placed in the projects scripts/ directory.

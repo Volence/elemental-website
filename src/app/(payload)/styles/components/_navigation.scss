@@ -1,0 +1,200 @@
+// ============================================
+// NAVIGATION - SIDEBAR & BREADCRUMBS
+// ============================================
+
+@import '../variables';
+@import '../mixins';
+
+// ============================================
+// SIDEBAR CONTAINER
+// ============================================
+
+aside,
+.template-default aside {
+  padding: $spacing-lg $spacing-sm $spacing-md;
+}
+
+// ============================================
+// NAV LINKS - UNIFIED SINGLE APPROACH
+// ============================================
+
+.nav__link {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: 0.625rem $spacing-lg;
+  margin: 0.125rem $spacing-sm;
+  border-radius: $radius-md;
+  color: $admin-text-secondary;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  text-decoration: none;
+  transition: all $transition-fast;
+  cursor: pointer;
+  
+  // Icon styling
+  svg {
+    width: 1.125rem;
+    height: 1.125rem;
+    flex-shrink: 0;
+    opacity: 0.8;
+  }
+  
+  // Hover state
+  &:hover:not(:has(.nav__link-indicator)) {
+    background: rgba($admin-accent-primary, 0.08);
+    color: $admin-text-primary;
+    
+    svg {
+      opacity: 1;
+    }
+  }
+}
+
+// Active/Current page indicator (Payload's left border system)
+.nav__link-indicator {
+  background: $admin-accent-primary;
+  width: 3px;
+  border-radius: 0;
+}
+
+// Active link container
+.nav__link:has(.nav__link-indicator) {
+  background: rgba($admin-accent-primary, 0.15);
+  border-radius: $radius-md;
+  margin: 0.125rem $spacing-sm;
+  
+  .nav__link-label {
+    color: rgb(165, 180, 252); // Light indigo
+    font-weight: 600;
+  }
+}
+
+// ============================================
+// GROUP TOGGLES (PEOPLE, ESPORTS, STAFF, etc.)
+// ============================================
+
+.nav-group__toggle {
+  color: rgba(139, 92, 246, 0.8); // Purple
+  font-weight: 600;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.625rem $spacing-lg;
+  margin: $spacing-md $spacing-sm $spacing-xs;
+  position: relative;
+  
+  // Gradient divider above group
+  &::before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: -$spacing-xs;
+    left: $spacing-lg;
+    right: $spacing-lg;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(139, 92, 246, 0.2) 50%,
+      transparent 100%
+    );
+  }
+  
+  // First group doesn't need divider
+  &:first-of-type::before {
+    display: none;
+  }
+}
+
+// Group items - slightly indented
+.nav-group ul li .nav__link {
+  padding-left: 1.25rem;
+}
+
+// Spacing between groups
+.nav-group + .nav-group {
+  margin-top: $spacing-sm;
+}
+
+// ============================================
+// BREADCRUMBS
+// ============================================
+
+.step-nav {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-xs 0;
+  margin: 0;
+  
+  a,
+  span {
+    display: inline-flex;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    width: auto;
+    gap: $spacing-xs;
+  }
+  
+  // Hide broken SVG that JS removes
+  svg {
+    display: none;
+  }
+  
+  // Add home icon with CSS (can't be removed by JS)
+  a[href="/admin"]::before {
+    content: "🏠";
+    font-size: 1rem;
+    line-height: 1;
+    display: inline-block;
+    margin-right: $spacing-xs;
+  }
+  
+  // Breadcrumb separators
+  > span:not([class*="home"]):not([class*="last"]) {
+    display: inline-block;
+    opacity: 0.5;
+  }
+}
+
+// ============================================
+// NOTIFICATION BADGES
+// ============================================
+
+.nav__link [class*="badge"],
+.nav__link [class*="pill"] {
+  margin-left: auto;
+  background: $admin-gradient-error;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.125rem $spacing-sm;
+  border-radius: $radius-pill;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+// ============================================
+// LOGOUT BUTTON
+// ============================================
+
+nav button[type="button"]:last-child {
+  margin-top: auto;
+  color: $admin-text-muted;
+  
+  &:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: rgb(252, 165, 165);
+  }
+}
+

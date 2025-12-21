@@ -1,0 +1,40 @@
+/**
+ * ELEMENTAL ESPORTS - ADMIN PANEL STYLES
+ * 
+ * Refactored from 1,985-line custom.scss to modular component-based architecture
+ * 
+ * Benefits:
+ * - Reduced specificity (no more !important wars)
+ * - Reusable patterns via mixins
+ * - Clear separation of concerns
+ * - Easier to maintain and debug
+ * - Better performance (smaller, more efficient CSS)
+ * 
+ * Structure:
+ * - Variables: Theme tokens, colors, spacing
+ * - Mixins: Reusable patterns (gradient borders, card styles, etc.)
+ * - Base: Foundation styles, resets
+ * - Components: Modular component styles
+ */
+
+// ============================================
+// FOUNDATION
+// ============================================
+
+@import './variables';
+@import './mixins';
+@import './base';
+
+// ============================================
+// COMPONENTS
+// ============================================
+
+@import './components/navigation';
+@import './components/cards';
+@import './components/forms';
+@import './components/typography';
+@import './components/buttons';
+@import './components/badges';
+@import './components/modals';
+@import './components/spacing';
+

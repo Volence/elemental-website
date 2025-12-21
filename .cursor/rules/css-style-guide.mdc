@@ -1,0 +1,61 @@
+---
+alwaysApply: true
+---
+## Admin Panel CSS Style Guide
+
+When writing or modifying styles in `src/app/(payload)/styles/`:
+
+1. **Component-First Approach**:
+   - Each component gets its own file in `components/` directory
+   - Import the file in `admin.scss`
+   - Keep related styles together
+
+2. **Use Design Tokens**:
+   ```scss
+   // ✅ Good - uses variables
+   color: $admin-text-primary;
+   padding: $spacing-lg;
+   
+   // ❌ Bad - hard-coded values
+   color: rgba(255, 255, 255, 0.9);
+   padding: 1rem;
+   ```
+
+3. **Use Mixins for Patterns**:
+   ```scss
+   // ✅ Good - reusable mixin
+   .my-card {
+     @include gradient-border;
+     @include card-hover;
+   }
+   
+   // ❌ Bad - repeating complex pattern
+   .my-card {
+     border: 2px solid transparent;
+     position: relative;
+     &::before { /* 15 lines of gradient border code */ }
+   }
+   ```
+
+4. **Naming Conventions**:
+   - Use descriptive class names (`.nav__link`, not `.nl`)
+   - Use BEM-style for components (`.block__element--modifier`)
+   - Prefix admin-specific classes if needed
+
+5. **Nesting Depth**:
+   ```scss
+   // ✅ Good - max 3 levels
+   .card {
+     .card__header {
+       .card__title { }
+     }
+   }
+   
+   // ❌ Bad - too deep
+   .container .section .card .header .title .text { }
+   ```
+
+6. **Comments**:
+   - Add section headers for groups of related styles
+   - Explain WHY, not WHAT (code shows what)
+   - Document any non-obvious patterns or workarounds

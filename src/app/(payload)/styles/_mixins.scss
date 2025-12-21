@@ -1,0 +1,161 @@
+// ============================================
+// REUSABLE MIXINS
+// ============================================
+
+@import './variables';
+
+// Gradient Border Effect - Used extensively throughout the admin panel
+@mixin gradient-border(
+  $gradient: $admin-gradient-primary,
+  $width: 2px,
+  $bg-color: transparent,
+  $radius: $radius-lg
+) {
+  border: $width solid transparent;
+  background: $bg-color;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: $radius;
+    padding: $width;
+    background: $gradient;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+}
+
+// Card Base Styles
+@mixin card-base {
+  background: $admin-bg-card;
+  border: 1px solid $admin-border-subtle;
+  border-radius: $radius-lg;
+  transition: all $transition-normal;
+}
+
+// Card Hover with Glow
+@mixin card-hover($color: $admin-accent-primary, $intensity: 0.15) {
+  &:hover {
+    background: $admin-bg-hover;
+    border-color: rgba($color, 0.2);
+    box-shadow: 0 0 20px rgba($color, $intensity);
+  }
+}
+
+// Focus State (for inputs, selects, etc.)
+@mixin focus-ring($color: $admin-accent-primary) {
+  &:focus {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba($color, 0.6);
+    box-shadow: 
+      0 0 0 3px rgba($color, 0.2),
+      0 0 20px rgba($color, 0.25);
+    outline: none;
+    transform: translateY(-1px);
+  }
+}
+
+// Glow Effect on Hover
+@mixin hover-glow($color: $admin-accent-primary, $lift: true) {
+  &:hover {
+    box-shadow: 0 0 20px rgba($color, 0.3);
+    @if $lift {
+      transform: translateY(-1px);
+    }
+    filter: brightness(1.1);
+  }
+}
+
+// Button Base
+@mixin button-base {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-md $spacing-lg;
+  border-radius: $radius-md;
+  font-weight: 500;
+  letter-spacing: 0.025em;
+  transition: all $transition-normal;
+  cursor: pointer;
+}
+
+// Gradient Underline (for headings)
+@mixin gradient-underline(
+  $gradient: $admin-gradient-primary,
+  $width: 100%,
+  $max-width: 300px,
+  $height: 3px,
+  $glow: true
+) {
+  position: relative;
+  padding-bottom: $spacing-md;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: $width;
+    max-width: $max-width;
+    height: $height;
+    background: $gradient;
+    border-radius: 2px;
+    
+    @if $glow {
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
+    }
+  }
+}
+
+// Stat Card with Status Color
+@mixin stat-card($type: 'neutral') {
+  @include card-base;
+  @include gradient-border($gradient: if($type == 'success', $admin-gradient-success,
+    if($type == 'warning', $admin-gradient-warning,
+    if($type == 'error', $admin-gradient-error,
+    if($type == 'info', $admin-gradient-info, $admin-gradient-primary)))));
+  
+  $bg-opacity: 0.05;
+  @if $type == 'success' {
+    background: rgba(34, 197, 94, $bg-opacity);
+  } @else if $type == 'warning' {
+    background: rgba(245, 158, 11, $bg-opacity);
+  } @else if $type == 'error' {
+    background: rgba(239, 68, 68, $bg-opacity);
+  } @else if $type == 'info' {
+    background: rgba(6, 182, 212, $bg-opacity);
+  }
+}
+
+// Truncate Text
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Custom Scrollbar
+@mixin custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+  }
+}
+

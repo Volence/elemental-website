@@ -1,0 +1,61 @@
+---
+alwaysApply: true
+---
+## CSS Anti-Patterns to Avoid
+
+Prevent regression to the old monolithic CSS. Watch for these red flags:
+
+1. **Specificity Wars** ❌:
+   ```scss
+   // ❌ Never do this
+   html body .template-default aside nav a { }
+   div div div .class { }
+   ```
+   Instead: Use single class names with proper cascade
+
+2. **!important Abuse** ❌:
+   ```scss
+   // ❌ Avoid
+   background: black !important;
+   ```
+   Instead: Fix the specificity issue or refactor conflicting rule
+
+3. **Code Duplication** ❌:
+   - If copying a style block, create a mixin instead
+   - If repeating a value, create a variable instead
+   - If similar patterns exist, consolidate them
+
+4. **Inline Styles** ❌:
+   - Never add inline styles to React components for admin panel
+   - Use CSS classes from the component files instead
+
+5. **Magic Numbers** ❌:
+   ```scss
+   // ❌ Bad
+   margin-top: 23px;
+   padding-left: 47px;
+   
+   // ✅ Good
+   margin-top: $spacing-xl;
+   padding-left: $spacing-3xl;
+   ```
+
+6. **Over-Qualification** ❌:
+   ```scss
+   // ❌ Unnecessarily specific
+   div.card { }
+   button.btn { }
+   
+   // ✅ Simpler
+   .card { }
+   .btn { }
+   ```
+
+7. **File Size Warning**:
+   - If any SCSS file exceeds 500 lines, it needs to be split
+   - Look for logical groupings to extract into separate files
+
+**Before committing CSS changes**: 
+- Check that no file has grown too large
+- Verify no new `!important` were added unnecessarily
+- Confirm you're using existing variables/mixins where applicable

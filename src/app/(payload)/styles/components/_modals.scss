@@ -1,0 +1,34 @@
+// ============================================
+// DRAWERS & MODALS
+// ============================================
+
+@import '../variables';
+@import '../mixins';
+
+// ============================================
+// CONTAINER
+// ============================================
+
+.drawer,
+.drawer__content,
+[class*="drawer"],
+.modal,
+[class*="modal"] {
+  background: $admin-bg-elevated;
+  border: 1px solid $admin-border-normal;
+}
+
+// ============================================
+// HEADER
+// ============================================
+
+.drawer__header,
+[class*="drawer__header"],
+.modal__header,
+.doc-drawer__header-content,
+.doc-drawer__after-header {
+  background: $admin-bg-card;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: $spacing-xl $spacing-2xl;
+}
+

@@ -1,0 +1,180 @@
+// ============================================
+// CARDS & CONTAINERS
+// ============================================
+
+@import '../variables';
+@import '../mixins';
+
+// ============================================
+// GENERIC CARDS
+// ============================================
+
+.card,
+[class*="card"]:not([class*="stat-card"]),
+.collection-list__item,
+.doc-drawer,
+.collapsible,
+[class*="drawer"],
+[class*="panel"] {
+  @include card-base;
+  @include card-hover;
+}
+
+// ============================================
+// DASHBOARD CARDS
+// ============================================
+
+.dashboard__card,
+.dashboard .card {
+  @include card-base;
+  @include gradient-border($gradient: $admin-gradient-primary, $width: 3px);
+  padding: $spacing-xl;
+  margin-bottom: $spacing-2xl;
+  overflow: hidden;
+  
+  &:hover {
+    transform: scale(1.02) translateY(-2px);
+    box-shadow: 
+      0 0 30px rgba(6, 182, 212, 0.3),
+      0 10px 25px rgba(0, 0, 0, 0.3);
+    border-color: rgba(6, 182, 212, 0.2);
+    
+    &::before {
+      opacity: 1;
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
+    }
+  }
+}
+
+// ============================================
+// STAT CARDS (Data Consistency, etc.)
+// ============================================
+
+.stat-card,
+[class*="stat-card"],
+[class*="critical"][class*="card"],
+[class*="error"][class*="card"],
+[class*="warning"][class*="card"],
+[class*="success"][class*="card"],
+[class*="auto-fix"][class*="card"] {
+  @include card-base;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-lg;
+  border: 2px solid transparent;
+  position: relative;
+  overflow: visible;
+}
+
+// Success variant
+.stat-card--success,
+[class*="success"][class*="card"],
+[class*="auto-fix"][class*="card"] {
+  @include stat-card('success');
+}
+
+// Warning variant
+.stat-card--warning,
+[class*="warning"][class*="card"] {
+  @include stat-card('warning');
+}
+
+// Error/Critical variant
+.stat-card--error,
+.stat-card--critical,
+[class*="error"][class*="card"],
+[class*="critical"][class*="card"] {
+  @include stat-card('error');
+}
+
+// Info variant
+.stat-card--info,
+[class*="info"][class*="card"] {
+  @include stat-card('info');
+}
+
+// ============================================
+// INFO BOXES & BANNERS
+// ============================================
+
+.banner,
+[class*="banner"],
+.notification,
+[class*="notification"],
+.message,
+[class*="message"],
+.info-box,
+[class*="info-box"] {
+  @include gradient-border($gradient: $admin-gradient-primary);
+  margin: $spacing-2xl $spacing-xl;
+  padding: $spacing-lg $spacing-xl;
+  max-width: calc(100% - #{$spacing-3xl});
+}
+
+// Info box variant
+.info-box,
+[class*="info-box"],
+[class*="info"][class*="box"] {
+  @include gradient-border($gradient: $admin-gradient-info);
+  background: rgba(6, 182, 212, 0.05);
+}
+
+// Warning variant
+[class*="warning"],
+[class*="alert"] {
+  @include gradient-border($gradient: $admin-gradient-warning);
+  background: rgba(245, 158, 11, 0.05);
+}
+
+// ============================================
+// BEFORE DASHBOARD SECTIONS
+// ============================================
+
+.before-dashboard {
+  padding: $spacing-xl;
+  margin-bottom: $spacing-2xl;
+  
+  > div,
+  section {
+    @include gradient-border($gradient: $admin-gradient-primary);
+    margin-bottom: $spacing-2xl;
+    padding: $spacing-xl;
+    
+    > * {
+      position: relative;
+      z-index: $z-base;
+    }
+  }
+}
+
+// ============================================
+// COLLECTION LIST ITEMS
+// ============================================
+
+.collection-list__item,
+[class*="list-item"] {
+  padding: $spacing-lg;
+  margin: $spacing-md 0;
+}
+
+// ============================================
+// TABLE ROWS
+// ============================================
+
+table tbody tr,
+.table__tr,
+[class*="table"] tbody tr {
+  background: transparent;
+  transition: background-color $transition-fast, box-shadow $transition-normal;
+  
+  &:nth-child(even) {
+    background: rgba(255, 255, 255, 0.015);
+  }
+  
+  &:hover {
+    background: rgba($admin-accent-primary, 0.12);
+    box-shadow: 
+      0 0 20px rgba($admin-accent-primary, 0.15),
+      inset 0 0 0 1px rgba($admin-accent-primary, 0.2);
+  }
+}
+

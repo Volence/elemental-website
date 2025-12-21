@@ -1,0 +1,101 @@
+// ============================================
+// BUTTONS
+// ============================================
+
+@import '../variables';
+@import '../mixins';
+
+// ============================================
+// BASE BUTTON STYLES
+// ============================================
+
+button,
+.btn {
+  font-weight: 500;
+  letter-spacing: 0.025em;
+  transition: all $transition-normal;
+  
+  &:hover:not([aria-label="Close"]):not(.nav__mobile-close) {
+    box-shadow: 
+      0 0 20px rgba($admin-accent-primary, 0.3),
+      0 4px 12px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+    filter: brightness(1.1);
+  }
+  
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 0 15px rgba($admin-accent-primary, 0.2);
+  }
+}
+
+// ============================================
+// PRIMARY/ACTION BUTTONS
+// ============================================
+
+button[type="submit"],
+button.btn--primary,
+[class*="btn-primary"],
+[class*="button--primary"] {
+  &:hover {
+    box-shadow: 
+      0 0 25px rgba($admin-accent-primary, 0.4),
+      0 6px 16px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+  }
+}
+
+// ============================================
+// SUCCESS/CREATE BUTTONS
+// ============================================
+
+button[class*="create"],
+button[class*="save"],
+button[class*="success"] {
+  &:hover {
+    box-shadow: 
+      0 0 20px rgba($admin-accent-success, 0.3),
+      0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+}
+
+// ============================================
+// DANGER/DELETE BUTTONS
+// ============================================
+
+button[class*="delete"],
+button[class*="danger"],
+button[class*="remove"] {
+  &:hover {
+    box-shadow: 
+      0 0 20px rgba($admin-accent-error, 0.3),
+      0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+}
+
+// ============================================
+// CLOSE BUTTONS (Drawers/Modals)
+// ============================================
+
+.drawer__header-close,
+.modal__close,
+button[aria-label="Close"]:not(.nav__mobile-close) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid $admin-border-normal;
+  border-radius: $radius-md;
+  padding: $spacing-sm;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: $admin-text-secondary;
+  transition: all $transition-normal;
+  
+  &:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: $admin-text-primary;
+  }
+}
+
