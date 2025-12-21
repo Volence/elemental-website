@@ -53,7 +53,7 @@ const BeforeDashboard: React.FC = () => {
       )}
       {/* @ts-ignore - Payload ClientUser type compatibility issue */}
       {user && (user as User).role === UserRole.TEAM_MANAGER && (
-        <div className="mb-4 p-3 rounded bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-200">
+        <div className="mb-4 p-3 rounded border bg-green-50 border-green-400 text-green-800 dark:bg-green-950 dark:border-green-700 dark:text-green-200">
           <strong>👤 Team Manager:</strong> You have access to manage your assigned teams. 
           Visit the <strong>Teams</strong> collection to see which teams you can edit. 
           You can create new teams and edit your assigned teams, but other teams are read-only.
@@ -111,7 +111,7 @@ const BeforeDashboard: React.FC = () => {
           {' to preview data.'}
         </li>
       </ul>
-      <div className="mb-6 p-4 rounded bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-200">
+      <div className="mb-6 p-4 rounded border bg-green-50 border-green-400 text-green-800 dark:bg-green-950 dark:border-green-700 dark:text-green-200">
         <strong>✨ New People System:</strong>
         <ul className="mt-2 mb-0 pl-6 space-y-1">
           <li>Create people in the <strong>People</strong> collection first</li>
