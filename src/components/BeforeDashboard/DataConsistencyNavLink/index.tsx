@@ -51,36 +51,35 @@ const DataConsistencyNavLink: React.FC = () => {
   if (!user || user.role !== UserRole.ADMIN) return null
 
   return (
-    <div
-      style={{
-        borderTop: '1px solid var(--theme-elevation-200)',
-        borderBottom: '1px solid var(--theme-elevation-200)',
-        marginTop: '0.5rem',
-        marginBottom: '0.5rem',
-      }}
-    >
+    <div style={{ margin: 0 }}>
       <a
         href="/admin/data-consistency"
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0.75rem 1.5rem',
-          color: 'var(--theme-text)',
+          gap: '0.625rem',
+          padding: '0.5rem 0.75rem',
+          color: 'var(--theme-text-500, rgba(255, 255, 255, 0.7))',
           textDecoration: 'none',
           fontSize: '0.875rem',
-          fontWeight: 500,
-          transition: 'background-color 0.2s ease',
+          fontWeight: 400,
+          lineHeight: '1.25rem',
+          borderRadius: '4px',
+          margin: 0,
+          transition: 'all 0.15s ease',
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.backgroundColor = 'var(--theme-elevation-100)'
+          e.currentTarget.style.color = 'var(--theme-text)'
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.backgroundColor = 'transparent'
+          e.currentTarget.style.color = 'var(--theme-text-500, rgba(255, 255, 255, 0.7))'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <span style={{ fontSize: '1.125rem' }}>📊</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+          <span style={{ fontSize: '18px', lineHeight: '18px', flexShrink: 0 }}>📊</span>
           <span>Data Consistency</span>
         </div>
         {!loading && issueCount > 0 && (
