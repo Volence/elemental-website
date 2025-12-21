@@ -1,23 +1,7 @@
-import React from 'react'
-import { DefaultTemplate } from '@payloadcms/next/templates'
-import config from '@payload-config'
-import { importMap } from '../importMap'
-import ScheduleGeneratorClient from './ScheduleGeneratorClient'
+'use client'
 
-// Server component wrapped with Payload's admin layout
-export default async function ScheduleGeneratorRoute() {
-  return (
-    <DefaultTemplate
-      config={config}
-      i18n={{}}
-      importMap={importMap}
-      params={{ segments: ['schedule-generator'] }}
-      searchParams={{}}
-    >
-      <ScheduleGeneratorClient />
-    </DefaultTemplate>
-  )
-}
+import React, { useEffect, useState } from 'react'
+import { Button } from '@payloadcms/ui'
 
 interface Match {
   id: number
@@ -43,7 +27,7 @@ interface Match {
   }>
 }
 
-const ScheduleGeneratorPage = () => {
+const ScheduleGeneratorClient = () => {
   const [matches, setMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
   const [copiedInternal, setCopiedInternal] = useState(false)
@@ -445,7 +429,5 @@ const ScheduleGeneratorPage = () => {
   )
 }
 
-export default ScheduleGeneratorPage
-
-
+export default ScheduleGeneratorClient
 
