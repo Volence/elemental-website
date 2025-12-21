@@ -111,16 +111,18 @@ const BeforeDashboard: React.FC = () => {
           {' to preview data.'}
         </li>
       </ul>
-      <div className="mb-6 p-4 rounded border bg-green-50 border-green-400 text-green-800 dark:bg-green-950 dark:border-green-700 dark:text-green-200">
-        <strong>✨ New People System:</strong>
-        <ul className="mt-2 mb-0 pl-6 space-y-1">
-          <li>Create people in the <strong>People</strong> collection first</li>
-          <li>Link them in teams/staff using the <strong>Person</strong> field (recommended)</li>
-          <li>Names and social links auto-fill from People when linked</li>
-          <li>Legacy name fields still work for backward compatibility</li>
-          <li>Use the migration endpoint to convert existing data: <code className="bg-black/10 dark:bg-white/10 px-1 py-0.5 rounded">POST /api/migrate-to-people</code></li>
-        </ul>
-      </div>
+      <GradientBorder>
+        <div className="p-4 rounded">
+          <strong className="text-green-400">✨ New People System:</strong>
+          <ul className="mt-2 mb-0 pl-6 space-y-1">
+            <li>Create people in the <strong>People</strong> collection first</li>
+            <li>Link them in teams/staff using the <strong>Person</strong> field (recommended)</li>
+            <li>Names and social links auto-fill from People when linked</li>
+            <li>Legacy name fields still work for backward compatibility</li>
+            <li>Use the migration endpoint to convert existing data: <code className="bg-black/10 dark:bg-white/10 px-1 py-0.5 rounded">POST /api/migrate-to-people</code></li>
+          </ul>
+        </div>
+      </GradientBorder>
       <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
         <em>Need help? Check the field descriptions in each collection for detailed guidance.</em>
       </p>
