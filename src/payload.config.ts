@@ -39,8 +39,11 @@ export default buildConfig({
         '@/components/BeforeDashboard/DashboardNavLink',
         '@/components/BeforeDashboard/ScheduleGeneratorNavLink#default',
         '@/components/BeforeDashboard/DataConsistencyNavLink#default',
-        '@/components/BeforeDashboard/LogoutButton',
         '@/components/BeforeDashboard/ReadOnlyStyles#default',
+      ],
+      // Log Out button appears after all collections (under System section)
+      afterNavLinks: [
+        '@/components/BeforeDashboard/LogoutButton',
       ],
       // Custom logo for admin panel breadcrumbs
       graphics: {
