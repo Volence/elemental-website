@@ -86,13 +86,14 @@
 // ROLE BADGES
 // ============================================
 // Note: Scoped to badge/pill elements only to avoid affecting table cells
+// Also excludes team-manager-info and assigned-teams components
 
 // Manager
-.pill[class*="manager"],
-.badge[class*="manager"],
-.chip[class*="manager"],
-.tag[class*="manager"],
-.role-manager {
+.pill[class*="manager"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.badge[class*="manager"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.chip[class*="manager"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.tag[class*="manager"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.role-manager:not(.team-manager-info):not([class*="team-manager-info"]) {
   background: linear-gradient(
     135deg,
     rgba(251, 191, 36, 0.15) 0%,
@@ -103,12 +104,23 @@
   box-shadow: 0 0 12px rgba(251, 191, 36, 0.2);
 }
 
+// Exclude anything inside team-manager-info from getting badge styling
+.team-manager-info [class*="manager"],
+.team-manager-info [class*="coach"],
+.team-manager-info [class*="captain"],
+.team-manager-info [class*="sub"] {
+  background: none !important;
+  border: none !important;
+  color: inherit !important;
+  box-shadow: none !important;
+}
+
 // Coach
-.pill[class*="coach"],
-.badge[class*="coach"],
-.chip[class*="coach"],
-.tag[class*="coach"],
-.role-coach {
+.pill[class*="coach"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.badge[class*="coach"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.chip[class*="coach"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.tag[class*="coach"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.role-coach:not(.team-manager-info):not([class*="team-manager-info"]) {
   background: linear-gradient(
     135deg,
     rgba(59, 130, 246, 0.15) 0%,
@@ -120,11 +132,11 @@
 }
 
 // Captain
-.pill[class*="captain"],
-.badge[class*="captain"],
-.chip[class*="captain"],
-.tag[class*="captain"],
-.role-captain {
+.pill[class*="captain"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.badge[class*="captain"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.chip[class*="captain"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.tag[class*="captain"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.role-captain:not(.team-manager-info):not([class*="team-manager-info"]) {
   background: linear-gradient(
     135deg,
     rgba($admin-accent-success, 0.15) 0%,
@@ -136,11 +148,11 @@
 }
 
 // Substitute
-.pill[class*="sub"],
-.badge[class*="sub"],
-.chip[class*="sub"],
-.tag[class*="sub"],
-.role-sub {
+.pill[class*="sub"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.badge[class*="sub"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.chip[class*="sub"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.tag[class*="sub"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.role-sub:not(.team-manager-info):not([class*="team-manager-info"]) {
   background: linear-gradient(
     135deg,
     rgba(156, 163, 175, 0.15) 0%,
