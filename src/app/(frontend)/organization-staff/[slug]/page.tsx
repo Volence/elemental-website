@@ -110,12 +110,12 @@ export default async function OrganizationStaffPage({ params: paramsPromise }: A
           <div className="flex items-center justify-center gap-2 text-muted-foreground flex-wrap">
             {roles.length > 0 ? (
               roles.map((role: string, index: number) => {
-                const RoleIcon = getOrgRoleIcon(role, 'lg')
+                const roleIcon = getOrgRoleIcon(role, 'lg')
                 const roleLabel = getOrgRoleLabel(role)
                 return (
                   <React.Fragment key={role}>
                     <div className="flex items-center gap-2">
-                      {React.createElement(RoleIcon, { className: 'w-5 h-5' })}
+                      {roleIcon}
                       <span className="text-lg">{roleLabel}</span>
                     </div>
                     {index < roles.length - 1 && <span className="text-muted-foreground">•</span>}
