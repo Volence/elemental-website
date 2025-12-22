@@ -75,6 +75,7 @@ export interface Config {
     production: Production;
     'organization-staff': OrganizationStaff;
     users: User;
+    'ignored-duplicates': IgnoredDuplicate;
     redirects: Redirect;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
@@ -92,6 +93,7 @@ export interface Config {
     production: ProductionSelect<false> | ProductionSelect<true>;
     'organization-staff': OrganizationStaffSelect<false> | OrganizationStaffSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    'ignored-duplicates': IgnoredDuplicatesSelect<false> | IgnoredDuplicatesSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
@@ -797,6 +799,33 @@ export interface User {
   password?: string | null;
 }
 /**
+ * Pairs of people with similar names that are actually different people
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ignored-duplicates".
+ */
+export interface IgnoredDuplicate {
+  id: number;
+  /**
+   * First person in the pair
+   */
+  person1: number | Person;
+  /**
+   * Second person in the pair
+   */
+  person2: number | Person;
+  /**
+   * Display label (auto-generated)
+   */
+  label: string;
+  /**
+   * Optional note explaining why these are different people
+   */
+  reason?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
@@ -964,6 +993,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'users';
         value: number | User;
+      } | null)
+    | ({
+        relationTo: 'ignored-duplicates';
+        value: number | IgnoredDuplicate;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1390,6 +1423,18 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ignored-duplicates_select".
+ */
+export interface IgnoredDuplicatesSelect<T extends boolean = true> {
+  person1?: T;
+  person2?: T;
+  label?: T;
+  reason?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

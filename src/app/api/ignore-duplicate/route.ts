@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
 
     // Check if this pair is already ignored
     const existing = await payload.find({
-      collection: 'ignored-duplicates',
+      collection: 'ignored-duplicates' as any,
       where: {
         or: [
           {
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
 
     // Create the ignored duplicate entry
     await payload.create({
-      collection: 'ignored-duplicates',
+      collection: 'ignored-duplicates' as any,
       data: {
         person1: person1Id,
         person2: person2Id,

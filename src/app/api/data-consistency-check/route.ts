@@ -63,7 +63,7 @@ export async function GET() {
 
     // Fetch ignored duplicate pairs
     const ignoredDuplicates = await payload.find({
-      collection: 'ignored-duplicates',
+      collection: 'ignored-duplicates' as any,
       limit: 1000,
       depth: 0,
     })
