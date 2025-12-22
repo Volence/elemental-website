@@ -15,6 +15,8 @@ import { MetaImageComponent as MetaImageComponent_a8a977ebc872c5d5ea7ee689724c08
 import { MetaDescriptionComponent as MetaDescriptionComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { SlugField as SlugField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
+import { default as default_a57c6a823b3afaaec2d5debdf135e084 } from '@/components/ViewOnSiteButton'
+import { default as default_00c104303d223c5ad174a97bdf6b198b } from '@/components/PersonRelationshipsSidebar'
 import { default as default_890f375c2e64cfbf8289c4ab4ee8f2a1 } from '@/components/PeopleListColumns/StaffPositionsCell'
 import { default as default_04cdbc390d38c074fb71cb7d83ceaa88 } from '@/components/PeopleListColumns/TeamsCell'
 import { default as default_765c32446158099d5cf3659ccd46167a } from '@/collections/Teams/ColorPickerField'
@@ -62,6 +64,8 @@ export const importMap = {
   "@payloadcms/plugin-seo/client#MetaDescriptionComponent": MetaDescriptionComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#PreviewComponent": PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/ui#SlugField": SlugField_3817bf644402e67bfe6577f60ef982de,
+  "@/components/ViewOnSiteButton#default": default_a57c6a823b3afaaec2d5debdf135e084,
+  "@/components/PersonRelationshipsSidebar#default": default_00c104303d223c5ad174a97bdf6b198b,
   "@/components/PeopleListColumns/StaffPositionsCell#default": default_890f375c2e64cfbf8289c4ab4ee8f2a1,
   "@/components/PeopleListColumns/TeamsCell#default": default_04cdbc390d38c074fb71cb7d83ceaa88,
   "@/collections/Teams/ColorPickerField#default": default_765c32446158099d5cf3659ccd46167a,

@@ -34,6 +34,7 @@ main h1 {
   letter-spacing: -0.025em;
   line-height: 1.2;
   margin-bottom: 0;
+  color: rgb(6, 182, 212);
 }
 
 // Dashboard headings (h1, h2)
@@ -53,6 +54,7 @@ main h2,
   line-height: 1.3;
   margin-top: $spacing-2xl;
   margin-bottom: $spacing-lg;
+  color: rgb(132, 204, 22);
 }
 
 // Subsection headings (h3)
@@ -67,6 +69,7 @@ main h3,
   line-height: 1.4;
   margin-top: $spacing-2xl;
   margin-bottom: $spacing-lg;
+  color: rgb(245, 158, 11);
 
   // On mobile, reduce underline width to prevent collision with buttons
   @media (max-width: 768px) {

@@ -77,6 +77,20 @@ export const Teams: CollectionConfig = {
   },
   fields: [
     {
+      name: 'viewOnSite',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: {
+            path: '@/components/ViewOnSiteButton',
+            clientProps: {
+              basePath: '/teams',
+            },
+          },
+        },
+      },
+    },
+    {
       type: 'tabs',
       tabs: [
         {

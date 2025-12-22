@@ -94,16 +94,16 @@ export const SeedButton: React.FC = () => {
 
   return (
     <Fragment>
-      <div className="flex gap-3 flex-wrap items-center">
+      <div className="flex gap-4 flex-wrap items-center">
         <button 
-          className="appearance-none bg-transparent border-none p-0 underline cursor-pointer hover:opacity-85 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed" 
+          className="dashboard-action-button" 
           onClick={handleTeamsSeed}
           disabled={loading || loadingTeams}
         >
           {loadingTeams ? 'Seeding Teams...' : 'Seed Teams Only'}
         </button>
         <button 
-          className="appearance-none bg-transparent border-none p-0 underline cursor-pointer hover:opacity-85 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed" 
+          className="dashboard-action-button" 
           onClick={handleFullSeed}
           disabled={loading || loadingTeams}
         >

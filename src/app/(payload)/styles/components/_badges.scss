@@ -163,3 +163,58 @@
   box-shadow: 0 0 12px rgba(156, 163, 175, 0.15);
 }
 
+// ============================================
+// GAME ROLE BADGES (Tank, DPS, Support)
+// ============================================
+
+// Tank
+.pill[class*="tank"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.badge[class*="tank"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.chip[class*="tank"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.tag[class*="tank"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.role-tank:not(.team-manager-info):not([class*="team-manager-info"]) {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.15) 0%,
+    rgba(99, 102, 241, 0.25) 100%
+  );
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  color: rgb(96, 165, 250);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+  font-weight: 700;
+}
+
+// DPS
+.pill[class*="dps"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.badge[class*="dps"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.chip[class*="dps"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.tag[class*="dps"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.role-dps:not(.team-manager-info):not([class*="team-manager-info"]) {
+  background: linear-gradient(
+    135deg,
+    rgba(239, 68, 68, 0.15) 0%,
+    rgba(220, 38, 38, 0.25) 100%
+  );
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: rgb(252, 129, 129);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
+  font-weight: 700;
+}
+
+// Support
+.pill[class*="support"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.badge[class*="support"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.chip[class*="support"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.tag[class*="support"]:not(.team-manager-info):not([class*="team-manager-info"]),
+.role-support:not(.team-manager-info):not([class*="team-manager-info"]) {
+  background: linear-gradient(
+    135deg,
+    rgba(34, 197, 94, 0.15) 0%,
+    rgba(22, 163, 74, 0.25) 100%
+  );
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: rgb(134, 239, 172);
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
+  font-weight: 700;
+}
+

@@ -78,7 +78,7 @@ export const FixStaffButton: React.FC = () => {
   return (
     <Fragment>
       <button 
-        className="px-4 py-2 bg-blue-600 text-white rounded cursor-pointer text-sm font-medium transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60" 
+        className="dashboard-action-button" 
         onClick={handleFix}
         disabled={loading}
       >

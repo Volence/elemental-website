@@ -42,6 +42,20 @@ export const People: CollectionConfig = {
   },
   fields: [
     {
+      name: 'viewOnSite',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: {
+            path: '@/components/ViewOnSiteButton',
+            clientProps: {
+              basePath: '/players',
+            },
+          },
+        },
+      },
+    },
+    {
       name: 'name',
       type: 'text',
       required: true,
@@ -58,6 +72,16 @@ export const People: CollectionConfig = {
       admin: {
         position: 'sidebar',
         description: 'Auto-generated from name. You can customize it if needed.',
+      },
+    },
+    {
+      name: 'relationships',
+      type: 'ui',
+      admin: {
+        position: 'sidebar',
+        components: {
+          Field: '@/components/PersonRelationshipsSidebar',
+        },
       },
     },
     {

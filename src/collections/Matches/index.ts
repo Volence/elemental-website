@@ -82,6 +82,20 @@ export const Matches: CollectionConfig = {
   },
   fields: [
     {
+      name: 'viewOnSite',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: {
+            path: '@/components/ViewOnSiteButton',
+            clientProps: {
+              basePath: '/matches',
+            },
+          },
+        },
+      },
+    },
+    {
       type: 'tabs',
       tabs: [
         {
