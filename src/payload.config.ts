@@ -50,16 +50,15 @@ export default buildConfig({
         Logo: '@/components/AdminLogo#default',
         Icon: '@/components/AdminLogo#default',
       },
-    },
-    // Register custom admin views with proper routing
-    views: {
-      'data-consistency': {
-        Component: '@/app/(payload)/admin/data-consistency/page#default',
-        path: '/data-consistency',
-      },
-      'schedule-generator': {
-        Component: '@/app/(payload)/admin/schedule-generator/ScheduleGeneratorClient#default',
-        path: '/schedule-generator',
+      views: {
+        dataConsistency: {
+          Component: '@/components/DataConsistencyView#default',
+          path: '/data-consistency',
+        },
+        scheduleGenerator: {
+          Component: '@/app/(payload)/admin/schedule-generator/ScheduleGeneratorClient#default',
+          path: '/schedule-generator',
+        },
       },
     },
     importMap: {
