@@ -61,6 +61,20 @@ export async function GET() {
     const payload = await getPayload({ config: configPromise })
     const issues: DetailedIssue[] = []
 
+    // Fetch ignored duplicate pairs
+    const ignoredDuplicates = await payload.find({
+      collection: 'ignored-duplicates',
+      limit: 1000,
+      depth: 0,
+    })
+    const ignoredPairs = new Set<string>()
+    ignoredDuplicates.docs.forEach((ignored: any) => {
+      const id1 = typeof ignored.person1 === 'object' ? ignored.person1.id : ignored.person1
+      const id2 = typeof ignored.person2 === 'object' ? ignored.person2.id : ignored.person2
+      const pairKey = [id1, id2].sort().join('-')
+      ignoredPairs.add(pairKey)
+    })
+
     // 1. Check for broken Person relationships in Teams
     const teams = await payload.find({
       collection: 'teams',
@@ -219,6 +233,12 @@ export async function GET() {
 
         if (person1.name && person2.name) {
           const similarity = calculateSimilarity(person1.name, person2.name)
+          
+          // Check if this pair is ignored
+          const pairKey = [person1.id, person2.id].sort().join('-')
+          if (ignoredPairs.has(pairKey)) {
+            continue // Skip this pair
+          }
           
           // If similarity is high (>= 0.8), consider them potential duplicates
           if (similarity >= 0.8) {

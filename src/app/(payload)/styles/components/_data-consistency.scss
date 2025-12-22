@@ -523,6 +523,24 @@
       }
     }
 
+    &--ignore {
+      background: var(--theme-warning-500);
+      color: white;
+      border-color: var(--theme-warning-600);
+
+      &:hover:not(:disabled) {
+        background: var(--theme-warning-600);
+        border-color: var(--theme-warning-700);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+
     &:active {
       transform: translateY(0);
     }
