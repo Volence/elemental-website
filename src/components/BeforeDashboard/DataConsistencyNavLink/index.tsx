@@ -53,7 +53,9 @@ const DataConsistencyNavLink: React.FC = () => {
   return (
     <div style={{ margin: 0 }}>
       <a
-        href="/admin/data-consistency"
+        href="/data-consistency"
+        target="_blank"
+        rel="noopener noreferrer"
         style={{
           display: 'flex',
           alignItems: 'center',

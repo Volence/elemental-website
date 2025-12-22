@@ -42,8 +42,6 @@ import { default as default_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/component
 import { default as default_cb688d169ef5bf1426eea8968f0b9a29 } from '@/components/BeforeDashboard/DashboardNavLink'
 import { default as default_e628de2580dfa48b44b682030c88673e } from '@/components/BeforeDashboard/ScheduleGeneratorNavLink'
 import { default as default_fd326f044450d16fd3ebc6e67f0c12ec } from '@/components/BeforeDashboard/DataConsistencyNavLink'
-import { default as default_fb44995c905912cabb4309522541625e } from '@/components/DataConsistencyViewWrapped'
-import { default as default_3bf037ec8a6be91980b4d8444a258219 } from '@/components/ScheduleGeneratorViewWrapped'
 
 export const importMap = {
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
@@ -89,7 +87,5 @@ export const importMap = {
   "@/components/BeforeLogin#default": default_8a7ab0eb7ab5c511aba12e68480bfe5e,
   "@/components/BeforeDashboard/DashboardNavLink#default": default_cb688d169ef5bf1426eea8968f0b9a29,
   "@/components/BeforeDashboard/ScheduleGeneratorNavLink#default": default_e628de2580dfa48b44b682030c88673e,
-  "@/components/BeforeDashboard/DataConsistencyNavLink#default": default_fd326f044450d16fd3ebc6e67f0c12ec,
-  "@/components/DataConsistencyViewWrapped#default": default_fb44995c905912cabb4309522541625e,
-  "@/components/ScheduleGeneratorViewWrapped#default": default_3bf037ec8a6be91980b4d8444a258219
+  "@/components/BeforeDashboard/DataConsistencyNavLink#default": default_fd326f044450d16fd3ebc6e67f0c12ec
 }

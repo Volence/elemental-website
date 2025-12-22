@@ -50,16 +50,6 @@ export default buildConfig({
         Logo: '@/components/AdminLogo#default',
         Icon: '@/components/AdminLogo#default',
       },
-      views: {
-        dataConsistency: {
-          Component: '@/components/DataConsistencyViewWrapped#default',
-          path: '/data-consistency',
-        },
-        scheduleGenerator: {
-          Component: '@/components/ScheduleGeneratorViewWrapped#default',
-          path: '/schedule-generator',
-        },
-      },
     },
     importMap: {
       baseDir: path.resolve(dirname),

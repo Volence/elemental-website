@@ -1,14 +1,15 @@
 'use client'
 
 import React from 'react'
-import Link from 'next/link'
 import { Calendar } from 'lucide-react'
 
 const ScheduleGeneratorNavLink = () => {
   return (
     <div style={{ margin: 0 }}>
-      <Link
-        href="/admin/schedule-generator"
+      <a
+        href="/schedule-generator"
+        target="_blank"
+        rel="noopener noreferrer"
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -27,7 +28,7 @@ const ScheduleGeneratorNavLink = () => {
       >
         <Calendar style={{ width: '18px', height: '18px', flexShrink: 0 }} />
         <span>Schedule Generator</span>
-      </Link>
+      </a>
       <style jsx global>{`
         .schedule-generator-link:hover {
           background-color: var(--theme-elevation-100);
