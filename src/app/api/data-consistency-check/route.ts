@@ -208,10 +208,10 @@ export async function GET() {
     }
 
     // 4. Check for duplicate or similar person names using Levenshtein distance
-    const duplicateItems: Array<{ id: number; name: string; slug: string; details: string }> = []
-    const processedPairs = new Set<string>()
+    // Group similar people together to avoid duplicate keys
+    const duplicateGroups = new Map<number, Array<{ id: number; name: string; similarity: number }>>()
     
-    // Compare all pairs
+    // Compare all pairs and group similar people
     for (let i = 0; i < allPeople.docs.length; i++) {
       for (let j = i + 1; j < allPeople.docs.length; j++) {
         const person1 = allPeople.docs[i]
@@ -222,30 +222,48 @@ export async function GET() {
           
           // If similarity is high (>= 0.8), consider them potential duplicates
           if (similarity >= 0.8) {
-            const pairKey = [person1.id, person2.id].sort().join('-')
-            if (!processedPairs.has(pairKey)) {
-              processedPairs.add(pairKey)
-              
-              const similarityPercent = Math.round(similarity * 100)
-              
-              duplicateItems.push({
-                id: person1.id,
-                name: person1.name,
-                slug: person1.slug || '',
-                details: `${similarityPercent}% similar to "${person2.name}"`,
-              })
-              
-              duplicateItems.push({
-                id: person2.id,
-                name: person2.name,
-                slug: person2.slug || '',
-                details: `${similarityPercent}% similar to "${person1.name}"`,
-              })
+            // Add to person1's group
+            if (!duplicateGroups.has(person1.id)) {
+              duplicateGroups.set(person1.id, [])
             }
+            duplicateGroups.get(person1.id)!.push({
+              id: person2.id,
+              name: person2.name,
+              similarity: Math.round(similarity * 100),
+            })
+            
+            // Add to person2's group
+            if (!duplicateGroups.has(person2.id)) {
+              duplicateGroups.set(person2.id, [])
+            }
+            duplicateGroups.get(person2.id)!.push({
+              id: person1.id,
+              name: person1.name,
+              similarity: Math.round(similarity * 100),
+            })
           }
         }
       }
     }
+    
+    // Convert groups to items with unique details
+    const duplicateItems: Array<{ id: number; name: string; slug: string; details: string }> = []
+    duplicateGroups.forEach((matches, personId) => {
+      const person = allPeople.docs.find(p => p.id === personId)
+      if (person) {
+        // Create a single entry with all matches listed
+        const matchDetails = matches
+          .map(m => `${m.similarity}% match with "${m.name}"`)
+          .join(', ')
+        
+        duplicateItems.push({
+          id: person.id,
+          name: person.name,
+          slug: person.slug || '',
+          details: matchDetails,
+        })
+      }
+    })
 
     if (duplicateItems.length > 0) {
       issues.push({
