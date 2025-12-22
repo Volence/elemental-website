@@ -10,7 +10,7 @@
 // ============================================
 
 .card,
-[class*="card"]:not([class*="stat-card"]),
+[class*="card"]:not([class*="stat-card"]):not([class*="dashboard-stats"]),
 .collection-list__item,
 .doc-drawer,
 .collapsible,
