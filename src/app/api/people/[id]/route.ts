@@ -1,6 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { NextRequest } from 'next/server'
 import { authenticateRequest, apiErrorResponse, apiSuccessResponse } from '@/utilities/apiAuth'
 
 /**
@@ -9,34 +7,33 @@ import { authenticateRequest, apiErrorResponse, apiSuccessResponse } from '@/uti
  * Only admins can delete people
  */
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Authenticate the request
-    const authResult = await authenticateRequest(request)
-    if (!authResult.authenticated || !authResult.user) {
-      return apiErrorResponse('Unauthorized', 401)
+    const authResult = await authenticateRequest()
+    if (!authResult.success) {
+      return authResult.response
     }
 
+    const { payload, user } = authResult.data
+
     // Only admins can delete people
-    if (authResult.user.role !== 'admin') {
+    if (user.role !== 'admin') {
       return apiErrorResponse('Forbidden: Admin access required', 403)
     }
 
     const { id } = await params
-    const personId = parseInt(id, 10)
 
-    if (isNaN(personId)) {
+    if (!id) {
       return apiErrorResponse('Invalid person ID', 400)
     }
-
-    const payload = await getPayload({ config })
 
     // Check if person exists
     const person = await payload.findByID({
       collection: 'people',
-      id: personId,
+      id,
     })
 
     if (!person) {
@@ -46,12 +43,12 @@ export async function DELETE(
     // Delete the person
     await payload.delete({
       collection: 'people',
-      id: personId,
+      id,
     })
 
     return apiSuccessResponse({
       message: `Successfully deleted person: ${person.name}`,
-      deletedId: personId,
+      deletedId: id,
     })
   } catch (error) {
     console.error('Error deleting person:', error)

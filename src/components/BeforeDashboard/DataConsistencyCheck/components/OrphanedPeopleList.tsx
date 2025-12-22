@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 
 interface OrphanedPerson {
-  id: number
+  id: number | string
   name: string
   slug: string
   createdAt: string
@@ -16,8 +16,8 @@ export const OrphanedPeopleList: React.FC<OrphanedPeopleListProps> = ({
   people, 
   onPersonDeleted 
 }) => {
-  const [deleting, setDeleting] = useState<number | null>(null)
-  const [deletedIds, setDeletedIds] = useState<Set<number>>(new Set())
+  const [deleting, setDeleting] = useState<number | string | null>(null)
+  const [deletedIds, setDeletedIds] = useState<Set<number | string>>(new Set())
 
   if (people.length === 0) return null
 
