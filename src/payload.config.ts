@@ -56,7 +56,7 @@ export default buildConfig({
           path: '/data-consistency',
         },
         scheduleGenerator: {
-          Component: '@/app/(payload)/admin/schedule-generator/ScheduleGeneratorClient#default',
+          Component: '@/components/ScheduleGeneratorView#default',
           path: '/schedule-generator',
         },
       },
