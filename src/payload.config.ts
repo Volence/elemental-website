@@ -52,11 +52,11 @@ export default buildConfig({
       },
       views: {
         dataConsistency: {
-          Component: '@/components/DataConsistencyView#default',
+          Component: '@/components/DataConsistencyViewWrapped#default',
           path: '/data-consistency',
         },
         scheduleGenerator: {
-          Component: '@/components/ScheduleGeneratorView#default',
+          Component: '@/components/ScheduleGeneratorViewWrapped#default',
           path: '/schedule-generator',
         },
       },
