@@ -8,7 +8,7 @@ export const DataConsistency: GlobalConfig = {
     group: 'Tools',
     components: {
       views: {
-        Edit: '@/components/DataConsistencyView#default',
+        Default: '@/components/DataConsistencyView#default',
       },
     },
   },

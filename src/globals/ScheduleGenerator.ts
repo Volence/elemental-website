@@ -8,7 +8,7 @@ export const ScheduleGenerator: GlobalConfig = {
     group: 'Tools',
     components: {
       views: {
-        Edit: '@/components/ScheduleGeneratorView#default',
+        Default: '@/components/ScheduleGeneratorView#default',
       },
     },
   },
