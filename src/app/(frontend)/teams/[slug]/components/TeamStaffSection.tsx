@@ -16,7 +16,7 @@ interface TeamStaffSectionProps {
   managers?: StaffMember[]
   coaches?: StaffMember[]
   captains?: StaffMember[]
-  coCaptain?: string
+  coCaptain?: string | null
 }
 
 export function TeamStaffSection({
