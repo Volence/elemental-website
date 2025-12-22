@@ -64,15 +64,27 @@
   border-radius: 6px;
   font-size: 0.875rem;
 
+  // Prevent inner elements from getting borders
+  div, strong, svg {
+    border: none !important;
+    
+    &::before,
+    &::after {
+      display: none !important;
+    }
+  }
+
   &__title {
     font-weight: 600;
     color: var(--theme-text);
     margin-bottom: 0.5rem;
+    border: none;
   }
 
   &__description {
     color: var(--theme-text-600);
     line-height: 1.5;
+    border: none;
   }
 
   &--admin {
