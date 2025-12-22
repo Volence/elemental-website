@@ -34,7 +34,7 @@ export async function POST() {
     })
     
     const peopleBySlug = new Map<string, any>()
-    allPeople.docs.forEach((person) => {
+    allPeople.docs.forEach((person: any) => {
       if (person.slug) {
         peopleBySlug.set(person.slug.toLowerCase(), person)
       }

@@ -7,7 +7,7 @@ import { formatPlayerSlug } from '@/utilities/getPlayer'
 
 interface SubstituteCardProps {
   name: string
-  photoUrl?: string
+  photoUrl?: string | null
   twitter?: string
   twitch?: string
   youtube?: string

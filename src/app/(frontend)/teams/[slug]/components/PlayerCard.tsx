@@ -8,7 +8,7 @@ import { getGameRoleIcon } from '@/utilities/roleIcons'
 interface PlayerCardProps {
   name: string
   role: string
-  photoUrl?: string
+  photoUrl?: string | null
   twitter?: string
   twitch?: string
   youtube?: string

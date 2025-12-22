@@ -27,8 +27,8 @@ const QuickStats: React.FC = () => {
     )
   }
 
-  // Don't show for non-authenticated or viewers
-  if (!user || user.role === UserRole.VIEWER) {
+  // Don't show for non-authenticated users
+  if (!user) {
     return null
   }
   

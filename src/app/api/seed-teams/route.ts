@@ -12,7 +12,7 @@ export async function POST(): Promise<Response> {
 
   try {
     // Create a Payload request object to pass to the Local API for transactions
-    const payloadReq = await createLocalReq({ user }, payload)
+    const payloadReq = await createLocalReq({ user: { ...user, collection: 'users' } }, payload)
 
     await seedTeams({ payload, req: payloadReq })
 

@@ -12,8 +12,8 @@ export const DataConsistency: GlobalConfig = {
     components: {
       elements: {
         SaveButton: '@/components/EmptyComponent#default',
-        SaveDraft: '@/components/EmptyComponent#default',
-        Publish: '@/components/EmptyComponent#default',
+        SaveDraftButton: '@/components/EmptyComponent#default',
+        PublishButton: '@/components/EmptyComponent#default',
       },
     },
   },
