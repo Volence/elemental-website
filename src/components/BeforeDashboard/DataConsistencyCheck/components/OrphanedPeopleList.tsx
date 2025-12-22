@@ -18,8 +18,8 @@ export const OrphanedPeopleList: React.FC<OrphanedPeopleListProps> = ({ people }
     <div className="mb-6">
       <h4 className="mb-2 font-semibold">🚨 Orphaned People ({people.length})</h4>
       <p className="text-sm mb-3 opacity-80">
-        These People entries are not linked to any team or staff position. They may be unused or
-        need to be linked.
+        These People entries are not linked to any team (in any role) AND not assigned to any staff position 
+        (organization or production). They may be unused entries or need to be linked.
       </p>
       <div className="grid gap-2">
         {people.map((person) => (

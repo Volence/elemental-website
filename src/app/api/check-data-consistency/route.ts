@@ -5,7 +5,7 @@ import { authenticateRequest, apiErrorResponse, apiSuccessResponse } from '@/uti
  * API endpoint to check data consistency
  * 
  * Returns:
- * - Orphaned People (not linked to any team/staff)
+ * - Orphaned People (not on any team AND not in any staff role)
  * - Teams with missing person relationships (legacy data)
  * - Duplicate People entries with similar names
  * 

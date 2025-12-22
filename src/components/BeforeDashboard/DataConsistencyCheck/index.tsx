@@ -114,8 +114,8 @@ const DataConsistencyCheck: React.FC = () => {
 
             {report && !hasIssues && (
               <div className="p-3 rounded bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300 mt-2">
-                ✅ <strong>All good!</strong> No orphaned People, teams with missing relationships,
-                or duplicate entries found.
+                ✅ <strong>All good!</strong> All People are linked to either a team or a staff position. 
+                No teams with missing relationships or duplicate entries found.
               </div>
             )}
           </div>
