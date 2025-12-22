@@ -267,9 +267,6 @@ const ScheduleGeneratorView = () => {
 
   return (
     <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
-      <h1 style={{ marginBottom: '1rem', fontSize: '2rem', fontWeight: 'bold' }}>
-        📋 Schedule Generator
-      </h1>
       <p style={{ marginBottom: '2rem', color: 'var(--theme-elevation-500)' }}>
         Auto-generate Discord announcements from upcoming matches. Found {matches.length} upcoming match(es).
       </p>

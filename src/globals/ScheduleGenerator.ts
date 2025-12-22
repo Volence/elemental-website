@@ -8,6 +8,14 @@ export const ScheduleGenerator: GlobalConfig = {
     group: 'Tools',
     // Hide the default UI elements
     hideAPIURL: true,
+    // Hide the save button gutter
+    components: {
+      elements: {
+        SaveButton: () => null,
+        SaveDraft: () => null,
+        Publish: () => null,
+      },
+    },
   },
   fields: [
     {

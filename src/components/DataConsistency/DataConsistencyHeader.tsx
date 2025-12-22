@@ -13,7 +13,6 @@ export function DataConsistencyHeader({
 }: DataConsistencyHeaderProps) {
   return (
     <div className="data-consistency-header">
-      <h1 className="data-consistency-header__title">📊 Data Consistency Dashboard</h1>
       {autoFixableCount > 0 && (
         <button
           onClick={onFixAll}
