@@ -106,10 +106,14 @@ export interface Config {
   globals: {
     header: Header;
     footer: Footer;
+    'data-consistency': DataConsistency;
+    'schedule-generator': ScheduleGenerator;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    'data-consistency': DataConsistencySelect<false> | DataConsistencySelect<true>;
+    'schedule-generator': ScheduleGeneratorSelect<false> | ScheduleGeneratorSelect<true>;
   };
   locale: null;
   user: User & {
@@ -1523,6 +1527,30 @@ export interface Footer {
   createdAt?: string | null;
 }
 /**
+ * 📊 Check and fix data consistency issues across collections.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "data-consistency".
+ */
+export interface DataConsistency {
+  id: number;
+  placeholder?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * 📋 Generate Discord announcements from upcoming matches.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "schedule-generator".
+ */
+export interface ScheduleGenerator {
+  id: number;
+  placeholder?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
@@ -1564,6 +1592,26 @@ export interface FooterSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "data-consistency_select".
+ */
+export interface DataConsistencySelect<T extends boolean = true> {
+  placeholder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "schedule-generator_select".
+ */
+export interface ScheduleGeneratorSelect<T extends boolean = true> {
+  placeholder?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

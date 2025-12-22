@@ -17,6 +17,8 @@ import { Users } from './collections/Users'
 // import { ActivityLog } from './collections/ActivityLog' // Temporarily disabled until migrations are fixed
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
+import { DataConsistency } from './globals/DataConsistency'
+import { ScheduleGenerator } from './globals/ScheduleGenerator'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
@@ -37,8 +39,6 @@ export default buildConfig({
       // Custom navigation links in the sidebar
       beforeNavLinks: [
         '@/components/BeforeDashboard/DashboardNavLink',
-        '@/components/BeforeDashboard/ScheduleGeneratorNavLink#default',
-        '@/components/BeforeDashboard/DataConsistencyNavLink#default',
         '@/components/BeforeDashboard/ReadOnlyStyles#default',
       ],
       // Log Out button appears after all collections (under System section)
@@ -89,7 +89,7 @@ export default buildConfig({
   }),
   collections: [Pages, Media, People, Teams, Matches, Production, OrganizationStaff, Users /* ActivityLog temporarily disabled */],
   cors: [getServerSideURL()].filter(Boolean),
-  globals: [Header, Footer],
+  globals: [Header, Footer, DataConsistency, ScheduleGenerator],
   plugins: [
     ...plugins,
     // storage-adapter-placeholder
