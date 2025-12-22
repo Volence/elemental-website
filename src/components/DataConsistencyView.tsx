@@ -124,7 +124,7 @@ const DataConsistencyView: React.FC = () => {
           ) : (
             <div className="issues-list">
               {issues.map((issue, index) => (
-                <IssueCard key={index} {...issue} />
+                <IssueCard key={index} {...issue} onRefresh={fetchIssues} />
               ))}
             </div>
           )}
