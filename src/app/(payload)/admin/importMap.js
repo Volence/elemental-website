@@ -43,7 +43,7 @@ import { default as default_cb688d169ef5bf1426eea8968f0b9a29 } from '@/component
 import { default as default_e628de2580dfa48b44b682030c88673e } from '@/components/BeforeDashboard/ScheduleGeneratorNavLink'
 import { default as default_fd326f044450d16fd3ebc6e67f0c12ec } from '@/components/BeforeDashboard/DataConsistencyNavLink'
 import { default as default_a1087e454b1b74ceaf1bf3fd38ecfc7a } from '@/components/DataConsistencyView'
-import { default as default_2e6df26f0365c66131796ee2a3f69f75 } from '@/app/(payload)/admin/schedule-generator/ScheduleGeneratorClient'
+import { default as default_ca8995f013e915ce49d7b5ddd8cc4174 } from '@/components/ScheduleGeneratorView'
 
 export const importMap = {
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
@@ -91,5 +91,5 @@ export const importMap = {
   "@/components/BeforeDashboard/ScheduleGeneratorNavLink#default": default_e628de2580dfa48b44b682030c88673e,
   "@/components/BeforeDashboard/DataConsistencyNavLink#default": default_fd326f044450d16fd3ebc6e67f0c12ec,
   "@/components/DataConsistencyView#default": default_a1087e454b1b74ceaf1bf3fd38ecfc7a,
-  "@/app/(payload)/admin/schedule-generator/ScheduleGeneratorClient#default": default_2e6df26f0365c66131796ee2a3f69f75
+  "@/components/ScheduleGeneratorView#default": default_ca8995f013e915ce49d7b5ddd8cc4174
 }
