@@ -15,6 +15,47 @@ interface DetailedIssue {
   autoFixable: boolean
 }
 
+/**
+ * Calculate string similarity using Levenshtein distance
+ */
+function calculateSimilarity(str1: string, str2: string): number {
+  const longer = str1.length > str2.length ? str1 : str2
+  const shorter = str1.length > str2.length ? str2 : str1
+  
+  if (longer.length === 0) return 1.0
+  
+  const distance = levenshteinDistance(longer.toLowerCase(), shorter.toLowerCase())
+  return (longer.length - distance) / longer.length
+}
+
+function levenshteinDistance(str1: string, str2: string): number {
+  const matrix: number[][] = []
+  
+  for (let i = 0; i <= str2.length; i++) {
+    matrix[i] = [i]
+  }
+  
+  for (let j = 0; j <= str1.length; j++) {
+    matrix[0][j] = j
+  }
+  
+  for (let i = 1; i <= str2.length; i++) {
+    for (let j = 1; j <= str1.length; j++) {
+      if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1]
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1, // substitution
+          matrix[i][j - 1] + 1,     // insertion
+          matrix[i - 1][j] + 1      // deletion
+        )
+      }
+    }
+  }
+  
+  return matrix[str2.length][str1.length]
+}
+
 export async function GET() {
   try {
     const payload = await getPayload({ config: configPromise })
@@ -166,35 +207,51 @@ export async function GET() {
       })
     }
 
-    // 4. Check for duplicate or similar person names
-    const nameMap = new Map<string, any[]>()
-    allPeople.docs.forEach(person => {
-      const nameLower = person.name.toLowerCase().replace(/[^a-z0-9]/g, '')
-      if (!nameMap.has(nameLower)) {
-        nameMap.set(nameLower, [])
-      }
-      nameMap.get(nameLower)!.push(person)
-    })
-
-    const duplicateGroups = Array.from(nameMap.values()).filter(people => people.length > 1)
+    // 4. Check for duplicate or similar person names using Levenshtein distance
     const duplicateItems: Array<{ id: number; name: string; slug: string; details: string }> = []
+    const processedPairs = new Set<string>()
     
-    duplicateGroups.forEach(group => {
-      group.forEach((person, index) => {
-        duplicateItems.push({
-          id: person.id,
-          name: person.name,
-          slug: person.slug,
-          details: `Duplicate ${index + 1} of ${group.length} similar names`,
-        })
-      })
-    })
+    // Compare all pairs
+    for (let i = 0; i < allPeople.docs.length; i++) {
+      for (let j = i + 1; j < allPeople.docs.length; j++) {
+        const person1 = allPeople.docs[i]
+        const person2 = allPeople.docs[j]
+
+        if (person1.name && person2.name) {
+          const similarity = calculateSimilarity(person1.name, person2.name)
+          
+          // If similarity is high (>= 0.8), consider them potential duplicates
+          if (similarity >= 0.8) {
+            const pairKey = [person1.id, person2.id].sort().join('-')
+            if (!processedPairs.has(pairKey)) {
+              processedPairs.add(pairKey)
+              
+              const similarityPercent = Math.round(similarity * 100)
+              
+              duplicateItems.push({
+                id: person1.id,
+                name: person1.name,
+                slug: person1.slug || '',
+                details: `${similarityPercent}% similar to "${person2.name}"`,
+              })
+              
+              duplicateItems.push({
+                id: person2.id,
+                name: person2.name,
+                slug: person2.slug || '',
+                details: `${similarityPercent}% similar to "${person1.name}"`,
+              })
+            }
+          }
+        }
+      }
+    }
 
     if (duplicateItems.length > 0) {
       issues.push({
         type: 'warning',
-        category: 'Duplicate Names',
-        message: 'Potential duplicate person records with similar names detected',
+        category: 'Potential Duplicates',
+        message: 'These People entries have very similar names and may be duplicates. Review and consider merging them.',
         items: duplicateItems,
         autoFixable: false,
       })
