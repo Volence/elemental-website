@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { authenticateRequest, apiErrorResponse, apiSuccessResponse } from '@/utilities/apiAuth'
 
 /**
@@ -21,13 +21,19 @@ export async function DELETE(
 
     // Only admins can delete people
     if (user.role !== 'admin') {
-      return apiErrorResponse('Forbidden: Admin access required', 403)
+      return NextResponse.json(
+        { success: false, error: 'Forbidden: Admin access required' },
+        { status: 403 }
+      )
     }
 
     const { id } = await params
 
     if (!id) {
-      return apiErrorResponse('Invalid person ID', 400)
+      return NextResponse.json(
+        { success: false, error: 'Invalid person ID' },
+        { status: 400 }
+      )
     }
 
     // Check if person exists
@@ -37,7 +43,10 @@ export async function DELETE(
     })
 
     if (!person) {
-      return apiErrorResponse('Person not found', 404)
+      return NextResponse.json(
+        { success: false, error: 'Person not found' },
+        { status: 404 }
+      )
     }
 
     // Delete the person
@@ -52,10 +61,7 @@ export async function DELETE(
     })
   } catch (error) {
     console.error('Error deleting person:', error)
-    return apiErrorResponse(
-      error instanceof Error ? error.message : 'Failed to delete person',
-      500
-    )
+    return apiErrorResponse(error, 'Failed to delete person')
   }
 }
 
