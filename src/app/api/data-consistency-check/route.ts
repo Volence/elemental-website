@@ -71,11 +71,27 @@ export async function GET() {
       })
     }
 
-    // 2. Check for People without teams
-    const peopleWithoutTeams: Array<{ id: number; name: string; slug: string }> = []
+    // 2. Check for People without teams AND without staff roles
+    // Get organization staff
+    const orgStaff = await payload.find({
+      collection: 'organization-staff',
+      limit: 1000,
+      depth: 1,
+    })
+
+    // Get production staff
+    const productionStaff = await payload.find({
+      collection: 'production',
+      limit: 1000,
+      depth: 1,
+    })
+
+    const orphanedPeople: Array<{ id: number; name: string; slug: string }> = []
     allPeople.docs.forEach(person => {
       let hasTeam = false
+      let hasStaffRole = false
       
+      // Check if person is on any team
       teams.docs.forEach(team => {
         const checkInArray = (array: any[]) => {
           return array?.some((item: any) => {
@@ -91,8 +107,25 @@ export async function GET() {
         }
       })
 
-      if (!hasTeam) {
-        peopleWithoutTeams.push({
+      // Check if person is in organization staff
+      if (orgStaff.docs.some(staff => {
+        const personId = typeof staff.person === 'object' ? staff.person?.id : staff.person
+        return personId === person.id
+      })) {
+        hasStaffRole = true
+      }
+
+      // Check if person is in production staff
+      if (productionStaff.docs.some(staff => {
+        const personId = typeof staff.person === 'object' ? staff.person?.id : staff.person
+        return personId === person.id
+      })) {
+        hasStaffRole = true
+      }
+
+      // Only flag if person has neither team nor staff role
+      if (!hasTeam && !hasStaffRole) {
+        orphanedPeople.push({
           id: person.id,
           name: person.name,
           slug: person.slug || '',
@@ -100,12 +133,12 @@ export async function GET() {
       }
     })
 
-    if (peopleWithoutTeams.length > 0) {
+    if (orphanedPeople.length > 0) {
       issues.push({
         type: 'warning',
-        category: 'Unassigned People',
-        message: 'People exist in the database but are not assigned to any teams',
-        items: peopleWithoutTeams,
+        category: 'Orphaned People',
+        message: 'People are not on any team AND not assigned to any staff role (organization or production)',
+        items: orphanedPeople,
         autoFixable: false,
       })
     }
