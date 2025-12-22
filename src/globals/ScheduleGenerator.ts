@@ -11,9 +11,9 @@ export const ScheduleGenerator: GlobalConfig = {
     // Hide the save button gutter
     components: {
       elements: {
-        SaveButton: () => null,
-        SaveDraft: () => null,
-        Publish: () => null,
+        SaveButton: '@/components/EmptyComponent#default',
+        SaveDraft: '@/components/EmptyComponent#default',
+        Publish: '@/components/EmptyComponent#default',
       },
     },
   },
