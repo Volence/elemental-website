@@ -5,7 +5,7 @@ import { StaffMemberCard } from './StaffMemberCard'
 
 interface StaffMember {
   name: string
-  photoUrl?: string
+  photoUrl?: string | null
   twitter?: string
   twitch?: string
   youtube?: string
