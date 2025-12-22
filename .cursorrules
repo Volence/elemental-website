@@ -133,10 +133,13 @@
 - [ ] No files exceed size limits (200 lines component, 500 lines SCSS)
 - [ ] No new inline styles (except dynamic values)
 - [ ] No duplicate code (checked for existing utilities)
-- [ ] All TypeScript errors resolved
+- [ ] All TypeScript errors resolved (run `npm run type-check`)
 - [ ] Used existing variables/mixins where applicable
 - [ ] No `!important` added unnecessarily
 - [ ] Component names are descriptive and follow patterns
+
+**Note:** A pre-push git hook automatically runs `npm run type-check` before allowing pushes.
+To set up hooks after cloning, run: `./scripts/setup-git-hooks.sh`
 
 ## Migration Notes
 As of December 21, 2025:
