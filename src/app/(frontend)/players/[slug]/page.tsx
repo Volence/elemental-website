@@ -38,10 +38,10 @@ const getRoleLabel = (role: string) => {
 }
 
 const getProductionIcon = (type: string) => {
-  if (type === 'observer') return Eye
-  if (type === 'producer') return Video
-  if (type === 'observer-producer' || type === 'observer-producer-caster') return Video
-  return Mic
+  if (type === 'observer') return <Eye className="w-5 h-5" />
+  if (type === 'producer') return <Video className="w-5 h-5" />
+  if (type === 'observer-producer' || type === 'observer-producer-caster') return <Video className="w-5 h-5" />
+  return <Mic className="w-5 h-5" />
 }
 
 // Skip static generation during build - pages will be generated on-demand
