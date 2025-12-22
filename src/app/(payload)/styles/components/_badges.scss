@@ -85,9 +85,13 @@
 // ============================================
 // ROLE BADGES
 // ============================================
+// Note: Scoped to badge/pill elements only to avoid affecting table cells
 
 // Manager
-[class*="manager"],
+.pill[class*="manager"],
+.badge[class*="manager"],
+.chip[class*="manager"],
+.tag[class*="manager"],
 .role-manager {
   background: linear-gradient(
     135deg,
@@ -100,7 +104,10 @@
 }
 
 // Coach
-[class*="coach"],
+.pill[class*="coach"],
+.badge[class*="coach"],
+.chip[class*="coach"],
+.tag[class*="coach"],
 .role-coach {
   background: linear-gradient(
     135deg,
@@ -113,7 +120,10 @@
 }
 
 // Captain
-[class*="captain"],
+.pill[class*="captain"],
+.badge[class*="captain"],
+.chip[class*="captain"],
+.tag[class*="captain"],
 .role-captain {
   background: linear-gradient(
     135deg,
@@ -126,7 +136,10 @@
 }
 
 // Substitute
-[class*="sub"],
+.pill[class*="sub"],
+.badge[class*="sub"],
+.chip[class*="sub"],
+.tag[class*="sub"],
 .role-sub {
   background: linear-gradient(
     135deg,
