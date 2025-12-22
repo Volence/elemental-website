@@ -1,20 +1,11 @@
 import React from 'react'
-import { DefaultTemplate } from '@payloadcms/next/templates'
 import DataConsistencyView from '@/components/DataConsistencyView'
-import config from '@payload-config'
-import { importMap } from '../importMap'
 
-// Server component wrapped with Payload's admin layout
-export default async function DataConsistencyRoute() {
+// Custom admin page - layout provides admin shell with sidebar
+export default function DataConsistencyPage() {
   return (
-    <DefaultTemplate
-      config={config}
-      i18n={{}}
-      importMap={importMap}
-      params={{ segments: ['data-consistency'] }}
-      searchParams={{}}
-    >
+    <div className="gutter--left gutter--right">
       <DataConsistencyView />
-    </DefaultTemplate>
+    </div>
   )
 }
