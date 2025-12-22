@@ -100,7 +100,10 @@ const DataConsistencyCheck: React.FC = () => {
 
             {showDetails && hasIssues && (
               <div className="mt-4 max-h-[500px] overflow-y-auto p-4 rounded border bg-white border-gray-300 text-gray-800 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
-                <OrphanedPeopleList people={report.orphanedPeople} />
+                <OrphanedPeopleList 
+                  people={report.orphanedPeople} 
+                  onPersonDeleted={runCheck}
+                />
                 <TeamsWithIssuesList teams={report.teamsWithMissingRelationships} />
                 <DuplicatePeopleList duplicates={report.duplicatePeople} />
 
