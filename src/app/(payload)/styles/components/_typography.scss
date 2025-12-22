@@ -67,6 +67,19 @@ main h3,
   line-height: 1.4;
   margin-top: $spacing-2xl;
   margin-bottom: $spacing-lg;
+
+  // On mobile, reduce underline width to prevent collision with buttons
+  @media (max-width: 768px) {
+    &::after {
+      max-width: 80px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    &::after {
+      max-width: 60px;
+    }
+  }
 }
 
 // Banner headings (h4)
@@ -74,6 +87,19 @@ main h3,
 .before-dashboard h4 {
   @include gradient-underline($width: 80px, $height: 2.5px);
   margin-bottom: 0;
+
+  // On mobile, reduce underline width to prevent UI collisions
+  @media (max-width: 768px) {
+    &::after {
+      max-width: 60px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    &::after {
+      max-width: 50px;
+    }
+  }
 }
 
 // ============================================
