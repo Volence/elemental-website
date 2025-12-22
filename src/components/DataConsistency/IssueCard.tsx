@@ -101,30 +101,31 @@ export function IssueCard({ type, category, message, items, autoFixable, onRefre
                   <th>Name</th>
                   {hasSlug && <th>Slug</th>}
                   {hasDetails && <th>Details</th>}
-                  <th className="issue-card__table-actions">Actions</th>
+                  {isOrphanedPeople && <th className="issue-card__table-actions">Actions</th>}
                 </tr>
               </thead>
               <tbody>
                 {visibleItems.map((item) => (
                   <tr key={item.id}>
                     <td className="issue-card__table-cell--id">{item.id}</td>
-                    <td className="issue-card__table-cell--name">{item.name}</td>
+                    <td className="issue-card__table-cell--name">
+                      <a
+                        href={`/admin/collections/people/${item.id}`}
+                        className="issue-card__name-link"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {item.name}
+                      </a>
+                    </td>
                     {hasSlug && (
                       <td className="issue-card__table-cell--slug">{item.slug || '-'}</td>
                     )}
                     {hasDetails && (
                       <td className="issue-card__table-cell--details">{item.details || '-'}</td>
                     )}
-                    <td className="issue-card__table-cell--actions">
-                      <a
-                        href={`/admin/collections/people/${item.id}`}
-                        className="issue-card__action-link"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        View
-                      </a>
-                      {isOrphanedPeople && (
+                    {isOrphanedPeople && (
+                      <td className="issue-card__table-cell--actions">
                         <button
                           onClick={() => handleDelete(item)}
                           disabled={deleting === item.id}
@@ -132,8 +133,8 @@ export function IssueCard({ type, category, message, items, autoFixable, onRefre
                         >
                           {deleting === item.id ? 'Deleting...' : 'Delete'}
                         </button>
-                      )}
-                    </td>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

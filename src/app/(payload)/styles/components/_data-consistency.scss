@@ -3,7 +3,7 @@
 
 // Container
 .data-consistency {
-  padding: 2rem;
+  padding: 1rem 2rem;
   max-width: 1400px;
   margin: 0 auto;
 
@@ -35,8 +35,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
   border-bottom: 2px solid var(--theme-elevation-200);
 
   &__title {
@@ -455,6 +455,18 @@
       &.issue-card__table-cell--actions {
         text-align: center;
       }
+    }
+  }
+
+  &__name-link {
+    color: var(--theme-text);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      color: var(--theme-success-500);
+      text-decoration: underline;
     }
   }
 
