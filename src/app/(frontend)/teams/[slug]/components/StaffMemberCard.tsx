@@ -6,7 +6,7 @@ import { formatPlayerSlug } from '@/utilities/getPlayer'
 
 interface StaffMemberCardProps {
   name: string
-  photoUrl?: string
+  photoUrl?: string | null
   twitter?: string
   twitch?: string
   youtube?: string
