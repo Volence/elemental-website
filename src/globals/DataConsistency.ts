@@ -6,18 +6,17 @@ export const DataConsistency: GlobalConfig = {
   admin: {
     description: '📊 Check and fix data consistency issues across collections.',
     group: 'Tools',
-    components: {
-      views: {
-        Default: '@/components/DataConsistencyView#default',
-      },
-    },
+    // Hide the default UI elements
+    hideAPIURL: true,
   },
   fields: [
     {
-      name: 'placeholder',
-      type: 'text',
+      name: 'content',
+      type: 'ui',
       admin: {
-        hidden: true,
+        components: {
+          Field: '@/components/DataConsistencyView#default',
+        },
       },
     },
   ],

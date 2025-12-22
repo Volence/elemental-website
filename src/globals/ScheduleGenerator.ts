@@ -6,18 +6,17 @@ export const ScheduleGenerator: GlobalConfig = {
   admin: {
     description: '📋 Generate Discord announcements from upcoming matches.',
     group: 'Tools',
-    components: {
-      views: {
-        Default: '@/components/ScheduleGeneratorView#default',
-      },
-    },
+    // Hide the default UI elements
+    hideAPIURL: true,
   },
   fields: [
     {
-      name: 'placeholder',
-      type: 'text',
+      name: 'content',
+      type: 'ui',
       admin: {
-        hidden: true,
+        components: {
+          Field: '@/components/ScheduleGeneratorView#default',
+        },
       },
     },
   ],

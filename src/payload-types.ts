@@ -1534,7 +1534,6 @@ export interface Footer {
  */
 export interface DataConsistency {
   id: number;
-  placeholder?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1546,7 +1545,6 @@ export interface DataConsistency {
  */
 export interface ScheduleGenerator {
   id: number;
-  placeholder?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1601,7 +1599,6 @@ export interface FooterSelect<T extends boolean = true> {
  * via the `definition` "data-consistency_select".
  */
 export interface DataConsistencySelect<T extends boolean = true> {
-  placeholder?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -1611,7 +1608,6 @@ export interface DataConsistencySelect<T extends boolean = true> {
  * via the `definition` "schedule-generator_select".
  */
 export interface ScheduleGeneratorSelect<T extends boolean = true> {
-  placeholder?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
