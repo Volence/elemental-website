@@ -5,8 +5,6 @@ import React from 'react'
 
 import { SeedButton } from './SeedButton'
 import { FixStaffButton } from './FixStaffButton'
-import DataConsistencyCheck from './DataConsistencyCheck'
-import DataConsistencyDashboard from './DataConsistencyDashboard'
 import QuickStats from './QuickStats'
 import AssignedTeamsDashboard from './AssignedTeamsDashboard'
 import { GradientBorder } from './GradientBorder'
@@ -45,7 +43,6 @@ const BeforeDashboard: React.FC = () => {
               </div>
             </div>
           </GradientBorder>
-          <DataConsistencyCheck />
         </>
       )}
       {isTeamManager && (
