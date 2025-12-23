@@ -117,7 +117,7 @@ export default async function RecruitmentDetailPage({ params }: Props) {
       <div className="mb-8">
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <span
-            className={`inline-block rounded-full border px-4 py-1 text-sm font-semibold ${roleColor}`}
+            className={`inline-flex items-center gap-2 rounded-full border px-4 py-1 text-sm font-semibold ${roleColor}`}
           >
             {getGameRoleIcon(listing.role, 'sm')} {roleLabel}
           </span>
