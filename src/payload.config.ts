@@ -32,6 +32,27 @@ const dirname = path.dirname(filename)
 
 export default buildConfig({
   admin: {
+    meta: {
+      titleSuffix: '- Elemental Admin',
+      description: 'Elemental Esports admin panel - manage teams, players, matches, and content.',
+      icons: [
+        {
+          rel: 'icon',
+          type: 'image/png',
+          url: '/logos/org.png',
+        },
+        {
+          rel: 'apple-touch-icon',
+          url: '/logos/org.png',
+        },
+      ],
+      openGraph: {
+        title: 'Elemental Admin Panel',
+        description: 'Elemental Esports content management system.',
+        images: '/logos/org.png',
+        siteName: 'Elemental Esports',
+      },
+    },
     components: {
       // The `BeforeLogin` component renders a message that you see while logging into your admin panel.
       // Feel free to delete this at any time. Simply remove the line below.
