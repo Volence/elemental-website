@@ -365,7 +365,7 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
           {/* Right Column - Sidebar */}
           <div className="space-y-8">
             {/* Social Links */}
-            {(player.socialLinks.twitter || player.socialLinks.twitch || player.socialLinks.youtube || player.socialLinks.instagram || player.socialLinks.tiktok) && (
+            {(player.socialLinks.twitter || player.socialLinks.twitch || player.socialLinks.youtube || player.socialLinks.instagram || player.socialLinks.tiktok || (player.socialLinks.customLinks && player.socialLinks.customLinks.length > 0)) && (
               <div className="p-6 rounded-2xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-lg backdrop-blur-sm hover:border-border/80 transition-all">
                 <h2 className="text-xl font-black mb-4 flex items-center gap-2">
                   <Share2 className="w-5 h-5 text-primary" />
