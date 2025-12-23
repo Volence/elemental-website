@@ -17,12 +17,14 @@ const UserProfile: React.FC = () => {
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
+  const [passwordError, setPasswordError] = useState<string | null>(null)
+  const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
+  const [avatarError, setAvatarError] = useState<string | null>(null)
+  const [avatarSuccess, setAvatarSuccess] = useState<string | null>(null)
 
   if (!typedUser) {
     return (
@@ -34,22 +36,22 @@ const UserProfile: React.FC = () => {
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError(null)
-    setSuccess(null)
+    setPasswordError(null)
+    setPasswordSuccess(null)
 
     // Validation
     if (!currentPassword || !newPassword || !confirmPassword) {
-      setError('All fields are required')
+      setPasswordError('All fields are required')
       return
     }
 
     if (newPassword.length < 8) {
-      setError('New password must be at least 8 characters')
+      setPasswordError('New password must be at least 8 characters')
       return
     }
 
     if (newPassword !== confirmPassword) {
-      setError('New passwords do not match')
+      setPasswordError('New passwords do not match')
       return
     }
 
@@ -87,12 +89,12 @@ const UserProfile: React.FC = () => {
         throw new Error(data.error || 'Failed to update password')
       }
 
-      setSuccess('Password updated successfully!')
+      setPasswordSuccess('Password updated successfully!')
       setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
     } catch (err: any) {
-      setError(err.message || 'An error occurred')
+      setPasswordError(err.message || 'An error occurred')
     } finally {
       setIsSubmitting(false)
     }
@@ -115,8 +117,8 @@ const UserProfile: React.FC = () => {
     if (!avatarFile) return
 
     setIsUploadingAvatar(true)
-    setError(null)
-    setSuccess(null)
+    setAvatarError(null)
+    setAvatarSuccess(null)
 
     try {
       // Upload the file to media
@@ -130,36 +132,39 @@ const UserProfile: React.FC = () => {
       })
 
       if (!uploadResponse.ok) {
-        throw new Error('Failed to upload avatar')
+        const errorData = await uploadResponse.json()
+        throw new Error(errorData.errors?.[0]?.message || 'Failed to upload avatar')
       }
 
       const uploadData = await uploadResponse.json()
       const mediaId = uploadData.doc.id
 
-      // Update user with new avatar
+      // Update user with new avatar - include email which is required for auth collection
       const updateResponse = await fetch(`/api/users/${typedUser.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           avatar: mediaId,
-          role: typedUser.role,
-          name: typedUser.name,
+          role: typedUser.role, // Required field
+          name: typedUser.name, // Required field
+          email: typedUser.email, // Required for auth collection
         }),
       })
 
       if (!updateResponse.ok) {
-        throw new Error('Failed to update avatar')
+        const errorData = await updateResponse.json()
+        throw new Error(errorData.errors?.[0]?.message || 'Failed to update avatar')
       }
 
-      setSuccess('Avatar updated successfully!')
+      setAvatarSuccess('Avatar updated successfully!')
       setAvatarFile(null)
       setAvatarPreview(null)
       
       // Reload the page to show new avatar
       setTimeout(() => window.location.reload(), 1500)
     } catch (err: any) {
-      setError(err.message || 'Failed to upload avatar')
+      setAvatarError(err.message || 'Failed to upload avatar')
     } finally {
       setIsUploadingAvatar(false)
     }
@@ -183,6 +188,32 @@ const UserProfile: React.FC = () => {
         padding: '1.5rem',
         marginBottom: '2rem'
       }}>
+        {avatarError && (
+          <div style={{ 
+            background: 'var(--theme-error-50)', 
+            border: '1px solid var(--theme-error-200)', 
+            color: 'var(--theme-error-700)', 
+            padding: '0.75rem', 
+            borderRadius: '4px',
+            marginBottom: '1rem'
+          }}>
+            {avatarError}
+          </div>
+        )}
+
+        {avatarSuccess && (
+          <div style={{ 
+            background: 'var(--theme-success-50)', 
+            border: '1px solid var(--theme-success-200)', 
+            color: 'var(--theme-success-700)', 
+            padding: '0.75rem', 
+            borderRadius: '4px',
+            marginBottom: '1rem'
+          }}>
+            {avatarSuccess}
+          </div>
+        )}
+
         <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem', alignItems: 'flex-start' }}>
           {/* Avatar */}
           <div style={{ flexShrink: 0, textAlign: 'center' }}>
@@ -301,7 +332,7 @@ const UserProfile: React.FC = () => {
           Change Password
         </h2>
 
-        {error && (
+        {passwordError && (
           <div style={{ 
             background: 'var(--theme-error-50)', 
             border: '1px solid var(--theme-error-200)', 
@@ -310,11 +341,11 @@ const UserProfile: React.FC = () => {
             borderRadius: '4px',
             marginBottom: '1rem'
           }}>
-            {error}
+            {passwordError}
           </div>
         )}
 
-        {success && (
+        {passwordSuccess && (
           <div style={{ 
             background: 'var(--theme-success-50)', 
             border: '1px solid var(--theme-success-200)', 
@@ -323,7 +354,7 @@ const UserProfile: React.FC = () => {
             borderRadius: '4px',
             marginBottom: '1rem'
           }}>
-            {success}
+            {passwordSuccess}
           </div>
         )}
 
