@@ -194,46 +194,8 @@ export const RecruitmentListings: CollectionConfig = {
         position: 'sidebar',
       },
     },
-    // Virtual field for application count
-    {
-      name: 'applicationCount',
-      type: 'number',
-      admin: {
-        readOnly: true,
-        description: 'Number of applications received',
-        position: 'sidebar',
-      },
-      hooks: {
-        afterRead: [
-          async ({ req, siblingData, context }) => {
-            // Only calculate on single document view (not on list views or create page)
-            if (!siblingData?.id || context?.skipApplicationCount) {
-              return 0
-            }
-
-            // Count non-archived applications for this listing
-            const count = await req.payload.count({
-              collection: 'recruitment-applications',
-              where: {
-                and: [
-                  {
-                    listing: {
-                      equals: siblingData.id,
-                    },
-                  },
-                  {
-                    archived: {
-                      not_equals: true,
-                    },
-                  },
-                ],
-              },
-            })
-            return count.totalDocs
-          },
-        ],
-      },
-    },
+    // Note: Application count removed to avoid database query issues.
+    // View applications in the Recruitment Applications collection filtered by listing.
     // UI fields for custom list columns
     {
       name: 'teamDisplay',
