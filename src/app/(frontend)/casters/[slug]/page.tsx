@@ -163,7 +163,7 @@ export default async function CasterPage({ params: paramsPromise }: Args) {
           // Social links are now only in the People collection
           const socialLinks = getSocialLinksFromPerson(casterData.person)
           
-          const hasSocialLinks = socialLinks.twitter || socialLinks.twitch || socialLinks.youtube || socialLinks.instagram
+          const hasSocialLinks = socialLinks.twitter || socialLinks.twitch || socialLinks.youtube || socialLinks.instagram || socialLinks.tiktok
           
           if (!hasSocialLinks) return null
           

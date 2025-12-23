@@ -140,7 +140,7 @@ export default async function OrganizationStaffPage({ params: paramsPromise }: A
           // Social links are now only in the People collection
           const socialLinks = getSocialLinksFromPerson(staffData.person)
           
-          const hasSocialLinks = socialLinks.twitter || socialLinks.twitch || socialLinks.youtube || socialLinks.instagram
+          const hasSocialLinks = socialLinks.twitter || socialLinks.twitch || socialLinks.youtube || socialLinks.instagram || socialLinks.tiktok
           
           if (!hasSocialLinks) return null
           

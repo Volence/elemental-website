@@ -38,6 +38,7 @@ export interface PlayerInfo {
     twitch?: string
     youtube?: string
     instagram?: string
+    tiktok?: string
   }
 }
 
