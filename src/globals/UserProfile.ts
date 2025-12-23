@@ -12,14 +12,22 @@ export const UserProfile: GlobalConfig = {
     group: 'System',
     description: '👤 View and manage your account settings',
     hidden: false,
+    hideAPIURL: true,
+    components: {
+      elements: {
+        SaveButton: '@/components/EmptyComponent#default',
+        SaveDraftButton: '@/components/EmptyComponent#default',
+        PublishButton: '@/components/EmptyComponent#default',
+      },
+    },
   },
   fields: [
     {
-      name: 'profileUI',
+      name: 'content',
       type: 'ui',
       admin: {
         components: {
-          Field: '@/components/UserProfile',
+          Field: '@/components/UserProfile#default',
         },
       },
     },

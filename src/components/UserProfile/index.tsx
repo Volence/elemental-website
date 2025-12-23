@@ -2,7 +2,13 @@
 
 import React, { useState } from 'react'
 import { useAuth } from '@payloadcms/ui'
-import type { User } from '@/payload-types'
+import type { User, Media } from '@/payload-types'
+
+function getMediaUrl(media: string | number | Media | null | undefined): string | null {
+  if (!media) return null
+  if (typeof media === 'object' && media.url) return media.url
+  return null
+}
 
 const UserProfile: React.FC = () => {
   const { user } = useAuth()
@@ -93,6 +99,8 @@ const UserProfile: React.FC = () => {
     'staff-manager': 'Staff Manager',
   }
 
+  const avatarUrl = getMediaUrl(typedUser.avatar)
+
   return (
     <div style={{ padding: '2rem', maxWidth: '600px' }}>
       <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '2rem' }}>
@@ -107,21 +115,72 @@ const UserProfile: React.FC = () => {
         padding: '1.5rem',
         marginBottom: '2rem'
       }}>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem' }}>
-          Account Information
-        </h2>
-        <div style={{ display: 'grid', gap: '0.75rem' }}>
-          <div>
-            <span style={{ fontWeight: '500', color: '#6b7280' }}>Name:</span>{' '}
-            <span>{typedUser.name}</span>
+        <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem', alignItems: 'center' }}>
+          {/* Avatar */}
+          <div style={{ flexShrink: 0 }}>
+            {avatarUrl ? (
+              <img 
+                src={avatarUrl} 
+                alt={typedUser.name}
+                style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: '2px solid #3b82f6'
+                }}
+              />
+            ) : (
+              <div style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                background: '#3b82f6',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '2rem',
+                color: 'white',
+                fontWeight: 'bold'
+              }}>
+                {typedUser.name.charAt(0).toUpperCase()}
+              </div>
+            )}
           </div>
+          
+          {/* Name and Role */}
+          <div style={{ flex: 1 }}>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: '600', marginBottom: '0.25rem' }}>
+              {typedUser.name}
+            </h2>
+            <p style={{ color: '#6b7280', marginBottom: '0.5rem' }}>
+              {roleLabels[typedUser.role]}
+            </p>
+            <a 
+              href={`/admin/collections/users/${typedUser.id}`}
+              style={{
+                color: '#3b82f6',
+                textDecoration: 'none',
+                fontSize: '0.875rem',
+                fontWeight: '500'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.textDecoration = 'underline'}
+              onMouseOut={(e) => e.currentTarget.style.textDecoration = 'none'}
+            >
+              Edit Profile & Avatar →
+            </a>
+          </div>
+        </div>
+
+        <div style={{ 
+          borderTop: '1px solid #e5e7eb',
+          paddingTop: '1rem',
+          display: 'grid',
+          gap: '0.5rem'
+        }}>
           <div>
             <span style={{ fontWeight: '500', color: '#6b7280' }}>Email:</span>{' '}
             <span>{typedUser.email}</span>
-          </div>
-          <div>
-            <span style={{ fontWeight: '500', color: '#6b7280' }}>Role:</span>{' '}
-            <span>{roleLabels[typedUser.role]}</span>
           </div>
         </div>
       </div>

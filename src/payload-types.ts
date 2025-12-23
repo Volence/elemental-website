@@ -781,6 +781,10 @@ export interface User {
   id: number;
   name: string;
   /**
+   * Profile picture for your account
+   */
+  avatar?: (number | null) | Media;
+  /**
    * User role determines what they can access and edit in the CMS.
    */
   role: 'admin' | 'team-manager' | 'staff-manager';
@@ -1557,6 +1561,7 @@ export interface OrganizationStaffSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  avatar?: T;
   role?: T;
   assignedTeams?: T;
   updatedAt?: T;

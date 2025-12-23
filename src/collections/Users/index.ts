@@ -51,6 +51,14 @@ export const Users: CollectionConfig = {
       required: true,
     },
     {
+      name: 'avatar',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description: 'Profile picture for your account',
+      },
+    },
+    {
       name: 'role',
       type: 'select',
       required: true,
