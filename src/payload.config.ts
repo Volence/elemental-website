@@ -17,11 +17,13 @@ import { Users } from './collections/Users'
 import { IgnoredDuplicates } from './collections/IgnoredDuplicates'
 import { RecruitmentListings } from './collections/RecruitmentListings'
 import { RecruitmentApplications } from './collections/RecruitmentApplications'
+import { InviteLinks } from './collections/InviteLinks'
 // import { ActivityLog } from './collections/ActivityLog' // Temporarily disabled until migrations are fixed
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { DataConsistency } from './globals/DataConsistency'
 import { ScheduleGenerator } from './globals/ScheduleGenerator'
+import { UserProfile } from './globals/UserProfile'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
@@ -122,10 +124,11 @@ export default buildConfig({
     Users,
     IgnoredDuplicates,
     RecruitmentListings,
-    RecruitmentApplications /* ActivityLog temporarily disabled */,
+    RecruitmentApplications,
+    InviteLinks /* ActivityLog temporarily disabled */,
   ],
   cors: [getServerSideURL()].filter(Boolean),
-  globals: [Header, Footer, DataConsistency, ScheduleGenerator],
+  globals: [Header, Footer, DataConsistency, ScheduleGenerator, UserProfile],
   plugins: [
     ...plugins,
     // storage-adapter-placeholder

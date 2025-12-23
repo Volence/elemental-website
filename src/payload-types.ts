@@ -78,6 +78,7 @@ export interface Config {
     'ignored-duplicates': IgnoredDuplicate;
     'recruitment-listings': RecruitmentListing;
     'recruitment-applications': RecruitmentApplication;
+    'invite-links': InviteLink;
     redirects: Redirect;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
@@ -98,6 +99,7 @@ export interface Config {
     'ignored-duplicates': IgnoredDuplicatesSelect<false> | IgnoredDuplicatesSelect<true>;
     'recruitment-listings': RecruitmentListingsSelect<false> | RecruitmentListingsSelect<true>;
     'recruitment-applications': RecruitmentApplicationsSelect<false> | RecruitmentApplicationsSelect<true>;
+    'invite-links': InviteLinksSelect<false> | InviteLinksSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
@@ -114,12 +116,14 @@ export interface Config {
     footer: Footer;
     'data-consistency': DataConsistency;
     'schedule-generator': ScheduleGenerator;
+    'user-profile': UserProfile;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'data-consistency': DataConsistencySelect<false> | DataConsistencySelect<true>;
     'schedule-generator': ScheduleGeneratorSelect<false> | ScheduleGeneratorSelect<true>;
+    'user-profile': UserProfileSelect<false> | UserProfileSelect<true>;
   };
   locale: null;
   user: User & {
@@ -919,6 +923,49 @@ export interface RecruitmentApplication {
   createdAt: string;
 }
 /**
+ * 🔗 Generate invite links for new users with pre-configured permissions.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "invite-links".
+ */
+export interface InviteLink {
+  id: number;
+  /**
+   * Unique token for this invite link (auto-generated)
+   */
+  token: string;
+  /**
+   * The role the new user will be assigned when they sign up
+   */
+  role: 'admin' | 'team-manager' | 'staff-manager';
+  /**
+   * Teams the new user will have access to (for Team Managers and Staff Managers)
+   */
+  assignedTeams?: (number | Team)[] | null;
+  /**
+   * Optional: Pre-assign an email address for this invite
+   */
+  email?: string | null;
+  /**
+   * When this invite link expires (default: 7 days from creation)
+   */
+  expiresAt: string;
+  /**
+   * When this invite was used (null if not yet used)
+   */
+  usedAt?: string | null;
+  /**
+   * The user who used this invite
+   */
+  usedBy?: (number | null) | User;
+  /**
+   * The admin who created this invite
+   */
+  createdBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
@@ -1098,6 +1145,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'recruitment-applications';
         value: number | RecruitmentApplication;
+      } | null)
+    | ({
+        relationTo: 'invite-links';
+        value: number | InviteLink;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1568,6 +1619,22 @@ export interface RecruitmentApplicationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "invite-links_select".
+ */
+export interface InviteLinksSelect<T extends boolean = true> {
+  token?: T;
+  role?: T;
+  assignedTeams?: T;
+  email?: T;
+  expiresAt?: T;
+  usedAt?: T;
+  usedBy?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects_select".
  */
 export interface RedirectsSelect<T extends boolean = true> {
@@ -1724,6 +1791,17 @@ export interface ScheduleGenerator {
   createdAt?: string | null;
 }
 /**
+ * 👤 View and manage your account settings
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "user-profile".
+ */
+export interface UserProfile {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
@@ -1783,6 +1861,15 @@ export interface DataConsistencySelect<T extends boolean = true> {
  * via the `definition` "schedule-generator_select".
  */
 export interface ScheduleGeneratorSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "user-profile_select".
+ */
+export interface UserProfileSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

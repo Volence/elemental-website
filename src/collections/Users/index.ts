@@ -24,7 +24,13 @@ export const Users: CollectionConfig = {
       // Unauthenticated users cannot read any users
       return false
     },
-    update: adminOnly, // Only admins can update users
+    update: ({ req: { user } }) => {
+      // Admins can update anyone
+      if (user && (user as User).role === UserRole.ADMIN) return true
+      // Users can only update themselves (name, email, password)
+      if (user) return { id: { equals: user.id } }
+      return false
+    },
   },
   admin: {
     defaultColumns: ['name', 'email', 'role', 'assignedTeams'],
@@ -103,13 +109,19 @@ export const Users: CollectionConfig = {
           }
         }
 
-        // Prevent non-admins from changing roles (their own or others')
+        // Prevent non-admins from changing sensitive fields (role, assignedTeams)
         if (operation === 'update' && data && user) {
-          // Only admins can change roles
-          if (user.role !== UserRole.ADMIN && 'role' in data) {
+          if (user.role !== UserRole.ADMIN) {
             // Remove role from update data if user is not admin
-            delete data.role
-            req.payload.logger.warn('Non-admin user attempted to change role - prevented')
+            if ('role' in data) {
+              delete data.role
+              req.payload.logger.warn('Non-admin user attempted to change role - prevented')
+            }
+            // Remove assignedTeams from update data if user is not admin
+            if ('assignedTeams' in data) {
+              delete data.assignedTeams
+              req.payload.logger.warn('Non-admin user attempted to change assignedTeams - prevented')
+            }
           }
         }
 

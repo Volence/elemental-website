@@ -44,11 +44,14 @@ import { default as default_1f089b8c2a27470c9bbc5822da887828 } from '@/component
 import { default as default_4b32192632526300c4dfce3ec06124cb } from '@/components/RecruitmentListColumns/ListingCell'
 import { default as default_46b3ed67e65478b5cdaa83f2b09fc358 } from '@/components/RecruitmentApplicationColumns/PositionCell'
 import { default as default_91b673ad90a59e578cd7d9f0fa7f0d19 } from '@/components/RecruitmentApplicationColumns/ActionsCell'
+import { default as default_af352f4805551eefd7ae0beaaee692c1 } from '@/components/InviteLinkFields/CopyLinkField'
+import { default as default_83b754ffb26a9a06f67ecd0cafa4ac31 } from '@/components/InviteLinkColumns/StatusCell'
 import { RowLabel as RowLabel_ec255a65fa6fa8d1faeb09cf35284224 } from '@/Header/RowLabel'
 import { RowLabel as RowLabel_1f6ff6ff633e3695d348f4f3c58f1466 } from '@/Footer/RowLabel'
 import { default as default_a1087e454b1b74ceaf1bf3fd38ecfc7a } from '@/components/DataConsistencyView'
 import { default as default_b41852718c887b613f07fa372f5e410c } from '@/components/EmptyComponent'
 import { default as default_ca8995f013e915ce49d7b5ddd8cc4174 } from '@/components/ScheduleGeneratorView'
+import { default as default_edd64f2e4c5782e3b325d6480ed3b38e } from '@/components/UserProfile'
 import { default as default_aa0a2d19d38a4839dbd373417e210b89 } from '@/components/AdminLogo'
 import { default as default_6b1b7b9ecbb8673c7166977ed22f5ed3 } from '@/components/BeforeDashboard/LogoutButton'
 import { default as default_1a7510af427896d367a49dbf838d2de6 } from '@/components/BeforeDashboard'
@@ -102,11 +105,14 @@ export const importMap = {
   "@/components/RecruitmentListColumns/ListingCell#default": default_4b32192632526300c4dfce3ec06124cb,
   "@/components/RecruitmentApplicationColumns/PositionCell#default": default_46b3ed67e65478b5cdaa83f2b09fc358,
   "@/components/RecruitmentApplicationColumns/ActionsCell#default": default_91b673ad90a59e578cd7d9f0fa7f0d19,
+  "@/components/InviteLinkFields/CopyLinkField#default": default_af352f4805551eefd7ae0beaaee692c1,
+  "@/components/InviteLinkColumns/StatusCell#default": default_83b754ffb26a9a06f67ecd0cafa4ac31,
   "@/Header/RowLabel#RowLabel": RowLabel_ec255a65fa6fa8d1faeb09cf35284224,
   "@/Footer/RowLabel#RowLabel": RowLabel_1f6ff6ff633e3695d348f4f3c58f1466,
   "@/components/DataConsistencyView#default": default_a1087e454b1b74ceaf1bf3fd38ecfc7a,
   "@/components/EmptyComponent#default": default_b41852718c887b613f07fa372f5e410c,
   "@/components/ScheduleGeneratorView#default": default_ca8995f013e915ce49d7b5ddd8cc4174,
+  "@/components/UserProfile#default": default_edd64f2e4c5782e3b325d6480ed3b38e,
   "@/components/AdminLogo#default": default_aa0a2d19d38a4839dbd373417e210b89,
   "@/components/BeforeDashboard/LogoutButton#default": default_6b1b7b9ecbb8673c7166977ed22f5ed3,
   "@/components/BeforeDashboard#default": default_1a7510af427896d367a49dbf838d2de6,
