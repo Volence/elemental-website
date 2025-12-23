@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import type { Media } from '@/payload-types'
 import React from 'react'
 import { notFound } from 'next/navigation'
 import { getPlayerByName, getAllPlayerNames } from '@/utilities/getPlayer'
@@ -89,13 +90,19 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
                            player.teams.length > 0 ? `Player for ${player.teams.map(t => t.teamName).join(', ')}` :
                            'Player'
     
+    // Use player photo if available, otherwise fall back to org logo
+    const photoUrl = player.photo && typeof player.photo === 'object' 
+      ? getMediaUrl((player.photo as Media).url)
+      : ''
+    const imageUrl = photoUrl || '/logos/org.png'
+    
     return {
       title: `${player.name} | Players | Elemental (ELMT)`,
       description: `Learn more about ${player.name}, ${roleDescription} for Elemental.`,
       openGraph: {
         title: `${player.name} | Elemental (ELMT)`,
         description: `${player.name} - ${roleDescription}`,
-        images: [{ url: '/logos/org.png' }],
+        images: [{ url: imageUrl }],
       },
     }
   } catch (error) {
