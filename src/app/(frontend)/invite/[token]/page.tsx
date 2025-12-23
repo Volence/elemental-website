@@ -30,11 +30,11 @@ export default async function InvitePage({ params }: PageProps) {
   // Check if invite exists
   if (!invite) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+        <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 text-center">
           <div className="text-6xl mb-4">❌</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Invalid Invite Link</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Invalid Invite Link</h1>
+          <p className="text-gray-600 dark:text-gray-400">
             This invite link doesn't exist. Please check the URL and try again, or contact an administrator.
           </p>
         </div>
@@ -45,14 +45,14 @@ export default async function InvitePage({ params }: PageProps) {
   // Check if already used
   if (invite.usedAt) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+        <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 text-center">
           <div className="text-6xl mb-4">🔒</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Invite Already Used</h1>
-          <p className="text-gray-600 mb-4">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Invite Already Used</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
             This invite link has already been used and cannot be used again.
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-500">
             If you need access, please contact an administrator for a new invite link.
           </p>
         </div>
@@ -65,14 +65,14 @@ export default async function InvitePage({ params }: PageProps) {
   const expiresAt = new Date(invite.expiresAt)
   if (expiresAt < now) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+        <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 text-center">
           <div className="text-6xl mb-4">⏰</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Invite Expired</h1>
-          <p className="text-gray-600 mb-2">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Invite Expired</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-2">
             This invite link expired on {expiresAt.toLocaleDateString()} at {expiresAt.toLocaleTimeString()}.
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-500">
             Please contact an administrator for a new invite link.
           </p>
         </div>
@@ -88,19 +88,19 @@ export default async function InvitePage({ params }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 py-12">
+      <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
         <div className="text-center mb-8">
           <div className="text-5xl mb-4">🎮</div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Join Elemental</h1>
-          <p className="text-gray-600">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Join Elemental</h1>
+          <p className="text-gray-600 dark:text-gray-400">
             You've been invited to join as a <span className="font-semibold">{roleLabels[invite.role]}</span>
           </p>
         </div>
 
         <SignupForm token={token} prefilledEmail={invite.email || undefined} />
 
-        <div className="mt-6 text-center text-sm text-gray-500">
+        <div className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
           <p>This invite expires on {expiresAt.toLocaleDateString()} at {expiresAt.toLocaleTimeString()}</p>
         </div>
       </div>
