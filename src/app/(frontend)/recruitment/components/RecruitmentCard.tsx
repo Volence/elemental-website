@@ -3,6 +3,8 @@
 import React, { useState } from 'react'
 import type { RecruitmentListing } from '@/payload-types'
 import { ApplicationModal } from './ApplicationModal'
+import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
 
 interface TeamInfo {
   name: string
@@ -90,13 +92,22 @@ export const RecruitmentCard: React.FC<RecruitmentCardProps> = ({ listing, team 
           <p className="text-gray-300">{listing.requirements}</p>
         </div>
 
-        {/* Apply Button */}
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="w-full rounded-lg bg-primary-600 px-4 py-2 font-semibold text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-gray-800"
-        >
-          Apply Now
-        </button>
+        {/* Action Buttons */}
+        <div className="flex gap-3">
+          <Link
+            href={`/recruitment/${listing.id}`}
+            className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-gray-600 bg-gray-700 px-4 py-2 font-semibold text-white transition-colors hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-800"
+          >
+            View Details
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex-1 rounded-lg bg-primary-600 px-4 py-2 font-semibold text-white transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-gray-800"
+          >
+            Quick Apply
+          </button>
+        </div>
       </div>
 
       {/* Application Modal */}

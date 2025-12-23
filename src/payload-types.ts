@@ -880,10 +880,6 @@ export interface RecruitmentListing {
    * User who created this listing
    */
   createdBy?: (number | null) | User;
-  /**
-   * Number of applications received
-   */
-  applicationCount?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1553,7 +1549,6 @@ export interface RecruitmentListingsSelect<T extends boolean = true> {
   status?: T;
   filledBy?: T;
   createdBy?: T;
-  applicationCount?: T;
   updatedAt?: T;
   createdAt?: T;
 }
