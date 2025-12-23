@@ -30,7 +30,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
   }, [headerTheme])
 
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b border-border/50" {...(theme ? { 'data-theme': theme } : {})}>
+    <header className="sticky top-0 z-50 backdrop-blur-md bg-background/80" {...(theme ? { 'data-theme': theme } : {})}>
       <div className="container">
         <div className="py-6 flex justify-between items-center">
           <Link href="/" className="transition-opacity hover:opacity-80 duration-200">
@@ -39,6 +39,8 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
           <HeaderNav data={data} />
         </div>
       </div>
+      {/* Colorful gradient border */}
+      <div className="h-0.5 bg-gradient-to-r from-[hsl(var(--accent-blue))] via-[hsl(var(--accent-green))] to-[hsl(var(--accent-gold))] shadow-[0_0_20px_rgba(56,189,248,0.3)]" />
     </header>
   )
 }
