@@ -41,12 +41,16 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
       }
     }
 
+    const rosterSize = team.roster?.length || 0
+    const region = team.region || 'International'
+    
     return {
-      title: `Team ${team.name} | Elemental (ELMT)`,
-      description: `View the roster, staff, and achievements of Team ${team.name} from Elemental.`,
+      title: `ELMT ${team.name} | Elemental`,
+      description: `${region} Overwatch 2 team with ${rosterSize} players. View roster, staff, and match history for ELMT ${team.name}.`,
       openGraph: {
-        title: `Team ${team.name} | Elemental (ELMT)`,
-        description: `View the roster, staff, and achievements of Team ${team.name} from Elemental.`,
+        title: `ELMT ${team.name} | Elemental`,
+        description: `${region} Overwatch 2 team with ${rosterSize} players. View roster, staff, and match history for ELMT ${team.name}.`,
+        images: team.logo ? [{ url: team.logo }] : undefined,
       },
     }
   } catch (error) {

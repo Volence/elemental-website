@@ -2,6 +2,7 @@ import React from 'react'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { RecruitmentListing, Team } from '@/payload-types'
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { ApplyButton } from '../components/ApplyButton'
 import Link from 'next/link'
@@ -55,6 +56,61 @@ const roleColors: Record<string, string> = {
   observer: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/50',
   producer: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/50',
   'observer-producer': 'bg-cyan-500/20 text-cyan-400 border-cyan-500/50',
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params
+  const payload = await getPayload({ config })
+  const listingId = parseInt(id, 10)
+
+  if (isNaN(listingId)) {
+    return {
+      title: 'Position Not Found | Elemental',
+    }
+  }
+
+  try {
+    const { docs: listings } = await payload.find({
+      collection: 'recruitment-listings',
+      where: {
+        id: { equals: listingId },
+      },
+      depth: 2,
+      limit: 1,
+    })
+
+    const listing = listings[0]
+
+    if (!listing || listing.status !== 'open') {
+      return {
+        title: 'Position Not Found | Elemental',
+      }
+    }
+
+    const team = listing.team && typeof listing.team === 'object' ? listing.team : null
+    const roleLabel = listing.role ? roleLabels[listing.role] || listing.role : 'Position'
+    
+    const categoryLabel = listing.category === 'player' ? 'Player' :
+                         listing.category === 'team-staff' ? 'Team Staff' : 'Staff'
+    
+    const titlePrefix = team ? `ELMT ${team.name}` : 'Elemental'
+    const title = `${titlePrefix} - ${roleLabel} | Join Us`
+    const description = listing.requirements.slice(0, 155) + '...'
+
+    return {
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        images: team?.logo ? [{ url: team.logo }] : [{ url: '/logos/org.png' }],
+      },
+    }
+  } catch (error) {
+    return {
+      title: 'Recruitment | Elemental',
+    }
+  }
 }
 
 export default async function RecruitmentDetailPage({ params }: Props) {

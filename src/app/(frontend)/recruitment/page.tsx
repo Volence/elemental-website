@@ -1,12 +1,35 @@
 import React from 'react'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import type { Metadata } from 'next'
 import { RecruitmentListings } from './components/RecruitmentListings'
 import Link from 'next/link'
 import { Building2, Users } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
+
+export async function generateMetadata(): Promise<Metadata> {
+  const payload = await getPayload({ config })
+
+  const { totalDocs } = await payload.find({
+    collection: 'recruitment-listings',
+    where: {
+      status: { equals: 'open' },
+    },
+    limit: 0,
+  })
+
+  return {
+    title: 'Join Our Teams | Elemental Recruitment',
+    description: `${totalDocs} open position${totalDocs !== 1 ? 's' : ''} available. Join Elemental Esports as a player, coach, or staff member. Find your perfect role in our Overwatch 2 organization.`,
+    openGraph: {
+      title: 'Join Our Teams | Elemental Recruitment',
+      description: `${totalDocs} open position${totalDocs !== 1 ? 's' : ''} available. Join Elemental Esports as a player, coach, or staff member.`,
+      images: [{ url: '/logos/org.png' }],
+    },
+  }
+}
 
 export default async function RecruitmentPage() {
   const payload = await getPayload({ config })

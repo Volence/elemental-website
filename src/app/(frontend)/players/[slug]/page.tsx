@@ -92,6 +92,11 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
     return {
       title: `${player.name} | Players | Elemental (ELMT)`,
       description: `Learn more about ${player.name}, ${roleDescription} for Elemental.`,
+      openGraph: {
+        title: `${player.name} | Elemental (ELMT)`,
+        description: `${player.name} - ${roleDescription}`,
+        images: [{ url: '/logos/org.png' }],
+      },
     }
   } catch (error) {
     // During build, database may not be available

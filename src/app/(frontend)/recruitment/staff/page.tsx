@@ -2,6 +2,7 @@ import React from 'react'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import type { RecruitmentListing } from '@/payload-types'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowLeft, Building2, Users, Briefcase } from 'lucide-react'
 import { ApplyButton } from '../components/ApplyButton'
@@ -9,6 +10,31 @@ import { formatDate } from '@/utilities/formatDateTime'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
+
+export async function generateMetadata(): Promise<Metadata> {
+  const payload = await getPayload({ config })
+
+  const { totalDocs } = await payload.find({
+    collection: 'recruitment-listings',
+    where: {
+      and: [
+        { status: { equals: 'open' } },
+        { category: { equals: 'org-staff' } },
+      ],
+    },
+    limit: 0,
+  })
+
+  return {
+    title: 'Join Our Organization | Elemental Staff Positions',
+    description: `${totalDocs} staff position${totalDocs !== 1 ? 's' : ''} available. Join Elemental Esports as a moderator, event manager, content creator, or production staff. Help us grow!`,
+    openGraph: {
+      title: 'Join Our Organization | Elemental Staff Positions',
+      description: `${totalDocs} staff position${totalDocs !== 1 ? 's' : ''} available. Join Elemental Esports in community, content, or production roles.`,
+      images: [{ url: '/logos/org.png' }],
+    },
+  }
+}
 
 const roleLabels: Record<string, string> = {
   moderator: 'Moderator',
