@@ -222,7 +222,7 @@ const UserProfile: React.FC = () => {
           </div>
         )}
 
-        <form onSubmit={handlePasswordChange} style={{ display: 'grid', gap: '1rem' }}>
+        <div style={{ display: 'grid', gap: '1rem' }}>
           <div>
             <label 
               htmlFor="currentPassword" 
@@ -236,6 +236,12 @@ const UserProfile: React.FC = () => {
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               disabled={isSubmitting}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !isSubmitting) {
+                  e.preventDefault()
+                  handlePasswordChange(e)
+                }
+              }}
               style={{
                 width: '100%',
                 padding: '0.5rem',
@@ -259,6 +265,12 @@ const UserProfile: React.FC = () => {
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               disabled={isSubmitting}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !isSubmitting) {
+                  e.preventDefault()
+                  handlePasswordChange(e)
+                }
+              }}
               style={{
                 width: '100%',
                 padding: '0.5rem',
@@ -285,6 +297,12 @@ const UserProfile: React.FC = () => {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               disabled={isSubmitting}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !isSubmitting) {
+                  e.preventDefault()
+                  handlePasswordChange(e)
+                }
+              }}
               style={{
                 width: '100%',
                 padding: '0.5rem',
@@ -296,7 +314,8 @@ const UserProfile: React.FC = () => {
           </div>
 
           <button
-            type="submit"
+            type="button"
+            onClick={handlePasswordChange}
             disabled={isSubmitting}
             style={{
               padding: '0.75rem 1.5rem',
@@ -311,7 +330,7 @@ const UserProfile: React.FC = () => {
           >
             {isSubmitting ? 'Updating...' : 'Update Password'}
           </button>
-        </form>
+        </div>
       </div>
     </div>
   )
