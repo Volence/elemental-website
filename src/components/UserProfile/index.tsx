@@ -103,14 +103,10 @@ const UserProfile: React.FC = () => {
 
   return (
     <div style={{ padding: '2rem', maxWidth: '600px' }}>
-      <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '2rem' }}>
-        My Profile
-      </h1>
-
       {/* Profile Information */}
       <div style={{ 
-        background: '#f9fafb', 
-        border: '1px solid #e5e7eb', 
+        background: 'var(--theme-elevation-50)', 
+        border: '1px solid var(--theme-elevation-100)', 
         borderRadius: '8px', 
         padding: '1.5rem',
         marginBottom: '2rem'
@@ -153,13 +149,13 @@ const UserProfile: React.FC = () => {
             <h2 style={{ fontSize: '1.5rem', fontWeight: '600', marginBottom: '0.25rem' }}>
               {typedUser.name}
             </h2>
-            <p style={{ color: '#6b7280', marginBottom: '0.5rem' }}>
+            <p style={{ color: 'var(--theme-elevation-500)', marginBottom: '0.5rem' }}>
               {roleLabels[typedUser.role]}
             </p>
             <a 
               href={`/admin/collections/users/${typedUser.id}`}
               style={{
-                color: '#3b82f6',
+                color: 'var(--theme-text-accent)',
                 textDecoration: 'none',
                 fontSize: '0.875rem',
                 fontWeight: '500'
@@ -173,22 +169,22 @@ const UserProfile: React.FC = () => {
         </div>
 
         <div style={{ 
-          borderTop: '1px solid #e5e7eb',
+          borderTop: '1px solid var(--theme-elevation-100)',
           paddingTop: '1rem',
           display: 'grid',
           gap: '0.5rem'
         }}>
           <div>
-            <span style={{ fontWeight: '500', color: '#6b7280' }}>Email:</span>{' '}
-            <span>{typedUser.email}</span>
+            <span style={{ fontWeight: '500', color: 'var(--theme-elevation-500)' }}>Email:</span>{' '}
+            <span style={{ color: 'var(--theme-elevation-800)' }}>{typedUser.email}</span>
           </div>
         </div>
       </div>
 
       {/* Change Password Form */}
       <div style={{ 
-        background: 'white', 
-        border: '1px solid #e5e7eb', 
+        background: 'var(--theme-elevation-50)', 
+        border: '1px solid var(--theme-elevation-100)', 
         borderRadius: '8px', 
         padding: '1.5rem'
       }}>
@@ -198,9 +194,9 @@ const UserProfile: React.FC = () => {
 
         {error && (
           <div style={{ 
-            background: '#fee2e2', 
-            border: '1px solid #fecaca', 
-            color: '#991b1b', 
+            background: 'var(--theme-error-50)', 
+            border: '1px solid var(--theme-error-200)', 
+            color: 'var(--theme-error-700)', 
             padding: '0.75rem', 
             borderRadius: '4px',
             marginBottom: '1rem'
@@ -211,9 +207,9 @@ const UserProfile: React.FC = () => {
 
         {success && (
           <div style={{ 
-            background: '#d1fae5', 
-            border: '1px solid #a7f3d0', 
-            color: '#065f46', 
+            background: 'var(--theme-success-50)', 
+            border: '1px solid var(--theme-success-200)', 
+            color: 'var(--theme-success-700)', 
             padding: '0.75rem', 
             borderRadius: '4px',
             marginBottom: '1rem'
@@ -226,7 +222,7 @@ const UserProfile: React.FC = () => {
           <div>
             <label 
               htmlFor="currentPassword" 
-              style={{ display: 'block', fontWeight: '500', marginBottom: '0.5rem' }}
+              style={{ display: 'block', fontWeight: '500', marginBottom: '0.5rem', color: 'var(--theme-elevation-800)' }}
             >
               Current Password
             </label>
@@ -245,9 +241,11 @@ const UserProfile: React.FC = () => {
               style={{
                 width: '100%',
                 padding: '0.5rem',
-                border: '1px solid #d1d5db',
+                border: '1px solid var(--theme-elevation-150)',
                 borderRadius: '4px',
                 fontSize: '1rem',
+                background: 'var(--theme-elevation-0)',
+                color: 'var(--theme-elevation-800)',
               }}
             />
           </div>
@@ -255,7 +253,7 @@ const UserProfile: React.FC = () => {
           <div>
             <label 
               htmlFor="newPassword" 
-              style={{ display: 'block', fontWeight: '500', marginBottom: '0.5rem' }}
+              style={{ display: 'block', fontWeight: '500', marginBottom: '0.5rem', color: 'var(--theme-elevation-800)' }}
             >
               New Password
             </label>
@@ -274,12 +272,14 @@ const UserProfile: React.FC = () => {
               style={{
                 width: '100%',
                 padding: '0.5rem',
-                border: '1px solid #d1d5db',
+                border: '1px solid var(--theme-elevation-150)',
                 borderRadius: '4px',
                 fontSize: '1rem',
+                background: 'var(--theme-elevation-0)',
+                color: 'var(--theme-elevation-800)',
               }}
             />
-            <p style={{ fontSize: '0.875rem', color: '#6b7280', marginTop: '0.25rem' }}>
+            <p style={{ fontSize: '0.875rem', color: 'var(--theme-elevation-500)', marginTop: '0.25rem' }}>
               Must be at least 8 characters
             </p>
           </div>
@@ -287,7 +287,7 @@ const UserProfile: React.FC = () => {
           <div>
             <label 
               htmlFor="confirmPassword" 
-              style={{ display: 'block', fontWeight: '500', marginBottom: '0.5rem' }}
+              style={{ display: 'block', fontWeight: '500', marginBottom: '0.5rem', color: 'var(--theme-elevation-800)' }}
             >
               Confirm New Password
             </label>
@@ -306,9 +306,11 @@ const UserProfile: React.FC = () => {
               style={{
                 width: '100%',
                 padding: '0.5rem',
-                border: '1px solid #d1d5db',
+                border: '1px solid var(--theme-elevation-150)',
                 borderRadius: '4px',
                 fontSize: '1rem',
+                background: 'var(--theme-elevation-0)',
+                color: 'var(--theme-elevation-800)',
               }}
             />
           </div>
@@ -319,8 +321,8 @@ const UserProfile: React.FC = () => {
             disabled={isSubmitting}
             style={{
               padding: '0.75rem 1.5rem',
-              background: isSubmitting ? '#9ca3af' : '#3b82f6',
-              color: 'white',
+              background: isSubmitting ? 'var(--theme-elevation-300)' : 'var(--theme-button-primary)',
+              color: isSubmitting ? 'var(--theme-elevation-600)' : 'var(--theme-button-primary-text)',
               border: 'none',
               borderRadius: '4px',
               fontWeight: '500',
