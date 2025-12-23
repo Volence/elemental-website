@@ -13,9 +13,9 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 interface Props {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 const roleLabels: Record<string, string> = {
@@ -58,9 +58,10 @@ const roleColors: Record<string, string> = {
 }
 
 export default async function RecruitmentDetailPage({ params }: Props) {
+  const { id } = await params
   const payload = await getPayload({ config })
 
-  const listingId = parseInt(params.id, 10)
+  const listingId = parseInt(id, 10)
 
   if (isNaN(listingId)) {
     notFound()
