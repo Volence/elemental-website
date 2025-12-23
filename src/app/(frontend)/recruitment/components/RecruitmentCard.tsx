@@ -89,7 +89,7 @@ export const RecruitmentCard: React.FC<RecruitmentCardProps> = ({ listing, team 
           <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-400">
             Requirements
           </h3>
-          <p className="text-gray-300">{listing.requirements}</p>
+          <p className="line-clamp-3 text-gray-300">{listing.requirements}</p>
         </div>
 
         {/* Action Buttons */}
