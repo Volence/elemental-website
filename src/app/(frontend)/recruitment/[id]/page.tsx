@@ -117,9 +117,10 @@ export default async function RecruitmentDetailPage({ params }: Props) {
       <div className="mb-8">
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <span
-            className={`inline-flex items-center gap-2 rounded-full border px-4 py-1 text-sm font-semibold ${roleColor}`}
+            className={`inline-flex items-center rounded-full border px-4 py-1 text-sm font-semibold ${roleColor}`}
           >
-            {getGameRoleIcon(listing.role, 'sm')} {roleLabel}
+            <span className="mr-2">{getGameRoleIcon(listing.role, 'sm')}</span>
+            {roleLabel}
           </span>
           <span className="inline-flex items-center gap-1 rounded-full border border-gray-600 bg-gray-700 px-3 py-1 text-xs font-semibold text-gray-300">
             {getCategoryLabel(listing.category)}
