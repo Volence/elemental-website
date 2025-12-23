@@ -48,7 +48,8 @@ export const Users: CollectionConfig = {
     {
       name: 'name',
       type: 'text',
-      required: true,
+      // Only required on create, not on update (allows updates without sending name)
+      required: ({ operation }) => operation === 'create',
     },
     {
       name: 'avatar',
@@ -61,7 +62,8 @@ export const Users: CollectionConfig = {
     {
       name: 'role',
       type: 'select',
-      required: true,
+      // Only required on create, not on update (allows updates without sending role)
+      required: ({ data, operation }) => operation === 'create',
       defaultValue: UserRole.TEAM_MANAGER,
       admin: {
         description: 'User role determines what they can access and edit in the CMS.',

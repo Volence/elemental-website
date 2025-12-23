@@ -787,7 +787,7 @@ export interface User {
   /**
    * User role determines what they can access and edit in the CMS.
    */
-  role: 'admin' | 'team-manager' | 'staff-manager';
+  role?: ('admin' | 'team-manager' | 'staff-manager') | null;
   /**
    * For Team Managers: Restrict editing to only these teams. For Staff Managers & Admins: Quick access links to these teams (they can still edit all teams).
    */
