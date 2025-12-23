@@ -76,6 +76,8 @@ export interface Config {
     'organization-staff': OrganizationStaff;
     users: User;
     'ignored-duplicates': IgnoredDuplicate;
+    'recruitment-listings': RecruitmentListing;
+    'recruitment-applications': RecruitmentApplication;
     redirects: Redirect;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
@@ -94,6 +96,8 @@ export interface Config {
     'organization-staff': OrganizationStaffSelect<false> | OrganizationStaffSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'ignored-duplicates': IgnoredDuplicatesSelect<false> | IgnoredDuplicatesSelect<true>;
+    'recruitment-listings': RecruitmentListingsSelect<false> | RecruitmentListingsSelect<true>;
+    'recruitment-applications': RecruitmentApplicationsSelect<false> | RecruitmentApplicationsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
@@ -826,6 +830,99 @@ export interface IgnoredDuplicate {
   createdAt: string;
 }
 /**
+ * 📋 Manage open player positions and recruitment listings.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recruitment-listings".
+ */
+export interface RecruitmentListing {
+  id: number;
+  /**
+   * Type of position being recruited for
+   */
+  category: 'player' | 'team-staff' | 'org-staff';
+  /**
+   * Which team is recruiting (not applicable for organization-wide positions)
+   */
+  team?: (number | null) | Team;
+  /**
+   * What role is needed
+   */
+  role:
+    | 'tank'
+    | 'dps'
+    | 'support'
+    | 'coach'
+    | 'manager'
+    | 'assistant-coach'
+    | 'moderator'
+    | 'event-manager'
+    | 'social-manager'
+    | 'graphics'
+    | 'media-editor'
+    | 'caster'
+    | 'observer'
+    | 'producer'
+    | 'observer-producer';
+  /**
+   * Describe what you're looking for (e.g., "We're looking for a Main Support. Must have a good attitude and can scrim 3 times a week")
+   */
+  requirements: string;
+  /**
+   * Status of this listing
+   */
+  status: 'open' | 'filled' | 'closed';
+  /**
+   * Person who filled this position (auto-set when filled)
+   */
+  filledBy?: (number | null) | Person;
+  /**
+   * User who created this listing
+   */
+  createdBy?: (number | null) | User;
+  /**
+   * Number of applications received
+   */
+  applicationCount?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * 📝 Review and manage recruitment applications.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recruitment-applications".
+ */
+export interface RecruitmentApplication {
+  id: number;
+  /**
+   * Which listing this application is for
+   */
+  listing: number | RecruitmentListing;
+  /**
+   * Applicant's Discord username
+   */
+  discordHandle: string;
+  /**
+   * Applicant's introduction and why they want to join
+   */
+  aboutMe: string;
+  /**
+   * Current status of this application
+   */
+  status: 'new' | 'reviewing' | 'contacted' | 'tryout' | 'accepted' | 'rejected';
+  /**
+   * Internal notes visible only to managers and admins (not shown to applicant)
+   */
+  internalNotes?: string | null;
+  /**
+   * Archive old applications to hide them from active list
+   */
+  archived?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
@@ -997,6 +1094,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'ignored-duplicates';
         value: number | IgnoredDuplicate;
+      } | null)
+    | ({
+        relationTo: 'recruitment-listings';
+        value: number | RecruitmentListing;
+      } | null)
+    | ({
+        relationTo: 'recruitment-applications';
+        value: number | RecruitmentApplication;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1433,6 +1538,36 @@ export interface IgnoredDuplicatesSelect<T extends boolean = true> {
   person2?: T;
   label?: T;
   reason?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recruitment-listings_select".
+ */
+export interface RecruitmentListingsSelect<T extends boolean = true> {
+  category?: T;
+  team?: T;
+  role?: T;
+  requirements?: T;
+  status?: T;
+  filledBy?: T;
+  createdBy?: T;
+  applicationCount?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recruitment-applications_select".
+ */
+export interface RecruitmentApplicationsSelect<T extends boolean = true> {
+  listing?: T;
+  discordHandle?: T;
+  aboutMe?: T;
+  status?: T;
+  internalNotes?: T;
+  archived?: T;
   updatedAt?: T;
   createdAt?: T;
 }

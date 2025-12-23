@@ -6,6 +6,8 @@ export const ScheduleGenerator: GlobalConfig = {
   admin: {
     description: '📋 Generate Discord announcements from upcoming matches.',
     group: 'Tools',
+    // Hide from Team Managers, show to Staff Managers and Admins
+    hidden: ({ user }) => user?.role === 'team-manager',
     // Hide the default UI elements
     hideAPIURL: true,
     // Hide the save button gutter

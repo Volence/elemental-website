@@ -27,10 +27,7 @@ export function PlayerCard({
   getRoleColor,
 }: PlayerCardProps) {
   return (
-    <Link
-      href={`/players/${formatPlayerSlug(name)}`}
-      className="group flex items-center gap-4 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-background to-background/50 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 hover:scale-[1.02] transition-all duration-200"
-    >
+    <div className="group flex items-center gap-4 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-background to-background/50 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 hover:scale-[1.02] transition-all duration-200">
       {/* Avatar placeholder with role icon */}
       <div className="relative flex-shrink-0">
         <div
@@ -56,9 +53,12 @@ export function PlayerCard({
 
       {/* Player info */}
       <div className="flex-1 min-w-0">
-        <p className="font-bold text-lg group-hover:text-primary transition-colors truncate">
+        <Link 
+          href={`/players/${formatPlayerSlug(name)}`}
+          className="font-bold text-lg group-hover:text-primary transition-colors truncate hover:underline block"
+        >
           {name}
-        </p>
+        </Link>
         <div className="flex items-center gap-2 mt-1">
           <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-2.5 py-1 rounded-md bg-muted/50 border border-muted">
             {role}
@@ -70,7 +70,7 @@ export function PlayerCard({
       <div className="flex-shrink-0 opacity-70 group-hover:opacity-100 transition-opacity">
         <SocialLinks links={{ twitter, twitch, youtube, instagram }} />
       </div>
-    </Link>
+    </div>
   )
 }
 

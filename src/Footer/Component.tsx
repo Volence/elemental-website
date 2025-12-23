@@ -52,6 +52,7 @@ export async function Footer() {
                 <Link href="/matches" className="text-muted-foreground hover:text-primary transition-colors font-medium">Matches</Link>
                 <Link href="/seminars" className="text-muted-foreground hover:text-primary transition-colors font-medium">Seminars</Link>
                 <Link href="/staff" className="text-muted-foreground hover:text-primary transition-colors font-medium">Staff</Link>
+                <Link href="/recruitment" className="text-muted-foreground hover:text-primary transition-colors font-medium">Join Us</Link>
               </nav>
             </div>
             <div className="flex flex-col gap-4">
@@ -120,6 +121,9 @@ export async function Footer() {
               <Link href="/staff" className="text-muted-foreground hover:text-primary transition-colors font-medium">
                 Staff
               </Link>
+              <Link href="/recruitment" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+                Join Us
+              </Link>
               {navItems.map(({ link }, i) => {
                 return <CMSLink className="text-muted-foreground hover:text-primary transition-colors font-medium" key={i} {...link} />
               })}
@@ -178,6 +182,7 @@ export async function Footer() {
                 <Link href="/matches" className="text-muted-foreground hover:text-primary transition-colors font-medium">Matches</Link>
                 <Link href="/seminars" className="text-muted-foreground hover:text-primary transition-colors font-medium">Seminars</Link>
                 <Link href="/staff" className="text-muted-foreground hover:text-primary transition-colors font-medium">Staff</Link>
+                <Link href="/recruitment" className="text-muted-foreground hover:text-primary transition-colors font-medium">Join Us</Link>
               </nav>
             </div>
             <div className="flex flex-col gap-4">

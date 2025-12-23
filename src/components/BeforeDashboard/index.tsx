@@ -7,6 +7,7 @@ import { SeedButton } from './SeedButton'
 import { FixStaffButton } from './FixStaffButton'
 import QuickStats from './QuickStats'
 import AssignedTeamsDashboard from './AssignedTeamsDashboard'
+import RecruitmentWidget from './RecruitmentWidget'
 import { GradientBorder } from './GradientBorder'
 import { useIsAdmin, useIsTeamManager } from '@/utilities/adminAuth'
 
@@ -22,6 +23,7 @@ const BeforeDashboard: React.FC = () => {
       {/* <DataConsistencyDashboard /> - Removed, using sidebar link instead */}
       <AssignedTeamsDashboard />
       <QuickStats />
+      <RecruitmentWidget />
       {isAdmin && (
         <>
           <GradientBorder>

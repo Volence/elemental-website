@@ -35,6 +35,15 @@ import { default as default_18c292333f7a71cfdec38694246f96bb } from '@/component
 import { default as default_1c78329ca40bdaea08398ce17076186a } from '@/components/TeamsListColumns/CellAlignmentStyles'
 import { default as default_3b0c933eeb58b8ba9e1fb354f07641f1 } from '@/components/MatchesListColumns/TitleCell'
 import { default as default_73cfbba28a8886a492b9c832e231d2f5 } from '@/components/MatchesListColumns/CellAlignmentStyles'
+import { default as default_ed1e8d66015b6bb359c4bd3a3c1c4e16 } from '@/components/RecruitmentFields/CategorySelectField'
+import { default as default_cf24fd1a27e289c739c233304f5b861d } from '@/components/RecruitmentFields/TeamRelationshipField'
+import { default as default_ec72e2a2a07bfec297bbb538e037e4b8 } from '@/components/RecruitmentFields/RoleSelectField'
+import { default as default_1b7075925c490fc3d58739ca3d9b3222 } from '@/components/RecruitmentListColumns/TeamCell'
+import { default as default_4c66c0b8cac62bf890a911a99068eac3 } from '@/components/RecruitmentListColumns/RoleCell'
+import { default as default_1f089b8c2a27470c9bbc5822da887828 } from '@/components/RecruitmentListColumns/ActionsCell'
+import { default as default_4b32192632526300c4dfce3ec06124cb } from '@/components/RecruitmentListColumns/ListingCell'
+import { default as default_46b3ed67e65478b5cdaa83f2b09fc358 } from '@/components/RecruitmentApplicationColumns/PositionCell'
+import { default as default_91b673ad90a59e578cd7d9f0fa7f0d19 } from '@/components/RecruitmentApplicationColumns/ActionsCell'
 import { RowLabel as RowLabel_ec255a65fa6fa8d1faeb09cf35284224 } from '@/Header/RowLabel'
 import { RowLabel as RowLabel_1f6ff6ff633e3695d348f4f3c58f1466 } from '@/Footer/RowLabel'
 import { default as default_a1087e454b1b74ceaf1bf3fd38ecfc7a } from '@/components/DataConsistencyView'
@@ -84,6 +93,15 @@ export const importMap = {
   "@/components/TeamsListColumns/CellAlignmentStyles#default": default_1c78329ca40bdaea08398ce17076186a,
   "@/components/MatchesListColumns/TitleCell#default": default_3b0c933eeb58b8ba9e1fb354f07641f1,
   "@/components/MatchesListColumns/CellAlignmentStyles#default": default_73cfbba28a8886a492b9c832e231d2f5,
+  "@/components/RecruitmentFields/CategorySelectField#default": default_ed1e8d66015b6bb359c4bd3a3c1c4e16,
+  "@/components/RecruitmentFields/TeamRelationshipField#default": default_cf24fd1a27e289c739c233304f5b861d,
+  "@/components/RecruitmentFields/RoleSelectField#default": default_ec72e2a2a07bfec297bbb538e037e4b8,
+  "@/components/RecruitmentListColumns/TeamCell#default": default_1b7075925c490fc3d58739ca3d9b3222,
+  "@/components/RecruitmentListColumns/RoleCell#default": default_4c66c0b8cac62bf890a911a99068eac3,
+  "@/components/RecruitmentListColumns/ActionsCell#default": default_1f089b8c2a27470c9bbc5822da887828,
+  "@/components/RecruitmentListColumns/ListingCell#default": default_4b32192632526300c4dfce3ec06124cb,
+  "@/components/RecruitmentApplicationColumns/PositionCell#default": default_46b3ed67e65478b5cdaa83f2b09fc358,
+  "@/components/RecruitmentApplicationColumns/ActionsCell#default": default_91b673ad90a59e578cd7d9f0fa7f0d19,
   "@/Header/RowLabel#RowLabel": RowLabel_ec255a65fa6fa8d1faeb09cf35284224,
   "@/Footer/RowLabel#RowLabel": RowLabel_1f6ff6ff633e3695d348f4f3c58f1466,
   "@/components/DataConsistencyView#default": default_a1087e454b1b74ceaf1bf3fd38ecfc7a,

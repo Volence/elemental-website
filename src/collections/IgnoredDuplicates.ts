@@ -15,6 +15,7 @@ export const IgnoredDuplicates: CollectionConfig = {
     description: 'Pairs of people with similar names that are actually different people',
     group: 'System',
     defaultColumns: ['label', 'person1', 'person2', 'createdAt'],
+    hidden: ({ user }) => user?.role !== 'admin',
   },
   fields: [
     {

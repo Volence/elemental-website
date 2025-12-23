@@ -55,6 +55,7 @@ export interface TeamSub {
 }
 
 export interface Team {
+  id: number
   slug: string
   name: string
   logo: string
@@ -140,6 +141,7 @@ function transformPayloadTeam(payloadTeam: PayloadTeam): Team | null {
 
 
     return {
+      id: payloadTeam.id,
       slug: payloadTeam.slug,
       name: payloadTeam.name,
       logo: payloadTeam.logo,

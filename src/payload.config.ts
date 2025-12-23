@@ -15,6 +15,8 @@ import { People } from './collections/People'
 import { Teams } from './collections/Teams'
 import { Users } from './collections/Users'
 import { IgnoredDuplicates } from './collections/IgnoredDuplicates'
+import { RecruitmentListings } from './collections/RecruitmentListings'
+import { RecruitmentApplications } from './collections/RecruitmentApplications'
 // import { ActivityLog } from './collections/ActivityLog' // Temporarily disabled until migrations are fixed
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
@@ -88,7 +90,19 @@ export default buildConfig({
     // Use default UUID IDs (idType: 'serial' is broken in Payload 3.68.0)
     push: process.env.PAYLOAD_DB_PUSH === 'true' || false,
   }),
-  collections: [Pages, Media, People, Teams, Matches, Production, OrganizationStaff, Users, IgnoredDuplicates /* ActivityLog temporarily disabled */],
+  collections: [
+    Pages,
+    Media,
+    People,
+    Teams,
+    Matches,
+    Production,
+    OrganizationStaff,
+    Users,
+    IgnoredDuplicates,
+    RecruitmentListings,
+    RecruitmentApplications /* ActivityLog temporarily disabled */,
+  ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer, DataConsistency, ScheduleGenerator],
   plugins: [

@@ -23,10 +23,7 @@ export function SubstituteCard({
   instagram,
 }: SubstituteCardProps) {
   return (
-    <Link
-      href={`/players/${formatPlayerSlug(name)}`}
-      className="group flex items-center gap-4 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-background to-background/50 hover:border-orange-500/50 hover:shadow-lg hover:scale-[1.02] transition-all duration-200"
-    >
+    <div className="group flex items-center gap-4 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-background to-background/50 hover:border-orange-500/50 hover:shadow-lg hover:scale-[1.02] transition-all duration-200">
       {/* Avatar placeholder */}
       <div className="relative flex-shrink-0">
         <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-500/20 to-orange-500/5 flex items-center justify-center ring-2 ring-orange-500/20 group-hover:ring-orange-500/50 transition-all overflow-hidden">
@@ -50,9 +47,12 @@ export function SubstituteCard({
 
       {/* Player info */}
       <div className="flex-1 min-w-0">
-        <p className="font-bold text-base group-hover:text-orange-500 transition-colors truncate">
+        <Link 
+          href={`/players/${formatPlayerSlug(name)}`}
+          className="font-bold text-base group-hover:text-orange-500 transition-colors truncate hover:underline block"
+        >
           {name}
-        </p>
+        </Link>
         <span className="text-xs font-medium text-muted-foreground">Substitute</span>
       </div>
 
@@ -60,7 +60,7 @@ export function SubstituteCard({
       <div className="flex-shrink-0 opacity-70 group-hover:opacity-100 transition-opacity">
         <SocialLinks links={{ twitter, twitch, youtube, instagram }} />
       </div>
-    </Link>
+    </div>
   )
 }
 

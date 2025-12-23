@@ -8,7 +8,7 @@ import { getAllTeams } from '@/utilities/getTeams'
 import { TeamLogo } from '@/components/TeamLogo'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
-import { Calendar, TrendingUp } from 'lucide-react'
+import { Calendar, TrendingUp, UserPlus } from 'lucide-react'
 
 export const dynamic = 'force-dynamic' // Always render dynamically to fetch fresh data
 
@@ -35,6 +35,7 @@ export default async function HomePage() {
   // Page is force-dynamic, so it always renders at runtime with fresh data
   let randomTeams: any[] = []
   let upcomingMatches: any[] = []
+  let openPositionsCount = 0
   
   try {
     // Get 6 random teams to display
@@ -66,6 +67,22 @@ export default async function HomePage() {
     upcomingMatches = result.docs
   } catch (error) {
     console.error('Error loading upcoming matches for homepage:', error)
+  }
+
+  try {
+    // Check if there are any open recruitment positions
+    const payload = await getPayload({ config: configPromise })
+    const recruitmentResult = await payload.count({
+      collection: 'recruitment-listings',
+      where: {
+        status: {
+          equals: 'open',
+        },
+      },
+    })
+    openPositionsCount = recruitmentResult.totalDocs
+  } catch (error) {
+    console.error('Error loading recruitment positions for homepage:', error)
   }
 
   return (
@@ -219,6 +236,30 @@ export default async function HomePage() {
           )}
         </div>
       </section>
+
+      {/* Recruitment Section - Only show if there are open positions */}
+      {openPositionsCount > 0 && (
+        <section className="py-16 bg-gradient-to-br from-yellow-500/5 via-orange-500/5 to-yellow-500/5 animate-fade-in">
+          <div className="container max-w-4xl">
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-yellow-500/20 mb-6">
+                <UserPlus className="w-8 h-8 text-yellow-400" />
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">Join Our Teams</h2>
+              <div className="w-24 h-1 bg-gradient-to-r from-yellow-400 to-orange-500 mx-auto mb-6 shadow-[0_0_20px_rgba(234,179,8,0.4)]" />
+              <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+                We're actively recruiting talented players across multiple teams. 
+                {openPositionsCount === 1 
+                  ? ' We have 1 open position available.'
+                  : ` We have ${openPositionsCount} open positions available.`}
+              </p>
+              <Button asChild size="lg" className="text-lg px-8 bg-yellow-500 hover:bg-yellow-400 text-black">
+                <Link href="/recruitment">See Open Positions →</Link>
+              </Button>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* About Us Section */}
       <section className="py-16 bg-background animate-fade-in">

@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import React from 'react'
+import { getPayload } from 'payload'
+import config from '@payload-config'
 import { getTeamBySlug } from '@/utilities/getTeams'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { TeamHero } from './components/TeamHero'
@@ -8,6 +10,7 @@ import { TeamStatsSidebar } from './components/TeamStatsSidebar'
 import { TeamStaffSection } from './components/TeamStaffSection'
 import { TeamRosterSection } from './components/TeamRosterSection'
 import { TeamSubstitutesSection } from './components/TeamSubstitutesSection'
+import { TeamRecruitmentSection } from './components/TeamRecruitmentSection'
 import { getRoleColor, getRegionColor, getTeamColor } from './utils/teamColors'
 
 // Skip static generation during build - pages will be generated on-demand
@@ -65,6 +68,28 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
   const rosterCount = team.roster?.length || 0
   const subsCount = team.subs?.length || 0
 
+  // Fetch open recruitment listings for this team
+  const payload = await getPayload({ config })
+  const { docs: listings } = await payload.find({
+    collection: 'recruitment-listings',
+    where: {
+      and: [
+        {
+          team: {
+            equals: team.id,
+          },
+        },
+        {
+          status: {
+            equals: 'open',
+          },
+        },
+      ],
+    },
+    depth: 0,
+    limit: 10,
+  })
+
   // Check if team has custom theme color
   const hasCustomColor = team.themeColor && team.themeColor.startsWith('#')
 
@@ -107,6 +132,9 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
 
           {/* Main Content */}
           <main className="space-y-8">
+            {/* Recruitment - Only show if there are open positions */}
+            <TeamRecruitmentSection listings={listings} team={team} />
+
             {/* Staff Section */}
             <TeamStaffSection
               managers={team.manager}

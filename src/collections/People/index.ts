@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { authenticated } from '../../access/authenticated'
 import { anyone } from '../../access/anyone'
 import { slugField } from 'payload'
+import { autoCloseRecruitment } from './hooks/autoCloseRecruitment'
 // import { createActivityLogHook, createActivityLogDeleteHook } from '../../utilities/activityLogger' // Temporarily disabled
 
 const formatSlug = (value: string): string => {
@@ -195,7 +196,7 @@ export const People: CollectionConfig = {
     },
   ],
   hooks: {
-    // afterChange: [createActivityLogHook('people')], // Temporarily disabled
+    afterChange: [autoCloseRecruitment /* createActivityLogHook('people') temporarily disabled */],
     // afterDelete: [createActivityLogDeleteHook('people')], // Temporarily disabled
     // REMOVED: beforeRead hook - it was removing select clauses which made the admin UI unable to fetch names
     // The custom /api/people endpoint handles relationship dropdown queries with raw SQL
