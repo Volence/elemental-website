@@ -26,6 +26,12 @@ const UserProfile: React.FC = () => {
   const [avatarError, setAvatarError] = useState<string | null>(null)
   const [avatarSuccess, setAvatarSuccess] = useState<string | null>(null)
 
+  // Prevent hydration mismatch by only rendering after mount
+  const [isMounted, setIsMounted] = useState(false)
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
   if (!typedUser) {
     return (
       <div style={{ padding: '2rem' }}>
@@ -221,8 +227,8 @@ const UserProfile: React.FC = () => {
           <div style={{ flexShrink: 0, textAlign: 'center' }}>
             {avatarPreview || avatarUrl ? (
               <img 
-                src={avatarPreview || avatarUrl!} 
-                alt={typedUser.name}
+                src={(avatarPreview || avatarUrl) as string} 
+                alt={typedUser.name || 'User avatar'}
                 style={{
                   width: '100px',
                   height: '100px',
@@ -246,7 +252,7 @@ const UserProfile: React.FC = () => {
                 fontWeight: 'bold',
                 marginBottom: '0.75rem'
               }}>
-                {typedUser.name.charAt(0).toUpperCase()}
+                {typedUser.name ? typedUser.name.charAt(0).toUpperCase() : '?'}
               </div>
             )}
             
