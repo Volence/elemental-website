@@ -116,14 +116,12 @@ export interface Config {
     footer: Footer;
     'data-consistency': DataConsistency;
     'schedule-generator': ScheduleGenerator;
-    'user-profile': UserProfile;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'data-consistency': DataConsistencySelect<false> | DataConsistencySelect<true>;
     'schedule-generator': ScheduleGeneratorSelect<false> | ScheduleGeneratorSelect<true>;
-    'user-profile': UserProfileSelect<false> | UserProfileSelect<true>;
   };
   locale: null;
   user: User & {
@@ -1796,17 +1794,6 @@ export interface ScheduleGenerator {
   createdAt?: string | null;
 }
 /**
- * 👤 View and manage your account settings
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "user-profile".
- */
-export interface UserProfile {
-  id: number;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
@@ -1866,15 +1853,6 @@ export interface DataConsistencySelect<T extends boolean = true> {
  * via the `definition` "schedule-generator_select".
  */
 export interface ScheduleGeneratorSelect<T extends boolean = true> {
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "user-profile_select".
- */
-export interface UserProfileSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

@@ -81,6 +81,9 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
     user: Users.slug,
+    avatar: {
+      Component: '@/components/UserAvatar#default',
+    },
     livePreview: {
       breakpoints: [
         {
