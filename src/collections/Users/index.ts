@@ -48,8 +48,8 @@ export const Users: CollectionConfig = {
     {
       name: 'name',
       type: 'text',
-      // Only required on create, not on update (allows updates without sending name)
-      required: ({ operation }) => operation === 'create',
+      // Don't mark as required - we'll handle it in the hook
+      required: false,
     },
     {
       name: 'avatar',
@@ -62,8 +62,8 @@ export const Users: CollectionConfig = {
     {
       name: 'role',
       type: 'select',
-      // Only required on create, not on update (allows updates without sending role)
-      required: ({ data, operation }) => operation === 'create',
+      // Don't mark as required - we'll handle it in the hook
+      required: false,
       defaultValue: UserRole.TEAM_MANAGER,
       admin: {
         description: 'User role determines what they can access and edit in the CMS.',
@@ -98,39 +98,61 @@ export const Users: CollectionConfig = {
     // afterChange: [createActivityLogHook('users')], // Temporarily disabled
     // afterDelete: [createActivityLogDeleteHook('users')], // Temporarily disabled
     beforeValidate: [
-      async ({ data, operation, req }) => {
+      async ({ data, operation, req, originalDoc }) => {
+        if (!data) return data
+        
         const user = req.user as User | undefined
         
-        // Auto-assign Admin role to the first user (when creating first user)
-        if (operation === 'create' && data && !data.role) {
-          const payload = req.payload
-          if (payload) {
-            const existingUsers = await payload.find({
-              collection: 'users',
-              limit: 1,
-              pagination: false,
-            })
+        // Validate required fields on create
+        if (operation === 'create') {
+          if (!data.name) {
+            throw new Error('Name is required when creating a user')
+          }
+          if (!data.role) {
+            // Auto-assign Admin role to the first user
+            const payload = req.payload
+            if (payload) {
+              const existingUsers = await payload.find({
+                collection: 'users',
+                limit: 1,
+                pagination: false,
+              })
 
-            // If this is the first user, make them admin
-            if (existingUsers.docs.length === 0) {
-              data.role = UserRole.ADMIN
-              req.payload.logger.info('First user created - automatically assigned Admin role')
+              // If this is the first user, make them admin
+              if (existingUsers.docs.length === 0) {
+                data.role = UserRole.ADMIN
+                req.payload.logger.info('First user created - automatically assigned Admin role')
+              } else {
+                throw new Error('Role is required when creating a user')
+              }
             }
           }
         }
 
+        // On update, preserve existing values for fields not being changed
+        if (operation === 'update' && originalDoc) {
+          // If name not provided, use existing
+          if (!data.name && originalDoc.name) {
+            data.name = originalDoc.name
+          }
+          // If role not provided, use existing
+          if (!data.role && originalDoc.role) {
+            data.role = originalDoc.role
+          }
+        }
+
         // Prevent non-admins from changing sensitive fields (role, assignedTeams)
-        if (operation === 'update' && data && user) {
+        if (operation === 'update' && user && originalDoc) {
           if (user.role !== UserRole.ADMIN) {
-            // Remove role from update data if user is not admin
-            if ('role' in data) {
-              delete data.role
+            // If role was explicitly sent and differs from original, reject it
+            if ('role' in data && data.role !== originalDoc.role) {
               req.payload.logger.warn('Non-admin user attempted to change role - prevented')
+              data.role = originalDoc.role // Restore original
             }
-            // Remove assignedTeams from update data if user is not admin
+            // If assignedTeams was explicitly sent and differs, reject it
             if ('assignedTeams' in data) {
-              delete data.assignedTeams
               req.payload.logger.warn('Non-admin user attempted to change assignedTeams - prevented')
+              data.assignedTeams = originalDoc.assignedTeams // Restore original
             }
           }
         }

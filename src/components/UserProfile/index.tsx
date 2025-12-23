@@ -167,7 +167,7 @@ const UserProfile: React.FC = () => {
     }
   }
 
-  const roleLabels = {
+  const roleLabels: Record<string, string> = {
     'admin': 'Admin',
     'team-manager': 'Team Manager',
     'staff-manager': 'Staff Manager',
@@ -300,7 +300,7 @@ const UserProfile: React.FC = () => {
               {typedUser.name}
             </h2>
             <p style={{ color: 'var(--theme-elevation-500)', marginBottom: '0.5rem' }}>
-              {roleLabels[typedUser.role]}
+              {typedUser.role ? (roleLabels[typedUser.role] || typedUser.role) : 'No role assigned'}
             </p>
           </div>
         </div>
