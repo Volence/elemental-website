@@ -72,15 +72,14 @@ const UserProfile: React.FC = () => {
         throw new Error('Current password is incorrect')
       }
 
-      // Update password using Payload API - must include role to pass validation
+      // Update password using Payload API
+      // Don't send role - the beforeValidate hook removes it for non-admins anyway
       const updateResponse = await fetch(`/api/users/${typedUser.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           password: newPassword,
-          role: typedUser.role, // Required field
-          name: typedUser.name, // Required field
         }),
       })
 
@@ -139,16 +138,14 @@ const UserProfile: React.FC = () => {
       const uploadData = await uploadResponse.json()
       const mediaId = uploadData.doc.id
 
-      // Update user with new avatar - include email which is required for auth collection
+      // Update user with new avatar
+      // Don't send role or assignedTeams - the beforeValidate hook removes them for non-admins
       const updateResponse = await fetch(`/api/users/${typedUser.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           avatar: mediaId,
-          role: typedUser.role, // Required field
-          name: typedUser.name, // Required field
-          email: typedUser.email, // Required for auth collection
         }),
       })
 
