@@ -39,6 +39,7 @@ export interface PlayerInfo {
     youtube?: string
     instagram?: string
     tiktok?: string
+    customLinks?: { label: string; url: string }[]
   }
 }
 
