@@ -20,6 +20,9 @@ const UserProfile: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
 
   if (!typedUser) {
     return (
@@ -67,13 +70,15 @@ const UserProfile: React.FC = () => {
         throw new Error('Current password is incorrect')
       }
 
-      // Update password using Payload API
+      // Update password using Payload API - must include role to pass validation
       const updateResponse = await fetch(`/api/users/${typedUser.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           password: newPassword,
+          role: typedUser.role, // Required field
+          name: typedUser.name, // Required field
         }),
       })
 
@@ -90,6 +95,73 @@ const UserProfile: React.FC = () => {
       setError(err.message || 'An error occurred')
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setAvatarFile(file)
+      // Create preview URL
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleAvatarUpload = async () => {
+    if (!avatarFile) return
+
+    setIsUploadingAvatar(true)
+    setError(null)
+    setSuccess(null)
+
+    try {
+      // Upload the file to media
+      const formData = new FormData()
+      formData.append('file', avatarFile)
+
+      const uploadResponse = await fetch('/api/media', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      })
+
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload avatar')
+      }
+
+      const uploadData = await uploadResponse.json()
+      const mediaId = uploadData.doc.id
+
+      // Update user with new avatar
+      const updateResponse = await fetch(`/api/users/${typedUser.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          avatar: mediaId,
+          role: typedUser.role,
+          name: typedUser.name,
+        }),
+      })
+
+      if (!updateResponse.ok) {
+        throw new Error('Failed to update avatar')
+      }
+
+      setSuccess('Avatar updated successfully!')
+      setAvatarFile(null)
+      setAvatarPreview(null)
+      
+      // Reload the page to show new avatar
+      setTimeout(() => window.location.reload(), 1500)
+    } catch (err: any) {
+      setError(err.message || 'Failed to upload avatar')
+    } finally {
+      setIsUploadingAvatar(false)
     }
   }
 
@@ -111,60 +183,97 @@ const UserProfile: React.FC = () => {
         padding: '1.5rem',
         marginBottom: '2rem'
       }}>
-        <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem', alignItems: 'flex-start' }}>
           {/* Avatar */}
-          <div style={{ flexShrink: 0 }}>
-            {avatarUrl ? (
+          <div style={{ flexShrink: 0, textAlign: 'center' }}>
+            {avatarPreview || avatarUrl ? (
               <img 
-                src={avatarUrl} 
+                src={avatarPreview || avatarUrl!} 
                 alt={typedUser.name}
                 style={{
-                  width: '80px',
-                  height: '80px',
+                  width: '100px',
+                  height: '100px',
                   borderRadius: '50%',
                   objectFit: 'cover',
-                  border: '2px solid #3b82f6'
+                  border: '3px solid var(--theme-elevation-200)',
+                  marginBottom: '0.75rem'
                 }}
               />
             ) : (
               <div style={{
-                width: '80px',
-                height: '80px',
+                width: '100px',
+                height: '100px',
                 borderRadius: '50%',
-                background: '#3b82f6',
+                background: 'var(--theme-button-primary)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '2rem',
-                color: 'white',
-                fontWeight: 'bold'
+                fontSize: '2.5rem',
+                color: 'var(--theme-button-primary-text)',
+                fontWeight: 'bold',
+                marginBottom: '0.75rem'
               }}>
                 {typedUser.name.charAt(0).toUpperCase()}
               </div>
             )}
+            
+            {/* Avatar upload */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                style={{ display: 'none' }}
+                id="avatar-upload"
+                disabled={isUploadingAvatar}
+              />
+              <label
+                htmlFor="avatar-upload"
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: 'var(--theme-elevation-100)',
+                  color: 'var(--theme-elevation-800)',
+                  border: '1px solid var(--theme-elevation-200)',
+                  borderRadius: '4px',
+                  cursor: isUploadingAvatar ? 'not-allowed' : 'pointer',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  display: 'inline-block'
+                }}
+              >
+                Choose Photo
+              </label>
+              
+              {avatarFile && (
+                <button
+                  type="button"
+                  onClick={handleAvatarUpload}
+                  disabled={isUploadingAvatar}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: isUploadingAvatar ? 'var(--theme-elevation-300)' : 'var(--theme-button-primary)',
+                    color: isUploadingAvatar ? 'var(--theme-elevation-600)' : 'var(--theme-button-primary-text)',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: isUploadingAvatar ? 'not-allowed' : 'pointer',
+                    fontSize: '0.875rem',
+                    fontWeight: '500'
+                  }}
+                >
+                  {isUploadingAvatar ? 'Uploading...' : 'Upload'}
+                </button>
+              )}
+            </div>
           </div>
           
           {/* Name and Role */}
           <div style={{ flex: 1 }}>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: '600', marginBottom: '0.25rem' }}>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: '600', marginBottom: '0.25rem', color: 'var(--theme-elevation-800)' }}>
               {typedUser.name}
             </h2>
             <p style={{ color: 'var(--theme-elevation-500)', marginBottom: '0.5rem' }}>
               {roleLabels[typedUser.role]}
             </p>
-            <a 
-              href={`/admin/collections/users/${typedUser.id}`}
-              style={{
-                color: 'var(--theme-text-accent)',
-                textDecoration: 'none',
-                fontSize: '0.875rem',
-                fontWeight: '500'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.textDecoration = 'underline'}
-              onMouseOut={(e) => e.currentTarget.style.textDecoration = 'none'}
-            >
-              Edit Profile & Avatar →
-            </a>
           </div>
         </div>
 
