@@ -23,7 +23,7 @@ import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { DataConsistency } from './globals/DataConsistency'
 import { ScheduleGenerator } from './globals/ScheduleGenerator'
-import { UserProfile } from './globals/UserProfile'
+// import { UserProfile } from './globals/UserProfile' // Removed - using built-in /admin/account page instead
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
@@ -128,7 +128,7 @@ export default buildConfig({
     InviteLinks /* ActivityLog temporarily disabled */,
   ],
   cors: [getServerSideURL()].filter(Boolean),
-  globals: [Header, Footer, DataConsistency, ScheduleGenerator, UserProfile],
+  globals: [Header, Footer, DataConsistency, ScheduleGenerator],
   plugins: [
     ...plugins,
     // storage-adapter-placeholder

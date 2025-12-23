@@ -67,6 +67,14 @@ export const Users: CollectionConfig = {
       defaultValue: UserRole.TEAM_MANAGER,
       admin: {
         description: 'User role determines what they can access and edit in the CMS.',
+        // Read-only for non-admins is handled in the access control and hooks
+      },
+      access: {
+        // Only admins can update the role field
+        update: ({ req }) => {
+          const user = req.user as User | undefined
+          return user?.role === UserRole.ADMIN
+        },
       },
       options: [
         {
@@ -91,6 +99,13 @@ export const Users: CollectionConfig = {
       admin: {
         description: 'For Team Managers: Restrict editing to only these teams. For Staff Managers & Admins: Quick access links to these teams (they can still edit all teams).',
         condition: (data) => data.role === UserRole.ADMIN || data.role === UserRole.TEAM_MANAGER || data.role === UserRole.STAFF_MANAGER,
+      },
+      access: {
+        // Only admins can update the assignedTeams field
+        update: ({ req }) => {
+          const user = req.user as User | undefined
+          return user?.role === UserRole.ADMIN
+        },
       },
     },
   ],
