@@ -1,16 +1,15 @@
 'use client'
 
 import React, { useState } from 'react'
-import { useDocumentInfo } from '@payloadcms/ui'
-import type { InviteLink } from '@/payload-types'
+import { useFormFields } from '@payloadcms/ui'
 
 const CopyLinkField: React.FC = () => {
   const [copied, setCopied] = useState(false)
-  const { docData } = useDocumentInfo()
+  const allFields = useFormFields(([fields]) => fields)
   
-  // Get token and expiresAt from the document
-  const token = (docData as InviteLink)?.token
-  const expiresAt = (docData as InviteLink)?.expiresAt
+  // Get token and expiresAt from the form fields
+  const token = allFields?.token?.value as string | undefined
+  const expiresAt = allFields?.expiresAt?.value as string | undefined
 
   if (!token) {
     return (
