@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '@payloadcms/ui'
 import type { User, Media } from '@/payload-types'
 
@@ -174,6 +174,11 @@ const UserProfile: React.FC = () => {
   }
 
   const avatarUrl = getMediaUrl(typedUser.avatar)
+
+  // Prevent hydration mismatch - only render after client mount
+  if (!isMounted) {
+    return <div style={{ padding: '2rem' }}>Loading...</div>
+  }
 
   return (
     <div style={{ padding: '2rem', maxWidth: '600px' }}>

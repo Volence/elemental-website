@@ -779,7 +779,7 @@ export interface OrganizationStaff {
  */
 export interface User {
   id: number;
-  name: string;
+  name?: string | null;
   /**
    * Profile picture for your account
    */
