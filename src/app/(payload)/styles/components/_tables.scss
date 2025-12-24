@@ -1,0 +1,327 @@
+/* ============================================
+ * Admin Table Enhancements
+ * Visual hierarchy and improved UX
+ * ============================================ */
+
+/* Table wrapper - add subtle shadow */
+.table-list {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Table header enhancements */
+.table-list thead {
+  th {
+    position: relative;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.75rem;
+    color: var(--theme-text-700);
+    background-color: var(--theme-elevation-150);
+    border-bottom: 2px solid var(--theme-elevation-300);
+    padding: 1rem 0.75rem;
+
+    /* Gradient underline on hover */
+    &:hover {
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #ec4899, #a855f7);
+        opacity: 0.6;
+      }
+    }
+  }
+
+  /* First column (checkbox) */
+  th:first-child {
+    padding-left: 1.5rem;
+  }
+}
+
+/* Table body enhancements */
+.table-list tbody {
+  tr {
+    transition: all 0.2s ease;
+    border-bottom: 1px solid var(--theme-elevation-250);
+
+    /* Row hover state */
+    &:hover {
+      background-color: var(--theme-elevation-100);
+      box-shadow: inset 4px 0 0 #ec4899;
+      transform: translateX(2px);
+
+      /* Make text slightly bolder on hover */
+      td {
+        color: var(--theme-text);
+      }
+    }
+
+    /* Alternate row background */
+    &:nth-child(even) {
+      background-color: var(--theme-elevation-50);
+    }
+
+    &:nth-child(even):hover {
+      background-color: var(--theme-elevation-100);
+    }
+  }
+
+  td {
+    padding: 0.875rem 0.75rem;
+    font-size: 0.875rem;
+    color: var(--theme-text-800);
+    transition: color 0.2s ease;
+
+    /* First column (checkbox) */
+    &:first-child {
+      padding-left: 1.5rem;
+    }
+
+    /* Primary column (usually name/title) - make it bold */
+    &:nth-child(2) {
+      font-weight: 600;
+      color: var(--theme-text);
+
+      a {
+        color: var(--theme-text);
+        text-decoration: none;
+        transition: color 0.2s ease;
+
+        &:hover {
+          color: #ec4899;
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+}
+
+/* Empty state in tables */
+.table-list tbody tr.empty-state {
+  td {
+    padding: 3rem 1.5rem;
+    text-align: center;
+    color: var(--theme-text-500);
+    font-style: italic;
+  }
+}
+
+/* Loading state in tables */
+.table-list tbody tr.loading-state {
+  td {
+    padding: 2rem 1.5rem;
+  }
+}
+
+/* ============================================
+ * Status Badge Enhancements
+ * Add gradient backgrounds
+ * ============================================ */
+
+.status-badge {
+  /* Active status - green gradient */
+  &--active {
+    background: linear-gradient(135deg, #22c55e15, #10b98115);
+    border-color: #22c55e50;
+    color: #22c55e;
+    font-weight: 600;
+
+    .status-badge__dot {
+      background: linear-gradient(135deg, #22c55e, #10b981);
+      box-shadow: 0 0 8px #22c55e50;
+    }
+  }
+
+  /* Inactive status */
+  &--inactive {
+    background-color: var(--theme-elevation-200);
+    border-color: var(--theme-elevation-400);
+    color: var(--theme-text-500);
+  }
+
+  /* Pending/Scheduled status - blue gradient */
+  &--pending,
+  &--scheduled {
+    background: linear-gradient(135deg, #3b82f615, #06b6d415);
+    border-color: #3b82f650;
+    color: #3b82f6;
+    font-weight: 600;
+
+    .status-badge__dot {
+      background: linear-gradient(135deg, #3b82f6, #06b6d4);
+      box-shadow: 0 0 8px #3b82f650;
+    }
+  }
+
+  /* Completed status - gray gradient */
+  &--completed {
+    background: linear-gradient(135deg, #6b728015, #47505715);
+    border-color: #6b728050;
+    color: #6b7280;
+    font-weight: 600;
+  }
+}
+
+/* ============================================
+ * List Cell Tag Enhancements
+ * Add colors for different types
+ * ============================================ */
+
+.list-cell-tag {
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Team tags - blue accent */
+  &--team {
+    background: linear-gradient(135deg, #3b82f610, #06b6d410);
+    border-color: #3b82f630;
+    color: #3b82f6;
+    font-weight: 500;
+  }
+
+  /* Staff position tags - purple accent */
+  &--position {
+    background: linear-gradient(135deg, #a855f710, #ec489910);
+    border-color: #a855f730;
+    color: #a855f7;
+    font-weight: 600;
+  }
+}
+
+/* ============================================
+ * Rating Cell Enhancement
+ * Add tier colors
+ * ============================================ */
+
+.rating-cell {
+  font-weight: 700;
+  letter-spacing: 0.025em;
+
+  /* Masters tier */
+  &--masters {
+    color: #ec4899;
+    text-shadow: 0 0 10px #ec489930;
+  }
+
+  /* Expert tier */
+  &--expert {
+    color: #8b5cf6;
+    text-shadow: 0 0 10px #8b5cf630;
+  }
+
+  /* Advanced tier */
+  &--advanced {
+    color: #3b82f6;
+    text-shadow: 0 0 10px #3b82f630;
+  }
+
+  /* 4k tier */
+  &--4k {
+    color: #06b6d4;
+    text-shadow: 0 0 10px #06b6d430;
+  }
+
+  /* 3.5k tier */
+  &--35k {
+    color: #22c55e;
+    text-shadow: 0 0 10px #22c55e30;
+  }
+
+  /* 3k tier */
+  &--30k {
+    color: #eab308;
+    text-shadow: 0 0 10px #eab30830;
+  }
+
+  /* Below 3k tier */
+  &--below3k {
+    color: #f97316;
+    text-shadow: 0 0 10px #f9731630;
+  }
+}
+
+/* ============================================
+ * Pagination Enhancements
+ * Make it more prominent
+ * ============================================ */
+
+.pagination {
+  padding: 1.5rem 1rem;
+  background-color: var(--theme-elevation-50);
+  border-top: 1px solid var(--theme-elevation-250);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  &__info {
+    font-size: 0.875rem;
+    color: var(--theme-text-700);
+    font-weight: 500;
+  }
+
+  &__controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__button {
+    min-width: 36px;
+    height: 36px;
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: 1px solid var(--theme-elevation-300);
+    background-color: var(--theme-elevation-100);
+    color: var(--theme-text);
+    font-weight: 500;
+    transition: all 0.2s ease;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      background: linear-gradient(135deg, #ec489915, #a855f715);
+      border-color: #ec489950;
+      color: #ec4899;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    &--active {
+      background: linear-gradient(135deg, #ec4899, #a855f7);
+      border-color: transparent;
+      color: white;
+      font-weight: 600;
+    }
+  }
+
+  &__per-page {
+    margin-left: 1rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    border: 1px solid var(--theme-elevation-300);
+    background-color: var(--theme-elevation-100);
+    color: var(--theme-text);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: #ec489950;
+      background-color: var(--theme-elevation-150);
+    }
+  }
+}
+
