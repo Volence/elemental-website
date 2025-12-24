@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { SocialLinks } from '@/components/SocialLinks'
 import { formatPlayerSlug } from '@/utilities/getPlayer'
 import { getGameRoleIcon } from '@/utilities/roleIcons'
+import { getRoleColors } from '@/utilities/tierColors'
 
 interface PlayerCardProps {
   name: string
@@ -26,6 +27,11 @@ export function PlayerCard({
   instagram,
   getRoleColor,
 }: PlayerCardProps) {
+  const roleColors = getRoleColors(role)
+  
+  // Extract hex color from the gradient for the badge
+  const roleColorHex = role === 'tank' ? '#3b82f6' : role === 'support' ? '#22c55e' : '#ef4444'
+  
   return (
     <div className="group flex items-center gap-4 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-background to-background/50 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 hover:scale-[1.02] transition-all duration-200">
       {/* Avatar placeholder with role icon */}
@@ -60,7 +66,14 @@ export function PlayerCard({
           {name}
         </Link>
         <div className="flex items-center gap-2 mt-1">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-2.5 py-1 rounded-md bg-muted/50 border border-muted">
+          <span 
+            className="text-xs font-bold uppercase tracking-widest px-2.5 py-1 rounded-md border"
+            style={{
+              backgroundColor: `${roleColorHex}15`,
+              color: roleColorHex,
+              borderColor: `${roleColorHex}50`
+            }}
+          >
             {role}
           </span>
         </div>

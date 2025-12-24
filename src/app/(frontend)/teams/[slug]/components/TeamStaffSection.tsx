@@ -51,10 +51,13 @@ export function TeamStaffSection({
 
   return (
     <div className="p-6 rounded-xl border border-border bg-card shadow-sm">
-      <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
-        <Shield className="w-6 h-6 text-primary" />
-        Staff
-      </h2>
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold mb-2 flex items-center gap-3">
+          <Shield className="w-6 h-6 text-primary" />
+          Staff
+        </h2>
+        <div className="w-20 h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 rounded-full"></div>
+      </div>
       <div className="space-y-6">
         {managers && managers.length > 0 && (
           <div className="space-y-3">

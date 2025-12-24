@@ -22,10 +22,13 @@ export function TeamSubstitutesSection({ subs }: TeamSubstitutesSectionProps) {
 
   return (
     <div className="p-6 rounded-xl border border-border bg-card shadow-sm">
-      <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
-        <Lock className="w-6 h-6 text-orange-500" />
-        Substitutes
-      </h2>
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold mb-2 flex items-center gap-3">
+          <Lock className="w-6 h-6 text-orange-500" />
+          Substitutes
+        </h2>
+        <div className="w-20 h-1 bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 rounded-full"></div>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {subs.map((sub, i) => (
           <SubstituteCard key={i} {...sub} />

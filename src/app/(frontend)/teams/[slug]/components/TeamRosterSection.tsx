@@ -39,11 +39,14 @@ export function TeamRosterSection({ roster, getRoleColor }: TeamRosterSectionPro
 
   return (
     <div className="p-6 rounded-xl border border-border bg-card shadow-sm">
-      <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
-        <Users className="w-6 h-6 text-primary" />
-        Roster
-        <span className="text-sm font-normal text-muted-foreground">({roster.length})</span>
-      </h2>
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold mb-2 flex items-center gap-3">
+          <Users className="w-6 h-6 text-primary" />
+          Roster
+          <span className="text-sm font-normal text-muted-foreground">({roster.length})</span>
+        </h2>
+        <div className="w-20 h-1 bg-gradient-to-r from-blue-500 via-cyan-500 to-green-500 rounded-full"></div>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {roster.map((player, i) => (
           <PlayerCard key={i} {...player} getRoleColor={getRoleColor} />

@@ -5,7 +5,7 @@ import type { RecruitmentListing } from '@/payload-types'
 import { ApplicationModal } from './ApplicationModal'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
-import { getTierFromRating, getRoleColors as getTierRoleColors } from '@/utilities/tierColors'
+import { getTierFromRating, getRoleColors as getTierRoleColors, categoryColors } from '@/utilities/tierColors'
 
 interface TeamInfo {
   name: string
@@ -72,6 +72,10 @@ export const RecruitmentCard: React.FC<RecruitmentCardProps> = ({ listing, team 
   
   // Get tier colors for team positions
   const tierColors = team?.rating ? getTierFromRating(team.rating) : null
+  
+  // Get category colors
+  const categoryColorData = listing.category ? categoryColors[listing.category as keyof typeof categoryColors] : null
+  const categoryLabel = listing.category === 'player' ? 'Player Position' : listing.category === 'team-staff' ? 'Team Staff' : 'Organization Staff'
 
   return (
     <>
@@ -93,18 +97,20 @@ export const RecruitmentCard: React.FC<RecruitmentCardProps> = ({ listing, team 
           ></div>
         )}
         <div className="relative z-10">
-        {/* Role Badge */}
-        <div className="mb-4 flex items-center gap-2">
+        {/* Category and Role Badges */}
+        <div className="mb-4 flex items-center gap-2 flex-wrap">
+          {categoryColorData && (
+            <span 
+              className={`inline-block rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wider ${categoryColorData.bg} ${categoryColorData.text} ${categoryColorData.border}`}
+            >
+              {categoryLabel}
+            </span>
+          )}
           <span
             className={`inline-block rounded-full border px-3 py-1 text-sm font-semibold ${roleColor}`}
           >
             {roleLabel}
           </span>
-          {isOrgPosition && (
-            <span className="inline-block rounded-full border border-gray-600 bg-gray-700/50 px-2 py-0.5 text-xs font-medium text-gray-300">
-              Organization-wide
-            </span>
-          )}
         </div>
 
         {/* Requirements */}
