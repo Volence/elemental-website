@@ -73,25 +73,37 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, size = 'medium', showH
 
       {/* Hover Card - Fixed positioning prevents it from affecting page layout */}
       {showHoverCard && (
-      <div className="fixed z-50 w-80 max-w-[90vw] p-4 rounded-xl border border-border bg-card shadow-2xl opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 pointer-events-none hidden md:block"
+      <div className="fixed z-50 w-80 max-w-[90vw] rounded-xl border-2 bg-card shadow-2xl opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 pointer-events-none hidden md:block overflow-hidden"
            style={{
              left: '50%',
              top: '50%',
-             transform: 'translate(-50%, -50%)'
+             transform: 'translate(-50%, -50%)',
+             borderColor: `${tierColors.borderColor}40`,
+             boxShadow: `0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2), 0 0 0 1px ${tierColors.borderColor}20`
            }}>
-        <div className="flex flex-col gap-3">
+        {/* Tier color accent bar at top */}
+        <div 
+          className="h-1 w-full"
+          style={{ backgroundColor: tierColors.borderColor }}
+        ></div>
+        
+        <div className="p-4 flex flex-col gap-3">
           {/* Team Name & Info */}
-          <div className="text-center border-b border-border pb-2">
-            <h4 className="font-bold text-lg mb-1">{team.name}</h4>
-            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-              {team.region && <span>[{team.region}]</span>}
+          <div className="text-center pb-3 border-b" style={{ borderColor: `${tierColors.borderColor}20` }}>
+            <h4 className="font-bold text-lg mb-1.5">{team.name}</h4>
+            <div className="flex items-center justify-center gap-2 text-xs">
+              {team.region && (
+                <span className="text-muted-foreground px-2 py-0.5 rounded bg-muted/50">
+                  {team.region}
+                </span>
+              )}
               {team.rating && (
                 <span 
-                  className="border px-2 py-0.5 rounded font-semibold"
+                  className="px-2.5 py-0.5 rounded font-semibold shadow-sm"
                   style={{
-                    backgroundColor: `${tierColors.borderColor}15`,
+                    backgroundColor: `${tierColors.borderColor}20`,
                     color: tierColors.borderColor,
-                    borderColor: `${tierColors.borderColor}50`
+                    border: `1px solid ${tierColors.borderColor}40`
                   }}
                 >
                   {team.rating}
@@ -103,32 +115,32 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, size = 'medium', showH
           {/* Staff */}
           {(team.manager || team.coaches || team.captain || team.coCaptain) && (
             <div className="space-y-2">
-              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                <Users className="w-3 h-3" />
+              <div className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: tierColors.borderColor }}>
+                <Users className="w-3.5 h-3.5" />
                 Staff
               </div>
-              <div className="space-y-1 text-xs">
+              <div className="space-y-1.5 text-xs bg-muted/30 rounded-lg p-2">
                 {team.manager && team.manager.length > 0 && (
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground min-w-[70px]">Manager:</span>
+                    <span className="text-muted-foreground min-w-[70px] text-[11px]">Manager:</span>
                     <span className="font-medium">{team.manager.map(m => m.name).join(' & ')}</span>
                   </div>
                 )}
                 {team.coaches && team.coaches.length > 0 && (
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground min-w-[70px]">Coaches:</span>
+                    <span className="text-muted-foreground min-w-[70px] text-[11px]">Coaches:</span>
                     <span className="font-medium">{team.coaches.map(c => c.name).join(' & ')}</span>
                   </div>
                 )}
                 {team.captain && team.captain.length > 0 && (
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground min-w-[70px]">Captain:</span>
+                    <span className="text-muted-foreground min-w-[70px] text-[11px]">Captain:</span>
                     <span className="font-medium">{team.captain.map(c => c.name).join(' & ')}</span>
                   </div>
                 )}
                 {team.coCaptain && (
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground min-w-[70px]">Co-Captain:</span>
+                    <span className="text-muted-foreground min-w-[70px] text-[11px]">Co-Captain:</span>
                     <span className="font-medium">{team.coCaptain}</span>
                   </div>
                 )}
@@ -139,12 +151,13 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, size = 'medium', showH
           {/* Players List */}
           {team.roster && team.roster.length > 0 && (
             <div className="space-y-2">
-              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              <div className="text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: tierColors.borderColor }}>
+                <UserCheck className="w-3.5 h-3.5" />
                 Players ({rosterCount})
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 {team.roster.map((player, i) => (
-                  <div key={i} className="flex items-center gap-2 text-xs">
+                  <div key={i} className="flex items-center gap-2 text-xs bg-muted/20 rounded px-2 py-1.5 hover:bg-muted/40 transition-colors">
                     <div className="flex-shrink-0">
                       {getGameRoleIcon(player.role, 'sm')}
                     </div>
@@ -159,14 +172,14 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, size = 'medium', showH
           {/* Subs */}
           {team.subs && team.subs.length > 0 && (
             <div className="space-y-2">
-              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
-                <Lock className="w-3 h-3 text-orange-500" />
+              <div className="text-xs font-semibold text-orange-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Lock className="w-3.5 h-3.5" />
                 Subs ({team.subs.length})
               </div>
               <div className="space-y-1 text-xs">
                 {team.subs.map((sub, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <Lock className="w-3 h-3 text-orange-500 flex-shrink-0" />
+                  <div key={i} className="flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 rounded px-2 py-1.5">
+                    <Lock className="w-3 h-3 text-orange-400 flex-shrink-0" />
                     <span className="font-medium">{sub.name}</span>
                   </div>
                 ))}
@@ -176,19 +189,28 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, size = 'medium', showH
 
           {/* Achievements Preview */}
           {team.achievements && team.achievements.length > 0 && (
-            <div className="text-xs">
-              <div className="font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+            <div className="text-xs space-y-1.5">
+              <div className="font-semibold uppercase tracking-wider flex items-center gap-1.5" style={{ color: tierColors.borderColor }}>
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                </svg>
                 Achievements
               </div>
-              <div className="text-muted-foreground line-clamp-2">
+              <div className="text-muted-foreground line-clamp-2 bg-muted/20 rounded p-2 italic text-[11px]">
                 {team.achievements[0]}
               </div>
             </div>
           )}
 
           {/* Click hint */}
-          <div className="text-xs text-center text-primary font-medium pt-2 border-t border-border">
-            Click to view details →
+          <div 
+            className="text-xs text-center font-semibold pt-3 pb-1 -mx-4 -mb-4 mt-2 rounded-b-xl"
+            style={{ 
+              backgroundColor: `${tierColors.borderColor}10`,
+              color: tierColors.borderColor
+            }}
+          >
+            Click to view full details →
           </div>
         </div>
       </div>
