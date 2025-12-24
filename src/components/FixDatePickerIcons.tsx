@@ -19,8 +19,8 @@ export default function FixDatePickerIcons() {
       // Fix clear button positioning
       const clearButtons = document.querySelectorAll<HTMLElement>('.date-time-picker__clear-button')
       clearButtons.forEach((button) => {
-        if (button.style.top !== '-5px') {
-          button.style.top = '-5px' // Negative value moves it UP
+        if (button.style.top !== '2px') {
+          button.style.top = '2px'
           button.style.position = 'relative'
         }
       })
@@ -28,8 +28,8 @@ export default function FixDatePickerIcons() {
       // Fix icon wrap positioning  
       const iconWraps = document.querySelectorAll<HTMLElement>('.date-time-picker__icon-wrap')
       iconWraps.forEach((wrap) => {
-        if (wrap.style.top !== '8px') {
-          wrap.style.top = '8px' // Reduce from 10px to move up
+        if (wrap.style.top !== '3px') {
+          wrap.style.top = '3px'
         }
       })
     }
