@@ -98,7 +98,9 @@ nav > *,
 // GROUP TOGGLES (PEOPLE, ESPORTS, STAFF, etc.)
 // ============================================
 
-.nav-group__toggle {
+// Maximum specificity for nav group toggles
+html body .nav-group__toggle,
+html body button.nav-group__toggle {
   color: rgba(139, 92, 246, 0.8); // Purple
   font-weight: 600;
   font-size: 0.6875rem;
