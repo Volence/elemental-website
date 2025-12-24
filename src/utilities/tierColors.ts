@@ -20,21 +20,21 @@ export interface TierColors {
 export const tierColors: Record<TierName, TierColors> = {
   masters: {
     name: 'Masters',
-    gradient: 'from-pink-500 to-fuchsia-500',
-    bg: 'bg-pink-500/10',
-    text: 'text-pink-400',
-    border: 'border-pink-500/30',
-    borderLeft: 'border-l-4 border-l-pink-500',
-    borderColor: '#ec4899', // pink-500 (vibrant and distinctive)
-  },
-  expert: {
-    name: 'Expert',
-    gradient: 'from-purple-500 to-violet-500',
+    gradient: 'from-purple-500 to-pink-500',
     bg: 'bg-purple-500/10',
     text: 'text-purple-400',
     border: 'border-purple-500/30',
     borderLeft: 'border-l-4 border-l-purple-500',
-    borderColor: '#a855f7', // purple-500 (was Masters color)
+    borderColor: '#a855f7', // purple-500 (original color)
+  },
+  expert: {
+    name: 'Expert',
+    gradient: 'from-indigo-500 to-purple-500',
+    bg: 'bg-indigo-500/10',
+    text: 'text-indigo-400',
+    border: 'border-indigo-500/30',
+    borderLeft: 'border-l-4 border-l-indigo-500',
+    borderColor: '#6366f1', // indigo-500 (original color)
   },
   advanced: {
     name: 'Advanced',
