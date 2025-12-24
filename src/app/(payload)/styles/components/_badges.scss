@@ -270,7 +270,7 @@ html body button.pill.list-controls__toggle-columns,
 html body button.pill.list-controls__toggle-where {
   padding: 0.75rem 1.25rem !important;
   min-height: 44px !important;
-  font-size: 0.9375rem !important;
+  font-size: 15px !important;          // Using px instead of rem (admin root is 13px)
   font-weight: 600 !important;
   letter-spacing: 0.025em !important;
   text-transform: none !important;
@@ -279,7 +279,7 @@ html body button.pill.list-controls__toggle-where {
   
   .pill__label,
   span.pill__label {
-    font-size: 0.9375rem !important;
+    font-size: 15px !important;        // Using px instead of rem (admin root is 13px)
     font-weight: 600 !important;
     letter-spacing: 0.025em !important;
     line-height: 1.5 !important;
