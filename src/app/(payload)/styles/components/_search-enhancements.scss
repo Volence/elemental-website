@@ -5,6 +5,11 @@
 
 .search-filter-container,
 .list-controls__wrap {
+  // Ensure the search bar container has position relative for absolute icon positioning
+  .search-bar {
+    position: relative;
+  }
+  
   .search-filter,
   input[type="search"],
   input[placeholder*="Search"] {
@@ -38,14 +43,16 @@
 
   /* Search icon */
   .search-icon,
+  svg.icon--search,
+  .icon.icon--search,
   svg[class*="search"],
   [class*="search"] svg:first-child {
-    position: absolute;
-    left: 1rem;                         // Moved closer to left edge
-    top: 50%;
-    transform: translateY(-50%);
-    width: 24px !important;             // Increased from 20px for better visibility
-    height: 24px !important;            // Increased from 20px for better visibility
+    position: absolute !important;
+    left: 1rem !important;              // Moved closer to left edge
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 24px !important;             // Increased from 16px for better visibility
+    height: 24px !important;            // Increased from 16px for better visibility
     color: var(--theme-text-500);
     pointer-events: none;
     transition: color 0.2s ease;
