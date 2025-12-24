@@ -91,8 +91,8 @@
   border-top: 1px solid $admin-border-subtle !important;
   
   button {
-    min-width: 100px !important;
-    padding: $spacing-sm $spacing-lg !important;
+    min-width: 120px !important;
+    padding: $spacing-md $spacing-xl !important;
     
     // Fix squished button text
     white-space: nowrap !important;
