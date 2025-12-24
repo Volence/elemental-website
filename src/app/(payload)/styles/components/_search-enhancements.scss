@@ -41,11 +41,11 @@
   svg[class*="search"],
   [class*="search"] svg:first-child {
     position: absolute;
-    left: 1.25rem;
+    left: 1rem;                         // Moved closer to left edge
     top: 50%;
     transform: translateY(-50%);
-    width: 20px !important;
-    height: 20px !important;
+    width: 24px !important;             // Increased from 20px for better visibility
+    height: 24px !important;            // Increased from 20px for better visibility
     color: var(--theme-text-500);
     pointer-events: none;
     transition: color 0.2s ease;
