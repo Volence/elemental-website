@@ -80,12 +80,13 @@ button.btn--lg {
 // ============================================
 
 // Small icon buttons next to form fields (X, dropdown, +, etc.)
+// EXCEPT upload buttons which have their own larger sizing
 button[class*="remove"],
 button[class*="clear"],
-button[class*="toggle"],
+button[class*="toggle"]:not(.upload__listToggler):not([class*="dropzone"]),
 button[class*="expand"],
-button[aria-label],
-.field-type button:not([type="submit"]):not([class*="create"]):not([class*="save"]) {
+button[aria-label]:not(.upload__listToggler),
+.field-type button:not([type="submit"]):not([class*="create"]):not([class*="save"]):not(.upload__listToggler) {
   padding: $padding-xs !important;                   // 0.5rem (square icon buttons)
   min-width: 32px !important;
   min-height: 32px !important;
