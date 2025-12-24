@@ -1,6 +1,7 @@
 import React from 'react'
 import { MapPin, Star, Trophy } from 'lucide-react'
 import { TeamLogo } from '@/components/TeamLogo'
+import { getTierFromRating } from '@/utilities/tierColors'
 
 interface TeamHeroProps {
   name: string
@@ -24,6 +25,7 @@ export function TeamHero({
   gradientClass,
 }: TeamHeroProps) {
   const hasCustomColor = themeColor && themeColor.startsWith('#')
+  const tierColors = rating ? getTierFromRating(rating) : null
 
   return (
     <div
@@ -69,8 +71,15 @@ export function TeamHero({
                     <span className="text-base font-bold">{region}</span>
                   </div>
                 )}
-                {rating && (
-                  <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary/15 text-primary border-2 border-primary/30 shadow-lg">
+                {rating && tierColors && (
+                  <div 
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 shadow-lg"
+                    style={{
+                      backgroundColor: `${tierColors.borderColor}15`,
+                      color: tierColors.borderColor,
+                      borderColor: `${tierColors.borderColor}50`
+                    }}
+                  >
                     <Star className="w-4 h-4" />
                     <span className="text-base font-bold">{rating}</span>
                   </div>

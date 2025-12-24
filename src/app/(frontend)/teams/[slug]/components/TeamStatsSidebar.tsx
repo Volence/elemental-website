@@ -1,5 +1,6 @@
 import React from 'react'
 import { Users, MapPin, Star, Lock, Trophy } from 'lucide-react'
+import { getTierFromRating } from '@/utilities/tierColors'
 
 interface TeamStatsSidebarProps {
   region?: string
@@ -16,6 +17,8 @@ export function TeamStatsSidebar({
   subsCount,
   achievementsCount,
 }: TeamStatsSidebarProps) {
+  const tierColors = rating ? getTierFromRating(rating) : null
+
   return (
     <aside className="space-y-6">
       <div className="p-6 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-xl sticky top-24">
@@ -40,7 +43,12 @@ export function TeamStatsSidebar({
               <Star className="w-4 h-4 text-muted-foreground" />
               <span className="text-sm font-medium text-muted-foreground">Rating</span>
             </div>
-            <span className="text-sm font-bold text-primary">{rating || 'Unranked'}</span>
+            <span 
+              className="text-sm font-bold"
+              style={tierColors ? { color: tierColors.borderColor } : undefined}
+            >
+              {rating || 'Unranked'}
+            </span>
           </div>
 
           <div className="flex items-center justify-between py-3 px-4 rounded-lg bg-background/50 hover:bg-background/80 transition-colors">
