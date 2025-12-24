@@ -72,3 +72,49 @@
   margin-bottom: $spacing-md;
 }
 
+// ============================================
+// MODAL BUTTONS
+// ============================================
+
+// Fix button spacing in confirmation modals
+.modal__footer,
+.modal__actions,
+[class*="modal"] .form-submit,
+[class*="modal__footer"],
+[class*="modal__actions"],
+[class*="popup__actions"],
+.popup__actions {
+  display: flex !important;
+  gap: $spacing-md !important;
+  padding: $spacing-lg $spacing-2xl !important;
+  background: $admin-bg-card !important;
+  border-top: 1px solid $admin-border-subtle !important;
+  
+  button {
+    min-width: 100px !important;
+    padding: $spacing-sm $spacing-lg !important;
+    
+    // Fix squished button text
+    white-space: nowrap !important;
+    
+    &:not(:last-child) {
+      margin-right: 0 !important;
+    }
+  }
+}
+
+// Delete confirmation modal specific styles
+[class*="delete-modal"],
+[class*="confirm-modal"],
+.modal--delete,
+.modal--confirm {
+  .modal__content {
+    padding: $spacing-2xl !important;
+  }
+  
+  .modal__footer,
+  .modal__actions {
+    justify-content: flex-end !important;
+  }
+}
+
