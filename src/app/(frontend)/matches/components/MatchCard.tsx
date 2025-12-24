@@ -419,7 +419,7 @@ export function MatchCard({ match, showCountdown = true }: MatchCardProps) {
   return (
     <div
       key={match.id}
-      className="p-8 border-t-2 border-r-2 border-b-2 border-border rounded-xl bg-gradient-to-br from-card to-card/50 shadow-lg hover:shadow-xl hover:border-primary/30 transition-all relative overflow-hidden"
+      className="p-8 border-t-2 border-r-2 border-b-2 border-border rounded-xl bg-gradient-to-br from-card to-card/50 shadow-lg hover:shadow-xl hover:border-primary/30 transition-all duration-200 relative overflow-hidden"
       style={{ 
         borderLeft: `4px solid ${tierColors.borderColor}`,
         boxShadow: `inset 4px 0 12px -8px ${tierColors.borderColor}, 0 10px 15px -3px rgba(0, 0, 0, 0.1)`

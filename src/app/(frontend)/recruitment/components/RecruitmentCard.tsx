@@ -80,7 +80,7 @@ export const RecruitmentCard: React.FC<RecruitmentCardProps> = ({ listing, team 
   return (
     <>
       <div 
-        className="group relative overflow-hidden rounded-lg border-t border-r border-b border-gray-700 bg-gray-800 p-6 transition-all hover:border-gray-600 hover:bg-gray-750"
+        className="group relative overflow-hidden rounded-lg border-t border-r border-b border-gray-700 bg-gray-800 p-6 transition-all duration-200 hover:border-gray-600 hover:bg-gray-750"
         style={tierColors ? { 
           borderLeft: `4px solid ${tierColors.borderColor}`,
           boxShadow: `inset 4px 0 12px -8px ${tierColors.borderColor}`

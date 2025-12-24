@@ -39,9 +39,9 @@ export function StaffMemberCard({
   const roleColor = getRoleColor()
   
   return (
-    <div className="group flex items-center gap-4 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-background to-background/50 hover:border-primary/50 hover:shadow-lg transition-all">
+    <div className="group flex items-center gap-4 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-background to-background/50 hover:border-primary/50 hover:shadow-lg transition-all duration-200">
       <div 
-        className="w-12 h-12 rounded-full flex items-center justify-center ring-2 transition-all overflow-hidden"
+        className="w-12 h-12 rounded-full flex items-center justify-center ring-2 transition-all duration-200 overflow-hidden"
         style={{
           backgroundColor: roleColor.bg,
           borderColor: roleColor.ring,

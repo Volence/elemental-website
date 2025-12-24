@@ -26,7 +26,7 @@ export function SubstituteCard({
     <div className="group flex items-center gap-4 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-background to-background/50 hover:border-orange-500/50 hover:shadow-lg hover:scale-[1.02] transition-all duration-200">
       {/* Avatar placeholder */}
       <div className="relative flex-shrink-0">
-        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-500/20 to-orange-500/5 flex items-center justify-center ring-2 ring-orange-500/20 group-hover:ring-orange-500/50 transition-all overflow-hidden">
+        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-500/20 to-orange-500/5 flex items-center justify-center ring-2 ring-orange-500/20 group-hover:ring-orange-500/50 transition-all duration-200 overflow-hidden">
           {photoUrl ? (
             <Image
               src={photoUrl}
