@@ -29,12 +29,12 @@ export const tierColors: Record<TierName, TierColors> = {
   },
   expert: {
     name: 'Expert',
-    gradient: 'from-indigo-500 to-purple-500',
-    bg: 'bg-indigo-500/10',
-    text: 'text-indigo-400',
-    border: 'border-indigo-500/30',
-    borderLeft: 'border-l-4 border-l-indigo-500',
-    borderColor: '#6366f1', // indigo-500
+    gradient: 'from-violet-500 to-purple-500',
+    bg: 'bg-violet-500/10',
+    text: 'text-violet-400',
+    border: 'border-violet-500/30',
+    borderLeft: 'border-l-4 border-l-violet-500',
+    borderColor: '#8b5cf6', // violet-500 (more distinct from blue)
   },
   advanced: {
     name: 'Advanced',
