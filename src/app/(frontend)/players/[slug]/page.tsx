@@ -328,9 +328,6 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
                     const roleColors = teamInfo.role ? getRoleColors(teamInfo.role) : null
                     const roleColorHex = teamInfo.role === 'tank' ? '#3b82f6' : teamInfo.role === 'support' ? '#22c55e' : '#ef4444'
                     
-                    // Get tier colors for team tier badge
-                    const tierColors = teamInfo.teamRating ? getTierFromRating(teamInfo.teamRating) : null
-                    
                     // Get position colors
                     const getPositionColor = (position: string) => {
                       if (position === 'captain' || position === 'co-captain') return { bg: '#eab30815', color: '#eab308', border: '#eab30850' } // Yellow/Gold
@@ -368,18 +365,6 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
                                 }}
                               >
                                 {teamInfo.role}
-                              </span>
-                            )}
-                            {tierColors && teamInfo.teamRating && (
-                              <span 
-                                className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg border"
-                                style={{
-                                  backgroundColor: `${tierColors.borderColor}15`,
-                                  color: tierColors.borderColor,
-                                  borderColor: `${tierColors.borderColor}50`
-                                }}
-                              >
-                                {teamInfo.teamRating}
                               </span>
                             )}
                             {teamInfo.positions && teamInfo.positions.length > 0 && (
