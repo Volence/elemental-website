@@ -68,7 +68,7 @@ input[type="datetime-local"] {
 .date-time-picker__icon-wrap {
   position: absolute;
   right: 0.75rem;
-  top: 10px; // Align with input text content area (slightly below top padding)
+  top: 3px; // Align closer to top of input
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -92,6 +92,8 @@ input[type="datetime-local"] {
   width: 16px !important;
   height: 16px !important;
   min-height: unset !important;
+  position: relative;
+  top: 2px;
   
   &:hover {
     background: rgba(255, 255, 255, 0.1);
