@@ -64,9 +64,12 @@ export async function Footer() {
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group flex items-center justify-center w-12 h-12 rounded-lg bg-muted/10 text-white hover:text-white transition-all hover:scale-110 relative overflow-hidden"
+                    className="group flex items-center justify-center w-12 h-12 rounded-lg text-white transition-all hover:scale-110 relative overflow-hidden"
                     aria-label={name}
                   >
+                    <div 
+                      className="absolute inset-0 bg-white/10 transition-opacity duration-300"
+                    />
                     <div 
                       className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                       style={{ background: gradient }}
@@ -198,9 +201,12 @@ export async function Footer() {
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group flex items-center justify-center w-12 h-12 rounded-lg bg-muted/10 text-white hover:text-white transition-all hover:scale-110 relative overflow-hidden"
+                    className="group flex items-center justify-center w-12 h-12 rounded-lg text-white transition-all hover:scale-110 relative overflow-hidden"
                     aria-label={name}
                   >
+                    <div 
+                      className="absolute inset-0 bg-white/10 transition-opacity duration-300"
+                    />
                     <div 
                       className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                       style={{ background: gradient }}
