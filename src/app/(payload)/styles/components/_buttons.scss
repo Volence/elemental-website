@@ -13,19 +13,19 @@ button,
 .btn {
   font-weight: 500;
   letter-spacing: 0.025em;
-  transition: all $transition-normal;
+  transition: all 0.2s ease;
   
   &:hover:not([aria-label="Close"]):not(.nav__mobile-close) {
     box-shadow: 
-      0 0 20px rgba($admin-accent-primary, 0.3),
+      0 0 20px rgba(236, 72, 153, 0.3),
       0 4px 12px rgba(0, 0, 0, 0.2);
-    transform: translateY(-1px);
+    transform: translateY(-1px) scale(1.02);
     filter: brightness(1.1);
   }
   
   &:active {
-    transform: translateY(0);
-    box-shadow: 0 0 15px rgba($admin-accent-primary, 0.2);
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 0 15px rgba(236, 72, 153, 0.2);
   }
 }
 
@@ -37,11 +37,19 @@ button[type="submit"],
 button.btn--primary,
 [class*="btn-primary"],
 [class*="button--primary"] {
+  background: linear-gradient(135deg, #ec4899, #a855f7);
+  border: none;
+  
   &:hover {
+    background: linear-gradient(135deg, #f472b6, #c084fc);
     box-shadow: 
-      0 0 25px rgba($admin-accent-primary, 0.4),
+      0 0 25px rgba(236, 72, 153, 0.5),
       0 6px 16px rgba(0, 0, 0, 0.3);
-    transform: translateY(-2px);
+    transform: translateY(-2px) scale(1.02);
+  }
+  
+  &:active {
+    transform: translateY(0) scale(0.98);
   }
 }
 
