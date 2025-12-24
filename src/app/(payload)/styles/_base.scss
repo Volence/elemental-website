@@ -106,5 +106,12 @@ html[data-theme='light'] {
   .nav__mobile-close {
     display: none;
   }
+  
+  // Hide mobile menu toggle button in header on desktop
+  .template-default__header button:first-child,
+  header[role="banner"] > div > button:first-child,
+  [class*="header"] > div > button[aria-label*="Menu"] {
+    display: none !important;
+  }
 }
 
