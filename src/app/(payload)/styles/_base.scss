@@ -106,7 +106,9 @@ html[data-theme='light'] {
   // Hide mobile nav close button on desktop
   .nav__mobile-close,
   button.nav__mobile-close,
-  [class*="nav__mobile-close"] {
+  [class*="nav__mobile-close"],
+  .hamburger__close,
+  button.hamburger__close {
     display: none !important;
   }
   
