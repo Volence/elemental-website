@@ -81,16 +81,19 @@ html body [class*="modal"] button[type="button"] {
 }
 
 // Fix empty collection "Create new" button styling
-.collection-list button,
-[class*="collection-list"] button,
-[class*="list-controls"] button[href*="create"],
-a[class*="create-first"],
-a[href*="create"]:not(.pill) {
+html body .collection-list__no-results .btn,
+html body .collection-list__no-results a.btn,
+html body [class*="no-results"] .btn,
+html body [class*="no-results"] a.btn {
   padding: 0.75rem 1.5rem !important;
-  min-width: auto !important;
+  min-width: 180px !important;
+  width: auto !important;
+  max-width: none !important;
   white-space: nowrap !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
+  flex: none !important;
+  overflow: visible !important;
 }
 
