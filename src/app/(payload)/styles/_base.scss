@@ -115,9 +115,9 @@ html[data-theme='light'] {
   }
   
   // Hide redundant "Close" button at bottom of sidebar (same as collapse)
-  nav button[aria-label="Close"],
-  .nav button[aria-label="Close"],
-  aside button[aria-label="Close"] {
+  [role="complementary"] > button,
+  complementary > button,
+  aside > button:not(:first-child) {
     display: none !important;
   }
 }
