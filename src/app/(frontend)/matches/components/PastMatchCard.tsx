@@ -91,7 +91,7 @@ export function PastMatchCard({ match }: PastMatchCardProps) {
   }
 
   return (
-    <div className="p-6 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 hover:border-primary/20 hover:shadow-lg transition-all duration-200">
+    <div className="p-6 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-lg hover:border-primary/20 hover:shadow-xl transition-all duration-200">
       {/* Header with Team Logo and Badges */}
       <div className="flex items-center justify-between gap-4 mb-4">
         {/* Team Logo and Title */}

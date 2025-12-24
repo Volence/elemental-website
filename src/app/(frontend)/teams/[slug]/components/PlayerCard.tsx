@@ -33,7 +33,7 @@ export function PlayerCard({
   const roleColorHex = role === 'tank' ? '#3b82f6' : role === 'support' ? '#22c55e' : '#ef4444'
   
   return (
-    <div className="group flex items-center gap-4 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-background to-background/50 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 hover:scale-[1.02] transition-all duration-200">
+    <div className="group flex items-center gap-4 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-background to-background/50 shadow-md hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 hover:scale-[1.02] transition-all duration-200">
       {/* Avatar placeholder with role icon */}
       <div className="relative flex-shrink-0">
         <div
