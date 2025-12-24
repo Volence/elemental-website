@@ -41,8 +41,11 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, size = 'medium', showH
         >
           {/* Subtle tier color background */}
           <div 
-            className="absolute inset-0 pointer-events-none opacity-[0.03]"
-            style={{ backgroundColor: tierColors.borderColor }}
+            className="absolute inset-0 pointer-events-none"
+            style={{ 
+              backgroundColor: tierColors.borderColor,
+              opacity: 0.05
+            }}
           ></div>
           <div className="relative z-10">
           <div className={`${logoSize} mb-4 flex items-center justify-center mx-auto rounded-xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm ring-2 ring-white/20 shadow-[0_0_20px_rgba(255,255,255,0.08)] group-hover:shadow-[0_0_30px_rgba(255,255,255,0.15)] group-hover:ring-primary/30 transition-all duration-300`}>

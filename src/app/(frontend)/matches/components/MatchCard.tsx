@@ -427,8 +427,11 @@ export function MatchCard({ match, showCountdown = true }: MatchCardProps) {
     >
       {/* Subtle tier color background */}
       <div 
-        className="absolute inset-0 pointer-events-none opacity-[0.03]"
-        style={{ backgroundColor: tierColors.borderColor }}
+        className="absolute inset-0 pointer-events-none"
+        style={{ 
+          backgroundColor: tierColors.borderColor,
+          opacity: 0.05
+        }}
       ></div>
       <div className="relative z-10">
       {/* Header with Team Logos and Status */}

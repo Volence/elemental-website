@@ -85,8 +85,11 @@ export const RecruitmentCard: React.FC<RecruitmentCardProps> = ({ listing, team 
         {/* Subtle tier color background for team positions */}
         {tierColors && (
           <div 
-            className="absolute inset-0 pointer-events-none opacity-[0.03]"
-            style={{ backgroundColor: tierColors.borderColor }}
+            className="absolute inset-0 pointer-events-none"
+            style={{ 
+              backgroundColor: tierColors.borderColor,
+              opacity: 0.05
+            }}
           ></div>
         )}
         <div className="relative z-10">
