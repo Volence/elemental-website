@@ -69,3 +69,14 @@
   }
 }
 
+// Modal button padding override (must come after button imports)
+html body .modal__footer button,
+html body .modal__actions button,
+html body [class*="modal__footer"] button,
+html body [class*="modal__actions"] button,
+html body [class*="popup__actions"] button,
+html body .popup__actions button,
+html body [class*="modal"] button[type="button"] {
+  padding: 0.75rem 3.5rem !important;
+}
+
