@@ -258,3 +258,35 @@
   font-weight: 700;
 }
 
+// ============================================
+// LIST CONTROL PILLS - COLUMNS/FILTERS BUTTONS
+// Override the pill--size-small class for list controls
+// ============================================
+
+button.pill.pill--size-small.list-controls__toggle-columns,
+button.pill.pill--size-small.list-controls__toggle-where,
+button.pill.list-controls__toggle-columns,
+button.pill.list-controls__toggle-where {
+  padding: 0.75rem 1.25rem !important;
+  min-height: 44px !important;
+  font-size: 0.9375rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.025em !important;
+  text-transform: none !important;
+  border-radius: 8px !important;
+  line-height: 1.5 !important;
+  
+  .pill__label {
+    font-size: 0.9375rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.025em !important;
+    line-height: 1.5 !important;
+  }
+  
+  .pill__icon,
+  svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+}
+
