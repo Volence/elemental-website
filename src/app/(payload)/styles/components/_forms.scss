@@ -225,6 +225,24 @@ input[placeholder*="search"] {
   color: $admin-text-muted;
 }
 
+// React Select multi-value remove buttons (X buttons in tags)
+.multi-value-remove,
+.rs__multi-value__remove,
+[class*="multi-value__remove"] {
+  width: 20px !important;
+  height: 20px !important;
+  padding: 2px !important;
+  min-height: unset !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  
+  svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+}
+
 // ============================================
 // FIELD TYPE CONTAINERS
 // ============================================
