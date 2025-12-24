@@ -498,6 +498,29 @@ span.btn__icon {
   }
 }
 
+// Upload dropzone buttons (Create New / Choose from existing)
+html body .upload__dropzoneContent__buttons,
+html body [class*="dropzoneContent"] {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: $spacing-md !important;
+  flex-wrap: wrap !important;
+  
+  button {
+    width: auto !important;
+    min-width: fit-content !important;
+    padding: $padding-md $padding-xl !important;    // 13px 26px (1rem 2rem in 13px root)
+    min-height: 44px !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    font-size: 15px !important;                      // Use px for consistency
+    font-weight: $font-weight-semibold !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+}
+
 .file-field__drag-text,
 .upload__drag-text {
   color: rgba(255, 255, 255, 0.4);
