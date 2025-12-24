@@ -11,73 +11,177 @@
 
 button,
 .btn {
-  font-weight: 500;
-  letter-spacing: 0.025em;
-  transition: all 0.2s ease;
+  // Base styling - all buttons
+  font-weight: $font-weight-medium;      // 500
+  font-size: $font-size-base;            // 0.9375rem / 15px
+  letter-spacing: $letter-spacing-wide;  // 0.025em
+  border-radius: $radius-sm;             // 4px
+  border: $border-thin solid transparent;
+  padding: $padding-sm $padding-md;      // 0.75rem 1rem (default size)
+  cursor: pointer;
+  transition: $transition-all-normal;    // all 0.2s ease-out
+  display: inline-flex;
+  align-items: center;
+  gap: $gap-xs;                          // 0.5rem
   
-  &:hover:not([aria-label="Close"]):not(.nav__mobile-close) {
-    box-shadow: 
-      0 0 20px rgba(236, 72, 153, 0.3),
-      0 4px 12px rgba(0, 0, 0, 0.2);
-    transform: translateY(-1px) scale(1.02);
-    filter: brightness(1.1);
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
   }
   
-  &:active {
-    transform: translateY(0) scale(0.98);
-    box-shadow: 0 0 15px rgba(236, 72, 153, 0.2);
+  // Default hover (for buttons without specific classes)
+  &:hover:not([aria-label="Close"]):not(.nav__mobile-close):not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: $shadow-md;
+  }
+  
+  &:active:not(:disabled) {
+    transform: translateY(0);
   }
 }
 
 // ============================================
-// PRIMARY/ACTION BUTTONS
+// BUTTON SIZE VARIANTS
+// ============================================
+
+.btn--sm,
+button.btn--sm {
+  padding: $padding-xs $padding-sm;      // 0.5rem 0.75rem
+  font-size: $font-size-sm;              // 0.875rem / 14px
+  border-radius: $radius-sm;             // 4px
+}
+
+.btn--md,
+button.btn--md {
+  padding: $padding-sm $padding-md;      // 0.75rem 1rem (default)
+  font-size: $font-size-base;            // 0.9375rem / 15px
+  border-radius: $radius-sm;             // 4px
+}
+
+.btn--lg,
+button.btn--lg {
+  padding: $padding-md $padding-lg;      // 1rem 1.5rem
+  font-size: $font-size-md;              // 1rem / 16px
+  border-radius: $radius-md;             // 6px
+}
+
+// ============================================
+// PRIMARY BUTTON VARIANT
 // ============================================
 
 button[type="submit"],
+.btn--primary,
 button.btn--primary,
 [class*="btn-primary"],
 [class*="button--primary"] {
-  background: linear-gradient(135deg, #ec4899, #a855f7);
+  background: linear-gradient(135deg, $admin-accent-primary, #a855f7);
+  color: white;
   border: none;
+  font-weight: $font-weight-semibold;    // 600
   
-  &:hover {
-    background: linear-gradient(135deg, #f472b6, #c084fc);
-    box-shadow: 
-      0 0 25px rgba(236, 72, 153, 0.5),
-      0 6px 16px rgba(0, 0, 0, 0.3);
-    transform: translateY(-2px) scale(1.02);
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #7c7ff7, #c084fc);
+    box-shadow: $shadow-primary-md;
+    transform: translateY(-1px);
+    filter: brightness(1.05);
   }
   
-  &:active {
-    transform: translateY(0) scale(0.98);
+  &:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: $shadow-primary-sm;
   }
 }
 
 // ============================================
-// SUCCESS/CREATE BUTTONS
+// SECONDARY BUTTON VARIANT
 // ============================================
 
+.btn--secondary,
+button.btn--secondary {
+  background: transparent;
+  border: $border-thin solid var(--theme-elevation-300);
+  color: $admin-text-primary;
+  
+  &:hover:not(:disabled) {
+    background: var(--theme-elevation-50);
+    border-color: $admin-accent-primary;
+    color: $admin-accent-primary;
+    box-shadow: $shadow-md;
+  }
+  
+  &:active:not(:disabled) {
+    background: var(--theme-elevation-100);
+  }
+}
+
+// ============================================
+// SUCCESS/CREATE BUTTON VARIANT
+// ============================================
+
+.btn--success,
+button.btn--success,
 button[class*="create"],
-button[class*="save"],
-button[class*="success"] {
-  &:hover {
-    box-shadow: 
-      0 0 20px rgba($admin-accent-success, 0.3),
-      0 4px 12px rgba(0, 0, 0, 0.2);
+button[class*="save"] {
+  background: linear-gradient(135deg, $admin-accent-success, #16a34a);
+  color: white;
+  border: none;
+  font-weight: $font-weight-semibold;    // 600
+  
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #4ade80, #22c55e);
+    box-shadow: 0 0 20px rgba($admin-accent-success, 0.3);
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+  }
+  
+  &:active:not(:disabled) {
+    transform: translateY(0);
   }
 }
 
 // ============================================
-// DANGER/DELETE BUTTONS
+// DANGER/DELETE BUTTON VARIANT
 // ============================================
 
+.btn--danger,
+button.btn--danger,
 button[class*="delete"],
-button[class*="danger"],
 button[class*="remove"] {
-  &:hover {
-    box-shadow: 
-      0 0 20px rgba($admin-accent-error, 0.3),
-      0 4px 12px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, $admin-accent-error, #dc2626);
+  color: white;
+  border: none;
+  font-weight: $font-weight-semibold;    // 600
+  
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, #f87171, #ef4444);
+    box-shadow: 0 0 20px rgba($admin-accent-error, 0.3);
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+  }
+  
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}
+
+// ============================================
+// GHOST BUTTON VARIANT
+// ============================================
+
+.btn--ghost,
+button.btn--ghost {
+  background: transparent;
+  border: none;
+  color: $admin-text-secondary;
+  
+  &:hover:not(:disabled) {
+    background: var(--theme-elevation-50);
+    color: $admin-text-primary;
+  }
+  
+  &:active:not(:disabled) {
+    background: var(--theme-elevation-100);
   }
 }
 
@@ -92,18 +196,39 @@ button[aria-label="Close"]:not(.nav__mobile-close) {
   align-items: center;
   justify-content: center;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid $admin-border-normal;
-  border-radius: $radius-md;
-  padding: $spacing-sm;
+  border: $border-thin solid $admin-border-normal;
+  border-radius: $radius-md;               // 6px
+  padding: $padding-sm;                     // 0.75rem
   width: 2.5rem;
   height: 2.5rem;
   color: $admin-text-secondary;
-  transition: all $transition-normal;
+  transition: $transition-all-normal;       // all 0.2s ease-out
   
-  &:hover {
-    background: rgba(239, 68, 68, 0.15);
-    border-color: rgba(239, 68, 68, 0.3);
+  &:hover:not(:disabled) {
+    background: rgba($admin-accent-error, 0.15);
+    border-color: rgba($admin-accent-error, 0.3);
     color: $admin-text-primary;
+    transform: none;  // Override default button hover transform
+  }
+  
+  &:active:not(:disabled) {
+    background: rgba($admin-accent-error, 0.2);
+    transform: scale(0.95);
+  }
+}
+
+// ============================================
+// BUTTON GROUPS
+// ============================================
+
+.btn-group {
+  display: flex;
+  gap: $gap-sm;                             // 0.75rem
+  align-items: center;
+  
+  // Reduce gap for compact groups
+  &--compact {
+    gap: $gap-xs;                           // 0.5rem
   }
 }
 

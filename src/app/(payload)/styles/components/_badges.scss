@@ -18,18 +18,58 @@
 .tag {
   display: inline-flex;
   align-items: center;
-  padding: 0.25rem $spacing-md;
-  border-radius: $radius-pill;
-  font-size: 0.75rem;
-  font-weight: 600;
+  gap: $gap-xs;                                                    // 0.5rem (for icons)
+  padding: 0.25rem $padding-sm;                                    // 0.25rem 0.75rem (default size)
+  border-radius: $radius-sm;                                       // 4px (default)
+  font-size: $font-size-xs;                                        // 0.75rem
+  font-weight: $font-weight-semibold;                              // 600
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  transition: all $transition-normal;
+  letter-spacing: $letter-spacing-wider;                           // 0.05em
+  border: $border-thin solid transparent;                          // 1px
+  transition: $transition-all-normal;                              // all 0.2s ease-out
   
   &:hover {
     transform: translateY(-1px);
     box-shadow: 0 0 20px currentColor;
   }
+}
+
+// ============================================
+// BADGE SIZE VARIANTS
+// ============================================
+
+.badge--sm,
+.pill--sm {
+  padding: 0.125rem $padding-xs;                                   // 0.125rem 0.5rem
+  font-size: $font-size-xs;                                        // 0.75rem (11px when scaled)
+  border-radius: $radius-sm;                                       // 4px
+}
+
+.badge--md,
+.pill--md {
+  padding: 0.375rem $padding-sm;                                   // 0.375rem 0.75rem (default)
+  font-size: $font-size-sm;                                        // 0.8125rem
+  border-radius: $radius-sm;                                       // 4px
+}
+
+.badge--lg,
+.pill--lg {
+  padding: $padding-xs $padding-md;                                // 0.5rem 1rem
+  font-size: $font-size-sm;                                        // 0.875rem
+  border-radius: $radius-md;                                       // 6px
+}
+
+// ============================================
+// BADGE SHAPE VARIANTS
+// ============================================
+
+.badge--pill,
+.pill--rounded {
+  border-radius: $radius-full;                                     // 9999px
+}
+
+.badge--square {
+  border-radius: $radius-xs;                                       // 2px
 }
 
 // ============================================
