@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { getPeopleListData } from '@/utilities/peopleListDataCache'
+import { AdminBadgeGroupSkeleton } from '@/components/AdminSkeletonLoader'
 
 /**
  * Custom cell component that displays all teams a person is associated with
@@ -87,7 +88,7 @@ const TeamsCell: React.FC<{ rowData: any }> = ({ rowData }) => {
   }, [rowData?.id])
 
   if (loading) {
-    return <span className="list-cell-loading">Loading...</span>
+    return <AdminBadgeGroupSkeleton count={1} />
   }
 
   if (teams.length === 0) {

@@ -1,0 +1,57 @@
+/* ============================================
+ * Admin Skeleton Loader Styles
+ * Shimmer animation for loading states
+ * ============================================ */
+
+@keyframes admin-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.admin-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--theme-elevation-200) 25%,
+    var(--theme-elevation-300) 50%,
+    var(--theme-elevation-200) 75%
+  );
+  background-size: 200% 100%;
+  animation: admin-shimmer 1.5s ease-in-out infinite;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.admin-cell-skeleton {
+  display: flex;
+  align-items: center;
+  min-height: 50px;
+}
+
+.admin-badge-skeleton {
+  border-radius: 12px;
+}
+
+.admin-badge-group-skeleton {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.admin-logo-skeleton {
+  .admin-skeleton {
+    border-radius: 6px;
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .admin-skeleton {
+    animation: none;
+    background: var(--theme-elevation-250);
+  }
+}
+

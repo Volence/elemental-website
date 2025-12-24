@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { getPeopleListData } from '@/utilities/peopleListDataCache'
 import { formatRole, formatProductionType } from '@/utilities/formatters'
+import { AdminBadgeGroupSkeleton } from '@/components/AdminSkeletonLoader'
 
 /**
  * Custom cell component that displays all staff positions a person holds
@@ -57,7 +58,7 @@ const StaffPositionsCell: React.FC<{ rowData: any }> = ({ rowData }) => {
   }, [rowData?.id])
 
   if (loading) {
-    return <span className="list-cell-loading">Loading...</span>
+    return <AdminBadgeGroupSkeleton count={2} />
   }
 
   if (positions.length === 0) {

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import type { RecruitmentApplication, RecruitmentListing, Team } from '@/payload-types'
+import { AdminCellSkeleton } from '@/components/AdminSkeletonLoader'
 
 interface PositionCellProps {
   rowData?: RecruitmentApplication
@@ -26,36 +27,38 @@ const roleLabels: Record<string, string> = {
 }
 
 export const PositionCell: React.FC<PositionCellProps> = ({ rowData }) => {
-  const [position, setPosition] = useState<string>('Loading...')
+  const [position, setPosition] = useState<string>('')
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const loadPosition = () => {
-      if (!rowData?.listing) {
-        setPosition('—')
-        return
-      }
-
-      // Check if listing is populated
-      if (typeof rowData.listing === 'object' && 'role' in rowData.listing) {
-        const listing = rowData.listing as RecruitmentListing
-        const roleLabel = roleLabels[listing.role] || listing.role
-        
-        // Check if it's an org-wide position or team-specific
-        if (listing.category === 'org-staff') {
-          setPosition(roleLabel)
-        } else if (listing.team && typeof listing.team === 'object' && 'name' in listing.team) {
-          const team = listing.team as Team
-          setPosition(`${team.name} - ${roleLabel}`)
-        } else {
-          setPosition(roleLabel)
+    const loadPosition = async () => {
+      try {
+        if (!rowData?.listing) {
+          setPosition('—')
+          return
         }
-      } else {
-        // Listing is just an ID - fetch it
-        const listingId = typeof rowData.listing === 'number' ? rowData.listing : (rowData.listing as any)?.id
-        if (listingId) {
-          fetch(`/api/recruitment-listings/${listingId}?depth=1`)
-            .then(res => res.json())
-            .then((listing: RecruitmentListing) => {
+
+        // Check if listing is populated
+        if (typeof rowData.listing === 'object' && 'role' in rowData.listing) {
+          const listing = rowData.listing as RecruitmentListing
+          const roleLabel = roleLabels[listing.role] || listing.role
+          
+          // Check if it's an org-wide position or team-specific
+          if (listing.category === 'org-staff') {
+            setPosition(roleLabel)
+          } else if (listing.team && typeof listing.team === 'object' && 'name' in listing.team) {
+            const team = listing.team as Team
+            setPosition(`${team.name} - ${roleLabel}`)
+          } else {
+            setPosition(roleLabel)
+          }
+        } else {
+          // Listing is just an ID - fetch it
+          const listingId = typeof rowData.listing === 'number' ? rowData.listing : (rowData.listing as any)?.id
+          if (listingId) {
+            try {
+              const res = await fetch(`/api/recruitment-listings/${listingId}?depth=1`)
+              const listing: RecruitmentListing = await res.json()
               const roleLabel = roleLabels[listing.role] || listing.role
               
               if (listing.category === 'org-staff') {
@@ -65,16 +68,24 @@ export const PositionCell: React.FC<PositionCellProps> = ({ rowData }) => {
                 const teamName = team?.name || 'Unknown Team'
                 setPosition(`${teamName} - ${roleLabel}`)
               }
-            })
-            .catch(() => setPosition('Unknown'))
-        } else {
-          setPosition('Unknown')
+            } catch {
+              setPosition('Unknown')
+            }
+          } else {
+            setPosition('Unknown')
+          }
         }
+      } finally {
+        setLoading(false)
       }
     }
 
     loadPosition()
   }, [rowData])
+
+  if (loading) {
+    return <AdminCellSkeleton width="150px" />
+  }
 
   return (
     <div className="list-cell">
