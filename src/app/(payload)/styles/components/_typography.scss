@@ -239,7 +239,7 @@ tbody td {
   margin-bottom: 0;
 }
 
-// CREATE NEW buttons positioning
+// CREATE NEW buttons positioning and styling
 button[class*="create"],
 .collection-list__header button,
 .list-header button,
@@ -247,5 +247,17 @@ button[class*="create"],
 a[class*="create"] {
   margin-top: 0;
   align-self: center;
+  
+  // Ensure consistent sizing for header buttons
+  padding: $padding-sm $padding-lg !important;                     // 0.75rem 1.5rem
+  font-size: $font-size-base !important;                           // 0.9375rem
+  font-weight: $font-weight-semibold !important;                   // 600
+  border-radius: $radius-md !important;                            // 6px
+  white-space: nowrap;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $gap-xs;                                                    // 0.5rem (for icon)
 }
 
