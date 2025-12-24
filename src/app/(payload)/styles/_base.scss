@@ -84,9 +84,10 @@ html[data-theme='light'] {
 // UI CLEANUP
 // ============================================
 
-// Hide broken template close button
-.template-default__close {
-  display: none;
+// Hide broken template close button and redundant sidebar close button
+.template-default__close,
+button[aria-label="Close"]:not(.hamburger__close) {
+  display: none !important;
 }
 
 // Mobile nav - lock body scroll when open
