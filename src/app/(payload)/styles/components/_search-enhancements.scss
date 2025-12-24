@@ -121,3 +121,36 @@
   }
 }
 
+/* Override pill button sizing for list controls (Columns/Filters) */
+.list-controls__toggle-columns,
+.list-controls__toggle-filters,
+[class*="list-controls__toggle"],
+button[class*="pill"][aria-controls*="list-controls"] {
+  padding: 0.75rem 1.25rem !important;
+  min-height: 44px !important;
+  min-width: auto !important;
+  font-size: 0.9375rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.025em !important;
+  text-transform: none !important;
+  border-radius: 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  white-space: nowrap !important;
+  
+  .pill__label,
+  span[class*="label"] {
+    font-size: 0.9375rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.025em !important;
+  }
+  
+  .pill__icon,
+  svg {
+    width: 18px !important;
+    height: 18px !important;
+    flex-shrink: 0;
+  }
+}
+
