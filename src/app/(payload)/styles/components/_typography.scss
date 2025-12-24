@@ -236,7 +236,22 @@ tbody td {
   align-items: center;
   justify-content: space-between;
   gap: $spacing-lg;
-  margin-bottom: $spacing-2xl !important;  // 3rem / ~39px - Comfortable spacing to search bar
+  margin-bottom: $spacing-lg !important;  // 1.5rem / ~20px - Only on outer container
+  
+  // Remove internal spacing to prevent compounding margins
+  .list-header__content,
+  .list-header__title-and-actions,
+  .list-header__title,
+  .list-header__actions,
+  .list-header__after-header-content {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  // Remove h1 padding within header
+  h1 {
+    padding-bottom: 0 !important;
+  }
 }
 
 // CREATE NEW buttons positioning and styling

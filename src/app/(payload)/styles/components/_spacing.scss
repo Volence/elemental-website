@@ -30,11 +30,11 @@ main > section,
   margin-bottom: $spacing-xl;
 }
 
-// Collection list sub-header spacing
+// Collection list sub-header spacing (description text area)
 .collection-list__sub-header,
 [class*="sub-header"] {
-  margin-bottom: $spacing-2xl;
-  padding: $spacing-lg 0;
+  margin-bottom: 0 !important;          // Remove bottom margin (handled by parent)
+  padding: $spacing-xs 0 !important;    // Minimal padding: 0.5rem / ~7px top/bottom
 }
 
 // ============================================
