@@ -108,6 +108,7 @@ nav > *,
   margin: 0.5rem 0 0.25rem;
   position: relative;
   text-align: left !important;      // Left-align section headers
+  justify-content: flex-start !important;  // Flex alignment for left-align
 }
 
 // Group items - slightly indented
