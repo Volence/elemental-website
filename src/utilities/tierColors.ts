@@ -92,12 +92,12 @@ export function getTierFromRating(rating: string | number | null | undefined): T
 
   const ratingStr = String(rating).toLowerCase().trim()
 
-  // Handle FACEIT tiers (case-insensitive)
-  if (ratingStr.includes('masters')) return tierColors.masters
+  // Handle FACEIT tiers (case-insensitive) - also handle variations
+  if (ratingStr.includes('master')) return tierColors.masters
   if (ratingStr.includes('expert')) return tierColors.expert
-  if (ratingStr.includes('advanced')) return tierColors.advanced
+  if (ratingStr.includes('advanced') || ratingStr.includes('adv')) return tierColors.advanced
 
-  // Handle numeric ratings (e.g., "4.2k", "3500", "3.5k")
+  // Handle numeric ratings (e.g., "4.2k", "3500", "3.5k", "3.4K")
   // Remove 'k' and any non-numeric characters except decimal point
   const cleanedRating = ratingStr.replace(/[^\d.]/g, '')
   const numericRating = parseFloat(cleanedRating)

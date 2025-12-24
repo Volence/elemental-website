@@ -32,10 +32,8 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, size = 'medium', showH
         href={`/teams/${team.slug}`}
         className="flex flex-col items-center h-full"
       >
-        <div className={`${cardPadding} ${tierColors.borderLeft} rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 hover:border-primary/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-primary/20 w-full relative overflow-hidden`}>
-          {/* Tier background overlay - very subtle */}
-          <div className={`absolute inset-0 bg-gradient-to-br ${tierColors.gradient} opacity-[0.03] pointer-events-none`}></div>
-          <div className={`relative ${logoSize} mb-4 flex items-center justify-center mx-auto rounded-xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm ring-2 ring-white/20 shadow-[0_0_20px_rgba(255,255,255,0.08)] group-hover:shadow-[0_0_30px_rgba(255,255,255,0.15)] group-hover:ring-primary/30 transition-all duration-300`}>
+        <div className={`${cardPadding} ${tierColors.borderLeft} rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 hover:border-primary/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-primary/20 w-full relative`}>
+          <div className={`${logoSize} mb-4 flex items-center justify-center mx-auto rounded-xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm ring-2 ring-white/20 shadow-[0_0_20px_rgba(255,255,255,0.08)] group-hover:shadow-[0_0_30px_rgba(255,255,255,0.15)] group-hover:ring-primary/30 transition-all duration-300`}>
             <TeamLogo
               src={team.logo}
               alt={`${team.name} Logo`}

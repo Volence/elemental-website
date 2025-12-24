@@ -419,10 +419,8 @@ export function MatchCard({ match, showCountdown = true }: MatchCardProps) {
   return (
     <div
       key={match.id}
-      className={`p-8 ${tierColors.borderLeft} rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-lg hover:shadow-xl hover:border-primary/30 transition-all relative overflow-hidden`}
+      className={`p-8 ${tierColors.borderLeft} rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-lg hover:shadow-xl hover:border-primary/30 transition-all relative`}
     >
-      {/* Tier background overlay - very subtle */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${tierColors.gradient} opacity-[0.02] pointer-events-none`}></div>
       <div className="relative z-10">
       {/* Header with Team Logos and Status */}
       <div className="flex items-center justify-between gap-6 mb-6">
