@@ -61,7 +61,14 @@ export function TeamStaffSection({
       <div className="space-y-6">
         {managers && managers.length > 0 && (
           <div className="space-y-3">
-            <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-2">
+            <div 
+              className="text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg border inline-block"
+              style={{
+                backgroundColor: '#a855f715',
+                color: '#a855f7',
+                borderColor: '#a855f750'
+              }}
+            >
               Manager
             </div>
             <div className="grid gap-3">
@@ -74,7 +81,14 @@ export function TeamStaffSection({
 
         {coaches && coaches.length > 0 && (
           <div className="space-y-3">
-            <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-2">
+            <div 
+              className="text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg border inline-block"
+              style={{
+                backgroundColor: '#22c55e15',
+                color: '#22c55e',
+                borderColor: '#22c55e50'
+              }}
+            >
               Coach{coaches.length > 1 ? 'es' : ''}
             </div>
             <div className="grid gap-3">
@@ -87,7 +101,14 @@ export function TeamStaffSection({
 
         {captains && captains.length > 0 && (
           <div className="space-y-3">
-            <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-2">
+            <div 
+              className="text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg border inline-block"
+              style={{
+                backgroundColor: '#eab30815',
+                color: '#eab308',
+                borderColor: '#eab30850'
+              }}
+            >
               Captain
             </div>
             <div className="grid gap-3">
@@ -100,7 +121,14 @@ export function TeamStaffSection({
 
         {coCaptain && (
           <div className="space-y-3">
-            <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-2">
+            <div 
+              className="text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg border inline-block"
+              style={{
+                backgroundColor: '#eab30815',
+                color: '#eab308',
+                borderColor: '#eab30850'
+              }}
+            >
               Co-Captain
             </div>
             <Link
