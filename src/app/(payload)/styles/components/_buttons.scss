@@ -10,19 +10,25 @@
 // ============================================
 
 button,
-.btn {
-  // Base styling - all buttons
-  font-weight: $font-weight-medium;      // 500
-  font-size: $font-size-base;            // 0.9375rem / 15px
-  letter-spacing: $letter-spacing-wide;  // 0.025em
-  border-radius: $radius-sm;             // 4px
+.btn,
+button[type="button"],
+input[type="button"],
+input[type="submit"] {
+  // Base styling - all buttons (using !important to override PayloadCMS defaults)
+  font-weight: $font-weight-medium !important;      // 500
+  font-size: $font-size-base !important;            // 0.9375rem / 15px
+  letter-spacing: $letter-spacing-wide !important;  // 0.025em
+  border-radius: $radius-md !important;             // 6px
   border: $border-thin solid transparent;
-  padding: $padding-sm $padding-md;      // 0.75rem 1rem (default size)
+  padding: $padding-sm $padding-lg !important;      // 0.75rem 1.5rem (better proportions)
+  min-height: 40px !important;                      // Ensure adequate height
   cursor: pointer;
-  transition: $transition-all-normal;    // all 0.2s ease-out
-  display: inline-flex;
-  align-items: center;
-  gap: $gap-xs;                          // 0.5rem
+  transition: $transition-all-normal;               // all 0.2s ease-out
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: $gap-xs !important;                          // 0.5rem
+  white-space: nowrap;
   
   &:disabled {
     opacity: 0.5;
@@ -47,23 +53,48 @@ button,
 
 .btn--sm,
 button.btn--sm {
-  padding: $padding-xs $padding-sm;      // 0.5rem 0.75rem
-  font-size: $font-size-sm;              // 0.875rem / 14px
-  border-radius: $radius-sm;             // 4px
+  padding: $padding-xs $padding-md !important;      // 0.5rem 1rem
+  font-size: $font-size-sm !important;              // 0.875rem / 14px
+  border-radius: $radius-md !important;             // 6px
+  min-height: 36px !important;
 }
 
 .btn--md,
 button.btn--md {
-  padding: $padding-sm $padding-md;      // 0.75rem 1rem (default)
-  font-size: $font-size-base;            // 0.9375rem / 15px
-  border-radius: $radius-sm;             // 4px
+  padding: $padding-sm $padding-lg !important;      // 0.75rem 1.5rem (default)
+  font-size: $font-size-base !important;            // 0.9375rem / 15px
+  border-radius: $radius-md !important;             // 6px
+  min-height: 40px !important;
 }
 
 .btn--lg,
 button.btn--lg {
-  padding: $padding-md $padding-lg;      // 1rem 1.5rem
-  font-size: $font-size-md;              // 1rem / 16px
-  border-radius: $radius-md;             // 6px
+  padding: $padding-md $padding-xl !important;      // 1rem 2rem
+  font-size: $font-size-md !important;              // 1rem / 16px
+  border-radius: $radius-md !important;             // 6px
+  min-height: 48px !important;
+}
+
+// ============================================
+// ICON-ONLY BUTTONS (Field controls, etc.)
+// ============================================
+
+// Small icon buttons next to form fields (X, dropdown, +, etc.)
+button[class*="remove"],
+button[class*="clear"],
+button[class*="toggle"],
+button[class*="expand"],
+button[aria-label],
+.field-type button:not([type="submit"]):not([class*="create"]):not([class*="save"]) {
+  padding: $padding-xs !important;                   // 0.5rem (square icon buttons)
+  min-width: 32px !important;
+  min-height: 32px !important;
+  border-radius: $radius-sm !important;              // 4px
+  
+  svg {
+    width: $icon-md !important;                      // 16px
+    height: $icon-md !important;                     // 16px
+  }
 }
 
 // ============================================
@@ -186,6 +217,21 @@ button.btn--ghost {
 }
 
 // ============================================
+// TAB BUTTONS (Edit, API, etc.)
+// ============================================
+
+// Header tab buttons
+.doc-header button,
+[class*="doc-header"] button,
+.doc-tabs button,
+[class*="tabs"] button {
+  padding: $padding-sm $padding-lg !important;       // 0.75rem 1.5rem
+  font-size: $font-size-base !important;             // 0.9375rem
+  min-height: 40px !important;
+  border-radius: $radius-md $radius-md 0 0 !important; // Rounded top only
+}
+
+// ============================================
 // CLOSE BUTTONS (Drawers/Modals)
 // ============================================
 
@@ -215,6 +261,22 @@ button[aria-label="Close"]:not(.nav__mobile-close) {
     background: rgba($admin-accent-error, 0.2);
     transform: scale(0.95);
   }
+}
+
+// ============================================
+// ACTION BUTTONS (Save, etc. in doc headers)
+// ============================================
+
+// Top-right action buttons (Save, More actions, etc.)
+.doc-controls button,
+[class*="doc-controls"] button,
+.form-submit button,
+[class*="form-submit"] button {
+  padding: $padding-sm $padding-xl !important;       // 0.75rem 2rem
+  font-size: $font-size-base !important;             // 0.9375rem
+  font-weight: $font-weight-semibold !important;     // 600
+  min-height: 44px !important;                       // Slightly taller for prominence
+  border-radius: $radius-md !important;              // 6px
 }
 
 // ============================================
