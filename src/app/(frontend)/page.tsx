@@ -9,6 +9,7 @@ import { TeamLogo } from '@/components/TeamLogo'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { Calendar, TrendingUp, UserPlus } from 'lucide-react'
+import { getTierFromRating } from '@/utilities/tierColors'
 
 export const dynamic = 'force-dynamic' // Always render dynamically to fetch fresh data
 
@@ -131,6 +132,9 @@ export default async function HomePage() {
                 const isToday = daysUntil === 0
                 const isSoon = daysUntil <= 3
                 
+                // Get tier colors for the league badge
+                const tierColors = match.league ? getTierFromRating(match.league) : null
+                
                 return (
                   <Link
                     key={match.id}
@@ -164,8 +168,15 @@ export default async function HomePage() {
                                 year: 'numeric'
                               })}
                             </div>
-                            {match.league && (
-                              <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-xs font-semibold">
+                            {match.league && tierColors && (
+                              <span 
+                                className="px-2 py-0.5 rounded text-xs font-semibold border"
+                                style={{
+                                  backgroundColor: `${tierColors.borderColor}15`,
+                                  color: tierColors.borderColor,
+                                  borderColor: `${tierColors.borderColor}50`
+                                }}
+                              >
                                 {match.league}
                               </span>
                             )}
