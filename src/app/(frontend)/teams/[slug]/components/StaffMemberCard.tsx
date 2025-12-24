@@ -11,6 +11,7 @@ interface StaffMemberCardProps {
   twitch?: string
   youtube?: string
   instagram?: string
+  role?: 'manager' | 'coach' | 'captain'
 }
 
 export function StaffMemberCard({
@@ -20,10 +21,32 @@ export function StaffMemberCard({
   twitch,
   youtube,
   instagram,
+  role = 'captain',
 }: StaffMemberCardProps) {
+  // Get role colors
+  const getRoleColor = () => {
+    switch (role) {
+      case 'manager':
+        return { bg: '#a855f715', color: '#a855f7', ring: '#a855f750' }
+      case 'coach':
+        return { bg: '#22c55e15', color: '#22c55e', ring: '#22c55e50' }
+      case 'captain':
+      default:
+        return { bg: '#eab30815', color: '#eab308', ring: '#eab30850' }
+    }
+  }
+  
+  const roleColor = getRoleColor()
+  
   return (
     <div className="group flex items-center gap-4 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-background to-background/50 hover:border-primary/50 hover:shadow-lg transition-all">
-      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center ring-2 ring-primary/20 group-hover:ring-primary/50 transition-all overflow-hidden">
+      <div 
+        className="w-12 h-12 rounded-full flex items-center justify-center ring-2 transition-all overflow-hidden"
+        style={{
+          backgroundColor: roleColor.bg,
+          borderColor: roleColor.ring,
+        }}
+      >
         {photoUrl ? (
           <Image
             src={photoUrl}
@@ -33,7 +56,7 @@ export function StaffMemberCard({
             className="w-full h-full object-cover"
           />
         ) : (
-          <span className="text-lg font-bold text-primary">{name.charAt(0)}</span>
+          <span className="text-lg font-bold" style={{ color: roleColor.color }}>{name.charAt(0)}</span>
         )}
       </div>
       <Link 

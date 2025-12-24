@@ -73,7 +73,7 @@ export function TeamStaffSection({
             </div>
             <div className="grid gap-3">
               {managers.map((manager, i) => (
-                <StaffMemberCard key={i} {...manager} />
+                <StaffMemberCard key={i} {...manager} role="manager" />
               ))}
             </div>
           </div>
@@ -93,7 +93,7 @@ export function TeamStaffSection({
             </div>
             <div className="grid gap-3">
               {coaches.map((coach, i) => (
-                <StaffMemberCard key={i} {...coach} />
+                <StaffMemberCard key={i} {...coach} role="coach" />
               ))}
             </div>
           </div>
@@ -113,7 +113,7 @@ export function TeamStaffSection({
             </div>
             <div className="grid gap-3">
               {captains.map((captain, i) => (
-                <StaffMemberCard key={i} {...captain} />
+                <StaffMemberCard key={i} {...captain} role="captain" />
               ))}
             </div>
           </div>
@@ -135,7 +135,14 @@ export function TeamStaffSection({
               href={`/players/${coCaptain.toLowerCase().replace(/\s+/g, '-')}`}
               className="group flex items-center gap-4 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-background to-background/50 hover:border-primary/50 hover:shadow-lg transition-all"
             >
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center ring-2 ring-primary/20 group-hover:ring-primary/50 transition-all text-lg font-bold text-primary">
+              <div 
+                className="w-12 h-12 rounded-full flex items-center justify-center ring-2 transition-all text-lg font-bold"
+                style={{
+                  backgroundColor: '#eab30815',
+                  color: '#eab308',
+                  borderColor: '#eab30850'
+                }}
+              >
                 {coCaptain.charAt(0)}
               </div>
               <span className="flex-1 font-bold group-hover:text-primary transition-colors">
