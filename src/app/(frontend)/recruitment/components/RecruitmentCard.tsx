@@ -5,10 +5,13 @@ import type { RecruitmentListing } from '@/payload-types'
 import { ApplicationModal } from './ApplicationModal'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
+import { getTierFromRating, getRoleColors as getTierRoleColors } from '@/utilities/tierColors'
 
 interface TeamInfo {
   name: string
   logo?: string | null
+  rating?: string | null
+  region?: string | null
 }
 
 interface RecruitmentCardProps {
@@ -66,10 +69,14 @@ export const RecruitmentCard: React.FC<RecruitmentCardProps> = ({ listing, team 
   const roleLabel = listing.role ? roleLabels[listing.role] || listing.role : 'Unknown'
   const roleColor = listing.role ? roleColors[listing.role] || roleColors.tank : roleColors.tank
   const isOrgPosition = listing.category === 'org-staff'
+  
+  // Get tier colors for team positions
+  const tierColors = team?.rating ? getTierFromRating(team.rating) : null
+  const borderClass = tierColors ? tierColors.borderLeft : ''
 
   return (
     <>
-      <div className="group relative overflow-hidden rounded-lg border border-gray-700 bg-gray-800 p-6 transition-all hover:border-gray-600 hover:bg-gray-750">
+      <div className={`group relative overflow-hidden rounded-lg border border-gray-700 bg-gray-800 p-6 transition-all hover:border-gray-600 hover:bg-gray-750 ${borderClass}`}>
         {/* Role Badge */}
         <div className="mb-4 flex items-center gap-2">
           <span

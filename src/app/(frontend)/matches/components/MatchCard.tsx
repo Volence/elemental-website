@@ -19,6 +19,7 @@ import {
 } from '@/utilities/personHelpers'
 import { getMatchStatus } from '@/utilities/getMatchStatus'
 import { formatDate, convertToEST, convertToCET } from '@/utilities/formatDateTime'
+import { getTierFromRating } from '@/utilities/tierColors'
 
 interface MatchCardProps {
   match: any // TODO: Type this properly with Match type
@@ -52,6 +53,9 @@ export function MatchCard({ match, showCountdown = true }: MatchCardProps) {
     match.date as string,
     (match.status as 'scheduled' | 'cancelled') || 'scheduled',
   )
+
+  // Get tier colors based on league or team rating
+  const tierColors = getTierFromRating(match.league || team?.rating)
 
   // Parse match title to make ELMT team name clickable
   const renderMatchTitle = () => {
@@ -415,8 +419,11 @@ export function MatchCard({ match, showCountdown = true }: MatchCardProps) {
   return (
     <div
       key={match.id}
-      className="p-8 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-lg hover:shadow-xl hover:border-primary/30 transition-all"
+      className={`p-8 ${tierColors.borderLeft} rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-lg hover:shadow-xl hover:border-primary/30 transition-all relative overflow-hidden`}
     >
+      {/* Tier background overlay - very subtle */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${tierColors.gradient} opacity-[0.02] pointer-events-none`}></div>
+      <div className="relative z-10">
       {/* Header with Team Logos and Status */}
       <div className="flex items-center justify-between gap-6 mb-6">
         {/* ELMT Team Logo */}
@@ -438,7 +445,7 @@ export function MatchCard({ match, showCountdown = true }: MatchCardProps) {
         <div className="flex items-center gap-3 flex-shrink-0">
           {/* League Badge */}
           {match.league && (
-            <span className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20 text-xs font-bold uppercase tracking-wider flex items-center gap-1">
+            <span className={`px-3 py-1.5 rounded-lg ${tierColors.bg} ${tierColors.text} ${tierColors.border} border text-xs font-bold uppercase tracking-wider flex items-center gap-1`}>
               <Trophy className="w-3 h-3" />
               {match.league}
             </span>
@@ -576,6 +583,7 @@ export function MatchCard({ match, showCountdown = true }: MatchCardProps) {
               )}
             </div>
           )}
+      </div>
       </div>
     </div>
   )

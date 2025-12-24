@@ -1,17 +1,18 @@
+import { getRoleColors } from '@/utilities/tierColors'
+
 /**
  * Get CSS classes for player role colors
+ * Uses centralized role colors from tierColors utility
  */
 export function getRoleColor(role: string): string {
-  switch (role) {
-    case 'tank':
-      return 'from-blue-500/20 to-blue-500/5 ring-blue-500/30 group-hover:ring-blue-500/60'
-    case 'dps':
-      return 'from-red-500/20 to-red-500/5 ring-red-500/30 group-hover:ring-red-500/60'
-    case 'support':
-      return 'from-green-500/20 to-green-500/5 ring-green-500/30 group-hover:ring-green-500/60'
-    default:
-      return 'from-primary/20 to-primary/5 ring-primary/30 group-hover:ring-primary/60'
-  }
+  const colors = getRoleColors(role)
+  
+  // Extract the color name from the gradient (e.g., "from-blue-500 to-cyan-500" -> "blue")
+  const colorMatch = colors.gradient.match(/from-(\w+)-/)
+  const colorName = colorMatch ? colorMatch[1] : 'primary'
+  
+  // Build gradient ring classes compatible with PlayerCard
+  return `from-${colorName}-500/20 to-${colorName}-500/5 ring-${colorName}-500/30 group-hover:ring-${colorName}-500/60`
 }
 
 /**

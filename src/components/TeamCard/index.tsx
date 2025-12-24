@@ -6,6 +6,7 @@ import { TeamLogo } from '@/components/TeamLogo'
 import type { Team } from '@/utilities/getTeams'
 import { Lock, Users, UserCheck } from 'lucide-react'
 import { getGameRoleIcon } from '@/utilities/roleIcons'
+import { getTierFromRating } from '@/utilities/tierColors'
 
 interface TeamCardProps {
   team: Team
@@ -22,13 +23,18 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, size = 'medium', showH
   const dpsCount = team.roster?.filter(p => p.role === 'dps').length || 0
   const supportCount = team.roster?.filter(p => p.role === 'support').length || 0
 
+  // Get tier colors based on team rating
+  const tierColors = getTierFromRating(team.rating)
+
   return (
     <div className="relative group h-full overflow-visible">
       <Link
         href={`/teams/${team.slug}`}
         className="flex flex-col items-center h-full"
       >
-        <div className={`${cardPadding} rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 hover:border-primary/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-primary/20 w-full relative`}>
+        <div className={`${cardPadding} ${tierColors.borderLeft} rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 hover:border-primary/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-primary/20 w-full relative overflow-hidden`}>
+          {/* Tier background overlay - very subtle */}
+          <div className={`absolute inset-0 bg-gradient-to-br ${tierColors.gradient} opacity-[0.03] pointer-events-none`}></div>
           <div className={`relative ${logoSize} mb-4 flex items-center justify-center mx-auto rounded-xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm ring-2 ring-white/20 shadow-[0_0_20px_rgba(255,255,255,0.08)] group-hover:shadow-[0_0_30px_rgba(255,255,255,0.15)] group-hover:ring-primary/30 transition-all duration-300`}>
             <TeamLogo
               src={team.logo}
@@ -59,7 +65,11 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, size = 'medium', showH
             <h4 className="font-bold text-lg mb-1">{team.name}</h4>
             <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
               {team.region && <span>[{team.region}]</span>}
-              {team.rating && <span>[{team.rating}]</span>}
+              {team.rating && (
+                <span className={`${tierColors.bg} ${tierColors.text} ${tierColors.border} border px-2 py-0.5 rounded font-semibold`}>
+                  {team.rating}
+                </span>
+              )}
             </div>
           </div>
 
