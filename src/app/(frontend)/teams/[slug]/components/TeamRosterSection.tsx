@@ -40,7 +40,7 @@ export function TeamRosterSection({ roster, getRoleColor }: TeamRosterSectionPro
   return (
     <div className="p-6 rounded-xl border border-border bg-card shadow-sm">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-2 flex items-center gap-3">
+        <h2 className="text-2xl font-bold mb-2 flex items-center gap-4">
           <Users className="w-6 h-6 text-primary" />
           Roster
           <span className="text-sm font-normal text-muted-foreground">({roster.length})</span>

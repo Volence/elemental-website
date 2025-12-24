@@ -10,7 +10,7 @@ export function LiveBanner({ liveCount }: LiveBannerProps) {
   return (
     <div className="mb-8 p-6 rounded-xl bg-gradient-to-r from-red-500/20 via-red-500/10 to-red-500/20 border-2 border-red-500/50 animate-pulse-glow">
       <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <div className="relative">
             <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
             <div className="absolute inset-0 w-3 h-3 bg-red-500 rounded-full animate-ping" />

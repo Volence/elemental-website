@@ -110,7 +110,7 @@ export function TeamHero({
                   {achievements.slice(0, 3).map((achievement, i) => (
                     <div
                       key={i}
-                      className="flex items-start gap-3 text-base font-medium bg-card/30 backdrop-blur-sm px-4 py-2.5 rounded-lg border border-white/5 hover:bg-card/50 transition-colors"
+                      className="flex items-start gap-4 text-base font-medium bg-card/30 backdrop-blur-sm px-4 py-2.5 rounded-lg border border-white/5 hover:bg-card/50 transition-colors"
                     >
                       <span className="text-xl flex-shrink-0">🏆</span>
                       <span className="leading-relaxed">{achievement}</span>

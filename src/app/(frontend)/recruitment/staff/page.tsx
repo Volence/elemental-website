@@ -166,7 +166,7 @@ export default async function StaffRecruitmentPage() {
             ({ categoryName, listings: categoryListings }) =>
               categoryListings.length > 0 && (
                 <div key={categoryName}>
-                  <h2 className="mb-6 flex items-center gap-3 text-2xl font-bold text-white">
+                  <h2 className="mb-6 flex items-center gap-4 text-2xl font-bold text-white">
                     {categoryName === 'Community & Events' && (
                       <Users className="h-6 w-6 text-primary-400" />
                     )}
@@ -206,7 +206,7 @@ export default async function StaffRecruitmentPage() {
 
                           <p className="mb-6 line-clamp-3 text-gray-300">{listing.requirements}</p>
 
-                          <div className="flex gap-3">
+                          <div className="flex gap-4">
                             <Link
                               href={`/recruitment/${listing.id}`}
                               className="flex-1 rounded-lg border border-gray-600 bg-gray-700 px-4 py-2 text-center font-semibold text-white transition-colors hover:bg-gray-600"

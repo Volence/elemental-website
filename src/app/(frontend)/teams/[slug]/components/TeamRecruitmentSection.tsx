@@ -57,7 +57,7 @@ export const TeamRecruitmentSection: React.FC<TeamRecruitmentSectionProps> = ({
       <div className="mb-6 rounded-lg border border-yellow-500/30 bg-gradient-to-r from-yellow-500/10 to-orange-500/5 p-4">
         <div className="flex items-center justify-between gap-4">
           {/* Left side - Icon and text */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-yellow-500/20 text-yellow-400">
               <UserPlus className="h-4 w-4" />
             </div>

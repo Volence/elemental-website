@@ -22,7 +22,7 @@ export function TeamStatsSidebar({
   return (
     <aside className="space-y-6">
       <div className="p-6 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-xl sticky top-24">
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-4 mb-6">
           <div className="p-2 rounded-lg bg-primary/10">
             <Users className="w-5 h-5 text-primary" />
           </div>

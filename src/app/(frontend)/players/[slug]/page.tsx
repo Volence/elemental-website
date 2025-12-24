@@ -210,7 +210,7 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
                 </p>
                 
                 {/* Quick Stats */}
-                <div className="flex flex-wrap justify-center md:justify-start gap-3">
+                <div className="flex flex-wrap justify-center md:justify-start gap-4">
                   {player.teams.length > 0 && (
                     <div className="px-4 py-2 rounded-lg bg-primary/10 border border-primary/20">
                       <span className="text-sm font-semibold text-primary">
@@ -275,13 +275,13 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
                         <Crown className="w-4 h-4" />
                         Organization Staff
                       </h3>
-                      <div className="grid sm:grid-cols-2 gap-3">
+                      <div className="grid sm:grid-cols-2 gap-4">
                         {player.staffRoles.organization.map((role) => {
                           const roleIcon = getOrgRoleIcon(role, 'md')
                           return (
                             <div 
                               key={role} 
-                              className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-br from-accent-gold/10 to-accent-gold/5 border border-accent-gold/20 hover:border-accent-gold/40 transition-all hover:scale-[1.02]"
+                              className="flex items-center gap-4 px-4 py-3 rounded-lg bg-gradient-to-br from-accent-gold/10 to-accent-gold/5 border border-accent-gold/20 hover:border-accent-gold/40 transition-all hover:scale-[1.02]"
                             >
                               <div className="w-8 h-8 rounded-lg bg-accent-gold/20 flex items-center justify-center flex-shrink-0">
                                 {roleIcon}
@@ -300,7 +300,7 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
                         <Video className="w-4 h-4" />
                         Production Staff
                       </h3>
-                      <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-br from-accent-blue/10 to-accent-blue/5 border border-accent-blue/20 hover:border-accent-blue/40 transition-all hover:scale-[1.02] w-fit">
+                      <div className="flex items-center gap-4 px-4 py-3 rounded-lg bg-gradient-to-br from-accent-blue/10 to-accent-blue/5 border border-accent-blue/20 hover:border-accent-blue/40 transition-all hover:scale-[1.02] w-fit">
                         <div className="w-8 h-8 rounded-lg bg-accent-blue/20 flex items-center justify-center flex-shrink-0">
                           {getProductionIcon(player.staffRoles.production)}
                         </div>

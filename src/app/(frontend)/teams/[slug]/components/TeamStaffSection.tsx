@@ -52,7 +52,7 @@ export function TeamStaffSection({
   return (
     <div className="p-6 rounded-xl border border-border bg-card shadow-sm">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-2 flex items-center gap-3">
+        <h2 className="text-2xl font-bold mb-2 flex items-center gap-4">
           <Shield className="w-6 h-6 text-primary" />
           Staff
         </h2>
@@ -71,7 +71,7 @@ export function TeamStaffSection({
             >
               Manager
             </div>
-            <div className="grid gap-3">
+            <div className="grid gap-4">
               {managers.map((manager, i) => (
                 <StaffMemberCard key={i} {...manager} role="manager" />
               ))}
@@ -91,7 +91,7 @@ export function TeamStaffSection({
             >
               Coach{coaches.length > 1 ? 'es' : ''}
             </div>
-            <div className="grid gap-3">
+            <div className="grid gap-4">
               {coaches.map((coach, i) => (
                 <StaffMemberCard key={i} {...coach} role="coach" />
               ))}
@@ -111,7 +111,7 @@ export function TeamStaffSection({
             >
               Captain
             </div>
-            <div className="grid gap-3">
+            <div className="grid gap-4">
               {captains.map((captain, i) => (
                 <StaffMemberCard key={i} {...captain} role="captain" />
               ))}

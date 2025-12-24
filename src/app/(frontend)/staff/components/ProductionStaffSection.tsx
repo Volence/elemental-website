@@ -62,7 +62,7 @@ export function ProductionStaffSection({
   return (
     <div className="p-6 rounded-2xl bg-gradient-to-br from-purple-500/5 via-blue-500/5 to-yellow-500/5">
       <div className="mb-6">
-        <h2 className="text-3xl md:text-4xl font-bold mb-2 tracking-tight flex items-center gap-3">
+        <h2 className="text-3xl md:text-4xl font-bold mb-2 tracking-tight flex items-center gap-4">
           <Users className="w-8 h-8" />
           Production Staff
         </h2>

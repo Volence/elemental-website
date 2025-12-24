@@ -452,7 +452,7 @@ export function MatchCard({ match, showCountdown = true }: MatchCardProps) {
           </div>
         )}
 
-        <div className="flex items-center gap-3 flex-shrink-0">
+        <div className="flex items-center gap-4 flex-shrink-0">
           {/* League Badge */}
           {match.league && (
             <span 
@@ -569,7 +569,7 @@ export function MatchCard({ match, showCountdown = true }: MatchCardProps) {
         {displayStatus === 'completed' &&
           match.score?.elmtScore !== undefined &&
           match.score?.opponentScore !== undefined && (
-            <div className="mt-4 inline-flex items-center gap-3 px-4 py-2 rounded-lg bg-muted/30 border border-border">
+            <div className="mt-4 inline-flex items-center gap-4 px-4 py-2 rounded-lg bg-muted/30 border border-border">
               <span
                 className={`text-2xl font-bold ${
                   match.score.elmtScore > match.score.opponentScore

@@ -122,7 +122,7 @@ export const RecruitmentCard: React.FC<RecruitmentCardProps> = ({ listing, team 
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-3">
+        <div className="flex gap-4">
           <Link
             href={`/recruitment/${listing.id}`}
             className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-gray-600 bg-gray-700 px-4 py-2 font-semibold text-white transition-colors hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-800"

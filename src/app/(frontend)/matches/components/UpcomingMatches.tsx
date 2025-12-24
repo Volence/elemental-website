@@ -55,7 +55,7 @@ export function UpcomingMatches({ matches, searchQuery }: UpcomingMatchesProps) 
             <p className="text-muted-foreground mb-6">
               Check back soon for the latest match schedule.
             </p>
-            <div className="flex items-center justify-center gap-3">
+            <div className="flex items-center justify-center gap-4">
               <Link
                 href="#past-matches"
                 className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity"

@@ -171,7 +171,7 @@ export default async function RecruitmentDetailPage({ params }: Props) {
 
       {/* Header */}
       <div className="mb-8">
-        <div className="mb-4 flex flex-wrap items-center gap-3">
+        <div className="mb-4 flex flex-wrap items-center gap-4">
           <span
             className={`inline-flex items-center rounded-full border px-4 py-1 text-sm font-semibold ${roleColor}`}
           >

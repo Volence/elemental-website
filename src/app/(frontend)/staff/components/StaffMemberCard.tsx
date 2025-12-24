@@ -35,7 +35,7 @@ export function StaffMemberCard({
     .slice(0, 2)
 
   return (
-    <div className="flex items-center gap-3 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-md hover:border-primary/50 hover:shadow-lg hover:scale-[1.02] transition-all duration-200 group">
+    <div className="flex items-center gap-4 p-4 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-md hover:border-primary/50 hover:shadow-lg hover:scale-[1.02] transition-all duration-200 group">
       <div
         className={`relative w-12 h-12 rounded-full bg-gradient-to-br ${avatarColors.from} ${avatarColors.to} flex items-center justify-center flex-shrink-0 ring-2 ${avatarColors.ring} group-hover:ring-primary/40 transition-all duration-200 overflow-hidden`}
       >

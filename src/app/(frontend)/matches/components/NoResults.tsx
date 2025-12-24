@@ -19,7 +19,7 @@ export function NoResults({ searchQuery }: NoResultsProps) {
         <p className="text-sm text-muted-foreground mb-6">
           Try searching for a team name, opponent, region, or league
         </p>
-        <div className="flex items-center justify-center gap-3">
+        <div className="flex items-center justify-center gap-4">
           <Link
             href="/matches"
             className="px-4 py-2 rounded-lg bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity"

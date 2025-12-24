@@ -66,7 +66,7 @@ export default async function RecruitmentPage() {
         <div className="mb-8 flex justify-center">
           <Link
             href="/recruitment/staff"
-            className="group flex items-center gap-3 rounded-lg border border-primary-500/30 bg-primary-500/10 px-6 py-4 transition-all hover:border-primary-500/50 hover:bg-primary-500/20"
+            className="group flex items-center gap-4 rounded-lg border border-primary-500/30 bg-primary-500/10 px-6 py-4 transition-all hover:border-primary-500/50 hover:bg-primary-500/20"
           >
             <Building2 className="h-6 w-6 text-primary-400" />
             <div className="text-left">

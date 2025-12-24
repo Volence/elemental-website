@@ -23,7 +23,7 @@ export function TeamSubstitutesSection({ subs }: TeamSubstitutesSectionProps) {
   return (
     <div className="p-6 rounded-xl border border-border bg-card shadow-sm">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-2 flex items-center gap-3">
+        <h2 className="text-2xl font-bold mb-2 flex items-center gap-4">
           <Lock className="w-6 h-6 text-orange-500" />
           Substitutes
         </h2>

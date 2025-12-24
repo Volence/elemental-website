@@ -96,7 +96,7 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({ listing, tea
 
         {/* Header */}
         <div className="mb-6">
-          <div className="mb-4 flex items-center gap-3">
+          <div className="mb-4 flex items-center gap-4">
             {team?.logo && (
               <img
                 src={team.logo}
