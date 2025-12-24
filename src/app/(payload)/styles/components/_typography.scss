@@ -236,7 +236,7 @@ tbody td {
   align-items: center;
   justify-content: space-between;
   gap: $spacing-lg;
-  margin-bottom: 0;
+  margin-bottom: $spacing-xl !important;  // 2rem / 32px - Consistent spacing to search bar
 }
 
 // CREATE NEW buttons positioning and styling
