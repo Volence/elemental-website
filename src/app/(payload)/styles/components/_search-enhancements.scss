@@ -11,6 +11,8 @@
   }
   
   .search-filter,
+  .search-filter__input,
+  input#search-filter-input,
   input[type="search"],
   input[placeholder*="Search"] {
     position: relative;
