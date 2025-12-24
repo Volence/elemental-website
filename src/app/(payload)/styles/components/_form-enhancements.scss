@@ -1,0 +1,344 @@
+/* ============================================
+ * Form Visual Hierarchy Enhancements
+ * Tabs, fields, help text improvements
+ * ============================================ */
+
+/* ============================================
+ * Tab Navigation Enhancements
+ * ============================================ */
+
+.tabs-list,
+.render-fields__tabs {
+  border-bottom: 2px solid var(--theme-elevation-250);
+  margin-bottom: 2rem;
+
+  button {
+    position: relative;
+    padding: 1rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+
+    /* Active tab */
+    &[aria-selected="true"],
+    &.active {
+      color: #ec4899;
+      border-bottom-color: transparent;
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #ec4899, #a855f7);
+        border-radius: 2px 2px 0 0;
+      }
+    }
+
+    /* Hover state */
+    &:hover:not([aria-selected="true"]) {
+      color: var(--theme-text);
+      background-color: var(--theme-elevation-100);
+    }
+
+    /* Error indicator */
+    &[data-has-error="true"]::before {
+      content: '';
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      width: 8px;
+      height: 8px;
+      background-color: #ef4444;
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+    }
+
+    /* Item count badge */
+    .tab-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 0.4rem;
+      margin-left: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background-color: var(--theme-elevation-200);
+      color: var(--theme-text-600);
+      border-radius: 10px;
+      transition: all 0.2s ease;
+    }
+
+    &[aria-selected="true"] .tab-badge {
+      background: linear-gradient(135deg, #ec4899, #a855f7);
+      color: white;
+    }
+  }
+}
+
+/* ============================================
+ * Field Enhancements
+ * ============================================ */
+
+.field-type {
+  margin-bottom: 1.5rem;
+
+  /* Field label */
+  label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--theme-text);
+
+    /* Required indicator */
+    &[data-required="true"]::after,
+    &.required::after {
+      content: '*';
+      color: #ec4899;
+      font-weight: 700;
+      margin-left: 0.25rem;
+    }
+  }
+
+  /* Input fields */
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  input[type="url"],
+  textarea,
+  select {
+    transition: all 0.2s ease;
+    border: 2px solid var(--theme-elevation-300);
+
+    /* Focus state with gradient */
+    &:focus {
+      border-color: transparent;
+      box-shadow: 
+        0 0 0 2px rgba(236, 72, 153, 0.3),
+        0 0 20px rgba(236, 72, 153, 0.1);
+      outline: none;
+    }
+
+    /* Error state */
+    &[aria-invalid="true"],
+    &.error {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.2);
+
+      &:focus {
+        box-shadow: 
+          0 0 0 2px rgba(239, 68, 68, 0.3),
+          0 0 20px rgba(239, 68, 68, 0.1);
+      }
+    }
+
+    /* Success state */
+    &[data-valid="true"],
+    &.success {
+      border-color: #22c55e;
+      box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.2);
+    }
+  }
+
+  /* Help text */
+  .field-description,
+  .help-text,
+  [class*="description"] {
+    font-size: 0.8125rem;
+    color: var(--theme-text-500);
+    margin-top: 0.5rem;
+    line-height: 1.5;
+    font-weight: 400;
+  }
+
+  /* Error message */
+  .error-message,
+  [class*="error-message"] {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background-color: rgba(239, 68, 68, 0.1);
+    border-left: 3px solid #ef4444;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    color: #ef4444;
+    font-weight: 500;
+
+    &::before {
+      content: '⚠';
+      font-size: 1rem;
+    }
+  }
+
+  /* Success message */
+  .success-message {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background-color: rgba(34, 197, 94, 0.1);
+    border-left: 3px solid #22c55e;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    color: #22c55e;
+    font-weight: 500;
+
+    &::before {
+      content: '✓';
+      font-size: 1rem;
+    }
+  }
+}
+
+/* ============================================
+ * Field Grouping
+ * ============================================ */
+
+.field-group {
+  padding: 1.5rem;
+  background-color: var(--theme-elevation-50);
+  border: 1px solid var(--theme-elevation-200);
+  border-radius: 8px;
+  margin-bottom: 2rem;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--theme-elevation-250);
+
+    h3 {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--theme-text);
+      margin: 0;
+    }
+
+    .icon {
+      width: 24px;
+      height: 24px;
+      color: #ec4899;
+    }
+  }
+}
+
+/* ============================================
+ * Relationship Fields
+ * ============================================ */
+
+.relationship-field {
+  .relationship-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background-color: var(--theme-elevation-100);
+    border: 1px solid var(--theme-elevation-250);
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: rgba(236, 72, 153, 0.3);
+      background-color: var(--theme-elevation-150);
+      transform: translateX(2px);
+    }
+
+    &__avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--theme-elevation-200);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: var(--theme-text-600);
+    }
+
+    &__name {
+      flex: 1;
+      font-weight: 500;
+      color: var(--theme-text);
+    }
+
+    &__remove {
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    &:hover &__remove {
+      opacity: 1;
+    }
+  }
+
+  .add-relationship {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(168, 85, 247, 0.1));
+    border: 1px dashed rgba(236, 72, 153, 0.3);
+    border-radius: 6px;
+    color: #ec4899;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(168, 85, 247, 0.15));
+      border-color: rgba(236, 72, 153, 0.5);
+      transform: translateY(-1px);
+    }
+  }
+}
+
+/* ============================================
+ * Color Picker Enhancement
+ * ============================================ */
+
+.color-picker {
+  .color-preview {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    border: 2px solid var(--theme-elevation-300);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  .eyedropper-button {
+    background: linear-gradient(135deg, #ec4899, #a855f7);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+    }
+  }
+}
+

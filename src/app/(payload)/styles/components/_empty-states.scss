@@ -1,0 +1,179 @@
+/* ============================================
+ * Empty State Components
+ * Better UX for empty collections
+ * ============================================ */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  min-height: 400px;
+
+  &__icon {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 1.5rem;
+    opacity: 0.4;
+    color: var(--theme-text-400);
+
+    /* Animated gradient background */
+    &--gradient {
+      background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(168, 85, 247, 0.2));
+      border-radius: 50%;
+      padding: 1.5rem;
+      opacity: 1;
+    }
+  }
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--theme-text);
+    margin-bottom: 0.75rem;
+  }
+
+  &__description {
+    font-size: 1rem;
+    color: var(--theme-text-500);
+    max-width: 500px;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  &__button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.5rem;
+    background: linear-gradient(135deg, #ec4899, #a855f7);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+
+    &:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 8px 24px rgba(236, 72, 153, 0.3);
+    }
+
+    &:active {
+      transform: translateY(0) scale(0.98);
+    }
+
+    &--secondary {
+      background: transparent;
+      border: 2px solid var(--theme-elevation-300);
+      color: var(--theme-text);
+
+      &:hover {
+        border-color: rgba(236, 72, 153, 0.3);
+        background: linear-gradient(135deg, rgba(236, 72, 153, 0.05), rgba(168, 85, 247, 0.05));
+      }
+    }
+  }
+
+  &__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    color: #ec4899;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: #a855f7;
+      transform: translateX(4px);
+    }
+  }
+
+  /* Specific empty states */
+  &--teams {
+    .empty-state__icon {
+      color: #ec4899;
+    }
+  }
+
+  &--people {
+    .empty-state__icon {
+      color: #3b82f6;
+    }
+  }
+
+  &--matches {
+    .empty-state__icon {
+      color: #8b5cf6;
+    }
+  }
+
+  &--recruitment {
+    .empty-state__icon {
+      color: #22c55e;
+    }
+  }
+}
+
+/* No results state (after search/filter) */
+.no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+
+  &__icon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+    color: var(--theme-text-400);
+  }
+
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--theme-text);
+    margin-bottom: 0.5rem;
+  }
+
+  &__description {
+    font-size: 0.875rem;
+    color: var(--theme-text-500);
+    margin-bottom: 1.5rem;
+  }
+
+  &__button {
+    padding: 0.625rem 1.25rem;
+    background-color: var(--theme-elevation-200);
+    border: 1px solid var(--theme-elevation-300);
+    border-radius: 6px;
+    color: var(--theme-text);
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: var(--theme-elevation-300);
+      transform: translateY(-1px);
+    }
+  }
+}
+

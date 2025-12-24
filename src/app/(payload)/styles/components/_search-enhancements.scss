@@ -1,0 +1,111 @@
+/* ============================================
+ * Search Bar Enhancements
+ * Make search more prominent and user-friendly
+ * ============================================ */
+
+.search-filter-container,
+.list-controls__wrap {
+  .search-filter,
+  input[type="search"],
+  input[placeholder*="Search"] {
+    position: relative;
+    padding: 0.875rem 1rem 0.875rem 3rem;
+    font-size: 1rem;
+    border: 2px solid var(--theme-elevation-300);
+    border-radius: 8px;
+    background-color: var(--theme-elevation-100);
+    color: var(--theme-text);
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    /* Gradient border on focus */
+    &:focus {
+      border-color: transparent;
+      background-color: var(--theme-elevation-50);
+      box-shadow: 
+        0 0 0 2px rgba(236, 72, 153, 0.3),
+        0 0 20px rgba(236, 72, 153, 0.1),
+        0 4px 12px rgba(0, 0, 0, 0.1);
+      outline: none;
+    }
+
+    /* Placeholder styling */
+    &::placeholder {
+      color: var(--theme-text-500);
+      font-weight: 400;
+    }
+  }
+
+  /* Search icon */
+  .search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    color: var(--theme-text-500);
+    pointer-events: none;
+    transition: color 0.2s ease;
+  }
+
+  /* When input is focused, color the icon */
+  input:focus + .search-icon {
+    color: #ec4899;
+  }
+
+  /* Keyboard shortcut hint */
+  .search-shortcut {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 0.25rem 0.5rem;
+    background-color: var(--theme-elevation-200);
+    border: 1px solid var(--theme-elevation-300);
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--theme-text-500);
+    pointer-events: none;
+  }
+}
+
+/* Filter buttons enhancement */
+.list-controls__buttons {
+  display: flex;
+  gap: 0.75rem;
+
+  button {
+    padding: 0.875rem 1.25rem;
+    border: 2px solid var(--theme-elevation-300);
+    border-radius: 8px;
+    background-color: var(--theme-elevation-100);
+    color: var(--theme-text);
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &:hover {
+      border-color: rgba(236, 72, 153, 0.3);
+      background: linear-gradient(135deg, rgba(236, 72, 153, 0.05), rgba(168, 85, 247, 0.05));
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    &[data-active="true"],
+    &.active {
+      background: linear-gradient(135deg, #ec4899, #a855f7);
+      border-color: transparent;
+      color: white;
+
+      &:hover {
+        transform: translateY(-1px) scale(1.02);
+      }
+    }
+  }
+}
+
