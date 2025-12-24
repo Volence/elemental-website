@@ -236,18 +236,24 @@ input[placeholder*="search"] {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  color: rgba(255, 255, 255, 0.5) !important; // Muted gray by default
+  color: rgba(255, 255, 255, 0.4) !important; // Muted gray by default
   transition: all $transition-fast !important;
   border-radius: $radius-sm !important;
   
   &:hover {
-    color: #ef4444 !important; // Red on hover (Tailwind red-500)
-    background: rgba(239, 68, 68, 0.1) !important;
+    color: $admin-accent-primary !important; // Cyan theme color on hover
+    background: rgba($admin-accent-primary, 0.15) !important;
   }
   
   svg {
     width: 14px !important;
     height: 14px !important;
+  }
+  
+  // Hide the redundant "Remove" tooltip
+  [role="complementary"],
+  + [role="complementary"] {
+    display: none !important;
   }
 }
 
