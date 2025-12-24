@@ -419,9 +419,17 @@ export function MatchCard({ match, showCountdown = true }: MatchCardProps) {
   return (
     <div
       key={match.id}
-      className="p-8 border-t-2 border-r-2 border-b-2 border-border rounded-xl bg-gradient-to-br from-card to-card/50 shadow-lg hover:shadow-xl hover:border-primary/30 transition-all relative"
-      style={{ borderLeft: `4px solid ${tierColors.borderColor}` }}
+      className="p-8 border-t-2 border-r-2 border-b-2 border-border rounded-xl bg-gradient-to-br from-card to-card/50 shadow-lg hover:shadow-xl hover:border-primary/30 transition-all relative overflow-hidden"
+      style={{ 
+        borderLeft: `4px solid ${tierColors.borderColor}`,
+        boxShadow: `inset 4px 0 12px -8px ${tierColors.borderColor}, 0 10px 15px -3px rgba(0, 0, 0, 0.1)`
+      }}
     >
+      {/* Subtle tier color background */}
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-[0.03]"
+        style={{ backgroundColor: tierColors.borderColor }}
+      ></div>
       <div className="relative z-10">
       {/* Header with Team Logos and Status */}
       <div className="flex items-center justify-between gap-6 mb-6">
@@ -444,7 +452,14 @@ export function MatchCard({ match, showCountdown = true }: MatchCardProps) {
         <div className="flex items-center gap-3 flex-shrink-0">
           {/* League Badge */}
           {match.league && (
-            <span className={`px-3 py-1.5 rounded-lg ${tierColors.bg} ${tierColors.text} ${tierColors.border} border text-xs font-bold uppercase tracking-wider flex items-center gap-1`}>
+            <span 
+              className="px-3 py-1.5 rounded-lg border text-xs font-bold uppercase tracking-wider flex items-center gap-1"
+              style={{
+                backgroundColor: `${tierColors.borderColor}15`,
+                color: tierColors.borderColor,
+                borderColor: `${tierColors.borderColor}50`
+              }}
+            >
               <Trophy className="w-3 h-3" />
               {match.league}
             </span>

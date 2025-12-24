@@ -33,9 +33,18 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, size = 'medium', showH
         className="flex flex-col items-center h-full"
       >
         <div 
-          className={`${cardPadding} border-t-2 border-r-2 border-b-2 border-border rounded-xl bg-gradient-to-br from-card to-card/50 hover:border-primary/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-primary/20 w-full relative`}
-          style={{ borderLeft: `4px solid ${tierColors.borderColor}` }}
+          className={`${cardPadding} border-t-2 border-r-2 border-b-2 border-border rounded-xl bg-gradient-to-br from-card to-card/50 hover:border-primary/50 transition-all duration-300 hover:scale-105 hover:shadow-xl w-full relative overflow-hidden`}
+          style={{ 
+            borderLeft: `4px solid ${tierColors.borderColor}`,
+            boxShadow: `inset 4px 0 12px -8px ${tierColors.borderColor}, 0 10px 15px -3px rgba(0, 0, 0, 0.1)`
+          }}
         >
+          {/* Subtle tier color background */}
+          <div 
+            className="absolute inset-0 pointer-events-none opacity-[0.03]"
+            style={{ backgroundColor: tierColors.borderColor }}
+          ></div>
+          <div className="relative z-10">
           <div className={`${logoSize} mb-4 flex items-center justify-center mx-auto rounded-xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm ring-2 ring-white/20 shadow-[0_0_20px_rgba(255,255,255,0.08)] group-hover:shadow-[0_0_30px_rgba(255,255,255,0.15)] group-hover:ring-primary/30 transition-all duration-300`}>
             <TeamLogo
               src={team.logo}
@@ -49,6 +58,7 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, size = 'medium', showH
           <h3 className={`text-center font-bold ${size === 'small' ? 'text-xs' : 'text-sm'} group-hover:text-primary transition-colors duration-300`}>
             {team.name}
           </h3>
+          </div>
         </div>
       </Link>
 
@@ -67,7 +77,14 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, size = 'medium', showH
             <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
               {team.region && <span>[{team.region}]</span>}
               {team.rating && (
-                <span className={`${tierColors.bg} ${tierColors.text} ${tierColors.border} border px-2 py-0.5 rounded font-semibold`}>
+                <span 
+                  className="border px-2 py-0.5 rounded font-semibold"
+                  style={{
+                    backgroundColor: `${tierColors.borderColor}15`,
+                    color: tierColors.borderColor,
+                    borderColor: `${tierColors.borderColor}50`
+                  }}
+                >
                   {team.rating}
                 </span>
               )}

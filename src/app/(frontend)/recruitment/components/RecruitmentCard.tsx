@@ -77,8 +77,19 @@ export const RecruitmentCard: React.FC<RecruitmentCardProps> = ({ listing, team 
     <>
       <div 
         className="group relative overflow-hidden rounded-lg border-t border-r border-b border-gray-700 bg-gray-800 p-6 transition-all hover:border-gray-600 hover:bg-gray-750"
-        style={tierColors ? { borderLeft: `4px solid ${tierColors.borderColor}` } : {}}
+        style={tierColors ? { 
+          borderLeft: `4px solid ${tierColors.borderColor}`,
+          boxShadow: `inset 4px 0 12px -8px ${tierColors.borderColor}`
+        } : {}}
       >
+        {/* Subtle tier color background for team positions */}
+        {tierColors && (
+          <div 
+            className="absolute inset-0 pointer-events-none opacity-[0.03]"
+            style={{ backgroundColor: tierColors.borderColor }}
+          ></div>
+        )}
+        <div className="relative z-10">
         {/* Role Badge */}
         <div className="mb-4 flex items-center gap-2">
           <span
@@ -116,6 +127,7 @@ export const RecruitmentCard: React.FC<RecruitmentCardProps> = ({ listing, team 
           >
             Quick Apply
           </button>
+        </div>
         </div>
       </div>
 
