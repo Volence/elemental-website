@@ -330,3 +330,21 @@ button[aria-label="Close"]:not(.nav__mobile-close) {
   }
 }
 
+// ============================================
+// FINAL OVERRIDES - MAXIMUM SPECIFICITY
+// These must come LAST to override PayloadCMS defaults
+// ============================================
+
+// Array field add buttons - FINAL OVERRIDE
+// Must come after all other button rules to win specificity battle
+html body button.btn.array-field__add-row.btn--icon.btn--size-medium,
+html body button.btn.array-field__add-row.btn--icon,
+html body .field-type button.array-field__add-row {
+  padding: 10px 20px !important;                     // Use px for exact control
+  min-height: 40px !important;
+  height: 40px !important;
+  max-height: 40px !important;
+  font-size: 15px !important;
+  line-height: 1.2 !important;
+}
+
