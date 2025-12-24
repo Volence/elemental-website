@@ -122,10 +122,14 @@
 }
 
 /* Override pill button sizing for list controls (Columns/Filters) */
+/* Must use high specificity to override .pill--size-small */
+button.pill.pill--size-small.list-controls__toggle-columns,
+button.pill.pill--size-small.list-controls__toggle-where,
+button.pill.list-controls__toggle-columns,
+button.pill.list-controls__toggle-where,
 .list-controls__toggle-columns,
 .list-controls__toggle-filters,
-[class*="list-controls__toggle"],
-button[class*="pill"][aria-controls*="list-controls"] {
+[class*="list-controls__toggle"] {
   padding: 0.75rem 1.25rem !important;
   min-height: 44px !important;
   min-width: auto !important;
@@ -138,12 +142,14 @@ button[class*="pill"][aria-controls*="list-controls"] {
   align-items: center !important;
   gap: 0.5rem !important;
   white-space: nowrap !important;
+  line-height: 1.5 !important;
   
   .pill__label,
   span[class*="label"] {
     font-size: 0.9375rem !important;
     font-weight: 600 !important;
     letter-spacing: 0.025em !important;
+    line-height: 1.5 !important;
   }
   
   .pill__icon,
