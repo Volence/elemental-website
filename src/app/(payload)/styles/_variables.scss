@@ -31,28 +31,137 @@ $admin-text-secondary: rgba(255, 255, 255, 0.7);
 $admin-text-muted: rgba(255, 255, 255, 0.5);
 $admin-text-disabled: rgba(255, 255, 255, 0.3);
 
-// Spacing Scale
-$spacing-xs: 0.25rem;    // 4px
-$spacing-sm: 0.5rem;     // 8px
-$spacing-md: 0.75rem;    // 12px
-$spacing-lg: 1rem;       // 16px
-$spacing-xl: 1.5rem;     // 24px
-$spacing-2xl: 2rem;      // 32px
-$spacing-3xl: 3rem;      // 48px
+// ============================================
+// SPACING SCALE
+// ============================================
+$spacing-xs: 0.5rem;     // 8px
+$spacing-sm: 0.75rem;    // 12px
+$spacing-md: 1rem;       // 16px
+$spacing-lg: 1.5rem;     // 24px
+$spacing-xl: 2rem;       // 32px
+$spacing-2xl: 3rem;      // 48px
+$spacing-3xl: 4rem;      // 64px
+
+// Padding Scale (for components)
+$padding-xs: 0.5rem;     // 8px
+$padding-sm: 0.75rem;    // 12px
+$padding-md: 1rem;       // 16px
+$padding-lg: 1.5rem;     // 24px
+$padding-xl: 2rem;       // 32px
+
+// Gap Scale (for flex/grid)
+$gap-xs: 0.5rem;         // 8px
+$gap-sm: 0.75rem;        // 12px
+$gap-md: 1rem;           // 16px
+$gap-lg: 1.5rem;         // 24px
+$gap-xl: 2rem;           // 32px
+$gap-2xl: 3rem;          // 48px
+
+// ============================================
+// TYPOGRAPHY SCALE
+// ============================================
+
+// Font Sizes
+$font-size-xs: 0.75rem;      // 12px - Tiny text
+$font-size-sm: 0.8125rem;    // 13px - Small text
+$font-size-base: 0.9375rem;  // 15px - Body text
+$font-size-md: 1rem;         // 16px - Slightly larger body
+$font-size-lg: 1.125rem;     // 18px - Lead text
+$font-size-xl: 1.25rem;      // 20px - H3
+$font-size-2xl: 1.5rem;      // 24px - H2
+$font-size-3xl: 2rem;        // 32px - H1
+
+// Font Weights
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// Line Heights
+$line-height-tight: 1.25;    // Headings
+$line-height-normal: 1.5;    // Body text
+$line-height-relaxed: 1.7;   // Long-form content
+
+// Letter Spacing
+$letter-spacing-tight: -0.025em;
+$letter-spacing-normal: 0;
+$letter-spacing-wide: 0.025em;
+$letter-spacing-wider: 0.05em;
+
+// ============================================
+// BORDER SYSTEM
+// ============================================
+
+// Border Widths
+$border-thin: 1px;           // Default borders
+$border-medium: 2px;         // Emphasis borders
+$border-thick: 4px;          // Accent borders
 
 // Border Radius
-$radius-sm: 4px;
-$radius-md: 6px;
-$radius-lg: 8px;
-$radius-xl: 10px;
-$radius-pill: 12px;
+$radius-xs: 2px;             // Tiny elements
+$radius-sm: 4px;             // Buttons, small badges
+$radius-md: 6px;             // Inputs, standard badges
+$radius-lg: 8px;             // Cards, panels
+$radius-xl: 12px;            // Modals, large containers
+$radius-full: 9999px;        // Pills, avatars
 
-// Transitions
-$transition-fast: 0.15s ease;
-$transition-normal: 0.2s ease;
-$transition-slow: 0.3s ease;
+// ============================================
+// SHADOW ELEVATION SYSTEM
+// ============================================
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+$shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+$shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 
-// Z-index Scale
+// Colored Shadows (for hover/focus)
+$shadow-primary-sm: 0 0 15px rgba(99, 102, 241, 0.2);
+$shadow-primary-md: 0 0 20px rgba(99, 102, 241, 0.3);
+$shadow-primary-lg: 0 0 25px rgba(99, 102, 241, 0.4);
+
+// ============================================
+// TRANSITIONS & ANIMATIONS
+// ============================================
+
+// Transition Durations
+$transition-fast: 0.15s;     // Quick feedback
+$transition-normal: 0.2s;    // Standard transitions
+$transition-slow: 0.3s;      // Deliberate transitions
+$transition-slower: 0.5s;    // Dramatic transitions
+
+// Easing Functions
+$ease-out: cubic-bezier(0, 0, 0.2, 1);
+$ease-in: cubic-bezier(0.4, 0, 1, 1);
+$ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+// Common Transitions
+$transition-all-fast: all $transition-fast $ease-out;
+$transition-all-normal: all $transition-normal $ease-out;
+$transition-all-slow: all $transition-slow $ease-out;
+
+// ============================================
+// ICON SIZING SCALE
+// ============================================
+$icon-xs: 12px;              // 0.75rem - Tiny indicators
+$icon-sm: 14px;              // 0.875rem - Table icons
+$icon-md: 16px;              // 1rem - Default (nav, buttons)
+$icon-lg: 20px;              // 1.25rem - Section headers
+$icon-xl: 24px;              // 1.5rem - Feature icons
+$icon-2xl: 32px;             // 2rem - Large display icons
+
+// ============================================
+// CONTAINER WIDTHS
+// ============================================
+$container-xs: 20rem;        // 320px - Narrow modals
+$container-sm: 36rem;        // 576px - Forms, small modals
+$container-md: 48rem;        // 768px - Default content
+$container-lg: 64rem;        // 1024px - Wide content
+$container-xl: 80rem;        // 1280px - Full-width content
+$container-2xl: 96rem;       // 1536px - Extra wide
+
+// ============================================
+// Z-INDEX SCALE
+// ============================================
 $z-base: 1;
 $z-dropdown: 10;
 $z-sticky: 100;

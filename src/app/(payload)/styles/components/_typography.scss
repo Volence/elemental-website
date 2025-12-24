@@ -18,7 +18,7 @@ h1, h2, h3, h4, h5, h6 {
 // PAGE HEADINGS WITH GRADIENT UNDERLINES
 // ============================================
 
-// Main page headings (h1)
+// Main page headings (h1) - Page titles
 h1,
 .collection-list__header h1,
 .list-header h1,
@@ -29,10 +29,10 @@ h1.doc-header__title,
 h1.list-header__title,
 main h1 {
   @include gradient-underline($max-width: 300px, $height: 3px);
-  font-size: 2rem;
-  font-weight: 700;
-  letter-spacing: -0.025em;
-  line-height: 1.2;
+  font-size: $font-size-3xl;        // 2rem / 32px
+  font-weight: $font-weight-bold;   // 700
+  letter-spacing: $letter-spacing-tight;  // -0.025em
+  line-height: $line-height-tight;  // 1.25
   margin-bottom: 0;
   color: rgb(6, 182, 212);
 }
@@ -44,31 +44,31 @@ main h1 {
   margin-bottom: 0;
 }
 
-// Section headings (h2)
+// Section headings (h2) - Section titles
 h2,
 main h2,
 .dashboard h2 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  letter-spacing: -0.015em;
-  line-height: 1.3;
-  margin-top: $spacing-2xl;
-  margin-bottom: $spacing-lg;
+  font-size: $font-size-2xl;        // 1.5rem / 24px
+  font-weight: $font-weight-bold;   // 700
+  letter-spacing: $letter-spacing-tight;  // -0.025em
+  line-height: $line-height-tight;  // 1.25
+  margin-top: $spacing-2xl;         // 3rem
+  margin-bottom: $spacing-lg;       // 1.5rem
   color: rgb(132, 204, 22);
 }
 
-// Subsection headings (h3)
+// Subsection headings (h3) - Subsection titles
 h3,
 main h3,
 .dashboard h3,
 .before-dashboard h3 {
   @include gradient-underline($width: 120px, $height: 2.5px);
-  font-size: 1.25rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: 1.4;
-  margin-top: $spacing-2xl;
-  margin-bottom: $spacing-lg;
+  font-size: $font-size-xl;         // 1.25rem / 20px
+  font-weight: $font-weight-semibold; // 600
+  letter-spacing: $letter-spacing-normal; // 0
+  line-height: $line-height-tight;  // 1.25
+  margin-top: $spacing-2xl;         // 3rem
+  margin-bottom: $spacing-lg;       // 1.5rem
   color: rgb(245, 158, 11);
 
   // On mobile, reduce underline width to prevent collision with buttons
@@ -85,7 +85,17 @@ main h3,
   }
 }
 
-// Banner headings (h4)
+// Banner headings (h4) - Card titles
+h4,
+.banner h4,
+.before-dashboard h4 {
+  font-size: $font-size-md;         // 1rem / 16px
+  font-weight: $font-weight-semibold; // 600
+  letter-spacing: $letter-spacing-normal; // 0
+  line-height: $line-height-tight;  // 1.25
+  margin-bottom: $spacing-sm;       // 0.75rem
+}
+
 .banner h4,
 .before-dashboard h4 {
   @include gradient-underline($width: 80px, $height: 2.5px);
@@ -113,12 +123,12 @@ main h3,
 .field-type > .field-label,
 label.field-label,
 .render-fields > .field-type > label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  letter-spacing: 0.025em;
+  font-size: $font-size-sm;         // 0.875rem / 14px (keep original - it's small/uppercase)
+  font-weight: $font-weight-semibold; // 600
+  letter-spacing: $letter-spacing-wide; // 0.025em
   text-transform: uppercase;
   color: $admin-text-secondary;
-  margin-bottom: $spacing-sm;
+  margin-bottom: $spacing-sm;       // 0.75rem
   display: block;
 }
 
@@ -140,8 +150,8 @@ label.field-label,
 p,
 .body-text,
 main p {
-  font-size: 0.9375rem;
-  line-height: 1.6;
+  font-size: $font-size-base;       // 0.9375rem / 15px
+  line-height: $line-height-normal; // 1.5
   color: $admin-text-secondary;
 }
 
@@ -150,10 +160,10 @@ main p {
 [class*="helper"],
 .help-text,
 small {
-  font-size: 0.8125rem;
-  line-height: 1.5;
+  font-size: $font-size-sm;         // 0.8125rem / 13px
+  line-height: $line-height-normal; // 1.5
   color: $admin-text-muted;
-  margin-top: $spacing-xs;
+  margin-top: $spacing-xs;          // 0.5rem
   margin-bottom: 0;
 }
 
@@ -169,17 +179,17 @@ small {
 th,
 .table__th,
 thead th {
-  font-size: 0.8125rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
+  font-size: $font-size-sm;         // 0.8125rem / 13px
+  font-weight: $font-weight-bold;   // 700
+  letter-spacing: $letter-spacing-wider; // 0.05em
   text-transform: uppercase;
   color: $admin-text-secondary;
   position: sticky;
   top: 0;
   z-index: $z-sticky;
   background: $admin-bg-base;
-  padding: $spacing-lg;
-  border-bottom: 2px solid transparent;
+  padding: $padding-md;             // 1rem (standardized)
+  border-bottom: $border-medium solid transparent; // 2px
   background-image: 
     linear-gradient($admin-bg-base, $admin-bg-base),
     $admin-gradient-primary;
@@ -192,7 +202,7 @@ thead th {
     bottom: 0;
     left: 0;
     right: 0;
-    height: 2px;
+    height: $border-medium;         // 2px
     background: $admin-gradient-primary;
     opacity: 0.6;
   }
@@ -210,7 +220,7 @@ thead th {
 td,
 .table__td,
 tbody td {
-  font-size: 0.9375rem;
+  font-size: $font-size-base;       // 0.9375rem / 15px
   color: $admin-text-primary;
 }
 

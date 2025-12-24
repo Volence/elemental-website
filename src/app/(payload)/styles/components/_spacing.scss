@@ -107,3 +107,82 @@ main > div > section + section {
   }
 }
 
+// ============================================
+// UTILITY CLASSES FOR CONSISTENT SPACING
+// ============================================
+
+// Padding utilities
+.p-xs { padding: $padding-xs; }           // 0.5rem / 8px
+.p-sm { padding: $padding-sm; }           // 0.75rem / 12px
+.p-md { padding: $padding-md; }           // 1rem / 16px
+.p-lg { padding: $padding-lg; }           // 1.5rem / 24px
+.p-xl { padding: $padding-xl; }           // 2rem / 32px
+
+// Padding directional
+.pt-xs { padding-top: $padding-xs; }
+.pt-sm { padding-top: $padding-sm; }
+.pt-md { padding-top: $padding-md; }
+.pt-lg { padding-top: $padding-lg; }
+.pt-xl { padding-top: $padding-xl; }
+
+.pb-xs { padding-bottom: $padding-xs; }
+.pb-sm { padding-bottom: $padding-sm; }
+.pb-md { padding-bottom: $padding-md; }
+.pb-lg { padding-bottom: $padding-lg; }
+.pb-xl { padding-bottom: $padding-xl; }
+
+.pl-xs { padding-left: $padding-xs; }
+.pl-sm { padding-left: $padding-sm; }
+.pl-md { padding-left: $padding-md; }
+.pl-lg { padding-left: $padding-lg; }
+.pl-xl { padding-left: $padding-xl; }
+
+.pr-xs { padding-right: $padding-xs; }
+.pr-sm { padding-right: $padding-sm; }
+.pr-md { padding-right: $padding-md; }
+.pr-lg { padding-right: $padding-lg; }
+.pr-xl { padding-right: $padding-xl; }
+
+// Margin utilities
+.m-xs { margin: $spacing-xs; }            // 0.5rem / 8px
+.m-sm { margin: $spacing-sm; }            // 0.75rem / 12px
+.m-md { margin: $spacing-md; }            // 1rem / 16px
+.m-lg { margin: $spacing-lg; }            // 1.5rem / 24px
+.m-xl { margin: $spacing-xl; }            // 2rem / 32px
+.m-2xl { margin: $spacing-2xl; }          // 3rem / 48px
+
+// Margin directional
+.mt-xs { margin-top: $spacing-xs; }
+.mt-sm { margin-top: $spacing-sm; }
+.mt-md { margin-top: $spacing-md; }
+.mt-lg { margin-top: $spacing-lg; }
+.mt-xl { margin-top: $spacing-xl; }
+.mt-2xl { margin-top: $spacing-2xl; }
+
+.mb-xs { margin-bottom: $spacing-xs; }
+.mb-sm { margin-bottom: $spacing-sm; }
+.mb-md { margin-bottom: $spacing-md; }
+.mb-lg { margin-bottom: $spacing-lg; }
+.mb-xl { margin-bottom: $spacing-xl; }
+.mb-2xl { margin-bottom: $spacing-2xl; }
+
+.ml-xs { margin-left: $spacing-xs; }
+.ml-sm { margin-left: $spacing-sm; }
+.ml-md { margin-left: $spacing-md; }
+.ml-lg { margin-left: $spacing-lg; }
+.ml-xl { margin-left: $spacing-xl; }
+
+.mr-xs { margin-right: $spacing-xs; }
+.mr-sm { margin-right: $spacing-sm; }
+.mr-md { margin-right: $spacing-md; }
+.mr-lg { margin-right: $spacing-lg; }
+.mr-xl { margin-right: $spacing-xl; }
+
+// Gap utilities (for flex/grid)
+.gap-xs { gap: $gap-xs; }                 // 0.5rem / 8px
+.gap-sm { gap: $gap-sm; }                 // 0.75rem / 12px
+.gap-md { gap: $gap-md; }                 // 1rem / 16px
+.gap-lg { gap: $gap-lg; }                 // 1.5rem / 24px
+.gap-xl { gap: $gap-xl; }                 // 2rem / 32px
+.gap-2xl { gap: $gap-2xl; }               // 3rem / 48px
+
