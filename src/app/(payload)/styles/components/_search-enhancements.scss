@@ -14,8 +14,8 @@
   input[type="search"],
   input[placeholder*="Search"] {
     position: relative;
-    padding: 0.875rem 1rem 0.875rem 3.5rem;    // Increased left padding for larger 24px icon
-    font-size: 1rem;
+    padding: 0.875rem 1rem 0.875rem 3.5rem !important;    // Increased left padding for larger 24px icon
+    font-size: 15px !important;                            // Using px instead of rem (admin root is 13px)
     border: 2px solid var(--theme-elevation-300);
     border-radius: 8px;
     background-color: var(--theme-elevation-100);
@@ -41,22 +41,7 @@
     }
   }
 
-  /* Search icon */
-  .search-icon,
-  svg.icon--search,
-  .icon.icon--search,
-  svg[class*="search"],
-  [class*="search"] svg:first-child {
-    position: absolute !important;
-    left: 1rem !important;              // Moved closer to left edge
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    width: 24px !important;             // Increased from 16px for better visibility
-    height: 24px !important;            // Increased from 16px for better visibility
-    color: var(--theme-text-500);
-    pointer-events: none;
-    transition: color 0.2s ease;
-  }
+  /* Search icon - now handled in _icons.scss */
 
   /* When input is focused, color the icon */
   input:focus + .search-icon {
