@@ -102,6 +102,9 @@ button[aria-label]:not(.upload__listToggler):not(.array-field__add-row),
 // ARRAY FIELD ADD BUTTONS (Add Custom Link, Add Item, etc.)
 // ============================================
 
+// Target the array add button with its specific class combinations
+html body button.array-field__add-row.btn--icon.btn--size-medium,
+html body button.array-field__add-row.btn--icon,
 html body button.array-field__add-row,
 html body button[class*="add-row"],
 html body button[class*="array"][class*="add"] {
@@ -110,6 +113,7 @@ html body button[class*="array"][class*="add"] {
   padding: $padding-sm $padding-lg !important;       // 0.75rem 1.5rem (10px 20px)
   min-height: 40px !important;
   height: 40px !important;
+  max-height: 40px !important;
   font-size: 15px !important;                         // Use px for consistency
   font-weight: $font-weight-medium !important;        // 500
   border-radius: $radius-md !important;               // 6px
@@ -120,6 +124,7 @@ html body button[class*="array"][class*="add"] {
   gap: $gap-xs !important;                            // 0.5rem spacing between icon and text
   overflow: visible !important;
   text-overflow: clip !important;
+  line-height: normal !important;
   
   svg {
     width: $icon-md !important;                       // 16px
