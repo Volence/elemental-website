@@ -16,21 +16,21 @@ import { useEffect } from 'react'
 export default function FixDatePickerIcons() {
   useEffect(() => {
     function applyFixes() {
-      // Fix clear button positioning
+      // Fix clear button positioning AND sizing
       const clearButtons = document.querySelectorAll<HTMLElement>('.date-time-picker__clear-button')
       clearButtons.forEach((button) => {
-        if (button.style.top !== '2px') {
-          button.style.top = '2px'
-          button.style.position = 'relative'
-        }
+        button.style.setProperty('top', '2px', 'important')
+        button.style.setProperty('position', 'relative', 'important')
+        button.style.setProperty('width', '16px', 'important')
+        button.style.setProperty('height', '16px', 'important')
+        button.style.setProperty('padding', '0', 'important')
+        button.style.setProperty('min-height', 'unset', 'important')
       })
       
       // Fix icon wrap positioning  
       const iconWraps = document.querySelectorAll<HTMLElement>('.date-time-picker__icon-wrap')
       iconWraps.forEach((wrap) => {
-        if (wrap.style.top !== '3px') {
-          wrap.style.top = '3px'
-        }
+        wrap.style.setProperty('top', '3px', 'important')
       })
     }
     
