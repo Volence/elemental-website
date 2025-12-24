@@ -81,13 +81,17 @@ input[type="datetime-local"] {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.25rem;
+  padding: 0 !important;
+  margin: 0 !important;
   background: transparent;
   border: none;
   cursor: pointer;
   color: $admin-text-muted;
   transition: all $transition-fast;
   border-radius: $radius-sm;
+  width: 16px !important;
+  height: 16px !important;
+  min-height: unset !important;
   
   &:hover {
     background: rgba(255, 255, 255, 0.1);
@@ -99,8 +103,8 @@ input[type="datetime-local"] {
   }
   
   svg {
-    width: 16px;
-    height: 16px;
+    width: 16px !important;
+    height: 16px !important;
     display: block;
   }
 }
@@ -137,6 +141,31 @@ input[type="datetime-local"] {
 html body .date-time-picker .react-datepicker__input-container input,
 html body .date-time-field input[type="text"] {
   padding-right: 4rem !important; // Make room for both icons (X + calendar)
+}
+
+// ============================================
+// DATE PICKER CLEAR BUTTON SIZING - ULTRA MAXIMUM SPECIFICITY
+// ============================================
+// Override Payload's default button sizing
+html body .date-time-picker .date-time-picker__clear-button,
+html body button.date-time-picker__clear-button,
+html body .date-time-picker__icon-wrap button {
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px !important;
+  min-height: unset !important;
+  max-width: 16px !important;
+  max-height: 16px !important;
+  box-sizing: border-box !important;
+  flex-shrink: 0 !important;
+  
+  svg {
+    width: 16px !important;
+    height: 16px !important;
+    display: block !important;
+  }
 }
 
 // Textareas need more height
