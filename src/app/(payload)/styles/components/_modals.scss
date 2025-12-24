@@ -89,17 +89,24 @@
   padding: $spacing-lg $spacing-2xl !important;
   background: $admin-bg-card !important;
   border-top: 1px solid $admin-border-subtle !important;
+}
+
+// Modal button sizing (must be separate for higher specificity)
+html body .modal__footer button,
+html body .modal__actions button,
+html body [class*="modal"] .form-submit button,
+html body [class*="modal__footer"] button,
+html body [class*="modal__actions"] button,
+html body [class*="popup__actions"] button,
+html body .popup__actions button {
+  min-width: 120px !important;
+  padding: 0.75rem 3.5rem !important;
   
-  button {
-    min-width: 120px !important;
-    padding: 0.75rem 3.5rem !important;
-    
-    // Fix squished button text
-    white-space: nowrap !important;
-    
-    &:not(:last-child) {
-      margin-right: 0 !important;
-    }
+  // Fix squished button text
+  white-space: nowrap !important;
+  
+  &:not(:last-child) {
+    margin-right: 0 !important;
   }
 }
 
