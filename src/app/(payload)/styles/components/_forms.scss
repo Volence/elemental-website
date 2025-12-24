@@ -500,25 +500,38 @@ span.btn__icon {
 
 // Upload dropzone buttons (Create New / Choose from existing)
 html body .upload__dropzoneContent__buttons,
-html body [class*="dropzoneContent"] {
+html body [class*="dropzoneContent__buttons"] {
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
   gap: $spacing-md !important;
   flex-wrap: wrap !important;
   
-  button {
+  button,
+  button[type="button"] {
     width: auto !important;
     min-width: fit-content !important;
     padding: $padding-md $padding-xl !important;    // 13px 26px (1rem 2rem in 13px root)
     min-height: 44px !important;
+    max-height: 44px !important;                     // Prevent shrinking
+    height: 44px !important;                          // Force height
     white-space: nowrap !important;
     flex-shrink: 0 !important;
     font-size: 15px !important;                      // Use px for consistency
     font-weight: $font-weight-semibold !important;
     overflow: visible !important;
     text-overflow: clip !important;
+    line-height: normal !important;
   }
+}
+
+// More specific targeting for "Choose from existing" button
+html body button[class*="btn"][class*="btn--secondary"],
+html body .upload button:nth-of-type(2),
+html body [class*="dropzone"] button:nth-of-type(2) {
+  padding: $padding-md $padding-xl !important;
+  min-height: 44px !important;
+  height: 44px !important;
 }
 
 .file-field__drag-text,
