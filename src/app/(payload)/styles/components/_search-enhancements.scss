@@ -3,6 +3,15 @@
  * Make search more prominent and user-friendly
  * ============================================ */
 
+// Maximum specificity override for search input
+html body .search-filter-container .search-filter__input,
+html body .list-controls__wrap .search-filter__input,
+html body input.search-filter__input,
+html body input#search-filter-input {
+  padding: 0.875rem 1rem 0.875rem 3.5rem !important;    // Increased left padding for larger 24px icon
+  font-size: 15px !important;                            // Using px instead of rem (admin root is 13px)
+}
+
 .search-filter-container,
 .list-controls__wrap {
   // Ensure the search bar container has position relative for absolute icon positioning
