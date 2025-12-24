@@ -52,3 +52,20 @@
 @import './components/read-only-items';
 @import './components/recruitment';
 
+// ============================================
+// FINAL OVERRIDES (Maximum Specificity)
+// ============================================
+// These rules must come last to override PayloadCMS defaults
+
+@media (min-width: 768px) {
+  // Hide mobile-only buttons on desktop with nuclear specificity
+  html body button.nav__mobile-close,
+  html body .nav__mobile-close,
+  html body [role="complementary"] button.nav__mobile-close {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+}
+
