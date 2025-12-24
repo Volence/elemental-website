@@ -419,7 +419,8 @@ export function MatchCard({ match, showCountdown = true }: MatchCardProps) {
   return (
     <div
       key={match.id}
-      className={`p-8 ${tierColors.borderLeft} rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-lg hover:shadow-xl hover:border-primary/30 transition-all relative`}
+      className="p-8 border-t-2 border-r-2 border-b-2 border-border rounded-xl bg-gradient-to-br from-card to-card/50 shadow-lg hover:shadow-xl hover:border-primary/30 transition-all relative"
+      style={{ borderLeft: `4px solid ${tierColors.borderColor}` }}
     >
       <div className="relative z-10">
       {/* Header with Team Logos and Status */}

@@ -72,11 +72,13 @@ export const RecruitmentCard: React.FC<RecruitmentCardProps> = ({ listing, team 
   
   // Get tier colors for team positions
   const tierColors = team?.rating ? getTierFromRating(team.rating) : null
-  const borderClass = tierColors ? tierColors.borderLeft : ''
 
   return (
     <>
-      <div className={`group relative overflow-hidden rounded-lg border border-gray-700 bg-gray-800 p-6 transition-all hover:border-gray-600 hover:bg-gray-750 ${borderClass}`}>
+      <div 
+        className="group relative overflow-hidden rounded-lg border-t border-r border-b border-gray-700 bg-gray-800 p-6 transition-all hover:border-gray-600 hover:bg-gray-750"
+        style={tierColors ? { borderLeft: `4px solid ${tierColors.borderColor}` } : {}}
+      >
         {/* Role Badge */}
         <div className="mb-4 flex items-center gap-2">
           <span

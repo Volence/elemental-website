@@ -14,6 +14,7 @@ export interface TierColors {
   text: string
   border: string
   borderLeft: string
+  borderColor: string // Hex color for inline styles
 }
 
 export const tierColors: Record<TierName, TierColors> = {
@@ -24,6 +25,7 @@ export const tierColors: Record<TierName, TierColors> = {
     text: 'text-purple-400',
     border: 'border-purple-500/30',
     borderLeft: 'border-l-4 border-l-purple-500',
+    borderColor: '#a855f7', // purple-500
   },
   expert: {
     name: 'Expert',
@@ -32,6 +34,7 @@ export const tierColors: Record<TierName, TierColors> = {
     text: 'text-indigo-400',
     border: 'border-indigo-500/30',
     borderLeft: 'border-l-4 border-l-indigo-500',
+    borderColor: '#6366f1', // indigo-500
   },
   advanced: {
     name: 'Advanced',
@@ -40,6 +43,7 @@ export const tierColors: Record<TierName, TierColors> = {
     text: 'text-blue-400',
     border: 'border-blue-500/30',
     borderLeft: 'border-l-4 border-l-blue-500',
+    borderColor: '#3b82f6', // blue-500
   },
   tier4k: {
     name: '4k-4.5k',
@@ -48,6 +52,7 @@ export const tierColors: Record<TierName, TierColors> = {
     text: 'text-cyan-400',
     border: 'border-cyan-500/30',
     borderLeft: 'border-l-4 border-l-cyan-500',
+    borderColor: '#06b6d4', // cyan-500
   },
   tier35k: {
     name: '3.5k-3.9k',
@@ -56,6 +61,7 @@ export const tierColors: Record<TierName, TierColors> = {
     text: 'text-green-400',
     border: 'border-green-500/30',
     borderLeft: 'border-l-4 border-l-green-500',
+    borderColor: '#22c55e', // green-500
   },
   tier30k: {
     name: '3.0k-3.4k',
@@ -64,6 +70,7 @@ export const tierColors: Record<TierName, TierColors> = {
     text: 'text-yellow-400',
     border: 'border-yellow-500/30',
     borderLeft: 'border-l-4 border-l-yellow-500',
+    borderColor: '#eab308', // yellow-500
   },
   tierBelow: {
     name: 'Below 3k',
@@ -72,6 +79,7 @@ export const tierColors: Record<TierName, TierColors> = {
     text: 'text-orange-400',
     border: 'border-orange-500/30',
     borderLeft: 'border-l-4 border-l-orange-500',
+    borderColor: '#f97316', // orange-500
   },
 }
 
