@@ -235,7 +235,7 @@ tbody td {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0 !important;                      // Remove gap to eliminate extra spacing
+  gap: $spacing-lg !important;            // Add gap between title and button
   margin-bottom: $spacing-lg !important;  // 1.5rem / ~20px - Only on outer container
   
   // Remove internal spacing to prevent compounding margins
@@ -251,17 +251,19 @@ tbody td {
   // Remove h1 padding within header
   h1 {
     padding-bottom: 0 !important;
+    flex-shrink: 0 !important;            // Prevent title from shrinking
   }
 }
 
 // CREATE NEW buttons positioning and styling
-button[class*="create"],
-.collection-list__header button,
-.list-header button,
-[href*="create"],
-a[class*="create"] {
+html body .collection-list__header button,
+html body .list-header button,
+html body .list-header a[href*="create"],
+html body button[class*="create"],
+html body a[class*="create"] {
   margin-top: 0 !important;
   align-self: center;
+  flex-shrink: 0 !important;                                       // Prevent button from shrinking
   
   // Ensure consistent sizing for header buttons
   padding: $padding-md $padding-xl !important;                     // 1rem 2rem
@@ -270,6 +272,8 @@ a[class*="create"] {
   border-radius: $radius-md !important;                            // 6px
   white-space: nowrap !important;
   min-height: 44px !important;
+  min-width: fit-content !important;                               // Ensure button fits content
+  width: auto !important;                                          // Allow button to size properly
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
