@@ -103,8 +103,11 @@ html[data-theme='light'] {
 }
 
 @media (min-width: 768px) {
-  .nav__mobile-close {
-    display: none;
+  // Hide mobile nav close button on desktop
+  .nav__mobile-close,
+  button.nav__mobile-close,
+  [class*="nav__mobile-close"] {
+    display: none !important;
   }
   
   // Hide mobile menu toggle button in header on desktop
