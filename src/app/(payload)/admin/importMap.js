@@ -55,6 +55,7 @@ import { default as default_66dcba8625c994af6076586cb15c754f } from '@/component
 import { default as default_aa0a2d19d38a4839dbd373417e210b89 } from '@/components/AdminLogo'
 import { default as default_6b1b7b9ecbb8673c7166977ed22f5ed3 } from '@/components/BeforeDashboard/LogoutButton'
 import { default as default_1a7510af427896d367a49dbf838d2de6 } from '@/components/BeforeDashboard'
+import { default as default_c665fb14b647600ee6fac862e3d3aeb2 } from '@/components/FixDatePickerIcons'
 import { default as default_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/components/BeforeLogin'
 import { default as default_cb688d169ef5bf1426eea8968f0b9a29 } from '@/components/BeforeDashboard/DashboardNavLink'
 
@@ -116,6 +117,7 @@ export const importMap = {
   "@/components/AdminLogo#default": default_aa0a2d19d38a4839dbd373417e210b89,
   "@/components/BeforeDashboard/LogoutButton#default": default_6b1b7b9ecbb8673c7166977ed22f5ed3,
   "@/components/BeforeDashboard#default": default_1a7510af427896d367a49dbf838d2de6,
+  "@/components/FixDatePickerIcons#default": default_c665fb14b647600ee6fac862e3d3aeb2,
   "@/components/BeforeLogin#default": default_8a7ab0eb7ab5c511aba12e68480bfe5e,
   "@/components/BeforeDashboard/DashboardNavLink#default": default_cb688d169ef5bf1426eea8968f0b9a29
 }
