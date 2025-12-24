@@ -168,8 +168,8 @@ small {
 }
 
 .custom-view-description {
-  padding: $spacing-sm;
-  margin: $spacing-sm 0;
+  padding: 0 !important;      // Remove padding to reduce spacing
+  margin: 0 !important;       // Remove margin to reduce spacing
 }
 
 // ============================================
@@ -235,7 +235,7 @@ tbody td {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: $spacing-lg;
+  gap: 0 !important;                      // Remove gap to eliminate extra spacing
   margin-bottom: $spacing-lg !important;  // 1.5rem / ~20px - Only on outer container
   
   // Remove internal spacing to prevent compounding margins
