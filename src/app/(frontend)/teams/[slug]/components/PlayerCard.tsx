@@ -37,7 +37,7 @@ export function PlayerCard({
       {/* Avatar placeholder with role icon */}
       <div className="relative flex-shrink-0">
         <div
-          className={`w-16 h-16 rounded-full bg-gradient-to-br flex items-center justify-center ring-2 transition-all overflow-hidden ${getRoleColor(role)}`}
+          className={`w-16 h-16 rounded-full bg-gradient-to-br flex items-center justify-center ring-2 transition-all duration-200 overflow-hidden ${getRoleColor(role)}`}
         >
           {photoUrl ? (
             <Image
@@ -67,7 +67,7 @@ export function PlayerCard({
         </Link>
         <div className="flex items-center gap-2 mt-1">
           <span 
-            className="text-xs font-bold uppercase tracking-widest px-2.5 py-1 rounded-md border"
+            className="text-xs font-bold uppercase tracking-widest px-2.5 py-1 rounded-lg border"
             style={{
               backgroundColor: `${roleColorHex}15`,
               color: roleColorHex,
