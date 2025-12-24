@@ -141,16 +141,23 @@ export async function Footer() {
           <div className="flex flex-col gap-4">
             <h3 className="text-lg font-bold text-white uppercase tracking-wider">Follow Us</h3>
             <div className="flex flex-wrap gap-4">
-              {socialLinks.map(({ name, icon: Icon, href }) => (
+              {socialLinks.map(({ name, icon: Icon, href, gradient }) => (
                 <Link
                   key={name}
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center w-12 h-12 rounded-lg bg-muted/10 text-white hover:bg-primary hover:text-primary-foreground transition-all hover:scale-110"
+                  className="group flex items-center justify-center w-12 h-12 rounded-lg text-white transition-all hover:scale-110 relative overflow-hidden"
                   aria-label={name}
                 >
-                  <Icon className="w-6 h-6" />
+                  <div 
+                    className="absolute inset-0 bg-white/10 transition-opacity duration-300"
+                  />
+                  <div 
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{ background: gradient }}
+                  />
+                  <Icon className="w-6 h-6 relative z-10" />
                 </Link>
               ))}
             </div>
