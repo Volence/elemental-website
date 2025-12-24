@@ -54,6 +54,94 @@ input[type="datetime-local"] {
   line-height: 1;
 }
 
+// ============================================
+// DATE TIME PICKER (react-datepicker)
+// ============================================
+
+// Main date-time-picker container
+.date-time-picker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+// Icon wrapper - contains clear (X) and calendar icons
+.date-time-picker__icon-wrap {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 1;
+  pointer-events: all;
+}
+
+// Clear button (X icon)
+.date-time-picker__clear-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: $admin-text-muted;
+  transition: all $transition-fast;
+  border-radius: $radius-sm;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: $admin-text-primary;
+  }
+  
+  &:active {
+    background: rgba(255, 255, 255, 0.15);
+  }
+  
+  svg {
+    width: 16px;
+    height: 16px;
+    display: block;
+  }
+}
+
+// Calendar icon
+.icon--calendar {
+  width: 16px;
+  height: 16px;
+  color: $admin-text-muted;
+  pointer-events: none;
+}
+
+// Date picker input wrapper
+.react-datepicker-wrapper {
+  width: 100%;
+  display: block;
+}
+
+.react-datepicker__input-container {
+  width: 100%;
+  display: block;
+}
+
+// Ensure the field wrapper contains everything
+.date-time-field .field-type__wrap {
+  position: relative;
+  overflow: visible;
+}
+
+// ============================================
+// DATE PICKER INPUT PADDING - MUST COME LAST
+// ============================================
+// This MUST be at the end of the file to override the generic .field-type input rules above
+html body .date-time-picker .react-datepicker__input-container input,
+html body .date-time-field input[type="text"] {
+  padding-right: 4rem !important; // Make room for both icons (X + calendar)
+}
+
 // Textareas need more height
 textarea {
   min-height: 6rem;
