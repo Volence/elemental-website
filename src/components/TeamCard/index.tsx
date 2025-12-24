@@ -33,10 +33,17 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, size = 'medium', showH
         className="flex flex-col items-center h-full"
       >
         <div 
-          className={`${cardPadding} border-t-2 border-r-2 border-b-2 border-border rounded-xl bg-gradient-to-br from-card to-card/50 hover:border-primary/50 transition-all duration-300 hover:scale-105 hover:shadow-xl w-full relative overflow-hidden`}
+          className={`${cardPadding} border-t-2 border-r-2 border-b-2 border-border rounded-xl bg-gradient-to-br from-card to-card/50 transition-all duration-300 hover:scale-105 w-full relative overflow-hidden`}
           style={{ 
             borderLeft: `4px solid ${tierColors.borderColor}`,
-            boxShadow: `inset 4px 0 12px -8px ${tierColors.borderColor}, 0 10px 15px -3px rgba(0, 0, 0, 0.1)`
+            boxShadow: `inset 4px 0 12px -8px ${tierColors.borderColor}, 0 10px 15px -3px rgba(0, 0, 0, 0.1)`,
+            borderColor: tierColors.borderColor
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.boxShadow = `inset 4px 0 12px -8px ${tierColors.borderColor}, 0 20px 25px -5px ${tierColors.borderColor}40, 0 10px 10px -5px ${tierColors.borderColor}30`
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = `inset 4px 0 12px -8px ${tierColors.borderColor}, 0 10px 15px -3px rgba(0, 0, 0, 0.1)`
           }}
         >
           {/* Subtle tier color background */}

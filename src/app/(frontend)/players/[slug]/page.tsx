@@ -12,6 +12,7 @@ import { formatPlayerSlug } from '@/utilities/getPlayer'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { getMediaUrl } from '@/utilities/getMediaUrl'
 import { getOrgRoleIcon, getOrgRoleLabel } from '@/utilities/roleIcons'
+import { getRoleColors, getTierFromRating } from '@/utilities/tierColors'
 
 type Args = {
   params: Promise<{
@@ -244,10 +245,13 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
             {/* Bio */}
             {player.bio && (
               <div className="p-6 md:p-8 rounded-2xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-lg backdrop-blur-sm hover:border-border/80 transition-all">
-                <h2 className="text-2xl font-black mb-4 flex items-center gap-2">
-                  <Users className="w-6 h-6 text-primary" />
-                  About
-                </h2>
+                <div className="mb-4">
+                  <h2 className="text-2xl font-black mb-2 flex items-center gap-2">
+                    <Users className="w-6 h-6 text-primary" />
+                    About
+                  </h2>
+                  <div className="w-20 h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 rounded-full"></div>
+                </div>
                 <p className="text-foreground/90 leading-relaxed whitespace-pre-wrap text-base">
                   {player.bio}
                 </p>
@@ -257,10 +261,13 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
             {/* Staff Roles */}
             {(player.staffRoles.organization && player.staffRoles.organization.length > 0) || player.staffRoles.production ? (
               <div className="p-6 md:p-8 rounded-2xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-lg backdrop-blur-sm hover:border-border/80 transition-all">
-                <h2 className="text-2xl font-black mb-6 flex items-center gap-2">
-                  <Shield className="w-6 h-6 text-primary" />
-                  Staff Positions
-                </h2>
+                <div className="mb-6">
+                  <h2 className="text-2xl font-black mb-2 flex items-center gap-2">
+                    <Shield className="w-6 h-6 text-primary" />
+                    Staff Positions
+                  </h2>
+                  <div className="w-20 h-1 bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 rounded-full"></div>
+                </div>
                 <div className="space-y-6">
                   {player.staffRoles.organization && player.staffRoles.organization.length > 0 && (
                     <div>
@@ -308,55 +315,102 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
             {/* Teams */}
             {player.teams.length > 0 && (
               <div className="p-6 md:p-8 rounded-2xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-lg backdrop-blur-sm hover:border-border/80 transition-all">
-                <h2 className="text-2xl font-black mb-6 flex items-center gap-2">
-                  <Shield className="w-6 h-6 text-primary" />
-                  Teams
-                </h2>
+                <div className="mb-6">
+                  <h2 className="text-2xl font-black mb-2 flex items-center gap-2">
+                    <Shield className="w-6 h-6 text-primary" />
+                    Teams
+                  </h2>
+                  <div className="w-20 h-1 bg-gradient-to-r from-blue-500 via-cyan-500 to-green-500 rounded-full"></div>
+                </div>
                 <div className="space-y-3">
-                  {player.teams.map((teamInfo) => (
-                    <Link
-                      key={teamInfo.teamSlug}
-                      href={`/teams/${teamInfo.teamSlug}`}
-                      className="group flex items-center gap-4 p-5 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all hover:scale-[1.02]"
-                    >
-                      <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-muted/20">
-                        <TeamLogo
-                          src={teamInfo.teamLogo}
-                          alt={`${teamInfo.teamName} Logo`}
-                          fill
-                          className="object-contain p-2"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">
-                          {teamInfo.teamName}
-                        </h3>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {teamInfo.role && (
-                            <span className="text-xs font-bold text-foreground uppercase tracking-wider px-3 py-1.5 rounded-lg bg-muted border border-border">
-                              {teamInfo.role}
-                            </span>
-                          )}
-                          {teamInfo.positions && teamInfo.positions.length > 0 && (
-                            <>
-                              {teamInfo.positions.map((position) => (
-                                <span 
-                                  key={position}
-                                  className="text-xs font-bold text-primary uppercase tracking-wider px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/30"
-                                >
-                                  {position === 'co-captain' ? 'Co-Captain' : 
-                                   position === 'captain' ? 'Captain' :
-                                   position === 'manager' ? 'Manager' :
-                                   position === 'coach' ? 'Coach' :
-                                   position.charAt(0).toUpperCase() + position.slice(1)}
-                                </span>
-                              ))}
-                            </>
-                          )}
+                  {player.teams.map((teamInfo) => {
+                    // Get role colors for player role badge
+                    const roleColors = teamInfo.role ? getRoleColors(teamInfo.role) : null
+                    const roleColorHex = teamInfo.role === 'tank' ? '#3b82f6' : teamInfo.role === 'support' ? '#22c55e' : '#ef4444'
+                    
+                    // Get tier colors for team tier badge
+                    const tierColors = teamInfo.teamRating ? getTierFromRating(teamInfo.teamRating) : null
+                    
+                    // Get position colors
+                    const getPositionColor = (position: string) => {
+                      if (position === 'captain' || position === 'co-captain') return { bg: '#eab30815', color: '#eab308', border: '#eab30850' } // Yellow/Gold
+                      if (position === 'manager') return { bg: '#a855f715', color: '#a855f7', border: '#a855f750' } // Purple
+                      if (position === 'coach') return { bg: '#22c55e15', color: '#22c55e', border: '#22c55e50' } // Green
+                      return { bg: '#3b82f615', color: '#3b82f6', border: '#3b82f650' } // Blue default
+                    }
+                    
+                    return (
+                      <Link
+                        key={teamInfo.teamSlug}
+                        href={`/teams/${teamInfo.teamSlug}`}
+                        className="group flex items-center gap-4 p-5 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all hover:scale-[1.02]"
+                      >
+                        <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-muted/20">
+                          <TeamLogo
+                            src={teamInfo.teamLogo}
+                            alt={`${teamInfo.teamName} Logo`}
+                            fill
+                            className="object-contain p-2"
+                          />
                         </div>
-                      </div>
-                    </Link>
-                  ))}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">
+                            {teamInfo.teamName}
+                          </h3>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {teamInfo.role && (
+                              <span 
+                                className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg border"
+                                style={{
+                                  backgroundColor: `${roleColorHex}15`,
+                                  color: roleColorHex,
+                                  borderColor: `${roleColorHex}50`
+                                }}
+                              >
+                                {teamInfo.role}
+                              </span>
+                            )}
+                            {tierColors && teamInfo.teamRating && (
+                              <span 
+                                className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg border"
+                                style={{
+                                  backgroundColor: `${tierColors.borderColor}15`,
+                                  color: tierColors.borderColor,
+                                  borderColor: `${tierColors.borderColor}50`
+                                }}
+                              >
+                                {teamInfo.teamRating}
+                              </span>
+                            )}
+                            {teamInfo.positions && teamInfo.positions.length > 0 && (
+                              <>
+                                {teamInfo.positions.map((position) => {
+                                  const posColor = getPositionColor(position)
+                                  return (
+                                    <span 
+                                      key={position}
+                                      className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg border"
+                                      style={{
+                                        backgroundColor: posColor.bg,
+                                        color: posColor.color,
+                                        borderColor: posColor.border
+                                      }}
+                                    >
+                                      {position === 'co-captain' ? 'Co-Captain' : 
+                                       position === 'captain' ? 'Captain' :
+                                       position === 'manager' ? 'Manager' :
+                                       position === 'coach' ? 'Coach' :
+                                       position.charAt(0).toUpperCase() + position.slice(1)}
+                                    </span>
+                                  )
+                                })}
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </Link>
+                    )
+                  })}
                 </div>
               </div>
             )}

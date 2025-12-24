@@ -22,11 +22,11 @@ const TikTokIcon: React.FC<{ className?: string }> = ({ className }) => (
 )
 
 const socialLinks = [
-  { name: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/elmt_gg/' },
-  { name: 'TikTok', icon: TikTokIcon, href: 'https://www.tiktok.com/@elementalesports_' },
-  { name: 'YouTube', icon: Youtube, href: 'https://www.youtube.com/@ELMT_GG' },
-  { name: 'Twitter', icon: Twitter, href: 'https://x.com/ELMT_GG' },
-  { name: 'Discord', icon: MessageCircle, href: 'https://discord.gg/elmt' },
+  { name: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/elmt_gg/', hoverClass: 'hover:bg-gradient-to-br hover:from-purple-500 hover:to-pink-500' },
+  { name: 'TikTok', icon: TikTokIcon, href: 'https://www.tiktok.com/@elementalesports_', hoverClass: 'hover:bg-gradient-to-br hover:from-cyan-400 hover:to-pink-500' },
+  { name: 'YouTube', icon: Youtube, href: 'https://www.youtube.com/@ELMT_GG', hoverClass: 'hover:bg-gradient-to-br hover:from-red-500 hover:to-red-600' },
+  { name: 'Twitter', icon: Twitter, href: 'https://x.com/ELMT_GG', hoverClass: 'hover:bg-gradient-to-br hover:from-blue-400 hover:to-blue-500' },
+  { name: 'Discord', icon: MessageCircle, href: 'https://discord.gg/elmt', hoverClass: 'hover:bg-gradient-to-br hover:from-indigo-500 hover:to-indigo-600' },
 ]
 
 export async function Footer() {
@@ -58,13 +58,13 @@ export async function Footer() {
             <div className="flex flex-col gap-4">
               <h3 className="text-lg font-bold text-white uppercase tracking-wider">Follow Us</h3>
               <div className="flex flex-wrap gap-4">
-                {socialLinks.map(({ name, icon: Icon, href }) => (
+                {socialLinks.map(({ name, icon: Icon, href, hoverClass }) => (
                   <Link
                     key={name}
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center w-12 h-12 rounded-lg bg-muted/10 text-white hover:bg-primary hover:text-primary-foreground transition-all hover:scale-110"
+                    className={`flex items-center justify-center w-12 h-12 rounded-lg bg-muted/10 text-white hover:text-white transition-all hover:scale-110 ${hoverClass}`}
                     aria-label={name}
                   >
                     <Icon className="w-6 h-6" />
@@ -188,13 +188,13 @@ export async function Footer() {
             <div className="flex flex-col gap-4">
               <h3 className="text-lg font-bold text-white uppercase tracking-wider">Follow Us</h3>
               <div className="flex flex-wrap gap-4">
-                {socialLinks.map(({ name, icon: Icon, href }) => (
+                {socialLinks.map(({ name, icon: Icon, href, hoverClass }) => (
                   <Link
                     key={name}
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center w-12 h-12 rounded-lg bg-muted/10 text-white hover:bg-primary hover:text-primary-foreground transition-all hover:scale-110"
+                    className={`flex items-center justify-center w-12 h-12 rounded-lg bg-muted/10 text-white hover:text-white transition-all hover:scale-110 ${hoverClass}`}
                     aria-label={name}
                   >
                     <Icon className="w-6 h-6" />
