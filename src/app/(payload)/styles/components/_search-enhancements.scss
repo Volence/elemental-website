@@ -37,13 +37,15 @@
   }
 
   /* Search icon */
-  .search-icon {
+  .search-icon,
+  svg[class*="search"],
+  [class*="search"] svg:first-child {
     position: absolute;
-    left: 1rem;
+    left: 1.25rem;
     top: 50%;
     transform: translateY(-50%);
-    width: 20px;
-    height: 20px;
+    width: 20px !important;
+    height: 20px !important;
     color: var(--theme-text-500);
     pointer-events: none;
     transition: color 0.2s ease;
@@ -77,17 +79,27 @@
   gap: 0.75rem;
 
   button {
-    padding: 0.875rem 1.25rem;
+    padding: 0.875rem 1.25rem !important;
+    min-height: 44px !important;
+    min-width: 44px !important;
     border: 2px solid var(--theme-elevation-300);
     border-radius: 8px;
     background-color: var(--theme-elevation-100);
-    color: var(--theme-text);
-    font-weight: 600;
-    font-size: 0.875rem;
+    color: var(--theme-text) !important;
+    font-weight: 600 !important;
+    font-size: 0.9375rem !important;
+    letter-spacing: 0.025em;
     transition: all 0.2s ease;
-    display: flex;
+    display: flex !important;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
+    white-space: nowrap;
+
+    svg {
+      width: 18px !important;
+      height: 18px !important;
+    }
 
     &:hover {
       border-color: rgba(236, 72, 153, 0.3);
@@ -100,7 +112,7 @@
     &.active {
       background: linear-gradient(135deg, #ec4899, #a855f7);
       border-color: transparent;
-      color: white;
+      color: white !important;
 
       &:hover {
         transform: translateY(-1px) scale(1.02);

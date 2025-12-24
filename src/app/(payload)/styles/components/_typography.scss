@@ -245,17 +245,17 @@ button[class*="create"],
 .list-header button,
 [href*="create"],
 a[class*="create"] {
-  margin-top: 0;
+  margin-top: 0 !important;
   align-self: center;
   
   // Ensure consistent sizing for header buttons
-  padding: $padding-sm $padding-lg !important;                     // 0.75rem 1.5rem
-  font-size: $font-size-base !important;                           // 0.9375rem
+  padding: $padding-md $padding-xl !important;                     // 1rem 2rem
+  font-size: $font-size-md !important;                             // 1rem
   font-weight: $font-weight-semibold !important;                   // 600
   border-radius: $radius-md !important;                            // 6px
-  white-space: nowrap;
-  min-height: 40px;
-  display: inline-flex;
+  white-space: nowrap !important;
+  min-height: 44px !important;
+  display: inline-flex !important;
   align-items: center;
   justify-content: center;
   gap: $gap-xs;                                                    // 0.5rem (for icon)

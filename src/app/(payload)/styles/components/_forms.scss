@@ -404,6 +404,14 @@ button.array-actions__button {
   align-items: center;
   gap: $spacing-sm;
   line-height: 1.5;
+  padding: $padding-sm $padding-lg !important;
+  min-height: 40px !important;
+  font-size: $font-size-base !important;
+  font-weight: $font-weight-medium !important;
+  border-radius: $radius-md !important;
+  margin-top: $spacing-md !important;
+  margin-bottom: $spacing-md !important;
+  white-space: nowrap;
 }
 
 // Button icon wrapper alignment
@@ -469,15 +477,24 @@ span.btn__icon {
 .file-field__upload-actions,
 .upload__actions {
   display: flex;
-  align-items: center;
-  gap: $spacing-lg;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: $spacing-md;
   margin-bottom: 0;
+  
+  button {
+    width: auto;
+    padding: $padding-sm $padding-lg !important;
+    min-height: 40px !important;
+    white-space: nowrap !important;
+  }
   
   span {
     color: $admin-text-disabled;
     font-size: 0.875rem;
     font-weight: 400;
-    padding: 0 $spacing-sm;
+    padding: 0;
+    margin-top: $spacing-xs;
   }
 }
 
@@ -485,8 +502,8 @@ span.btn__icon {
 .upload__drag-text {
   color: rgba(255, 255, 255, 0.4);
   font-size: 0.875rem;
-  margin-top: $spacing-xl;
-  text-align: right;
+  margin-top: $spacing-md;
+  text-align: left;
 }
 
 // ============================================
