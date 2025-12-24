@@ -261,12 +261,13 @@
 // ============================================
 // LIST CONTROL PILLS - COLUMNS/FILTERS BUTTONS
 // Override the pill--size-small class for list controls
+// Using maximum specificity to override PayloadCMS defaults
 // ============================================
 
-button.pill.pill--size-small.list-controls__toggle-columns,
-button.pill.pill--size-small.list-controls__toggle-where,
-button.pill.list-controls__toggle-columns,
-button.pill.list-controls__toggle-where {
+html body button.pill.pill--size-small.list-controls__toggle-columns,
+html body button.pill.pill--size-small.list-controls__toggle-where,
+html body button.pill.list-controls__toggle-columns,
+html body button.pill.list-controls__toggle-where {
   padding: 0.75rem 1.25rem !important;
   min-height: 44px !important;
   font-size: 0.9375rem !important;
@@ -276,14 +277,17 @@ button.pill.list-controls__toggle-where {
   border-radius: 8px !important;
   line-height: 1.5 !important;
   
-  .pill__label {
+  .pill__label,
+  span.pill__label {
     font-size: 0.9375rem !important;
     font-weight: 600 !important;
     letter-spacing: 0.025em !important;
     line-height: 1.5 !important;
+    text-transform: none !important;
   }
   
   .pill__icon,
+  span.pill__icon,
   svg {
     width: 18px !important;
     height: 18px !important;
