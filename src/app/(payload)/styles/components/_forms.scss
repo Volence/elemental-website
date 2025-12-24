@@ -534,6 +534,15 @@ html body [class*="dropzone"] button:nth-of-type(2) {
   height: 44px !important;
 }
 
+// Super specific override for upload list toggler (Choose from existing)
+html body button.upload__listToggler,
+html body button.btn--size-small.upload__listToggler,
+html body [class*="upload"] button[class*="listToggler"] {
+  padding: $padding-md $padding-xl !important;    // 13px 26px (1rem 2rem in 13px root)
+  min-height: 44px !important;
+  height: 44px !important;
+}
+
 .file-field__drag-text,
 .upload__drag-text {
   color: rgba(255, 255, 255, 0.4);
