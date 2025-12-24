@@ -113,5 +113,12 @@ html[data-theme='light'] {
   [class*="header"] > div > button[aria-label*="Menu"] {
     display: none !important;
   }
+  
+  // Hide redundant "Close" button at bottom of sidebar (same as collapse)
+  nav button[aria-label="Close"],
+  .nav button[aria-label="Close"],
+  aside button[aria-label="Close"] {
+    display: none !important;
+  }
 }
 
