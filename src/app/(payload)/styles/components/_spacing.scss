@@ -37,12 +37,6 @@ main > section,
   padding: $spacing-lg 0;
 }
 
-// List controls (search bar) spacing from header
-.list-controls,
-[class*="list-controls"] {
-  margin-top: $spacing-lg !important;  // 1.5rem / ~20px - Closer to header
-}
-
 // ============================================
 // SECTION DIVIDERS
 // ============================================
