@@ -28,15 +28,15 @@
 .dashboard .card {
   @include card-base;
   @include gradient-border($gradient: $admin-gradient-primary, $width: 3px);
-  padding: $spacing-xl;
-  margin-bottom: $spacing-2xl;
+  padding: $padding-xl;                                            // 2rem (standardized)
+  margin-bottom: $spacing-2xl;                                     // 3rem
+  border-radius: $radius-lg;                                       // 8px
   overflow: hidden;
+  transition: $transition-all-normal;                              // all 0.2s ease-out
   
   &:hover {
     transform: scale(1.02) translateY(-2px);
-    box-shadow: 
-      0 0 30px rgba(6, 182, 212, 0.3),
-      0 10px 25px rgba(0, 0, 0, 0.3);
+    box-shadow: $shadow-xl, 0 0 30px rgba(6, 182, 212, 0.3);      // Use standardized shadow
     border-color: rgba(6, 182, 212, 0.2);
     
     &::before {
@@ -58,9 +58,11 @@
 [class*="success"][class*="card"],
 [class*="auto-fix"][class*="card"] {
   @include card-base;
-  padding: $spacing-lg;
-  margin-bottom: $spacing-lg;
-  border: 2px solid transparent;
+  padding: $padding-lg;                                            // 1.5rem (standardized)
+  margin-bottom: $spacing-lg;                                      // 1.5rem
+  border: $border-medium solid transparent;                        // 2px
+  border-radius: $radius-lg;                                       // 8px
+  transition: $transition-all-normal;                              // all 0.2s ease-out
   position: relative;
   overflow: visible;
 }
@@ -105,9 +107,11 @@
 .info-box:not([class*="assigned-teams"]):not([class*="team-manager"]),
 [class*="info-box"]:not([class*="assigned-teams"]):not([class*="team-manager"]) {
   @include gradient-border($gradient: $admin-gradient-primary);
-  margin: $spacing-2xl $spacing-xl;
-  padding: $spacing-lg $spacing-xl;
+  margin: $spacing-2xl $spacing-xl;                                // 3rem 2rem
+  padding: $padding-lg $padding-xl;                                // 1.5rem 2rem (standardized)
+  border-radius: $radius-lg;                                       // 8px
   max-width: calc(100% - #{$spacing-3xl});
+  transition: $transition-all-normal;                              // all 0.2s ease-out
 }
 
 // Info box variant
@@ -152,8 +156,10 @@
 
 .collection-list__item,
 [class*="list-item"] {
-  padding: $spacing-lg;
-  margin: $spacing-md 0;
+  padding: $padding-lg;                                            // 1.5rem (standardized)
+  margin: $spacing-md 0;                                           // 1rem 0
+  border-radius: $radius-lg;                                       // 8px
+  transition: $transition-all-normal;                              // all 0.2s ease-out
 }
 
 // ============================================
@@ -172,9 +178,7 @@ table tbody tr,
   
   &:hover {
     background: rgba($admin-accent-primary, 0.12);
-    box-shadow: 
-      0 0 20px rgba($admin-accent-primary, 0.15),
-      inset 0 0 0 1px rgba($admin-accent-primary, 0.2);
+    box-shadow: $shadow-md, 0 0 20px rgba($admin-accent-primary, 0.15);  // Use standardized shadow
   }
 }
 

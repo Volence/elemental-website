@@ -1,0 +1,177 @@
+// ============================================
+// ICON SIZING UTILITIES
+// Standardized icon sizes for consistency
+// ============================================
+
+@import '../variables';
+
+// ============================================
+// ICON SIZE CLASSES
+// ============================================
+
+.icon,
+[class*="icon"],
+svg {
+  // Default icon size
+  width: $icon-md;                                                 // 16px
+  height: $icon-md;                                                // 16px
+  flex-shrink: 0;                                                  // Prevent icon squishing
+}
+
+// Size variants
+.icon--xs,
+.icon-xs {
+  width: $icon-xs;                                                 // 12px
+  height: $icon-xs;                                                // 12px
+}
+
+.icon--sm,
+.icon-sm {
+  width: $icon-sm;                                                 // 14px
+  height: $icon-sm;                                                // 14px
+}
+
+.icon--md,
+.icon-md {
+  width: $icon-md;                                                 // 16px
+  height: $icon-md;                                                // 16px
+}
+
+.icon--lg,
+.icon-lg {
+  width: $icon-lg;                                                 // 20px
+  height: $icon-lg;                                                // 20px
+}
+
+.icon--xl,
+.icon-xl {
+  width: $icon-xl;                                                 // 24px
+  height: $icon-xl;                                                // 24px
+}
+
+.icon--2xl,
+.icon-2xl {
+  width: $icon-2xl;                                                // 32px
+  height: $icon-2xl;                                               // 32px
+}
+
+// ============================================
+// ICON SPACING UTILITIES
+// ============================================
+
+// Icon with text (left)
+.icon-left {
+  display: inline-flex;
+  align-items: center;
+  gap: $gap-xs;                                                    // 0.5rem
+  
+  svg {
+    order: -1;                                                     // Icon before text
+  }
+}
+
+// Icon with text (right)
+.icon-right {
+  display: inline-flex;
+  align-items: center;
+  gap: $gap-xs;                                                    // 0.5rem
+  
+  svg {
+    order: 1;                                                      // Icon after text
+  }
+}
+
+// Icon button (square, centered)
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $padding-xs;                                            // 0.5rem
+  border-radius: $radius-md;                                       // 6px
+  cursor: pointer;
+  transition: $transition-all-normal;                              // all 0.2s ease-out
+  
+  &:hover {
+    background-color: var(--theme-elevation-100);
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+// ============================================
+// ICON COLOR UTILITIES
+// ============================================
+
+.icon--primary {
+  color: var(--theme-primary-500);
+}
+
+.icon--success {
+  color: $admin-accent-success;
+}
+
+.icon--warning {
+  color: $admin-accent-warning;
+}
+
+.icon--error {
+  color: $admin-accent-error;
+}
+
+.icon--info {
+  color: $admin-accent-info;
+}
+
+.icon--muted {
+  color: $admin-text-muted;
+}
+
+// ============================================
+// CONTEXT-SPECIFIC ICON SIZES
+// ============================================
+
+// Nav icons
+.nav__link svg,
+[class*="nav"] svg {
+  width: $icon-md;                                                 // 16px
+  height: $icon-md;                                                // 16px
+}
+
+// Button icons
+button svg,
+.btn svg {
+  width: $icon-md;                                                 // 16px
+  height: $icon-md;                                                // 16px
+}
+
+// Table cell icons
+td svg,
+.table__td svg {
+  width: $icon-sm;                                                 // 14px
+  height: $icon-sm;                                                // 14px
+}
+
+// Card header icons
+.card__header svg,
+[class*="card-header"] svg {
+  width: $icon-lg;                                                 // 20px
+  height: $icon-lg;                                                // 20px
+}
+
+// Section header icons
+h1 svg,
+h2 svg,
+h3 svg {
+  width: $icon-lg;                                                 // 20px
+  height: $icon-lg;                                                // 20px
+}
+
+// Badge icons
+.badge svg,
+.pill svg {
+  width: $icon-xs;                                                 // 12px
+  height: $icon-xs;                                                // 12px
+}
+

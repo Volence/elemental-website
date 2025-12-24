@@ -1,0 +1,350 @@
+// ============================================
+// ANIMATIONS & TRANSITIONS
+// Standardized animation system for admin panel
+// ============================================
+
+@import '../variables';
+
+// ============================================
+// KEYFRAME ANIMATIONS
+// ============================================
+
+// Fade in animation
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// Slide in from top
+@keyframes slideInDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// Slide in from bottom
+@keyframes slideInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+// Slide in from left
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+// Slide in from right
+@keyframes slideInRight {
+  from {
+    transform: translateX(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+// Scale in
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// Pulse animation
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+// Spin animation
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Shake animation (for errors)
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-2px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(2px);
+  }
+}
+
+// Bounce animation
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+// Shimmer animation (for skeleton loaders)
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+// ============================================
+// ANIMATION UTILITY CLASSES
+// ============================================
+
+// Fade animations
+.animate-fadeIn {
+  animation: fadeIn $transition-slow $ease-out;
+}
+
+.animate-fadeIn-fast {
+  animation: fadeIn $transition-fast $ease-out;
+}
+
+// Slide animations
+.animate-slideInDown {
+  animation: slideInDown $transition-slow $ease-out;
+}
+
+.animate-slideInUp {
+  animation: slideInUp $transition-slow $ease-out;
+}
+
+.animate-slideInLeft {
+  animation: slideInLeft $transition-slow $ease-out;
+}
+
+.animate-slideInRight {
+  animation: slideInRight $transition-slow $ease-out;
+}
+
+// Scale animation
+.animate-scaleIn {
+  animation: scaleIn $transition-slow $ease-out;
+}
+
+// Pulse animation
+.animate-pulse {
+  animation: pulse 2s $ease-in-out infinite;
+}
+
+.animate-pulse-fast {
+  animation: pulse 1s $ease-in-out infinite;
+}
+
+// Spin animation
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-spin-slow {
+  animation: spin 2s linear infinite;
+}
+
+// Shake animation
+.animate-shake {
+  animation: shake 0.5s $ease-in-out;
+}
+
+// Bounce animation
+.animate-bounce {
+  animation: bounce 1s $ease-in-out infinite;
+}
+
+// Shimmer animation
+.animate-shimmer {
+  animation: shimmer 2s linear infinite;
+}
+
+// ============================================
+// TRANSITION UTILITIES
+// ============================================
+
+// Transition all properties
+.transition-all {
+  transition: $transition-all-normal;  // all 0.2s ease-out
+}
+
+.transition-all-fast {
+  transition: $transition-all-fast;    // all 0.15s ease-out
+}
+
+.transition-all-slow {
+  transition: $transition-all-slow;    // all 0.3s ease-out
+}
+
+// Transition specific properties
+.transition-opacity {
+  transition: opacity $transition-normal $ease-out;
+}
+
+.transition-transform {
+  transition: transform $transition-normal $ease-out;
+}
+
+.transition-colors {
+  transition: color $transition-normal $ease-out,
+              background-color $transition-normal $ease-out,
+              border-color $transition-normal $ease-out;
+}
+
+// ============================================
+// HOVER TRANSFORM UTILITIES
+// ============================================
+
+.hover-lift {
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.hover-lift-sm {
+  &:hover {
+    transform: translateY(-1px);
+  }
+}
+
+.hover-scale {
+  &:hover {
+    transform: scale(1.02);
+  }
+}
+
+.hover-scale-sm {
+  &:hover {
+    transform: scale(1.01);
+  }
+}
+
+.hover-scale-lg {
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
+// ============================================
+// LOADING STATES
+// ============================================
+
+.loading {
+  position: relative;
+  pointer-events: none;
+  opacity: 0.6;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid transparent;
+    border-top-color: var(--theme-primary-500);
+    border-radius: $radius-full;
+    animation: spin $transition-normal linear infinite;
+  }
+}
+
+// ============================================
+// DELAY UTILITIES
+// ============================================
+
+.delay-75 {
+  animation-delay: 75ms;
+  transition-delay: 75ms;
+}
+
+.delay-100 {
+  animation-delay: 100ms;
+  transition-delay: 100ms;
+}
+
+.delay-150 {
+  animation-delay: 150ms;
+  transition-delay: 150ms;
+}
+
+.delay-200 {
+  animation-delay: 200ms;
+  transition-delay: 200ms;
+}
+
+.delay-300 {
+  animation-delay: 300ms;
+  transition-delay: 300ms;
+}
+
+.delay-500 {
+  animation-delay: 500ms;
+  transition-delay: 500ms;
+}
+
+// ============================================
+// DURATION UTILITIES
+// ============================================
+
+.duration-fast {
+  animation-duration: $transition-fast;
+  transition-duration: $transition-fast;
+}
+
+.duration-normal {
+  animation-duration: $transition-normal;
+  transition-duration: $transition-normal;
+}
+
+.duration-slow {
+  animation-duration: $transition-slow;
+  transition-duration: $transition-slow;
+}
+
+.duration-slower {
+  animation-duration: $transition-slower;
+  transition-duration: $transition-slower;
+}
+
