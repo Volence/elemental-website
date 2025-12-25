@@ -1389,6 +1389,16 @@ div.assignment-assigned-item span {
         box-shadow: 0 0 16px rgba(var(--theme-success-rgb), 0.8);
       }
     }
+    
+    // Green glow for assigned card header
+    .my-signup-card__header {
+      border-color: rgba(var(--theme-success-rgb), 0.3);
+      
+      &::before {
+        background: var(--theme-success);
+        box-shadow: 0 0 10px rgba(var(--theme-success-rgb), 0.6);
+      }
+    }
   }
 
   &__header {
@@ -1396,19 +1406,39 @@ div.assignment-assigned-item span {
     justify-content: space-between;
     align-items: flex-start;
     margin-bottom: 1.25rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--theme-elevation-150);
+    padding: 1.25rem;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5));
+    border: 1px solid rgba($admin-accent-primary, 0.2);
+    box-shadow: 
+      0 2px 8px rgba(0, 0, 0, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(4px);
+    position: relative;
+    
+    // Glowing left accent
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: $admin-accent-primary;
+      border-radius: 8px 0 0 8px;
+      box-shadow: 0 0 10px rgba($admin-accent-primary, 0.5);
+    }
 
     h4 {
       margin: 0 0 0.5rem 0;
-      color: var(--theme-elevation-900);
-      font-size: 1.1rem;
+      color: rgba(255, 255, 255, 0.95);
+      font-size: 1.15rem;
       font-weight: 600;
     }
   }
 
   &__date {
-    color: var(--theme-elevation-600);
+    color: rgba(255, 255, 255, 0.75);
     font-size: 0.9rem;
     margin: 0;
     display: flex;
@@ -1421,12 +1451,19 @@ div.assignment-assigned-item span {
   }
 
   &__roles {
+    padding: 1rem 1.25rem;
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.4));
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    
     strong {
       display: block;
-      color: var(--theme-elevation-800);
+      color: rgba(255, 255, 255, 0.85);
       margin-bottom: 0.75rem;
       font-size: 0.9rem;
       font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
   }
 
