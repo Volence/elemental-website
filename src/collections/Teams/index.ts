@@ -65,7 +65,7 @@ export const Teams: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['logoPreview', 'nameCell', 'regionCell', 'ratingCell', 'status', 'updatedAtCell'],
     description: '🏆 Manage all Elemental teams, including rosters, staff, and achievements.',
-    group: 'Esports',
+    group: 'People',
     components: {
       beforeList: [
         '@/components/BeforeDashboard/AssignedTeamsBanner#default',
@@ -386,6 +386,16 @@ export const Teams: CollectionConfig = {
             return value
           },
         ],
+      },
+    },
+    {
+      name: 'activeTournaments',
+      type: 'relationship',
+      relationTo: 'tournament-templates',
+      hasMany: true,
+      admin: {
+        description: 'Tournaments this team is currently participating in (auto-generates weekly matches)',
+        position: 'sidebar',
       },
     },
     // UI fields for list view columns with custom cells for vertical centering

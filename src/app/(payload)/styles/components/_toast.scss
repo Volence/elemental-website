@@ -1,0 +1,27 @@
+/**
+ * TOAST NOTIFICATIONS
+ * 
+ * Custom styles for toast/notification popups
+ */
+
+// Hide the close button on toast notifications
+.toast,
+[class*="toast"],
+[role="status"],
+[role="alert"] {
+  button[aria-label="Close"],
+  button[aria-label="Dismiss"],
+  .toast__close,
+  [class*="close"] {
+    display: none !important;
+  }
+}
+
+// Alternative: Target by Payload's specific toast classes
+[class*="Toastify"] {
+  button[aria-label="close"] {
+    display: none !important;
+  }
+}
+
+

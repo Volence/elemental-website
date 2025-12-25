@@ -2,7 +2,7 @@ import type { CollectionConfig } from 'payload'
 
 import { authenticated } from '../../access/authenticated'
 import { anyone } from '../../access/anyone'
-import { slugField } from 'payload'
+import { isProductionManager } from '../../access/roles'
 // import { createActivityLogHook, createActivityLogDeleteHook } from '../../utilities/activityLogger' // Temporarily disabled
 
 export const Matches: CollectionConfig = {
@@ -15,16 +15,24 @@ export const Matches: CollectionConfig = {
     plural: 'Matches',
   },
   access: {
-    create: authenticated,
-    delete: authenticated,
-    read: anyone,
-    update: authenticated,
+    // Only production managers (admin, staff-manager) can create, update, delete matches
+    // Regular production staff sign up through Production Dashboard only
+    create: isProductionManager,
+    delete: isProductionManager,
+    read: anyone, // Public can read (for frontend)
+    update: isProductionManager,
   },
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['titleCell', 'date', 'team', 'status', 'updatedAt'],
     description: '⚔️ Manage competitive matches for Elemental teams. Include match details, scores, streams, and VODs.',
-    group: 'Esports',
+    group: 'Production',
+    // Hide from sidebar for regular production staff - they use Production Dashboard instead
+    hidden: ({ user }) => {
+      if (!user) return true
+      // Show to admins and staff managers only
+      return user.role !== 'admin' && user.role !== 'staff-manager'
+    },
     components: {
       beforeList: [
         '@/components/MatchesListColumns/CellAlignmentStyles#default',
@@ -78,6 +86,24 @@ export const Matches: CollectionConfig = {
         
         return data
       },
+      async ({ data }) => {
+        // Auto-calculate coverage status for Production Workflow
+        if (data && data.productionWorkflow) {
+          const pw = data.productionWorkflow
+          const hasObserver = !!pw.assignedObserver
+          const hasProducer = !!pw.assignedProducer
+          const casterCount = pw.assignedCasters?.length || 0
+          
+          if (hasObserver && hasProducer && casterCount >= 2) {
+            pw.coverageStatus = 'full'
+          } else if (hasObserver || hasProducer || casterCount > 0) {
+            pw.coverageStatus = 'partial'
+          } else {
+            pw.coverageStatus = 'none'
+          }
+        }
+        return data
+      },
     ],
   },
   fields: [
@@ -103,18 +129,34 @@ export const Matches: CollectionConfig = {
           description: 'Match details, teams, date, and status',
           fields: [
             {
+              name: 'matchType',
+              type: 'select',
+              required: true,
+              defaultValue: 'team-match',
+              options: [
+                { label: 'Team Match', value: 'team-match' },
+                { label: 'Organization Event', value: 'organization-event' },
+                { label: 'Show Match', value: 'show-match' },
+                { label: 'Content Production', value: 'content-production' },
+              ],
+              admin: {
+                description: 'Match type affects how it appears in Weekly View',
+              },
+            },
+            {
               name: 'team',
               type: 'relationship',
               relationTo: 'teams',
-              required: true,
+              required: false,
               admin: {
-                description: 'Which ELMT team is playing. Tip: Only select teams from your organization. This will create a link to the team page on the match schedule.',
+                description: 'Which ELMT team is playing (required for team matches)',
+                condition: (data) => data.matchType === 'team-match',
               },
             },
             {
               name: 'opponent',
               type: 'text',
-              required: true,
+              required: false, // Changed to optional for blank match generation
               admin: {
                 description: 'Opponent team name',
               },
@@ -283,75 +325,193 @@ export const Matches: CollectionConfig = {
           ],
         },
         {
-          label: 'Production Staff',
-          description: 'Casters, producers, and observers for this match',
+          label: 'Production Workflow',
+          description: '📺 Staff availability, assignments, and broadcast schedule (used in Production Dashboard)',
           fields: [
             {
-              name: 'producersObservers',
-              type: 'array',
-              label: 'Producers/Observers',
-              labels: {
-                singular: 'Producer/Observer',
-                plural: 'Producers/Observers',
-              },
-              admin: {
-                description: 'Producers and/or Observers for this match. Add one entry if one person is doing both roles, or add multiple entries for separate producer and observer.',
-              },
+              name: 'productionWorkflow',
+              type: 'group',
+              dbName: 'prod_wf',
               fields: [
                 {
-                  name: 'staff',
-                  type: 'relationship',
-                  relationTo: 'production',
+                  name: 'priority',
+                  type: 'select',
+                  defaultValue: 'none',
+                  options: [
+                    { label: 'None', value: 'none' },
+                    { label: 'Low', value: 'low' },
+                    { label: 'Medium', value: 'medium' },
+                    { label: 'High', value: 'high' },
+                    { label: 'Urgent', value: 'urgent' },
+                  ],
+                },
+                {
+                  name: 'weekGenerated',
+                  type: 'date',
                   admin: {
-                    description: 'Select existing producer/observer from Production Staff (or leave empty and enter name manually below)',
+                    readOnly: true,
+                    description: 'When this match was auto-generated',
                   },
                 },
                 {
-                  name: 'name',
-                  type: 'text',
+                  name: 'isArchived',
+                  type: 'checkbox',
+                  defaultValue: false,
                   admin: {
-                    description: 'Producer/Observer name (only fill if not selecting from Production Staff above)',
+                    description: 'Archived matches hidden from Weekly View',
+                  },
+                },
+                // SIGNUPS: Staff who are AVAILABLE and want to work this match
+                {
+                  name: 'observerSignups',
+                  type: 'relationship',
+                  relationTo: 'users',
+                  hasMany: true,
+                  label: '✋ Observer Signups',
+                  admin: { 
+                    description: 'Staff who are AVAILABLE to observe (not yet confirmed)'
+                  },
+                },
+                {
+                  name: 'producerSignups',
+                  type: 'relationship',
+                  relationTo: 'users',
+                  hasMany: true,
+                  label: '✋ Producer Signups',
+                  admin: { 
+                    description: 'Staff who are AVAILABLE to produce (not yet confirmed)'
+                  },
+                },
+                {
+                  name: 'casterSignups',
+                  type: 'array',
+                  dbName: 'caster_su',
+                  minRows: 0,
+                  label: '✋ Caster Signups',
+                  admin: {
+                    description: 'Staff who are AVAILABLE to cast (not yet confirmed)'
+                  },
+                  fields: [
+                    {
+                      name: 'user',
+                      type: 'relationship',
+                      relationTo: 'users',
+                      required: true,
+                    },
+                    {
+                      name: 'style',
+                      type: 'select',
+                      label: 'Casting Style',
+                      options: [
+                        { label: 'Play-by-Play', value: 'play-by-play' },
+                        { label: 'Color', value: 'color' },
+                        { label: 'Both', value: 'both' },
+                      ],
+                    },
+                  ],
+                },
+                // ASSIGNMENTS: Staff who are CONFIRMED to work this match
+                {
+                  name: 'assignedObserver',
+                  type: 'relationship',
+                  relationTo: 'users',
+                  label: '✅ Assigned Observer',
+                  admin: { 
+                    description: 'CONFIRMED observer who WILL work this match (1 max)'
+                  },
+                },
+                {
+                  name: 'assignedProducer',
+                  type: 'relationship',
+                  relationTo: 'users',
+                  label: '✅ Assigned Producer',
+                  admin: { 
+                    description: 'CONFIRMED producer who WILL work this match (1 max)'
+                  },
+                },
+                {
+                  name: 'assignedCasters',
+                  type: 'array',
+                  minRows: 0,
+                  maxRows: 2,
+                  dbName: 'assigned_c',
+                  label: '✅ Assigned Casters',
+                  admin: {
+                    description: 'CONFIRMED casters who WILL work this match (2 max)'
+                  },
+                  fields: [
+                    {
+                      name: 'user',
+                      type: 'relationship',
+                      relationTo: 'users',
+                      required: true,
+                    },
+                    {
+                      name: 'style',
+                      type: 'select',
+                      label: 'Casting Style',
+                      options: [
+                        { label: 'Play-by-Play', value: 'play-by-play' },
+                        { label: 'Color', value: 'color' },
+                        { label: 'Both', value: 'both' },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  name: 'coverageStatus',
+                  type: 'select',
+                  admin: {
+                    readOnly: true,
+                    description: 'Auto-calculated: none/partial/full',
+                  },
+                  options: [
+                    { label: 'No Coverage', value: 'none' },
+                    { label: 'Partial Coverage', value: 'partial' },
+                    { label: 'Full Coverage', value: 'full' },
+                  ],
+                },
+                {
+                  name: 'includeInSchedule',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  admin: {
+                    description: 'Include in Schedule Generator export',
+                  },
+                },
+                {
+                  name: 'productionNotes',
+                  type: 'richText',
+                  admin: {
+                    description: 'Internal production notes',
                   },
                 },
               ],
-            },
-            {
-              name: 'casters',
-              type: 'array',
-              label: 'Casters',
-              labels: {
-                singular: 'Caster',
-                plural: 'Casters',
-              },
-              fields: [
-                {
-                  name: 'caster',
-                  type: 'relationship',
-                  relationTo: 'production',
-                  admin: {
-                    description: 'Select existing caster (or leave empty and enter name manually below)',
-                  },
-                },
-                {
-                  name: 'name',
-                  type: 'text',
-                  admin: {
-                    description: 'Caster name (only fill if not selecting from Production Staff above)',
-                  },
-                },
-              ],
-              admin: {
-                description: 'Casters for this match',
-              },
             },
           ],
         },
       ],
     },
     // Keep slug in sidebar
-    slugField({
-      position: 'sidebar',
-    }),
+    {
+      name: 'slug',
+      type: 'text',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+      },
+      hooks: {
+        beforeValidate: [
+          ({ value, data }) => {
+            // Auto-generate slug if not provided
+            if (!value) {
+              return `match-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
+            }
+            return value
+          },
+        ],
+      },
+    },
   ],
   // Note: hooks are defined above in the main config (beforeValidate for title generation)
   // Activity log hooks temporarily disabled:

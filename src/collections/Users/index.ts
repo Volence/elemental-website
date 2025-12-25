@@ -64,7 +64,7 @@ export const Users: CollectionConfig = {
       type: 'select',
       // Don't mark as required - we'll handle it in the hook
       required: false,
-      defaultValue: UserRole.TEAM_MANAGER,
+      defaultValue: UserRole.USER,
       admin: {
         description: 'User role determines what they can access and edit in the CMS.',
         // Read-only for non-admins is handled in the access control and hooks
@@ -82,12 +82,16 @@ export const Users: CollectionConfig = {
           value: UserRole.ADMIN,
         },
         {
+          label: 'Staff Manager',
+          value: UserRole.STAFF_MANAGER,
+        },
+        {
           label: 'Team Manager',
           value: UserRole.TEAM_MANAGER,
         },
         {
-          label: 'Staff Manager',
-          value: UserRole.STAFF_MANAGER,
+          label: 'User',
+          value: UserRole.USER,
         },
       ],
     },
@@ -107,6 +111,26 @@ export const Users: CollectionConfig = {
           return user?.role === UserRole.ADMIN
         },
       },
+    },
+    {
+      name: 'departments',
+      type: 'group',
+      label: 'Department Access',
+      admin: {
+        description: 'Grant access to department-specific tools and dashboards',
+        condition: (data) => data.role !== UserRole.ADMIN,
+      },
+      fields: [
+        {
+          name: 'isProductionStaff',
+          type: 'checkbox',
+          label: 'Production Staff',
+          admin: {
+            description: 'Grants access to Production Dashboard (view schedule, sign up for matches)',
+          },
+        },
+        // Future: isGraphicsStaff, isMediaStaff, isSocialStaff, isScoutingStaff, isEventsStaff
+      ],
     },
   ],
   hooks: {

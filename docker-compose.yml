@@ -16,7 +16,7 @@ services:
       - .env
     environment:
       - DATABASE_URI=postgresql://payload:payload@postgres:5432/payload
-      - PAYLOAD_DB_PUSH=${PAYLOAD_DB_PUSH:-false}
+      - PAYLOAD_DB_PUSH=${PAYLOAD_DB_PUSH:-true}
 
   postgres:
     image: postgres:16-alpine

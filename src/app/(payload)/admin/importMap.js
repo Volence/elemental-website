@@ -50,7 +50,7 @@ import { RowLabel as RowLabel_ec255a65fa6fa8d1faeb09cf35284224 } from '@/Header/
 import { RowLabel as RowLabel_1f6ff6ff633e3695d348f4f3c58f1466 } from '@/Footer/RowLabel'
 import { default as default_a1087e454b1b74ceaf1bf3fd38ecfc7a } from '@/components/DataConsistencyView'
 import { default as default_b41852718c887b613f07fa372f5e410c } from '@/components/EmptyComponent'
-import { default as default_ca8995f013e915ce49d7b5ddd8cc4174 } from '@/components/ScheduleGeneratorView'
+import { default as default_c68ab0b1bbf77fcff4337c949e1b628c } from '@/components/ProductionDashboardView'
 import { default as default_66dcba8625c994af6076586cb15c754f } from '@/components/UserAvatar'
 import { default as default_aa0a2d19d38a4839dbd373417e210b89 } from '@/components/AdminLogo'
 import { default as default_6b1b7b9ecbb8673c7166977ed22f5ed3 } from '@/components/BeforeDashboard/LogoutButton'
@@ -112,7 +112,7 @@ export const importMap = {
   "@/Footer/RowLabel#RowLabel": RowLabel_1f6ff6ff633e3695d348f4f3c58f1466,
   "@/components/DataConsistencyView#default": default_a1087e454b1b74ceaf1bf3fd38ecfc7a,
   "@/components/EmptyComponent#default": default_b41852718c887b613f07fa372f5e410c,
-  "@/components/ScheduleGeneratorView#default": default_ca8995f013e915ce49d7b5ddd8cc4174,
+  "@/components/ProductionDashboardView#default": default_c68ab0b1bbf77fcff4337c949e1b628c,
   "@/components/UserAvatar#default": default_66dcba8625c994af6076586cb15c754f,
   "@/components/AdminLogo#default": default_aa0a2d19d38a4839dbd373417e210b89,
   "@/components/BeforeDashboard/LogoutButton#default": default_6b1b7b9ecbb8673c7166977ed22f5ed3,

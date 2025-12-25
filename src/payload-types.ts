@@ -72,6 +72,7 @@ export interface Config {
     people: Person;
     teams: Team;
     matches: Match;
+    'tournament-templates': TournamentTemplate;
     production: Production;
     'organization-staff': OrganizationStaff;
     users: User;
@@ -93,6 +94,7 @@ export interface Config {
     people: PeopleSelect<false> | PeopleSelect<true>;
     teams: TeamsSelect<false> | TeamsSelect<true>;
     matches: MatchesSelect<false> | MatchesSelect<true>;
+    'tournament-templates': TournamentTemplatesSelect<false> | TournamentTemplatesSelect<true>;
     production: ProductionSelect<false> | ProductionSelect<true>;
     'organization-staff': OrganizationStaffSelect<false> | OrganizationStaffSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -115,13 +117,13 @@ export interface Config {
     header: Header;
     footer: Footer;
     'data-consistency': DataConsistency;
-    'schedule-generator': ScheduleGenerator;
+    'production-dashboard': ProductionDashboard;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'data-consistency': DataConsistencySelect<false> | DataConsistencySelect<true>;
-    'schedule-generator': ScheduleGeneratorSelect<false> | ScheduleGeneratorSelect<true>;
+    'production-dashboard': ProductionDashboardSelect<false> | ProductionDashboardSelect<true>;
   };
   locale: null;
   user: User & {
@@ -606,6 +608,61 @@ export interface Team {
    * URL-friendly identifier (auto-generated from name)
    */
   slug?: string | null;
+  /**
+   * Tournaments this team is currently participating in (auto-generates weekly matches)
+   */
+  activeTournaments?: (number | TournamentTemplate)[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * 🏆 Define recurring match schedules for tournaments and leagues
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tournament-templates".
+ */
+export interface TournamentTemplate {
+  id: number;
+  /**
+   * Tournament/League name (e.g., "FACEIT League S7", "Annihilation Tournament")
+   */
+  name: string;
+  /**
+   * When unchecked, stops auto-creating matches (use for breaks/off-season)
+   */
+  isActive?: boolean | null;
+  /**
+   * Teams participating in this tournament (can also assign from Teams collection)
+   */
+  assignedTeams?: (number | Team)[] | null;
+  /**
+   * Define match schedule per division/region combination
+   */
+  scheduleRules?:
+    | {
+        region: 'NA' | 'EU' | 'SA' | 'all';
+        division: 'Masters' | 'Expert' | 'Advanced' | 'Open' | 'all';
+        /**
+         * Number of matches to auto-create per week
+         */
+        matchesPerWeek: number;
+        /**
+         * When to schedule matches (can be rescheduled per match)
+         */
+        matchSlots?:
+          | {
+              dayOfWeek: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+              /**
+               * Time in HH:MM format (e.g., "20:00", "21:00")
+               */
+              time: string;
+              timezone: 'CET' | 'EST';
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -618,13 +675,17 @@ export interface Team {
 export interface Match {
   id: number;
   /**
-   * Which ELMT team is playing. Tip: Only select teams from your organization. This will create a link to the team page on the match schedule.
+   * Match type affects how it appears in Weekly View
    */
-  team: number | Team;
+  matchType: 'team-match' | 'organization-event' | 'show-match' | 'content-production';
+  /**
+   * Which ELMT team is playing (required for team matches)
+   */
+  team?: (number | null) | Team;
   /**
    * Opponent team name
    */
-  opponent: string;
+  opponent?: string | null;
   /**
    * Match date and time
    */
@@ -672,45 +733,130 @@ export interface Match {
    * VOD/replay URL (YouTube or Twitch)
    */
   vod?: string | null;
-  /**
-   * Producers and/or Observers for this match. Add one entry if one person is doing both roles, or add multiple entries for separate producer and observer.
-   */
-  producersObservers?:
-    | {
-        /**
-         * Select existing producer/observer from Production Staff (or leave empty and enter name manually below)
-         */
-        staff?: (number | null) | Production;
-        /**
-         * Producer/Observer name (only fill if not selecting from Production Staff above)
-         */
-        name?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Casters for this match
-   */
-  casters?:
-    | {
-        /**
-         * Select existing caster (or leave empty and enter name manually below)
-         */
-        caster?: (number | null) | Production;
-        /**
-         * Caster name (only fill if not selecting from Production Staff above)
-         */
-        name?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
-  slug: string;
+  productionWorkflow?: {
+    priority?: ('none' | 'low' | 'medium' | 'high' | 'urgent') | null;
+    /**
+     * When this match was auto-generated
+     */
+    weekGenerated?: string | null;
+    /**
+     * Archived matches hidden from Weekly View
+     */
+    isArchived?: boolean | null;
+    /**
+     * Staff who are AVAILABLE to observe (not yet confirmed)
+     */
+    observerSignups?: (number | User)[] | null;
+    /**
+     * Staff who are AVAILABLE to produce (not yet confirmed)
+     */
+    producerSignups?: (number | User)[] | null;
+    /**
+     * Staff who are AVAILABLE to cast (not yet confirmed)
+     */
+    casterSignups?:
+      | {
+          user: number | User;
+          style?: ('play-by-play' | 'color' | 'both') | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * CONFIRMED observer who WILL work this match (1 max)
+     */
+    assignedObserver?: (number | null) | User;
+    /**
+     * CONFIRMED producer who WILL work this match (1 max)
+     */
+    assignedProducer?: (number | null) | User;
+    /**
+     * CONFIRMED casters who WILL work this match (2 max)
+     */
+    assignedCasters?:
+      | {
+          user: number | User;
+          style?: ('play-by-play' | 'color' | 'both') | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Auto-calculated: none/partial/full
+     */
+    coverageStatus?: ('none' | 'partial' | 'full') | null;
+    /**
+     * Include in Schedule Generator export
+     */
+    includeInSchedule?: boolean | null;
+    /**
+     * Internal production notes
+     */
+    productionNotes?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+  };
+  slug?: string | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * 👤 Manage admin users who can access the CMS. Assign roles to control what each user can edit.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: number;
+  name?: string | null;
+  /**
+   * Profile picture for your account
+   */
+  avatar?: (number | null) | Media;
+  /**
+   * User role determines what they can access and edit in the CMS.
+   */
+  role?: ('admin' | 'staff-manager' | 'team-manager' | 'user') | null;
+  /**
+   * For Team Managers: Restrict editing to only these teams. For Staff Managers & Admins: Quick access links to these teams (they can still edit all teams).
+   */
+  assignedTeams?: (number | Team)[] | null;
+  /**
+   * Grant access to department-specific tools and dashboards
+   */
+  departments?: {
+    /**
+     * Grants access to Production Dashboard (view schedule, sign up for matches)
+     */
+    isProductionStaff?: boolean | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
 }
 /**
  * 🎙️ Manage production staff (casters, observers, producers) who work on match broadcasts.
@@ -768,45 +914,6 @@ export interface OrganizationStaff {
   )[];
   updatedAt: string;
   createdAt: string;
-}
-/**
- * 👤 Manage admin users who can access the CMS. Assign roles to control what each user can edit.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
- */
-export interface User {
-  id: number;
-  name?: string | null;
-  /**
-   * Profile picture for your account
-   */
-  avatar?: (number | null) | Media;
-  /**
-   * User role determines what they can access and edit in the CMS.
-   */
-  role?: ('admin' | 'team-manager' | 'staff-manager') | null;
-  /**
-   * For Team Managers: Restrict editing to only these teams. For Staff Managers & Admins: Quick access links to these teams (they can still edit all teams).
-   */
-  assignedTeams?: (number | Team)[] | null;
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
 }
 /**
  * Pairs of people with similar names that are actually different people
@@ -1123,6 +1230,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'matches';
         value: number | Match;
+      } | null)
+    | ({
+        relationTo: 'tournament-templates';
+        value: number | TournamentTemplate;
       } | null)
     | ({
         relationTo: 'production';
@@ -1479,6 +1590,7 @@ export interface TeamsSelect<T extends boolean = true> {
         id?: T;
       };
   slug?: T;
+  activeTournaments?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1487,6 +1599,7 @@ export interface TeamsSelect<T extends boolean = true> {
  * via the `definition` "matches_select".
  */
 export interface MatchesSelect<T extends boolean = true> {
+  matchType?: T;
   team?: T;
   opponent?: T;
   date?: T;
@@ -1510,22 +1623,62 @@ export interface MatchesSelect<T extends boolean = true> {
       };
   faceitLobby?: T;
   vod?: T;
-  producersObservers?:
+  productionWorkflow?:
     | T
     | {
-        staff?: T;
-        name?: T;
-        id?: T;
+        priority?: T;
+        weekGenerated?: T;
+        isArchived?: T;
+        observerSignups?: T;
+        producerSignups?: T;
+        casterSignups?:
+          | T
+          | {
+              user?: T;
+              style?: T;
+              id?: T;
+            };
+        assignedObserver?: T;
+        assignedProducer?: T;
+        assignedCasters?:
+          | T
+          | {
+              user?: T;
+              style?: T;
+              id?: T;
+            };
+        coverageStatus?: T;
+        includeInSchedule?: T;
+        productionNotes?: T;
       };
-  casters?:
-    | T
-    | {
-        caster?: T;
-        name?: T;
-        id?: T;
-      };
-  generateSlug?: T;
   slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tournament-templates_select".
+ */
+export interface TournamentTemplatesSelect<T extends boolean = true> {
+  name?: T;
+  isActive?: T;
+  assignedTeams?: T;
+  scheduleRules?:
+    | T
+    | {
+        region?: T;
+        division?: T;
+        matchesPerWeek?: T;
+        matchSlots?:
+          | T
+          | {
+              dayOfWeek?: T;
+              time?: T;
+              timezone?: T;
+              id?: T;
+            };
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1562,6 +1715,11 @@ export interface UsersSelect<T extends boolean = true> {
   avatar?: T;
   role?: T;
   assignedTeams?: T;
+  departments?:
+    | T
+    | {
+        isProductionStaff?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -1783,12 +1941,12 @@ export interface DataConsistency {
   createdAt?: string | null;
 }
 /**
- * 📋 Generate Discord announcements from upcoming matches.
+ * 📺 Manage weekly match coverage, staff assignments, and broadcast schedule
  *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "schedule-generator".
+ * via the `definition` "production-dashboard".
  */
-export interface ScheduleGenerator {
+export interface ProductionDashboard {
   id: number;
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -1850,9 +2008,9 @@ export interface DataConsistencySelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "schedule-generator_select".
+ * via the `definition` "production-dashboard_select".
  */
-export interface ScheduleGeneratorSelect<T extends boolean = true> {
+export interface ProductionDashboardSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

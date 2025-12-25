@@ -6,6 +6,7 @@ export enum UserRole {
   ADMIN = 'admin',
   TEAM_MANAGER = 'team-manager',
   STAFF_MANAGER = 'staff-manager',
+  USER = 'user',
 }
 
 type AccessCheck = (args: AccessArgs<User>) => boolean | Promise<boolean>
@@ -56,4 +57,25 @@ export const adminOrAuthenticated: AccessCheck = ({ req: { user } }) => {
 export const adminOnly: AccessCheck = ({ req: { user } }) => {
   if (!user) return false
   return (user as User).role === UserRole.ADMIN
+}
+
+/**
+ * Check if user has production staff access
+ */
+export const isProductionStaff = ({ req: { user } }: AccessArgs<User>): boolean => {
+  if (!user) return false
+  const u = user as any
+  return u.departments?.isProductionStaff === true || 
+         (user as User).role === UserRole.ADMIN ||
+         (user as User).role === UserRole.STAFF_MANAGER
+}
+
+/**
+ * Check if user is production manager (admin or staff-manager)
+ * Used to restrict full access to production-related collections
+ */
+export const isProductionManager = ({ req: { user } }: AccessArgs<User>): boolean => {
+  if (!user) return false
+  return (user as User).role === UserRole.ADMIN ||
+         (user as User).role === UserRole.STAFF_MANAGER
 }

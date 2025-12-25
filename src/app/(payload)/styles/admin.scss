@@ -51,6 +51,8 @@
 @import './components/list-columns';
 @import './components/read-only-items';
 @import './components/recruitment';
+@import './components/production-dashboard';
+@import './components/toast';
 
 // ============================================
 // FINAL OVERRIDES (Maximum Specificity)
@@ -95,5 +97,22 @@ html body [class*="no-results"] a.btn {
   justify-content: center !important;
   flex: none !important;
   overflow: visible !important;
+}
+
+// Fix Production Dashboard buttons (nuclear option)
+html body .production-dashboard__actions button,
+html body .production-dashboard__actions .btn,
+html body .production-dashboard__actions [class*="btn"] {
+  padding: 0.75rem 1.5rem !important;
+  min-width: auto !important;
+  width: auto !important;
+  max-width: none !important;
+  white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: none !important;
+  overflow: visible !important;
+  font-size: 0.95rem !important;
 }
 
