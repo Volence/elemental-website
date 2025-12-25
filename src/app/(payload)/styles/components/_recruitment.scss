@@ -87,28 +87,35 @@
     align-items: center;
     gap: $spacing-sm;
     padding: $spacing-md $spacing-lg;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    @include transparent-bg(0.05);  // Clean Glow: transparent background
+    @include glow-border(#eab308, 0.4, 0.7);  // Yellow/Amber theme for management
     border-radius: $radius-md;
     color: $admin-text-primary;
     font-weight: 600;
     text-decoration: none;
     transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 0 10px rgba(234, 179, 8, 0.12);
 
     &:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: $admin-accent-primary;
+      background: rgba(234, 179, 8, 0.08);
       transform: translateY(-2px);
+      box-shadow: 0 0 16px rgba(234, 179, 8, 0.25);
     }
 
     &--primary {
-      background: $admin-accent-primary;
-      border-color: $admin-accent-primary;
-      color: white;
+      // Emerald/Green theme for applications (inviting action)
+      @include transparent-bg(0.08);
+      @include glow-border(#10b981, 0.5, 0.8);
+      background: linear-gradient(135deg, rgba(#10b981, 0.15), rgba(#22c55e, 0.15));
+      color: white !important;
+      font-weight: 600;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.15);
 
       &:hover {
-        background: lighten($admin-accent-primary, 10%);
-        border-color: lighten($admin-accent-primary, 10%);
+        background: linear-gradient(135deg, rgba(#10b981, 0.25), rgba(#22c55e, 0.25));
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
       }
     }
   }
@@ -119,7 +126,7 @@
   }
 }
 
-// Status badges for applications
+// Status badges for applications - Clean Glow Style
 .recruitment-status-badge {
   display: inline-block;
   padding: $spacing-xs $spacing-md;
@@ -128,41 +135,53 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
 
   &--new {
-    background: rgba(59, 130, 246, 0.2);
+    @include transparent-bg(0.03);
+    @include glow-border(#3b82f6, 0.5, 0.8);
     color: rgb(96, 165, 250);
-    border: 1px solid rgba(59, 130, 246, 0.5);
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.12);
   }
 
   &--reviewing {
-    background: rgba(234, 179, 8, 0.2);
+    @include transparent-bg(0.03);
+    @include glow-border(#eab308, 0.5, 0.8);
     color: rgb(250, 204, 21);
-    border: 1px solid rgba(234, 179, 8, 0.5);
+    box-shadow: 0 0 10px rgba(234, 179, 8, 0.12);
   }
 
   &--contacted {
-    background: rgba(147, 51, 234, 0.2);
+    @include transparent-bg(0.03);
+    @include glow-border(#9333ea, 0.5, 0.8);
     color: rgb(192, 132, 252);
-    border: 1px solid rgba(147, 51, 234, 0.5);
+    box-shadow: 0 0 10px rgba(147, 51, 234, 0.12);
   }
 
   &--tryout {
-    background: rgba(249, 115, 22, 0.2);
+    @include transparent-bg(0.03);
+    @include glow-border(#f97316, 0.5, 0.8);
     color: rgb(251, 146, 60);
-    border: 1px solid rgba(249, 115, 22, 0.5);
+    box-shadow: 0 0 10px rgba(249, 115, 22, 0.12);
   }
 
   &--accepted {
-    background: rgba(34, 197, 94, 0.2);
+    @include transparent-bg(0.03);
+    @include glow-border(#22c55e, 0.5, 0.8);
     color: rgb(74, 222, 128);
-    border: 1px solid rgba(34, 197, 94, 0.5);
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.12);
   }
 
   &--rejected {
-    background: rgba(239, 68, 68, 0.2);
+    @include transparent-bg(0.03);
+    @include glow-border(#ef4444, 0.5, 0.8);
     color: rgb(248, 113, 113);
-    border: 1px solid rgba(239, 68, 68, 0.5);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.12);
   }
 }
 
