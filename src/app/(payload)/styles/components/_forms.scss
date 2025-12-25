@@ -225,90 +225,56 @@ input[placeholder*="search"] {
   color: $admin-text-muted;
 }
 
-// React Select multi-value tags/badges - DARK GLOW style matching Production Dashboard
+// React Select multi-value tags/badges - Using DARK GLOW mixins
 .rs__multi-value {
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5)) !important;
-  border: 1px solid rgba($admin-accent-primary, 0.3) !important;
-  border-radius: 8px !important;
-  margin: 0.25rem !important;
-  padding: 0 !important;
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
-  backdrop-filter: blur(4px) !important;
-  transition: all 0.2s ease !important;
-  position: relative !important;
-  
-  // Glowing left accent bar (matching Production Dashboard style)
-  &::before {
-    content: '' !important;
-    position: absolute !important;
-    left: 0 !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    width: 3px !important;
-    height: 60% !important;
-    background: $admin-accent-primary !important;
-    border-radius: 2px !important;
-    box-shadow: 0 0 8px rgba($admin-accent-primary, 0.5) !important;
-    z-index: 1 !important;
-  }
-  
-  &:hover {
-    border-color: rgba($admin-accent-primary, 0.5) !important;
-    box-shadow: 
-      0 4px 12px rgba(0, 0, 0, 0.25),
-      0 0 15px rgba($admin-accent-primary, 0.15),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
-    
-    &::before {
-      box-shadow: 0 0 12px rgba($admin-accent-primary, 0.7) !important;
-    }
-  }
+  @include dark-glow-badge;
+  @include glow-accent-bar;
+  margin: 0.25rem;
+  padding: 0;
 }
 
 // React Select multi-value label - transparent with extra left padding for accent bar
 .rs__multi-value__label {
-  background: transparent !important;
-  border: none !important;
-  color: rgba(255, 255, 255, 0.95) !important;
-  padding: 0.5rem 0.65rem 0.5rem 1rem !important; // Extra left padding for accent bar
-  font-size: 0.9rem !important;
-  font-weight: 500 !important;
-  position: relative !important;
-  z-index: 2 !important;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.95);
+  padding: 0.5rem 0.65rem 0.5rem 1rem; // Extra left padding for accent bar
+  font-size: 0.9rem;
+  font-weight: 500;
+  position: relative;
+  z-index: 2;
 }
 
 // React Select multi-value remove buttons (X buttons in tags)
 .rs__multi-value__remove {
-  background: transparent !important;
-  border: none !important;
-  width: 20px !important;
-  height: 20px !important;
-  padding: 2px !important;
-  min-height: unset !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  color: rgba(255, 255, 255, 0.4) !important; // Muted gray by default
-  transition: all $transition-fast !important;
-  border-radius: $radius-sm !important;
-  margin-left: 0.35rem !important;
+  background: transparent;
+  border: none;
+  width: 20px;
+  height: 20px;
+  padding: 2px;
+  min-height: unset;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.4);
+  transition: all $transition-fast;
+  border-radius: $radius-sm;
+  margin-left: 0.35rem;
   
   &:hover {
-    color: $admin-accent-primary !important; // Cyan theme color on hover
-    background: rgba($admin-accent-primary, 0.15) !important;
+    color: $admin-accent-primary;
+    background: rgba($admin-accent-primary, 0.15);
   }
   
   svg {
-    width: 14px !important;
-    height: 14px !important;
+    width: 14px;
+    height: 14px;
   }
   
   // Hide the redundant "Remove" tooltip
   [role="complementary"],
   + [role="complementary"] {
-    display: none !important;
+    display: none;
   }
 }
 
