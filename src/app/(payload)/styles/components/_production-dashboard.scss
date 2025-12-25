@@ -1553,7 +1553,7 @@ html body .my-signup-card.my-signup-card--assigned {
   &--assigned {
     @include transparent-bg(0.05);
     @include glow-badge(#10b981);
-    @include glow-accent-bar(#10b981, 3px, 60%, 2px, 0.6);
+    @include glow-accent-bar(#10b981, 3px, 60%);
     padding-left: 1.15rem; // Extra space for accent bar
     color: rgba(255, 255, 255, 1);
   }
@@ -1561,7 +1561,7 @@ html body .my-signup-card.my-signup-card--assigned {
   &--pending {
     @include transparent-bg(0.05);
     @include glow-badge($admin-accent-primary);
-    @include glow-accent-bar($admin-accent-primary, 3px, 60%, 2px, 0.6);
+    @include glow-accent-bar($admin-accent-primary, 3px, 60%);
     padding-left: 1.15rem; // Extra space for accent bar
     color: rgba(255, 255, 255, 1);
   }
