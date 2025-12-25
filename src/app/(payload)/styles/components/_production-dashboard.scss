@@ -1317,21 +1317,21 @@ div.assignment-assigned-item span {
   gap: 1rem;
 }
 
-.my-signup-card {
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.35));
-  border: 1px solid rgba($admin-accent-primary, 0.3);
-  border-radius: 10px;
-  padding: 1.5rem;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.2s ease;
+html body .my-signup-card {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.35)) !important;
+  border: 1px solid rgba($admin-accent-primary, 0.3) !important;
+  border-radius: 10px !important;
+  padding: 1.5rem !important;
+  position: relative !important;
+  overflow: hidden !important;
+  transition: all 0.2s ease !important;
   box-shadow: 
     0 4px 12px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(8px);
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(8px) !important;
   
   // Add glowing left accent border
-  border-left: 3px solid $admin-accent-primary;
+  border-left: 3px solid $admin-accent-primary !important;
   
   &::after {
     content: '';
@@ -1346,11 +1346,11 @@ div.assignment-assigned-item span {
   }
   
   &:hover {
-    transform: translateY(-2px);
+    transform: translateY(-2px) !important;
     box-shadow: 
       0 6px 16px rgba($admin-accent-primary, 0.15),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    border-color: rgba($admin-accent-primary, 0.5);
+      inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba($admin-accent-primary, 0.5) !important;
     
     &::after {
       box-shadow: 0 0 16px rgba($admin-accent-primary, 0.7);
@@ -1358,13 +1358,13 @@ div.assignment-assigned-item span {
   }
 
   &--assigned {
-    background: linear-gradient(135deg, rgba(var(--theme-success-rgb), 0.15), rgba(var(--theme-success-rgb), 0.2));
-    border-color: rgba(var(--theme-success-rgb), 0.4);
-    border-left: 3px solid var(--theme-success);
+    background: linear-gradient(135deg, rgba(var(--theme-success-rgb), 0.15), rgba(var(--theme-success-rgb), 0.2)) !important;
+    border-color: rgba(var(--theme-success-rgb), 0.4) !important;
+    border-left: 3px solid var(--theme-success) !important;
     
     &::after {
-      background: var(--theme-success);
-      box-shadow: 0 0 12px rgba(var(--theme-success-rgb), 0.6);
+      background: var(--theme-success) !important;
+      box-shadow: 0 0 12px rgba(var(--theme-success-rgb), 0.6) !important;
     }
     
     // Add glowing top accent bar for confirmed assignments
@@ -1382,21 +1382,21 @@ div.assignment-assigned-item span {
     &:hover {
       box-shadow: 
         0 6px 16px rgba(var(--theme-success-rgb), 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-      border-color: rgba(var(--theme-success-rgb), 0.6);
+        inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+      border-color: rgba(var(--theme-success-rgb), 0.6) !important;
       
       &::after {
-        box-shadow: 0 0 16px rgba(var(--theme-success-rgb), 0.8);
+        box-shadow: 0 0 16px rgba(var(--theme-success-rgb), 0.8) !important;
       }
     }
     
     // Green glow for assigned card header
     .my-signup-card__header {
-      border-color: rgba(var(--theme-success-rgb), 0.3);
+      border-color: rgba(var(--theme-success-rgb), 0.3) !important;
       
       &::before {
-        background: var(--theme-success);
-        box-shadow: 0 0 10px rgba(var(--theme-success-rgb), 0.6);
+        background: var(--theme-success) !important;
+        box-shadow: 0 0 10px rgba(var(--theme-success-rgb), 0.6) !important;
       }
     }
   }

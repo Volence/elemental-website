@@ -148,3 +148,4 @@ FACEIT divisions map to our system as follows:
 - **Solution:** Adjust the "Matches Per Week" field and number of match slots in the schedule rule
 
 
+
