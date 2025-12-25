@@ -225,9 +225,9 @@ input[placeholder*="search"] {
   color: $admin-text-muted;
 }
 
-// React Select multi-value tags/badges - Using DARK GLOW mixins
+// React Select multi-value tags/badges - Using CLEAN GLOW mixins
 .rs__multi-value {
-  @include dark-glow-badge;
+  @include glow-badge;
   @include glow-accent-bar;
   margin: 0.25rem;
   padding: 0;

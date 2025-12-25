@@ -130,26 +130,22 @@ button[aria-label="Close"]:not(.hamburger__close) {
 }
 
 // ============================================
-// DARK GLOW GLOBAL BASE STYLES
+// CLEAN GLOW GLOBAL BASE STYLES
 // ============================================
 
-// Apply DARK GLOW to badges, pills, and tags by default
+// Apply clean glow to badges, pills, and tags by default
 .pill,
 .badge,
 .chip,
 .tag {
-  @include dark-glow-badge;
+  @include glow-badge;
 }
 
-// Apply DARK GLOW to cards
+// Apply clean glow to cards
 .card,
 [class*="card"]:not([class*="stat-card"]):not([class*="dashboard-stats"]):not([class*="assigned-teams"]) {
-  @include dark-glow-card;
+  @include glow-card;
 }
 
-// Apply DARK GLOW to buttons (excluding certain system buttons)
-button:not([type="submit"]):not([aria-label*="Close"]):not([class*="hamburger"]),
-.btn {
-  @include dark-glow-button;
-}
+// Note: Buttons are NOT globally styled to allow for more color variety per context
 

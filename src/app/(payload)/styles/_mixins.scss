@@ -160,68 +160,57 @@
 }
 
 // ============================================
-// DARK GLOW DESIGN SYSTEM MIXINS
+// GLOW DESIGN SYSTEM MIXINS (Clean & Sleek)
 // ============================================
 
-// Dark Gradient Background - Core pattern
-@mixin dark-gradient-bg($alpha-start: 0.4, $alpha-end: 0.5) {
-  background: linear-gradient(135deg, rgba(0, 0, 0, $alpha-start), rgba(0, 0, 0, $alpha-end));
+// Transparent Background - Subtle, not heavy
+@mixin transparent-bg($alpha: 0.05) {
+  background: rgba(0, 0, 0, $alpha);
 }
 
-// Glass Morphism Effect
-@mixin glass-effect($blur: 4px, $alpha: 0.05) {
+// Glass Morphism Effect - Very light
+@mixin glass-effect($blur: 4px, $alpha: 0.03) {
   backdrop-filter: blur($blur);
   background: rgba(0, 0, 0, $alpha);
 }
 
-// Glowing Border
-@mixin glow-border($color: $admin-accent-primary, $alpha: 0.3, $hover-alpha: 0.5) {
+// Glowing Border - The star of the show
+@mixin glow-border($color: $admin-accent-primary, $alpha: 0.5, $hover-alpha: 0.8) {
   border: 1px solid rgba($color, $alpha);
-  transition: border-color 0.2s ease;
+  box-shadow: 0 0 12px rgba($color, 0.15);
+  transition: all 0.2s ease;
   
   &:hover {
     border-color: rgba($color, $hover-alpha);
+    box-shadow: 0 0 20px rgba($color, 0.3);
   }
 }
 
-// Dark Glow Card - Complete card styling
-@mixin dark-glow-card($color: $admin-accent-primary) {
-  @include dark-gradient-bg(0.3, 0.4);
+// Clean Glow Card - Transparent with glowing border
+@mixin glow-card($color: $admin-accent-primary) {
+  @include transparent-bg(0.05);
   @include glow-border($color);
   border-radius: 8px;
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(8px);
   transition: all 0.2s ease;
   
   &:hover {
-    box-shadow: 
-      0 8px 24px rgba(0, 0, 0, 0.3),
-      0 0 20px rgba($color, 0.15),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    background: rgba($color, 0.05);
     transform: translateY(-2px);
   }
 }
 
-// Dark Glow Badge/Pill - Complete badge styling
-@mixin dark-glow-badge($color: $admin-accent-primary) {
-  @include dark-gradient-bg(0.4, 0.5);
-  @include glow-border($color);
+// Clean Glow Badge/Pill - Transparent with glowing border
+@mixin glow-badge($color: $admin-accent-primary) {
+  @include transparent-bg(0.03);
+  @include glow-border($color, 0.5, 0.9);
   border-radius: 8px;
   color: rgba(255, 255, 255, 0.95);
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(4px);
   transition: all 0.2s ease;
   
   &:hover {
-    background: linear-gradient(135deg, rgba($color, 0.15), rgba($color, 0.2));
-    border-color: rgba($color, 0.6);
-    box-shadow: 
-      0 4px 12px rgba($color, 0.25),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    background: rgba($color, 0.1);
     transform: translateY(-1px);
   }
 }
@@ -250,44 +239,51 @@
   }
 }
 
-// Dark Glow Button
-@mixin dark-glow-button($color: $admin-accent-primary) {
-  background: linear-gradient(135deg, rgba($color, 0.2), rgba($color, 0.3));
-  border: 1px solid rgba($color, 0.5);
+// Clean Glow Button - Transparent with colored glow
+@mixin glow-button($color: $admin-accent-primary) {
+  @include transparent-bg(0.08);
+  @include glow-border($color);
   border-radius: 8px;
   color: white;
-  box-shadow: 
-    0 2px 8px rgba($color, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(4px);
   transition: all 0.2s ease;
   
   &:hover {
-    background: linear-gradient(135deg, rgba($color, 0.3), rgba($color, 0.4));
-    border-color: rgba($color, 0.7);
-    box-shadow: 
-      0 4px 12px rgba($color, 0.35),
-      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    background: rgba($color, 0.15);
     transform: translateY(-1px);
   }
   
   &:active {
     transform: translateY(0);
-    box-shadow: 
-      0 2px 4px rgba($color, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    background: rgba($color, 0.2);
   }
 }
 
-// Dark Glow Section Header
-@mixin dark-glow-header($color: $admin-accent-primary) {
-  @include dark-gradient-bg(0.4, 0.5);
+// Legacy dark-glow mixins (kept for backward compatibility)
+@mixin dark-gradient-bg($alpha-start: 0.4, $alpha-end: 0.5) {
+  background: linear-gradient(135deg, rgba(0, 0, 0, $alpha-start), rgba(0, 0, 0, $alpha-end));
+}
+
+@mixin dark-glow-card($color: $admin-accent-primary) {
+  @include glow-card($color); // Use new cleaner version
+}
+
+@mixin dark-glow-badge($color: $admin-accent-primary) {
+  @include glow-badge($color); // Use new cleaner version
+}
+
+@mixin dark-glow-button($color: $admin-accent-primary) {
+  @include glow-button($color); // Use new cleaner version
+}
+
+// Clean Glow Section Header
+@mixin glow-header($color: $admin-accent-primary) {
+  @include transparent-bg(0.05);
   @include glow-border($color);
   border-radius: 8px;
   padding: 1rem 1.25rem;
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(4px);
+  position: relative;
   
   // Glowing left accent
   &::before {
@@ -299,7 +295,7 @@
     width: 4px;
     background: $color;
     border-radius: 8px 0 0 8px;
-    box-shadow: 0 0 12px rgba($color, 0.6);
+    box-shadow: 0 0 15px rgba($color, 0.7);
   }
   
   // Glowing bottom accent
@@ -311,7 +307,12 @@
     right: 0;
     height: 2px;
     background: linear-gradient(90deg, $color, transparent);
-    box-shadow: 0 0 10px rgba($color, 0.5);
+    box-shadow: 0 0 12px rgba($color, 0.6);
   }
+}
+
+// Legacy
+@mixin dark-glow-header($color: $admin-accent-primary) {
+  @include glow-header($color);
 }
 

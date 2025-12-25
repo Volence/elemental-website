@@ -1380,12 +1380,9 @@ html body .my-signup-card.my-signup-card--assigned {
   
   // Green glow for assigned card header
   .my-signup-card__header {
-    @include dark-gradient-bg(0.5, 0.6);
-    @include glow-border(#10b981, 0.3, 0.5);
-    box-shadow: 
-      0 4px 12px rgba(0, 0, 0, 0.3),
-      0 0 15px rgba(16, 185, 129, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    @include transparent-bg(0.08);
+    @include glow-border(#10b981, 0.5, 0.8);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
     
     &::before {
       background: linear-gradient(180deg, #10b981, rgba(16, 185, 129, 0.6));
@@ -1398,11 +1395,9 @@ html body .my-signup-card.my-signup-card--assigned {
   
   // Green glow for roles section
   .my-signup-card__roles {
-    @include dark-gradient-bg(0.35, 0.45);
-    @include glow-border(#10b981, 0.2, 0.4);
-    box-shadow: 
-      0 2px 8px rgba(0, 0, 0, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    @include transparent-bg(0.05);
+    @include glow-border(#10b981, 0.4, 0.6);
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.1);
   }
 }
 
@@ -1413,11 +1408,8 @@ html body .my-signup-card.my-signup-card--assigned {
   margin-bottom: 1.25rem;
   padding: 1.25rem;
   border-radius: 8px;
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5));
-  border: 1px solid rgba($admin-accent-primary, 0.2);
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  @include transparent-bg(0.05);
+  @include glow-border($admin-accent-primary, 0.5, 0.8);
   backdrop-filter: blur(4px);
   position: relative;
   
@@ -1458,7 +1450,7 @@ html body .my-signup-card.my-signup-card--assigned {
 .my-signup-card__roles {
   padding: 1rem 1.25rem;
   border-radius: 8px;
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.4));
+  @include transparent-bg(0.03);
   border: 1px solid rgba(255, 255, 255, 0.05);
   
   strong {
@@ -1559,49 +1551,19 @@ html body .my-signup-card.my-signup-card--assigned {
   backdrop-filter: blur(4px);
 
   &--assigned {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.25));
+    @include transparent-bg(0.05);
+    @include glow-badge(#10b981);
+    @include glow-accent-bar(#10b981, 3px, 60%, 2px, 0.6);
+    padding-left: 1.15rem; // Extra space for accent bar
     color: rgba(255, 255, 255, 1);
-    border-color: rgba(16, 185, 129, 0.5);
-    box-shadow: 
-      0 2px 8px rgba(16, 185, 129, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    
-    // Glowing left accent
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 3px;
-      height: 60%;
-      background: #10b981;
-      border-radius: 2px;
-      box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
-    }
   }
 
   &--pending {
-    background: linear-gradient(135deg, rgba($admin-accent-primary, 0.2), rgba($admin-accent-primary, 0.25));
+    @include transparent-bg(0.05);
+    @include glow-badge($admin-accent-primary);
+    @include glow-accent-bar($admin-accent-primary, 3px, 60%, 2px, 0.6);
+    padding-left: 1.15rem; // Extra space for accent bar
     color: rgba(255, 255, 255, 1);
-    border-color: rgba($admin-accent-primary, 0.5);
-    box-shadow: 
-      0 2px 8px rgba($admin-accent-primary, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    
-    // Glowing left accent
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 3px;
-      height: 60%;
-      background: $admin-accent-primary;
-      border-radius: 2px;
-      box-shadow: 0 0 8px rgba($admin-accent-primary, 0.6);
-    }
   }
 }
 

@@ -122,6 +122,42 @@ html body input#search-filter-input {
       }
     }
   }
+  
+  // Color variety for Columns button (Cyan theme)
+  .list-controls__toggle-columns,
+  button[class*="toggle-columns"] {
+    &:hover {
+      border-color: rgba(6, 182, 212, 0.3) !important;
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.05), rgba(8, 145, 178, 0.05)) !important;
+      box-shadow: 0 0 15px rgba(6, 182, 212, 0.15) !important;
+    }
+
+    &[data-active="true"],
+    &.active {
+      background: linear-gradient(135deg, #06b6d4, #0891b2) !important;
+      border-color: rgba(6, 182, 212, 0.5) !important;
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.3) !important;
+    }
+  }
+  
+  // Color variety for Filters button (Green theme)
+  .list-controls__toggle-where,
+  .list-controls__toggle-filters,
+  button[class*="toggle-where"],
+  button[class*="toggle-filters"] {
+    &:hover {
+      border-color: rgba(132, 204, 22, 0.3) !important;
+      background: linear-gradient(135deg, rgba(132, 204, 22, 0.05), rgba(101, 163, 13, 0.05)) !important;
+      box-shadow: 0 0 15px rgba(132, 204, 22, 0.15) !important;
+    }
+
+    &[data-active="true"],
+    &.active {
+      background: linear-gradient(135deg, #84cc16, #65a30d) !important;
+      border-color: rgba(132, 204, 22, 0.5) !important;
+      box-shadow: 0 0 20px rgba(132, 204, 22, 0.3) !important;
+    }
+  }
 }
 
 /* Override pill button sizing for list controls (Columns/Filters) */
