@@ -124,6 +124,15 @@
           color: $tier-4k !important;
         }
       }
+      
+      // CRITICAL FIX: Remove border from inner .btn__content element to prevent double borders
+      .btn__content,
+      [class*="btn__content"] {
+        border: none !important;
+        box-shadow: none !important;
+        background: none !important;
+        border-radius: 0 !important;
+      }
     }
   }
   
