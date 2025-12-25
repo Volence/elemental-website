@@ -332,7 +332,7 @@ export function StaffSignupsView() {
     return false
   }
 
-  const currentUserId = user?.id || null
+  const currentUserId = user?.id ? (typeof user.id === 'number' ? user.id : parseInt(user.id as string, 10)) : null
   const mySignups = matches.filter(m => isUserSignedUp(m, currentUserId))
   const myAssignments = matches.filter(m => isUserAssigned(m, currentUserId))
   const myPendingSignups = mySignups.filter(m => !isUserAssigned(m, currentUserId))

@@ -136,7 +136,7 @@ export const TournamentTemplates: CollectionConfig = {
                 description: 'Time in HH:MM format (e.g., "20:00", "21:00")',
                 placeholder: '20:00',
               },
-              validate: (value) => {
+              validate: (value: string | null | undefined) => {
                 if (!value) return 'Time is required'
                 const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/
                 if (!timeRegex.test(value)) {

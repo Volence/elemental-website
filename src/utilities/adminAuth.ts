@@ -71,6 +71,7 @@ export function getRoleLabel(role: UserRole | undefined): string {
     [UserRole.ADMIN]: 'Administrator',
     [UserRole.TEAM_MANAGER]: 'Team Manager',
     [UserRole.STAFF_MANAGER]: 'Staff Manager',
+    [UserRole.USER]: 'User',
   }
   
   return roleLabels[role] || role

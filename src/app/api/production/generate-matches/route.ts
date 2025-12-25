@@ -56,13 +56,14 @@ export async function POST(req: NextRequest) {
           
           await payload.create({
             collection: 'matches',
+            draft: false,
             data: {
               matchType: 'team-match',
               team: team.id,
               opponent: '',
               date: matchDate.toISOString(),
-              region: team.region,
-              league: division,
+              region: (team.region === 'NA' || team.region === 'EMEA' || team.region === 'SA') ? team.region : 'NA',
+              league: (division === 'Masters' || division === 'Expert' || division === 'Advanced' || division === 'Open') ? division : 'Open',
               faceitLobby: '',
               season: tournament.name || '',
               status: 'scheduled',

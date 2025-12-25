@@ -67,7 +67,7 @@ export function AssignmentView() {
       const match = matches.find(m => m.id === matchId)
       if (!match) return
 
-      const pw = match.productionWorkflow || {}
+      const pw = match.productionWorkflow || {} as NonNullable<Match['productionWorkflow']>
       let updateData: any = {}
 
       if (role === 'observer') {
@@ -126,7 +126,7 @@ export function AssignmentView() {
       const match = matches.find(m => m.id === matchId)
       if (!match) return
 
-      const pw = match.productionWorkflow || {}
+      const pw = match.productionWorkflow || {} as NonNullable<Match['productionWorkflow']>
       let updateData: any = {}
 
       if (role === 'observer') {
@@ -143,7 +143,7 @@ export function AssignmentView() {
         const existingCasters = pw.assignedCasters || []
         updateData.productionWorkflow = {
           ...pw,
-          assignedCasters: existingCasters.filter((_, idx) => idx !== casterIndex)
+          assignedCasters: existingCasters.filter((_: CasterSignup, idx: number) => idx !== casterIndex)
         }
       }
 
@@ -228,7 +228,7 @@ export function AssignmentView() {
       ) : (
         <div className="assignment-matches">
           {matches.map((match) => {
-            const pw = match.productionWorkflow || {}
+            const pw = match.productionWorkflow || {} as NonNullable<Match['productionWorkflow']>
             const observerSignups = pw.observerSignups || []
             const producerSignups = pw.producerSignups || []
             const casterSignups = pw.casterSignups || []
@@ -264,7 +264,7 @@ export function AssignmentView() {
                           <p className="assignment-empty">No signups</p>
                         ) : (
                           <div className="assignment-signup-list">
-                            {observerSignups.map((user, idx) => (
+                            {observerSignups.map((user: User | number, idx: number) => (
                               <button
                                 key={idx}
                                 onClick={() => assignStaff(match.id, 'observer', typeof user === 'number' ? user : user.id)}
@@ -306,7 +306,7 @@ export function AssignmentView() {
                           <p className="assignment-empty">No signups</p>
                         ) : (
                           <div className="assignment-signup-list">
-                            {producerSignups.map((user, idx) => (
+                            {producerSignups.map((user: User | number, idx: number) => (
                               <button
                                 key={idx}
                                 onClick={() => assignStaff(match.id, 'producer', typeof user === 'number' ? user : user.id)}
@@ -348,7 +348,7 @@ export function AssignmentView() {
                           <p className="assignment-empty">No signups</p>
                         ) : (
                           <div className="assignment-signup-list">
-                            {casterSignups.map((signup, idx) => {
+                            {casterSignups.map((signup: CasterSignup, idx: number) => {
                               const user = typeof signup.user === 'number' ? null : signup.user
                               const userId = typeof signup.user === 'number' ? signup.user : signup.user?.id
                               return (
@@ -372,7 +372,7 @@ export function AssignmentView() {
                           <p className="assignment-empty">None</p>
                         ) : (
                           <div className="assignment-assigned-list">
-                            {assignedCasters.map((caster, idx) => {
+                            {assignedCasters.map((caster: CasterSignup, idx: number) => {
                               const user = typeof caster.user === 'number' ? null : caster.user
                               return (
                                 <div key={idx} className="assignment-assigned-item">

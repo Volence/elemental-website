@@ -1356,122 +1356,124 @@ html body .my-signup-card {
       box-shadow: 0 0 16px rgba($admin-accent-primary, 0.7);
     }
   }
+}
 
-  &--assigned {
-    background: linear-gradient(135deg, rgba(var(--theme-success-rgb), 0.15), rgba(var(--theme-success-rgb), 0.2)) !important;
-    border-color: rgba(var(--theme-success-rgb), 0.4) !important;
-    border-left: 3px solid var(--theme-success) !important;
+// Assigned card with green glow (higher specificity)
+html body .my-signup-card.my-signup-card--assigned {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.2)) !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+  border-left: 3px solid #10b981 !important;
+  
+  &::after {
+    background: #10b981 !important;
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.6) !important;
+  }
+  
+  // Add glowing top accent bar for confirmed assignments
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, #10b981, transparent);
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+    z-index: 1;
+  }
+  
+  &:hover {
+    box-shadow: 
+      0 6px 16px rgba(16, 185, 129, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(16, 185, 129, 0.6) !important;
     
     &::after {
-      background: var(--theme-success) !important;
-      box-shadow: 0 0 12px rgba(var(--theme-success-rgb), 0.6) !important;
-    }
-    
-    // Add glowing top accent bar for confirmed assignments
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: linear-gradient(90deg, var(--theme-success), transparent);
-      box-shadow: 0 0 10px rgba(var(--theme-success-rgb), 0.5);
-    }
-    
-    &:hover {
-      box-shadow: 
-        0 6px 16px rgba(var(--theme-success-rgb), 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
-      border-color: rgba(var(--theme-success-rgb), 0.6) !important;
-      
-      &::after {
-        box-shadow: 0 0 16px rgba(var(--theme-success-rgb), 0.8) !important;
-      }
-    }
-    
-    // Green glow for assigned card header
-    .my-signup-card__header {
-      border-color: rgba(var(--theme-success-rgb), 0.3) !important;
-      
-      &::before {
-        background: var(--theme-success) !important;
-        box-shadow: 0 0 10px rgba(var(--theme-success-rgb), 0.6) !important;
-      }
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.8) !important;
     }
   }
-
-  &__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 1.25rem;
-    padding: 1.25rem;
-    border-radius: 8px;
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5));
-    border: 1px solid rgba($admin-accent-primary, 0.2);
-    box-shadow: 
-      0 2px 8px rgba(0, 0, 0, 0.15),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(4px);
-    position: relative;
+  
+  // Green glow for assigned card header
+  .my-signup-card__header {
+    border-color: rgba(16, 185, 129, 0.3) !important;
     
-    // Glowing left accent
     &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 3px;
-      background: $admin-accent-primary;
-      border-radius: 8px 0 0 8px;
-      box-shadow: 0 0 10px rgba($admin-accent-primary, 0.5);
-    }
-
-    h4 {
-      margin: 0 0 0.5rem 0;
-      color: rgba(255, 255, 255, 0.95);
-      font-size: 1.15rem;
-      font-weight: 600;
+      background: #10b981 !important;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.6) !important;
     }
   }
+}
 
-  &__date {
-    color: rgba(255, 255, 255, 0.75);
+.my-signup-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+  padding: 1.25rem;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5));
+  border: 1px solid rgba($admin-accent-primary, 0.2);
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(4px);
+  position: relative;
+  
+  // Glowing left accent
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: $admin-accent-primary;
+    border-radius: 8px 0 0 8px;
+    box-shadow: 0 0 10px rgba($admin-accent-primary, 0.5);
+  }
+
+  h4 {
+    margin: 0 0 0.5rem 0;
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 1.15rem;
+    font-weight: 600;
+  }
+}
+
+.my-signup-card__date {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.9rem;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.my-signup-card__status {
+  flex-shrink: 0;
+}
+
+.my-signup-card__roles {
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.4));
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  
+  strong {
+    display: block;
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 0.75rem;
     font-size: 0.9rem;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
+}
 
-  &__status {
-    flex-shrink: 0;
-  }
-
-  &__roles {
-    padding: 1rem 1.25rem;
-    border-radius: 8px;
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.4));
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    
-    strong {
-      display: block;
-      color: rgba(255, 255, 255, 0.85);
-      margin-bottom: 0.75rem;
-      font-size: 0.9rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-  }
-
-  &__role-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.65rem;
-  }
+.my-signup-card__role-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
 }
 
 .my-signup-role {

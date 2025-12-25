@@ -331,7 +331,6 @@ export const Matches: CollectionConfig = {
             {
               name: 'productionWorkflow',
               type: 'group',
-              dbName: 'prod_wf',
               fields: [
                 {
                   name: 'priority',

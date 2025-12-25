@@ -25,19 +25,19 @@ export async function GET() {
       console.log('✅ Created data-consistency global')
     }
 
-    // Initialize Schedule Generator Global
+    // Initialize Production Dashboard Global
     try {
       await payload.findGlobal({
-        slug: 'schedule-generator',
+        slug: 'production-dashboard',
       })
-      console.log('✅ schedule-generator global already exists')
+      console.log('✅ production-dashboard global already exists')
     } catch (error) {
       // Global doesn't exist, create it
       await payload.updateGlobal({
-        slug: 'schedule-generator',
+        slug: 'production-dashboard',
         data: {},
       })
-      console.log('✅ Created schedule-generator global')
+      console.log('✅ Created production-dashboard global')
     }
 
     return NextResponse.json({
