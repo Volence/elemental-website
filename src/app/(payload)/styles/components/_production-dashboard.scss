@@ -1573,26 +1573,26 @@ html body .my-signup-card.my-signup-card--assigned {
   }
 
   &--assigned {
-    background: linear-gradient(135deg, rgba(var(--theme-success-rgb), 0.2), rgba(var(--theme-success-rgb), 0.25));
-    border-color: rgba(var(--theme-success-rgb), 0.5);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.25));
+    border-color: rgba(16, 185, 129, 0.5);
     font-weight: 600;
     color: rgba(255, 255, 255, 1);
-    box-shadow: 0 2px 8px rgba(var(--theme-success-rgb), 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
     
     &::before {
-      background: var(--theme-success);
+      background: #10b981;
       height: 70%;
-      box-shadow: 0 0 10px rgba(var(--theme-success-rgb), 0.6);
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
     }
     
     &:hover {
-      background: linear-gradient(135deg, rgba(var(--theme-success-rgb), 0.25), rgba(var(--theme-success-rgb), 0.3));
-      box-shadow: 0 4px 12px rgba(var(--theme-success-rgb), 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-      border-color: rgba(var(--theme-success-rgb), 0.7);
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(16, 185, 129, 0.3));
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      border-color: rgba(16, 185, 129, 0.7);
       
       &::before {
         height: 80%;
-        box-shadow: 0 0 15px rgba(var(--theme-success-rgb), 0.8);
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.8);
       }
     }
   }
@@ -1662,11 +1662,11 @@ html body .my-signup-card.my-signup-card--assigned {
   backdrop-filter: blur(4px);
 
   &--assigned {
-    background: linear-gradient(135deg, rgba(var(--theme-success-rgb), 0.2), rgba(var(--theme-success-rgb), 0.25));
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.25));
     color: rgba(255, 255, 255, 1);
-    border-color: rgba(var(--theme-success-rgb), 0.5);
+    border-color: rgba(16, 185, 129, 0.5);
     box-shadow: 
-      0 2px 8px rgba(var(--theme-success-rgb), 0.2),
+      0 2px 8px rgba(16, 185, 129, 0.2),
       inset 0 1px 0 rgba(255, 255, 255, 0.1);
     
     // Glowing left accent
@@ -1678,9 +1678,9 @@ html body .my-signup-card.my-signup-card--assigned {
       transform: translateY(-50%);
       width: 3px;
       height: 60%;
-      background: var(--theme-success);
+      background: #10b981;
       border-radius: 2px;
-      box-shadow: 0 0 8px rgba(var(--theme-success-rgb), 0.6);
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
     }
   }
 
