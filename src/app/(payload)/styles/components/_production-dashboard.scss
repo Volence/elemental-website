@@ -1358,15 +1358,24 @@ html body .my-signup-card {
   }
 }
 
-// Assigned card with green glow (higher specificity)
+// Assigned card with DARK GLOW green theme (higher specificity)
 html body .my-signup-card.my-signup-card--assigned {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.2)) !important;
-  border-color: rgba(16, 185, 129, 0.4) !important;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.5), rgba(16, 185, 129, 0.15)) !important;
+  border: 1px solid rgba(16, 185, 129, 0.4) !important;
   border-left: 3px solid #10b981 !important;
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(16, 185, 129, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(12px) !important;
   
+  // Glowing left accent with DARK GLOW intensity
   &::after {
-    background: #10b981 !important;
-    box-shadow: 0 0 12px rgba(16, 185, 129, 0.6) !important;
+    background: linear-gradient(180deg, #10b981, rgba(16, 185, 129, 0.5)) !important;
+    box-shadow: 
+      0 0 20px rgba(16, 185, 129, 0.7),
+      0 0 40px rgba(16, 185, 129, 0.3) !important;
+    width: 4px !important;
   }
   
   // Add glowing top accent bar for confirmed assignments
@@ -1376,31 +1385,61 @@ html body .my-signup-card.my-signup-card--assigned {
     top: 0;
     left: 0;
     width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, #10b981, transparent);
-    box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+    height: 3px;
+    background: linear-gradient(90deg, #10b981, rgba(16, 185, 129, 0.5), transparent);
+    box-shadow: 
+      0 0 15px rgba(16, 185, 129, 0.6),
+      0 2px 8px rgba(16, 185, 129, 0.4);
     z-index: 1;
+    border-radius: 10px 10px 0 0;
   }
   
   &:hover {
+    transform: translateY(-2px) !important;
     box-shadow: 
-      0 6px 16px rgba(16, 185, 129, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+      0 12px 32px rgba(0, 0, 0, 0.5),
+      0 0 30px rgba(16, 185, 129, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
     border-color: rgba(16, 185, 129, 0.6) !important;
     
     &::after {
-      box-shadow: 0 0 16px rgba(16, 185, 129, 0.8) !important;
+      box-shadow: 
+        0 0 30px rgba(16, 185, 129, 0.9),
+        0 0 50px rgba(16, 185, 129, 0.4) !important;
+    }
+    
+    &::before {
+      box-shadow: 
+        0 0 20px rgba(16, 185, 129, 0.8),
+        0 2px 12px rgba(16, 185, 129, 0.6);
     }
   }
   
   // Green glow for assigned card header
   .my-signup-card__header {
-    border-color: rgba(16, 185, 129, 0.3) !important;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(16, 185, 129, 0.15)) !important;
+    border: 1px solid rgba(16, 185, 129, 0.3) !important;
+    box-shadow: 
+      0 4px 12px rgba(0, 0, 0, 0.3),
+      0 0 15px rgba(16, 185, 129, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
     
     &::before {
-      background: #10b981 !important;
-      box-shadow: 0 0 10px rgba(16, 185, 129, 0.6) !important;
+      background: linear-gradient(180deg, #10b981, rgba(16, 185, 129, 0.6)) !important;
+      box-shadow: 
+        0 0 15px rgba(16, 185, 129, 0.7),
+        0 0 25px rgba(16, 185, 129, 0.3) !important;
+      width: 4px !important;
     }
+  }
+  
+  // Green glow for roles section
+  .my-signup-card__roles {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(16, 185, 129, 0.08)) !important;
+    border: 1px solid rgba(16, 185, 129, 0.2) !important;
+    box-shadow: 
+      0 2px 8px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
   }
 }
 
