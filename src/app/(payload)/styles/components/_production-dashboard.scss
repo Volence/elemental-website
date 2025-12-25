@@ -1304,59 +1304,98 @@ div.assignment-assigned-item span {
 .my-signup-role {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.9rem;
-  background: var(--theme-elevation-100);
+  gap: 0.65rem;
+  padding: 0.65rem 1rem 0.65rem 1.1rem;
+  background: linear-gradient(135deg, var(--theme-elevation-100), var(--theme-elevation-150));
   border: 1px solid var(--theme-elevation-200);
-  border-radius: 6px;
-  font-size: 0.85rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
   font-weight: 500;
-  color: var(--theme-elevation-800);
+  color: var(--theme-elevation-900);
   transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  position: relative;
+  
+  // Add subtle left accent
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
+    background: rgba($admin-accent-primary, 0.5);
+    border-radius: 2px;
+  }
   
   &:hover {
-    background: var(--theme-elevation-150);
-    border-color: var(--theme-elevation-250);
+    background: linear-gradient(135deg, var(--theme-elevation-150), var(--theme-elevation-200));
+    border-color: rgba($admin-accent-primary, 0.3);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+    
+    &::before {
+      background: $admin-accent-primary;
+      height: 70%;
+    }
   }
 
   &--assigned {
-    background: rgba(var(--theme-success-rgb), 0.1);
+    background: linear-gradient(135deg, rgba(var(--theme-success-rgb), 0.12), rgba(var(--theme-success-rgb), 0.18));
     border-color: rgba(var(--theme-success-rgb), 0.4);
-    border-left: 3px solid var(--theme-success);
     font-weight: 600;
     color: var(--theme-success);
-    padding-left: 0.75rem;
+    box-shadow: 0 2px 6px rgba(var(--theme-success-rgb), 0.15);
+    
+    &::before {
+      background: var(--theme-success);
+      height: 70%;
+    }
     
     &:hover {
-      background: rgba(var(--theme-success-rgb), 0.15);
-      box-shadow: 0 2px 6px rgba(var(--theme-success-rgb), 0.2);
+      background: linear-gradient(135deg, rgba(var(--theme-success-rgb), 0.18), rgba(var(--theme-success-rgb), 0.22));
+      box-shadow: 0 4px 10px rgba(var(--theme-success-rgb), 0.25);
+      border-color: rgba(var(--theme-success-rgb), 0.5);
+      
+      &::before {
+        height: 80%;
+      }
     }
   }
 
   &__remove {
     padding: 0;
     margin: 0;
-    background: transparent;
-    border: none;
-    font-size: 0.9rem;
+    margin-left: 0.25rem;
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid transparent;
+    font-size: 0.85rem;
+    font-weight: 600;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 20px;
-    height: 20px;
-    border-radius: 4px;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
     transition: all 0.2s ease;
     
     // Subtle default state (muted gray)
-    color: rgba(255, 255, 255, 0.4);
-    opacity: 0.7;
+    color: rgba(255, 255, 255, 0.35);
+    opacity: 0.6;
 
     &:hover {
-      background: rgba($admin-accent-primary, 0.15); // Light cyan background
+      background: rgba($admin-accent-primary, 0.2); // Light cyan background
+      border-color: rgba($admin-accent-primary, 0.4);
       color: $admin-accent-primary; // Cyan accent color
-      box-shadow: 0 0 8px rgba($admin-accent-primary, 0.2);
+      box-shadow: 0 0 10px rgba($admin-accent-primary, 0.25);
       opacity: 1;
+      transform: scale(1.05);
+    }
+    
+    &:active {
+      transform: scale(0.95);
     }
   }
 
@@ -1364,10 +1403,15 @@ div.assignment-assigned-item span {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 18px;
-    height: 18px;
+    width: 22px;
+    height: 22px;
     font-size: 0.9rem;
-    opacity: 0.7;
+    opacity: 0.8;
+    margin-left: 0.25rem;
+    padding: 0.25rem;
+    background: rgba(var(--theme-success-rgb), 0.1);
+    border-radius: 6px;
+    border: 1px solid rgba(var(--theme-success-rgb), 0.2);
   }
 }
 
