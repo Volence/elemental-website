@@ -225,35 +225,58 @@ input[placeholder*="search"] {
   color: $admin-text-muted;
 }
 
-// React Select multi-value tags/badges - ONLY target the container
+// React Select multi-value tags/badges - DARK GLOW style matching Production Dashboard
 .rs__multi-value {
   background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5)) !important;
   border: 1px solid rgba($admin-accent-primary, 0.3) !important;
   border-radius: 8px !important;
   margin: 0.25rem !important;
+  padding: 0 !important;
   box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.2),
+    0 2px 8px rgba(0, 0, 0, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
   backdrop-filter: blur(4px) !important;
   transition: all 0.2s ease !important;
+  position: relative !important;
+  
+  // Glowing left accent bar (matching Production Dashboard style)
+  &::before {
+    content: '' !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 3px !important;
+    height: 60% !important;
+    background: $admin-accent-primary !important;
+    border-radius: 2px !important;
+    box-shadow: 0 0 8px rgba($admin-accent-primary, 0.5) !important;
+    z-index: 1 !important;
+  }
   
   &:hover {
     border-color: rgba($admin-accent-primary, 0.5) !important;
     box-shadow: 
-      0 4px 12px rgba(0, 0, 0, 0.3),
-      0 0 15px rgba($admin-accent-primary, 0.1),
+      0 4px 12px rgba(0, 0, 0, 0.25),
+      0 0 15px rgba($admin-accent-primary, 0.15),
       inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+    
+    &::before {
+      box-shadow: 0 0 12px rgba($admin-accent-primary, 0.7) !important;
+    }
   }
 }
 
-// React Select multi-value label - completely transparent, text only
+// React Select multi-value label - transparent with extra left padding for accent bar
 .rs__multi-value__label {
   background: transparent !important;
   border: none !important;
   color: rgba(255, 255, 255, 0.95) !important;
-  padding: 0.5rem 0.65rem !important;
+  padding: 0.5rem 0.65rem 0.5rem 1rem !important; // Extra left padding for accent bar
   font-size: 0.9rem !important;
   font-weight: 500 !important;
+  position: relative !important;
+  z-index: 2 !important;
 }
 
 // React Select multi-value remove buttons (X buttons in tags)
