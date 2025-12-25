@@ -221,27 +221,9 @@
   max-width: 300px;
 }
 
-.list-cell-tag {
-  display: inline-block;
-  padding: 0.125rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  white-space: nowrap;
-
-  /* Team tags (default) */
-  &--team {
-    background-color: var(--theme-elevation-100);
-    border: 1px solid var(--theme-elevation-300);
-    color: var(--theme-text);
-  }
-
-  /* Staff position tags */
-  &--position {
-    background-color: var(--theme-success-100);
-    border: 1px solid var(--theme-success-300);
-    color: var(--theme-success-900);
-    font-weight: 500;
-  }
-}
+/* Note: .list-cell-tag styles have been moved to _tables.scss
+ * to use Clean Glow design system with transparent backgrounds
+ * and glowing borders. See _tables.scss for full implementation.
+ */
 
 
