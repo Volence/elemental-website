@@ -121,17 +121,50 @@ A premium, modern design system featuring dark semi-transparent backgrounds with
 ## Color Palette
 
 ### Primary States
-- **Cyan (Pending/Default)**: `$admin-accent-primary` (rgb(99, 102, 241) - Indigo)
-- **Info**: `$admin-accent-info` (rgb(6, 182, 212) - Cyan)
+- **Indigo (Primary)**: `$admin-accent-primary` (rgb(99, 102, 241))
+- **Cyan (Info)**: `$admin-accent-info` (rgb(6, 182, 212))
 
 ### Success States
-- **Green (Confirmed/Assigned)**: `var(--theme-success)` / `$admin-accent-success`
+- **Green (Confirmed/Assigned)**: `$admin-accent-success` (rgb(34, 197, 94))
 
 ### Warning States
 - **Amber (Attention)**: `$admin-accent-warning` (rgb(245, 158, 11))
 
 ### Error States
 - **Red (Critical)**: `$admin-accent-error` (rgb(239, 68, 68))
+
+### Tier Colors (from Team Cards)
+Perfect for skill ratings, rankings, levels, or premium features:
+
+- **Masters**: `$tier-masters` (rgb(236, 72, 153) - Pink #ec4899)
+- **Expert**: `$tier-expert` (rgb(168, 85, 247) - Purple #a855f7)
+- **Advanced**: `$tier-advanced` (rgb(59, 130, 246) - Blue #3b82f6)
+- **4k-4.5k**: `$tier-4k` (rgb(6, 182, 212) - Cyan #06b6d4)
+- **3.5k-3.9k**: `$tier-35k` (rgb(34, 197, 94) - Green #22c55e)
+- **3.0k-3.4k**: `$tier-30k` (rgb(234, 179, 8) - Yellow #eab308)
+- **Below 3k**: `$tier-below` (rgb(249, 115, 22) - Orange #f97316)
+
+**Usage Examples:**
+```scss
+// Masters tier badge
+.badge--masters {
+  background: linear-gradient(135deg, rgba($tier-masters, 0.2), rgba($tier-masters, 0.3));
+  border-color: rgba($tier-masters, 0.5);
+  &::before {
+    background: $tier-masters;
+    box-shadow: 0 0 12px rgba($tier-masters, 0.6);
+  }
+}
+
+// Expert tier card accent
+.card--expert {
+  border-left: 3px solid $tier-expert;
+  &::after {
+    background: $tier-expert;
+    box-shadow: 0 0 16px rgba($tier-expert, 0.8);
+  }
+}
+```
 
 ## Usage Guidelines
 

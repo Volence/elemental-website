@@ -9,6 +9,15 @@ $admin-accent-warning: rgb(245, 158, 11);     // Amber
 $admin-accent-error: rgb(239, 68, 68);        // Red
 $admin-accent-info: rgb(6, 182, 212);         // Cyan
 
+// Tier Colors for Dark Glow System (from team cards)
+$tier-masters: rgb(236, 72, 153);             // Pink #ec4899
+$tier-expert: rgb(168, 85, 247);              // Purple #a855f7
+$tier-advanced: rgb(59, 130, 246);            // Blue #3b82f6
+$tier-4k: rgb(6, 182, 212);                   // Cyan #06b6d4
+$tier-35k: rgb(34, 197, 94);                  // Green #22c55e
+$tier-30k: rgb(234, 179, 8);                  // Yellow #eab308
+$tier-below: rgb(249, 115, 22);               // Orange #f97316
+
 $admin-gradient-primary: linear-gradient(90deg, #06b6d4 0%, #84cc16 100%);
 $admin-gradient-success: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
 $admin-gradient-warning: linear-gradient(135deg, #f59e0b 0%, #eab308 100%);
