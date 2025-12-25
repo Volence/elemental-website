@@ -82,19 +82,15 @@ html body [class*="modal"] button[type="button"] {
   padding: 0.75rem 3.5rem !important;
 }
 
-// Fix empty collection "Create new" button styling
+// Empty collection "Create new" button positioning
+// (Styling now in _buttons.scss)
 html body .collection-list__no-results .btn,
 html body .collection-list__no-results a.btn,
 html body [class*="no-results"] .btn,
 html body [class*="no-results"] a.btn {
-  padding: 0.75rem 1.5rem !important;
-  min-width: 180px !important;
   width: auto !important;
   max-width: none !important;
   white-space: nowrap !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
   flex: none !important;
   overflow: visible !important;
 }

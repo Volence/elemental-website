@@ -134,7 +134,7 @@ html body button[class*="array"][class*="add"] {
 }
 
 // ============================================
-// PRIMARY BUTTON VARIANT
+// PRIMARY BUTTON VARIANT (Clean Glow Style)
 // ============================================
 
 button[type="submit"],
@@ -142,21 +142,91 @@ button[type="submit"],
 button.btn--primary,
 [class*="btn-primary"],
 [class*="button--primary"] {
-  background: linear-gradient(135deg, $admin-accent-primary, #a855f7);
-  color: white;
-  border: none;
-  font-weight: $font-weight-semibold;    // 600
+  @include glow-button($admin-accent-primary);
+  color: white !important;
+  font-weight: $font-weight-semibold !important;    // 600
+  
+  // Subtle gradient for primary buttons (very light)
+  background: linear-gradient(135deg, rgba($admin-accent-primary, 0.15), rgba(#a855f7, 0.15)) !important;
   
   &:hover:not(:disabled) {
-    background: linear-gradient(135deg, #7c7ff7, #c084fc);
-    box-shadow: $shadow-primary-md;
-    transform: translateY(-1px);
-    filter: brightness(1.05);
+    background: linear-gradient(135deg, rgba($admin-accent-primary, 0.25), rgba(#a855f7, 0.25)) !important;
+    transform: translateY(-2px) !important;
   }
   
   &:active:not(:disabled) {
-    transform: translateY(0);
-    box-shadow: $shadow-primary-sm;
+    transform: translateY(0) !important;
+    background: linear-gradient(135deg, rgba($admin-accent-primary, 0.3), rgba(#a855f7, 0.3)) !important;
+  }
+}
+
+// ============================================
+// CREATE NEW BUTTONS (Special Glow Treatment)
+// ============================================
+
+// Header CREATE NEW buttons - use color variety
+html body .collection-list__header button,
+html body .list-header button,
+html body .list-header a[href*="create"],
+html body button[class*="create"]:not([class*="modal"]),
+html body a[class*="create"] {
+  @include glow-button($admin-accent-primary);
+  background: linear-gradient(135deg, rgba($admin-accent-primary, 0.15), rgba(#a855f7, 0.15)) !important;
+  color: white !important;
+  font-weight: $font-weight-semibold !important;
+  
+  // Add glowing accent for extra visual interest
+  position: relative;
+  overflow: visible !important;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    padding: 2px;
+    background: linear-gradient(135deg, $admin-accent-primary, #a855f7);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+  }
+  
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, rgba($admin-accent-primary, 0.25), rgba(#a855f7, 0.25)) !important;
+    transform: translateY(-2px) !important;
+    
+    &::before {
+      opacity: 0.6;
+    }
+  }
+  
+  &:active:not(:disabled) {
+    transform: translateY(0) !important;
+    background: linear-gradient(135deg, rgba($admin-accent-primary, 0.3), rgba(#a855f7, 0.3)) !important;
+  }
+}
+
+// Empty collection CREATE NEW button
+html body .collection-list__no-results .btn,
+html body .collection-list__no-results a.btn,
+html body [class*="no-results"] .btn,
+html body [class*="no-results"] a.btn {
+  @include glow-button(#10b981);  // Emerald green for "getting started"
+  background: linear-gradient(135deg, rgba(#10b981, 0.15), rgba(#22c55e, 0.15)) !important;
+  color: white !important;
+  font-weight: $font-weight-semibold !important;
+  min-width: 180px !important;
+  
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, rgba(#10b981, 0.25), rgba(#22c55e, 0.25)) !important;
+    transform: translateY(-2px) scale(1.02) !important;
+  }
+  
+  &:active:not(:disabled) {
+    transform: translateY(0) scale(1) !important;
   }
 }
 

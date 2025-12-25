@@ -255,7 +255,7 @@ tbody td {
   }
 }
 
-// CREATE NEW buttons positioning and styling
+// CREATE NEW buttons positioning (styling now in _buttons.scss)
 html body .collection-list__header button,
 html body .list-header button,
 html body .list-header a[href*="create"],
@@ -264,19 +264,7 @@ html body a[class*="create"] {
   margin-top: 0 !important;
   align-self: center;
   flex-shrink: 0 !important;                                       // Prevent button from shrinking
-  
-  // Ensure consistent sizing for header buttons
-  padding: $padding-md $padding-xl !important;                     // 1rem 2rem
-  font-size: $font-size-md !important;                             // 1rem
-  font-weight: $font-weight-semibold !important;                   // 600
-  border-radius: $radius-md !important;                            // 6px
-  white-space: nowrap !important;
-  min-height: 44px !important;
   min-width: fit-content !important;                               // Ensure button fits content
   width: auto !important;                                          // Allow button to size properly
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
-  gap: $gap-xs;                                                    // 0.5rem (for icon)
 }
 
