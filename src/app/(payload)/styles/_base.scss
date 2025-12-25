@@ -3,6 +3,7 @@
 // ============================================
 
 @import './variables';
+@import './mixins';
 
 // ============================================
 // BACKGROUNDS
@@ -126,5 +127,29 @@ button[aria-label="Close"]:not(.hamburger__close) {
   [role="complementary"] > * > button:last-child {
     display: none !important;
   }
+}
+
+// ============================================
+// DARK GLOW GLOBAL BASE STYLES
+// ============================================
+
+// Apply DARK GLOW to badges, pills, and tags by default
+.pill,
+.badge,
+.chip,
+.tag {
+  @include dark-glow-badge;
+}
+
+// Apply DARK GLOW to cards
+.card,
+[class*="card"]:not([class*="stat-card"]):not([class*="dashboard-stats"]):not([class*="assigned-teams"]) {
+  @include dark-glow-card;
+}
+
+// Apply DARK GLOW to buttons (excluding certain system buttons)
+button:not([type="submit"]):not([aria-label*="Close"]):not([class*="hamburger"]),
+.btn {
+  @include dark-glow-button;
 }
 
