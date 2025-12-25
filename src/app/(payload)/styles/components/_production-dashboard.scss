@@ -136,14 +136,18 @@
         }
       }
       
-      // Remove ALL styling from inner elements
+      // Remove ALL styling from inner elements - CRITICAL FIX for double borders
       .btn__content,
       [class*="btn__content"],
+      .btn__label,
+      [class*="btn__label"],
+      span,
       * {
         border: none !important;
         box-shadow: none !important;
         background: transparent !important;
         border-radius: 0 !important;
+        outline: none !important;
       }
     }
   }
