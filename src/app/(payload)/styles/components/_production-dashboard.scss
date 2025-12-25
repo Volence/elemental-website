@@ -76,28 +76,52 @@
     button,
     .btn,
     [class*="btn"] {
-      @include glow-button($tier-advanced);  // Clean Glow: Blue/Cyan theme
+      // VERY OBVIOUS Clean Glow styling
+      @include transparent-bg(0.15);  // More visible background
       padding: 0.75rem 1.5rem !important;
       min-width: auto !important;
       width: auto !important;
       max-width: none !important;
       white-space: nowrap !important;
       font-size: 0.95rem !important;
-      font-weight: 500 !important;
+      font-weight: 600 !important;
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
       overflow: visible !important;
+      border-radius: 8px !important;
+      
+      // Blue/cyan theme with VERY STRONG glow
+      border: 2px solid rgba($tier-advanced, 0.8) !important;
+      box-shadow: 0 0 20px rgba($tier-advanced, 0.4) !important;
+      backdrop-filter: blur(8px) !important;
+      color: rgba($tier-advanced, 1) !important;
+      transition: all 0.3s ease !important;
+      
+      &:hover:not(:disabled) {
+        background: rgba($tier-advanced, 0.25) !important;
+        border-color: rgba($tier-advanced, 1) !important;
+        box-shadow: 0 0 30px rgba($tier-advanced, 0.6) !important;
+        transform: translateY(-2px) !important;
+      }
       
       &:disabled {
-        opacity: 0.5 !important;
+        opacity: 0.4 !important;
         cursor: not-allowed !important;
         box-shadow: none !important;
       }
       
-      // "Generate" button - different color for variety
+      // "Generate" button - VERY STRONG emerald green glow
       &:last-child {
-        @include glow-button($tier-4k);  // Emerald green theme
+        border: 2px solid rgba($tier-4k, 0.8) !important;
+        box-shadow: 0 0 20px rgba($tier-4k, 0.4) !important;
+        color: rgba($tier-4k, 1) !important;
+        
+        &:hover:not(:disabled) {
+          background: rgba($tier-4k, 0.25) !important;
+          border-color: rgba($tier-4k, 1) !important;
+          box-shadow: 0 0 30px rgba($tier-4k, 0.6) !important;
+        }
       }
     }
   }
