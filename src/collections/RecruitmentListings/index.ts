@@ -77,6 +77,13 @@ export const RecruitmentListings: CollectionConfig = {
     defaultColumns: ['teamDisplay', 'roleDisplay', 'status', 'createdAt', 'actions'],
     description: '📋 Manage open player positions and recruitment listings.',
     group: 'Recruitment',
+    hidden: ({ user }) => {
+      if (!user) return true
+      // Hide from regular users - only show to managers and admins
+      return user.role !== 'admin' && 
+             user.role !== 'staff-manager' && 
+             user.role !== 'team-manager'
+    },
     listSearchableFields: ['requirements'],
     pagination: {
       defaultLimit: 25,
@@ -111,6 +118,40 @@ export const RecruitmentListings: CollectionConfig = {
         components: {
           Field: '@/components/RecruitmentFields/TeamRelationshipField#default',
         },
+      },
+      filterOptions: ({ user, relationTo, siblingData }) => {
+        const currentUser = user as User | undefined
+        if (!currentUser) return false
+
+        // Admins and Staff Managers can see all teams
+        if (
+          currentUser.role === UserRole.ADMIN ||
+          currentUser.role === UserRole.STAFF_MANAGER
+        ) {
+          return true // Return all teams
+        }
+
+        // Team Managers can only see their assigned teams
+        if (currentUser.role === UserRole.TEAM_MANAGER) {
+          const assignedTeams = currentUser.assignedTeams
+          if (!assignedTeams || !Array.isArray(assignedTeams)) {
+            return false // No teams assigned, show nothing
+          }
+
+          // Extract team IDs (handle both number and object references)
+          const teamIds = assignedTeams.map((team: any) =>
+            typeof team === 'number' ? team : team?.id || team,
+          )
+
+          // Filter to only show teams in the user's assigned list
+          return {
+            id: {
+              in: teamIds,
+            },
+          }
+        }
+
+        return false // Default: show nothing
       },
       required: true,
       validate: (value, { data }: any) => {

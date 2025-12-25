@@ -55,20 +55,22 @@
 
   &__card {
     padding: 1.75rem;
-    background: var(--theme-elevation-0);
+    @include transparent-bg(0.05);  // Clean Glow: transparent background
     border-radius: 12px;
-    border: 2px solid var(--theme-elevation-200);
+    border: 2px solid rgba(255, 255, 255, 0.08);  // Very subtle default border
     text-decoration: none;
     color: inherit;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
-    gap: 1.25rem; // Increased from 0.75rem to prevent icon/number clipping
+    gap: 1.25rem;
     cursor: pointer;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(8px);  // Glass effect
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
+    // Top accent bar (will be colored by variants)
     &::before {
       content: '';
       position: absolute;
@@ -76,17 +78,36 @@
       left: 0;
       width: 100%;
       height: 4px;
+      opacity: 0.6;
+      transition: all 0.3s ease;
+    }
+
+    // Glowing border effect on hover
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      padding: 2px;
+      background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
       opacity: 0;
       transition: opacity 0.3s ease;
     }
 
     &:hover {
-      border-color: var(--theme-elevation-300);
       transform: translateY(-4px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
 
       &::before {
         opacity: 1;
+        height: 6px;  // Grows on hover
+      }
+
+      &::after {
+        opacity: 1;  // Show glowing border
       }
 
       .dashboard-stats__card-description {
@@ -143,11 +164,14 @@
   }
 }
 
-/* Color variants for stat cards - Using tier colors */
+/* Color variants for stat cards - Clean Glow with tier colors */
 .stat-card {
   &--teams {
+    border-color: rgba(236, 72, 153, 0.3);  // Pink/Masters theme
+    box-shadow: 0 0 12px rgba(236, 72, 153, 0.12);
+    
     &::before {
-      background: linear-gradient(90deg, #ec4899, #a855f7); // Masters tier
+      background: linear-gradient(90deg, #ec4899, #a855f7);
     }
 
     .dashboard-stats__card-value {
@@ -158,50 +182,62 @@
     }
 
     &:hover {
-      background: linear-gradient(135deg, rgba(236, 72, 153, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%);
-      border-color: rgba(236, 72, 153, 0.3);
+      background: rgba(236, 72, 153, 0.05);
+      border-color: rgba(236, 72, 153, 0.6);
+      box-shadow: 0 0 24px rgba(236, 72, 153, 0.25), 0 12px 32px rgba(0, 0, 0, 0.12);
     }
   }
 
   &--people {
+    border-color: rgba(6, 182, 212, 0.3);  // Cyan theme
+    box-shadow: 0 0 12px rgba(6, 182, 212, 0.12);
+    
     &::before {
-      background: linear-gradient(90deg, #3b82f6, #06b6d4); // Advanced tier
+      background: linear-gradient(90deg, #06b6d4, #3b82f6);
     }
 
     .dashboard-stats__card-value {
-      background: linear-gradient(135deg, #3b82f6, #06b6d4);
+      background: linear-gradient(135deg, #06b6d4, #3b82f6);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
 
     &:hover {
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(6, 182, 212, 0.08) 100%);
-      border-color: rgba(59, 130, 246, 0.3);
+      background: rgba(6, 182, 212, 0.05);
+      border-color: rgba(6, 182, 212, 0.6);
+      box-shadow: 0 0 24px rgba(6, 182, 212, 0.25), 0 12px 32px rgba(0, 0, 0, 0.12);
     }
   }
 
   &--matches {
+    border-color: rgba(168, 85, 247, 0.3);  // Purple/Expert theme
+    box-shadow: 0 0 12px rgba(168, 85, 247, 0.12);
+    
     &::before {
-      background: linear-gradient(90deg, #8b5cf6, #a855f7); // Expert tier
+      background: linear-gradient(90deg, #a855f7, #8b5cf6);
     }
 
     .dashboard-stats__card-value {
-      background: linear-gradient(135deg, #8b5cf6, #a855f7);
+      background: linear-gradient(135deg, #a855f7, #8b5cf6);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
 
     &:hover {
-      background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%);
-      border-color: rgba(139, 92, 246, 0.3);
+      background: rgba(168, 85, 247, 0.05);
+      border-color: rgba(168, 85, 247, 0.6);
+      box-shadow: 0 0 24px rgba(168, 85, 247, 0.25), 0 12px 32px rgba(0, 0, 0, 0.12);
     }
   }
 
   &--upcoming {
+    border-color: rgba(249, 115, 22, 0.3);  // Orange theme
+    box-shadow: 0 0 12px rgba(249, 115, 22, 0.12);
+    
     &::before {
-      background: linear-gradient(90deg, #f97316, #ef4444); // Below 3k tier
+      background: linear-gradient(90deg, #f97316, #ef4444);
     }
 
     .dashboard-stats__card-value {
@@ -212,14 +248,18 @@
     }
 
     &:hover {
-      background: linear-gradient(135deg, rgba(249, 115, 22, 0.08) 0%, rgba(239, 68, 68, 0.08) 100%);
-      border-color: rgba(249, 115, 22, 0.3);
+      background: rgba(249, 115, 22, 0.05);
+      border-color: rgba(249, 115, 22, 0.6);
+      box-shadow: 0 0 24px rgba(249, 115, 22, 0.25), 0 12px 32px rgba(0, 0, 0, 0.12);
     }
   }
 
   &--org-staff {
+    border-color: rgba(234, 179, 8, 0.3);  // Yellow theme
+    box-shadow: 0 0 12px rgba(234, 179, 8, 0.12);
+    
     &::before {
-      background: linear-gradient(90deg, #eab308, #f59e0b); // 3k tier
+      background: linear-gradient(90deg, #eab308, #f59e0b);
     }
 
     .dashboard-stats__card-value {
@@ -230,26 +270,31 @@
     }
 
     &:hover {
-      background: linear-gradient(135deg, rgba(234, 179, 8, 0.08) 0%, rgba(245, 158, 11, 0.08) 100%);
-      border-color: rgba(234, 179, 8, 0.3);
+      background: rgba(234, 179, 8, 0.05);
+      border-color: rgba(234, 179, 8, 0.6);
+      box-shadow: 0 0 24px rgba(234, 179, 8, 0.25), 0 12px 32px rgba(0, 0, 0, 0.12);
     }
   }
 
   &--production {
+    border-color: rgba(16, 185, 129, 0.3);  // Emerald theme
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.12);
+    
     &::before {
-      background: linear-gradient(90deg, #22c55e, #10b981); // 3.5k tier
+      background: linear-gradient(90deg, #10b981, #22c55e);
     }
 
     .dashboard-stats__card-value {
-      background: linear-gradient(135deg, #22c55e, #10b981);
+      background: linear-gradient(135deg, #10b981, #22c55e);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
 
     &:hover {
-      background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(16, 185, 129, 0.08) 100%);
-      border-color: rgba(34, 197, 94, 0.3);
+      background: rgba(16, 185, 129, 0.05);
+      border-color: rgba(16, 185, 129, 0.6);
+      box-shadow: 0 0 24px rgba(16, 185, 129, 0.25), 0 12px 32px rgba(0, 0, 0, 0.12);
     }
   }
 }

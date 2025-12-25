@@ -66,6 +66,13 @@ export const Teams: CollectionConfig = {
     defaultColumns: ['logoPreview', 'nameCell', 'regionCell', 'ratingCell', 'status', 'updatedAtCell'],
     description: '🏆 Manage all Elemental teams, including rosters, staff, and achievements.',
     group: 'People',
+    hidden: ({ user }) => {
+      if (!user) return true
+      // Hide from regular users - only show to managers and admins
+      return user.role !== 'admin' && 
+             user.role !== 'staff-manager' && 
+             user.role !== 'team-manager'
+    },
     components: {
       beforeList: [
         '@/components/BeforeDashboard/AssignedTeamsBanner#default',

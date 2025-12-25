@@ -13,6 +13,11 @@ export const TournamentTemplates: CollectionConfig = {
     description: '🏆 Define recurring match schedules for tournaments and leagues',
     group: 'Production',
     defaultColumns: ['name', 'isActive', 'assignedTeams', 'updatedAt'],
+    hidden: ({ user }) => {
+      if (!user) return true
+      // Only admins and staff managers can see tournament templates
+      return user.role !== 'admin' && user.role !== 'staff-manager'
+    },
   },
   access: {
     create: ({ req: { user } }) => {

@@ -43,6 +43,11 @@ export const OrganizationStaff: CollectionConfig = {
     defaultColumns: ['displayName', 'roles', 'updatedAt'],
     description: '👔 Manage organization staff members (owners, HR, moderators, managers, etc.). Staff can have multiple roles.',
     group: 'Staff',
+    hidden: ({ user }) => {
+      if (!user) return true
+      // Only admins and staff managers can see staff collections
+      return user.role !== 'admin' && user.role !== 'staff-manager'
+    },
   },
   fields: [
     {

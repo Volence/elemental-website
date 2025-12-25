@@ -33,6 +33,13 @@ export const People: CollectionConfig = {
     description: '👥 Centralized collection for all people (players, staff, casters, etc.). This is the single source of truth for person profiles.',
     group: 'People',
     listSearchableFields: ['name', 'slug'],
+    hidden: ({ user }) => {
+      if (!user) return true
+      // Hide from regular users - only show to managers and admins
+      return user.role !== 'admin' && 
+             user.role !== 'staff-manager' && 
+             user.role !== 'team-manager'
+    },
     // CRITICAL: Don't use defaultPopulate for relationship queries
     // This can cause select clauses that filter out results
     // defaultPopulate: {
