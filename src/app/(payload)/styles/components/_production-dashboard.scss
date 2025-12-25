@@ -1173,46 +1173,81 @@ div.assignment-assigned-item span {
 }
 
 .staff-signup-btn {
-  padding: 0.5rem 1.25rem;
-  background: $admin-accent-primary; // Cyan theme color
+  padding: 0.6rem 1.5rem;
+  background: linear-gradient(135deg, rgba($admin-accent-primary, 0.25), rgba($admin-accent-primary, 0.35));
   color: white;
-  border: none;
-  border-radius: 6px;
+  border: 1px solid rgba($admin-accent-primary, 0.5);
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 
+    0 2px 8px rgba($admin-accent-primary, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(4px);
 
   &:hover {
-    background: lighten($admin-accent-primary, 5%);
-    box-shadow: 0 4px 8px rgba($admin-accent-primary, 0.3);
+    background: linear-gradient(135deg, rgba($admin-accent-primary, 0.35), rgba($admin-accent-primary, 0.45));
+    border-color: rgba($admin-accent-primary, 0.7);
+    box-shadow: 
+      0 4px 12px rgba($admin-accent-primary, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
     transform: translateY(-1px);
+  }
+  
+  &:active {
+    transform: translateY(0);
   }
 
   &--active {
-    background: $admin-accent-info; // Cyan for signed up state
+    background: linear-gradient(135deg, rgba($admin-accent-info, 0.25), rgba($admin-accent-info, 0.35));
+    border-color: rgba($admin-accent-info, 0.5);
+    box-shadow: 
+      0 2px 8px rgba($admin-accent-info, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
     
     &:hover {
-      background: lighten($admin-accent-info, 5%);
-      box-shadow: 0 4px 8px rgba($admin-accent-info, 0.3);
+      background: linear-gradient(135deg, rgba($admin-accent-info, 0.35), rgba($admin-accent-info, 0.45));
+      border-color: rgba($admin-accent-info, 0.7);
+      box-shadow: 
+        0 4px 12px rgba($admin-accent-info, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
     }
   }
 }
 
 .assigned-badge {
   margin-left: 0.75rem;
-  font-size: 0.75rem;
-  padding: 0.35rem 0.65rem;
-  background: rgba(var(--theme-success-rgb), 0.15);
-  color: var(--theme-success);
-  border-radius: 6px;
-  border: 1px solid rgba(var(--theme-success-rgb), 0.3);
+  font-size: 0.8rem;
+  padding: 0.4rem 0.75rem;
+  background: linear-gradient(135deg, rgba(var(--theme-success-rgb), 0.2), rgba(var(--theme-success-rgb), 0.25));
+  color: rgba(255, 255, 255, 1);
+  border-radius: 8px;
+  border: 1px solid rgba(var(--theme-success-rgb), 0.5);
   font-weight: 600;
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  box-shadow: 0 2px 4px rgba(var(--theme-success-rgb), 0.1);
+  gap: 0.3rem;
+  box-shadow: 
+    0 2px 8px rgba(var(--theme-success-rgb), 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(4px);
+  position: relative;
+  
+  // Glowing accent
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
+    background: var(--theme-success);
+    border-radius: 2px;
+    box-shadow: 0 0 8px rgba(var(--theme-success-rgb), 0.6);
+  }
 }
 
 // My Signups List
@@ -1222,28 +1257,56 @@ div.assignment-assigned-item span {
 }
 
 .my-signup-card {
-  background: var(--theme-elevation-50);
-  border: 1px solid var(--theme-elevation-150);
-  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.35));
+  border: 1px solid rgba($admin-accent-primary, 0.3);
+  border-radius: 10px;
   padding: 1.5rem;
   position: relative;
   overflow: hidden;
   transition: all 0.2s ease;
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
   
-  // Add left accent border
-  border-left: 3px solid rgba($admin-accent-primary, 0.5);
+  // Add glowing left accent border
+  border-left: 3px solid $admin-accent-primary;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: $admin-accent-primary;
+    box-shadow: 0 0 12px rgba($admin-accent-primary, 0.5);
+    pointer-events: none;
+  }
   
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 
+      0 6px 16px rgba($admin-accent-primary, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    border-color: rgba($admin-accent-primary, 0.5);
+    
+    &::after {
+      box-shadow: 0 0 16px rgba($admin-accent-primary, 0.7);
+    }
   }
 
   &--assigned {
-    background: rgba(var(--theme-success-rgb), 0.05);
-    border-color: rgba(var(--theme-success-rgb), 0.3);
+    background: linear-gradient(135deg, rgba(var(--theme-success-rgb), 0.15), rgba(var(--theme-success-rgb), 0.2));
+    border-color: rgba(var(--theme-success-rgb), 0.4);
     border-left: 3px solid var(--theme-success);
     
-    // Add top accent bar for confirmed assignments
+    &::after {
+      background: var(--theme-success);
+      box-shadow: 0 0 12px rgba(var(--theme-success-rgb), 0.6);
+    }
+    
+    // Add glowing top accent bar for confirmed assignments
     &::before {
       content: '';
       position: absolute;
@@ -1252,6 +1315,18 @@ div.assignment-assigned-item span {
       width: 100%;
       height: 2px;
       background: linear-gradient(90deg, var(--theme-success), transparent);
+      box-shadow: 0 0 10px rgba(var(--theme-success-rgb), 0.5);
+    }
+    
+    &:hover {
+      box-shadow: 
+        0 6px 16px rgba(var(--theme-success-rgb), 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      border-color: rgba(var(--theme-success-rgb), 0.6);
+      
+      &::after {
+        box-shadow: 0 0 16px rgba(var(--theme-success-rgb), 0.8);
+      }
     }
   }
 
@@ -1420,26 +1495,62 @@ div.assignment-assigned-item span {
 }
 
 .status-badge {
-  padding: 0.45rem 0.9rem;
-  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
   font-size: 0.85rem;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.35rem;
   border: 1px solid transparent;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  position: relative;
+  backdrop-filter: blur(4px);
 
   &--assigned {
-    background: rgba(var(--theme-success-rgb), 0.15);
-    color: var(--theme-success);
-    border-color: rgba(var(--theme-success-rgb), 0.3);
+    background: linear-gradient(135deg, rgba(var(--theme-success-rgb), 0.2), rgba(var(--theme-success-rgb), 0.25));
+    color: rgba(255, 255, 255, 1);
+    border-color: rgba(var(--theme-success-rgb), 0.5);
+    box-shadow: 
+      0 2px 8px rgba(var(--theme-success-rgb), 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    
+    // Glowing left accent
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 60%;
+      background: var(--theme-success);
+      border-radius: 2px;
+      box-shadow: 0 0 8px rgba(var(--theme-success-rgb), 0.6);
+    }
   }
 
   &--pending {
-    background: rgba($admin-accent-primary, 0.15);
-    color: $admin-accent-primary;
-    border-color: rgba($admin-accent-primary, 0.3);
+    background: linear-gradient(135deg, rgba($admin-accent-primary, 0.2), rgba($admin-accent-primary, 0.25));
+    color: rgba(255, 255, 255, 1);
+    border-color: rgba($admin-accent-primary, 0.5);
+    box-shadow: 
+      0 2px 8px rgba($admin-accent-primary, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    
+    // Glowing left accent
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 60%;
+      background: $admin-accent-primary;
+      border-radius: 2px;
+      box-shadow: 0 0 8px rgba($admin-accent-primary, 0.6);
+    }
   }
 }
 
