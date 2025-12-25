@@ -91,25 +91,24 @@
       overflow: visible !important;
       border-radius: 8px !important;
       
-      // NO border property - use ONLY box-shadow to create the glowing border effect
+      // Single glowing border - NO outer glow to avoid double-border effect
       border: none !important;
       box-shadow: 
-        0 0 0 1px rgba($tier-advanced, 0.6),     // Simulated border using box-shadow
-        0 0 16px rgba($tier-advanced, 0.3),       // Outer glow
-        inset 0 0 20px rgba($tier-advanced, 0.05) // Inner glow
+        0 0 0 1px rgba($tier-advanced, 0.7),      // Single simulated border
+        inset 0 0 20px rgba($tier-advanced, 0.08) // Subtle inner glow
        !important;
       backdrop-filter: blur(8px) !important;
       color: rgba(255, 255, 255, 0.9) !important;
       transition: all 0.3s ease !important;
       
       &:hover:not(:disabled) {
-        background: rgba($tier-advanced, 0.15) !important;
+        background: rgba($tier-advanced, 0.12) !important;
         box-shadow: 
-          0 0 0 1px rgba($tier-advanced, 0.9),      // Brighter simulated border
-          0 0 24px rgba($tier-advanced, 0.5),        // Brighter outer glow
-          inset 0 0 30px rgba($tier-advanced, 0.08)  // Brighter inner glow
+          0 0 0 1px rgba($tier-advanced, 1.0),      // Brighter border on hover
+          0 0 12px rgba($tier-advanced, 0.4),        // Subtle outer glow on hover only
+          inset 0 0 25px rgba($tier-advanced, 0.1)  // Brighter inner glow
          !important;
-        transform: translateY(-2px) !important;
+        transform: translateY(-1px) !important;
         color: $tier-advanced !important;
       }
       
@@ -122,17 +121,16 @@
       // "Generate" button - emerald green glow
       &:last-child {
         box-shadow: 
-          0 0 0 1px rgba($tier-4k, 0.6),         // Simulated border using box-shadow
-          0 0 16px rgba($tier-4k, 0.3),           // Outer glow
-          inset 0 0 20px rgba($tier-4k, 0.05)     // Inner glow
+          0 0 0 1px rgba($tier-4k, 0.7),         // Single simulated border
+          inset 0 0 20px rgba($tier-4k, 0.08)     // Subtle inner glow
          !important;
         
         &:hover:not(:disabled) {
-          background: rgba($tier-4k, 0.15) !important;
+          background: rgba($tier-4k, 0.12) !important;
           box-shadow: 
-            0 0 0 1px rgba($tier-4k, 0.9),          // Brighter simulated border
-            0 0 24px rgba($tier-4k, 0.5),            // Brighter outer glow
-            inset 0 0 30px rgba($tier-4k, 0.08)      // Brighter inner glow
+            0 0 0 1px rgba($tier-4k, 1.0),          // Brighter border on hover
+            0 0 12px rgba($tier-4k, 0.4),            // Subtle outer glow on hover only
+            inset 0 0 25px rgba($tier-4k, 0.1)      // Brighter inner glow
            !important;
           color: $tier-4k !important;
         }
