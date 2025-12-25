@@ -225,9 +225,8 @@ input[placeholder*="search"] {
   color: $admin-text-muted;
 }
 
-// React Select multi-value tags/badges with subtle DARK GLOW theme
-.rs__multi-value,
-[class*="multi-value"]:not([class*="multi-value__"]) {
+// React Select multi-value tags/badges - ONLY target the container
+.rs__multi-value {
   background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5)) !important;
   border: 1px solid rgba($admin-accent-primary, 0.3) !important;
   border-radius: 8px !important;
@@ -247,9 +246,10 @@ input[placeholder*="search"] {
   }
 }
 
-// React Select multi-value label (text inside badge)
-.rs__multi-value__label,
-[class*="multi-value__label"] {
+// React Select multi-value label - completely transparent, text only
+.rs__multi-value__label {
+  background: transparent !important;
+  border: none !important;
   color: rgba(255, 255, 255, 0.95) !important;
   padding: 0.5rem 0.65rem !important;
   font-size: 0.9rem !important;
@@ -257,9 +257,9 @@ input[placeholder*="search"] {
 }
 
 // React Select multi-value remove buttons (X buttons in tags)
-.multi-value-remove,
-.rs__multi-value__remove,
-[class*="multi-value__remove"] {
+.rs__multi-value__remove {
+  background: transparent !important;
+  border: none !important;
   width: 20px !important;
   height: 20px !important;
   padding: 2px !important;
