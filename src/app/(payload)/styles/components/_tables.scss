@@ -167,34 +167,87 @@
 }
 
 /* ============================================
- * List Cell Tag Enhancements
- * Add colors for different types
+ * List Cell Tag Enhancements - Clean Glow Style
  * ============================================ */
 
 .list-cell-tag {
   transition: all 0.2s ease;
+  position: relative;
 
   &:hover {
     transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
-  /* Team tags - blue accent */
+  /* Team tags - Cyan/Blue theme */
   &--team {
-    background: linear-gradient(135deg, #3b82f610, #06b6d410);
-    border-color: #3b82f630;
-    color: #3b82f6;
+    @include transparent-bg(0.03);
+    @include glow-border(#06b6d4, 0.5, 0.8);
+    color: rgba(6, 182, 212, 0.95);
     font-weight: 500;
+    box-shadow: 0 0 10px rgba(6, 182, 212, 0.12);
+    
+    // Glowing left accent bar
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 2px;
+      height: 60%;
+      background: #06b6d4;
+      border-radius: 2px;
+      box-shadow: 0 0 6px rgba(6, 182, 212, 0.5);
+    }
+    
+    // Extra left padding for accent bar
+    padding-left: 0.65rem;
+    
+    &:hover {
+      box-shadow: 0 0 16px rgba(6, 182, 212, 0.25);
+    }
   }
 
-  /* Staff position tags - purple accent */
+  /* Staff position tags - Purple/Pink theme (default) */
   &--position {
-    background: linear-gradient(135deg, #a855f710, #ec489910);
-    border-color: #a855f730;
-    color: #a855f7;
+    @include transparent-bg(0.03);
+    @include glow-border(#a855f7, 0.5, 0.8);
+    color: rgba(168, 85, 247, 0.95);
     font-weight: 600;
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.12);
+    
+    // Glowing left accent bar
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 2px;
+      height: 60%;
+      background: #a855f7;
+      border-radius: 2px;
+      box-shadow: 0 0 6px rgba(168, 85, 247, 0.5);
+    }
+    
+    // Extra left padding for accent bar
+    padding-left: 0.65rem;
+    
+    &:hover {
+      box-shadow: 0 0 16px rgba(168, 85, 247, 0.25);
+    }
   }
 }
+
+/* ============================================
+ * Future: Role-Specific Color Variants
+ * To add color variety per role, add data-role attributes in React components:
+ * <span className="list-cell-tag list-cell-tag--position" data-role="moderator">
+ * Then uncomment and use:
+ * .list-cell-tag--position[data-role="moderator"] { ... }
+ * .list-cell-tag--position[data-role="observer"] { ... }
+ * etc.
+ * ============================================ */
 
 /* ============================================
  * Rating Cell Enhancement
