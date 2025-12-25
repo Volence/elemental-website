@@ -1127,6 +1127,21 @@ div.assignment-assigned-item span {
       box-shadow: 0 0 10px rgba($admin-accent-primary, 0.5);
     }
   }
+  
+  // Green variant for assignments section
+  &--assignments h3 {
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    
+    &::before {
+      background: #10b981;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+    }
+    
+    &::after {
+      background: linear-gradient(90deg, #10b981, transparent);
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+    }
+  }
 }
 
 .staff-signups-table-wrapper {
@@ -1360,7 +1375,7 @@ html body .my-signup-card {
 
 // Assigned card with DARK GLOW green theme (higher specificity)
 html body .my-signup-card.my-signup-card--assigned {
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.5), rgba(16, 185, 129, 0.15)) !important;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5)) !important;
   border: 1px solid rgba(16, 185, 129, 0.4) !important;
   border-left: 3px solid #10b981 !important;
   box-shadow: 
@@ -1417,7 +1432,7 @@ html body .my-signup-card.my-signup-card--assigned {
   
   // Green glow for assigned card header
   .my-signup-card__header {
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(16, 185, 129, 0.15)) !important;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6)) !important;
     border: 1px solid rgba(16, 185, 129, 0.3) !important;
     box-shadow: 
       0 4px 12px rgba(0, 0, 0, 0.3),
@@ -1435,7 +1450,7 @@ html body .my-signup-card.my-signup-card--assigned {
   
   // Green glow for roles section
   .my-signup-card__roles {
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(16, 185, 129, 0.08)) !important;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.45)) !important;
     border: 1px solid rgba(16, 185, 129, 0.2) !important;
     box-shadow: 
       0 2px 8px rgba(0, 0, 0, 0.2),

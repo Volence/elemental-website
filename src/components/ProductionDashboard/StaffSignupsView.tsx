@@ -419,7 +419,7 @@ export function StaffSignupsView() {
       </div>
 
       {/* Section 2: My Assignments */}
-      <div className="staff-signups-section">
+      <div className="staff-signups-section staff-signups-section--assignments">
         <h3>✅ My Assignments (Confirmed)</h3>
         {myAssignments.length === 0 ? (
           <div className="production-dashboard__empty">
