@@ -1,211 +1,769 @@
-# Dark Glow Design System
+# Clean Glow Design System
 
 **Created**: December 25, 2025  
-**Applied to**: Production Dashboard (Staff Signups View)
+**Philosophy**: "Sleek, clean, and glowy" - Transparent backgrounds with vibrant glowing borders  
+**Applied to**: Admin panel (Production Dashboard, Forms, Search, Collections)
+
+---
 
 ## Overview
 
-A premium, modern design system featuring dark semi-transparent backgrounds with vibrant glowing accents. Creates depth, energy, and a polished professional appearance.
+A modern, premium design system featuring **ultra-transparent backgrounds** with **vibrant glowing borders** and **colorful accents**. The emphasis is on **borders that glow**, not heavy dark backgrounds. Creates a clean, sleek, energy-filled aesthetic that feels light and professional.
+
+---
 
 ## Core Principles
 
-### 1. **Dark Rich Backgrounds**
-- Semi-transparent black: `rgba(0, 0, 0, 0.4)` to `rgba(0, 0, 0, 0.5)`
-- Gradient overlays: `linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5))`
-- Glass-morphism: `backdrop-filter: blur(4px)`
-- Subtle inset highlights: `inset 0 1px 0 rgba(255, 255, 255, 0.05-0.1)`
+### 1. **🌟 Transparency First** (The Foundation)
 
-### 2. **Glowing Borders**
-- Accent-colored borders with transparency
-- **Cyan (Primary)**: `rgba($admin-accent-primary, 0.3-0.6)`
-- **Green (Success)**: `rgba(var(--theme-success-rgb), 0.5-0.7)`
-- Hover increases opacity by 20-30%
+Backgrounds should be **barely visible** - just enough to create subtle depth without feeling heavy.
 
-### 3. **Glowing Accent Bars**
-- 3px width colored bars
-- Box-shadow for glow effect:
-  - Default: `0 0 8px rgba(color, 0.5)`
-  - Hover: `0 0 12-15px rgba(color, 0.8)`
-- Height grows on hover (60% → 70% → 80%)
+**Opacity Guidelines:**
+- **Ultra-Light**: `rgba(0, 0, 0, 0.03)` - 3% opacity (badges, small elements)
+- **Light**: `rgba(0, 0, 0, 0.05)` - 5% opacity (cards, containers)
+- **Medium**: `rgba(0, 0, 0, 0.08)` - 8% opacity (buttons, interactive elements)
 
-### 4. **Vibrant Text**
-- High contrast white: `rgba(255, 255, 255, 0.95-1)`
-- Medium weight fonts (500-600)
-- Accent-colored text for special states
+**❌ OLD WAY (Dark & Heavy):**
+```scss
+background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5));  // 40-50% opacity
+```
 
-### 5. **Shadow Depth**
-- Multiple shadow layers:
-  - Outer: `0 2px 8px rgba(0, 0, 0, 0.15)`
-  - Hover: `0 4px 12px rgba(accent-color, 0.25-0.35)`
-  - Inset: `inset 0 1px 0 rgba(255, 255, 255, 0.05-0.15)`
+**✅ NEW WAY (Clean & Transparent):**
+```scss
+@include transparent-bg(0.05);  // 5% opacity - barely visible!
+```
 
-### 6. **Smooth Interactions**
-- Transition: `all 0.2s ease`
-- Hover lift: `transform: translateY(-1px)`
-- Active scale: `transform: scale(0.95-1.05)`
-- Background tints on hover: `rgba(accent-color, 0.15-0.25)`
+---
+
+### 2. **✨ Glowing Borders** (The Star of the Show)
+
+Borders are the **primary visual element** - they should be vibrant, colorful, and glow beautifully on hover.
+
+**Border Opacity:**
+- **Default**: `50-60%` opacity (visible and vibrant)
+- **Hover**: `80-90%` opacity (more intense glow)
+
+**Glow Effect:**
+```scss
+box-shadow: 0 0 12px rgba($color, 0.15);  // Subtle outer glow
+box-shadow: 0 0 20px rgba($color, 0.3);   // Hover: stronger glow
+```
+
+**Example:**
+```scss
+border: 1px solid rgba($color, 0.5);           // 50% opacity - vibrant!
+box-shadow: 0 0 12px rgba($color, 0.15);       // Outer glow
+transition: all 0.2s ease;
+
+&:hover {
+  border-color: rgba($color, 0.8);              // 80% opacity - intense!
+  box-shadow: 0 0 20px rgba($color, 0.3);       // Stronger glow
+}
+```
+
+---
+
+### 3. **🎨 Color Variety** (Not Just Purple!)
+
+Use the full **7-tier color palette** for different UI elements. Avoid using the same color everywhere.
+
+**Color Strategy:**
+- **Columns Button:** Cyan (`#06b6d4`)
+- **Filters Button:** Lime/Green (`#84cc16`)
+- **Pending Status:** Purple/Indigo (`$admin-accent-primary`)
+- **Confirmed/Assigned:** Emerald (`#10b981`)
+- **Team Tiers:** Masters (pink), Expert (purple), Advanced (blue), etc.
+
+**Example:**
+```scss
+// Don't do this (same color everywhere):
+.button { border-color: $admin-accent-primary; }
+.badge { border-color: $admin-accent-primary; }
+.card { border-color: $admin-accent-primary; }
+
+// Do this (color variety):
+.columns-button { border-color: #06b6d4; }  // Cyan
+.filters-button { border-color: #84cc16; }  // Lime
+.pending-badge { border-color: $admin-accent-primary; }  // Purple
+.assigned-badge { border-color: #10b981; }  // Green
+```
+
+---
+
+### 4. **📍 Glowing Accent Bars**
+
+3-4px vertical bars on the left side that add color and visual interest.
+
+**Specs:**
+- **Width**: `3-4px`
+- **Height**: `60%` of container
+- **Glow**: `0 0 8-15px rgba($color, 0.5-0.7)`
+- **Position**: Absolute, left side, vertically centered
+
+**Example:**
+```scss
+@include glow-accent-bar($color, 3px, 60%);
+
+// Generates:
+&::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: $color;
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba($color, 0.5);
+}
+```
+
+---
+
+### 5. **🌫️ Glass Morphism** (Subtle Blur)
+
+Use `backdrop-filter: blur()` sparingly for depth, but keep it subtle.
+
+**Guidelines:**
+- **Cards/Containers**: `blur(4-8px)`
+- **Badges**: `blur(4px)`
+- **Don't overuse** - not every element needs blur
+
+```scss
+backdrop-filter: blur(4px);  // Subtle glass effect
+```
+
+---
+
+### 6. **⚡ Smooth Interactions**
+
+All interactive elements should have smooth transitions and hover effects.
+
+**Standard Transition:**
+```scss
+transition: all 0.2s ease;
+```
+
+**Hover Effects:**
+```scss
+&:hover {
+  background: rgba($color, 0.1);           // Light tint (10% opacity)
+  transform: translateY(-1px);             // Slight lift
+  box-shadow: 0 0 20px rgba($color, 0.3); // Stronger glow
+}
+```
+
+---
+
+## Mixin System
+
+We've created **8 reusable mixins** for consistent styling across the admin panel.
+
+### Core Mixins:
+
+#### `@include transparent-bg($alpha)`
+Creates ultra-light transparent backgrounds.
+
+```scss
+@include transparent-bg(0.05);  // 5% black background
+
+// Generates:
+background: rgba(0, 0, 0, 0.05);
+```
+
+**When to use:**
+- Cards: `0.05` (5%)
+- Badges: `0.03` (3%)
+- Buttons: `0.08` (8%)
+
+---
+
+#### `@include glow-border($color, $alpha, $hover-alpha)`
+Creates vibrant glowing borders with hover effects.
+
+```scss
+@include glow-border($admin-accent-primary);
+// Or with custom opacity:
+@include glow-border(#10b981, 0.5, 0.8);
+
+// Generates:
+border: 1px solid rgba($color, 0.5);
+box-shadow: 0 0 12px rgba($color, 0.15);
+transition: all 0.2s ease;
+
+&:hover {
+  border-color: rgba($color, 0.8);
+  box-shadow: 0 0 20px rgba($color, 0.3);
+}
+```
+
+---
+
+#### `@include glow-badge($color)`
+Complete badge styling with transparent background and glowing border.
+
+```scss
+@include glow-badge($tier-masters);  // Pink badge
+
+// Generates:
+background: rgba(0, 0, 0, 0.03);
+border: 1px solid rgba($color, 0.5);
+box-shadow: 0 0 12px rgba($color, 0.15);
+border-radius: 8px;
+color: rgba(255, 255, 255, 0.95);
+backdrop-filter: blur(4px);
+transition: all 0.2s ease;
+
+&:hover {
+  background: rgba($color, 0.1);
+  transform: translateY(-1px);
+}
+```
+
+**Perfect for:**
+- Status badges
+- Role badges
+- Tag pills
+- Chips
+
+---
+
+#### `@include glow-card($color)`
+Complete card styling with transparent background and glowing border.
+
+```scss
+@include glow-card($admin-accent-info);  // Cyan card
+
+// Generates:
+background: rgba(0, 0, 0, 0.05);
+border: 1px solid rgba($color, 0.5);
+box-shadow: 0 0 12px rgba($color, 0.15);
+border-radius: 8px;
+backdrop-filter: blur(8px);
+transition: all 0.2s ease;
+
+&:hover {
+  background: rgba($color, 0.05);
+  transform: translateY(-2px);
+}
+```
+
+**Perfect for:**
+- Content cards
+- Containers
+- Panels
+
+---
+
+#### `@include glow-button($color)`
+Button styling with transparent background and colored glow.
+
+```scss
+@include glow-button($tier-expert);  // Purple button
+
+// Generates:
+background: rgba(0, 0, 0, 0.08);
+border: 1px solid rgba($color, 0.5);
+box-shadow: 0 0 12px rgba($color, 0.15);
+border-radius: 8px;
+color: white;
+backdrop-filter: blur(4px);
+transition: all 0.2s ease;
+
+&:hover {
+  background: rgba($color, 0.15);
+  transform: translateY(-1px);
+}
+
+&:active {
+  transform: translateY(0);
+  background: rgba($color, 0.2);
+}
+```
+
+---
+
+#### `@include glow-accent-bar($color, $width, $height)`
+Creates a glowing vertical accent bar on the left side.
+
+```scss
+@include glow-accent-bar($tier-masters, 3px, 60%);
+
+// Generates:
+position: relative;
+
+&::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: $tier-masters;
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba($tier-masters, 0.5);
+  transition: all 0.2s ease;
+}
+```
+
+**Perfect for:**
+- Badge accents
+- Card left borders
+- Section headers
+
+---
+
+#### `@include glow-header($color)`
+Section header styling with glowing accents.
+
+```scss
+@include glow-header(#10b981);  // Green header
+
+// Generates:
+background: rgba(0, 0, 0, 0.05);
+border: 1px solid rgba($color, 0.5);
+box-shadow: 0 0 12px rgba($color, 0.15);
+border-radius: 8px;
+padding: 1rem 1.25rem;
+backdrop-filter: blur(4px);
+position: relative;
+
+// Glowing left accent
+&::before { /* 4px vertical bar */ }
+
+// Glowing bottom accent
+&::after { /* Gradient underline */ }
+```
+
+---
+
+#### `@include glass-effect($blur, $alpha)`
+Glass morphism effect with backdrop blur.
+
+```scss
+@include glass-effect(4px, 0.03);
+
+// Generates:
+backdrop-filter: blur(4px);
+background: rgba(0, 0, 0, 0.03);
+```
+
+---
 
 ## Component Patterns
 
-### Badge/Pill Component
+### Badge/Pill Component ✨
+
+**The Clean Glow Way:**
 ```scss
-.component {
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5));
-  border: 1px solid rgba($accent-color, 0.3);
-  border-radius: 8px;
-  color: rgba(255, 255, 255, 0.95);
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(4px);
-  transition: all 0.2s ease;
-  
-  // Glowing accent bar
-  &::before {
-    width: 3px;
-    background: $accent-color;
-    box-shadow: 0 0 8px rgba($accent-color, 0.5);
-  }
-  
-  &:hover {
-    background: linear-gradient(135deg, rgba($accent-color, 0.15), rgba($accent-color, 0.2));
-    border-color: rgba($accent-color, 0.6);
-    box-shadow: 
-      0 4px 12px rgba($accent-color, 0.25),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    transform: translateY(-1px);
-  }
+.badge {
+  @include glow-badge($admin-accent-primary);
+  @include glow-accent-bar($admin-accent-primary);
+  padding: 0.5rem 1rem 0.5rem 1.15rem;  // Extra left padding for accent bar
+}
+
+.badge--success {
+  @include glow-badge(#10b981);
+  @include glow-accent-bar(#10b981);
+}
+
+.badge--masters {
+  @include glow-badge($tier-masters);
+  @include glow-accent-bar($tier-masters);
 }
 ```
 
-### Button Component
+**Result:**
+- 3% transparent background (barely visible)
+- 50% opacity border (vibrant purple/green/pink)
+- Glowing left accent bar
+- Subtle outer glow
+- Smooth hover: brightens border to 80%, lifts up 1px
+
+---
+
+### Button Component ✨
+
+**The Clean Glow Way:**
 ```scss
 .button {
-  background: linear-gradient(135deg, rgba($accent-color, 0.2), rgba($accent-color, 0.3));
-  border: 1px solid rgba($accent-color, 0.5);
-  color: white;
-  box-shadow: 
-    0 2px 8px rgba($accent-color, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  
-  &:hover {
-    background: linear-gradient(135deg, rgba($accent-color, 0.3), rgba($accent-color, 0.4));
-    border-color: rgba($accent-color, 0.7);
-    box-shadow: 
-      0 4px 12px rgba($accent-color, 0.35),
-      inset 0 1px 0 rgba(255, 255, 255, 0.15);
-    transform: translateY(-1px);
-  }
+  @include glow-button($admin-accent-primary);
+}
+
+.button--columns {
+  @include glow-button(#06b6d4);  // Cyan theme
+}
+
+.button--filters {
+  @include glow-button(#84cc16);  // Lime theme
 }
 ```
 
-### Card Component
+**Result:**
+- 8% transparent background
+- Vibrant colored border
+- Glowing effect
+- Hover: background tints with color, border intensifies
+
+---
+
+### Card Component ✨
+
+**The Clean Glow Way:**
 ```scss
 .card {
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.4));
-  border: 1px solid rgba($accent-color, 0.3);
-  border-left: 3px solid $accent-color;
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(8px);
+  @include glow-card($admin-accent-primary);
+  padding: 1.5rem;
   
-  // Optional: Top accent bar
-  &::before {
-    height: 2px;
-    background: linear-gradient(90deg, $accent-color, transparent);
+  &--assigned {
+    @include glow-card(#10b981);  // Green variant
   }
 }
+
+.card__header {
+  @include transparent-bg(0.05);
+  @include glow-border($admin-accent-info, 0.5, 0.8);
+  padding: 1.25rem;
+  border-radius: 8px;
+  
+  // Add left accent
+  @include glow-accent-bar($admin-accent-info);
+}
 ```
+
+**Result:**
+- 5% transparent background on card
+- Vibrant glowing border
+- Header with subtle background + cyan accent bar
+- Glass blur effect for depth
+
+---
+
+### Section Header ✨
+
+**The Clean Glow Way:**
+```scss
+.section-header {
+  @include glow-header($admin-accent-primary);
+}
+
+.section-header--success {
+  @include glow-header(#10b981);  // Green header
+}
+```
+
+**Result:**
+- Dark pill-style background (5% opacity)
+- Glowing left accent bar (4px)
+- Glowing bottom gradient accent
+- Full glow effect
+
+---
 
 ## Color Palette
 
-### Primary States
-- **Indigo (Primary)**: `$admin-accent-primary` (rgb(99, 102, 241))
-- **Cyan (Info)**: `$admin-accent-info` (rgb(6, 182, 212))
+### Primary Accent Colors
 
-### Success States
-- **Green (Confirmed/Assigned)**: `$admin-accent-success` (rgb(34, 197, 94))
+**Admin UI:**
+- **Indigo (Primary)**: `$admin-accent-primary` - `rgb(99, 102, 241)` / `#6366f1`
+- **Cyan (Info)**: `$admin-accent-info` - `rgb(6, 182, 212)` / `#06b6d4`
+- **Green (Success)**: `$admin-accent-success` - `rgb(34, 197, 94)` / `#22c55e`
+- **Emerald (Confirmed)**: `#10b981`
+- **Lime (Filters)**: `#84cc16`
 
-### Warning States
-- **Amber (Attention)**: `$admin-accent-warning` (rgb(245, 158, 11))
+### Tier Colors (7-Tier System)
 
-### Error States
-- **Red (Critical)**: `$admin-accent-error` (rgb(239, 68, 68))
+Perfect for skill ratings, rankings, levels, or adding color variety:
 
-### Tier Colors (from Team Cards)
-Perfect for skill ratings, rankings, levels, or premium features:
+| Tier | Variable | Color | RGB | Hex |
+|------|----------|-------|-----|-----|
+| **Masters** | `$tier-masters` | Pink | `236, 72, 153` | `#ec4899` |
+| **Expert** | `$tier-expert` | Purple | `168, 85, 247` | `#a855f7` |
+| **Advanced** | `$tier-advanced` | Blue | `59, 130, 246` | `#3b82f6` |
+| **4k-4.5k** | `$tier-4k` | Cyan | `6, 182, 212` | `#06b6d4` |
+| **3.5k-3.9k** | `$tier-35k` | Green | `34, 197, 94` | `#22c55e` |
+| **3.0k-3.4k** | `$tier-30k` | Yellow | `234, 179, 8` | `#eab308` |
+| **Below 3k** | `$tier-below` | Orange | `249, 115, 22` | `#f97316` |
 
-- **Masters**: `$tier-masters` (rgb(236, 72, 153) - Pink #ec4899)
-- **Expert**: `$tier-expert` (rgb(168, 85, 247) - Purple #a855f7)
-- **Advanced**: `$tier-advanced` (rgb(59, 130, 246) - Blue #3b82f6)
-- **4k-4.5k**: `$tier-4k` (rgb(6, 182, 212) - Cyan #06b6d4)
-- **3.5k-3.9k**: `$tier-35k` (rgb(34, 197, 94) - Green #22c55e)
-- **3.0k-3.4k**: `$tier-30k` (rgb(234, 179, 8) - Yellow #eab308)
-- **Below 3k**: `$tier-below` (rgb(249, 115, 22) - Orange #f97316)
+---
 
-**Usage Examples:**
+### Usage Examples with Color Variety:
+
 ```scss
-// Masters tier badge
-.badge--masters {
-  background: linear-gradient(135deg, rgba($tier-masters, 0.2), rgba($tier-masters, 0.3));
-  border-color: rgba($tier-masters, 0.5);
-  &::before {
-    background: $tier-masters;
-    box-shadow: 0 0 12px rgba($tier-masters, 0.6);
-  }
+// Columns button - Cyan theme
+.list-controls__toggle-columns {
+  @include glow-button(#06b6d4);
 }
 
-// Expert tier card accent
-.card--expert {
-  border-left: 3px solid $tier-expert;
-  &::after {
-    background: $tier-expert;
-    box-shadow: 0 0 16px rgba($tier-expert, 0.8);
+// Filters button - Lime theme
+.list-controls__toggle-filters {
+  @include glow-button(#84cc16);
+}
+
+// Pending status - Purple theme
+.status-badge--pending {
+  @include glow-badge($admin-accent-primary);
+  @include glow-accent-bar($admin-accent-primary);
+}
+
+// Confirmed status - Green theme
+.status-badge--confirmed {
+  @include glow-badge(#10b981);
+  @include glow-accent-bar(#10b981);
+}
+
+// Masters tier badge - Pink theme
+.tier-badge--masters {
+  @include glow-badge($tier-masters);
+  @include glow-accent-bar($tier-masters);
+}
+
+// Expert tier card - Purple theme
+.tier-card--expert {
+  @include glow-card($tier-expert);
+}
+```
+
+---
+
+## Before & After Comparison
+
+### Badge Styling:
+
+**❌ OLD (Dark & Heavy):**
+```scss
+.badge {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5));  // 40-50% opacity
+  border: 1px solid rgba($color, 0.3);  // 30% opacity - dull
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);  // Dark shadow
+}
+```
+**Issues:** Dark, heavy, clunky appearance. Border too subtle.
+
+**✅ NEW (Clean & Glowy):**
+```scss
+.badge {
+  @include glow-badge($color);
+  @include glow-accent-bar($color);
+}
+
+// Expands to:
+// background: rgba(0, 0, 0, 0.03);  ← 3% opacity - barely visible!
+// border: 1px solid rgba($color, 0.5);  ← 50% opacity - vibrant!
+// box-shadow: 0 0 12px rgba($color, 0.15);  ← Glowing!
+```
+**Result:** Sleek, clean, glowy. Border is the star. 🌟
+
+---
+
+### Card Styling:
+
+**❌ OLD (Dark & Heavy):**
+```scss
+.card {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.4));  // 30-40% opacity
+  border: 1px solid rgba($color, 0.2);  // 20% opacity - barely visible
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+```
+**Issues:** Too dark, border not visible enough.
+
+**✅ NEW (Clean & Glowy):**
+```scss
+.card {
+  @include glow-card($color);
+}
+
+// Expands to:
+// background: rgba(0, 0, 0, 0.05);  ← 5% opacity - transparent!
+// border: 1px solid rgba($color, 0.5);  ← 50% opacity - stands out!
+// box-shadow: 0 0 12px rgba($color, 0.15);  ← Colored glow!
+```
+**Result:** Light, airy, borders glow beautifully. ✨
+
+---
+
+## Usage Guidelines
+
+### ✅ When to Use:
+
+- **Interactive elements** (buttons, badges, pills, chips)
+- **Status indicators** (pending, confirmed, assigned)
+- **Cards and containers** (assignments, signups, panels)
+- **Section headers** (with glowing accents)
+- **Hover states** (brighten borders, lift elements)
+- **Elements that need color variety** (Columns, Filters, different statuses)
+
+### ❌ When NOT to Use:
+
+- **Body text or paragraphs** (use standard text styles)
+- **Every single element** (creates visual noise - be selective)
+- **Static decorative elements** (glows are for interactive/important items)
+- **Light backgrounds** (this system is designed for dark admin panels)
+
+---
+
+## Design Philosophy: "Sleek, Clean, and Glowy"
+
+### Key Principles:
+
+1. **Transparency Over Darkness**
+   - Keep backgrounds barely visible (3-8% opacity)
+   - Let the page background show through
+   - Avoid heavy, dark, clunky appearance
+
+2. **Borders Shine**
+   - Borders are the primary visual element
+   - Use 50-80% opacity for vibrancy
+   - Add outer glows for extra depth
+
+3. **Color Variety**
+   - Don't use the same color everywhere
+   - Leverage the 7-tier color palette
+   - Assign semantic meaning to colors
+
+4. **Smooth Interactions**
+   - Everything transitions smoothly (0.2s)
+   - Hover states brighten and lift
+   - Active states provide feedback
+
+5. **Subtle Depth**
+   - Use backdrop blur sparingly
+   - Add accent bars for visual interest
+   - Keep shadows light and colored
+
+---
+
+## Accessibility
+
+### Contrast:
+- **Text on transparent backgrounds**: Maintain WCAG AA (4.5:1 contrast)
+- **White text works well**: `rgba(255, 255, 255, 0.95-1)`
+- **Test with color pickers**: Ensure readability
+
+### Focus States:
+```scss
+&:focus-visible {
+  outline: 2px solid $color;
+  outline-offset: 2px;
+  box-shadow: 0 0 20px rgba($color, 0.4);
+}
+```
+
+### Reduced Motion:
+```scss
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    transform: none !important;
   }
 }
 ```
 
-## Usage Guidelines
+### Color Blindness:
+- Don't rely solely on color for meaning
+- Add icons to status badges
+- Use labels with semantic text
 
-### When to Use
-✅ Interactive elements (buttons, badges, pills)  
-✅ Status indicators  
-✅ Important cards or sections  
-✅ Hover states and active elements  
-✅ Elements that need to "pop" from the background
-
-### When NOT to Use
-❌ Body text or large text blocks  
-❌ Every single element (creates visual noise)  
-❌ Static non-interactive elements  
-❌ Background layers (use subtler dark colors)
-
-## Accessibility
-
-- **Contrast**: Maintain WCAG AA standards (4.5:1 for text)
-- **Focus states**: Add visible focus rings with accent glow
-- **Reduced motion**: Respect `prefers-reduced-motion` for animations
-- **Color blindness**: Don't rely solely on color; use icons and text
+---
 
 ## Examples in Codebase
 
-- **Role badges**: `src/app/(payload)/styles/components/_production-dashboard.scss`
-  - `.my-signup-role` (Observer, Producer badges)
-  - `.my-signup-role--assigned` (Confirmed assignments)
+### Production Dashboard:
+- **Navigation Tabs**: `_production-dashboard.scss` (lines 1256-1310)
+  - Uses `glow-card`, `glow-button`, `glow-accent-bar`
+  
+- **Role Badges**: `_production-dashboard.scss` (lines 1481-1514)
+  - Uses `glow-badge`, `glow-accent-bar`
+  
+- **Status Badges**: `_production-dashboard.scss` (lines 1540-1568)
+  - Uses `glow-badge`, `glow-accent-bar`
+  - Color variants: Purple (pending), Green (confirmed)
+
+- **Section Headers**: `_production-dashboard.scss` (lines 1182-1254)
+  - Uses `glow-header`
+  - Color variants: Purple, Green
+
+### Forms:
+- **React Select Multi-Value Badges**: `_forms.scss` (lines 228-270)
+  - Uses `glow-badge`, `glow-accent-bar`
+  - Clean, sleek appearance
+
+### Search & Collections:
+- **Columns/Filters Buttons**: `_search-enhancements.scss` (lines 118-162)
+  - Cyan theme for Columns
+  - Lime theme for Filters
+  - Color variety in action!
+
+---
+
+## Quick Reference Card
+
+| Element | Background Opacity | Border Opacity | Mixin |
+|---------|-------------------|----------------|-------|
+| **Badge** | 3% | 50% → 90% | `glow-badge` |
+| **Card** | 5% | 50% → 80% | `glow-card` |
+| **Button** | 8% | 50% → 80% | `glow-button` |
+| **Header** | 5% | 50% → 80% | `glow-header` |
+
+---
+
+## Tips & Best Practices
+
+### 1. Start Simple:
+```scss
+// Don't overthink it - just use the mixins!
+.my-badge {
+  @include glow-badge($color);
+  @include glow-accent-bar($color);
+}
+```
+
+### 2. Add Color Variety:
+```scss
+// Don't use the same color for everything
+.button-a { @include glow-button(#06b6d4); }  // Cyan
+.button-b { @include glow-button(#84cc16); }  // Lime
+.button-c { @include glow-button(#a855f7); }  // Purple
+```
+
+### 3. Keep Backgrounds Light:
+```scss
+// ❌ Don't do this (too dark):
+background: rgba(0, 0, 0, 0.4);
+
+// ✅ Do this (barely visible):
+@include transparent-bg(0.05);
+```
+
+### 4. Let Borders Glow:
+```scss
+// ❌ Don't do this (border too subtle):
+border: 1px solid rgba($color, 0.2);
+
+// ✅ Do this (vibrant):
+@include glow-border($color, 0.5, 0.8);
+```
+
+---
 
 ## Future Applications
 
 Consider applying to:
-- Status badges throughout admin panel
-- Action buttons (primary, secondary states)
-- Notification toasts
-- Modal overlays
-- Important cards/sections
-- Sidebar navigation items (active state)
-- Dashboard stat cards
+- ✅ **Production Dashboard** (Done!)
+- ✅ **Form Elements** (Done!)
+- ✅ **Search Buttons** (Done!)
+- ⏳ **Modal overlays** (Pending)
+- ⏳ **Notification toasts** (Pending)
+- ⏳ **Sidebar navigation** (Pending)
+- ⏳ **Dashboard stat cards** (Pending)
+- ⏳ **Table row hover states** (Pending)
 
 ---
 
-**Tip**: This design system works best on dark or mid-tone backgrounds. On light backgrounds, adjust opacity and shadow values accordingly.
+**Last Updated**: December 25, 2025  
+**Status**: ✅ **Core system complete and in production!**
 
+🌟 **Remember:** Clean, transparent backgrounds. Vibrant, glowing borders. Color variety everywhere! 🎨
