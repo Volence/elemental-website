@@ -1,114 +1,103 @@
 /**
  * ELEMENTAL ESPORTS - ADMIN PANEL STYLES
  * 
- * Refactored from 1,985-line custom.scss to modular component-based architecture
+ * Complete CSS refactor - Clean Glow Design System with Section Theming
  * 
  * Benefits:
- * - Reduced specificity (no more !important wars)
- * - Reusable patterns via mixins
+ * - Zero html body prefixes (down from 54)
+ * - Minimal !important flags (down from 338 to ~10)
+ * - Section-based color theming (5 distinct color identities)
+ * - Clean Glow design system throughout
+ * - Reusable mixins and patterns
  * - Clear separation of concerns
- * - Easier to maintain and debug
- * - Better performance (smaller, more efficient CSS)
+ * - Easy to maintain and extend
  * 
- * Structure:
- * - Variables: Theme tokens, colors, spacing
- * - Mixins: Reusable patterns (gradient borders, card styles, etc.)
- * - Base: Foundation styles, resets
+ * Architecture:
+ * - Foundation: Variables, mixins, base styles
+ * - Theming: Section-based dynamic theming system
+ * - Overrides: PayloadCMS base style overrides  
  * - Components: Modular component styles
+ * 
+ * Color Theming:
+ * - People: Pink/Fuchsia (warm, people-focused)
+ * - Production: Cyan/Blue (tech, broadcast)
+ * - Staff: Purple/Violet (management)
+ * - System: Orange (admin functions)
+ * - Recruitment: Green/Emerald (growth)
  */
 
 // ============================================
-// FOUNDATION
+// FOUNDATION LAYER
 // ============================================
 
-@import './variables';
-@import './mixins';
-@import './base';
+@import './variables';      // Theme tokens, colors, spacing
+@import './mixins';          // Reusable patterns (glow-button, glow-card, etc.)
+@import './base';            // Foundation styles, resets
 
 // ============================================
-// COMPONENTS
+// THEMING SYSTEM
 // ============================================
 
+@import './section-theming';    // Section-based color theming via CSS variables
+@import './payload-overrides';  // PayloadCMS base style overrides with Clean Glow
+
+// ============================================
+// COMPONENT LAYER
+// ============================================
+
+// Layout & Navigation
 @import './components/navigation';
-@import './components/cards';
+@import './components/spacing';
+
+// Typography
+@import './components/typography';
+
+// Form Elements
 @import './components/forms';
 @import './components/form-enhancements';
-@import './components/typography';
+
+// Interactive Elements
 @import './components/buttons';
 @import './components/badges';
 @import './components/icons';
+
+// Containers
+@import './components/cards';
 @import './components/modals';
-@import './components/spacing';
-@import './components/animations';
 @import './components/tables';
+
+// Data Display
+@import './components/list-columns';
 @import './components/search-enhancements';
 @import './components/empty-states';
-@import './components/data-consistency';
-@import './components/assigned-teams';
+@import './components/read-only-items';
+
+// Dashboard & Stats
 @import './components/dashboard-stats';
 @import './components/dashboard-actions';
+@import './components/assigned-teams';
+
+// Special Features
+@import './components/data-consistency';
 @import './components/person-relationships';
-@import './components/list-columns';
-@import './components/read-only-items';
 @import './components/recruitment';
 @import './components/production-dashboard';
+
+// Utilities
+@import './components/animations';
 @import './components/toast';
 
 // ============================================
-// FINAL OVERRIDES (Maximum Specificity)
+// MINIMAL OVERRIDES
 // ============================================
-// These rules must come last to override PayloadCMS defaults
+// Only keep overrides that are absolutely necessary
+// Most styling is now handled by _payload-overrides.scss and component files
 
 @media (min-width: 768px) {
-  // Hide mobile-only buttons on desktop with nuclear specificity
-  html body button.nav__mobile-close,
-  html body .nav__mobile-close,
-  html body [role="complementary"] button.nav__mobile-close {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
+  // Hide mobile navigation on desktop
+  .nav__mobile-close,
+  button.nav__mobile-close,
+  [role="complementary"] button.nav__mobile-close {
+    display: none;
   }
 }
-
-// Modal button padding override (must come after button imports)
-html body .modal__footer button,
-html body .modal__actions button,
-html body [class*="modal__footer"] button,
-html body [class*="modal__actions"] button,
-html body [class*="popup__actions"] button,
-html body .popup__actions button,
-html body [class*="modal"] button[type="button"] {
-  padding: 0.75rem 3.5rem !important;
-}
-
-// Empty collection "Create new" button positioning
-// (Styling now in _buttons.scss)
-html body .collection-list__no-results .btn,
-html body .collection-list__no-results a.btn,
-html body [class*="no-results"] .btn,
-html body [class*="no-results"] a.btn {
-  width: auto !important;
-  max-width: none !important;
-  white-space: nowrap !important;
-  flex: none !important;
-  overflow: visible !important;
-}
-
-// Fix Production Dashboard buttons (nuclear option)
-html body .production-dashboard__actions button,
-html body .production-dashboard__actions .btn,
-html body .production-dashboard__actions [class*="btn"] {
-  padding: 0.75rem 1.5rem !important;
-  min-width: auto !important;
-  width: auto !important;
-  max-width: none !important;
-  white-space: nowrap !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  flex: none !important;
-  overflow: visible !important;
-  font-size: 0.95rem !important;
-}
-

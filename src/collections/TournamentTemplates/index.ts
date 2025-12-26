@@ -34,6 +34,77 @@ export const TournamentTemplates: CollectionConfig = {
       return user.role === 'admin'
     },
   },
+  hooks: {
+    afterChange: [
+      async ({ doc, req, operation, previousDoc }) => {
+        // Sync assignedTeams with each team's activeTournaments field
+        if (operation === 'update' || operation === 'create') {
+          const newTeamIds = (doc.assignedTeams || []).map((t: any) => (typeof t === 'number' ? t : t.id))
+          const oldTeamIds = operation === 'update' 
+            ? (previousDoc?.assignedTeams || []).map((t: any) => (typeof t === 'number' ? t : t.id))
+            : []
+
+          // Find teams that were added
+          const addedTeamIds = newTeamIds.filter((id: number) => !oldTeamIds.includes(id))
+          
+          // Find teams that were removed
+          const removedTeamIds = oldTeamIds.filter((id: number) => !newTeamIds.includes(id))
+
+          // Add this tournament to newly assigned teams
+          for (const teamId of addedTeamIds) {
+            try {
+              const team = await req.payload.findByID({
+                collection: 'teams',
+                id: teamId,
+                depth: 0,
+              })
+              
+              const currentTournaments = team.activeTournaments || []
+              const tournamentIds = currentTournaments.map((t: any) => (typeof t === 'number' ? t : t.id))
+              
+              if (!tournamentIds.includes(doc.id)) {
+                await req.payload.update({
+                  collection: 'teams',
+                  id: teamId,
+                  data: {
+                    activeTournaments: [...tournamentIds, doc.id],
+                  },
+                })
+              }
+            } catch (error) {
+              console.error(`Failed to add tournament to team ${teamId}:`, error)
+            }
+          }
+
+          // Remove this tournament from unassigned teams
+          for (const teamId of removedTeamIds) {
+            try {
+              const team = await req.payload.findByID({
+                collection: 'teams',
+                id: teamId,
+                depth: 0,
+              })
+              
+              const currentTournaments = team.activeTournaments || []
+              const tournamentIds = currentTournaments.map((t: any) => (typeof t === 'number' ? t : t.id))
+              
+              const updatedTournaments = tournamentIds.filter((id: number) => id !== doc.id)
+              
+              await req.payload.update({
+                collection: 'teams',
+                id: teamId,
+                data: {
+                  activeTournaments: updatedTournaments,
+                },
+              })
+            } catch (error) {
+              console.error(`Failed to remove tournament from team ${teamId}:`, error)
+            }
+          }
+        }
+      },
+    ],
+  },
   fields: [
     {
       name: 'name',
@@ -57,7 +128,10 @@ export const TournamentTemplates: CollectionConfig = {
       relationTo: 'teams',
       hasMany: true,
       admin: {
-        description: 'Teams participating in this tournament (can also assign from Teams collection)',
+        description: 'Teams participating in this tournament. Use the bulk selector below for easy multi-selection.',
+        components: {
+          Field: '@/components/TournamentFields/BulkTeamSelector#default',
+        },
       },
     },
     {

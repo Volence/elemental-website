@@ -1,57 +1,359 @@
-// Production Dashboard Styles
+// ============================================
+// PRODUCTION DASHBOARD - Cyan Theme
+// ============================================
+//
+// This component uses the cyan/info color theme
+// Section theming is applied via data-section="production"
+//
 
+@import '../variables';
+@import '../mixins';
+
+// ============================================
+// TIMEZONE NOTICE
+// ============================================
+
+.production-dashboard__timezone-notice {
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+  background: rgba($admin-accent-info, 0.1);
+  border-left: 3px solid $admin-accent-info;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+  
+  strong {
+    color: $admin-accent-info;
+    font-weight: 600;
+  }
+}
+
+// ============================================
+// TIMEZONE DEBUG (Testing Component)
+// ============================================
+
+.timezone-debug {
+  @include glow-card($admin-accent-warning);
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin: 1.5rem 0;
+
+  &__header {
+    margin-bottom: 1rem;
+
+    h4 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: $admin-accent-warning;
+      margin: 0 0 0.5rem 0;
+    }
+
+    p {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.7);
+      margin: 0;
+    }
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  &__item {
+    @include transparent-bg(0.1);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  &__flag {
+    font-size: 1.5rem;
+  }
+
+  &__name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  &__time {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: $admin-accent-warning;
+    font-family: 'Courier New', monospace;
+  }
+
+  &__current {
+    padding: 0.75rem 1rem;
+    background: rgba($admin-accent-info, 0.15);
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.85);
+
+    strong {
+      color: $admin-accent-info;
+    }
+  }
+
+  &__note {
+    padding: 0.75rem 1rem;
+    background: rgba($admin-accent-warning, 0.1);
+    border-left: 3px solid $admin-accent-warning;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+
+    strong {
+      color: $admin-accent-warning;
+    }
+  }
+}
+
+// ============================================
+// SUMMARY VIEW
+// ============================================
+
+.production-dashboard__summary {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.summary-card {
+  @include glow-card($admin-accent-info);
+  padding: 2rem;
+  
+  // Wide cards (Staff Workload, Matches Needing Attention) span full width
+  &--wide {
+    grid-column: 1 / -1;
+  }
+  
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: rgba($admin-accent-info, 0.95);
+    margin: 0 0 1.5rem 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid rgba($admin-accent-info, 0.3);
+  }
+}
+
+.summary-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.summary-stat {
+  text-align: center;
+  
+  &__value {
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+  
+  &__label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(255, 255, 255, 0.7);
+  }
+  
+  &--success {
+    .summary-stat__value {
+      color: rgba($admin-accent-success, 0.95);
+    }
+  }
+  
+  &--warning {
+    .summary-stat__value {
+      color: rgba($admin-accent-warning, 0.95);
+    }
+  }
+  
+  &--error {
+    .summary-stat__value {
+      color: rgba($admin-accent-error, 0.95);
+    }
+  }
+}
+
+.summary-progress {
+  margin-top: 1.5rem;
+  
+  &__bar {
+    height: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    overflow: hidden;
+    display: flex;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  &__fill {
+    height: 100%;
+    transition: width 0.3s ease;
+    
+    &--full {
+      background: linear-gradient(90deg, rgba($admin-accent-success, 0.8), rgba($admin-accent-success, 1));
+      box-shadow: 0 0 10px rgba($admin-accent-success, 0.5);
+    }
+    
+    &--partial {
+      background: linear-gradient(90deg, rgba($admin-accent-warning, 0.8), rgba($admin-accent-warning, 1));
+      box-shadow: 0 0 10px rgba($admin-accent-warning, 0.5);
+    }
+  }
+  
+  &__label {
+    margin-top: 0.75rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+    text-align: center;
+  }
+}
+
+// Table wrapper in summary (Staff Workload)
+.summary-table {
+  margin-top: 1.5rem;
+  overflow-x: auto;
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    
+    thead {
+      background: rgba($admin-accent-info, 0.1);
+      
+      th {
+        padding: 1rem;
+        text-align: center;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: rgba(255, 255, 255, 0.8);
+        border-bottom: 2px solid rgba($admin-accent-info, 0.3);
+        
+        &:first-child {
+          text-align: left;
+          padding-left: 1.25rem;
+        }
+      }
+    }
+    
+    tbody {
+      tr {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.2s ease;
+        
+        &:hover {
+          background: rgba($admin-accent-info, 0.05);
+        }
+        
+        &:last-child {
+          border-bottom: none;
+        }
+      }
+      
+      td {
+        padding: 1rem;
+        font-size: 0.9375rem;
+        color: rgba(255, 255, 255, 0.85);
+        text-align: center;
+        
+        &:first-child {
+          text-align: left;
+          padding-left: 1.25rem;
+          
+          strong {
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.95);
+          }
+        }
+      }
+    }
+  }
+}
+
+// Badge for total count in workload table
+.summary-workload-badge {
+  @include glow-badge($admin-accent-primary);
+  padding: 0.375rem 0.75rem;
+  font-weight: 700;
+  color: rgba($admin-accent-primary, 0.95);
+  display: inline-block;
+}
+
+// Legacy class name support
+.summary-workload {
+  @extend .summary-table;
+}
+
+// ============================================
+// PRODUCTION DASHBOARD - Main Container
+// ============================================
+
+// Main container
 .production-dashboard {
   padding: 0;
+  
+  // ============================================
+  // NAVIGATION TABS
+  // ============================================
   
   &__tabs {
     display: flex;
     gap: 0.5rem;
     margin-bottom: 2rem;
-    @include dark-gradient-bg(0.3, 0.35);
-    @include glass-effect(8px);
-    border: 1px solid rgba(0, 0, 0, 0.4);
-    border-radius: 12px;
+    @include glow-card($admin-accent-info);
     padding: 0.75rem;
-    box-shadow: 
-      0 4px 16px rgba(0, 0, 0, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
   
   &__tab {
+    @include glow-button($admin-accent-info);
     padding: 0.85rem 1.5rem;
-    @include dark-gradient-bg(0.3, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    color: rgba(255, 255, 255, 0.7);
-    cursor: pointer;
-    transition: all 0.25s ease;
     font-size: 0.95rem;
     font-weight: 500;
-    position: relative;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
     
     &:hover:not(&--active) {
-      @include dark-gradient-bg(0.4, 0.5);
-      border-color: rgba(255, 255, 255, 0.15);
-      color: rgba(255, 255, 255, 0.85);
-      box-shadow: 
-        0 4px 12px rgba(0, 0, 0, 0.3),
-        0 0 15px rgba($admin-accent-primary, 0.1);
+      color: rgba(255, 255, 255, 0.9);
       transform: translateY(-1px);
     }
     
     &--active {
-      @include glow-accent-bar;
-      background: linear-gradient(135deg, rgba($admin-accent-primary, 0.2), rgba($admin-accent-primary, 0.25));
-      border-color: rgba($admin-accent-primary, 0.5);
-      color: rgba(255, 255, 255, 1);
+      @include glow-accent-bar($admin-accent-info, 3px, 60%);
+      background: rgba($admin-accent-info, 0.2);
+      border-color: rgba($admin-accent-info, 0.7);
+      color: white;
       font-weight: 600;
-      box-shadow: 
-        0 4px 12px rgba($admin-accent-primary, 0.25),
-        0 0 20px rgba($admin-accent-primary, 0.15),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      box-shadow: 0 0 15px rgba($admin-accent-info, 0.3);
     }
   }
+  
+  // ============================================
+  // CONTENT AREA
+  // ============================================
   
   &__content {
     padding: 0 2rem 2rem;
@@ -65,529 +367,315 @@
     
     h2 {
       margin: 0;
-      color: var(--theme-elevation-900);
+      color: rgba($admin-accent-info, 0.95);
     }
   }
+  
+  // ============================================
+  // ACTION BUTTONS (Add Match, Generate, etc.)
+  // ============================================
   
   &__actions {
     display: flex;
     gap: 0.75rem;
     
-    button,
-    .btn,
-    [class*="btn"] {
-      // Clean Glow styling - NO CSS border, only box-shadow for glow
-      @include transparent-bg(0.08);  // Subtle background
-      padding: 0.75rem 1.5rem !important;
-      min-width: auto !important;
-      width: auto !important;
-      max-width: none !important;
-      white-space: nowrap !important;
-      font-size: 0.95rem !important;
-      font-weight: 600 !important;
-      display: inline-flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      overflow: visible !important;
-      border-radius: 8px !important;
+    button {
+      @include glow-button($tier-advanced); // Blue theme
+      padding: 0.75rem 1.5rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      white-space: nowrap;
       
-      // Single glowing border - NO outer glow to avoid double-border effect
-      border: none !important;
-      box-shadow: 
-        0 0 0 1px rgba($tier-advanced, 0.7),      // Single simulated border
-        inset 0 0 20px rgba($tier-advanced, 0.08) // Subtle inner glow
-       !important;
-      backdrop-filter: blur(8px) !important;
-      color: rgba(255, 255, 255, 0.9) !important;
-      transition: all 0.3s ease !important;
-      
-      &:hover:not(:disabled) {
-        background: rgba($tier-advanced, 0.12) !important;
-        box-shadow: 
-          0 0 0 1px rgba($tier-advanced, 1.0),      // Brighter border on hover
-          0 0 12px rgba($tier-advanced, 0.4),        // Subtle outer glow on hover only
-          inset 0 0 25px rgba($tier-advanced, 0.1)  // Brighter inner glow
-         !important;
-        transform: translateY(-1px) !important;
-        color: $tier-advanced !important;
-      }
-      
-      &:disabled {
-        opacity: 0.4 !important;
-        cursor: not-allowed !important;
-        box-shadow: none !important;
-      }
-      
-      // "Generate" button - emerald green glow
-      &:last-child {
-        box-shadow: 
-          0 0 0 1px rgba($tier-4k, 0.7),         // Single simulated border
-          inset 0 0 20px rgba($tier-4k, 0.08)     // Subtle inner glow
-         !important;
-        
-        &:hover:not(:disabled) {
-          background: rgba($tier-4k, 0.12) !important;
-          box-shadow: 
-            0 0 0 1px rgba($tier-4k, 1.0),          // Brighter border on hover
-            0 0 12px rgba($tier-4k, 0.4),            // Subtle outer glow on hover only
-            inset 0 0 25px rgba($tier-4k, 0.1)      // Brighter inner glow
-           !important;
-          color: $tier-4k !important;
-        }
-      }
-      
-      // Remove ALL styling from inner elements - CRITICAL FIX for double borders
+      // Specific inner element cleanup (not wildcard)
       .btn__content,
-      [class*="btn__content"],
       .btn__label,
-      [class*="btn__label"],
-      span,
-      * {
-        border: none !important;
-        box-shadow: none !important;
-        background: transparent !important;
-        border-radius: 0 !important;
-        outline: none !important;
+      span {
+        border: none;
+        box-shadow: none;
+        background: transparent;
+      }
+      
+      // "Generate" button - emerald green theme
+      &:last-child {
+        @include glow-button($tier-4k);
       }
     }
   }
+}
+
+// ============================================
+// STAFF SIGNUPS VIEW
+// ============================================
+
+.staff-signups-section {
+  margin-bottom: 2.5rem;
   
-  &__filters {
-    display: flex;
-    gap: 1.5rem;
+  h3 {
+    @include glow-header($admin-accent-info);
     margin-bottom: 1.5rem;
-    padding: 1rem;
-    background: var(--theme-elevation-50);
-    border-radius: 4px;
+    font-size: 1.125rem;
+    color: rgba($admin-accent-info, 0.95);
+  }
+  
+  // Assignments section uses green theme
+  &--assignments h3 {
+    @include glow-header($admin-accent-success);
+    color: rgba($admin-accent-success, 0.95);
+  }
+}
+
+// Available matches table
+.staff-signups-table-wrapper {
+  @include glow-card($admin-accent-info);
+  padding: 0;
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+.staff-signups-table {
+  width: 100%;
+  border-collapse: collapse;
+  
+  thead {
+    background: rgba($admin-accent-info, 0.1);
+    border-bottom: 2px solid rgba($admin-accent-info, 0.4);
     
-    label {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.9rem;
-      color: var(--theme-elevation-700);
-      
-      select {
-        padding: 0.4rem 0.75rem;
-        border: 1px solid var(--theme-elevation-200);
-        border-radius: 4px;
-        background: var(--theme-elevation-0);
-        color: var(--theme-elevation-900);
-        font-size: 0.9rem;
-        
-        &:focus {
-          outline: none;
-          border-color: var(--theme-success);
-        }
-      }
-      
-      input[type="checkbox"] {
-        width: 1rem;
-        height: 1rem;
-      }
+    th {
+      padding: 1rem;
+      text-align: left;
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 600;
+      font-size: 0.9375rem;
     }
   }
   
-  &__section {
-    margin-bottom: 3rem;
-    
-    h3 {
-      margin-bottom: 1rem;
-      color: var(--theme-elevation-800);
-      font-size: 1.1rem;
-    }
-  }
-  
-  &__table {
-    width: 100%;
-    border-collapse: collapse;
-    background: var(--theme-elevation-0);
-    border: 1px solid var(--theme-elevation-150);
-    border-radius: 4px;
-    overflow: hidden;
-    
-    thead {
-      background: var(--theme-elevation-100);
+  tbody {
+    tr {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.2s ease;
       
-      tr {
-        border-bottom: 2px solid var(--theme-elevation-200);
-      }
-      
-      th {
-        padding: 0.75rem 1rem;
-        text-align: left;
-        font-weight: 600;
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: var(--theme-elevation-700);
-      }
-    }
-    
-    tbody {
-      tr {
-        border-bottom: 1px solid var(--theme-elevation-100);
-        transition: background 0.15s ease;
-        
-        &:hover {
-          background: var(--theme-elevation-50);
-        }
-        
-        &:last-child {
-          border-bottom: none;
-        }
+      &:hover {
+        background: rgba($admin-accent-info, 0.05);
+        box-shadow: inset 0 0 0 1px rgba($admin-accent-info, 0.2);
       }
       
       td {
-        padding: 0.75rem 1rem;
-        font-size: 0.9rem;
-        color: var(--theme-elevation-800);
-        vertical-align: middle;
+        padding: 0.875rem 1rem;
+        color: rgba(255, 255, 255, 0.85);
         
-        a {
-          color: var(--theme-success);
-          text-decoration: none;
-          font-weight: 500;
-          
-          &:hover {
-            text-decoration: underline;
-          }
-        }
+      &.signup-count {
+        text-align: center;
+        font-weight: 600;
+        color: rgba($admin-accent-info, 0.9);
       }
-    }
-  }
-  
-  &__inline-input,
-  &__inline-select {
-    width: 100%;
-    padding: 0.4rem 0.6rem;
-    border: 1px solid var(--theme-elevation-200);
-    border-radius: 3px;
-    background: var(--theme-elevation-0);
-    color: var(--theme-elevation-900);
-    font-size: 0.85rem;
-    font-family: inherit;
-    
-    &:focus {
-      outline: none;
-      border-color: var(--theme-success);
-      background: var(--theme-elevation-50);
-    }
-    
-    &::placeholder {
-      color: var(--theme-elevation-400);
-      font-style: italic;
-    }
-  }
-  
-  &__inline-select {
-    cursor: pointer;
-  }
-  
-  &__loading {
-    padding: 3rem;
-    text-align: center;
-    color: var(--theme-elevation-600);
-    font-size: 1rem;
-  }
-  
-  &__empty {
-    padding: 2rem;
-    text-align: center;
-    color: var(--theme-elevation-500);
-    font-style: italic;
-    background: var(--theme-elevation-50);
-    border-radius: 4px;
-    border: 1px dashed var(--theme-elevation-200);
-  }
-  
-  // Weekly View specific
-  &__weekly {
-    .production-dashboard__section {
-      h3 {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        
-        &::before {
-          content: '';
-          width: 4px;
-          height: 1.2rem;
-          background: linear-gradient(135deg, var(--theme-success), var(--theme-info));
-          border-radius: 2px;
-        }
-      }
-    }
-  }
-  
-  // Staff Signups specific
-  &__staff-signups {
-    h2 {
-      margin: 0 0 0.5rem 0;
-      color: var(--theme-elevation-900);
-    }
-  }
-
-  // Summary specific
-  &__summary {
-    h2 {
-      margin: 0 0 0.5rem 0;
-      color: var(--theme-elevation-900);
-    }
-
-    h3 {
-      margin: 0 0 1.5rem 0;
-      color: var(--theme-elevation-800);
-      font-size: 1rem;
-    }
-  }
-
-  // Schedule Builder specific
-  &__schedule-builder {
-    h2 {
-      margin: 0 0 0.5rem 0;
-      color: var(--theme-elevation-900);
-    }
-
-    h3 {
-      margin: 0 0 1rem 0;
-      color: var(--theme-elevation-800);
-      font-size: 1.1rem;
-    }
-
-    h4 {
-      margin: 0;
-      color: var(--theme-elevation-800);
-      font-size: 0.95rem;
-    }
-  }
-
-  // Assignment View specific
-  &__assignment {
-    h2 {
-      margin: 0 0 0.5rem 0;
-      color: var(--theme-elevation-900);
-    }
-  }
-
-  &__subtitle {
-    color: var(--theme-elevation-600);
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-  }
-
-  &__instructions {
-    background: rgba(var(--theme-info-rgb), 0.05);
-    border: 1px solid rgba(var(--theme-info-rgb), 0.2);
-    border-radius: 6px;
-    padding: 1rem 1.25rem;
-    margin-top: 1rem;
-    margin-bottom: 2rem;
-
-    strong {
-      display: block;
-      margin-bottom: 0.5rem;
-      color: var(--theme-elevation-800);
-      font-size: 0.9rem;
-    }
-
-    ol {
-      margin: 0;
-      padding-left: 1.5rem;
-      color: var(--theme-elevation-700);
-      font-size: 0.85rem;
-      line-height: 1.6;
-
-      li {
-        margin-bottom: 0.25rem;
-
-        &:last-child {
-          margin-bottom: 0;
-        }
       }
     }
   }
 }
 
-// Assignment View Components
-.assignment-matches {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+// ============================================
+// SIGNUP TOOLTIPS
+// ============================================
+
+.signup-count-wrapper {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
 }
 
-.assignment-match {
-  @include transparent-bg(0.04);  // Clean Glow: transparent background
-  @include glow-border($admin-accent-info, 0.3, 0.6);  // Cyan glowing border
-  backdrop-filter: blur(4px);  // Glass effect
-  box-shadow: 0 0 12px rgba(6, 182, 212, 0.1);  // Subtle glow
-  border-radius: 8px;
-  padding: 1.5rem;
-  transition: all 0.3s ease;
-
-  &__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid var(--theme-elevation-100);
-  }
-
-  &__info {
-    h3 {
-      margin: 0 0 0.5rem 0;
-      color: var(--theme-elevation-900);
-      font-size: 1.1rem;
-    }
-  }
-
-  &__meta {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    font-size: 0.85rem;
-    color: var(--theme-elevation-600);
-  }
-
-  &__link {
-    color: var(--theme-success);
-    text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 500;
-    white-space: nowrap;
-
+.signup-count-number {
+  font-weight: 600;
+  font-size: 0.95rem;
+  
+  &.has-signups {
+    color: rgba($admin-accent-info, 1);
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-decoration-color: rgba($admin-accent-info, 0.5);
+    transition: all 0.2s ease;
+    
     &:hover {
-      text-decoration: underline;
+      color: rgba($admin-accent-info, 1);
+      text-decoration-color: rgba($admin-accent-primary, 0.8);
+      transform: scale(1.1);
     }
   }
 }
 
-.assignment-roles {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-}
-
-.assignment-role {
-  @include transparent-bg(0.03);  // Clean Glow: subtle transparent background
-  @include glow-border($tier-expert, 0.3, 0.6);  // Purple glowing border
-  backdrop-filter: blur(3px);
-  box-shadow: 0 0 10px rgba(168, 85, 247, 0.08);
-  border-radius: 6px;
-  padding: 1rem;
-
-  h4 {
-    margin: 0 0 1rem 0;
-    color: var(--theme-elevation-900);
-    font-size: 0.95rem;
-    font-weight: 700;
+.signup-tooltip {
+  // Position is set via inline styles (fixed positioning)
+  min-width: 200px;
+  max-width: 300px;
+  width: max-content;
+  pointer-events: auto;
+  
+  @include dark-glow-card($admin-accent-info);
+  padding: 0;
+  border-radius: 8px;
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba($admin-accent-info, 0.3);
+  
+  // Arrow pointing up
+  &::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 12px;
+    height: 12px;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6));
+    border: 1px solid rgba($admin-accent-info, 0.4);
+    border-bottom: none;
+    border-right: none;
+    box-shadow: 0 0 10px rgba($admin-accent-info, 0.3);
+  }
+  
+  &__header {
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, rgba($admin-accent-info, 0.15), rgba($admin-accent-info, 0.2));
+    border-bottom: 1px solid rgba($admin-accent-info, 0.3);
+    border-radius: 8px 8px 0 0;
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-align: center;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
-
-  &__content {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  &__signups strong,
-  &__assigned strong {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--theme-elevation-0);
-    background: var(--theme-elevation-700);
-    padding: 0.25rem 0.5rem;
-    border-radius: 3px;
+  
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0.5rem 0;
+    max-height: 200px;
+    overflow-y: auto;
+    
+    // Custom scrollbar
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 0 8px 8px 0;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: rgba($admin-accent-info, 0.4);
+      border-radius: 3px;
+      
+      &:hover {
+        background: rgba($admin-accent-info, 0.6);
+      }
+    }
+    
+    li {
+      padding: 0.5rem 1rem;
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 0.85rem;
+      border-left: 3px solid transparent;
+      transition: all 0.15s ease;
+      
+      &:hover {
+        background: rgba($admin-accent-info, 0.1);
+        border-left-color: $admin-accent-info;
+        padding-left: 1.25rem;
+      }
+      
+      &:not(:last-child) {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+    }
   }
 }
 
-.assignment-signup-list,
-.assignment-assigned-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.assignment-signup-btn {
-  @include transparent-bg(0.03);  // Clean Glow: transparent background
-  @include glow-border($tier-4k, 0.3, 0.6);  // Emerald green border (for signup action)
-  padding: 0.5rem 0.75rem;
-  border-radius: 6px;
-  color: rgba($tier-4k, 0.95) !important;
-  font-size: 0.85rem;
-  font-weight: 500;
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(3px);
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.1);
-
-  &:hover:not(:disabled) {
-    background: rgba($tier-4k, 0.12) !important;
-    box-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
-    transform: translateY(-1px);
-  }
-
+// Signup button in table
+.staff-signup-btn {
+  @include glow-button($tier-expert); // Indigo theme for action buttons
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  
   &:disabled {
     opacity: 0.4;
     cursor: not-allowed;
   }
 }
 
-.assignment-assigned-item {
+// ============================================
+// TIME SLOT GROUPS
+// ============================================
+
+.time-slot-groups {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.5rem 0.75rem;
-  background: var(--theme-success);
-  color: #ffffff !important;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  font-weight: 500;
+  flex-direction: column;
+  gap: 1rem;
+}
 
-  span {
+.time-slot-group {
+  @include glow-card($admin-accent-info);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+
+  &--signed-up {
+    @include glow-card($admin-accent-success);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  &__toggle {
     flex: 1;
-    color: #ffffff !important;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.9);
+    cursor: pointer;
+    text-align: left;
+    padding: 0;
+    transition: opacity 0.2s ease;
+
+    &:hover {
+      opacity: 0.8;
+    }
   }
-}
 
-// Maximum specificity override for assigned staff names
-.assignment-assigned-item span,
-.assignment-assigned-item > span,
-div.assignment-assigned-item span {
-  color: #ffffff !important;
-}
-
-.assignment-unassign-btn {
-  padding: 0.25rem 0.5rem;
-  background: transparent;
-  border: none;
-  color: var(--theme-elevation-0);
-  font-size: 1rem;
-  line-height: 1;
-  cursor: pointer;
-  opacity: 0.7;
-  transition: opacity 0.2s ease;
-
-  &:hover {
-    opacity: 1;
+  &__icon {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.6);
+    width: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-}
 
-.assignment-empty {
-  font-size: 0.85rem;
-  color: var(--theme-elevation-600);
-  font-style: italic;
-  margin: 0;
-  font-weight: 500;
-}
+  &__info {
+    flex: 1;
+  }
 
-// Schedule Builder Components
-.schedule-builder {
+  &__datetime {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 0.25rem 0;
+    color: rgba(255, 255, 255, 0.95);
+  }
+
+  &__count {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+  }
+
   &__stats {
     display: flex;
     gap: 1.5rem;
@@ -595,1165 +683,244 @@ div.assignment-assigned-item span {
   }
 
   &__stat {
-    font-size: 0.9rem;
-    color: var(--theme-elevation-600);
-
-    &--highlight {
-      font-weight: 600;
-      color: var(--theme-success);
-      font-size: 1rem;
-    }
-  }
-
-  &__content {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-    margin-top: 2rem;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 600;
   }
 
   &__matches {
-    background: var(--theme-elevation-50);
-    border: 1px solid var(--theme-elevation-150);
-    border-radius: 6px;
-    padding: 1.5rem;
-  }
-
-  &__instruction {
-    font-size: 0.9rem;
-    color: var(--theme-elevation-600);
-    margin-bottom: 1rem;
-  }
-
-  &__match-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  &__match {
-    background: var(--theme-elevation-0);
-    border: 2px solid var(--theme-elevation-200);
-    border-radius: 6px;
-    transition: all 0.2s ease;
-
-    &:hover {
-      border-color: var(--theme-elevation-300);
-    }
-
-    &--selected {
-      border-color: var(--theme-success);
-      background: rgba(var(--theme-success-rgb), 0.05);
-    }
-  }
-
-  &__match-label {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    padding: 1rem;
-    cursor: pointer;
-  }
-
-  &__checkbox {
-    width: 1.25rem;
-    height: 1.25rem;
-    margin-top: 0.25rem;
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-
-  &__match-info {
-    flex: 1;
-  }
-
-  &__match-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 0.5rem;
-
-    strong {
-      font-size: 0.95rem;
-      color: var(--theme-elevation-900);
-    }
-  }
-
-  &__match-meta {
-    display: flex;
-    gap: 1rem;
-    font-size: 0.85rem;
-    color: var(--theme-elevation-600);
-  }
-
-  &__export {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  &__preview-section {
-    background: var(--theme-elevation-50);
-    border: 1px solid var(--theme-elevation-150);
-    border-radius: 6px;
-    padding: 1.5rem;
-  }
-
-  &__preview-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-  }
-
-  &__preview {
-    background: var(--theme-elevation-800);
-    color: var(--theme-elevation-50);
-    padding: 1rem;
-    border-radius: 4px;
-    font-family: 'Monaco', 'Courier New', monospace;
-    font-size: 0.85rem;
-    line-height: 1.6;
-    overflow-x: auto;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    margin: 0;
-    min-height: 200px;
-    max-height: 400px;
-    overflow-y: auto;
-  }
-}
-
-// Summary View Components
-.summary-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 1.5rem;
-  margin-top: 2rem;
-}
-
-.summary-card {
-  background: var(--theme-elevation-0);
-  border: 1px solid var(--theme-elevation-150);
-  border-radius: 8px;
-  padding: 1.5rem;
-
-  &--wide {
-    grid-column: span 2;
-  }
-
-  &__description {
-    font-size: 0.9rem;
-    color: var(--theme-elevation-600);
-    margin: 1rem 0 0 0;
-  }
-}
-
-.summary-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.summary-stat {
-  text-align: center;
-  padding: 1rem;
-  border-radius: 6px;
-  background: var(--theme-elevation-50);
-
-  &--success {
-    background: rgba(var(--theme-success-rgb), 0.1);
-  }
-
-  &--warning {
-    background: rgba(var(--theme-warning-rgb), 0.1);
-  }
-
-  &--error {
-    background: rgba(var(--theme-error-rgb), 0.1);
-  }
-
-  &--info {
-    background: rgba(var(--theme-info-rgb), 0.1);
-  }
-
-  &__value {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--theme-elevation-900);
-    line-height: 1;
-    margin-bottom: 0.5rem;
-  }
-
-  &__label {
-    font-size: 0.85rem;
-    color: var(--theme-elevation-600);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-}
-
-.summary-progress {
-  &__bar {
-    height: 12px;
-    background: var(--theme-elevation-100);
-    border-radius: 6px;
-    overflow: hidden;
-    display: flex;
-    margin-bottom: 0.5rem;
-  }
-
-  &__fill {
-    transition: width 0.3s ease;
-
-    &--full {
-      background: var(--theme-success);
-    }
-
-    &--partial {
-      background: var(--theme-warning);
-    }
-  }
-
-  &__label {
-    font-size: 0.85rem;
-    color: var(--theme-elevation-600);
-    text-align: center;
-  }
-}
-
-.summary-table {
-  overflow-x: auto;
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-
-    thead {
-      background: var(--theme-elevation-50);
-
-      th {
-        padding: 0.75rem;
-        text-align: left;
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: var(--theme-elevation-700);
-        border-bottom: 2px solid var(--theme-elevation-150);
-      }
-    }
-
-    tbody {
-      tr {
-        border-bottom: 1px solid var(--theme-elevation-100);
-
-        &:last-child {
-          border-bottom: none;
-        }
-
-        &:hover {
-          background: var(--theme-elevation-50);
-        }
-      }
-
-      td {
-        padding: 0.75rem;
-        font-size: 0.9rem;
-        color: var(--theme-elevation-800);
-      }
-    }
-  }
-}
-
-.summary-workload-badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  background: var(--theme-success);
-  color: var(--theme-elevation-0);
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 0.85rem;
-}
-
-.summary-match-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.summary-match {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 1rem;
-  background: var(--theme-elevation-50);
-  border: 1px solid var(--theme-elevation-150);
-  border-radius: 6px;
-
-  &__info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-
-    strong {
-      font-size: 0.9rem;
-      color: var(--theme-elevation-900);
-    }
-  }
-
-  &__date {
-    font-size: 0.85rem;
-    color: var(--theme-elevation-600);
-  }
-}
-
-.summary-empty {
-  font-size: 0.9rem;
-  color: var(--theme-elevation-500);
-  font-style: italic;
-  text-align: center;
-  padding: 2rem;
-}
-
-.summary-success {
-  font-size: 0.95rem;
-  color: var(--theme-success);
-  text-align: center;
-  padding: 2rem;
-  background: rgba(var(--theme-success-rgb), 0.05);
-  border-radius: 6px;
-  margin: 0;
-}
-
-.summary-more {
-  font-size: 0.9rem;
-  color: var(--theme-elevation-600);
-  font-style: italic;
-  text-align: center;
-  margin: 0.5rem 0 0 0;
-}
-
-// Staff Signups View Components
-.staff-signups-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  margin-top: 2rem;
-}
-
-.staff-signup-card {
-  background: var(--theme-elevation-0);
-  border: 1px solid var(--theme-elevation-150);
-  border-radius: 8px;
-  overflow: hidden;
-
-  &__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 1.5rem;
-    background: var(--theme-elevation-50);
-    border-bottom: 1px solid var(--theme-elevation-150);
-  }
-
-  &__info {
-    flex: 1;
-
-    h3 {
-      margin: 0 0 0.75rem 0;
-      color: var(--theme-elevation-900);
-      font-size: 1.1rem;
-    }
-  }
-
-  &__badges {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  &__total {
-    text-align: center;
-  }
-
-  &__content {
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-}
-
-.staff-signup-badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.85rem;
-  font-weight: 500;
-
-  &--observer {
-    background: rgba(var(--theme-info-rgb), 0.15);
-    color: var(--theme-info);
-  }
-
-  &--producer {
-    background: rgba(var(--theme-warning-rgb), 0.15);
-    color: var(--theme-warning);
-  }
-
-  &--caster {
-    background: rgba(var(--theme-success-rgb), 0.15);
-    color: var(--theme-success);
-  }
-}
-
-.staff-signup-total-badge {
-  width: 3rem;
-  height: 3rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--theme-success);
-  color: var(--theme-elevation-0);
-  border-radius: 50%;
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-
-.staff-signup-total-label {
-  font-size: 0.75rem;
-  color: var(--theme-elevation-600);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.staff-signup-section {
-  h4 {
-    margin: 0 0 0.75rem 0;
-    color: var(--theme-elevation-800);
-    font-size: 0.95rem;
-    font-weight: 600;
-  }
-}
-
-.staff-signup-matches {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.staff-signup-match {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem 1rem;
-  background: var(--theme-elevation-50);
-  border: 1px solid var(--theme-elevation-150);
-  border-radius: 6px;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: var(--theme-elevation-100);
-    border-color: var(--theme-elevation-200);
-  }
-
-  &__link {
-    flex: 1;
-    color: var(--theme-elevation-900);
-    text-decoration: none;
-    font-size: 0.9rem;
-
-    &:hover {
-      color: var(--theme-success);
-      text-decoration: underline;
-    }
-  }
-
-  &__date {
-    font-size: 0.85rem;
-    color: var(--theme-elevation-600);
-    white-space: nowrap;
-    margin-left: 1rem;
-  }
-}
-
-// Coverage status badges
-.coverage-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.25rem 0.6rem;
-  border-radius: 12px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  
-  &--full {
-    background: rgba(var(--theme-success-rgb), 0.1);
-    color: var(--theme-success);
-  }
-  
-  &--partial {
-    background: rgba(var(--theme-warning-rgb), 0.1);
-    color: var(--theme-warning);
-  }
-  
-  &--none {
-    background: rgba(var(--theme-error-rgb), 0.1);
-    color: var(--theme-error);
-  }
-}
-
-// Priority badges
-.priority-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.85rem;
-  font-weight: 500;
-  
-  &--urgent {
-    color: var(--theme-error);
-  }
-  
-  &--high {
-    color: var(--theme-warning);
-  }
-  
-  &--medium {
-    color: var(--theme-info);
-  }
-  
-  &--low {
-    color: var(--theme-elevation-500);
-  }
-}
-
-// Schedule Builder Copy Button Fix (Maximum Specificity)
-.schedule-builder__preview-header button,
-.schedule-builder__preview-header .btn {
-  padding: 0.5rem 1rem !important;
-  font-size: 0.9rem !important;
-  min-width: 100px !important;
-  width: auto !important;
-  max-width: none !important;
-  background: var(--theme-success) !important;
-  color: var(--theme-elevation-0) !important;
-  border: none !important;
-  border-radius: 4px !important;
-  cursor: pointer !important;
-  font-weight: 600 !important;
-  transition: filter 0.2s ease !important;
-
-  &:hover:not(:disabled) {
-    filter: brightness(0.9) !important;
-  }
-
-  &:disabled {
-    opacity: 0.5 !important;
-    cursor: not-allowed !important;
-    background: var(--theme-elevation-400) !important;
-  }
-}
-
-// ============================================
-// Staff Signups View Styles
-// ============================================
-
-.staff-signups-section {
-  margin-bottom: 3.5rem;
-
-  h3 {
-    @include dark-glow-header;
-    color: rgba(255, 255, 255, 0.95);
-    margin-bottom: 1.5rem;
-    font-size: 1.3rem;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 0.65rem;
-  }
-  
-  // Green variant for assignments section
-  &--assignments h3 {
-    @include dark-glow-header(#10b981);
-  }
-}
-
-.staff-signups-table-wrapper {
-  overflow-x: auto;
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.35));
-  border-radius: 10px;
-  border: 1px solid rgba($admin-accent-primary, 0.25);
-  box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(8px);
-}
-
-.staff-signups-table {
-  width: 100%;
-  border-collapse: collapse;
-
-  thead {
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6));
-    border-bottom: 2px solid rgba($admin-accent-primary, 0.3);
-    position: relative;
-    
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: -2px;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, $admin-accent-primary, transparent);
-      box-shadow: 0 0 8px rgba($admin-accent-primary, 0.5);
-    }
-
-    th {
-      padding: 1rem 1.25rem;
-      text-align: left;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.9);
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-  }
-
-  tbody {
-    tr {
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      transition: all 0.2s ease;
-      position: relative;
-
-      &:hover {
-        background: linear-gradient(135deg, rgba($admin-accent-primary, 0.08), rgba($admin-accent-primary, 0.12));
-        transform: translateX(2px);
-        
-        &::before {
-          opacity: 1;
-        }
-      }
-      
-      // Subtle glow on hover
-      &::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 3px;
-        background: $admin-accent-primary;
-        box-shadow: 0 0 8px rgba($admin-accent-primary, 0.6);
-        opacity: 0;
-        transition: opacity 0.2s ease;
-      }
-
-      &.signed-up {
-        background: linear-gradient(135deg, rgba($admin-accent-info, 0.08), rgba($admin-accent-info, 0.1));
-        
-        &:hover {
-          background: linear-gradient(135deg, rgba($admin-accent-info, 0.12), rgba($admin-accent-info, 0.15));
-        }
-        
-        &::before {
-          background: $admin-accent-info;
-          box-shadow: 0 0 8px rgba($admin-accent-info, 0.6);
-        }
-      }
-
-      td {
-        padding: 1rem 1.25rem;
-        color: rgba(255, 255, 255, 0.85);
-
-        strong {
-          color: rgba(255, 255, 255, 0.95);
-          font-weight: 600;
-        }
-
-        &.signup-count {
-          text-align: center;
-          font-weight: 600;
-          font-size: 0.95rem;
-          color: rgba(255, 255, 255, 0.8);
-        }
-      }
-    }
-  }
-}
-
-.staff-signup-btn {
-  padding: 0.6rem 1.5rem;
-  background: linear-gradient(135deg, rgba($admin-accent-primary, 0.25), rgba($admin-accent-primary, 0.35));
-  color: white;
-  border: 1px solid rgba($admin-accent-primary, 0.5);
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: all 0.2s ease;
-  box-shadow: 
-    0 2px 8px rgba($admin-accent-primary, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(4px);
-
-  &:hover {
-    background: linear-gradient(135deg, rgba($admin-accent-primary, 0.35), rgba($admin-accent-primary, 0.45));
-    border-color: rgba($admin-accent-primary, 0.7);
-    box-shadow: 
-      0 4px 12px rgba($admin-accent-primary, 0.4),
-      inset 0 1px 0 rgba(255, 255, 255, 0.15);
-    transform: translateY(-1px);
-  }
-  
-  &:active {
-    transform: translateY(0);
-  }
-
-  &--active {
-    background: linear-gradient(135deg, rgba($admin-accent-info, 0.25), rgba($admin-accent-info, 0.35));
-    border-color: rgba($admin-accent-info, 0.5);
-    box-shadow: 
-      0 2px 8px rgba($admin-accent-info, 0.25),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    
-    &:hover {
-      background: linear-gradient(135deg, rgba($admin-accent-info, 0.35), rgba($admin-accent-info, 0.45));
-      border-color: rgba($admin-accent-info, 0.7);
-      box-shadow: 
-        0 4px 12px rgba($admin-accent-info, 0.4),
-        inset 0 1px 0 rgba(255, 255, 255, 0.15);
-    }
-  }
-}
-
-.assigned-badge {
-  margin-left: 0.75rem;
-  font-size: 0.8rem;
-  padding: 0.4rem 0.75rem;
-  background: linear-gradient(135deg, rgba(var(--theme-success-rgb), 0.2), rgba(var(--theme-success-rgb), 0.25));
-  color: rgba(255, 255, 255, 1);
-  border-radius: 8px;
-  border: 1px solid rgba(var(--theme-success-rgb), 0.5);
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  box-shadow: 
-    0 2px 8px rgba(var(--theme-success-rgb), 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(4px);
-  position: relative;
-  
-  // Glowing accent
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 3px;
-    height: 60%;
-    background: var(--theme-success);
-    border-radius: 2px;
-    box-shadow: 0 0 8px rgba(var(--theme-success-rgb), 0.6);
-  }
-}
-
-// My Signups List
-.my-signups-list {
-  display: grid;
-  gap: 1rem;
-}
-
-// Higher specificity to override Payload styles - no !important needed
-html body .my-signup-card {
-  @include dark-glow-card;
-  border-radius: 10px;
-  padding: 1.5rem;
-  overflow: hidden;
-  border-left: 3px solid $admin-accent-primary;
-  
-  &::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: $admin-accent-primary;
-    box-shadow: 0 0 12px rgba($admin-accent-primary, 0.5);
-    pointer-events: none;
-  }
-  
-  &:hover::after {
-    box-shadow: 0 0 16px rgba($admin-accent-primary, 0.7);
-  }
-}
-
-// Assigned card with DARK GLOW green theme - Higher specificity, no !important
-html body .my-signup-card.my-signup-card--assigned {
-  @include dark-glow-card(#10b981);
-  border-left: 3px solid #10b981;
-  backdrop-filter: blur(12px);
-  
-  // Glowing left accent with DARK GLOW intensity
-  &::after {
-    background: linear-gradient(180deg, #10b981, rgba(16, 185, 129, 0.5));
-    box-shadow: 
-      0 0 20px rgba(16, 185, 129, 0.7),
-      0 0 40px rgba(16, 185, 129, 0.3);
-    width: 4px;
-  }
-  
-  // Add glowing top accent bar for confirmed assignments
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background: linear-gradient(90deg, #10b981, rgba(16, 185, 129, 0.5), transparent);
-    box-shadow: 
-      0 0 15px rgba(16, 185, 129, 0.6),
-      0 2px 8px rgba(16, 185, 129, 0.4);
-    z-index: 1;
-    border-radius: 10px 10px 0 0;
-  }
-  
-  &:hover {
-    &::after {
-      box-shadow: 
-        0 0 30px rgba(16, 185, 129, 0.9),
-        0 0 50px rgba(16, 185, 129, 0.4);
-    }
-    
-    &::before {
-      box-shadow: 
-        0 0 20px rgba(16, 185, 129, 0.8),
-        0 2px 12px rgba(16, 185, 129, 0.6);
-    }
-  }
-  
-  // Green glow for assigned card header
-  .my-signup-card__header {
-    @include transparent-bg(0.08);
-    @include glow-border(#10b981, 0.5, 0.8);
-    box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
-    
-    &::before {
-      background: linear-gradient(180deg, #10b981, rgba(16, 185, 129, 0.6));
-      box-shadow: 
-        0 0 15px rgba(16, 185, 129, 0.7),
-        0 0 25px rgba(16, 185, 129, 0.3);
-      width: 4px;
-    }
-  }
-  
-  // Green glow for roles section
-  .my-signup-card__roles {
-    @include transparent-bg(0.05);
-    @include glow-border(#10b981, 0.4, 0.6);
-    box-shadow: 0 0 10px rgba(16, 185, 129, 0.1);
-  }
-}
-
-.my-signup-card__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1.25rem;
-  padding: 1.25rem;
-  border-radius: 8px;
-  @include transparent-bg(0.05);
-  @include glow-border($admin-accent-primary, 0.5, 0.8);
-  backdrop-filter: blur(4px);
-  position: relative;
-  
-  // Glowing left accent
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: $admin-accent-primary;
-    border-radius: 8px 0 0 8px;
-    box-shadow: 0 0 10px rgba($admin-accent-primary, 0.5);
-  }
-
-  h4 {
-    margin: 0 0 0.5rem 0;
-    color: rgba(255, 255, 255, 0.95);
-    font-size: 1.15rem;
-    font-weight: 600;
-  }
-}
-
-.my-signup-card__date {
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 0.9rem;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.my-signup-card__status {
-  flex-shrink: 0;
-}
-
-.my-signup-card__roles {
-  padding: 1rem 1.25rem;
-  border-radius: 8px;
-  @include transparent-bg(0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  
-  strong {
-    display: block;
-    color: rgba(255, 255, 255, 0.85);
-    margin-bottom: 0.75rem;
-    font-size: 0.9rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-}
-
-.my-signup-card__role-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.65rem;
-}
-
-.my-signup-role {
-  @include dark-glow-badge;
-  @include glow-accent-bar;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0.65rem 1rem 0.65rem 1.1rem;
-  font-size: 0.9rem;
-
-  &--assigned {
-    @include dark-glow-badge(#10b981);
-    @include glow-accent-bar(#10b981);
-    font-weight: 600;
-    color: rgba(255, 255, 255, 1);
-  }
-
-  &__remove {
     padding: 0;
-    margin: 0;
-    margin-left: 0.25rem;
-    background: rgba(0, 0, 0, 0.05);
-    border: 1px solid transparent;
-    font-size: 0.85rem;
+    background: rgba(0, 0, 0, 0.15);
+  }
+}
+
+.time-slot-match {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+  
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &__title {
+    font-size: 1rem;
     font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 22px;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-    
-    // Subtle default state (muted gray)
-    color: rgba(255, 255, 255, 0.35);
-    opacity: 0.6;
-
-    &:hover {
-      background: rgba($admin-accent-primary, 0.2); // Light cyan background
-      border-color: rgba($admin-accent-primary, 0.4);
-      color: $admin-accent-primary; // Cyan accent color
-      box-shadow: 0 0 10px rgba($admin-accent-primary, 0.25);
-      opacity: 1;
-      transform: scale(1.05);
-    }
-    
-    &:active {
-      transform: scale(0.95);
-    }
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0.75rem;
   }
 
-  &__locked {
+  &__stats {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  &__stat {
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: 22px;
-    height: 22px;
+    gap: 0.5rem;
     font-size: 0.9rem;
-    opacity: 0.8;
-    margin-left: 0.25rem;
-    padding: 0.25rem;
-    background: rgba(var(--theme-success-rgb), 0.1);
-    border-radius: 6px;
-    border: 1px solid rgba(var(--theme-success-rgb), 0.2);
+
+    span:first-child {
+      color: rgba(255, 255, 255, 0.7);
+    }
   }
 }
 
-.status-badge {
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-size: 0.85rem;
+// ============================================
+// SIGNUP MODAL
+// ============================================
+
+.signup-modal__match-count {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0.5rem 0;
   font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  border: 1px solid transparent;
-  transition: all 0.2s ease;
-  position: relative;
-  backdrop-filter: blur(4px);
-
-  &--assigned {
-    @include transparent-bg(0.05);
-    @include glow-badge(#10b981);
-    @include glow-accent-bar(#10b981, 3px, 60%);
-    padding-left: 1.15rem; // Extra space for accent bar
-    color: rgba(255, 255, 255, 1);
-  }
-
-  &--pending {
-    @include transparent-bg(0.05);
-    @include glow-badge($admin-accent-primary);
-    @include glow-accent-bar($admin-accent-primary, 3px, 60%);
-    padding-left: 1.15rem; // Extra space for accent bar
-    color: rgba(255, 255, 255, 1);
-  }
 }
 
-// Signup Modal
+.signup-modal__match-list {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+}
+
+.signup-modal__match-item {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.9rem;
+  padding: 0.25rem 0;
+  line-height: 1.6;
+}
+
+.signup-modal__note {
+  margin: 1rem 0 0 0;
+  padding: 0.75rem 1rem;
+  background: rgba($admin-accent-info, 0.1);
+  border-left: 3px solid $admin-accent-info;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+}
+
+// ============================================
+// SIGNUP MODAL
+// ============================================
+
 .signup-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: 10001;
   padding: 1rem;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .signup-modal {
-  background: var(--theme-elevation-0);
-  border-radius: 8px;
-  width: 100%;
+  @include dark-glow-card($admin-accent-info);
   max-width: 500px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+  border: 2px solid rgba($admin-accent-info, 0.4);
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.6),
+    0 0 30px rgba($admin-accent-info, 0.3);
+  
   &__header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem;
-    border-bottom: 1px solid var(--theme-elevation-150);
-
+    border-bottom: 2px solid rgba($admin-accent-info, 0.3);
+    background: linear-gradient(135deg, rgba($admin-accent-info, 0.15), rgba($admin-accent-info, 0.1));
+    
     h3 {
       margin: 0;
-      color: var(--theme-elevation-900);
-      font-size: 1.25rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.95);
+      text-shadow: 0 0 20px rgba($admin-accent-info, 0.5);
     }
   }
-
+  
   &__close {
-    background: transparent;
+    background: none;
     border: none;
+    color: rgba(255, 255, 255, 0.7);
     font-size: 1.5rem;
-    color: var(--theme-elevation-600);
     cursor: pointer;
-    padding: 0;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    padding: 0.25rem 0.5rem;
+    transition: all 0.2s ease;
     border-radius: 4px;
-    transition: all 0.15s ease;
-
+    
     &:hover {
-      background: var(--theme-elevation-100);
-      color: var(--theme-elevation-900);
+      color: rgba(255, 255, 255, 1);
+      background: rgba(255, 255, 255, 0.1);
     }
   }
-
+  
   &__body {
     padding: 1.5rem;
   }
-
+  
   &__match-info {
     margin-bottom: 1.5rem;
     padding: 1rem;
-    background: var(--theme-elevation-50);
-    border-radius: 6px;
-
+    background: rgba($admin-accent-info, 0.05);
+    border: 1px solid rgba($admin-accent-info, 0.2);
+    border-radius: 8px;
+    
     h4 {
       margin: 0 0 0.5rem 0;
-      color: var(--theme-elevation-900);
+      font-size: 1.1rem;
+      color: rgba(255, 255, 255, 0.95);
     }
-
+    
     p {
       margin: 0;
-      color: var(--theme-elevation-600);
+      color: rgba(255, 255, 255, 0.7);
       font-size: 0.9rem;
     }
   }
-
+  
   &__roles {
     display: flex;
     flex-direction: column;
     gap: 1rem;
   }
-
+  
   &__footer {
     display: flex;
-    justify-content: flex-end;
-    gap: 0.75rem;
+    gap: 1rem;
     padding: 1.5rem;
-    border-top: 1px solid var(--theme-elevation-150);
+    border-top: 2px solid rgba($admin-accent-info, 0.3);
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.2));
   }
-
-  &__cancel,
-  &__submit {
+  
+  &__cancel {
+    flex: 1;
     padding: 0.75rem 1.5rem;
-    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1rem;
     font-weight: 600;
-    font-size: 0.9rem;
     cursor: pointer;
-    transition: all 0.15s ease;
-    border: none;
-
+    transition: all 0.2s ease;
+    
+    &:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    
     &:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
   }
-
-  &__cancel {
-    background: var(--theme-elevation-100);
-    color: var(--theme-elevation-800);
-
-    &:hover:not(:disabled) {
-      background: var(--theme-elevation-200);
+  
+  &__submit {
+    flex: 1;
+    @include glow-button($admin-accent-info);
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
   }
+}
 
-  &__submit {
-    background: var(--theme-success);
-    color: white;
-
-    &:hover:not(:disabled) {
-      filter: brightness(0.9);
-    }
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
 }
 
@@ -1761,53 +928,974 @@ html body .my-signup-card.my-signup-card--assigned {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem;
-  background: var(--theme-elevation-50);
-  border-radius: 6px;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.15s ease;
-
+  transition: all 0.2s ease;
+  
   &:hover {
-    background: var(--theme-elevation-100);
+    background: rgba(0, 0, 0, 0.4);
+    border-color: rgba($admin-accent-info, 0.3);
   }
-
+  
   input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     cursor: pointer;
+    accent-color: $admin-accent-info;
   }
-
+  
   span {
     font-size: 1rem;
-    color: var(--theme-elevation-800);
+    color: rgba(255, 255, 255, 0.9);
     font-weight: 500;
   }
 }
 
 .signup-caster-style {
-  margin-left: 2.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-
+  padding: 1rem;
+  background: rgba($admin-accent-info, 0.05);
+  border: 1px solid rgba($admin-accent-info, 0.2);
+  border-radius: 8px;
+  margin-top: 0.5rem;
+  
   label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 600;
     font-size: 0.9rem;
-    color: var(--theme-elevation-700);
-    font-weight: 500;
   }
-
+  
   select {
-    padding: 0.5rem;
-    border: 1px solid var(--theme-elevation-200);
-    border-radius: 4px;
-    background: var(--theme-elevation-0);
-    color: var(--theme-elevation-900);
-    font-size: 0.9rem;
+    width: 100%;
+    padding: 0.75rem;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1rem;
     cursor: pointer;
-
+    
     &:focus {
       outline: none;
-      border-color: var(--theme-success);
+      border-color: rgba($admin-accent-info, 0.5);
+      box-shadow: 0 0 10px rgba($admin-accent-info, 0.2);
+    }
+    
+    option {
+      background: rgba(0, 0, 0, 0.95);
+      color: rgba(255, 255, 255, 0.9);
+    }
+  }
+}
+
+// ============================================
+// INLINE EDIT INPUTS (Weekly View Table)
+// ============================================
+
+.production-dashboard__inline-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  
+  &:focus {
+    outline: none;
+    border-color: rgba($admin-accent-info, 0.6);
+    background: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 8px rgba($admin-accent-info, 0.2);
+  }
+  
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+  }
+}
+
+.production-dashboard__inline-select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:focus {
+    outline: none;
+    border-color: rgba($admin-accent-info, 0.6);
+    background: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 8px rgba($admin-accent-info, 0.2);
+  }
+  
+  option {
+    background: var(--theme-elevation-500);
+    color: var(--theme-elevation-100);
+    padding: 0.5rem;
+  }
+}
+
+// ============================================
+// MY SIGNUP CARDS (Assignments & Signups)
+// ============================================
+
+.my-signup-card {
+  @include glow-card($admin-accent-info);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  
+  // Assigned card uses green theme
+  &--assigned {
+    @include glow-card($admin-accent-success);
+    border-color: rgba($admin-accent-success, 0.6);
+    box-shadow: 0 0 20px rgba($admin-accent-success, 0.15);
+  }
+}
+
+.my-signup-card__header {
+  @include glow-header($admin-accent-info);
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+  
+  .my-signup-card--assigned & {
+    @include glow-header($admin-accent-success);
+  }
+}
+
+.my-signup-card__date {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0;
+}
+
+.my-signup-card__match-info {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 0.25rem;
+}
+
+.my-signup-card__roles {
+  @include transparent-bg(0.05);
+  @include glow-border($admin-accent-info, 0.5, 0.8);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  
+  .my-signup-card--assigned & {
+    @include glow-border($admin-accent-success, 0.5, 0.8);
+  }
+}
+
+.my-signup-card__role-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+// Individual role badges
+.my-signup-role {
+  @include glow-badge($admin-accent-info);
+  @include glow-accent-bar($admin-accent-info, 2px, 60%);
+  padding: 0.5rem 1rem;
+  padding-left: 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+  
+  .my-signup-card--assigned & {
+    @include glow-badge($admin-accent-success);
+    @include glow-accent-bar($admin-accent-success, 2px, 60%);
+  }
+}
+
+// Remove role button (X)
+.my-signup-role__remove {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  transition: all 0.2s ease;
+  
+  svg {
+    width: 12px;
+    height: 12px;
+  }
+  
+  &:hover {
+    color: $admin-accent-info;
+    background: rgba($admin-accent-info, 0.2);
+    border-radius: 2px;
+    box-shadow: 0 0 8px rgba($admin-accent-info, 0.3);
+  }
+  
+  .my-signup-card--assigned & {
+    &:hover {
+      color: $admin-accent-success;
+      background: rgba($admin-accent-success, 0.2);
+      box-shadow: 0 0 8px rgba($admin-accent-success, 0.3);
+    }
+  }
+}
+
+// ============================================
+// STATUS BADGES
+// ============================================
+
+.status-badge {
+  @include glow-badge($admin-accent-info);
+  padding: 0.375rem 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  
+  &--pending {
+    @include glow-badge($admin-accent-primary);
+    @include glow-accent-bar($admin-accent-primary, 2px, 60%);
+    color: rgba($admin-accent-primary, 0.95);
+  }
+  
+  &--assigned {
+    @include glow-badge($admin-accent-success);
+    @include glow-accent-bar($admin-accent-success, 2px, 60%);
+    color: rgba($admin-accent-success, 0.95);
+  }
+  
+  &--partial {
+    @include glow-badge($admin-accent-warning);
+    @include glow-accent-bar($admin-accent-warning, 2px, 60%);
+    color: rgba($admin-accent-warning, 0.95);
+  }
+  
+  &--none {
+    @include glow-badge($admin-accent-error);
+    @include glow-accent-bar($admin-accent-error, 2px, 60%);
+    color: rgba($admin-accent-error, 0.95);
+  }
+}
+
+// ============================================
+// ASSIGNMENT VIEW - Actual Component Classes
+// ============================================
+
+.assignment-roles {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  margin-top: 1.5rem;
+}
+
+.assignment-role {
+  @include transparent-bg(0.03);
+  @include glow-border($admin-accent-info, 0.4, 0.6);
+  border-radius: 10px;
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+  
+  h4 {
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.075em;
+    color: rgba($admin-accent-info, 0.95);
+    margin: 0 0 1.25rem 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid rgba($admin-accent-info, 0.3);
+  }
+  
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  
+  &__signups,
+  &__assigned {
+    strong {
+      display: block;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 0.75rem;
+    }
+  }
+}
+
+.assignment-signup-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.assignment-signup-btn {
+  @include glow-badge($admin-accent-info);
+  padding: 0.625rem 1.125rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: rgba($admin-accent-info, 0.95);
+  background: rgba($admin-accent-info, 0.05);
+  border: 1px solid rgba($admin-accent-info, 0.5);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover:not(:disabled) {
+    background: rgba($admin-accent-info, 0.15);
+    border-color: rgba($admin-accent-info, 0.8);
+    box-shadow: 0 0 20px rgba($admin-accent-info, 0.3);
+    transform: translateY(-1px);
+    color: rgba($admin-accent-info, 1);
+  }
+  
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.assignment-assigned-badge {
+  @include glow-badge($admin-accent-success);
+  @include glow-accent-bar($admin-accent-success, 2px, 60%);
+  padding: 0.75rem 1.25rem;
+  padding-left: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgba($admin-accent-success, 0.95);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  position: relative;
+  
+  button {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    padding: 0.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    border-radius: 3px;
+    
+    &:hover {
+      color: rgba(255, 255, 255, 0.95);
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+}
+
+.assignment-empty {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+  margin: 0.5rem 0 0 0;
+}
+
+// ============================================
+// ASSIGNMENT VIEW (OLD STYLES - Keep for backwards compatibility)
+// ============================================
+
+.assignment-view {
+  max-width: 800px;
+  margin: 0 auto;
+  
+  &__section {
+    margin-bottom: 3rem;
+  }
+  
+  h3 {
+    @include glow-header($admin-accent-info);
+    margin-bottom: 1.25rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+  }
+  
+  // Role section headers (Observer, Producer, Casters)
+  h4 {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.075em;
+    color: rgba(255, 255, 255, 0.95);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid rgba($admin-accent-info, 0.3);
+    
+    // Count badge in heading
+    small {
+      font-size: 0.8125rem;
+      color: rgba(255, 255, 255, 0.6);
+      font-weight: 500;
+      margin-left: 0.5rem;
+    }
+  }
+}
+
+// Clean spacing between role sections
+.assignment-view__section + .assignment-view__section {
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.match-card {
+  @include glow-card($admin-accent-info);
+  padding: 1.75rem;
+  margin-bottom: 2rem;
+  
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: rgba($admin-accent-info, 0.95);
+    margin: 0;
+    line-height: 1.3;
+  }
+  
+  &__meta {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.65);
+    margin-top: 0.5rem;
+    font-weight: 500;
+  }
+  
+  &__roles {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+}
+
+.role-assignment {
+  @include transparent-bg(0.03);
+  @include glow-border($admin-accent-info, 0.4, 0.6);
+  border-radius: 10px;
+  padding: 1.25rem;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    @include transparent-bg(0.05);
+    border-color: rgba($admin-accent-info, 0.6);
+  }
+  
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  
+  &__label {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.9);
+    text-transform: uppercase;
+    letter-spacing: 0.075em;
+  }
+  
+  &__select {
+    width: 100%;
+    margin-top: 0.75rem;
+  }
+  
+  &__assigned {
+    @include glow-badge($admin-accent-success);
+    @include glow-accent-bar($admin-accent-success, 2px, 60%);
+    padding: 0.625rem 1.125rem;
+    padding-left: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: rgba($admin-accent-success, 0.95);
+  }
+  
+  &__signups {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  &__signups-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.65);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.75rem;
+    display: block;
+  }
+  
+  &__signups-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.625rem;
+  }
+  
+  &__signup-item {
+    @include glow-badge($admin-accent-info);
+    padding: 0.5rem 0.875rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgba($admin-accent-info, 0.9);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      @include glow-badge($admin-accent-primary);
+      color: rgba($admin-accent-primary, 0.95);
+      transform: translateY(-1px);
+      box-shadow: 0 0 15px rgba($admin-accent-primary, 0.3);
+    }
+  }
+}
+
+// ============================================
+// MATCH LIST (Weekly View)
+// ============================================
+
+.match-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.match-list-item {
+  @include glow-card($admin-accent-info);
+  padding: 1.25rem;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateX(4px);
+    box-shadow: 0 0 20px rgba($admin-accent-info, 0.2);
+  }
+  
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+  
+  &__title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.95);
+    margin: 0;
+  }
+  
+  &__date {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 0.25rem;
+  }
+  
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  &__info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  &__label {
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 500;
+  }
+  
+  &__value {
+    font-weight: 600;
+  }
+}
+
+// ============================================
+// LOADING & EMPTY STATES
+// ============================================
+
+.production-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  
+  &__spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top-color: $admin-accent-info;
+    border-radius: 50%;
+    animation: spinner 0.8s linear infinite;
+  }
+  
+  &__text {
+    margin-top: 1.5rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9375rem;
+  }
+}
+
+@keyframes spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.production-empty {
+  @include glow-card($admin-accent-info);
+  padding: 3rem 2rem;
+  text-align: center;
+  
+  &__icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+  
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0 0 0.75rem 0;
+  }
+  
+  &__message {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+  
+  &__action {
+    margin-top: 1.5rem;
+  }
+}
+
+// ============================================
+// RESPONSIVE ADJUSTMENTS
+// ============================================
+
+@media (max-width: 768px) {
+  .production-dashboard {
+    &__tabs {
+      flex-direction: column;
+    }
+    
+    &__content {
+      padding: 0 1rem 1rem;
+    }
+    
+    &__header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    
+    &__actions {
+      width: 100%;
+      flex-direction: column;
+      
+      button {
+        width: 100%;
+      }
+    }
+  }
+  
+  .staff-signups-table-wrapper {
+    overflow-x: auto;
+  }
+  
+  .staff-signups-table {
+    min-width: 600px;
+  }
+  
+  .match-card__roles {
+    grid-template-columns: 1fr;
+  }
+  
+  .match-list-item__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+// ============================================
+// BULK TEAM SELECTOR
+// ============================================
+
+.bulk-team-selector {
+  @include glow-card($admin-accent-info);
+  padding: 2rem;
+  border-radius: 12px;
+  margin: 1rem 0;
+
+  &__loading {
+    padding: 2rem;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  &__header {
+    margin-bottom: 1.5rem;
+  }
+
+  &__title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.95);
+    margin: 0 0 0.5rem 0;
+  }
+
+  &__subtitle {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+  }
+
+  &__filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  &__search {
+    @include glow-input($admin-accent-info);
+    flex: 1;
+    min-width: 200px;
+    padding: 0.75rem 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.95rem;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+  }
+
+  &__filter {
+    @include glow-input($admin-accent-info);
+    padding: 0.75rem 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.95rem;
+    cursor: pointer;
+
+    option {
+      background: var(--theme-elevation-500);
+      color: var(--theme-elevation-100);
+    }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+  }
+
+  &__action-btn {
+    @include glow-button($admin-accent-success);
+    padding: 0.65rem 1.25rem;
+    font-size: 0.9rem;
+  }
+
+  &__count {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  &__list {
+    max-height: 500px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.75rem;
+
+    // Custom scrollbar
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba($admin-accent-info, 0.5);
+      border-radius: 4px;
+
+      &:hover {
+        background: rgba($admin-accent-info, 0.7);
+      }
+    }
+  }
+
+  &__empty {
+    padding: 2rem;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+    font-style: italic;
+  }
+
+  &__item {
+    @include transparent-bg(0.05);
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.25rem 1.5rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba($admin-accent-info, 0.5);
+    }
+
+    &--selected {
+      background: rgba($admin-accent-success, 0.1);
+      border-color: rgba($admin-accent-success, 0.6);
+
+      &:hover {
+        background: rgba($admin-accent-success, 0.15);
+      }
+    }
+  }
+
+  &__checkbox {
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba($admin-accent-info, 0.5);
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.3);
+    display: grid;
+    place-content: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    flex-shrink: 0;
+
+    &::before {
+      content: "";
+      width: 12px;
+      height: 12px;
+      transform: scale(0);
+      transition: transform 0.2s ease;
+      box-shadow: inset 1em 1em $admin-accent-success;
+      clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 60%);
+    }
+
+    &:checked {
+      background-color: rgba($admin-accent-success, 0.2);
+      border-color: $admin-accent-success;
+      
+      &::before {
+        transform: scale(1);
+      }
+    }
+  }
+
+  &__team-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  &__team-name {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.95);
+  }
+
+  &__team-meta {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  &__badge {
+    padding: 0.25rem 0.65rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    &--region {
+      background: rgba($admin-accent-info, 0.2);
+      color: $admin-accent-info;
+      border: 1px solid rgba($admin-accent-info, 0.4);
+    }
+
+    &--division {
+      background: rgba($admin-accent-primary, 0.2);
+      color: $admin-accent-primary;
+      border: 1px solid rgba($admin-accent-primary, 0.4);
+    }
+
+    &--status {
+      border: 1px solid rgba(255, 255, 255, 0.3);
+
+      &--active {
+        background: rgba($admin-accent-success, 0.2);
+        color: $admin-accent-success;
+        border-color: rgba($admin-accent-success, 0.4);
+      }
+
+      &--inactive {
+        background: rgba($admin-accent-error, 0.2);
+        color: $admin-accent-error;
+        border-color: rgba($admin-accent-error, 0.4);
+      }
     }
   }
 }

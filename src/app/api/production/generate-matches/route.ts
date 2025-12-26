@@ -34,10 +34,17 @@ export async function POST(req: NextRequest) {
         // 3. Find matching schedule rule
         const scheduleRules = tournament.scheduleRules || []
         const teamRating = (team.rating || '').toLowerCase() // e.g., "faceit masters"
+        
+        // Determine team's actual division
+        let teamDivision = 'Open' // Default
+        if (teamRating.includes('masters')) teamDivision = 'Masters'
+        else if (teamRating.includes('expert')) teamDivision = 'Expert'
+        else if (teamRating.includes('advanced')) teamDivision = 'Advanced'
+        // If not Masters/Expert/Advanced, it's Open (even if rating is empty or "Unknown")
+        
         const rule = scheduleRules.find((r: any) => {
           const regionMatch = r.region === team.region || r.region === 'all'
-          const divisionMatch = r.division === 'all' || 
-                                teamRating.includes(r.division.toLowerCase()) // "faceit masters".includes("masters")
+          const divisionMatch = r.division === 'all' || r.division === teamDivision
           return regionMatch && divisionMatch
         })
         
@@ -47,12 +54,8 @@ export async function POST(req: NextRequest) {
         for (const slot of rule.matchSlots) {
           const matchDate = calculateMatchDate(slot.dayOfWeek, slot.time, slot.timezone)
           
-          // Extract division from rating (e.g., "FACEIT Masters" -> "Masters")
-          const teamRating = team.rating || ''
-          let division = 'Open' // Default
-          if (teamRating.toLowerCase().includes('masters')) division = 'Masters'
-          else if (teamRating.toLowerCase().includes('expert')) division = 'Expert'
-          else if (teamRating.toLowerCase().includes('advanced')) division = 'Advanced'
+          // Use the same division we already determined (ensures consistency)
+          const division = teamDivision
           
           await payload.create({
             collection: 'matches',

@@ -79,6 +79,68 @@ export function convertToCET(date: Date | string): string {
 }
 
 /**
+ * Format date and time in the user's local timezone with timezone abbreviation
+ * @param date - Date object or string
+ * @param options - Optional formatting options
+ * @returns Formatted date/time string (e.g., "Mon, Dec 25, 3:00 PM EST")
+ */
+export function formatLocalDateTime(
+  date: Date | string,
+  options?: {
+    includeDate?: boolean
+    includeTime?: boolean
+    includeTimezone?: boolean
+    short?: boolean
+  }
+): string {
+  const d = typeof date === 'string' ? new Date(date) : date
+  const {
+    includeDate = true,
+    includeTime = true,
+    includeTimezone = true,
+    short = false,
+  } = options || {}
+
+  const dateOptions: Intl.DateTimeFormatOptions = {}
+
+  if (includeDate) {
+    dateOptions.weekday = short ? 'short' : 'short'
+    dateOptions.month = short ? 'short' : 'short'
+    dateOptions.day = 'numeric'
+  }
+
+  if (includeTime) {
+    dateOptions.hour = 'numeric'
+    dateOptions.minute = '2-digit'
+    dateOptions.hour12 = true
+  }
+
+  if (includeTimezone && includeTime) {
+    dateOptions.timeZoneName = 'short'
+  }
+
+  return new Intl.DateTimeFormat('en-US', dateOptions).format(d)
+}
+
+/**
+ * Format time only in the user's local timezone
+ * @param date - Date object or string
+ * @returns Time string with timezone (e.g., "3:00 PM EST")
+ */
+export function formatLocalTime(date: Date | string): string {
+  return formatLocalDateTime(date, { includeDate: false, includeTime: true, includeTimezone: true })
+}
+
+/**
+ * Format date only in the user's local timezone
+ * @param date - Date object or string
+ * @returns Date string (e.g., "Mon, Dec 25")
+ */
+export function formatLocalDate(date: Date | string): string {
+  return formatLocalDateTime(date, { includeDate: true, includeTime: false, includeTimezone: false })
+}
+
+/**
  * Get the start and end of the week for a given date
  * Week starts on Monday
  * @param date - Date to get week range for (defaults to today)

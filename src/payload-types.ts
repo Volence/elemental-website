@@ -632,7 +632,7 @@ export interface TournamentTemplate {
    */
   isActive?: boolean | null;
   /**
-   * Teams participating in this tournament (can also assign from Teams collection)
+   * Teams participating in this tournament. Use the bulk selector below for easy multi-selection.
    */
   assignedTeams?: (number | Team)[] | null;
   /**
@@ -1046,11 +1046,20 @@ export interface InviteLink {
   /**
    * The role the new user will be assigned when they sign up
    */
-  role: 'admin' | 'team-manager' | 'staff-manager';
+  role: 'admin' | 'staff-manager' | 'team-manager' | 'user';
   /**
-   * Teams the new user will have access to (for Team Managers and Staff Managers)
+   * Teams the new user will have access to (only applicable for Team Managers and Staff Managers)
    */
   assignedTeams?: (number | Team)[] | null;
+  /**
+   * Which departments this user will have access to (mainly for User role)
+   */
+  departments?: {
+    /**
+     * Grant access to Production Dashboard for signing up to matches (casters, observers, producers)
+     */
+    isProductionStaff?: boolean | null;
+  };
   /**
    * Optional: Pre-assign an email address for this invite
    */
@@ -1786,6 +1795,11 @@ export interface InviteLinksSelect<T extends boolean = true> {
   token?: T;
   role?: T;
   assignedTeams?: T;
+  departments?:
+    | T
+    | {
+        isProductionStaff?: T;
+      };
   email?: T;
   expiresAt?: T;
   usedAt?: T;

@@ -20,7 +20,7 @@ export const InviteLinks: CollectionConfig = {
     delete: adminOnly,
   },
   admin: {
-    defaultColumns: ['token', 'role', 'assignedTeams', 'expiresAt', 'status', 'usedAt'],
+    defaultColumns: ['token', 'role', 'assignedTeams', 'departmentsDisplay', 'expiresAt', 'status', 'usedAt'],
     useAsTitle: 'token',
     description: '🔗 Generate invite links for new users with pre-configured permissions.',
     group: 'System',
@@ -49,12 +49,16 @@ export const InviteLinks: CollectionConfig = {
           value: 'admin',
         },
         {
+          label: 'Staff Manager',
+          value: 'staff-manager',
+        },
+        {
           label: 'Team Manager',
           value: 'team-manager',
         },
         {
-          label: 'Staff Manager',
-          value: 'staff-manager',
+          label: 'User',
+          value: 'user',
         },
       ],
     },
@@ -64,8 +68,28 @@ export const InviteLinks: CollectionConfig = {
       relationTo: 'teams',
       hasMany: true,
       admin: {
-        description: 'Teams the new user will have access to (for Team Managers and Staff Managers)',
+        description: 'Teams the new user will have access to (only applicable for Team Managers and Staff Managers)',
+        condition: (data) => data.role === 'team-manager' || data.role === 'staff-manager',
       },
+    },
+    {
+      name: 'departments',
+      type: 'group',
+      label: 'Department Access',
+      admin: {
+        description: 'Which departments this user will have access to (mainly for User role)',
+      },
+      fields: [
+        {
+          name: 'isProductionStaff',
+          type: 'checkbox',
+          label: 'Production Staff',
+          defaultValue: false,
+          admin: {
+            description: 'Grant access to Production Dashboard for signing up to matches (casters, observers, producers)',
+          },
+        },
+      ],
     },
     {
       name: 'email',
@@ -120,6 +144,15 @@ export const InviteLinks: CollectionConfig = {
       admin: {
         components: {
           Field: '@/components/InviteLinkFields/CopyLinkField',
+        },
+      },
+    },
+    {
+      name: 'departmentsDisplay',
+      type: 'ui',
+      admin: {
+        components: {
+          Cell: '@/components/InviteLinkColumns/DepartmentsCell',
         },
       },
     },

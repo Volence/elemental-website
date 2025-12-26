@@ -12,6 +12,106 @@ A modern, premium design system featuring **ultra-transparent backgrounds** with
 
 ---
 
+## Section-Based Color Theming (NEW!)
+
+**Added**: December 25, 2025  
+**Impact**: Each admin section now has its own color identity
+
+### The System
+
+The admin panel now uses **dynamic section-based theming** where each major section automatically themes all its components to a specific color. This creates clear visual hierarchy and helps users understand which part of the system they're in.
+
+### Section Color Mapping
+
+| Section | Color | Hex Code | Purpose |
+|---------|-------|----------|---------|
+| **People & Teams** | Pink/Fuchsia | `#ec4899` | Warm, people-focused |
+| **Production & Matches** | Cyan/Blue | `#06b6d4` | Tech, broadcast |
+| **Staff** | Purple/Violet | `#8b5cf6` | Management, coordination |
+| **System & Users** | Orange | `#f59e0b` | Admin functions |
+| **Recruitment** | Green/Emerald | `#10b981` | Growth, new members |
+
+### How It Works
+
+**1. CSS Custom Properties:**
+```scss
+:root {
+  --section-color: #{$admin-accent-primary}; // Default purple
+  --section-color-rgb: 139, 92, 246;
+}
+
+[data-section="people"] {
+  --section-color: #{$tier-masters}; // Pink
+  --section-color-rgb: 236, 72, 153;
+}
+```
+
+**2. Automatic Application:**
+```scss
+[data-section] {
+  // All components within a section automatically use section color
+  button[type="submit"] {
+    border-color: rgba(var(--section-color-rgb), 0.7);
+    box-shadow: 0 0 12px rgba(var(--section-color-rgb), 0.15);
+  }
+}
+```
+
+**3. React Integration:**
+```tsx
+// Automatically applied based on route
+<SectionThemeApplicator /> // In payload.config.ts
+
+// Or manually for custom components
+<div data-section="production" className="my-component">
+  {/* All Clean Glow components here get cyan theme */}
+</div>
+```
+
+### What Gets Themed
+
+When a section color is applied, these elements automatically update:
+
+- ✅ Page headers (h1, h2, h3)
+- ✅ Primary buttons (submit, create new)
+- ✅ Cards and containers
+- ✅ Table headers
+- ✅ Navigation (active state)
+- ✅ Form inputs (focus state)
+- ✅ Badges and pills (primary variants)
+- ✅ Accent bars
+- ✅ Links (hover state)
+
+### Manual Color Overrides
+
+Section theming is the **default**, but you can still override for specific elements:
+
+```scss
+// Use section color (automatic)
+button {
+  @include glow-button(var(--section-color));
+}
+
+// Override with specific color
+button.delete {
+  @include glow-button($admin-accent-error); // Always red
+}
+
+button.success {
+  @include glow-button($admin-accent-success); // Always green
+}
+```
+
+### Benefits
+
+1. **Visual Hierarchy**: Instantly know which section you're in
+2. **Reduced Cognitive Load**: Color-coded navigation aids
+3. **Consistency**: All components in a section share a theme
+4. **Flexibility**: Easy to add new sections or change colors
+5. **Maintainability**: One variable change affects entire section
+
+---
+
 ## Core Principles
 
 ### 1. **🌟 Transparency First** (The Foundation)

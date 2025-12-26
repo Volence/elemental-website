@@ -57,6 +57,28 @@ export function WeeklyView() {
     }
   }
 
+  const syncTournamentTeams = async () => {
+    try {
+      setGenerating(true)
+      const response = await fetch('/api/production/sync-tournament-teams', {
+        method: 'POST',
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
+        toast.success(`Synced ${result.syncedCount} team-tournament relationships`)
+      } else {
+        const error = await response.json()
+        toast.error(error.message || 'Failed to sync teams')
+      }
+    } catch (error) {
+      console.error('Error syncing teams:', error)
+      toast.error('Error syncing teams. Please try again.')
+    } finally {
+      setGenerating(false)
+    }
+  }
+
   const generateWeeklyMatches = async () => {
     try {
       setGenerating(true)
@@ -90,6 +112,21 @@ export function WeeklyView() {
     
     // Update local state immediately for responsive UI
     setEditingValues(prev => ({ ...prev, [key]: value }))
+    
+    // Also update the matches array immediately for dropdowns/selects
+    setMatches(prevMatches => 
+      prevMatches.map(match => {
+        if (match.id !== matchId) return match
+        
+        // Handle nested productionWorkflow field
+        if (field === 'productionWorkflow') {
+          return { ...match, productionWorkflow: value }
+        }
+        
+        // Handle regular fields
+        return { ...match, [field]: value }
+      })
+    )
     
     // Clear existing timeout
     if (updateTimeouts.current[key]) {
@@ -153,9 +190,13 @@ export function WeeklyView() {
           <p className="production-dashboard__subtitle">
             View and edit all matches for this week
           </p>
+          <div className="production-dashboard__timezone-notice">
+            🌍 <strong>Timezone Info:</strong> All times are automatically shown in your local timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone})
+          </div>
           <div className="production-dashboard__instructions">
             <strong>Quick Start:</strong>
             <ol>
+              <li>If you just bulk-assigned teams, click "Sync Tournament Teams" first</li>
               <li>Click "Generate This Week's Matches" to auto-create matches from tournament templates</li>
               <li>Edit opponent names and lobby codes directly in the table</li>
               <li>Set priority levels for matches</li>
@@ -166,6 +207,9 @@ export function WeeklyView() {
         <div className="production-dashboard__actions">
           <Button onClick={addManualMatch}>
             ➕ Add Match
+          </Button>
+          <Button onClick={syncTournamentTeams} disabled={generating}>
+            {generating ? 'Syncing...' : '🔗 Sync Tournament Teams'}
           </Button>
           <Button onClick={generateWeeklyMatches} disabled={generating}>
             {generating ? 'Generating...' : '🔄 Generate This Week\'s Matches'}

@@ -65,6 +65,7 @@ export default buildConfig({
       beforeDashboard: [
         '@/components/BeforeDashboard',
         '@/components/FixDatePickerIcons#default',
+        '@/components/SectionThemeApplicator#SectionThemeApplicator',
       ],
       // Custom navigation links in the sidebar
       beforeNavLinks: [

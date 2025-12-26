@@ -1,0 +1,319 @@
+// ============================================
+// SECTION-BASED COLOR THEMING SYSTEM
+// ============================================
+//
+// Provides dynamic color theming based on admin section
+// Each section (People, Production, Staff, etc.) gets its own color identity
+//
+// Usage: Add data-section="people" to page wrapper
+//
+
+@import './variables';
+
+// ============================================
+// CSS CUSTOM PROPERTIES (Default Theme)
+// ============================================
+
+:root {
+  --section-color: #{$admin-accent-primary}; // Default: Purple
+  --section-color-rgb: 139, 92, 246; // For rgba() usage
+}
+
+// ============================================
+// SECTION-SPECIFIC COLOR OVERRIDES
+// ============================================
+
+// PEOPLE SECTION → Pink/Fuchsia (warm, people-focused)
+[data-section="people"],
+[data-section="teams"] {
+  --section-color: #{$tier-masters};
+  --section-color-rgb: 236, 72, 153;
+}
+
+// PRODUCTION SECTION → Cyan/Blue (tech, broadcast)
+[data-section="production"],
+[data-section="matches"],
+[data-section="tournament-templates"] {
+  --section-color: #{$admin-accent-info};
+  --section-color-rgb: 6, 182, 212;
+}
+
+// STAFF SECTION → Purple/Violet (management, coordination)
+[data-section="staff"],
+[data-section="organization-staff"],
+[data-section="production-staff"] {
+  --section-color: #{$admin-accent-primary};
+  --section-color-rgb: 139, 92, 246;
+}
+
+// SYSTEM SECTION → Orange (settings, admin functions)
+[data-section="system"],
+[data-section="users"],
+[data-section="ignored-duplicates"],
+[data-section="invite-links"] {
+  --section-color: #{$admin-accent-warning};
+  --section-color-rgb: 245, 158, 11;
+}
+
+// RECRUITMENT SECTION → Green/Emerald (growth, new members)
+[data-section="recruitment"],
+[data-section="recruitment-listings"],
+[data-section="recruitment-applications"] {
+  --section-color: #{$admin-accent-success};
+  --section-color-rgb: 16, 185, 129;
+}
+
+// TOOLS SECTION → Cyan/Blue (utilities)
+[data-section="tools"],
+[data-section="data-consistency"],
+[data-section="schedule-generator"] {
+  --section-color: #{$admin-accent-info};
+  --section-color-rgb: 6, 182, 212;
+}
+
+// ============================================
+// THEMED COMPONENT STYLES
+// ============================================
+
+// Apply section color to all components within a themed section
+[data-section] {
+  
+  // --------------------------------------------
+  // PAGE HEADERS
+  // --------------------------------------------
+  
+  .page-header,
+  .document-header h1,
+  .collection-list__header h1,
+  .render-title h1 {
+    color: rgba(var(--section-color-rgb), 0.95);
+    
+    // Glowing underline accent
+    &::after {
+      background: var(--section-color);
+      box-shadow: 0 0 20px rgba(var(--section-color-rgb), 0.5);
+    }
+  }
+  
+  // Sub-headings
+  h2, h3 {
+    color: rgba(var(--section-color-rgb), 0.85);
+  }
+  
+  // --------------------------------------------
+  // BUTTONS - Primary actions use section color
+  // --------------------------------------------
+  
+  // Submit buttons and primary actions
+  button[type="submit"],
+  .btn--style-primary,
+  .form-submit button {
+    border-color: rgba(var(--section-color-rgb), 0.7) !important;
+    box-shadow: 0 0 12px rgba(var(--section-color-rgb), 0.15) !important;
+    
+    &:hover:not(:disabled) {
+      background: rgba(var(--section-color-rgb), 0.15) !important;
+      box-shadow: 0 0 20px rgba(var(--section-color-rgb), 0.3) !important;
+      border-color: rgba(var(--section-color-rgb), 0.9) !important;
+    }
+  }
+  
+  // "Create New" buttons
+  .collection-list__header button,
+  a[href*="create"] {
+    border-color: rgba(var(--section-color-rgb), 0.6);
+    box-shadow: 0 0 12px rgba(var(--section-color-rgb), 0.12);
+    
+    &:hover {
+      border-color: rgba(var(--section-color-rgb), 0.85);
+      box-shadow: 0 0 18px rgba(var(--section-color-rgb), 0.25);
+    }
+  }
+  
+  // --------------------------------------------
+  // CARDS & CONTAINERS
+  // --------------------------------------------
+  
+  .card-header,
+  .collection-list__header {
+    border-bottom-color: rgba(var(--section-color-rgb), 0.25);
+    
+    // Left accent bar
+    &::before {
+      background: var(--section-color);
+      box-shadow: 0 0 12px rgba(var(--section-color-rgb), 0.5);
+    }
+  }
+  
+  // Dashboard stat cards
+  .dashboard-stats__card {
+    border-color: rgba(var(--section-color-rgb), 0.3);
+    
+    &:hover {
+      box-shadow: 0 0 20px rgba(var(--section-color-rgb), 0.2);
+    }
+  }
+  
+  // --------------------------------------------
+  // TABLES
+  // --------------------------------------------
+  
+  table thead,
+  .table-header {
+    border-bottom-color: rgba(var(--section-color-rgb), 0.4);
+    background: rgba(var(--section-color-rgb), 0.05);
+  }
+  
+  // Table row hover
+  tbody tr:hover {
+    background: rgba(var(--section-color-rgb), 0.03);
+  }
+  
+  // --------------------------------------------
+  // NAVIGATION & TABS
+  // --------------------------------------------
+  
+  // Active tab/nav item
+  .nav__link--active,
+  .tab--active,
+  [aria-current="page"] {
+    color: var(--section-color);
+    border-color: var(--section-color);
+    
+    &::after {
+      background: var(--section-color);
+      box-shadow: 0 0 10px rgba(var(--section-color-rgb), 0.4);
+    }
+  }
+  
+  // --------------------------------------------
+  // FORMS & INPUTS
+  // --------------------------------------------
+  
+  // Focused inputs
+  input:focus,
+  select:focus,
+  textarea:focus {
+    border-color: rgba(var(--section-color-rgb), 0.6);
+    box-shadow: 0 0 0 3px rgba(var(--section-color-rgb), 0.15);
+  }
+  
+  // --------------------------------------------
+  // BADGES & PILLS
+  // --------------------------------------------
+  
+  // Status badges that should match section
+  .badge--primary,
+  .pill--primary {
+    border-color: rgba(var(--section-color-rgb), 0.7);
+    background: rgba(var(--section-color-rgb), 0.1);
+    box-shadow: 0 0 10px rgba(var(--section-color-rgb), 0.12);
+  }
+  
+  // --------------------------------------------
+  // ACCENT BARS (Glowing left borders)
+  // --------------------------------------------
+  
+  .glow-accent-bar::before,
+  [class*="accent-bar"]::before {
+    background: var(--section-color);
+    box-shadow: 0 0 8px rgba(var(--section-color-rgb), 0.5);
+  }
+  
+  // --------------------------------------------
+  // LINKS
+  // --------------------------------------------
+  
+  a:not(.btn):hover {
+    color: var(--section-color);
+  }
+  
+  // --------------------------------------------
+  // CUSTOM COMPONENTS
+  // --------------------------------------------
+  
+  // Production Dashboard specific
+  .production-dashboard__tab--active {
+    border-color: var(--section-color);
+    box-shadow: 0 0 15px rgba(var(--section-color-rgb), 0.3);
+  }
+  
+  // Assigned team cards
+  .assigned-team__card {
+    border-color: rgba(var(--section-color-rgb), 0.3);
+    
+    &:hover {
+      border-color: rgba(var(--section-color-rgb), 0.6);
+      box-shadow: 0 0 15px rgba(var(--section-color-rgb), 0.2);
+    }
+  }
+}
+
+// ============================================
+// SIDEBAR NAVIGATION THEMING
+// ============================================
+
+// Color-code sidebar nav items by section
+.nav {
+  // People section links
+  a[href*="/people"],
+  a[href*="/teams"] {
+    &:hover, &[aria-current="page"] {
+      color: #{$tier-masters};
+      border-left-color: #{$tier-masters};
+      box-shadow: 0 0 10px rgba(236, 72, 153, 0.2);
+    }
+  }
+  
+  // Production section links
+  a[href*="/matches"],
+  a[href*="/tournament"],
+  a[href*="/production-dashboard"] {
+    &:hover, &[aria-current="page"] {
+      color: #{$admin-accent-info};
+      border-left-color: #{$admin-accent-info};
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
+    }
+  }
+  
+  // Staff section links
+  a[href*="/production/"],
+  a[href*="/organization-staff"] {
+    &:hover, &[aria-current="page"] {
+      color: #{$admin-accent-primary};
+      border-left-color: #{$admin-accent-primary};
+      box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+    }
+  }
+  
+  // System section links
+  a[href*="/users"],
+  a[href*="/ignored-duplicates"],
+  a[href*="/invite-links"] {
+    &:hover, &[aria-current="page"] {
+      color: #{$admin-accent-warning};
+      border-left-color: #{$admin-accent-warning};
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+    }
+  }
+  
+  // Recruitment section links
+  a[href*="/recruitment"] {
+    &:hover, &[aria-current="page"] {
+      color: #{$admin-accent-success};
+      border-left-color: #{$admin-accent-success};
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+    }
+  }
+  
+  // Tools section links
+  a[href*="/data-consistency"],
+  a[href*="/schedule-generator"] {
+    &:hover, &[aria-current="page"] {
+      color: #{$admin-accent-info};
+      border-left-color: #{$admin-accent-info};
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
+    }
+  }
+}
+

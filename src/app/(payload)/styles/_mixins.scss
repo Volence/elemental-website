@@ -316,3 +316,142 @@
   @include glow-header($color);
 }
 
+// ============================================
+// FORM INPUT MIXINS
+// ============================================
+
+// Input field with glow (for text inputs, selects, textareas)
+@mixin glow-input($color: $admin-accent-primary) {
+  @include transparent-bg(0.03);
+  border: 1px solid rgba($color, 0.3);
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 8px rgba($color, 0.08);
+  transition: all 0.2s ease;
+  
+  &:hover:not(:disabled) {
+    border-color: rgba($color, 0.5);
+    box-shadow: 0 0 12px rgba($color, 0.12);
+  }
+  
+  &:focus {
+    background: rgba($color, 0.05);
+    border-color: rgba($color, 0.7);
+    box-shadow: 0 0 0 3px rgba($color, 0.15);
+    outline: none;
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Select dropdown with glow
+@mixin glow-select($color: $admin-accent-info) {
+  @include glow-input($color);
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='rgba(255,255,255,0.5)' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2.5rem;
+  
+  &:hover:not(:disabled) {
+    border-color: rgba($color, 0.6);
+  }
+}
+
+// Checkbox/Radio with glow
+@mixin glow-checkbox($color: $admin-accent-success, $size: 20px) {
+  appearance: none;
+  -webkit-appearance: none;
+  width: $size;
+  height: $size;
+  border: 2px solid rgba($color, 0.5);
+  border-radius: 4px;
+  @include transparent-bg(0.05);
+  box-shadow: 0 0 8px rgba($color, 0.12);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  
+  &:hover:not(:disabled) {
+    border-color: rgba($color, 0.7);
+    box-shadow: 0 0 12px rgba($color, 0.2);
+    background: rgba($color, 0.08);
+  }
+  
+  &:checked {
+    background: rgba($color, 0.25);
+    border-color: rgba($color, 0.9);
+    box-shadow: 0 0 15px rgba($color, 0.35);
+    
+    // Checkmark - centered and properly aligned
+    &::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 4px;
+      height: 8px;
+      border: solid $color;
+      border-width: 0 2px 2px 0;
+      transform: translate(-50%, -60%) rotate(45deg);
+      filter: drop-shadow(0 0 4px rgba($color, 0.6));
+    }
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: rgba($color, 0.8);
+    box-shadow: 0 0 0 3px rgba($color, 0.15);
+  }
+  
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+// Radio button variant
+@mixin glow-radio($color: $admin-accent-success, $size: 20px) {
+  @include glow-checkbox($color, $size);
+  border-radius: 50%;
+  
+  &:checked::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 4px;
+    width: 8px;
+    height: 8px;
+    background: $color;
+    border: none;
+    border-radius: 50%;
+    transform: none;
+    box-shadow: 0 0 8px rgba($color, 0.8);
+  }
+}
+
+// ============================================
+// COLOR VARIANT HELPERS
+// ============================================
+
+// Create tier-based button variants
+@mixin glow-button-tier-masters { @include glow-button($tier-masters); }
+@mixin glow-button-tier-expert { @include glow-button($tier-expert); }
+@mixin glow-button-tier-advanced { @include glow-button($tier-advanced); }
+@mixin glow-button-tier-4k { @include glow-button($tier-4k); }
+@mixin glow-button-tier-35k { @include glow-button($tier-35k); }
+@mixin glow-button-tier-30k { @include glow-button($tier-30k); }
+@mixin glow-button-tier-below { @include glow-button($tier-below); }
+
+// Create semantic button variants  
+@mixin glow-button-info { @include glow-button($admin-accent-info); }
+@mixin glow-button-success { @include glow-button($admin-accent-success); }
+@mixin glow-button-warning { @include glow-button($admin-accent-warning); }
+@mixin glow-button-error { @include glow-button($admin-accent-error); }
+

@@ -254,12 +254,10 @@ export function SummaryView() {
           )}
         </div>
 
-        {/* Matches Needing Attention */}
-        <div className="summary-card summary-card--wide">
-          <h3>⚠️ Matches Needing Attention ({needingAttention.length})</h3>
-          {needingAttention.length === 0 ? (
-            <p className="summary-success">🎉 All matches have full coverage! Great work!</p>
-          ) : (
+        {/* Matches Needing Attention - Only show if there are matches needing attention */}
+        {needingAttention.length > 0 && (
+          <div className="summary-card summary-card--wide">
+            <h3>⚠️ Matches Needing Attention ({needingAttention.length})</h3>
             <div className="summary-match-list">
               {needingAttention.slice(0, 10).map((match) => (
                 <div key={match.id} className="summary-match">
@@ -286,8 +284,8 @@ export function SummaryView() {
                 </p>
               )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   )

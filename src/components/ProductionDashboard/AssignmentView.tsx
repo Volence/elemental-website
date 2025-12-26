@@ -211,6 +211,9 @@ export function AssignmentView() {
           <p className="production-dashboard__subtitle">
             Click on a signup button to assign that person to the match. Coverage updates automatically.
           </p>
+          <div className="production-dashboard__timezone-notice">
+            🌍 <strong>Timezone Info:</strong> All times are automatically shown in your local timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone})
+          </div>
           <div className="production-dashboard__instructions">
             <strong>How it works:</strong>
             <ol>

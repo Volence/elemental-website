@@ -1,127 +1,190 @@
 // ============================================
-// DRAWERS & MODALS
+// MODALS & DRAWERS - Component Overrides
 // ============================================
+//
+// Base modal styles are in _payload-overrides.scss
+// This file only contains component-specific overrides
+//
 
 @import '../variables';
 @import '../mixins';
 
 // ============================================
-// CONTAINER
+// MODAL CONTAINER
 // ============================================
 
-.drawer,
-.drawer__content,
-[class*="drawer"],
 .modal,
-[class*="modal"] {
-  background: $admin-bg-elevated;
-  border: none;
+.drawer {
+  backdrop-filter: blur(8px);
 }
 
-// Remove all borders from modal/popup children
-.modal *,
-[class*="modal"] *,
-[class*="popup"] *,
-.drawer *,
-[class*="drawer"] * {
-  border-top: none !important;
-  border-bottom: none !important;
+// Modal content area
+.modal__content,
+.drawer__content {
+  @include glow-card($admin-accent-primary);
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 // ============================================
-// HEADER
+// MODAL HEADER
 // ============================================
 
-.drawer__header,
-[class*="drawer__header"],
 .modal__header,
-.doc-drawer__header-content,
-.doc-drawer__after-header {
-  background: $admin-bg-card;
-  border-bottom: none;
-  padding: $spacing-xl $spacing-2xl;
-}
-
-// Remove gradient underlines from modal/dialog headings
-.modal h1,
-.modal h2,
-.modal h3,
-.modal h4,
-[class*="modal"] h1,
-[class*="modal"] h2,
-[class*="modal"] h3,
-[class*="modal"] h4,
-.drawer h1,
-.drawer h2,
-.drawer h3,
-.drawer h4,
-[class*="drawer"] h1,
-[class*="drawer"] h2,
-[class*="drawer"] h3,
-[class*="drawer"] h4,
-[class*="popup"] h1,
-[class*="popup"] h2,
-[class*="popup"] h3,
-[class*="popup"] h4 {
-  &::after {
-    display: none !important;
+.drawer__header,
+.doc-drawer__header-content {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  
+  h1, h2, h3, h4 {
+    margin: 0;
+    color: $admin-text-primary;
+    
+    // Remove gradient underlines in modals
+    &::after {
+      display: none;
+    }
   }
-  background: none !important;
-  background-image: none !important;
-  padding-bottom: 0 !important;
-  margin-bottom: $spacing-md;
 }
 
 // ============================================
-// MODAL BUTTONS
+// MODAL BODY
 // ============================================
 
-// Fix button spacing in confirmation modals
+.modal__body,
+.drawer__body {
+  padding: 1.5rem 2rem;
+  
+  p {
+    color: $admin-text-secondary;
+    line-height: 1.6;
+    margin: 0 0 1rem 0;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// ============================================
+// MODAL FOOTER & ACTIONS
+// ============================================
+
 .modal__footer,
 .modal__actions,
-[class*="modal"] .form-submit,
-[class*="modal__footer"],
-[class*="modal__actions"],
-[class*="popup__actions"],
 .popup__actions {
-  display: flex !important;
-  gap: $spacing-md !important;
-  padding: $spacing-lg $spacing-2xl !important;
-  background: $admin-bg-card !important;
-  border-top: 1px solid $admin-border-subtle !important;
-}
-
-// Modal button sizing (must be separate for higher specificity)
-html body .modal__footer button,
-html body .modal__actions button,
-html body [class*="modal"] .form-submit button,
-html body [class*="modal__footer"] button,
-html body [class*="modal__actions"] button,
-html body [class*="popup__actions"] button,
-html body .popup__actions button {
-  min-width: 120px !important;
-  padding: 0.75rem 3.5rem !important;
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  justify-content: flex-end;
   
-  // Fix squished button text
-  white-space: nowrap !important;
-  
-  &:not(:last-child) {
-    margin-right: 0 !important;
+  button {
+    min-width: 120px;
+    padding: 0.75rem 3.5rem;
+    white-space: nowrap;
   }
 }
 
-// Delete confirmation modal specific styles
-[class*="delete-modal"],
-[class*="confirm-modal"],
+// ============================================
+// CONFIRMATION MODALS (Delete, etc.)
+// ============================================
+
 .modal--delete,
 .modal--confirm {
-  .modal__content {
-    padding: $spacing-2xl !important;
+  .modal__body {
+    padding: 2rem;
   }
   
-  .modal__footer,
-  .modal__actions {
-    justify-content: flex-end !important;
+  .modal__footer {
+    justify-content: flex-end;
+    
+    // Cancel button
+    button:first-child {
+      @include glow-button($admin-accent-primary);
+    }
+    
+    // Confirm delete button
+    button:last-child {
+      @include glow-button($admin-accent-error);
+    }
   }
 }
 
+// ============================================
+// DOC DRAWER (Edit side panel)
+// ============================================
+
+.doc-drawer {
+  width: 600px;
+  max-width: 90vw;
+}
+
+.doc-drawer__header-content {
+  padding: 1.5rem 2rem;
+}
+
+.doc-drawer__content {
+  padding: 0 2rem 2rem;
+}
+
+// ============================================
+// POPUP (Select dropdowns, etc.)
+// ============================================
+
+.popup {
+  @include glow-card($admin-accent-info);
+  z-index: 100;
+}
+
+.popup__scroll {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.popup__list {
+  padding: 0.5rem;
+}
+
+.popup__list-item {
+  padding: 0.625rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: rgba($admin-accent-info, 0.1);
+  }
+}
+
+.popup__list-item--selected {
+  background: rgba($admin-accent-info, 0.15);
+  color: $admin-accent-info;
+  font-weight: 500;
+}
+
+// ============================================
+// RESPONSIVE ADJUSTMENTS
+// ============================================
+
+@media (max-width: 768px) {
+  .modal__content,
+  .drawer__content {
+    max-width: 95vw;
+    max-height: 95vh;
+  }
+  
+  .modal__header,
+  .modal__body,
+  .modal__footer,
+  .drawer__header,
+  .drawer__body {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .doc-drawer {
+    width: 100vw;
+    max-width: 100vw;
+  }
+}

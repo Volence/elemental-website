@@ -1,6 +1,9 @@
 // ============================================
-// TYPOGRAPHY
+// TYPOGRAPHY - Component-Specific Styles
 // ============================================
+//
+// This file contains typography styling specific to PayloadCMS components
+//
 
 @import '../variables';
 @import '../mixins';
@@ -12,72 +15,68 @@
 h1, h2, h3, h4, h5, h6 {
   font-size: unset;
   font-weight: unset;
+  margin: 0;
 }
 
 // ============================================
 // PAGE HEADINGS WITH GRADIENT UNDERLINES
 // ============================================
 
-// Main page headings (h1) - Page titles
+// H1 - Main page titles
 h1,
+main h1,
 .collection-list__header h1,
 .list-header h1,
-.doc-header h1,
-h1.doc-header__title,
-.doc-header h1,
-.list-header__title,
-h1.list-header__title,
-main h1 {
+.doc-header h1 {
   @include gradient-underline($max-width: 300px, $height: 3px);
-  font-size: $font-size-3xl;        // 2rem / 32px
-  font-weight: $font-weight-bold;   // 700
-  letter-spacing: $letter-spacing-tight;  // -0.025em
-  line-height: $line-height-tight;  // 1.25
+  font-size: 2rem;        // 32px
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
   margin-bottom: 0;
-  color: rgb(6, 182, 212);
+  color: $admin-accent-info;
 }
 
-// Dashboard headings (h1, h2)
+// Dashboard headings
 .dashboard h1,
 .dashboard h2 {
   @include gradient-underline($max-width: 300px, $height: 3px);
   margin-bottom: 0;
 }
 
-// Section headings (h2) - Section titles
+// H2 - Section titles
 h2,
 main h2,
 .dashboard h2 {
-  font-size: $font-size-2xl;        // 1.5rem / 24px
-  font-weight: $font-weight-bold;   // 700
-  letter-spacing: $letter-spacing-tight;  // -0.025em
-  line-height: $line-height-tight;  // 1.25
-  margin-top: $spacing-2xl;         // 3rem
-  margin-bottom: $spacing-lg;       // 1.5rem
-  color: rgb(132, 204, 22);
+  font-size: 1.5rem;      // 24px
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+  color: $tier-35k; // Lime green
 }
 
-// Subsection headings (h3) - Subsection titles
+// H3 - Subsection titles
 h3,
 main h3,
 .dashboard h3,
 .before-dashboard h3 {
   @include gradient-underline($width: 120px, $height: 2.5px);
-  font-size: $font-size-xl;         // 1.25rem / 20px
-  font-weight: $font-weight-semibold; // 600
-  letter-spacing: $letter-spacing-normal; // 0
-  line-height: $line-height-tight;  // 1.25
-  margin-top: $spacing-2xl;         // 3rem
-  margin-bottom: $spacing-lg;       // 1.5rem
-  color: rgb(245, 158, 11);
-
-  // On mobile, reduce underline width to prevent collision with buttons
+  font-size: 1.25rem;     // 20px
+  font-weight: 600;
+  line-height: 1.25;
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+  color: $admin-accent-warning; // Orange
+  
+  // Responsive underline width
   @media (max-width: 768px) {
     &::after {
       max-width: 80px;
     }
   }
-
+  
   @media (max-width: 480px) {
     &::after {
       max-width: 60px;
@@ -85,29 +84,27 @@ main h3,
   }
 }
 
-// Banner headings (h4) - Card titles
+// H4 - Card titles
 h4,
 .banner h4,
 .before-dashboard h4 {
-  font-size: $font-size-md;         // 1rem / 16px
-  font-weight: $font-weight-semibold; // 600
-  letter-spacing: $letter-spacing-normal; // 0
-  line-height: $line-height-tight;  // 1.25
-  margin-bottom: $spacing-sm;       // 0.75rem
+  font-size: 1rem;        // 16px
+  font-weight: 600;
+  line-height: 1.25;
+  margin-bottom: 0.75rem;
 }
 
 .banner h4,
 .before-dashboard h4 {
   @include gradient-underline($width: 80px, $height: 2.5px);
   margin-bottom: 0;
-
-  // On mobile, reduce underline width to prevent UI collisions
+  
   @media (max-width: 768px) {
     &::after {
       max-width: 60px;
     }
   }
-
+  
   @media (max-width: 480px) {
     &::after {
       max-width: 50px;
@@ -123,21 +120,29 @@ h4,
 .field-type > .field-label,
 label.field-label,
 .render-fields > .field-type > label {
-  font-size: $font-size-sm;         // 0.875rem / 14px (keep original - it's small/uppercase)
-  font-weight: $font-weight-semibold; // 600
-  letter-spacing: $letter-spacing-wide; // 0.025em
+  font-size: 0.875rem;    // 14px
+  font-weight: 600;
+  letter-spacing: 0.025em;
   text-transform: uppercase;
   color: $admin-text-secondary;
-  margin-bottom: $spacing-sm;       // 0.75rem
+  margin-bottom: 0.75rem;
   display: block;
 }
 
-// Exclude relationship field values from label styling
-.relationship *,
-[class*="relationship"] *,
-[class*="select__"] *,
-.react-select *,
-[class*="pill__"] * {
+// Exclude relationship/select field values from label styling (specific elements, not wildcard)
+.relationship label,
+.relationship span,
+.relationship div[class*="value"],
+[class*="relationship"] label,
+[class*="relationship"] span,
+[class*="relationship"] div[class*="value"],
+[class*="select__"] span,
+[class*="select__"] div,
+.react-select span,
+.react-select div[class*="single-value"],
+.react-select div[class*="multi-value"],
+[class*="pill__"] span,
+[class*="pill__"] div {
   text-transform: none;
   font-size: inherit;
   letter-spacing: normal;
@@ -150,9 +155,14 @@ label.field-label,
 p,
 .body-text,
 main p {
-  font-size: $font-size-base;       // 0.9375rem / 15px
-  line-height: $line-height-normal; // 1.5
+  font-size: 0.9375rem;   // 15px
+  line-height: 1.5;
   color: $admin-text-secondary;
+  margin: 0 0 1rem 0;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 
 .field-description,
@@ -160,16 +170,16 @@ main p {
 [class*="helper"],
 .help-text,
 small {
-  font-size: $font-size-sm;         // 0.8125rem / 13px
-  line-height: $line-height-normal; // 1.5
+  font-size: 0.875rem;    // 14px
+  line-height: 1.5;
   color: $admin-text-muted;
-  margin-top: $spacing-xs;          // 0.5rem
+  margin-top: 0.5rem;
   margin-bottom: 0;
 }
 
 .custom-view-description {
-  padding: 0 !important;      // Remove padding to reduce spacing
-  margin: 0 !important;       // Remove margin to reduce spacing
+  padding: 0;
+  margin: 0;
 }
 
 // ============================================
@@ -177,51 +187,24 @@ small {
 // ============================================
 
 th,
-.table__th,
 thead th {
-  font-size: $font-size-sm;         // 0.8125rem / 13px
-  font-weight: $font-weight-bold;   // 700
-  letter-spacing: $letter-spacing-wider; // 0.05em
+  font-size: 0.875rem;    // 14px
+  font-weight: 700;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: $admin-text-secondary;
-  position: sticky;
-  top: 0;
-  z-index: $z-sticky;
-  background: $admin-bg-base;
-  padding: $padding-md;             // 1rem (standardized)
-  border-bottom: $border-medium solid transparent; // 2px
-  background-image: 
-    linear-gradient($admin-bg-base, $admin-bg-base),
-    $admin-gradient-primary;
-  background-origin: padding-box, border-box;
-  background-clip: padding-box, border-box;
-  
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: $border-medium;         // 2px
-    background: $admin-gradient-primary;
-    opacity: 0.6;
-  }
+  padding: 1rem;
   
   &:hover {
     color: $admin-text-primary;
-    
-    &::after {
-      opacity: 1;
-      box-shadow: 0 0 10px rgba(6, 182, 212, 0.4);
-    }
   }
 }
 
 td,
-.table__td,
 tbody td {
-  font-size: $font-size-base;       // 0.9375rem / 15px
+  font-size: 0.9375rem;   // 15px
   color: $admin-text-primary;
+  padding: 0.875rem 1rem;
 }
 
 // ============================================
@@ -230,41 +213,197 @@ tbody td {
 
 .collection-list__header,
 .list-header,
-[class*="list-header"],
 .doc-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: $spacing-lg !important;            // Add gap between title and button
-  margin-bottom: $spacing-lg !important;  // 1.5rem / ~20px - Only on outer container
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
   
-  // Remove internal spacing to prevent compounding margins
+  // Remove internal spacing
   .list-header__content,
   .list-header__title-and-actions,
   .list-header__title,
-  .list-header__actions,
-  .list-header__after-header-content {
-    margin-bottom: 0 !important;
-    padding-bottom: 0 !important;
+  .list-header__actions {
+    margin-bottom: 0;
+    padding-bottom: 0;
   }
   
-  // Remove h1 padding within header
   h1 {
-    padding-bottom: 0 !important;
-    flex-shrink: 0 !important;            // Prevent title from shrinking
+    padding-bottom: 0;
+    flex-shrink: 0;
+  }
+  
+  button,
+  a[href*="create"] {
+    margin-top: 0;
+    flex-shrink: 0;
   }
 }
 
-// CREATE NEW buttons positioning (styling now in _buttons.scss)
-html body .collection-list__header button,
-html body .list-header button,
-html body .list-header a[href*="create"],
-html body button[class*="create"],
-html body a[class*="create"] {
-  margin-top: 0 !important;
-  align-self: center;
-  flex-shrink: 0 !important;                                       // Prevent button from shrinking
-  min-width: fit-content !important;                               // Ensure button fits content
-  width: auto !important;                                          // Allow button to size properly
+// ============================================
+// DOCUMENT META TEXT (Last Modified, Created)
+// ============================================
+
+// Add spacing between label and value in document meta
+// E.g., "Last Modified: [space] December 24th..."
+main > div > div:first-child > div:first-child {
+  // If this contains timestamp text
+  font-size: 0.875rem;
+  
+  > div {
+    margin-right: 2rem;
+    
+    &:last-child {
+      margin-right: 0;
+    }
+  }
 }
 
+// Fix margin alignment issues on doc-controls meta
+.doc-controls__label,
+.doc-controls__value,
+p.doc-controls__label,
+p.doc-controls__value {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.5 !important;
+}
+
+// Remove margin from doc-controls meta
+.doc-controls__meta,
+ul.doc-controls__meta {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+// Ensure list items in doc-controls meta are aligned
+.doc-controls__meta li,
+ul.doc-controls__meta li,
+.doc-controls__list-item {
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+// Vertically center the doc-controls content (timestamps)
+.doc-controls__content,
+div.doc-controls__content {
+  display: flex !important;
+  align-items: center !important;
+  gap: 2rem !important;
+}
+
+// Fix doc-header bottom margin bleeding into content
+.doc-header,
+div.doc-header,
+.gutter.doc-header {
+  margin-bottom: 0 !important;
+  padding-bottom: 1rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 1.5rem !important;
+  
+  // Hide if empty (no content or only whitespace)
+  &:empty,
+  &:not(:has(*)) {
+    display: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}
+
+// ============================================
+// LINKS
+// ============================================
+
+a {
+  color: $admin-accent-info;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  
+  &:hover {
+    color: $admin-accent-info;
+    filter: brightness(1.2);
+  }
+  
+  &:focus {
+    outline: 2px solid rgba($admin-accent-info, 0.5);
+    outline-offset: 2px;
+  }
+}
+
+// ============================================
+// CODE & PRE
+// ============================================
+
+code {
+  @include transparent-bg(0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 0.125rem 0.375rem;
+  font-family: 'Monaco', 'Courier New', monospace;
+  font-size: 0.875rem;
+  color: $admin-accent-info;
+}
+
+pre {
+  @include glow-card($admin-accent-primary);
+  padding: 1rem;
+  overflow-x: auto;
+  border-radius: 8px;
+  
+  code {
+    background: transparent;
+    border: none;
+    padding: 0;
+    color: inherit;
+  }
+}
+
+// ============================================
+// LISTS
+// ============================================
+
+ul, ol {
+  margin: 0 0 1rem 0;
+  padding-left: 1.5rem;
+  
+  li {
+    margin-bottom: 0.5rem;
+    color: $admin-text-secondary;
+    line-height: 1.5;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+// ============================================
+// RESPONSIVE TYPOGRAPHY
+// ============================================
+
+@media (max-width: 768px) {
+  h1, .collection-list__header h1, .list-header h1 {
+    font-size: 1.75rem; // 28px
+  }
+  
+  h2, main h2 {
+    font-size: 1.375rem; // 22px
+  }
+  
+  h3, main h3 {
+    font-size: 1.125rem; // 18px
+  }
+  
+  .collection-list__header,
+  .list-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}

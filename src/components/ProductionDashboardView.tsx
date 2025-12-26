@@ -18,7 +18,7 @@ export default function ProductionDashboardView() {
   const [activeTab, setActiveTab] = useState(isProductionManager ? 'weekly' : 'signups')
   
   return (
-    <div className="production-dashboard">
+    <div className="production-dashboard" data-section="production">
       <nav className="production-dashboard__tabs">
         {/* Only show management tabs to production managers */}
         {isProductionManager && (

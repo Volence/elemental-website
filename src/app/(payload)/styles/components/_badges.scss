@@ -1,302 +1,342 @@
 // ============================================
-// BADGES & PILLS
+// BADGES & PILLS - Component-Specific Styles
 // ============================================
+//
+// Base badge styles are in _payload-overrides.scss
+// This file contains variant styles and special cases
+//
 
 @import '../variables';
 @import '../mixins';
 
 // ============================================
-// BASE BADGE STYLES
-// ============================================
-
-.pill,
-.badge,
-[class*="pill"],
-[class*="badge"],
-.chip,
-[class*="chip"],
-.tag {
-  display: inline-flex;
-  align-items: center;
-  gap: $gap-xs;                                                    // 0.5rem (for icons)
-  padding: 0.25rem $padding-sm;                                    // 0.25rem 0.75rem (default size)
-  border-radius: $radius-sm;                                       // 4px (default)
-  font-size: $font-size-xs;                                        // 0.75rem
-  font-weight: $font-weight-semibold;                              // 600
-  text-transform: uppercase;
-  letter-spacing: $letter-spacing-wider;                           // 0.05em
-  border: $border-thin solid transparent;                          // 1px
-  transition: $transition-all-normal;                              // all 0.2s ease-out
-  
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 0 20px currentColor;
-  }
-}
-
-// ============================================
-// BADGE SIZE VARIANTS
+// SIZE VARIANTS
 // ============================================
 
 .badge--sm,
 .pill--sm {
-  padding: 0.125rem $padding-xs;                                   // 0.125rem 0.5rem
-  font-size: $font-size-xs;                                        // 0.75rem (11px when scaled)
-  border-radius: $radius-sm;                                       // 4px
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
 }
 
 .badge--md,
 .pill--md {
-  padding: 0.375rem $padding-sm;                                   // 0.375rem 0.75rem (default)
-  font-size: $font-size-sm;                                        // 0.8125rem
-  border-radius: $radius-sm;                                       // 4px
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
 }
 
 .badge--lg,
 .pill--lg {
-  padding: $padding-xs $padding-md;                                // 0.5rem 1rem
-  font-size: $font-size-sm;                                        // 0.875rem
-  border-radius: $radius-md;                                       // 6px
+  padding: 0.5rem 1rem;
+  font-size: 0.9375rem;
 }
 
 // ============================================
-// BADGE SHAPE VARIANTS
+// SHAPE VARIANTS
 // ============================================
 
 .badge--pill,
 .pill--rounded {
-  border-radius: $radius-full;                                     // 9999px
+  border-radius: 9999px;
 }
 
 .badge--square {
-  border-radius: $radius-xs;                                       // 2px
+  border-radius: 2px;
 }
 
 // ============================================
 // STATUS BADGES
 // ============================================
 
-// Published/Completed
-.pill--status-published,
+// Published/Completed - Green
 .badge--published,
+.badge--completed,
 [class*="status"][class*="published"],
-[class*="completed"] {
-  background: linear-gradient(
-    135deg,
-    rgba($admin-accent-success, 0.15) 0%,
-    rgba($admin-accent-success, 0.25) 100%
-  );
-  border: 1px solid rgba($admin-accent-success, 0.3);
-  color: rgb(134, 239, 172);
-  box-shadow: 0 0 12px rgba($admin-accent-success, 0.2);
+[class*="status"][class*="completed"] {
+  @include glow-badge($admin-accent-success);
+  @include glow-accent-bar($admin-accent-success, 2px, 60%);
+  color: rgba($admin-accent-success, 0.95);
 }
 
-// Draft/Scheduled/Upcoming
-.pill--status-draft,
+// Draft/Scheduled/Upcoming - Blue
 .badge--draft,
+.badge--scheduled,
+.badge--upcoming,
 [class*="status"][class*="draft"],
-[class*="scheduled"],
-[class*="upcoming"] {
-  background: linear-gradient(
-    135deg,
-    rgba(59, 130, 246, 0.15) 0%,
-    rgba(59, 130, 246, 0.25) 100%
-  );
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  color: rgb(147, 197, 253);
-  box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+[class*="status"][class*="scheduled"],
+[class*="status"][class*="upcoming"] {
+  @include glow-badge($admin-accent-info);
+  @include glow-accent-bar($admin-accent-info, 2px, 60%);
+  color: rgba($admin-accent-info, 0.95);
 }
 
-// Archived/Cancelled
-.pill--status-archived,
+// Archived/Cancelled - Red
 .badge--archived,
-[class*="status"][class*="cancelled"],
-[class*="archived"] {
-  background: linear-gradient(
-    135deg,
-    rgba($admin-accent-error, 0.15) 0%,
-    rgba($admin-accent-error, 0.25) 100%
-  );
-  border: 1px solid rgba($admin-accent-error, 0.3);
-  color: rgb(252, 165, 165);
-  box-shadow: 0 0 12px rgba($admin-accent-error, 0.2);
+.badge--cancelled,
+[class*="status"][class*="archived"],
+[class*="status"][class*="cancelled"] {
+  @include glow-badge($admin-accent-error);
+  @include glow-accent-bar($admin-accent-error, 2px, 60%);
+  color: rgba($admin-accent-error, 0.95);
+}
+
+// Pending - Purple
+.badge--pending,
+[class*="status"][class*="pending"] {
+  @include glow-badge($admin-accent-primary);
+  @include glow-accent-bar($admin-accent-primary, 2px, 60%);
+  color: rgba($admin-accent-primary, 0.95);
+}
+
+// Active - Green
+.badge--active,
+[class*="status"][class*="active"] {
+  @include glow-badge($admin-accent-success);
+  @include glow-accent-bar($admin-accent-success, 2px, 60%);
+  color: rgba($admin-accent-success, 0.95);
+}
+
+// Inactive - Gray
+.badge--inactive,
+[class*="status"][class*="inactive"] {
+  @include glow-badge($tier-below);
+  @include glow-accent-bar($tier-below, 2px, 60%);
+  color: rgba($tier-below, 0.95);
 }
 
 // ============================================
-// ROLE BADGES
+// ROLE BADGES (Team roles)
 // ============================================
-// Note: Scoped to badge/pill elements only to avoid affecting table cells
-// Also excludes team-manager-info and assigned-teams components
+// Exclude team-manager-info component from styling
 
-// Manager
-.pill[class*="manager"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.badge[class*="manager"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.chip[class*="manager"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.tag[class*="manager"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.role-manager:not(.team-manager-info):not([class*="team-manager-info"]) {
-  background: linear-gradient(
-    135deg,
-    rgba(251, 191, 36, 0.15) 0%,
-    rgba(251, 191, 36, 0.25) 100%
-  );
-  border: 1px solid rgba(251, 191, 36, 0.3);
-  color: rgb(253, 224, 71);
-  box-shadow: 0 0 12px rgba(251, 191, 36, 0.2);
+// Manager - Yellow
+.pill[class*="manager"]:not(.team-manager-info *),
+.badge[class*="manager"]:not(.team-manager-info *),
+.role-manager:not(.team-manager-info *) {
+  @include glow-badge($admin-accent-warning);
+  @include glow-accent-bar($admin-accent-warning, 2px, 60%);
+  color: rgba($admin-accent-warning, 0.95);
 }
 
-// Exclude anything inside team-manager-info from getting badge styling
-.team-manager-info [class*="manager"],
-.team-manager-info [class*="coach"],
-.team-manager-info [class*="captain"],
-.team-manager-info [class*="sub"] {
-  background: none !important;
-  border: none !important;
-  color: inherit !important;
-  box-shadow: none !important;
+// Coach - Blue
+.pill[class*="coach"]:not(.team-manager-info *),
+.badge[class*="coach"]:not(.team-manager-info *),
+.role-coach:not(.team-manager-info *) {
+  @include glow-badge($admin-accent-info);
+  @include glow-accent-bar($admin-accent-info, 2px, 60%);
+  color: rgba($admin-accent-info, 0.95);
 }
 
-// Coach
-.pill[class*="coach"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.badge[class*="coach"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.chip[class*="coach"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.tag[class*="coach"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.role-coach:not(.team-manager-info):not([class*="team-manager-info"]) {
-  background: linear-gradient(
-    135deg,
-    rgba(59, 130, 246, 0.15) 0%,
-    rgba(59, 130, 246, 0.25) 100%
-  );
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  color: rgb(147, 197, 253);
-  box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+// Captain - Green
+.pill[class*="captain"]:not(.team-manager-info *),
+.badge[class*="captain"]:not(.team-manager-info *),
+.role-captain:not(.team-manager-info *) {
+  @include glow-badge($admin-accent-success);
+  @include glow-accent-bar($admin-accent-success, 2px, 60%);
+  color: rgba($admin-accent-success, 0.95);
 }
 
-// Captain
-.pill[class*="captain"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.badge[class*="captain"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.chip[class*="captain"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.tag[class*="captain"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.role-captain:not(.team-manager-info):not([class*="team-manager-info"]) {
-  background: linear-gradient(
-    135deg,
-    rgba($admin-accent-success, 0.15) 0%,
-    rgba($admin-accent-success, 0.25) 100%
-  );
-  border: 1px solid rgba($admin-accent-success, 0.3);
-  color: rgb(134, 239, 172);
-  box-shadow: 0 0 12px rgba($admin-accent-success, 0.2);
-}
-
-// Substitute
-.pill[class*="sub"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.badge[class*="sub"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.chip[class*="sub"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.tag[class*="sub"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.role-sub:not(.team-manager-info):not([class*="team-manager-info"]) {
-  background: linear-gradient(
-    135deg,
-    rgba(156, 163, 175, 0.15) 0%,
-    rgba(156, 163, 175, 0.25) 100%
-  );
-  border: 1px solid rgba(156, 163, 175, 0.3);
-  color: rgb(209, 213, 219);
-  box-shadow: 0 0 12px rgba(156, 163, 175, 0.15);
+// Substitute - Gray
+.pill[class*="sub"]:not(.team-manager-info *),
+.badge[class*="sub"]:not(.team-manager-info *),
+.role-sub:not(.team-manager-info *) {
+  @include glow-badge($tier-below);
+  @include glow-accent-bar($tier-below, 2px, 60%);
+  color: rgba($tier-below, 0.95);
 }
 
 // ============================================
 // GAME ROLE BADGES (Tank, DPS, Support)
 // ============================================
 
-// Tank
-.pill[class*="tank"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.badge[class*="tank"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.chip[class*="tank"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.tag[class*="tank"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.role-tank:not(.team-manager-info):not([class*="team-manager-info"]) {
-  background: linear-gradient(
-    135deg,
-    rgba(59, 130, 246, 0.15) 0%,
-    rgba(99, 102, 241, 0.25) 100%
-  );
-  border: 1px solid rgba(59, 130, 246, 0.4);
-  color: rgb(96, 165, 250);
-  box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+// Tank - Blue
+.pill[class*="tank"]:not(.team-manager-info *),
+.badge[class*="tank"]:not(.team-manager-info *),
+.role-tank:not(.team-manager-info *) {
+  @include glow-badge($tier-advanced);
+  @include glow-accent-bar($tier-advanced, 2px, 60%);
+  color: rgba($tier-advanced, 0.95);
   font-weight: 700;
 }
 
-// DPS
-.pill[class*="dps"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.badge[class*="dps"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.chip[class*="dps"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.tag[class*="dps"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.role-dps:not(.team-manager-info):not([class*="team-manager-info"]) {
-  background: linear-gradient(
-    135deg,
-    rgba(239, 68, 68, 0.15) 0%,
-    rgba(220, 38, 38, 0.25) 100%
-  );
-  border: 1px solid rgba(239, 68, 68, 0.4);
-  color: rgb(252, 129, 129);
-  box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
+// DPS - Red
+.pill[class*="dps"]:not(.team-manager-info *),
+.badge[class*="dps"]:not(.team-manager-info *),
+.role-dps:not(.team-manager-info *) {
+  @include glow-badge($admin-accent-error);
+  @include glow-accent-bar($admin-accent-error, 2px, 60%);
+  color: rgba($admin-accent-error, 0.95);
   font-weight: 700;
 }
 
-// Support
-.pill[class*="support"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.badge[class*="support"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.chip[class*="support"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.tag[class*="support"]:not(.team-manager-info):not([class*="team-manager-info"]),
-.role-support:not(.team-manager-info):not([class*="team-manager-info"]) {
-  background: linear-gradient(
-    135deg,
-    rgba(34, 197, 94, 0.15) 0%,
-    rgba(22, 163, 74, 0.25) 100%
-  );
-  border: 1px solid rgba(34, 197, 94, 0.4);
-  color: rgb(134, 239, 172);
-  box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
+// Support - Green
+.pill[class*="support"]:not(.team-manager-info *),
+.badge[class*="support"]:not(.team-manager-info *),
+.role-support:not(.team-manager-info *) {
+  @include glow-badge($admin-accent-success);
+  @include glow-accent-bar($admin-accent-success, 2px, 60%);
+  color: rgba($admin-accent-success, 0.95);
   font-weight: 700;
 }
 
 // ============================================
-// LIST CONTROL PILLS - COLUMNS/FILTERS BUTTONS
-// Override the pill--size-small class for list controls
-// Using maximum specificity to override PayloadCMS defaults
+// TIER BADGES (Competitive tiers)
 // ============================================
 
-html body button.pill.pill--size-small.list-controls__toggle-columns,
-html body button.pill.pill--size-small.list-controls__toggle-where,
-html body button.pill.list-controls__toggle-columns,
-html body button.pill.list-controls__toggle-where {
-  padding: 0.75rem 1.25rem !important;
-  min-height: 44px !important;
-  width: auto !important;               // Allow button to grow to fit content
-  min-width: fit-content !important;    // Ensure full text is visible
-  font-size: 15px !important;           // Using px instead of rem (admin root is 13px)
-  font-weight: 600 !important;
-  letter-spacing: 0.025em !important;
-  text-transform: none !important;
-  border-radius: 8px !important;
-  line-height: 1.5 !important;
-  overflow: visible !important;         // Don't hide text
-  text-overflow: clip !important;       // Don't ellipsis the text
+.badge--masters,
+.badge--tier-masters {
+  @include glow-badge($tier-masters);
+  @include glow-accent-bar($tier-masters, 2px, 60%);
+  color: rgba($tier-masters, 0.95);
+}
+
+.badge--expert,
+.badge--tier-expert {
+  @include glow-badge($tier-expert);
+  @include glow-accent-bar($tier-expert, 2px, 60%);
+  color: rgba($tier-expert, 0.95);
+}
+
+.badge--advanced,
+.badge--tier-advanced {
+  @include glow-badge($tier-advanced);
+  @include glow-accent-bar($tier-advanced, 2px, 60%);
+  color: rgba($tier-advanced, 0.95);
+}
+
+.badge--4k,
+.badge--tier-4k {
+  @include glow-badge($tier-4k);
+  @include glow-accent-bar($tier-4k, 2px, 60%);
+  color: rgba($tier-4k, 0.95);
+}
+
+.badge--35k,
+.badge--tier-35k {
+  @include glow-badge($tier-35k);
+  @include glow-accent-bar($tier-35k, 2px, 60%);
+  color: rgba($tier-35k, 0.95);
+}
+
+.badge--30k,
+.badge--tier-30k {
+  @include glow-badge($tier-30k);
+  @include glow-accent-bar($tier-30k, 2px, 60%);
+  color: rgba($tier-30k, 0.95);
+}
+
+.badge--below,
+.badge--tier-below {
+  @include glow-badge($tier-below);
+  @include glow-accent-bar($tier-below, 2px, 60%);
+  color: rgba($tier-below, 0.95);
+}
+
+// ============================================
+// INTERACTIVE BADGES
+// ============================================
+
+.badge--clickable,
+.badge--interactive {
+  cursor: pointer;
+  transition: all 0.2s ease;
   
-  .pill__label,
-  span.pill__label {
-    font-size: 15px !important;         // Using px instead of rem (admin root is 13px)
-    font-weight: 600 !important;
-    letter-spacing: 0.025em !important;
-    line-height: 1.5 !important;
-    text-transform: none !important;
-    overflow: visible !important;
-    text-overflow: clip !important;
+  &:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.2);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// ============================================
+// BADGE WITH ICON
+// ============================================
+
+.badge--with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+// ============================================
+// BADGE WITH REMOVE BUTTON
+// ============================================
+
+.badge--removable {
+  padding-right: 0.375rem;
+  
+  button {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    padding: 0;
+    margin-left: 0.375rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+    }
+    
+    svg {
+      width: 12px;
+      height: 12px;
+    }
+  }
+}
+
+// ============================================
+// LIST CONTROL PILLS/BUTTONS
+// ============================================
+
+// Filter & Column toggle buttons
+.list-controls__toggle-columns,
+.list-controls__toggle-where,
+.list-controls__toggle-filters {
+  @include glow-button($admin-accent-info);
+  padding: 0.875rem 1.5rem;
+  min-height: 48px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: none;
+  white-space: nowrap;
+  
+  .pill__label {
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: none;
+    white-space: nowrap;
   }
   
   .pill__icon,
-  span.pill__icon,
   svg {
-    width: 18px !important;
-    height: 18px !important;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
   }
 }
 
+// Specific button colors
+.list-controls__toggle-columns {
+  @include glow-button($admin-accent-info); // Cyan
+}
+
+.list-controls__toggle-where,
+.list-controls__toggle-filters {
+  @include glow-button($admin-accent-success); // Green
+}

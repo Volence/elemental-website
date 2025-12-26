@@ -14,6 +14,10 @@ html body input#search-filter-input {
 
 .search-filter-container,
 .list-controls__wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  
   // Ensure the search bar container has position relative for absolute icon positioning
   .search-bar {
     position: relative;
@@ -79,6 +83,7 @@ html body input#search-filter-input {
 /* Filter buttons enhancement */
 .list-controls__buttons {
   display: flex;
+  align-items: center;
   gap: 0.75rem;
 
   button {
@@ -160,42 +165,125 @@ html body input#search-filter-input {
   }
 }
 
+/* List controls alignment */
+.list-controls,
+.list-controls__wrap,
+.list-controls__buttons {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  
+  // Ensure checkboxes are vertically aligned
+  label:has(input[type="checkbox"]),
+  label:has(input[type="radio"]) {
+    display: inline-flex !important;
+    align-items: center !important;
+    min-height: 44px !important;
+    margin: 0 !important;
+    padding: 0.5rem 0.75rem !important;
+    line-height: 1 !important;
+    gap: 0.5rem !important;
+  }
+}
+
 /* Override pill button sizing for list controls (Columns/Filters) */
 /* Must use high specificity to override .pill--size-small */
-button.pill.pill--size-small.list-controls__toggle-columns,
-button.pill.pill--size-small.list-controls__toggle-where,
-button.pill.list-controls__toggle-columns,
-button.pill.list-controls__toggle-where,
-.list-controls__toggle-columns,
-.list-controls__toggle-filters,
-[class*="list-controls__toggle"] {
-  padding: 0.75rem 1.25rem !important;
-  min-height: 44px !important;
-  min-width: auto !important;
-  font-size: 0.9375rem !important;
+html body button.pill.pill--size-small.list-controls__toggle-columns,
+html body button.pill.pill--size-small.list-controls__toggle-where,
+html body button.pill.list-controls__toggle-columns,
+html body button.pill.list-controls__toggle-where,
+html body .list-controls__toggle-columns,
+html body .list-controls__toggle-filters,
+html body [class*="list-controls__toggle"] {
+  padding: 0.875rem 1.5rem !important;
+  min-height: 48px !important;
+  min-width: fit-content !important;
+  max-width: none !important;
+  width: auto !important;
+  font-size: 1rem !important;
   font-weight: 600 !important;
   letter-spacing: 0.025em !important;
   text-transform: none !important;
   border-radius: 8px !important;
   display: inline-flex !important;
   align-items: center !important;
-  gap: 0.5rem !important;
+  justify-content: center !important;
+  gap: 0.625rem !important;
   white-space: nowrap !important;
   line-height: 1.5 !important;
+  overflow: visible !important;
+  flex-shrink: 0 !important;
   
   .pill__label,
-  span[class*="label"] {
-    font-size: 0.9375rem !important;
+  span[class*="label"],
+  span {
+    font-size: 1rem !important;
     font-weight: 600 !important;
     letter-spacing: 0.025em !important;
     line-height: 1.5 !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
   }
   
   .pill__icon,
   svg {
-    width: 18px !important;
-    height: 18px !important;
-    flex-shrink: 0;
+    width: 20px !important;
+    height: 20px !important;
+    flex-shrink: 0 !important;
+  }
+}
+
+/* NUCLEAR OPTION: Ensure Columns and Filters buttons are readable */
+html body .list-controls .list-controls__toggle-columns,
+html body .list-controls .list-controls__toggle-filters,
+html body .list-controls .list-controls__toggle-where,
+html body .list-controls button.pill,
+html body .list-controls [class*="toggle"] {
+  padding: 0.875rem 1.5rem !important;
+  min-height: 48px !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  min-width: 120px !important;
+  max-width: none !important;
+  width: auto !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  
+  // Single clean border - no doubles
+  border: 1px solid rgba(6, 182, 212, 0.5) !important;
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.15) !important;
+  
+  // Remove any nested borders
+  * {
+    border: none !important;
+  }
+  
+  // Ensure text is visible
+  span,
+  .pill__label {
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  
+  &:hover {
+    border-color: rgba(6, 182, 212, 0.8) !important;
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.3) !important;
+  }
+}
+
+// Filters button - green theme
+html body .list-controls .list-controls__toggle-filters,
+html body .list-controls .list-controls__toggle-where {
+  border-color: rgba(132, 204, 22, 0.5) !important;
+  box-shadow: 0 0 12px rgba(132, 204, 22, 0.15) !important;
+  
+  &:hover {
+    border-color: rgba(132, 204, 22, 0.8) !important;
+    box-shadow: 0 0 20px rgba(132, 204, 22, 0.3) !important;
   }
 }
 

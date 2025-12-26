@@ -1,388 +1,148 @@
 // ============================================
-// BUTTONS
+// BUTTONS - Component-Specific Overrides
 // ============================================
+//
+// Base button styles are in _payload-overrides.scss
+// This file only contains:
+//   - Size variants
+//   - Icon-only buttons
+//   - Loading states
+//   - Special case buttons (close, array add, etc.)
+//
 
 @import '../variables';
 @import '../mixins';
 
 // ============================================
-// BASE BUTTON STYLES
-// ============================================
-
-button,
-.btn,
-button[type="button"],
-input[type="button"],
-input[type="submit"] {
-  // Base styling - all buttons (using !important to override PayloadCMS defaults)
-  font-weight: $font-weight-medium !important;      // 500
-  font-size: $font-size-base !important;            // 0.9375rem / 15px
-  letter-spacing: $letter-spacing-wide !important;  // 0.025em
-  border-radius: $radius-md !important;             // 6px
-  border: $border-thin solid transparent;
-  padding: $padding-sm $padding-lg !important;      // 0.75rem 1.5rem (better proportions)
-  min-height: 40px !important;                      // Ensure adequate height
-  cursor: pointer;
-  transition: $transition-all-normal;               // all 0.2s ease-out
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: $gap-xs !important;                          // 0.5rem
-  white-space: nowrap;
-  
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none !important;
-  }
-  
-  // Default hover (for buttons without specific classes)
-  &:hover:not([aria-label="Close"]):not(.nav__mobile-close):not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: $shadow-md;
-  }
-  
-  &:active:not(:disabled) {
-    transform: translateY(0);
-  }
-}
-
-// ============================================
-// BUTTON SIZE VARIANTS
+// SIZE VARIANTS
 // ============================================
 
 .btn--sm,
-button.btn--sm {
-  padding: $padding-xs $padding-md !important;      // 0.5rem 1rem
-  font-size: $font-size-sm !important;              // 0.875rem / 14px
-  border-radius: $radius-md !important;             // 6px
-  min-height: 36px !important;
+button.btn--sm,
+.btn--size-small,
+button.btn--size-small {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  min-height: 36px;
+  width: auto;
+  max-width: none;
 }
 
 .btn--md,
-button.btn--md {
-  padding: $padding-sm $padding-lg !important;      // 0.75rem 1.5rem (default)
-  font-size: $font-size-base !important;            // 0.9375rem / 15px
-  border-radius: $radius-md !important;             // 6px
-  min-height: 40px !important;
+button.btn--md,
+.btn--size-medium,
+button.btn--size-medium {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9375rem;
+  min-height: 40px;
+  width: auto;
+  max-width: none;
 }
 
 .btn--lg,
-button.btn--lg {
-  padding: $padding-md $padding-xl !important;      // 1rem 2rem
-  font-size: $font-size-md !important;              // 1rem / 16px
-  border-radius: $radius-md !important;             // 6px
-  min-height: 48px !important;
+button.btn--lg,
+.btn--size-large,
+button.btn--size-large {
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  min-height: 48px;
+  width: auto;
+  max-width: none;
 }
 
 // ============================================
-// ICON-ONLY BUTTONS (Field controls, etc.)
+// ICON-STYLE BUTTONS (PayloadCMS)
 // ============================================
 
-// Small icon buttons next to form fields (X, dropdown, +, etc.)
-// EXCEPT upload buttons and array add buttons which have their own larger sizing
-button[class*="remove"]:not(.array-field__add-row),
+// Buttons with icon-style classes should still fit their content
+.btn--icon-style-without-border,
+.btn--icon-style-with-border,
+.btn--style-primary,
+.btn--style-secondary,
+.btn--withoutPopup,
+button.btn--icon-style-without-border,
+button.btn--icon-style-with-border,
+button.btn--style-primary,
+button.btn--style-secondary,
+button.btn--withoutPopup {
+  width: auto;
+  min-width: fit-content;
+  max-width: none;
+  overflow: visible;
+  white-space: nowrap;
+  flex-shrink: 0;
+  
+  // Ensure inner elements don't truncate
+  .btn__content,
+  .btn__label {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: nowrap;
+    width: auto;
+  }
+}
+
+// ============================================
+// ICON-ONLY BUTTONS
+// ============================================
+
+// Small square buttons for field controls
+button[class*="remove"]:not(.array-field__add-row):not([class*="multi-value"]),
 button[class*="clear"]:not(.array-field__add-row),
-button[class*="toggle"]:not(.upload__listToggler):not([class*="dropzone"]):not(.array-field__add-row),
+button[class*="toggle"]:not(.array-field__add-row),
 button[class*="expand"]:not(.array-field__add-row),
-button[aria-label]:not(.upload__listToggler):not(.array-field__add-row),
-.field-type button:not([type="submit"]):not([class*="create"]):not([class*="save"]):not(.upload__listToggler):not(.array-field__add-row) {
-  padding: $padding-xs !important;                   // 0.5rem (square icon buttons)
-  min-width: 32px !important;
-  min-height: 32px !important;
-  border-radius: $radius-sm !important;              // 4px
+.field-type button[aria-label]:not([type="submit"]):not(.array-field__add-row) {
+  padding: 0.5rem;
+  min-width: 32px;
+  min-height: 32px;
   
   svg {
-    width: $icon-md !important;                      // 16px
-    height: $icon-md !important;                     // 16px
+    width: 16px;
+    height: 16px;
   }
 }
 
 // ============================================
-// ARRAY FIELD ADD BUTTONS (Add Custom Link, Add Item, etc.)
-// ============================================
-
-// Target the array add button with its specific class combinations
-html body button.array-field__add-row.btn--icon.btn--size-medium,
-html body button.array-field__add-row.btn--icon,
-html body button.array-field__add-row,
-html body button[class*="add-row"],
-html body button[class*="array"][class*="add"] {
-  width: auto !important;
-  min-width: fit-content !important;
-  padding: $padding-sm $padding-lg !important;       // 0.75rem 1.5rem (10px 20px)
-  min-height: 40px !important;
-  height: 40px !important;
-  max-height: 40px !important;
-  font-size: 15px !important;                         // Use px for consistency
-  font-weight: $font-weight-medium !important;        // 500
-  border-radius: $radius-md !important;               // 6px
-  white-space: nowrap !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: $gap-xs !important;                            // 0.5rem spacing between icon and text
-  overflow: visible !important;
-  text-overflow: clip !important;
-  line-height: normal !important;
-  
-  svg {
-    width: $icon-md !important;                       // 16px
-    height: $icon-md !important;                      // 16px
-    flex-shrink: 0 !important;
-  }
-}
-
-// ============================================
-// PRIMARY BUTTON VARIANT (Clean Glow Style)
-// ============================================
-
-button[type="submit"],
-.btn--primary,
-button.btn--primary,
-[class*="btn-primary"],
-[class*="button--primary"] {
-  @include glow-button($admin-accent-primary);
-  color: white !important;
-  font-weight: $font-weight-semibold !important;    // 600
-  
-  // Subtle gradient for primary buttons (very light)
-  background: linear-gradient(135deg, rgba($admin-accent-primary, 0.15), rgba(#a855f7, 0.15)) !important;
-  
-  &:hover:not(:disabled) {
-    background: linear-gradient(135deg, rgba($admin-accent-primary, 0.25), rgba(#a855f7, 0.25)) !important;
-    transform: translateY(-2px) !important;
-  }
-  
-  &:active:not(:disabled) {
-    transform: translateY(0) !important;
-    background: linear-gradient(135deg, rgba($admin-accent-primary, 0.3), rgba(#a855f7, 0.3)) !important;
-  }
-}
-
-// ============================================
-// CREATE NEW BUTTONS (Special Glow Treatment)
-// ============================================
-
-// Header CREATE NEW buttons - use color variety
-html body .collection-list__header button,
-html body .list-header button,
-html body .list-header a[href*="create"],
-html body button[class*="create"]:not([class*="modal"]),
-html body a[class*="create"] {
-  @include glow-button($admin-accent-primary);
-  background: linear-gradient(135deg, rgba($admin-accent-primary, 0.15), rgba(#a855f7, 0.15)) !important;
-  color: white !important;
-  font-weight: $font-weight-semibold !important;
-  
-  // Add glowing accent for extra visual interest
-  position: relative;
-  overflow: visible !important;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    inset: -2px;
-    border-radius: inherit;
-    padding: 2px;
-    background: linear-gradient(135deg, $admin-accent-primary, #a855f7);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    pointer-events: none;
-  }
-  
-  &:hover:not(:disabled) {
-    background: linear-gradient(135deg, rgba($admin-accent-primary, 0.25), rgba(#a855f7, 0.25)) !important;
-    transform: translateY(-2px) !important;
-    
-    &::before {
-      opacity: 0.6;
-    }
-  }
-  
-  &:active:not(:disabled) {
-    transform: translateY(0) !important;
-    background: linear-gradient(135deg, rgba($admin-accent-primary, 0.3), rgba(#a855f7, 0.3)) !important;
-  }
-}
-
-// Empty collection CREATE NEW button
-html body .collection-list__no-results .btn,
-html body .collection-list__no-results a.btn,
-html body [class*="no-results"] .btn,
-html body [class*="no-results"] a.btn {
-  @include glow-button(#10b981);  // Emerald green for "getting started"
-  background: linear-gradient(135deg, rgba(#10b981, 0.15), rgba(#22c55e, 0.15)) !important;
-  color: white !important;
-  font-weight: $font-weight-semibold !important;
-  min-width: 180px !important;
-  
-  &:hover:not(:disabled) {
-    background: linear-gradient(135deg, rgba(#10b981, 0.25), rgba(#22c55e, 0.25)) !important;
-    transform: translateY(-2px) scale(1.02) !important;
-  }
-  
-  &:active:not(:disabled) {
-    transform: translateY(0) scale(1) !important;
-  }
-}
-
-// ============================================
-// SECONDARY BUTTON VARIANT
-// ============================================
-
-.btn--secondary,
-button.btn--secondary {
-  background: transparent;
-  border: $border-thin solid var(--theme-elevation-300);
-  color: $admin-text-primary;
-  
-  &:hover:not(:disabled) {
-    background: var(--theme-elevation-50);
-    border-color: $admin-accent-primary;
-    color: $admin-accent-primary;
-    box-shadow: $shadow-md;
-  }
-  
-  &:active:not(:disabled) {
-    background: var(--theme-elevation-100);
-  }
-}
-
-// ============================================
-// SUCCESS/CREATE BUTTON VARIANT
-// ============================================
-
-.btn--success,
-button.btn--success,
-button[class*="create"],
-button[class*="save"] {
-  background: linear-gradient(135deg, $admin-accent-success, #16a34a);
-  color: white;
-  border: none;
-  font-weight: $font-weight-semibold;    // 600
-  
-  &:hover:not(:disabled) {
-    background: linear-gradient(135deg, #4ade80, #22c55e);
-    box-shadow: 0 0 20px rgba($admin-accent-success, 0.3);
-    transform: translateY(-1px);
-    filter: brightness(1.05);
-  }
-  
-  &:active:not(:disabled) {
-    transform: translateY(0);
-  }
-}
-
-// ============================================
-// DANGER/DELETE BUTTON VARIANT
-// ============================================
-
-.btn--danger,
-button.btn--danger,
-button[class*="delete"],
-button[class*="remove"] {
-  background: linear-gradient(135deg, $admin-accent-error, #dc2626);
-  color: white;
-  border: none;
-  font-weight: $font-weight-semibold;    // 600
-  
-  &:hover:not(:disabled) {
-    background: linear-gradient(135deg, #f87171, #ef4444);
-    box-shadow: 0 0 20px rgba($admin-accent-error, 0.3);
-    transform: translateY(-1px);
-    filter: brightness(1.05);
-  }
-  
-  &:active:not(:disabled) {
-    transform: translateY(0);
-  }
-}
-
-// ============================================
-// GHOST BUTTON VARIANT
-// ============================================
-
-.btn--ghost,
-button.btn--ghost {
-  background: transparent;
-  border: none;
-  color: $admin-text-secondary;
-  
-  &:hover:not(:disabled) {
-    background: var(--theme-elevation-50);
-    color: $admin-text-primary;
-  }
-  
-  &:active:not(:disabled) {
-    background: var(--theme-elevation-100);
-  }
-}
-
-// ============================================
-// TAB BUTTONS (Edit, API, etc.)
-// ============================================
-
-// Header tab buttons
-.doc-header button,
-[class*="doc-header"] button,
-.doc-tabs button,
-[class*="tabs"] button {
-  padding: $padding-sm $padding-lg !important;       // 0.75rem 1.5rem
-  font-size: $font-size-base !important;             // 0.9375rem
-  min-height: 40px !important;
-  border-radius: $radius-md $radius-md 0 0 !important; // Rounded top only
-}
-
-// ============================================
-// CLOSE BUTTONS (Drawers/Modals)
+// CLOSE BUTTONS (Modals/Drawers)
 // ============================================
 
 .drawer__header-close,
 .modal__close,
 button[aria-label="Close"]:not(.nav__mobile-close) {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.05);
-  border: $border-thin solid $admin-border-normal;
-  border-radius: $radius-md;               // 6px
-  padding: $padding-sm;                     // 0.75rem
+  @include glow-button($admin-accent-error);
   width: 2.5rem;
   height: 2.5rem;
-  color: $admin-text-secondary;
-  transition: $transition-all-normal;       // all 0.2s ease-out
+  padding: 0.75rem;
   
   &:hover:not(:disabled) {
-    background: rgba($admin-accent-error, 0.15);
-    border-color: rgba($admin-accent-error, 0.3);
-    color: $admin-text-primary;
-    transform: none;  // Override default button hover transform
+    transform: none; // Don't move up/down
   }
   
   &:active:not(:disabled) {
-    background: rgba($admin-accent-error, 0.2);
     transform: scale(0.95);
   }
 }
 
 // ============================================
-// ACTION BUTTONS (Save, etc. in doc headers)
+// ARRAY/BLOCKS FIELD ADD BUTTONS
 // ============================================
 
-// Top-right action buttons (Save, More actions, etc.)
-.doc-controls button,
-[class*="doc-controls"] button,
-.form-submit button,
-[class*="form-submit"] button {
-  padding: $padding-sm $padding-xl !important;       // 0.75rem 2rem
-  font-size: $font-size-base !important;             // 0.9375rem
-  font-weight: $font-weight-semibold !important;     // 600
-  min-height: 44px !important;                       // Slightly taller for prominence
-  border-radius: $radius-md !important;              // 6px
+// "Add Item", "Add Custom Link", etc. buttons
+.array-field__add-row,
+.blocks-field__add-row,
+button[class*="add-row"],
+button[class*="array"][class*="add"],
+button[class*="blocks"][class*="add"] {
+  @include glow-button($admin-accent-success);
+  padding: 0.75rem 1.5rem;
+  min-height: 40px;
+  width: auto;
+  white-space: nowrap;
+  
+  svg {
+    width: 16px;
+    height: 16px;
+  }
 }
 
 // ============================================
@@ -391,30 +151,164 @@ button[aria-label="Close"]:not(.nav__mobile-close) {
 
 .btn-group {
   display: flex;
-  gap: $gap-sm;                             // 0.75rem
+  gap: 0.75rem;
   align-items: center;
   
-  // Reduce gap for compact groups
   &--compact {
-    gap: $gap-xs;                           // 0.5rem
+    gap: 0.5rem;
+  }
+  
+  &--justified {
+    width: 100%;
+    
+    button {
+      flex: 1;
+    }
   }
 }
 
 // ============================================
-// FINAL OVERRIDES - MAXIMUM SPECIFICITY
-// These must come LAST to override PayloadCMS defaults
+// LOADING STATE
 // ============================================
 
-// Array field add buttons - FINAL OVERRIDE
-// Must come after all other button rules to win specificity battle
-html body button.btn.array-field__add-row.btn--icon.btn--size-medium,
-html body button.btn.array-field__add-row.btn--icon,
-html body .field-type button.array-field__add-row {
-  padding: 10px 20px !important;                     // Use px for exact control
-  min-height: 40px !important;
-  height: 40px !important;
-  max-height: 40px !important;
-  font-size: 15px !important;
-  line-height: 1.2 !important;
+.btn--loading,
+button.btn--loading,
+button[data-loading="true"] {
+  position: relative;
+  color: transparent;
+  pointer-events: none;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    top: 50%;
+    left: 50%;
+    margin-left: -9px;
+    margin-top: -9px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spinner 0.6s linear infinite;
+  }
 }
 
+@keyframes spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ============================================
+// ICON POSITIONING
+// ============================================
+
+// Icon before text
+.btn--icon-left {
+  flex-direction: row;
+  
+  svg {
+    margin-right: 0.5rem;
+  }
+}
+
+// Icon after text
+.btn--icon-right {
+  flex-direction: row-reverse;
+  
+  svg {
+    margin-left: 0.5rem;
+  }
+}
+
+// Icon only (no text)
+.btn--icon-only {
+  padding: 0.75rem;
+  
+  svg {
+    margin: 0;
+  }
+}
+
+// ============================================
+// SPECIAL PAYLOAD BUTTONS
+// ============================================
+
+// Tab buttons in document headers
+.doc-header button,
+.doc-tabs button {
+  border-radius: 6px 6px 0 0;
+}
+
+// Form submit buttons in doc controls
+.doc-controls button[type="submit"],
+.form-submit button {
+  @include glow-button($admin-accent-success);
+  font-weight: 600;
+  padding: 0.75rem 2rem;
+  min-height: 44px;
+}
+
+// Delete buttons in doc controls
+.doc-controls button[class*="delete"],
+.doc-controls button[class*="remove"] {
+  @include glow-button($admin-accent-error);
+}
+
+// ============================================
+// POPUP/MORE ACTIONS BUTTON (...)
+// ============================================
+
+// Fix double border on "..." menu button in doc controls
+.popup-button,
+button.popup-button,
+.doc-controls button.popup-button {
+  // Single clean border - remove doubles
+  border: 1px solid rgba($admin-accent-primary, 0.7) !important;
+  box-shadow: 0 0 12px rgba($admin-accent-primary, 0.15) !important;
+  
+  // Remove nested borders from any child elements
+  *,
+  &::before,
+  &::after {
+    border: none !important;
+    box-shadow: none !important;
+  }
+  
+  &:hover:not(:disabled) {
+    border-color: rgba($admin-accent-primary, 0.9) !important;
+    box-shadow: 0 0 20px rgba($admin-accent-primary, 0.3) !important;
+  }
+}
+
+// ============================================
+// RESPONSIVE ADJUSTMENTS
+// ============================================
+
+@media (max-width: 768px) {
+  // Make buttons slightly smaller on mobile
+  button,
+  .btn {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+  }
+  
+  // Icon buttons stay the same
+  button[class*="remove"],
+  button[class*="clear"],
+  button[class*="toggle"],
+  button[class*="expand"] {
+    padding: 0.5rem;
+  }
+  
+  // Button groups stack on mobile
+  .btn-group:not(.btn-group--no-wrap) {
+    flex-direction: column;
+    width: 100%;
+    
+    button {
+      width: 100%;
+    }
+  }
+}

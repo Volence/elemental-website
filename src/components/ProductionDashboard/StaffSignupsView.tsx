@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useAuth } from '@payloadcms/ui'
 import { toast } from '@payloadcms/ui'
 
@@ -33,10 +34,10 @@ interface Match {
 }
 
 interface SignupModalProps {
-  match: Match | null
+  matchGroup: MatchGroup | null
   currentUserId: number | null
   onClose: () => void
-  onSignup: (matchId: number, roles: SignupRoles) => Promise<void>
+  onSignup: (matchIds: number[], roles: SignupRoles) => Promise<void>
 }
 
 interface SignupRoles {
@@ -46,7 +47,131 @@ interface SignupRoles {
   casterStyle?: string
 }
 
-function SignupModal({ match, currentUserId, onClose, onSignup }: SignupModalProps) {
+interface SignupTooltipProps {
+  names: string[]
+  count: number
+  role: string
+}
+
+function SignupTooltip({ names, count, role }: SignupTooltipProps) {
+  const [showTooltip, setShowTooltip] = useState(false)
+  const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({})
+  const [mounted, setMounted] = useState(false)
+  const tooltipRef = useRef<HTMLDivElement>(null)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const calculatedRef = useRef(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (tooltipRef.current && !tooltipRef.current.contains(event.target as Node)) {
+        setShowTooltip(false)
+        calculatedRef.current = false
+      }
+    }
+
+    if (showTooltip) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showTooltip])
+
+  const updatePosition = () => {
+    if (!wrapperRef.current || calculatedRef.current) return
+    
+    calculatedRef.current = true
+    
+    const wrapperRect = wrapperRef.current.getBoundingClientRect()
+    const viewportWidth = window.innerWidth
+    const tooltipWidth = 250
+    
+    let left = wrapperRect.left + wrapperRect.width / 2
+    let transform = 'translateX(-50%)'
+    
+    if (left + tooltipWidth / 2 > viewportWidth - 20) {
+      left = wrapperRect.right - 10
+      transform = 'translateX(-100%)'
+    } else if (left - tooltipWidth / 2 < 20) {
+      left = wrapperRect.left + 10
+      transform = 'translateX(0)'
+    }
+    
+    setTooltipStyle({
+      position: 'fixed',
+      top: `${wrapperRect.bottom + 8}px`,
+      left: `${left}px`,
+      transform: transform,
+      zIndex: 10000,
+    })
+  }
+
+  const handleMouseEnter = () => {
+    calculatedRef.current = false
+    setShowTooltip(true)
+    setTimeout(updatePosition, 0)
+  }
+
+  const handleMouseLeave = () => {
+    setShowTooltip(false)
+    calculatedRef.current = false
+  }
+
+  if (count === 0) {
+    return <span className="signup-count-number">0</span>
+  }
+
+  const tooltipContent = showTooltip && mounted ? (
+    createPortal(
+      <div 
+        ref={tooltipRef}
+        className="signup-tooltip"
+        style={tooltipStyle}
+        onMouseEnter={() => setShowTooltip(true)}
+        onMouseLeave={handleMouseLeave}
+      >
+        <div className="signup-tooltip__header">{role} Signups</div>
+        <ul className="signup-tooltip__list">
+          {names.map((name, idx) => (
+            <li key={idx}>{name}</li>
+          ))}
+        </ul>
+      </div>,
+      document.body
+    )
+  ) : null
+
+  return (
+    <>
+      <div 
+        className="signup-count-wrapper" 
+        ref={wrapperRef}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onClick={() => {
+          if (!showTooltip) {
+            calculatedRef.current = false
+            setShowTooltip(true)
+            setTimeout(updatePosition, 0)
+          } else {
+            setShowTooltip(false)
+            calculatedRef.current = false
+          }
+        }}
+      >
+        <span className="signup-count-number has-signups">{count}</span>
+      </div>
+      {tooltipContent}
+    </>
+  )
+}
+
+function SignupModal({ matchGroup, currentUserId, onClose, onSignup }: SignupModalProps) {
   const [roles, setRoles] = useState<SignupRoles>({
     observer: false,
     producer: false,
@@ -54,12 +179,24 @@ function SignupModal({ match, currentUserId, onClose, onSignup }: SignupModalPro
     casterStyle: undefined,
   })
   const [submitting, setSubmitting] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    if (!match || !currentUserId) return
+    setMounted(true)
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden'
+    
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [])
 
-    // Pre-check boxes if user is already signed up
-    const pw = match.productionWorkflow
+  useEffect(() => {
+    if (!matchGroup || !currentUserId) return
+
+    // Pre-check boxes if user is already signed up to ANY match in the group
+    const anyMatch = matchGroup.matches[0]
+    const pw = anyMatch.productionWorkflow
     if (pw) {
       const isObserverSignup = pw.observerSignups?.some(u => (typeof u === 'number' ? u : u.id) === currentUserId)
       const isProducerSignup = pw.producerSignups?.some(u => (typeof u === 'number' ? u : u.id) === currentUserId)
@@ -72,9 +209,9 @@ function SignupModal({ match, currentUserId, onClose, onSignup }: SignupModalPro
         casterStyle: casterSignup?.style,
       })
     }
-  }, [match, currentUserId])
+  }, [matchGroup, currentUserId])
 
-  if (!match) return null
+  if (!matchGroup || !mounted) return null
 
   const handleSubmit = async () => {
     if (!roles.observer && !roles.producer && !roles.caster) {
@@ -84,8 +221,9 @@ function SignupModal({ match, currentUserId, onClose, onSignup }: SignupModalPro
 
     setSubmitting(true)
     try {
-      await onSignup(match.id, roles)
-      toast.success('Signed up successfully!')
+      const matchIds = matchGroup.matches.map(m => m.id)
+      await onSignup(matchIds, roles)
+      toast.success(`Signed up for ${matchGroup.matches.length} match${matchGroup.matches.length > 1 ? 'es' : ''}!`)
       onClose()
     } catch (error) {
       toast.error('Failed to sign up')
@@ -94,26 +232,32 @@ function SignupModal({ match, currentUserId, onClose, onSignup }: SignupModalPro
     }
   }
 
-  return (
+  const modalContent = (
     <div className="signup-modal-overlay" onClick={onClose}>
       <div className="signup-modal" onClick={(e) => e.stopPropagation()}>
         <div className="signup-modal__header">
-          <h3>Sign Up for Match</h3>
-          <button className="signup-modal__close" onClick={onClose}>✕</button>
+          <h3>Sign Up for Time Slot</h3>
+          <button className="signup-modal__close" onClick={onClose} aria-label="Close modal">
+            ✕
+          </button>
         </div>
 
         <div className="signup-modal__body">
           <div className="signup-modal__match-info">
-            <h4>{match.title}</h4>
-            <p>
-              {new Date(match.date).toLocaleDateString('en-US', {
-                weekday: 'short',
-                month: 'short',
-                day: 'numeric',
-                hour: 'numeric',
-                minute: '2-digit',
-                timeZoneName: 'short',
-              })}
+            <h4>📅 {matchGroup.formattedDate}</h4>
+            <p className="signup-modal__match-count">
+              {matchGroup.matches.length} match{matchGroup.matches.length > 1 ? 'es' : ''} at this time
+            </p>
+            <div className="signup-modal__match-list">
+              {matchGroup.matches.map(match => (
+                <div key={match.id} className="signup-modal__match-item">
+                  • {match.title}
+                </div>
+              ))}
+            </div>
+            <p className="signup-modal__note">
+              💡 You'll be marked as available for all matches at this time. 
+              Staff managers will assign you to specific matches later.
             </p>
           </div>
 
@@ -173,14 +317,23 @@ function SignupModal({ match, currentUserId, onClose, onSignup }: SignupModalPro
       </div>
     </div>
   )
+
+  return createPortal(modalContent, document.body)
+}
+
+interface MatchGroup {
+  dateTime: string
+  matches: Match[]
+  formattedDate: string
 }
 
 export function StaffSignupsView() {
   const { user } = useAuth()
   const [matches, setMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null)
+  const [selectedMatchGroup, setSelectedMatchGroup] = useState<MatchGroup | null>(null)
   const [showModal, setShowModal] = useState(false)
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     fetchMatches()
@@ -189,12 +342,9 @@ export function StaffSignupsView() {
   const fetchMatches = async () => {
     try {
       setLoading(true)
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
-
-      const query = `/api/matches?where[date][greater_than_equal]=${today.toISOString()}&where[productionWorkflow.isArchived][not_equals]=true&sort=date&limit=100&depth=2`
-
-      const response = await fetch(query)
+      
+      // Use custom API endpoint that properly populates user data
+      const response = await fetch('/api/production/matches-with-signups')
       const data = await response.json()
       setMatches(data.docs || [])
     } catch (error) {
@@ -204,19 +354,65 @@ export function StaffSignupsView() {
     }
   }
 
-  const handleSignup = async (matchId: number, roles: SignupRoles) => {
-    const response = await fetch('/api/production/staff-signup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ matchId, roles }),
-    })
+  const handleSignup = async (matchIds: number[], roles: SignupRoles) => {
+    // Sign up for all matches in the group
+    const promises = matchIds.map(matchId =>
+      fetch('/api/production/staff-signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ matchId, roles }),
+      })
+    )
 
-    if (!response.ok) {
-      throw new Error('Failed to sign up')
+    const results = await Promise.all(promises)
+    
+    if (results.some(r => !r.ok)) {
+      throw new Error('Failed to sign up for some matches')
     }
 
     // Refresh matches
     await fetchMatches()
+  }
+  
+  // Group matches by their exact date/time
+  const groupMatchesByTime = (matchList: Match[]): MatchGroup[] => {
+    const grouped = new Map<string, Match[]>()
+    
+    matchList.forEach(match => {
+      const dateTime = new Date(match.date).toISOString()
+      if (!grouped.has(dateTime)) {
+        grouped.set(dateTime, [])
+      }
+      grouped.get(dateTime)!.push(match)
+    })
+    
+    return Array.from(grouped.entries())
+      .map(([dateTime, matches]) => ({
+        dateTime,
+        matches,
+        formattedDate: new Date(dateTime).toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+        })
+      }))
+      .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime())
+  }
+  
+  const matchGroups = groupMatchesByTime(matches)
+  
+  const toggleGroup = (dateTime: string) => {
+    setExpandedGroups(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(dateTime)) {
+        newSet.delete(dateTime)
+      } else {
+        newSet.add(dateTime)
+      }
+      return newSet
+    })
   }
 
   const handleRemoveSignup = async (matchId: number, role: 'observer' | 'producer' | 'caster') => {
@@ -348,72 +544,109 @@ export function StaffSignupsView() {
         <p className="production-dashboard__subtitle">
           Sign up for upcoming matches and track your assignments
         </p>
+        <div className="production-dashboard__timezone-notice">
+          🌍 <strong>Timezone Info:</strong> All times are automatically shown in your local timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone})
+        </div>
       </div>
 
-      {/* Section 1: Available Matches */}
+      {/* Section 1: Available Time Slots */}
       <div className="staff-signups-section">
-        <h3>📋 Available Matches</h3>
-        {matches.length === 0 ? (
+        <h3>📋 Available Time Slots</h3>
+        {matchGroups.length === 0 ? (
           <div className="production-dashboard__empty">
-            <p>No upcoming matches available for signup.</p>
+            <p>No upcoming time slots available for signup.</p>
           </div>
         ) : (
-          <div className="staff-signups-table-wrapper">
-            <table className="staff-signups-table">
-              <thead>
-                <tr>
-                  <th>Match</th>
-                  <th>Date/Time</th>
-                  <th>Region</th>
-                  <th>Observer Signups</th>
-                  <th>Producer Signups</th>
-                  <th>Caster Signups</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {matches.map((match) => {
-                  const pw = match.productionWorkflow || {}
-                  const observerCount = pw.observerSignups?.length || 0
-                  const producerCount = pw.producerSignups?.length || 0
-                  const casterCount = pw.casterSignups?.length || 0
-                  const isSignedUp = isUserSignedUp(match, currentUserId)
-                  const isAssigned = isUserAssigned(match, currentUserId)
+          <div className="time-slot-groups">
+            {matchGroups.map((group) => {
+              const isExpanded = expandedGroups.has(group.dateTime)
+              const isGroupSignedUp = group.matches.some(m => isUserSignedUp(m, currentUserId))
+              const isGroupAssigned = group.matches.some(m => isUserAssigned(m, currentUserId))
+              
+              // Aggregate totals for the group
+              const totalObservers = group.matches.reduce((sum, m) => sum + (m.productionWorkflow?.observerSignups?.length || 0), 0)
+              const totalProducers = group.matches.reduce((sum, m) => sum + (m.productionWorkflow?.producerSignups?.length || 0), 0)
+              const totalCasters = group.matches.reduce((sum, m) => sum + (m.productionWorkflow?.casterSignups?.length || 0), 0)
 
-                  return (
-                    <tr key={match.id} className={isSignedUp ? 'signed-up' : ''}>
-                      <td>
-                        <strong>{match.title}</strong>
-                      </td>
-                      <td>
-                        {new Date(match.date).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          hour: 'numeric',
-                          minute: '2-digit',
-                        })}
-                      </td>
-                      <td>{match.region || 'N/A'}</td>
-                      <td className="signup-count">{observerCount}</td>
-                      <td className="signup-count">{producerCount}</td>
-                      <td className="signup-count">{casterCount}</td>
-                      <td>
-                        <button
-                          className={`staff-signup-btn ${isSignedUp ? 'staff-signup-btn--active' : ''}`}
-                          onClick={() => {
-                            setSelectedMatch(match)
-                            setShowModal(true)
-                          }}
-                        >
-                          {isSignedUp ? '✓ Signed Up' : 'Sign Up'}
-                        </button>
-                        {isAssigned && <span className="assigned-badge">✅ Assigned</span>}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+              return (
+                <div key={group.dateTime} className={`time-slot-group ${isGroupSignedUp ? 'time-slot-group--signed-up' : ''}`}>
+                  <div className="time-slot-group__header">
+                    <button
+                      className="time-slot-group__toggle"
+                      onClick={() => toggleGroup(group.dateTime)}
+                    >
+                      <span className="time-slot-group__icon">{isExpanded ? '▼' : '▶'}</span>
+                      <div className="time-slot-group__info">
+                        <h4 className="time-slot-group__datetime">{group.formattedDate}</h4>
+                        <p className="time-slot-group__count">{group.matches.length} match{group.matches.length > 1 ? 'es' : ''}</p>
+                      </div>
+                    </button>
+                    
+                    <div className="time-slot-group__stats">
+                      <span className="time-slot-group__stat">👁️ {totalObservers}</span>
+                      <span className="time-slot-group__stat">🎬 {totalProducers}</span>
+                      <span className="time-slot-group__stat">🎙️ {totalCasters}</span>
+                    </div>
+                    
+                    <button
+                      className={`staff-signup-btn ${isGroupSignedUp ? 'staff-signup-btn--active' : ''}`}
+                      onClick={() => {
+                        setSelectedMatchGroup(group)
+                        setShowModal(true)
+                      }}
+                    >
+                      {isGroupSignedUp ? '✓ Signed Up' : 'Sign Up'}
+                    </button>
+                    {isGroupAssigned && <span className="assigned-badge">✅ Assigned</span>}
+                  </div>
+                  
+                  {isExpanded && (
+                    <div className="time-slot-group__matches">
+                      {group.matches.map((match) => {
+                        const pw = match.productionWorkflow || {}
+                        const observerCount = pw.observerSignups?.length || 0
+                        const producerCount = pw.producerSignups?.length || 0
+                        const casterCount = pw.casterSignups?.length || 0
+                        
+                        // Get names for tooltips
+                        const observerNames = (pw.observerSignups || []).map(u => 
+                          typeof u === 'object' && u ? (u.name || u.email || 'Unknown User') : `User ID: ${u}`
+                        )
+                        const producerNames = (pw.producerSignups || []).map(u => 
+                          typeof u === 'object' && u ? (u.name || u.email || 'Unknown User') : `User ID: ${u}`
+                        )
+                        const casterNames = (pw.casterSignups || []).map(c => {
+                          const user = typeof c.user === 'object' && c.user ? c.user : null
+                          const name = user ? (user.name || user.email || 'Unknown User') : `User ID: ${c.user}`
+                          const style = c.style ? ` (${c.style})` : ''
+                          return `${name}${style}`
+                        })
+
+                        return (
+                          <div key={match.id} className="time-slot-match">
+                            <div className="time-slot-match__title">{match.title}</div>
+                            <div className="time-slot-match__stats">
+                              <div className="time-slot-match__stat">
+                                <span>👁️ Observers:</span>
+                                <SignupTooltip names={observerNames} count={observerCount} role="Observer" />
+                              </div>
+                              <div className="time-slot-match__stat">
+                                <span>🎬 Producers:</span>
+                                <SignupTooltip names={producerNames} count={producerCount} role="Producer" />
+                              </div>
+                              <div className="time-slot-match__stat">
+                                <span>🎙️ Casters:</span>
+                                <SignupTooltip names={casterNames} count={casterCount} role="Caster" />
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
         )}
       </div>
@@ -536,11 +769,11 @@ export function StaffSignupsView() {
       {/* Signup Modal */}
       {showModal && (
         <SignupModal
-          match={selectedMatch}
+          matchGroup={selectedMatchGroup}
           currentUserId={currentUserId}
           onClose={() => {
             setShowModal(false)
-            setSelectedMatch(null)
+            setSelectedMatchGroup(null)
           }}
           onSignup={handleSignup}
         />
