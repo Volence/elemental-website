@@ -36,15 +36,24 @@ export default async function MatchesPage({
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  // Get upcoming matches (from today onwards)
+  // Get upcoming matches (from today onwards) - Only show matches marked for schedule
   let upcomingMatches
   try {
     upcomingMatches = await payload.find({
       collection: 'matches',
       where: {
-        date: {
-          greater_than_equal: today.toISOString(),
-        },
+        and: [
+          {
+            date: {
+              greater_than_equal: today.toISOString(),
+            },
+          },
+          {
+            'productionWorkflow.includeInSchedule': {
+              equals: true,
+            },
+          },
+        ],
       },
       sort: 'date',
       limit: 100,
@@ -56,15 +65,24 @@ export default async function MatchesPage({
     upcomingMatches = { docs: [], totalDocs: 0, page: 1, totalPages: 0 }
   }
 
-  // Get past matches (before today) with pagination
+  // Get past matches (before today) with pagination - Only show matches marked for schedule
   let pastMatches
   try {
     pastMatches = await payload.find({
       collection: 'matches',
       where: {
-        date: {
-          less_than: today.toISOString(),
-        },
+        and: [
+          {
+            date: {
+              less_than: today.toISOString(),
+            },
+          },
+          {
+            'productionWorkflow.includeInSchedule': {
+              equals: true,
+            },
+          },
+        ],
       },
       sort: '-date', // Most recent first
       limit: PAST_MATCHES_PER_PAGE,
