@@ -8,7 +8,8 @@ import React from 'react'
 const RegionCell: React.FC<{ rowData: any }> = ({ rowData }) => {
   const regionLabels: Record<string, string> = {
     NA: 'North America',
-    EU: 'Europe',
+    EU: 'EMEA', // Legacy support
+    EMEA: 'EMEA',
     SA: 'South America',
     Other: 'Other',
   }

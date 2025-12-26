@@ -223,7 +223,7 @@ export function WeeklyView() {
           <select value={filterRegion} onChange={(e) => setFilterRegion(e.target.value)}>
             <option value="all">All Regions</option>
             <option value="NA">North America</option>
-            <option value="EU">Europe</option>
+            <option value="EMEA">EMEA</option>
             <option value="SA">South America</option>
           </select>
         </label>

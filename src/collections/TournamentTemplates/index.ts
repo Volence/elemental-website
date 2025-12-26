@@ -37,6 +37,9 @@ export const TournamentTemplates: CollectionConfig = {
   hooks: {
     afterChange: [
       async ({ doc, req, operation, previousDoc }) => {
+        // TEMPORARILY DISABLED: Causing hung transactions in production
+        return doc
+        
         // Sync assignedTeams with each team's activeTournaments field
         if (operation === 'update' || operation === 'create') {
           const newTeamIds = (doc.assignedTeams || []).map((t: any) => (typeof t === 'number' ? t : t.id))
@@ -154,7 +157,7 @@ export const TournamentTemplates: CollectionConfig = {
               required: true,
               options: [
                 { label: 'North America', value: 'NA' },
-                { label: 'Europe', value: 'EU' },
+                { label: 'EMEA', value: 'EMEA' },
                 { label: 'South America', value: 'SA' },
                 { label: 'All Regions', value: 'all' },
               ],

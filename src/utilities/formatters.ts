@@ -68,7 +68,8 @@ export function formatPersonType(type: string | undefined | null): string {
  * 
  * Examples:
  * - "NA" → "North America"
- * - "EU" → "Europe"
+ * - "EMEA" → "EMEA"
+ * - "EU" → "EMEA" (legacy support)
  * - "SA" → "South America"
  * 
  * @param region - The region code
@@ -79,7 +80,8 @@ export function formatRegion(region: string | undefined | null): string {
   
   const regionMap: Record<string, string> = {
     NA: 'North America',
-    EU: 'Europe',
+    EU: 'EMEA', // Legacy support
+    EMEA: 'EMEA',
     SA: 'South America',
     Other: 'Other',
   }

@@ -115,7 +115,7 @@ const BulkTeamSelector: React.FC<any> = ({ path }) => {
         >
           <option value="all">All Regions</option>
           <option value="NA">North America</option>
-          <option value="EU">Europe</option>
+          <option value="EMEA">EMEA</option>
           <option value="SA">South America</option>
         </select>
 

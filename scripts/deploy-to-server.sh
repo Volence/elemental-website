@@ -65,6 +65,11 @@ ssh -i "$SSH_KEY" "$SERVER" << ENDSSH
     sleep 10
     echo ""
     
+    echo "🔄 Running database migrations..."
+    chmod +x scripts/migrate-eu-to-emea.sh
+    ./scripts/migrate-eu-to-emea.sh || echo "⚠️ Migration script failed or no changes needed"
+    echo ""
+    
     echo "📋 Container status:"
     docker compose ps
     echo ""
