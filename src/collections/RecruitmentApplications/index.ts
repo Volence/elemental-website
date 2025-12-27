@@ -77,7 +77,7 @@ export const RecruitmentApplications: CollectionConfig = {
           typeof application.listing === 'object' ? application.listing : null
         if (!listing || !listing.team) return false
 
-        const teamId = typeof listing.team === 'number' ? listing.team : listing.team?.id
+        const teamId = typeof listing.team === 'object' && listing.team !== null ? listing.team.id : listing.team
 
         return teamIds.includes(Number(teamId))
       }
