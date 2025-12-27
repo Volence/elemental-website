@@ -1055,3 +1055,153 @@
     }
   }
 }
+
+// ============================================================================
+// PAYLOAD FILTER UI - Clean Glow Styling
+// ============================================================================
+// Style Payload's built-in filter drawer to match Clean Glow design
+
+// Filter drawer container
+.list-controls__where {
+  @include glow-card(var(--admin-accent-primary, #3b82f6));
+  padding: $spacing-xl !important;
+  background: rgba(var(--theme-elevation-0-rgb, 0, 0, 0), 0.95) !important;
+  backdrop-filter: blur(20px);
+  
+  // Filter title
+  .where-builder__label {
+    color: var(--theme-text);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: $spacing-lg;
+  }
+}
+
+// Individual filter rows
+.where-builder__row {
+  @include transparent-bg(0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: $spacing-lg !important;
+  margin-bottom: $spacing-md;
+  
+  &:hover {
+    @include transparent-bg(0.08);
+    border-color: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3);
+  }
+}
+
+// Filter field selectors and dropdowns
+.where-builder__field-select,
+.where-builder__condition-select,
+.where-builder__value-input,
+.react-select__control {
+  @include glow-button(var(--admin-accent-primary, #3b82f6));
+  background: rgba(var(--theme-elevation-100-rgb, 20, 20, 20), 0.5) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  min-height: 40px;
+  
+  &:hover {
+    border-color: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.4) !important;
+    box-shadow: 0 0 12px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.2);
+  }
+  
+  &:focus,
+  &:focus-within {
+    @include glow-border(var(--admin-accent-primary, #3b82f6), 0.6, 1);
+    box-shadow: 0 0 20px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3);
+  }
+}
+
+// React-select specific styling
+.react-select__menu {
+  @include glow-card(var(--admin-accent-primary, #3b82f6));
+  background: rgba(var(--theme-elevation-0-rgb, 0, 0, 0), 0.95) !important;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3);
+  
+  .react-select__option {
+    background: transparent;
+    color: var(--theme-text);
+    
+    &:hover {
+      background: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.2);
+    }
+    
+    &--is-selected {
+      background: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3);
+      font-weight: 600;
+    }
+  }
+}
+
+// Add filter button
+.where-builder__add-filter,
+.where-builder__add-or {
+  @include glow-button(var(--admin-accent-success, #10b981));
+  padding: $spacing-sm $spacing-lg;
+  font-size: 0.85rem;
+  font-weight: 500;
+  
+  &:hover {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.5);
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.3);
+  }
+}
+
+// Remove filter button
+.where-builder__remove-filter {
+  @include glow-button(var(--admin-accent-danger, #ef4444));
+  padding: $spacing-xs $spacing-sm;
+  
+  &:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.5);
+    box-shadow: 0 0 16px rgba(239, 68, 68, 0.3);
+  }
+}
+
+// OR button between filter groups
+.where-builder__or-button {
+  @include glow-button(var(--admin-accent-warning, #f59e0b));
+  padding: $spacing-xs $spacing-md;
+  font-size: 0.8rem;
+  font-weight: 600;
+  
+  &:hover {
+    background: rgba(245, 158, 11, 0.2);
+    border-color: rgba(245, 158, 11, 0.5);
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.3);
+  }
+}
+
+// Apply/Clear buttons at bottom
+.where-builder__actions {
+  display: flex;
+  gap: $spacing-md;
+  margin-top: $spacing-lg;
+  padding-top: $spacing-lg;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  
+  button {
+    @include glow-button(var(--admin-accent-primary, #3b82f6));
+    padding: $spacing-sm $spacing-xl;
+    font-weight: 600;
+    
+    &:hover {
+      background: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.2);
+      box-shadow: 0 0 20px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.4);
+    }
+    
+    &[type="button"] {
+      // Clear button
+      @include glow-button(var(--admin-accent-danger, #ef4444));
+      
+      &:hover {
+        background: rgba(239, 68, 68, 0.2);
+        box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+      }
+    }
+  }
+}
