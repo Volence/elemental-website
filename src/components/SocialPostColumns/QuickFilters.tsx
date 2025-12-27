@@ -21,11 +21,13 @@ export default function QuickFilters() {
     
     switch (filterName) {
       case 'my-posts':
-        // Convert user ID to number if it's a string
-        const userId = typeof user?.id === 'string' ? parseInt(user.id, 10) : user?.id
+        // Ensure user ID is a number (not a string)
+        const userId = Number(user?.id)
+        console.log('[QuickFilters] My Posts filter - User ID:', userId, 'Type:', typeof userId)
         whereClause = {
           assignedTo: { equals: userId },
         }
+        console.log('[QuickFilters] Where clause:', JSON.stringify(whereClause))
         break
       case 'pending-approval':
         whereClause = {
@@ -74,8 +76,8 @@ export default function QuickFilters() {
       
       switch (filterName) {
         case 'my-posts':
-          // Convert both to numbers for comparison
-          const userId = typeof user?.id === 'string' ? parseInt(user.id, 10) : user?.id
+          // Convert to number for comparison
+          const userId = Number(user?.id)
           return parsed.assignedTo?.equals === userId
         case 'pending-approval':
           return parsed.status?.equals === 'Ready for Review'
