@@ -80,22 +80,12 @@
     font-weight: 500;
     white-space: nowrap;
     
-    &--warning {
-      @include glow-button(var(--admin-accent-warning, #f59e0b));
-    }
-    
     &--active {
       background: var(--admin-accent-primary, #3b82f6);
       color: white;
       font-weight: 600;
       box-shadow: 0 0 20px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.4),
                   0 0 40px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.2);
-      
-      &.quick-filter-btn--warning {
-        background: var(--admin-accent-warning, #f59e0b);
-        box-shadow: 0 0 20px rgba(245, 158, 11, 0.4),
-                    0 0 40px rgba(245, 158, 11, 0.2);
-      }
     }
   }
   

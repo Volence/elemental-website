@@ -21,8 +21,10 @@ export default function QuickFilters() {
     
     switch (filterName) {
       case 'my-posts':
+        // Convert user ID to number if it's a string
+        const userId = typeof user?.id === 'string' ? parseInt(user.id, 10) : user?.id
         whereClause = {
-          assignedTo: { equals: user?.id },
+          assignedTo: { equals: userId },
         }
         break
       case 'pending-approval':
@@ -72,7 +74,9 @@ export default function QuickFilters() {
       
       switch (filterName) {
         case 'my-posts':
-          return parsed.assignedTo?.equals === user?.id
+          // Convert both to numbers for comparison
+          const userId = typeof user?.id === 'string' ? parseInt(user.id, 10) : user?.id
+          return parsed.assignedTo?.equals === userId
         case 'pending-approval':
           return parsed.status?.equals === 'Ready for Review'
         case 'drafts':
@@ -110,7 +114,7 @@ export default function QuickFilters() {
       {isAdmin && (
         <button
           onClick={() => applyFilter('pending-approval')}
-          className={`quick-filter-btn quick-filter-btn--warning ${isActive('pending-approval') ? 'quick-filter-btn--active' : ''}`}
+          className={`quick-filter-btn ${isActive('pending-approval') ? 'quick-filter-btn--active' : ''}`}
         >
           ⏳ Pending Approval
         </button>
