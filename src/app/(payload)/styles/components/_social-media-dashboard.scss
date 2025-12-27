@@ -50,6 +50,54 @@
   }
   
   // ============================================================================
+  // QUICK FILTERS - Clean Glow Style
+  // ============================================================================
+  
+  .social-posts-quick-filters {
+    padding: $spacing-lg $spacing-2xl;
+    @include transparent-bg(0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    gap: $spacing-md;
+    flex-wrap: wrap;
+    align-items: center;
+    
+    &__label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.6);
+      margin-right: $spacing-sm;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  }
+  
+  .quick-filter-btn {
+    @include glow-button(var(--admin-accent-primary, #3b82f6));
+    padding: $spacing-sm $spacing-lg;
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+    
+    &--warning {
+      @include glow-button(var(--admin-accent-warning, #f59e0b));
+    }
+    
+    &--active {
+      background: var(--admin-accent-primary, #3b82f6);
+      color: white;
+      font-weight: 600;
+      box-shadow: 0 0 20px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.4),
+                  0 0 40px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.2);
+      
+      &.quick-filter-btn--warning {
+        background: var(--admin-accent-warning, #f59e0b);
+        box-shadow: 0 0 20px rgba(245, 158, 11, 0.4),
+                    0 0 40px rgba(245, 158, 11, 0.2);
+      }
+    }
+  }
+  
   // CALENDAR VIEW - Clean Glow Style
   // ============================================================================
   

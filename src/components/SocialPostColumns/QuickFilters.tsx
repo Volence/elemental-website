@@ -88,48 +88,14 @@ export default function QuickFilters() {
   }
   
   return (
-    <div className="social-posts-quick-filters" style={{ 
-      padding: '1rem 1.5rem',
-      background: 'var(--theme-elevation-100)',
-      borderBottom: '1px solid var(--theme-elevation-200)',
-      display: 'flex',
-      gap: '0.75rem',
-      flexWrap: 'wrap',
-      alignItems: 'center',
-    }}>
-      <span style={{
-        fontSize: '0.85rem',
-        fontWeight: 600,
-        color: 'var(--theme-elevation-500)',
-        marginRight: '0.5rem',
-      }}>
+    <div className="social-posts-quick-filters">
+      <span className="social-posts-quick-filters__label">
         Quick Filters:
       </span>
       
       <button
         onClick={() => applyFilter('all')}
         className={`quick-filter-btn ${isActive('all') ? 'quick-filter-btn--active' : ''}`}
-        style={{
-          padding: '0.4rem 0.9rem',
-          fontSize: '0.85rem',
-          borderRadius: '4px',
-          border: isActive('all') ? '2px solid var(--admin-accent-primary, #3b82f6)' : '1px solid var(--theme-elevation-300)',
-          background: isActive('all') ? 'var(--admin-accent-primary, #3b82f6)' : 'var(--theme-elevation-0)',
-          color: isActive('all') ? 'white' : 'var(--theme-text)',
-          cursor: 'pointer',
-          fontWeight: isActive('all') ? 600 : 500,
-          transition: 'all 0.2s ease',
-        }}
-        onMouseEnter={(e) => {
-          if (!isActive('all')) {
-            e.currentTarget.style.background = 'var(--theme-elevation-200)'
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (!isActive('all')) {
-            e.currentTarget.style.background = 'var(--theme-elevation-0)'
-          }
-        }}
       >
         📋 All Posts
       </button>
@@ -137,27 +103,6 @@ export default function QuickFilters() {
       <button
         onClick={() => applyFilter('my-posts')}
         className={`quick-filter-btn ${isActive('my-posts') ? 'quick-filter-btn--active' : ''}`}
-        style={{
-          padding: '0.4rem 0.9rem',
-          fontSize: '0.85rem',
-          borderRadius: '4px',
-          border: isActive('my-posts') ? '2px solid var(--admin-accent-primary, #3b82f6)' : '1px solid var(--theme-elevation-300)',
-          background: isActive('my-posts') ? 'var(--admin-accent-primary, #3b82f6)' : 'var(--theme-elevation-0)',
-          color: isActive('my-posts') ? 'white' : 'var(--theme-text)',
-          cursor: 'pointer',
-          fontWeight: isActive('my-posts') ? 600 : 500,
-          transition: 'all 0.2s ease',
-        }}
-        onMouseEnter={(e) => {
-          if (!isActive('my-posts')) {
-            e.currentTarget.style.background = 'var(--theme-elevation-200)'
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (!isActive('my-posts')) {
-            e.currentTarget.style.background = 'var(--theme-elevation-0)'
-          }
-        }}
       >
         👤 My Posts
       </button>
@@ -165,28 +110,7 @@ export default function QuickFilters() {
       {isAdmin && (
         <button
           onClick={() => applyFilter('pending-approval')}
-          className={`quick-filter-btn ${isActive('pending-approval') ? 'quick-filter-btn--active' : ''}`}
-          style={{
-            padding: '0.4rem 0.9rem',
-            fontSize: '0.85rem',
-            borderRadius: '4px',
-            border: isActive('pending-approval') ? '2px solid var(--admin-accent-warning, #f59e0b)' : '1px solid var(--theme-elevation-300)',
-            background: isActive('pending-approval') ? 'var(--admin-accent-warning, #f59e0b)' : 'var(--theme-elevation-0)',
-            color: isActive('pending-approval') ? 'white' : 'var(--theme-text)',
-            cursor: 'pointer',
-            fontWeight: isActive('pending-approval') ? 600 : 500,
-            transition: 'all 0.2s ease',
-          }}
-          onMouseEnter={(e) => {
-            if (!isActive('pending-approval')) {
-              e.currentTarget.style.background = 'var(--theme-elevation-200)'
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!isActive('pending-approval')) {
-              e.currentTarget.style.background = 'var(--theme-elevation-0)'
-            }
-          }}
+          className={`quick-filter-btn quick-filter-btn--warning ${isActive('pending-approval') ? 'quick-filter-btn--active' : ''}`}
         >
           ⏳ Pending Approval
         </button>
@@ -195,27 +119,6 @@ export default function QuickFilters() {
       <button
         onClick={() => applyFilter('this-week')}
         className={`quick-filter-btn ${isActive('this-week') ? 'quick-filter-btn--active' : ''}`}
-        style={{
-          padding: '0.4rem 0.9rem',
-          fontSize: '0.85rem',
-          borderRadius: '4px',
-          border: isActive('this-week') ? '2px solid var(--admin-accent-primary, #3b82f6)' : '1px solid var(--theme-elevation-300)',
-          background: isActive('this-week') ? 'var(--admin-accent-primary, #3b82f6)' : 'var(--theme-elevation-0)',
-          color: isActive('this-week') ? 'white' : 'var(--theme-text)',
-          cursor: 'pointer',
-          fontWeight: isActive('this-week') ? 600 : 500,
-          transition: 'all 0.2s ease',
-        }}
-        onMouseEnter={(e) => {
-          if (!isActive('this-week')) {
-            e.currentTarget.style.background = 'var(--theme-elevation-200)'
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (!isActive('this-week')) {
-            e.currentTarget.style.background = 'var(--theme-elevation-0)'
-          }
-        }}
       >
         📅 This Week
       </button>
@@ -223,27 +126,6 @@ export default function QuickFilters() {
       <button
         onClick={() => applyFilter('drafts')}
         className={`quick-filter-btn ${isActive('drafts') ? 'quick-filter-btn--active' : ''}`}
-        style={{
-          padding: '0.4rem 0.9rem',
-          fontSize: '0.85rem',
-          borderRadius: '4px',
-          border: isActive('drafts') ? '2px solid var(--admin-accent-primary, #3b82f6)' : '1px solid var(--theme-elevation-300)',
-          background: isActive('drafts') ? 'var(--admin-accent-primary, #3b82f6)' : 'var(--theme-elevation-0)',
-          color: isActive('drafts') ? 'white' : 'var(--theme-text)',
-          cursor: 'pointer',
-          fontWeight: isActive('drafts') ? 600 : 500,
-          transition: 'all 0.2s ease',
-        }}
-        onMouseEnter={(e) => {
-          if (!isActive('drafts')) {
-            e.currentTarget.style.background = 'var(--theme-elevation-200)'
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (!isActive('drafts')) {
-            e.currentTarget.style.background = 'var(--theme-elevation-0)'
-          }
-        }}
       >
         📝 Drafts
       </button>
