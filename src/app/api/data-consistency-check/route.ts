@@ -109,7 +109,7 @@ export async function GET() {
 
       if (brokenCount > 0) {
         teamsWithBrokenRefs.push({
-          id: team.id,
+          id: Number(team.id),
           name: team.name,
           details: `${brokenCount} broken reference${brokenCount > 1 ? 's' : ''}`,
         })
