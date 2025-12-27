@@ -45,9 +45,9 @@ export const RecruitmentListings: CollectionConfig = {
 
       // Creator can update their own listings
       if (
-        typeof listing.createdBy === 'number'
-          ? listing.createdBy === user.id
-          : listing.createdBy?.id === user.id
+        typeof listing.createdBy === 'object' && listing.createdBy !== null
+          ? listing.createdBy.id === user.id
+          : listing.createdBy === user.id
       ) {
         return true
       }
