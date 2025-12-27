@@ -68,7 +68,7 @@ export const RecruitmentListings: React.FC<RecruitmentListingsProps> = ({ listin
       categoryListings.reduce(
         (acc, listing) => {
           const team = listing.team
-          if (!team || typeof team === 'number') return acc
+          if (!team || typeof team !== 'object') return acc
 
           const teamId = team.id
           if (!acc[teamId]) {
