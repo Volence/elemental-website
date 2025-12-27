@@ -121,7 +121,8 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URI || 'postgresql://build:build@localhost:5432/build',
     },
-    idType: 'serial', // REQUIRED: Use integer IDs, not UUIDs (our tables use serial)
+    // idType: 'serial' is broken in Payload 3.68.0 - it generates UUIDs anyway
+    // Omit idType entirely and let Payload auto-detect from database schema
     push: process.env.PAYLOAD_DB_PUSH === 'true' || false,
   }),
   collections: [
