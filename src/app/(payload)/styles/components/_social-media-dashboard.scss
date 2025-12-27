@@ -1060,14 +1060,7 @@
 // PAYLOAD FILTER UI - Clean Glow Styling (Simplified & Fixed)
 // ============================================================================
 // Minimal styling that doesn't break Payload's layout
-
-// Just style the colors and borders, don't mess with layout
-.list-controls__where {
-  background: rgba(var(--theme-elevation-0-rgb, 0, 0, 0), 0.95) !important;
-  border: 1px solid rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3) !important;
-  border-radius: 8px !important;
-  padding: $spacing-xl !important;
-}
+// Only style when the filter drawer is actually open/visible
 
 // Style the react-select controls (dropdowns)
 .react-select__control {
