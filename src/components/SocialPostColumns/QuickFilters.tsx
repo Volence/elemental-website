@@ -3,6 +3,7 @@
 import React from 'react'
 import { useAuth } from '@payloadcms/ui'
 import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 
 export default function QuickFilters() {
   const { user } = useAuth()
@@ -24,12 +25,14 @@ export default function QuickFilters() {
         const userId = String(user?.id)
         console.log('[QuickFilters] My Posts filter - User ID:', userId, 'Type:', typeof userId)
         
-        // Try simpler format - maybe Payload admin UI parser doesn't like nested "equals"
+        // Try "in" operator format - some Payload relationship queries need "in" instead of "equals"
         whereClause = {
-          assignedTo: userId,
+          assignedTo: {
+            in: [userId],
+          },
         }
         
-        console.log('[QuickFilters] Where clause (direct format):', JSON.stringify(whereClause))
+        console.log('[QuickFilters] Where clause ("in" operator format):', JSON.stringify(whereClause))
         break
       case 'pending-approval':
         whereClause = {
@@ -87,9 +90,11 @@ export default function QuickFilters() {
       
       switch (filterName) {
         case 'my-posts':
-          // Check both formats: simple and nested
+          // Check multiple formats: simple, equals, and "in"
           const userId = String(user?.id)
-          return parsed.assignedTo === userId || parsed.assignedTo?.equals === userId
+          return parsed.assignedTo === userId || 
+                 parsed.assignedTo?.equals === userId ||
+                 (parsed.assignedTo?.in && parsed.assignedTo.in.includes(userId))
         case 'pending-approval':
           return parsed.status?.equals === 'Ready for Review'
         case 'drafts':
