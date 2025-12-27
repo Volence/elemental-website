@@ -203,7 +203,7 @@ export const People: CollectionConfig = {
     },
   ],
   hooks: {
-    afterChange: [autoCloseRecruitment /* createActivityLogHook('people') temporarily disabled */],
+    // afterChange: [autoCloseRecruitment /* createActivityLogHook('people') temporarily disabled */], // Temporarily disabled due to schema errors
     // afterDelete: [createActivityLogDeleteHook('people')], // Temporarily disabled
     // REMOVED: beforeRead hook - it was removing select clauses which made the admin UI unable to fetch names
     // The custom /api/people endpoint handles relationship dropdown queries with raw SQL
