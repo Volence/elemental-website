@@ -50,15 +50,15 @@ ssh -i "$SSH_KEY" "$SERVER" << ENDSSH
     echo ""
     
     echo "🛑 Stopping payload container..."
-    docker compose -f docker-compose.dev.yml down payload
+    docker compose -f docker-compose.prod.yml down payload
     echo ""
     
-    echo "🔨 Building dev image (recommended for Next.js 15 compatibility)..."
-    docker compose -f docker-compose.dev.yml build payload
+    echo "🔨 Building production image..."
+    docker compose -f docker-compose.prod.yml build payload
     echo ""
     
-    echo "🚀 Starting payload container in dev mode..."
-    docker compose -f docker-compose.dev.yml up -d payload
+    echo "🚀 Starting payload container..."
+    docker compose -f docker-compose.prod.yml up -d payload
     echo ""
     
     echo "⏳ Waiting for container to start..."
