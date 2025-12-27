@@ -111,7 +111,7 @@ export async function POST(request: Request): Promise<Response> {
         email: email.toLowerCase(),
         password,
         role: invite.role,
-        assignedTeams: invite.assignedTeams as number[] | undefined,
+        assignedTeams: invite.assignedTeams,
         departments: {
           isProductionStaff: invite.departments?.isProductionStaff || false,
           isSocialMediaStaff: invite.departments?.isSocialMediaStaff || false,
