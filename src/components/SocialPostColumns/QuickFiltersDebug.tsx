@@ -26,10 +26,20 @@ export default function QuickFiltersDebug() {
 
       rows.forEach((row, idx) => {
         const cells = row.querySelectorAll('td')
+        console.log(`[QuickFiltersDebug] Row ${idx + 1} has ${cells.length} cells`)
         if (cells.length >= 6) {
-          const title = cells[0]?.textContent
-          const assignedTo = cells[5]?.textContent // ASSIGNED TO column
-          console.log(`[QuickFiltersDebug] Row ${idx + 1}: "${title}" -> Assigned to: "${assignedTo}"`)
+          // Cells: [checkbox, title, postType, platform, scheduledDate, status, assignedTo]
+          // But checkbox is not a <td>, so actual indices are:
+          // 0: title, 1: postType, 2: platform, 3: scheduledDate, 4: status, 5: assignedTo
+          const title = cells[0]?.textContent?.trim()
+          const postType = cells[1]?.textContent?.trim()
+          const status = cells[4]?.textContent?.trim()
+          const assignedTo = cells[5]?.textContent?.trim() // Should be correct now
+          console.log(`[QuickFiltersDebug] Row ${idx + 1}:`)
+          console.log(`  Title: "${title}"`)
+          console.log(`  Post Type: "${postType}"`)
+          console.log(`  Status: "${status}"`)
+          console.log(`  Assigned To: "${assignedTo}"`)
         }
       })
     }, 1000)

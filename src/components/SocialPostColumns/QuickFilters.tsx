@@ -2,11 +2,10 @@
 
 import React from 'react'
 import { useAuth } from '@payloadcms/ui'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 
 export default function QuickFilters() {
   const { user } = useAuth()
-  const router = useRouter()
   const searchParams = useSearchParams()
   
   const isAdmin = user?.role === 'admin' || user?.role === 'staff-manager'
@@ -65,13 +64,18 @@ export default function QuickFilters() {
         const currentParams = new URLSearchParams(window.location.search)
         currentParams.delete('where')
         const newUrl = currentParams.toString() ? `${baseUrl}?${currentParams.toString()}` : baseUrl
-        router.push(newUrl)
+        console.log('[QuickFilters] Navigating to:', newUrl)
+        // Force full page reload to ensure Payload admin UI picks up the change
+        window.location.href = newUrl
         return
     }
     
     const params = new URLSearchParams(window.location.search)
     params.set('where', JSON.stringify(whereClause))
-    router.push(`${baseUrl}?${params.toString()}`)
+    const newUrl = `${baseUrl}?${params.toString()}`
+    console.log('[QuickFilters] Navigating to:', newUrl)
+    // Force full page reload to ensure Payload admin UI picks up the filter
+    window.location.href = newUrl
   }
   
   const isActive = (filterName: string) => {
