@@ -1064,144 +1064,175 @@
 // Filter drawer container
 .list-controls__where {
   @include glow-card(var(--admin-accent-primary, #3b82f6));
-  padding: $spacing-xl !important;
+  padding: $spacing-2xl !important;
   background: rgba(var(--theme-elevation-0-rgb, 0, 0, 0), 0.95) !important;
   backdrop-filter: blur(20px);
-  
-  // Filter title
-  .where-builder__label {
-    color: var(--theme-text);
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: $spacing-lg;
-  }
+  border-radius: 12px;
 }
 
-// Individual filter rows
-.where-builder__row {
+// Filter title
+.list-controls__where > div:first-child {
+  color: var(--theme-text);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: $spacing-xl;
+}
+
+// Main filter container - improve layout
+.where-builder {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+}
+
+// Individual filter rows - grid layout for alignment
+.where-builder > div {
+  display: grid !important;
+  grid-template-columns: 200px 150px 1fr auto auto;
+  gap: $spacing-md;
+  align-items: center;
   @include transparent-bg(0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   padding: $spacing-lg !important;
-  margin-bottom: $spacing-md;
   
   &:hover {
     @include transparent-bg(0.08);
     border-color: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3);
   }
+  
+  // Field selector (1st column)
+  > div:nth-child(1) {
+    width: 100%;
+  }
+  
+  // Operator selector (2nd column)
+  > div:nth-child(2) {
+    width: 100%;
+  }
+  
+  // Value input (3rd column)
+  > div:nth-child(3) {
+    width: 100%;
+  }
+  
+  // Remove button (4th column)
+  > button:first-of-type {
+    width: 40px;
+    height: 40px;
+    padding: 0 !important;
+  }
+  
+  // Add condition button (5th column)
+  > button:last-of-type {
+    width: 40px;
+    height: 40px;
+    padding: 0 !important;
+  }
 }
 
-// Filter field selectors and dropdowns
-.where-builder__field-select,
-.where-builder__condition-select,
-.where-builder__value-input,
+// All dropdowns and inputs
+.where-builder select,
+.where-builder input,
 .react-select__control {
   @include glow-button(var(--admin-accent-primary, #3b82f6));
   background: rgba(var(--theme-elevation-100-rgb, 20, 20, 20), 0.5) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-  min-height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 6px !important;
+  min-height: 40px !important;
+  height: 40px !important;
+  width: 100%;
+  color: var(--theme-text) !important;
+  padding: 0 $spacing-md !important;
   
   &:hover {
     border-color: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.4) !important;
-    box-shadow: 0 0 12px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.2);
+    box-shadow: 0 0 12px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.2) !important;
   }
   
   &:focus,
   &:focus-within {
     @include glow-border(var(--admin-accent-primary, #3b82f6), 0.6, 1);
-    box-shadow: 0 0 20px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3);
+    box-shadow: 0 0 20px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3) !important;
+    outline: none !important;
   }
 }
 
-// React-select specific styling
+// React-select multi-value (for selected values like "Test")
+.react-select__multi-value {
+  @include glow-button(var(--admin-accent-primary, #3b82f6));
+  background: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.2) !important;
+  border-radius: 4px;
+  
+  .react-select__multi-value__label {
+    color: var(--theme-text) !important;
+    padding: 4px 8px;
+  }
+  
+  .react-select__multi-value__remove {
+    background: transparent;
+    border-radius: 0 4px 4px 0;
+    
+    &:hover {
+      background: rgba(239, 68, 68, 0.3) !important;
+      color: #ef4444 !important;
+    }
+  }
+}
+
+// React-select dropdown menu
 .react-select__menu {
   @include glow-card(var(--admin-accent-primary, #3b82f6));
   background: rgba(var(--theme-elevation-0-rgb, 0, 0, 0), 0.95) !important;
   backdrop-filter: blur(20px);
   border: 1px solid rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3);
+  border-radius: 8px;
+  overflow: hidden;
   
   .react-select__option {
     background: transparent;
     color: var(--theme-text);
+    padding: $spacing-sm $spacing-md;
     
     &:hover {
       background: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.2);
     }
     
     &--is-selected {
-      background: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3);
+      background: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3) !important;
       font-weight: 600;
     }
   }
 }
 
-// Add filter button
-.where-builder__add-filter,
-.where-builder__add-or {
-  @include glow-button(var(--admin-accent-success, #10b981));
-  padding: $spacing-sm $spacing-lg;
-  font-size: 0.85rem;
+// Buttons in the filter rows
+.where-builder button {
+  @include glow-button(var(--admin-accent-primary, #3b82f6));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 1rem;
   font-weight: 500;
+  transition: all 0.2s ease;
   
   &:hover {
-    background: rgba(16, 185, 129, 0.2);
-    border-color: rgba(16, 185, 129, 0.5);
-    box-shadow: 0 0 16px rgba(16, 185, 129, 0.3);
+    transform: translateY(-1px);
   }
 }
 
-// Remove filter button
-.where-builder__remove-filter {
-  @include glow-button(var(--admin-accent-danger, #ef4444));
-  padding: $spacing-xs $spacing-sm;
-  
-  &:hover {
-    background: rgba(239, 68, 68, 0.2);
-    border-color: rgba(239, 68, 68, 0.5);
-    box-shadow: 0 0 16px rgba(239, 68, 68, 0.3);
-  }
-}
-
-// OR button between filter groups
-.where-builder__or-button {
+// "Or" button between filter groups
+.where-builder > button[type="button"] {
   @include glow-button(var(--admin-accent-warning, #f59e0b));
-  padding: $spacing-xs $spacing-md;
-  font-size: 0.8rem;
+  width: fit-content;
+  padding: $spacing-sm $spacing-lg !important;
+  font-size: 0.85rem;
   font-weight: 600;
+  margin: $spacing-md 0;
   
   &:hover {
     background: rgba(245, 158, 11, 0.2);
     border-color: rgba(245, 158, 11, 0.5);
     box-shadow: 0 0 16px rgba(245, 158, 11, 0.3);
-  }
-}
-
-// Apply/Clear buttons at bottom
-.where-builder__actions {
-  display: flex;
-  gap: $spacing-md;
-  margin-top: $spacing-lg;
-  padding-top: $spacing-lg;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  
-  button {
-    @include glow-button(var(--admin-accent-primary, #3b82f6));
-    padding: $spacing-sm $spacing-xl;
-    font-weight: 600;
-    
-    &:hover {
-      background: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.2);
-      box-shadow: 0 0 20px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.4);
-    }
-    
-    &[type="button"] {
-      // Clear button
-      @include glow-button(var(--admin-accent-danger, #ef4444));
-      
-      &:hover {
-        background: rgba(239, 68, 68, 0.2);
-        box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
-      }
-    }
   }
 }
