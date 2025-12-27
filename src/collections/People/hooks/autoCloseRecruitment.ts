@@ -88,7 +88,7 @@ export const autoCloseRecruitment: CollectionAfterChangeHook<Person> = async ({
  */
 async function closeMatchingListings(
   req: any,
-  teamId: number,
+  teamId: number | string,
   role: string,
   category: 'player' | 'team-staff',
   person: Person,
