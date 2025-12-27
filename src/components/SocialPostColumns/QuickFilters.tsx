@@ -24,8 +24,12 @@ export default function QuickFilters() {
         // Ensure user ID is a number (not a string)
         const userId = Number(user?.id)
         console.log('[QuickFilters] My Posts filter - User ID:', userId, 'Type:', typeof userId)
+        console.log('[QuickFilters] Full user object:', user)
+        // Try simpler relationship query format
         whereClause = {
-          assignedTo: { equals: userId },
+          assignedTo: {
+            equals: userId,
+          },
         }
         console.log('[QuickFilters] Where clause:', JSON.stringify(whereClause))
         break
