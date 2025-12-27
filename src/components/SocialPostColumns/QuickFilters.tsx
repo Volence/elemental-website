@@ -10,14 +10,38 @@ export default function QuickFilters() {
   const searchParams = useSearchParams()
   
   const isAdmin = user?.role === 'admin' || user?.role === 'staff-manager'
+  const userId = user?.id || ''
   
   // Get current filter status
-  const whereParam = searchParams.get('where')
-  const isAllActive = !whereParam
+  const whereParam = searchParams.toString()
+  const isAllActive = !whereParam.includes('where')
+  const isMyPostsActive = whereParam.includes('assignedTo')
+  const isPendingActive = whereParam.includes('Ready%20for%20Review') || whereParam.includes('Ready+for+Review')
+  const isDraftsActive = whereParam.includes('status') && whereParam.includes('Draft')
   
-  // Helper to build filter URL
-  const buildFilterUrl = (where: any) => {
-    return `/admin/collections/social-posts?where=${encodeURIComponent(JSON.stringify(where))}`
+  // Build filter URLs using Payload's query string array format (not JSON!)
+  const buildMyPostsUrl = () => {
+    return `/admin/collections/social-posts?where[or][0][and][0][assignedTo][equals]=${userId}`
+  }
+  
+  const buildPendingApprovalUrl = () => {
+    return `/admin/collections/social-posts?where[or][0][and][0][status][equals]=Ready%20for%20Review`
+  }
+  
+  const buildDraftsUrl = () => {
+    return `/admin/collections/social-posts?where[or][0][and][0][status][equals]=Draft`
+  }
+  
+  const buildThisWeekUrl = () => {
+    const now = new Date()
+    const startOfWeek = new Date(now)
+    startOfWeek.setDate(now.getDate() - now.getDay())
+    startOfWeek.setHours(0, 0, 0, 0)
+    
+    const endOfWeek = new Date(startOfWeek)
+    endOfWeek.setDate(startOfWeek.getDate() + 7)
+    
+    return `/admin/collections/social-posts?where[or][0][and][0][scheduledDate][greater_than_equal]=${startOfWeek.toISOString()}&where[or][0][and][1][scheduledDate][less_than]=${endOfWeek.toISOString()}`
   }
   
   return (
@@ -26,7 +50,6 @@ export default function QuickFilters() {
         Quick Filters:
       </span>
       
-      {/* All Posts */}
       <Link
         href="/admin/collections/social-posts"
         className={`quick-filter-btn ${isAllActive ? 'quick-filter-btn--active' : ''}`}
@@ -34,18 +57,35 @@ export default function QuickFilters() {
         📋 All Posts
       </Link>
       
-      {/* Note about My Posts */}
-      <div style={{
-        marginLeft: '1rem',
-        padding: '0.5rem 1rem',
-        background: 'rgba(59, 130, 246, 0.1)',
-        border: '1px solid rgba(59, 130, 246, 0.3)',
-        borderRadius: '4px',
-        fontSize: '0.85rem',
-        color: 'var(--theme-text)',
-      }}>
-        💡 <strong>Tip:</strong> Use the <strong>"Filters"</strong> button above to filter by Assigned To, Status, Date, etc.
-      </div>
+      <Link
+        href={buildMyPostsUrl()}
+        className={`quick-filter-btn ${isMyPostsActive ? 'quick-filter-btn--active' : ''}`}
+      >
+        👤 My Posts
+      </Link>
+      
+      {isAdmin && (
+        <Link
+          href={buildPendingApprovalUrl()}
+          className={`quick-filter-btn ${isPendingActive ? 'quick-filter-btn--active' : ''}`}
+        >
+          ⏳ Pending Approval
+        </Link>
+      )}
+      
+      <Link
+        href={buildThisWeekUrl()}
+        className={`quick-filter-btn ${whereParam.includes('scheduledDate') ? 'quick-filter-btn--active' : ''}`}
+      >
+        📅 This Week
+      </Link>
+      
+      <Link
+        href={buildDraftsUrl()}
+        className={`quick-filter-btn ${isDraftsActive ? 'quick-filter-btn--active' : ''}`}
+      >
+        📝 Drafts
+      </Link>
     </div>
   )
 }
