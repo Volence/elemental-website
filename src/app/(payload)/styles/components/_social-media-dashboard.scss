@@ -1057,10 +1057,28 @@
 }
 
 // ============================================================================
-// PAYLOAD FILTER UI - Clean Glow Styling (Simplified & Fixed)
+// PAYLOAD FILTER UI - Clean Glow Styling (Simplified & Fixed)  
 // ============================================================================
 // Minimal styling that doesn't break Payload's layout
-// Only style when the filter drawer is actually open/visible
+// Hide filter drawer by default - users should use Quick Filters instead
+
+// Target the "Filter Social Posts where" drawer that appears
+// Hide it initially so quick filters don't trigger the drawer to open
+[class*="list-controls"] > div[class*="where"] {
+  display: none !important;
+  
+  // Show it when user manually opens via Filters button
+  // Payload might add an 'open' or 'active' class
+  &[class*="open"],
+  &[class*="active"],
+  &[class*="visible"] {
+    display: block !important;
+    background: rgba(var(--theme-elevation-0-rgb, 0, 0, 0), 0.95);
+    border: 1px solid rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3);
+    border-radius: 8px;
+    padding: $spacing-xl;
+  }
+}
 
 // Style the react-select controls (dropdowns)
 .react-select__control {
