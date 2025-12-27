@@ -23,13 +23,13 @@ export default function QuickFilters() {
         // Relationship fields in Payload use STRING IDs, not numbers!
         const userId = String(user?.id)
         console.log('[QuickFilters] My Posts filter - User ID:', userId, 'Type:', typeof userId)
-        console.log('[QuickFilters] Full user object:', user)
+        
+        // Try simpler format - maybe Payload admin UI parser doesn't like nested "equals"
         whereClause = {
-          assignedTo: {
-            equals: userId,
-          },
+          assignedTo: userId,
         }
-        console.log('[QuickFilters] Where clause:', JSON.stringify(whereClause))
+        
+        console.log('[QuickFilters] Where clause (direct format):', JSON.stringify(whereClause))
         break
       case 'pending-approval':
         whereClause = {
@@ -87,9 +87,9 @@ export default function QuickFilters() {
       
       switch (filterName) {
         case 'my-posts':
-          // Relationship fields use strings
+          // Check both formats: simple and nested
           const userId = String(user?.id)
-          return parsed.assignedTo?.equals === userId
+          return parsed.assignedTo === userId || parsed.assignedTo?.equals === userId
         case 'pending-approval':
           return parsed.status?.equals === 'Ready for Review'
         case 'drafts':
