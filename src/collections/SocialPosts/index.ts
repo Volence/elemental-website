@@ -56,7 +56,7 @@ export const SocialPosts: CollectionConfig = {
     },
     listSearchableFields: ['title', 'content', 'postType', 'platform'],
     components: {
-      BeforeListTable: '@/components/SocialPostColumns/QuickFilters#default',
+      beforeListTable: ['@/components/SocialPostColumns/QuickFilters#default'],
     },
   },
   fields: [
