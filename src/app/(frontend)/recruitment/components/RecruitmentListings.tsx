@@ -63,27 +63,27 @@ export const RecruitmentListings: React.FC<RecruitmentListingsProps> = ({ listin
     const teamStaffListings = filteredListings.filter((l) => l.category === 'team-staff')
     const orgListings = filteredListings.filter((l) => l.category === 'org-staff')
 
-    const groupByTeam = (categoryListings: RecruitmentListing[]) => {
-      return Object.values(
-        categoryListings.reduce(
-          (acc, listing) => {
-            const team = listing.team as Team
-            if (!team) return acc
+  const groupByTeam = (categoryListings: RecruitmentListing[]) => {
+    return Object.values(
+      categoryListings.reduce(
+        (acc, listing) => {
+          const team = listing.team as Team
+          if (!team) return acc
 
-            const teamId = team.id
-            if (!acc[teamId]) {
-              acc[teamId] = {
-                team,
-                listings: [],
-              }
+          const teamId = team.id as number
+          if (!acc[teamId]) {
+            acc[teamId] = {
+              team,
+              listings: [],
             }
-            acc[teamId].listings.push(listing)
-            return acc
-          },
-          {} as Record<number, { team: Team; listings: RecruitmentListing[] }>,
-        ),
-      )
-    }
+          }
+          acc[teamId].listings.push(listing)
+          return acc
+        },
+        {} as Record<number, { team: Team; listings: RecruitmentListing[] }>,
+      ),
+    )
+  }
 
     return {
       playerTeams: groupByTeam(playerListings),
