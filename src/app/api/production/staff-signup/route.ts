@@ -122,8 +122,8 @@ export async function DELETE(req: NextRequest) {
     const pw = match.productionWorkflow || {}
     
     // Remove user from the specified role
-    let observerSignups = Array.isArray(pw.observerSignups) ? pw.observerSignups.filter((id): id is number => typeof id === 'number') : []
-    let producerSignups = Array.isArray(pw.producerSignups) ? pw.producerSignups.filter((id): id is number => typeof id === 'number') : []
+    let observerSignups = Array.isArray(pw.observerSignups) ? pw.observerSignups : []
+    let producerSignups = Array.isArray(pw.producerSignups) ? pw.producerSignups : []
     let casterSignups = Array.isArray(pw.casterSignups) ? pw.casterSignups : []
 
     if (role === 'observer') {
