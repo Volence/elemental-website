@@ -1057,182 +1057,56 @@
 }
 
 // ============================================================================
-// PAYLOAD FILTER UI - Clean Glow Styling
+// PAYLOAD FILTER UI - Clean Glow Styling (Simplified & Fixed)
 // ============================================================================
-// Style Payload's built-in filter drawer to match Clean Glow design
+// Minimal styling that doesn't break Payload's layout
 
-// Filter drawer container
+// Just style the colors and borders, don't mess with layout
 .list-controls__where {
-  @include glow-card(var(--admin-accent-primary, #3b82f6));
-  padding: $spacing-2xl !important;
   background: rgba(var(--theme-elevation-0-rgb, 0, 0, 0), 0.95) !important;
-  backdrop-filter: blur(20px);
-  border-radius: 12px;
+  border: 1px solid rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3) !important;
+  border-radius: 8px !important;
+  padding: $spacing-xl !important;
 }
 
-// Filter title
-.list-controls__where > div:first-child {
-  color: var(--theme-text);
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: $spacing-xl;
-}
-
-// Main filter container - improve layout
-.where-builder {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-lg;
-}
-
-// Individual filter rows - grid layout for alignment
-.where-builder > div {
-  display: grid !important;
-  grid-template-columns: 200px 150px 1fr auto auto;
-  gap: $spacing-md;
-  align-items: center;
-  @include transparent-bg(0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: $spacing-lg !important;
-  
-  &:hover {
-    @include transparent-bg(0.08);
-    border-color: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3);
-  }
-  
-  // Field selector (1st column)
-  > div:nth-child(1) {
-    width: 100%;
-  }
-  
-  // Operator selector (2nd column)
-  > div:nth-child(2) {
-    width: 100%;
-  }
-  
-  // Value input (3rd column)
-  > div:nth-child(3) {
-    width: 100%;
-  }
-  
-  // Remove button (4th column)
-  > button:first-of-type {
-    width: 40px;
-    height: 40px;
-    padding: 0 !important;
-  }
-  
-  // Add condition button (5th column)
-  > button:last-of-type {
-    width: 40px;
-    height: 40px;
-    padding: 0 !important;
-  }
-}
-
-// All dropdowns and inputs
-.where-builder select,
-.where-builder input,
+// Style the react-select controls (dropdowns)
 .react-select__control {
-  @include glow-button(var(--admin-accent-primary, #3b82f6));
   background: rgba(var(--theme-elevation-100-rgb, 20, 20, 20), 0.5) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: 6px !important;
-  min-height: 40px !important;
-  height: 40px !important;
-  width: 100%;
-  color: var(--theme-text) !important;
-  padding: 0 $spacing-md !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
   
   &:hover {
     border-color: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.4) !important;
-    box-shadow: 0 0 12px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.2) !important;
-  }
-  
-  &:focus,
-  &:focus-within {
-    @include glow-border(var(--admin-accent-primary, #3b82f6), 0.6, 1);
-    box-shadow: 0 0 20px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3) !important;
-    outline: none !important;
   }
 }
 
-// React-select multi-value (for selected values like "Test")
+// Style selected values in multi-select
 .react-select__multi-value {
-  @include glow-button(var(--admin-accent-primary, #3b82f6));
   background: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.2) !important;
+  border: 1px solid rgba(var(--admin-accent-rgb, 59, 130, 246), 0.4);
   border-radius: 4px;
   
-  .react-select__multi-value__label {
+  &__label {
     color: var(--theme-text) !important;
-    padding: 4px 8px;
   }
   
-  .react-select__multi-value__remove {
-    background: transparent;
-    border-radius: 0 4px 4px 0;
-    
-    &:hover {
-      background: rgba(239, 68, 68, 0.3) !important;
-      color: #ef4444 !important;
-    }
+  &__remove:hover {
+    background: rgba(239, 68, 68, 0.3) !important;
+    color: #ef4444 !important;
   }
 }
 
-// React-select dropdown menu
+// Style dropdown menus
 .react-select__menu {
-  @include glow-card(var(--admin-accent-primary, #3b82f6));
   background: rgba(var(--theme-elevation-0-rgb, 0, 0, 0), 0.95) !important;
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3);
-  border-radius: 8px;
-  overflow: hidden;
+  border: 1px solid rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3) !important;
   
   .react-select__option {
-    background: transparent;
-    color: var(--theme-text);
-    padding: $spacing-sm $spacing-md;
-    
     &:hover {
-      background: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.2);
+      background: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.2) !important;
     }
     
     &--is-selected {
       background: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3) !important;
-      font-weight: 600;
     }
-  }
-}
-
-// Buttons in the filter rows
-.where-builder button {
-  @include glow-button(var(--admin-accent-primary, #3b82f6));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  
-  &:hover {
-    transform: translateY(-1px);
-  }
-}
-
-// "Or" button between filter groups
-.where-builder > button[type="button"] {
-  @include glow-button(var(--admin-accent-warning, #f59e0b));
-  width: fit-content;
-  padding: $spacing-sm $spacing-lg !important;
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin: $spacing-md 0;
-  
-  &:hover {
-    background: rgba(245, 158, 11, 0.2);
-    border-color: rgba(245, 158, 11, 0.5);
-    box-shadow: 0 0 16px rgba(245, 158, 11, 0.3);
   }
 }
