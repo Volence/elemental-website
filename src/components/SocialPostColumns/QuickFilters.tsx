@@ -57,12 +57,16 @@ export default function QuickFilters() {
         break
       case 'all':
       default:
-        // Clear filter
-        router.push(baseUrl)
+        // Clear all filters - explicitly remove the where parameter
+        console.log('[QuickFilters] Clearing all filters')
+        const currentParams = new URLSearchParams(window.location.search)
+        currentParams.delete('where')
+        const newUrl = currentParams.toString() ? `${baseUrl}?${currentParams.toString()}` : baseUrl
+        router.push(newUrl)
         return
     }
     
-    const params = new URLSearchParams()
+    const params = new URLSearchParams(window.location.search)
     params.set('where', JSON.stringify(whereClause))
     router.push(`${baseUrl}?${params.toString()}`)
   }
