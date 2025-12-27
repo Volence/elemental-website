@@ -7,7 +7,7 @@ interface DetailedIssue {
   category: string
   message: string
   items: Array<{
-    id: number
+    id: number | string
     name: string
     slug?: string
     details?: string
