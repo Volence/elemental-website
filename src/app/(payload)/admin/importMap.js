@@ -39,7 +39,6 @@ import { default as default_4c7ee971bccbc12ad44464e4882fd683 } from '@/component
 import { default as default_048c297467b6adbf2ab886ee3bbecc66 } from '@/components/SocialPostColumns/ContentPreviewCell'
 import { default as default_cbd62d152faae83563323bc6e1990a3d } from '@/components/SocialPostFields/ContentWithTemplate'
 import { default as default_f52f291ae9aadfb75185249ec10b563b } from '@/components/SocialPostColumns/StatusCell'
-import { default as default_6b7ab1bcf3858d76397d35f4ac810b8c } from '@/components/SocialPostColumns/QuickFilters'
 import { default as default_ed1e8d66015b6bb359c4bd3a3c1c4e16 } from '@/components/RecruitmentFields/CategorySelectField'
 import { default as default_cf24fd1a27e289c739c233304f5b861d } from '@/components/RecruitmentFields/TeamRelationshipField'
 import { default as default_ec72e2a2a07bfec297bbb538e037e4b8 } from '@/components/RecruitmentFields/RoleSelectField'
@@ -111,7 +110,6 @@ export const importMap = {
   "@/components/SocialPostColumns/ContentPreviewCell#default": default_048c297467b6adbf2ab886ee3bbecc66,
   "@/components/SocialPostFields/ContentWithTemplate#default": default_cbd62d152faae83563323bc6e1990a3d,
   "@/components/SocialPostColumns/StatusCell#default": default_f52f291ae9aadfb75185249ec10b563b,
-  "@/components/SocialPostColumns/QuickFilters#default": default_6b7ab1bcf3858d76397d35f4ac810b8c,
   "@/components/RecruitmentFields/CategorySelectField#default": default_ed1e8d66015b6bb359c4bd3a3c1c4e16,
   "@/components/RecruitmentFields/TeamRelationshipField#default": default_cf24fd1a27e289c739c233304f5b861d,
   "@/components/RecruitmentFields/RoleSelectField#default": default_ec72e2a2a07bfec297bbb538e037e4b8,

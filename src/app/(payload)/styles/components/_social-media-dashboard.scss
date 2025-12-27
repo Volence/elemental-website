@@ -55,6 +55,7 @@
   
   .social-posts-quick-filters {
     padding: $spacing-lg $spacing-2xl;
+    margin-bottom: $spacing-lg;
     @include transparent-bg(0.03);
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     display: flex;
@@ -66,7 +67,7 @@
       font-size: 0.9rem;
       font-weight: 600;
       color: rgba(255, 255, 255, 0.6);
-      margin-right: $spacing-sm;
+      margin-right: $spacing-lg; // Increased from $spacing-sm to $spacing-lg
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
