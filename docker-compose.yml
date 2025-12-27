@@ -15,7 +15,7 @@ services:
     env_file:
       - .env
     environment:
-      - PAYLOAD_DB_PUSH=${PAYLOAD_DB_PUSH:-true}
+      - PAYLOAD_DB_PUSH=false
 
   postgres:
     image: postgres:16-alpine
