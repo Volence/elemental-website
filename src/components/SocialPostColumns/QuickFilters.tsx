@@ -21,11 +21,10 @@ export default function QuickFilters() {
     
     switch (filterName) {
       case 'my-posts':
-        // Ensure user ID is a number (not a string)
-        const userId = Number(user?.id)
+        // Relationship fields in Payload use STRING IDs, not numbers!
+        const userId = String(user?.id)
         console.log('[QuickFilters] My Posts filter - User ID:', userId, 'Type:', typeof userId)
         console.log('[QuickFilters] Full user object:', user)
-        // Try simpler relationship query format
         whereClause = {
           assignedTo: {
             equals: userId,
@@ -84,8 +83,8 @@ export default function QuickFilters() {
       
       switch (filterName) {
         case 'my-posts':
-          // Convert to number for comparison
-          const userId = Number(user?.id)
+          // Relationship fields use strings
+          const userId = String(user?.id)
           return parsed.assignedTo?.equals === userId
         case 'pending-approval':
           return parsed.status?.equals === 'Ready for Review'
