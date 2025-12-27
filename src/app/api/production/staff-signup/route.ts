@@ -33,8 +33,8 @@ export async function POST(req: NextRequest) {
 
     // Get existing production workflow data
     const pw = match.productionWorkflow || {}
-    const observerSignups = Array.isArray(pw.observerSignups) ? pw.observerSignups.filter((id): id is number => typeof id === 'number') : []
-    const producerSignups = Array.isArray(pw.producerSignups) ? pw.producerSignups.filter((id): id is number => typeof id === 'number') : []
+    const observerSignups = Array.isArray(pw.observerSignups) ? pw.observerSignups : []
+    const producerSignups = Array.isArray(pw.producerSignups) ? pw.producerSignups : []
     const casterSignups = Array.isArray(pw.casterSignups) ? pw.casterSignups : []
 
     // Add user to the selected role arrays (avoid duplicates)
