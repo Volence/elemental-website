@@ -112,7 +112,10 @@ export async function POST(request: Request): Promise<Response> {
         password,
         role: invite.role,
         assignedTeams: invite.assignedTeams as number[] | undefined,
-        departments: invite.departments || {},
+        departments: {
+          isProductionStaff: invite.departments?.isProductionStaff || false,
+          isSocialMediaStaff: invite.departments?.isSocialMediaStaff || false,
+        },
       },
     })
 

@@ -38,6 +38,7 @@ interface Match {
 export function AssignmentView() {
   const [matches, setMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     fetchMatches()
@@ -199,6 +200,16 @@ export function AssignmentView() {
     }
   }
 
+  const toggleGroup = (dateTime: string) => {
+    const newExpanded = new Set(expandedGroups)
+    if (newExpanded.has(dateTime)) {
+      newExpanded.delete(dateTime)
+    } else {
+      newExpanded.add(dateTime)
+    }
+    setExpandedGroups(newExpanded)
+  }
+
   if (loading) {
     return <div className="production-dashboard__loading">Loading matches...</div>
   }
@@ -228,9 +239,111 @@ export function AssignmentView() {
 
       {matches.length === 0 ? (
         <p className="production-dashboard__empty">No upcoming matches found.</p>
-      ) : (
-        <div className="assignment-matches">
-          {matches.map((match) => {
+      ) : (() => {
+        // Group matches by date/time (time slot)
+        const matchGroups = new Map<string, Match[]>()
+        matches.forEach(match => {
+          const dateTime = new Date(match.date).toISOString()
+          if (!matchGroups.has(dateTime)) {
+            matchGroups.set(dateTime, [])
+          }
+          matchGroups.get(dateTime)!.push(match)
+        })
+
+        return (
+          <div className="assignment-time-slots">
+            {Array.from(matchGroups.entries()).map(([dateTime, groupMatches]) => {
+              const isExpanded = expandedGroups.has(dateTime)
+              
+              // Calculate aggregate stats for the group - count UNIQUE users, not total signups
+              const uniqueSignupUsers = new Set<number>()
+              const uniqueAssignedUsers = new Set<number>()
+
+              groupMatches.forEach(m => {
+                const pw = m.productionWorkflow
+                if (!pw) return
+                
+                // Count unique signups
+                pw.observerSignups?.forEach((u: any) => {
+                  const userId = typeof u === 'number' ? u : u?.id
+                  if (userId) uniqueSignupUsers.add(userId)
+                })
+                pw.producerSignups?.forEach((u: any) => {
+                  const userId = typeof u === 'number' ? u : u?.id
+                  if (userId) uniqueSignupUsers.add(userId)
+                })
+                pw.casterSignups?.forEach((c: any) => {
+                  const userId = typeof c.user === 'number' ? c.user : c.user?.id
+                  if (userId) uniqueSignupUsers.add(userId)
+                })
+                
+                // Count unique assignments
+                if (pw.assignedObserver) {
+                  const userId = typeof pw.assignedObserver === 'number' ? pw.assignedObserver : (pw.assignedObserver as any)?.id
+                  if (userId) uniqueAssignedUsers.add(userId)
+                }
+                if (pw.assignedProducer) {
+                  const userId = typeof pw.assignedProducer === 'number' ? pw.assignedProducer : (pw.assignedProducer as any)?.id
+                  if (userId) uniqueAssignedUsers.add(userId)
+                }
+                pw.assignedCasters?.forEach((c: any) => {
+                  const userId = typeof c.user === 'number' ? c.user : c.user?.id
+                  if (userId) uniqueAssignedUsers.add(userId)
+                })
+              })
+              
+              const totalSignups = uniqueSignupUsers.size
+              const totalAssigned = uniqueAssignedUsers.size
+
+              const allFullCoverage = groupMatches.every(m => m.productionWorkflow?.coverageStatus === 'full')
+              const someFullCoverage = groupMatches.some(m => m.productionWorkflow?.coverageStatus === 'full')
+
+              const formattedDate = new Date(dateTime).toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                timeZoneName: 'short',
+              })
+
+              return (
+                <div key={dateTime} className={`assignment-time-slot ${allFullCoverage ? 'assignment-time-slot--complete' : ''}`}>
+                  <div className="assignment-time-slot__header">
+                    <button
+                      className="assignment-time-slot__toggle"
+                      onClick={() => toggleGroup(dateTime)}
+                    >
+                      <span className="assignment-time-slot__icon">{isExpanded ? '▼' : '▶'}</span>
+                      <div className="assignment-time-slot__info">
+                        <h3 className="assignment-time-slot__datetime">{formattedDate}</h3>
+                        <p className="assignment-time-slot__count">{groupMatches.length} match{groupMatches.length > 1 ? 'es' : ''}</p>
+                      </div>
+                    </button>
+                    
+                    <div className="assignment-time-slot__stats">
+                      <span className="assignment-time-slot__stat">
+                        👥 {totalSignups} signup{totalSignups !== 1 ? 's' : ''}
+                      </span>
+                      <span className="assignment-time-slot__stat">
+                        ✓ {totalAssigned} assigned
+                      </span>
+                      {allFullCoverage && (
+                        <span className="assignment-time-slot__badge assignment-time-slot__badge--complete">
+                          ✅ Full Coverage
+                        </span>
+                      )}
+                      {!allFullCoverage && someFullCoverage && (
+                        <span className="assignment-time-slot__badge assignment-time-slot__badge--partial">
+                          ⚠️ Partial
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {isExpanded && (
+                    <div className="assignment-time-slot__matches">
+                      {groupMatches.map((match) => {
             const pw = match.productionWorkflow || {} as NonNullable<Match['productionWorkflow']>
             const observerSignups = pw.observerSignups || []
             const producerSignups = pw.producerSignups || []
@@ -398,10 +511,16 @@ export function AssignmentView() {
                   </div>
                 </div>
               </div>
-            )
-          })}
-        </div>
-      )}
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+              )
+            })}
+          </div>
+        )
+      })()}
     </div>
   )
 }

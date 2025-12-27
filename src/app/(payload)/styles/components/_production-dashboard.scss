@@ -1197,47 +1197,203 @@
 // ASSIGNMENT VIEW - Actual Component Classes
 // ============================================
 
+// Time Slot Grouping
+.assignment-time-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.assignment-time-slot {
+  @include glow-card($admin-accent-info);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+
+  &--complete {
+    @include glow-border($admin-accent-success, 0.6, 0.8);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0;
+    background: rgba($admin-accent-info, 0.05);
+    border-bottom: 1px solid rgba($admin-accent-info, 0.15);
+  }
+
+  &__toggle {
+    all: unset;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    flex: 1;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba($admin-accent-info, 0.08);
+    }
+  }
+
+  &__icon {
+    font-size: 0.875rem;
+    color: $admin-accent-info;
+    transition: transform 0.2s ease;
+    min-width: 16px;
+  }
+
+  &__info {
+    flex: 1;
+  }
+
+  &__datetime {
+    font-size: 1rem;
+    font-weight: 600;
+    color: $admin-text-primary;
+    margin: 0 0 0.25rem 0;
+  }
+
+  &__count {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+  }
+
+  &__stats {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+  }
+
+  &__stat {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.7);
+    white-space: nowrap;
+  }
+
+  &__badge {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    white-space: nowrap;
+
+    &--complete {
+      background: rgba($admin-accent-success, 0.2);
+      color: $admin-accent-success;
+      border: 1px solid rgba($admin-accent-success, 0.4);
+    }
+
+    &--partial {
+      background: rgba($admin-accent-warning, 0.2);
+      color: $admin-accent-warning;
+      border: 1px solid rgba($admin-accent-warning, 0.4);
+    }
+  }
+
+  &__matches {
+    padding: 0;
+  }
+}
+
+// Individual match within a time slot - EXTRA compact
+.assignment-match {
+  padding: 1rem; // Reduced from 1.5rem
+  border-bottom: 1px solid rgba($admin-accent-info, 0.1);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem; // Reduced from 1rem
+  }
+
+  &__info {
+    flex: 1;
+
+    h3 {
+      font-size: 1rem; // Reduced from 1.1rem
+      font-weight: 600;
+      color: $admin-text-primary;
+      margin: 0 0 0.25rem 0; // Reduced from 0.5rem
+    }
+  }
+
+  &__meta {
+    display: flex;
+    gap: 0.75rem; // Reduced from 1rem
+    align-items: center;
+    font-size: 0.8rem; // Reduced from 0.85rem
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  &__link {
+    color: $admin-accent-info;
+    text-decoration: none;
+    font-size: 0.8rem; // Reduced from 0.875rem
+    font-weight: 500;
+    padding: 0.4rem 0.75rem; // Reduced from 0.5rem 1rem
+    border-radius: 6px;
+    background: rgba($admin-accent-info, 0.1);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+
+    &:hover {
+      background: rgba($admin-accent-info, 0.2);
+      transform: translateX(2px);
+    }
+  }
+}
+
 .assignment-roles {
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
-  margin-top: 1.5rem;
+  gap: 0.75rem; // Reduced from 1rem
+  margin-top: 0.75rem; // Reduced from 1rem
 }
 
 .assignment-role {
   @include transparent-bg(0.03);
   @include glow-border($admin-accent-info, 0.4, 0.6);
-  border-radius: 10px;
-  padding: 1.5rem;
+  border-radius: 8px; // Reduced from 10px
+  padding: 0.75rem; // Reduced from 1rem
   transition: all 0.2s ease;
   
   h4 {
-    font-size: 1rem;
+    font-size: 0.85rem; // Reduced from 0.9rem
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.075em;
     color: rgba($admin-accent-info, 0.95);
-    margin: 0 0 1.25rem 0;
-    padding-bottom: 0.75rem;
+    margin: 0 0 0.5rem 0; // Reduced from 0.75rem
+    padding-bottom: 0.4rem; // Reduced from 0.5rem
     border-bottom: 2px solid rgba($admin-accent-info, 0.3);
   }
   
   &__content {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 0.5rem; // Reduced from 0.75rem
   }
   
   &__signups,
   &__assigned {
     strong {
       display: block;
-      font-size: 0.8125rem;
+      font-size: 0.75rem; // Reduced from 0.8125rem
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: rgba(255, 255, 255, 0.7);
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.4rem; // Reduced from 0.5rem
     }
   }
 }
@@ -1245,19 +1401,19 @@
 .assignment-signup-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
+  gap: 0.5rem; // Reduced from 0.75rem
+  margin-top: 0.4rem; // Reduced from 0.5rem
 }
 
 .assignment-signup-btn {
   @include glow-badge($admin-accent-info);
-  padding: 0.625rem 1.125rem;
-  font-size: 0.9375rem;
+  padding: 0.5rem 0.875rem; // Reduced from 0.625rem 1.125rem
+  font-size: 0.875rem; // Reduced from 0.9375rem
   font-weight: 600;
   color: rgba($admin-accent-info, 0.95);
   background: rgba($admin-accent-info, 0.05);
   border: 1px solid rgba($admin-accent-info, 0.5);
-  border-radius: 8px;
+  border-radius: 6px; // Reduced from 8px
   cursor: pointer;
   transition: all 0.2s ease;
   
@@ -1278,14 +1434,14 @@
 .assignment-assigned-badge {
   @include glow-badge($admin-accent-success);
   @include glow-accent-bar($admin-accent-success, 2px, 60%);
-  padding: 0.75rem 1.25rem;
-  padding-left: 1rem;
-  font-size: 1rem;
+  padding: 0.5rem 0.875rem; // Reduced from 0.75rem 1.25rem
+  padding-left: 0.75rem; // Reduced from 1rem
+  font-size: 0.875rem; // Reduced from 1rem
   font-weight: 600;
   color: rgba($admin-accent-success, 0.95);
   display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem; // Reduced from 0.75rem
   position: relative;
   
   button {
@@ -1308,10 +1464,10 @@
 }
 
 .assignment-empty {
-  font-size: 0.875rem;
+  font-size: 0.8rem; // Reduced from 0.875rem
   color: rgba(255, 255, 255, 0.5);
   font-style: italic;
-  margin: 0.5rem 0 0 0;
+  margin: 0.25rem 0 0 0; // Reduced from 0.5rem
 }
 
 // ============================================

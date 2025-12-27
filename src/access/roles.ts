@@ -79,3 +79,14 @@ export const isProductionManager = ({ req: { user } }: AccessArgs<User>): boolea
   return (user as User).role === UserRole.ADMIN ||
          (user as User).role === UserRole.STAFF_MANAGER
 }
+
+/**
+ * Check if user has social media staff access
+ */
+export const isSocialMediaStaff = ({ req: { user } }: AccessArgs<User>): boolean => {
+  if (!user) return false
+  const u = user as any
+  return u.departments?.isSocialMediaStaff === true || 
+         (user as User).role === UserRole.ADMIN ||
+         (user as User).role === UserRole.STAFF_MANAGER
+}

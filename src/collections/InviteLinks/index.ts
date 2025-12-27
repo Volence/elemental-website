@@ -89,6 +89,15 @@ export const InviteLinks: CollectionConfig = {
             description: 'Grant access to Production Dashboard for signing up to matches (casters, observers, producers)',
           },
         },
+        {
+          name: 'isSocialMediaStaff',
+          type: 'checkbox',
+          label: 'Social Media Staff',
+          defaultValue: false,
+          admin: {
+            description: 'Grants access to the Social Media Dashboard (manage posts, content calendar)',
+          },
+        },
       ],
     },
     {

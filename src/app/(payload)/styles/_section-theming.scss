@@ -63,6 +63,13 @@
   --section-color-rgb: 16, 185, 129;
 }
 
+// SOCIAL MEDIA SECTION → Blue/Sky (engagement, communication)
+[data-section="social-media"],
+[data-section="social-posts"] {
+  --section-color: #{$admin-accent-info};
+  --section-color-rgb: 59, 130, 246;
+}
+
 // TOOLS SECTION → Cyan/Blue (utilities)
 [data-section="tools"],
 [data-section="data-consistency"],
@@ -306,6 +313,16 @@
     }
   }
   
+  // Social Media section links
+  a[href*="/social-posts"],
+  a[href*="/social-media-settings"] {
+    &:hover, &[aria-current="page"] {
+      color: #{$admin-accent-info};
+      border-left-color: #{$admin-accent-info};
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
+    }
+  }
+  
   // Tools section links
   a[href*="/data-consistency"],
   a[href*="/schedule-generator"] {
@@ -316,4 +333,5 @@
     }
   }
 }
+
 

@@ -106,6 +106,7 @@
   border-bottom: 1px solid rgba($admin-accent-info, 0.3);
   border-radius: 8px 8px 0 0;
   padding: 1rem;
+  position: relative;
 }
 
 .react-datepicker__current-month,
@@ -113,6 +114,41 @@
   color: $admin-text-primary;
   font-weight: 600;
   margin-bottom: 0.5rem;
+}
+
+// Navigation Arrows
+.react-datepicker__navigation {
+  top: 1rem;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  @include transparent-bg(0.05);
+  transition: all 0.2s ease;
+  
+  &:hover {
+    @include transparent-bg(0.1);
+    border-color: rgba($admin-accent-info, 0.5);
+    box-shadow: 0 0 12px rgba($admin-accent-info, 0.3);
+  }
+  
+  &--previous {
+    left: 1rem;
+  }
+  
+  &--next {
+    right: 1rem;
+  }
+}
+
+.react-datepicker__navigation-icon {
+  &::before {
+    border-color: $admin-text-primary;
+    border-width: 2px 2px 0 0;
+    height: 8px;
+    width: 8px;
+    top: 10px;
+  }
 }
 
 .react-datepicker__day-name,
@@ -150,6 +186,64 @@
   
   &:hover {
     background: transparent;
+  }
+}
+
+// Time Picker Scrollable List
+.react-datepicker__time-container {
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100px;
+}
+
+.react-datepicker__time {
+  background: transparent;
+}
+
+.react-datepicker__time-box {
+  width: 100%;
+}
+
+.react-datepicker__time-list {
+  max-height: 200px !important;
+  overflow-y: auto !important;
+  padding: 0.5rem 0;
+  
+  // Always show scrollbar for clarity
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba($admin-accent-info, 0.5);
+    border-radius: 4px;
+    
+    &:hover {
+      background: rgba($admin-accent-info, 0.7);
+    }
+  }
+  
+  // For Firefox
+  scrollbar-width: thin;
+  scrollbar-color: rgba($admin-accent-info, 0.5) rgba(0, 0, 0, 0.2);
+}
+
+.react-datepicker__time-list-item {
+  height: auto !important;
+  padding: 0.5rem !important;
+  color: $admin-text-primary;
+  
+  &:hover {
+    background: rgba($admin-accent-info, 0.1) !important;
+  }
+  
+  &--selected {
+    background: rgba($admin-accent-info, 0.2) !important;
+    font-weight: 600;
   }
 }
 
@@ -790,6 +884,9 @@
     transform: translateX(0);
   }
 }
+
+
+
 
 
 

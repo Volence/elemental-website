@@ -67,3 +67,4 @@ export const SectionThemeApplicator = () => {
   return null // This component doesn't render anything
 }
 
+

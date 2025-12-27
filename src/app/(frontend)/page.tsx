@@ -55,9 +55,18 @@ export default async function HomePage() {
     const result = await payload.find({
       collection: 'matches',
       where: {
-        date: {
-          greater_than_equal: today.toISOString(),
-        },
+        and: [
+          {
+            date: {
+              greater_than_equal: today.toISOString(),
+            },
+          },
+          {
+            'productionWorkflow.includeInSchedule': {
+              equals: true,
+            },
+          },
+        ],
       },
       sort: 'date',
       limit: 3,

@@ -19,11 +19,14 @@ import { RecruitmentListings } from './collections/RecruitmentListings'
 import { RecruitmentApplications } from './collections/RecruitmentApplications'
 import { InviteLinks } from './collections/InviteLinks'
 import { TournamentTemplates } from './collections/TournamentTemplates'
+import { SocialPosts } from './collections/SocialPosts'
 // import { ActivityLog } from './collections/ActivityLog' // Temporarily disabled until migrations are fixed
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { DataConsistency } from './globals/DataConsistency'
 import { ProductionDashboard } from './globals/ProductionDashboard'
+import { SocialMediaSettings } from './globals/SocialMediaSettings'
+import { SocialMediaConfig } from './globals/SocialMediaConfig'
 // import { UserProfile } from './globals/UserProfile' // Removed - using built-in /admin/account page instead
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
@@ -130,6 +133,7 @@ export default buildConfig({
     TournamentTemplates,
     Production,
     OrganizationStaff,
+    SocialPosts,
     Users,
     IgnoredDuplicates,
     RecruitmentListings,
@@ -137,7 +141,7 @@ export default buildConfig({
     InviteLinks /* ActivityLog temporarily disabled */,
   ],
   cors: [getServerSideURL()].filter(Boolean),
-  globals: [Header, Footer, DataConsistency, ProductionDashboard],
+  globals: [Header, Footer, DataConsistency, ProductionDashboard, SocialMediaSettings, SocialMediaConfig],
   plugins: [
     ...plugins,
     // storage-adapter-placeholder

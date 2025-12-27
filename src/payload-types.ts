@@ -75,6 +75,7 @@ export interface Config {
     'tournament-templates': TournamentTemplate;
     production: Production;
     'organization-staff': OrganizationStaff;
+    'social-posts': SocialPost;
     users: User;
     'ignored-duplicates': IgnoredDuplicate;
     'recruitment-listings': RecruitmentListing;
@@ -97,6 +98,7 @@ export interface Config {
     'tournament-templates': TournamentTemplatesSelect<false> | TournamentTemplatesSelect<true>;
     production: ProductionSelect<false> | ProductionSelect<true>;
     'organization-staff': OrganizationStaffSelect<false> | OrganizationStaffSelect<true>;
+    'social-posts': SocialPostsSelect<false> | SocialPostsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'ignored-duplicates': IgnoredDuplicatesSelect<false> | IgnoredDuplicatesSelect<true>;
     'recruitment-listings': RecruitmentListingsSelect<false> | RecruitmentListingsSelect<true>;
@@ -118,12 +120,16 @@ export interface Config {
     footer: Footer;
     'data-consistency': DataConsistency;
     'production-dashboard': ProductionDashboard;
+    'social-media-settings': SocialMediaSetting;
+    'social-media-config': SocialMediaConfig;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'data-consistency': DataConsistencySelect<false> | DataConsistencySelect<true>;
     'production-dashboard': ProductionDashboardSelect<false> | ProductionDashboardSelect<true>;
+    'social-media-settings': SocialMediaSettingsSelect<false> | SocialMediaSettingsSelect<true>;
+    'social-media-config': SocialMediaConfigSelect<false> | SocialMediaConfigSelect<true>;
   };
   locale: null;
   user: User & {
@@ -640,7 +646,7 @@ export interface TournamentTemplate {
    */
   scheduleRules?:
     | {
-        region: 'NA' | 'EU' | 'SA' | 'all';
+        region: 'NA' | 'EMEA' | 'SA' | 'all';
         division: 'Masters' | 'Expert' | 'Advanced' | 'Open' | 'all';
         /**
          * Number of matches to auto-create per week
@@ -839,6 +845,10 @@ export interface User {
      * Grants access to Production Dashboard (view schedule, sign up for matches)
      */
     isProductionStaff?: boolean | null;
+    /**
+     * Grants access to Social Media Dashboard (manage posts, content calendar)
+     */
+    isSocialMediaStaff?: boolean | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -912,6 +922,80 @@ export interface OrganizationStaff {
     | 'graphics'
     | 'media-editor'
   )[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * 📱 Manage social media posts and content calendar.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "social-posts".
+ */
+export interface SocialPost {
+  id: number;
+  /**
+   * Internal title to identify this post (not shown publicly)
+   */
+  title: string;
+  /**
+   * The text content of the post (can be drafted later)
+   */
+  content?: string | null;
+  /**
+   * Category of the post (for tracking and color-coding)
+   */
+  postType:
+    | 'Match Promo'
+    | 'Stream Announcement'
+    | 'Community Engagement'
+    | 'Original Content'
+    | 'Repost/Share'
+    | 'Other';
+  /**
+   * Which platform this post is for
+   */
+  platform: 'Twitter/X';
+  /**
+   * When to post this content (optional for drafts/backlog)
+   */
+  scheduledDate?: string | null;
+  /**
+   * Current status of the post
+   */
+  status: 'Draft' | 'Ready for Review' | 'Approved' | 'Scheduled' | 'Posted';
+  /**
+   * SM staff member responsible for this post
+   */
+  assignedTo: number | User;
+  /**
+   * Admin who approved this post
+   */
+  approvedBy?: (number | null) | User;
+  /**
+   * If this post is promoting a specific match
+   */
+  relatedMatch?: (number | null) | Match;
+  /**
+   * Images, videos, or other media for this post
+   */
+  mediaAttachments?:
+    | {
+        media?: (number | null) | Media;
+        /**
+         * Or link to external media
+         */
+        url?: string | null;
+        /**
+         * Alt text for accessibility
+         */
+        altText?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Internal notes for reviewers (not visible in the post)
+   */
+  notes?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1059,6 +1143,10 @@ export interface InviteLink {
      * Grant access to Production Dashboard for signing up to matches (casters, observers, producers)
      */
     isProductionStaff?: boolean | null;
+    /**
+     * Grants access to the Social Media Dashboard (manage posts, content calendar)
+     */
+    isSocialMediaStaff?: boolean | null;
   };
   /**
    * Optional: Pre-assign an email address for this invite
@@ -1251,6 +1339,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'organization-staff';
         value: number | OrganizationStaff;
+      } | null)
+    | ({
+        relationTo: 'social-posts';
+        value: number | SocialPost;
       } | null)
     | ({
         relationTo: 'users';
@@ -1717,6 +1809,32 @@ export interface OrganizationStaffSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "social-posts_select".
+ */
+export interface SocialPostsSelect<T extends boolean = true> {
+  title?: T;
+  content?: T;
+  postType?: T;
+  platform?: T;
+  scheduledDate?: T;
+  status?: T;
+  assignedTo?: T;
+  approvedBy?: T;
+  relatedMatch?: T;
+  mediaAttachments?:
+    | T
+    | {
+        media?: T;
+        url?: T;
+        altText?: T;
+        id?: T;
+      };
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
@@ -1728,6 +1846,7 @@ export interface UsersSelect<T extends boolean = true> {
     | T
     | {
         isProductionStaff?: T;
+        isSocialMediaStaff?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -1799,6 +1918,7 @@ export interface InviteLinksSelect<T extends boolean = true> {
     | T
     | {
         isProductionStaff?: T;
+        isSocialMediaStaff?: T;
       };
   email?: T;
   expiresAt?: T;
@@ -1966,6 +2086,101 @@ export interface ProductionDashboard {
   createdAt?: string | null;
 }
 /**
+ * 📱 Manage social media posts, content calendar, and posting schedule
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "social-media-settings".
+ */
+export interface SocialMediaSetting {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * ⚙️ Configure templates, goals, and content guidelines for social media posts
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "social-media-config".
+ */
+export interface SocialMediaConfig {
+  id: number;
+  /**
+   * Create reusable templates for your social media team
+   */
+  postTemplates?:
+    | {
+        /**
+         * Template name (e.g., "Match Day Announcement")
+         */
+        name: string;
+        /**
+         * Associated post type
+         */
+        postType:
+          | 'Match Promo'
+          | 'Stream Announcement'
+          | 'Community Engagement'
+          | 'Original Content'
+          | 'Repost/Share'
+          | 'Other';
+        /**
+         * Template text with placeholders. Use {{placeholderName}} for any dynamic value (e.g., {{team_1}}, {{team_2}}, {{matchTime}}, {{url}})
+         */
+        templateText: string;
+        /**
+         * Recommended graphics or media type (e.g., "Team banner", "Stream overlay")
+         */
+        suggestedMedia?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Set weekly posting targets to encourage consistent output
+   */
+  weeklyGoals?: {
+    /**
+     * Target number of posts per week
+     */
+    totalPostsPerWeek?: number | null;
+    /**
+     * Target match promotion posts
+     */
+    matchPromos?: number | null;
+    /**
+     * Target stream announcement posts
+     */
+    streamAnnouncements?: number | null;
+    /**
+     * Target community engagement posts
+     */
+    communityEngagement?: number | null;
+    /**
+     * Target original content posts
+     */
+    originalContent?: number | null;
+  };
+  /**
+   * Best practices, brand voice, and posting guidelines for the team
+   */
+  contentGuidelines?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
@@ -2025,6 +2240,43 @@ export interface DataConsistencySelect<T extends boolean = true> {
  * via the `definition` "production-dashboard_select".
  */
 export interface ProductionDashboardSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "social-media-settings_select".
+ */
+export interface SocialMediaSettingsSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "social-media-config_select".
+ */
+export interface SocialMediaConfigSelect<T extends boolean = true> {
+  postTemplates?:
+    | T
+    | {
+        name?: T;
+        postType?: T;
+        templateText?: T;
+        suggestedMedia?: T;
+        id?: T;
+      };
+  weeklyGoals?:
+    | T
+    | {
+        totalPostsPerWeek?: T;
+        matchPromos?: T;
+        streamAnnouncements?: T;
+        communityEngagement?: T;
+        originalContent?: T;
+      };
+  contentGuidelines?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

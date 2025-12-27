@@ -36,6 +36,10 @@ import { default as default_1c78329ca40bdaea08398ce17076186a } from '@/component
 import { default as default_3b0c933eeb58b8ba9e1fb354f07641f1 } from '@/components/MatchesListColumns/TitleCell'
 import { default as default_73cfbba28a8886a492b9c832e231d2f5 } from '@/components/MatchesListColumns/CellAlignmentStyles'
 import { default as default_4c7ee971bccbc12ad44464e4882fd683 } from '@/components/TournamentFields/BulkTeamSelector'
+import { default as default_048c297467b6adbf2ab886ee3bbecc66 } from '@/components/SocialPostColumns/ContentPreviewCell'
+import { default as default_cbd62d152faae83563323bc6e1990a3d } from '@/components/SocialPostFields/ContentWithTemplate'
+import { default as default_f52f291ae9aadfb75185249ec10b563b } from '@/components/SocialPostColumns/StatusCell'
+import { default as default_6b7ab1bcf3858d76397d35f4ac810b8c } from '@/components/SocialPostColumns/QuickFilters'
 import { default as default_ed1e8d66015b6bb359c4bd3a3c1c4e16 } from '@/components/RecruitmentFields/CategorySelectField'
 import { default as default_cf24fd1a27e289c739c233304f5b861d } from '@/components/RecruitmentFields/TeamRelationshipField'
 import { default as default_ec72e2a2a07bfec297bbb538e037e4b8 } from '@/components/RecruitmentFields/RoleSelectField'
@@ -53,6 +57,9 @@ import { RowLabel as RowLabel_1f6ff6ff633e3695d348f4f3c58f1466 } from '@/Footer/
 import { default as default_a1087e454b1b74ceaf1bf3fd38ecfc7a } from '@/components/DataConsistencyView'
 import { default as default_b41852718c887b613f07fa372f5e410c } from '@/components/EmptyComponent'
 import { default as default_c68ab0b1bbf77fcff4337c949e1b628c } from '@/components/ProductionDashboardView'
+import { default as default_9696e71ab6d0b177b492c0a63e1b5e83 } from '@/components/SocialMediaDashboard'
+import { default as default_f76c92028911e3d433af128d3a307d36 } from '@/components/SocialMediaConfig/TemplateInstructions'
+import { default as default_8e4d4e3438d12585a6d66d71f450349a } from '@/components/SocialMediaConfig/TemplateRowLabel'
 import { default as default_66dcba8625c994af6076586cb15c754f } from '@/components/UserAvatar'
 import { default as default_aa0a2d19d38a4839dbd373417e210b89 } from '@/components/AdminLogo'
 import { default as default_6b1b7b9ecbb8673c7166977ed22f5ed3 } from '@/components/BeforeDashboard/LogoutButton'
@@ -101,6 +108,10 @@ export const importMap = {
   "@/components/MatchesListColumns/TitleCell#default": default_3b0c933eeb58b8ba9e1fb354f07641f1,
   "@/components/MatchesListColumns/CellAlignmentStyles#default": default_73cfbba28a8886a492b9c832e231d2f5,
   "@/components/TournamentFields/BulkTeamSelector#default": default_4c7ee971bccbc12ad44464e4882fd683,
+  "@/components/SocialPostColumns/ContentPreviewCell#default": default_048c297467b6adbf2ab886ee3bbecc66,
+  "@/components/SocialPostFields/ContentWithTemplate#default": default_cbd62d152faae83563323bc6e1990a3d,
+  "@/components/SocialPostColumns/StatusCell#default": default_f52f291ae9aadfb75185249ec10b563b,
+  "@/components/SocialPostColumns/QuickFilters#default": default_6b7ab1bcf3858d76397d35f4ac810b8c,
   "@/components/RecruitmentFields/CategorySelectField#default": default_ed1e8d66015b6bb359c4bd3a3c1c4e16,
   "@/components/RecruitmentFields/TeamRelationshipField#default": default_cf24fd1a27e289c739c233304f5b861d,
   "@/components/RecruitmentFields/RoleSelectField#default": default_ec72e2a2a07bfec297bbb538e037e4b8,
@@ -118,6 +129,9 @@ export const importMap = {
   "@/components/DataConsistencyView#default": default_a1087e454b1b74ceaf1bf3fd38ecfc7a,
   "@/components/EmptyComponent#default": default_b41852718c887b613f07fa372f5e410c,
   "@/components/ProductionDashboardView#default": default_c68ab0b1bbf77fcff4337c949e1b628c,
+  "@/components/SocialMediaDashboard#default": default_9696e71ab6d0b177b492c0a63e1b5e83,
+  "@/components/SocialMediaConfig/TemplateInstructions#default": default_f76c92028911e3d433af128d3a307d36,
+  "@/components/SocialMediaConfig/TemplateRowLabel#default": default_8e4d4e3438d12585a6d66d71f450349a,
   "@/components/UserAvatar#default": default_66dcba8625c994af6076586cb15c754f,
   "@/components/AdminLogo#default": default_aa0a2d19d38a4839dbd373417e210b89,
   "@/components/BeforeDashboard/LogoutButton#default": default_6b1b7b9ecbb8673c7166977ed22f5ed3,

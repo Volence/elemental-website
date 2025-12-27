@@ -30,6 +30,7 @@ interface Match {
     assignedObserver?: User | number
     assignedProducer?: User | number
     assignedCasters?: CasterSignup[]
+    includeInSchedule?: boolean
   }
 }
 
@@ -530,7 +531,8 @@ export function StaffSignupsView() {
 
   const currentUserId = user?.id ? (typeof user.id === 'number' ? user.id : parseInt(user.id as string, 10)) : null
   const mySignups = matches.filter(m => isUserSignedUp(m, currentUserId))
-  const myAssignments = matches.filter(m => isUserAssigned(m, currentUserId))
+  // Only show assigned matches that are included in the schedule
+  const myAssignments = matches.filter(m => isUserAssigned(m, currentUserId) && m.productionWorkflow?.includeInSchedule === true)
   const myPendingSignups = mySignups.filter(m => !isUserAssigned(m, currentUserId))
 
   if (loading) {
@@ -563,10 +565,46 @@ export function StaffSignupsView() {
               const isGroupSignedUp = group.matches.some(m => isUserSignedUp(m, currentUserId))
               const isGroupAssigned = group.matches.some(m => isUserAssigned(m, currentUserId))
               
-              // Aggregate totals for the group
-              const totalObservers = group.matches.reduce((sum, m) => sum + (m.productionWorkflow?.observerSignups?.length || 0), 0)
-              const totalProducers = group.matches.reduce((sum, m) => sum + (m.productionWorkflow?.producerSignups?.length || 0), 0)
-              const totalCasters = group.matches.reduce((sum, m) => sum + (m.productionWorkflow?.casterSignups?.length || 0), 0)
+              // Aggregate totals for the group - count UNIQUE users, not total signups
+              const uniqueObservers = new Set<number>()
+              const uniqueProducers = new Set<number>()
+              const uniqueCasters = new Set<number>()
+              const observerNames: string[] = []
+              const producerNames: string[] = []
+              const casterNames: string[] = []
+
+              group.matches.forEach(m => {
+                m.productionWorkflow?.observerSignups?.forEach(u => {
+                  const userId = getUserId(u)
+                  if (userId) {
+                    uniqueObservers.add(userId)
+                    const name = getUserName(u)
+                    if (!observerNames.includes(name)) observerNames.push(name)
+                  }
+                })
+                m.productionWorkflow?.producerSignups?.forEach(u => {
+                  const userId = getUserId(u)
+                  if (userId) {
+                    uniqueProducers.add(userId)
+                    const name = getUserName(u)
+                    if (!producerNames.includes(name)) producerNames.push(name)
+                  }
+                })
+                m.productionWorkflow?.casterSignups?.forEach(c => {
+                  const userId = getUserId(c.user)
+                  if (userId) {
+                    uniqueCasters.add(userId)
+                    const name = getUserName(c.user)
+                    const style = c.style ? ` (${c.style})` : ''
+                    const fullName = `${name}${style}`
+                    if (!casterNames.includes(fullName)) casterNames.push(fullName)
+                  }
+                })
+              })
+
+              const totalObservers = uniqueObservers.size
+              const totalProducers = uniqueProducers.size
+              const totalCasters = uniqueCasters.size
 
               return (
                 <div key={group.dateTime} className={`time-slot-group ${isGroupSignedUp ? 'time-slot-group--signed-up' : ''}`}>
@@ -583,9 +621,15 @@ export function StaffSignupsView() {
                     </button>
                     
                     <div className="time-slot-group__stats">
-                      <span className="time-slot-group__stat">👁️ {totalObservers}</span>
-                      <span className="time-slot-group__stat">🎬 {totalProducers}</span>
-                      <span className="time-slot-group__stat">🎙️ {totalCasters}</span>
+                      <span className="time-slot-group__stat">
+                        👁️ <SignupTooltip names={observerNames} count={totalObservers} role="Observer" />
+                      </span>
+                      <span className="time-slot-group__stat">
+                        🎬 <SignupTooltip names={producerNames} count={totalProducers} role="Producer" />
+                      </span>
+                      <span className="time-slot-group__stat">
+                        🎙️ <SignupTooltip names={casterNames} count={totalCasters} role="Caster" />
+                      </span>
                     </div>
                     
                     <button
@@ -708,62 +752,95 @@ export function StaffSignupsView() {
           <div className="production-dashboard__empty">
             <p>No pending signups. All your signups have been confirmed!</p>
           </div>
-        ) : (
-          <div className="my-signups-list">
-            {myPendingSignups.map((match) => {
-              const roles = getMySignupRoles(match, currentUserId)
+        ) : (() => {
+          // Group pending signups by date/time (time slot)
+          const signupGroups = new Map<string, Match[]>()
+          myPendingSignups.forEach(match => {
+            const dateTime = new Date(match.date).toISOString()
+            if (!signupGroups.has(dateTime)) {
+              signupGroups.set(dateTime, [])
+            }
+            signupGroups.get(dateTime)!.push(match)
+          })
 
-              return (
-                <div key={match.id} className="my-signup-card">
-                  <div className="my-signup-card__header">
-                    <div>
-                      <h4>{match.title}</h4>
-                      <p className="my-signup-card__date">
-                        {new Date(match.date).toLocaleDateString('en-US', {
-                          weekday: 'short',
-                          month: 'short',
-                          day: 'numeric',
-                          hour: 'numeric',
-                          minute: '2-digit',
-                          timeZoneName: 'short',
+          return (
+            <div className="my-signups-list">
+              {Array.from(signupGroups.entries()).map(([dateTime, groupMatches]) => {
+                // Get all unique roles across all matches in this time slot
+                const allRoles = new Set<string>()
+                const roleToMatches = new Map<string, number[]>() // role -> matchIds
+
+                groupMatches.forEach(match => {
+                  const roles = getMySignupRoles(match, currentUserId)
+                  roles.forEach(role => {
+                    allRoles.add(role)
+                    const roleKey = role.toLowerCase().split(' ')[0]
+                    if (!roleToMatches.has(roleKey)) {
+                      roleToMatches.set(roleKey, [])
+                    }
+                    roleToMatches.get(roleKey)!.push(match.id)
+                  })
+                })
+
+                const formattedDate = new Date(dateTime).toLocaleDateString('en-US', {
+                  weekday: 'short',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: 'numeric',
+                  minute: '2-digit',
+                  timeZoneName: 'short',
+                })
+
+                return (
+                  <div key={dateTime} className="my-signup-card">
+                    <div className="my-signup-card__header">
+                      <div>
+                        <h4>{formattedDate}</h4>
+                        <p className="my-signup-card__count">
+                          {groupMatches.length} match{groupMatches.length > 1 ? 'es' : ''}
+                        </p>
+                      </div>
+                      <div className="my-signup-card__status">
+                        <span className="status-badge status-badge--pending">⏳ Pending</span>
+                      </div>
+                    </div>
+                    <div className="my-signup-card__roles">
+                      <strong>Signed up as:</strong>
+                      <div className="my-signup-card__role-list">
+                        {Array.from(allRoles).map((role, idx) => {
+                          const roleKey = role.toLowerCase().split(' ')[0] as 'observer' | 'producer' | 'caster'
+                          // Check if ANY match in this group has this role assigned
+                          const isAnyRoleAssigned = groupMatches.some(m => isRoleAssigned(m, currentUserId, roleKey))
+                          
+                          return (
+                            <div key={idx} className="my-signup-role">
+                              <span>{role}</span>
+                              {isAnyRoleAssigned ? (
+                                <span className="my-signup-role__locked" title="Cannot remove - you've been assigned this role in some matches">🔒</span>
+                              ) : (
+                                <button
+                                  className="my-signup-role__remove"
+                                  onClick={async () => {
+                                    // Remove signup for this role from ALL matches in this time slot
+                                    const matchesToUpdate = roleToMatches.get(roleKey) || []
+                                    await Promise.all(matchesToUpdate.map(matchId => handleRemoveSignup(matchId, roleKey)))
+                                  }}
+                                  title="Remove signup for this role from all matches in this time slot"
+                                >
+                                  ✕
+                                </button>
+                              )}
+                            </div>
+                          )
                         })}
-                      </p>
-                    </div>
-                    <div className="my-signup-card__status">
-                      <span className="status-badge status-badge--pending">⏳ Pending</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="my-signup-card__roles">
-                    <strong>Signed up as:</strong>
-                    <div className="my-signup-card__role-list">
-                      {roles.map((role, idx) => {
-                        const roleKey = role.toLowerCase().split(' ')[0] as 'observer' | 'producer' | 'caster'
-                        const isThisRoleAssigned = isRoleAssigned(match, currentUserId, roleKey)
-                        
-                        return (
-                          <div key={idx} className="my-signup-role">
-                            <span>{role}</span>
-                            {isThisRoleAssigned ? (
-                              <span className="my-signup-role__locked" title="Cannot remove - you've been assigned this role">🔒</span>
-                            ) : (
-                              <button
-                                className="my-signup-role__remove"
-                                onClick={() => handleRemoveSignup(match.id, roleKey)}
-                                title="Remove this signup"
-                              >
-                                ✕
-                              </button>
-                            )}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        )}
+                )
+              })}
+            </div>
+          )
+        })()}
       </div>
 
       {/* Signup Modal */}

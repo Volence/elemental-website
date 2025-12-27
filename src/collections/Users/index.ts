@@ -17,10 +17,13 @@ export const Users: CollectionConfig = {
     create: adminOnly, // Only admins can create users
     delete: adminOnly, // Only admins can delete users
     read: ({ req: { user } }) => {
-      // Admins can read all users
+      // Admins can read all users with full details
       if (user && (user as User).role === UserRole.ADMIN) return true
-      // Authenticated users can only read their own user data
-      if (user) return { id: { equals: user.id } }
+      // Staff managers can read all users (for team management)
+      if (user && (user as User).role === UserRole.STAFF_MANAGER) return true
+      // Authenticated users can read all users (but field-level access restricts what they see)
+      // This allows displaying names in relationships (e.g., "Assigned To" column)
+      if (user) return true
       // Unauthenticated users cannot read any users
       return false
     },
@@ -50,6 +53,11 @@ export const Users: CollectionConfig = {
       type: 'text',
       // Don't mark as required - we'll handle it in the hook
       required: false,
+      access: {
+        // Allow authenticated users to read names (for displaying in relationships)
+        // This allows social media staff to see each other's names in the "Assigned To" column
+        read: ({ req: { user } }) => !!user,
+      },
     },
     {
       name: 'avatar',
@@ -70,6 +78,12 @@ export const Users: CollectionConfig = {
         // Read-only for non-admins is handled in the access control and hooks
       },
       access: {
+        // Only admins and staff managers can read roles
+        read: ({ req: { user } }) => {
+          if (!user) return false
+          const typedUser = user as User
+          return typedUser.role === UserRole.ADMIN || typedUser.role === UserRole.STAFF_MANAGER
+        },
         // Only admins can update the role field
         update: ({ req }) => {
           const user = req.user as User | undefined
@@ -105,6 +119,12 @@ export const Users: CollectionConfig = {
         condition: (data) => data.role === UserRole.ADMIN || data.role === UserRole.TEAM_MANAGER || data.role === UserRole.STAFF_MANAGER,
       },
       access: {
+        // Only admins and staff managers can read assignedTeams
+        read: ({ req: { user } }) => {
+          if (!user) return false
+          const typedUser = user as User
+          return typedUser.role === UserRole.ADMIN || typedUser.role === UserRole.STAFF_MANAGER
+        },
         // Only admins can update the assignedTeams field
         update: ({ req }) => {
           const user = req.user as User | undefined
@@ -120,6 +140,14 @@ export const Users: CollectionConfig = {
         description: 'Grant access to department-specific tools and dashboards',
         condition: (data) => data.role !== UserRole.ADMIN,
       },
+      access: {
+        // Only admins and staff managers can read department settings
+        read: ({ req: { user } }) => {
+          if (!user) return false
+          const typedUser = user as User
+          return typedUser.role === UserRole.ADMIN || typedUser.role === UserRole.STAFF_MANAGER
+        },
+      },
       fields: [
         {
           name: 'isProductionStaff',
@@ -129,7 +157,16 @@ export const Users: CollectionConfig = {
             description: 'Grants access to Production Dashboard (view schedule, sign up for matches)',
           },
         },
-        // Future: isGraphicsStaff, isMediaStaff, isSocialStaff, isScoutingStaff, isEventsStaff
+        {
+          name: 'isSocialMediaStaff',
+          type: 'checkbox',
+          label: 'Social Media Staff',
+          defaultValue: false,
+          admin: {
+            description: 'Grants access to Social Media Dashboard (manage posts, content calendar)',
+          },
+        },
+        // Future: isGraphicsStaff, isMediaStaff, isScoutingStaff, isEventsStaff
       ],
     },
   ],

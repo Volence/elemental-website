@@ -1,0 +1,1018 @@
+// ============================================================================
+// SOCIAL MEDIA DASHBOARD - Clean Glow Design System
+// ============================================================================
+// Styles for the Social Media department dashboard, calendar view, and post management
+// Uses Clean Glow design patterns with transparent backgrounds and glowing borders
+
+[data-section="social-media"] {
+  .social-media-dashboard {
+    padding: $spacing-2xl;
+    min-height: 600px;
+    
+    &__tabs {
+      display: flex;
+      gap: $spacing-md;
+      margin-bottom: $spacing-xl;
+      flex-wrap: wrap;
+    }
+    
+    &__tab {
+      padding: $spacing-md $spacing-lg;
+      @include transparent-bg(0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: var(--theme-elevation-500);
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      
+      &:hover {
+        color: var(--theme-text);
+        @include transparent-bg(0.08);
+        border-color: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.4);
+        box-shadow: 0 0 16px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.2);
+      }
+      
+      &--active {
+        color: var(--theme-text);
+        @include glow-border(var(--admin-accent-primary, #3b82f6), 0.5, 1);
+        @include transparent-bg(0.1);
+        font-weight: 600;
+      }
+    }
+    
+    &__content {
+      min-height: 400px;
+      @include glow-card(var(--admin-accent-primary, #3b82f6));
+      padding: $spacing-xl;
+    }
+  }
+  
+  // ============================================================================
+  // CALENDAR VIEW - Clean Glow Style
+  // ============================================================================
+  
+  .calendar-view {
+    &__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: $spacing-xl;
+      flex-wrap: wrap;
+      gap: $spacing-md;
+      
+      h2 {
+        color: var(--theme-text);
+        font-size: 1.5rem;
+        margin: 0;
+        text-shadow: 0 0 20px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3);
+      }
+    }
+    
+    &__controls {
+      display: flex;
+      gap: $spacing-lg;
+      flex-wrap: wrap;
+      
+      .btn {
+        @include glow-button(var(--admin-accent-primary, #3b82f6));
+        font-size: 0.85rem;
+        padding: $spacing-sm $spacing-md;
+      }
+    }
+    
+    &__period {
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: var(--theme-text);
+      margin-bottom: $spacing-lg;
+      @include transparent-bg(0.05);
+      padding: $spacing-sm $spacing-lg;
+      border-radius: 8px;
+      display: inline-block;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    &__week {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: $spacing-md;
+      margin-bottom: $spacing-xl;
+      
+      @media (max-width: 1200px) {
+        grid-template-columns: repeat(4, 1fr);
+      }
+      
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    &__month-notice {
+      padding: $spacing-2xl;
+      text-align: center;
+      @include glow-card(var(--admin-accent-primary, #3b82f6));
+      
+      p {
+        color: var(--theme-elevation-600);
+        margin-bottom: $spacing-md;
+      }
+    }
+    
+    &__legend {
+      margin-top: $spacing-2xl;
+      padding: $spacing-lg;
+      @include transparent-bg(0.05);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      
+      h4 {
+        color: var(--theme-text);
+        margin-bottom: $spacing-md;
+        font-size: 0.95rem;
+        font-weight: 600;
+      }
+      
+      .legend-items {
+        display: flex;
+        flex-wrap: wrap;
+        gap: $spacing-lg;
+      }
+      
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
+        font-size: 0.85rem;
+        color: var(--theme-elevation-600);
+      }
+      
+      .legend-color {
+        width: 16px;
+        height: 16px;
+        border-radius: 3px;
+        box-shadow: 0 0 8px currentColor;
+      }
+    }
+  }
+  
+  .calendar-day {
+    @include glow-card(var(--admin-accent-primary, #3b82f6));
+    padding: $spacing-md;
+    min-height: 200px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &:hover {
+      box-shadow: 0 0 24px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.25);
+      transform: translateY(-2px);
+    }
+    
+    &--today {
+      @include glow-border(var(--admin-accent-primary, #3b82f6), 0.7, 1.2);
+      @include transparent-bg(0.08);
+    }
+    
+    &__header {
+      margin-bottom: $spacing-md;
+      padding-bottom: $spacing-sm;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    &__date {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--theme-text);
+    }
+    
+    &__count {
+      font-size: 0.75rem;
+      color: var(--theme-elevation-500);
+      margin-top: $spacing-xs;
+    }
+    
+    &__posts {
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-sm;
+    }
+    
+    &__empty {
+      padding: $spacing-lg;
+      text-align: center;
+      color: var(--theme-elevation-400);
+      font-size: 0.85rem;
+      font-style: italic;
+    }
+  }
+  
+  .calendar-post-card {
+    display: block;
+    padding: $spacing-sm;
+    @include transparent-bg(0.05);
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    position: relative;
+    overflow: hidden;
+    
+    // Color-coded left border glow
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: currentColor;
+      box-shadow: 0 0 8px currentColor;
+      opacity: 0.8;
+    }
+    
+    &:hover {
+      @include transparent-bg(0.1);
+      transform: translateX(4px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    &__time {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--theme-text);
+      margin-bottom: $spacing-xs;
+      padding-left: $spacing-xs;
+    }
+    
+    &__type {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--theme-elevation-500);
+      margin-bottom: $spacing-xs;
+      padding-left: $spacing-xs;
+    }
+    
+    &__content {
+      font-size: 0.85rem;
+      color: var(--theme-text);
+      line-height: 1.3;
+      margin-bottom: $spacing-xs;
+      padding-left: $spacing-xs;
+    }
+    
+    &__status {
+      font-size: 0.7rem;
+      color: var(--theme-elevation-500);
+      font-weight: 500;
+      padding-left: $spacing-xs;
+    }
+  }
+
+  // Month View - Calendar Grid
+  .calendar-view__month {
+    @include glow-card(var(--admin-accent));
+    border-radius: $radius-md;
+    overflow: hidden;
+  }
+
+  .calendar-month-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.08);
+    border-bottom: 2px solid rgba(var(--admin-accent-rgb, 59, 130, 246), 0.2);
+    
+    &__day {
+      padding: $spacing-sm;
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: var(--theme-text);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  .calendar-month-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-auto-rows: minmax(120px, auto);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .calendar-month-day {
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: $spacing-xs;
+    @include transparent-bg(0.02);
+    transition: background 0.2s ease;
+    min-height: 120px;
+    
+    &:hover {
+      @include transparent-bg(0.05);
+    }
+    
+    &--today {
+      @include glow-border(var(--admin-accent), 0.6, 0.8);
+      background: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.08);
+    }
+    
+    &--other-month {
+      opacity: 0.4;
+    }
+    
+    &--weekend {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    
+    &__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: $spacing-xs;
+    }
+    
+    &__date {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--theme-text);
+    }
+    
+    &__count {
+      font-size: 0.75rem;
+      background: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.2);
+      color: var(--admin-accent);
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+    
+    &__posts {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    &__more {
+      font-size: 0.7rem;
+      color: var(--theme-elevation-500);
+      padding: 4px 6px;
+      text-align: center;
+      font-style: italic;
+    }
+  }
+
+  .calendar-month-post {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 6px;
+    @include transparent-bg(0.05);
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-size: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    
+    &:hover {
+      @include transparent-bg(0.1);
+      transform: translateX(2px);
+    }
+    
+    &__time {
+      color: var(--theme-text);
+      font-weight: 600;
+      font-size: 0.7rem;
+      white-space: nowrap;
+    }
+    
+    &__title {
+      color: var(--theme-elevation-500);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+    }
+  }
+  
+  // ============================================================================
+  // WEEKLY GOALS - Clean Glow Style
+  // ============================================================================
+  
+  .weekly-goals {
+    &__header {
+      margin-bottom: $spacing-2xl;
+      text-align: center;
+      
+      h2 {
+        color: var(--theme-text);
+        font-size: 1.8rem;
+        margin: 0 0 $spacing-sm 0;
+        text-shadow: 0 0 20px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3);
+      }
+      
+      p {
+        color: var(--theme-elevation-500);
+        margin: 0;
+        font-size: 0.95rem;
+      }
+    }
+    
+    &__overall {
+      margin-bottom: $spacing-2xl;
+      
+      h3 {
+        color: var(--theme-text);
+        font-size: 1.2rem;
+        margin-bottom: $spacing-lg;
+        font-weight: 600;
+      }
+    }
+    
+    &__breakdown {
+      margin-bottom: $spacing-2xl;
+      
+      h3 {
+        color: var(--theme-text);
+        font-size: 1.2rem;
+        margin-bottom: $spacing-lg;
+        font-weight: 600;
+      }
+    }
+    
+    &__other-stats {
+      @include transparent-bg(0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: $spacing-lg;
+      margin-bottom: $spacing-2xl;
+      
+      h3 {
+        color: var(--theme-text);
+        font-size: 1rem;
+        margin-bottom: $spacing-md;
+        font-weight: 600;
+      }
+    }
+    
+    &__actions {
+      display: flex;
+      gap: $spacing-md;
+      justify-content: center;
+      flex-wrap: wrap;
+      
+      .btn {
+        @include glow-button(var(--admin-accent-primary, #3b82f6));
+        padding: $spacing-md $spacing-xl;
+        font-size: 0.95rem;
+        font-weight: 600;
+        
+        &--secondary {
+          background: rgba(255, 255, 255, 0.05);
+          border-color: rgba(255, 255, 255, 0.2);
+          
+          &:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.5);
+          }
+        }
+      }
+    }
+  }
+  
+  // Goal Cards
+  .goal-card {
+    @include glow-card(var(--admin-accent-primary, #3b82f6));
+    padding: $spacing-lg;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &:hover {
+      box-shadow: 0 0 28px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3);
+      transform: translateY(-2px);
+    }
+    
+    &--large {
+      padding: $spacing-xl;
+      margin-bottom: $spacing-lg;
+    }
+    
+    &__stats {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: $spacing-xl;
+      margin-bottom: $spacing-lg;
+    }
+    
+    &__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: $spacing-md;
+      
+      h4 {
+        color: var(--theme-text);
+        font-size: 1rem;
+        margin: 0;
+        font-weight: 600;
+      }
+    }
+    
+    &__numbers {
+      color: var(--theme-text);
+      font-size: 1.1rem;
+      font-weight: 700;
+      @include transparent-bg(0.05);
+      padding: $spacing-xs $spacing-md;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    &__message {
+      text-align: center;
+      margin-top: $spacing-md;
+      font-size: 0.95rem;
+      font-weight: 500;
+      
+      .need-message {
+        color: var(--theme-elevation-600);
+      }
+      
+      .complete-message {
+        color: #10b981;
+        text-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+      }
+    }
+    
+    &__action {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: $spacing-md;
+      padding-top: $spacing-md;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      
+      .need-count {
+        color: var(--theme-elevation-600);
+        font-size: 0.85rem;
+      }
+      
+      .btn {
+        @include glow-button(var(--admin-accent-primary, #3b82f6));
+        padding: $spacing-xs $spacing-md;
+        font-size: 0.85rem;
+        
+        &--small {
+          padding: $spacing-xs $spacing-sm;
+          font-size: 0.8rem;
+        }
+      }
+    }
+    
+    &__complete {
+      text-align: center;
+      margin-top: $spacing-md;
+      padding-top: $spacing-md;
+      border-top: 1px solid rgba(16, 185, 129, 0.3);
+      color: #10b981;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+  }
+  
+  .goal-stat {
+    text-align: center;
+    
+    &__value {
+      font-size: 3rem;
+      font-weight: 700;
+      color: var(--theme-text);
+      line-height: 1;
+      margin-bottom: $spacing-xs;
+      text-shadow: 0 0 24px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.4);
+    }
+    
+    &__label {
+      font-size: 0.85rem;
+      color: var(--theme-elevation-500);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    &__divider {
+      font-size: 2.5rem;
+      color: var(--theme-elevation-400);
+      font-weight: 300;
+    }
+  }
+  
+  .goal-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: $spacing-lg;
+  }
+  
+  .progress-bar-container {
+    width: 100%;
+    height: 12px;
+    @include transparent-bg(0.05);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+  }
+  
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--admin-accent-primary, #3b82f6), var(--admin-accent-secondary, #8b5cf6));
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 16px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.6);
+    border-radius: 12px;
+    position: relative;
+    
+    &--low {
+      background: linear-gradient(90deg, #ef4444, #dc2626);
+      box-shadow: 0 0 16px rgba(239, 68, 68, 0.6);
+    }
+    
+    &--ok {
+      background: linear-gradient(90deg, #f59e0b, #d97706);
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.6);
+    }
+    
+    &--good {
+      background: linear-gradient(90deg, #3b82f6, #2563eb);
+      box-shadow: 0 0 16px rgba(59, 130, 246, 0.6);
+    }
+    
+    &--complete {
+      background: linear-gradient(90deg, #10b981, #059669);
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.6);
+    }
+    
+    // Animated shimmer effect
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      animation: shimmer 2s infinite;
+    }
+  }
+  
+  @keyframes shimmer {
+    to {
+      left: 100%;
+    }
+  }
+  
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $spacing-sm 0;
+    color: var(--theme-elevation-600);
+    font-size: 0.9rem;
+    
+    &:not(:last-child) {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    strong {
+      color: var(--theme-text);
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+  }
+  
+  // ============================================================================
+  // TEMPLATES VIEW - Clean Glow Style
+  // ============================================================================
+  
+  .templates-view {
+    &__header {
+      margin-bottom: $spacing-lg;
+      text-align: center;
+      
+      h2 {
+        color: var(--theme-text);
+        font-size: 1.5rem;
+        margin: 0 0 $spacing-sm 0;
+        text-shadow: 0 0 20px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3);
+      }
+      
+      p {
+        color: var(--theme-elevation-500);
+        margin: 0;
+      }
+    }
+    
+    &__instructions {
+      @include glow-card(var(--admin-accent-primary, #3b82f6));
+      padding: $spacing-xl;
+      margin-bottom: $spacing-2xl;
+      
+      h3 {
+        color: var(--theme-text);
+        font-size: 1.1rem;
+        margin: 0 0 $spacing-md 0;
+        font-weight: 600;
+      }
+      
+      ol {
+        margin: 0;
+        padding-left: 1.5rem;
+        color: var(--theme-elevation-600);
+        line-height: 1.8;
+        
+        li {
+          margin-bottom: $spacing-sm;
+          
+          strong {
+            color: var(--theme-text);
+          }
+          
+          code {
+            @include transparent-bg(0.08);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: var(--admin-accent-primary, #3b82f6);
+            border: 1px solid rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3);
+          }
+        }
+      }
+    }
+    
+    &__manage {
+      margin-top: $spacing-lg;
+      padding-top: $spacing-lg;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      
+      .btn {
+        @include glow-button(var(--admin-accent-primary, #3b82f6));
+        font-size: 0.9rem;
+      }
+    }
+    
+    &__empty {
+      text-align: center;
+      padding: $spacing-3xl;
+      
+      p {
+        color: var(--theme-elevation-500);
+        margin-bottom: $spacing-lg;
+        
+        a {
+          color: var(--admin-accent-primary, #3b82f6);
+          text-decoration: none;
+          font-weight: 600;
+          
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
+    }
+  }
+  
+  .progress-bar {
+    width: 100%;
+    height: 24px;
+    @include transparent-bg(0.05);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin: $spacing-md 0;
+    
+    &__fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--admin-accent-primary, #3b82f6), var(--admin-accent-secondary, #8b5cf6));
+      transition: width 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: $spacing-sm;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: white;
+      box-shadow: 0 0 12px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.5);
+      min-width: 0;
+    }
+  }
+  
+  .templates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: $spacing-lg;
+  }
+  
+  .template-card {
+    @include glow-card(var(--admin-accent-primary, #3b82f6));
+    padding: $spacing-lg;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    
+    &:hover {
+      box-shadow: 0 0 28px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3);
+      transform: translateY(-2px);
+    }
+    
+    &__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: $spacing-md;
+      gap: $spacing-md;
+    }
+    
+    &__name {
+      font-weight: 600;
+      color: var(--theme-text);
+      font-size: 1.1rem;
+      flex: 1;
+    }
+    
+    &__type {
+      @include glow-badge(var(--admin-accent-primary, #3b82f6));
+      padding: $spacing-xs $spacing-sm;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+    
+    &__content {
+      flex: 1;
+      margin-bottom: $spacing-md;
+    }
+    
+    &__text {
+      color: var(--theme-elevation-600);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      margin-bottom: $spacing-md;
+      padding: $spacing-md;
+      @include transparent-bg(0.05);
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      font-family: 'Courier New', monospace;
+    }
+    
+    &__media-suggestion {
+      color: var(--theme-elevation-500);
+      font-size: 0.85rem;
+      padding: $spacing-sm;
+      @include transparent-bg(0.03);
+      border-radius: 4px;
+      border-left: 3px solid var(--admin-accent-primary, #3b82f6);
+      
+      strong {
+        color: var(--theme-text);
+      }
+    }
+    
+    &__placeholders {
+      margin-top: $spacing-md;
+      padding: $spacing-md;
+      @include transparent-bg(0.03);
+      border-radius: 6px;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      
+      h4 {
+        color: var(--theme-text);
+        font-size: 0.8rem;
+        margin: 0 0 $spacing-sm 0;
+        font-weight: 600;
+      }
+    }
+    
+    &__actions {
+      display: flex;
+      gap: $spacing-sm;
+      padding-top: $spacing-md;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      
+      .btn {
+        flex: 1;
+        @include glow-button(var(--admin-accent-primary, #3b82f6));
+        font-size: 0.85rem;
+        padding: $spacing-sm $spacing-md;
+        text-align: center;
+        
+        &--secondary {
+          background: rgba(255, 255, 255, 0.05);
+          border-color: rgba(255, 255, 255, 0.2);
+          
+          &:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.5);
+          }
+        }
+      }
+    }
+  }
+  
+  .post-type-badge {
+    @include glow-badge(var(--admin-accent-primary, #3b82f6));
+    padding: $spacing-xs $spacing-sm;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+  
+  // ============================================================================
+  // LOADING & EMPTY STATES - Clean Glow Style
+  // ============================================================================
+  
+  .loading-spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    color: var(--theme-text);
+    font-size: 1.1rem;
+    
+    &::before {
+      content: '';
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top-color: var(--admin-accent-primary, #3b82f6);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: $spacing-md;
+      box-shadow: 0 0 16px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3);
+    }
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .empty-state {
+    padding: $spacing-3xl;
+    text-align: center;
+    @include glow-card(var(--admin-accent-primary, #3b82f6));
+    
+    &__icon {
+      font-size: 3rem;
+      margin-bottom: $spacing-lg;
+      opacity: 0.5;
+    }
+    
+    &__title {
+      font-size: 1.3rem;
+      color: var(--theme-text);
+      margin-bottom: $spacing-md;
+    }
+    
+    &__description {
+      color: var(--theme-elevation-600);
+      margin-bottom: $spacing-xl;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .btn {
+      @include glow-button(var(--admin-accent-primary, #3b82f6));
+      padding: $spacing-md $spacing-xl;
+      font-size: 0.95rem;
+    }
+  }
+  
+  // ============================================================================
+  // RESPONSIVE
+  // ============================================================================
+  
+  @media (max-width: 768px) {
+    .social-media-dashboard {
+      padding: $spacing-lg;
+      
+      &__tabs {
+        flex-direction: column;
+        gap: 0;
+      }
+      
+      &__tab {
+        width: 100%;
+        text-align: left;
+        border-bottom: 1px solid var(--theme-elevation-200);
+        border-radius: 0;
+      }
+      
+      &__content {
+        padding: $spacing-md;
+      }
+    }
+  }
+}
