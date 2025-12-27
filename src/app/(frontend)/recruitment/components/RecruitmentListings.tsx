@@ -74,7 +74,7 @@ export const RecruitmentListings: React.FC<RecruitmentListingsProps> = ({ listin
           const team = listing.team
           if (!isTeamObject(team)) return acc
 
-          const teamId = team.id
+          const teamId: number = team.id
           if (!acc[teamId]) {
             acc[teamId] = {
               team,
