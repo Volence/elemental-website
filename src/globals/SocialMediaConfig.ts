@@ -12,10 +12,11 @@ export const SocialMediaConfig: GlobalConfig = {
       // Only show to admins and staff managers
       return user.role !== 'admin' && user.role !== 'staff-manager'
     },
+    hideAPIURL: true,
   },
   fields: [
     {
-      name: 'templatesInstructions',
+      name: 'templateInstructions',
       type: 'ui',
       admin: {
         components: {
