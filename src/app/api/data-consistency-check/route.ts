@@ -89,7 +89,7 @@ export async function GET() {
     })
     const peopleIds = new Set(allPeople.docs.map(p => p.id))
 
-    const teamsWithBrokenRefs: Array<{ id: number; name: string; details: string }> = []
+    const teamsWithBrokenRefs: Array<{ id: number | string; name: string; details: string }> = []
     teams.docs.forEach(team => {
       let brokenCount = 0
       const checkArray = (array: any[], arrayName: string) => {
@@ -141,7 +141,7 @@ export async function GET() {
       depth: 1,
     })
 
-    const orphanedPeople: Array<{ id: number; name: string; slug: string }> = []
+    const orphanedPeople: Array<{ id: number | string; name: string; slug: string }> = []
     allPeople.docs.forEach(person => {
       let hasTeam = false
       let hasStaffRole = false
@@ -223,7 +223,7 @@ export async function GET() {
 
     // 4. Check for duplicate or similar person names using Levenshtein distance
     // Group similar people together to avoid duplicate keys
-    const duplicateGroups = new Map<number, Array<{ id: number; name: string; similarity: number }>>()
+    const duplicateGroups = new Map<number | string, Array<{ id: number | string; name: string; similarity: number }>>()
     
     // Compare all pairs and group similar people
     for (let i = 0; i < allPeople.docs.length; i++) {
@@ -267,7 +267,7 @@ export async function GET() {
     }
     
     // Convert groups to items with unique details
-    const duplicateItems: Array<{ id: number; name: string; slug: string; details: string }> = []
+    const duplicateItems: Array<{ id: number | string; name: string; slug: string; details: string }> = []
     duplicateGroups.forEach((matches, personId) => {
       const person = allPeople.docs.find(p => p.id === personId)
       if (person) {
