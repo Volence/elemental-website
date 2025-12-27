@@ -42,7 +42,9 @@ export default function QuickFilters() {
     return `/admin/collections/social-posts?where[or][0][and][0][status][equals]=Draft`
   }
   
-  const buildThisWeekUrl = () => {
+  // Use click handler for "This Week" to avoid hydration issues with Date()
+  const handleThisWeekClick = (e: React.MouseEvent) => {
+    e.preventDefault()
     const now = new Date()
     const startOfWeek = new Date(now)
     startOfWeek.setDate(now.getDate() - now.getDay())
@@ -51,7 +53,8 @@ export default function QuickFilters() {
     const endOfWeek = new Date(startOfWeek)
     endOfWeek.setDate(startOfWeek.getDate() + 7)
     
-    return `/admin/collections/social-posts?where[or][0][and][0][scheduledDate][greater_than_equal]=${startOfWeek.toISOString()}&where[or][0][and][1][scheduledDate][less_than]=${endOfWeek.toISOString()}`
+    const url = `/admin/collections/social-posts?where[or][0][and][0][scheduledDate][greater_than_equal]=${startOfWeek.toISOString()}&where[or][0][and][1][scheduledDate][less_than]=${endOfWeek.toISOString()}`
+    window.location.href = url
   }
   
   return (
@@ -83,12 +86,13 @@ export default function QuickFilters() {
         </Link>
       )}
       
-      <Link
-        href={buildThisWeekUrl()}
+      <a
+        href="#"
+        onClick={handleThisWeekClick}
         className={`quick-filter-btn ${isThisWeekActive ? 'quick-filter-btn--active' : ''}`}
       >
         📅 This Week
-      </Link>
+      </a>
       
       <Link
         href={buildDraftsUrl()}
