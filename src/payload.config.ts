@@ -121,7 +121,7 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URI || 'postgresql://build:build@localhost:5432/build',
     },
-    idType: 'number', // Try 'number' instead of 'serial' - may work better with array fields
+    idType: 'serial', // Use 'serial' for auto-incrementing numeric IDs
     push: process.env.PAYLOAD_DB_PUSH === 'true' || false,
   }),
   collections: [
