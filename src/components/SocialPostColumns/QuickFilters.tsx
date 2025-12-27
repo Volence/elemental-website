@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '@payloadcms/ui'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -12,12 +12,22 @@ export default function QuickFilters() {
   const isAdmin = user?.role === 'admin' || user?.role === 'staff-manager'
   const userId = user?.id || ''
   
-  // Get current filter status
-  const whereParam = searchParams.toString()
-  const isAllActive = !whereParam.includes('where')
-  const isMyPostsActive = whereParam.includes('assignedTo')
-  const isPendingActive = whereParam.includes('Ready%20for%20Review') || whereParam.includes('Ready+for+Review')
-  const isDraftsActive = whereParam.includes('status') && whereParam.includes('Draft')
+  // Use state to track active filters (client-side only to avoid hydration mismatch)
+  const [isAllActive, setIsAllActive] = useState(true)
+  const [isMyPostsActive, setIsMyPostsActive] = useState(false)
+  const [isPendingActive, setIsPendingActive] = useState(false)
+  const [isThisWeekActive, setIsThisWeekActive] = useState(false)
+  const [isDraftsActive, setIsDraftsActive] = useState(false)
+  
+  // Update active states after mount (client-side only)
+  useEffect(() => {
+    const whereParam = searchParams.toString()
+    setIsAllActive(!whereParam.includes('where'))
+    setIsMyPostsActive(whereParam.includes('assignedTo'))
+    setIsPendingActive(whereParam.includes('Ready%20for%20Review') || whereParam.includes('Ready+for+Review'))
+    setIsThisWeekActive(whereParam.includes('scheduledDate'))
+    setIsDraftsActive(whereParam.includes('status') && whereParam.includes('Draft'))
+  }, [searchParams])
   
   // Build filter URLs using Payload's query string array format (not JSON!)
   const buildMyPostsUrl = () => {
@@ -75,7 +85,7 @@ export default function QuickFilters() {
       
       <Link
         href={buildThisWeekUrl()}
-        className={`quick-filter-btn ${whereParam.includes('scheduledDate') ? 'quick-filter-btn--active' : ''}`}
+        className={`quick-filter-btn ${isThisWeekActive ? 'quick-filter-btn--active' : ''}`}
       >
         📅 This Week
       </Link>
