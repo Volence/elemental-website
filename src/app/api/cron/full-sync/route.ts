@@ -84,7 +84,7 @@ export async function POST(request: Request) {
         
         const syncResult = await syncTeamData(
           team.id,
-          team.faceitTeamId,
+          team.faceitTeamId || '',
           league.championshipId || '',
           league.leagueId || '',
           league.seasonId || '',
