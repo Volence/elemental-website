@@ -71,17 +71,17 @@ export interface Config {
     media: Media;
     people: Person;
     teams: Team;
+    'faceit-leagues': FaceitLeague;
+    production: Production;
+    'organization-staff': OrganizationStaff;
     matches: Match;
     'tournament-templates': TournamentTemplate;
     'faceit-seasons': FaceitSeason;
-    'faceit-seasons-archive': FaceitSeasonsArchive;
-    production: Production;
-    'organization-staff': OrganizationStaff;
     'social-posts': SocialPost;
-    users: User;
-    'ignored-duplicates': IgnoredDuplicate;
     'recruitment-listings': RecruitmentListing;
     'recruitment-applications': RecruitmentApplication;
+    users: User;
+    'ignored-duplicates': IgnoredDuplicate;
     'invite-links': InviteLink;
     redirects: Redirect;
     'payload-kv': PayloadKv;
@@ -96,17 +96,17 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     people: PeopleSelect<false> | PeopleSelect<true>;
     teams: TeamsSelect<false> | TeamsSelect<true>;
+    'faceit-leagues': FaceitLeaguesSelect<false> | FaceitLeaguesSelect<true>;
+    production: ProductionSelect<false> | ProductionSelect<true>;
+    'organization-staff': OrganizationStaffSelect<false> | OrganizationStaffSelect<true>;
     matches: MatchesSelect<false> | MatchesSelect<true>;
     'tournament-templates': TournamentTemplatesSelect<false> | TournamentTemplatesSelect<true>;
     'faceit-seasons': FaceitSeasonsSelect<false> | FaceitSeasonsSelect<true>;
-    'faceit-seasons-archive': FaceitSeasonsArchiveSelect<false> | FaceitSeasonsArchiveSelect<true>;
-    production: ProductionSelect<false> | ProductionSelect<true>;
-    'organization-staff': OrganizationStaffSelect<false> | OrganizationStaffSelect<true>;
     'social-posts': SocialPostsSelect<false> | SocialPostsSelect<true>;
-    users: UsersSelect<false> | UsersSelect<true>;
-    'ignored-duplicates': IgnoredDuplicatesSelect<false> | IgnoredDuplicatesSelect<true>;
     'recruitment-listings': RecruitmentListingsSelect<false> | RecruitmentListingsSelect<true>;
     'recruitment-applications': RecruitmentApplicationsSelect<false> | RecruitmentApplicationsSelect<true>;
+    users: UsersSelect<false> | UsersSelect<true>;
+    'ignored-duplicates': IgnoredDuplicatesSelect<false> | IgnoredDuplicatesSelect<true>;
     'invite-links': InviteLinksSelect<false> | InviteLinksSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -122,18 +122,18 @@ export interface Config {
   globals: {
     header: Header;
     footer: Footer;
-    'data-consistency': DataConsistency;
     'production-dashboard': ProductionDashboard;
     'social-media-settings': SocialMediaSetting;
     'social-media-config': SocialMediaConfig;
+    'data-consistency': DataConsistency;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
-    'data-consistency': DataConsistencySelect<false> | DataConsistencySelect<true>;
     'production-dashboard': ProductionDashboardSelect<false> | ProductionDashboardSelect<true>;
     'social-media-settings': SocialMediaSettingsSelect<false> | SocialMediaSettingsSelect<true>;
     'social-media-config': SocialMediaConfigSelect<false> | SocialMediaConfigSelect<true>;
+    'data-consistency': DataConsistencySelect<false> | DataConsistencySelect<true>;
   };
   locale: null;
   user: User & {
@@ -623,31 +623,15 @@ export interface Team {
    */
   faceitTeamId?: string | null;
   /**
-   * Current season Championship ID - See FACEIT_API_COMPLETE_REFERENCE.md for IDs
+   * 🎯 Current league/season this team is competing in - Selecting this auto-creates the season entry
    */
-  faceitChampionshipId?: string | null;
+  currentFaceitLeague?: (number | null) | FaceitLeague;
   /**
-   * Current League ID
-   */
-  faceitLeagueId?: string | null;
-  /**
-   * Current Season ID
-   */
-  faceitSeasonId?: string | null;
-  /**
-   * Current Stage ID (used for standings API)
-   */
-  faceitStageId?: string | null;
-  /**
-   * Display competitive section on team page frontend
+   * Display FaceIt competitive data on team page frontend
    */
   faceitShowCompetitiveSection?: boolean | null;
   /**
-   * Hide historical season data (e.g., after team identity change)
-   */
-  faceitHideHistoricalSeasons?: boolean | null;
-  /**
-   * 📊 Current active season data (auto-populated by sync)
+   * 📊 Current active season data (auto-populated)
    */
   currentFaceitSeason?: (number | null) | FaceitSeason;
   /**
@@ -662,7 +646,56 @@ export interface Team {
   createdAt: string;
 }
 /**
- * 🏆 Current FaceIt competitive season data for teams
+ * ⚙️ FaceIt league templates - Admin-only. Teams select from these when enabling FaceIt.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faceit-leagues".
+ */
+export interface FaceitLeague {
+  id: number;
+  /**
+   * Display name (e.g., "Season 7 Advanced NA")
+   */
+  name: string;
+  /**
+   * Is this the current active season?
+   */
+  isActive?: boolean | null;
+  /**
+   * Season number (e.g., 7)
+   */
+  seasonNumber: number;
+  division: 'Masters' | 'Expert' | 'Advanced' | 'Open';
+  region: 'NA' | 'EMEA' | 'SA';
+  /**
+   * Conference name (e.g., "Central") - optional
+   */
+  conference?: string | null;
+  /**
+   * FaceIt League ID (from standings URL)
+   */
+  leagueId: string;
+  /**
+   * FaceIt Season ID (from standings URL)
+   */
+  seasonId: string;
+  /**
+   * FaceIt Stage ID (from ?stage= parameter in standings URL)
+   */
+  stageId: string;
+  /**
+   * FaceIt Championship ID (optional - needed for match data sync. Try using League ID if unknown)
+   */
+  championshipId?: string | null;
+  /**
+   * Internal notes about this league/season
+   */
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * 🏆 Team FaceIt seasons - Auto-managed through team pages (backend only)
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "faceit-seasons".
@@ -674,27 +707,31 @@ export interface FaceitSeason {
    */
   team: number | Team;
   /**
-   * FaceIt Team ID (e.g., bc03efbc-725a-42f2-8acb-c8ee9783c8ae)
+   * ⭐ RECOMMENDED: Select a league template to auto-fill championship/stage/league IDs
+   */
+  faceitLeague?: (number | null) | FaceitLeague;
+  /**
+   * FaceIt Team ID for this specific team (e.g., bc03efbc-725a-42f2-8acb-c8ee9783c8ae)
    */
   faceitTeamId: string;
   /**
-   * FaceIt Championship ID for this season
+   * FaceIt Championship ID (auto-filled from league, or enter manually)
    */
-  championshipId: string;
+  championshipId?: string | null;
   /**
-   * FaceIt League ID
+   * FaceIt League ID (auto-filled from league, or enter manually)
    */
-  leagueId: string;
+  leagueId?: string | null;
   /**
-   * FaceIt Season ID
+   * FaceIt Season ID (auto-filled from league, or enter manually)
    */
-  seasonId: string;
+  seasonId?: string | null;
   /**
-   * FaceIt Stage ID (used for standings endpoint)
+   * FaceIt Stage ID (auto-filled from league, or enter manually)
    */
-  stageId: string;
+  stageId?: string | null;
   /**
-   * Display name (e.g., "Season 7")
+   * ✨ Auto-filled from league template on save (editable before save)
    */
   seasonName: string;
   /**
@@ -702,15 +739,15 @@ export interface FaceitSeason {
    */
   isActive?: boolean | null;
   /**
-   * Skill division
+   * ✨ Auto-filled from league template on save
    */
   division: 'Masters' | 'Expert' | 'Advanced' | 'Open';
   /**
-   * Geographic region
+   * ✨ Auto-filled from league template on save
    */
   region: 'NA' | 'EMEA' | 'SA';
   /**
-   * Conference name (e.g., "Central")
+   * ✨ Auto-filled from league template on save (e.g., "Central")
    */
   conference?: string | null;
   /**
@@ -747,43 +784,6 @@ export interface FaceitSeason {
     matchesPlayed?: number | null;
   };
   /**
-   * Recent match results (last 10 matches)
-   */
-  recentMatches?:
-    | {
-        /**
-         * FaceIt match ID
-         */
-        matchId: string;
-        /**
-         * FaceIt room ID (for generating room links)
-         */
-        faceitRoomId: string;
-        /**
-         * Opponent team name
-         */
-        opponent: string;
-        /**
-         * Opponent FaceIt team ID
-         */
-        opponentId?: string | null;
-        /**
-         * Match date and time
-         */
-        date: string;
-        result: 'win' | 'loss' | 'scheduled';
-        /**
-         * ELMT score
-         */
-        elmtScore?: number | null;
-        /**
-         * Opponent score
-         */
-        opponentScore?: number | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
    * Last sync from FaceIt API
    */
   lastSynced?: string | null;
@@ -799,7 +799,7 @@ export interface FaceitSeason {
   createdAt: string;
 }
 /**
- * 🏆 Define recurring match schedules for tournaments and leagues
+ * 🏆 Define recurring match schedules for manually-scheduled tournaments. ⚠️ NOT needed for FaceIt tournaments - those use FaceIt Leagues instead.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "tournament-templates".
@@ -807,21 +807,13 @@ export interface FaceitSeason {
 export interface TournamentTemplate {
   id: number;
   /**
-   * Tournament/League name (e.g., "FACEIT League S7", "Annihilation Tournament")
+   * Tournament/League name (e.g., "Annihilation Tournament", "Summer Cup")
    */
   name: string;
   /**
    * When unchecked, stops auto-creating matches (use for breaks/off-season)
    */
   isActive?: boolean | null;
-  /**
-   * 🏆 This is a FaceIt tournament - automatically pull match data from FaceIt API
-   */
-  isFaceitTournament?: boolean | null;
-  /**
-   * Auto-sync matches from FaceIt (recommended)
-   */
-  faceitAutoSync?: boolean | null;
   /**
    * Teams participating in this tournament. Use the bulk selector below for easy multi-selection.
    */
@@ -858,6 +850,63 @@ export interface TournamentTemplate {
   createdAt: string;
 }
 /**
+ * 🎙️ Manage production staff (casters, observers, producers) who work on match broadcasts.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "production".
+ */
+export interface Production {
+  id: number;
+  /**
+   * Link to a person in the People collection. Social links are managed in the People collection.
+   */
+  person: number | Person;
+  displayName?: string | null;
+  /**
+   * Auto-populated from the linked person's slug. This field is automatically set when you select a person.
+   */
+  slug?: string | null;
+  /**
+   * Production role. Select the combination that best describes their role(s).
+   */
+  type: 'caster' | 'observer' | 'producer' | 'observer-producer' | 'observer-producer-caster';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * 👔 Manage organization staff members (owners, HR, moderators, managers, etc.). Staff can have multiple roles.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organization-staff".
+ */
+export interface OrganizationStaff {
+  id: number;
+  /**
+   * Link to a person in the People collection. Social links are managed in the People collection.
+   */
+  person: number | Person;
+  displayName?: string | null;
+  /**
+   * Auto-populated from the linked person's slug. This field is automatically set when you select a person.
+   */
+  slug?: string | null;
+  /**
+   * Select all roles this staff member holds. They can have multiple roles.
+   */
+  roles: (
+    | 'owner'
+    | 'co-owner'
+    | 'hr'
+    | 'moderator'
+    | 'event-manager'
+    | 'social-manager'
+    | 'graphics'
+    | 'media-editor'
+  )[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * ⚔️ Manage competitive matches for Elemental teams. Include match details, scores, streams, and VODs.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -888,9 +937,9 @@ export interface Match {
    */
   season?: string | null;
   /**
-   * Upcoming/Live/Completed status is automatically determined based on match date and time
+   * Matches are automatically marked Complete 2 hours after their scheduled time
    */
-  status: 'scheduled' | 'cancelled';
+  status: 'scheduled' | 'complete' | 'cancelled';
   /**
    * Match title (auto-generated from team + opponent if left blank). You can override the auto-generated title by entering a custom one here.
    */
@@ -1070,130 +1119,6 @@ export interface User {
   password?: string | null;
 }
 /**
- * 📦 Historical FaceIt season data (read-only, not synced)
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "faceit-seasons-archive".
- */
-export interface FaceitSeasonsArchive {
-  id: number;
-  /**
-   * Which ELMT team this historical season data belongs to
-   */
-  team: number | Team;
-  /**
-   * FaceIt Team ID at the time of this season
-   */
-  faceitTeamId: string;
-  /**
-   * FaceIt Championship ID
-   */
-  championshipId: string;
-  leagueId: string;
-  seasonId: string;
-  stageId: string;
-  /**
-   * Display name (e.g., "Season 6")
-   */
-  seasonName: string;
-  /**
-   * Always false for archived seasons
-   */
-  isActive?: boolean | null;
-  division: 'Masters' | 'Expert' | 'Advanced' | 'Open';
-  region: 'NA' | 'EMEA' | 'SA';
-  /**
-   * Conference name (e.g., "Central")
-   */
-  conference?: string | null;
-  /**
-   * Final standings from end of season
-   */
-  standings?: {
-    /**
-     * Final rank/position
-     */
-    currentRank?: number | null;
-    /**
-     * Total teams in division
-     */
-    totalTeams?: number | null;
-    wins?: number | null;
-    losses?: number | null;
-    ties?: number | null;
-    points?: number | null;
-    matchesPlayed?: number | null;
-  };
-  /**
-   * When this season was archived
-   */
-  archivedAt?: string | null;
-  dataSource?: 'faceit' | null;
-  /**
-   * Hide from frontend display (e.g., after team identity change)
-   */
-  hideHistoricalData?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * 🎙️ Manage production staff (casters, observers, producers) who work on match broadcasts.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "production".
- */
-export interface Production {
-  id: number;
-  /**
-   * Link to a person in the People collection. Social links are managed in the People collection.
-   */
-  person: number | Person;
-  displayName?: string | null;
-  /**
-   * Auto-populated from the linked person's slug. This field is automatically set when you select a person.
-   */
-  slug?: string | null;
-  /**
-   * Production role. Select the combination that best describes their role(s).
-   */
-  type: 'caster' | 'observer' | 'producer' | 'observer-producer' | 'observer-producer-caster';
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * 👔 Manage organization staff members (owners, HR, moderators, managers, etc.). Staff can have multiple roles.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "organization-staff".
- */
-export interface OrganizationStaff {
-  id: number;
-  /**
-   * Link to a person in the People collection. Social links are managed in the People collection.
-   */
-  person: number | Person;
-  displayName?: string | null;
-  /**
-   * Auto-populated from the linked person's slug. This field is automatically set when you select a person.
-   */
-  slug?: string | null;
-  /**
-   * Select all roles this staff member holds. They can have multiple roles.
-   */
-  roles: (
-    | 'owner'
-    | 'co-owner'
-    | 'hr'
-    | 'moderator'
-    | 'event-manager'
-    | 'social-manager'
-    | 'graphics'
-    | 'media-editor'
-  )[];
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * 📱 Manage social media posts and content calendar.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1264,33 +1189,6 @@ export interface SocialPost {
    * Internal notes for reviewers (not visible in the post)
    */
   notes?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Pairs of people with similar names that are actually different people
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ignored-duplicates".
- */
-export interface IgnoredDuplicate {
-  id: number;
-  /**
-   * First person in the pair
-   */
-  person1: number | Person;
-  /**
-   * Second person in the pair
-   */
-  person2: number | Person;
-  /**
-   * Display label (auto-generated)
-   */
-  label: string;
-  /**
-   * Optional note explaining why these are different people
-   */
-  reason?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1380,6 +1278,33 @@ export interface RecruitmentApplication {
    * Archive old applications to hide them from active list
    */
   archived?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Pairs of people with similar names that are actually different people
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ignored-duplicates".
+ */
+export interface IgnoredDuplicate {
+  id: number;
+  /**
+   * First person in the pair
+   */
+  person1: number | Person;
+  /**
+   * Second person in the pair
+   */
+  person2: number | Person;
+  /**
+   * Display label (auto-generated)
+   */
+  label: string;
+  /**
+   * Optional note explaining why these are different people
+   */
+  reason?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1593,6 +1518,18 @@ export interface PayloadLockedDocument {
         value: number | Team;
       } | null)
     | ({
+        relationTo: 'faceit-leagues';
+        value: number | FaceitLeague;
+      } | null)
+    | ({
+        relationTo: 'production';
+        value: number | Production;
+      } | null)
+    | ({
+        relationTo: 'organization-staff';
+        value: number | OrganizationStaff;
+      } | null)
+    | ({
         relationTo: 'matches';
         value: number | Match;
       } | null)
@@ -1605,28 +1542,8 @@ export interface PayloadLockedDocument {
         value: number | FaceitSeason;
       } | null)
     | ({
-        relationTo: 'faceit-seasons-archive';
-        value: number | FaceitSeasonsArchive;
-      } | null)
-    | ({
-        relationTo: 'production';
-        value: number | Production;
-      } | null)
-    | ({
-        relationTo: 'organization-staff';
-        value: number | OrganizationStaff;
-      } | null)
-    | ({
         relationTo: 'social-posts';
         value: number | SocialPost;
-      } | null)
-    | ({
-        relationTo: 'users';
-        value: number | User;
-      } | null)
-    | ({
-        relationTo: 'ignored-duplicates';
-        value: number | IgnoredDuplicate;
       } | null)
     | ({
         relationTo: 'recruitment-listings';
@@ -1635,6 +1552,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'recruitment-applications';
         value: number | RecruitmentApplication;
+      } | null)
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'ignored-duplicates';
+        value: number | IgnoredDuplicate;
       } | null)
     | ({
         relationTo: 'invite-links';
@@ -1968,15 +1893,54 @@ export interface TeamsSelect<T extends boolean = true> {
       };
   faceitEnabled?: T;
   faceitTeamId?: T;
-  faceitChampionshipId?: T;
-  faceitLeagueId?: T;
-  faceitSeasonId?: T;
-  faceitStageId?: T;
+  currentFaceitLeague?: T;
   faceitShowCompetitiveSection?: T;
-  faceitHideHistoricalSeasons?: T;
   currentFaceitSeason?: T;
   slug?: T;
   activeTournaments?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faceit-leagues_select".
+ */
+export interface FaceitLeaguesSelect<T extends boolean = true> {
+  name?: T;
+  isActive?: T;
+  seasonNumber?: T;
+  division?: T;
+  region?: T;
+  conference?: T;
+  leagueId?: T;
+  seasonId?: T;
+  stageId?: T;
+  championshipId?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "production_select".
+ */
+export interface ProductionSelect<T extends boolean = true> {
+  person?: T;
+  displayName?: T;
+  slug?: T;
+  type?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organization-staff_select".
+ */
+export interface OrganizationStaffSelect<T extends boolean = true> {
+  person?: T;
+  displayName?: T;
+  slug?: T;
+  roles?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2052,8 +2016,6 @@ export interface MatchesSelect<T extends boolean = true> {
 export interface TournamentTemplatesSelect<T extends boolean = true> {
   name?: T;
   isActive?: T;
-  isFaceitTournament?: T;
-  faceitAutoSync?: T;
   assignedTeams?: T;
   scheduleRules?:
     | T
@@ -2080,6 +2042,7 @@ export interface TournamentTemplatesSelect<T extends boolean = true> {
  */
 export interface FaceitSeasonsSelect<T extends boolean = true> {
   team?: T;
+  faceitLeague?: T;
   faceitTeamId?: T;
   championshipId?: T;
   leagueId?: T;
@@ -2100,80 +2063,10 @@ export interface FaceitSeasonsSelect<T extends boolean = true> {
         ties?: T;
         points?: T;
         matchesPlayed?: T;
-      };
-  recentMatches?:
-    | T
-    | {
-        matchId?: T;
-        faceitRoomId?: T;
-        opponent?: T;
-        opponentId?: T;
-        date?: T;
-        result?: T;
-        elmtScore?: T;
-        opponentScore?: T;
-        id?: T;
       };
   lastSynced?: T;
   dataSource?: T;
   hideHistoricalData?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "faceit-seasons-archive_select".
- */
-export interface FaceitSeasonsArchiveSelect<T extends boolean = true> {
-  team?: T;
-  faceitTeamId?: T;
-  championshipId?: T;
-  leagueId?: T;
-  seasonId?: T;
-  stageId?: T;
-  seasonName?: T;
-  isActive?: T;
-  division?: T;
-  region?: T;
-  conference?: T;
-  standings?:
-    | T
-    | {
-        currentRank?: T;
-        totalTeams?: T;
-        wins?: T;
-        losses?: T;
-        ties?: T;
-        points?: T;
-        matchesPlayed?: T;
-      };
-  archivedAt?: T;
-  dataSource?: T;
-  hideHistoricalData?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "production_select".
- */
-export interface ProductionSelect<T extends boolean = true> {
-  person?: T;
-  displayName?: T;
-  slug?: T;
-  type?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "organization-staff_select".
- */
-export interface OrganizationStaffSelect<T extends boolean = true> {
-  person?: T;
-  displayName?: T;
-  slug?: T;
-  roles?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2200,6 +2093,35 @@ export interface SocialPostsSelect<T extends boolean = true> {
         id?: T;
       };
   notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recruitment-listings_select".
+ */
+export interface RecruitmentListingsSelect<T extends boolean = true> {
+  category?: T;
+  team?: T;
+  role?: T;
+  requirements?: T;
+  status?: T;
+  filledBy?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recruitment-applications_select".
+ */
+export interface RecruitmentApplicationsSelect<T extends boolean = true> {
+  listing?: T;
+  discordHandle?: T;
+  aboutMe?: T;
+  status?: T;
+  internalNotes?: T;
+  archived?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2244,35 +2166,6 @@ export interface IgnoredDuplicatesSelect<T extends boolean = true> {
   person2?: T;
   label?: T;
   reason?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "recruitment-listings_select".
- */
-export interface RecruitmentListingsSelect<T extends boolean = true> {
-  category?: T;
-  team?: T;
-  role?: T;
-  requirements?: T;
-  status?: T;
-  filledBy?: T;
-  createdBy?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "recruitment-applications_select".
- */
-export interface RecruitmentApplicationsSelect<T extends boolean = true> {
-  listing?: T;
-  discordHandle?: T;
-  aboutMe?: T;
-  status?: T;
-  internalNotes?: T;
-  archived?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2434,17 +2327,6 @@ export interface Footer {
   createdAt?: string | null;
 }
 /**
- * 📊 Check and fix data consistency issues across collections.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "data-consistency".
- */
-export interface DataConsistency {
-  id: number;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
  * 📺 Manage weekly match coverage, staff assignments, and broadcast schedule
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2551,6 +2433,17 @@ export interface SocialMediaConfig {
   createdAt?: string | null;
 }
 /**
+ * 📊 Check and fix data consistency issues across collections.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "data-consistency".
+ */
+export interface DataConsistency {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
@@ -2598,15 +2491,6 @@ export interface FooterSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "data-consistency_select".
- */
-export interface DataConsistencySelect<T extends boolean = true> {
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "production-dashboard_select".
  */
 export interface ProductionDashboardSelect<T extends boolean = true> {
@@ -2647,6 +2531,15 @@ export interface SocialMediaConfigSelect<T extends boolean = true> {
         originalContent?: T;
       };
   contentGuidelines?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "data-consistency_select".
+ */
+export interface DataConsistencySelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

@@ -38,13 +38,13 @@ export async function GET(
     
     const currentSeason = currentSeasons.docs[0] || null
     
-    // Get historical seasons (not hidden)
+    // Get historical seasons (inactive, not hidden)
     const historicalSeasons = await payload.find({
-      collection: 'faceit-seasons-archive',
+      collection: 'faceit-seasons',
       where: {
         and: [
           { team: { equals: teamId } },
-          { hideHistoricalData: { equals: false } },
+          { isActive: { equals: false } },
         ],
       },
       sort: '-seasonName',

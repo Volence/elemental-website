@@ -17,16 +17,24 @@ export const FaceitSeasons: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'seasonName',
-    defaultColumns: ['team', 'seasonName', 'currentRank', 'record', 'isActive', 'lastSynced'],
-    description: '🏆 Current FaceIt competitive season data for teams',
+    defaultColumns: ['team', 'faceitLeague', 'seasonName', 'isActive', 'lastSynced'],
+    description: '🏆 Team FaceIt seasons - Auto-managed through team pages (backend only)',
     group: 'Production',
-    hidden: ({ user }) => {
-      if (!user) return true
-      // Only admins and staff managers can see this collection
-      return user.role !== 'admin' && user.role !== 'staff-manager'
-    },
+    hidden: true, // Hidden from nav, managed through team pages
   },
   fields: [
+    // URL Helper (makes it easy to fill in IDs)
+    {
+      name: 'urlHelper',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '@/components/FaceitUrlHelper',
+        },
+        description: 'Quick fill tool - paste team page URL to extract Team ID',
+      },
+    },
+
     // Team Relationship
     {
       name: 'team',
@@ -38,46 +46,59 @@ export const FaceitSeasons: CollectionConfig = {
         description: 'Which ELMT team this season data belongs to',
       },
     },
+
+    // League Relationship (THE EASY WAY!)
+    {
+      name: 'faceitLeague',
+      type: 'relationship',
+      relationTo: 'faceit-leagues',
+      hasMany: false,
+      admin: {
+        description: '⭐ RECOMMENDED: Select a league template to auto-fill championship/stage/league IDs',
+      },
+    },
     
-    // FaceIt IDs (from API documentation)
+    // Team-Specific ID (still required)
     {
       name: 'faceitTeamId',
       type: 'text',
       required: true,
       admin: {
-        description: 'FaceIt Team ID (e.g., bc03efbc-725a-42f2-8acb-c8ee9783c8ae)',
+        description: 'FaceIt Team ID for this specific team (e.g., bc03efbc-725a-42f2-8acb-c8ee9783c8ae)',
       },
     },
+
+    // Manual IDs (only show if no league selected)
     {
       name: 'championshipId',
       type: 'text',
-      required: true,
       admin: {
-        description: 'FaceIt Championship ID for this season',
+        description: 'FaceIt Championship ID (auto-filled from league, or enter manually)',
+        condition: (data) => !data.faceitLeague,
       },
     },
     {
       name: 'leagueId',
       type: 'text',
-      required: true,
       admin: {
-        description: 'FaceIt League ID',
+        description: 'FaceIt League ID (auto-filled from league, or enter manually)',
+        condition: (data) => !data.faceitLeague,
       },
     },
     {
       name: 'seasonId',
       type: 'text',
-      required: true,
       admin: {
-        description: 'FaceIt Season ID',
+        description: 'FaceIt Season ID (auto-filled from league, or enter manually)',
+        condition: (data) => !data.faceitLeague,
       },
     },
     {
       name: 'stageId',
       type: 'text',
-      required: true,
       admin: {
-        description: 'FaceIt Stage ID (used for standings endpoint)',
+        description: 'FaceIt Stage ID (auto-filled from league, or enter manually)',
+        condition: (data) => !data.faceitLeague,
       },
     },
     
@@ -90,7 +111,7 @@ export const FaceitSeasons: CollectionConfig = {
           type: 'text',
           required: true,
           admin: {
-            description: 'Display name (e.g., "Season 7")',
+            description: '✨ Auto-filled from league template on save (editable before save)',
           },
         },
         {
@@ -117,7 +138,7 @@ export const FaceitSeasons: CollectionConfig = {
             { label: 'Open', value: 'Open' },
           ],
           admin: {
-            description: 'Skill division',
+            description: '✨ Auto-filled from league template on save',
           },
         },
         {
@@ -130,7 +151,7 @@ export const FaceitSeasons: CollectionConfig = {
             { label: 'South America', value: 'SA' },
           ],
           admin: {
-            description: 'Geographic region',
+            description: '✨ Auto-filled from league template on save',
           },
         },
       ],
@@ -139,7 +160,7 @@ export const FaceitSeasons: CollectionConfig = {
       name: 'conference',
       type: 'text',
       admin: {
-        description: 'Conference name (e.g., "Central")',
+        description: '✨ Auto-filled from league template on save (e.g., "Central")',
       },
     },
     
@@ -223,93 +244,6 @@ export const FaceitSeasons: CollectionConfig = {
       ],
     },
     
-    // Recent Matches (lightweight storage)
-    {
-      name: 'recentMatches',
-      type: 'array',
-      admin: {
-        description: 'Recent match results (last 10 matches)',
-      },
-      fields: [
-        {
-          name: 'matchId',
-          type: 'text',
-          required: true,
-          admin: {
-            description: 'FaceIt match ID',
-          },
-        },
-        {
-          name: 'faceitRoomId',
-          type: 'text',
-          required: true,
-          admin: {
-            description: 'FaceIt room ID (for generating room links)',
-          },
-        },
-        {
-          type: 'row',
-          fields: [
-            {
-              name: 'opponent',
-              type: 'text',
-              required: true,
-              admin: {
-                description: 'Opponent team name',
-              },
-            },
-            {
-              name: 'opponentId',
-              type: 'text',
-              admin: {
-                description: 'Opponent FaceIt team ID',
-              },
-            },
-          ],
-        },
-        {
-          name: 'date',
-          type: 'date',
-          required: true,
-          admin: {
-            date: {
-              pickerAppearance: 'dayAndTime',
-            },
-            description: 'Match date and time',
-          },
-        },
-        {
-          type: 'row',
-          fields: [
-            {
-              name: 'result',
-              type: 'select',
-              required: true,
-              options: [
-                { label: 'Win', value: 'win' },
-                { label: 'Loss', value: 'loss' },
-                { label: 'Scheduled', value: 'scheduled' },
-              ],
-            },
-            {
-              name: 'elmtScore',
-              type: 'number',
-              admin: {
-                description: 'ELMT score',
-              },
-            },
-            {
-              name: 'opponentScore',
-              type: 'number',
-              admin: {
-                description: 'Opponent score',
-              },
-            },
-          ],
-        },
-      ],
-    },
-    
     // Metadata
     {
       type: 'row',
@@ -347,17 +281,35 @@ export const FaceitSeasons: CollectionConfig = {
         description: 'Hide this season from frontend historical display (data preserved)',
       },
     },
-    
-    // Custom list columns
-    {
-      name: 'record',
-      type: 'ui',
-      admin: {
-        components: {
-          Cell: '@/components/FaceitSeasonsListColumns/RecordCell#default',
-        },
-      },
-    },
   ],
+  hooks: {
+    beforeChange: [
+      async ({ data, req }) => {
+        // Auto-populate fields from selected league template
+        if (data.faceitLeague) {
+          const league = await req.payload.findByID({
+            collection: 'faceit-leagues',
+            id: data.faceitLeague,
+          })
+          
+          if (league) {
+            // Auto-fill IDs from league
+            data.championshipId = league.championshipId || ''
+            data.leagueId = league.leagueId
+            data.seasonId = league.seasonId
+            data.stageId = league.stageId
+            
+            // Auto-fill display fields from league
+            data.seasonName = league.name
+            data.division = league.division
+            data.region = league.region
+            data.conference = league.conference || ''
+          }
+        }
+        
+        return data
+      },
+    ],
+  },
 }
 

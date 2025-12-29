@@ -41,6 +41,7 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showHistory, setShowHistory] = useState(false)
+  const [showPastMatches, setShowPastMatches] = useState(false)
 
   useEffect(() => {
     async function fetchData() {
@@ -62,7 +63,32 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
         const matchesData = await matchesRes.json()
         
         setScheduledMatches(matchesData.scheduled || [])
-        setRecentResults(matchesData.results || [])
+        
+        // Smart BYE detection: If total matches played > actual match records, add BYE weeks
+        let results = matchesData.results || []
+        if (standingsData.currentSeason) {
+          const totalMatchesPlayed = 
+            standingsData.currentSeason.wins + 
+            standingsData.currentSeason.losses + 
+            (standingsData.currentSeason.ties || 0)
+          
+          const actualMatchCount = results.length
+          const byeWeeksCount = totalMatchesPlayed - actualMatchCount
+          
+          if (byeWeeksCount > 0) {
+            // Add BYE weeks to fill the gap
+            for (let i = 0; i < byeWeeksCount; i++) {
+              results.push({
+                id: -1 - i, // Negative ID for fake BYE entries
+                date: '', // No date for BYE
+                opponent: 'BYE',
+                result: undefined,
+              })
+            }
+          }
+        }
+        
+        setRecentResults(results)
 
       } catch (err: any) {
         console.error('Error fetching FaceIt data:', err)
@@ -103,390 +129,178 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
   }
 
   return (
-    <div className="competitive-section">
-      <div className="competitive-header">
-        <h2>🏆 FaceIt Competitive</h2>
-        <div className="season-badge">{standing.season}</div>
-      </div>
-
-      {/* Current Season Standings */}
-      <div className="standings-card">
-        <div className="standings-header">
-          <span className="division-badge">
-            {standing.division} {standing.region}
-          </span>
+    <section className="mb-8">
+      <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-xl border border-slate-700/50 overflow-hidden backdrop-blur-sm">
+        <div className="p-6 border-b border-slate-700/50">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+              🏆 FaceIt Competitive
+            </h2>
+            <div className="px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-md text-sm font-medium text-blue-300">
+              {standing.season}
+            </div>
+          </div>
         </div>
-        <div className="standings-stats">
-          <div className="stat">
-            <span className="stat-label">Rank</span>
-            <span className="stat-value">
-              {standing.rank} <span className="stat-secondary">of {standing.totalTeams}</span>
+
+        {/* Current Season Standings */}
+        <div className="p-6">
+          <div className="mb-4">
+            <span className="inline-block px-3 py-1 bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30 rounded-md text-sm font-semibold text-purple-200">
+              {standing.division} {standing.region}
             </span>
           </div>
-          <div className="stat">
-            <span className="stat-label">Record</span>
-            <span className="stat-value">{standing.record}</span>
-          </div>
-          <div className="stat">
-            <span className="stat-label">Points</span>
-            <span className="stat-value">{standing.points}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Upcoming Matches */}
-      {scheduledMatches.length > 0 && (
-        <div className="matches-section">
-          <h3>📅 Upcoming Matches ({scheduledMatches.length})</h3>
-          <div className="matches-list">
-            {scheduledMatches.map((match) => (
-              <div key={match.id} className="match-card scheduled">
-                <div className="match-date">{formatDate(match.date)}</div>
-                <div className="match-opponent">vs {match.opponent}</div>
-                {match.roomLink && (
-                  <a 
-                    href={match.roomLink} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="match-link"
-                  >
-                    Match Room →
-                  </a>
-                )}
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <div className="text-sm text-slate-400 uppercase tracking-wide mb-1">Rank</div>
+              <div className="text-3xl font-bold text-white">
+                {standing.rank} <span className="text-lg text-slate-400 font-normal">of {standing.totalTeams}</span>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Recent Results */}
-      {recentResults.length > 0 && (
-        <div className="matches-section">
-          <h3>📊 Recent Results</h3>
-          <div className="matches-list">
-            {recentResults.map((match) => (
-              <div key={match.id} className={`match-card result ${match.result}`}>
-                <div className="match-date">{formatDate(match.date)}</div>
-                <div className="match-opponent">vs {match.opponent}</div>
-                <div className="match-result">
-                  {match.result === 'win' && <span className="result-badge win">✓ WIN</span>}
-                  {match.result === 'loss' && <span className="result-badge loss">✗ LOSS</span>}
-                  {match.score && <span className="match-score">{match.score}</span>}
-                </div>
-                {match.roomLink && (
-                  <a 
-                    href={match.roomLink} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="match-link small"
-                  >
-                    Room
-                  </a>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Historical Seasons */}
-      {historicalSeasons.length > 0 && (
-        <div className="historical-section">
-          <button 
-            className="historical-toggle"
-            onClick={() => setShowHistory(!showHistory)}
-          >
-            {showHistory ? '▼' : '▶'} Past Seasons ({historicalSeasons.length})
-          </button>
-          {showHistory && (
-            <div className="historical-list">
-              {historicalSeasons.map((season, idx) => (
-                <div key={idx} className="historical-item">
-                  <span className="historical-season">{season.season}</span>
-                  <span className="historical-rank">
-                    {season.rank}
-                    {season.rank === 1 && '🥇'}
-                    {season.rank === 2 && '🥈'}
-                    {season.rank === 3 && '🥉'}
-                    <span className="historical-secondary"> of {season.totalTeams}</span>
-                  </span>
-                  <span className="historical-record">({season.record})</span>
-                </div>
-              ))}
             </div>
-          )}
+            <div>
+              <div className="text-sm text-slate-400 uppercase tracking-wide mb-1">Record</div>
+              <div className="text-3xl font-bold text-white">{standing.record}</div>
+            </div>
+          </div>
         </div>
-      )}
 
-      <style jsx>{`
-        .competitive-section {
-          margin: 2rem 0;
-          padding: 2rem;
-          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-          border-radius: 12px;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+        {/* Upcoming Matches */}
+        {scheduledMatches.length > 0 && (
+          <div className="px-6 pb-6">
+            <h3 className="text-lg font-semibold text-white mb-3">📅 Upcoming Matches</h3>
+            <div className="space-y-2">
+              {scheduledMatches.map((match) => {
+                const isBye = match.opponent.toUpperCase() === 'BYE'
+                return (
+                  <div 
+                    key={match.id} 
+                    className={`flex items-center justify-between p-4 bg-slate-800/50 rounded-lg border transition-colors ${
+                      isBye 
+                        ? 'border-slate-600/30 opacity-60' 
+                        : 'border-blue-500/20 hover:border-blue-500/40'
+                    }`}
+                  >
+                    <div className="flex-1">
+                      <div className="text-sm text-slate-400">{formatDate(match.date)}</div>
+                      <div className={`font-semibold mt-1 ${isBye ? 'text-slate-500' : 'text-white'}`}>
+                        {isBye ? '— BYE Week —' : `vs ${match.opponent}`}
+                      </div>
+                    </div>
+                    {match.roomLink && !isBye && (
+                      <a 
+                        href={match.roomLink} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded-md text-sm font-medium text-blue-300 transition-colors"
+                      >
+                        Match Room →
+                      </a>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
-        .competitive-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 1.5rem;
-          padding-bottom: 1rem;
-          border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-        }
+        {/* Past Matches - Collapsible */}
+        {recentResults.length > 0 && (
+          <div className="px-6 pb-6">
+            <button 
+              className="flex items-center gap-2 text-lg font-semibold text-white mb-3 hover:text-blue-300 transition-colors"
+              onClick={() => setShowPastMatches(!showPastMatches)}
+            >
+              <span className="transform transition-transform" style={{ transform: showPastMatches ? 'rotate(90deg)' : 'rotate(0deg)' }}>
+                ▶
+              </span>
+              Past Matches ({recentResults.length})
+            </button>
+            {showPastMatches && (
+              <div className="space-y-2">
+                {recentResults.map((match) => {
+                  const isBye = match.opponent.toUpperCase() === 'BYE'
+                  return (
+                    <div 
+                      key={match.id} 
+                      className={`flex items-center justify-between p-4 bg-slate-800/50 rounded-lg border transition-colors ${
+                        isBye
+                          ? 'border-slate-600/30 opacity-60'
+                          : match.result === 'win' 
+                            ? 'border-green-500/20 hover:border-green-500/40' 
+                            : 'border-red-500/20 hover:border-red-500/40'
+                      }`}
+                    >
+                      <div className="flex-1">
+                        {!isBye && match.date && (
+                          <div className="text-sm text-slate-400">{formatDate(match.date)}</div>
+                        )}
+                        <div className={`font-semibold ${isBye ? 'text-slate-500' : match.date ? 'mt-1' : ''} ${isBye ? 'text-slate-500' : 'text-white'}`}>
+                          {isBye ? '— BYE Week —' : `vs ${match.opponent}`}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {!isBye && match.result === 'win' && (
+                          <span className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-md text-sm font-semibold text-green-300">
+                            ✓ WIN
+                          </span>
+                        )}
+                        {!isBye && match.result === 'loss' && (
+                          <span className="px-3 py-1 bg-red-500/20 border border-red-500/30 rounded-md text-sm font-semibold text-red-300">
+                            ✗ LOSS
+                          </span>
+                        )}
+                        {match.roomLink && !isBye && (
+                          <a 
+                            href={match.roomLink} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="px-3 py-1 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-md text-xs font-medium text-slate-300 transition-colors"
+                          >
+                            Room
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
 
-        .competitive-header h2 {
-          margin: 0;
-          font-size: 1.75rem;
-          color: #fff;
-        }
-
-        .season-badge {
-          padding: 0.5rem 1rem;
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 6px;
-          font-weight: 600;
-          color: #fff;
-        }
-
-        .standings-card {
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 8px;
-          padding: 1.5rem;
-          margin-bottom: 1.5rem;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .division-badge {
-          display: inline-block;
-          padding: 0.25rem 0.75rem;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          border-radius: 4px;
-          font-size: 0.875rem;
-          font-weight: 600;
-          color: #fff;
-        }
-
-        .standings-stats {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-          gap: 1.5rem;
-          margin-top: 1rem;
-        }
-
-        .stat {
-          display: flex;
-          flex-direction: column;
-          gap: 0.25rem;
-        }
-
-        .stat-label {
-          font-size: 0.875rem;
-          color: rgba(255, 255, 255, 0.6);
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-        }
-
-        .stat-value {
-          font-size: 1.5rem;
-          font-weight: 700;
-          color: #fff;
-        }
-
-        .stat-secondary {
-          font-size: 1rem;
-          font-weight: 400;
-          color: rgba(255, 255, 255, 0.6);
-        }
-
-        .matches-section {
-          margin-top: 1.5rem;
-        }
-
-        .matches-section h3 {
-          font-size: 1.25rem;
-          color: #fff;
-          margin-bottom: 1rem;
-        }
-
-        .matches-list {
-          display: flex;
-          flex-direction: column;
-          gap: 0.75rem;
-        }
-
-        .match-card {
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 6px;
-          padding: 1rem;
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          border-left: 3px solid transparent;
-          transition: all 0.2s;
-        }
-
-        .match-card:hover {
-          background: rgba(255, 255, 255, 0.08);
-        }
-
-        .match-card.scheduled {
-          border-left-color: #3b82f6;
-        }
-
-        .match-card.result.win {
-          border-left-color: #10b981;
-        }
-
-        .match-card.result.loss {
-          border-left-color: #ef4444;
-        }
-
-        .match-date {
-          font-size: 0.875rem;
-          color: rgba(255, 255, 255, 0.7);
-          min-width: 180px;
-        }
-
-        .match-opponent {
-          flex: 1;
-          font-weight: 600;
-          color: #fff;
-        }
-
-        .match-result {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-        }
-
-        .result-badge {
-          padding: 0.25rem 0.75rem;
-          border-radius: 4px;
-          font-size: 0.875rem;
-          font-weight: 600;
-        }
-
-        .result-badge.win {
-          background: rgba(16, 185, 129, 0.2);
-          color: #10b981;
-        }
-
-        .result-badge.loss {
-          background: rgba(239, 68, 68, 0.2);
-          color: #ef4444;
-        }
-
-        .match-score {
-          font-weight: 600;
-          color: rgba(255, 255, 255, 0.9);
-        }
-
-        .match-link {
-          padding: 0.5rem 1rem;
-          background: rgba(59, 130, 246, 0.2);
-          color: #3b82f6;
-          border-radius: 4px;
-          text-decoration: none;
-          font-size: 0.875rem;
-          font-weight: 600;
-          transition: all 0.2s;
-          white-space: nowrap;
-        }
-
-        .match-link:hover {
-          background: rgba(59, 130, 246, 0.3);
-        }
-
-        .match-link.small {
-          padding: 0.25rem 0.5rem;
-          font-size: 0.75rem;
-        }
-
-        .historical-section {
-          margin-top: 1.5rem;
-          padding-top: 1.5rem;
-          border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .historical-toggle {
-          background: none;
-          border: none;
-          color: rgba(255, 255, 255, 0.8);
-          font-size: 1rem;
-          font-weight: 600;
-          cursor: pointer;
-          padding: 0.5rem 0;
-          transition: color 0.2s;
-        }
-
-        .historical-toggle:hover {
-          color: #fff;
-        }
-
-        .historical-list {
-          margin-top: 1rem;
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
-        }
-
-        .historical-item {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          padding: 0.75rem;
-          background: rgba(255, 255, 255, 0.03);
-          border-radius: 4px;
-        }
-
-        .historical-season {
-          font-weight: 600;
-          color: #fff;
-          min-width: 100px;
-        }
-
-        .historical-rank {
-          color: rgba(255, 255, 255, 0.9);
-        }
-
-        .historical-secondary {
-          color: rgba(255, 255, 255, 0.6);
-          font-size: 0.875rem;
-        }
-
-        .historical-record {
-          color: rgba(255, 255, 255, 0.7);
-          font-size: 0.875rem;
-        }
-
-        .loading {
-          text-align: center;
-          padding: 2rem;
-          color: rgba(255, 255, 255, 0.6);
-        }
-
-        @media (max-width: 768px) {
-          .competitive-section {
-            padding: 1.5rem;
-          }
-
-          .standings-stats {
-            gap: 1rem;
-          }
-
-          .match-card {
-            flex-direction: column;
-            align-items: flex-start;
-          }
-
-          .match-date {
-            min-width: auto;
-          }
-        }
-      `}</style>
-    </div>
+        {/* Historical Seasons */}
+        {historicalSeasons.length > 0 && (
+          <div className="px-6 pb-6 border-t border-slate-700/50 pt-6">
+            <button 
+              className="flex items-center gap-2 text-lg font-semibold text-white mb-3 hover:text-blue-300 transition-colors"
+              onClick={() => setShowHistory(!showHistory)}
+            >
+              <span className="transform transition-transform" style={{ transform: showHistory ? 'rotate(90deg)' : 'rotate(0deg)' }}>
+                ▶
+              </span>
+              Past Seasons ({historicalSeasons.length})
+            </button>
+            {showHistory && (
+              <div className="space-y-2">
+                {historicalSeasons.map((season, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 bg-slate-800/30 rounded-lg">
+                    <span className="text-white font-semibold">{season.season}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-white">
+                        {season.rank}
+                        {season.rank === 1 && '🥇'}
+                        {season.rank === 2 && '🥈'}
+                        {season.rank === 3 && '🥉'}
+                        <span className="text-slate-400 text-sm"> of {season.totalTeams}</span>
+                      </span>
+                      <span className="text-slate-400 text-sm">({season.record})</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </section>
   )
 }
-

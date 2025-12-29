@@ -1,0 +1,13 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/smart-sync",
+      "schedule": "0 5,8,11,14,17,20,23,2 * * *"
+    },
+    {
+      "path": "/api/cron/full-sync",
+      "schedule": "0 8 * * *"
+    }
+  ]
+}
+

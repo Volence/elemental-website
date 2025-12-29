@@ -10,7 +10,7 @@ export const TournamentTemplates: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'name',
-    description: '🏆 Define recurring match schedules for tournaments and leagues',
+    description: '🏆 Define recurring match schedules for manually-scheduled tournaments. ⚠️ NOT needed for FaceIt tournaments - those use FaceIt Leagues instead.',
     group: 'Production',
     defaultColumns: ['name', 'isActive', 'assignedTeams', 'updatedAt'],
     hidden: ({ user }) => {
@@ -110,11 +110,20 @@ export const TournamentTemplates: CollectionConfig = {
   },
   fields: [
     {
+      name: 'faceitNotice',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '@/components/TournamentFaceitNotice',
+        },
+      },
+    },
+    {
       name: 'name',
       type: 'text',
       required: true,
       admin: {
-        description: 'Tournament/League name (e.g., "FACEIT League S7", "Annihilation Tournament")',
+        description: 'Tournament/League name (e.g., "Annihilation Tournament", "Summer Cup")',
       },
     },
     {
@@ -123,23 +132,6 @@ export const TournamentTemplates: CollectionConfig = {
       defaultValue: true,
       admin: {
         description: 'When unchecked, stops auto-creating matches (use for breaks/off-season)',
-      },
-    },
-    {
-      name: 'isFaceitTournament',
-      type: 'checkbox',
-      defaultValue: false,
-      admin: {
-        description: '🏆 This is a FaceIt tournament - automatically pull match data from FaceIt API',
-      },
-    },
-    {
-      name: 'faceitAutoSync',
-      type: 'checkbox',
-      defaultValue: true,
-      admin: {
-        description: 'Auto-sync matches from FaceIt (recommended)',
-        condition: (data) => data.isFaceitTournament === true,
       },
     },
     {

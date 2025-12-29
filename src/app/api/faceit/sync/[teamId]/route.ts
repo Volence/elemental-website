@@ -21,12 +21,23 @@ export async function POST(
       )
     }
     
+    // Get league IDs from request body
+    const body = await request.json()
+    const {faceitTeamId, championshipId, leagueId, seasonId, stageId } = body
+    
+    if (!faceitTeamId || !stageId) {
+      return NextResponse.json(
+        { success: false, error: 'Missing required FaceIt IDs (faceitTeamId, stageId)' },
+        { status: 400 }
+      )
+    }
+    
     // TODO: Check admin authentication
     // For now, we'll allow the request (testing locally)
     
-    console.log(`[FaceIt API] Syncing team ${teamId}...`)
+    console.log(`[FaceIt API] Syncing team ${teamId} with FaceIt team ${faceitTeamId}, stage ${stageId}...`)
     
-    const result = await syncTeamData(teamId)
+    const result = await syncTeamData(teamId, faceitTeamId, championshipId, leagueId, seasonId, stageId)
     
     if (result.success) {
       console.log(`[FaceIt API] Team ${teamId} synced successfully:`, result)

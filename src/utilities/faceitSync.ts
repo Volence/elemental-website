@@ -88,7 +88,7 @@ async function fetchTeamProfile(teamId: string): Promise<FaceitTeamData | null> 
  * Fetch current standings from FaceIt Team-Leagues API (v2)
  * No authentication required!
  */
-async function fetchStandings(stageId: string, teamId: string): Promise<FaceitStanding | null> {
+async function fetchStandings(stageId: string, teamId: string): Promise<{ standing: FaceitStanding | null, totalTeams: number }> {
   try {
     const response = await fetch(
       `${TEAM_LEAGUES_BASE}/standings?entityId=${stageId}&entityType=stage&userId=&offset=0&limit=100`
@@ -96,7 +96,7 @@ async function fetchStandings(stageId: string, teamId: string): Promise<FaceitSt
 
     if (!response.ok) {
       console.error(`Failed to fetch standings: ${response.status}`)
-      return null
+      return { standing: null, totalTeams: 0 }
     }
 
     const data = await response.json()
@@ -107,10 +107,13 @@ async function fetchStandings(stageId: string, teamId: string): Promise<FaceitSt
       s.premade_team_id === teamId
     )
 
-    return teamStanding || null
+    return {
+      standing: teamStanding || null,
+      totalTeams: standings.length, // Actual number of teams in division
+    }
   } catch (error) {
     console.error('Error fetching standings:', error)
-    return null
+    return { standing: null, totalTeams: 0 }
   }
 }
 
@@ -165,7 +168,14 @@ async function resolveOpponentNames(opponentIds: string[]): Promise<Map<string, 
 /**
  * Sync a single team's data from FaceIt
  */
-export async function syncTeamData(teamId: number): Promise<SyncResult> {
+export async function syncTeamData(
+  teamId: number,
+  faceitTeamId: string,
+  championshipId?: string,
+  leagueId?: string,
+  seasonId?: string,
+  stageId?: string
+): Promise<SyncResult> {
   try {
     const payload = await getPayload({ config: configPromise })
     
@@ -183,21 +193,17 @@ export async function syncTeamData(teamId: number): Promise<SyncResult> {
       }
     }
 
-    if (!team.faceitTeamId) {
-      return {
-        success: false,
-        error: 'FaceIt Team ID not configured',
-      }
-    }
-
     // 2. Fetch data from FaceIt API
-    console.log(`[FaceIt Sync] Fetching data for team ${teamId}...`)
+    console.log(`[FaceIt Sync] Fetching data for team ${teamId} (FaceIt ID: ${faceitTeamId})...`)
     
-    const [teamProfile, standing, matches] = await Promise.all([
-      fetchTeamProfile(team.faceitTeamId),
-      team.faceitStageId ? fetchStandings(team.faceitStageId, team.faceitTeamId) : null,
-      team.faceitChampionshipId ? fetchMatches(team.faceitTeamId, team.faceitChampionshipId) : [],
+    const [teamProfile, standingsResult, matches] = await Promise.all([
+      fetchTeamProfile(faceitTeamId),
+      stageId ? fetchStandings(stageId, faceitTeamId) : { standing: null, totalTeams: 0 },
+      championshipId ? fetchMatches(faceitTeamId, championshipId) : [],
     ])
+    
+    const standing = standingsResult.standing
+    const totalTeams = standingsResult.totalTeams
 
     if (!teamProfile) {
       return {
@@ -206,35 +212,39 @@ export async function syncTeamData(teamId: number): Promise<SyncResult> {
       }
     }
 
-    // 3. Update or create season record
-    let seasonRecord = null
-    
-    if (standing) {
-      // Find existing season record
-      const existingSeasons = await payload.find({
-        collection: 'faceit-seasons',
-        where: {
-          team: { equals: teamId },
-          isActive: { equals: true },
-        },
-        limit: 1,
-      })
+    // 3. Fetch existing season record (needed for match creation even without standings)
+    const existingSeasons = await payload.find({
+      collection: 'faceit-seasons',
+      where: {
+        team: { equals: teamId },
+        isActive: { equals: true },
+      },
+      limit: 1,
+      depth: 1, // Include populated relationships
+    })
 
-      const seasonData = {
-        team: teamId,
-        faceitTeamId: team.faceitTeamId,
-        championshipId: team.faceitChampionshipId || '',
-        leagueId: team.faceitLeagueId || '',
-        seasonId: team.faceitSeasonId || '',
-        stageId: team.faceitStageId || '',
-        seasonName: 'Season 7', // TODO: Make this configurable
-        division: team.rating || 'Advanced',
-        region: team.region || 'NA',
-        conference: 'Central', // TODO: Make this configurable
-        isActive: true,
+    const existingSeason = existingSeasons.docs[0]
+    let seasonRecord = existingSeason || null
+    
+    if (existingSeason) {
+      console.log(`[FaceIt Sync] Found existing season for team ${teamId}, division: ${existingSeason.division}`)
+    } else {
+      console.warn(`[FaceIt Sync] No existing season found for team ${teamId}`)
+    }
+    
+    // 4. Update season record with new standings data
+    if (standing && existingSeason) {
+      const seasonData: any = {
+        // Only update FaceIt API IDs and standings data
+        // DO NOT update division, seasonName, region, conference - those come from league template
+        faceitTeamId: faceitTeamId,
+        championshipId: championshipId || '',
+        leagueId: leagueId || '',
+        seasonId: seasonId || '',
+        stageId: stageId || '',
         standings: {
           currentRank: standing.rank_start,
-          totalTeams: 47, // TODO: Calculate from standings data
+          totalTeams: totalTeams, // Actual number of teams in division
           wins: standing.won,
           losses: standing.lost,
           ties: standing.tied || 0,
@@ -245,23 +255,22 @@ export async function syncTeamData(teamId: number): Promise<SyncResult> {
         dataSource: 'faceit',
       }
 
-      if (existingSeasons.docs.length > 0) {
-        // Update existing
-        seasonRecord = await payload.update({
-          collection: 'faceit-seasons',
-          id: existingSeasons.docs[0].id,
-          data: seasonData,
-        })
-      } else {
-        // Create new
-        seasonRecord = await payload.create({
-          collection: 'faceit-seasons',
-          data: seasonData,
-        })
+      // Preserve faceitLeague relationship if it exists
+      if (existingSeason.faceitLeague) {
+        seasonData.faceitLeague = typeof existingSeason.faceitLeague === 'object' 
+          ? existingSeason.faceitLeague.id 
+          : existingSeason.faceitLeague
       }
+
+      // Update existing season with new standings
+      seasonRecord = await payload.update({
+        collection: 'faceit-seasons',
+        id: existingSeason.id,
+        data: seasonData,
+      })
     }
 
-    // 4. Generate/update matches
+    // 5. Generate/update matches
     let matchesCreated = 0
     let matchesUpdated = 0
 
@@ -269,7 +278,7 @@ export async function syncTeamData(teamId: number): Promise<SyncResult> {
       // Get unique opponent IDs
       const opponentIds = new Set<string>()
       matches.forEach(match => {
-        const opponentFaction = match.factions.find(f => f.id !== team.faceitTeamId)
+        const opponentFaction = match.factions.find(f => f.id !== faceitTeamId)
         if (opponentFaction) {
           opponentIds.add(opponentFaction.id)
         }
@@ -280,10 +289,30 @@ export async function syncTeamData(teamId: number): Promise<SyncResult> {
 
       // Process each match
       for (const faceitMatch of matches) {
+        // Skip matches without valid schedule data
+        if (!faceitMatch.origin?.schedule) {
+          console.warn(`[FaceIt Sync] Skipping match without schedule:`, faceitMatch.origin?.id)
+          continue
+        }
+        
         const matchDate = new Date(faceitMatch.origin.schedule)
-        const opponentFaction = faceitMatch.factions.find(f => f.id !== team.faceitTeamId)
+        
+        // Validate the date is valid
+        if (isNaN(matchDate.getTime())) {
+          console.warn(`[FaceIt Sync] Skipping match with invalid date:`, faceitMatch.origin.schedule)
+          continue
+        }
+        
+        const opponentFaction = faceitMatch.factions.find(f => f.id !== faceitTeamId)
         const opponentId = opponentFaction?.id || ''
-        const opponentName = opponentNames.get(opponentId) || 'TBD'
+        let opponentName = opponentNames.get(opponentId) || 'TBD'
+        
+        // Check if this is a BYE week (no opponent or failed to fetch opponent)
+        const isBye = !opponentId || opponentName === 'TBD'
+        if (isBye) {
+          opponentName = 'BYE'
+          console.log(`[FaceIt Sync] Creating BYE match for ${matchDate.toISOString()}`)
+        }
 
         // Check if match already exists (same team, date within 1 hour window)
         const oneHourBefore = new Date(matchDate.getTime() - 60 * 60 * 1000)
@@ -302,16 +331,25 @@ export async function syncTeamData(teamId: number): Promise<SyncResult> {
         })
 
         const isFinished = faceitMatch.status === 'finished'
-        const didWin = isFinished && faceitMatch.winner === team.faceitTeamId
+        const didWin = isFinished && faceitMatch.winner === faceitTeamId
 
-        const matchData = {
+        // Get division from season record (more reliable than team.rating)
+        const division = seasonRecord?.division || 'Advanced'
+        
+        if (!seasonRecord) {
+          console.warn(`[FaceIt Sync] No season record found for team ${teamId}, using fallback division: ${division}`)
+        } else {
+          console.log(`[FaceIt Sync] Using division from season record: ${division}`)
+        }
+        
+        const matchData: any = {
           team: teamId,
           opponent: opponentName,
           date: matchDate.toISOString(),
           region: team.region || 'NA',
-          league: team.rating || 'Advanced',
-          season: 'S7 Regular Season', // TODO: Make configurable
-          status: 'scheduled' as const,
+          league: division, // Use division from season (Masters, Expert, Advanced, Open)
+          season: seasonRecord?.seasonName || 'Season 7', // Use season name from record
+          status: isFinished ? ('complete' as const) : ('scheduled' as const),
           matchType: 'team-match' as const,
           faceitMatchId: faceitMatch.origin.id,
           faceitRoomId: faceitMatch.origin.id,
@@ -320,23 +358,43 @@ export async function syncTeamData(teamId: number): Promise<SyncResult> {
           faceitSeasonId: seasonRecord?.id,
         }
 
+        // Add score for finished matches (FaceIt only provides win/loss, not map scores)
+        if (isFinished) {
+          matchData.score = {
+            elmtScore: didWin ? 1 : 0,
+            opponentScore: didWin ? 0 : 1,
+          }
+        }
+
         if (existingMatches.docs.length > 0) {
           // Update existing match (preserve manual data, update FaceIt fields)
           const existing = existingMatches.docs[0]
+          const updateData: any = {
+            opponent: matchData.opponent,
+            date: matchData.date, // Update date in case it changed
+            region: matchData.region,
+            league: matchData.league, // Update division (Open/Advanced/etc)
+            season: matchData.season,
+            status: matchData.status, // Update status (complete if finished)
+            faceitLobby: matchData.faceitLobby,
+            faceitMatchId: matchData.faceitMatchId,
+            faceitRoomId: matchData.faceitRoomId,
+            faceitSeasonId: matchData.faceitSeasonId,
+            syncedFromFaceit: true,
+          }
+          
+          // Add score if match is finished
+          if (matchData.score) {
+            updateData.score = matchData.score
+          }
+          
           await payload.update({
             collection: 'matches',
             id: existing.id,
-            data: {
-              opponent: matchData.opponent,
-              faceitLobby: matchData.faceitLobby,
-              faceitMatchId: matchData.faceitMatchId,
-              faceitRoomId: matchData.faceitRoomId,
-              faceitSeasonId: matchData.faceitSeasonId,
-              syncedFromFaceit: true,
-            },
+            data: updateData,
           })
           matchesUpdated++
-        } else {
+        } else{
           // Create new match
           await payload.create({
             collection: 'matches',
@@ -347,16 +405,8 @@ export async function syncTeamData(teamId: number): Promise<SyncResult> {
       }
     }
 
-    // 5. Update team's current season reference
-    if (seasonRecord) {
-      await payload.update({
-        collection: 'teams',
-        id: teamId,
-        data: {
-          currentFaceitSeason: seasonRecord.id,
-        },
-      })
-    }
+    // Season record is already linked to team and marked as active
+    // No need to update team here - it's handled by the team's beforeChange hook
 
     return {
       success: true,
@@ -382,22 +432,66 @@ export async function syncAllTeams(): Promise<SyncResult[]> {
   try {
     const payload = await getPayload({ config: configPromise })
     
-    // Find all teams with FaceIt enabled
+    // Find all teams with FaceIt enabled and a current league
     const teams = await payload.find({
       collection: 'teams',
       where: {
-        faceitEnabled: { equals: true },
+        and: [
+          { faceitEnabled: { equals: true } },
+          { currentFaceitLeague: { exists: true } },
+        ],
       },
+      depth: 2, // Populate currentFaceitLeague
       limit: 100,
     })
 
-    console.log(`[FaceIt Sync] Found ${teams.docs.length} teams with FaceIt enabled`)
+    console.log(`[FaceIt Sync] Found ${teams.docs.length} teams with FaceIt enabled and league configured`)
 
     // Sync each team
     const results: SyncResult[] = []
     for (const team of teams.docs) {
-      const result = await syncTeamData(team.id)
-      results.push(result)
+      // Find the active season for this team
+      const activeSeason = await payload.find({
+        collection: 'faceit-seasons',
+        where: {
+          and: [
+            { team: { equals: team.id } },
+            { isActive: { equals: true } },
+          ],
+        },
+        limit: 1,
+      })
+
+      if (activeSeason.docs.length === 0) {
+        console.log(`[FaceIt Sync] No active season found for team ${team.name}, skipping`)
+        results.push({
+          success: false,
+          error: `No active season found for team ${team.name}`,
+        })
+        continue
+      }
+
+      // Get league data from populated relationship
+      const league = team.currentFaceitLeague as any
+      
+      if (!league || !team.faceitTeamId) {
+        console.log(`[FaceIt Sync] Missing league or team ID for ${team.name}, skipping`)
+        results.push({
+          success: false,
+          error: `Missing required data for team ${team.name}`,
+        })
+        continue
+      }
+
+      const result = await syncTeamData(
+        team.id,
+        team.faceitTeamId,
+        league.championshipId,
+        league.leagueId,
+        league.seasonId,
+        league.stageId
+      )
+      results.push({ ...result, team: team.name })
       
       // Add delay to avoid rate limiting
       await new Promise(resolve => setTimeout(resolve, 1000))

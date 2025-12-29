@@ -24,6 +24,11 @@ export async function GET(req: NextRequest) {
               not_equals: true,
             },
           },
+          {
+            status: {
+              not_equals: 'complete',
+            },
+          },
         ],
       },
       sort: 'date',

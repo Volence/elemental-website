@@ -379,34 +379,25 @@ export const Teams: CollectionConfig = {
               },
             },
             {
-              name: 'faceitChampionshipId',
-              type: 'text',
+              name: 'faceitTeamUrlHelper',
+              type: 'ui',
               admin: {
-                description: 'Current season Championship ID - See FACEIT_API_COMPLETE_REFERENCE.md for IDs',
+                components: {
+                  Field: '@/components/FaceitUrlHelper#TeamUrlHelper',
+                },
                 condition: (data) => data.faceitEnabled === true,
               },
             },
             {
-              name: 'faceitLeagueId',
-              type: 'text',
+              name: 'currentFaceitLeague',
+              type: 'relationship',
+              relationTo: 'faceit-leagues',
+              hasMany: false,
+              filterOptions: () => ({
+                isActive: { equals: true },
+              }),
               admin: {
-                description: 'Current League ID',
-                condition: (data) => data.faceitEnabled === true,
-              },
-            },
-            {
-              name: 'faceitSeasonId',
-              type: 'text',
-              admin: {
-                description: 'Current Season ID',
-                condition: (data) => data.faceitEnabled === true,
-              },
-            },
-            {
-              name: 'faceitStageId',
-              type: 'text',
-              admin: {
-                description: 'Current Stage ID (used for standings API)',
+                description: '🎯 Current league/season this team is competing in - Selecting this auto-creates the season entry',
                 condition: (data) => data.faceitEnabled === true,
               },
             },
@@ -415,16 +406,7 @@ export const Teams: CollectionConfig = {
               type: 'checkbox',
               defaultValue: true,
               admin: {
-                description: 'Display competitive section on team page frontend',
-                condition: (data) => data.faceitEnabled === true,
-              },
-            },
-            {
-              name: 'faceitHideHistoricalSeasons',
-              type: 'checkbox',
-              defaultValue: false,
-              admin: {
-                description: 'Hide historical season data (e.g., after team identity change)',
+                description: 'Display FaceIt competitive data on team page frontend',
                 condition: (data) => data.faceitEnabled === true,
               },
             },
@@ -434,9 +416,9 @@ export const Teams: CollectionConfig = {
               relationTo: 'faceit-seasons',
               hasMany: false,
               admin: {
-                description: '📊 Current active season data (auto-populated by sync)',
+                description: '📊 Current active season data (auto-populated)',
                 readOnly: true,
-                condition: (data) => data.faceitEnabled === true,
+                hidden: true, // Hidden from UI, only used internally for data linking
               },
             },
             {
@@ -562,6 +544,82 @@ export const Teams: CollectionConfig = {
         if (data?.name && !data?.slug) {
           data.slug = formatSlug(data.name)
         }
+        return data
+      },
+    ],
+    beforeChange: [
+      async ({ data, req, operation }) => {
+        // Auto-create/update FaceitSeason when currentFaceitLeague is selected
+        if (data.faceitEnabled && data.currentFaceitLeague && data.faceitTeamId) {
+          try {
+            const league = await req.payload.findByID({
+              collection: 'faceit-leagues',
+              id: data.currentFaceitLeague,
+            })
+            
+            // Check if season already exists for this team and league
+            const existingSeasons = await req.payload.find({
+              collection: 'faceit-seasons',
+              where: {
+                and: [
+                  { team: { equals: data.id || req.data?.id } },
+                  { faceitLeague: { equals: data.currentFaceitLeague } },
+                ],
+              },
+            })
+            
+            if (existingSeasons.docs.length === 0) {
+              // Mark old seasons as inactive
+              await req.payload.update({
+                collection: 'faceit-seasons',
+                where: {
+                  and: [
+                    { team: { equals: data.id || req.data?.id } },
+                    { isActive: { equals: true } },
+                  ],
+                },
+                data: { isActive: false },
+              })
+              
+              // Create new active season
+              const newSeason = await req.payload.create({
+                collection: 'faceit-seasons',
+                data: {
+                  team: data.id || req.data?.id,
+                  faceitLeague: data.currentFaceitLeague,
+                  faceitTeamId: data.faceitTeamId,
+                  seasonName: league.name,
+                  division: league.division,
+                  region: league.region,
+                  conference: league.conference || '',
+                  championshipId: league.championshipId || '',
+                  leagueId: league.leagueId,
+                  seasonId: league.seasonId,
+                  stageId: league.stageId,
+                  isActive: true,
+                },
+              })
+              
+              // Link the new season back to the team
+              data.currentFaceitSeason = newSeason.id
+            } else {
+              // Season exists, ensure it's marked as active
+              const season = existingSeasons.docs[0]
+              if (!season.isActive) {
+                await req.payload.update({
+                  collection: 'faceit-seasons',
+                  id: season.id,
+                  data: { isActive: true },
+                })
+              }
+              data.currentFaceitSeason = season.id
+            }
+          } catch (error) {
+            console.error('[Teams beforeChange] Error auto-creating FaceIt season:', error)
+            // Don't block the save, just log the error
+          }
+        }
+        
         return data
       },
     ],
