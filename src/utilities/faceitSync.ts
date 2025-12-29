@@ -134,7 +134,9 @@ async function fetchMatches(teamId: string, championshipId: string): Promise<Fac
     }
 
     const data = await response.json()
-    return data.payload?.items || []
+    const matches = data.payload?.items || []
+    console.log(`[FaceIt API] Fetched ${matches.length} matches for team ${teamId}`)
+    return matches
   } catch (error) {
     console.error('Error fetching matches:', error)
     return []
@@ -321,6 +323,8 @@ export async function syncTeamData(
     let matchesCreated = 0
     let matchesUpdated = 0
 
+    console.log(`[FaceIt Sync] Processing ${matches.length} matches for team ${teamId}`)
+    
     if (matches.length > 0) {
       // Get unique opponent IDs
       const opponentIds = new Set<string>()
@@ -454,6 +458,8 @@ export async function syncTeamData(
 
     // Season record is already linked to team and marked as active
     // No need to update team here - it's handled by the team's beforeChange hook
+
+    console.log(`[FaceIt Sync] Team ${teamId} complete: ${matchesCreated} created, ${matchesUpdated} updated out of ${matches.length} fetched`)
 
     return {
       success: true,
