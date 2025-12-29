@@ -26,7 +26,7 @@ export default function FaceitSyncButton({ value, ...props }: any) {
     if (currentFaceitLeague?.value) {
       // Handle both ID and object formats
       const leagueId = typeof currentFaceitLeague.value === 'object' 
-        ? currentFaceitLeague.value.id 
+        ? (currentFaceitLeague.value as { id: number }).id 
         : currentFaceitLeague.value
       
       console.log('[FaceitSyncButton] Fetching league data for ID:', leagueId)

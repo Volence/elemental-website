@@ -119,7 +119,7 @@ const BulkTeamSelector: React.FC<any> = ({ path }) => {
         <p className="bulk-team-selector__subtitle">
           Select multiple teams at once to assign to this tournament
         </p>
-        {isFaceitTournament?.value && faceitAutoSync?.value && (
+        {(isFaceitTournament?.value as boolean) && (faceitAutoSync?.value as boolean) && (
           <div style={{ 
             marginTop: '0.75rem', 
             padding: '0.75rem', 

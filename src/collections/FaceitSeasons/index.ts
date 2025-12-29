@@ -31,7 +31,6 @@ export const FaceitSeasons: CollectionConfig = {
         components: {
           Field: '@/components/FaceitUrlHelper',
         },
-        description: 'Quick fill tool - paste team page URL to extract Team ID',
       },
     },
 

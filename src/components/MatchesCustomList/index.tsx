@@ -6,7 +6,7 @@ import Link from 'next/link'
 
 export default function MatchesCustomList() {
   const config = useConfig()
-  const adminRoute = config?.routes?.admin || '/admin'
+  const adminRoute = (config as any)?.routes?.admin || '/admin'
   const [upcomingMatches, setUpcomingMatches] = useState<any[]>([])
   const [completedMatches, setCompletedMatches] = useState<any[]>([])
   const [loading, setLoading] = useState(true)

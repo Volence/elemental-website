@@ -52,6 +52,7 @@ interface SyncResult {
   success: boolean
   error?: string
   teamId?: number
+  team?: string
   matchesCreated?: number
   matchesUpdated?: number
   seasonUpdated?: boolean

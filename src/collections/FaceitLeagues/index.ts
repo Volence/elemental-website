@@ -48,7 +48,6 @@ export const FaceitLeagues: CollectionConfig = {
         components: {
           Field: '@/components/FaceitUrlHelper',
         },
-        description: 'Quick fill tool - paste FaceIt league or standings URLs to extract championship/stage/league IDs',
       },
     },
 
