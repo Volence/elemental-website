@@ -1,0 +1,68 @@
+// ============================================
+// FACEIT SYNC BUTTON STYLES
+// ============================================
+
+@import '../variables';
+@import '../mixins';
+
+.faceit-sync-button {
+  margin-top: $spacing-md;
+
+  &__status {
+    margin-bottom: $spacing-sm;
+    padding: $spacing-sm $spacing-md;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    backdrop-filter: blur(4px);
+    transition: all $transition-normal;
+
+    // Loading state - Info/Cyan glow
+    &--loading {
+      @include glow-badge($admin-accent-info);
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    // Ready state - Success/Green glow
+    &--ready {
+      @include glow-badge($admin-accent-success);
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    // Syncing state - Info/Cyan glow with pulse
+    &--syncing {
+      @include glow-badge($admin-accent-info);
+      color: rgba(255, 255, 255, 0.95);
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+
+    // Error state - Red glow
+    &--error {
+      @include glow-badge($admin-accent-error);
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    // Success message - Green glow
+    &--success {
+      @include glow-badge($admin-accent-success);
+      color: rgba(255, 255, 255, 0.95);
+    }
+  }
+
+  &__description {
+    margin-top: $spacing-md;
+    font-size: $font-size-xs;
+    color: $admin-text-muted;
+  }
+}
+
+// Pulse animation for syncing state
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(6, 182, 212, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
+  }
+}
+
+

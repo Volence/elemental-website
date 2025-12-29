@@ -11,6 +11,7 @@ import { TeamStaffSection } from './components/TeamStaffSection'
 import { TeamRosterSection } from './components/TeamRosterSection'
 import { TeamSubstitutesSection } from './components/TeamSubstitutesSection'
 import { TeamRecruitmentSection } from './components/TeamRecruitmentSection'
+import CompetitiveSection from './components/CompetitiveSection'
 import { getRoleColor, getRegionColor, getTeamColor } from './utils/teamColors'
 
 // Skip static generation during build - pages will be generated on-demand
@@ -138,6 +139,11 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
           <main className="space-y-8">
             {/* Recruitment - Only show if there are open positions */}
             <TeamRecruitmentSection listings={listings} team={team} />
+
+            {/* FaceIt Competitive Section - Only show if team has FaceIt enabled */}
+            {team.faceitEnabled && team.faceitShowCompetitiveSection && (
+              <CompetitiveSection teamId={team.id} />
+            )}
 
             {/* Staff Section */}
             <TeamStaffSection

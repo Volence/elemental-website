@@ -41,7 +41,7 @@ export function WeeklyView() {
       const today = new Date()
       today.setHours(0, 0, 0, 0)
       
-      let query = `/api/matches?where[date][greater_than_equal]=${today.toISOString()}&sort=date&limit=100&depth=2`
+      let query = `/api/matches?where[date][greater_than_equal]=${today.toISOString()}&where[status][not_equals]=complete&sort=date&limit=100&depth=2`
       
       if (!showArchived) {
         query += `&where[productionWorkflow.isArchived][not_equals]=true`

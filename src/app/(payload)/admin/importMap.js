@@ -22,6 +22,8 @@ import { default as default_04cdbc390d38c074fb71cb7d83ceaa88 } from '@/component
 import { default as default_765c32446158099d5cf3659ccd46167a } from '@/collections/Teams/ColorPickerField'
 import { default as default_befd121dc2c708f29d17ef6cf6b47565 } from '@/components/TeamTabCounts/StaffCount'
 import { default as default_f6633e5ce5f4aebde4e8dd97802e545a } from '@/components/TeamTabCounts/RosterCount'
+import { TeamUrlHelper as TeamUrlHelper_d3aadc8f7d1aa70ce78ff0cfa164a82b } from '@/components/FaceitUrlHelper'
+import { default as default_6d9e1ded9f80f1d962812e7bd12ae28d } from '@/components/FaceitSyncButton'
 import { default as default_6bf23cb42f8cd662b9483def3bfe5de8 } from '@/components/TeamLogoPreview'
 import { default as default_ec091fc5c03678bb916f265b8e19f4d7 } from '@/components/TeamsListColumns/LogoCell'
 import { default as default_ca18705bdb593eaffdc1fe803bf3471b } from '@/components/TeamsListColumns/NameCell'
@@ -33,8 +35,12 @@ import { default as default_6fd0f10ba03248579d8362f751a831ec } from '@/component
 import { default as default_3be39f37c57c85dcea766fdec96c9113 } from '@/components/BeforeDashboard/TeamManagerInfo'
 import { default as default_18c292333f7a71cfdec38694246f96bb } from '@/components/BeforeDashboard/ReadOnlyStyles'
 import { default as default_1c78329ca40bdaea08398ce17076186a } from '@/components/TeamsListColumns/CellAlignmentStyles'
+import { default as default_d3aadc8f7d1aa70ce78ff0cfa164a82b } from '@/components/FaceitUrlHelper'
+import { default as default_d5aa1d40568040f475310b67e7154f0d } from '@/components/FaceitBulkSync'
+import { default as default_cf964bbe3d4a487a32a7dec96194ca0e } from '@/components/FaceitLeaguesNotifications'
 import { default as default_3b0c933eeb58b8ba9e1fb354f07641f1 } from '@/components/MatchesListColumns/TitleCell'
-import { default as default_73cfbba28a8886a492b9c832e231d2f5 } from '@/components/MatchesListColumns/CellAlignmentStyles'
+import { default as default_aa7f6faaa886a93f7a640627f141e7c7 } from '@/components/MatchesCustomList'
+import { default as default_2e617cc3176ad62e33aa558930ac7655 } from '@/components/TournamentFaceitNotice'
 import { default as default_4c7ee971bccbc12ad44464e4882fd683 } from '@/components/TournamentFields/BulkTeamSelector'
 import { default as default_048c297467b6adbf2ab886ee3bbecc66 } from '@/components/SocialPostColumns/ContentPreviewCell'
 import { default as default_cbd62d152faae83563323bc6e1990a3d } from '@/components/SocialPostFields/ContentWithTemplate'
@@ -54,15 +60,14 @@ import { default as default_c88412ef156346181b651c19a855fdb0 } from '@/component
 import { default as default_83b754ffb26a9a06f67ecd0cafa4ac31 } from '@/components/InviteLinkColumns/StatusCell'
 import { RowLabel as RowLabel_ec255a65fa6fa8d1faeb09cf35284224 } from '@/Header/RowLabel'
 import { RowLabel as RowLabel_1f6ff6ff633e3695d348f4f3c58f1466 } from '@/Footer/RowLabel'
-import { default as default_a1087e454b1b74ceaf1bf3fd38ecfc7a } from '@/components/DataConsistencyView'
-import { default as default_b41852718c887b613f07fa372f5e410c } from '@/components/EmptyComponent'
 import { default as default_c68ab0b1bbf77fcff4337c949e1b628c } from '@/components/ProductionDashboardView'
+import { default as default_b41852718c887b613f07fa372f5e410c } from '@/components/EmptyComponent'
 import { default as default_9696e71ab6d0b177b492c0a63e1b5e83 } from '@/components/SocialMediaDashboard'
 import { default as default_f76c92028911e3d433af128d3a307d36 } from '@/components/SocialMediaConfig/TemplateInstructions'
 import { default as default_8e4d4e3438d12585a6d66d71f450349a } from '@/components/SocialMediaConfig/TemplateRowLabel'
+import { default as default_a1087e454b1b74ceaf1bf3fd38ecfc7a } from '@/components/DataConsistencyView'
 import { default as default_66dcba8625c994af6076586cb15c754f } from '@/components/UserAvatar'
 import { default as default_aa0a2d19d38a4839dbd373417e210b89 } from '@/components/AdminLogo'
-import { default as default_6b1b7b9ecbb8673c7166977ed22f5ed3 } from '@/components/BeforeDashboard/LogoutButton'
 import { default as default_1a7510af427896d367a49dbf838d2de6 } from '@/components/BeforeDashboard'
 import { default as default_c665fb14b647600ee6fac862e3d3aeb2 } from '@/components/FixDatePickerIcons'
 import { SectionThemeApplicator as SectionThemeApplicator_b4f71752b0da9dddb562ddd527781822 } from '@/components/SectionThemeApplicator'
@@ -94,6 +99,8 @@ export const importMap = {
   "@/collections/Teams/ColorPickerField#default": default_765c32446158099d5cf3659ccd46167a,
   "@/components/TeamTabCounts/StaffCount#default": default_befd121dc2c708f29d17ef6cf6b47565,
   "@/components/TeamTabCounts/RosterCount#default": default_f6633e5ce5f4aebde4e8dd97802e545a,
+  "@/components/FaceitUrlHelper#TeamUrlHelper": TeamUrlHelper_d3aadc8f7d1aa70ce78ff0cfa164a82b,
+  "@/components/FaceitSyncButton#default": default_6d9e1ded9f80f1d962812e7bd12ae28d,
   "@/components/TeamLogoPreview#default": default_6bf23cb42f8cd662b9483def3bfe5de8,
   "@/components/TeamsListColumns/LogoCell#default": default_ec091fc5c03678bb916f265b8e19f4d7,
   "@/components/TeamsListColumns/NameCell#default": default_ca18705bdb593eaffdc1fe803bf3471b,
@@ -105,8 +112,12 @@ export const importMap = {
   "@/components/BeforeDashboard/TeamManagerInfo#default": default_3be39f37c57c85dcea766fdec96c9113,
   "@/components/BeforeDashboard/ReadOnlyStyles#default": default_18c292333f7a71cfdec38694246f96bb,
   "@/components/TeamsListColumns/CellAlignmentStyles#default": default_1c78329ca40bdaea08398ce17076186a,
+  "@/components/FaceitUrlHelper#default": default_d3aadc8f7d1aa70ce78ff0cfa164a82b,
+  "@/components/FaceitBulkSync#default": default_d5aa1d40568040f475310b67e7154f0d,
+  "@/components/FaceitLeaguesNotifications#default": default_cf964bbe3d4a487a32a7dec96194ca0e,
   "@/components/MatchesListColumns/TitleCell#default": default_3b0c933eeb58b8ba9e1fb354f07641f1,
-  "@/components/MatchesListColumns/CellAlignmentStyles#default": default_73cfbba28a8886a492b9c832e231d2f5,
+  "@/components/MatchesCustomList#default": default_aa7f6faaa886a93f7a640627f141e7c7,
+  "@/components/TournamentFaceitNotice#default": default_2e617cc3176ad62e33aa558930ac7655,
   "@/components/TournamentFields/BulkTeamSelector#default": default_4c7ee971bccbc12ad44464e4882fd683,
   "@/components/SocialPostColumns/ContentPreviewCell#default": default_048c297467b6adbf2ab886ee3bbecc66,
   "@/components/SocialPostFields/ContentWithTemplate#default": default_cbd62d152faae83563323bc6e1990a3d,
@@ -126,15 +137,14 @@ export const importMap = {
   "@/components/InviteLinkColumns/StatusCell#default": default_83b754ffb26a9a06f67ecd0cafa4ac31,
   "@/Header/RowLabel#RowLabel": RowLabel_ec255a65fa6fa8d1faeb09cf35284224,
   "@/Footer/RowLabel#RowLabel": RowLabel_1f6ff6ff633e3695d348f4f3c58f1466,
-  "@/components/DataConsistencyView#default": default_a1087e454b1b74ceaf1bf3fd38ecfc7a,
-  "@/components/EmptyComponent#default": default_b41852718c887b613f07fa372f5e410c,
   "@/components/ProductionDashboardView#default": default_c68ab0b1bbf77fcff4337c949e1b628c,
+  "@/components/EmptyComponent#default": default_b41852718c887b613f07fa372f5e410c,
   "@/components/SocialMediaDashboard#default": default_9696e71ab6d0b177b492c0a63e1b5e83,
   "@/components/SocialMediaConfig/TemplateInstructions#default": default_f76c92028911e3d433af128d3a307d36,
   "@/components/SocialMediaConfig/TemplateRowLabel#default": default_8e4d4e3438d12585a6d66d71f450349a,
+  "@/components/DataConsistencyView#default": default_a1087e454b1b74ceaf1bf3fd38ecfc7a,
   "@/components/UserAvatar#default": default_66dcba8625c994af6076586cb15c754f,
   "@/components/AdminLogo#default": default_aa0a2d19d38a4839dbd373417e210b89,
-  "@/components/BeforeDashboard/LogoutButton#default": default_6b1b7b9ecbb8673c7166977ed22f5ed3,
   "@/components/BeforeDashboard#default": default_1a7510af427896d367a49dbf838d2de6,
   "@/components/FixDatePickerIcons#default": default_c665fb14b647600ee6fac862e3d3aeb2,
   "@/components/SectionThemeApplicator#SectionThemeApplicator": SectionThemeApplicator_b4f71752b0da9dddb562ddd527781822,

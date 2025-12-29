@@ -5,7 +5,7 @@ export const DataConsistency: GlobalConfig = {
   label: 'Data Consistency',
   admin: {
     description: '📊 Check and fix data consistency issues across collections.',
-    group: 'Tools',
+    group: 'System',
     // Hide the default UI elements
     hideAPIURL: true,
     // Hide the save button gutter

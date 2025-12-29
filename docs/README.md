@@ -39,6 +39,16 @@ Production deployment guides and migration docs:
 - **PRODUCTION_DEPLOYMENT.md** - Production deployment procedures
 - **PRODUCTION_DB_MIGRATION.md** - Database migration in production
 
+### 🎮 FaceIt Integration
+Documentation for FaceIt API integration and automation:
+- **FACEIT_API_COMPLETE_REFERENCE.md** - Complete FaceIt API documentation
+- **FACEIT_CRON_SETUP.md** - Automated sync setup with cron jobs
+- **FACEIT_SEASON_TRANSITION_GUIDE.md** - Season transition procedures
+- **FACEIT_GO_LIVE_CHECKLIST.md** - Pre-launch checklist
+- **FACEIT_QUICK_START.md** - Quick start guide
+- **FACEIT_INTEGRATION_TESTING_GUIDE.md** - Testing procedures
+- **ENVIRONMENT_VARIABLES.md** - All environment variables explained
+
 ### 📦 `/archive/` - Historical/Outdated Docs
 Old documentation kept for reference:
 - Build fixes (temporary issues)
@@ -65,6 +75,12 @@ From comprehensive refactoring:
 **For Deployment:**
 - Quick deploy: [guides/QUICK_DEPLOY.md](./guides/QUICK_DEPLOY.md)
 - Full guide: [guides/DEPLOYMENT_GUIDE.md](./guides/DEPLOYMENT_GUIDE.md)
+- Environment setup: [ENVIRONMENT_VARIABLES.md](./ENVIRONMENT_VARIABLES.md)
+
+**For FaceIt Integration:**
+- Setup cron jobs: [FACEIT_CRON_SETUP.md](./FACEIT_CRON_SETUP.md)
+- Season transitions: [FACEIT_SEASON_TRANSITION_GUIDE.md](./FACEIT_SEASON_TRANSITION_GUIDE.md)
+- Go live checklist: [FACEIT_GO_LIVE_CHECKLIST.md](./FACEIT_GO_LIVE_CHECKLIST.md)
 
 **For Onboarding:**
 1. Read FINAL_PROJECT_SUMMARY.md for project overview

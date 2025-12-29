@@ -34,12 +34,34 @@ export const Matches: CollectionConfig = {
       return user.role !== 'admin' && user.role !== 'staff-manager'
     },
     components: {
-      beforeList: [
-        '@/components/MatchesListColumns/CellAlignmentStyles#default',
-      ],
+      views: {
+        list: {
+          Component: '@/components/MatchesCustomList#default',
+        },
+      },
+    },
+    listSearchableFields: ['title', 'opponent', 'team', 'region', 'league', 'season', 'status'],
+    pagination: {
+      defaultLimit: 10,
     },
   },
   hooks: {
+    beforeChange: [
+      async ({ data, operation, req }) => {
+        // Auto-mark matches as complete if they're 2+ hours past their scheduled time
+        if (data && data.date && data.status === 'scheduled') {
+          const matchDate = new Date(data.date)
+          const now = new Date()
+          const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000)
+          
+          if (matchDate < twoHoursAgo) {
+            data.status = 'complete'
+            console.log(`[Matches] Auto-completed match: ${data.title || 'Untitled'}`)
+          }
+        }
+        return data
+      },
+    ],
     beforeValidate: [
       async ({ data, operation, req }) => {
         // Guard against undefined data
@@ -215,10 +237,11 @@ export const Matches: CollectionConfig = {
                   defaultValue: 'scheduled',
                   options: [
                     { label: 'Scheduled', value: 'scheduled' },
+                    { label: 'Complete', value: 'complete' },
                     { label: 'Cancelled', value: 'cancelled' },
                   ],
                   admin: {
-                    description: 'Upcoming/Live/Completed status is automatically determined based on match date and time',
+                    description: 'Matches are automatically marked Complete 2 hours after their scheduled time',
                   },
                 },
               ],
@@ -312,7 +335,23 @@ export const Matches: CollectionConfig = {
               name: 'faceitLobby',
               type: 'text',
               admin: {
-                description: 'FACEIT lobby URL',
+                description: 'FACEIT lobby URL (auto-populated if synced from FaceIt)',
+              },
+            },
+            {
+              name: 'faceitRoomId',
+              type: 'text',
+              admin: {
+                description: 'FaceIt Room ID (for generating room links) - auto-populated by sync',
+                readOnly: true,
+              },
+            },
+            {
+              name: 'faceitMatchId',
+              type: 'text',
+              admin: {
+                description: 'FaceIt Match ID - auto-populated by sync',
+                readOnly: true,
               },
             },
             {
@@ -490,6 +529,28 @@ export const Matches: CollectionConfig = {
           ],
         },
       ],
+    },
+    // FaceIt Integration (sidebar)
+    {
+      name: 'syncedFromFaceit',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        position: 'sidebar',
+        description: 'Auto-populated from FaceIt API',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'faceitSeasonId',
+      type: 'relationship',
+      relationTo: 'faceit-seasons',
+      hasMany: false,
+      admin: {
+        position: 'sidebar',
+        description: 'Link to FaceIt season data',
+        readOnly: true,
+      },
     },
     // Keep slug in sidebar
     {

@@ -52,7 +52,7 @@ export function ScheduleBuilderView() {
       today.setHours(0, 0, 0, 0)
 
       // Fetch upcoming matches with at least partial coverage
-      const query = `/api/matches?where[date][greater_than_equal]=${today.toISOString()}&where[productionWorkflow.isArchived][not_equals]=true&sort=date&limit=100&depth=2`
+      const query = `/api/matches?where[date][greater_than_equal]=${today.toISOString()}&where[productionWorkflow.isArchived][not_equals]=true&where[status][not_equals]=complete&sort=date&limit=100&depth=2`
 
       const response = await fetch(query)
       const data = await response.json()

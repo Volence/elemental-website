@@ -20,6 +20,8 @@ import { RecruitmentApplications } from './collections/RecruitmentApplications'
 import { InviteLinks } from './collections/InviteLinks'
 import { TournamentTemplates } from './collections/TournamentTemplates'
 import { SocialPosts } from './collections/SocialPosts'
+import { FaceitSeasons } from './collections/FaceitSeasons'
+import { FaceitLeagues } from './collections/FaceitLeagues'
 // import { ActivityLog } from './collections/ActivityLog' // Temporarily disabled until migrations are fixed
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
@@ -75,10 +77,7 @@ export default buildConfig({
         '@/components/BeforeDashboard/DashboardNavLink',
         '@/components/BeforeDashboard/ReadOnlyStyles#default',
       ],
-      // Log Out button appears after all collections (under System section)
-      afterNavLinks: [
-        '@/components/BeforeDashboard/LogoutButton',
-      ],
+      // No custom afterNavLinks - Payload provides its own logout button
       // Custom logo for admin panel breadcrumbs
       graphics: {
         Logo: '@/components/AdminLogo#default',
@@ -125,23 +124,45 @@ export default buildConfig({
     push: process.env.PAYLOAD_DB_PUSH === 'true' || false,
   }),
   collections: [
+    // Hidden collections (Pages, Media)
     Pages,
     Media,
+    
+    // PEOPLE: Core entities
     People,
     Teams,
-    Matches,
-    TournamentTemplates,
+    FaceitLeagues,
+    
+    // STAFF: Who manages operations
     Production,
     OrganizationStaff,
+    
+    // PRODUCTION: Department - Matches & broadcasts
+    Matches,
+    TournamentTemplates,
+    FaceitSeasons, // Hidden, auto-managed
+    
+    // SOCIAL MEDIA: Department - Content & calendar
     SocialPosts,
-    Users,
-    IgnoredDuplicates,
+    
+    // RECRUITMENT: Growth
     RecruitmentListings,
     RecruitmentApplications,
+    
+    // SYSTEM: Administration
+    Users,
+    IgnoredDuplicates,
     InviteLinks /* ActivityLog temporarily disabled */,
   ],
   cors: [getServerSideURL()].filter(Boolean),
-  globals: [Header, Footer, DataConsistency, ProductionDashboard, SocialMediaSettings, SocialMediaConfig],
+  globals: [
+    Header, 
+    Footer, 
+    ProductionDashboard, // Production group
+    SocialMediaSettings, // Social Media group
+    SocialMediaConfig, // Social Media group
+    DataConsistency, // System group
+  ],
   plugins: [
     ...plugins,
     // storage-adapter-placeholder

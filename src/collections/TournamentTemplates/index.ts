@@ -10,7 +10,7 @@ export const TournamentTemplates: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'name',
-    description: '🏆 Define recurring match schedules for tournaments and leagues',
+    description: '🏆 Define recurring match schedules for manually-scheduled tournaments. ⚠️ NOT needed for FaceIt tournaments - those use FaceIt Leagues instead.',
     group: 'Production',
     defaultColumns: ['name', 'isActive', 'assignedTeams', 'updatedAt'],
     hidden: ({ user }) => {
@@ -110,11 +110,20 @@ export const TournamentTemplates: CollectionConfig = {
   },
   fields: [
     {
+      name: 'faceitNotice',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '@/components/TournamentFaceitNotice',
+        },
+      },
+    },
+    {
       name: 'name',
       type: 'text',
       required: true,
       admin: {
-        description: 'Tournament/League name (e.g., "FACEIT League S7", "Annihilation Tournament")',
+        description: 'Tournament/League name (e.g., "Annihilation Tournament", "Summer Cup")',
       },
     },
     {
