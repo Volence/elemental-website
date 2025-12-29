@@ -20,6 +20,8 @@ import { RecruitmentApplications } from './collections/RecruitmentApplications'
 import { InviteLinks } from './collections/InviteLinks'
 import { TournamentTemplates } from './collections/TournamentTemplates'
 import { SocialPosts } from './collections/SocialPosts'
+import { FaceitSeasons } from './collections/FaceitSeasons'
+import { FaceitSeasonsArchive } from './collections/FaceitSeasonsArchive'
 // import { ActivityLog } from './collections/ActivityLog' // Temporarily disabled until migrations are fixed
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
@@ -131,6 +133,8 @@ export default buildConfig({
     Teams,
     Matches,
     TournamentTemplates,
+    FaceitSeasons,
+    FaceitSeasonsArchive,
     Production,
     OrganizationStaff,
     SocialPosts,

@@ -359,6 +359,98 @@ export const Teams: CollectionConfig = {
             },
           ],
         },
+        {
+          label: 'FaceIt Integration',
+          fields: [
+            {
+              name: 'faceitEnabled',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                description: '🏆 Enable FaceIt competitive tracking for this team',
+              },
+            },
+            {
+              name: 'faceitTeamId',
+              type: 'text',
+              admin: {
+                description: 'FaceIt Team ID (e.g., bc03efbc-725a-42f2-8acb-c8ee9783c8ae) - Find this on the team\'s FaceIt profile URL',
+                condition: (data) => data.faceitEnabled === true,
+              },
+            },
+            {
+              name: 'faceitChampionshipId',
+              type: 'text',
+              admin: {
+                description: 'Current season Championship ID - See FACEIT_API_COMPLETE_REFERENCE.md for IDs',
+                condition: (data) => data.faceitEnabled === true,
+              },
+            },
+            {
+              name: 'faceitLeagueId',
+              type: 'text',
+              admin: {
+                description: 'Current League ID',
+                condition: (data) => data.faceitEnabled === true,
+              },
+            },
+            {
+              name: 'faceitSeasonId',
+              type: 'text',
+              admin: {
+                description: 'Current Season ID',
+                condition: (data) => data.faceitEnabled === true,
+              },
+            },
+            {
+              name: 'faceitStageId',
+              type: 'text',
+              admin: {
+                description: 'Current Stage ID (used for standings API)',
+                condition: (data) => data.faceitEnabled === true,
+              },
+            },
+            {
+              name: 'faceitShowCompetitiveSection',
+              type: 'checkbox',
+              defaultValue: true,
+              admin: {
+                description: 'Display competitive section on team page frontend',
+                condition: (data) => data.faceitEnabled === true,
+              },
+            },
+            {
+              name: 'faceitHideHistoricalSeasons',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                description: 'Hide historical season data (e.g., after team identity change)',
+                condition: (data) => data.faceitEnabled === true,
+              },
+            },
+            {
+              name: 'currentFaceitSeason',
+              type: 'relationship',
+              relationTo: 'faceit-seasons',
+              hasMany: false,
+              admin: {
+                description: '📊 Current active season data (auto-populated by sync)',
+                readOnly: true,
+                condition: (data) => data.faceitEnabled === true,
+              },
+            },
+            {
+              name: 'faceitSyncButton',
+              type: 'ui',
+              admin: {
+                components: {
+                  Field: '@/components/FaceitSyncButton',
+                },
+                condition: (data) => data.faceitEnabled === true,
+              },
+            },
+          ],
+        },
       ],
     },
     {

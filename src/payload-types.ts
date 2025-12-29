@@ -73,6 +73,8 @@ export interface Config {
     teams: Team;
     matches: Match;
     'tournament-templates': TournamentTemplate;
+    'faceit-seasons': FaceitSeason;
+    'faceit-seasons-archive': FaceitSeasonsArchive;
     production: Production;
     'organization-staff': OrganizationStaff;
     'social-posts': SocialPost;
@@ -96,6 +98,8 @@ export interface Config {
     teams: TeamsSelect<false> | TeamsSelect<true>;
     matches: MatchesSelect<false> | MatchesSelect<true>;
     'tournament-templates': TournamentTemplatesSelect<false> | TournamentTemplatesSelect<true>;
+    'faceit-seasons': FaceitSeasonsSelect<false> | FaceitSeasonsSelect<true>;
+    'faceit-seasons-archive': FaceitSeasonsArchiveSelect<false> | FaceitSeasonsArchiveSelect<true>;
     production: ProductionSelect<false> | ProductionSelect<true>;
     'organization-staff': OrganizationStaffSelect<false> | OrganizationStaffSelect<true>;
     'social-posts': SocialPostsSelect<false> | SocialPostsSelect<true>;
@@ -611,6 +615,42 @@ export interface Team {
       }[]
     | null;
   /**
+   * 🏆 Enable FaceIt competitive tracking for this team
+   */
+  faceitEnabled?: boolean | null;
+  /**
+   * FaceIt Team ID (e.g., bc03efbc-725a-42f2-8acb-c8ee9783c8ae) - Find this on the team's FaceIt profile URL
+   */
+  faceitTeamId?: string | null;
+  /**
+   * Current season Championship ID - See FACEIT_API_COMPLETE_REFERENCE.md for IDs
+   */
+  faceitChampionshipId?: string | null;
+  /**
+   * Current League ID
+   */
+  faceitLeagueId?: string | null;
+  /**
+   * Current Season ID
+   */
+  faceitSeasonId?: string | null;
+  /**
+   * Current Stage ID (used for standings API)
+   */
+  faceitStageId?: string | null;
+  /**
+   * Display competitive section on team page frontend
+   */
+  faceitShowCompetitiveSection?: boolean | null;
+  /**
+   * Hide historical season data (e.g., after team identity change)
+   */
+  faceitHideHistoricalSeasons?: boolean | null;
+  /**
+   * 📊 Current active season data (auto-populated by sync)
+   */
+  currentFaceitSeason?: (number | null) | FaceitSeason;
+  /**
    * URL-friendly identifier (auto-generated from name)
    */
   slug?: string | null;
@@ -618,6 +658,143 @@ export interface Team {
    * Tournaments this team is currently participating in (auto-generates weekly matches)
    */
   activeTournaments?: (number | TournamentTemplate)[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * 🏆 Current FaceIt competitive season data for teams
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faceit-seasons".
+ */
+export interface FaceitSeason {
+  id: number;
+  /**
+   * Which ELMT team this season data belongs to
+   */
+  team: number | Team;
+  /**
+   * FaceIt Team ID (e.g., bc03efbc-725a-42f2-8acb-c8ee9783c8ae)
+   */
+  faceitTeamId: string;
+  /**
+   * FaceIt Championship ID for this season
+   */
+  championshipId: string;
+  /**
+   * FaceIt League ID
+   */
+  leagueId: string;
+  /**
+   * FaceIt Season ID
+   */
+  seasonId: string;
+  /**
+   * FaceIt Stage ID (used for standings endpoint)
+   */
+  stageId: string;
+  /**
+   * Display name (e.g., "Season 7")
+   */
+  seasonName: string;
+  /**
+   * Is this the current active season?
+   */
+  isActive?: boolean | null;
+  /**
+   * Skill division
+   */
+  division: 'Masters' | 'Expert' | 'Advanced' | 'Open';
+  /**
+   * Geographic region
+   */
+  region: 'NA' | 'EMEA' | 'SA';
+  /**
+   * Conference name (e.g., "Central")
+   */
+  conference?: string | null;
+  /**
+   * Current standings information
+   */
+  standings?: {
+    /**
+     * Current rank/position
+     */
+    currentRank?: number | null;
+    /**
+     * Total teams in division
+     */
+    totalTeams?: number | null;
+    /**
+     * Wins
+     */
+    wins?: number | null;
+    /**
+     * Losses
+     */
+    losses?: number | null;
+    /**
+     * Ties
+     */
+    ties?: number | null;
+    /**
+     * Total points
+     */
+    points?: number | null;
+    /**
+     * Matches played
+     */
+    matchesPlayed?: number | null;
+  };
+  /**
+   * Recent match results (last 10 matches)
+   */
+  recentMatches?:
+    | {
+        /**
+         * FaceIt match ID
+         */
+        matchId: string;
+        /**
+         * FaceIt room ID (for generating room links)
+         */
+        faceitRoomId: string;
+        /**
+         * Opponent team name
+         */
+        opponent: string;
+        /**
+         * Opponent FaceIt team ID
+         */
+        opponentId?: string | null;
+        /**
+         * Match date and time
+         */
+        date: string;
+        result: 'win' | 'loss' | 'scheduled';
+        /**
+         * ELMT score
+         */
+        elmtScore?: number | null;
+        /**
+         * Opponent score
+         */
+        opponentScore?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Last sync from FaceIt API
+   */
+  lastSynced?: string | null;
+  /**
+   * Data source (for future integrations)
+   */
+  dataSource?: 'faceit' | null;
+  /**
+   * Hide this season from frontend historical display (data preserved)
+   */
+  hideHistoricalData?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -637,6 +814,14 @@ export interface TournamentTemplate {
    * When unchecked, stops auto-creating matches (use for breaks/off-season)
    */
   isActive?: boolean | null;
+  /**
+   * 🏆 This is a FaceIt tournament - automatically pull match data from FaceIt API
+   */
+  isFaceitTournament?: boolean | null;
+  /**
+   * Auto-sync matches from FaceIt (recommended)
+   */
+  faceitAutoSync?: boolean | null;
   /**
    * Teams participating in this tournament. Use the bulk selector below for easy multi-selection.
    */
@@ -732,9 +917,17 @@ export interface Match {
     streamedBy?: string | null;
   };
   /**
-   * FACEIT lobby URL
+   * FACEIT lobby URL (auto-populated if synced from FaceIt)
    */
   faceitLobby?: string | null;
+  /**
+   * FaceIt Room ID (for generating room links) - auto-populated by sync
+   */
+  faceitRoomId?: string | null;
+  /**
+   * FaceIt Match ID - auto-populated by sync
+   */
+  faceitMatchId?: string | null;
   /**
    * VOD/replay URL (YouTube or Twitch)
    */
@@ -812,6 +1005,14 @@ export interface Match {
       [k: string]: unknown;
     } | null;
   };
+  /**
+   * Auto-populated from FaceIt API
+   */
+  syncedFromFaceit?: boolean | null;
+  /**
+   * Link to FaceIt season data
+   */
+  faceitSeasonId?: (number | null) | FaceitSeason;
   slug?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -867,6 +1068,73 @@ export interface User {
       }[]
     | null;
   password?: string | null;
+}
+/**
+ * 📦 Historical FaceIt season data (read-only, not synced)
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faceit-seasons-archive".
+ */
+export interface FaceitSeasonsArchive {
+  id: number;
+  /**
+   * Which ELMT team this historical season data belongs to
+   */
+  team: number | Team;
+  /**
+   * FaceIt Team ID at the time of this season
+   */
+  faceitTeamId: string;
+  /**
+   * FaceIt Championship ID
+   */
+  championshipId: string;
+  leagueId: string;
+  seasonId: string;
+  stageId: string;
+  /**
+   * Display name (e.g., "Season 6")
+   */
+  seasonName: string;
+  /**
+   * Always false for archived seasons
+   */
+  isActive?: boolean | null;
+  division: 'Masters' | 'Expert' | 'Advanced' | 'Open';
+  region: 'NA' | 'EMEA' | 'SA';
+  /**
+   * Conference name (e.g., "Central")
+   */
+  conference?: string | null;
+  /**
+   * Final standings from end of season
+   */
+  standings?: {
+    /**
+     * Final rank/position
+     */
+    currentRank?: number | null;
+    /**
+     * Total teams in division
+     */
+    totalTeams?: number | null;
+    wins?: number | null;
+    losses?: number | null;
+    ties?: number | null;
+    points?: number | null;
+    matchesPlayed?: number | null;
+  };
+  /**
+   * When this season was archived
+   */
+  archivedAt?: string | null;
+  dataSource?: 'faceit' | null;
+  /**
+   * Hide from frontend display (e.g., after team identity change)
+   */
+  hideHistoricalData?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * 🎙️ Manage production staff (casters, observers, producers) who work on match broadcasts.
@@ -1333,6 +1601,14 @@ export interface PayloadLockedDocument {
         value: number | TournamentTemplate;
       } | null)
     | ({
+        relationTo: 'faceit-seasons';
+        value: number | FaceitSeason;
+      } | null)
+    | ({
+        relationTo: 'faceit-seasons-archive';
+        value: number | FaceitSeasonsArchive;
+      } | null)
+    | ({
         relationTo: 'production';
         value: number | Production;
       } | null)
@@ -1690,6 +1966,15 @@ export interface TeamsSelect<T extends boolean = true> {
         person?: T;
         id?: T;
       };
+  faceitEnabled?: T;
+  faceitTeamId?: T;
+  faceitChampionshipId?: T;
+  faceitLeagueId?: T;
+  faceitSeasonId?: T;
+  faceitStageId?: T;
+  faceitShowCompetitiveSection?: T;
+  faceitHideHistoricalSeasons?: T;
+  currentFaceitSeason?: T;
   slug?: T;
   activeTournaments?: T;
   updatedAt?: T;
@@ -1723,6 +2008,8 @@ export interface MatchesSelect<T extends boolean = true> {
         streamedBy?: T;
       };
   faceitLobby?: T;
+  faceitRoomId?: T;
+  faceitMatchId?: T;
   vod?: T;
   productionWorkflow?:
     | T
@@ -1752,6 +2039,8 @@ export interface MatchesSelect<T extends boolean = true> {
         includeInSchedule?: T;
         productionNotes?: T;
       };
+  syncedFromFaceit?: T;
+  faceitSeasonId?: T;
   slug?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1763,6 +2052,8 @@ export interface MatchesSelect<T extends boolean = true> {
 export interface TournamentTemplatesSelect<T extends boolean = true> {
   name?: T;
   isActive?: T;
+  isFaceitTournament?: T;
+  faceitAutoSync?: T;
   assignedTeams?: T;
   scheduleRules?:
     | T
@@ -1780,6 +2071,85 @@ export interface TournamentTemplatesSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faceit-seasons_select".
+ */
+export interface FaceitSeasonsSelect<T extends boolean = true> {
+  team?: T;
+  faceitTeamId?: T;
+  championshipId?: T;
+  leagueId?: T;
+  seasonId?: T;
+  stageId?: T;
+  seasonName?: T;
+  isActive?: T;
+  division?: T;
+  region?: T;
+  conference?: T;
+  standings?:
+    | T
+    | {
+        currentRank?: T;
+        totalTeams?: T;
+        wins?: T;
+        losses?: T;
+        ties?: T;
+        points?: T;
+        matchesPlayed?: T;
+      };
+  recentMatches?:
+    | T
+    | {
+        matchId?: T;
+        faceitRoomId?: T;
+        opponent?: T;
+        opponentId?: T;
+        date?: T;
+        result?: T;
+        elmtScore?: T;
+        opponentScore?: T;
+        id?: T;
+      };
+  lastSynced?: T;
+  dataSource?: T;
+  hideHistoricalData?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faceit-seasons-archive_select".
+ */
+export interface FaceitSeasonsArchiveSelect<T extends boolean = true> {
+  team?: T;
+  faceitTeamId?: T;
+  championshipId?: T;
+  leagueId?: T;
+  seasonId?: T;
+  stageId?: T;
+  seasonName?: T;
+  isActive?: T;
+  division?: T;
+  region?: T;
+  conference?: T;
+  standings?:
+    | T
+    | {
+        currentRank?: T;
+        totalTeams?: T;
+        wins?: T;
+        losses?: T;
+        ties?: T;
+        points?: T;
+        matchesPlayed?: T;
+      };
+  archivedAt?: T;
+  dataSource?: T;
+  hideHistoricalData?: T;
   updatedAt?: T;
   createdAt?: T;
 }

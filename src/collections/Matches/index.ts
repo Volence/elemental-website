@@ -312,7 +312,23 @@ export const Matches: CollectionConfig = {
               name: 'faceitLobby',
               type: 'text',
               admin: {
-                description: 'FACEIT lobby URL',
+                description: 'FACEIT lobby URL (auto-populated if synced from FaceIt)',
+              },
+            },
+            {
+              name: 'faceitRoomId',
+              type: 'text',
+              admin: {
+                description: 'FaceIt Room ID (for generating room links) - auto-populated by sync',
+                readOnly: true,
+              },
+            },
+            {
+              name: 'faceitMatchId',
+              type: 'text',
+              admin: {
+                description: 'FaceIt Match ID - auto-populated by sync',
+                readOnly: true,
               },
             },
             {
@@ -490,6 +506,28 @@ export const Matches: CollectionConfig = {
           ],
         },
       ],
+    },
+    // FaceIt Integration (sidebar)
+    {
+      name: 'syncedFromFaceit',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        position: 'sidebar',
+        description: 'Auto-populated from FaceIt API',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'faceitSeasonId',
+      type: 'relationship',
+      relationTo: 'faceit-seasons',
+      hasMany: false,
+      admin: {
+        position: 'sidebar',
+        description: 'Link to FaceIt season data',
+        readOnly: true,
+      },
     },
     // Keep slug in sidebar
     {

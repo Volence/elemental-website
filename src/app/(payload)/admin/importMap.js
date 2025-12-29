@@ -22,6 +22,7 @@ import { default as default_04cdbc390d38c074fb71cb7d83ceaa88 } from '@/component
 import { default as default_765c32446158099d5cf3659ccd46167a } from '@/collections/Teams/ColorPickerField'
 import { default as default_befd121dc2c708f29d17ef6cf6b47565 } from '@/components/TeamTabCounts/StaffCount'
 import { default as default_f6633e5ce5f4aebde4e8dd97802e545a } from '@/components/TeamTabCounts/RosterCount'
+import { default as default_6d9e1ded9f80f1d962812e7bd12ae28d } from '@/components/FaceitSyncButton'
 import { default as default_6bf23cb42f8cd662b9483def3bfe5de8 } from '@/components/TeamLogoPreview'
 import { default as default_ec091fc5c03678bb916f265b8e19f4d7 } from '@/components/TeamsListColumns/LogoCell'
 import { default as default_ca18705bdb593eaffdc1fe803bf3471b } from '@/components/TeamsListColumns/NameCell'
@@ -36,6 +37,7 @@ import { default as default_1c78329ca40bdaea08398ce17076186a } from '@/component
 import { default as default_3b0c933eeb58b8ba9e1fb354f07641f1 } from '@/components/MatchesListColumns/TitleCell'
 import { default as default_73cfbba28a8886a492b9c832e231d2f5 } from '@/components/MatchesListColumns/CellAlignmentStyles'
 import { default as default_4c7ee971bccbc12ad44464e4882fd683 } from '@/components/TournamentFields/BulkTeamSelector'
+import { default as default_a8373daa35991579a3d075c396a6a433 } from '@/components/FaceitSeasonsListColumns/RecordCell'
 import { default as default_048c297467b6adbf2ab886ee3bbecc66 } from '@/components/SocialPostColumns/ContentPreviewCell'
 import { default as default_cbd62d152faae83563323bc6e1990a3d } from '@/components/SocialPostFields/ContentWithTemplate'
 import { default as default_f52f291ae9aadfb75185249ec10b563b } from '@/components/SocialPostColumns/StatusCell'
@@ -94,6 +96,7 @@ export const importMap = {
   "@/collections/Teams/ColorPickerField#default": default_765c32446158099d5cf3659ccd46167a,
   "@/components/TeamTabCounts/StaffCount#default": default_befd121dc2c708f29d17ef6cf6b47565,
   "@/components/TeamTabCounts/RosterCount#default": default_f6633e5ce5f4aebde4e8dd97802e545a,
+  "@/components/FaceitSyncButton#default": default_6d9e1ded9f80f1d962812e7bd12ae28d,
   "@/components/TeamLogoPreview#default": default_6bf23cb42f8cd662b9483def3bfe5de8,
   "@/components/TeamsListColumns/LogoCell#default": default_ec091fc5c03678bb916f265b8e19f4d7,
   "@/components/TeamsListColumns/NameCell#default": default_ca18705bdb593eaffdc1fe803bf3471b,
@@ -108,6 +111,7 @@ export const importMap = {
   "@/components/MatchesListColumns/TitleCell#default": default_3b0c933eeb58b8ba9e1fb354f07641f1,
   "@/components/MatchesListColumns/CellAlignmentStyles#default": default_73cfbba28a8886a492b9c832e231d2f5,
   "@/components/TournamentFields/BulkTeamSelector#default": default_4c7ee971bccbc12ad44464e4882fd683,
+  "@/components/FaceitSeasonsListColumns/RecordCell#default": default_a8373daa35991579a3d075c396a6a433,
   "@/components/SocialPostColumns/ContentPreviewCell#default": default_048c297467b6adbf2ab886ee3bbecc66,
   "@/components/SocialPostFields/ContentWithTemplate#default": default_cbd62d152faae83563323bc6e1990a3d,
   "@/components/SocialPostColumns/StatusCell#default": default_f52f291ae9aadfb75185249ec10b563b,

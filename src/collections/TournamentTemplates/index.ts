@@ -126,6 +126,23 @@ export const TournamentTemplates: CollectionConfig = {
       },
     },
     {
+      name: 'isFaceitTournament',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: '🏆 This is a FaceIt tournament - automatically pull match data from FaceIt API',
+      },
+    },
+    {
+      name: 'faceitAutoSync',
+      type: 'checkbox',
+      defaultValue: true,
+      admin: {
+        description: 'Auto-sync matches from FaceIt (recommended)',
+        condition: (data) => data.isFaceitTournament === true,
+      },
+    },
+    {
       name: 'assignedTeams',
       type: 'relationship',
       relationTo: 'teams',
