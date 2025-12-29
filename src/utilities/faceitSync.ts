@@ -233,9 +233,54 @@ export async function syncTeamData(
       console.warn(`[FaceIt Sync] No existing season found for team ${teamId}`)
     }
     
-    // 4. Update season record with new standings data
-    if (standing && existingSeason) {
-      const seasonData: any = {
+    // 4. Create or update season record
+    if (standing) {
+      // If no season exists, create one with data from the team's league
+      if (!existingSeason) {
+        console.log(`[FaceIt Sync] Creating new season record for team ${teamId}`)
+        
+        // Get division/region from team's current FaceIt league
+        const teamData = await payload.findByID({
+          collection: 'teams',
+          id: teamId,
+          depth: 1,
+        })
+        
+        const league = teamData.currentFaceitLeague as any
+        
+        seasonRecord = await payload.create({
+          collection: 'faceit-seasons',
+          data: {
+            team: teamId,
+            faceitLeague: league?.id,
+            faceitTeamId: faceitTeamId,
+            division: league?.division || 'Advanced',
+            region: league?.region || teamData.region || 'NA',
+            conference: league?.conference,
+            seasonName: league?.name || 'Season 7',
+            championshipId: championshipId || '',
+            leagueId: leagueId || '',
+            seasonId: seasonId || '',
+            stageId: stageId || '',
+            standings: {
+              currentRank: standing.rank_start,
+              totalTeams: totalTeams,
+              wins: standing.won,
+              losses: standing.lost,
+              ties: standing.tied || 0,
+              points: standing.points,
+              matchesPlayed: standing.matches,
+            },
+            lastSynced: new Date().toISOString(),
+            dataSource: 'faceit',
+            isActive: true,
+          },
+        })
+        
+        console.log(`[FaceIt Sync] Created season record ${seasonRecord.id} for team ${teamId}`)
+      } else {
+        // Update existing season
+        const seasonData: any = {
         // Only update FaceIt API IDs and standings data
         // DO NOT update division, seasonName, region, conference - those come from league template
         faceitTeamId: faceitTeamId,
@@ -263,12 +308,13 @@ export async function syncTeamData(
           : existingSeason.faceitLeague
       }
 
-      // Update existing season with new standings
-      seasonRecord = await payload.update({
-        collection: 'faceit-seasons',
-        id: existingSeason.id,
-        data: seasonData,
-      })
+        // Update existing season with new standings
+        seasonRecord = await payload.update({
+          collection: 'faceit-seasons',
+          id: existingSeason.id,
+          data: seasonData,
+        })
+      }
     }
 
     // 5. Generate/update matches
