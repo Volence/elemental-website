@@ -81,9 +81,9 @@ export async function POST(request: Request) {
           team.id,
           team.faceitTeamId,
           league.championshipId || '',
-          league.leagueId,
-          league.seasonId,
-          league.stageId
+          league.leagueId || '',
+          league.seasonId || '',
+          league.stageId || ''
         )
         
         if (syncResult.success) {
