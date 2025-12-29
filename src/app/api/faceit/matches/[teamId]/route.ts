@@ -13,10 +13,11 @@ import configPromise from '@payload-config'
  */
 export async function GET(
   request: Request,
-  { params }: { params: { teamId: string } }
+  { params }: { params: Promise<{ teamId: string }> }
 ) {
   try {
-    const teamId = parseInt(params.teamId)
+    const { teamId: teamIdStr } = await params
+    const teamId = parseInt(teamIdStr)
     
     if (isNaN(teamId)) {
       return NextResponse.json(
