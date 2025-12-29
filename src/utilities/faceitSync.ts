@@ -125,7 +125,7 @@ async function fetchStandings(stageId: string, teamId: string): Promise<{ standi
 async function fetchMatches(teamId: string, championshipId: string): Promise<FaceitMatch[]> {
   try {
     const response = await fetch(
-      `${CHAMPIONSHIPS_BASE}/matches?participantId=${teamId}&participantType=TEAM&championshipId=${championshipId}&limite=70&offset=0&sort=ASC`
+      `${CHAMPIONSHIPS_BASE}/matches?participantId=${teamId}&participantType=TEAM&championshipId=${championshipId}&limit=70&offset=0&sort=ASC`
     )
 
     if (!response.ok) {
