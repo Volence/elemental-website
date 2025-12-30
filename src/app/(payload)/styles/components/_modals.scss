@@ -162,10 +162,16 @@
   }
 }
 
-// Style the REAL close button (Payload's built-in)
+// Hide the old empty close button (it's redundant and shows up blank)
 .doc-drawer {
+  .drawer__close,
+  button[aria-label="Close"][id*="close-drawer"] {
+    display: none !important;
+  }
+  
+  // Style the X close button in top-right
   .drawer__header-close,
-  button[aria-label="Close"] {
+  button[aria-label="Close"]:not([id*="close-drawer"]) {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
