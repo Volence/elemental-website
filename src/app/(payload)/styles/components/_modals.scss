@@ -197,6 +197,17 @@
   padding: 0 2rem 2rem 2rem; // Standard padding for form area
 }
 
+// Remove padding from ALL sidebar containers (these create the purple padding in dev tools)
+.doc-drawer {
+  .document-fields__sidebar,
+  [class*="document-fields__sidebar"],
+  [class*="sidebar"],
+  .gutter {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}
+
 // Fix nested scrollbars in relationship drawers
 .drawer__content {
   overflow: visible; // Let the inner content handle scrolling
