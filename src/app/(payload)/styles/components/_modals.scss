@@ -116,8 +116,8 @@
 // ============================================
 
 .doc-drawer {
-  width: 800px;
-  max-width: 90vw;
+  width: 1200px; // Much wider for forms
+  max-width: 95vw;
 }
 
 .doc-drawer__header-content {
@@ -141,30 +141,55 @@
 
 // Make form fields use full drawer width
 .drawer {
+  // Force all form containers to full width
   .render-fields,
-  .field-type,
+  .form-fields,
   form {
-    width: 100%;
-    max-width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
-  // Ensure two-column layout fields use full width
+  // Payload's field wrapper
   .field-type {
-    flex: 1 1 100%;
-    max-width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
+    
+    // Inner containers
+    > div {
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+  }
+
+  // All input wrappers
+  .input-wrapper,
+  .text-input,
+  .textarea-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
   // Make text inputs and textareas stretch
   input[type="text"],
   input[type="email"],
   input[type="url"],
-  textarea {
-    width: 100%;
+  input[type="number"],
+  textarea,
+  select {
+    width: 100% !important;
   }
 
-  // Remove excessive padding/margins
+  // Field spacing
   .field-type + .field-type {
     margin-top: $spacing-lg;
+  }
+
+  // Remove max-width constraints on field containers
+  .field-type,
+  .field-type > div,
+  .field-type .input,
+  .render-fields > div {
+    max-width: none !important;
   }
 }
 
