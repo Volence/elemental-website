@@ -126,20 +126,15 @@
   width: 1200px; // Much wider for forms
   max-width: 95vw;
   
-  // NUCLEAR OPTION: Remove ALL padding/margins from EVERY container
-  *,
-  *::before,
-  *::after {
-    box-sizing: border-box !important;
-  }
-  
-  .drawer__content,
-  .doc-drawer__content,
-  .doc-drawer__body {
+  // Remove padding/margins from the outer containers ONLY
+  > .drawer__content {
     padding: 0 !important;
     margin: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
+  }
+  
+  .doc-drawer__content {
+    padding: 0 !important;
+    margin: 0 !important;
   }
 }
 
@@ -170,90 +165,53 @@
 }
 
 .doc-drawer__header-content {
-  padding: 1.5rem 2rem !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  margin: 0 !important;
+  padding: 1.5rem 2rem;
 }
 
 // Document fields container - this is where the actual form lives
 .doc-drawer__document-fields {
-  padding: 0 2rem 2rem 2rem !important; // Only pad the actual fields area
-  width: 100% !important;
-  max-width: 100% !important;
-  margin: 0 !important;
-  
-  // Aggressively remove all nested padding/margins
-  * {
-    box-sizing: border-box !important;
-  }
-  
-  > div,
-  > form,
-  .render-fields,
-  [class*="render"],
-  [class*="fields"] {
-    padding: 0 !important;
-    margin: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-  }
+  padding: 0 2rem 2rem 2rem; // Standard padding for form area
 }
 
 // Fix nested scrollbars in relationship drawers
 .drawer__content {
-  overflow: visible !important;
+  overflow: visible; // Let the inner content handle scrolling
 }
 
 .doc-drawer .doc-drawer__content {
-  overflow-y: auto !important;
-  max-height: calc(100vh - 80px);
-  padding: 0 !important;
-  margin: 0 !important;
+  overflow-y: auto; // Only scroll the content area
+  max-height: calc(100vh - 80px); // Prevent double scrollbars
 }
 
-// Make form fields use full drawer width - AGGRESSIVE MODE
+// Make form fields use full drawer width
 .doc-drawer,
 .drawer {
-  // Force EVERYTHING to full width
+  // Force all form containers to full width
   .render-fields,
   .form-fields,
-  form,
-  [class*="render"],
-  [class*="form"],
-  [class*="fields"],
-  [class*="wrapper"] {
+  form {
     width: 100% !important;
     max-width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
   }
 
   // Payload's field wrapper
   .field-type {
     width: 100% !important;
     max-width: 100% !important;
-    padding: 0 !important;
-    margin: 0 0 $spacing-lg 0 !important;
     
     // Inner containers
-    > div,
-    > * {
+    > div {
       width: 100% !important;
       max-width: 100% !important;
-      margin: 0 !important;
     }
   }
 
   // All input wrappers
   .input-wrapper,
   .text-input,
-  .textarea-wrapper,
-  [class*="input"],
-  [class*="wrapper"] {
+  .textarea-wrapper {
     width: 100% !important;
     max-width: 100% !important;
-    margin: 0 !important;
   }
 
   // Make text inputs and textareas stretch
@@ -264,22 +222,19 @@
   textarea,
   select {
     width: 100% !important;
-    max-width: 100% !important;
   }
 
   // Field spacing
   .field-type + .field-type {
-    margin-top: $spacing-lg !important;
+    margin-top: $spacing-lg;
   }
 
-  // Nuclear option: remove ALL max-width constraints
-  * {
+  // Remove max-width constraints on field containers
+  .field-type,
+  .field-type > div,
+  .field-type .input,
+  .render-fields > div {
     max-width: none !important;
-  }
-  
-  // Except for the drawer itself
-  &.doc-drawer {
-    max-width: 95vw !important;
   }
 }
 
