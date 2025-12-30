@@ -116,7 +116,7 @@
 // ============================================
 
 .doc-drawer {
-  width: 600px;
+  width: 800px;
   max-width: 90vw;
 }
 
@@ -126,6 +126,17 @@
 
 .doc-drawer__content {
   padding: 0 2rem 2rem;
+  overflow-y: auto;
+  max-height: calc(100vh - 80px); // Prevent double scrollbars
+}
+
+// Fix nested scrollbars in relationship drawers
+.drawer__content {
+  overflow: visible; // Let the inner content handle scrolling
+}
+
+.drawer .doc-drawer__content {
+  overflow-y: auto; // Only scroll the content area
 }
 
 // ============================================
