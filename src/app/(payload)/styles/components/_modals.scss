@@ -132,11 +132,17 @@
   width: 1200px; // Much wider for forms
   max-width: 95vw;
   
-  // Remove padding/margins from the outer containers ONLY
-  > .drawer__content {
+  // CRITICAL: Completely remove ALL glow-card effects from drawer containers
+  // The glow-card mixin (from _payload-overrides.scss) adds background, border, and shadow
+  // that create visual "gray space" around the content
+  > .drawer__content,
+  .drawer__content {
     padding: 0 !important;
     margin: 0 !important;
-    box-shadow: none !important; // Remove glow effect that creates visual gray space
+    background: transparent !important; // Remove glow-card background
+    border: none !important; // Remove glow-card border
+    box-shadow: none !important; // Remove glow-card shadow
+    backdrop-filter: none !important; // Remove blur effect
     
     &::before,
     &::after {
@@ -147,6 +153,7 @@
   .doc-drawer__content {
     padding: 0 !important;
     margin: 0 !important;
+    background: transparent !important;
     
     &::before,
     &::after {
