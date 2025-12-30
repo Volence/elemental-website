@@ -125,34 +125,78 @@
 .doc-drawer {
   width: 1200px; // Much wider for forms
   max-width: 95vw;
+  
+  // CRITICAL: Remove ALL padding/margins from drawer containers
+  .drawer__content,
+  .doc-drawer__content {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}
+
+// Drawer header with close button
+.doc-drawer__header {
+  position: relative;
+  
+  // Add close button
+  &::after {
+    content: '×';
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    line-height: 1;
+    color: $admin-text-secondary;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    z-index: 10;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: $admin-text-primary;
+    }
+  }
 }
 
 .doc-drawer__header-content {
-  padding: 1.5rem 2rem;
+  padding: 1.5rem 3rem 1.5rem 2rem; // Extra right padding for close button
 }
 
-.doc-drawer__content {
-  padding: 1rem 2rem; // Reduce top padding
-  overflow-y: auto;
-  max-height: calc(100vh - 80px); // Prevent double scrollbars
+// Document fields container - this is where the actual form lives
+.doc-drawer__document-fields {
+  padding: 0 2rem 2rem 2rem !important; // Only pad the actual fields area
+  width: 100% !important;
+  max-width: 100% !important;
   
-  // Remove excessive margins on the content wrapper
-  > div {
-    margin: 0 !important;
+  // Remove any nested container padding
+  > div,
+  > form,
+  .render-fields {
     padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 }
 
 // Fix nested scrollbars in relationship drawers
 .drawer__content {
-  overflow: visible; // Let the inner content handle scrolling
+  overflow: visible !important; // Let the inner content handle scrolling
 }
 
-.drawer .doc-drawer__content {
-  overflow-y: auto; // Only scroll the content area
+.doc-drawer .doc-drawer__content {
+  overflow-y: auto !important; // Only scroll the content area
+  max-height: calc(100vh - 80px); // Prevent double scrollbars
 }
 
 // Make form fields use full drawer width
+.doc-drawer,
 .drawer {
   // Force all form containers to full width
   .render-fields,
