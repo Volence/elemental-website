@@ -139,6 +139,35 @@
   overflow-y: auto; // Only scroll the content area
 }
 
+// Make form fields use full drawer width
+.drawer {
+  .render-fields,
+  .field-type,
+  form {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  // Ensure two-column layout fields use full width
+  .field-type {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  // Make text inputs and textareas stretch
+  input[type="text"],
+  input[type="email"],
+  input[type="url"],
+  textarea {
+    width: 100%;
+  }
+
+  // Remove excessive padding/margins
+  .field-type + .field-type {
+    margin-top: $spacing-lg;
+  }
+}
+
 // ============================================
 // POPUP (Select dropdowns, etc.)
 // ============================================
