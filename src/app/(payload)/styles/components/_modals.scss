@@ -126,46 +126,54 @@
   width: 1200px; // Much wider for forms
   max-width: 95vw;
   
-  // CRITICAL: Remove ALL padding/margins from drawer containers
+  // NUCLEAR OPTION: Remove ALL padding/margins from EVERY container
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box !important;
+  }
+  
   .drawer__content,
-  .doc-drawer__content {
+  .doc-drawer__content,
+  .doc-drawer__body {
     padding: 0 !important;
     margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 }
 
-// Drawer header with close button
-.doc-drawer__header {
-  position: relative;
-  
-  // Add close button
-  &::after {
-    content: '×';
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    line-height: 1;
-    color: $admin-text-secondary;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-    z-index: 10;
+// Style the REAL close button (Payload's built-in)
+.doc-drawer {
+  .drawer__header-close,
+  button[aria-label="Close"] {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 6px !important;
+    color: $admin-text-secondary !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    font-size: 20px !important;
     
     &:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: $admin-text-primary;
+      background: rgba(255, 68, 68, 0.15) !important;
+      border-color: rgba(255, 68, 68, 0.3) !important;
+      color: $admin-text-primary !important;
     }
   }
 }
 
 .doc-drawer__header-content {
-  padding: 1.5rem 3rem 1.5rem 2rem; // Extra right padding for close button
+  padding: 1.5rem 2rem !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
 }
 
 // Document fields container - this is where the actual form lives
@@ -173,11 +181,18 @@
   padding: 0 2rem 2rem 2rem !important; // Only pad the actual fields area
   width: 100% !important;
   max-width: 100% !important;
+  margin: 0 !important;
   
-  // Remove any nested container padding
+  // Aggressively remove all nested padding/margins
+  * {
+    box-sizing: border-box !important;
+  }
+  
   > div,
   > form,
-  .render-fields {
+  .render-fields,
+  [class*="render"],
+  [class*="fields"] {
     padding: 0 !important;
     margin: 0 !important;
     width: 100% !important;
@@ -187,21 +202,27 @@
 
 // Fix nested scrollbars in relationship drawers
 .drawer__content {
-  overflow: visible !important; // Let the inner content handle scrolling
+  overflow: visible !important;
 }
 
 .doc-drawer .doc-drawer__content {
-  overflow-y: auto !important; // Only scroll the content area
-  max-height: calc(100vh - 80px); // Prevent double scrollbars
+  overflow-y: auto !important;
+  max-height: calc(100vh - 80px);
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
-// Make form fields use full drawer width
+// Make form fields use full drawer width - AGGRESSIVE MODE
 .doc-drawer,
 .drawer {
-  // Force all form containers to full width
+  // Force EVERYTHING to full width
   .render-fields,
   .form-fields,
-  form {
+  form,
+  [class*="render"],
+  [class*="form"],
+  [class*="fields"],
+  [class*="wrapper"] {
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 !important;
@@ -212,20 +233,27 @@
   .field-type {
     width: 100% !important;
     max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 0 $spacing-lg 0 !important;
     
     // Inner containers
-    > div {
+    > div,
+    > * {
       width: 100% !important;
       max-width: 100% !important;
+      margin: 0 !important;
     }
   }
 
   // All input wrappers
   .input-wrapper,
   .text-input,
-  .textarea-wrapper {
+  .textarea-wrapper,
+  [class*="input"],
+  [class*="wrapper"] {
     width: 100% !important;
     max-width: 100% !important;
+    margin: 0 !important;
   }
 
   // Make text inputs and textareas stretch
@@ -236,19 +264,22 @@
   textarea,
   select {
     width: 100% !important;
+    max-width: 100% !important;
   }
 
   // Field spacing
   .field-type + .field-type {
-    margin-top: $spacing-lg;
+    margin-top: $spacing-lg !important;
   }
 
-  // Remove max-width constraints on field containers
-  .field-type,
-  .field-type > div,
-  .field-type .input,
-  .render-fields > div {
+  // Nuclear option: remove ALL max-width constraints
+  * {
     max-width: none !important;
+  }
+  
+  // Except for the drawer itself
+  &.doc-drawer {
+    max-width: 95vw !important;
   }
 }
 
