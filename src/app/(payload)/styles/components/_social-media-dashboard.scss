@@ -784,6 +784,20 @@
           }
         }
       }
+      
+      p {
+        margin-top: $spacing-lg;
+        color: var(--theme-elevation-500);
+        font-size: 0.9rem;
+        
+        code {
+          padding: 2px 4px;
+          background: rgba(59, 130, 246, 0.15);
+          border-radius: 3px;
+          font-size: 0.85em;
+          color: $admin-accent-primary;
+        }
+      }
     }
     
     &__manage {
@@ -927,6 +941,21 @@
         font-size: 0.8rem;
         margin: 0 0 $spacing-sm 0;
         font-weight: 600;
+      }
+      
+      &-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: $gap-sm;
+      }
+      
+      code {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+        background: rgba(59, 130, 246, 0.15);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 4px;
+        color: #3b82f6;
       }
     }
     

@@ -73,13 +73,8 @@ export function TemplatesView() {
           <li><strong>Click "Create Post"</strong> - Opens a new post with everything pre-filled!</li>
           <li><strong>Add media and schedule</strong> - Upload images/videos and set your post time</li>
         </ol>
-        <p style={{ marginTop: '1rem', color: 'var(--theme-elevation-500)', fontSize: '0.9rem' }}>
-          💡 <strong>Tip:</strong> Templates support ANY <code style={{ 
-            padding: '2px 4px', 
-            background: 'rgba(59, 130, 246, 0.15)', 
-            borderRadius: '3px', 
-            fontSize: '0.85em'
-          }}>{'{{placeholder}}'}</code> format - they're automatically detected! You can also click "Copy to Clipboard" in the modal if you just need the text.
+        <p>
+          💡 <strong>Tip:</strong> Templates support ANY <code>{'{{placeholder}}'}</code> format - they're automatically detected! You can also click "Copy to Clipboard" in the modal if you just need the text.
         </p>
         {isManager && (
           <div className="templates-view__manage">
@@ -154,16 +149,9 @@ export function TemplatesView() {
                       return (
                         <div className="template-card__placeholders">
                           <h4>📝 Fields to fill ({placeholderArray.length}):</h4>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                          <div className="template-card__placeholders-list">
                             {placeholderArray.map((placeholder) => (
-                              <code key={placeholder} style={{ 
-                                fontSize: '0.8rem',
-                                padding: '0.25rem 0.5rem',
-                                background: 'rgba(59, 130, 246, 0.15)',
-                                border: '1px solid rgba(59, 130, 246, 0.3)',
-                                borderRadius: '4px',
-                                color: '#3b82f6'
-                              }}>
+                              <code key={placeholder}>
                                 {placeholder}
                               </code>
                             ))}
