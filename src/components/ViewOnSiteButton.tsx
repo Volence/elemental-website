@@ -45,36 +45,14 @@ const ViewOnSiteButton: React.FC<{ basePath: string }> = ({ basePath }) => {
   const liveUrl = `https://elmt.gg${basePath}/${slug}`
 
   return (
-    <div style={{ marginBottom: '1.5rem' }}>
+    <div className="view-on-site">
       <a
         href={liveUrl}
         target="_blank"
         rel="noopener noreferrer"
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          padding: '0.5rem 1.25rem',
-          background: 'linear-gradient(135deg, rgb(34, 197, 94) 0%, rgb(22, 163, 74) 100%)',
-          color: 'white',
-          textDecoration: 'none',
-          borderRadius: '6px',
-          fontSize: '0.875rem',
-          fontWeight: 600,
-          border: '1px solid rgba(34, 197, 94, 0.5)',
-          boxShadow: '0 0 20px rgba(34, 197, 94, 0.3)',
-          transition: 'all 0.2s ease',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'translateY(-2px)'
-          e.currentTarget.style.boxShadow = '0 0 30px rgba(34, 197, 94, 0.5)'
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'translateY(0)'
-          e.currentTarget.style.boxShadow = '0 0 20px rgba(34, 197, 94, 0.3)'
-        }}
+        className="view-on-site__link"
       >
-        <span style={{ fontSize: '1rem' }}>🌐</span>
+        <span className="view-on-site__icon">🌐</span>
         <span>View on Live Site</span>
         <span>→</span>
       </a>

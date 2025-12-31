@@ -17,13 +17,7 @@ const CopyLinkField: React.FC = () => {
         <div className="label">
           <label>Invite Link</label>
         </div>
-        <div style={{ 
-          padding: '0.75rem', 
-          background: 'var(--theme-elevation-100)', 
-          borderRadius: '4px', 
-          color: 'var(--theme-elevation-800)',
-          border: '1px solid var(--theme-elevation-400)',
-        }}>
+        <div className="copy-link-field__placeholder">
           Save this invite to generate a link
         </div>
       </div>
@@ -47,50 +41,24 @@ const CopyLinkField: React.FC = () => {
       <div className="label">
         <label>Invite Link</label>
       </div>
-      <div style={{ 
-        display: 'flex', 
-        gap: '0.5rem', 
-        alignItems: 'center',
-        padding: '0.75rem',
-        background: 'var(--theme-elevation-100)',
-        border: '1px solid var(--theme-elevation-400)',
-        borderRadius: '4px',
-      }}>
+      <div className="copy-link-field__container">
         <input
           type="text"
           value={inviteUrl}
           readOnly
-          style={{
-            flex: 1,
-            padding: '0.5rem',
-            border: '1px solid var(--theme-elevation-400)',
-            borderRadius: '4px',
-            fontFamily: 'monospace',
-            fontSize: '0.875rem',
-            background: 'var(--theme-elevation-0)',
-            color: 'var(--theme-text)',
-          }}
+          className="copy-link-field__input"
           onClick={(e) => (e.target as HTMLInputElement).select()}
         />
         <button
           type="button"
           onClick={handleCopy}
-          style={{
-            padding: '0.5rem 1rem',
-            background: copied ? '#10b981' : 'var(--theme-elevation-500)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontWeight: '500',
-            whiteSpace: 'nowrap',
-          }}
+          className={`copy-link-field__button ${copied ? 'copy-link-field__button--copied' : 'copy-link-field__button--copy'}`}
         >
           {copied ? '✓ Copied!' : 'Copy Link'}
         </button>
       </div>
       {expiresAt && (
-        <div style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: 'var(--theme-elevation-800)' }}>
+        <div className="copy-link-field__hint">
           Share this link with the person you want to invite. It will expire on{' '}
           {new Date(expiresAt).toLocaleString()}.
         </div>

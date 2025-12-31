@@ -5,18 +5,11 @@ import React from 'react'
  */
 export const TournamentFaceitNotice: React.FC = () => {
   return (
-    <div style={{
-      padding: '16px',
-      marginBottom: '24px',
-      backgroundColor: '#1a1a2e',
-      border: '2px solid #3b82f6',
-      borderRadius: '8px',
-      color: '#e5e7eb'
-    }}>
-      <h3 style={{ margin: '0 0 8px 0', color: '#60a5fa', fontSize: '16px', fontWeight: '600' }}>
+    <div className="tournament-faceit-notice">
+      <h3 className="tournament-faceit-notice__title">
         ℹ️ FaceIt Tournaments
       </h3>
-      <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.5' }}>
+      <p className="tournament-faceit-notice__content">
         <strong>Tournament Templates are NOT used for FaceIt leagues.</strong><br/>
         FaceIt matches are automatically synced from the FaceIt API using <strong>FaceIt Leagues</strong> (People → FaceIt Leagues).<br/>
         Only use Tournament Templates for manually-scheduled, non-FaceIt tournaments.
