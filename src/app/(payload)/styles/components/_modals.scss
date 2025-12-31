@@ -18,19 +18,18 @@
   backdrop-filter: blur(8px);
 }
 
-// Modal content area
-.modal__content,
-.drawer__content {
+// Modal content area - use double class for higher specificity
+.modal.modal .modal__content,
+.drawer.drawer .drawer__content {
   @include glow-card($admin-accent-primary);
   max-height: 90vh;
   overflow-y: auto;
-  padding: 0 !important; // Remove default padding on drawer container
-  margin: 0 !important; // Remove default margin
+  padding: 0;
+  margin: 0;
   
-  // Ensure no pseudo-elements add extra space
   &::before,
   &::after {
-    display: none !important;
+    display: none;
   }
 }
 
@@ -61,7 +60,7 @@
 
 .modal__body,
 .drawer__body {
-  padding: 1rem 2rem; // Reduce padding
+  padding: 1rem 2rem;
   
   p {
     color: $admin-text-secondary;
@@ -75,7 +74,7 @@
   
   // Remove excessive wrapper margins/padding
   > div {
-    margin: 0 !important;
+    margin: 0;
   }
 }
 
@@ -112,12 +111,10 @@
   .modal__footer {
     justify-content: flex-end;
     
-    // Cancel button
     button:first-child {
       @include glow-button($admin-accent-primary);
     }
     
-    // Confirm delete button
     button:last-child {
       @include glow-button($admin-accent-error);
     }
@@ -128,69 +125,65 @@
 // DOC DRAWER (Edit side panel)
 // ============================================
 
-.doc-drawer {
-  width: 1200px; // Much wider for forms
+.doc-drawer.doc-drawer {
+  width: 1200px;
   max-width: 95vw;
   
-  // CRITICAL: Completely remove ALL glow-card effects from drawer containers
-  // The glow-card mixin (from _payload-overrides.scss) adds background, border, and shadow
-  // that create visual "gray space" around the content
+  // Remove glow-card effects from drawer containers
   > .drawer__content,
   .drawer__content {
-    padding: 0 !important;
-    margin: 0 !important;
-    background: transparent !important; // Remove glow-card background
-    border: none !important; // Remove glow-card border
-    box-shadow: none !important; // Remove glow-card shadow
-    backdrop-filter: none !important; // Remove blur effect
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
     
     &::before,
     &::after {
-      display: none !important;
+      display: none;
     }
   }
   
   .doc-drawer__content {
-    padding: 0 !important;
-    margin: 0 !important;
-    background: transparent !important;
+    padding: 0;
+    margin: 0;
+    background: transparent;
     
     &::before,
     &::after {
-      display: none !important;
+      display: none;
     }
   }
 }
 
-// Hide the old empty close button (it's redundant and shows up blank)
-.doc-drawer {
-  .drawer__close,
-  button[aria-label="Close"][id*="close-drawer"] {
-    display: none !important;
-  }
+// Hide redundant close button
+.doc-drawer .drawer__close,
+.doc-drawer button[aria-label="Close"][id*="close-drawer"] {
+  display: none;
+}
+
+// Style the X close button
+.doc-drawer .drawer__header-close,
+.doc-drawer button[aria-label="Close"]:not([id*="close-drawer"]) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: $admin-text-secondary;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 20px;
   
-  // Style the X close button in top-right
-  .drawer__header-close,
-  button[aria-label="Close"]:not([id*="close-drawer"]) {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 32px !important;
-    height: 32px !important;
-    padding: 0 !important;
-    background: rgba(255, 255, 255, 0.05) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 6px !important;
-    color: $admin-text-secondary !important;
-    cursor: pointer !important;
-    transition: all 0.2s ease !important;
-    font-size: 20px !important;
-    
-    &:hover {
-      background: rgba(255, 68, 68, 0.15) !important;
-      border-color: rgba(255, 68, 68, 0.3) !important;
-      color: $admin-text-primary !important;
-    }
+  &:hover {
+    background: rgba(255, 68, 68, 0.15);
+    border-color: rgba(255, 68, 68, 0.3);
+    color: $admin-text-primary;
   }
 }
 
@@ -198,74 +191,86 @@
   padding: 1.5rem 2rem;
 }
 
-// Document fields container - this is where the actual form lives
 .doc-drawer__document-fields {
-  padding: 0 2rem 2rem 2rem; // Standard padding for form area
+  padding: 0 2rem 2rem 2rem;
 }
 
-// Fix nested scrollbars in relationship drawers
+// Fix nested scrollbars
 .drawer__content {
-  overflow: visible; // Let the inner content handle scrolling
+  overflow: visible;
 }
 
 .doc-drawer .doc-drawer__content {
-  overflow-y: auto; // Only scroll the content area
-  max-height: calc(100vh - 80px); // Prevent double scrollbars
+  overflow-y: auto;
+  max-height: calc(100vh - 80px);
 }
 
-// Make form fields use full drawer width
-.doc-drawer,
-.drawer {
-  // Force all form containers to full width
-  .render-fields,
-  .form-fields,
-  form {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
+// Full width form fields - use descendant combinator for specificity
+.doc-drawer .render-fields,
+.doc-drawer .form-fields,
+.doc-drawer form,
+.drawer .render-fields,
+.drawer .form-fields,
+.drawer form {
+  width: 100%;
+  max-width: 100%;
+}
 
-  // Payload's field wrapper
-  .field-type {
-    width: 100% !important;
-    max-width: 100% !important;
-    
-    // Inner containers
-    > div {
-      width: 100% !important;
-      max-width: 100% !important;
-    }
+// Field containers
+.doc-drawer .field-type,
+.drawer .field-type {
+  width: 100%;
+  max-width: 100%;
+  
+  > div {
+    width: 100%;
+    max-width: 100%;
   }
+}
 
-  // All input wrappers
-  .input-wrapper,
-  .text-input,
-  .textarea-wrapper {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
+// Input wrappers
+.doc-drawer .input-wrapper,
+.doc-drawer .text-input,
+.doc-drawer .textarea-wrapper,
+.drawer .input-wrapper,
+.drawer .text-input,
+.drawer .textarea-wrapper {
+  width: 100%;
+  max-width: 100%;
+}
 
-  // Make text inputs and textareas stretch
-  input[type="text"],
-  input[type="email"],
-  input[type="url"],
-  input[type="number"],
-  textarea,
-  select {
-    width: 100% !important;
-  }
+// Form inputs
+.doc-drawer input[type="text"],
+.doc-drawer input[type="email"],
+.doc-drawer input[type="url"],
+.doc-drawer input[type="number"],
+.doc-drawer textarea,
+.doc-drawer select,
+.drawer input[type="text"],
+.drawer input[type="email"],
+.drawer input[type="url"],
+.drawer input[type="number"],
+.drawer textarea,
+.drawer select {
+  width: 100%;
+}
 
-  // Field spacing
-  .field-type + .field-type {
-    margin-top: $spacing-lg;
-  }
+// Field spacing
+.doc-drawer .field-type + .field-type,
+.drawer .field-type + .field-type {
+  margin-top: $spacing-lg;
+}
 
-  // Remove max-width constraints on field containers
-  .field-type,
-  .field-type > div,
-  .field-type .input,
-  .render-fields > div {
-    max-width: none !important;
-  }
+// Remove max-width constraints
+.doc-drawer .field-type,
+.doc-drawer .field-type > div,
+.doc-drawer .field-type .input,
+.doc-drawer .render-fields > div,
+.drawer .field-type,
+.drawer .field-type > div,
+.drawer .field-type .input,
+.drawer .render-fields > div {
+  max-width: none;
 }
 
 // ============================================
