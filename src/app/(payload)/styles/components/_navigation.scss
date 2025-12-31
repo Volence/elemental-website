@@ -16,28 +16,7 @@ aside,
   overflow-y: auto;
   overflow-x: hidden;
   
-  // Custom scrollbar styling
-  &::-webkit-scrollbar {
-    width: 8px;
-  }
-  
-  &::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 4px;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background: rgba(139, 92, 246, 0.3);
-    border-radius: 4px;
-    
-    &:hover {
-      background: rgba(139, 92, 246, 0.5);
-    }
-  }
-  
-  // Firefox scrollbar styling
-  scrollbar-width: thin;
-  scrollbar-color: rgba(139, 92, 246, 0.3) rgba(255, 255, 255, 0.05);
+  @extend %custom-scroll;
 }
 
 // Ensure nav container has no extra padding or margins
@@ -68,8 +47,7 @@ nav > *,
 }
 
 .nav__link {
-  display: flex;
-  align-items: center;
+  @extend %flex-row-center;
   gap: 0.625rem;
   padding: 0.5rem 0.75rem;
   margin: 0;
