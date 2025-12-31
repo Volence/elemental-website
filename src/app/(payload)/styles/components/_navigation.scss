@@ -13,11 +13,8 @@ aside,
 .template-default aside {
   padding: 0.75rem 0.5rem;
   max-height: 100vh;
-  height: 100vh;
-  overflow-y: scroll !important; // Force scrollbar to always show
-  overflow-x: hidden !important; // Prevent horizontal scroll
-  width: 100%;
-  max-width: 100%;
+  overflow-y: auto; // Only show scrollbar when needed
+  overflow-x: hidden;
   
   @include custom-scrollbar;
 }
@@ -27,14 +24,7 @@ nav,
 .nav {
   padding: 0;
   margin: 0;
-  overflow: visible !important; // Prevent double scrollbar - only aside should scroll
-  width: 100%;
-  max-width: 100%;
-  
-  // Ensure all children don't overflow
-  & * {
-    max-width: 100%;
-  }
+  overflow: visible; // Prevent double scrollbar - only aside should scroll
 }
 
 // ============================================
@@ -232,23 +222,6 @@ nav button[type="button"]:last-child {
 // ============================================
 // Each nav-group gets its own color that applies to ALL children
 // Target .nav-group specifically to avoid counting other sibling elements
-
-// RESET Payload's default purple hover AND remove reddish glow (must come first!)
-aside nav .nav__link {
-  // Remove ALL default hover/focus effects
-  &:hover,
-  &:focus,
-  &:focus-visible,
-  &:hover:not(:has(.nav__link-indicator)) {
-    background: transparent !important;
-    border: none !important;
-    border-left: none !important;
-    border-right: none !important;
-    border-left-color: transparent !important;
-    box-shadow: none !important;
-    outline: none !important;
-  }
-}
 
 // PEOPLE Section (Vibrant Pink) - 1st nav-group
 // Ultra-specific selectors to override Payload's defaults
