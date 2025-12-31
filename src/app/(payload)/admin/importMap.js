@@ -66,6 +66,11 @@ import { default as default_9696e71ab6d0b177b492c0a63e1b5e83 } from '@/component
 import { default as default_f76c92028911e3d433af128d3a307d36 } from '@/components/SocialMediaConfig/TemplateInstructions'
 import { default as default_8e4d4e3438d12585a6d66d71f450349a } from '@/components/SocialMediaConfig/TemplateRowLabel'
 import { default as default_a1087e454b1b74ceaf1bf3fd38ecfc7a } from '@/components/DataConsistencyView'
+import { default as default_03160af9efa1fa5b8f41c67277172bb7 } from '@/components/AuditLogView'
+import { default as default_70c06c9f0db61e2d5f2e0b3cb36d3c0f } from '@/components/CronMonitorView'
+import { default as default_0416c944e1064e133af284ca7cddd7cf } from '@/components/ErrorDashboardView'
+import { default as default_cf367b0cfa20983ada2328388cb1d9d3 } from '@/components/ActiveSessionsView'
+import { default as default_302448b4a495c30b527c2bd82b32d2c0 } from '@/components/DatabaseHealthView'
 import { default as default_66dcba8625c994af6076586cb15c754f } from '@/components/UserAvatar'
 import { default as default_aa0a2d19d38a4839dbd373417e210b89 } from '@/components/AdminLogo'
 import { default as default_1a7510af427896d367a49dbf838d2de6 } from '@/components/BeforeDashboard'
@@ -143,6 +148,11 @@ export const importMap = {
   "@/components/SocialMediaConfig/TemplateInstructions#default": default_f76c92028911e3d433af128d3a307d36,
   "@/components/SocialMediaConfig/TemplateRowLabel#default": default_8e4d4e3438d12585a6d66d71f450349a,
   "@/components/DataConsistencyView#default": default_a1087e454b1b74ceaf1bf3fd38ecfc7a,
+  "@/components/AuditLogView#default": default_03160af9efa1fa5b8f41c67277172bb7,
+  "@/components/CronMonitorView#default": default_70c06c9f0db61e2d5f2e0b3cb36d3c0f,
+  "@/components/ErrorDashboardView#default": default_0416c944e1064e133af284ca7cddd7cf,
+  "@/components/ActiveSessionsView#default": default_cf367b0cfa20983ada2328388cb1d9d3,
+  "@/components/DatabaseHealthView#default": default_302448b4a495c30b527c2bd82b32d2c0,
   "@/components/UserAvatar#default": default_66dcba8625c994af6076586cb15c754f,
   "@/components/AdminLogo#default": default_aa0a2d19d38a4839dbd373417e210b89,
   "@/components/BeforeDashboard#default": default_1a7510af427896d367a49dbf838d2de6,

@@ -4,7 +4,8 @@ import { authenticated } from '../../access/authenticated'
 import { adminOnly, isAdmin } from '../../access/roles'
 import { UserRole } from '../../access/roles'
 import type { User } from '@/payload-types'
-// import { createActivityLogHook, createActivityLogDeleteHook } from '../../utilities/activityLogger' // Temporarily disabled
+import { createAuditLogHook, createAuditLogDeleteHook } from '../../utilities/auditLogger'
+import { trackLogin, trackLogout } from '../../utilities/sessionTracker'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -171,8 +172,22 @@ export const Users: CollectionConfig = {
     },
   ],
   hooks: {
-    // afterChange: [createActivityLogHook('users')], // Temporarily disabled
-    // afterDelete: [createActivityLogDeleteHook('users')], // Temporarily disabled
+    afterChange: [createAuditLogHook('users')],
+    afterDelete: [createAuditLogDeleteHook('users')],
+    afterLogin: [
+      async ({ req, user }) => {
+        if (user && req.payload) {
+          await trackLogin(req.payload, user as User, req)
+        }
+      },
+    ],
+    afterLogout: [
+      async ({ req }) => {
+        if (req.user && req.payload) {
+          await trackLogout(req.payload, req.user.id)
+        }
+      },
+    ],
     beforeValidate: [
       async ({ data, operation, req, originalDoc }) => {
         if (!data) return data

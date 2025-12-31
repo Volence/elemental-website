@@ -4,7 +4,7 @@ import { authenticated } from '../../access/authenticated'
 import { anyone } from '../../access/anyone'
 import { adminOnly, hasAnyRole, UserRole } from '../../access/roles'
 import type { User } from '@/payload-types'
-// import { createActivityLogHook, createActivityLogDeleteHook } from '../../utilities/activityLogger' // Temporarily disabled
+import { createAuditLogHook, createAuditLogDeleteHook } from '../../utilities/auditLogger'
 
 const formatSlug = (value: string): string => {
   return value
@@ -536,8 +536,8 @@ export const Teams: CollectionConfig = {
     },
   ],
   hooks: {
-    // afterChange: [createActivityLogHook('teams')], // Temporarily disabled
-    // afterDelete: [createActivityLogDeleteHook('teams')], // Temporarily disabled
+    afterChange: [createAuditLogHook('teams')],
+    afterDelete: [createAuditLogDeleteHook('teams')],
     beforeValidate: [
       async ({ data, operation }) => {
         // Ensure slug is always generated from name if missing

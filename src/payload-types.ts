@@ -83,6 +83,10 @@ export interface Config {
     users: User;
     'ignored-duplicates': IgnoredDuplicate;
     'invite-links': InviteLink;
+    'audit-logs': AuditLog;
+    'error-logs': ErrorLog;
+    'cron-job-runs': CronJobRun;
+    'active-sessions': ActiveSession;
     redirects: Redirect;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
@@ -108,6 +112,10 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     'ignored-duplicates': IgnoredDuplicatesSelect<false> | IgnoredDuplicatesSelect<true>;
     'invite-links': InviteLinksSelect<false> | InviteLinksSelect<true>;
+    'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
+    'error-logs': ErrorLogsSelect<false> | ErrorLogsSelect<true>;
+    'cron-job-runs': CronJobRunsSelect<false> | CronJobRunsSelect<true>;
+    'active-sessions': ActiveSessionsSelect<false> | ActiveSessionsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
@@ -126,6 +134,12 @@ export interface Config {
     'social-media-settings': SocialMediaSetting;
     'social-media-config': SocialMediaConfig;
     'data-consistency': DataConsistency;
+    'audit-log-viewer': AuditLogViewer;
+    'cron-monitor': CronMonitor;
+    'error-dashboard': ErrorDashboard;
+    'active-sessions-viewer': ActiveSessionsViewer;
+    'database-health': DatabaseHealth;
+    'error-harvester-state': ErrorHarvesterState;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
@@ -134,6 +148,12 @@ export interface Config {
     'social-media-settings': SocialMediaSettingsSelect<false> | SocialMediaSettingsSelect<true>;
     'social-media-config': SocialMediaConfigSelect<false> | SocialMediaConfigSelect<true>;
     'data-consistency': DataConsistencySelect<false> | DataConsistencySelect<true>;
+    'audit-log-viewer': AuditLogViewerSelect<false> | AuditLogViewerSelect<true>;
+    'cron-monitor': CronMonitorSelect<false> | CronMonitorSelect<true>;
+    'error-dashboard': ErrorDashboardSelect<false> | ErrorDashboardSelect<true>;
+    'active-sessions-viewer': ActiveSessionsViewerSelect<false> | ActiveSessionsViewerSelect<true>;
+    'database-health': DatabaseHealthSelect<false> | DatabaseHealthSelect<true>;
+    'error-harvester-state': ErrorHarvesterStateSelect<false> | ErrorHarvesterStateSelect<true>;
   };
   locale: null;
   user: User & {
@@ -1365,6 +1385,182 @@ export interface InviteLink {
   createdAt: string;
 }
 /**
+ * 🔍 System-generated log of user actions for security monitoring.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-logs".
+ */
+export interface AuditLog {
+  id: number;
+  /**
+   * User who performed the action
+   */
+  user?: (number | null) | User;
+  /**
+   * Type of action performed
+   */
+  action: 'login' | 'logout' | 'create' | 'delete' | 'update' | 'bulk';
+  /**
+   * Collection that was affected (e.g., teams, matches, users)
+   */
+  collection?: string | null;
+  /**
+   * ID of the document that was affected
+   */
+  documentId?: string | null;
+  /**
+   * Display name of the affected item
+   */
+  documentTitle?: string | null;
+  /**
+   * Additional context (role changes, bulk operation details, etc.)
+   */
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * IP address of the request
+   */
+  ipAddress?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * ⚠️ System-generated log of errors for debugging and monitoring.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "error-logs".
+ */
+export interface ErrorLog {
+  id: number;
+  /**
+   * User who encountered the error
+   */
+  user?: (number | null) | User;
+  /**
+   * Category of error
+   */
+  errorType: 'api' | 'backend' | 'database' | 'frontend' | 'validation' | 'system';
+  /**
+   * Error message
+   */
+  message: string;
+  /**
+   * Stack trace for debugging
+   */
+  stack?: string | null;
+  /**
+   * URL where error occurred
+   */
+  url?: string | null;
+  /**
+   * Severity level of the error
+   */
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  /**
+   * Mark this error as resolved/fixed
+   */
+  resolved?: boolean | null;
+  /**
+   * When the error was marked as resolved
+   */
+  resolvedAt?: string | null;
+  /**
+   * Admin notes about the error and resolution
+   */
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * ⏰ System-generated log of scheduled job executions.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cron-job-runs".
+ */
+export interface CronJobRun {
+  id: number;
+  /**
+   * Name of the cron job
+   */
+  jobName: 'smart-sync' | 'full-sync' | 'session-cleanup';
+  /**
+   * Current status of the job
+   */
+  status: 'running' | 'success' | 'failed';
+  /**
+   * When the job started
+   */
+  startTime: string;
+  /**
+   * When the job completed
+   */
+  endTime?: string | null;
+  /**
+   * Duration in seconds
+   */
+  duration?: number | null;
+  /**
+   * Job-specific results (API calls, records synced, etc.)
+   */
+  summary?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Error messages if job failed
+   */
+  errors?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * 👥 Track active admin panel sessions for security monitoring.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "active-sessions".
+ */
+export interface ActiveSession {
+  id: number;
+  /**
+   * User who owns this session
+   */
+  user: number | User;
+  /**
+   * When the user logged in
+   */
+  loginTime: string;
+  /**
+   * Last activity timestamp
+   */
+  lastActivity: string;
+  /**
+   * IP address of the session
+   */
+  ipAddress?: string | null;
+  /**
+   * Browser/client information
+   */
+  userAgent?: string | null;
+  /**
+   * Whether this session is currently active
+   */
+  isActive?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
@@ -1564,6 +1760,22 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'invite-links';
         value: number | InviteLink;
+      } | null)
+    | ({
+        relationTo: 'audit-logs';
+        value: number | AuditLog;
+      } | null)
+    | ({
+        relationTo: 'error-logs';
+        value: number | ErrorLog;
+      } | null)
+    | ({
+        relationTo: 'cron-job-runs';
+        value: number | CronJobRun;
+      } | null)
+    | ({
+        relationTo: 'active-sessions';
+        value: number | ActiveSession;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -2193,6 +2405,67 @@ export interface InviteLinksSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-logs_select".
+ */
+export interface AuditLogsSelect<T extends boolean = true> {
+  user?: T;
+  action?: T;
+  collection?: T;
+  documentId?: T;
+  documentTitle?: T;
+  metadata?: T;
+  ipAddress?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "error-logs_select".
+ */
+export interface ErrorLogsSelect<T extends boolean = true> {
+  user?: T;
+  errorType?: T;
+  message?: T;
+  stack?: T;
+  url?: T;
+  severity?: T;
+  resolved?: T;
+  resolvedAt?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cron-job-runs_select".
+ */
+export interface CronJobRunsSelect<T extends boolean = true> {
+  jobName?: T;
+  status?: T;
+  startTime?: T;
+  endTime?: T;
+  duration?: T;
+  summary?: T;
+  errors?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "active-sessions_select".
+ */
+export interface ActiveSessionsSelect<T extends boolean = true> {
+  user?: T;
+  loginTime?: T;
+  lastActivity?: T;
+  ipAddress?: T;
+  userAgent?: T;
+  isActive?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects_select".
  */
 export interface RedirectsSelect<T extends boolean = true> {
@@ -2444,6 +2717,82 @@ export interface DataConsistency {
   createdAt?: string | null;
 }
 /**
+ * 🔍 View user action logs for security monitoring.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-log-viewer".
+ */
+export interface AuditLogViewer {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * ⏰ Monitor scheduled job executions and performance.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cron-monitor".
+ */
+export interface CronMonitor {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * ⚠️ Monitor and track application errors for debugging.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "error-dashboard".
+ */
+export interface ErrorDashboard {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * 👥 Monitor currently logged-in admin panel users
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "active-sessions-viewer".
+ */
+export interface ActiveSessionsViewer {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * 📊 System overview and health monitoring.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "database-health".
+ */
+export interface DatabaseHealth {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "error-harvester-state".
+ */
+export interface ErrorHarvesterState {
+  id: number;
+  /**
+   * Timestamp of when the error harvester last ran
+   */
+  lastCheckedAt?: string | null;
+  /**
+   * Number of errors found in the last run
+   */
+  lastRunErrors?: number | null;
+  /**
+   * Total number of times the harvester has run
+   */
+  totalRunCount?: number | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
@@ -2540,6 +2889,63 @@ export interface SocialMediaConfigSelect<T extends boolean = true> {
  * via the `definition` "data-consistency_select".
  */
 export interface DataConsistencySelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-log-viewer_select".
+ */
+export interface AuditLogViewerSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cron-monitor_select".
+ */
+export interface CronMonitorSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "error-dashboard_select".
+ */
+export interface ErrorDashboardSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "active-sessions-viewer_select".
+ */
+export interface ActiveSessionsViewerSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "database-health_select".
+ */
+export interface DatabaseHealthSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "error-harvester-state_select".
+ */
+export interface ErrorHarvesterStateSelect<T extends boolean = true> {
+  lastCheckedAt?: T;
+  lastRunErrors?: T;
+  totalRunCount?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { syncTeamData } from '@/utilities/faceitSync'
+import { startCronJob, completeCronJob, failCronJob } from '@/utilities/cronLogger'
 
 /**
  * Full Sync Cron Job
@@ -15,6 +16,8 @@ import { syncTeamData } from '@/utilities/faceitSync'
  * Requires: x-cron-secret header matching CRON_SECRET env var
  */
 export async function POST(request: Request) {
+  let cronJobRunId: number | string | undefined
+  
   try {
     // Authenticate cron request
     const cronSecret = request.headers.get('x-cron-secret')
@@ -30,6 +33,10 @@ export async function POST(request: Request) {
     console.log('[Full Sync] Starting full sync cron job...')
     
     const payload = await getPayload({ config: await configPromise })
+    
+    // Start tracking this cron job run
+    cronJobRunId = await startCronJob(payload, 'full-sync')
+    
     const now = new Date()
     
     // Find all teams with FaceIt enabled and an active league
@@ -145,10 +152,22 @@ export async function POST(request: Request) {
     
     console.log('[Full Sync] Completed:', summary)
     
+    // Mark cron job as completed
+    if (cronJobRunId) {
+      await completeCronJob(payload, cronJobRunId, summary)
+    }
+    
     return NextResponse.json(summary)
     
   } catch (error: any) {
     console.error('[Full Sync] Fatal error:', error)
+    
+    // Mark cron job as failed
+    if (cronJobRunId) {
+      const payload = await getPayload({ config: await configPromise })
+      await failCronJob(payload, cronJobRunId, error.message || 'Internal server error')
+    }
+    
     return NextResponse.json(
       { success: false, error: error.message || 'Internal server error' },
       { status: 500 }

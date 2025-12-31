@@ -3,7 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { authenticated } from '../../access/authenticated'
 import { anyone } from '../../access/anyone'
 import { isProductionManager } from '../../access/roles'
-// import { createActivityLogHook, createActivityLogDeleteHook } from '../../utilities/activityLogger' // Temporarily disabled
+import { createAuditLogHook, createAuditLogDeleteHook } from '../../utilities/auditLogger'
 
 export const Matches: CollectionConfig = {
   slug: 'matches',
@@ -46,6 +46,8 @@ export const Matches: CollectionConfig = {
     },
   },
   hooks: {
+    afterChange: [createAuditLogHook('matches')],
+    afterDelete: [createAuditLogDeleteHook('matches')],
     beforeChange: [
       async ({ data, operation, req }) => {
         // Auto-mark matches as complete if they're 2+ hours past their scheduled time

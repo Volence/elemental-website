@@ -22,23 +22,32 @@ import { TournamentTemplates } from './collections/TournamentTemplates'
 import { SocialPosts } from './collections/SocialPosts'
 import { FaceitSeasons } from './collections/FaceitSeasons'
 import { FaceitLeagues } from './collections/FaceitLeagues'
-// import { ActivityLog } from './collections/ActivityLog' // Temporarily disabled until migrations are fixed
+import { AuditLogs } from './collections/AuditLogs'
+import { ErrorLogs } from './collections/ErrorLogs'
+import { CronJobRuns } from './collections/CronJobRuns'
+import { ActiveSessions } from './collections/ActiveSessions'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { DataConsistency } from './globals/DataConsistency'
 import { ProductionDashboard } from './globals/ProductionDashboard'
 import { SocialMediaSettings } from './globals/SocialMediaSettings'
 import { SocialMediaConfig } from './globals/SocialMediaConfig'
-// import { UserProfile } from './globals/UserProfile' // Removed - using built-in /admin/account page instead
+import { AuditLogViewer } from './globals/AuditLogViewer'
+import { CronMonitor } from './globals/CronMonitor'
+import { ErrorDashboard } from './globals/ErrorDashboard'
+import { DatabaseHealth } from './globals/DatabaseHealth'
+import { ActiveSessionsViewer } from './globals/ActiveSessionsViewer'
+import { ErrorHarvesterState } from './globals/ErrorHarvesterState'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
 import { UserRole } from './access/roles'
+import { handlePayloadError } from './utilities/payloadErrorHandler'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-export default buildConfig({
+const config = buildConfig({
   admin: {
     meta: {
       titleSuffix: '- Elemental Admin',
@@ -152,7 +161,13 @@ export default buildConfig({
     // SYSTEM: Administration
     Users,
     IgnoredDuplicates,
-    InviteLinks /* ActivityLog temporarily disabled */,
+    InviteLinks,
+    
+    // MONITORING: Security & Health
+    AuditLogs,
+    ErrorLogs,
+    CronJobRuns,
+    ActiveSessions,
   ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [
@@ -162,6 +177,12 @@ export default buildConfig({
     SocialMediaSettings, // Social Media group
     SocialMediaConfig, // Social Media group
     DataConsistency, // System group
+    AuditLogViewer, // Monitoring group
+    CronMonitor, // Monitoring group
+    ErrorDashboard, // Monitoring group
+    ActiveSessionsViewer, // Monitoring group
+    DatabaseHealth, // Monitoring group
+    ErrorHarvesterState, // Internal state tracking (hidden)
   ],
   plugins: [
     ...plugins,
@@ -188,3 +209,5 @@ export default buildConfig({
     tasks: [],
   },
 })
+
+export default config

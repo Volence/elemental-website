@@ -4,7 +4,7 @@ import { authenticated } from '../../access/authenticated'
 import { anyone } from '../../access/anyone'
 import { slugField } from 'payload'
 import { autoCloseRecruitment } from './hooks/autoCloseRecruitment'
-// import { createActivityLogHook, createActivityLogDeleteHook } from '../../utilities/activityLogger' // Temporarily disabled
+import { createAuditLogHook, createAuditLogDeleteHook } from '../../utilities/auditLogger'
 
 const formatSlug = (value: string): string => {
   return value
@@ -203,8 +203,8 @@ export const People: CollectionConfig = {
     },
   ],
   hooks: {
-    // afterChange: [autoCloseRecruitment /* createActivityLogHook('people') temporarily disabled */], // Temporarily disabled due to schema errors
-    // afterDelete: [createActivityLogDeleteHook('people')], // Temporarily disabled
+    afterChange: [autoCloseRecruitment, createAuditLogHook('people')],
+    afterDelete: [createAuditLogDeleteHook('people')],
     // REMOVED: beforeRead hook - it was removing select clauses which made the admin UI unable to fetch names
     // The custom /api/people endpoint handles relationship dropdown queries with raw SQL
     // Admin UI queries work fine without intervention

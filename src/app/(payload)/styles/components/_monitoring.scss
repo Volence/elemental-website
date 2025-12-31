@@ -1,0 +1,879 @@
+// ============================================================================
+// MONITORING COMPONENTS
+// ============================================================================
+// Styles for admin monitoring suite (audit logs, cron jobs, errors, health)
+
+// Container
+// ----------------------------------------------------------------------------
+.monitoring-container {
+  padding: $spacing-2xl;
+  max-width: $container-xl;
+  margin: 0 auto;
+}
+
+// Header
+// ----------------------------------------------------------------------------
+.monitoring-header {
+  margin-bottom: $spacing-2xl;
+  
+  h2 {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: $spacing-sm;
+    color: $admin-text-primary;
+  }
+}
+
+.monitoring-description {
+  color: $admin-text-secondary;
+  font-size: 0.95rem;
+  margin-bottom: $spacing-md;
+}
+
+// Filters
+// ----------------------------------------------------------------------------
+.monitoring-filters {
+  display: flex;
+  gap: $spacing-lg;
+  align-items: flex-end;
+  margin-bottom: $spacing-2xl;
+  flex-wrap: wrap;
+}
+
+.monitoring-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+  
+  label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $admin-text-secondary;
+  }
+}
+
+.monitoring-select {
+  padding: $spacing-sm $spacing-md;
+  border: 1px solid $admin-border-normal;
+  border-radius: $radius-md;
+  background: $admin-bg-elevated;
+  color: $admin-text-primary;
+  font-size: 0.9rem;
+  min-width: 180px;
+  
+  &:focus {
+    outline: none;
+    border-color: $admin-accent-primary;
+  }
+
+  // Force proper contrast for dropdown options
+  option {
+    background-color: $admin-bg-elevated;
+    color: $admin-text-primary;
+    padding: $spacing-sm;
+    
+    // Override browser default selection colors
+    &:checked,
+    &:hover,
+    &[selected] {
+      background-color: $admin-accent-primary !important;
+      color: #ffffff !important;
+    }
+  }
+}
+
+// Buttons
+// ----------------------------------------------------------------------------
+.monitoring-btn {
+  padding: $spacing-sm $spacing-lg;
+  border: 1px solid $admin-border-normal;
+  border-radius: $radius-md;
+  background: $admin-bg-card;
+  color: $admin-text-primary;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: $transition-all-normal;
+  
+  &:hover:not(:disabled) {
+    background: $admin-accent-primary;
+    border-color: $admin-accent-primary;
+    color: white;
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  &--refresh {
+    margin-left: auto;
+  }
+}
+
+// Badges
+// ----------------------------------------------------------------------------
+.monitoring-badge {
+  display: inline-block;
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $radius-sm;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: $admin-bg-hover;
+  color: $admin-text-secondary;
+  
+  &--success {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+  }
+  
+  &--danger,
+  &--critical,
+  &--red {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+  }
+  
+  &--warning,
+  &--yellow {
+    background: rgba(251, 191, 36, 0.15);
+    color: #fbbf24;
+  }
+  
+  &--info,
+  &--blue {
+    background: rgba(59, 130, 246, 0.15);
+    color: #3b82f6;
+  }
+  
+  &--neutral {
+    background: rgba(156, 163, 175, 0.15);
+    color: #9ca3af;
+  }
+  
+  &--purple {
+    background: rgba(168, 85, 247, 0.15);
+    color: #a855f7;
+  }
+}
+
+// Loading & Empty States
+// ----------------------------------------------------------------------------
+.monitoring-loading,
+.monitoring-empty {
+  text-align: center;
+  padding: $spacing-3xl;
+  color: $admin-text-secondary;
+  font-size: 1rem;
+  background: $admin-bg-card;
+  border-radius: $radius-lg;
+  border: 1px dashed $admin-border-normal;
+}
+
+// Timeline (for Audit Logs)
+// ----------------------------------------------------------------------------
+.monitoring-timeline {
+  position: relative;
+  padding-left: $spacing-xl;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: $admin-border-normal;
+  }
+}
+
+.monitoring-timeline-item {
+  position: relative;
+  margin-bottom: $spacing-xl;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.monitoring-timeline-marker {
+  position: absolute;
+  left: -$spacing-xl;
+  top: $spacing-sm;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: $admin-accent-primary;
+  border: 2px solid $admin-bg-base;
+  z-index: $z-base;
+}
+
+.monitoring-timeline-content {
+  background: $admin-bg-card;
+  border: 1px solid $admin-border-normal;
+  border-radius: $radius-md;
+  padding: $spacing-lg;
+}
+
+.monitoring-timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.monitoring-timeline-time {
+  font-size: 0.875rem;
+  color: $admin-text-secondary;
+}
+
+.monitoring-timeline-body {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.monitoring-timeline-user {
+  font-size: 0.95rem;
+  color: $admin-text-primary;
+}
+
+.monitoring-timeline-detail {
+  font-size: 0.875rem;
+  color: $admin-text-secondary;
+  
+  strong {
+    color: $admin-text-primary;
+  }
+}
+
+.monitoring-timeline-metadata {
+  margin-top: $spacing-sm;
+  
+  summary {
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: $admin-accent-primary;
+    user-select: none;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+  
+  pre {
+    margin-top: $spacing-sm;
+    padding: $spacing-md;
+    background: $admin-bg-elevated;
+    border-radius: $radius-sm;
+    font-size: 0.8rem;
+    overflow-x: auto;
+  }
+}
+
+// Cards (for Cron Jobs & Errors)
+// ----------------------------------------------------------------------------
+.monitoring-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(600px, 1fr));
+  gap: $spacing-xl;
+  
+  // For error cards, use single column since error messages can be long
+  &--single {
+    grid-template-columns: 1fr;
+  }
+}
+
+.monitoring-card {
+  background: $admin-bg-card;
+  border: 1px solid $admin-border-normal;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  transition: box-shadow $transition-normal ease;
+  
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  &--resolved {
+    opacity: 0.7;
+    border-color: rgba(34, 197, 94, 0.3);
+  }
+}
+
+.monitoring-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $spacing-lg;
+  gap: $spacing-md;
+  
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: $admin-text-primary;
+    margin: 0;
+  }
+}
+
+.monitoring-card-badges {
+  display: flex;
+  gap: $spacing-xs;
+  flex-wrap: wrap;
+}
+
+.monitoring-card-time {
+  font-size: 0.8rem;
+  color: $admin-text-secondary;
+  white-space: nowrap;
+}
+
+.monitoring-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.monitoring-card-row {
+  display: flex;
+  gap: $spacing-sm;
+  font-size: 0.9rem;
+}
+
+.monitoring-card-label {
+  font-weight: 500;
+  color: $admin-text-secondary;
+  min-width: 100px;
+}
+
+.monitoring-card-value {
+  color: $admin-text-primary;
+  flex: 1;
+  word-break: break-word;
+}
+
+.monitoring-card-relative {
+  display: block;
+  font-size: 0.8rem;
+  color: $admin-text-secondary;
+  margin-top: $spacing-xs;
+}
+
+.monitoring-card-url {
+  font-family: monospace;
+  font-size: 0.85rem;
+}
+
+.monitoring-card-details {
+  summary {
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $admin-accent-primary;
+    user-select: none;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+  
+  pre {
+    margin-top: $spacing-sm;
+    padding: $spacing-md;
+    background: $admin-bg-elevated;
+    border-radius: $radius-sm;
+    font-size: 0.8rem;
+    overflow-x: auto;
+    max-height: 300px;
+  }
+}
+
+.monitoring-error-message {
+  font-size: 1rem;
+  font-weight: 500;
+  color: $admin-text-primary;
+  padding: $spacing-md;
+  background: $admin-bg-elevated;
+  border-radius: $radius-sm;
+  border-left: 3px solid $admin-accent-error;
+}
+
+.monitoring-stack-trace {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.monitoring-card-errors {
+  padding: $spacing-md;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: $radius-sm;
+  border-left: 3px solid $admin-accent-error;
+  
+  strong {
+    display: block;
+    margin-bottom: $spacing-sm;
+    color: #ef4444;
+  }
+  
+  pre {
+    font-size: 0.85rem;
+    color: $admin-text-primary;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+}
+
+.monitoring-error-message {
+  padding: $spacing-md;
+  background: rgba(239, 68, 68, 0.08);
+  border-radius: $radius-sm;
+  border-left: 4px solid $admin-accent-error;
+  color: $admin-text-primary;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  word-break: break-word;
+  margin-bottom: $spacing-md;
+}
+
+.monitoring-error-group-summary {
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1px solid $admin-border-normal;
+}
+
+.monitoring-group-toggle {
+  background: $admin-bg-elevated;
+  border: 1px solid $admin-border-normal;
+  border-radius: $radius-md;
+  padding: $spacing-sm $spacing-md;
+  color: $admin-text-primary;
+  font-size: 0.875rem;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: $transition-all-normal;
+  
+  &:hover {
+    background: $admin-bg-hover;
+    border-color: $admin-accent-primary;
+  }
+}
+
+.monitoring-occurrence-list {
+  margin-top: $spacing-md;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.monitoring-occurrence {
+  background: $admin-bg-elevated;
+  border: 1px solid $admin-border-normal;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  transition: $transition-all-normal;
+  
+  &--resolved {
+    opacity: 0.6;
+    border-color: rgba(34, 197, 94, 0.3);
+  }
+}
+
+.monitoring-occurrence-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-sm;
+  
+  > div {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+  
+  strong {
+    color: $admin-text-primary;
+    font-size: 0.9rem;
+  }
+}
+
+.monitoring-occurrence-time {
+  font-size: 0.8rem;
+  color: $admin-text-secondary;
+}
+
+.monitoring-occurrence-url {
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: $admin-text-secondary;
+  margin-top: $spacing-xs;
+  word-break: break-all;
+}
+
+.monitoring-occurrence-stack {
+  margin-top: $spacing-sm;
+  
+  summary {
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: $admin-accent-primary;
+    user-select: none;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+  
+  pre {
+    margin-top: $spacing-xs;
+    padding: $spacing-sm;
+    background: $admin-bg-card;
+    border-radius: $radius-sm;
+    font-size: 0.75rem;
+    overflow-x: auto;
+    max-height: 200px;
+  }
+}
+
+.monitoring-occurrence-resolve {
+  padding: $spacing-xs $spacing-sm;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: $radius-sm;
+  color: #22c55e;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: $transition-all-normal;
+  
+  &:hover:not(:disabled) {
+    background: #22c55e;
+    border-color: #22c55e;
+    color: white;
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.monitoring-card-notes {
+  padding: $spacing-md;
+  background: $admin-bg-elevated;
+  border-radius: $radius-sm;
+  font-size: 0.9rem;
+  
+  strong {
+    display: block;
+    margin-bottom: $spacing-xs;
+    color: $admin-text-primary;
+  }
+  
+  p {
+    margin: 0;
+    color: $admin-text-secondary;
+  }
+}
+
+.monitoring-card-resolved {
+  padding: $spacing-sm $spacing-md;
+  background: rgba(34, 197, 94, 0.1);
+  border-radius: $radius-sm;
+  color: $admin-accent-success;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.monitoring-card-actions {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1px solid $admin-border-normal;
+}
+
+.monitoring-action-btn {
+  flex: 1;
+  padding: $spacing-sm $spacing-md;
+  border: 1px solid $admin-border-normal;
+  border-radius: $radius-md;
+  background: $admin-bg-elevated;
+  color: $admin-text-primary;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: $transition-all-normal;
+  
+  &:hover:not(:disabled) {
+    background: $admin-accent-primary;
+    border-color: $admin-accent-primary;
+    color: white;
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  &--resolve {
+    background: rgba(34, 197, 94, 0.1);
+    border-color: rgba(34, 197, 94, 0.3);
+    color: #22c55e;
+    
+    &:hover:not(:disabled) {
+      background: #22c55e;
+      border-color: #22c55e;
+      color: white;
+    }
+  }
+}
+
+// Stats Cards
+// ----------------------------------------------------------------------------
+.monitoring-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: $spacing-lg;
+  margin-bottom: $spacing-2xl;
+}
+
+.monitoring-stat-card {
+  background: $admin-bg-card;
+  border: 1px solid $admin-border-normal;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  text-align: center;
+}
+
+.monitoring-stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: $admin-accent-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.monitoring-stat-label {
+  font-size: 0.875rem;
+  color: $admin-text-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+// Table
+// ----------------------------------------------------------------------------
+.monitoring-table {
+  overflow-x: auto;
+  background: $admin-bg-card;
+  border: 1px solid $admin-border-normal;
+  border-radius: $radius-lg;
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  
+  thead {
+    background: $admin-bg-elevated;
+    border-bottom: 1px solid $admin-border-normal;
+    
+    th {
+      padding: $spacing-md $spacing-lg;
+      text-align: left;
+      font-weight: 600;
+      color: $admin-text-secondary;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.5px;
+    }
+  }
+  
+  tbody {
+    tr {
+      border-bottom: 1px solid $admin-border-normal;
+      transition: background-color $transition-fast ease;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      &:hover {
+        background: $admin-bg-hover;
+      }
+    }
+    
+    td {
+      padding: $spacing-md $spacing-lg;
+      color: $admin-text-primary;
+      
+      strong {
+        color: $admin-text-primary;
+      }
+    }
+  }
+}
+
+// Pagination
+// ----------------------------------------------------------------------------
+.monitoring-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: $spacing-lg;
+  margin-top: $spacing-2xl;
+  padding-top: $spacing-xl;
+  border-top: 1px solid $admin-border-normal;
+}
+
+.monitoring-pagination-info {
+  font-size: 0.9rem;
+  color: $admin-text-secondary;
+}
+
+// Database Health
+// ----------------------------------------------------------------------------
+.monitoring-health-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: $spacing-xl;
+}
+
+.monitoring-health-card {
+  background: $admin-bg-card;
+  border: 1px solid $admin-border-normal;
+  border-radius: $radius-lg;
+  padding: $spacing-xl;
+  
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: $admin-text-primary;
+    margin-bottom: $spacing-lg;
+    padding-bottom: $spacing-md;
+    border-bottom: 2px solid $admin-border-normal;
+  }
+}
+
+.monitoring-health-stats {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.monitoring-health-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+  
+  &--indent {
+    padding-left: $spacing-lg;
+    font-size: 0.875rem;
+  }
+}
+
+.monitoring-health-stat-label {
+  color: $admin-text-secondary;
+  text-transform: capitalize;
+}
+
+.monitoring-health-stat-value {
+  font-weight: 600;
+  color: $admin-text-primary;
+  
+  &--success {
+    color: $admin-accent-success;
+  }
+  
+  &--warning {
+    color: $admin-accent-warning;
+  }
+  
+  &--danger {
+    color: $admin-accent-error;
+  }
+}
+
+.monitoring-health-empty {
+  text-align: center;
+  padding: $spacing-lg;
+  color: $admin-text-secondary;
+  font-size: 0.9rem;
+}
+
+.monitoring-health-cron {
+  padding: $spacing-md;
+  background: $admin-bg-elevated;
+  border-radius: $radius-md;
+  margin-bottom: $spacing-md;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.monitoring-health-cron-name {
+  font-weight: 600;
+  color: $admin-text-primary;
+  margin-bottom: $spacing-sm;
+}
+
+.monitoring-health-cron-details {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+  padding-left: $spacing-md;
+}
+
+.monitoring-health-users {
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1px solid $admin-border-normal;
+  
+  strong {
+    display: block;
+    margin-bottom: $spacing-sm;
+    color: $admin-text-primary;
+    font-size: 0.9rem;
+  }
+  
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    
+    li {
+      padding: $spacing-xs 0;
+      color: $admin-text-secondary;
+      font-size: 0.875rem;
+    }
+  }
+}
+
+// Responsive
+// ----------------------------------------------------------------------------
+@media (max-width: 768px) {
+  .monitoring-container {
+    padding: $spacing-lg;
+  }
+  
+  .monitoring-filters {
+    flex-direction: column;
+    align-items: stretch;
+    
+    .monitoring-btn--refresh {
+      margin-left: 0;
+    }
+  }
+  
+  .monitoring-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .monitoring-health-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

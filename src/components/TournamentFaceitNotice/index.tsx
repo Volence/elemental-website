@@ -27,3 +27,4 @@ export const TournamentFaceitNotice: React.FC = () => {
 
 export default TournamentFaceitNotice
 
+
