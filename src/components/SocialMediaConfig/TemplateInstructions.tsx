@@ -4,33 +4,11 @@ import React from 'react'
 
 export default function TemplateInstructions() {
   return (
-    <div
-      style={{
-        background: 'rgba(59, 130, 246, 0.1)',
-        border: '1px solid rgba(59, 130, 246, 0.3)',
-        borderRadius: '8px',
-        padding: '1.5rem',
-        marginBottom: '2rem',
-      }}
-    >
-      <h3
-        style={{
-          margin: '0 0 1rem 0',
-          color: 'var(--theme-text)',
-          fontSize: '1.1rem',
-          fontWeight: 600,
-        }}
-      >
+    <div className="template-instructions">
+      <h3 className="template-instructions__title">
         📝 How to Create Templates
       </h3>
-      <ol
-        style={{
-          margin: 0,
-          paddingLeft: '1.5rem',
-          color: 'var(--theme-elevation-600)',
-          lineHeight: '1.8',
-        }}
-      >
+      <ol className="template-instructions__list">
         <li>
           <strong>Click "Add Post Template"</strong> below to create a new template
         </li>
@@ -43,7 +21,7 @@ export default function TemplateInstructions() {
         </li>
         <li>
           <strong>Write the template text</strong> using placeholders:
-          <ul style={{ marginTop: '0.5rem' }}>
+          <ul>
             <li>
               Use <code>{'{{placeholderName}}'}</code> format for <strong>any</strong> dynamic value
             </li>
@@ -64,14 +42,7 @@ export default function TemplateInstructions() {
           Dashboard!
         </li>
       </ol>
-      <p
-        style={{
-          marginTop: '1rem',
-          marginBottom: 0,
-          color: 'var(--theme-elevation-500)',
-          fontSize: '0.9rem',
-        }}
-      >
+      <p className="template-instructions__tip">
         💡 <strong>Tip:</strong> Templates help maintain consistent messaging and save time for
         your social media team.
       </p>

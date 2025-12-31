@@ -1,0 +1,54 @@
+@import '../variables';
+@import '../mixins';
+
+.template-instructions {
+  @include transparent-bg(0.1);
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: $radius-md;
+  padding: $spacing-xl;
+  margin-bottom: $spacing-xl;
+  
+  &__title {
+    margin: 0 0 $spacing-lg 0;
+    color: var(--theme-text);
+    font-size: 1.1rem;
+    font-weight: $font-weight-semibold;
+  }
+  
+  &__list {
+    margin: 0;
+    padding-left: $spacing-xl;
+    color: var(--theme-elevation-600);
+    line-height: 1.8;
+    
+    ul {
+      margin-top: $spacing-xs;
+    }
+    
+    strong {
+      color: var(--theme-text);
+    }
+    
+    code {
+      @include transparent-bg(0.08);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.9em;
+      color: $admin-accent-primary;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+  }
+  
+  &__tip {
+    margin-top: $spacing-lg;
+    margin-bottom: 0;
+    color: var(--theme-elevation-500);
+    font-size: 0.9rem;
+    
+    strong {
+      color: var(--theme-text);
+    }
+  }
+}
+
