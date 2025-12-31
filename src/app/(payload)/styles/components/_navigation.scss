@@ -222,6 +222,15 @@ nav button[type="button"]:last-child {
 // Each nav-group gets its own color that applies to ALL children
 // Target .nav-group specifically to avoid counting other sibling elements
 
+// RESET Payload's default purple hover (must come first!)
+aside nav .nav__link {
+  &:hover,
+  &:hover:not(:has(.nav__link-indicator)) {
+    background: transparent !important;
+    border-left-color: transparent !important;
+  }
+}
+
 // PEOPLE Section (Pink/Fuchsia) - 1st nav-group
 aside nav .nav-group.People .nav__link,
 aside nav .nav-group:nth-of-type(1) .nav__link {

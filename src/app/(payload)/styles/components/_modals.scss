@@ -119,7 +119,7 @@
   > .drawer__content,
   .drawer__content {
     @include transparent-bg(0.05);
-    border: 2px solid rgba($admin-accent-primary, 0.25);
+    border: none !important; // Remove all borders - Clean Glow uses shadow, not borders
     border-radius: 0; // Drawers are edge-to-edge
     backdrop-filter: blur(16px);
     box-shadow: -4px 0 24px rgba(0, 0, 0, 0.5);
@@ -152,10 +152,14 @@
   }
 }
 
-// Show the close button in the drawer header
+// Show the close button in the drawer header - VERY AGGRESSIVE SELECTORS
 .doc-drawer .drawer__header button[aria-label="Close"],
 .doc-drawer .drawer__header-close,
-.drawer__header button[aria-label="Close"] {
+.doc-drawer button[aria-label="Close"],
+.drawer__header button[aria-label="Close"],
+.drawer button[aria-label="Close"],
+button.drawer__close,
+button.drawer__header-close {
   @extend %close-button-pattern;
   position: absolute !important;
   top: 1rem !important;
@@ -164,6 +168,11 @@
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  width: 32px !important;
+  height: 32px !important;
 }
 
 // Header stays at top
