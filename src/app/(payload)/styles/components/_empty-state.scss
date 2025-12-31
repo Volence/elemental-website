@@ -1,0 +1,51 @@
+@import '../variables';
+@import '../mixins';
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  min-height: 400px;
+  
+  &__icon {
+    font-size: 4rem;
+    margin-bottom: $spacing-lg;
+  }
+  
+  &__title {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-semibold;
+    color: var(--theme-text);
+    margin-bottom: $spacing-md;
+  }
+  
+  &__description {
+    font-size: $font-size-base;
+    color: var(--theme-text-600);
+    max-width: 500px;
+    margin-bottom: $spacing-xl;
+    line-height: 1.6;
+  }
+  
+  &__action {
+    padding: $padding-md $padding-xl;
+    background-color: var(--theme-success-500);
+    color: white;
+    border: none;
+    border-radius: $radius-sm;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background-color: var(--theme-success-600);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+  }
+}
+
