@@ -76,95 +76,35 @@ export function TemplateModal({ template, onClose }: TemplateModalProps) {
       <div
         className="template-modal-backdrop"
         onClick={onClose}
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0, 0, 0, 0.7)',
-          backdropFilter: 'blur(4px)',
-          zIndex: 1000,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '2rem',
-        }}
       >
         {/* Modal */}
         <div
           className="template-modal"
           onClick={(e) => e.stopPropagation()}
-          style={{
-            background: 'var(--theme-elevation-0)',
-            borderRadius: '12px',
-            maxWidth: '700px',
-            width: '100%',
-            maxHeight: '90vh',
-            overflow: 'auto',
-            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
-          }}
         >
           {/* Header */}
-          <div
-            style={{
-              padding: '1.5rem 2rem',
-              borderBottom: '1px solid var(--theme-elevation-200)',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
+          <div className="template-modal__header">
             <div>
-              <h2
-                style={{
-                  margin: 0,
-                  color: 'var(--theme-text)',
-                  fontSize: '1.3rem',
-                  fontWeight: 600,
-                }}
-              >
+              <h2>
                 📝 Use Template: {template.name}
               </h2>
-              <p
-                style={{
-                  margin: '0.5rem 0 0 0',
-                  color: 'var(--theme-elevation-500)',
-                  fontSize: '0.9rem',
-                }}
-              >
+              <p>
                 Fill in the placeholders below to customize your post
               </p>
             </div>
             <button
               onClick={onClose}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--theme-elevation-500)',
-                fontSize: '1.5rem',
-                cursor: 'pointer',
-                padding: '0.5rem',
-                lineHeight: 1,
-              }}
+              className="template-modal__close-btn"
             >
               ×
             </button>
           </div>
 
           {/* Body */}
-          <div style={{ padding: '2rem' }}>
+          <div className="template-modal__body">
             {/* Post Title */}
-            <div style={{ marginBottom: '2rem' }}>
-              <label
-                style={{
-                  display: 'block',
-                  marginBottom: '0.5rem',
-                  color: 'var(--theme-text)',
-                  fontSize: '1rem',
-                  fontWeight: 600,
-                }}
-              >
+            <div className="template-modal__field">
+              <label>
                 Post Title (Internal)
               </label>
               <input
@@ -172,52 +112,22 @@ export function TemplateModal({ template, onClose }: TemplateModalProps) {
                 value={postTitle}
                 onChange={(e) => setPostTitle(e.target.value)}
                 placeholder="e.g., Week 3 Match - ELMT Fire vs Team Evil water"
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  background: 'var(--theme-elevation-100)',
-                  border: '1px solid var(--theme-elevation-300)',
-                  borderRadius: '6px',
-                  color: 'var(--theme-text)',
-                  fontSize: '0.95rem',
-                }}
               />
-              <p
-                style={{
-                  marginTop: '0.5rem',
-                  fontSize: '0.85rem',
-                  color: 'var(--theme-elevation-500)',
-                }}
-              >
+              <p className="template-modal__field-hint">
                 This helps you identify the post later (not shown to followers)
               </p>
             </div>
 
             {/* Placeholder Inputs */}
             {placeholders.length > 0 && (
-              <div style={{ marginBottom: '2rem' }}>
-                <h3
-                  style={{
-                    margin: '0 0 1rem 0',
-                    color: 'var(--theme-text)',
-                    fontSize: '1rem',
-                    fontWeight: 600,
-                  }}
-                >
+              <div className="template-modal__section">
+                <h3>
                   Fill in Details
                 </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div className="template-modal__fields-grid">
                   {placeholders.map((placeholder) => (
-                    <div key={placeholder}>
-                      <label
-                        style={{
-                          display: 'block',
-                          marginBottom: '0.5rem',
-                          color: 'var(--theme-text)',
-                          fontSize: '0.9rem',
-                          fontWeight: 500,
-                        }}
-                      >
+                    <div key={placeholder} className="template-modal__field">
+                      <label>
                         {placeholder}
                       </label>
                       <input
@@ -225,15 +135,6 @@ export function TemplateModal({ template, onClose }: TemplateModalProps) {
                         value={placeholderValues[placeholder] || ''}
                         onChange={(e) => handlePlaceholderChange(placeholder, e.target.value)}
                         placeholder={`Enter ${placeholder}`}
-                        style={{
-                          width: '100%',
-                          padding: '0.75rem',
-                          background: 'var(--theme-elevation-100)',
-                          border: '1px solid var(--theme-elevation-300)',
-                          borderRadius: '6px',
-                          color: 'var(--theme-text)',
-                          fontSize: '0.95rem',
-                        }}
                       />
                     </div>
                   ))}
@@ -242,47 +143,19 @@ export function TemplateModal({ template, onClose }: TemplateModalProps) {
             )}
 
             {/* Preview */}
-            <div>
-              <h3
-                style={{
-                  margin: '0 0 1rem 0',
-                  color: 'var(--theme-text)',
-                  fontSize: '1rem',
-                  fontWeight: 600,
-                }}
-              >
+            <div className="template-modal__section">
+              <h3>
                 Preview
               </h3>
-              <div
-                style={{
-                  padding: '1rem',
-                  background: 'var(--theme-elevation-100)',
-                  border: '1px solid var(--theme-elevation-300)',
-                  borderRadius: '8px',
-                  color: 'var(--theme-elevation-600)',
-                  fontSize: '0.95rem',
-                  lineHeight: '1.6',
-                  whiteSpace: 'pre-wrap',
-                  fontFamily: 'inherit',
-                  minHeight: '100px',
-                }}
-              >
+              <div className="template-modal__preview">
                 {filledContent}
               </div>
             </div>
 
             {template.suggestedMedia && (
-              <div
-                style={{
-                  marginTop: '1.5rem',
-                  padding: '1rem',
-                  background: 'rgba(59, 130, 246, 0.1)',
-                  border: '1px solid rgba(59, 130, 246, 0.3)',
-                  borderRadius: '8px',
-                }}
-              >
-                <strong style={{ color: 'var(--theme-text)' }}>💡 Suggested Media:</strong>{' '}
-                <span style={{ color: 'var(--theme-elevation-600)' }}>
+              <div className="template-modal__media-suggestion">
+                <strong>💡 Suggested Media:</strong>{' '}
+                <span>
                   {template.suggestedMedia}
                 </span>
               </div>
@@ -290,43 +163,16 @@ export function TemplateModal({ template, onClose }: TemplateModalProps) {
           </div>
 
           {/* Footer */}
-          <div
-            style={{
-              padding: '1.5rem 2rem',
-              borderTop: '1px solid var(--theme-elevation-200)',
-              display: 'flex',
-              gap: '1rem',
-              justifyContent: 'flex-end',
-            }}
-          >
+          <div className="template-modal__footer">
             <button
               onClick={handleCopyToClipboard}
-              style={{
-                padding: '0.75rem 1.5rem',
-                background: 'var(--theme-elevation-100)',
-                border: '1px solid var(--theme-elevation-300)',
-                borderRadius: '6px',
-                color: 'var(--theme-text)',
-                fontSize: '0.95rem',
-                fontWeight: 500,
-                cursor: 'pointer',
-              }}
+              className="template-modal__btn template-modal__btn--secondary"
             >
               📋 Copy to Clipboard
             </button>
             <button
               onClick={handleUseTemplate}
-              style={{
-                padding: '0.75rem 1.5rem',
-                background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
-                border: 'none',
-                borderRadius: '6px',
-                color: 'white',
-                fontSize: '0.95rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                boxShadow: '0 0 16px rgba(59, 130, 246, 0.4)',
-              }}
+              className="template-modal__btn template-modal__btn--primary"
             >
               ✨ Create Post
             </button>

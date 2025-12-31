@@ -1,0 +1,193 @@
+@import '../variables';
+@import '../mixins';
+
+.template-modal {
+  &-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-xl;
+  }
+  
+  background: var(--theme-elevation-0);
+  border-radius: $radius-lg;
+  max-width: 700px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  
+  @include custom-scrollbar;
+  
+  &__header {
+    padding: $spacing-lg $spacing-xl;
+    border-bottom: 1px solid var(--theme-elevation-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    h2 {
+      margin: 0;
+      color: var(--theme-text);
+      font-size: 1.3rem;
+      font-weight: $font-weight-semibold;
+    }
+    
+    p {
+      margin: $spacing-xs 0 0 0;
+      color: var(--theme-elevation-500);
+      font-size: $font-size-sm;
+    }
+  }
+  
+  &__close-btn {
+    background: none;
+    border: none;
+    color: var(--theme-elevation-500);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: $spacing-xs;
+    line-height: 1;
+    transition: color 0.2s;
+    
+    &:hover {
+      color: var(--theme-text);
+    }
+  }
+  
+  &__body {
+    padding: $spacing-xl;
+  }
+  
+  &__field {
+    margin-bottom: $spacing-xl;
+    
+    label {
+      display: block;
+      margin-bottom: $spacing-xs;
+      color: var(--theme-text);
+      font-size: $font-size-base;
+      font-weight: $font-weight-semibold;
+    }
+    
+    input {
+      width: 100%;
+      padding: $padding-md;
+      background: var(--theme-elevation-100);
+      border: 1px solid var(--theme-elevation-300);
+      border-radius: $radius-sm;
+      color: var(--theme-text);
+      font-size: $font-size-sm;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      
+      &:focus {
+        outline: none;
+        border-color: $admin-accent-primary;
+        box-shadow: 0 0 0 3px rgba($admin-accent-primary, 0.1);
+      }
+    }
+    
+    &-hint {
+      margin-top: $spacing-xs;
+      font-size: $font-size-xs;
+      color: var(--theme-elevation-500);
+    }
+  }
+  
+  &__section {
+    margin-bottom: $spacing-xl;
+    
+    h3 {
+      margin: 0 0 $spacing-md 0;
+      color: var(--theme-text);
+      font-size: $font-size-base;
+      font-weight: $font-weight-semibold;
+    }
+  }
+  
+  &__fields-grid {
+    display: flex;
+    flex-direction: column;
+    gap: $gap-md;
+  }
+  
+  &__preview {
+    padding: $padding-lg;
+    background: var(--theme-elevation-100);
+    border: 1px solid var(--theme-elevation-300);
+    border-radius: $radius-md;
+    color: var(--theme-elevation-600);
+    font-size: $font-size-sm;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    font-family: inherit;
+    min-height: 100px;
+  }
+  
+  &__media-suggestion {
+    margin-top: $spacing-lg;
+    padding: $padding-lg;
+    @include transparent-bg(0.1);
+    border: 1px solid rgba($admin-accent-info, 0.3);
+    border-radius: $radius-md;
+    
+    strong {
+      color: var(--theme-text);
+    }
+    
+    span {
+      color: var(--theme-elevation-600);
+    }
+  }
+  
+  &__footer {
+    padding: $spacing-lg $spacing-xl;
+    border-top: 1px solid var(--theme-elevation-200);
+    display: flex;
+    gap: $gap-md;
+    justify-content: flex-end;
+  }
+  
+  &__btn {
+    padding: $padding-md $padding-lg;
+    border-radius: $radius-sm;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &--secondary {
+      background: var(--theme-elevation-100);
+      border: 1px solid var(--theme-elevation-300);
+      color: var(--theme-text);
+      
+      &:hover {
+        background: var(--theme-elevation-200);
+        transform: translateY(-1px);
+      }
+    }
+    
+    &--primary {
+      @include glow-button($admin-accent-primary);
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border: none;
+      color: white;
+      font-weight: $font-weight-semibold;
+      box-shadow: 0 0 16px rgba(59, 130, 246, 0.4);
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 24px rgba(59, 130, 246, 0.6);
+      }
+    }
+  }
+}
+
