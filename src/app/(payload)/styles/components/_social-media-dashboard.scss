@@ -36,7 +36,7 @@
       
       &--active {
         color: var(--theme-text);
-        @include glow-border(var(--admin-accent-primary, #3b82f6), 0.5, 1);
+        @include glow-border($admin-accent-primary, 0.5, 1);
         @include transparent-bg(0.1);
         font-weight: 600;
       }
@@ -44,7 +44,7 @@
     
     &__content {
       min-height: 400px;
-      @include glow-card(var(--admin-accent-primary, #3b82f6));
+      @include glow-card($admin-accent-primary);
       padding: $spacing-xl;
     }
   }
@@ -74,14 +74,14 @@
   }
   
   .quick-filter-btn {
-    @include glow-button(var(--admin-accent-primary, #3b82f6));
+    @include glow-button($admin-accent-primary);
     padding: $spacing-sm $spacing-lg;
     font-size: 0.85rem;
     font-weight: 500;
     white-space: nowrap;
     
     &--active {
-      background: var(--admin-accent-primary, #3b82f6);
+      background: $admin-accent-primary;
       color: white;
       font-weight: 600;
       box-shadow: 0 0 20px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.4),
@@ -115,7 +115,7 @@
       flex-wrap: wrap;
       
       .btn {
-        @include glow-button(var(--admin-accent-primary, #3b82f6));
+        @include glow-button($admin-accent-primary);
         font-size: 0.85rem;
         padding: $spacing-sm $spacing-md;
       }
@@ -151,7 +151,7 @@
     &__month-notice {
       padding: $spacing-2xl;
       text-align: center;
-      @include glow-card(var(--admin-accent-primary, #3b82f6));
+      @include glow-card($admin-accent-primary);
       
       p {
         color: var(--theme-elevation-600);
@@ -197,7 +197,7 @@
   }
   
   .calendar-day {
-    @include glow-card(var(--admin-accent-primary, #3b82f6));
+    @include glow-card($admin-accent-primary);
     padding: $spacing-md;
     min-height: 200px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -208,7 +208,7 @@
     }
     
     &--today {
-      @include glow-border(var(--admin-accent-primary, #3b82f6), 0.7, 1.2);
+      @include glow-border($admin-accent-primary, 0.7, 1.2);
       @include transparent-bg(0.08);
     }
     
@@ -310,7 +310,7 @@
 
   // Month View - Calendar Grid
   .calendar-view__month {
-    @include glow-card(var(--admin-accent));
+    @include glow-card($admin-accent-primary);
     border-radius: $radius-md;
     overflow: hidden;
   }
@@ -352,7 +352,7 @@
     }
     
     &--today {
-      @include glow-border(var(--admin-accent), 0.6, 0.8);
+      @include glow-border($admin-accent-primary, 0.6, 0.8);
       background: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.08);
     }
     
@@ -380,7 +380,7 @@
     &__count {
       font-size: 0.75rem;
       background: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.2);
-      color: var(--admin-accent);
+      color: $admin-accent-primary;
       padding: 2px 6px;
       border-radius: 10px;
       font-weight: 600;
@@ -501,7 +501,7 @@
       flex-wrap: wrap;
       
       .btn {
-        @include glow-button(var(--admin-accent-primary, #3b82f6));
+        @include glow-button($admin-accent-primary);
         padding: $spacing-md $spacing-xl;
         font-size: 0.95rem;
         font-weight: 600;
@@ -521,7 +521,7 @@
   
   // Goal Cards
   .goal-card {
-    @include glow-card(var(--admin-accent-primary, #3b82f6));
+    @include glow-card($admin-accent-primary);
     padding: $spacing-lg;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     
@@ -597,7 +597,7 @@
       }
       
       .btn {
-        @include glow-button(var(--admin-accent-primary, #3b82f6));
+        @include glow-button($admin-accent-primary);
         padding: $spacing-xs $spacing-md;
         font-size: 0.85rem;
         
@@ -663,7 +663,7 @@
   
   .progress-bar {
     height: 100%;
-    background: linear-gradient(90deg, var(--admin-accent-primary, #3b82f6), var(--admin-accent-secondary, #8b5cf6));
+    background: linear-gradient(90deg, $admin-accent-primary, var(--admin-accent-secondary, #8b5cf6));
     transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 0 16px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.6);
     border-radius: 12px;
@@ -750,7 +750,7 @@
     }
     
     &__instructions {
-      @include glow-card(var(--admin-accent-primary, #3b82f6));
+      @include glow-card($admin-accent-primary);
       padding: $spacing-xl;
       margin-bottom: $spacing-2xl;
       
@@ -779,7 +779,7 @@
             padding: 2px 6px;
             border-radius: 4px;
             font-size: 0.9em;
-            color: var(--admin-accent-primary, #3b82f6);
+            color: $admin-accent-primary;
             border: 1px solid rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3);
           }
         }
@@ -792,7 +792,7 @@
       border-top: 1px solid rgba(255, 255, 255, 0.1);
       
       .btn {
-        @include glow-button(var(--admin-accent-primary, #3b82f6));
+        @include glow-button($admin-accent-primary);
         font-size: 0.9rem;
       }
     }
@@ -806,7 +806,7 @@
         margin-bottom: $spacing-lg;
         
         a {
-          color: var(--admin-accent-primary, #3b82f6);
+          color: $admin-accent-primary;
           text-decoration: none;
           font-weight: 600;
           
@@ -829,7 +829,7 @@
     
     &__fill {
       height: 100%;
-      background: linear-gradient(90deg, var(--admin-accent-primary, #3b82f6), var(--admin-accent-secondary, #8b5cf6));
+      background: linear-gradient(90deg, $admin-accent-primary, var(--admin-accent-secondary, #8b5cf6));
       transition: width 0.3s ease;
       display: flex;
       align-items: center;
@@ -850,7 +850,7 @@
   }
   
   .template-card {
-    @include glow-card(var(--admin-accent-primary, #3b82f6));
+    @include glow-card($admin-accent-primary);
     padding: $spacing-lg;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
@@ -877,7 +877,7 @@
     }
     
     &__type {
-      @include glow-badge(var(--admin-accent-primary, #3b82f6));
+      @include glow-badge($admin-accent-primary);
       padding: $spacing-xs $spacing-sm;
       font-size: 0.7rem;
       text-transform: uppercase;
@@ -908,7 +908,7 @@
       padding: $spacing-sm;
       @include transparent-bg(0.03);
       border-radius: 4px;
-      border-left: 3px solid var(--admin-accent-primary, #3b82f6);
+      border-left: 3px solid $admin-accent-primary;
       
       strong {
         color: var(--theme-text);
@@ -938,7 +938,7 @@
       
       .btn {
         flex: 1;
-        @include glow-button(var(--admin-accent-primary, #3b82f6));
+        @include glow-button($admin-accent-primary);
         font-size: 0.85rem;
         padding: $spacing-sm $spacing-md;
         text-align: center;
@@ -957,7 +957,7 @@
   }
   
   .post-type-badge {
-    @include glow-badge(var(--admin-accent-primary, #3b82f6));
+    @include glow-badge($admin-accent-primary);
     padding: $spacing-xs $spacing-sm;
     font-size: 0.7rem;
     text-transform: uppercase;
@@ -983,7 +983,7 @@
       width: 40px;
       height: 40px;
       border: 3px solid rgba(255, 255, 255, 0.1);
-      border-top-color: var(--admin-accent-primary, #3b82f6);
+      border-top-color: $admin-accent-primary;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
       margin-right: $spacing-md;
@@ -1000,7 +1000,7 @@
   .empty-state {
     padding: $spacing-3xl;
     text-align: center;
-    @include glow-card(var(--admin-accent-primary, #3b82f6));
+    @include glow-card($admin-accent-primary);
     
     &__icon {
       font-size: 3rem;
@@ -1023,7 +1023,7 @@
     }
     
     .btn {
-      @include glow-button(var(--admin-accent-primary, #3b82f6));
+      @include glow-button($admin-accent-primary);
       padding: $spacing-md $spacing-xl;
       font-size: 0.95rem;
     }
