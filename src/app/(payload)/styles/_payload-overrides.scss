@@ -772,9 +772,9 @@ table {
 // LOADING STATES
 // ============================================
 
-.loading,
-.spinner,
-[class*="loading"] {
+// Generic loading indicator (NOT for .loading-spinner which has its own styling)
+.loading:not(.loading-spinner),
+.spinner {
   display: inline-block;
   
   &::after {
