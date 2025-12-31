@@ -195,13 +195,8 @@ const PersonRelationshipsSidebar: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={{ 
-        padding: '1rem',
-        backgroundColor: 'transparent',
-        borderRadius: '4px',
-        marginBottom: '1.5rem',
-      }}>
-        <p style={{ margin: 0, fontSize: '0.875rem', opacity: 0.7 }}>Loading relationships...</p>
+      <div className="admin-card--compact">
+        <p className="admin-text--small admin-text--muted">Loading relationships...</p>
       </div>
     )
   }
@@ -213,21 +208,14 @@ const PersonRelationshipsSidebar: React.FC = () => {
 
   if (!hasAnyRelationships) {
     return (
-      <div style={{ 
-        padding: '1rem',
-        backgroundColor: 'transparent',
-        borderRadius: '4px',
-        marginBottom: '1.5rem',
-      }}>
-        <h4 style={{ 
+      <div className="admin-card--compact">
+        <h4 className="admin-text--small" style={{ 
           margin: '0 0 0.5rem 0', 
-          fontSize: '0.875rem',
           fontWeight: 600,
-          color: 'var(--theme-text)',
         }}>
           Relationships
         </h4>
-        <p style={{ margin: 0, fontSize: '0.875rem', opacity: 0.7 }}>
+        <p className="admin-text--small admin-text--muted">
           No teams or staff positions
         </p>
       </div>
@@ -235,21 +223,11 @@ const PersonRelationshipsSidebar: React.FC = () => {
   }
 
   return (
-    <div 
-      className="person-relationships-sidebar"
-      style={{ 
-        padding: '1rem',
-        backgroundColor: 'transparent',
-        borderRadius: '4px',
-        marginBottom: '1.5rem',
-        border: 'none',
-      }}
-    >
+    <div className="person-relationships-sidebar admin-card--compact">
       <h4 style={{ 
         margin: '0 0 0.75rem 0', 
         fontSize: '0.875rem',
         fontWeight: 600,
-        color: 'var(--theme-text)',
         textTransform: 'uppercase',
         letterSpacing: '0.5px',
         background: 'linear-gradient(90deg, #06b6d4 0%, #84cc16 100%)',
@@ -329,16 +307,13 @@ const PersonRelationshipsSidebar: React.FC = () => {
             👔 Organization Staff
           </p>
           {relationships.orgStaff.map((staff, idx) => (
-            <div key={idx} style={{ 
+            <div key={idx} className="admin-badge--warning" style={{ 
               padding: '0.5rem',
-              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(234, 179, 8, 0.1) 100%)',
-              border: '1px solid rgba(245, 158, 11, 0.3)',
-              borderRadius: '6px',
               marginBottom: '0.25rem',
+              display: 'block',
             }}>
-              <p style={{ 
+              <p className="admin-text--small" style={{ 
                 margin: 0, 
-                fontSize: '0.875rem',
                 fontWeight: 600,
                 color: 'rgb(245, 158, 11)',
               }}>
@@ -363,16 +338,13 @@ const PersonRelationshipsSidebar: React.FC = () => {
             🎬 Production Staff
           </p>
           {relationships.prodStaff.map((staff, idx) => (
-            <div key={idx} style={{ 
+            <div key={idx} className="admin-badge" style={{ 
               padding: '0.5rem',
-              background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%)',
-              border: '1px solid rgba(99, 102, 241, 0.3)',
-              borderRadius: '6px',
               marginBottom: '0.25rem',
+              display: 'block',
             }}>
-              <p style={{ 
+              <p className="admin-text--small" style={{ 
                 margin: 0, 
-                fontSize: '0.875rem',
                 fontWeight: 600,
                 color: 'rgb(99, 102, 241)',
               }}>
