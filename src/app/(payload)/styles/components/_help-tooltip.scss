@@ -1,0 +1,111 @@
+@import '../variables';
+@import '../mixins';
+
+.help-tooltip {
+  position: relative;
+  display: inline-block;
+  margin-left: $spacing-xs;
+  cursor: help;
+  
+  &__icon {
+    vertical-align: middle;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+    
+    &:hover {
+      opacity: 1;
+    }
+  }
+  
+  &__content {
+    position: absolute;
+    background-color: var(--theme-elevation-800);
+    color: var(--theme-text);
+    padding: $padding-sm $padding-md;
+    border-radius: $radius-sm;
+    font-size: $font-size-xs;
+    line-height: 1.4;
+    max-width: 250px;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    white-space: normal;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+    
+    // Position modifiers
+    &--top {
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-bottom: $spacing-xs;
+    }
+    
+    &--bottom {
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-top: $spacing-xs;
+    }
+    
+    &--left {
+      right: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      margin-right: $spacing-xs;
+    }
+    
+    &--right {
+      left: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      margin-left: $spacing-xs;
+    }
+  }
+  
+  &:hover &__content {
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  &__arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    
+    &--top {
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-color: var(--theme-elevation-800) transparent transparent transparent;
+      border-width: 6px 6px 0 6px;
+    }
+    
+    &--bottom {
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-color: transparent transparent var(--theme-elevation-800) transparent;
+      border-width: 0 6px 6px 6px;
+    }
+    
+    &--left {
+      left: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      border-color: transparent transparent transparent var(--theme-elevation-800);
+      border-width: 6px 0 6px 6px;
+    }
+    
+    &--right {
+      right: 100%;
+      top: 50%;
+      transform: translateY(-50%);
+      border-color: transparent var(--theme-elevation-800) transparent transparent;
+      border-width: 6px 6px 6px 0;
+    }
+  }
+}
+
