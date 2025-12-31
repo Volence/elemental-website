@@ -163,32 +163,14 @@
   display: none;
 }
 
-// Style the X close button
+// Style the X close button - Using utility pattern
 .doc-drawer .drawer__header-close,
 .doc-drawer button[aria-label="Close"]:not([id*="close-drawer"]) {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  color: $admin-text-secondary;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 20px;
-  
-  &:hover {
-    background: rgba(255, 68, 68, 0.15);
-    border-color: rgba(255, 68, 68, 0.3);
-    color: $admin-text-primary;
-  }
+  @extend %close-button-pattern;
 }
 
 .doc-drawer__header-content {
-  padding: 1.5rem 2rem;
+  @extend %modal-header-pattern;
 }
 
 .doc-drawer__document-fields {
