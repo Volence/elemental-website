@@ -114,8 +114,8 @@
   right: 0 !important;
   top: 0 !important;
   bottom: 0 !important;
-  width: min(900px, 90vw) !important; // Responsive width
-  max-width: 90vw !important;
+  width: min(1200px, 95vw) !important; // Wider drawer - 1200px instead of 900px
+  max-width: 95vw !important;
   display: block !important;
   
   // Drawer content should NOT be transparent, apply Clean Glow

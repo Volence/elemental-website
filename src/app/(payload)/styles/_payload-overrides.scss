@@ -12,6 +12,21 @@
 @import './mixins';
 
 // ============================================
+// GLOBAL FIXES - Prevent Unwanted Scrollbars
+// ============================================
+
+// Prevent horizontal scrollbar on admin pages
+.template-default {
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+  
+  // Ensure sidebar doesn't cause horizontal overflow
+  aside {
+    overflow-x: hidden !important;
+  }
+}
+
+// ============================================
 // BUTTONS - Clean Glow as Default
 // ============================================
 

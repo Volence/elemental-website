@@ -13,8 +13,11 @@ aside,
 .template-default aside {
   padding: 0.75rem 0.5rem;
   max-height: 100vh;
+  height: 100vh;
   overflow-y: scroll !important; // Force scrollbar to always show
-  overflow-x: hidden;
+  overflow-x: hidden !important; // Prevent horizontal scroll
+  width: 100%;
+  max-width: 100%;
   
   @include custom-scrollbar;
 }
@@ -25,6 +28,13 @@ nav,
   padding: 0;
   margin: 0;
   overflow: visible !important; // Prevent double scrollbar - only aside should scroll
+  width: 100%;
+  max-width: 100%;
+  
+  // Ensure all children don't overflow
+  & * {
+    max-width: 100%;
+  }
 }
 
 // ============================================
@@ -240,7 +250,7 @@ aside nav .nav__link {
   }
 }
 
-// PEOPLE Section (Pink/Fuchsia) - 1st nav-group
+// PEOPLE Section (Vibrant Pink) - 1st nav-group
 // Ultra-specific selectors to override Payload's defaults
 .template-default aside nav .nav-group.People .nav__link,
 .template-default aside nav .nav-group:nth-of-type(1) .nav__link,
@@ -250,159 +260,196 @@ aside nav .nav-group.People .nav__link,
 aside nav .nav-group:nth-of-type(1) .nav__link {
   &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
-    background: rgba($tier-masters, 0.08) !important;
-    color: lighten($tier-masters, 15%) !important;
+    background: rgba($tier-masters, 0.15) !important;
+    color: lighten($tier-masters, 20%) !important;
+    box-shadow: 0 0 12px rgba($tier-masters, 0.3) !important;
   }
   
   // Active state
   &:has(.nav__link-indicator) {
-    background: rgba($tier-masters, 0.12) !important;
+    background: rgba($tier-masters, 0.2) !important;
     
     .nav__link-indicator {
       background: $tier-masters !important;
-      box-shadow: 0 0 8px rgba($tier-masters, 0.5) !important;
+      box-shadow: 0 0 12px rgba($tier-masters, 0.6) !important;
     }
     
     .nav__link-label {
-      color: lighten($tier-masters, 15%) !important;
+      color: lighten($tier-masters, 20%) !important;
     }
   }
 }
 
 // STAFF Section (Vibrant Purple) - 2nd nav-group
+.template-default aside nav .nav-group.Staff .nav__link,
+.template-default aside nav .nav-group:nth-of-type(2) .nav__link,
+aside nav > .nav-group.Staff .nav__link,
+aside nav > .nav-group:nth-of-type(2) .nav__link,
 aside nav .nav-group.Staff .nav__link,
 aside nav .nav-group:nth-of-type(2) .nav__link {
+  &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
-    background: rgba($tier-expert, 0.08) !important;
-    color: lighten($tier-expert, 15%) !important;
+    background: rgba($tier-expert, 0.15) !important;
+    color: lighten($tier-expert, 20%) !important;
+    box-shadow: 0 0 12px rgba($tier-expert, 0.3) !important;
   }
   
   // Active state
   &:has(.nav__link-indicator) {
-    background: rgba($tier-expert, 0.12) !important;
+    background: rgba($tier-expert, 0.2) !important;
     
     .nav__link-indicator {
       background: $tier-expert !important;
-      box-shadow: 0 0 8px rgba($tier-expert, 0.5) !important;
+      box-shadow: 0 0 12px rgba($tier-expert, 0.6) !important;
     }
     
     .nav__link-label {
-      color: lighten($tier-expert, 15%) !important;
+      color: lighten($tier-expert, 20%) !important;
     }
   }
 }
 
-// PRODUCTION Section (Cyan) - 3rd nav-group
+// PRODUCTION Section (Vibrant Cyan) - 3rd nav-group
+.template-default aside nav .nav-group.Production .nav__link,
+.template-default aside nav .nav-group:nth-of-type(3) .nav__link,
+aside nav > .nav-group.Production .nav__link,
+aside nav > .nav-group:nth-of-type(3) .nav__link,
 aside nav .nav-group.Production .nav__link,
 aside nav .nav-group:nth-of-type(3) .nav__link {
+  &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
-    background: rgba($tier-4k, 0.08) !important;
-    color: lighten($tier-4k, 15%) !important;
+    background: rgba($tier-4k, 0.15) !important;
+    color: lighten($tier-4k, 20%) !important;
+    box-shadow: 0 0 12px rgba($tier-4k, 0.3) !important;
   }
   
   // Active state
   &:has(.nav__link-indicator) {
-    background: rgba($tier-4k, 0.12) !important;
+    background: rgba($tier-4k, 0.2) !important;
     
     .nav__link-indicator {
       background: $tier-4k !important;
-      box-shadow: 0 0 8px rgba($tier-4k, 0.5) !important;
+      box-shadow: 0 0 12px rgba($tier-4k, 0.6) !important;
     }
     
     .nav__link-label {
-      color: lighten($tier-4k, 15%) !important;
+      color: lighten($tier-4k, 20%) !important;
     }
   }
 }
 
-// SOCIAL MEDIA Section (Blue/Sky) - 4th nav-group
+// SOCIAL MEDIA Section (Vibrant Blue) - 4th nav-group
+.template-default aside nav .nav-group.Social .nav__link,
+.template-default aside nav .nav-group:nth-of-type(4) .nav__link,
+aside nav > .nav-group.Social .nav__link,
+aside nav > .nav-group:nth-of-type(4) .nav__link,
 aside nav .nav-group.Social .nav__link,
 aside nav .nav-group:nth-of-type(4) .nav__link {
+  &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
-    background: rgba($tier-advanced, 0.08) !important;
-    color: lighten($tier-advanced, 15%) !important;
+    background: rgba($tier-advanced, 0.15) !important;
+    color: lighten($tier-advanced, 20%) !important;
+    box-shadow: 0 0 12px rgba($tier-advanced, 0.3) !important;
   }
   
   // Active state
   &:has(.nav__link-indicator) {
-    background: rgba($tier-advanced, 0.12) !important;
+    background: rgba($tier-advanced, 0.2) !important;
     
     .nav__link-indicator {
       background: $tier-advanced !important;
-      box-shadow: 0 0 8px rgba($tier-advanced, 0.5) !important;
+      box-shadow: 0 0 12px rgba($tier-advanced, 0.6) !important;
     }
     
     .nav__link-label {
-      color: lighten($tier-advanced, 15%) !important;
+      color: lighten($tier-advanced, 20%) !important;
     }
   }
 }
 
-// RECRUITMENT Section (Green) - 5th nav-group
+// RECRUITMENT Section (Vibrant Green) - 5th nav-group
+.template-default aside nav .nav-group.Recruitment .nav__link,
+.template-default aside nav .nav-group:nth-of-type(5) .nav__link,
+aside nav > .nav-group.Recruitment .nav__link,
+aside nav > .nav-group:nth-of-type(5) .nav__link,
 aside nav .nav-group.Recruitment .nav__link,
 aside nav .nav-group:nth-of-type(5) .nav__link {
+  &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
-    background: rgba($tier-35k, 0.08) !important;
-    color: lighten($tier-35k, 15%) !important;
+    background: rgba($tier-35k, 0.15) !important;
+    color: lighten($tier-35k, 20%) !important;
+    box-shadow: 0 0 12px rgba($tier-35k, 0.3) !important;
   }
   
   // Active state
   &:has(.nav__link-indicator) {
-    background: rgba($tier-35k, 0.12) !important;
+    background: rgba($tier-35k, 0.2) !important;
     
     .nav__link-indicator {
       background: $tier-35k !important;
-      box-shadow: 0 0 8px rgba($tier-35k, 0.5) !important;
+      box-shadow: 0 0 12px rgba($tier-35k, 0.6) !important;
     }
     
     .nav__link-label {
-      color: lighten($tier-35k, 15%) !important;
+      color: lighten($tier-35k, 20%) !important;
     }
   }
 }
 
 // SYSTEM Section (Vibrant Orange) - 6th nav-group
+.template-default aside nav .nav-group.System .nav__link,
+.template-default aside nav .nav-group:nth-of-type(6) .nav__link,
+aside nav > .nav-group.System .nav__link,
+aside nav > .nav-group:nth-of-type(6) .nav__link,
 aside nav .nav-group.System .nav__link,
 aside nav .nav-group:nth-of-type(6) .nav__link {
+  &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
-    background: rgba($tier-below, 0.08) !important;
-    color: lighten($tier-below, 15%) !important;
+    background: rgba($tier-below, 0.15) !important;
+    color: lighten($tier-below, 20%) !important;
+    box-shadow: 0 0 12px rgba($tier-below, 0.3) !important;
   }
   
   // Active state
   &:has(.nav__link-indicator) {
-    background: rgba($tier-below, 0.12) !important;
+    background: rgba($tier-below, 0.2) !important;
     
     .nav__link-indicator {
       background: $tier-below !important;
-      box-shadow: 0 0 8px rgba($tier-below, 0.5) !important;
+      box-shadow: 0 0 12px rgba($tier-below, 0.6) !important;
     }
     
     .nav__link-label {
-      color: lighten($tier-below, 15%) !important;
+      color: lighten($tier-below, 20%) !important;
     }
   }
 }
 
-// MONITORING Section (Bright Yellow) - 7th nav-group
+// MONITORING Section (Vibrant Yellow) - 7th nav-group
+.template-default aside nav .nav-group.Monitoring .nav__link,
+.template-default aside nav .nav-group:nth-of-type(7) .nav__link,
+aside nav > .nav-group.Monitoring .nav__link,
+aside nav > .nav-group:nth-of-type(7) .nav__link,
 aside nav .nav-group.Monitoring .nav__link,
 aside nav .nav-group:nth-of-type(7) .nav__link {
+  &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
-    background: rgba($tier-30k, 0.08) !important;
-    color: lighten($tier-30k, 5%) !important; // Less lightening for yellow
+    background: rgba($tier-30k, 0.15) !important;
+    color: lighten($tier-30k, 10%) !important;
+    box-shadow: 0 0 12px rgba($tier-30k, 0.3) !important;
   }
   
   // Active state
   &:has(.nav__link-indicator) {
-    background: rgba($tier-30k, 0.12) !important;
+    background: rgba($tier-30k, 0.2) !important;
     
     .nav__link-indicator {
       background: $tier-30k !important;
-      box-shadow: 0 0 8px rgba($tier-30k, 0.5) !important;
+      box-shadow: 0 0 12px rgba($tier-30k, 0.6) !important;
     }
     
     .nav__link-label {
-      color: lighten($tier-30k, 5%) !important; // Less lightening for yellow
+      color: lighten($tier-30k, 10%) !important;
     }
   }
 }
