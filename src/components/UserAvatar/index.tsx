@@ -24,20 +24,7 @@ export const UserAvatar: React.FC = () => {
     // Fallback to default avatar (first letter of name)
     const initial = typedUser.name ? typedUser.name.charAt(0).toUpperCase() : '?'
     return (
-      <div
-        style={{
-          width: '32px',
-          height: '32px',
-          borderRadius: '50%',
-          background: 'var(--theme-elevation-400)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '14px',
-          fontWeight: '600',
-          color: 'white',
-        }}
-      >
+      <div className="user-avatar user-avatar--initial">
         {initial}
       </div>
     )
@@ -47,12 +34,7 @@ export const UserAvatar: React.FC = () => {
     <img
       src={avatarUrl}
       alt={typedUser.name || 'User avatar'}
-      style={{
-        width: '32px',
-        height: '32px',
-        borderRadius: '50%',
-        objectFit: 'cover',
-      }}
+      className="user-avatar"
     />
   )
 }
