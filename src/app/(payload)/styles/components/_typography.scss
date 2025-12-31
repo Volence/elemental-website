@@ -260,59 +260,52 @@ main > div > div:first-child > div:first-child {
   }
 }
 
-// Fix margin alignment issues on doc-controls meta
-.doc-controls__label,
-.doc-controls__value,
+// Fix doc-controls spacing - use element.class for higher specificity
 p.doc-controls__label,
 p.doc-controls__value {
-  margin: 0 !important;
-  padding: 0 !important;
-  line-height: 1.5 !important;
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
 }
 
 // Remove margin from doc-controls meta
-.doc-controls__meta,
 ul.doc-controls__meta {
-  margin: 0 !important;
-  padding: 0 !important;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-// Ensure list items in doc-controls meta are aligned
-.doc-controls__meta li,
-ul.doc-controls__meta li,
-.doc-controls__list-item {
-  margin: 0 !important;
-  padding: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 0.5rem !important;
+// Align list items in doc-controls meta
+ul.doc-controls__meta li {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-// Vertically center the doc-controls content (timestamps)
-.doc-controls__content,
+// Vertically center doc-controls content
 div.doc-controls__content {
-  display: flex !important;
-  align-items: center !important;
-  gap: 2rem !important;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
 }
 
-// Fix doc-header bottom margin bleeding into content
-.doc-header,
-div.doc-header,
-.gutter.doc-header {
-  margin-bottom: 0 !important;
-  padding-bottom: 1rem !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 1.5rem !important;
+// Fix doc-header spacing - use element.class for specificity
+div.doc-header {
+  margin-bottom: 0;
+  padding-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
   
-  // Hide if empty (no content or only whitespace)
+  // Hide if empty
   &:empty,
   &:not(:has(*)) {
-    display: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
+    display: none;
+    padding: 0;
+    margin: 0;
   }
 }
 
