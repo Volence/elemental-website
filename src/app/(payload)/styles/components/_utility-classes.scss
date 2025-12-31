@@ -1,0 +1,292 @@
+// ============================================
+// UTILITY CLASSES - DRY Pattern Consolidation
+// Phase 5: Eliminate CSS duplication across components
+// ============================================
+
+@import '../variables';
+@import '../mixins';
+
+// ============================================
+// MODAL/DRAWER PATTERNS
+// ============================================
+
+// Modal header - used in modals, drawers, panels
+.modal-header-pattern,
+%modal-header-pattern {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  
+  h1, h2, h3, h4 {
+    margin: 0;
+    color: $admin-text-primary;
+    
+    &::after {
+      display: none; // Remove gradient underlines
+    }
+  }
+}
+
+// Modal body - common padding pattern
+.modal-body-pattern,
+%modal-body-pattern {
+  padding: 1rem 2rem;
+}
+
+// Modal footer - flex end with gap
+.modal-footer-pattern,
+%modal-footer-pattern {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  justify-content: flex-end;
+}
+
+// Backdrop pattern - full screen overlay
+.backdrop-pattern,
+%backdrop-pattern {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+}
+
+// Close button pattern - 32px square icon button
+.close-button-pattern,
+%close-button-pattern {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: $admin-text-secondary;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 20px;
+  
+  &:hover {
+    background: rgba(255, 68, 68, 0.15);
+    border-color: rgba(255, 68, 68, 0.3);
+    color: $admin-text-primary;
+  }
+}
+
+// ============================================
+// FLEX CONTAINER PATTERNS
+// ============================================
+
+// Flex row with center align
+.flex-center,
+%flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Flex row with vertical center
+.flex-row-center,
+%flex-row-center {
+  display: flex;
+  align-items: center;
+}
+
+// Flex row with space between
+.flex-between,
+%flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+// Flex row with gap - small
+.flex-gap-sm,
+%flex-gap-sm {
+  display: flex;
+  gap: $gap-sm;
+}
+
+// Flex row with gap - medium
+.flex-gap-md,
+%flex-gap-md {
+  display: flex;
+  gap: $gap-md;
+}
+
+// Flex row with gap - large
+.flex-gap-lg,
+%flex-gap-lg {
+  display: flex;
+  gap: $gap-lg;
+}
+
+// Flex center with gap
+.flex-center-gap,
+%flex-center-gap {
+  display: flex;
+  align-items: center;
+  gap: $gap-md;
+}
+
+// ============================================
+// DIVIDER PATTERNS
+// ============================================
+
+// Subtle divider - common in sections
+.divider-subtle,
+%divider-subtle {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+// Divider with spacing
+.divider-spaced,
+%divider-spaced {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  margin-top: $spacing-xl;
+  padding-top: $spacing-xl;
+}
+
+// ============================================
+// SCROLLBAR PATTERNS
+// ============================================
+
+// Custom scrollbar - thin dark theme
+.custom-scroll,
+%custom-scroll {
+  @include custom-scrollbar;
+}
+
+// Scrollable container
+.scrollable-container,
+%scrollable-container {
+  max-height: 90vh;
+  overflow-y: auto;
+  @include custom-scrollbar;
+}
+
+// ============================================
+// CARD PATTERNS
+// ============================================
+
+// Card with padding - standard
+.card-padding,
+%card-padding {
+  padding: $padding-xl;
+}
+
+// Card with padding - compact
+.card-padding-compact,
+%card-padding-compact {
+  padding: $padding-lg;
+}
+
+// Card border radius
+.card-radius,
+%card-radius {
+  border-radius: $radius-lg;
+}
+
+// ============================================
+// SECTION PATTERNS
+// ============================================
+
+// Section spacing - standard
+.section-spacing,
+%section-spacing {
+  margin-bottom: $spacing-3xl;
+}
+
+// Section padding - standard
+.section-padding,
+%section-padding {
+  padding: 0 $padding-xl;
+}
+
+// ============================================
+// BUTTON PATTERNS (already handled by mixins mostly)
+// ============================================
+
+// Button group - horizontal
+.button-group,
+%button-group {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+// ============================================
+// TEXT PATTERNS
+// ============================================
+
+// Truncate text with ellipsis
+.text-truncate,
+%text-truncate {
+  @include truncate;
+}
+
+// Secondary text color
+.text-secondary,
+%text-secondary {
+  color: $admin-text-secondary;
+}
+
+// Muted text
+.text-muted,
+%text-muted {
+  color: $admin-text-muted;
+}
+
+// ============================================
+// SPACING UTILITIES (Compact versions)
+// ============================================
+
+// Remove margin/padding - common reset
+.no-margin,
+%no-margin {
+  margin: 0;
+}
+
+.no-padding,
+%no-padding {
+  padding: 0;
+}
+
+// Full width
+.full-width,
+%full-width {
+  width: 100%;
+  max-width: 100%;
+}
+
+// ============================================
+// POSITION PATTERNS
+// ============================================
+
+// Absolute center
+.absolute-center,
+%absolute-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+// ============================================
+// USAGE NOTES
+// ============================================
+
+// These utilities can be used in two ways:
+// 1. As classes: class="modal-header-pattern"
+// 2. As @extend: @extend %modal-header-pattern;
+//
+// Use @extend for component-specific styles
+// Use classes for one-off utilities in HTML
+
+
