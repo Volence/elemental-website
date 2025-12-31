@@ -84,13 +84,23 @@ html[data-theme='light'] {
   box-sizing: border-box;
 }
 
-// Ensure main wrapper allows scroll
+// Ensure main wrapper prevents horizontal overflow
 main,
 .template-default main,
 [class*="render"] {
   width: 100%;
   max-width: 100%;
-  overflow-x: auto;
+  overflow-x: hidden; // Prevent horizontal scroll
+  box-sizing: border-box;
+}
+
+// Ensure all content within is contained
+.render-default,
+.doc-fields,
+form {
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 // ============================================
