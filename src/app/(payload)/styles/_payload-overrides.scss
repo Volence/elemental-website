@@ -578,9 +578,9 @@ table {
       &[aria-selected="true"],
       &.active {
         @include transparent-bg(0.08);
-        border-color: rgba(var(--section-color-rgb), 0.5);
+        border-color: rgba($admin-accent-primary, 0.5);
         color: rgba(255, 255, 255, 1);
-        box-shadow: 0 0 12px rgba(var(--section-color-rgb), 0.15);
+        box-shadow: 0 0 12px rgba($admin-accent-primary, 0.15);
       }
     }
   }
@@ -591,7 +591,7 @@ table {
 .blocks-field {
   .array-field__row,
   .blocks-field__row {
-    @include glow-card(rgba(var(--section-color-rgb), 1));
+    @include glow-card($admin-accent-primary);
     margin-bottom: 1rem;
     padding: 1.5rem;
     
