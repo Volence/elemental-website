@@ -79,6 +79,18 @@ html[data-theme='light'] {
 .dashboard,
 .collection-list {
   padding: $spacing-xl;
+  width: 100%;
+  max-width: 100vw;
+  box-sizing: border-box;
+}
+
+// Ensure main wrapper allows scroll
+main,
+.template-default main,
+[class*="render"] {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 // ============================================

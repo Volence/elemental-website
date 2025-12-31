@@ -352,7 +352,26 @@ label:has(input[type="radio"]) {
 // TABLES
 // ============================================
 
+// Ensure table containers can scroll horizontally
+[class*="Table"],
+[class*="table"],
+.collection-list,
+.list-view {
+  overflow-x: auto;
+  overflow-y: visible;
+  width: 100%;
+  
+  // Smooth scrolling
+  -webkit-overflow-scrolling: touch;
+  
+  // Custom scrollbar
+  @include custom-scrollbar;
+}
+
 table {
+  width: 100%;
+  min-width: max-content; // Prevent table from shrinking below content width
+  
   thead {
     @include transparent-bg(0.05);
     border-bottom: 2px solid rgba($admin-accent-primary, 0.3);
