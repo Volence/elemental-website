@@ -149,3 +149,377 @@ button[aria-label="Close"]:not(.hamburger__close) {
 
 // Note: Buttons are NOT globally styled to allow for more color variety per context
 
+// ============================================
+// UTILITY BASE CLASSES
+// ============================================
+// These classes provide consistent patterns for common admin panel components
+// Use these instead of inline styles for predictable, maintainable styling
+
+// --------------------------------------------
+// CARD UTILITIES
+// --------------------------------------------
+
+.admin-card {
+  @include glow-card(var(--section-color, #{$admin-accent-primary}));
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.admin-card--compact {
+  @include glow-card(var(--section-color, #{$admin-accent-primary}));
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.admin-card--spacious {
+  @include glow-card(var(--section-color, #{$admin-accent-primary}));
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+// Card with specific color themes
+.admin-card--info {
+  @include glow-card($admin-accent-info);
+}
+
+.admin-card--success {
+  @include glow-card($admin-accent-success);
+}
+
+.admin-card--warning {
+  @include glow-card($admin-accent-warning);
+}
+
+.admin-card--error {
+  @include glow-card($admin-accent-error);
+}
+
+// --------------------------------------------
+// SECTION HEADERS
+// --------------------------------------------
+
+.admin-section-header {
+  @include glow-header(var(--section-color, #{$admin-accent-primary}));
+  margin-bottom: 1.5rem;
+  
+  h2,
+  h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.95);
+  }
+}
+
+.admin-section-header--large {
+  @include glow-header(var(--section-color, #{$admin-accent-primary}));
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 2rem;
+  
+  h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 1);
+  }
+}
+
+// --------------------------------------------
+// STAT CARDS
+// --------------------------------------------
+
+.admin-stat-card {
+  @include glow-card(var(--section-color, #{$admin-accent-primary}));
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  
+  .admin-stat-card__label {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .admin-stat-card__value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.95);
+    line-height: 1.2;
+  }
+  
+  .admin-stat-card__change {
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    
+    &--positive {
+      color: $admin-accent-success;
+    }
+    
+    &--negative {
+      color: $admin-accent-error;
+    }
+    
+    &--neutral {
+      color: rgba(255, 255, 255, 0.6);
+    }
+  }
+}
+
+// --------------------------------------------
+// BADGE UTILITIES
+// --------------------------------------------
+
+.admin-badge {
+  @include glow-badge(var(--section-color, #{$admin-accent-primary}));
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.admin-badge--with-accent {
+  @include glow-badge(var(--section-color, #{$admin-accent-primary}));
+  @include glow-accent-bar(var(--section-color, #{$admin-accent-primary}), 3px, 60%);
+  padding-left: 1rem;
+}
+
+// Badge color variants
+.admin-badge--info {
+  @include glow-badge($admin-accent-info);
+}
+
+.admin-badge--success {
+  @include glow-badge($admin-accent-success);
+}
+
+.admin-badge--warning {
+  @include glow-badge($admin-accent-warning);
+}
+
+.admin-badge--error {
+  @include glow-badge($admin-accent-error);
+}
+
+// --------------------------------------------
+// BUTTON UTILITIES
+// --------------------------------------------
+
+.admin-button {
+  @include glow-button(var(--section-color, #{$admin-accent-primary}));
+}
+
+.admin-button--action {
+  @include glow-button($admin-accent-success);
+}
+
+.admin-button--danger {
+  @include glow-button($admin-accent-error);
+}
+
+.admin-button--info {
+  @include glow-button($admin-accent-info);
+}
+
+.admin-button--warning {
+  @include glow-button($admin-accent-warning);
+}
+
+// --------------------------------------------
+// LAYOUT UTILITIES
+// --------------------------------------------
+
+// Flex layouts
+.admin-flex {
+  display: flex;
+  gap: $gap-md;
+}
+
+.admin-flex--center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $gap-md;
+}
+
+.admin-flex--between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $gap-md;
+}
+
+.admin-flex--column {
+  display: flex;
+  flex-direction: column;
+  gap: $gap-md;
+}
+
+// Grid layouts
+.admin-grid {
+  display: grid;
+  gap: $gap-lg;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.admin-grid--2col {
+  display: grid;
+  gap: $gap-lg;
+  grid-template-columns: repeat(2, 1fr);
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-grid--3col {
+  display: grid;
+  gap: $gap-lg;
+  grid-template-columns: repeat(3, 1fr);
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-grid--4col {
+  display: grid;
+  gap: $gap-lg;
+  grid-template-columns: repeat(4, 1fr);
+  
+  @media (max-width: 1280px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// --------------------------------------------
+// SPACING UTILITIES
+// --------------------------------------------
+
+.admin-spacing--page {
+  padding: $spacing-xl;
+  
+  @media (max-width: 768px) {
+    padding: $spacing-lg;
+  }
+}
+
+.admin-spacing--section {
+  margin-bottom: $spacing-2xl;
+}
+
+.admin-spacing--compact {
+  padding: $spacing-md;
+}
+
+// --------------------------------------------
+// TEXT UTILITIES
+// --------------------------------------------
+
+.admin-text--muted {
+  color: $admin-text-muted;
+}
+
+.admin-text--secondary {
+  color: $admin-text-secondary;
+}
+
+.admin-text--primary {
+  color: $admin-text-primary;
+}
+
+.admin-text--center {
+  text-align: center;
+}
+
+.admin-text--small {
+  font-size: $font-size-sm;
+}
+
+.admin-text--large {
+  font-size: $font-size-lg;
+}
+
+// --------------------------------------------
+// STATUS INDICATORS
+// --------------------------------------------
+
+.admin-status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  
+  &::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  
+  &--active::before {
+    background: $admin-accent-success;
+    box-shadow: 0 0 8px rgba($admin-accent-success, 0.5);
+  }
+  
+  &--pending::before {
+    background: $admin-accent-warning;
+    box-shadow: 0 0 8px rgba($admin-accent-warning, 0.5);
+  }
+  
+  &--inactive::before {
+    background: $admin-text-muted;
+  }
+  
+  &--error::before {
+    background: $admin-accent-error;
+    box-shadow: 0 0 8px rgba($admin-accent-error, 0.5);
+  }
+}
+
+// --------------------------------------------
+// LOADING STATES
+// --------------------------------------------
+
+.admin-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: rgba(255, 255, 255, 0.6);
+  
+  &::after {
+    content: '';
+    width: 2rem;
+    height: 2rem;
+    border: 3px solid rgba(var(--section-color-rgb), 0.2);
+    border-top-color: rgba(var(--section-color-rgb), 1);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+

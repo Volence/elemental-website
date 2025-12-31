@@ -519,6 +519,335 @@ table {
 }
 
 // ============================================
+// FIELD GROUPS & SECTIONS
+// ============================================
+
+// Field groups (collapsible sections in forms)
+.field-group,
+.collapsible {
+  @include transparent-bg(0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  
+  &__header {
+    @include transparent-bg(0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 0.75rem 1rem;
+    margin: -1rem -1rem 1rem -1rem;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      @include transparent-bg(0.05);
+    }
+  }
+  
+  &__label {
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+  }
+}
+
+// Tabs (for collection edit views)
+.tabs,
+.tabs-field {
+  .tabs__nav {
+    display: flex;
+    gap: 0.5rem;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 1.5rem;
+    
+    button {
+      @include transparent-bg(0.02);
+      border: 1px solid transparent;
+      border-bottom: none;
+      border-radius: 8px 8px 0 0;
+      padding: 0.75rem 1.5rem;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.7);
+      transition: all 0.2s ease;
+      
+      &:hover {
+        @include transparent-bg(0.05);
+        color: rgba(255, 255, 255, 0.9);
+      }
+      
+      &[aria-selected="true"],
+      &.active {
+        @include transparent-bg(0.08);
+        border-color: rgba(var(--section-color-rgb), 0.5);
+        color: rgba(255, 255, 255, 1);
+        box-shadow: 0 0 12px rgba(var(--section-color-rgb), 0.15);
+      }
+    }
+  }
+}
+
+// Array fields (repeaters)
+.array-field,
+.blocks-field {
+  .array-field__row,
+  .blocks-field__row {
+    @include glow-card(rgba(var(--section-color-rgb), 1));
+    margin-bottom: 1rem;
+    padding: 1.5rem;
+    
+    &:hover {
+      transform: translateY(-1px);
+    }
+  }
+  
+  .array-field__add-button,
+  .blocks-field__add-button,
+  button[class*="add-row"] {
+    @include glow-button($admin-accent-success);
+    width: 100%;
+    justify-content: center;
+    margin-top: 0.75rem;
+  }
+  
+  .array-field__remove-button,
+  .blocks-field__remove-button,
+  button[class*="remove-row"] {
+    @include glow-button($admin-accent-error);
+    padding: 0.5rem;
+    min-width: auto;
+  }
+}
+
+// Relationship fields
+.relationship-field,
+.upload-field {
+  .relationship__value,
+  .upload__value {
+    @include glow-badge($admin-accent-info);
+    display: inline-flex;
+    padding: 0.5rem 1rem;
+    margin: 0.25rem;
+  }
+}
+
+// Rich text editor
+.rich-text-field,
+.lexical-editor {
+  .rich-text__toolbar {
+    @include transparent-bg(0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px 8px 0 0;
+    padding: 0.5rem;
+    
+    button {
+      @include transparent-bg(0.03);
+      border: 1px solid transparent;
+      border-radius: 4px;
+      padding: 0.5rem;
+      margin: 0.125rem;
+      transition: all 0.2s ease;
+      
+      &:hover {
+        @include transparent-bg(0.08);
+        border-color: rgba($admin-accent-primary, 0.3);
+      }
+      
+      &.active {
+        @include transparent-bg(0.1);
+        border-color: rgba($admin-accent-primary, 0.5);
+        box-shadow: 0 0 8px rgba($admin-accent-primary, 0.2);
+      }
+    }
+  }
+  
+  .rich-text__content {
+    @include glow-input($admin-accent-primary);
+    min-height: 200px;
+    padding: 1rem;
+  }
+}
+
+// Date picker
+.date-time-picker {
+  input {
+    @include glow-input($admin-accent-info);
+  }
+  
+  .date-time-picker__icon-wrap {
+    color: rgba($admin-accent-info, 0.7);
+  }
+  
+  .date-time-picker__clear-button {
+    color: rgba($admin-accent-error, 0.7);
+    transition: all 0.2s ease;
+    
+    &:hover {
+      color: $admin-accent-error;
+    }
+  }
+}
+
+// Upload field (file/image uploads)
+.file-field,
+.upload {
+  .file-field__upload,
+  .upload__dropzone {
+    @include glow-card($admin-accent-info);
+    border: 2px dashed rgba($admin-accent-info, 0.3);
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      border-color: rgba($admin-accent-info, 0.6);
+      background: rgba($admin-accent-info, 0.05);
+    }
+  }
+  
+  .file-field__preview,
+  .upload__preview {
+    @include glow-card($admin-accent-primary);
+    padding: 1rem;
+    margin-top: 1rem;
+  }
+}
+
+// ============================================
+// PAGINATION
+// ============================================
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+  
+  button,
+  a {
+    @include glow-button($admin-accent-primary);
+    padding: 0.5rem 1rem;
+    min-width: 44px;
+    
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    
+    &.active,
+    &[aria-current="page"] {
+      @include glow-button($admin-accent-info);
+      box-shadow: 0 0 15px rgba($admin-accent-info, 0.3);
+    }
+  }
+  
+  .pagination__page-count {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.875rem;
+    margin: 0 0.5rem;
+  }
+}
+
+// ============================================
+// LOADING STATES
+// ============================================
+
+.loading,
+.spinner,
+[class*="loading"] {
+  display: inline-block;
+  
+  &::after {
+    content: '';
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid rgba($admin-accent-primary, 0.3);
+    border-top-color: $admin-accent-primary;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ============================================
+// ERROR STATES
+// ============================================
+
+.error,
+.field-error,
+.validation-error,
+[class*="error-message"] {
+  @include glow-badge($admin-accent-error);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  
+  &::before {
+    content: '⚠';
+    font-size: 1rem;
+  }
+}
+
+// Field with error state
+.field--error,
+.field.has-error,
+input.error,
+textarea.error,
+select.error {
+  border-color: rgba($admin-accent-error, 0.6);
+  box-shadow: 0 0 12px rgba($admin-accent-error, 0.2);
+  
+  &:focus {
+    border-color: rgba($admin-accent-error, 0.8);
+    box-shadow: 0 0 0 3px rgba($admin-accent-error, 0.2);
+  }
+}
+
+// ============================================
+// EMPTY STATES
+// ============================================
+
+.empty-state,
+.no-results,
+[class*="empty"] {
+  @include transparent-bg(0.03);
+  border: 2px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 3rem 2rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  
+  h3,
+  .empty-state__title {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  p,
+  .empty-state__description {
+    font-size: 0.9375rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  button,
+  a.btn {
+    @include glow-button($admin-accent-success);
+  }
+}
+
+// ============================================
 // UTILITY CLASSES
 // ============================================
 
