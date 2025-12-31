@@ -58,11 +58,12 @@
 /* Team manager info banner */
 .team-manager-info {
   margin-bottom: 1rem;
-  padding: 0.875rem 1rem;
-  background-color: var(--theme-elevation-50);
-  border: 1px solid var(--theme-elevation-200);
-  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  @include transparent-bg(0.03);
+  border-radius: $radius-md;
   font-size: 0.875rem;
+  backdrop-filter: blur(8px);
+  position: relative;
 
   // Prevent inner elements from getting borders
   div, strong, svg {
@@ -73,44 +74,101 @@
       display: none !important;
     }
   }
+  
+  &__container {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  &__icon {
+    flex-shrink: 0;
+    margin-top: 0.125rem;
+  }
+  
+  &__content {
+    flex: 1;
+  }
 
   &__title {
     font-weight: 600;
-    color: var(--theme-text);
     margin-bottom: 0.5rem;
     border: none;
+    display: block;
   }
 
   &__description {
-    color: var(--theme-text-600);
+    color: $admin-text-secondary;
     line-height: 1.5;
     border: none;
+    
+    strong {
+      color: $admin-text-primary;
+    }
+  }
+  
+  // Left accent bar for each variant
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    border-radius: $radius-md 0 0 $radius-md;
   }
 
   &--admin {
-    background-color: var(--theme-blue-50);
-    border-color: var(--theme-blue-200);
+    border: 1px solid rgba($admin-accent-info, 0.3);
+    box-shadow: 0 0 12px rgba($admin-accent-info, 0.1);
+    
+    &::before {
+      background: $admin-accent-info;
+      box-shadow: 0 0 8px rgba($admin-accent-info, 0.5);
+    }
 
     .team-manager-info__title {
-      color: var(--theme-blue-700);
+      color: lighten($admin-accent-info, 15%);
+    }
+    
+    .team-manager-info__icon path {
+      fill: $admin-accent-info;
     }
   }
 
   &--team-manager {
-    background-color: var(--theme-success-50);
-    border-color: var(--theme-success-200);
+    border: 1px solid rgba($admin-accent-success, 0.3);
+    box-shadow: 0 0 12px rgba($admin-accent-success, 0.1);
+    
+    &::before {
+      background: $admin-accent-success;
+      box-shadow: 0 0 8px rgba($admin-accent-success, 0.5);
+    }
 
     .team-manager-info__title {
-      color: var(--theme-success-700);
+      color: lighten($admin-accent-success, 15%);
+    }
+    
+    .team-manager-info__icon path {
+      fill: $admin-accent-success;
     }
   }
 
   &--staff-manager {
-    background-color: var(--theme-warning-50);
-    border-color: var(--theme-warning-200);
+    border: 1px solid rgba($admin-accent-warning, 0.3);
+    box-shadow: 0 0 12px rgba($admin-accent-warning, 0.1);
+    
+    &::before {
+      background: $admin-accent-warning;
+      box-shadow: 0 0 8px rgba($admin-accent-warning, 0.5);
+    }
 
     .team-manager-info__title {
-      color: var(--theme-warning-700);
+      color: lighten($admin-accent-warning, 15%);
+    }
+    
+    .team-manager-info__icon path {
+      fill: $admin-accent-warning;
     }
   }
 }

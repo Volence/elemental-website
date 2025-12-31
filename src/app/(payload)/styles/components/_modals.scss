@@ -110,29 +110,40 @@
 // ============================================
 
 .doc-drawer.doc-drawer {
-  width: 1200px;
+  width: auto;
   max-width: 95vw;
+  display: flex;
+  justify-content: flex-end; // Align drawer to right side
   
-  // Remove glow-card effects from drawer containers
+  // Drawer content should NOT be transparent, apply Clean Glow
   > .drawer__content,
   .drawer__content {
+    @include transparent-bg(0.05);
+    border: 2px solid rgba($admin-accent-primary, 0.25);
+    border-radius: 0; // Drawers are edge-to-edge
+    backdrop-filter: blur(16px);
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.5);
     padding: 0;
     margin: 0;
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    backdrop-filter: none;
+    overflow: visible; // Parent doesn't scroll
+    max-height: 100vh;
+    width: 900px; // Fixed width for content
+    max-width: 90vw; // Responsive on small screens
     
     &::before,
     &::after {
-      display: none;
+      display: none; // No animated border for drawers
     }
   }
   
+  // Inner content area - THIS is what scrolls
   .doc-drawer__content {
     padding: 0;
     margin: 0;
     background: transparent;
+    overflow-y: auto;
+    max-height: calc(100vh - 80px); // Account for header
+    width: 100%;
     
     &::before,
     &::after {
@@ -141,34 +152,42 @@
   }
 }
 
-// Hide redundant close button
+// Hide ALL close buttons initially to prevent duplicates
 .doc-drawer .drawer__close,
-.doc-drawer button[aria-label="Close"][id*="close-drawer"] {
-  display: none;
+.doc-drawer button[aria-label="Close"],
+.doc-drawer .drawer__header-close {
+  display: none !important;
 }
 
-// Style the X close button - Using utility pattern
-.doc-drawer .drawer__header-close,
-.doc-drawer button[aria-label="Close"]:not([id*="close-drawer"]) {
+// Show ONLY the header close button (the one in drawer__header-close position)
+.doc-drawer .drawer__header .drawer__header-close,
+.doc-drawer .drawer__header button[aria-label="Close"]:first-of-type {
+  display: flex !important;
   @extend %close-button-pattern;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
 }
 
+// Header stays at top
 .doc-drawer__header-content {
   @extend %modal-header-pattern;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .doc-drawer__document-fields {
-  padding: 0 2rem 2rem 2rem;
+  padding: 2rem;
 }
 
-// Fix nested scrollbars
+// Fix nested scrollbars - only doc-drawer__content scrolls
 .drawer__content {
-  overflow: visible;
-}
-
-.doc-drawer .doc-drawer__content {
-  overflow-y: auto;
-  max-height: calc(100vh - 80px);
+  overflow: visible !important;
 }
 
 // Full width form fields - use descendant combinator for specificity

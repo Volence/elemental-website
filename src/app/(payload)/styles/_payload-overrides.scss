@@ -325,27 +325,111 @@ label:has(input[type="radio"]) {
 }
 
 // ============================================
-// MODALS & POPUPS
+// MODALS & POPUPS - Clean Glow Treatment
 // ============================================
 
+// Modal/Drawer backdrop ONLY (not popup - that's for dropdowns!)
 .modal,
-.popup,
 .drawer {
-  backdrop-filter: blur(8px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(12px);
+    cursor: pointer; // Show it's clickable
+  }
 }
 
-// Modal content
+// Modal content - enhanced Clean Glow
 .modal__content,
-.popup__content,
 .drawer__content {
-  @include glow-card($admin-accent-primary);
+  position: relative;
+  z-index: 1; // Above the backdrop
+  @include transparent-bg(0.08); // Darker background for better contrast
+  border: 2px solid rgba($admin-accent-primary, 0.3);
+  border-radius: 12px;
+  backdrop-filter: blur(16px);
+  box-shadow: 
+    0 0 32px rgba($admin-accent-primary, 0.2),
+    0 12px 48px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
+  
+  // Glowing border effect
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 12px;
+    padding: 2px;
+    background: linear-gradient(
+      135deg,
+      rgba($admin-accent-primary, 0.5),
+      rgba($admin-accent-info, 0.3),
+      rgba($admin-accent-primary, 0.5)
+    );
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.6;
+    animation: borderGlow 3s ease-in-out infinite;
+    pointer-events: none; // Don't block clicks
+  }
+}
+
+@keyframes borderGlow {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+// Popup dropdowns (select menus, filter menus, etc.) - NO backdrop, just clean dropdown
+.popup {
+  @include transparent-bg(0.08);
+  border: 1px solid rgba($admin-accent-primary, 0.3);
+  border-radius: 8px;
+  backdrop-filter: blur(16px);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    0 0 12px rgba($admin-accent-primary, 0.15);
+}
+
+.popup__content {
+  position: relative;
+}
+
+// Drawer content (side panels) - wider and consistent
+.drawer__content {
+  max-width: none; // Remove max-width constraint
+  width: auto; // Let it size based on content
+  height: 100vh;
+  max-height: 100vh;
+  margin: 0;
+  border-radius: 0; // No border radius for full-height drawer
+  border-left: 2px solid rgba($admin-accent-primary, 0.3);
+  border-right: none;
+  border-top: none;
+  border-bottom: none;
 }
 
 // Modal footer buttons
 .modal__footer button,
 .popup__actions button {
-  padding: 0.75rem 3.5rem;
-  min-width: auto;
+  padding: 0.75rem 2rem;
+  min-width: 120px;
 }
 
 // ============================================
@@ -863,6 +947,118 @@ select.error {
   button,
   a.btn {
     @include glow-button($admin-accent-success);
+  }
+}
+
+// ============================================
+// BANNER COMPONENT - Clean Glow Override
+// ============================================
+
+// PayloadCMS Banner component with Clean Glow styling
+.banner,
+[class*="banner"] {
+  position: relative;
+  padding: $spacing-lg;
+  border-radius: $radius-md;
+  margin-bottom: $spacing-lg;
+  backdrop-filter: blur(12px);
+  @include transparent-bg(0.03);
+  
+  // Left accent bar
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    border-radius: $radius-md 0 0 $radius-md;
+    opacity: 0.8;
+  }
+  
+  // Banner variants
+  &[class*="success"],
+  &.banner--success {
+    border-color: rgba($admin-accent-success, 0.3);
+    color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 16px rgba($admin-accent-success, 0.12);
+    
+    &::before {
+      background: $admin-accent-success;
+      box-shadow: 0 0 8px rgba($admin-accent-success, 0.5);
+    }
+    
+    h4, strong {
+      color: $admin-accent-success;
+      font-weight: $font-weight-semibold;
+    }
+  }
+  
+  &[class*="warning"],
+  &.banner--warning {
+    border-color: rgba($admin-accent-warning, 0.3);
+    color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 16px rgba($admin-accent-warning, 0.12);
+    
+    &::before {
+      background: $admin-accent-warning;
+      box-shadow: 0 0 8px rgba($admin-accent-warning, 0.5);
+    }
+    
+    h4, strong {
+      color: $admin-accent-warning;
+      font-weight: $font-weight-semibold;
+    }
+  }
+  
+  &[class*="error"],
+  &.banner--error {
+    border-color: rgba($admin-accent-error, 0.3);
+    color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 16px rgba($admin-accent-error, 0.12);
+    
+    &::before {
+      background: $admin-accent-error;
+      box-shadow: 0 0 8px rgba($admin-accent-error, 0.5);
+    }
+    
+    h4, strong {
+      color: $admin-accent-error;
+      font-weight: $font-weight-semibold;
+    }
+  }
+  
+  &[class*="info"],
+  &.banner--info {
+    border-color: rgba($admin-accent-info, 0.3);
+    color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 16px rgba($admin-accent-info, 0.12);
+    
+    &::before {
+      background: $admin-accent-info;
+      box-shadow: 0 0 8px rgba($admin-accent-info, 0.5);
+    }
+    
+    h4, strong {
+      color: $admin-accent-info;
+      font-weight: $font-weight-semibold;
+    }
+  }
+  
+  // Typography inside banners
+  h4 {
+    margin: 0;
+    font-size: $font-size-lg;
+    line-height: $line-height-tight;
+  }
+  
+  p {
+    margin: 0.5rem 0 0 0;
+    font-size: $font-size-base;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
   }
 }
 

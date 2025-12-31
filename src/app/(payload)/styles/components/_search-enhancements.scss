@@ -20,7 +20,7 @@
   input[type="search"],
   input[placeholder*="Search"] {
     position: relative;
-    padding: 0.875rem 1rem 0.875rem 3.5rem;
+    padding: 0.875rem 1rem 0.875rem 2.75rem; // Reduced from 3.5rem to prevent icon overlap
     font-size: 15px;
     border: 2px solid var(--theme-elevation-300);
     border-radius: 8px;

@@ -313,10 +313,11 @@
 
 .gradient-border-container {
   position: relative;
-  padding: 2px; // Border width
+  padding: 1px; // Thinner border width for subtlety
   margin-bottom: $spacing-lg;
   border-radius: $radius-md;
-  background: linear-gradient(to right, #00FFFF, #BFFF00);
+  // More subtle gradient - less saturated, more transparent effect
+  background: linear-gradient(135deg, rgba($admin-accent-primary, 0.4), rgba($admin-accent-info, 0.4));
   
   &__content {
     padding: $spacing-lg;

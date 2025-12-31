@@ -16,7 +16,7 @@ aside,
   overflow-y: auto;
   overflow-x: hidden;
   
-  @extend %custom-scroll;
+  @include custom-scrollbar;
 }
 
 // Ensure nav container has no extra padding or margins
@@ -68,7 +68,7 @@ nav > *,
     opacity: 0.8;
   }
   
-  // Hover state
+  // Hover state (color will be overridden by section-specific styles below)
   &:hover:not(:has(.nav__link-indicator)) {
     background: rgba($admin-accent-primary, 0.08);
     color: $admin-text-primary;
@@ -80,6 +80,7 @@ nav > *,
 }
 
 // Active/Current page indicator (Payload's left border system)
+// Color will be overridden by section-specific styles below
 .nav__link-indicator {
   background: $admin-accent-primary;
   width: 3px;
@@ -87,13 +88,14 @@ nav > *,
 }
 
 // Active link container
+// Background will be overridden by section-specific styles below
 .nav__link:has(.nav__link-indicator) {
   background: rgba($admin-accent-primary, 0.12);
   border-radius: $radius-md;
   margin: 0;
   
   .nav__link-label {
-    color: rgb(165, 180, 252); // Light indigo
+    color: rgba(255, 255, 255, 0.95);
     font-weight: 500;
   }
 }
@@ -111,10 +113,16 @@ html body button.nav-group__toggle {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 0.875rem 0.75rem 0.25rem;
-  margin: 0.5rem 0 0.25rem;
+  margin: 0.25rem 0 0.25rem; // Reduced from 0.5rem to 0.25rem
   position: relative;
   text-align: left !important;      // Left-align section headers
   justify-content: flex-start !important;  // Flex alignment for left-align
+}
+
+// First group has no top margin
+.nav-group:first-of-type .nav-group__toggle,
+nav > .nav-group:first-child .nav-group__toggle {
+  margin-top: 0;
 }
 
 // Group items - slightly indented
@@ -205,6 +213,173 @@ nav button[type="button"]:last-child {
   &:hover {
     background: rgba(239, 68, 68, 0.1);
     color: rgb(252, 165, 165);
+  }
+}
+
+// ============================================
+// SECTION-BASED NAV COLORING
+// ============================================
+// Each nav-group gets its own color that applies to ALL children
+// Using nth-of-type for more reliable targeting of nav-groups specifically
+
+// PEOPLE Section (Pink/Fuchsia) - 1st group
+aside nav .nav-group:nth-of-type(1) .nav__link,
+aside nav > div:nth-of-type(1) .nav__link {
+  &:hover:not(:has(.nav__link-indicator)) {
+    background: rgba($tier-masters, 0.08) !important;
+    color: lighten($tier-masters, 15%) !important;
+  }
+  
+  // Active state
+  &:has(.nav__link-indicator) {
+    background: rgba($tier-masters, 0.12) !important;
+    
+    .nav__link-indicator {
+      background: $tier-masters !important;
+      box-shadow: 0 0 8px rgba($tier-masters, 0.5) !important;
+    }
+    
+    .nav__link-label {
+      color: lighten($tier-masters, 15%) !important;
+    }
+  }
+}
+
+// STAFF Section (Purple/Violet) - 2nd group
+aside nav .nav-group:nth-of-type(2) .nav__link,
+aside nav > div:nth-of-type(2) .nav__link {
+  &:hover:not(:has(.nav__link-indicator)) {
+    background: rgba($admin-accent-primary, 0.08) !important;
+    color: lighten($admin-accent-primary, 15%) !important;
+  }
+  
+  // Active state
+  &:has(.nav__link-indicator) {
+    background: rgba($admin-accent-primary, 0.12) !important;
+    
+    .nav__link-indicator {
+      background: $admin-accent-primary !important;
+      box-shadow: 0 0 8px rgba($admin-accent-primary, 0.5) !important;
+    }
+    
+    .nav__link-label {
+      color: lighten($admin-accent-primary, 15%) !important;
+    }
+  }
+}
+
+// PRODUCTION Section (Cyan/Blue) - 3rd group
+aside nav .nav-group:nth-of-type(3) .nav__link,
+aside nav > div:nth-of-type(3) .nav__link {
+  &:hover:not(:has(.nav__link-indicator)) {
+    background: rgba($admin-accent-info, 0.08) !important;
+    color: lighten($admin-accent-info, 15%) !important;
+  }
+  
+  // Active state
+  &:has(.nav__link-indicator) {
+    background: rgba($admin-accent-info, 0.12) !important;
+    
+    .nav__link-indicator {
+      background: $admin-accent-info !important;
+      box-shadow: 0 0 8px rgba($admin-accent-info, 0.5) !important;
+    }
+    
+    .nav__link-label {
+      color: lighten($admin-accent-info, 15%) !important;
+    }
+  }
+}
+
+// SOCIAL MEDIA Section (Blue/Sky) - 4th group
+aside nav .nav-group:nth-of-type(4) .nav__link,
+aside nav > div:nth-of-type(4) .nav__link {
+  &:hover:not(:has(.nav__link-indicator)) {
+    background: rgba($tier-advanced, 0.08) !important;
+    color: lighten($tier-advanced, 15%) !important;
+  }
+  
+  // Active state
+  &:has(.nav__link-indicator) {
+    background: rgba($tier-advanced, 0.12) !important;
+    
+    .nav__link-indicator {
+      background: $tier-advanced !important;
+      box-shadow: 0 0 8px rgba($tier-advanced, 0.5) !important;
+    }
+    
+    .nav__link-label {
+      color: lighten($tier-advanced, 15%) !important;
+    }
+  }
+}
+
+// RECRUITMENT Section (Green/Emerald) - 5th group
+aside nav .nav-group:nth-of-type(5) .nav__link,
+aside nav > div:nth-of-type(5) .nav__link {
+  &:hover:not(:has(.nav__link-indicator)) {
+    background: rgba($admin-accent-success, 0.08) !important;
+    color: lighten($admin-accent-success, 15%) !important;
+  }
+  
+  // Active state
+  &:has(.nav__link-indicator) {
+    background: rgba($admin-accent-success, 0.12) !important;
+    
+    .nav__link-indicator {
+      background: $admin-accent-success !important;
+      box-shadow: 0 0 8px rgba($admin-accent-success, 0.5) !important;
+    }
+    
+    .nav__link-label {
+      color: lighten($admin-accent-success, 15%) !important;
+    }
+  }
+}
+
+// SYSTEM Section (Orange/Amber) - 6th group
+aside nav .nav-group:nth-of-type(6) .nav__link,
+aside nav > div:nth-of-type(6) .nav__link {
+  &:hover:not(:has(.nav__link-indicator)) {
+    background: rgba($admin-accent-warning, 0.08) !important;
+    color: lighten($admin-accent-warning, 15%) !important;
+  }
+  
+  // Active state
+  &:has(.nav__link-indicator) {
+    background: rgba($admin-accent-warning, 0.12) !important;
+    
+    .nav__link-indicator {
+      background: $admin-accent-warning !important;
+      box-shadow: 0 0 8px rgba($admin-accent-warning, 0.5) !important;
+    }
+    
+    .nav__link-label {
+      color: lighten($admin-accent-warning, 15%) !important;
+    }
+  }
+}
+
+// MONITORING Section (Teal/Cyan) - 7th group
+aside nav .nav-group:nth-of-type(7) .nav__link,
+aside nav > div:nth-of-type(7) .nav__link {
+  &:hover:not(:has(.nav__link-indicator)) {
+    background: rgba($tier-4k, 0.08) !important;
+    color: lighten($tier-4k, 15%) !important;
+  }
+  
+  // Active state
+  &:has(.nav__link-indicator) {
+    background: rgba($tier-4k, 0.12) !important;
+    
+    .nav__link-indicator {
+      background: $tier-4k !important;
+      box-shadow: 0 0 8px rgba($tier-4k, 0.5) !important;
+    }
+    
+    .nav__link-label {
+      color: lighten($tier-4k, 15%) !important;
+    }
   }
 }
 

@@ -17,7 +17,8 @@ export const CheckHeader: React.FC<CheckHeaderProps> = ({ loading, onRunCheck })
       <button
         onClick={onRunCheck}
         disabled={loading}
-        className="ml-4 px-4 py-2 bg-blue-600 text-white rounded cursor-pointer text-sm transition-colors hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
+        className="notification-btn notification-btn--primary"
+        style={{ marginLeft: '1rem' }}
       >
         {loading ? 'Checking...' : 'Run Check'}
       </button>

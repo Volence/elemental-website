@@ -27,23 +27,25 @@ export const TeamsWithIssuesList: React.FC<TeamsWithIssuesListProps> = ({ teams 
         {teams.map((team) => (
           <div
             key={team.teamId}
-            className="p-3 rounded border bg-yellow-50 border-yellow-400 text-yellow-800 dark:bg-yellow-950 dark:border-yellow-700 dark:text-yellow-200"
+            className="notification-item notification-item--warning"
+            style={{ flexDirection: 'column' as const, alignItems: 'flex-start' }}
           >
-            <div className="mb-2">
+            <div style={{ marginBottom: '0.75rem' }}>
               <strong>{team.teamName}</strong>
-              <span className="ml-2 opacity-70 text-sm">({team.teamSlug})</span>
+              <span style={{ marginLeft: '0.5rem', opacity: 0.7, fontSize: '0.875rem' }}>({team.teamSlug})</span>
               <a
                 href={`/admin/collections/teams/${team.teamId}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="ml-2 px-2 py-1 bg-blue-600 text-white rounded no-underline text-sm inline-block hover:bg-blue-700 transition-colors"
+                className="notification-btn notification-btn--view"
+                style={{ marginLeft: '0.5rem' }}
               >
                 View
               </a>
             </div>
-            <ul className="m-0 pl-6 text-sm space-y-1">
+            <ul style={{ margin: 0, paddingLeft: '1.5rem', fontSize: '0.875rem' }}>
               {team.issues.map((issue, idx) => (
-                <li key={idx}>{issue}</li>
+                <li key={idx} style={{ marginBottom: '0.25rem' }}>{issue}</li>
               ))}
             </ul>
           </div>

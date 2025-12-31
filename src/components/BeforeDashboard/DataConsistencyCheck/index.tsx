@@ -75,7 +75,7 @@ const DataConsistencyCheck: React.FC = () => {
         <CheckHeader loading={loading} onRunCheck={runCheck} />
 
         {error && (
-          <div className="p-3 rounded bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300 mt-2">
+          <div className="alert alert--error">
             <strong>Error:</strong> {error}
           </div>
         )}
@@ -92,31 +92,35 @@ const DataConsistencyCheck: React.FC = () => {
             {hasIssues && (
               <button
                 onClick={() => setShowDetails(!showDetails)}
-                className="mb-4 px-4 py-2 bg-blue-600 text-white rounded cursor-pointer text-sm transition-colors hover:bg-blue-700"
+                className="notification-btn notification-btn--primary"
+                style={{ marginBottom: '1rem' }}
               >
                 {showDetails ? 'Hide Details' : 'Show Details'}
               </button>
             )}
 
             {showDetails && hasIssues && (
-              <div className="mt-4 max-h-[500px] overflow-y-auto p-4 rounded border bg-white border-gray-300 text-gray-800 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200">
+              <div style={{ 
+                marginTop: '1.5rem', 
+                maxHeight: '500px', 
+                overflowY: 'auto' as const,
+                padding: '1.5rem',
+                borderRadius: '8px',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                background: 'rgba(0, 0, 0, 0.03)',
+                backdropFilter: 'blur(8px)'
+              }}>
                 <OrphanedPeopleList 
                   people={report.orphanedPeople} 
                   onPersonDeleted={runCheck}
                 />
                 <TeamsWithIssuesList teams={report.teamsWithMissingRelationships} />
                 <DuplicatePeopleList duplicates={report.duplicatePeople} />
-
-                {!hasIssues && (
-                  <div className="p-4 text-center text-green-700 dark:text-green-300">
-                    ✅ <strong>No issues found!</strong> Your data is consistent.
-                  </div>
-                )}
               </div>
             )}
 
             {report && !hasIssues && (
-              <div className="p-3 rounded bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300 mt-2">
+              <div className="alert alert--success">
                 ✅ <strong>All good!</strong> All People are linked to either a team or a staff position. 
                 No teams with missing relationships or duplicate entries found.
               </div>

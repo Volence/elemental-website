@@ -180,6 +180,79 @@
 }
 
 // ============================================
+// STAFF POSITION BADGES (Org & Production Staff)
+// ============================================
+
+// GRAPHICS - Purple/Violet
+.pill[class*="graphics"]:not(.team-manager-info *),
+.badge[class*="graphics"]:not(.team-manager-info *),
+[class*="GRAPHICS"]:not(.team-manager-info *) {
+  @include glow-badge($admin-accent-primary);
+  @include glow-accent-bar($admin-accent-primary, 2px, 60%);
+  color: rgba($admin-accent-primary, 0.95);
+}
+
+// SOCIAL-MANAGER - Cyan/Blue
+.pill[class*="social-manager"]:not(.team-manager-info *),
+.badge[class*="social-manager"]:not(.team-manager-info *),
+[class*="SOCIAL-MANAGER"]:not(.team-manager-info *),
+[class*="SOCIAL_MANAGER"]:not(.team-manager-info *) {
+  @include glow-badge($admin-accent-info);
+  @include glow-accent-bar($admin-accent-info, 2px, 60%);
+  color: rgba($admin-accent-info, 0.95);
+}
+
+// CASTER - Orange/Amber
+.pill[class*="caster"]:not(.team-manager-info *),
+.badge[class*="caster"]:not(.team-manager-info *),
+[class*="CASTER"]:not(.team-manager-info *) {
+  @include glow-badge($admin-accent-warning);
+  @include glow-accent-bar($admin-accent-warning, 2px, 60%);
+  color: rgba($admin-accent-warning, 0.95);
+}
+
+// OBSERVER-PRODUCER - Green/Emerald
+.pill[class*="observer"]:not(.team-manager-info *),
+.badge[class*="observer"]:not(.team-manager-info *),
+[class*="OBSERVER"]:not(.team-manager-info *),
+.pill[class*="producer"]:not(.team-manager-info *),
+.badge[class*="producer"]:not(.team-manager-info *),
+[class*="PRODUCER"]:not(.team-manager-info *) {
+  @include glow-badge($admin-accent-success);
+  @include glow-accent-bar($admin-accent-success, 2px, 60%);
+  color: rgba($admin-accent-success, 0.95);
+}
+
+// EVENT-MANAGER - Pink/Fuchsia
+.pill[class*="event-manager"]:not(.team-manager-info *),
+.badge[class*="event-manager"]:not(.team-manager-info *),
+[class*="EVENT-MANAGER"]:not(.team-manager-info *),
+[class*="EVENT_MANAGER"]:not(.team-manager-info *) {
+  @include glow-badge($tier-masters);
+  @include glow-accent-bar($tier-masters, 2px, 60%);
+  color: rgba($tier-masters, 0.95);
+}
+
+// MEDIA-EDITOR - Teal
+.pill[class*="media-editor"]:not(.team-manager-info *),
+.badge[class*="media-editor"]:not(.team-manager-info *),
+[class*="MEDIA-EDITOR"]:not(.team-manager-info *),
+[class*="MEDIA_EDITOR"]:not(.team-manager-info *) {
+  @include glow-badge($tier-4k);
+  @include glow-accent-bar($tier-4k, 2px, 60%);
+  color: rgba($tier-4k, 0.95);
+}
+
+// MODERATOR - Yellow/Amber (slightly different from caster)
+.pill[class*="moderator"]:not(.team-manager-info *),
+.badge[class*="moderator"]:not(.team-manager-info *),
+[class*="MODERATOR"]:not(.team-manager-info *) {
+  @include glow-badge($tier-35k);
+  @include glow-accent-bar($tier-35k, 2px, 60%);
+  color: rgba($tier-35k, 0.95);
+}
+
+// ============================================
 // TIER BADGES (Competitive tiers)
 // ============================================
 

@@ -24,34 +24,37 @@ export const DuplicatePeopleList: React.FC<DuplicatePeopleListProps> = ({ duplic
         {duplicates.map((dup, idx) => (
           <div
             key={idx}
-            className="flex justify-between items-center p-3 rounded border bg-yellow-50 border-yellow-400 text-yellow-800 dark:bg-yellow-950 dark:border-yellow-700 dark:text-yellow-200"
+            className="notification-item notification-item--warning"
+            style={{ flexDirection: 'column' as const, alignItems: 'flex-start' }}
           >
-            <div>
-              <div>
+            <div style={{ width: '100%' }}>
+              <div style={{ marginBottom: '0.5rem' }}>
                 <strong>{dup.person1.name}</strong>
-                <span className="ml-2 opacity-70 text-sm">({dup.person1.slug})</span>
+                <span style={{ marginLeft: '0.5rem', opacity: 0.7, fontSize: '0.875rem' }}>({dup.person1.slug})</span>
                 <a
                   href={`/admin/collections/people/${dup.person1.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="ml-2 px-2 py-1 bg-blue-600 text-white rounded no-underline text-sm inline-block hover:bg-blue-700 transition-colors"
+                  className="notification-btn notification-btn--view"
+                  style={{ marginLeft: '0.5rem' }}
                 >
                   View
                 </a>
               </div>
-              <div className="mt-1">
+              <div style={{ marginBottom: '0.5rem' }}>
                 <strong>{dup.person2.name}</strong>
-                <span className="ml-2 opacity-70 text-sm">({dup.person2.slug})</span>
+                <span style={{ marginLeft: '0.5rem', opacity: 0.7, fontSize: '0.875rem' }}>({dup.person2.slug})</span>
                 <a
                   href={`/admin/collections/people/${dup.person2.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="ml-2 px-2 py-1 bg-blue-600 text-white rounded no-underline text-sm inline-block hover:bg-blue-700 transition-colors"
+                  className="notification-btn notification-btn--view"
+                  style={{ marginLeft: '0.5rem' }}
                 >
                   View
                 </a>
               </div>
-              <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+              <div style={{ fontSize: '0.875rem', opacity: 0.7 }}>
                 Similarity: {Math.round(dup.similarity * 100)}%
               </div>
             </div>

@@ -56,8 +56,8 @@ export const OrphanedPeopleList: React.FC<OrphanedPeopleListProps> = ({
 
   if (visiblePeople.length === 0) {
     return (
-      <div className="mb-6 p-4 rounded border border-green-400 bg-green-50 dark:bg-green-950 dark:border-green-700">
-        <p className="text-green-800 dark:text-green-200">
+      <div className="alert alert--success" style={{ marginBottom: '1.5rem' }}>
+        <p>
           ✅ All orphaned people have been resolved!
         </p>
       </div>
@@ -75,25 +75,25 @@ export const OrphanedPeopleList: React.FC<OrphanedPeopleListProps> = ({
         {visiblePeople.map((person) => (
           <div
             key={person.id}
-            className="flex justify-between items-center p-3 rounded border bg-yellow-50 border-yellow-400 text-yellow-800 dark:bg-yellow-950 dark:border-yellow-700 dark:text-yellow-200"
+            className="notification-item notification-item--warning"
           >
-            <div>
+            <div className="notification-item__content">
               <strong>{person.name}</strong>
-              <span className="ml-2 opacity-70 text-sm">({person.slug})</span>
+              <span style={{ marginLeft: '0.5rem', opacity: 0.7, fontSize: '0.875rem' }}>({person.slug})</span>
             </div>
-            <div className="flex gap-2">
+            <div className="notification-item__actions">
               <a
                 href={`/admin/collections/people/${person.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-2 py-1 bg-blue-600 text-white rounded no-underline text-sm hover:bg-blue-700 transition-colors"
+                className="notification-btn notification-btn--view"
               >
                 View
               </a>
               <button
                 onClick={() => handleDelete(person)}
                 disabled={deleting === person.id}
-                className="px-2 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="notification-btn notification-btn--delete"
               >
                 {deleting === person.id ? 'Deleting...' : 'Delete'}
               </button>

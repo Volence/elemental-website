@@ -48,7 +48,7 @@ const BeforeDashboard: React.FC = () => {
         </>
       )}
       {isTeamManager && (
-        <div className="mb-4 p-3 rounded border bg-green-50 border-green-400 text-green-800 dark:bg-green-950 dark:border-green-700 dark:text-green-200">
+        <div className="manager-notification">
           <strong>👤 Team Manager:</strong> You have access to manage your assigned teams. 
           Visit the <strong>Teams</strong> collection to see which teams you can edit. 
           You can create new teams and edit your assigned teams, but other teams are read-only.
