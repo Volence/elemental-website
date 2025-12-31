@@ -1,0 +1,121 @@
+@import '../variables';
+@import '../mixins';
+
+.faceit-notifications {
+  margin-bottom: $spacing-lg;
+  
+  &__banner {
+    padding: $padding-lg $padding-xl;
+    border-radius: $radius-md;
+    margin-bottom: $spacing-lg;
+    display: flex;
+    align-items: center;
+    gap: $gap-md;
+    
+    &--success {
+      @include transparent-bg(0.1);
+      background-color: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+    
+    &--warning {
+      @include transparent-bg(0.1);
+      background-color: rgba(251, 191, 36, 0.1);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+    }
+  }
+  
+  &__icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+  
+  &__content {
+    flex: 1;
+  }
+  
+  &__title {
+    font-weight: $font-weight-semibold;
+    color: var(--theme-text);
+    margin-bottom: $spacing-xs;
+  }
+  
+  &__message {
+    font-size: $font-size-sm;
+    color: var(--theme-elevation-700);
+  }
+  
+  &__description {
+    font-size: $font-size-sm;
+    color: var(--theme-elevation-700);
+    margin-bottom: $spacing-md;
+  }
+  
+  &__details {
+    margin-top: $spacing-md;
+    
+    summary {
+      cursor: pointer;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      color: var(--theme-text);
+      padding: $padding-sm;
+      background-color: var(--theme-elevation-100);
+      border-radius: $radius-sm;
+      display: inline-block;
+      transition: background-color 0.2s;
+      
+      &:hover {
+        background-color: var(--theme-elevation-200);
+      }
+    }
+  }
+  
+  &__teams-list {
+    margin-top: $spacing-md;
+    display: grid;
+    gap: $gap-sm;
+    padding-left: $spacing-lg;
+  }
+  
+  &__team-link {
+    display: flex;
+    align-items: center;
+    gap: $gap-sm;
+    padding: $padding-sm;
+    background-color: var(--theme-elevation-100);
+    border-radius: $radius-sm;
+    text-decoration: none;
+    color: var(--theme-text);
+    font-size: $font-size-sm;
+    transition: background-color 0.2s;
+    
+    &:hover {
+      background-color: var(--theme-elevation-200);
+    }
+    
+    &-name {
+      font-weight: $font-weight-medium;
+    }
+    
+    &-action {
+      margin-left: auto;
+      font-size: $font-size-xs;
+      color: var(--theme-elevation-600);
+    }
+  }
+  
+  &__hint {
+    margin-top: $spacing-lg;
+    padding: $padding-md;
+    background-color: var(--theme-elevation-100);
+    border-radius: $radius-sm;
+    font-size: $font-size-sm;
+    color: var(--theme-elevation-700);
+    
+    strong {
+      color: var(--theme-text);
+    }
+  }
+}
+
