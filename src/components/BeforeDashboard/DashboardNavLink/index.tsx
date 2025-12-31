@@ -13,36 +13,10 @@ const DashboardNavLink: React.FC = () => {
   const isDashboard = pathname === '/admin' || pathname === '/admin/'
 
   return (
-    <div style={{ margin: 0 }}>
+    <div className="dashboard-nav-link">
       <Link
         href="/admin"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.625rem',
-          padding: '0.5rem 0.75rem',
-          color: isDashboard ? 'var(--theme-text)' : 'var(--theme-text-500, rgba(255, 255, 255, 0.7))',
-          textDecoration: 'none',
-          fontSize: '0.875rem',
-          fontWeight: isDashboard ? 500 : 400,
-          lineHeight: '1.25rem',
-          backgroundColor: isDashboard ? 'var(--theme-elevation-200, rgba(255, 255, 255, 0.1))' : 'transparent',
-          transition: 'all 0.15s ease',
-          borderRadius: '4px',
-          margin: 0,
-        }}
-        onMouseEnter={(e) => {
-          if (!isDashboard) {
-            e.currentTarget.style.backgroundColor = 'var(--theme-elevation-100, rgba(255, 255, 255, 0.05))'
-            e.currentTarget.style.color = 'var(--theme-text)'
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (!isDashboard) {
-            e.currentTarget.style.backgroundColor = 'transparent'
-            e.currentTarget.style.color = 'var(--theme-text-500, rgba(255, 255, 255, 0.7))'
-          }
-        }}
+        className={`dashboard-nav-link__link ${isDashboard ? 'dashboard-nav-link__link--active' : ''}`}
       >
         <svg
           width="18"
@@ -50,7 +24,7 @@ const DashboardNavLink: React.FC = () => {
           viewBox="0 0 16 16"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          style={{ flexShrink: 0 }}
+          className="dashboard-nav-link__icon"
         >
           <path
             d="M2 2H7V7H2V2Z"

@@ -14,25 +14,8 @@ interface GradientBorderProps {
  */
 export const GradientBorder: React.FC<GradientBorderProps> = ({ children, className = '', style = {} }) => {
   return (
-    <div
-      className={className}
-      style={{
-        position: 'relative',
-        padding: '2px', // Border width
-        marginBottom: '1.5rem',
-        borderRadius: '8px',
-        background: 'linear-gradient(to right, #00FFFF, #BFFF00)',
-        ...style,
-      }}
-    >
-      <div
-        style={{
-          padding: '1.25rem',
-          borderRadius: '6px',
-          backgroundColor: 'var(--theme-bg)',
-          position: 'relative',
-        }}
-      >
+    <div className={`gradient-border-container ${className}`} style={style}>
+      <div className="gradient-border-container__content">
         {children}
       </div>
     </div>

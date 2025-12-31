@@ -213,3 +213,116 @@
   }
 }
 
+// ============================================
+// Dashboard Navigation Links
+// ============================================
+
+.dashboard-nav-link {
+  margin: 0;
+  
+  &__link {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: $padding-sm $padding-md;
+    color: var(--theme-text-500, rgba(255, 255, 255, 0.7));
+    text-decoration: none;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-normal;
+    line-height: 1.25rem;
+    background-color: transparent;
+    transition: all 0.15s ease;
+    border-radius: $radius-sm;
+    margin: 0;
+    
+    &--active {
+      color: var(--theme-text);
+      font-weight: $font-weight-medium;
+      background-color: var(--theme-elevation-200, rgba(255, 255, 255, 0.1));
+    }
+    
+    &:hover:not(&--active) {
+      background-color: var(--theme-elevation-100, rgba(255, 255, 255, 0.05));
+      color: var(--theme-text);
+    }
+  }
+  
+  &__icon {
+    flex-shrink: 0;
+  }
+}
+
+.data-consistency-nav-link {
+  margin: 0;
+  
+  &__link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.625rem;
+    padding: $padding-sm $padding-md;
+    color: var(--theme-text-500, rgba(255, 255, 255, 0.7));
+    text-decoration: none;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-normal;
+    line-height: 1.25rem;
+    border-radius: $radius-sm;
+    margin: 0;
+    transition: all 0.15s ease;
+    
+    &:hover {
+      background-color: var(--theme-elevation-100);
+      color: var(--theme-text);
+    }
+  }
+  
+  &__content {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+  
+  &__icon {
+    font-size: 18px;
+    line-height: 18px;
+    flex-shrink: 0;
+  }
+  
+  &__badge {
+    padding: 0.25rem 0.5rem;
+    color: white;
+    border-radius: 12px;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    min-width: 24px;
+    text-align: center;
+    
+    &--error {
+      background-color: var(--theme-error-500);
+    }
+    
+    &--success {
+      background-color: var(--theme-success-500);
+    }
+  }
+}
+
+// ============================================
+// Gradient Border Container
+// ============================================
+
+.gradient-border-container {
+  position: relative;
+  padding: 2px; // Border width
+  margin-bottom: $spacing-lg;
+  border-radius: $radius-md;
+  background: linear-gradient(to right, #00FFFF, #BFFF00);
+  
+  &__content {
+    padding: $spacing-lg;
+    border-radius: 6px;
+    background-color: var(--theme-bg);
+    position: relative;
+  }
+}
+
