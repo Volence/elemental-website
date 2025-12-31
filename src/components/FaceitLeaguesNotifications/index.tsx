@@ -53,16 +53,9 @@ const FaceitLeaguesNotifications: React.FC = () => {
   if (inactiveLeagueWarnings.length === 0) {
     // No warnings - show success message
     return (
-      <div className="faceit-notifications__banner faceit-notifications__banner--success">
+      <div className="faceit-notifications__badge faceit-notifications__badge--success">
         <span className="faceit-notifications__icon">✅</span>
-        <div className="faceit-notifications__content">
-          <div className="faceit-notifications__title">
-            All Clear!
-          </div>
-          <div className="faceit-notifications__message">
-            No teams are using inactive leagues. Everything is up to date.
-          </div>
-        </div>
+        <span>All Clear! No teams are using inactive leagues. Everything is up to date.</span>
       </div>
     )
   }
