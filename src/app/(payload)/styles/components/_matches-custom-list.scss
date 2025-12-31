@@ -4,6 +4,32 @@
 .matches-custom-list {
   padding: 0 $spacing-xl $spacing-xl;
   
+  // Breadcrumb Navigation
+  &__breadcrumb {
+    margin-bottom: $spacing-lg;
+    font-size: $font-size-sm;
+    color: var(--theme-elevation-700);
+    
+    a {
+      color: inherit;
+      text-decoration: none;
+      transition: color 0.2s;
+      
+      &:hover {
+        color: var(--theme-text);
+      }
+    }
+    
+    &-separator {
+      margin: 0 $spacing-xs;
+    }
+    
+    &-current {
+      color: var(--theme-text);
+      font-weight: $font-weight-semibold;
+    }
+  }
+  
   // Search & Filter Section
   &__filters {
     @include gradient-border;

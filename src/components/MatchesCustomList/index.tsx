@@ -133,10 +133,10 @@ export default function MatchesCustomList() {
   return (
     <div className="matches-custom-list">
       {/* Breadcrumbs */}
-      <nav style={{ marginBottom: '1.5rem', fontSize: '0.875rem', color: 'var(--theme-elevation-700)' }}>
-        <a href={adminRoute} style={{ color: 'inherit', textDecoration: 'none' }}>Dashboard</a>
-        <span style={{ margin: '0 0.5rem' }}>/</span>
-        <span style={{ color: 'var(--theme-text)', fontWeight: '600' }}>Matches</span>
+      <nav className="matches-custom-list__breadcrumb">
+        <a href={adminRoute}>Dashboard</a>
+        <span className="matches-custom-list__breadcrumb-separator">/</span>
+        <span className="matches-custom-list__breadcrumb-current">Matches</span>
       </nav>
 
       {/* Search and Filter Controls */}
