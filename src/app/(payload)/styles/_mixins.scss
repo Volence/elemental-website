@@ -86,20 +86,21 @@
 // Gradient Underline (for headings)
 @mixin gradient-underline(
   $gradient: $admin-gradient-primary,
-  $width: 100%,
-  $max-width: 300px,
+  $width: auto,
+  $max-width: 200px,
   $height: 3px,
   $glow: true
 ) {
   position: relative;
   padding-bottom: $spacing-md;
+  display: inline-block; // Make width match content
   
   &::after {
     content: '';
     position: absolute;
     bottom: 0;
     left: 0;
-    width: $width;
+    width: 100%;
     max-width: $max-width;
     height: $height;
     background: $gradient;
