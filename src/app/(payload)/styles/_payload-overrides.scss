@@ -836,9 +836,9 @@ select.error {
 // EMPTY STATES
 // ============================================
 
+// Only target specific empty state components, NOT all elements with "empty" in class
 .empty-state,
-.no-results,
-[class*="empty"] {
+.no-results {
   @include transparent-bg(0.03);
   border: 2px dashed rgba(255, 255, 255, 0.1);
   border-radius: 12px;

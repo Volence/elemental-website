@@ -28,7 +28,7 @@ main h1,
 .collection-list__header h1,
 .list-header h1,
 .doc-header h1 {
-  @include gradient-underline($max-width: 300px, $height: 3px);
+  @include gradient-underline($max-width: 250px, $height: 3px);
   font-size: 2rem;        // 32px
   font-weight: 700;
   letter-spacing: -0.025em;
@@ -40,7 +40,7 @@ main h1,
 // Dashboard headings
 .dashboard h1,
 .dashboard h2 {
-  @include gradient-underline($max-width: 300px, $height: 3px);
+  @include gradient-underline($max-width: 250px, $height: 3px);
   margin-bottom: 0;
 }
 
