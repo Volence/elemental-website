@@ -220,11 +220,11 @@ nav button[type="button"]:last-child {
 // SECTION-BASED NAV COLORING
 // ============================================
 // Each nav-group gets its own color that applies to ALL children
-// Using nth-of-type for more reliable targeting of nav-groups specifically
+// Target .nav-group specifically to avoid counting other sibling elements
 
-// PEOPLE Section (Pink/Fuchsia) - 1st group
-aside nav .nav-group:nth-of-type(1) .nav__link,
-aside nav > div:nth-of-type(1) .nav__link {
+// PEOPLE Section (Pink/Fuchsia) - 1st nav-group
+aside nav .nav-group.People .nav__link,
+aside nav .nav-group:nth-of-type(1) .nav__link {
   &:hover:not(:has(.nav__link-indicator)) {
     background: rgba($tier-masters, 0.08) !important;
     color: lighten($tier-masters, 15%) !important;
@@ -245,9 +245,9 @@ aside nav > div:nth-of-type(1) .nav__link {
   }
 }
 
-// STAFF Section (Purple/Violet) - 2nd group
-aside nav .nav-group:nth-of-type(2) .nav__link,
-aside nav > div:nth-of-type(2) .nav__link {
+// STAFF Section (Purple/Violet) - 2nd nav-group
+aside nav .nav-group.Staff .nav__link,
+aside nav .nav-group:nth-of-type(2) .nav__link {
   &:hover:not(:has(.nav__link-indicator)) {
     background: rgba($admin-accent-primary, 0.08) !important;
     color: lighten($admin-accent-primary, 15%) !important;
@@ -268,9 +268,9 @@ aside nav > div:nth-of-type(2) .nav__link {
   }
 }
 
-// PRODUCTION Section (Cyan/Blue) - 3rd group
-aside nav .nav-group:nth-of-type(3) .nav__link,
-aside nav > div:nth-of-type(3) .nav__link {
+// PRODUCTION Section (Cyan/Blue) - 3rd nav-group
+aside nav .nav-group.Production .nav__link,
+aside nav .nav-group:nth-of-type(3) .nav__link {
   &:hover:not(:has(.nav__link-indicator)) {
     background: rgba($admin-accent-info, 0.08) !important;
     color: lighten($admin-accent-info, 15%) !important;
@@ -291,9 +291,9 @@ aside nav > div:nth-of-type(3) .nav__link {
   }
 }
 
-// SOCIAL MEDIA Section (Blue/Sky) - 4th group
-aside nav .nav-group:nth-of-type(4) .nav__link,
-aside nav > div:nth-of-type(4) .nav__link {
+// SOCIAL MEDIA Section (Blue/Sky) - 4th nav-group
+aside nav .nav-group.Social .nav__link,
+aside nav .nav-group:nth-of-type(4) .nav__link {
   &:hover:not(:has(.nav__link-indicator)) {
     background: rgba($tier-advanced, 0.08) !important;
     color: lighten($tier-advanced, 15%) !important;
@@ -314,9 +314,9 @@ aside nav > div:nth-of-type(4) .nav__link {
   }
 }
 
-// RECRUITMENT Section (Green/Emerald) - 5th group
-aside nav .nav-group:nth-of-type(5) .nav__link,
-aside nav > div:nth-of-type(5) .nav__link {
+// RECRUITMENT Section (Green/Emerald) - 5th nav-group
+aside nav .nav-group.Recruitment .nav__link,
+aside nav .nav-group:nth-of-type(5) .nav__link {
   &:hover:not(:has(.nav__link-indicator)) {
     background: rgba($admin-accent-success, 0.08) !important;
     color: lighten($admin-accent-success, 15%) !important;
@@ -337,9 +337,9 @@ aside nav > div:nth-of-type(5) .nav__link {
   }
 }
 
-// SYSTEM Section (Orange/Amber) - 6th group
-aside nav .nav-group:nth-of-type(6) .nav__link,
-aside nav > div:nth-of-type(6) .nav__link {
+// SYSTEM Section (Orange/Amber) - 6th nav-group
+aside nav .nav-group.System .nav__link,
+aside nav .nav-group:nth-of-type(6) .nav__link {
   &:hover:not(:has(.nav__link-indicator)) {
     background: rgba($admin-accent-warning, 0.08) !important;
     color: lighten($admin-accent-warning, 15%) !important;
@@ -360,9 +360,9 @@ aside nav > div:nth-of-type(6) .nav__link {
   }
 }
 
-// MONITORING Section (Teal/Cyan) - 7th group
-aside nav .nav-group:nth-of-type(7) .nav__link,
-aside nav > div:nth-of-type(7) .nav__link {
+// MONITORING Section (Teal/Cyan) - 7th nav-group
+aside nav .nav-group.Monitoring .nav__link,
+aside nav .nav-group:nth-of-type(7) .nav__link {
   &:hover:not(:has(.nav__link-indicator)) {
     background: rgba($tier-4k, 0.08) !important;
     color: lighten($tier-4k, 15%) !important;

@@ -152,22 +152,18 @@
   }
 }
 
-// Hide ALL close buttons initially to prevent duplicates
-.doc-drawer .drawer__close,
-.doc-drawer button[aria-label="Close"],
-.doc-drawer .drawer__header-close {
-  display: none !important;
-}
-
-// Show ONLY the header close button (the one in drawer__header-close position)
-.doc-drawer .drawer__header .drawer__header-close,
-.doc-drawer .drawer__header button[aria-label="Close"]:first-of-type {
-  display: flex !important;
+// Show the close button in the drawer header
+.doc-drawer .drawer__header button[aria-label="Close"],
+.doc-drawer .drawer__header-close,
+.drawer__header button[aria-label="Close"] {
   @extend %close-button-pattern;
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  z-index: 10;
+  position: absolute !important;
+  top: 1rem !important;
+  right: 1rem !important;
+  z-index: 10 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 // Header stays at top

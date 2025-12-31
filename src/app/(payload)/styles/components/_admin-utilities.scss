@@ -313,16 +313,11 @@
 
 .gradient-border-container {
   position: relative;
-  padding: 1px; // Thinner border width for subtlety
   margin-bottom: $spacing-lg;
-  border-radius: $radius-md;
-  // More subtle gradient - less saturated, more transparent effect
-  background: linear-gradient(135deg, rgba($admin-accent-primary, 0.4), rgba($admin-accent-info, 0.4));
+  // No visible border - just spacing container
   
   &__content {
     padding: $spacing-lg;
-    border-radius: 6px;
-    background-color: var(--theme-bg);
     position: relative;
   }
 }
