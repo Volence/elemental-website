@@ -2,17 +2,22 @@
 @import '../mixins';
 
 .faceit-notifications {
-  margin-bottom: $spacing-md;
+  // Remove all margins and spacing from container
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
   
   // Simple badge/pill style - NO nested divs!
   &__badge {
-    padding: $padding-xs $padding-md;
-    border-radius: 16px;
-    margin-bottom: $spacing-sm;
+    padding: 0.375rem 0.75rem; // Compact padding
+    border-radius: 12px; // Smaller radius
+    margin: 0 0 0.5rem 0; // Minimal bottom margin only
     display: inline-flex;
     align-items: center;
-    gap: $gap-xs;
-    font-size: $font-size-sm;
+    gap: 0.5rem;
+    font-size: 0.875rem;
     line-height: 1.4;
     
     // Remove any inherited borders/backgrounds
@@ -33,6 +38,8 @@
     * {
       border: none !important;
       background: transparent !important;
+      margin: 0 !important;
+      padding: 0 !important;
     }
   }
   
