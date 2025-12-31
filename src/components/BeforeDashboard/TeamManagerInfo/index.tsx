@@ -24,21 +24,21 @@ const TeamManagerInfo: React.FC = () => {
   
   return (
     <div className={`team-manager-info team-manager-info--${variant}`}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+      <div className="team-manager-info__container">
         <svg
           width="18"
           height="18"
           viewBox="0 0 18 18"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          style={{ flexShrink: 0, marginTop: '0.125rem' }}
+          className="team-manager-info__icon"
         >
           <path
             d="M9 1.5C4.85786 1.5 1.5 4.85786 1.5 9C1.5 13.1421 4.85786 16.5 9 16.5C13.1421 16.5 16.5 13.1421 16.5 9C16.5 4.85786 13.1421 1.5 9 1.5ZM8.25 12.75L5.25 9.75L6.3075 8.6925L8.25 10.6275L11.6925 7.185L12.75 8.25L8.25 12.75Z"
             fill="var(--theme-success-500)"
           />
         </svg>
-        <div style={{ flex: 1 }}>
+        <div className="team-manager-info__content">
           {isAdmin && (
             <>
               <strong className="team-manager-info__title">

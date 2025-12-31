@@ -132,3 +132,84 @@
   }
 }
 
+// ============================================
+// Logout Button
+// ============================================
+
+.logout-button {
+  margin: 0;
+  
+  &__btn {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    width: 100%;
+    padding: $padding-sm $padding-md;
+    color: var(--theme-text-500, rgba(255, 255, 255, 0.7));
+    background-color: transparent;
+    border: none;
+    border-radius: $radius-sm;
+    cursor: pointer;
+    font-weight: $font-weight-normal;
+    font-size: $font-size-sm;
+    line-height: 1.25rem;
+    transition: all 0.15s ease;
+    margin: 0;
+    text-align: left;
+    
+    &:hover:not(:disabled) {
+      background-color: var(--theme-elevation-100, rgba(255, 255, 255, 0.05));
+      color: var(--theme-text);
+    }
+    
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+  }
+  
+  &__icon {
+    flex-shrink: 0;
+  }
+}
+
+// ============================================
+// Team Manager Info
+// ============================================
+
+.team-manager-info {
+  // Styles are already in another file, just adding layout helpers
+  
+  &__container {
+    display: flex;
+    align-items: flex-start;
+    gap: $gap-md;
+  }
+  
+  &__icon {
+    flex-shrink: 0;
+    margin-top: 0.125rem;
+  }
+  
+  &__content {
+    flex: 1;
+  }
+}
+
+// ============================================
+// Read-Only Indicator
+// ============================================
+
+.read-only-indicator {
+  display: inline-flex;
+  align-items: center;
+  font-size: $font-size-xs;
+  color: var(--theme-text-50);
+  margin-left: $spacing-xs;
+  opacity: 0.7;
+  
+  &__icon {
+    margin-right: $spacing-xs;
+  }
+}
+

@@ -42,14 +42,7 @@ export const ReadOnlyIndicator: React.FC<{
   // Show read-only indicator
   return (
     <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        fontSize: '0.75rem',
-        color: 'var(--theme-text-50)',
-        marginLeft: '0.5rem',
-        opacity: 0.7,
-      }}
+      className="read-only-indicator"
       title="Read-only: You don't have permission to edit this item"
     >
       <svg
@@ -58,7 +51,7 @@ export const ReadOnlyIndicator: React.FC<{
         viewBox="0 0 16 16"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        style={{ marginRight: '0.25rem' }}
+        className="read-only-indicator__icon"
       >
         <path
           d="M8 1C4.13401 1 1 4.13401 1 8C1 11.866 4.13401 15 8 15C11.866 15 15 11.866 15 8C15 4.13401 11.866 1 8 1ZM7 11L4 8L5 7L7 9L11 5L12 6L7 11Z"
