@@ -1,0 +1,42 @@
+@import '../variables';
+@import '../mixins';
+
+.team-tab-count {
+  padding: $padding-md $padding-lg;
+  border-radius: $radius-sm;
+  margin-bottom: $spacing-lg;
+  font-size: $font-size-sm;
+  
+  &--empty {
+    background-color: var(--theme-elevation-100);
+    border: 1px solid var(--theme-elevation-300);
+    color: var(--theme-text-600);
+  }
+  
+  &--filled {
+    background-color: var(--theme-info-50);
+    border: 1px solid var(--theme-info-300);
+  }
+  
+  &__stats {
+    display: flex;
+    gap: $gap-lg;
+    flex-wrap: wrap;
+  }
+  
+  &__stat {
+    strong {
+      color: var(--theme-text);
+    }
+    
+    &-value {
+      color: var(--theme-text-700);
+      
+      &--primary {
+        color: var(--theme-info-700);
+        font-weight: $font-weight-semibold;
+      }
+    }
+  }
+}
+
