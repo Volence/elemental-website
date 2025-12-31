@@ -1,36 +1,27 @@
 /* ============================================
  * Search Bar Enhancements
  * Make search more prominent and user-friendly
+ * Using proper specificity instead of !important
  * ============================================ */
 
-// Maximum specificity override for search input
-html body .search-filter-container .search-filter__input,
-html body .list-controls__wrap .search-filter__input,
-html body input.search-filter__input,
-html body input#search-filter-input {
-  padding: 0.875rem 1rem 0.875rem 3.5rem !important;    // Increased left padding for larger 24px icon
-  font-size: 15px !important;                            // Using px instead of rem (admin root is 13px)
-}
-
+// Search input styling - use attribute selectors for higher specificity
 .search-filter-container,
 .list-controls__wrap {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   
-  // Ensure the search bar container has position relative for absolute icon positioning
   .search-bar {
     position: relative;
   }
   
-  .search-filter,
-  .search-filter__input,
-  input#search-filter-input,
+  // Target search inputs with combined selectors (higher specificity than single class)
+  input.search-filter__input,
   input[type="search"],
   input[placeholder*="Search"] {
     position: relative;
-    padding: 0.875rem 1rem 0.875rem 3.5rem !important;    // Increased left padding for larger 24px icon
-    font-size: 15px !important;                            // Using px instead of rem (admin root is 13px)
+    padding: 0.875rem 1rem 0.875rem 3.5rem;
+    font-size: 15px;
     border: 2px solid var(--theme-elevation-300);
     border-radius: 8px;
     background-color: var(--theme-elevation-100);
@@ -38,7 +29,6 @@ html body input#search-filter-input {
     transition: all 0.2s ease;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
-    /* Gradient border on focus */
     &:focus {
       border-color: transparent;
       background-color: var(--theme-elevation-50);
@@ -49,21 +39,16 @@ html body input#search-filter-input {
       outline: none;
     }
 
-    /* Placeholder styling */
     &::placeholder {
       color: var(--theme-text-500);
       font-weight: 400;
     }
   }
 
-  /* Search icon - now handled in _icons.scss */
-
-  /* When input is focused, color the icon */
   input:focus + .search-icon {
     color: #ec4899;
   }
 
-  /* Keyboard shortcut hint */
   .search-shortcut {
     position: absolute;
     right: 1rem;
@@ -80,33 +65,33 @@ html body input#search-filter-input {
   }
 }
 
-/* Filter buttons enhancement */
+/* Filter buttons - use descendant combinator for specificity */
 .list-controls__buttons {
   display: flex;
   align-items: center;
   gap: 0.75rem;
 
   button {
-    padding: 0.875rem 1.25rem !important;
-    min-height: 44px !important;
-    min-width: 44px !important;
+    padding: 0.875rem 1.25rem;
+    min-height: 44px;
+    min-width: 44px;
     border: 2px solid var(--theme-elevation-300);
     border-radius: 8px;
     background-color: var(--theme-elevation-100);
-    color: var(--theme-text) !important;
-    font-weight: 600 !important;
-    font-size: 0.9375rem !important;
+    color: var(--theme-text);
+    font-weight: 600;
+    font-size: 0.9375rem;
     letter-spacing: 0.025em;
     transition: all 0.2s ease;
-    display: flex !important;
+    display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
     white-space: nowrap;
 
     svg {
-      width: 18px !important;
-      height: 18px !important;
+      width: 18px;
+      height: 18px;
     }
 
     &:hover {
@@ -120,7 +105,7 @@ html body input#search-filter-input {
     &.active {
       background: linear-gradient(135deg, #ec4899, #a855f7);
       border-color: transparent;
-      color: white !important;
+      color: white;
 
       &:hover {
         transform: translateY(-1px) scale(1.02);
@@ -128,162 +113,127 @@ html body input#search-filter-input {
     }
   }
   
-  // Color variety for Columns button (Cyan theme)
-  .list-controls__toggle-columns,
+  // Columns button - Cyan theme
+  button.list-controls__toggle-columns,
   button[class*="toggle-columns"] {
     &:hover {
-      border-color: rgba(6, 182, 212, 0.3) !important;
-      background: linear-gradient(135deg, rgba(6, 182, 212, 0.05), rgba(8, 145, 178, 0.05)) !important;
-      box-shadow: 0 0 15px rgba(6, 182, 212, 0.15) !important;
+      border-color: rgba(6, 182, 212, 0.3);
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.05), rgba(8, 145, 178, 0.05));
+      box-shadow: 0 0 15px rgba(6, 182, 212, 0.15);
     }
 
     &[data-active="true"],
     &.active {
-      background: linear-gradient(135deg, #06b6d4, #0891b2) !important;
-      border-color: rgba(6, 182, 212, 0.5) !important;
-      box-shadow: 0 0 20px rgba(6, 182, 212, 0.3) !important;
+      background: linear-gradient(135deg, #06b6d4, #0891b2);
+      border-color: rgba(6, 182, 212, 0.5);
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
     }
   }
   
-  // Color variety for Filters button (Green theme)
-  .list-controls__toggle-where,
-  .list-controls__toggle-filters,
+  // Filters button - Green theme
+  button.list-controls__toggle-where,
+  button.list-controls__toggle-filters,
   button[class*="toggle-where"],
   button[class*="toggle-filters"] {
     &:hover {
-      border-color: rgba(132, 204, 22, 0.3) !important;
-      background: linear-gradient(135deg, rgba(132, 204, 22, 0.05), rgba(101, 163, 13, 0.05)) !important;
-      box-shadow: 0 0 15px rgba(132, 204, 22, 0.15) !important;
+      border-color: rgba(132, 204, 22, 0.3);
+      background: linear-gradient(135deg, rgba(132, 204, 22, 0.05), rgba(101, 163, 13, 0.05));
+      box-shadow: 0 0 15px rgba(132, 204, 22, 0.15);
     }
 
     &[data-active="true"],
     &.active {
-      background: linear-gradient(135deg, #84cc16, #65a30d) !important;
-      border-color: rgba(132, 204, 22, 0.5) !important;
-      box-shadow: 0 0 20px rgba(132, 204, 22, 0.3) !important;
+      background: linear-gradient(135deg, #84cc16, #65a30d);
+      border-color: rgba(132, 204, 22, 0.5);
+      box-shadow: 0 0 20px rgba(132, 204, 22, 0.3);
     }
   }
 }
 
 /* List controls alignment */
 .list-controls,
-.list-controls__wrap,
-.list-controls__buttons {
-  display: flex !important;
-  align-items: center !important;
-  gap: 0.75rem !important;
+.list-controls__wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   
-  // Ensure checkboxes are vertically aligned
+  // Checkbox/radio alignment
   label:has(input[type="checkbox"]),
   label:has(input[type="radio"]) {
-    display: inline-flex !important;
-    align-items: center !important;
-    min-height: 44px !important;
-    margin: 0 !important;
-    padding: 0.5rem 0.75rem !important;
-    line-height: 1 !important;
-    gap: 0.5rem !important;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin: 0;
+    padding: 0.5rem 0.75rem;
+    line-height: 1;
+    gap: 0.5rem;
   }
 }
 
-/* Override pill button sizing for list controls (Columns/Filters) */
-/* Must use high specificity to override .pill--size-small */
-html body button.pill.pill--size-small.list-controls__toggle-columns,
-html body button.pill.pill--size-small.list-controls__toggle-where,
-html body button.pill.list-controls__toggle-columns,
-html body button.pill.list-controls__toggle-where,
-html body .list-controls__toggle-columns,
-html body .list-controls__toggle-filters,
-html body [class*="list-controls__toggle"] {
-  padding: 0.875rem 1.5rem !important;
-  min-height: 48px !important;
-  min-width: fit-content !important;
-  max-width: none !important;
-  width: auto !important;
-  font-size: 1rem !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.025em !important;
-  text-transform: none !important;
-  border-radius: 8px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 0.625rem !important;
-  white-space: nowrap !important;
-  line-height: 1.5 !important;
-  overflow: visible !important;
-  flex-shrink: 0 !important;
+/* Pill button overrides - use .pill.pill for double-class specificity */
+.list-controls button.pill.pill {
+  padding: 0.875rem 1.5rem;
+  min-height: 48px;
+  min-width: fit-content;
+  max-width: none;
+  width: auto;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  text-transform: none;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  white-space: nowrap;
+  line-height: 1.5;
+  overflow: visible;
+  flex-shrink: 0;
   
   .pill__label,
-  span[class*="label"],
   span {
-    font-size: 1rem !important;
-    font-weight: 600 !important;
-    letter-spacing: 0.025em !important;
-    line-height: 1.5 !important;
-    white-space: nowrap !important;
-    overflow: visible !important;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.025em;
+    line-height: 1.5;
+    white-space: nowrap;
+    overflow: visible;
   }
   
   .pill__icon,
   svg {
-    width: 20px !important;
-    height: 20px !important;
-    flex-shrink: 0 !important;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
   }
 }
 
-/* NUCLEAR OPTION: Ensure Columns and Filters buttons are readable */
-html body .list-controls .list-controls__toggle-columns,
-html body .list-controls .list-controls__toggle-filters,
-html body .list-controls .list-controls__toggle-where,
-html body .list-controls button.pill,
-html body .list-controls [class*="toggle"] {
-  padding: 0.875rem 1.5rem !important;
-  min-height: 48px !important;
-  font-size: 1rem !important;
-  font-weight: 600 !important;
-  min-width: 120px !important;
-  max-width: none !important;
-  width: auto !important;
-  white-space: nowrap !important;
-  overflow: visible !important;
+// Specific button styling with proper specificity
+.list-controls button.list-controls__toggle-columns,
+.list-controls button.list-controls__toggle-filters,
+.list-controls button.list-controls__toggle-where {
+  border: 1px solid rgba(6, 182, 212, 0.5);
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.15);
   
-  // Single clean border - no doubles
-  border: 1px solid rgba(6, 182, 212, 0.5) !important;
-  box-shadow: 0 0 12px rgba(6, 182, 212, 0.15) !important;
-  
-  // Remove any nested borders
   * {
-    border: none !important;
-  }
-  
-  // Ensure text is visible
-  span,
-  .pill__label {
-    font-size: 1rem !important;
-    font-weight: 600 !important;
-    white-space: nowrap !important;
-    overflow: visible !important;
-    border: none !important;
-    box-shadow: none !important;
+    border: none;
   }
   
   &:hover {
-    border-color: rgba(6, 182, 212, 0.8) !important;
-    box-shadow: 0 0 20px rgba(6, 182, 212, 0.3) !important;
+    border-color: rgba(6, 182, 212, 0.8);
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
   }
 }
 
 // Filters button - green theme
-html body .list-controls .list-controls__toggle-filters,
-html body .list-controls .list-controls__toggle-where {
-  border-color: rgba(132, 204, 22, 0.5) !important;
-  box-shadow: 0 0 12px rgba(132, 204, 22, 0.15) !important;
+.list-controls button.list-controls__toggle-filters,
+.list-controls button.list-controls__toggle-where {
+  border-color: rgba(132, 204, 22, 0.5);
+  box-shadow: 0 0 12px rgba(132, 204, 22, 0.15);
   
   &:hover {
-    border-color: rgba(132, 204, 22, 0.8) !important;
-    box-shadow: 0 0 20px rgba(132, 204, 22, 0.3) !important;
+    border-color: rgba(132, 204, 22, 0.8);
+    box-shadow: 0 0 20px rgba(132, 204, 22, 0.3);
   }
 }
-
