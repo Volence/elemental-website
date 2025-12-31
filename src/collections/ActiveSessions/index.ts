@@ -1,6 +1,5 @@
-import type { CollectionConfig, AccessArgs } from 'payload'
+import type { CollectionConfig } from 'payload'
 import { isAdmin } from '../../access/roles'
-import type { User } from '@/payload-types'
 
 export const ActiveSessions: CollectionConfig = {
   slug: 'active-sessions',
@@ -13,10 +12,7 @@ export const ActiveSessions: CollectionConfig = {
     defaultColumns: ['user', 'loginTime', 'lastActivity', 'isActive', 'ipAddress'],
     description: '👥 Track active admin panel sessions for security monitoring.',
     group: 'System',
-    hidden: ({ user }: { user?: User }) => {
-      // Hide from sidebar but allow API access for admin users
-      return true
-    },
+    hidden: true, // Hide from sidebar but allow API access for admin users
   },
   access: {
     // Only admins can read sessions

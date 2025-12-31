@@ -1,6 +1,5 @@
-import type { CollectionConfig, AccessArgs } from 'payload'
+import type { CollectionConfig } from 'payload'
 import { isAdmin } from '../../access/roles'
-import type { User } from '@/payload-types'
 
 export const AuditLogs: CollectionConfig = {
   slug: 'audit-logs',
@@ -13,10 +12,7 @@ export const AuditLogs: CollectionConfig = {
     defaultColumns: ['action', 'user', 'collection', 'documentTitle', 'createdAt'],
     description: '🔍 System-generated log of user actions for security monitoring.',
     group: 'System',
-    hidden: ({ user }: { user?: User }) => {
-      // Hide from sidebar but allow API access for admin users
-      return true
-    },
+    hidden: true, // Hide from sidebar but allow API access for admin users
   },
   access: {
     // Only admins can read audit logs

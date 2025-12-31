@@ -1,6 +1,5 @@
-import type { CollectionConfig, AccessArgs } from 'payload'
+import type { CollectionConfig } from 'payload'
 import { isAdmin } from '../../access/roles'
-import type { User } from '@/payload-types'
 
 export const ErrorLogs: CollectionConfig = {
   slug: 'error-logs',
@@ -13,10 +12,7 @@ export const ErrorLogs: CollectionConfig = {
     defaultColumns: ['errorType', 'severity', 'message', 'user', 'resolved', 'createdAt'],
     description: '⚠️ System-generated log of errors for debugging and monitoring.',
     group: 'System',
-    hidden: ({ user }: { user?: User }) => {
-      // Hide from sidebar but allow API access for admin users
-      return true
-    },
+    hidden: true, // Hide from sidebar but allow API access for admin users
   },
   access: {
     // Only admins can read error logs

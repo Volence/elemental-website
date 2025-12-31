@@ -1,6 +1,5 @@
-import type { CollectionConfig, AccessArgs } from 'payload'
+import type { CollectionConfig } from 'payload'
 import { isAdmin } from '../../access/roles'
-import type { User } from '@/payload-types'
 
 export const CronJobRuns: CollectionConfig = {
   slug: 'cron-job-runs',
@@ -13,10 +12,7 @@ export const CronJobRuns: CollectionConfig = {
     defaultColumns: ['jobName', 'status', 'startTime', 'duration', 'createdAt'],
     description: '⏰ System-generated log of scheduled job executions.',
     group: 'System',
-    hidden: ({ user }: { user?: User }) => {
-      // Hide from sidebar but allow API access for admin users
-      return true
-    },
+    hidden: true, // Hide from sidebar but allow API access for admin users
   },
   access: {
     // Only admins can read cron job runs

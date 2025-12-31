@@ -42,7 +42,6 @@ import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
 import { UserRole } from './access/roles'
-import { handlePayloadError } from './utilities/payloadErrorHandler'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)

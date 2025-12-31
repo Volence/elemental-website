@@ -41,13 +41,17 @@ export async function createAuditLog(
         undefined
     }
 
-    // Prepare user ID
-    let userId: string | number | undefined
+    // Prepare user ID (must be number for Payload relationship)
+    let userId: number | undefined
     if (params.user) {
       if (typeof params.user === 'object' && 'id' in params.user) {
-        userId = params.user.id
-      } else {
-        userId = params.user as string | number
+        userId = typeof params.user.id === 'number' ? params.user.id : undefined
+      } else if (typeof params.user === 'number') {
+        userId = params.user
+      } else if (typeof params.user === 'string') {
+        // Try to parse string to number
+        const parsed = parseInt(params.user, 10)
+        userId = isNaN(parsed) ? undefined : parsed
       }
     }
 
@@ -55,7 +59,7 @@ export async function createAuditLog(
     await payload.create({
       collection: 'audit-logs',
       data: {
-        user: userId || undefined,
+        user: userId,
         action: params.action,
         collection: params.collection,
         documentId: params.documentId?.toString(),
