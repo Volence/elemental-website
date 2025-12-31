@@ -220,17 +220,11 @@ nav button[type="button"]:last-child {
 // ============================================
 // SECTION-BASED NAV COLORING
 // ============================================
-// Each nav-group gets its own color that applies to ALL children
-// Target .nav-group specifically to avoid counting other sibling elements
+// Ultra-specific approach: Target by nth-child of nav container
+// This is more reliable than class names which Payload might transform
 
-// PEOPLE Section (Vibrant Pink) - 1st nav-group
-// Ultra-specific selectors to override Payload's defaults
-.template-default aside nav .nav-group.People .nav__link,
-.template-default aside nav .nav-group:nth-of-type(1) .nav__link,
-aside nav > .nav-group.People .nav__link,
-aside nav > .nav-group:nth-of-type(1) .nav__link,
-aside nav .nav-group.People .nav__link,
-aside nav .nav-group:nth-of-type(1) .nav__link {
+// PEOPLE Section (Vibrant Pink) - 1st group after Dashboard
+html body aside nav > div:nth-child(2) .nav__link {
   &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
     background: rgba($tier-masters, 0.15) !important;
@@ -253,13 +247,8 @@ aside nav .nav-group:nth-of-type(1) .nav__link {
   }
 }
 
-// STAFF Section (Vibrant Purple) - 2nd nav-group
-.template-default aside nav .nav-group.Staff .nav__link,
-.template-default aside nav .nav-group:nth-of-type(2) .nav__link,
-aside nav > .nav-group.Staff .nav__link,
-aside nav > .nav-group:nth-of-type(2) .nav__link,
-aside nav .nav-group.Staff .nav__link,
-aside nav .nav-group:nth-of-type(2) .nav__link {
+// STAFF Section (Vibrant Purple) - 2nd group
+html body aside nav > div:nth-child(3) .nav__link {
   &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
     background: rgba($tier-expert, 0.15) !important;
@@ -282,13 +271,8 @@ aside nav .nav-group:nth-of-type(2) .nav__link {
   }
 }
 
-// PRODUCTION Section (Vibrant Cyan) - 3rd nav-group
-.template-default aside nav .nav-group.Production .nav__link,
-.template-default aside nav .nav-group:nth-of-type(3) .nav__link,
-aside nav > .nav-group.Production .nav__link,
-aside nav > .nav-group:nth-of-type(3) .nav__link,
-aside nav .nav-group.Production .nav__link,
-aside nav .nav-group:nth-of-type(3) .nav__link {
+// PRODUCTION Section (Vibrant Cyan) - 3rd group
+html body aside nav > div:nth-child(4) .nav__link {
   &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
     background: rgba($tier-4k, 0.15) !important;
@@ -311,13 +295,8 @@ aside nav .nav-group:nth-of-type(3) .nav__link {
   }
 }
 
-// SOCIAL MEDIA Section (Vibrant Blue) - 4th nav-group
-.template-default aside nav .nav-group.Social .nav__link,
-.template-default aside nav .nav-group:nth-of-type(4) .nav__link,
-aside nav > .nav-group.Social .nav__link,
-aside nav > .nav-group:nth-of-type(4) .nav__link,
-aside nav .nav-group.Social .nav__link,
-aside nav .nav-group:nth-of-type(4) .nav__link {
+// SOCIAL MEDIA Section (Vibrant Blue) - 4th group
+html body aside nav > div:nth-child(5) .nav__link {
   &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
     background: rgba($tier-advanced, 0.15) !important;
@@ -340,13 +319,8 @@ aside nav .nav-group:nth-of-type(4) .nav__link {
   }
 }
 
-// RECRUITMENT Section (Vibrant Green) - 5th nav-group
-.template-default aside nav .nav-group.Recruitment .nav__link,
-.template-default aside nav .nav-group:nth-of-type(5) .nav__link,
-aside nav > .nav-group.Recruitment .nav__link,
-aside nav > .nav-group:nth-of-type(5) .nav__link,
-aside nav .nav-group.Recruitment .nav__link,
-aside nav .nav-group:nth-of-type(5) .nav__link {
+// RECRUITMENT Section (Vibrant Green) - 5th group
+html body aside nav > div:nth-child(6) .nav__link {
   &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
     background: rgba($tier-35k, 0.15) !important;
@@ -369,13 +343,8 @@ aside nav .nav-group:nth-of-type(5) .nav__link {
   }
 }
 
-// SYSTEM Section (Vibrant Orange) - 6th nav-group
-.template-default aside nav .nav-group.System .nav__link,
-.template-default aside nav .nav-group:nth-of-type(6) .nav__link,
-aside nav > .nav-group.System .nav__link,
-aside nav > .nav-group:nth-of-type(6) .nav__link,
-aside nav .nav-group.System .nav__link,
-aside nav .nav-group:nth-of-type(6) .nav__link {
+// SYSTEM Section (Vibrant Orange) - 6th group
+html body aside nav > div:nth-child(7) .nav__link {
   &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
     background: rgba($tier-below, 0.15) !important;
@@ -398,13 +367,8 @@ aside nav .nav-group:nth-of-type(6) .nav__link {
   }
 }
 
-// MONITORING Section (Vibrant Yellow) - 7th nav-group
-.template-default aside nav .nav-group.Monitoring .nav__link,
-.template-default aside nav .nav-group:nth-of-type(7) .nav__link,
-aside nav > .nav-group.Monitoring .nav__link,
-aside nav > .nav-group:nth-of-type(7) .nav__link,
-aside nav .nav-group.Monitoring .nav__link,
-aside nav .nav-group:nth-of-type(7) .nav__link {
+// MONITORING Section (Vibrant Yellow) - 7th group
+html body aside nav > div:nth-child(8) .nav__link {
   &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
     background: rgba($tier-30k, 0.15) !important;
