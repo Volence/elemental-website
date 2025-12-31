@@ -19,11 +19,12 @@ aside,
   @include custom-scrollbar;
 }
 
-// Ensure nav container has no extra padding or margins
+// Ensure nav container has no extra padding, margins, or overflow
 nav,
 .nav {
   padding: 0;
   margin: 0;
+  overflow: visible !important; // Prevent double scrollbar - only aside should scroll
 }
 
 // ============================================
@@ -240,8 +241,14 @@ aside nav .nav__link {
 }
 
 // PEOPLE Section (Pink/Fuchsia) - 1st nav-group
+// Ultra-specific selectors to override Payload's defaults
+.template-default aside nav .nav-group.People .nav__link,
+.template-default aside nav .nav-group:nth-of-type(1) .nav__link,
+aside nav > .nav-group.People .nav__link,
+aside nav > .nav-group:nth-of-type(1) .nav__link,
 aside nav .nav-group.People .nav__link,
 aside nav .nav-group:nth-of-type(1) .nav__link {
+  &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
     background: rgba($tier-masters, 0.08) !important;
     color: lighten($tier-masters, 15%) !important;

@@ -110,10 +110,13 @@
 // ============================================
 
 .doc-drawer.doc-drawer {
-  width: 900px; // Match content width - no gray space on left
-  max-width: 90vw;
-  margin-left: auto; // Push to right side instead of using flex
-  display: block;
+  position: fixed !important;
+  right: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: min(900px, 90vw) !important; // Responsive width
+  max-width: 90vw !important;
+  display: block !important;
   
   // Drawer content should NOT be transparent, apply Clean Glow
   > .drawer__content,
@@ -127,8 +130,9 @@
     margin: 0;
     overflow: visible; // Parent doesn't scroll
     max-height: 100vh;
-    width: 100%; // Fill parent
-    max-width: 100%; // Ensure no overflow
+    height: 100vh;
+    width: 100% !important; // Fill parent completely
+    max-width: 100% !important; // Ensure no overflow
     
     &::before,
     &::after {
@@ -152,30 +156,37 @@
   }
 }
 
-// Hide ALL close buttons first (Payload's default ones are broken)
-.doc-drawer button[aria-label="Close"],
-.drawer button[aria-label="Close"],
-.drawer__header button,
-.drawer__header-close {
-  display: none !important;
-}
-
-// Show ONLY the properly styled close button (the one in drawer__header with our pattern)
-.doc-drawer .drawer__header > button[aria-label="Close"]:last-child,
-.drawer__header > button[aria-label="Close"]:last-child {
+// Style close button properly - use specific selectors
+.doc-drawer__header button[aria-label="Close"],
+.doc-drawer .drawer__header button[aria-label="Close"],
+.drawer__header button[aria-label="Close"],
+button.drawer__close {
   @extend %close-button-pattern;
-  display: flex !important; // Override the hide above
+  display: flex !important;
   position: absolute !important;
-  top: 1rem !important;
-  right: 1rem !important;
-  z-index: 10 !important;
+  top: 1.5rem !important;
+  right: 1.5rem !important;
+  z-index: 999 !important;
   align-items: center !important;
   justify-content: center !important;
   opacity: 1 !important;
   visibility: visible !important;
   pointer-events: auto !important;
-  width: 32px !important;
-  height: 32px !important;
+  width: 36px !important;
+  height: 36px !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 6px !important;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+  }
+  
+  svg {
+    display: block !important;
+    width: 20px !important;
+    height: 20px !important;
+    opacity: 1 !important;
+  }
 }
 
 // Header stays at top

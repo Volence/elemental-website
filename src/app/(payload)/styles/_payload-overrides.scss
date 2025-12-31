@@ -533,24 +533,26 @@ table {
 // NAVIGATION
 // ============================================
 
-.nav {
-  .nav__link {
-    transition: all 0.2s ease;
-    border-left: 3px solid transparent;
-    
-    &:hover {
-      @include transparent-bg(0.05);
-      border-left-color: rgba($admin-accent-primary, 0.5);
-    }
-    
-    &--active,
-    &[aria-current="page"] {
-      @include transparent-bg(0.08);
-      border-left-color: $admin-accent-primary;
-      box-shadow: 0 0 15px rgba($admin-accent-primary, 0.2);
-    }
-  }
-}
+// REMOVED: Generic nav link styling - now handled per-section in _navigation.scss
+// with specific colors for each category (People, Staff, Production, etc.)
+// .nav {
+//   .nav__link {
+//     transition: all 0.2s ease;
+//     border-left: 3px solid transparent;
+//     
+//     &:hover {
+//       @include transparent-bg(0.05);
+//       border-left-color: rgba($admin-accent-primary, 0.5);
+//     }
+//     
+//     &--active,
+//     &[aria-current="page"] {
+//       @include transparent-bg(0.08);
+//       border-left-color: $admin-accent-primary;
+//       box-shadow: 0 0 15px rgba($admin-accent-primary, 0.2);
+//     }
+//   }
+// }
 
 // ============================================
 // COLLECTION LIST HEADERS
