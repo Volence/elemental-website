@@ -160,19 +160,19 @@ button[aria-label="Close"]:not(.hamburger__close) {
 // --------------------------------------------
 
 .admin-card {
-  @include glow-card(var(--section-color, #{$admin-accent-primary}));
+  @include glow-card($admin-accent-primary);
   padding: 1.5rem;
   margin-bottom: 1.5rem;
 }
 
 .admin-card--compact {
-  @include glow-card(var(--section-color, #{$admin-accent-primary}));
+  @include glow-card($admin-accent-primary);
   padding: 1rem;
   margin-bottom: 1rem;
 }
 
 .admin-card--spacious {
-  @include glow-card(var(--section-color, #{$admin-accent-primary}));
+  @include glow-card($admin-accent-primary);
   padding: 2rem;
   margin-bottom: 2rem;
 }
@@ -199,7 +199,7 @@ button[aria-label="Close"]:not(.hamburger__close) {
 // --------------------------------------------
 
 .admin-section-header {
-  @include glow-header(var(--section-color, #{$admin-accent-primary}));
+  @include glow-header($admin-accent-primary);
   margin-bottom: 1.5rem;
   
   h2,
@@ -212,7 +212,7 @@ button[aria-label="Close"]:not(.hamburger__close) {
 }
 
 .admin-section-header--large {
-  @include glow-header(var(--section-color, #{$admin-accent-primary}));
+  @include glow-header($admin-accent-primary);
   padding: 1.5rem 1.75rem;
   margin-bottom: 2rem;
   
@@ -229,7 +229,7 @@ button[aria-label="Close"]:not(.hamburger__close) {
 // --------------------------------------------
 
 .admin-stat-card {
-  @include glow-card(var(--section-color, #{$admin-accent-primary}));
+  @include glow-card($admin-accent-primary);
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
@@ -275,7 +275,7 @@ button[aria-label="Close"]:not(.hamburger__close) {
 // --------------------------------------------
 
 .admin-badge {
-  @include glow-badge(var(--section-color, #{$admin-accent-primary}));
+  @include glow-badge($admin-accent-primary);
   padding: 0.25rem 0.75rem;
   font-size: 0.875rem;
   font-weight: 500;
@@ -285,8 +285,8 @@ button[aria-label="Close"]:not(.hamburger__close) {
 }
 
 .admin-badge--with-accent {
-  @include glow-badge(var(--section-color, #{$admin-accent-primary}));
-  @include glow-accent-bar(var(--section-color, #{$admin-accent-primary}), 3px, 60%);
+  @include glow-badge($admin-accent-primary);
+  @include glow-accent-bar($admin-accent-primary, 3px, 60%);
   padding-left: 1rem;
 }
 
@@ -312,7 +312,7 @@ button[aria-label="Close"]:not(.hamburger__close) {
 // --------------------------------------------
 
 .admin-button {
-  @include glow-button(var(--section-color, #{$admin-accent-primary}));
+  @include glow-button($admin-accent-primary);
 }
 
 .admin-button--action {
@@ -510,8 +510,8 @@ button[aria-label="Close"]:not(.hamburger__close) {
     content: '';
     width: 2rem;
     height: 2rem;
-    border: 3px solid rgba(var(--section-color-rgb), 0.2);
-    border-top-color: rgba(var(--section-color-rgb), 1);
+    border: 3px solid rgba($admin-accent-primary, 0.2);
+    border-top-color: $admin-accent-primary;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
