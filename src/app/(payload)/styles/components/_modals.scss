@@ -34,36 +34,25 @@
 }
 
 // ============================================
-// MODAL HEADER
+// MODAL HEADER - Using utility pattern
 // ============================================
 
 .modal__header,
 .drawer__header,
 .doc-drawer__header-content {
-  padding: 1.5rem 2rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  
-  h1, h2, h3, h4 {
-    margin: 0;
-    color: $admin-text-primary;
-    
-    // Remove gradient underlines in modals
-    &::after {
-      display: none;
-    }
-  }
+  @extend %modal-header-pattern;
 }
 
 // ============================================
-// MODAL BODY
+// MODAL BODY - Using utility pattern
 // ============================================
 
 .modal__body,
 .drawer__body {
-  padding: 1rem 2rem;
+  @extend %modal-body-pattern;
   
   p {
-    color: $admin-text-secondary;
+    @extend %text-secondary;
     line-height: 1.6;
     margin: 0 0 1rem 0;
     
@@ -72,24 +61,19 @@
     }
   }
   
-  // Remove excessive wrapper margins/padding
   > div {
     margin: 0;
   }
 }
 
 // ============================================
-// MODAL FOOTER & ACTIONS
+// MODAL FOOTER & ACTIONS - Using utility pattern
 // ============================================
 
 .modal__footer,
 .modal__actions,
 .popup__actions {
-  display: flex;
-  gap: 0.75rem;
-  padding: 1rem 2rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  justify-content: flex-end;
+  @extend %modal-footer-pattern;
   
   button {
     min-width: 120px;
