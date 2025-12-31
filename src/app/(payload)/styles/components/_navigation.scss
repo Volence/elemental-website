@@ -13,7 +13,7 @@ aside,
 .template-default aside {
   padding: 0.75rem 0.5rem;
   max-height: 100vh;
-  overflow-y: auto;
+  overflow-y: scroll !important; // Force scrollbar to always show
   overflow-x: hidden;
   
   @include custom-scrollbar;
@@ -222,12 +222,20 @@ nav button[type="button"]:last-child {
 // Each nav-group gets its own color that applies to ALL children
 // Target .nav-group specifically to avoid counting other sibling elements
 
-// RESET Payload's default purple hover (must come first!)
+// RESET Payload's default purple hover AND remove reddish glow (must come first!)
 aside nav .nav__link {
+  // Remove ALL default hover/focus effects
   &:hover,
+  &:focus,
+  &:focus-visible,
   &:hover:not(:has(.nav__link-indicator)) {
     background: transparent !important;
+    border: none !important;
+    border-left: none !important;
+    border-right: none !important;
     border-left-color: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
   }
 }
 
@@ -254,48 +262,48 @@ aside nav .nav-group:nth-of-type(1) .nav__link {
   }
 }
 
-// STAFF Section (Purple/Violet) - 2nd nav-group
+// STAFF Section (Vibrant Purple) - 2nd nav-group
 aside nav .nav-group.Staff .nav__link,
 aside nav .nav-group:nth-of-type(2) .nav__link {
   &:hover:not(:has(.nav__link-indicator)) {
-    background: rgba($admin-accent-primary, 0.08) !important;
-    color: lighten($admin-accent-primary, 15%) !important;
+    background: rgba($tier-expert, 0.08) !important;
+    color: lighten($tier-expert, 15%) !important;
   }
   
   // Active state
   &:has(.nav__link-indicator) {
-    background: rgba($admin-accent-primary, 0.12) !important;
+    background: rgba($tier-expert, 0.12) !important;
     
     .nav__link-indicator {
-      background: $admin-accent-primary !important;
-      box-shadow: 0 0 8px rgba($admin-accent-primary, 0.5) !important;
+      background: $tier-expert !important;
+      box-shadow: 0 0 8px rgba($tier-expert, 0.5) !important;
     }
     
     .nav__link-label {
-      color: lighten($admin-accent-primary, 15%) !important;
+      color: lighten($tier-expert, 15%) !important;
     }
   }
 }
 
-// PRODUCTION Section (Cyan/Blue) - 3rd nav-group
+// PRODUCTION Section (Cyan) - 3rd nav-group
 aside nav .nav-group.Production .nav__link,
 aside nav .nav-group:nth-of-type(3) .nav__link {
   &:hover:not(:has(.nav__link-indicator)) {
-    background: rgba($admin-accent-info, 0.08) !important;
-    color: lighten($admin-accent-info, 15%) !important;
+    background: rgba($tier-4k, 0.08) !important;
+    color: lighten($tier-4k, 15%) !important;
   }
   
   // Active state
   &:has(.nav__link-indicator) {
-    background: rgba($admin-accent-info, 0.12) !important;
+    background: rgba($tier-4k, 0.12) !important;
     
     .nav__link-indicator {
-      background: $admin-accent-info !important;
-      box-shadow: 0 0 8px rgba($admin-accent-info, 0.5) !important;
+      background: $tier-4k !important;
+      box-shadow: 0 0 8px rgba($tier-4k, 0.5) !important;
     }
     
     .nav__link-label {
-      color: lighten($admin-accent-info, 15%) !important;
+      color: lighten($tier-4k, 15%) !important;
     }
   }
 }
@@ -323,71 +331,71 @@ aside nav .nav-group:nth-of-type(4) .nav__link {
   }
 }
 
-// RECRUITMENT Section (Green/Emerald) - 5th nav-group
+// RECRUITMENT Section (Green) - 5th nav-group
 aside nav .nav-group.Recruitment .nav__link,
 aside nav .nav-group:nth-of-type(5) .nav__link {
   &:hover:not(:has(.nav__link-indicator)) {
-    background: rgba($admin-accent-success, 0.08) !important;
-    color: lighten($admin-accent-success, 15%) !important;
+    background: rgba($tier-35k, 0.08) !important;
+    color: lighten($tier-35k, 15%) !important;
   }
   
   // Active state
   &:has(.nav__link-indicator) {
-    background: rgba($admin-accent-success, 0.12) !important;
+    background: rgba($tier-35k, 0.12) !important;
     
     .nav__link-indicator {
-      background: $admin-accent-success !important;
-      box-shadow: 0 0 8px rgba($admin-accent-success, 0.5) !important;
+      background: $tier-35k !important;
+      box-shadow: 0 0 8px rgba($tier-35k, 0.5) !important;
     }
     
     .nav__link-label {
-      color: lighten($admin-accent-success, 15%) !important;
+      color: lighten($tier-35k, 15%) !important;
     }
   }
 }
 
-// SYSTEM Section (Orange/Amber) - 6th nav-group
+// SYSTEM Section (Vibrant Orange) - 6th nav-group
 aside nav .nav-group.System .nav__link,
 aside nav .nav-group:nth-of-type(6) .nav__link {
   &:hover:not(:has(.nav__link-indicator)) {
-    background: rgba($admin-accent-warning, 0.08) !important;
-    color: lighten($admin-accent-warning, 15%) !important;
+    background: rgba($tier-below, 0.08) !important;
+    color: lighten($tier-below, 15%) !important;
   }
   
   // Active state
   &:has(.nav__link-indicator) {
-    background: rgba($admin-accent-warning, 0.12) !important;
+    background: rgba($tier-below, 0.12) !important;
     
     .nav__link-indicator {
-      background: $admin-accent-warning !important;
-      box-shadow: 0 0 8px rgba($admin-accent-warning, 0.5) !important;
+      background: $tier-below !important;
+      box-shadow: 0 0 8px rgba($tier-below, 0.5) !important;
     }
     
     .nav__link-label {
-      color: lighten($admin-accent-warning, 15%) !important;
+      color: lighten($tier-below, 15%) !important;
     }
   }
 }
 
-// MONITORING Section (Teal/Cyan) - 7th nav-group
+// MONITORING Section (Bright Yellow) - 7th nav-group
 aside nav .nav-group.Monitoring .nav__link,
 aside nav .nav-group:nth-of-type(7) .nav__link {
   &:hover:not(:has(.nav__link-indicator)) {
-    background: rgba($tier-4k, 0.08) !important;
-    color: lighten($tier-4k, 15%) !important;
+    background: rgba($tier-30k, 0.08) !important;
+    color: lighten($tier-30k, 5%) !important; // Less lightening for yellow
   }
   
   // Active state
   &:has(.nav__link-indicator) {
-    background: rgba($tier-4k, 0.12) !important;
+    background: rgba($tier-30k, 0.12) !important;
     
     .nav__link-indicator {
-      background: $tier-4k !important;
-      box-shadow: 0 0 8px rgba($tier-4k, 0.5) !important;
+      background: $tier-30k !important;
+      box-shadow: 0 0 8px rgba($tier-30k, 0.5) !important;
     }
     
     .nav__link-label {
-      color: lighten($tier-4k, 15%) !important;
+      color: lighten($tier-30k, 5%) !important; // Less lightening for yellow
     }
   }
 }

@@ -110,10 +110,10 @@
 // ============================================
 
 .doc-drawer.doc-drawer {
-  width: auto;
-  max-width: 95vw;
-  display: flex;
-  justify-content: flex-end; // Align drawer to right side
+  width: 900px; // Match content width - no gray space on left
+  max-width: 90vw;
+  margin-left: auto; // Push to right side instead of using flex
+  display: block;
   
   // Drawer content should NOT be transparent, apply Clean Glow
   > .drawer__content,
@@ -127,8 +127,8 @@
     margin: 0;
     overflow: visible; // Parent doesn't scroll
     max-height: 100vh;
-    width: 900px; // Fixed width for content
-    max-width: 90vw; // Responsive on small screens
+    width: 100%; // Fill parent
+    max-width: 100%; // Ensure no overflow
     
     &::before,
     &::after {
@@ -152,20 +152,23 @@
   }
 }
 
-// Show the close button in the drawer header - VERY AGGRESSIVE SELECTORS
-.doc-drawer .drawer__header button[aria-label="Close"],
-.doc-drawer .drawer__header-close,
+// Hide ALL close buttons first (Payload's default ones are broken)
 .doc-drawer button[aria-label="Close"],
-.drawer__header button[aria-label="Close"],
 .drawer button[aria-label="Close"],
-button.drawer__close,
-button.drawer__header-close {
+.drawer__header button,
+.drawer__header-close {
+  display: none !important;
+}
+
+// Show ONLY the properly styled close button (the one in drawer__header with our pattern)
+.doc-drawer .drawer__header > button[aria-label="Close"]:last-child,
+.drawer__header > button[aria-label="Close"]:last-child {
   @extend %close-button-pattern;
+  display: flex !important; // Override the hide above
   position: absolute !important;
   top: 1rem !important;
   right: 1rem !important;
   z-index: 10 !important;
-  display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   opacity: 1 !important;

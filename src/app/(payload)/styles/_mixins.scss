@@ -143,29 +143,34 @@
 
 // Custom Scrollbar
 @mixin custom-scrollbar {
+  // Force scrollbar visibility (Firefox)
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.5) rgba(255, 255, 255, 0.1);
+  
+  // Webkit browsers (Chrome, Safari, Edge)
   &::-webkit-scrollbar {
-    width: 10px; // Increased from 8px for better visibility
-    height: 10px;
+    width: 12px !important; // Make more prominent
+    height: 12px !important;
   }
   
   &::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05); // More visible track
-    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.1) !important; // More visible track
+    border-radius: 6px;
   }
   
   &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.25); // Much more visible thumb
-    border-radius: 5px;
-    border: 2px solid transparent;
-    background-clip: padding-box; // Creates padding effect
+    background: rgba(255, 255, 255, 0.5) !important; // MUCH more visible
+    border-radius: 6px;
+    border: 2px solid rgba(0, 0, 0, 0.3);
+    background-clip: padding-box;
     
     &:hover {
-      background: rgba(255, 255, 255, 0.4); // Brighter on hover
+      background: rgba(255, 255, 255, 0.7) !important; // Brighter on hover
       background-clip: padding-box;
     }
     
     &:active {
-      background: rgba(255, 255, 255, 0.5); // Even brighter when dragging
+      background: rgba(255, 255, 255, 0.8) !important; // Brightest when dragging
       background-clip: padding-box;
     }
   }
