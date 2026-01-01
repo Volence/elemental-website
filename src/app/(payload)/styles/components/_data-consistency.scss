@@ -486,32 +486,38 @@
   &__items-container {
     max-height: 400px;
     overflow-y: auto;
-    background-color: var(--theme-elevation-50);
+    overflow-x: auto;
+    @include transparent-bg(0.03);
     border-radius: 8px;
-    border: 1px solid var(--theme-elevation-200);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+    max-width: 100%;
 
     // Custom scrollbar
     &::-webkit-scrollbar {
       width: 8px;
+      height: 8px;
     }
 
     &::-webkit-scrollbar-track {
-      background: var(--theme-elevation-100);
-      border-radius: 0 8px 8px 0;
+      @include transparent-bg(0.05);
+      border-radius: 4px;
     }
 
     &::-webkit-scrollbar-thumb {
-      background: var(--theme-elevation-300);
+      background: rgba(255, 255, 255, 0.2);
       border-radius: 4px;
 
       &:hover {
-        background: var(--theme-elevation-400);
+        background: rgba(255, 255, 255, 0.3);
       }
     }
   }
 
   &__table {
     width: 100%;
+    max-width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
 
     thead tr {
@@ -527,10 +533,24 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
       @include transparent-bg(0.05);
+      white-space: nowrap;
 
-      &.issue-card__table-actions {
+      &:first-child {
+        width: 10%;
+      }
+
+      &:nth-child(2) {
+        width: 35%;
+      }
+
+      &:nth-child(3) {
+        width: 35%;
+      }
+
+      &.issue-card__table-actions,
+      &:last-child {
         text-align: center;
-        width: 100px;
+        width: 20%;
       }
     }
 
@@ -551,6 +571,9 @@
       padding: 0.875rem 1rem;
       font-size: 0.875rem;
       color: $admin-text-primary;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
 
       &.issue-card__table-cell--id {
         font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
