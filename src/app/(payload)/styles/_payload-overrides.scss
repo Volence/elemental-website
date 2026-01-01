@@ -40,8 +40,15 @@
     }
   }
   
-  // Style the dropdown content - only visible when popup is active
+  // Hide the entire popup by default
+  .popup {
+    display: none !important;
+  }
+  
+  // Only show when active and apply Clean Glow styling
   .popup.popup--active {
+    display: block !important;
+    
     .popup__content {
       @include transparent-bg(0.08);
       border: 1px solid rgba($admin-accent-primary, 0.2);
