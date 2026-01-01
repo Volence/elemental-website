@@ -1044,6 +1044,55 @@ select.error {
   }
 }
 
+// PayloadCMS Form Field Errors (Sign-in page, etc.)
+.form-field {
+  position: relative;
+  
+  &.error,
+  &.has-error {
+    // Input field with error
+    input,
+    textarea,
+    select {
+      border-color: rgba($admin-accent-error, 0.6) !important;
+      box-shadow: 0 0 8px rgba($admin-accent-error, 0.15) !important;
+      
+      &:focus {
+        border-color: rgba($admin-accent-error, 0.8) !important;
+        box-shadow: 0 0 0 3px rgba($admin-accent-error, 0.15) !important;
+      }
+    }
+  }
+  
+  // Error message container
+  &__error,
+  .field-error-message {
+    @include transparent-bg(0.05);
+    border: 1px solid rgba($admin-accent-error, 0.3);
+    border-radius: $radius-sm;
+    padding: $spacing-sm $spacing-md;
+    margin-top: $spacing-xs;
+    font-size: $font-size-sm;
+    color: $admin-accent-error;
+    display: flex;
+    align-items: flex-start;
+    gap: $spacing-xs;
+    box-shadow: 0 2px 8px rgba($admin-accent-error, 0.1);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    
+    &::before {
+      content: '⚠';
+      font-size: $font-size-base;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+  }
+}
+
 // Login/Auth form specific error styling
 .template-default,
 body:not([class*="template"]) {
@@ -1056,7 +1105,8 @@ body:not([class*="template"]) {
     margin: 0.5rem 0;
   }
   
-  .field {
+  .field,
+  .form-field {
     width: 100%;
     max-width: 100%;
     
@@ -1111,9 +1161,9 @@ body:not([class*="template"]) {
 .banner,
 [class*="banner"] {
   position: relative;
-  padding: $spacing-lg;
+  padding: $spacing-md;
   border-radius: $radius-md;
-  margin-bottom: $spacing-lg;
+  margin-bottom: $spacing-md;
   backdrop-filter: blur(12px);
   @include transparent-bg(0.03);
   
@@ -1205,19 +1255,19 @@ body:not([class*="template"]) {
     line-height: $line-height-tight;
   }
   
-  // Page title headings
+  // Page title headings - minimal margin
   h1 {
-    margin: 0 0 $spacing-sm 0;
+    margin: 0;
     padding: 0;
   }
   
   h2 {
-    margin: 0 0 $spacing-sm 0;
+    margin: 0;
     padding: 0;
   }
   
   h3 {
-    margin: 0 0 $spacing-xs 0;
+    margin: 0;
     padding: 0;
   }
   
