@@ -1348,6 +1348,20 @@ body:not([class*="template"]) {
     font-size: $font-size-sm !important;
     font-weight: $font-weight-medium !important;
   }
+  
+  // Fix error state - don't apply error styling to the field container
+  .field-type.error {
+    background-color: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: auto !important;
+    
+    // The input inside should still show error state
+    input {
+      border-color: rgba($admin-accent-error, 0.5) !important;
+    }
+  }
 }
 
 // ============================================
