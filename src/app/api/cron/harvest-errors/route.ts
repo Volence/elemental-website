@@ -81,11 +81,18 @@ export async function POST(request: NextRequest) {
         },
       })
       
-      return NextResponse.json({
+      const summary = {
         success: true,
         message: 'No errors found in logs',
         errorsProcessed: 0,
-      })
+      }
+      
+      // Mark cron job as completed
+      if (cronJobRunId) {
+        await completeCronJob(payload, cronJobRunId, summary)
+      }
+      
+      return NextResponse.json(summary)
     }
 
     const errors = parseErrors(logLines)
