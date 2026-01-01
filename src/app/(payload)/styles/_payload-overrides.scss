@@ -1379,21 +1379,33 @@ body:not([class*="template"]) {
       }
     }
     
+    // Position the field wrapper relatively so tooltip can position from it
+    .field-type__wrap {
+      position: relative !important;
+    }
+    
     // Fix the error tooltip positioning and styling
     .tooltip.field-error,
     .field-error {
+      // Position below the input within the wrapper, not the container
       position: absolute !important;
-      top: 100% !important; // Position below the input, not above
+      top: calc(100% + 8px) !important; // 8px gap below input for breathing room
       left: 0 !important;
-      margin-top: 4px !important; // Small gap between input and tooltip
+      right: 0 !important;
+      margin: 0 !important; // No margin, use top calc instead
       max-height: none !important; // Remove max-height that causes scrollbar
       overflow: visible !important; // Remove scrollbar
       overflow-y: visible !important;
       white-space: normal !important; // Allow text to wrap
       word-wrap: break-word !important;
-      width: 100% !important; // Take full width
+      width: auto !important;
       box-sizing: border-box !important;
       z-index: 10 !important;
+      
+      // Remove the red border that shows as floating bar
+      border-top: none !important;
+      border-left: none !important;
+      border-right: none !important;
       
       // Clean up the tooltip appearance
       .tooltip-content {
