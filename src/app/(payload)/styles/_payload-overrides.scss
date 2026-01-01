@@ -23,6 +23,9 @@
 
 // Per-page pagination dropdown - Style and fix default visibility
 .per-page {
+  // Container should maintain position
+  position: relative;
+  
   // The popup container should only be as tall as the button when closed
   .popup {
     min-height: auto !important;
@@ -51,14 +54,23 @@
     }
   }
   
-  // Style dropdown when active
+  // Style dropdown when active - position absolutely to prevent layout shift
   .popup.popup--active {
     .popup__content {
+      position: absolute !important;
+      top: calc(100% + 4px) !important;
+      right: 0 !important;
+      z-index: 1000;
       @include transparent-bg(0.08);
       border: 1px solid rgba($admin-accent-primary, 0.2);
       border-radius: $radius-md;
       box-shadow: $shadow-lg;
       backdrop-filter: blur(16px);
+    }
+    
+    // Hide the arrow/caret
+    .popup__caret {
+      display: none !important;
     }
   }
 }
