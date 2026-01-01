@@ -21,9 +21,15 @@
   display: none !important;
 }
 
-// Per-page pagination dropdown - Let Payload handle functionality, just style the button
+// Per-page pagination dropdown - Style and fix default visibility
 .per-page {
-  // Style the button trigger only - don't interfere with popup mechanics
+  // The popup container should only be as tall as the button when closed
+  .popup {
+    min-height: auto !important;
+    height: auto !important;
+  }
+  
+  // Style the button trigger
   .popup-button {
     @include transparent-bg(0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -35,6 +41,24 @@
     &:hover {
       @include transparent-bg(0.08);
       border-color: rgba($admin-accent-primary, 0.3);
+    }
+  }
+  
+  // Hide dropdown content when not active
+  .popup:not(.popup--active) {
+    .popup__content {
+      display: none !important;
+    }
+  }
+  
+  // Style dropdown when active
+  .popup.popup--active {
+    .popup__content {
+      @include transparent-bg(0.08);
+      border: 1px solid rgba($admin-accent-primary, 0.2);
+      border-radius: $radius-md;
+      box-shadow: $shadow-lg;
+      backdrop-filter: blur(16px);
     }
   }
 }
