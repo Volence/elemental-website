@@ -11,8 +11,8 @@ export const AuditLogs: CollectionConfig = {
     useAsTitle: 'action',
     defaultColumns: ['action', 'user', 'collection', 'documentTitle', 'createdAt'],
     description: '🔍 System-generated log of user actions for security monitoring.',
-    group: 'System',
-    hidden: true, // Hide from sidebar but allow API access for admin users
+    group: 'Monitoring',
+    hidden: () => true, // Hidden from sidebar (use Monitoring globals instead)
   },
   access: {
     // Only admins can read audit logs
