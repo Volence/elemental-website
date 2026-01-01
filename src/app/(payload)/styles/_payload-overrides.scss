@@ -1355,74 +1355,25 @@ body:not([class*="template"]) {
     font-weight: $font-weight-medium !important;
   }
   
-  // Fix error state - comprehensive cleanup for login page
+  // Minimal error state fixes - keep it simple
   .field-type.error {
-    background-color: transparent !important;
-    border: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    width: auto !important;
-    display: block !important; // Force vertical stacking instead of horizontal flex
-    flex-direction: column !important; // If flex is applied, ensure column direction
+    // Don't mess with layout - just ensure it stacks vertically
+    display: block !important;
     
-    // The input inside should still show error state
+    // Style the input with error color
     input {
       border-color: rgba($admin-accent-error, 0.5) !important;
-      width: 100% !important; // Ensure input takes full width
-      box-shadow: none !important; // Remove any default shadow
       
       &:hover,
       &:focus {
-        outline: none !important; // Remove any outline on hover/focus
-        border-color: rgba($admin-accent-error, 0.6) !important; // Slightly brighter border
-        box-shadow: 0 0 0 3px rgba($admin-accent-error, 0.1) !important; // Subtle error glow
+        outline: none !important;
+        border-color: rgba($admin-accent-error, 0.6) !important;
+        box-shadow: 0 0 0 3px rgba($admin-accent-error, 0.1) !important;
       }
     }
     
-    // Position the field wrapper relatively so tooltip can position from it
-    .field-type__wrap {
-      position: relative !important;
-    }
-    
-    // Fix the error tooltip positioning and styling
-    .tooltip.field-error,
-    .field-error {
-      // Position below the input within the wrapper, not the container
-      position: absolute !important;
-      top: calc(100% + 15px) !important; // 15px gap below input to clear forgot password link
-      left: 0 !important;
-      right: 0 !important;
-      margin: 0 !important; // No margin, use top calc instead
-      max-height: none !important; // Remove max-height that causes scrollbar
-      overflow: visible !important; // Remove scrollbar
-      overflow-y: visible !important;
-      white-space: normal !important; // Allow text to wrap
-      word-wrap: break-word !important;
-      width: auto !important;
-      box-sizing: border-box !important;
-      z-index: 10 !important;
-      
-      // Remove the red border that shows as floating bar
-      border-top: none !important;
-      border-left: none !important;
-      border-right: none !important;
-      
-      // Clean up the tooltip appearance
-      .tooltip-content {
-        display: block !important;
-        padding: 0 !important;
-        margin: 0 !important;
-      }
-      
-      // Hide the caret/arrow
-      &::before,
-      &::after {
-        display: none !important;
-      }
-    }
-    
-    // Hide duplicate warning icon emoji that appears outside the tooltip
-    &::before {
+    // Hide the Payload error tooltip completely - it's too problematic
+    .tooltip.field-error {
       display: none !important;
     }
   }
