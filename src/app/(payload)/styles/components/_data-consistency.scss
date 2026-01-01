@@ -512,22 +512,10 @@
 
   &__table {
     width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    @include transparent-bg(0.03);
-    border-radius: $radius-md;
-    overflow: hidden;
-
-    thead {
-      position: sticky;
-      top: 0;
-      @include transparent-bg(0.08);
-      z-index: 10;
-      backdrop-filter: blur(8px);
-    }
+    border-collapse: collapse;
 
     thead tr {
-      border-bottom: 1px solid rgba($admin-accent-primary, 0.2);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     th {
@@ -538,7 +526,7 @@
       color: $admin-text-primary;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      white-space: nowrap;
+      @include transparent-bg(0.05);
 
       &.issue-card__table-actions {
         text-align: center;
@@ -548,12 +536,10 @@
 
     tbody tr {
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      transition: all 0.2s ease;
+      transition: background-color 0.2s ease;
 
       &:hover {
-        @include transparent-bg(0.08);
-        box-shadow: inset 3px 0 0 rgba($admin-accent-primary, 0.6);
-        transform: translateX(2px);
+        @include transparent-bg(0.05);
       }
 
       &:last-child {

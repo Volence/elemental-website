@@ -744,15 +744,15 @@
   background: $admin-bg-card;
   border: 1px solid $admin-border-normal;
   border-radius: $radius-lg;
-  padding: $spacing-lg; // Reduced from $spacing-xl
+  padding: $spacing-lg;
   
   h3 {
     font-size: 1.1rem;
     font-weight: 600;
     color: $admin-text-primary;
-    margin-bottom: $spacing-md; // Reduced from $spacing-lg
-    padding-bottom: $spacing-sm; // Reduced from $spacing-md
-    border-bottom: 1px solid $admin-border-normal; // Reduced from 2px
+    margin: 0 0 $spacing-md 0; // Remove top margin
+    padding-bottom: $spacing-sm;
+    border-bottom: 1px solid $admin-border-normal;
   }
 }
 
