@@ -11,17 +11,6 @@
   padding: 0;
 }
 
-.assigned-teams-dashboard__icon {
-  flex-shrink: 0;
-  width: 14px;
-  height: 14px;
-  color: $admin-accent-primary;
-  fill: currentColor;
-  background: transparent;
-  padding: 0;
-  margin: 0;
-}
-
 .assigned-teams-dashboard__title {
   margin: 0 !important;
   padding: 0 !important;
@@ -133,20 +122,6 @@
     );
     border-radius: $radius-md 0 0 $radius-md;
     box-shadow: 0 0 8px rgba($admin-accent-primary, 0.4);
-  }
-}
-
-.assigned-teams-banner__icon {
-  flex-shrink: 0;
-  width: 16px;
-  height: 16px;
-  color: $admin-accent-primary;
-  fill: currentColor; // Filled icon for better visibility
-  margin: 0;
-  padding: 0;
-  
-  path {
-    fill: currentColor; // Ensure path uses the color
   }
 }
 

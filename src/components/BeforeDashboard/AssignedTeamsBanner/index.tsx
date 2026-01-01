@@ -22,15 +22,6 @@ const AssignedTeamsBanner: React.FC = () => {
   
   return (
     <div className="assigned-teams-banner">
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="currentColor"
-        className="assigned-teams-banner__icon"
-      >
-        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" fill="currentColor"/>
-      </svg>
       <strong className="assigned-teams-banner__title">
         Your Assigned Teams:
       </strong>
