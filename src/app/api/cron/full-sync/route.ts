@@ -56,12 +56,19 @@ export async function POST(request: Request) {
     console.log(`[Full Sync] Found ${teams.docs.length} FaceIt-enabled teams to sync`)
     
     if (teams.docs.length === 0) {
-      return NextResponse.json({
+      const summary = {
         success: true,
         message: 'No FaceIt-enabled teams found',
         teamsTotal: 0,
         apiCalls: 0,
-      })
+      }
+      
+      // Mark cron job as completed even when no work was done
+      if (cronJobRunId) {
+        await completeCronJob(payload, cronJobRunId, summary)
+      }
+      
+      return NextResponse.json(summary)
     }
     
     const results = []

@@ -65,6 +65,16 @@ export async function POST(request: NextRequest) {
     const logLines = stdout.split('\n').filter(line => line.trim())
     
     if (logLines.length === 0) {
+      // Update the last checked time even when no errors found
+      await payload.updateGlobal({
+        slug: 'error-harvester-state',
+        data: {
+          lastCheckedAt: now.toISOString(),
+          lastRunErrors: 0,
+          totalRunCount: (state.totalRunCount || 0) + 1,
+        },
+      })
+      
       return NextResponse.json({
         success: true,
         message: 'No errors found in logs',

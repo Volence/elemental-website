@@ -58,13 +58,21 @@ export async function POST(request: Request) {
     
     if (oldScheduledMatches.docs.length === 0) {
       console.log('[Smart Sync] No old matches found. Skipping sync.')
-      return NextResponse.json({
+      
+      const summary = {
         success: true,
         message: 'No old matches found',
         matchesCompleted: 0,
         teamsToSync: 0,
         apiCalls: 0,
-      })
+      }
+      
+      // Mark cron job as completed even when no work was done
+      if (cronJobRunId) {
+        await completeCronJob(payload, cronJobRunId, summary)
+      }
+      
+      return NextResponse.json(summary)
     }
     
     // Step 2: Mark them as complete and collect unique team IDs
@@ -100,13 +108,20 @@ export async function POST(request: Request) {
     console.log(`[Smart Sync] ${teamIdsToSync.size} unique teams need syncing`)
     
     if (teamIdsToSync.size === 0) {
-      return NextResponse.json({
+      const summary = {
         success: true,
         message: 'Matches marked complete but no teams to sync',
         matchesCompleted: completedMatchIds.length,
         teamsToSync: 0,
         apiCalls: 0,
-      })
+      }
+      
+      // Mark cron job as completed
+      if (cronJobRunId) {
+        await completeCronJob(payload, cronJobRunId, summary)
+      }
+      
+      return NextResponse.json(summary)
     }
     
     // Step 3: Sync only the teams that had completed matches
