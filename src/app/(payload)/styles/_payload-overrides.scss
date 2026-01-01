@@ -1318,6 +1318,39 @@ body:not([class*="template"]) {
 }
 
 // ============================================
+// LOGIN PAGE - Clean Glow Styling
+// ============================================
+
+.template-minimal {
+  // Style input fields with Clean Glow
+  input[type="email"],
+  input[type="password"],
+  input[type="text"] {
+    @include transparent-bg(0.05) !important; // Dark transparent background
+    border: 1px solid rgba($admin-accent-primary, 0.3) !important;
+    color: $admin-text-primary !important;
+    
+    &::placeholder {
+      color: $admin-text-secondary !important;
+    }
+    
+    &:focus {
+      @include transparent-bg(0.08) !important;
+      border-color: rgba($admin-accent-primary, 0.5) !important;
+      outline: none !important;
+      box-shadow: 0 0 0 3px rgba($admin-accent-primary, 0.1) !important;
+    }
+  }
+  
+  // Labels
+  .field-label {
+    color: $admin-text-primary !important;
+    font-size: $font-size-sm !important;
+    font-weight: $font-weight-medium !important;
+  }
+}
+
+// ============================================
 // UTILITY CLASSES
 // ============================================
 
