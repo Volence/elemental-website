@@ -6,8 +6,8 @@
 .assigned-teams-banner__header {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-sm;
   margin-top: 0;
 }
 
@@ -16,15 +16,16 @@
   flex-shrink: 0;
   width: 16px;
   height: 16px;
+  color: $admin-accent-primary;
 }
 
 .assigned-teams-dashboard__title,
 .assigned-teams-banner__title {
   margin: 0 !important;
   padding: 0 !important;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--theme-text);
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $admin-text-primary;
   
   &::after {
     display: none !important;
@@ -102,68 +103,105 @@
   white-space: nowrap;
 }
 
-/* Assigned Teams Banner */
+/* Assigned Teams Banner - Clean Glow Styling */
 .assigned-teams-banner {
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background-color: var(--theme-success-50);
-  border: 2px solid var(--theme-success-200);
-  border-radius: 8px;
-  border-left: 4px solid var(--theme-success-500);
+  margin-bottom: $spacing-lg;
+  padding: $spacing-md;
+  @include transparent-bg(0.03); // Dark transparent background
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: $radius-md;
+  position: relative;
+  
+  // Glowing left accent bar
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, 
+      rgba($admin-accent-primary, 0.8), 
+      rgba($admin-accent-primary, 0.4)
+    );
+    border-radius: $radius-md 0 0 $radius-md;
+    box-shadow: 0 0 8px rgba($admin-accent-primary, 0.4);
+  }
 }
 
 .assigned-teams-banner__header {
-  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-sm;
 }
 
 .assigned-teams-banner__title {
-  color: var(--theme-success-900);
-  font-size: 0.95rem;
+  color: $admin-text-primary;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
 }
 
 .assigned-teams-banner__team-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: $spacing-sm;
   align-items: center;
 }
 
 .assigned-teams-banner__label {
-  color: var(--theme-text-600);
-  font-size: 0.875rem;
-  margin-right: 0.25rem;
+  color: $admin-text-secondary;
+  font-size: $font-size-sm;
+  margin-right: $spacing-xs;
 }
 
 .assigned-teams-banner__team-link {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.375rem 0.75rem;
-  min-height: 40px;
-  background-color: var(--theme-success-100);
-  color: var(--theme-success-900);
-  border-radius: 4px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  border: 1px solid var(--theme-success-300);
+  gap: $spacing-xs;
+  padding: $spacing-xs $spacing-md;
+  @include transparent-bg(0.05); // Clean Glow: dark transparent background
+  border: 1px solid rgba($admin-accent-primary, 0.3);
+  border-radius: $radius-sm;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $admin-text-primary;
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all $transition-fast ease;
+  position: relative;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 0 8px rgba($admin-accent-primary, 0.1);
+  
+  // Subtle left accent
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2px;
+    height: 60%;
+    background: $admin-accent-primary;
+    border-radius: 2px;
+    box-shadow: 0 0 4px rgba($admin-accent-primary, 0.4);
+  }
 
   &:hover {
-    background-color: var(--theme-success-200);
-    border-color: var(--theme-success-400);
+    @include transparent-bg(0.08);
+    border-color: rgba($admin-accent-primary, 0.5);
     transform: translateY(-1px);
+    box-shadow: 0 0 12px rgba($admin-accent-primary, 0.2);
   }
 }
 
 .assigned-teams-banner__team-logo-wrapper {
   width: 24px;
   height: 24px;
-  border-radius: 4px;
+  border-radius: $radius-sm;
   overflow: hidden;
-  background-color: var(--theme-success-50);
-  border: 1px solid var(--theme-success-300);
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
