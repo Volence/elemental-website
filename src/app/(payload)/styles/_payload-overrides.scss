@@ -1326,7 +1326,7 @@ body:not([class*="template"]) {
   input[type="email"],
   input[type="password"],
   input[type="text"] {
-    @include transparent-bg(0.05) !important; // Dark transparent background
+    background-color: rgba(0, 0, 0, 0.05) !important; // Dark transparent background
     border: 1px solid rgba($admin-accent-primary, 0.3) !important;
     color: $admin-text-primary !important;
     
@@ -1335,7 +1335,7 @@ body:not([class*="template"]) {
     }
     
     &:focus {
-      @include transparent-bg(0.08) !important;
+      background-color: rgba(0, 0, 0, 0.08) !important;
       border-color: rgba($admin-accent-primary, 0.5) !important;
       outline: none !important;
       box-shadow: 0 0 0 3px rgba($admin-accent-primary, 0.1) !important;
