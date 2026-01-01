@@ -228,23 +228,24 @@ nav button[type="button"]:last-child {
 html body aside nav > div:nth-child(3) .nav__link {
   &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
-    background: rgba($tier-masters, 0.25) !important; // Increased from 0.15
-    color: $tier-masters !important; // Use base color instead of lightened
-    box-shadow: 0 0 20px rgba($tier-masters, 0.6) !important; // Stronger glow
-    border: 1px solid rgba($tier-masters, 0.4) !important; // Add border
+    background: transparent !important; // No background - just glow and border
+    color: $tier-masters !important;
+    box-shadow: 0 0 20px rgba($tier-masters, 0.6) !important;
+    border: 1px solid rgba($tier-masters, 0.4) !important;
+    border-left: 3px solid $tier-masters !important; // Thicker left accent
   }
   
   // Active state
   &:has(.nav__link-indicator) {
-    background: rgba($tier-masters, 0.3) !important; // Increased from 0.2
+    background: transparent !important; // No background
     
     .nav__link-indicator {
       background: $tier-masters !important;
-      box-shadow: 0 0 16px rgba($tier-masters, 0.8) !important; // Stronger glow
+      box-shadow: 0 0 16px rgba($tier-masters, 0.8) !important;
     }
     
     .nav__link-label {
-      color: $tier-masters !important; // Use base color
+      color: $tier-masters !important;
     }
   }
 }
@@ -253,15 +254,16 @@ html body aside nav > div:nth-child(3) .nav__link {
 html body aside nav > div:nth-child(4) .nav__link {
   &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
-    background: rgba($tier-expert, 0.25) !important;
+    background: transparent !important;
     color: $tier-expert !important;
     box-shadow: 0 0 20px rgba($tier-expert, 0.6) !important;
     border: 1px solid rgba($tier-expert, 0.4) !important;
+    border-left: 3px solid $tier-expert !important;
   }
   
   // Active state
   &:has(.nav__link-indicator) {
-    background: rgba($tier-expert, 0.3) !important;
+    background: transparent !important;
     
     .nav__link-indicator {
       background: $tier-expert !important;
@@ -278,15 +280,16 @@ html body aside nav > div:nth-child(4) .nav__link {
 html body aside nav > div:nth-child(5) .nav__link {
   &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
-    background: rgba($tier-4k, 0.25) !important;
+    background: transparent !important;
     color: $tier-4k !important;
     box-shadow: 0 0 20px rgba($tier-4k, 0.6) !important;
     border: 1px solid rgba($tier-4k, 0.4) !important;
+    border-left: 3px solid $tier-4k !important;
   }
   
   // Active state
   &:has(.nav__link-indicator) {
-    background: rgba($tier-4k, 0.3) !important;
+    background: transparent !important;
     
     .nav__link-indicator {
       background: $tier-4k !important;
@@ -303,15 +306,16 @@ html body aside nav > div:nth-child(5) .nav__link {
 html body aside nav > div:nth-child(6) .nav__link {
   &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
-    background: rgba($tier-advanced, 0.25) !important;
+    background: transparent !important;
     color: $tier-advanced !important;
     box-shadow: 0 0 20px rgba($tier-advanced, 0.6) !important;
     border: 1px solid rgba($tier-advanced, 0.4) !important;
+    border-left: 3px solid $tier-advanced !important;
   }
   
   // Active state
   &:has(.nav__link-indicator) {
-    background: rgba($tier-advanced, 0.3) !important;
+    background: transparent !important;
     
     .nav__link-indicator {
       background: $tier-advanced !important;
@@ -328,15 +332,16 @@ html body aside nav > div:nth-child(6) .nav__link {
 html body aside nav > div:nth-child(7) .nav__link {
   &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
-    background: rgba($tier-35k, 0.25) !important;
+    background: transparent !important;
     color: $tier-35k !important;
     box-shadow: 0 0 20px rgba($tier-35k, 0.6) !important;
     border: 1px solid rgba($tier-35k, 0.4) !important;
+    border-left: 3px solid $tier-35k !important;
   }
   
   // Active state
   &:has(.nav__link-indicator) {
-    background: rgba($tier-35k, 0.3) !important;
+    background: transparent !important;
     
     .nav__link-indicator {
       background: $tier-35k !important;
@@ -353,15 +358,16 @@ html body aside nav > div:nth-child(7) .nav__link {
 html body aside nav > div:nth-child(8) .nav__link {
   &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
-    background: rgba($tier-below, 0.25) !important;
+    background: transparent !important;
     color: $tier-below !important;
     box-shadow: 0 0 20px rgba($tier-below, 0.6) !important;
     border: 1px solid rgba($tier-below, 0.4) !important;
+    border-left: 3px solid $tier-below !important;
   }
   
   // Active state
   &:has(.nav__link-indicator) {
-    background: rgba($tier-below, 0.3) !important;
+    background: transparent !important;
     
     .nav__link-indicator {
       background: $tier-below !important;
@@ -378,15 +384,16 @@ html body aside nav > div:nth-child(8) .nav__link {
 html body aside nav > div:nth-child(9) .nav__link {
   &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
-    background: rgba($tier-30k, 0.25) !important;
-    color: lighten($tier-30k, 5%) !important; // Slight lighten for yellow readability
+    background: transparent !important;
+    color: lighten($tier-30k, 5%) !important;
     box-shadow: 0 0 20px rgba($tier-30k, 0.6) !important;
     border: 1px solid rgba($tier-30k, 0.4) !important;
+    border-left: 3px solid $tier-30k !important;
   }
   
   // Active state
   &:has(.nav__link-indicator) {
-    background: rgba($tier-30k, 0.3) !important;
+    background: transparent !important;
     
     .nav__link-indicator {
       background: $tier-30k !important;
@@ -394,7 +401,7 @@ html body aside nav > div:nth-child(9) .nav__link {
     }
     
     .nav__link-label {
-      color: lighten($tier-30k, 5%) !important; // Slight lighten for yellow
+      color: lighten($tier-30k, 5%) !important;
     }
   }
 }
