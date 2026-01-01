@@ -93,6 +93,43 @@
 }
 
 // ============================================
+// FIELD TYPE SELECT - Reduce Excessive Spacing
+// ============================================
+
+// Fix the "Roles" field and other select fields that have huge padding/margin
+.field-type.select {
+  padding-top: $spacing-md !important; // Reduced from 52px
+  margin-top: $spacing-md !important; // Reduced from 52px
+}
+
+// ============================================
+// SEARCH BAR - Clean Glow Background
+// ============================================
+
+// Apply Clean Glow dark background to search bars
+.search-bar {
+  @include transparent-bg(0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: $radius-md;
+  padding: $spacing-xs;
+  
+  .search-filter__input {
+    @include transparent-bg(0.03);
+    border: 1px solid rgba($admin-accent-primary, 0.3);
+    color: $admin-text-primary;
+    
+    &::placeholder {
+      color: $admin-text-secondary;
+    }
+    
+    &:focus {
+      border-color: rgba($admin-accent-primary, 0.5);
+      box-shadow: 0 0 0 3px rgba($admin-accent-primary, 0.1);
+    }
+  }
+}
+
+// ============================================
 // SEARCH BAR FIX - Magnifying Glass Overlap
 // ============================================
 
