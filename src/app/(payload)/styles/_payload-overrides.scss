@@ -1356,10 +1356,13 @@ body:not([class*="template"]) {
     padding: 0 !important;
     margin: 0 !important;
     width: auto !important;
+    display: block !important; // Force vertical stacking instead of horizontal flex
+    flex-direction: column !important; // If flex is applied, ensure column direction
     
     // The input inside should still show error state
     input {
       border-color: rgba($admin-accent-error, 0.5) !important;
+      width: 100% !important; // Ensure input takes full width
     }
   }
 }
