@@ -21,6 +21,77 @@
   display: none !important;
 }
 
+// Fix per-page pagination dropdown positioning
+.per-page {
+  position: relative;
+  
+  // The popup inside per-page should be absolutely positioned
+  > .popup {
+    position: absolute !important;
+    top: calc(100% + 4px) !important;
+    left: 0;
+    z-index: 1000;
+    min-width: 100%;
+    
+    // Apply Clean Glow styling to dropdown
+    @include transparent-bg(0.08);
+    border: 1px solid rgba($admin-accent-primary, 0.2);
+    border-radius: $radius-md;
+    box-shadow: $shadow-lg;
+    backdrop-filter: blur(16px);
+    padding: $spacing-xs 0;
+    
+    // Hide by default - only show when opened
+    &:not([style*="display: block"]) {
+      display: none !important;
+    }
+  }
+  
+  // Button styling
+  &__base-button {
+    @include transparent-bg(0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: $radius-sm;
+    padding: $spacing-xs $spacing-md;
+    font-size: 0.875rem;
+    color: $admin-text-primary;
+    cursor: pointer;
+    transition: all $transition-fast ease;
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-xs;
+    
+    &:hover {
+      @include transparent-bg(0.08);
+      border-color: rgba($admin-accent-primary, 0.3);
+    }
+  }
+  
+  // Dropdown option buttons
+  &__button {
+    @include transparent-bg(0);
+    border: none;
+    padding: $spacing-sm $spacing-md;
+    color: $admin-text-secondary;
+    cursor: pointer;
+    transition: all $transition-fast ease;
+    text-align: left;
+    width: 100%;
+    font-size: 0.875rem;
+    
+    &:hover {
+      @include transparent-bg(0.08);
+      color: $admin-text-primary;
+    }
+    
+    &-active {
+      color: $admin-accent-primary;
+      font-weight: $font-weight-semibold;
+      @include transparent-bg(0.05);
+    }
+  }
+}
+
 // ============================================
 // BUTTONS - Clean Glow as Default
 // ============================================
