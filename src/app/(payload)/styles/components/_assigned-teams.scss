@@ -141,7 +141,8 @@
   width: 14px;
   height: 14px;
   color: $admin-accent-primary;
-  fill: currentColor;
+  stroke: currentColor; // For stroke-based icons
+  fill: none; // No fill for stroke-based icons
   margin: 0;
   padding: 0;
 }
