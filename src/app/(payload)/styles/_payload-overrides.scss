@@ -1369,11 +1369,13 @@ body:not([class*="template"]) {
     input {
       border-color: rgba($admin-accent-error, 0.5) !important;
       width: 100% !important; // Ensure input takes full width
+      box-shadow: none !important; // Remove any default shadow
       
       &:hover,
       &:focus {
-        outline: none !important; // Remove any red outline on hover/focus
-        box-shadow: 0 0 0 3px rgba($admin-accent-error, 0.1) !important; // Subtle error glow instead
+        outline: none !important; // Remove any outline on hover/focus
+        border-color: rgba($admin-accent-error, 0.6) !important; // Slightly brighter border
+        box-shadow: 0 0 0 3px rgba($admin-accent-error, 0.1) !important; // Subtle error glow
       }
     }
     
