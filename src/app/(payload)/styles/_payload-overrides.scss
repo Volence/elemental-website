@@ -1389,7 +1389,7 @@ body:not([class*="template"]) {
     .field-error {
       // Position below the input within the wrapper, not the container
       position: absolute !important;
-      top: calc(100% + 8px) !important; // 8px gap below input for breathing room
+      top: calc(100% + 15px) !important; // 15px gap below input to clear forgot password link
       left: 0 !important;
       right: 0 !important;
       margin: 0 !important; // No margin, use top calc instead
