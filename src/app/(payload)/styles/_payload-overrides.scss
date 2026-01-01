@@ -1322,6 +1322,12 @@ body:not([class*="template"]) {
 // ============================================
 
 .template-minimal {
+  // Hide Payload's default warning icon that appears as text
+  // This prevents duplicate warning icons
+  > form > div > div > div:has(.field-type.error)::before {
+    display: none !important;
+  }
+  
   // Style input fields with Clean Glow
   input[type="email"],
   input[type="password"],
@@ -1349,7 +1355,7 @@ body:not([class*="template"]) {
     font-weight: $font-weight-medium !important;
   }
   
-  // Fix error state - don't apply error styling to the field container
+  // Fix error state - comprehensive cleanup for login page
   .field-type.error {
     background-color: transparent !important;
     border: none !important;
@@ -1363,6 +1369,47 @@ body:not([class*="template"]) {
     input {
       border-color: rgba($admin-accent-error, 0.5) !important;
       width: 100% !important; // Ensure input takes full width
+      
+      &:hover,
+      &:focus {
+        outline: none !important; // Remove any red outline on hover/focus
+        box-shadow: 0 0 0 3px rgba($admin-accent-error, 0.1) !important; // Subtle error glow instead
+      }
+    }
+    
+    // Fix the error tooltip positioning and styling
+    .tooltip.field-error,
+    .field-error {
+      position: absolute !important;
+      top: 100% !important; // Position below the input, not above
+      left: 0 !important;
+      margin-top: 4px !important; // Small gap between input and tooltip
+      max-height: none !important; // Remove max-height that causes scrollbar
+      overflow: visible !important; // Remove scrollbar
+      overflow-y: visible !important;
+      white-space: normal !important; // Allow text to wrap
+      word-wrap: break-word !important;
+      width: 100% !important; // Take full width
+      box-sizing: border-box !important;
+      z-index: 10 !important;
+      
+      // Clean up the tooltip appearance
+      .tooltip-content {
+        display: block !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      
+      // Hide the caret/arrow
+      &::before,
+      &::after {
+        display: none !important;
+      }
+    }
+    
+    // Hide duplicate warning icon emoji that appears outside the tooltip
+    &::before {
+      display: none !important;
     }
   }
 }
