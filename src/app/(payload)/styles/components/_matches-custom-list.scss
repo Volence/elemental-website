@@ -1,3 +1,7 @@
+// ============================================
+// MATCHES CUSTOM LIST - Clean Glow Design
+// ============================================
+
 @import '../variables';
 @import '../mixins';
 
@@ -8,15 +12,15 @@
   &__breadcrumb {
     margin-bottom: $spacing-lg;
     font-size: $font-size-sm;
-    color: var(--theme-elevation-700);
+    color: $admin-text-secondary;
     
     a {
       color: inherit;
       text-decoration: none;
-      transition: color 0.2s;
+      transition: color $transition-fast;
       
       &:hover {
-        color: var(--theme-text);
+        color: $admin-text-primary;
       }
     }
     
@@ -25,24 +29,25 @@
     }
     
     &-current {
-      color: var(--theme-text);
+      color: $admin-text-primary;
       font-weight: $font-weight-semibold;
     }
   }
   
-  // Search & Filter Section
+  // Search & Filter Section - Clean Glow
   &__filters {
-    @include gradient-border;
-    padding: $padding-lg;
+    @include transparent-bg(0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: $radius-lg;
+    padding: $padding-xl;
     margin-bottom: $spacing-xl;
-    background: var(--theme-elevation-100);
-    border-radius: $radius-md;
+    box-shadow: $shadow-sm;
     
     h3 {
       font-size: $font-size-lg;
       font-weight: $font-weight-semibold;
       margin-bottom: $spacing-md;
-      color: var(--theme-text);
+      color: $admin-text-primary;
       display: flex;
       align-items: center;
       gap: $gap-sm;
@@ -70,24 +75,28 @@
         font-size: $font-size-sm;
         font-weight: $font-weight-medium;
         margin-bottom: $spacing-xs;
-        color: var(--theme-text);
+        color: $admin-text-primary;
       }
       
       input,
       select {
         width: 100%;
         padding: $padding-sm $padding-md;
-        background-color: var(--theme-elevation-50);
-        border: 1px solid var(--theme-elevation-500);
+        @include transparent-bg(0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: $radius-sm;
         font-size: $font-size-sm;
-        color: var(--theme-text);
-        transition: border-color 0.2s, box-shadow 0.2s;
+        color: $admin-text-primary;
+        transition: border-color $transition-fast, box-shadow $transition-fast;
         
         &:focus {
           outline: none;
-          border-color: var(--theme-elevation-700);
+          border-color: rgba($admin-accent-primary, 0.5);
           box-shadow: 0 0 0 3px rgba($admin-accent-primary, 0.1);
+        }
+        
+        &:hover {
+          border-color: rgba(255, 255, 255, 0.2);
         }
       }
     }
@@ -101,7 +110,7 @@
       
       span {
         font-size: $font-size-sm;
-        color: var(--theme-elevation-700);
+        color: $admin-text-secondary;
       }
       
       &-badge {
@@ -114,20 +123,21 @@
       &-clear {
         background: transparent;
         border: none;
-        color: var(--theme-elevation-700);
+        color: $admin-text-secondary;
         font-size: $font-size-xs;
         cursor: pointer;
         text-decoration: underline;
         padding: $padding-xs;
+        transition: color $transition-fast;
         
         &:hover {
-          color: var(--theme-text);
+          color: $admin-text-primary;
         }
       }
     }
   }
   
-  // Section Headers
+  // Section Headers - Clean Glow
   &__section {
     margin-bottom: $spacing-2xl;
     
@@ -137,13 +147,13 @@
       justify-content: space-between;
       margin-bottom: $spacing-lg;
       padding-bottom: $spacing-md;
-      border-bottom: 2px solid var(--theme-elevation-400);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       
       h2 {
         font-size: $font-size-xl;
         font-weight: $font-weight-semibold;
         margin: 0;
-        color: var(--theme-text);
+        color: $admin-text-primary;
         display: flex;
         align-items: center;
         gap: $gap-sm;
@@ -157,34 +167,57 @@
       }
       
       .create-button {
-        transition: all 0.2s;
-        &:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
+        @include glow-button($admin-accent-success);
+        transition: all $transition-fast;
       }
     }
   }
   
-  // Match Cards
+  // Match Cards - Clean Glow
   &__grid {
     display: grid;
     gap: $gap-md;
   }
   
   &__card {
-    @include gradient-border;
-    @include card-hover;
+    @include transparent-bg(0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: $radius-md;
     display: grid;
     grid-template-columns: 2fr 1.5fr 1fr 0.5fr;
     gap: $gap-lg;
     padding: $padding-lg;
-    background: var(--theme-elevation-100);
-    border-radius: $radius-md;
     text-decoration: none;
-    color: var(--theme-text);
-    transition: all 0.2s;
+    color: $admin-text-primary;
+    transition: all $transition-fast;
     align-items: center;
+    box-shadow: $shadow-sm;
+    position: relative;
+    
+    // Left accent bar
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: $admin-accent-primary;
+      border-radius: $radius-md 0 0 $radius-md;
+      opacity: 0.5;
+      transition: opacity $transition-fast;
+    }
+    
+    &:hover {
+      @include transparent-bg(0.05);
+      border-color: rgba($admin-accent-primary, 0.3);
+      transform: translateX(4px);
+      box-shadow: 0 0 20px rgba($admin-accent-primary, 0.15);
+      
+      &::before {
+        opacity: 1;
+      }
+    }
     
     // Remove all borders from children
     > * {
@@ -202,12 +235,15 @@
     }
     
     &--completed {
-      opacity: 0.7;
-      background: var(--theme-elevation-50);
+      opacity: 0.6;
+      
+      &::before {
+        background: $admin-text-secondary;
+      }
       
       &:hover {
         opacity: 1;
-        transform: translateY(-2px);
+        transform: translateY(-2px) translateX(4px);
       }
     }
     
@@ -221,6 +257,7 @@
       &-title {
         font-weight: $font-weight-semibold;
         font-size: $font-size-base;
+        color: $admin-text-primary;
         
         // Remove any pseudo-elements from title too
         &::before,
@@ -232,7 +269,7 @@
     
     &-date {
       font-size: $font-size-sm;
-      color: var(--theme-elevation-700);
+      color: $admin-text-secondary;
     }
     
     &-badges {
@@ -242,12 +279,12 @@
       align-items: flex-start;
       
       .status-badge {
-        @include glow-badge($admin-accent-info);
         padding: 4px 10px;
         font-size: $font-size-xs;
         font-weight: $font-weight-semibold;
         text-transform: uppercase;
         line-height: 1;
+        border-radius: $radius-sm;
         
         &--scheduled {
           @include glow-badge($admin-accent-info);
@@ -276,14 +313,19 @@
     
     &-arrow {
       text-align: right;
-      color: var(--theme-elevation-600);
+      color: $admin-text-secondary;
       font-size: $font-size-lg;
       border: none;
       background: transparent;
+      transition: color $transition-fast;
+    }
+    
+    &:hover &-arrow {
+      color: $admin-accent-primary;
     }
   }
   
-  // Pagination
+  // Pagination - Clean Glow
   &__pagination {
     margin-top: $spacing-xl;
     display: flex;
@@ -294,33 +336,34 @@
     
     button {
       padding: $padding-sm $padding-lg;
-      background: var(--theme-elevation-400);
-      color: var(--theme-text);
-      border: 1px solid var(--theme-elevation-500);
+      @include transparent-bg(0.05);
+      color: $admin-text-primary;
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: $radius-sm;
       font-size: $font-size-sm;
       font-weight: $font-weight-medium;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all $transition-fast;
       
       &:hover:not(:disabled) {
-        background: var(--theme-elevation-500);
+        @include transparent-bg(0.08);
+        border-color: rgba($admin-accent-primary, 0.3);
         transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 0 15px rgba($admin-accent-primary, 0.2);
       }
       
       &:disabled {
-        background: var(--theme-elevation-200);
-        color: var(--theme-elevation-600);
+        opacity: 0.3;
         cursor: not-allowed;
-        opacity: 0.5;
       }
       
       &--active {
-        background: var(--theme-elevation-600);
-        border: 2px solid var(--theme-elevation-800);
+        @include transparent-bg(0.1);
+        border-color: rgba($admin-accent-primary, 0.5);
+        color: $admin-accent-primary;
         font-weight: $font-weight-bold;
         cursor: default;
+        box-shadow: 0 0 10px rgba($admin-accent-primary, 0.2);
         
         &:hover {
           transform: none;
@@ -329,7 +372,7 @@
     }
     
     &-ellipsis {
-      color: var(--theme-elevation-600);
+      color: $admin-text-secondary;
       padding: 0 $padding-xs;
     }
     
@@ -337,23 +380,25 @@
       margin-top: $spacing-md;
       text-align: center;
       font-size: $font-size-sm;
-      color: var(--theme-elevation-700);
+      color: $admin-text-secondary;
     }
   }
   
   // Empty States
   &__empty {
     text-align: center;
-    padding: $spacing-2xl;
-    color: var(--theme-elevation-700);
+    padding: $spacing-3xl;
+    color: $admin-text-secondary;
     font-style: italic;
+    @include transparent-bg(0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: $radius-md;
   }
   
   // Loading State
   &__loading {
     text-align: center;
-    padding: $spacing-2xl;
-    color: var(--theme-elevation-700);
+    padding: $spacing-3xl;
+    color: $admin-text-secondary;
   }
 }
-
