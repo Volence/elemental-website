@@ -142,8 +142,12 @@ export async function POST(request: Request) {
       }
     }
     
+    // Determine if the job was successful overall
+    // Consider it a failure if ALL teams failed, or if more than 50% failed
+    const overallSuccess = successCount > 0 && (successCount >= failCount)
+    
     const summary = {
-      success: true,
+      success: overallSuccess,
       teamsTotal: teams.docs.length,
       apiCalls: successCount + failCount,
       syncResults: {
@@ -155,13 +159,19 @@ export async function POST(request: Request) {
         updated: totalMatchesUpdated,
       },
       timestamp: now.toISOString(),
+      results, // Include individual team results for debugging
     }
     
     console.log('[Full Sync] Completed:', summary)
     
-    // Mark cron job as completed
+    // Mark cron job as completed or failed based on overall success
     if (cronJobRunId) {
-      await completeCronJob(payload, cronJobRunId, summary)
+      if (overallSuccess) {
+        await completeCronJob(payload, cronJobRunId, summary)
+      } else {
+        const errorMsg = `${failCount} of ${teams.docs.length} teams failed to sync`
+        await failCronJob(payload, cronJobRunId, errorMsg)
+      }
     }
     
     return NextResponse.json(summary)

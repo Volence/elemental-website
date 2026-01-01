@@ -192,8 +192,12 @@ export async function POST(request: Request) {
       }
     }
     
+    // Determine if the job was successful overall
+    // Consider it a failure if ALL teams failed to sync (when there were teams to sync)
+    const overallSuccess = teamIdsToSync.size === 0 || successCount > 0
+    
     const summary = {
-      success: true,
+      success: overallSuccess,
       matchesCompleted: completedMatchIds.length,
       teamsToSync: teamIdsToSync.size,
       apiCalls: successCount + failCount,
@@ -202,13 +206,19 @@ export async function POST(request: Request) {
         failed: failCount,
       },
       timestamp: now.toISOString(),
+      results: syncResults, // Include individual team results for debugging
     }
     
     console.log('[Smart Sync] Completed:', summary)
     
-    // Mark cron job as completed
+    // Mark cron job as completed or failed based on overall success
     if (cronJobRunId) {
-      await completeCronJob(payload, cronJobRunId, summary)
+      if (overallSuccess) {
+        await completeCronJob(payload, cronJobRunId, summary)
+      } else {
+        const errorMsg = `${failCount} of ${teamIdsToSync.size} teams failed to sync`
+        await failCronJob(payload, cronJobRunId, errorMsg)
+      }
     }
     
     return NextResponse.json(summary)
