@@ -38,14 +38,21 @@ export default function DatabaseHealthView() {
   const serverURL = config?.serverURL || ''
 
   useEffect(() => {
-    fetchHealthStats()
-    // Refresh every minute
-    const interval = setInterval(fetchHealthStats, 60000)
+    const fetchData = async () => {
+      await fetchHealthStats(true)
+    }
+    
+    fetchData()
+    
+    // Refresh every minute without showing loading state
+    const interval = setInterval(() => fetchHealthStats(false), 60000)
     return () => clearInterval(interval)
-  }, [])
+  }, [serverURL])
 
-  const fetchHealthStats = async () => {
-    setLoading(true)
+  const fetchHealthStats = async (showLoadingState = true) => {
+    if (showLoadingState) {
+      setLoading(true)
+    }
     try {
       // Fetch collection counts
       const collections = [
@@ -152,7 +159,9 @@ export default function DatabaseHealthView() {
     } catch (error) {
       console.error('Failed to fetch health stats:', error)
     } finally {
-      setLoading(false)
+      if (showLoadingState) {
+        setLoading(false)
+      }
     }
   }
 
@@ -192,7 +201,7 @@ export default function DatabaseHealthView() {
         <p className="monitoring-description">
           System overview and health monitoring
         </p>
-        <button onClick={fetchHealthStats} className="monitoring-btn monitoring-btn--refresh">
+        <button onClick={() => fetchHealthStats(true)} className="monitoring-btn monitoring-btn--refresh">
           Refresh
         </button>
       </div>

@@ -27,24 +27,29 @@ export default function ActiveSessionsView() {
   const serverURL = config?.serverURL || ''
 
   useEffect(() => {
-    fetchSessions()
-    // Auto-refresh every 30 seconds
-    const interval = setInterval(fetchSessions, 30000)
+    const fetchData = async () => {
+      await fetchSessions(true)
+    }
+    
+    fetchData()
+    
+    // Auto-refresh every 30 seconds without showing loading state
+    const interval = setInterval(() => fetchSessions(false), 30000)
     return () => clearInterval(interval)
-  }, [filter])
+  }, [filter, serverURL])
 
-  const fetchSessions = async () => {
-    setLoading(true)
+  const fetchSessions = async (showLoadingState = true) => {
+    if (showLoadingState) {
+      setLoading(true)
+    }
     try {
-      const whereConditions: any[] = []
+      let whereClause = {}
 
       if (filter === 'active') {
-        whereConditions.push({ isActive: { equals: true } })
+        whereClause = { isActive: { equals: true } }
       } else if (filter === 'inactive') {
-        whereConditions.push({ isActive: { equals: false } })
+        whereClause = { isActive: { equals: false } }
       }
-
-      const whereClause = whereConditions.length > 0 ? { and: whereConditions } : {}
 
       const response = await fetch(
         `${serverURL}/api/active-sessions?where=${encodeURIComponent(JSON.stringify(whereClause))}&limit=100&depth=1&sort=-lastActivity`,
@@ -60,7 +65,9 @@ export default function ActiveSessionsView() {
     } catch (error) {
       console.error('Failed to fetch active sessions:', error)
     } finally {
-      setLoading(false)
+      if (showLoadingState) {
+        setLoading(false)
+      }
     }
   }
 
@@ -122,7 +129,7 @@ export default function ActiveSessionsView() {
           </select>
         </div>
 
-        <button onClick={fetchSessions} className="monitoring-btn monitoring-btn--refresh">
+        <button onClick={() => fetchSessions(true)} className="monitoring-btn monitoring-btn--refresh">
           Refresh
         </button>
       </div>

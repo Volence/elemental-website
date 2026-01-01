@@ -31,11 +31,21 @@ export default function AuditLogView() {
   const serverURL = config?.serverURL || ''
 
   useEffect(() => {
-    fetchLogs()
-  }, [filter, page])
+    const fetchData = async () => {
+      await fetchLogs(true)
+    }
+    
+    fetchData()
+    
+    // Auto-refresh every 30 seconds without showing loading state
+    const interval = setInterval(() => fetchLogs(false), 30000)
+    return () => clearInterval(interval)
+  }, [filter, page, serverURL])
 
-  const fetchLogs = async () => {
-    setLoading(true)
+  const fetchLogs = async (showLoadingState = true) => {
+    if (showLoadingState) {
+      setLoading(true)
+    }
     try {
       let whereClause = {}
       
@@ -58,7 +68,9 @@ export default function AuditLogView() {
     } catch (error) {
       console.error('Failed to fetch audit logs:', error)
     } finally {
-      setLoading(false)
+      if (showLoadingState) {
+        setLoading(false)
+      }
     }
   }
 

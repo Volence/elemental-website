@@ -26,14 +26,21 @@ export default function CronMonitorView() {
   const serverURL = config?.serverURL || ''
 
   useEffect(() => {
-    fetchRuns()
-    // Refresh every 30 seconds
-    const interval = setInterval(fetchRuns, 30000)
+    const fetchData = async () => {
+      await fetchRuns(true) // Show loading on initial fetch or filter change
+    }
+    
+    fetchData()
+    
+    // Refresh every 30 seconds without showing loading state (silent refresh)
+    const interval = setInterval(() => fetchRuns(false), 30000)
     return () => clearInterval(interval)
-  }, [filter, statusFilter])
+  }, [filter, statusFilter, serverURL])
 
-  const fetchRuns = async () => {
-    setLoading(true)
+  const fetchRuns = async (showLoadingState = true) => {
+    if (showLoadingState) {
+      setLoading(true)
+    }
     try {
       const whereConditions: any[] = []
       
@@ -63,7 +70,9 @@ export default function CronMonitorView() {
     } catch (error) {
       console.error('Failed to fetch cron job runs:', error)
     } finally {
-      setLoading(false)
+      if (showLoadingState) {
+        setLoading(false)
+      }
     }
   }
 
@@ -86,6 +95,8 @@ export default function CronMonitorView() {
         return 'Smart Sync'
       case 'full-sync':
         return 'Full Sync'
+      case 'error-harvester':
+        return 'Error Harvester'
       case 'session-cleanup':
         return 'Session Cleanup'
       default:
@@ -122,6 +133,7 @@ export default function CronMonitorView() {
             <option value="all">All Jobs</option>
             <option value="smart-sync">Smart Sync</option>
             <option value="full-sync">Full Sync</option>
+            <option value="error-harvester">Error Harvester</option>
             <option value="session-cleanup">Session Cleanup</option>
           </select>
         </div>
@@ -141,7 +153,7 @@ export default function CronMonitorView() {
           </select>
         </div>
 
-        <button onClick={fetchRuns} className="monitoring-btn monitoring-btn--refresh">
+        <button onClick={() => fetchRuns(true)} className="monitoring-btn monitoring-btn--refresh">
           Refresh
         </button>
       </div>

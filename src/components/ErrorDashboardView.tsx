@@ -46,11 +46,21 @@ export default function ErrorDashboardView() {
   const serverURL = config?.serverURL || ''
 
   useEffect(() => {
-    fetchErrors()
-  }, [typeFilter, severityFilter, resolvedFilter])
+    const fetchData = async () => {
+      await fetchErrors(true)
+    }
+    
+    fetchData()
+    
+    // Auto-refresh every 30 seconds without showing loading state
+    const interval = setInterval(() => fetchErrors(false), 30000)
+    return () => clearInterval(interval)
+  }, [typeFilter, severityFilter, resolvedFilter, serverURL])
 
-  const fetchErrors = async () => {
-    setLoading(true)
+  const fetchErrors = async (showLoadingState = true) => {
+    if (showLoadingState) {
+      setLoading(true)
+    }
     try {
       const whereConditions: any[] = []
       
@@ -83,7 +93,9 @@ export default function ErrorDashboardView() {
     } catch (error) {
       console.error('Failed to fetch error logs:', error)
     } finally {
-      setLoading(false)
+      if (showLoadingState) {
+        setLoading(false)
+      }
     }
   }
 
@@ -311,7 +323,7 @@ export default function ErrorDashboardView() {
           </select>
         </div>
 
-        <button onClick={fetchErrors} className="monitoring-btn monitoring-btn--refresh">
+        <button onClick={() => fetchErrors(true)} className="monitoring-btn monitoring-btn--refresh">
           Refresh
         </button>
       </div>
