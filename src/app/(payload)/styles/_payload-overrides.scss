@@ -32,7 +32,6 @@
     left: 0;
     z-index: 1000;
     min-width: 120px;
-    display: none !important; // Hidden by default
     
     // Apply Clean Glow styling to dropdown
     @include transparent-bg(0.08);
@@ -41,12 +40,11 @@
     box-shadow: $shadow-lg;
     backdrop-filter: blur(16px);
     padding: $spacing-xs 0;
-  }
-  
-  // Show popup when base button is clicked/active
-  &[aria-expanded="true"] > .popup,
-  &__base-button[aria-expanded="true"] ~ .popup {
-    display: block !important;
+    
+    // Hidden by default unless Payload shows it
+    &:not([style*="display: block"]) {
+      display: none !important;
+    }
   }
   
   // Button styling
@@ -705,10 +703,28 @@ table {
     @include glow-button($admin-accent-success); // Green for save
   }
   
+  // Hide the doc-controls popup by default (the three dots menu)
+  &__popup {
+    display: none !important;
+    
+    // Show only when explicitly opened by Payload
+    &[style*="display: block"],
+    &[data-state="open"],
+    &.popup--active {
+      display: block !important;
+    }
+  }
+  
   button[class*="delete"],
   button[class*="remove"] {
     @include glow-button($admin-accent-error); // Red for delete
   }
+}
+
+// Fix doc-header spacing (reduces excessive margin between heading and border)
+.doc-header {
+  margin-top: 0 !important;
+  padding-bottom: $spacing-xs !important; // Minimal padding
 }
 
 // ============================================
