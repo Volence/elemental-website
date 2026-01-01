@@ -21,11 +21,9 @@
   display: none !important;
 }
 
-// Per-page pagination dropdown - Apply Clean Glow styling
+// Per-page pagination dropdown - Let Payload handle functionality, just style the button
 .per-page {
-  // Don't override positioning - let Payload handle it
-  
-  // Style the button trigger
+  // Style the button trigger only - don't interfere with popup mechanics
   .popup-button {
     @include transparent-bg(0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -37,48 +35,6 @@
     &:hover {
       @include transparent-bg(0.08);
       border-color: rgba($admin-accent-primary, 0.3);
-    }
-  }
-  
-  // Hide the dropdown content by default
-  .popup__content {
-    display: none !important;
-  }
-  
-  // Only show dropdown when popup is active and apply Clean Glow styling
-  .popup.popup--active {
-    .popup__content {
-      display: block !important;
-      @include transparent-bg(0.08);
-      border: 1px solid rgba($admin-accent-primary, 0.2);
-      border-radius: $radius-md;
-      box-shadow: $shadow-lg;
-      backdrop-filter: blur(16px);
-      visibility: visible !important; // Override Payload's visibility hidden when open
-    }
-  }
-  
-  // Dropdown option buttons
-  &__button {
-    @include transparent-bg(0);
-    border: none;
-    padding: $spacing-sm $spacing-md;
-    color: $admin-text-secondary;
-    cursor: pointer;
-    transition: all $transition-fast ease;
-    text-align: left;
-    width: 100%;
-    font-size: 0.875rem;
-    
-    &:hover {
-      @include transparent-bg(0.08);
-      color: $admin-text-primary;
-    }
-    
-    &-active {
-      color: $admin-accent-primary;
-      font-weight: $font-weight-semibold;
-      @include transparent-bg(0.05);
     }
   }
 }
