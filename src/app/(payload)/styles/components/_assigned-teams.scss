@@ -2,30 +2,33 @@
  * Assigned Teams Dashboard & Banner Styles
  * ============================================ */
 
-.assigned-teams-dashboard__header,
-.assigned-teams-banner__header {
-  display: flex;
+/* Dashboard header styles (separate from banner) */
+.assigned-teams-dashboard__header {
+  display: inline-flex;
   align-items: center;
   gap: $spacing-xs;
-  margin-bottom: $spacing-sm;
-  margin-top: 0;
+  margin: 0;
+  padding: 0;
 }
 
-.assigned-teams-dashboard__icon,
-.assigned-teams-banner__icon {
+.assigned-teams-dashboard__icon {
   flex-shrink: 0;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   color: $admin-accent-primary;
+  fill: currentColor;
+  background: transparent;
+  padding: 0;
+  margin: 0;
 }
 
-.assigned-teams-dashboard__title,
-.assigned-teams-banner__title {
+.assigned-teams-dashboard__title {
   margin: 0 !important;
   padding: 0 !important;
   font-size: $font-size-sm;
   font-weight: $font-weight-semibold;
   color: $admin-text-primary;
+  line-height: 1.2;
   
   &::after {
     display: none !important;
@@ -105,8 +108,12 @@
 
 /* Assigned Teams Banner - Clean Glow Styling */
 .assigned-teams-banner {
+  display: flex; // Make it a flex container
+  flex-wrap: wrap; // Allow wrapping if needed
+  align-items: center;
+  gap: $spacing-xs; // Small gap between all children
   margin-bottom: $spacing-lg;
-  padding: $spacing-md;
+  padding: $spacing-xs $spacing-md; // Minimal vertical padding
   @include transparent-bg(0.03); // Dark transparent background
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: $radius-md;
@@ -129,37 +136,31 @@
   }
 }
 
-.assigned-teams-banner__header {
-  display: flex;
-  align-items: center;
-  gap: $spacing-xs;
-  margin-bottom: $spacing-sm;
+.assigned-teams-banner__icon {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  color: $admin-accent-primary;
+  fill: currentColor;
+  margin: 0;
+  padding: 0;
 }
 
 .assigned-teams-banner__title {
   color: $admin-text-primary;
-  font-size: $font-size-base;
-  font-weight: $font-weight-semibold;
-}
-
-.assigned-teams-banner__team-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: $spacing-sm;
-  align-items: center;
-}
-
-.assigned-teams-banner__label {
-  color: $admin-text-secondary;
   font-size: $font-size-sm;
-  margin-right: $spacing-xs;
+  font-weight: $font-weight-semibold;
+  margin: 0;
+  padding: 0;
+  line-height: 1.2;
+  white-space: nowrap; // Keep title on one line
 }
 
 .assigned-teams-banner__team-link {
   display: inline-flex;
   align-items: center;
   gap: $spacing-xs;
-  padding: $spacing-xs $spacing-md;
+  padding: 4px 10px; // Much smaller padding
   @include transparent-bg(0.05); // Clean Glow: dark transparent background
   border: 1px solid rgba($admin-accent-primary, 0.3);
   border-radius: $radius-sm;
@@ -171,7 +172,9 @@
   transition: all $transition-fast ease;
   position: relative;
   backdrop-filter: blur(4px);
-  box-shadow: 0 0 8px rgba($admin-accent-primary, 0.1);
+  box-shadow: 0 0 6px rgba($admin-accent-primary, 0.1);
+  margin: 0; // Remove margins
+  line-height: 1.2; // Tighter line height
   
   // Subtle left accent
   &::before {
@@ -191,14 +194,14 @@
     @include transparent-bg(0.08);
     border-color: rgba($admin-accent-primary, 0.5);
     transform: translateY(-1px);
-    box-shadow: 0 0 12px rgba($admin-accent-primary, 0.2);
+    box-shadow: 0 0 10px rgba($admin-accent-primary, 0.2);
   }
 }
 
 .assigned-teams-banner__team-logo-wrapper {
-  width: 24px;
-  height: 24px;
-  border-radius: $radius-sm;
+  width: 20px; // Smaller logo
+  height: 20px;
+  border-radius: 3px;
   overflow: hidden;
   background-color: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -206,6 +209,8 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  margin: 0; // Remove margins
+  padding: 0; // Remove padding
 }
 
 .assigned-teams-banner__team-logo {
