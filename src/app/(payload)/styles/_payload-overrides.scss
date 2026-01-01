@@ -15,17 +15,10 @@
 // POPUPS - Hide unwanted visible popups
 // ============================================
 
-// Hide clipboard and array action popups that shouldn't be visible by default
+// Hide clipboard and array action popups completely
 .popup.clipboard-action__popup,
 .popup.array-actions {
   display: none !important;
-  
-  // Only show when parent is hovered or active
-  .array-field__header:hover &,
-  .array-field__header-actions:hover &,
-  [aria-expanded="true"] & {
-    display: block !important;
-  }
 }
 
 // ============================================
