@@ -32,6 +32,7 @@
     left: 0;
     z-index: 1000;
     min-width: 120px;
+    display: none !important; // Hidden by default
     
     // Apply Clean Glow styling to dropdown
     @include transparent-bg(0.08);
@@ -40,6 +41,12 @@
     box-shadow: $shadow-lg;
     backdrop-filter: blur(16px);
     padding: $spacing-xs 0;
+  }
+  
+  // Show popup when base button is clicked/active
+  &[aria-expanded="true"] > .popup,
+  &__base-button[aria-expanded="true"] ~ .popup {
+    display: block !important;
   }
   
   // Button styling
@@ -84,6 +91,44 @@
       font-weight: $font-weight-semibold;
       @include transparent-bg(0.05);
     }
+  }
+}
+
+// ============================================
+// SEARCH BAR FIX - Magnifying Glass Overlap
+// ============================================
+
+// Fix search input padding to prevent icon overlap
+input[type="search"],
+input[placeholder*="Search"],
+input[placeholder*="search"] {
+  padding-left: 2.5rem !important; // Enough space for icon
+}
+
+// Search container - ensure input has proper padding
+.search-filter,
+.list-controls__search,
+[class*="search"] {
+  input {
+    padding-left: 2.5rem !important;
+  }
+}
+
+// ============================================
+// VIBRANT BUTTON OUTLINES
+// ============================================
+
+// Make Columns & Filters buttons have vibrant outlines
+.list-controls button,
+button[class*="column"],
+button[class*="filter"],
+button[class*="Column"],
+button[class*="Filter"] {
+  border-color: rgba($admin-accent-primary, 0.8) !important;
+  
+  &:hover {
+    border-color: $admin-accent-primary !important;
+    box-shadow: 0 0 15px rgba($admin-accent-primary, 0.4) !important;
   }
 }
 
@@ -1158,6 +1203,22 @@ body:not([class*="template"]) {
     margin: 0;
     font-size: $font-size-lg;
     line-height: $line-height-tight;
+  }
+  
+  // Page title headings
+  h1 {
+    margin: 0 0 $spacing-sm 0;
+    padding: 0;
+  }
+  
+  h2 {
+    margin: 0 0 $spacing-sm 0;
+    padding: 0;
+  }
+  
+  h3 {
+    margin: 0 0 $spacing-xs 0;
+    padding: 0;
   }
   
   p {
