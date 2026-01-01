@@ -40,14 +40,16 @@
     }
   }
   
-  // Style the dropdown content and ensure it's visible when popup is shown
-  .popup__content {
-    @include transparent-bg(0.08);
-    border: 1px solid rgba($admin-accent-primary, 0.2);
-    border-radius: $radius-md;
-    box-shadow: $shadow-lg;
-    backdrop-filter: blur(16px);
-    visibility: visible !important; // Override Payload's visibility hidden
+  // Style the dropdown content - only visible when popup has display: block
+  .popup[style*="display: block"] {
+    .popup__content {
+      @include transparent-bg(0.08);
+      border: 1px solid rgba($admin-accent-primary, 0.2);
+      border-radius: $radius-md;
+      box-shadow: $shadow-lg;
+      backdrop-filter: blur(16px);
+      visibility: visible !important; // Override Payload's visibility hidden when open
+    }
   }
   
   // Dropdown option buttons
