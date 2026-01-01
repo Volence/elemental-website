@@ -39,14 +39,15 @@
     @include transparent-bg(0.03);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: $radius-lg;
-    padding: $padding-xl;
+    padding: $padding-md; // Reduced from xl
     margin-bottom: $spacing-xl;
     box-shadow: $shadow-sm;
     
     h3 {
       font-size: $font-size-lg;
       font-weight: $font-weight-semibold;
-      margin-bottom: $spacing-md;
+      margin: 0 0 $spacing-sm 0; // Explicit margin: 0 top, minimal bottom
+      padding: 0; // No padding
       color: $admin-text-primary;
       display: flex;
       align-items: center;
