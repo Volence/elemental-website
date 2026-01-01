@@ -138,13 +138,16 @@
 
 .assigned-teams-banner__icon {
   flex-shrink: 0;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   color: $admin-accent-primary;
-  stroke: currentColor; // For stroke-based icons
-  fill: none; // No fill for stroke-based icons
+  fill: currentColor; // Filled icon for better visibility
   margin: 0;
   padding: 0;
+  
+  path {
+    fill: currentColor; // Ensure path uses the color
+  }
 }
 
 .assigned-teams-banner__title {
