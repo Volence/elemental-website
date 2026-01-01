@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { logError } from '@/utilities/errorLogger'
+import { startCronJob, completeCronJob, failCronJob } from '@/utilities/cronLogger'
 import { exec } from 'child_process'
 import { promisify } from 'util'
 
@@ -27,6 +28,8 @@ interface ParsedError {
 }
 
 export async function POST(request: NextRequest) {
+  let cronJobRunId: number | string | undefined
+  
   try {
     // Authenticate the request
     const authHeader = request.headers.get('authorization')
@@ -38,6 +41,9 @@ export async function POST(request: NextRequest) {
     }
 
     const payload = await getPayload({ config: await configPromise })
+    
+    // Start tracking this cron job run
+    cronJobRunId = await startCronJob(payload, 'error-harvester')
 
     // Get the last checked time to avoid re-processing
     const state = await payload.findGlobal({
@@ -110,7 +116,7 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return NextResponse.json({
+    const summary = {
       success: true,
       message: `Harvested ${created} error occurrence(s) from logs`,
       errorsCreated: created,
@@ -120,10 +126,24 @@ export async function POST(request: NextRequest) {
       previousCheckAt: lastCheckedAt?.toISOString() || 'never',
       totalRuns: (state.totalRunCount || 0) + 1,
       note: 'Error Dashboard will group identical errors and show counts + affected users',
-    })
+    }
+
+    // Mark cron job as completed
+    if (cronJobRunId) {
+      await completeCronJob(payload, cronJobRunId, summary)
+    }
+
+    return NextResponse.json(summary)
 
   } catch (error: any) {
     console.error('[Error Harvester] Failed:', error)
+    
+    // Mark cron job as failed
+    if (cronJobRunId) {
+      const payload = await getPayload({ config: await configPromise })
+      await failCronJob(payload, cronJobRunId, error.message || 'Failed to harvest errors')
+    }
+    
     return NextResponse.json(
       { 
         success: false, 

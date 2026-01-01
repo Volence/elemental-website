@@ -1489,7 +1489,7 @@ export interface CronJobRun {
   /**
    * Name of the cron job
    */
-  jobName: 'smart-sync' | 'full-sync' | 'session-cleanup';
+  jobName: 'smart-sync' | 'full-sync' | 'session-cleanup' | 'error-harvester';
   /**
    * Current status of the job
    */

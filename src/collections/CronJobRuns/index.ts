@@ -31,6 +31,7 @@ export const CronJobRuns: CollectionConfig = {
         { label: 'Smart Sync', value: 'smart-sync' },
         { label: 'Full Sync', value: 'full-sync' },
         { label: 'Session Cleanup', value: 'session-cleanup' },
+        { label: 'Error Harvester', value: 'error-harvester' },
       ],
       admin: {
         description: 'Name of the cron job',
