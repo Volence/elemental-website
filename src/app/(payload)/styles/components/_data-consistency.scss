@@ -487,11 +487,20 @@
     @include custom-scrollbar;
   }
   
+  // Table container wrapper
+  &__items-container {
+    overflow-x: auto;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+    @include custom-scrollbar;
+  }
+  
   // Table Styling
   &__table {
     width: 100%;
     max-width: 100%;
-    table-layout: fixed;
+    min-width: 800px; // Force horizontal scroll if needed
+    table-layout: auto; // Change to auto for better column sizing
     border-collapse: collapse;
     
     thead tr {

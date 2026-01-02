@@ -100,6 +100,31 @@
           border-color: rgba(255, 255, 255, 0.2);
         }
       }
+      
+      // Fix select dropdown options to be readable
+      select {
+        // Ensure the select itself has good visibility
+        background: rgba(20, 20, 20, 0.8);
+        
+        option {
+          background: rgba(20, 20, 20, 0.98);
+          color: rgba(255, 255, 255, 0.95);
+          padding: $padding-sm;
+          font-weight: 500;
+          
+          &:hover {
+            background: rgba($admin-accent-primary, 0.3);
+            color: rgba(255, 255, 255, 1);
+          }
+          
+          &:checked,
+          &[selected] {
+            background: rgba($admin-accent-primary, 0.5);
+            color: rgba(255, 255, 255, 1);
+            font-weight: 600;
+          }
+        }
+      }
     }
     
     &-active {

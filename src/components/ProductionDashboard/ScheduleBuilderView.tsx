@@ -113,6 +113,15 @@ export function ScheduleBuilderView() {
     return user.name || user.email || 'Unknown'
   }
 
+  const getFullTeamName = (teamName: string): string => {
+    // Ensure team name has "ELMT " prefix
+    // "Bug" -> "ELMT Bug", "ELMT Bug" -> "ELMT Bug"
+    if (!teamName.startsWith('ELMT ')) {
+      return `ELMT ${teamName}`
+    }
+    return teamName
+  }
+
   const generateDiscordInternal = () => {
     const selectedMatches = matches.filter(m => m.productionWorkflow?.includeInSchedule)
     if (selectedMatches.length === 0) {
@@ -123,7 +132,7 @@ export function ScheduleBuilderView() {
 
     selectedMatches.forEach((match) => {
       const pw = match.productionWorkflow!
-      const teamName = match.team?.name || 'Unknown Team'
+      const teamName = getFullTeamName(match.team?.name || 'Unknown Team')
       const date = new Date(match.date)
       const dateStr = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
       const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })
@@ -160,7 +169,7 @@ export function ScheduleBuilderView() {
     output += 'Tune in to watch our teams compete!\n\n'
 
     selectedMatches.forEach((match) => {
-      const teamName = match.team?.name || 'Unknown Team'
+      const teamName = getFullTeamName(match.team?.name || 'Unknown Team')
       const date = new Date(match.date)
       const dateStr = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
       const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })

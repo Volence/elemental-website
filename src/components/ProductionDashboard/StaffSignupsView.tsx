@@ -23,6 +23,7 @@ interface Match {
   team: any
   opponent: string
   region?: string
+  faceitLobby?: string
   productionWorkflow?: {
     observerSignups?: (User | number)[]
     producerSignups?: (User | number)[]
@@ -533,7 +534,18 @@ export function StaffSignupsView() {
   const mySignups = matches.filter(m => isUserSignedUp(m, currentUserId))
   // Only show assigned matches that are included in the schedule
   const myAssignments = matches.filter(m => isUserAssigned(m, currentUserId) && m.productionWorkflow?.includeInSchedule === true)
-  const myPendingSignups = mySignups.filter(m => !isUserAssigned(m, currentUserId))
+  
+  // Get all time slots where user is assigned
+  const assignedTimeSlots = new Set(
+    myAssignments.map(m => new Date(m.date).toISOString())
+  )
+  
+  // Filter out signups for time slots where user is already assigned
+  const myPendingSignups = mySignups.filter(m => {
+    const isAssignedToThisMatch = isUserAssigned(m, currentUserId)
+    const isAssignedToThisTimeSlot = assignedTimeSlots.has(new Date(m.date).toISOString())
+    return !isAssignedToThisMatch && !isAssignedToThisTimeSlot
+  })
 
   if (loading) {
     return <div className="production-dashboard__loading">Loading matches...</div>
@@ -722,6 +734,23 @@ export function StaffSignupsView() {
                           timeZoneName: 'short',
                         })}
                       </p>
+                      {match.opponent && (
+                        <p className="my-signup-card__opponent">
+                          <strong>Opponent:</strong> {match.opponent}
+                        </p>
+                      )}
+                      {match.faceitLobby && (
+                        <p className="my-signup-card__lobby">
+                          <a 
+                            href={match.faceitLobby} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="my-signup-card__lobby-link"
+                          >
+                            🎮 Join Lobby →
+                          </a>
+                        </p>
+                      )}
                     </div>
                     <div className="my-signup-card__status">
                       <span className="status-badge status-badge--assigned">✅ Confirmed</span>

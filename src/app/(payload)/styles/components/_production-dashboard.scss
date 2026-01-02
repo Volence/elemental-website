@@ -1072,13 +1072,13 @@
 }
 
 .my-signup-card__header {
-  @include glow-header($admin-accent-info);
+  @include transparent-bg(0.03);
   margin-bottom: 1.25rem;
-  padding: 1rem;
-  
-  .my-signup-card--assigned & {
-    @include glow-header($admin-accent-success);
-  }
+  padding: 1.25rem;
+  border-radius: $radius-sm;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
 .my-signup-card__date {
@@ -1088,6 +1088,58 @@
   margin: 0;
 }
 
+.my-signup-card__opponent {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0.5rem 0 0 0;
+  
+  strong {
+    color: $admin-accent-info;
+    
+    .my-signup-card--assigned & {
+      color: $admin-accent-success;
+    }
+  }
+}
+
+.my-signup-card__lobby {
+  margin: 0.5rem 0 0 0;
+}
+
+.my-signup-card__lobby-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: $admin-accent-info;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: $radius-sm;
+  background: rgba($admin-accent-info, 0.1);
+  border: 1px solid rgba($admin-accent-info, 0.3);
+  transition: all $transition-fast ease;
+  
+  .my-signup-card--assigned & {
+    color: $admin-accent-success;
+    background: rgba($admin-accent-success, 0.1);
+    border-color: rgba($admin-accent-success, 0.3);
+  }
+  
+  &:hover {
+    background: rgba($admin-accent-info, 0.2);
+    border-color: rgba($admin-accent-info, 0.5);
+    transform: translateX(3px);
+    box-shadow: 0 0 12px rgba($admin-accent-info, 0.3);
+    
+    .my-signup-card--assigned & {
+      background: rgba($admin-accent-success, 0.2);
+      border-color: rgba($admin-accent-success, 0.5);
+      box-shadow: 0 0 12px rgba($admin-accent-success, 0.3);
+    }
+  }
+}
+
 .my-signup-card__match-info {
   font-size: 0.875rem;
   color: rgba(255, 255, 255, 0.7);
@@ -1095,15 +1147,10 @@
 }
 
 .my-signup-card__roles {
-  @include transparent-bg(0.05);
-  @include glow-border($admin-accent-info, 0.5, 0.8);
+  @include transparent-bg(0.03);
   padding: 1rem;
   border-radius: 8px;
   margin-bottom: 1rem;
-  
-  .my-signup-card--assigned & {
-    @include glow-border($admin-accent-success, 0.5, 0.8);
-  }
 }
 
 .my-signup-card__role-list {
@@ -1776,6 +1823,19 @@
 }
 
 // ============================================
+// TABLE WRAPPERS FOR SCROLLING
+// ============================================
+
+.production-dashboard__table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  
+  // Custom scrollbar for table wrapper
+  @include custom-scrollbar;
+}
+
+// ============================================
 // RESPONSIVE ADJUSTMENTS
 // ============================================
 
@@ -1802,6 +1862,16 @@
       button {
         width: 100%;
       }
+    }
+    
+    // Ensure table wrapper enables scrolling on mobile
+    &__table-wrapper {
+      margin: 0 -1rem; // Extend to screen edges
+      padding: 0 1rem;
+    }
+    
+    &__table {
+      min-width: 800px; // Force horizontal scroll if needed
     }
   }
   

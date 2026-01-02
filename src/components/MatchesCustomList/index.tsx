@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useConfig } from '@payloadcms/ui'
 import Link from 'next/link'
 
@@ -10,15 +10,18 @@ export default function MatchesCustomList() {
   const [upcomingMatches, setUpcomingMatches] = useState<any[]>([])
   const [completedMatches, setCompletedMatches] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [initialLoad, setInitialLoad] = useState(true)
   const [upcomingTotal, setUpcomingTotal] = useState(0)
   const [completedTotal, setCompletedTotal] = useState(0)
   const [completedPage, setCompletedPage] = useState(1)
   const [completedTotalPages, setCompletedTotalPages] = useState(1)
   const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
   const [teamFilter, setTeamFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [broadcastFilter, setBroadcastFilter] = useState<string>('all')
   const [teams, setTeams] = useState<any[]>([])
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   
   const COMPLETED_PAGE_SIZE = 20
 
@@ -27,10 +30,27 @@ export default function MatchesCustomList() {
     fetchMatches()
   }, [])
   
+  // Debounce search term
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current)
+    }
+    
+    searchTimeoutRef.current = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm)
+    }, 300) // Wait 300ms after user stops typing
+    
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current)
+      }
+    }
+  }, [searchTerm])
+  
   useEffect(() => {
     setCompletedPage(1)
     fetchMatches()
-  }, [searchTerm, teamFilter, statusFilter, broadcastFilter])
+  }, [debouncedSearchTerm, teamFilter, statusFilter, broadcastFilter])
   
   useEffect(() => {
     fetchMatches()
@@ -48,7 +68,10 @@ export default function MatchesCustomList() {
 
   const fetchMatches = async () => {
     try {
-      setLoading(true)
+      // Only show full loading state on initial load
+      if (initialLoad) {
+        setLoading(true)
+      }
       
       let upcomingQuery = 'where[status][equals]=scheduled&sort=date&limit=100&depth=1'
       const offset = (completedPage - 1) * COMPLETED_PAGE_SIZE
@@ -59,8 +82,8 @@ export default function MatchesCustomList() {
         completedQuery += `&where[team][equals]=${teamFilter}`
       }
       
-      if (searchTerm && searchTerm.trim() !== '') {
-        const searchParam = encodeURIComponent(searchTerm.trim())
+      if (debouncedSearchTerm && debouncedSearchTerm.trim() !== '') {
+        const searchParam = encodeURIComponent(debouncedSearchTerm.trim())
         upcomingQuery += `&where[or][0][title][contains]=${searchParam}&where[or][1][opponent][contains]=${searchParam}`
         completedQuery += `&where[or][0][title][contains]=${searchParam}&where[or][1][opponent][contains]=${searchParam}`
       }
@@ -98,6 +121,7 @@ export default function MatchesCustomList() {
       console.error('Error fetching matches:', error)
     } finally {
       setLoading(false)
+      setInitialLoad(false)
     }
   }
 
@@ -128,7 +152,7 @@ export default function MatchesCustomList() {
     return <div className="matches-custom-list__loading">Loading matches...</div>
   }
 
-  const hasActiveFilters = searchTerm || teamFilter !== 'all' || statusFilter !== 'all' || broadcastFilter !== 'all'
+  const hasActiveFilters = debouncedSearchTerm || teamFilter !== 'all' || statusFilter !== 'all' || broadcastFilter !== 'all'
 
   return (
     <div className="matches-custom-list">

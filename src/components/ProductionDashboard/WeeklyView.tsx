@@ -136,12 +136,36 @@ export function WeeklyView() {
     // Debounce the actual API call (wait 1 second after user stops typing)
     updateTimeouts.current[key] = setTimeout(async () => {
       try {
+        const match = matches.find(m => m.id === matchId)
+        const updateData: any = { [field]: value }
+        
+        // Smart title update: Auto-update title when opponent changes IF:
+        // 1. Opponent was TBD/empty OR
+        // 2. Match is standard type (not showmatch/special) OR  
+        // 3. Title follows standard "X vs Y" pattern
+        if (field === 'opponent' && match) {
+          const oldOpponent = match.opponent || ''
+          const isOldOpponentTBD = !oldOpponent || oldOpponent.toLowerCase().includes('tbd')
+          const isStandardType = !match.matchType || match.matchType === 'regular' || match.matchType === 'league'
+          const followsStandardPattern = match.title && match.title.includes(' vs ')
+          
+          if (isOldOpponentTBD || isStandardType || followsStandardPattern) {
+            const teamName = match.team?.name || 'Team'
+            updateData.title = `${teamName} vs ${value}`
+          }
+        }
+        
         await fetch(`/api/matches/${matchId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ [field]: value }),
+          body: JSON.stringify(updateData),
         })
         toast.success('Match updated')
+        
+        // Refresh match data to get updated title
+        if (updateData.title) {
+          await fetchMatches()
+        }
       } catch (error) {
         console.error('Error updating match:', error)
         toast.error('Failed to update match')
@@ -253,77 +277,79 @@ export function WeeklyView() {
         {teamMatches.length === 0 ? (
           <p className="production-dashboard__empty">No team matches found. Click "Generate This Week's Matches" to create them.</p>
         ) : (
-          <table className="production-dashboard__table">
-            <thead>
-              <tr>
-                <th>Team</th>
-                <th>Region</th>
-                <th>Division</th>
-                <th>Date/Time</th>
-                <th>Opponent</th>
-                <th>Lobby Code</th>
-                <th>Priority</th>
-                <th>Coverage</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {teamMatches.map((match) => {
-                const opponentKey = `${match.id}-opponent`
-                const lobbyKey = `${match.id}-faceitLobby`
-                return (
-                <tr key={match.id}>
-                  <td>{match.team?.name || 'Unknown Team'}</td>
-                  <td>{match.region}</td>
-                  <td>{match.league}</td>
-                  <td>{new Date(match.date).toLocaleString()}</td>
-                  <td>
-                    <input
-                      type="text"
-                      value={editingValues[opponentKey] ?? match.opponent ?? ''}
-                      onChange={(e) => updateMatchField(match.id, 'opponent', e.target.value)}
-                      className="production-dashboard__inline-input"
-                      placeholder="Opponent name"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="text"
-                      value={editingValues[lobbyKey] ?? match.faceitLobby ?? ''}
-                      onChange={(e) => updateMatchField(match.id, 'faceitLobby', e.target.value)}
-                      className="production-dashboard__inline-input"
-                      placeholder="FACEIT lobby URL"
-                    />
-                  </td>
-                  <td>
-                    <select
-                      value={match.productionWorkflow?.priority || 'none'}
-                      onChange={(e) => updateMatchField(match.id, 'productionWorkflow', {
-                        ...match.productionWorkflow,
-                        priority: e.target.value
-                      })}
-                      className="production-dashboard__inline-select"
-                    >
-                      <option value="none">None</option>
-                      <option value="low">Low</option>
-                      <option value="medium">Medium</option>
-                      <option value="high">High</option>
-                      <option value="urgent">Urgent</option>
-                    </select>
-                  </td>
-                  <td>
-                    {getCoverageIcon(match.productionWorkflow?.coverageStatus)}
-                  </td>
-                  <td>
-                    <a href={`/admin/collections/matches/${match.id}`} target="_blank" rel="noopener noreferrer">
-                      Edit
-                    </a>
-                  </td>
+          <div className="production-dashboard__table-wrapper">
+            <table className="production-dashboard__table">
+              <thead>
+                <tr>
+                  <th>Team</th>
+                  <th>Region</th>
+                  <th>Division</th>
+                  <th>Date/Time</th>
+                  <th>Opponent</th>
+                  <th>Lobby Code</th>
+                  <th>Priority</th>
+                  <th>Coverage</th>
+                  <th>Actions</th>
                 </tr>
-              )
-              })}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {teamMatches.map((match) => {
+                  const opponentKey = `${match.id}-opponent`
+                  const lobbyKey = `${match.id}-faceitLobby`
+                  return (
+                    <tr key={match.id}>
+                      <td>{match.team?.name || 'Unknown Team'}</td>
+                      <td>{match.region}</td>
+                      <td>{match.league}</td>
+                      <td>{new Date(match.date).toLocaleString()}</td>
+                      <td>
+                        <input
+                          type="text"
+                          value={editingValues[opponentKey] ?? match.opponent ?? ''}
+                          onChange={(e) => updateMatchField(match.id, 'opponent', e.target.value)}
+                          className="production-dashboard__inline-input"
+                          placeholder="Opponent name"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="text"
+                          value={editingValues[lobbyKey] ?? match.faceitLobby ?? ''}
+                          onChange={(e) => updateMatchField(match.id, 'faceitLobby', e.target.value)}
+                          className="production-dashboard__inline-input"
+                          placeholder="FACEIT lobby URL"
+                        />
+                      </td>
+                      <td>
+                        <select
+                          value={match.productionWorkflow?.priority || 'none'}
+                          onChange={(e) => updateMatchField(match.id, 'productionWorkflow', {
+                            ...match.productionWorkflow,
+                            priority: e.target.value
+                          })}
+                          className="production-dashboard__inline-select"
+                        >
+                          <option value="none">None</option>
+                          <option value="low">Low</option>
+                          <option value="medium">Medium</option>
+                          <option value="high">High</option>
+                          <option value="urgent">Urgent</option>
+                        </select>
+                      </td>
+                      <td>
+                        {getCoverageIcon(match.productionWorkflow?.coverageStatus)}
+                      </td>
+                      <td>
+                        <a href={`/admin/collections/matches/${match.id}`} target="_blank" rel="noopener noreferrer">
+                          Edit
+                        </a>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </section>
 
@@ -332,34 +358,36 @@ export function WeeklyView() {
         {orgEvents.length === 0 ? (
           <p className="production-dashboard__empty">No organization events scheduled.</p>
         ) : (
-          <table className="production-dashboard__table">
-            <thead>
-              <tr>
-                <th>Event Name</th>
-                <th>Type</th>
-                <th>Date/Time</th>
-                <th>Coverage</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orgEvents.map((match) => (
-                <tr key={match.id}>
-                  <td>{match.title}</td>
-                  <td>{match.matchType}</td>
-                  <td>{new Date(match.date).toLocaleString()}</td>
-                  <td>
-                    {getCoverageIcon(match.productionWorkflow?.coverageStatus)}
-                  </td>
-                  <td>
-                    <a href={`/admin/collections/matches/${match.id}`} target="_blank" rel="noopener noreferrer">
-                      Edit
-                    </a>
-                  </td>
+          <div className="production-dashboard__table-wrapper">
+            <table className="production-dashboard__table">
+              <thead>
+                <tr>
+                  <th>Event Name</th>
+                  <th>Type</th>
+                  <th>Date/Time</th>
+                  <th>Coverage</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {orgEvents.map((match) => (
+                  <tr key={match.id}>
+                    <td>{match.title}</td>
+                    <td>{match.matchType}</td>
+                    <td>{new Date(match.date).toLocaleString()}</td>
+                    <td>
+                      {getCoverageIcon(match.productionWorkflow?.coverageStatus)}
+                    </td>
+                    <td>
+                      <a href={`/admin/collections/matches/${match.id}`} target="_blank" rel="noopener noreferrer">
+                        Edit
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </section>
     </div>

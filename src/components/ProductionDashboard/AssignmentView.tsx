@@ -74,12 +74,20 @@ export function AssignmentView() {
       if (role === 'observer') {
         updateData.productionWorkflow = {
           ...pw,
-          assignedObserver: userId
+          assignedObserver: userId,
+          // Remove user from observer signups
+          observerSignups: (pw.observerSignups || []).filter(u => 
+            (typeof u === 'number' ? u : u.id) !== userId
+          )
         }
       } else if (role === 'producer') {
         updateData.productionWorkflow = {
           ...pw,
-          assignedProducer: userId
+          assignedProducer: userId,
+          // Remove user from producer signups
+          producerSignups: (pw.producerSignups || []).filter(u => 
+            (typeof u === 'number' ? u : u.id) !== userId
+          )
         }
       } else if (role === 'caster') {
         const existingCasters = pw.assignedCasters || []
@@ -88,7 +96,11 @@ export function AssignmentView() {
           assignedCasters: [
             ...existingCasters,
             { user: userId, style: casterStyle || 'both' }
-          ]
+          ],
+          // Remove user from caster signups
+          casterSignups: (pw.casterSignups || []).filter(c => 
+            (typeof c.user === 'number' ? c.user : c.user?.id) !== userId
+          )
         }
       }
 
@@ -99,19 +111,12 @@ export function AssignmentView() {
       })
 
       if (response.ok) {
-        // Update local state instead of refetching
-        setMatches(matches.map(m => {
-          if (m.id === matchId) {
-            return {
-              ...m,
-              productionWorkflow: {
-                ...m.productionWorkflow,
-                ...updateData.productionWorkflow
-              }
-            }
-          }
-          return m
-        }))
+        // Refetch the specific match with full user data (depth=2)
+        const matchResponse = await fetch(`/api/matches/${matchId}?depth=2`)
+        const matchData = await matchResponse.json()
+        
+        // Update local state with the refetched match
+        setMatches(matches.map(m => m.id === matchId ? matchData : m))
         toast.success('Staff assigned successfully!')
       } else {
         toast.error('Failed to assign staff')
@@ -155,19 +160,12 @@ export function AssignmentView() {
       })
 
       if (response.ok) {
-        // Update local state instead of refetching
-        setMatches(matches.map(m => {
-          if (m.id === matchId) {
-            return {
-              ...m,
-              productionWorkflow: {
-                ...m.productionWorkflow,
-                ...updateData.productionWorkflow
-              }
-            }
-          }
-          return m
-        }))
+        // Refetch the specific match with full user data (depth=2)
+        const matchResponse = await fetch(`/api/matches/${matchId}?depth=2`)
+        const matchData = await matchResponse.json()
+        
+        // Update local state with the refetched match
+        setMatches(matches.map(m => m.id === matchId ? matchData : m))
         toast.success('Staff unassigned successfully!')
       } else {
         toast.error('Failed to unassign staff')
