@@ -80,10 +80,11 @@ const QuickStats: React.FC = () => {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
           gap: '1rem',
           marginBottom: '1.5rem',
         }}
+        className="quick-stats-grid"
       >
         {[1, 2, 3, 4, 5].map((i) => (
           <div
@@ -169,10 +170,11 @@ const QuickStats: React.FC = () => {
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
         gap: '1rem',
         marginBottom: '1.5rem',
       }}
+      className="quick-stats-grid"
     >
       {statCards.map((stat) => (
         <a

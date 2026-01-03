@@ -84,3 +84,4 @@ echo "  ssh -i $SSH_KEY $SERVER 'cd $PROJECT_DIR && docker compose logs -f paylo
 
 
 
+

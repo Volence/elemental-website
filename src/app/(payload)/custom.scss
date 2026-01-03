@@ -133,10 +133,12 @@ main > div {
   background-color: #000000 !important;
 }
 
-/* Dashboard and collection list containers - proper padding */
+/* Dashboard and collection list containers - proper padding and full width */
 .dashboard,
 .collection-list {
   padding: 1.5rem !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 /* ============================================ */
@@ -1597,10 +1599,12 @@ select:disabled {
   pointer-events: none !important;
 }
 
-/* Before dashboard - consistent vertical rhythm */
+/* Before dashboard - consistent vertical rhythm and full width */
 .before-dashboard {
   padding: 1.5rem !important;
   margin-bottom: 2rem !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 /* Your Assigned Teams section - proper spacing with gradient borders */
@@ -1950,6 +1954,29 @@ main > div > section + section::before {
 }
 
 /* ============================================ */
+/* DASHBOARD GRID RESPONSIVENESS               */
+/* ============================================ */
+
+/* Quick Stats and Assigned Teams grids - let them collapse naturally on small screens */
+@media (max-width: 600px) {
+  .quick-stats-grid,
+  .assigned-teams-grid {
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+  }
+  
+  /* Ensure all dashboard content uses full width */
+  .dashboard,
+  .before-dashboard,
+  .collection-list {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}
+
+/* ============================================ */
 /* MOBILE RESPONSIVENESS                        */
 /* ============================================ */
 
@@ -1979,6 +2006,17 @@ main > div > section + section::before {
   .render-default {
     margin-left: 0 !important;
     width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  /* Dashboard and collection content - ensure full width */
+  .dashboard,
+  .collection-list,
+  .before-dashboard {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
   }
 
   /* Dashboard cards - stacked layout */
@@ -1988,13 +2026,6 @@ main > div > section + section::before {
     width: 100% !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
-  }
-
-  /* Cards grid - single column */
-  [class*="grid"],
-  .dashboard > div {
-    grid-template-columns: 1fr !important;
-    gap: 1rem !important;
   }
 
   /* Responsive typography - smaller on mobile */
@@ -2105,11 +2136,8 @@ main > div > section + section::before {
   .template-default main {
     margin-left: 200px !important;
   }
-
-  /* Cards - 2 column grid on tablet */
-  [class*="grid"] {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
+  
+  /* Let dashboard grids handle their own responsive behavior naturally */
 }
 
 /* ============================================ */

@@ -168,11 +168,14 @@ const AssignedTeamsDashboard: React.FC = () => {
           Your Assigned Teams
         </h3>
       </div>
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-        gap: '0.75rem'
-      }}>
+      <div 
+        style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+          gap: '0.75rem'
+        }}
+        className="assigned-teams-grid"
+      >
         {assignedTeams.map((team) => (
           <a
             key={team.id}
