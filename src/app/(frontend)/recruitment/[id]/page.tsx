@@ -95,7 +95,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     
     const titlePrefix = team ? `ELMT ${team.name}` : 'Elemental'
     const title = `${titlePrefix} - ${roleLabel} | Join Us`
-    const description = listing.requirements.slice(0, 155) + '...'
+    
+    // Build description with team's rating and region for Discord embed
+    const descriptionParts: string[] = []
+    if (team?.rating) {
+      descriptionParts.push(`SR: ${team.rating}`)
+    }
+    if (team?.region) {
+      descriptionParts.push(`Region: ${team.region}`)
+    }
+    const description = descriptionParts.length > 0 
+      ? descriptionParts.join(' • ') 
+      : listing.requirements.slice(0, 155) + '...'
 
     return {
       title,
@@ -181,6 +192,11 @@ export default async function RecruitmentDetailPage({ params }: Props) {
           <span className="inline-flex items-center gap-1 rounded-full border border-gray-600 bg-gray-700 px-3 py-1 text-xs font-semibold text-gray-300">
             {getCategoryLabel(listing.category)}
           </span>
+          {team?.rating && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-primary-500/50 bg-primary-500/10 px-3 py-1 text-sm font-semibold text-primary-400">
+              SR: {team.rating}
+            </span>
+          )}
         </div>
 
         {team && (

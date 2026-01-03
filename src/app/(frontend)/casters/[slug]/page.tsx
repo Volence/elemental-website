@@ -70,9 +70,18 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
       }
     }
 
+    // Use person's avatar if available, otherwise fall back to org logo
+    const avatarMedia = person?.photo && typeof person.photo === 'object' ? person.photo : null
+    const avatarUrl = avatarMedia?.url || '/logos/org.png'
+
     return {
       title: `${casterName} | Production Staff | Elemental (ELMT)`,
       description: `Learn more about ${casterName}, ${getTypeDescription(casterData.type)} for Elemental.`,
+      openGraph: {
+        title: `${casterName} | Elemental (ELMT)`,
+        description: `${casterName} - ${getTypeDescription(casterData.type)}`,
+        images: [{ url: avatarUrl }],
+      },
     }
   } catch (error) {
     // During build, database may not be available

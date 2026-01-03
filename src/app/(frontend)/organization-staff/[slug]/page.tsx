@@ -58,9 +58,18 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
       ? roles.map((role: string) => getOrgRoleLabel(role)).join(', ')
       : 'Staff Member'
 
+    // Use person's avatar if available, otherwise fall back to org logo
+    const avatarMedia = person?.photo && typeof person.photo === 'object' ? person.photo : null
+    const avatarUrl = avatarMedia?.url || '/logos/org.png'
+
     return {
       title: `${staffName} | Staff | Elemental (ELMT)`,
       description: `Learn more about ${staffName}, ${roleLabels} for Elemental.`,
+      openGraph: {
+        title: `${staffName} | Elemental (ELMT)`,
+        description: `${staffName} - ${roleLabels}`,
+        images: [{ url: avatarUrl }],
+      },
     }
   } catch (error) {
     // During build, database may not be available
