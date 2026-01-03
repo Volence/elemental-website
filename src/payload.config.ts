@@ -14,9 +14,30 @@ import { Pages } from './collections/Pages'
 import { People } from './collections/People'
 import { Teams } from './collections/Teams'
 import { Users } from './collections/Users'
-// import { ActivityLog } from './collections/ActivityLog' // Temporarily disabled until migrations are fixed
+import { IgnoredDuplicates } from './collections/IgnoredDuplicates'
+import { RecruitmentListings } from './collections/RecruitmentListings'
+import { RecruitmentApplications } from './collections/RecruitmentApplications'
+import { InviteLinks } from './collections/InviteLinks'
+import { TournamentTemplates } from './collections/TournamentTemplates'
+import { SocialPosts } from './collections/SocialPosts'
+import { FaceitSeasons } from './collections/FaceitSeasons'
+import { FaceitLeagues } from './collections/FaceitLeagues'
+import { AuditLogs } from './collections/AuditLogs'
+import { ErrorLogs } from './collections/ErrorLogs'
+import { CronJobRuns } from './collections/CronJobRuns'
+import { ActiveSessions } from './collections/ActiveSessions'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
+import { DataConsistency } from './globals/DataConsistency'
+import { ProductionDashboard } from './globals/ProductionDashboard'
+import { SocialMediaSettings } from './globals/SocialMediaSettings'
+import { SocialMediaConfig } from './globals/SocialMediaConfig'
+import { AuditLogViewer } from './globals/AuditLogViewer'
+import { CronMonitor } from './globals/CronMonitor'
+import { ErrorDashboard } from './globals/ErrorDashboard'
+import { DatabaseHealth } from './globals/DatabaseHealth'
+import { ActiveSessionsViewer } from './globals/ActiveSessionsViewer'
+import { ErrorHarvesterState } from './globals/ErrorHarvesterState'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
@@ -25,23 +46,46 @@ import { UserRole } from './access/roles'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-export default buildConfig({
+const config = buildConfig({
   admin: {
+    meta: {
+      titleSuffix: '- Elemental Admin',
+      description: 'Elemental Esports admin panel - manage teams, players, matches, and content.',
+      icons: [
+        {
+          rel: 'icon',
+          type: 'image/png',
+          url: '/logos/org.png',
+        },
+        {
+          rel: 'apple-touch-icon',
+          url: '/logos/org.png',
+        },
+      ],
+      openGraph: {
+        title: 'Elemental Admin Panel',
+        description: 'Elemental Esports content management system.',
+        images: '/logos/org.png',
+        siteName: 'Elemental Esports',
+      },
+    },
     components: {
       // The `BeforeLogin` component renders a message that you see while logging into your admin panel.
       // Feel free to delete this at any time. Simply remove the line below.
       beforeLogin: ['@/components/BeforeLogin'],
       // The `BeforeDashboard` component renders the 'welcome' block that you see after logging into your admin panel.
       // Feel free to delete this at any time. Simply remove the line below.
-      beforeDashboard: ['@/components/BeforeDashboard'],
+      beforeDashboard: [
+        '@/components/BeforeDashboard',
+        '@/components/FixDatePickerIcons#default',
+        '@/components/SectionThemeApplicator#SectionThemeApplicator',
+      ],
       // Custom navigation links in the sidebar
       beforeNavLinks: [
         '@/components/BeforeDashboard/DashboardNavLink',
-        '@/components/BeforeDashboard/ScheduleGeneratorNavLink#default',
-        '@/components/BeforeDashboard/DataConsistencyNavLink#default',
-        '@/components/BeforeDashboard/LogoutButton',
         '@/components/BeforeDashboard/ReadOnlyStyles#default',
       ],
+      // No custom afterNavLinks - Payload provides its own logout button
       // Custom logo for admin panel breadcrumbs
       graphics: {
         Logo: '@/components/AdminLogo#default',
@@ -52,6 +96,9 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
     user: Users.slug,
+    avatar: {
+      Component: '@/components/UserAvatar#default',
+    },
     livePreview: {
       breakpoints: [
         {
@@ -81,12 +128,61 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URI || 'postgresql://build:build@localhost:5432/build',
     },
-    // Use default UUID IDs (idType: 'serial' is broken in Payload 3.68.0)
+    idType: 'serial', // Use 'serial' for auto-incrementing numeric IDs
     push: process.env.PAYLOAD_DB_PUSH === 'true' || false,
   }),
-  collections: [Pages, Media, People, Teams, Matches, Production, OrganizationStaff, Users /* ActivityLog temporarily disabled */],
+  collections: [
+    // Hidden collections (Pages, Media)
+    Pages,
+    Media,
+    
+    // PEOPLE: Core entities
+    People,
+    Teams,
+    FaceitLeagues,
+    
+    // STAFF: Who manages operations
+    Production,
+    OrganizationStaff,
+    
+    // PRODUCTION: Department - Matches & broadcasts
+    Matches,
+    TournamentTemplates,
+    FaceitSeasons, // Hidden, auto-managed
+    
+    // SOCIAL MEDIA: Department - Content & calendar
+    SocialPosts,
+    
+    // RECRUITMENT: Growth
+    RecruitmentListings,
+    RecruitmentApplications,
+    
+    // SYSTEM: Administration
+    Users,
+    IgnoredDuplicates,
+    InviteLinks,
+    
+    // MONITORING: Security & Health
+    AuditLogs,
+    ErrorLogs,
+    CronJobRuns,
+    ActiveSessions,
+  ],
   cors: [getServerSideURL()].filter(Boolean),
-  globals: [Header, Footer],
+  globals: [
+    Header, 
+    Footer, 
+    ProductionDashboard, // Production group
+    SocialMediaSettings, // Social Media group
+    SocialMediaConfig, // Social Media group
+    DataConsistency, // System group
+    AuditLogViewer, // Monitoring group
+    CronMonitor, // Monitoring group
+    ErrorDashboard, // Monitoring group
+    ActiveSessionsViewer, // Monitoring group
+    DatabaseHealth, // Monitoring group
+    ErrorHarvesterState, // Internal state tracking (hidden)
+  ],
   plugins: [
     ...plugins,
     // storage-adapter-placeholder
@@ -112,3 +208,5 @@ export default buildConfig({
     tasks: [],
   },
 })
+
+export default config

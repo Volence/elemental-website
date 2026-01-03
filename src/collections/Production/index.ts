@@ -43,6 +43,11 @@ export const Production: CollectionConfig = {
     defaultColumns: ['displayName', 'type', 'updatedAt'],
     description: '🎙️ Manage production staff (casters, observers, producers) who work on match broadcasts.',
     group: 'Staff',
+    hidden: ({ user }) => {
+      if (!user) return true
+      // Only admins and staff managers can see staff collections
+      return user.role !== 'admin' && user.role !== 'staff-manager'
+    },
   },
   fields: [
     {

@@ -41,68 +41,49 @@ const RosterCount: React.FC = () => {
 
   if (totalPlayers === 0) {
     return (
-      <div
-        style={{
-          padding: '0.75rem 1rem',
-          backgroundColor: 'var(--theme-elevation-100)',
-          border: '1px solid var(--theme-elevation-300)',
-          borderRadius: '6px',
-          marginBottom: '1.5rem',
-          fontSize: '0.875rem',
-          color: 'var(--theme-text-600)',
-        }}
-      >
+      <div className="team-tab-count team-tab-count--empty">
         No players on roster yet
       </div>
     )
   }
 
   return (
-    <div
-      style={{
-        padding: '0.75rem 1rem',
-        backgroundColor: 'var(--theme-info-50)',
-        border: '1px solid var(--theme-info-300)',
-        borderRadius: '6px',
-        marginBottom: '1.5rem',
-        fontSize: '0.875rem',
-      }}
-    >
-      <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-        <div>
-          <strong style={{ color: 'var(--theme-text)' }}>Total Players:</strong>{' '}
-          <span style={{ color: 'var(--theme-info-700)', fontWeight: 600 }}>{totalPlayers}</span>
+    <div className="team-tab-count team-tab-count--filled">
+      <div className="team-tab-count__stats">
+        <div className="team-tab-count__stat">
+          <strong>Total Players:</strong>{' '}
+          <span className="team-tab-count__stat-value team-tab-count__stat-value--primary">{totalPlayers}</span>
         </div>
         {rosterCount > 0 && (
-          <div>
-            <strong style={{ color: 'var(--theme-text)' }}>Active Roster:</strong>{' '}
-            <span style={{ color: 'var(--theme-text-700)' }}>{rosterCount}</span>
+          <div className="team-tab-count__stat">
+            <strong>Active Roster:</strong>{' '}
+            <span className="team-tab-count__stat-value">{rosterCount}</span>
           </div>
         )}
         {subsCount > 0 && (
-          <div>
-            <strong style={{ color: 'var(--theme-text)' }}>Substitutes:</strong>{' '}
-            <span style={{ color: 'var(--theme-text-700)' }}>{subsCount}</span>
+          <div className="team-tab-count__stat">
+            <strong>Substitutes:</strong>{' '}
+            <span className="team-tab-count__stat-value">{subsCount}</span>
           </div>
         )}
         {Object.keys(roleCounts).length > 0 && (
           <>
             {roleCounts.tank > 0 && (
-              <div>
-                <strong style={{ color: 'var(--theme-text)' }}>Tanks:</strong>{' '}
-                <span style={{ color: 'var(--theme-text-700)' }}>{roleCounts.tank}</span>
+              <div className="team-tab-count__stat">
+                <strong>Tanks:</strong>{' '}
+                <span className="team-tab-count__stat-value">{roleCounts.tank}</span>
               </div>
             )}
             {roleCounts.dps > 0 && (
-              <div>
-                <strong style={{ color: 'var(--theme-text)' }}>DPS:</strong>{' '}
-                <span style={{ color: 'var(--theme-text-700)' }}>{roleCounts.dps}</span>
+              <div className="team-tab-count__stat">
+                <strong>DPS:</strong>{' '}
+                <span className="team-tab-count__stat-value">{roleCounts.dps}</span>
               </div>
             )}
             {roleCounts.support > 0 && (
-              <div>
-                <strong style={{ color: 'var(--theme-text)' }}>Supports:</strong>{' '}
-                <span style={{ color: 'var(--theme-text-700)' }}>{roleCounts.support}</span>
+              <div className="team-tab-count__stat">
+                <strong>Supports:</strong>{' '}
+                <span className="team-tab-count__stat-value">{roleCounts.support}</span>
               </div>
             )}
           </>

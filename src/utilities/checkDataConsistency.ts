@@ -79,6 +79,10 @@ function levenshteinDistance(str1: string, str2: string): number {
 
 /**
  * Check for orphaned People entries (not linked to any team/staff)
+ * A person is only flagged as orphaned if they are:
+ * - NOT on any team (in any role) AND
+ * - NOT in organization staff AND
+ * - NOT in production staff
  */
 async function findOrphanedPeople(payload: Payload): Promise<Array<{
   id: number
@@ -107,7 +111,7 @@ async function findOrphanedPeople(payload: Payload): Promise<Array<{
     collection: 'organization-staff',
     limit: 10000,
     pagination: false,
-    depth: 0,
+    depth: 1, // Increased depth to ensure person is populated
   })
 
   // Get all production staff
@@ -115,10 +119,10 @@ async function findOrphanedPeople(payload: Payload): Promise<Array<{
     collection: 'production',
     limit: 10000,
     pagination: false,
-    depth: 0,
+    depth: 1, // Increased depth to ensure person is populated
   })
 
-  // Collect all person IDs that are referenced
+  // Collect all person IDs that are referenced in teams OR staff roles
   const referencedPersonIds = new Set<number>()
 
   // Check teams

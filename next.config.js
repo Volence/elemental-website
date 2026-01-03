@@ -11,8 +11,6 @@ const nextConfig = {
   output: 'standalone', // Required for Docker production builds
   // Skip static optimization during build when database is not available
   experimental: {
-    // Allow build to continue even if some pages fail during static generation
-    missingSuspenseWithCSRBailout: false,
     // Increase Server Actions body size limit for image uploads (default is 1MB)
     serverActions: {
       bodySizeLimit: '10mb',

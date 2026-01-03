@@ -7,7 +7,8 @@ function getRegionPriority(region?: string): number {
   switch (region) {
     case 'NA':
       return 1
-    case 'EU':
+    case 'EU': // Legacy support
+    case 'EMEA':
       return 2
     case 'SA':
       return 3
@@ -43,7 +44,7 @@ function getRatingPriority(rating?: string): number {
 }
 
 /**
- * Sort teams by region (NA, EU, SA) then by rating within each region
+ * Sort teams by region (NA, EMEA, SA) then by rating within each region
  */
 export function sortTeams(teams: Team[]): Team[] {
   return [...teams].sort((a, b) => {

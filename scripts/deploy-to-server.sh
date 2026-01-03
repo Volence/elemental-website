@@ -65,6 +65,10 @@ ssh -i "$SSH_KEY" "$SERVER" << ENDSSH
     sleep 10
     echo ""
     
+    echo "🔄 Payload will auto-migrate on startup..."
+    echo "✅ Database migrations handled by Payload"
+    echo ""
+    
     echo "📋 Container status:"
     docker compose ps
     echo ""

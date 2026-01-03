@@ -8,21 +8,11 @@ import React from 'react'
  */
 const AdminLogo: React.FC = () => {
   return (
-    <div style={{ 
-      display: 'flex', 
-      alignItems: 'center', 
-      gap: '0.5rem',
-      height: '100%',
-    }}>
+    <div className="admin-logo">
       <img 
         src="/logos/org.png" 
         alt="Elemental"
-        style={{
-          height: '24px',
-          width: 'auto',
-          objectFit: 'contain',
-          display: 'block',
-        }}
+        className="admin-logo__img"
       />
     </div>
   )

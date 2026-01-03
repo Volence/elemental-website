@@ -1,79 +1,28 @@
 'use client'
 
 import React, { useEffect } from 'react'
-import { useAuth } from '@payloadcms/ui'
 import { usePathname } from 'next/navigation'
-import type { User } from '@/payload-types'
+import { useAdminUser } from '@/utilities/adminAuth'
 import { UserRole } from '@/access/roles'
 
 /**
- * Component that adds CSS and marks read-only items in list views and navigation
- * This runs globally and injects styles + marks items based on permissions
+ * Component that marks read-only items in list views and navigation
+ * based on user permissions. Styling is handled by _read-only-items.scss
+ * 
+ * This component:
+ * - Marks navigation links as read-only for collections user can't access
+ * - Marks list rows as read-only based on user role and assigned teams
+ * - Uses MutationObserver to watch for DOM changes (pagination, filtering, etc.)
  */
 const ReadOnlyStyles: React.FC = () => {
-  const { user } = useAuth()
+  const user = useAdminUser()
   const pathname = usePathname()
   
   useEffect(() => {
     if (!user) return
     
-    // @ts-ignore - Payload ClientUser type compatibility issue
-    const currentUser = user as User
-    
-    // Inject CSS to style read-only items (only once)
-    const styleId = 'read-only-items-style'
-    if (!document.getElementById(styleId)) {
-      const style = document.createElement('style')
-      style.id = styleId
-      style.textContent = `
-        /* Gray out list rows marked as read-only */
-        [data-payload-list-row][data-read-only="true"] {
-          opacity: 0.5 !important;
-          filter: grayscale(0.4) !important;
-        }
-        
-        [data-payload-list-row][data-read-only="true"]:hover {
-          opacity: 0.7 !important;
-          background-color: var(--theme-elevation-50) !important;
-        }
-        
-        [data-payload-list-row][data-read-only="true"] a,
-        [data-payload-list-row][data-read-only="true"] button {
-          cursor: not-allowed !important;
-          pointer-events: auto;
-        }
-        
-        /* Add visual indicator in the name/title cell */
-        [data-payload-list-row][data-read-only="true"] [data-payload-cell="name"]::after,
-        [data-payload-list-row][data-read-only="true"] [data-payload-cell="displayName"]::after {
-          content: " (Read-only)";
-          font-size: 0.7rem;
-          color: var(--theme-text-50);
-          font-style: italic;
-          margin-left: 0.5rem;
-          opacity: 0.8;
-        }
-        
-        /* Gray out navigation links for collections user can't access */
-        nav a[data-read-only-nav="true"],
-        [data-payload-nav-link][data-read-only-nav="true"] {
-          opacity: 0.4 !important;
-          filter: grayscale(0.6) !important;
-          pointer-events: auto;
-          cursor: not-allowed !important;
-        }
-        
-        nav a[data-read-only-nav="true"]:hover,
-        [data-payload-nav-link][data-read-only-nav="true"]:hover {
-          opacity: 0.5 !important;
-        }
-      `
-      document.head.appendChild(style)
-    }
-    
-    // Only apply to non-admin users
-    if (currentUser.role === UserRole.ADMIN) {
-      // Remove any read-only markers for admins
+    // Admins can edit everything - remove any markers
+    if (user.role === UserRole.ADMIN) {
       document.querySelectorAll('[data-read-only="true"]').forEach(el => {
         el.removeAttribute('data-read-only')
       })
@@ -83,59 +32,103 @@ const ReadOnlyStyles: React.FC = () => {
       return
     }
     
-    // Determine which collection we're viewing (at top level so it can be used in multiple places)
-    const currentPathname = pathname || window.location.pathname
-    const isTeamsPage = currentPathname?.includes('/teams')
-    const isOrgStaffPage = currentPathname?.includes('/organization-staff')
-    const isProductionPage = currentPathname?.includes('/production')
-    
-    // Function to mark navigation links as read-only
+    /**
+     * Mark navigation links as read-only based on user permissions
+     */
     const markNavigationLinks = () => {
-      // Find all navigation links - Payload uses specific selectors
-      const navLinks = document.querySelectorAll('nav a[href*="/admin/collections/"], nav a[href*="/admin/globals/"], [data-payload-nav-link] a, aside a[href*="/admin/"]')
+      const navLinks = document.querySelectorAll(
+        'nav a[href*="/admin/collections/"], nav a[href*="/admin/globals/"], [data-payload-nav-link] a, aside a[href*="/admin/"]'
+      )
       
       navLinks.forEach((link) => {
         const href = link.getAttribute('href') || ''
         const linkText = link.textContent?.toLowerCase() || ''
         
-        // Check if this is a collection link the user can't access
-        if (href.includes('/organization-staff') || linkText.includes('organization staff')) {
-          if (currentUser.role !== UserRole.ADMIN && currentUser.role !== UserRole.STAFF_MANAGER) {
+        // Check Organization Staff and Production collections
+        const isOrgStaff = href.includes('/organization-staff') || linkText.includes('organization staff')
+        const isProduction = href.includes('/production') || linkText.includes('production staff')
+        
+        if (isOrgStaff || isProduction) {
+          // Only Staff Managers and Admins can access staff collections
+          if (user.role !== UserRole.STAFF_MANAGER) {
             link.setAttribute('data-read-only-nav', 'true')
-            if (process.env.NODE_ENV === 'development') {
-              console.log('[ReadOnlyStyles] Marked Organization Staff nav as read-only')
-            }
           } else {
             link.removeAttribute('data-read-only-nav')
           }
-        } else if (href.includes('/production') || linkText.includes('production staff')) {
-          if (currentUser.role !== UserRole.ADMIN && currentUser.role !== UserRole.STAFF_MANAGER) {
-            link.setAttribute('data-read-only-nav', 'true')
-            if (process.env.NODE_ENV === 'development') {
-              console.log('[ReadOnlyStyles] Marked Production Staff nav as read-only')
-            }
-          } else {
-            link.removeAttribute('data-read-only-nav')
-          }
-        } else if (href.includes('/teams') || linkText.includes('teams')) {
-          // Teams are always visible, but items within will be marked
-          link.removeAttribute('data-read-only-nav')
         } else {
-          // Remove marker for other links
+          // Remove marker for other links (they're accessible)
           link.removeAttribute('data-read-only-nav')
         }
       })
     }
     
-    // Function to mark read-only items in list views
-    const markReadOnlyItems = () => {
-      // Use current pathname (may have changed since component mounted)
-      const currentPath = window.location.pathname
-      const isTeamsPageLocal = currentPath?.includes('/teams')
-      const isOrgStaffPageLocal = currentPath?.includes('/organization-staff')
-      const isProductionPageLocal = currentPath?.includes('/production')
+    /**
+     * Extract item ID from a table row
+     */
+    const getRowItemId = (row: Element): string | null => {
+      // Try to get ID from link href (most reliable)
+      const link = row.querySelector('a[href*="/edit/"], a[href*="/teams/"], a[href*="/organization-staff/"], a[href*="/production/"]')
+      if (link) {
+        const href = link.getAttribute('href') || ''
+        const match = href.match(/\/(\d+)(?:\/|$)/)
+        if (match) return match[1]
+      }
       
-      if (!isTeamsPageLocal && !isOrgStaffPageLocal && !isProductionPageLocal) {
+      // Try data attributes
+      let itemId = row.getAttribute('data-row-id')
+      if (itemId) return itemId
+      
+      // Try ID cell
+      const idCell = row.querySelector('[data-payload-cell="id"]')
+      if (idCell?.textContent) return idCell.textContent.trim()
+      
+      // Try row ID/data-id
+      return (row as HTMLElement).id || row.getAttribute('data-id')
+    }
+    
+    /**
+     * Check if user can edit an item based on role and collection
+     */
+    const canEditItem = (itemId: string, collection: 'teams' | 'organization-staff' | 'production'): boolean => {
+      if (collection === 'teams' && user.role === UserRole.TEAM_MANAGER) {
+        // Team managers can only edit their assigned teams
+        const assignedTeams = user.assignedTeams
+        if (!assignedTeams || !Array.isArray(assignedTeams) || assignedTeams.length === 0) {
+          return false
+        }
+        
+        const teamIds = assignedTeams
+          .map((team: any) => {
+            if (typeof team === 'number') return team
+            if (typeof team === 'object' && team !== null) return team.id || team
+            return Number(team) || team
+          })
+          .filter((id): id is number => typeof id === 'number')
+        
+        return teamIds.includes(Number(itemId))
+      }
+      
+      if ((collection === 'organization-staff' || collection === 'production') && user.role === UserRole.STAFF_MANAGER) {
+        // Staff managers can edit all staff entries
+        return true
+      }
+      
+      return false
+    }
+    
+    /**
+     * Mark list rows as read-only based on permissions
+     */
+    const markReadOnlyItems = () => {
+      const currentPath = window.location.pathname
+      
+      // Determine which collection we're viewing
+      let collection: 'teams' | 'organization-staff' | 'production' | null = null
+      if (currentPath?.includes('/teams')) collection = 'teams'
+      else if (currentPath?.includes('/organization-staff')) collection = 'organization-staff'
+      else if (currentPath?.includes('/production')) collection = 'production'
+      
+      if (!collection) {
         // Not on a list page, clear any markers
         document.querySelectorAll('[data-read-only="true"]').forEach(el => {
           el.removeAttribute('data-read-only')
@@ -143,117 +136,38 @@ const ReadOnlyStyles: React.FC = () => {
         return
       }
       
-      // Find list rows - Payload uses table rows with links
-      // Use more specific selector to avoid scanning entire DOM
+      // Find table rows
       const tableBody = document.querySelector('table tbody')
-      if (!tableBody) return // Early exit if no table
+      if (!tableBody) return
       
-      const rows = tableBody.querySelectorAll('tr:not(:first-child)') // Skip header row
-      if (rows.length === 0) return // Early exit if no rows
+      const rows = tableBody.querySelectorAll('tr:not(:first-child)')
+      if (rows.length === 0) return
       
-      // Process rows efficiently
+      // Process each row
       rows.forEach((row) => {
-        // Try to get the ID from the link href (most reliable)
-        let itemId: string | null = null
+        const itemId = getRowItemId(row)
+        if (!itemId) return // Skip rows without IDs
         
-        // Method 1: Extract from link href (most reliable for Payload)
-        const link = row.querySelector('a[href*="/edit/"], a[href*="/teams/"], a[href*="/organization-staff/"], a[href*="/production/"]')
-        if (link) {
-          const href = link.getAttribute('href') || ''
-          // Match patterns like /admin/collections/teams/123 or /teams/123/edit
-          const match = href.match(/\/(\d+)(?:\/|$)/)
-          if (match) {
-            itemId = match[1]
-          }
-        }
-        
-        // Method 2: Check for data-row-id attribute
-        if (!itemId) {
-          itemId = row.getAttribute('data-row-id')
-        }
-        
-        // Method 3: Check ID cell
-        if (!itemId) {
-          const idCell = row.querySelector('[data-payload-cell="id"]')
-          if (idCell) {
-            itemId = idCell.textContent?.trim() || null
-          }
-        }
-        
-        // Method 4: Check the row's ID or data attributes
-        if (!itemId) {
-          itemId = (row as HTMLElement).id || row.getAttribute('data-id') || null
-        }
-        
-        if (!itemId) {
-          // Skip rows without IDs (headers, etc.)
-          return
-        }
-        
-        let canEdit = false
-        
-        if (isTeamsPageLocal && currentUser.role === UserRole.TEAM_MANAGER) {
-          // Team managers can only edit their assigned teams
-          const assignedTeams = currentUser.assignedTeams
-          if (assignedTeams && Array.isArray(assignedTeams) && assignedTeams.length > 0) {
-            const teamIds = assignedTeams.map((team: any) => {
-              // Handle both populated objects and IDs
-              if (typeof team === 'number') return team
-              if (typeof team === 'object' && team !== null) {
-                return team.id || team
-              }
-              return Number(team) || team
-            }).filter((id): id is number => typeof id === 'number')
-            
-            canEdit = teamIds.includes(Number(itemId))
-            
-            // Debug logging
-            if (process.env.NODE_ENV === 'development') {
-              console.log('[ReadOnlyStyles] Team Manager check:', {
-                itemId,
-                teamIds,
-                canEdit,
-                assignedTeams: assignedTeams.slice(0, 3), // Only log first 3
-                pathname
-              })
-            }
-          } else {
-            // No assigned teams = can't edit any
-            canEdit = false
-            if (process.env.NODE_ENV === 'development') {
-              console.log('[ReadOnlyStyles] Team Manager has no assigned teams')
-            }
-          }
-        } else if ((isOrgStaffPageLocal || isProductionPageLocal) && currentUser.role === UserRole.STAFF_MANAGER) {
-          // Staff managers can edit all staff (both organization and production)
-          canEdit = true
-        }
+        const canEdit = canEditItem(itemId, collection)
         
         if (!canEdit) {
           row.setAttribute('data-read-only', 'true')
-          if (process.env.NODE_ENV === 'development' && isTeamsPageLocal) {
-            console.log(`[ReadOnlyStyles] Marked team ${itemId} as read-only`)
-          }
         } else {
           row.removeAttribute('data-read-only')
-          if (process.env.NODE_ENV === 'development' && isTeamsPageLocal) {
-            console.log(`[ReadOnlyStyles] Team ${itemId} is editable`)
-          }
         }
       })
     }
     
-    // Mark navigation links immediately (only once)
+    // Mark navigation links immediately
     markNavigationLinks()
     
-    // Debounce function to limit how often we check (prevents CPU spikes)
+    // Debounce function to limit how often we check
     let debounceTimer: NodeJS.Timeout | null = null
     let isProcessing = false
     
     const debouncedMarkItems = () => {
-      if (debounceTimer) {
-        clearTimeout(debounceTimer)
-      }
+      if (debounceTimer) clearTimeout(debounceTimer)
+      
       debounceTimer = setTimeout(() => {
         if (!isProcessing) {
           isProcessing = true
@@ -261,33 +175,34 @@ const ReadOnlyStyles: React.FC = () => {
           markNavigationLinks()
           isProcessing = false
         }
-      }, 500) // Wait 500ms after last change before processing
+      }, 500)
     }
     
-    // Mark list items after initial render (longer delay for Teams page to ensure DOM is ready)
+    // Mark list items after initial render
+    const isTeamsPage = pathname?.includes('/teams')
     const delay = isTeamsPage ? 1500 : 800
     const initialTimer = setTimeout(() => {
       markReadOnlyItems()
       markNavigationLinks()
     }, delay)
     
-    // Watch for DOM updates with debouncing and limited scope
+    // Watch for DOM updates with MutationObserver
     let observer: MutationObserver | null = null
-    let isObserving = false
     
     const startObserving = () => {
-      if (isObserving || observer) return
+      if (observer) return
       
       observer = new MutationObserver((mutations) => {
-        // Only process if there are actual relevant changes to list rows or nav
+        // Only process if there are relevant changes to list rows or nav
         const hasRelevantChanges = mutations.some((mutation) => {
           if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
             const target = mutation.target as HTMLElement
-            // Only care about table rows or navigation changes
-            return target.tagName === 'TBODY' || 
-                   target.closest('table tbody') !== null ||
-                   target.closest('nav') !== null ||
-                   target.hasAttribute('data-payload-list-row')
+            return (
+              target.tagName === 'TBODY' ||
+              target.closest('table tbody') !== null ||
+              target.closest('nav') !== null ||
+              target.hasAttribute('data-payload-list-row')
+            )
           }
           return false
         })
@@ -297,52 +212,36 @@ const ReadOnlyStyles: React.FC = () => {
         }
       })
       
-      // Only observe specific containers, not the entire body
+      // Observe specific containers (not entire body for performance)
       const tableBody = document.querySelector('table tbody')
       const nav = document.querySelector('nav, aside[class*="nav"]')
       
       if (tableBody) {
-        observer.observe(tableBody, { 
-          childList: true,
-          subtree: false, // Don't go deep - only direct children
-        })
+        observer.observe(tableBody, { childList: true, subtree: false })
       }
       
       if (nav) {
-        observer.observe(nav, { 
-          childList: true,
-          subtree: false,
-        })
+        observer.observe(nav, { childList: true, subtree: false })
       }
       
-      // Only observe body as last resort, and with limited scope
+      // Fallback: observe body (with limited scope)
       if (!tableBody && !nav) {
-        observer.observe(document.body, { 
-          childList: true, 
-          subtree: false, // Critical: don't watch entire subtree
-        })
+        observer.observe(document.body, { childList: true, subtree: false })
       }
-      
-      isObserving = true
     }
     
     // Start observing after initial render
     setTimeout(startObserving, delay + 500)
     
+    // Cleanup on unmount
     return () => {
-      if (debounceTimer) {
-        clearTimeout(debounceTimer)
-      }
-      if (initialTimer) {
-        clearTimeout(initialTimer)
-      }
-      if (observer) {
-        observer.disconnect()
-      }
+      if (debounceTimer) clearTimeout(debounceTimer)
+      if (initialTimer) clearTimeout(initialTimer)
+      if (observer) observer.disconnect()
     }
   }, [user, pathname])
   
-  // Return a hidden div to ensure the component renders
+  // Hidden marker element
   return <div style={{ display: 'none' }} data-read-only-styles-marker="true" />
 }
 

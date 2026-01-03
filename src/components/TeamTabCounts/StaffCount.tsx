@@ -20,54 +20,35 @@ const StaffCount: React.FC = () => {
 
   if (totalStaff === 0) {
     return (
-      <div
-        style={{
-          padding: '0.75rem 1rem',
-          backgroundColor: 'var(--theme-elevation-100)',
-          border: '1px solid var(--theme-elevation-300)',
-          borderRadius: '6px',
-          marginBottom: '1.5rem',
-          fontSize: '0.875rem',
-          color: 'var(--theme-text-600)',
-        }}
-      >
+      <div className="team-tab-count team-tab-count--empty">
         No staff members assigned yet
       </div>
     )
   }
 
   return (
-    <div
-      style={{
-        padding: '0.75rem 1rem',
-        backgroundColor: 'var(--theme-info-50)',
-        border: '1px solid var(--theme-info-300)',
-        borderRadius: '6px',
-        marginBottom: '1.5rem',
-        fontSize: '0.875rem',
-      }}
-    >
-      <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-        <div>
-          <strong style={{ color: 'var(--theme-text)' }}>Total Staff:</strong>{' '}
-          <span style={{ color: 'var(--theme-info-700)', fontWeight: 600 }}>{totalStaff}</span>
+    <div className="team-tab-count team-tab-count--filled">
+      <div className="team-tab-count__stats">
+        <div className="team-tab-count__stat">
+          <strong>Total Staff:</strong>{' '}
+          <span className="team-tab-count__stat-value team-tab-count__stat-value--primary">{totalStaff}</span>
         </div>
         {managerCount > 0 && (
-          <div>
-            <strong style={{ color: 'var(--theme-text)' }}>Managers:</strong>{' '}
-            <span style={{ color: 'var(--theme-text-700)' }}>{managerCount}</span>
+          <div className="team-tab-count__stat">
+            <strong>Managers:</strong>{' '}
+            <span className="team-tab-count__stat-value">{managerCount}</span>
           </div>
         )}
         {coachesCount > 0 && (
-          <div>
-            <strong style={{ color: 'var(--theme-text)' }}>Coaches:</strong>{' '}
-            <span style={{ color: 'var(--theme-text-700)' }}>{coachesCount}</span>
+          <div className="team-tab-count__stat">
+            <strong>Coaches:</strong>{' '}
+            <span className="team-tab-count__stat-value">{coachesCount}</span>
           </div>
         )}
         {captainCount > 0 && (
-          <div>
-            <strong style={{ color: 'var(--theme-text)' }}>Captains:</strong>{' '}
-            <span style={{ color: 'var(--theme-text-700)' }}>{captainCount}</span>
+          <div className="team-tab-count__stat">
+            <strong>Captains:</strong>{' '}
+            <span className="team-tab-count__stat-value">{captainCount}</span>
           </div>
         )}
       </div>

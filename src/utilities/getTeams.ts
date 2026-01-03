@@ -55,6 +55,7 @@ export interface TeamSub {
 }
 
 export interface Team {
+  id: number
   slug: string
   name: string
   logo: string
@@ -69,6 +70,8 @@ export interface Team {
   coCaptain?: string | null
   roster?: TeamPlayer[]
   subs?: TeamSub[]
+  faceitEnabled?: boolean
+  faceitShowCompetitiveSection?: boolean
 }
 
 /**
@@ -140,6 +143,7 @@ function transformPayloadTeam(payloadTeam: PayloadTeam): Team | null {
 
 
     return {
+      id: payloadTeam.id,
       slug: payloadTeam.slug,
       name: payloadTeam.name,
       logo: payloadTeam.logo,
@@ -203,6 +207,8 @@ function transformPayloadTeam(payloadTeam: PayloadTeam): Team | null {
           ...data.socialLinks,
         } as TeamSub
       }).filter((s) => Boolean(s.name && s.name.trim() !== '')) || [], // Filter out empty names
+      faceitEnabled: payloadTeam.faceitEnabled || false,
+      faceitShowCompetitiveSection: payloadTeam.faceitShowCompetitiveSection || false,
     }
   } catch (error) {
     console.error(`[getTeams] Error transforming team ${payloadTeam.slug || payloadTeam.id}:`, error)

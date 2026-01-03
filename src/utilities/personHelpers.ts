@@ -175,3 +175,77 @@ export function getPhotoUrlFromPerson(person: any): string | null {
   
   return null
 }
+
+/**
+ * Extract a person ID from various formats
+ * Used in admin list views and relationship checks
+ * 
+ * Handles:
+ * - Direct number: 123
+ * - Object with id: { id: 123 }
+ * - Object with person field: { person: 123 } or { person: { id: 123 } }
+ * - Null/undefined
+ * 
+ * @returns The person ID as a number, or null if not found
+ */
+export function extractPersonId(person: any): number | null {
+  if (!person) return null
+  
+  // Handle direct number
+  if (typeof person === 'number') return person
+  
+  // Handle object with id
+  if (typeof person === 'object') {
+    if (typeof person.id === 'number') return person.id
+    
+    // Handle nested person field
+    if (person.person) {
+      if (typeof person.person === 'number') return person.person
+      if (typeof person.person === 'object' && typeof person.person.id === 'number') {
+        return person.person.id
+      }
+    }
+  }
+  
+  return null
+}
+
+/**
+ * Check if a person is in a list of relationships
+ * Used for checking if a person belongs to a team's roster, staff, etc.
+ * 
+ * @param personId - The ID of the person to find
+ * @param list - Array of relationship objects (can be IDs, objects, or nested)
+ * @returns true if the person is found in the list
+ */
+export function isPersonInList(
+  personId: number,
+  list: any[] | null | undefined
+): boolean {
+  if (!list || !Array.isArray(list) || list.length === 0) return false
+  
+  return list.some(item => {
+    const extractedId = extractPersonId(item)
+    return extractedId === personId
+  })
+}
+
+/**
+ * Find a person in a list and return the full relationship object
+ * Useful for getting role information from team rosters
+ * 
+ * @param personId - The ID of the person to find
+ * @param list - Array of relationship objects
+ * @returns The relationship object if found, or null
+ */
+export function findPersonInList(
+  personId: number,
+  list: any[] | null | undefined
+): any | null {
+  if (!list || !Array.isArray(list) || list.length === 0) return null
+  
+  return list.find(item => {
+    const extractedId = extractPersonId(item)
+    return extractedId === personId
+  }) || null
+}

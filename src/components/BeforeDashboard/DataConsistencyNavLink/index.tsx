@@ -51,50 +51,20 @@ const DataConsistencyNavLink: React.FC = () => {
   if (!user || user.role !== UserRole.ADMIN) return null
 
   return (
-    <div
-      style={{
-        borderTop: '1px solid var(--theme-elevation-200)',
-        borderBottom: '1px solid var(--theme-elevation-200)',
-        marginTop: '0.5rem',
-        marginBottom: '0.5rem',
-      }}
-    >
+    <div className="data-consistency-nav-link">
       <a
-        href="/admin/data-consistency"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0.75rem 1.5rem',
-          color: 'var(--theme-text)',
-          textDecoration: 'none',
-          fontSize: '0.875rem',
-          fontWeight: 500,
-          transition: 'background-color 0.2s ease',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'var(--theme-elevation-100)'
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'transparent'
-        }}
+        href="/data-consistency"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="data-consistency-nav-link__link"
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <span style={{ fontSize: '1.125rem' }}>📊</span>
+        <div className="data-consistency-nav-link__content">
+          <span className="data-consistency-nav-link__icon">📊</span>
           <span>Data Consistency</span>
         </div>
         {!loading && issueCount > 0 && (
           <span
-            style={{
-              padding: '0.25rem 0.5rem',
-              backgroundColor: issueCount > 0 ? 'var(--theme-error-500)' : 'var(--theme-success-500)',
-              color: 'white',
-              borderRadius: '12px',
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              minWidth: '24px',
-              textAlign: 'center',
-            }}
+            className={`data-consistency-nav-link__badge ${issueCount > 0 ? 'data-consistency-nav-link__badge--error' : 'data-consistency-nav-link__badge--success'}`}
           >
             {issueCount}
           </span>

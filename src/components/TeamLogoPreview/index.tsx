@@ -13,37 +13,19 @@ const TeamLogoPreview: React.FC = () => {
   })
 
   return (
-    <div style={{ marginBottom: '1.5rem' }}>
-      <div
-        style={{
-          fontSize: '0.875rem',
-          fontWeight: 600,
-          color: 'var(--theme-text)',
-          marginBottom: '0.5rem',
-        }}
-      >
+    <div className="team-logo-preview">
+      <div className="team-logo-preview__label">
         Logo Preview
       </div>
       {!logoPath || typeof logoPath !== 'string' || logoPath.trim() === '' ? (
-        <div
-          style={{
-            padding: '1rem',
-            backgroundColor: 'var(--theme-elevation-100)',
-            border: '1px dashed var(--theme-elevation-400)',
-            borderRadius: '8px',
-            textAlign: 'center',
-            color: 'var(--theme-text-500)',
-            fontSize: '0.875rem',
-          }}
-        >
-          <div style={{ marginBottom: '0.5rem' }}>
+        <div className="team-logo-preview__container team-logo-preview__container--empty">
+          <div className="team-logo-preview__empty-icon">
             <svg
               width="48"
               height="48"
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              style={{ opacity: 0.3, margin: '0 auto' }}
             >
               <path
                 d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"
@@ -54,33 +36,12 @@ const TeamLogoPreview: React.FC = () => {
           No logo set
         </div>
       ) : (
-        <div
-          style={{
-            padding: '1rem',
-            backgroundColor: 'var(--theme-elevation-50)',
-            border: '1px solid var(--theme-elevation-300)',
-            borderRadius: '8px',
-            textAlign: 'center',
-          }}
-        >
-          <div
-            style={{
-              marginBottom: '0.5rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              minHeight: '120px',
-            }}
-          >
+        <div className="team-logo-preview__container team-logo-preview__container--filled">
+          <div className="team-logo-preview__image-wrapper">
             <img
               src={logoPath}
               alt="Team logo preview"
-              style={{
-                maxWidth: '100%',
-                maxHeight: '120px',
-                objectFit: 'contain',
-                borderRadius: '4px',
-              }}
+              className="team-logo-preview__image"
               onError={(e) => {
                 // If image fails to load, show error message
                 const target = e.target as HTMLImageElement
@@ -88,7 +49,7 @@ const TeamLogoPreview: React.FC = () => {
                 const parent = target.parentElement
                 if (parent) {
                   parent.innerHTML = `
-                    <div style="color: var(--theme-error-500); font-size: 0.875rem;">
+                    <div class="team-logo-preview__error">
                       ⚠️ Logo not found at this path
                     </div>
                   `
@@ -96,13 +57,7 @@ const TeamLogoPreview: React.FC = () => {
               }}
             />
           </div>
-          <div
-            style={{
-              fontSize: '0.75rem',
-              color: 'var(--theme-text-500)',
-              wordBreak: 'break-all',
-            }}
-          >
+          <div className="team-logo-preview__path">
             {logoPath}
           </div>
         </div>

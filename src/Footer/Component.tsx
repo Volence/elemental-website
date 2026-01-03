@@ -22,11 +22,11 @@ const TikTokIcon: React.FC<{ className?: string }> = ({ className }) => (
 )
 
 const socialLinks = [
-  { name: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/elmt_gg/' },
-  { name: 'TikTok', icon: TikTokIcon, href: 'https://www.tiktok.com/@elementalesports_' },
-  { name: 'YouTube', icon: Youtube, href: 'https://www.youtube.com/@ELMT_GG' },
-  { name: 'Twitter', icon: Twitter, href: 'https://x.com/ELMT_GG' },
-  { name: 'Discord', icon: MessageCircle, href: 'https://discord.gg/elmt' },
+  { name: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/elmt_gg/', gradient: 'linear-gradient(to bottom right, rgb(168 85 247), rgb(236 72 153))' },
+  { name: 'TikTok', icon: TikTokIcon, href: 'https://www.tiktok.com/@elementalesports_', gradient: 'linear-gradient(to bottom right, rgb(34 211 238), rgb(236 72 153))' },
+  { name: 'YouTube', icon: Youtube, href: 'https://www.youtube.com/@ELMT_GG', gradient: 'linear-gradient(to bottom right, rgb(239 68 68), rgb(220 38 38))' },
+  { name: 'Twitter', icon: Twitter, href: 'https://x.com/ELMT_GG', gradient: 'linear-gradient(to bottom right, rgb(96 165 250), rgb(59 130 246))' },
+  { name: 'Discord', icon: MessageCircle, href: 'https://discord.gg/elmt', gradient: 'linear-gradient(to bottom right, rgb(99 102 241), rgb(79 70 229))' },
 ]
 
 export async function Footer() {
@@ -52,21 +52,29 @@ export async function Footer() {
                 <Link href="/matches" className="text-muted-foreground hover:text-primary transition-colors font-medium">Matches</Link>
                 <Link href="/seminars" className="text-muted-foreground hover:text-primary transition-colors font-medium">Seminars</Link>
                 <Link href="/staff" className="text-muted-foreground hover:text-primary transition-colors font-medium">Staff</Link>
+                <Link href="/recruitment" className="text-muted-foreground hover:text-primary transition-colors font-medium">Join Us</Link>
               </nav>
             </div>
             <div className="flex flex-col gap-4">
               <h3 className="text-lg font-bold text-white uppercase tracking-wider">Follow Us</h3>
               <div className="flex flex-wrap gap-4">
-                {socialLinks.map(({ name, icon: Icon, href }) => (
+                {socialLinks.map(({ name, icon: Icon, href, gradient }) => (
                   <Link
                     key={name}
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center w-12 h-12 rounded-lg bg-muted/10 text-white hover:bg-primary hover:text-primary-foreground transition-all hover:scale-110"
+                    className="group flex items-center justify-center w-12 h-12 rounded-lg text-white transition-all hover:scale-110 relative overflow-hidden"
                     aria-label={name}
                   >
-                    <Icon className="w-6 h-6" />
+                    <div 
+                      className="absolute inset-0 bg-white/10 transition-opacity duration-300"
+                    />
+                    <div 
+                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      style={{ background: gradient }}
+                    />
+                    <Icon className="w-6 h-6 relative z-10" />
                   </Link>
                 ))}
               </div>
@@ -120,6 +128,9 @@ export async function Footer() {
               <Link href="/staff" className="text-muted-foreground hover:text-primary transition-colors font-medium">
                 Staff
               </Link>
+              <Link href="/recruitment" className="text-muted-foreground hover:text-primary transition-colors font-medium">
+                Join Us
+              </Link>
               {navItems.map(({ link }, i) => {
                 return <CMSLink className="text-muted-foreground hover:text-primary transition-colors font-medium" key={i} {...link} />
               })}
@@ -130,16 +141,23 @@ export async function Footer() {
           <div className="flex flex-col gap-4">
             <h3 className="text-lg font-bold text-white uppercase tracking-wider">Follow Us</h3>
             <div className="flex flex-wrap gap-4">
-              {socialLinks.map(({ name, icon: Icon, href }) => (
+              {socialLinks.map(({ name, icon: Icon, href, gradient }) => (
                 <Link
                   key={name}
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center w-12 h-12 rounded-lg bg-muted/10 text-white hover:bg-primary hover:text-primary-foreground transition-all hover:scale-110"
+                  className="group flex items-center justify-center w-12 h-12 rounded-lg text-white transition-all hover:scale-110 relative overflow-hidden"
                   aria-label={name}
                 >
-                  <Icon className="w-6 h-6" />
+                  <div 
+                    className="absolute inset-0 bg-white/10 transition-opacity duration-300"
+                  />
+                  <div 
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{ background: gradient }}
+                  />
+                  <Icon className="w-6 h-6 relative z-10" />
                 </Link>
               ))}
             </div>
@@ -178,21 +196,29 @@ export async function Footer() {
                 <Link href="/matches" className="text-muted-foreground hover:text-primary transition-colors font-medium">Matches</Link>
                 <Link href="/seminars" className="text-muted-foreground hover:text-primary transition-colors font-medium">Seminars</Link>
                 <Link href="/staff" className="text-muted-foreground hover:text-primary transition-colors font-medium">Staff</Link>
+                <Link href="/recruitment" className="text-muted-foreground hover:text-primary transition-colors font-medium">Join Us</Link>
               </nav>
             </div>
             <div className="flex flex-col gap-4">
               <h3 className="text-lg font-bold text-white uppercase tracking-wider">Follow Us</h3>
               <div className="flex flex-wrap gap-4">
-                {socialLinks.map(({ name, icon: Icon, href }) => (
+                {socialLinks.map(({ name, icon: Icon, href, gradient }) => (
                   <Link
                     key={name}
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center w-12 h-12 rounded-lg bg-muted/10 text-white hover:bg-primary hover:text-primary-foreground transition-all hover:scale-110"
+                    className="group flex items-center justify-center w-12 h-12 rounded-lg text-white transition-all hover:scale-110 relative overflow-hidden"
                     aria-label={name}
                   >
-                    <Icon className="w-6 h-6" />
+                    <div 
+                      className="absolute inset-0 bg-white/10 transition-opacity duration-300"
+                    />
+                    <div 
+                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      style={{ background: gradient }}
+                    />
+                    <Icon className="w-6 h-6 relative z-10" />
                   </Link>
                 ))}
               </div>

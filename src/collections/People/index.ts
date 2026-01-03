@@ -3,7 +3,8 @@ import type { CollectionConfig } from 'payload'
 import { authenticated } from '../../access/authenticated'
 import { anyone } from '../../access/anyone'
 import { slugField } from 'payload'
-// import { createActivityLogHook, createActivityLogDeleteHook } from '../../utilities/activityLogger' // Temporarily disabled
+import { autoCloseRecruitment } from './hooks/autoCloseRecruitment'
+import { createAuditLogHook, createAuditLogDeleteHook } from '../../utilities/auditLogger'
 
 const formatSlug = (value: string): string => {
   return value
@@ -32,6 +33,13 @@ export const People: CollectionConfig = {
     description: '👥 Centralized collection for all people (players, staff, casters, etc.). This is the single source of truth for person profiles.',
     group: 'People',
     listSearchableFields: ['name', 'slug'],
+    hidden: ({ user }) => {
+      if (!user) return true
+      // Hide from regular users - only show to managers and admins
+      return user.role !== 'admin' && 
+             user.role !== 'staff-manager' && 
+             user.role !== 'team-manager'
+    },
     // CRITICAL: Don't use defaultPopulate for relationship queries
     // This can cause select clauses that filter out results
     // defaultPopulate: {
@@ -41,6 +49,20 @@ export const People: CollectionConfig = {
     // Currently disabled due to Payload 3 API changes
   },
   fields: [
+    {
+      name: 'viewOnSite',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: {
+            path: '@/components/ViewOnSiteButton',
+            clientProps: {
+              basePath: '/players',
+            },
+          },
+        },
+      },
+    },
     {
       name: 'name',
       type: 'text',
@@ -58,6 +80,16 @@ export const People: CollectionConfig = {
       admin: {
         position: 'sidebar',
         description: 'Auto-generated from name. You can customize it if needed.',
+      },
+    },
+    {
+      name: 'relationships',
+      type: 'ui',
+      admin: {
+        position: 'sidebar',
+        components: {
+          Field: '@/components/PersonRelationshipsSidebar',
+        },
       },
     },
     {
@@ -171,8 +203,8 @@ export const People: CollectionConfig = {
     },
   ],
   hooks: {
-    // afterChange: [createActivityLogHook('people')], // Temporarily disabled
-    // afterDelete: [createActivityLogDeleteHook('people')], // Temporarily disabled
+    afterChange: [autoCloseRecruitment, createAuditLogHook('people')],
+    afterDelete: [createAuditLogDeleteHook('people')],
     // REMOVED: beforeRead hook - it was removing select clauses which made the admin UI unable to fetch names
     // The custom /api/people endpoint handles relationship dropdown queries with raw SQL
     // Admin UI queries work fine without intervention

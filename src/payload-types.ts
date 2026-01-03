@@ -71,10 +71,22 @@ export interface Config {
     media: Media;
     people: Person;
     teams: Team;
-    matches: Match;
+    'faceit-leagues': FaceitLeague;
     production: Production;
     'organization-staff': OrganizationStaff;
+    matches: Match;
+    'tournament-templates': TournamentTemplate;
+    'faceit-seasons': FaceitSeason;
+    'social-posts': SocialPost;
+    'recruitment-listings': RecruitmentListing;
+    'recruitment-applications': RecruitmentApplication;
     users: User;
+    'ignored-duplicates': IgnoredDuplicate;
+    'invite-links': InviteLink;
+    'audit-logs': AuditLog;
+    'error-logs': ErrorLog;
+    'cron-job-runs': CronJobRun;
+    'active-sessions': ActiveSession;
     redirects: Redirect;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
@@ -88,10 +100,22 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     people: PeopleSelect<false> | PeopleSelect<true>;
     teams: TeamsSelect<false> | TeamsSelect<true>;
-    matches: MatchesSelect<false> | MatchesSelect<true>;
+    'faceit-leagues': FaceitLeaguesSelect<false> | FaceitLeaguesSelect<true>;
     production: ProductionSelect<false> | ProductionSelect<true>;
     'organization-staff': OrganizationStaffSelect<false> | OrganizationStaffSelect<true>;
+    matches: MatchesSelect<false> | MatchesSelect<true>;
+    'tournament-templates': TournamentTemplatesSelect<false> | TournamentTemplatesSelect<true>;
+    'faceit-seasons': FaceitSeasonsSelect<false> | FaceitSeasonsSelect<true>;
+    'social-posts': SocialPostsSelect<false> | SocialPostsSelect<true>;
+    'recruitment-listings': RecruitmentListingsSelect<false> | RecruitmentListingsSelect<true>;
+    'recruitment-applications': RecruitmentApplicationsSelect<false> | RecruitmentApplicationsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    'ignored-duplicates': IgnoredDuplicatesSelect<false> | IgnoredDuplicatesSelect<true>;
+    'invite-links': InviteLinksSelect<false> | InviteLinksSelect<true>;
+    'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
+    'error-logs': ErrorLogsSelect<false> | ErrorLogsSelect<true>;
+    'cron-job-runs': CronJobRunsSelect<false> | CronJobRunsSelect<true>;
+    'active-sessions': ActiveSessionsSelect<false> | ActiveSessionsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
@@ -106,10 +130,30 @@ export interface Config {
   globals: {
     header: Header;
     footer: Footer;
+    'production-dashboard': ProductionDashboard;
+    'social-media-settings': SocialMediaSetting;
+    'social-media-config': SocialMediaConfig;
+    'data-consistency': DataConsistency;
+    'audit-log-viewer': AuditLogViewer;
+    'cron-monitor': CronMonitor;
+    'error-dashboard': ErrorDashboard;
+    'active-sessions-viewer': ActiveSessionsViewer;
+    'database-health': DatabaseHealth;
+    'error-harvester-state': ErrorHarvesterState;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    'production-dashboard': ProductionDashboardSelect<false> | ProductionDashboardSelect<true>;
+    'social-media-settings': SocialMediaSettingsSelect<false> | SocialMediaSettingsSelect<true>;
+    'social-media-config': SocialMediaConfigSelect<false> | SocialMediaConfigSelect<true>;
+    'data-consistency': DataConsistencySelect<false> | DataConsistencySelect<true>;
+    'audit-log-viewer': AuditLogViewerSelect<false> | AuditLogViewerSelect<true>;
+    'cron-monitor': CronMonitorSelect<false> | CronMonitorSelect<true>;
+    'error-dashboard': ErrorDashboardSelect<false> | ErrorDashboardSelect<true>;
+    'active-sessions-viewer': ActiveSessionsViewerSelect<false> | ActiveSessionsViewerSelect<true>;
+    'database-health': DatabaseHealthSelect<false> | DatabaseHealthSelect<true>;
+    'error-harvester-state': ErrorHarvesterStateSelect<false> | ErrorHarvesterStateSelect<true>;
   };
   locale: null;
   user: User & {
@@ -591,112 +635,237 @@ export interface Team {
       }[]
     | null;
   /**
+   * 🏆 Enable FaceIt competitive tracking for this team
+   */
+  faceitEnabled?: boolean | null;
+  /**
+   * FaceIt Team ID (e.g., bc03efbc-725a-42f2-8acb-c8ee9783c8ae) - Find this on the team's FaceIt profile URL
+   */
+  faceitTeamId?: string | null;
+  /**
+   * 🎯 Current league/season this team is competing in - Selecting this auto-creates the season entry
+   */
+  currentFaceitLeague?: (number | null) | FaceitLeague;
+  /**
+   * Display FaceIt competitive data on team page frontend
+   */
+  faceitShowCompetitiveSection?: boolean | null;
+  /**
+   * 📊 Current active season data (auto-populated)
+   */
+  currentFaceitSeason?: (number | null) | FaceitSeason;
+  /**
    * URL-friendly identifier (auto-generated from name)
    */
   slug?: string | null;
+  /**
+   * Tournaments this team is currently participating in (auto-generates weekly matches)
+   */
+  activeTournaments?: (number | TournamentTemplate)[] | null;
   updatedAt: string;
   createdAt: string;
 }
 /**
- * ⚔️ Manage competitive matches for Elemental teams. Include match details, scores, streams, and VODs.
+ * ⚙️ FaceIt league templates - Admin-only. Teams select from these when enabling FaceIt.
  *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "matches".
+ * via the `definition` "faceit-leagues".
  */
-export interface Match {
+export interface FaceitLeague {
   id: number;
   /**
-   * Which ELMT team is playing. Tip: Only select teams from your organization. This will create a link to the team page on the match schedule.
+   * Display name (e.g., "Season 7 Advanced NA")
+   */
+  name: string;
+  /**
+   * Is this the current active season?
+   */
+  isActive?: boolean | null;
+  /**
+   * Season number (e.g., 7)
+   */
+  seasonNumber: number;
+  division: 'Masters' | 'Expert' | 'Advanced' | 'Open';
+  region: 'NA' | 'EMEA' | 'SA';
+  /**
+   * Conference name (e.g., "Central") - optional
+   */
+  conference?: string | null;
+  /**
+   * FaceIt League ID (from standings URL)
+   */
+  leagueId: string;
+  /**
+   * FaceIt Season ID (from standings URL)
+   */
+  seasonId: string;
+  /**
+   * FaceIt Stage ID (from ?stage= parameter in standings URL)
+   */
+  stageId: string;
+  /**
+   * FaceIt Championship ID (optional - needed for match data sync. Try using League ID if unknown)
+   */
+  championshipId?: string | null;
+  /**
+   * Internal notes about this league/season
+   */
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * 🏆 Team FaceIt seasons - Auto-managed through team pages (backend only)
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faceit-seasons".
+ */
+export interface FaceitSeason {
+  id: number;
+  /**
+   * Which ELMT team this season data belongs to
    */
   team: number | Team;
   /**
-   * Opponent team name
+   * ⭐ RECOMMENDED: Select a league template to auto-fill championship/stage/league IDs
    */
-  opponent: string;
+  faceitLeague?: (number | null) | FaceitLeague;
   /**
-   * Match date and time
+   * FaceIt Team ID for this specific team (e.g., bc03efbc-725a-42f2-8acb-c8ee9783c8ae)
    */
-  date: string;
+  faceitTeamId: string;
+  /**
+   * FaceIt Championship ID (auto-filled from league, or enter manually)
+   */
+  championshipId?: string | null;
+  /**
+   * FaceIt League ID (auto-filled from league, or enter manually)
+   */
+  leagueId?: string | null;
+  /**
+   * FaceIt Season ID (auto-filled from league, or enter manually)
+   */
+  seasonId?: string | null;
+  /**
+   * FaceIt Stage ID (auto-filled from league, or enter manually)
+   */
+  stageId?: string | null;
+  /**
+   * ✨ Auto-filled from league template on save (editable before save)
+   */
+  seasonName: string;
+  /**
+   * Is this the current active season?
+   */
+  isActive?: boolean | null;
+  /**
+   * ✨ Auto-filled from league template on save
+   */
+  division: 'Masters' | 'Expert' | 'Advanced' | 'Open';
+  /**
+   * ✨ Auto-filled from league template on save
+   */
   region: 'NA' | 'EMEA' | 'SA';
-  league: 'Masters' | 'Expert' | 'Advanced' | 'Open';
   /**
-   * Season identifier (e.g., "S7 Regular Season")
+   * ✨ Auto-filled from league template on save (e.g., "Central")
    */
-  season?: string | null;
+  conference?: string | null;
   /**
-   * Upcoming/Live/Completed status is automatically determined based on match date and time
+   * Current standings information
    */
-  status: 'scheduled' | 'cancelled';
-  /**
-   * Match title (auto-generated from team + opponent if left blank). You can override the auto-generated title by entering a custom one here.
-   */
-  title?: string | null;
-  titleCell?: string | null;
-  score?: {
+  standings?: {
     /**
-     * ELMT team score
+     * Current rank/position
      */
-    elmtScore?: number | null;
+    currentRank?: number | null;
     /**
-     * Opponent team score
+     * Total teams in division
      */
-    opponentScore?: number | null;
+    totalTeams?: number | null;
+    /**
+     * Wins
+     */
+    wins?: number | null;
+    /**
+     * Losses
+     */
+    losses?: number | null;
+    /**
+     * Ties
+     */
+    ties?: number | null;
+    /**
+     * Total points
+     */
+    points?: number | null;
+    /**
+     * Matches played
+     */
+    matchesPlayed?: number | null;
   };
-  stream?: {
-    /**
-     * Twitch stream URL
-     */
-    url?: string | null;
-    /**
-     * Who is streaming (e.g., "twitch.tv/elmt_gg" or "twitch.tv/bullskunk")
-     */
-    streamedBy?: string | null;
-  };
   /**
-   * FACEIT lobby URL
+   * Last sync from FaceIt API
    */
-  faceitLobby?: string | null;
+  lastSynced?: string | null;
   /**
-   * VOD/replay URL (YouTube or Twitch)
+   * Data source (for future integrations)
    */
-  vod?: string | null;
+  dataSource?: 'faceit' | null;
   /**
-   * Producers and/or Observers for this match. Add one entry if one person is doing both roles, or add multiple entries for separate producer and observer.
+   * Hide this season from frontend historical display (data preserved)
    */
-  producersObservers?:
+  hideHistoricalData?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * 🏆 Define recurring match schedules for manually-scheduled tournaments. ⚠️ NOT needed for FaceIt tournaments - those use FaceIt Leagues instead.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tournament-templates".
+ */
+export interface TournamentTemplate {
+  id: number;
+  /**
+   * Tournament/League name (e.g., "Annihilation Tournament", "Summer Cup")
+   */
+  name: string;
+  /**
+   * When unchecked, stops auto-creating matches (use for breaks/off-season)
+   */
+  isActive?: boolean | null;
+  /**
+   * Teams participating in this tournament. Use the bulk selector below for easy multi-selection.
+   */
+  assignedTeams?: (number | Team)[] | null;
+  /**
+   * Define match schedule per division/region combination
+   */
+  scheduleRules?:
     | {
+        region: 'NA' | 'EMEA' | 'SA' | 'all';
+        division: 'Masters' | 'Expert' | 'Advanced' | 'Open' | 'all';
         /**
-         * Select existing producer/observer from Production Staff (or leave empty and enter name manually below)
+         * Number of matches to auto-create per week
          */
-        staff?: (number | null) | Production;
+        matchesPerWeek: number;
         /**
-         * Producer/Observer name (only fill if not selecting from Production Staff above)
+         * When to schedule matches (can be rescheduled per match)
          */
-        name?: string | null;
+        matchSlots?:
+          | {
+              dayOfWeek: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+              /**
+               * Time in HH:MM format (e.g., "20:00", "21:00")
+               */
+              time: string;
+              timezone: 'CET' | 'EST';
+              id?: string | null;
+            }[]
+          | null;
         id?: string | null;
       }[]
     | null;
-  /**
-   * Casters for this match
-   */
-  casters?:
-    | {
-        /**
-         * Select existing caster (or leave empty and enter name manually below)
-         */
-        caster?: (number | null) | Production;
-        /**
-         * Caster name (only fill if not selecting from Production Staff above)
-         */
-        name?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
-  slug: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -758,6 +927,166 @@ export interface OrganizationStaff {
   createdAt: string;
 }
 /**
+ * ⚔️ Manage competitive matches for Elemental teams. Include match details, scores, streams, and VODs.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "matches".
+ */
+export interface Match {
+  id: number;
+  /**
+   * Match type affects how it appears in Weekly View
+   */
+  matchType: 'team-match' | 'organization-event' | 'show-match' | 'content-production';
+  /**
+   * Which ELMT team is playing (required for team matches)
+   */
+  team?: (number | null) | Team;
+  /**
+   * Opponent team name
+   */
+  opponent?: string | null;
+  /**
+   * Match date and time
+   */
+  date: string;
+  region: 'NA' | 'EMEA' | 'SA';
+  league: 'Masters' | 'Expert' | 'Advanced' | 'Open';
+  /**
+   * Season identifier (e.g., "S7 Regular Season")
+   */
+  season?: string | null;
+  /**
+   * Matches are automatically marked Complete 2 hours after their scheduled time
+   */
+  status: 'scheduled' | 'complete' | 'cancelled';
+  /**
+   * Match title (auto-generated from team + opponent if left blank). You can override the auto-generated title by entering a custom one here.
+   */
+  title?: string | null;
+  titleCell?: string | null;
+  score?: {
+    /**
+     * ELMT team score
+     */
+    elmtScore?: number | null;
+    /**
+     * Opponent team score
+     */
+    opponentScore?: number | null;
+  };
+  stream?: {
+    /**
+     * Twitch stream URL
+     */
+    url?: string | null;
+    /**
+     * Who is streaming (e.g., "twitch.tv/elmt_gg" or "twitch.tv/bullskunk")
+     */
+    streamedBy?: string | null;
+  };
+  /**
+   * FACEIT lobby URL (auto-populated if synced from FaceIt)
+   */
+  faceitLobby?: string | null;
+  /**
+   * FaceIt Room ID (for generating room links) - auto-populated by sync
+   */
+  faceitRoomId?: string | null;
+  /**
+   * FaceIt Match ID - auto-populated by sync
+   */
+  faceitMatchId?: string | null;
+  /**
+   * VOD/replay URL (YouTube or Twitch)
+   */
+  vod?: string | null;
+  productionWorkflow?: {
+    priority?: ('none' | 'low' | 'medium' | 'high' | 'urgent') | null;
+    /**
+     * When this match was auto-generated
+     */
+    weekGenerated?: string | null;
+    /**
+     * Archived matches hidden from Weekly View
+     */
+    isArchived?: boolean | null;
+    /**
+     * Staff who are AVAILABLE to observe (not yet confirmed)
+     */
+    observerSignups?: (number | User)[] | null;
+    /**
+     * Staff who are AVAILABLE to produce (not yet confirmed)
+     */
+    producerSignups?: (number | User)[] | null;
+    /**
+     * Staff who are AVAILABLE to cast (not yet confirmed)
+     */
+    casterSignups?:
+      | {
+          user: number | User;
+          style?: ('play-by-play' | 'color' | 'both') | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * CONFIRMED observer who WILL work this match (1 max)
+     */
+    assignedObserver?: (number | null) | User;
+    /**
+     * CONFIRMED producer who WILL work this match (1 max)
+     */
+    assignedProducer?: (number | null) | User;
+    /**
+     * CONFIRMED casters who WILL work this match (2 max)
+     */
+    assignedCasters?:
+      | {
+          user: number | User;
+          style?: ('play-by-play' | 'color' | 'both') | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Auto-calculated: none/partial/full
+     */
+    coverageStatus?: ('none' | 'partial' | 'full') | null;
+    /**
+     * Include in Schedule Generator export
+     */
+    includeInSchedule?: boolean | null;
+    /**
+     * Internal production notes
+     */
+    productionNotes?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+  };
+  /**
+   * Auto-populated from FaceIt API
+   */
+  syncedFromFaceit?: boolean | null;
+  /**
+   * Link to FaceIt season data
+   */
+  faceitSeasonId?: (number | null) | FaceitSeason;
+  slug?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * 👤 Manage admin users who can access the CMS. Assign roles to control what each user can edit.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -765,15 +1094,32 @@ export interface OrganizationStaff {
  */
 export interface User {
   id: number;
-  name: string;
+  name?: string | null;
+  /**
+   * Profile picture for your account
+   */
+  avatar?: (number | null) | Media;
   /**
    * User role determines what they can access and edit in the CMS.
    */
-  role: 'admin' | 'team-manager' | 'staff-manager';
+  role?: ('admin' | 'staff-manager' | 'team-manager' | 'user') | null;
   /**
    * For Team Managers: Restrict editing to only these teams. For Staff Managers & Admins: Quick access links to these teams (they can still edit all teams).
    */
   assignedTeams?: (number | Team)[] | null;
+  /**
+   * Grant access to department-specific tools and dashboards
+   */
+  departments?: {
+    /**
+     * Grants access to Production Dashboard (view schedule, sign up for matches)
+     */
+    isProductionStaff?: boolean | null;
+    /**
+     * Grants access to Social Media Dashboard (manage posts, content calendar)
+     */
+    isSocialMediaStaff?: boolean | null;
+  };
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -791,6 +1137,428 @@ export interface User {
       }[]
     | null;
   password?: string | null;
+}
+/**
+ * 📱 Manage social media posts and content calendar.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "social-posts".
+ */
+export interface SocialPost {
+  id: number;
+  /**
+   * Internal title to identify this post (not shown publicly)
+   */
+  title: string;
+  /**
+   * The text content of the post (can be drafted later)
+   */
+  content?: string | null;
+  /**
+   * Category of the post (for tracking and color-coding)
+   */
+  postType:
+    | 'Match Promo'
+    | 'Stream Announcement'
+    | 'Community Engagement'
+    | 'Original Content'
+    | 'Repost/Share'
+    | 'Other';
+  /**
+   * Which platform this post is for
+   */
+  platform: 'Twitter/X';
+  /**
+   * When to post this content (optional for drafts/backlog)
+   */
+  scheduledDate?: string | null;
+  /**
+   * Current status of the post
+   */
+  status: 'Draft' | 'Ready for Review' | 'Approved' | 'Scheduled' | 'Posted';
+  /**
+   * SM staff member responsible for this post
+   */
+  assignedTo: number | User;
+  /**
+   * Admin who approved this post
+   */
+  approvedBy?: (number | null) | User;
+  /**
+   * If this post is promoting a specific match
+   */
+  relatedMatch?: (number | null) | Match;
+  /**
+   * Images, videos, or other media for this post
+   */
+  mediaAttachments?:
+    | {
+        media?: (number | null) | Media;
+        /**
+         * Or link to external media
+         */
+        url?: string | null;
+        /**
+         * Alt text for accessibility
+         */
+        altText?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Internal notes for reviewers (not visible in the post)
+   */
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * 📋 Manage open player positions and recruitment listings.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recruitment-listings".
+ */
+export interface RecruitmentListing {
+  id: number;
+  /**
+   * Type of position being recruited for
+   */
+  category: 'player' | 'team-staff' | 'org-staff';
+  /**
+   * Which team is recruiting (not applicable for organization-wide positions)
+   */
+  team?: (number | null) | Team;
+  /**
+   * What role is needed
+   */
+  role:
+    | 'tank'
+    | 'dps'
+    | 'support'
+    | 'coach'
+    | 'manager'
+    | 'assistant-coach'
+    | 'moderator'
+    | 'event-manager'
+    | 'social-manager'
+    | 'graphics'
+    | 'media-editor'
+    | 'caster'
+    | 'observer'
+    | 'producer'
+    | 'observer-producer';
+  /**
+   * Describe what you're looking for (e.g., "We're looking for a Main Support. Must have a good attitude and can scrim 3 times a week")
+   */
+  requirements: string;
+  /**
+   * Status of this listing
+   */
+  status: 'open' | 'filled' | 'closed';
+  /**
+   * Person who filled this position (auto-set when filled)
+   */
+  filledBy?: (number | null) | Person;
+  /**
+   * User who created this listing
+   */
+  createdBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * 📝 Review and manage recruitment applications.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recruitment-applications".
+ */
+export interface RecruitmentApplication {
+  id: number;
+  /**
+   * Which listing this application is for
+   */
+  listing: number | RecruitmentListing;
+  /**
+   * Applicant's Discord username
+   */
+  discordHandle: string;
+  /**
+   * Applicant's introduction and why they want to join
+   */
+  aboutMe: string;
+  /**
+   * Current status of this application
+   */
+  status: 'new' | 'reviewing' | 'contacted' | 'tryout' | 'accepted' | 'rejected';
+  /**
+   * Internal notes visible only to managers and admins (not shown to applicant)
+   */
+  internalNotes?: string | null;
+  /**
+   * Archive old applications to hide them from active list
+   */
+  archived?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Pairs of people with similar names that are actually different people
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ignored-duplicates".
+ */
+export interface IgnoredDuplicate {
+  id: number;
+  /**
+   * First person in the pair
+   */
+  person1: number | Person;
+  /**
+   * Second person in the pair
+   */
+  person2: number | Person;
+  /**
+   * Display label (auto-generated)
+   */
+  label: string;
+  /**
+   * Optional note explaining why these are different people
+   */
+  reason?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * 🔗 Generate invite links for new users with pre-configured permissions.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "invite-links".
+ */
+export interface InviteLink {
+  id: number;
+  /**
+   * Unique token for this invite link (auto-generated)
+   */
+  token: string;
+  /**
+   * The role the new user will be assigned when they sign up
+   */
+  role: 'admin' | 'staff-manager' | 'team-manager' | 'user';
+  /**
+   * Teams the new user will have access to (only applicable for Team Managers and Staff Managers)
+   */
+  assignedTeams?: (number | Team)[] | null;
+  /**
+   * Which departments this user will have access to (mainly for User role)
+   */
+  departments?: {
+    /**
+     * Grant access to Production Dashboard for signing up to matches (casters, observers, producers)
+     */
+    isProductionStaff?: boolean | null;
+    /**
+     * Grants access to the Social Media Dashboard (manage posts, content calendar)
+     */
+    isSocialMediaStaff?: boolean | null;
+  };
+  /**
+   * Optional: Pre-assign an email address for this invite
+   */
+  email?: string | null;
+  /**
+   * When this invite link expires (default: 7 days from creation)
+   */
+  expiresAt: string;
+  /**
+   * When this invite was used (null if not yet used)
+   */
+  usedAt?: string | null;
+  /**
+   * The user who used this invite
+   */
+  usedBy?: (number | null) | User;
+  /**
+   * The admin who created this invite
+   */
+  createdBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * 🔍 System-generated log of user actions for security monitoring.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-logs".
+ */
+export interface AuditLog {
+  id: number;
+  /**
+   * User who performed the action
+   */
+  user?: (number | null) | User;
+  /**
+   * Type of action performed
+   */
+  action: 'login' | 'logout' | 'create' | 'delete' | 'update' | 'bulk';
+  /**
+   * Collection that was affected (e.g., teams, matches, users)
+   */
+  collection?: string | null;
+  /**
+   * ID of the document that was affected
+   */
+  documentId?: string | null;
+  /**
+   * Display name of the affected item
+   */
+  documentTitle?: string | null;
+  /**
+   * Additional context (role changes, bulk operation details, etc.)
+   */
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * IP address of the request
+   */
+  ipAddress?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * ⚠️ System-generated log of errors for debugging and monitoring.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "error-logs".
+ */
+export interface ErrorLog {
+  id: number;
+  /**
+   * User who encountered the error
+   */
+  user?: (number | null) | User;
+  /**
+   * Category of error
+   */
+  errorType: 'api' | 'backend' | 'database' | 'frontend' | 'validation' | 'system';
+  /**
+   * Error message
+   */
+  message: string;
+  /**
+   * Stack trace for debugging
+   */
+  stack?: string | null;
+  /**
+   * URL where error occurred
+   */
+  url?: string | null;
+  /**
+   * Severity level of the error
+   */
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  /**
+   * Mark this error as resolved/fixed
+   */
+  resolved?: boolean | null;
+  /**
+   * When the error was marked as resolved
+   */
+  resolvedAt?: string | null;
+  /**
+   * Admin notes about the error and resolution
+   */
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * ⏰ System-generated log of scheduled job executions.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cron-job-runs".
+ */
+export interface CronJobRun {
+  id: number;
+  /**
+   * Name of the cron job
+   */
+  jobName: 'smart-sync' | 'full-sync' | 'session-cleanup' | 'error-harvester';
+  /**
+   * Current status of the job
+   */
+  status: 'running' | 'success' | 'failed';
+  /**
+   * When the job started
+   */
+  startTime: string;
+  /**
+   * When the job completed
+   */
+  endTime?: string | null;
+  /**
+   * Duration in seconds
+   */
+  duration?: number | null;
+  /**
+   * Job-specific results (API calls, records synced, etc.)
+   */
+  summary?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Error messages if job failed
+   */
+  errors?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * 👥 Track active admin panel sessions for security monitoring.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "active-sessions".
+ */
+export interface ActiveSession {
+  id: number;
+  /**
+   * User who owns this session
+   */
+  user: number | User;
+  /**
+   * When the user logged in
+   */
+  loginTime: string;
+  /**
+   * Last activity timestamp
+   */
+  lastActivity: string;
+  /**
+   * IP address of the session
+   */
+  ipAddress?: string | null;
+  /**
+   * Browser/client information
+   */
+  userAgent?: string | null;
+  /**
+   * Whether this session is currently active
+   */
+  isActive?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -946,8 +1714,8 @@ export interface PayloadLockedDocument {
         value: number | Team;
       } | null)
     | ({
-        relationTo: 'matches';
-        value: number | Match;
+        relationTo: 'faceit-leagues';
+        value: number | FaceitLeague;
       } | null)
     | ({
         relationTo: 'production';
@@ -958,8 +1726,56 @@ export interface PayloadLockedDocument {
         value: number | OrganizationStaff;
       } | null)
     | ({
+        relationTo: 'matches';
+        value: number | Match;
+      } | null)
+    | ({
+        relationTo: 'tournament-templates';
+        value: number | TournamentTemplate;
+      } | null)
+    | ({
+        relationTo: 'faceit-seasons';
+        value: number | FaceitSeason;
+      } | null)
+    | ({
+        relationTo: 'social-posts';
+        value: number | SocialPost;
+      } | null)
+    | ({
+        relationTo: 'recruitment-listings';
+        value: number | RecruitmentListing;
+      } | null)
+    | ({
+        relationTo: 'recruitment-applications';
+        value: number | RecruitmentApplication;
+      } | null)
+    | ({
         relationTo: 'users';
         value: number | User;
+      } | null)
+    | ({
+        relationTo: 'ignored-duplicates';
+        value: number | IgnoredDuplicate;
+      } | null)
+    | ({
+        relationTo: 'invite-links';
+        value: number | InviteLink;
+      } | null)
+    | ({
+        relationTo: 'audit-logs';
+        value: number | AuditLog;
+      } | null)
+    | ({
+        relationTo: 'error-logs';
+        value: number | ErrorLog;
+      } | null)
+    | ({
+        relationTo: 'cron-job-runs';
+        value: number | CronJobRun;
+      } | null)
+    | ({
+        relationTo: 'active-sessions';
+        value: number | ActiveSession;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1287,54 +2103,32 @@ export interface TeamsSelect<T extends boolean = true> {
         person?: T;
         id?: T;
       };
+  faceitEnabled?: T;
+  faceitTeamId?: T;
+  currentFaceitLeague?: T;
+  faceitShowCompetitiveSection?: T;
+  currentFaceitSeason?: T;
   slug?: T;
+  activeTournaments?: T;
   updatedAt?: T;
   createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "matches_select".
+ * via the `definition` "faceit-leagues_select".
  */
-export interface MatchesSelect<T extends boolean = true> {
-  team?: T;
-  opponent?: T;
-  date?: T;
+export interface FaceitLeaguesSelect<T extends boolean = true> {
+  name?: T;
+  isActive?: T;
+  seasonNumber?: T;
+  division?: T;
   region?: T;
-  league?: T;
-  season?: T;
-  status?: T;
-  title?: T;
-  titleCell?: T;
-  score?:
-    | T
-    | {
-        elmtScore?: T;
-        opponentScore?: T;
-      };
-  stream?:
-    | T
-    | {
-        url?: T;
-        streamedBy?: T;
-      };
-  faceitLobby?: T;
-  vod?: T;
-  producersObservers?:
-    | T
-    | {
-        staff?: T;
-        name?: T;
-        id?: T;
-      };
-  casters?:
-    | T
-    | {
-        caster?: T;
-        name?: T;
-        id?: T;
-      };
-  generateSlug?: T;
-  slug?: T;
+  conference?: T;
+  leagueId?: T;
+  seasonId?: T;
+  stageId?: T;
+  championshipId?: T;
+  notes?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1364,12 +2158,200 @@ export interface OrganizationStaffSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "matches_select".
+ */
+export interface MatchesSelect<T extends boolean = true> {
+  matchType?: T;
+  team?: T;
+  opponent?: T;
+  date?: T;
+  region?: T;
+  league?: T;
+  season?: T;
+  status?: T;
+  title?: T;
+  titleCell?: T;
+  score?:
+    | T
+    | {
+        elmtScore?: T;
+        opponentScore?: T;
+      };
+  stream?:
+    | T
+    | {
+        url?: T;
+        streamedBy?: T;
+      };
+  faceitLobby?: T;
+  faceitRoomId?: T;
+  faceitMatchId?: T;
+  vod?: T;
+  productionWorkflow?:
+    | T
+    | {
+        priority?: T;
+        weekGenerated?: T;
+        isArchived?: T;
+        observerSignups?: T;
+        producerSignups?: T;
+        casterSignups?:
+          | T
+          | {
+              user?: T;
+              style?: T;
+              id?: T;
+            };
+        assignedObserver?: T;
+        assignedProducer?: T;
+        assignedCasters?:
+          | T
+          | {
+              user?: T;
+              style?: T;
+              id?: T;
+            };
+        coverageStatus?: T;
+        includeInSchedule?: T;
+        productionNotes?: T;
+      };
+  syncedFromFaceit?: T;
+  faceitSeasonId?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tournament-templates_select".
+ */
+export interface TournamentTemplatesSelect<T extends boolean = true> {
+  name?: T;
+  isActive?: T;
+  assignedTeams?: T;
+  scheduleRules?:
+    | T
+    | {
+        region?: T;
+        division?: T;
+        matchesPerWeek?: T;
+        matchSlots?:
+          | T
+          | {
+              dayOfWeek?: T;
+              time?: T;
+              timezone?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faceit-seasons_select".
+ */
+export interface FaceitSeasonsSelect<T extends boolean = true> {
+  team?: T;
+  faceitLeague?: T;
+  faceitTeamId?: T;
+  championshipId?: T;
+  leagueId?: T;
+  seasonId?: T;
+  stageId?: T;
+  seasonName?: T;
+  isActive?: T;
+  division?: T;
+  region?: T;
+  conference?: T;
+  standings?:
+    | T
+    | {
+        currentRank?: T;
+        totalTeams?: T;
+        wins?: T;
+        losses?: T;
+        ties?: T;
+        points?: T;
+        matchesPlayed?: T;
+      };
+  lastSynced?: T;
+  dataSource?: T;
+  hideHistoricalData?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "social-posts_select".
+ */
+export interface SocialPostsSelect<T extends boolean = true> {
+  title?: T;
+  content?: T;
+  postType?: T;
+  platform?: T;
+  scheduledDate?: T;
+  status?: T;
+  assignedTo?: T;
+  approvedBy?: T;
+  relatedMatch?: T;
+  mediaAttachments?:
+    | T
+    | {
+        media?: T;
+        url?: T;
+        altText?: T;
+        id?: T;
+      };
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recruitment-listings_select".
+ */
+export interface RecruitmentListingsSelect<T extends boolean = true> {
+  category?: T;
+  team?: T;
+  role?: T;
+  requirements?: T;
+  status?: T;
+  filledBy?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recruitment-applications_select".
+ */
+export interface RecruitmentApplicationsSelect<T extends boolean = true> {
+  listing?: T;
+  discordHandle?: T;
+  aboutMe?: T;
+  status?: T;
+  internalNotes?: T;
+  archived?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  avatar?: T;
   role?: T;
   assignedTeams?: T;
+  departments?:
+    | T
+    | {
+        isProductionStaff?: T;
+        isSocialMediaStaff?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -1386,6 +2368,101 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ignored-duplicates_select".
+ */
+export interface IgnoredDuplicatesSelect<T extends boolean = true> {
+  person1?: T;
+  person2?: T;
+  label?: T;
+  reason?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "invite-links_select".
+ */
+export interface InviteLinksSelect<T extends boolean = true> {
+  token?: T;
+  role?: T;
+  assignedTeams?: T;
+  departments?:
+    | T
+    | {
+        isProductionStaff?: T;
+        isSocialMediaStaff?: T;
+      };
+  email?: T;
+  expiresAt?: T;
+  usedAt?: T;
+  usedBy?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-logs_select".
+ */
+export interface AuditLogsSelect<T extends boolean = true> {
+  user?: T;
+  action?: T;
+  collection?: T;
+  documentId?: T;
+  documentTitle?: T;
+  metadata?: T;
+  ipAddress?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "error-logs_select".
+ */
+export interface ErrorLogsSelect<T extends boolean = true> {
+  user?: T;
+  errorType?: T;
+  message?: T;
+  stack?: T;
+  url?: T;
+  severity?: T;
+  resolved?: T;
+  resolvedAt?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cron-job-runs_select".
+ */
+export interface CronJobRunsSelect<T extends boolean = true> {
+  jobName?: T;
+  status?: T;
+  startTime?: T;
+  endTime?: T;
+  duration?: T;
+  summary?: T;
+  errors?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "active-sessions_select".
+ */
+export interface ActiveSessionsSelect<T extends boolean = true> {
+  user?: T;
+  loginTime?: T;
+  lastActivity?: T;
+  ipAddress?: T;
+  userAgent?: T;
+  isActive?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1523,6 +2600,199 @@ export interface Footer {
   createdAt?: string | null;
 }
 /**
+ * 📺 Manage weekly match coverage, staff assignments, and broadcast schedule
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "production-dashboard".
+ */
+export interface ProductionDashboard {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * 📱 Manage social media posts, content calendar, and posting schedule
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "social-media-settings".
+ */
+export interface SocialMediaSetting {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * ⚙️ Configure templates, goals, and content guidelines for social media posts
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "social-media-config".
+ */
+export interface SocialMediaConfig {
+  id: number;
+  /**
+   * Create reusable templates for your social media team
+   */
+  postTemplates?:
+    | {
+        /**
+         * Template name (e.g., "Match Day Announcement")
+         */
+        name: string;
+        /**
+         * Associated post type
+         */
+        postType:
+          | 'Match Promo'
+          | 'Stream Announcement'
+          | 'Community Engagement'
+          | 'Original Content'
+          | 'Repost/Share'
+          | 'Other';
+        /**
+         * Template text with placeholders. Use {{placeholderName}} for any dynamic value (e.g., {{team_1}}, {{team_2}}, {{matchTime}}, {{url}})
+         */
+        templateText: string;
+        /**
+         * Recommended graphics or media type (e.g., "Team banner", "Stream overlay")
+         */
+        suggestedMedia?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Set weekly posting targets to encourage consistent output
+   */
+  weeklyGoals?: {
+    /**
+     * Target number of posts per week
+     */
+    totalPostsPerWeek?: number | null;
+    /**
+     * Target match promotion posts
+     */
+    matchPromos?: number | null;
+    /**
+     * Target stream announcement posts
+     */
+    streamAnnouncements?: number | null;
+    /**
+     * Target community engagement posts
+     */
+    communityEngagement?: number | null;
+    /**
+     * Target original content posts
+     */
+    originalContent?: number | null;
+  };
+  /**
+   * Best practices, brand voice, and posting guidelines for the team
+   */
+  contentGuidelines?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * 📊 Check and fix data consistency issues across collections.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "data-consistency".
+ */
+export interface DataConsistency {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * 🔍 View user action logs for security monitoring.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-log-viewer".
+ */
+export interface AuditLogViewer {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * ⏰ Monitor scheduled job executions and performance.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cron-monitor".
+ */
+export interface CronMonitor {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * ⚠️ Monitor and track application errors for debugging.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "error-dashboard".
+ */
+export interface ErrorDashboard {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * 👥 Monitor currently logged-in admin panel users
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "active-sessions-viewer".
+ */
+export interface ActiveSessionsViewer {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * 📊 System overview and health monitoring.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "database-health".
+ */
+export interface DatabaseHealth {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "error-harvester-state".
+ */
+export interface ErrorHarvesterState {
+  id: number;
+  /**
+   * Timestamp of when the error harvester last ran
+   */
+  lastCheckedAt?: string | null;
+  /**
+   * Number of errors found in the last run
+   */
+  lastRunErrors?: number | null;
+  /**
+   * Total number of times the harvester has run
+   */
+  totalRunCount?: number | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
@@ -1564,6 +2834,118 @@ export interface FooterSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "production-dashboard_select".
+ */
+export interface ProductionDashboardSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "social-media-settings_select".
+ */
+export interface SocialMediaSettingsSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "social-media-config_select".
+ */
+export interface SocialMediaConfigSelect<T extends boolean = true> {
+  postTemplates?:
+    | T
+    | {
+        name?: T;
+        postType?: T;
+        templateText?: T;
+        suggestedMedia?: T;
+        id?: T;
+      };
+  weeklyGoals?:
+    | T
+    | {
+        totalPostsPerWeek?: T;
+        matchPromos?: T;
+        streamAnnouncements?: T;
+        communityEngagement?: T;
+        originalContent?: T;
+      };
+  contentGuidelines?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "data-consistency_select".
+ */
+export interface DataConsistencySelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-log-viewer_select".
+ */
+export interface AuditLogViewerSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cron-monitor_select".
+ */
+export interface CronMonitorSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "error-dashboard_select".
+ */
+export interface ErrorDashboardSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "active-sessions-viewer_select".
+ */
+export interface ActiveSessionsViewerSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "database-health_select".
+ */
+export interface DatabaseHealthSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "error-harvester-state_select".
+ */
+export interface ErrorHarvesterStateSelect<T extends boolean = true> {
+  lastCheckedAt?: T;
+  lastRunErrors?: T;
+  totalRunCount?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

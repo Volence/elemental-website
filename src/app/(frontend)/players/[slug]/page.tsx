@@ -1,34 +1,23 @@
 import type { Metadata } from 'next'
+import type { Media } from '@/payload-types'
 import React from 'react'
 import { notFound } from 'next/navigation'
 import { getPlayerByName, getAllPlayerNames } from '@/utilities/getPlayer'
 import { SocialLinks } from '@/components/SocialLinks'
-import { Shield, Users, Crown, UserCheck, Calendar, Share2, Image as ImageIcon, Film, Mic, Eye, Video } from 'lucide-react'
+import { Shield, Crown, Share2, Users, Mic, Eye, Video } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { TeamLogo } from '@/components/TeamLogo'
 import { formatPlayerSlug } from '@/utilities/getPlayer'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { getMediaUrl } from '@/utilities/getMediaUrl'
+import { getOrgRoleIcon, getOrgRoleLabel } from '@/utilities/roleIcons'
+import { getRoleColors, getTierFromRating } from '@/utilities/tierColors'
 
 type Args = {
   params: Promise<{
     slug: string
   }>
-}
-
-const getRoleIcon = (role: string) => {
-  const iconMap: Record<string, any> = {
-    'owner': Crown,
-    'co-owner': Crown,
-    'hr': UserCheck,
-    'moderator': Shield,
-    'event-manager': Calendar,
-    'social-manager': Share2,
-    'graphics': Image,
-    'media-editor': Film,
-  }
-  return iconMap[role] || Users
 }
 
 const getRoleLabel = (role: string) => {
@@ -51,10 +40,10 @@ const getRoleLabel = (role: string) => {
 }
 
 const getProductionIcon = (type: string) => {
-  if (type === 'observer') return Eye
-  if (type === 'producer') return Video
-  if (type === 'observer-producer' || type === 'observer-producer-caster') return Video
-  return Mic
+  if (type === 'observer') return <Eye className="w-5 h-5" />
+  if (type === 'producer') return <Video className="w-5 h-5" />
+  if (type === 'observer-producer' || type === 'observer-producer-caster') return <Video className="w-5 h-5" />
+  return <Mic className="w-5 h-5" />
 }
 
 // Skip static generation during build - pages will be generated on-demand
@@ -102,9 +91,20 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
                            player.teams.length > 0 ? `Player for ${player.teams.map(t => t.teamName).join(', ')}` :
                            'Player'
     
+    // Use player photo if available, otherwise fall back to org logo
+    const photoUrl = player.photo && typeof player.photo === 'object' 
+      ? getMediaUrl((player.photo as Media).url)
+      : ''
+    const imageUrl = photoUrl || '/logos/org.png'
+    
     return {
       title: `${player.name} | Players | Elemental (ELMT)`,
       description: `Learn more about ${player.name}, ${roleDescription} for Elemental.`,
+      openGraph: {
+        title: `${player.name} | Elemental (ELMT)`,
+        description: `${player.name} - ${roleDescription}`,
+        images: [{ url: imageUrl }],
+      },
     }
   } catch (error) {
     // During build, database may not be available
@@ -210,7 +210,7 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
                 </p>
                 
                 {/* Quick Stats */}
-                <div className="flex flex-wrap justify-center md:justify-start gap-3">
+                <div className="flex flex-wrap justify-center md:justify-start gap-4">
                   {player.teams.length > 0 && (
                     <div className="px-4 py-2 rounded-lg bg-primary/10 border border-primary/20">
                       <span className="text-sm font-semibold text-primary">
@@ -245,10 +245,13 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
             {/* Bio */}
             {player.bio && (
               <div className="p-6 md:p-8 rounded-2xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-lg backdrop-blur-sm hover:border-border/80 transition-all">
-                <h2 className="text-2xl font-black mb-4 flex items-center gap-2">
-                  <Users className="w-6 h-6 text-primary" />
-                  About
-                </h2>
+                <div className="mb-4">
+                  <h2 className="text-2xl font-black mb-2 flex items-center gap-2">
+                    <Users className="w-6 h-6 text-primary" />
+                    About
+                  </h2>
+                  <div className="w-20 h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 rounded-full"></div>
+                </div>
                 <p className="text-foreground/90 leading-relaxed whitespace-pre-wrap text-base">
                   {player.bio}
                 </p>
@@ -258,10 +261,13 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
             {/* Staff Roles */}
             {(player.staffRoles.organization && player.staffRoles.organization.length > 0) || player.staffRoles.production ? (
               <div className="p-6 md:p-8 rounded-2xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-lg backdrop-blur-sm hover:border-border/80 transition-all">
-                <h2 className="text-2xl font-black mb-6 flex items-center gap-2">
-                  <Shield className="w-6 h-6 text-primary" />
-                  Staff Positions
-                </h2>
+                <div className="mb-6">
+                  <h2 className="text-2xl font-black mb-2 flex items-center gap-2">
+                    <Shield className="w-6 h-6 text-primary" />
+                    Staff Positions
+                  </h2>
+                  <div className="w-20 h-1 bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 rounded-full"></div>
+                </div>
                 <div className="space-y-6">
                   {player.staffRoles.organization && player.staffRoles.organization.length > 0 && (
                     <div>
@@ -269,16 +275,16 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
                         <Crown className="w-4 h-4" />
                         Organization Staff
                       </h3>
-                      <div className="grid sm:grid-cols-2 gap-3">
+                      <div className="grid sm:grid-cols-2 gap-4">
                         {player.staffRoles.organization.map((role) => {
-                          const RoleIcon = getRoleIcon(role)
+                          const roleIcon = getOrgRoleIcon(role, 'md')
                           return (
                             <div 
                               key={role} 
-                              className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-br from-accent-gold/10 to-accent-gold/5 border border-accent-gold/20 hover:border-accent-gold/40 transition-all hover:scale-[1.02]"
+                              className="flex items-center gap-4 px-4 py-3 rounded-lg bg-gradient-to-br from-accent-gold/10 to-accent-gold/5 border border-accent-gold/20 hover:border-accent-gold/40 transition-all hover:scale-[1.02]"
                             >
                               <div className="w-8 h-8 rounded-lg bg-accent-gold/20 flex items-center justify-center flex-shrink-0">
-                                {React.createElement(RoleIcon, { className: 'w-4 h-4 text-[hsl(var(--accent-gold))]' })}
+                                {roleIcon}
                               </div>
                               <span className="font-semibold">{getRoleLabel(role)}</span>
                             </div>
@@ -294,11 +300,9 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
                         <Video className="w-4 h-4" />
                         Production Staff
                       </h3>
-                      <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-br from-accent-blue/10 to-accent-blue/5 border border-accent-blue/20 hover:border-accent-blue/40 transition-all hover:scale-[1.02] w-fit">
+                      <div className="flex items-center gap-4 px-4 py-3 rounded-lg bg-gradient-to-br from-accent-blue/10 to-accent-blue/5 border border-accent-blue/20 hover:border-accent-blue/40 transition-all hover:scale-[1.02] w-fit">
                         <div className="w-8 h-8 rounded-lg bg-accent-blue/20 flex items-center justify-center flex-shrink-0">
-                          {React.createElement(getProductionIcon(player.staffRoles.production), { 
-                            className: 'w-4 h-4 text-[hsl(var(--accent-blue))]' 
-                          })}
+                          {getProductionIcon(player.staffRoles.production)}
                         </div>
                         <span className="font-semibold">{getRoleLabel(player.staffRoles.production)}</span>
                       </div>
@@ -311,55 +315,87 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
             {/* Teams */}
             {player.teams.length > 0 && (
               <div className="p-6 md:p-8 rounded-2xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-lg backdrop-blur-sm hover:border-border/80 transition-all">
-                <h2 className="text-2xl font-black mb-6 flex items-center gap-2">
-                  <Shield className="w-6 h-6 text-primary" />
-                  Teams
-                </h2>
+                <div className="mb-6">
+                  <h2 className="text-2xl font-black mb-2 flex items-center gap-2">
+                    <Shield className="w-6 h-6 text-primary" />
+                    Teams
+                  </h2>
+                  <div className="w-20 h-1 bg-gradient-to-r from-blue-500 via-cyan-500 to-green-500 rounded-full"></div>
+                </div>
                 <div className="space-y-3">
-                  {player.teams.map((teamInfo) => (
-                    <Link
-                      key={teamInfo.teamSlug}
-                      href={`/teams/${teamInfo.teamSlug}`}
-                      className="group flex items-center gap-4 p-5 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all hover:scale-[1.02]"
-                    >
-                      <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-muted/20">
-                        <TeamLogo
-                          src={teamInfo.teamLogo}
-                          alt={`${teamInfo.teamName} Logo`}
-                          fill
-                          className="object-contain p-2"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">
-                          {teamInfo.teamName}
-                        </h3>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {teamInfo.role && (
-                            <span className="text-xs font-bold text-foreground uppercase tracking-wider px-3 py-1.5 rounded-lg bg-muted border border-border">
-                              {teamInfo.role}
-                            </span>
-                          )}
-                          {teamInfo.positions && teamInfo.positions.length > 0 && (
-                            <>
-                              {teamInfo.positions.map((position) => (
-                                <span 
-                                  key={position}
-                                  className="text-xs font-bold text-primary uppercase tracking-wider px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/30"
-                                >
-                                  {position === 'co-captain' ? 'Co-Captain' : 
-                                   position === 'captain' ? 'Captain' :
-                                   position === 'manager' ? 'Manager' :
-                                   position === 'coach' ? 'Coach' :
-                                   position.charAt(0).toUpperCase() + position.slice(1)}
-                                </span>
-                              ))}
-                            </>
-                          )}
+                  {player.teams.map((teamInfo) => {
+                    // Get role colors for player role badge
+                    const roleColors = teamInfo.role ? getRoleColors(teamInfo.role) : null
+                    const roleColorHex = teamInfo.role === 'tank' ? '#3b82f6' : teamInfo.role === 'support' ? '#22c55e' : '#ef4444'
+                    
+                    // Get position colors
+                    const getPositionColor = (position: string) => {
+                      if (position === 'captain' || position === 'co-captain') return { bg: '#eab30815', color: '#eab308', border: '#eab30850' } // Yellow/Gold
+                      if (position === 'manager') return { bg: '#a855f715', color: '#a855f7', border: '#a855f750' } // Purple
+                      if (position === 'coach') return { bg: '#22c55e15', color: '#22c55e', border: '#22c55e50' } // Green
+                      return { bg: '#3b82f615', color: '#3b82f6', border: '#3b82f650' } // Blue default
+                    }
+                    
+                    return (
+                      <Link
+                        key={teamInfo.teamSlug}
+                        href={`/teams/${teamInfo.teamSlug}`}
+                        className="group flex items-center gap-4 p-5 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all hover:scale-[1.02]"
+                      >
+                        <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-muted/20">
+                          <TeamLogo
+                            src={teamInfo.teamLogo}
+                            alt={`${teamInfo.teamName} Logo`}
+                            fill
+                            className="object-contain p-2"
+                          />
                         </div>
-                      </div>
-                    </Link>
-                  ))}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">
+                            {teamInfo.teamName}
+                          </h3>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {teamInfo.role && (
+                              <span 
+                                className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg border"
+                                style={{
+                                  backgroundColor: `${roleColorHex}15`,
+                                  color: roleColorHex,
+                                  borderColor: `${roleColorHex}50`
+                                }}
+                              >
+                                {teamInfo.role}
+                              </span>
+                            )}
+                            {teamInfo.positions && teamInfo.positions.length > 0 && (
+                              <>
+                                {teamInfo.positions.map((position) => {
+                                  const posColor = getPositionColor(position)
+                                  return (
+                                    <span 
+                                      key={position}
+                                      className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg border"
+                                      style={{
+                                        backgroundColor: posColor.bg,
+                                        color: posColor.color,
+                                        borderColor: posColor.border
+                                      }}
+                                    >
+                                      {position === 'co-captain' ? 'Co-Captain' : 
+                                       position === 'captain' ? 'Captain' :
+                                       position === 'manager' ? 'Manager' :
+                                       position === 'coach' ? 'Coach' :
+                                       position.charAt(0).toUpperCase() + position.slice(1)}
+                                    </span>
+                                  )
+                                })}
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </Link>
+                    )
+                  })}
                 </div>
               </div>
             )}
@@ -368,7 +404,7 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
           {/* Right Column - Sidebar */}
           <div className="space-y-8">
             {/* Social Links */}
-            {(player.socialLinks.twitter || player.socialLinks.twitch || player.socialLinks.youtube || player.socialLinks.instagram) && (
+            {(player.socialLinks.twitter || player.socialLinks.twitch || player.socialLinks.youtube || player.socialLinks.instagram || player.socialLinks.tiktok || (player.socialLinks.customLinks && player.socialLinks.customLinks.length > 0)) && (
               <div className="p-6 rounded-2xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-lg backdrop-blur-sm hover:border-border/80 transition-all">
                 <h2 className="text-xl font-black mb-4 flex items-center gap-2">
                   <Share2 className="w-5 h-5 text-primary" />
