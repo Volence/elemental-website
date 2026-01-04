@@ -1117,6 +1117,360 @@
   }
 }
 
+// Category Item Styles
+.categories-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+}
+
+.category-item {
+  @include glow-card($admin-accent-primary);
+  padding: $spacing-xl;
+  border-radius: $radius-md;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.category-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-lg;
+  gap: $spacing-md;
+}
+
+.category-title {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  flex: 1;
+  min-width: 0;
+
+  .category-icon {
+    color: $admin-accent-primary;
+    flex-shrink: 0;
+  }
+
+  h4 {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $admin-text-primary;
+    margin: 0;
+  }
+
+  .category-name-input {
+    flex: 1;
+    padding: $spacing-sm $spacing-md;
+    background: rgba($admin-bg-base, 0.5);
+    border: 2px solid $admin-accent-primary;
+    border-radius: $radius-sm;
+    color: $admin-text-primary;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba($admin-accent-primary, 0.2);
+    }
+  }
+
+  .channel-count {
+    @include glow-badge($admin-accent-info);
+    padding: $spacing-xs $spacing-sm;
+    font-size: $font-size-xs;
+    white-space: nowrap;
+  }
+}
+
+.category-actions {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  flex-shrink: 0;
+}
+
+.action-btn {
+  @include transparent-bg(0.05);
+  padding: $spacing-sm $spacing-md;
+  border: 1px solid rgba($admin-accent-primary, 0.3);
+  border-radius: $radius-sm;
+  color: $admin-text-secondary;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    color: $admin-text-primary;
+    border-color: $admin-accent-primary;
+    background: rgba($admin-accent-primary, 0.1);
+    transform: scale(1.05);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.save-btn {
+    border-color: $admin-accent-success;
+    color: $admin-accent-success;
+
+    &:hover:not(:disabled) {
+      background: rgba($admin-accent-success, 0.1);
+      border-color: $admin-accent-success;
+    }
+  }
+
+  &.cancel-btn {
+    border-color: $admin-accent-error;
+    color: $admin-accent-error;
+
+    &:hover:not(:disabled) {
+      background: rgba($admin-accent-error, 0.1);
+      border-color: $admin-accent-error;
+    }
+  }
+
+  &.copy-btn {
+    border-color: $admin-accent-info;
+    color: $admin-accent-info;
+
+    &:hover:not(:disabled) {
+      background: rgba($admin-accent-info, 0.1);
+    }
+  }
+
+  &.edit-btn {
+    border-color: $admin-accent-warning;
+    color: $admin-accent-warning;
+
+    &:hover:not(:disabled) {
+      background: rgba($admin-accent-warning, 0.1);
+    }
+  }
+
+  &.template-btn {
+    border-color: #a855f7;
+    color: #a855f7;
+
+    &:hover:not(:disabled) {
+      background: rgba(#a855f7, 0.1);
+    }
+  }
+
+  &.create-btn {
+    border-color: $admin-accent-success;
+    color: $admin-accent-success;
+
+    &:hover:not(:disabled) {
+      background: rgba($admin-accent-success, 0.1);
+    }
+  }
+
+  &.delete-btn {
+    border-color: $admin-accent-error;
+    color: $admin-accent-error;
+
+    &:hover:not(:disabled) {
+      background: rgba($admin-accent-error, 0.1);
+    }
+  }
+}
+
+.channels-container {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+  padding-left: $spacing-2xl;
+}
+
+.empty-channels {
+  padding: $spacing-xl;
+  text-align: center;
+  @include transparent-bg(0.03);
+  border-radius: $radius-sm;
+  border: 1px dashed rgba($admin-accent-primary, 0.3);
+
+  p {
+    color: $admin-text-secondary;
+    margin: 0 0 $spacing-md 0;
+  }
+
+  .add-channel-prompt {
+    @include glow-button($admin-accent-success);
+    padding: $spacing-sm $spacing-lg;
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-sm;
+  }
+}
+
+.channel-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-sm $spacing-md;
+  @include transparent-bg(0.02);
+  border-radius: $radius-sm;
+  border: 1px solid rgba($admin-accent-primary, 0.1);
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: rgba($admin-accent-primary, 0.3);
+    background: rgba($admin-accent-primary, 0.05);
+  }
+}
+
+.channel-content {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  flex: 1;
+  min-width: 0;
+
+  .channel-type-icon {
+    color: $admin-text-secondary;
+    flex-shrink: 0;
+  }
+
+  .channel-name {
+    color: $admin-text-primary;
+    font-size: $font-size-sm;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .channel-name-input {
+    flex: 1;
+    padding: $spacing-xs $spacing-sm;
+    background: rgba($admin-bg-base, 0.5);
+    border: 2px solid $admin-accent-primary;
+    border-radius: $radius-sm;
+    color: $admin-text-primary;
+    font-size: $font-size-sm;
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba($admin-accent-primary, 0.2);
+    }
+  }
+}
+
+.channel-actions {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+
+  .channel-item:hover & {
+    opacity: 1;
+  }
+}
+
+.action-btn-small {
+  @include transparent-bg(0.05);
+  padding: $spacing-xs;
+  border: 1px solid rgba($admin-accent-primary, 0.3);
+  border-radius: $radius-xs;
+  color: $admin-text-secondary;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  font-size: $font-size-xs;
+
+  &:hover:not(:disabled) {
+    color: $admin-text-primary;
+    border-color: $admin-accent-primary;
+    background: rgba($admin-accent-primary, 0.1);
+    transform: scale(1.1);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.save-btn {
+    border-color: $admin-accent-success;
+    color: $admin-accent-success;
+
+    &:hover:not(:disabled) {
+      background: rgba($admin-accent-success, 0.1);
+      border-color: $admin-accent-success;
+    }
+  }
+
+  &.cancel-btn {
+    border-color: $admin-accent-error;
+    color: $admin-accent-error;
+
+    &:hover:not(:disabled) {
+      background: rgba($admin-accent-error, 0.1);
+      border-color: $admin-accent-error;
+    }
+  }
+
+  &.copy-btn {
+    border-color: $admin-accent-info;
+    color: $admin-accent-info;
+
+    &:hover:not(:disabled) {
+      background: rgba($admin-accent-info, 0.1);
+    }
+  }
+
+  &.edit-btn {
+    border-color: $admin-accent-warning;
+    color: $admin-accent-warning;
+
+    &:hover:not(:disabled) {
+      background: rgba($admin-accent-warning, 0.1);
+    }
+  }
+
+  &.clone-btn {
+    border-color: #a855f7;
+    color: #a855f7;
+
+    &:hover:not(:disabled) {
+      background: rgba(#a855f7, 0.1);
+    }
+  }
+
+  &.delete-btn {
+    border-color: $admin-accent-error;
+    color: $admin-accent-error;
+
+    &:hover:not(:disabled) {
+      background: rgba($admin-accent-error, 0.1);
+    }
+  }
+}
+
+.uncategorized-section {
+  margin-top: $spacing-2xl;
+  @include glow-card($admin-accent-warning);
+  padding: $spacing-xl;
+  border-radius: $radius-md;
+
+  h3 {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $admin-text-primary;
+    margin: 0 0 $spacing-lg 0;
+  }
+}
+
 // Spinner animation
 @keyframes spin {
   to {

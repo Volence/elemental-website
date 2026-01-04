@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { AlertModal, ConfirmModal } from './Modal'
 import { EditTemplateModal } from './EditTemplateModal'
+import { CategoryItem } from './CategoryItem'
 import { Edit, Trash2 } from 'lucide-react'
 
 interface DiscordChannel {
@@ -395,6 +396,246 @@ const DiscordServerManagerView = () => {
     })
   }
 
+  // Server Structure Management Handlers
+  const handleRenameCategory = async (id: string, newName: string) => {
+    try {
+      const response = await fetch('/api/discord/server/rename', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, name: newName, type: 'category' }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to rename category')
+      }
+
+      await loadServerStructure()
+      setAlertModal({
+        isOpen: true,
+        title: 'Success',
+        message: 'Category renamed successfully!',
+        type: 'success'
+      })
+    } catch (err: any) {
+      setAlertModal({
+        isOpen: true,
+        title: 'Error',
+        message: err.message,
+        type: 'error'
+      })
+      throw err
+    }
+  }
+
+  const handleDeleteCategory = (id: string, name: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Category',
+      message: `Are you sure you want to delete the category "${name}"? All channels in this category will also be deleted. This action cannot be undone.`,
+      confirmType: 'danger',
+      onConfirm: async () => {
+        try {
+          const response = await fetch('/api/discord/server/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, type: 'category' }),
+          })
+
+          if (!response.ok) {
+            const error = await response.json()
+            throw new Error(error.error || 'Failed to delete category')
+          }
+
+          await loadServerStructure()
+          setAlertModal({
+            isOpen: true,
+            title: 'Success',
+            message: 'Category deleted successfully!',
+            type: 'success'
+          })
+        } catch (err: any) {
+          setAlertModal({
+            isOpen: true,
+            title: 'Error',
+            message: err.message,
+            type: 'error'
+          })
+        }
+      }
+    })
+  }
+
+  const handleCopyId = (id: string, label: string) => {
+    navigator.clipboard.writeText(id)
+    setAlertModal({
+      isOpen: true,
+      title: 'Copied!',
+      message: `${label} copied to clipboard`,
+      type: 'success'
+    })
+  }
+
+  const handleSaveCategoryAsTemplate = async (categoryId: string, categoryName: string) => {
+    setSelectedCategoryId(categoryId)
+    setTemplateName(`${categoryName} Template`)
+    setTemplateDescription(`Template created from ${categoryName}`)
+    // Switch to templates tab
+    setActiveTab('templates')
+  }
+
+  const handleCreateChannel = (categoryId: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Create Channel',
+      message: 'Enter the name for the new channel:',
+      confirmType: 'success',
+      onConfirm: async () => {
+        const channelName = prompt('Channel name:')
+        if (!channelName) return
+
+        try {
+          const response = await fetch('/api/discord/server/create-channel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              name: channelName, 
+              type: 0, // Text channel
+              parentId: categoryId 
+            }),
+          })
+
+          if (!response.ok) {
+            const error = await response.json()
+            throw new Error(error.error || 'Failed to create channel')
+          }
+
+          await loadServerStructure()
+          setAlertModal({
+            isOpen: true,
+            title: 'Success',
+            message: `Channel "${channelName}" created successfully!`,
+            type: 'success'
+          })
+        } catch (err: any) {
+          setAlertModal({
+            isOpen: true,
+            title: 'Error',
+            message: err.message,
+            type: 'error'
+          })
+        }
+      }
+    })
+  }
+
+  const handleRenameChannel = async (id: string, newName: string) => {
+    try {
+      const response = await fetch('/api/discord/server/rename', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, name: newName, type: 'channel' }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to rename channel')
+      }
+
+      await loadServerStructure()
+      setAlertModal({
+        isOpen: true,
+        title: 'Success',
+        message: 'Channel renamed successfully!',
+        type: 'success'
+      })
+    } catch (err: any) {
+      setAlertModal({
+        isOpen: true,
+        title: 'Error',
+        message: err.message,
+        type: 'error'
+      })
+      throw err
+    }
+  }
+
+  const handleDeleteChannel = (id: string, name: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Channel',
+      message: `Are you sure you want to delete the channel "${name}"? This action cannot be undone.`,
+      confirmType: 'danger',
+      onConfirm: async () => {
+        try {
+          const response = await fetch('/api/discord/server/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, type: 'channel' }),
+          })
+
+          if (!response.ok) {
+            const error = await response.json()
+            throw new Error(error.error || 'Failed to delete channel')
+          }
+
+          await loadServerStructure()
+          setAlertModal({
+            isOpen: true,
+            title: 'Success',
+            message: 'Channel deleted successfully!',
+            type: 'success'
+          })
+        } catch (err: any) {
+          setAlertModal({
+            isOpen: true,
+            title: 'Error',
+            message: err.message,
+            type: 'error'
+          })
+        }
+      }
+    })
+  }
+
+  const handleCloneChannel = (id: string, name: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Clone Channel',
+      message: `Clone the channel "${name}"?`,
+      confirmType: 'success',
+      onConfirm: async () => {
+        try {
+          const response = await fetch('/api/discord/server/clone-channel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ channelId: id }),
+          })
+
+          if (!response.ok) {
+            const error = await response.json()
+            throw new Error(error.error || 'Failed to clone channel')
+          }
+
+          await loadServerStructure()
+          setAlertModal({
+            isOpen: true,
+            title: 'Success',
+            message: `Channel "${name}" cloned successfully!`,
+            type: 'success'
+          })
+        } catch (err: any) {
+          setAlertModal({
+            isOpen: true,
+            title: 'Error',
+            message: err.message,
+            type: 'error'
+          })
+        }
+      }
+    })
+  }
+
   return (
     <div className="discord-server-manager">
       <div className="manager-header">
@@ -460,44 +701,59 @@ const DiscordServerManagerView = () => {
         {activeTab === 'structure' && structure && (
           <div className="server-structure">
             <div className="structure-header">
-              <h3>Categories & Channels</h3>
+              <h3>Categories & Channels ({structure.memberCount.toLocaleString()} members)</h3>
               <button onClick={loadServerStructure} className="refresh-button">
                 Refresh
               </button>
             </div>
 
-            {structure.categories.map((category) => (
-              <div key={category.id} className="category">
-                <div className="category-header">
-                  <h4>{category.name}</h4>
-                  <span className="channel-count">{category.channels.length} channels</span>
-                </div>
-                <div className="channels-list">
-                  {category.channels.map((channel) => (
-                    <div key={channel.id} className="channel">
-                      <span className="channel-icon">
-                        {channel.type === 0 ? '#' : channel.type === 2 ? '🔊' : '📄'}
-                      </span>
-                      <span className="channel-name">{channel.name}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
+            <div className="categories-list">
+              {structure.categories.map((category) => (
+                <CategoryItem
+                  key={category.id}
+                  category={category}
+                  onRename={handleRenameCategory}
+                  onDelete={handleDeleteCategory}
+                  onCopyId={handleCopyId}
+                  onSaveAsTemplate={handleSaveCategoryAsTemplate}
+                  onCreateChannel={handleCreateChannel}
+                  onChannelRename={handleRenameChannel}
+                  onChannelDelete={handleDeleteChannel}
+                  onChannelClone={handleCloneChannel}
+                  onChannelCopyId={handleCopyId}
+                  onRefresh={loadServerStructure}
+                />
+              ))}
+            </div>
 
             {structure.uncategorized.length > 0 && (
-              <div className="category">
-                <div className="category-header">
-                  <h4>Uncategorized</h4>
-                  <span className="channel-count">{structure.uncategorized.length} channels</span>
-                </div>
-                <div className="channels-list">
+              <div className="uncategorized-section">
+                <h3>Uncategorized Channels ({structure.uncategorized.length})</h3>
+                <div className="channels-container">
                   {structure.uncategorized.map((channel) => (
-                    <div key={channel.id} className="channel">
-                      <span className="channel-icon">
-                        {channel.type === 0 ? '#' : channel.type === 2 ? '🔊' : '📄'}
-                      </span>
-                      <span className="channel-name">{channel.name}</span>
+                    <div key={channel.id} className="channel-item">
+                      <div className="channel-content">
+                        <span className="channel-icon">
+                          {channel.type === 0 ? '#' : channel.type === 2 ? '🔊' : '📄'}
+                        </span>
+                        <span className="channel-name">{channel.name}</span>
+                      </div>
+                      <div className="channel-actions">
+                        <button
+                          onClick={() => handleCopyId(channel.id, 'Channel ID')}
+                          className="action-btn-small copy-btn"
+                          title="Copy Channel ID"
+                        >
+                          Copy ID
+                        </button>
+                        <button
+                          onClick={() => handleDeleteChannel(channel.id, channel.name)}
+                          className="action-btn-small delete-btn"
+                          title="Delete Channel"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
