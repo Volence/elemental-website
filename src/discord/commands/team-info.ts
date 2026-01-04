@@ -1,7 +1,7 @@
 import type { ChatInputCommandInteraction } from 'discord.js'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { buildTeamEmbed } from '../utils/embeds'
+import { buildEnhancedTeamEmbed } from '../utils/embeds'
 
 export async function handleTeamInfo(interaction: ChatInputCommandInteraction): Promise<void> {
   const teamSlug = interaction.options.getString('team-name', true)
@@ -9,7 +9,7 @@ export async function handleTeamInfo(interaction: ChatInputCommandInteraction): 
   try {
     await interaction.deferReply()
 
-    // Fetch team from database
+    // Fetch team from database with populated relationships
     const payload = await getPayload({ config: configPromise })
     const result = await payload.find({
       collection: 'teams',
@@ -19,6 +19,7 @@ export async function handleTeamInfo(interaction: ChatInputCommandInteraction): 
         },
       },
       limit: 1,
+      depth: 2, // Populate person relationships in roster/staff
     })
 
     if (!result.docs.length) {
@@ -30,15 +31,15 @@ export async function handleTeamInfo(interaction: ChatInputCommandInteraction): 
 
     const team = result.docs[0]
 
-    // Build embed
-    const embed = await buildTeamEmbed(team)
+    // Build embed with improved formatting
+    const embed = await buildEnhancedTeamEmbed(team, payload)
 
     // Add view on site link
     const siteUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
     const teamUrl = `${siteUrl}/teams/${team.slug}`
 
     await interaction.editReply({
-      content: `**${team.name}** ([View on site](${teamUrl}))`,
+      content: `[View full profile on website ›](${teamUrl})`,
       embeds: [embed],
     })
   } catch (error) {

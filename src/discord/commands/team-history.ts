@@ -35,25 +35,13 @@ export async function handleTeamHistory(interaction: ChatInputCommandInteraction
     const matches = await payload.find({
       collection: 'matches',
       where: {
-        or: [
-          { team1: { equals: team.id } },
-          { team2: { equals: team.id } },
-        ],
-        and: [
-          {
-            matchDate: {
-              less_than: now.toISOString(),
-            },
-          },
-          {
-            matchComplete: {
-              equals: true,
-            },
-          },
-        ],
+        team: { equals: team.id },
+        date: { less_than: now.toISOString() },
+        status: { equals: 'complete' },
       },
       limit: 10,
-      sort: '-matchDate', // Most recent first
+      sort: '-date', // Most recent first
+      depth: 1,
     })
 
     const embed = new EmbedBuilder()
@@ -70,13 +58,12 @@ export async function handleTeamHistory(interaction: ChatInputCommandInteraction
       const matchLines: string[] = []
 
       for (const match of matches.docs) {
-        const matchDate = new Date(match.matchDate)
+        const matchDate = new Date(match.date)
         const dateStr = `<t:${Math.floor(matchDate.getTime() / 1000)}:d>`
 
-        // Determine if this team won
-        const isTeam1 = match.team1?.id === team.id
-        const teamScore = isTeam1 ? (match.score1 || 0) : (match.score2 || 0)
-        const opponentScore = isTeam1 ? (match.score2 || 0) : (match.score1 || 0)
+        // Get scores
+        const teamScore = match.score?.elmtScore || 0
+        const opponentScore = match.score?.opponentScore || 0
 
         const won = teamScore > opponentScore
 
@@ -84,9 +71,7 @@ export async function handleTeamHistory(interaction: ChatInputCommandInteraction
         else losses++
 
         // Get opponent name
-        const opponent = isTeam1 ? match.team2 : match.team1
-        const opponentName =
-          typeof opponent === 'object' && opponent?.name ? opponent.name : 'TBD'
+        const opponentName = match.opponent || 'TBD'
 
         // Result emoji
         const resultEmoji = won ? '✅' : '❌'

@@ -35,20 +35,13 @@ export async function handleTeamMatches(interaction: ChatInputCommandInteraction
     const matches = await payload.find({
       collection: 'matches',
       where: {
-        or: [
-          { team1: { equals: team.id } },
-          { team2: { equals: team.id } },
-        ],
-        and: [
-          {
-            matchDate: {
-              greater_than_equal: now.toISOString(),
-            },
-          },
-        ],
+        team: { equals: team.id },
+        date: { greater_than_equal: now.toISOString() },
+        status: { equals: 'scheduled' },
       },
       limit: 10,
-      sort: 'matchDate',
+      sort: 'date',
+      depth: 1,
     })
 
     const embed = new EmbedBuilder()
@@ -62,18 +55,16 @@ export async function handleTeamMatches(interaction: ChatInputCommandInteraction
       const matchLines: string[] = []
 
       for (const match of matches.docs) {
-        const matchDate = new Date(match.matchDate)
+        const matchDate = new Date(match.date)
         const dateStr = `<t:${Math.floor(matchDate.getTime() / 1000)}:F>`
 
         // Get opponent name
-        const opponent = match.team1?.id === team.id ? match.team2 : match.team1
-        const opponentName =
-          typeof opponent === 'object' && opponent?.name ? opponent.name : 'TBD'
+        const opponentName = match.opponent || 'TBD'
 
-        // Match type
-        const matchType = match.matchType || 'Match'
+        // Match league/division
+        const leagueInfo = match.league ? ` (${match.league})` : ''
 
-        matchLines.push(`**${matchType}** vs ${opponentName}`)
+        matchLines.push(`**vs ${opponentName}**${leagueInfo}`)
         matchLines.push(`${dateStr}\n`)
       }
 

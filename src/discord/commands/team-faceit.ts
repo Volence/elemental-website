@@ -60,6 +60,7 @@ export async function handleTeamFaceit(interaction: ChatInputCommandInteraction)
       embed.setDescription('No active FaceIt season found.')
     } else {
       const season = seasons.docs[0]
+      const standings = season.standings || {}
 
       // Build stats description
       const stats: string[] = []
@@ -80,9 +81,9 @@ export async function handleTeamFaceit(interaction: ChatInputCommandInteraction)
         stats.push(`**Conference:** ${season.conference}`)
       }
 
-      // Record
-      const wins = season.wins || 0
-      const losses = season.losses || 0
+      // Record from standings
+      const wins = standings.wins || 0
+      const losses = standings.losses || 0
       stats.push(`**Record:** ${wins}W - ${losses}L`)
 
       // Win rate
@@ -92,21 +93,23 @@ export async function handleTeamFaceit(interaction: ChatInputCommandInteraction)
         stats.push(`**Win Rate:** ${winRate}%`)
       }
 
-      // Ranking
-      if (season.currentRank) {
-        stats.push(`**Rank:** #${season.currentRank}`)
+      // Ranking from standings
+      if (standings.currentRank && standings.totalTeams) {
+        stats.push(`**Rank:** #${standings.currentRank} of ${standings.totalTeams}`)
+      } else if (standings.currentRank) {
+        stats.push(`**Rank:** #${standings.currentRank}`)
       }
 
-      // Points
-      if (season.points !== undefined) {
-        stats.push(`**Points:** ${season.points}`)
+      // Points from standings
+      if (standings.points !== undefined) {
+        stats.push(`**Points:** ${standings.points}`)
       }
 
       embed.setDescription(stats.join('\n'))
 
       // Add last updated timestamp
-      if (season.lastSyncedAt) {
-        const lastSync = new Date(season.lastSyncedAt)
+      if (season.lastSynced) {
+        const lastSync = new Date(season.lastSynced)
         embed.setFooter({
           text: `Last updated`,
         })

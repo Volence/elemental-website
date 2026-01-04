@@ -1,4 +1,142 @@
 import { EmbedBuilder } from 'discord.js'
+import type { Payload } from 'payload'
+
+/**
+ * Build an enhanced team info embed with SR, logo, and proper formatting
+ */
+export async function buildEnhancedTeamEmbed(team: any, payload: Payload): Promise<EmbedBuilder> {
+  const embed = new EmbedBuilder()
+    .setTitle(`${team.name}`)
+    .setColor(team.themeColor ? parseInt(team.themeColor.replace('#', ''), 16) : getRegionColor(team.region))
+
+  // Team logo
+  if (team.logo) {
+    const logoUrl = typeof team.logo === 'string' ? team.logo : team.logo.url
+    if (logoUrl) {
+      embed.setThumbnail(getAbsoluteUrl(logoUrl))
+    }
+  }
+
+  // Build description with region and rating
+  const descParts: string[] = []
+  if (team.region) {
+    descParts.push(`🌍 **${team.region}**`)
+  }
+  if (team.rating) {
+    descParts.push(`⭐ **SR ${team.rating}**`)
+  }
+  if (descParts.length) {
+    embed.setDescription(descParts.join('  •  '))
+  }
+
+  // Fetch and display FaceIt stats if available
+  if (team.faceitEnabled && team.faceitTeamId) {
+    try {
+      const seasons = await payload.find({
+        collection: 'faceit-seasons',
+        where: {
+          team: { equals: team.id },
+          isActive: { equals: true },
+        },
+        limit: 1,
+      })
+
+      if (seasons.docs.length) {
+        const season = seasons.docs[0]
+        const standings = season.standings || {}
+        const wins = standings.wins || 0
+        const losses = standings.losses || 0
+        const rank = standings.currentRank
+        const total = standings.totalTeams
+
+        const faceitInfo: string[] = []
+        faceitInfo.push(`**${season.division || 'Unranked'}** ${season.region || ''}`)
+        faceitInfo.push(`Record: **${wins}-${losses}**`)
+        if (rank && total) {
+          faceitInfo.push(`Rank: **#${rank}** of ${total}`)
+        }
+
+        embed.addFields({
+          name: '🎮 FaceIt Competitive',
+          value: faceitInfo.join('\n'),
+          inline: false,
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching FaceIt data:', error)
+    }
+  }
+
+  // Roster
+  if (team.roster && team.roster.length > 0) {
+    const rosterByRole = {
+      tank: [] as string[],
+      dps: [] as string[],
+      support: [] as string[],
+    }
+
+    for (const player of team.roster) {
+      const personName = getPersonNameFromRelation(player.person)
+      if (personName) {
+        const role = (player.role || '').toLowerCase()
+        if (role.includes('tank')) {
+          rosterByRole.tank.push(personName)
+        } else if (role.includes('dps')) {
+          rosterByRole.dps.push(personName)
+        } else if (role.includes('support')) {
+          rosterByRole.support.push(personName)
+        }
+      }
+    }
+
+    const rosterLines: string[] = []
+    if (rosterByRole.tank.length) rosterLines.push(`🛡️ **Tank:** ${rosterByRole.tank.join(', ')}`)
+    if (rosterByRole.dps.length) rosterLines.push(`⚔️ **DPS:** ${rosterByRole.dps.join(', ')}`)
+    if (rosterByRole.support.length) rosterLines.push(`💚 **Support:** ${rosterByRole.support.join(', ')}`)
+
+    if (rosterLines.length) {
+      embed.addFields({
+        name: '👥 Roster',
+        value: rosterLines.join('\n'),
+        inline: false,
+      })
+    }
+  }
+
+  // Staff (managers and coaches)
+  const staffLines: string[] = []
+  if (team.manager && team.manager.length > 0) {
+    const names = team.manager.map((m: any) => getPersonNameFromRelation(m.person)).filter(Boolean)
+    if (names.length) staffLines.push(`👔 **Manager:** ${names.join(', ')}`)
+  }
+  if (team.coaches && team.coaches.length > 0) {
+    const names = team.coaches.map((c: any) => getPersonNameFromRelation(c.person)).filter(Boolean)
+    if (names.length) staffLines.push(`🎓 **Coach:** ${names.join(', ')}`)
+  }
+  if (staffLines.length) {
+    embed.addFields({
+      name: '🎯 Staff',
+      value: staffLines.join('\n'),
+      inline: false,
+    })
+  }
+
+  embed.setFooter({ text: `Last updated` })
+  embed.setTimestamp(new Date(team.updatedAt || Date.now()))
+
+  return embed
+}
+
+/**
+ * Get person name from a relationship (populated or ID)
+ */
+function getPersonNameFromRelation(personRef: any): string {
+  if (!personRef) return ''
+  if (typeof personRef === 'object' && personRef.name) {
+    return personRef.name
+  }
+  return ''
+}
 
 /**
  * Build a Discord embed for a team card
