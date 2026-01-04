@@ -922,11 +922,17 @@ table {
 // Array fields (repeaters)
 .array-field,
 .blocks-field {
+  // Allow dropdowns to escape the container
+  overflow: visible !important;
+  
   .array-field__row,
   .blocks-field__row {
     @include glow-card($admin-accent-primary);
     margin-bottom: 1rem;
     padding: 1.5rem;
+    
+    // CRITICAL: Allow dropdowns to extend beyond the row
+    overflow: visible !important;
     
     &:hover {
       transform: translateY(-1px);

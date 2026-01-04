@@ -121,8 +121,9 @@ export async function refreshAllTeamCards(): Promise<void> {
     for (const team of teams) {
       const embed = await buildEnhancedTeamEmbed(team, payload)
       const message = await channel.send({ embeds: [embed] })
-      // Don't save message IDs during bulk refresh (causes duplicate posts via afterChange hook)
-      // Message IDs are only needed for edit-in-place, which we're not using during full refresh
+      
+      // Save message ID so future edits update in-place (with skipDiscordUpdate to prevent loop)
+      await saveTeamMessageId(team.id, message.id, payload)
       
       const division = (typeof team.currentFaceitLeague === 'object' && team.currentFaceitLeague?.division) 
         ? team.currentFaceitLeague.division 

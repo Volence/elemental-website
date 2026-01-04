@@ -314,11 +314,14 @@
 .rs__menu {
   @include glow-card($admin-accent-info);
   margin-top: 0.5rem;
-  z-index: 100;
+  z-index: 9999 !important; // Ensure dropdown extends above all containers
+  position: absolute !important; // Break out of parent overflow constraints
 }
 
 .rs__menu-list {
   padding: 0.5rem;
+  max-height: 300px; // Ensure dropdown can show enough options
+  overflow-y: auto; // Allow scrolling if many options
 }
 
 .rs__option {
