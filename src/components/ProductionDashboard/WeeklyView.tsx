@@ -244,7 +244,11 @@ export function WeeklyView() {
       <div className="production-dashboard__filters">
         <label>
           Region:
-          <select value={filterRegion} onChange={(e) => setFilterRegion(e.target.value)}>
+          <select 
+            className="production-dashboard__filter-select"
+            value={filterRegion} 
+            onChange={(e) => setFilterRegion(e.target.value)}
+          >
             <option value="all">All Regions</option>
             <option value="NA">North America</option>
             <option value="EMEA">EMEA</option>
@@ -253,7 +257,11 @@ export function WeeklyView() {
         </label>
         <label>
           Priority:
-          <select value={filterPriority} onChange={(e) => setFilterPriority(e.target.value)}>
+          <select 
+            className="production-dashboard__filter-select"
+            value={filterPriority} 
+            onChange={(e) => setFilterPriority(e.target.value)}
+          >
             <option value="all">All Priorities</option>
             <option value="urgent">Urgent</option>
             <option value="high">High</option>
