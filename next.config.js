@@ -17,6 +17,8 @@ const nextConfig = {
     },
     // Enable instrumentation for Discord bot initialization
     instrumentationHook: true,
+    // Mark Discord packages as server-only (don't bundle for client)
+    serverComponentsExternalPackages: ['discord.js', '@discordjs/rest', '@discordjs/builders'],
   },
   images: {
     remotePatterns: [

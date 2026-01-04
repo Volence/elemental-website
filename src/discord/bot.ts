@@ -1,9 +1,22 @@
 import { Client, GatewayIntentBits, Events, ActivityType } from 'discord.js'
 
 let client: Client | null = null
+let initializationPromise: Promise<Client> | null = null
 
 export function getDiscordClient(): Client | null {
   return client
+}
+
+/**
+ * Get or initialize the Discord client (lazy loading)
+ */
+export async function ensureDiscordClient(): Promise<Client | null> {
+  if (client) return client
+  if (initializationPromise) return initializationPromise
+  
+  // Start initialization
+  initializationPromise = initializeDiscordBot()
+  return initializationPromise
 }
 
 export async function initializeDiscordBot(): Promise<Client> {
