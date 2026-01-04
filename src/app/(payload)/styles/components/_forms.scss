@@ -316,6 +316,8 @@
   margin-top: 0.5rem;
   z-index: 99999 !important; // Extremely high z-index to appear above everything
   position: absolute !important; // Break out of parent overflow constraints
+  background: rgba(20, 20, 20, 0.98) !important; // Nearly opaque background for readability
+  backdrop-filter: blur(8px); // Subtle blur for depth
 }
 
 // React Select menu portal (when rendered at document root)
