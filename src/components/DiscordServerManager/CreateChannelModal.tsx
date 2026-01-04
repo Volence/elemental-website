@@ -17,7 +17,7 @@ export const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
   categoryName
 }) => {
   const [channelName, setChannelName] = useState('')
-  const [channelType, setChannelType] = useState(0) // 0 = text, 2 = voice
+  const [channelType, setChannelType] = useState(0) // 0 = text, 2 = voice, 15 = forum
   const [isCreating, setIsCreating] = useState(false)
 
   const handleConfirm = async () => {
@@ -47,7 +47,7 @@ export const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
       isOpen={isOpen}
       onClose={handleClose}
       title={`Create Channel${categoryName ? ` in ${categoryName}` : ''}`}
-      size="small"
+      size="medium"
       footer={
         <>
           <button 
@@ -118,6 +118,20 @@ export const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
               <span className="channel-type-label">
                 <span className="channel-type-icon">🔊</span>
                 <span>Voice Channel</span>
+              </span>
+            </label>
+            <label className={`channel-type-option ${channelType === 15 ? 'selected' : ''}`}>
+              <input
+                type="radio"
+                name="channelType"
+                value={15}
+                checked={channelType === 15}
+                onChange={() => setChannelType(15)}
+                disabled={isCreating}
+              />
+              <span className="channel-type-label">
+                <span className="channel-type-icon">💬</span>
+                <span>Forum Channel</span>
               </span>
             </label>
           </div>

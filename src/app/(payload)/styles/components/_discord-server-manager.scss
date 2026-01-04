@@ -1533,9 +1533,13 @@
 
   .channel-type-options {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: $spacing-md;
     margin-top: $spacing-sm;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
 
     .channel-type-option {
       @include transparent-bg(0.03);
