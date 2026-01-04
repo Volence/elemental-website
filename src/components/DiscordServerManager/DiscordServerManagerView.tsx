@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { AlertModal, ConfirmModal } from './Modal'
 import { EditTemplateModal } from './EditTemplateModal'
+import { CreateChannelModal } from './CreateChannelModal'
 import { CategoryItem } from './CategoryItem'
 import { Edit, Trash2 } from 'lucide-react'
 
@@ -116,6 +117,11 @@ const DiscordServerManagerView = () => {
   const [editTemplateModal, setEditTemplateModal] = useState<{ isOpen: boolean; template: any | null }>({
     isOpen: false,
     template: null
+  })
+  const [createChannelModal, setCreateChannelModal] = useState<{ isOpen: boolean; categoryId: string; categoryName: string }>({
+    isOpen: false,
+    categoryId: '',
+    categoryName: ''
   })
 
   useEffect(() => {
@@ -485,48 +491,50 @@ const DiscordServerManagerView = () => {
   }
 
   const handleCreateChannel = (categoryId: string) => {
-    setConfirmModal({
+    // Find the category name for display
+    const category = structure?.categories.find(c => c.id === categoryId)
+    setCreateChannelModal({
       isOpen: true,
-      title: 'Create Channel',
-      message: 'Enter the name for the new channel:',
-      confirmType: 'success',
-      onConfirm: async () => {
-        const channelName = prompt('Channel name:')
-        if (!channelName) return
-
-        try {
-          const response = await fetch('/api/discord/server/create-channel', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              name: channelName, 
-              type: 0, // Text channel
-              parentId: categoryId 
-            }),
-          })
-
-          if (!response.ok) {
-            const error = await response.json()
-            throw new Error(error.error || 'Failed to create channel')
-          }
-
-          await loadServerStructure()
-          setAlertModal({
-            isOpen: true,
-            title: 'Success',
-            message: `Channel "${channelName}" created successfully!`,
-            type: 'success'
-          })
-        } catch (err: any) {
-          setAlertModal({
-            isOpen: true,
-            title: 'Error',
-            message: err.message,
-            type: 'error'
-          })
-        }
-      }
+      categoryId,
+      categoryName: category?.name || ''
     })
+  }
+
+  const handleConfirmCreateChannel = async (channelName: string, channelType: number) => {
+    const { categoryId } = createChannelModal
+    
+    try {
+      const response = await fetch('/api/discord/server/create-channel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          name: channelName, 
+          type: channelType,
+          parentId: categoryId 
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to create channel')
+      }
+
+      await loadServerStructure()
+      setAlertModal({
+        isOpen: true,
+        title: 'Success',
+        message: `Channel "${channelName}" created successfully!`,
+        type: 'success'
+      })
+    } catch (err: any) {
+      setAlertModal({
+        isOpen: true,
+        title: 'Error',
+        message: err.message,
+        type: 'error'
+      })
+      throw err // Re-throw to let modal handle it
+    }
   }
 
   const handleRenameChannel = async (id: string, newName: string) => {
@@ -1167,6 +1175,13 @@ const DiscordServerManagerView = () => {
         template={editTemplateModal.template}
         onClose={() => setEditTemplateModal({ isOpen: false, template: null })}
         onSave={handleSaveEditedTemplate}
+      />
+
+      <CreateChannelModal
+        isOpen={createChannelModal.isOpen}
+        categoryName={createChannelModal.categoryName}
+        onClose={() => setCreateChannelModal({ isOpen: false, categoryId: '', categoryName: '' })}
+        onConfirm={handleConfirmCreateChannel}
       />
     </div>
   )
