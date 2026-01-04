@@ -173,28 +173,60 @@ async function deleteAllTeamCardMessages(channel: TextChannel, payload: any): Pr
  */
 async function postStaffCards(channel: TextChannel, payload: any): Promise<void> {
   try {
-    // Get all production staff
-    const production = await payload.find({
-      collection: 'production',
-      limit: 100,
+    // Get all organization staff with populated person relationships
+    const orgStaff = await payload.find({
+      collection: 'organization-staff',
+      limit: 200,
+      depth: 1,
     })
 
-    if (production.docs.length > 0) {
-      const embed = buildStaffEmbed('Production Staff', production.docs)
-      await channel.send({ embeds: [embed] })
-      console.log('✅ Posted Production Staff card')
+    if (orgStaff.docs.length === 0) return
+
+    // Group staff by role (similar to the staff page)
+    const roleGroups = {
+      owner: [] as any[],
+      'co-owner': [] as any[],
+      hr: [] as any[],
+      graphics: [] as any[],
+      'social-manager': [] as any[],
+      moderator: [] as any[],
+      'event-manager': [] as any[],
+      'media-editor': [] as any[],
     }
 
-    // Get all organization staff
-    const organization = await payload.find({
-      collection: 'organization-staff',
-      limit: 100,
-    })
+    // Group staff members by their roles
+    for (const staff of orgStaff.docs) {
+      if (staff.roles && Array.isArray(staff.roles)) {
+        for (const role of staff.roles) {
+          if (role in roleGroups) {
+            roleGroups[role as keyof typeof roleGroups].push(staff)
+          }
+        }
+      }
+    }
 
-    if (organization.docs.length > 0) {
-      const embed = buildStaffEmbed('Organization Staff', organization.docs)
-      await channel.send({ embeds: [embed] })
-      console.log('✅ Posted Organization Staff card')
+    // Role labels matching the staff page
+    const roleLabels: Record<string, string> = {
+      owner: 'Owner',
+      'co-owner': 'Co-Owner',
+      hr: 'HR Staff',
+      graphics: 'Graphics Staff',
+      'social-manager': 'Social Manager',
+      moderator: 'Moderator',
+      'event-manager': 'Event Manager',
+      'media-editor': 'Media Editor',
+    }
+
+    // Post each role group as a separate card (only if non-empty)
+    for (const [role, staffMembers] of Object.entries(roleGroups)) {
+      if (staffMembers.length > 0) {
+        const embed = buildStaffEmbed(roleLabels[role] || role, staffMembers)
+        await channel.send({ embeds: [embed] })
+        console.log(`✅ Posted ${roleLabels[role]} card (${staffMembers.length} members)`)
+        
+        // Small delay to avoid rate limiting
+        await new Promise((resolve) => setTimeout(resolve, 300))
+      }
     }
   } catch (error) {
     console.error('Error posting staff cards:', error)

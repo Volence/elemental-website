@@ -243,33 +243,29 @@ export async function buildTeamEmbed(team: any): Promise<EmbedBuilder> {
  */
 export function buildStaffEmbed(departmentName: string, staff: any[]): EmbedBuilder {
   const embed = new EmbedBuilder()
+    .setTitle(departmentName)
+    .setColor(0x9b59b6) // Purple color for staff cards
 
-  embed.setTitle(`🎬 ${departmentName}`)
-
-  // Group staff by role
-  const byRole = new Map<string, string[]>()
-
-  for (const person of staff) {
-    const role = person.role || 'Staff'
-    const name = person.name || 'Unknown'
-
-    if (!byRole.has(role)) {
-      byRole.set(role, [])
+  // Extract staff names from person relationships
+  const staffNames: string[] = []
+  
+  for (const staffMember of staff) {
+    // Handle populated person relationship
+    if (staffMember.person) {
+      const personName = typeof staffMember.person === 'object' && staffMember.person.name
+        ? staffMember.person.name
+        : staffMember.displayName || 'Unknown'
+      staffNames.push(personName)
+    } else if (staffMember.displayName) {
+      staffNames.push(staffMember.displayName)
     }
-    byRole.get(role)!.push(name)
   }
 
-  // Add fields for each role
-  for (const [role, names] of byRole.entries()) {
-    embed.addFields({
-      name: role,
-      value: names.join(', '),
-      inline: false,
-    })
+  if (staffNames.length > 0) {
+    embed.setDescription(staffNames.join(', '))
+  } else {
+    embed.setDescription('No staff members')
   }
-
-  // Purple color for staff cards
-  embed.setColor(0x9b59b6)
 
   return embed
 }
