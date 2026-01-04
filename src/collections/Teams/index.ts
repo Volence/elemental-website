@@ -556,33 +556,77 @@ export const Teams: CollectionConfig = {
     afterChange: [
       createAuditLogHook('teams'),
       // Update Discord team card when roster, logo, or rating changes
-      async ({ doc, operation, previousDoc }) => {
-        // Only update on update operations (not create)
-        if (operation !== 'update') return
+      async ({ doc, operation, previousDoc, req }) => {
+        // Skip if this update is from Discord card system (to prevent loops)
+        if (req.context?.skipDiscordUpdate) return
 
-        // Check if any trigger fields changed
-        const triggersChanged =
-          doc.roster !== previousDoc?.roster ||
-          doc.logo !== previousDoc?.logo ||
-          doc.competitiveRating !== previousDoc?.competitiveRating ||
-          doc.name !== previousDoc?.name
+        // NEW TEAM CREATED - Refresh all cards to maintain sort order
+        if (operation === 'create') {
+          console.log(`🆕 New team created: ${doc.name} - refreshing all Discord cards`)
+          if (typeof globalThis !== 'undefined') {
+            setImmediate(async () => {
+              try {
+                const { refreshAllTeamCards } = await import('../../discord/services/teamCards')
+                await refreshAllTeamCards()
+              } catch (error) {
+                console.error('Failed to refresh Discord team cards:', error)
+              }
+            })
+          }
+          return
+        }
 
-        if (!triggersChanged) return
+        // EXISTING TEAM UPDATED - Only update if specific fields changed
+        if (operation === 'update') {
+          // Check if any trigger fields changed (deep comparison for arrays)
+          const rosterChanged = JSON.stringify(doc.roster) !== JSON.stringify(previousDoc?.roster)
+          const logoChanged = doc.logo !== previousDoc?.logo
+          const ratingChanged = doc.competitiveRating !== previousDoc?.competitiveRating
+          const nameChanged = doc.name !== previousDoc?.name
+          const messageIdChanged = doc.discordCardMessageId !== previousDoc?.discordCardMessageId
+          
+          // Only messageId changed? Skip (this is us saving the message ID)
+          if (messageIdChanged && !rosterChanged && !logoChanged && !ratingChanged && !nameChanged) {
+            return
+          }
 
-        // Trigger Discord card update (async, don't block save)
+          const triggersChanged = rosterChanged || logoChanged || ratingChanged || nameChanged
+
+          if (!triggersChanged) return
+          
+          console.log(`🔔 Discord card update triggered for ${doc.name} (roster: ${rosterChanged}, logo: ${logoChanged}, rating: ${ratingChanged}, name: ${nameChanged})`)
+
+          // Trigger Discord card update (async, don't block save)
+          if (typeof globalThis !== 'undefined') {
+            setImmediate(async () => {
+              try {
+                const { postOrUpdateTeamCard } = await import('../../discord/services/teamCards')
+                await postOrUpdateTeamCard({ teamId: doc.id })
+              } catch (error) {
+                console.error('Failed to update Discord team card:', error)
+              }
+            })
+          }
+        }
+      },
+    ],
+    afterDelete: [
+      createAuditLogDeleteHook('teams'),
+      // Refresh all Discord cards when team is deleted to maintain sort order
+      async ({ doc }) => {
+        console.log(`🗑️ Team deleted: ${doc.name} - refreshing all Discord cards`)
         if (typeof globalThis !== 'undefined') {
           setImmediate(async () => {
             try {
-              const { postOrUpdateTeamCard } = await import('../../discord/services/teamCards')
-              await postOrUpdateTeamCard({ teamId: doc.id })
+              const { refreshAllTeamCards } = await import('../../discord/services/teamCards')
+              await refreshAllTeamCards()
             } catch (error) {
-              console.error('Failed to update Discord team card:', error)
+              console.error('Failed to refresh Discord team cards after deletion:', error)
             }
           })
         }
       },
     ],
-    afterDelete: [createAuditLogDeleteHook('teams')],
     beforeValidate: [
       async ({ data, operation }) => {
         // Ensure slug is always generated from name if missing

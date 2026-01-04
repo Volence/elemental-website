@@ -16,8 +16,6 @@ const StaffCount: React.FC = () => {
   const captainCount = typeof allFields?.captain?.value === 'number' ? allFields.captain.value : 0
   const totalStaff = managerCount + coachesCount + captainCount
   
-  console.log('[StaffCount] Counts:', { managerCount, coachesCount, captainCount, totalStaff })
-
   if (totalStaff === 0) {
     return (
       <div className="team-tab-count team-tab-count--empty">

@@ -37,8 +37,6 @@ const RosterCount: React.FC = () => {
     }
   }, [docInfo])
   
-  console.log('[RosterCount] Counts:', { rosterCount, subsCount, totalPlayers, roleCounts })
-
   if (totalPlayers === 0) {
     return (
       <div className="team-tab-count team-tab-count--empty">

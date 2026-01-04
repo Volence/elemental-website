@@ -1,5 +1,5 @@
 import type { EmbedBuilder, TextChannel } from 'discord.js'
-import { getDiscordClient } from '../bot'
+import { ensureDiscordClient } from '../bot'
 import { buildEnhancedTeamEmbed, buildStaffEmbed } from '../utils/embeds'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
@@ -17,7 +17,7 @@ export async function postOrUpdateTeamCard(options: TeamCardOptions): Promise<st
   const { teamId, forceRepost = false } = options
 
   try {
-    const client = getDiscordClient()
+    const client = await ensureDiscordClient()
     if (!client) {
       console.log('Discord client not available')
       return null
@@ -61,7 +61,7 @@ export async function postOrUpdateTeamCard(options: TeamCardOptions): Promise<st
         await message.edit({ embeds: [embed] })
         console.log(`✅ Updated team card for ${team.name}`)
         return existingMessageId
-      } catch (error) {
+      } catch (error: any) {
         console.log(`Message ${existingMessageId} not found, will repost`)
       }
     }
@@ -71,7 +71,7 @@ export async function postOrUpdateTeamCard(options: TeamCardOptions): Promise<st
     console.log(`✅ Posted new team card for ${team.name}`)
 
     // Save message ID to database
-    await saveTeamMessageId(teamId, message.id)
+    await saveTeamMessageId(teamId, message.id, payload)
 
     return message.id
   } catch (error) {
@@ -85,7 +85,7 @@ export async function postOrUpdateTeamCard(options: TeamCardOptions): Promise<st
  */
 export async function refreshAllTeamCards(): Promise<void> {
   try {
-    const client = getDiscordClient()
+    const client = await ensureDiscordClient()
     if (!client) {
       console.log('Discord client not available')
       return
@@ -121,8 +121,13 @@ export async function refreshAllTeamCards(): Promise<void> {
     for (const team of teams) {
       const embed = await buildEnhancedTeamEmbed(team, payload)
       const message = await channel.send({ embeds: [embed] })
-      await saveTeamMessageId(team.id, message.id, payload)
-      console.log(`✅ Posted card for ${team.name} (${team.league || 'Open'} - ${team.rating || 'N/A'})`)
+      // Don't save message IDs during bulk refresh (causes duplicate posts via afterChange hook)
+      // Message IDs are only needed for edit-in-place, which we're not using during full refresh
+      
+      const division = (typeof team.currentFaceitLeague === 'object' && team.currentFaceitLeague?.division) 
+        ? team.currentFaceitLeague.division 
+        : 'Open'
+      console.log(`✅ Posted card for ${team.name} (${team.region || 'NA'} - ${division} - ${team.rating || 'N/A'})`)
 
       // Small delay to avoid rate limiting
       await new Promise((resolve) => setTimeout(resolve, 500))
@@ -139,34 +144,67 @@ export async function refreshAllTeamCards(): Promise<void> {
  */
 async function clearAllChannelMessages(channel: TextChannel): Promise<void> {
   try {
-    console.log('🗑️  Clearing all messages from channel...')
+    console.log(`🗑️  Clearing all messages from channel ${channel.name} (${channel.id})...`)
     
     let deleted = 0
     let fetched = 0
+    let iterations = 0
+    const twoWeeksAgo = Date.now() - (14 * 24 * 60 * 60 * 1000)
     
     // Fetch and delete messages in batches
-    while (true) {
+    while (iterations < 50) { // Safety limit
+      iterations++
       const messages = await channel.messages.fetch({ limit: 100 })
+      console.log(`   Batch ${iterations}: Fetched ${messages.size} messages`)
+      
       if (messages.size === 0) break
       
       fetched += messages.size
       
-      // Delete messages one by one (bulk delete only works for messages < 14 days old)
-      for (const message of messages.values()) {
+      // Separate messages by age (Discord bulk delete only works for messages < 14 days)
+      const recentMessages = messages.filter(m => m.createdTimestamp > twoWeeksAgo)
+      const oldMessages = messages.filter(m => m.createdTimestamp <= twoWeeksAgo)
+      
+      // Bulk delete recent messages (faster)
+      if (recentMessages.size > 0) {
         try {
-          await message.delete()
-          deleted++
-        } catch (error) {
-          console.log(`Failed to delete message ${message.id}`)
+          const bulkDeleted = await channel.bulkDelete(recentMessages, true)
+          deleted += bulkDeleted.size
+          console.log(`   Bulk deleted ${bulkDeleted.size} recent messages`)
+        } catch (error: any) {
+          console.log(`   Bulk delete failed: ${error.message}, falling back to individual delete`)
+          // Fallback: delete individually
+          for (const message of recentMessages.values()) {
+            try {
+              await message.delete()
+              deleted++
+              await new Promise((resolve) => setTimeout(resolve, 100))
+            } catch (err: any) {
+              console.log(`   Failed to delete message ${message.id}: ${err.message}`)
+            }
+          }
         }
-        // Small delay between deletions to avoid rate limits
-        await new Promise((resolve) => setTimeout(resolve, 100))
+      }
+      
+      // Delete old messages one by one
+      if (oldMessages.size > 0) {
+        console.log(`   Deleting ${oldMessages.size} old messages individually...`)
+        for (const message of oldMessages.values()) {
+          try {
+            await message.delete()
+            deleted++
+          } catch (error: any) {
+            console.log(`   Failed to delete old message ${message.id}: ${error.message}`)
+          }
+          // Delay to avoid rate limits (slower for old messages)
+          await new Promise((resolve) => setTimeout(resolve, 150))
+        }
       }
       
       if (messages.size < 100) break
     }
     
-    console.log(`🗑️  Cleared ${deleted} messages from channel`)
+    console.log(`🗑️  Cleared ${deleted}/${fetched} messages from channel in ${iterations} batches`)
   } catch (error) {
     console.error('Error clearing channel messages:', error)
   }
@@ -218,8 +256,6 @@ async function postStaffCards(channel: TextChannel, payload: any): Promise<void>
       depth: 1,
     })
 
-    if (orgStaff.docs.length === 0) return
-
     // Group staff by role (similar to the staff page)
     const roleGroups = {
       owner: [] as any[],
@@ -266,6 +302,43 @@ async function postStaffCards(channel: TextChannel, payload: any): Promise<void>
         await new Promise((resolve) => setTimeout(resolve, 300))
       }
     }
+
+    // Get all production staff with populated person relationships
+    const productionStaff = await payload.find({
+      collection: 'production',
+      limit: 200,
+      depth: 1,
+    })
+
+    // Group production staff: Casters separate, all others as "Production"
+    const casters: any[] = []
+    const production: any[] = []
+    
+    for (const staff of productionStaff.docs) {
+      const type = staff.type || 'Other'
+      if (type.toLowerCase() === 'caster') {
+        casters.push(staff)
+      } else {
+        // All others (Observer, Producer, Observer/Producer, etc.)
+        production.push(staff)
+      }
+    }
+
+    // Post Caster card
+    if (casters.length > 0) {
+      const embed = buildStaffEmbed('Caster', casters)
+      await channel.send({ embeds: [embed] })
+      console.log(`✅ Posted Caster card (${casters.length} members)`)
+      await new Promise((resolve) => setTimeout(resolve, 300))
+    }
+
+    // Post Production card (all other production roles)
+    if (production.length > 0) {
+      const embed = buildStaffEmbed('Production', production)
+      await channel.send({ embeds: [embed] })
+      console.log(`✅ Posted Production card (${production.length} members)`)
+      await new Promise((resolve) => setTimeout(resolve, 300))
+    }
   } catch (error) {
     console.error('Error posting staff cards:', error)
   }
@@ -282,6 +355,13 @@ async function fetchAllTeamsSorted(payload: any): Promise<any[]> {
       depth: 2,
     })
 
+    // Define region order (NA > EMEA > SA)
+    const regionOrder = {
+      'NA': 1,
+      'EMEA': 2,
+      'SA': 3,
+    }
+
     // Define division order (Masters > Expert > Advanced > Open)
     const divisionOrder = {
       'Masters': 1,
@@ -290,24 +370,47 @@ async function fetchAllTeamsSorted(payload: any): Promise<any[]> {
       'Open': 4,
     }
 
-    // Sort teams by division first, then by SR within each division
+    // Sort teams by: 1) Region, 2) Division, 3) SR
     const sorted = result.docs.sort((a, b) => {
-      // Get division from FaceIt league or default to Open
-      const aDivision = a.league || 'Open'
-      const bDivision = b.league || 'Open'
+      // First sort by region
+      const aRegion = a.region || 'NA'
+      const bRegion = b.region || 'NA'
+      const aRegionOrder = regionOrder[aRegion as keyof typeof regionOrder] || 999
+      const bRegionOrder = regionOrder[bRegion as keyof typeof regionOrder] || 999
+      
+      if (aRegionOrder !== bRegionOrder) {
+        return aRegionOrder - bRegionOrder
+      }
+      
+      // Then sort by division within same region
+      // Division is in currentFaceitLeague.division (populated with depth: 2)
+      const aDivision = (typeof a.currentFaceitLeague === 'object' && a.currentFaceitLeague?.division) 
+        ? a.currentFaceitLeague.division 
+        : 'Open'
+      const bDivision = (typeof b.currentFaceitLeague === 'object' && b.currentFaceitLeague?.division)
+        ? b.currentFaceitLeague.division
+        : 'Open'
       
       const aDivOrder = divisionOrder[aDivision as keyof typeof divisionOrder] || 999
       const bDivOrder = divisionOrder[bDivision as keyof typeof divisionOrder] || 999
       
-      // First sort by division
       if (aDivOrder !== bDivOrder) {
         return aDivOrder - bDivOrder
       }
       
-      // Then sort by SR within same division (high to low)
+      // Finally sort by SR within same division (high to low)
       const aRating = parseRating(a.rating) || 0
       const bRating = parseRating(b.rating) || 0
       return bRating - aRating
+    })
+
+    // Debug: Log sorted order
+    console.log('🔍 Team sort order:')
+    sorted.forEach((team, idx) => {
+      const division = (typeof team.currentFaceitLeague === 'object' && team.currentFaceitLeague?.division) 
+        ? team.currentFaceitLeague.division 
+        : 'Open'
+      console.log(`  ${idx + 1}. ${team.name} (${team.region || 'NO_REGION'} - ${division} - ${team.rating || 'N/A'})`)
     })
 
     return sorted
@@ -343,6 +446,9 @@ async function saveTeamMessageId(teamId: string | number, messageId: string, pay
       id: teamId,
       data: {
         discordCardMessageId: messageId,
+      },
+      context: {
+        skipDiscordUpdate: true, // Prevent afterChange hook from firing Discord update
       },
     })
   } catch (error) {

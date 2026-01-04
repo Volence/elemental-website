@@ -15,10 +15,84 @@
 // POPUPS - Hide unwanted visible popups
 // ============================================
 
-// Hide clipboard and array action popups completely
-.popup.clipboard-action__popup,
-.popup.array-actions {
+// Hide clipboard popup (but NOT array-actions - that's needed for delete!)
+.popup.clipboard-action__popup {
   display: none !important;
+}
+
+// Array row header - ensure it's positioned for absolute popup
+.array-field__row-header,
+.blocks-field__row-header {
+  position: relative;
+}
+
+// Array actions popup - make the dropdown overlay instead of taking up space
+.popup.array-actions,
+.popup.popup-list,
+.array-field__row .popup,
+.blocks-field__row .popup {
+  position: relative;
+  
+  // The popup button should be completely clean - no borders
+  .popup-button,
+  .popup__button,
+  button[class*="popup"] {
+    display: inline-flex !important;
+    visibility: visible !important;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    padding: 0.5rem !important;
+    color: $admin-text-muted;
+    transition: color 0.2s ease;
+    box-shadow: none !important;
+    
+    &:hover {
+      color: $admin-text-primary;
+      background: rgba(255, 255, 255, 0.05) !important;
+      border-radius: 4px;
+    }
+    
+    &:focus,
+    &:focus-visible {
+      outline: none !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+    
+    // Remove any pseudo-element borders
+    &::before,
+    &::after {
+      display: none !important;
+    }
+  }
+  
+  // Only the dropdown content should overlay
+  .popup__content,
+  .popup-list {
+    position: absolute !important;
+    top: 100%;
+    right: 0;
+    z-index: 100;
+    min-width: 200px;
+    margin-top: 0.5rem;
+  }
+  
+  // Hide dropdown content when not active
+  &:not(.popup--active) {
+    .popup__content,
+    .popup-list {
+      display: none !important;
+    }
+  }
+  
+  // Show dropdown content when active
+  &.popup--active {
+    .popup__content,
+    .popup-list {
+      display: block !important;
+    }
+  }
 }
 
 // Per-page pagination dropdown - Style and fix default visibility

@@ -9,6 +9,12 @@ export async function buildEnhancedTeamEmbed(team: any, payload: Payload): Promi
     .setTitle(team.name)
     .setColor(team.themeColor ? parseInt(team.themeColor.replace('#', ''), 16) : getRegionColor(team.region))
 
+  // Add URL to team's website page
+  if (team.slug) {
+    const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'https://elmt.gg'
+    embed.setURL(`${baseUrl}/teams/${team.slug}`)
+  }
+
   // Team logo - ensure absolute URL
   if (team.logo) {
     const logoUrl = typeof team.logo === 'string' ? team.logo : team.logo.url
@@ -163,8 +169,14 @@ function getPersonNameFromRelation(personRef: any): string {
 export async function buildTeamEmbed(team: any): Promise<EmbedBuilder> {
   const embed = new EmbedBuilder()
 
-  // Team name as title
+  // Team name as title with link to team page
   embed.setTitle(team.name)
+  
+  // Add URL to team's website page
+  if (team.slug) {
+    const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'https://elmt.gg'
+    embed.setURL(`${baseUrl}/teams/${team.slug}`)
+  }
 
   // Team logo as thumbnail
   if (team.logo && typeof team.logo === 'object' && team.logo.url) {
@@ -186,11 +198,15 @@ export async function buildTeamEmbed(team: any): Promise<EmbedBuilder> {
     })
   }
 
-  // Division (if available)
-  if (team.division) {
+  // Division (if available from FaceIt League)
+  const division = typeof team.currentFaceitLeague === 'object' && team.currentFaceitLeague?.division
+    ? team.currentFaceitLeague.division
+    : null
+  
+  if (division) {
     embed.addFields({
       name: '🏆 Division',
-      value: team.division,
+      value: division,
       inline: true,
     })
   }
@@ -239,12 +255,57 @@ export async function buildTeamEmbed(team: any): Promise<EmbedBuilder> {
 }
 
 /**
+ * Get color for staff department (matching website)
+ */
+function getStaffDepartmentColor(departmentName: string): number {
+  const colorMap: Record<string, number> = {
+    'Owner': 0xFBBF24,           // Yellow-500
+    'Co-Owner': 0xF97316,        // Orange-500
+    'HR Staff': 0x22C55E,        // Green-500
+    'Moderator': 0x3B82F6,       // Blue-500
+    'Event Manager': 0xA855F7,   // Purple-500
+    'Social Manager': 0x06B6D4,  // Cyan-500
+    'Graphics Staff': 0xF97316,  // Orange-500
+    'Media Editor Staff': 0xEF4444, // Red-500
+    // Production staff
+    'Caster': 0xA855F7,          // Purple-500
+    'Production': 0x3B82F6,      // Blue-500 (for all non-caster production)
+    'Observer': 0x3B82F6,        // Blue-500
+    'Producer': 0xEAB308,        // Yellow-500
+    'Observer/Producer': 0x06B6D4, // Cyan-500
+    'Observer/Producer/Caster': 0xEC4899, // Pink-500
+  }
+  return colorMap[departmentName] || 0x9b59b6 // Default purple
+}
+
+/**
+ * Get role icon for staff department
+ */
+function getStaffRoleIcon(departmentName: string): string {
+  const iconMap: Record<string, string> = {
+    'Owner': '👑',
+    'Co-Owner': '⭐',
+    'HR Staff': '🤝',
+    'Moderator': '🛡️',
+    'Event Manager': '📅',
+    'Social Manager': '📱',
+    'Graphics Staff': '🎨',
+    'Media Editor Staff': '🎬',
+    'Caster': '🎙️',
+    'Production': '🎥',
+  }
+  return iconMap[departmentName] || '📋'
+}
+
+/**
  * Build a Discord embed for staff department card
  */
 export function buildStaffEmbed(departmentName: string, staff: any[]): EmbedBuilder {
+  const icon = getStaffRoleIcon(departmentName)
+  
   const embed = new EmbedBuilder()
-    .setTitle(departmentName)
-    .setColor(0x9b59b6) // Purple color for staff cards
+    .setTitle(`${icon} ${departmentName}`)
+    .setColor(getStaffDepartmentColor(departmentName))
 
   // Extract staff names from person relationships
   const staffNames: string[] = []
@@ -255,16 +316,18 @@ export function buildStaffEmbed(departmentName: string, staff: any[]): EmbedBuil
       const personName = typeof staffMember.person === 'object' && staffMember.person.name
         ? staffMember.person.name
         : staffMember.displayName || 'Unknown'
-      staffNames.push(personName)
+      staffNames.push(`• ${personName}`)
     } else if (staffMember.displayName) {
-      staffNames.push(staffMember.displayName)
+      staffNames.push(`• ${staffMember.displayName}`)
     }
   }
 
+  // Display names one per line with bullet points
   if (staffNames.length > 0) {
-    embed.setDescription(staffNames.join(', '))
+    embed.setDescription(staffNames.join('\n'))
+    embed.setFooter({ text: `${staffNames.length} member${staffNames.length !== 1 ? 's' : ''}` })
   } else {
-    embed.setDescription('No staff members')
+    embed.setDescription('_No staff members_')
   }
 
   return embed
