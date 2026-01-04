@@ -67,13 +67,33 @@ interface ServerHealth {
   }
 }
 
+interface Template {
+  id: string
+  name: string
+  description?: string
+  sourceCategory: string
+  channelCount: number
+  createdAt: string
+}
+
 const DiscordServerManagerView = () => {
   const [structure, setStructure] = useState<ServerStructure | null>(null)
   const [stats, setStats] = useState<ServerStats | null>(null)
   const [health, setHealth] = useState<ServerHealth | null>(null)
+  const [templates, setTemplates] = useState<Template[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'structure' | 'stats' | 'health' | 'templates'>('structure')
+  
+  // Template form state
+  const [selectedCategoryId, setSelectedCategoryId] = useState('')
+  const [templateName, setTemplateName] = useState('')
+  const [templateDescription, setTemplateDescription] = useState('')
+  const [selectedTemplateId, setSelectedTemplateId] = useState('')
+  const [newCategoryName, setNewCategoryName] = useState('')
+  const [isPrivateCategory, setIsPrivateCategory] = useState(false)
+  const [savingTemplate, setSavingTemplate] = useState(false)
+  const [applyingTemplate, setApplyingTemplate] = useState(false)
 
   useEffect(() => {
     loadServerStructure()
@@ -84,6 +104,8 @@ const DiscordServerManagerView = () => {
       loadServerStats()
     } else if (activeTab === 'health' && !health) {
       loadServerHealth()
+    } else if (activeTab === 'templates' && templates.length === 0) {
+      loadTemplates()
     }
   }, [activeTab])
 
@@ -135,6 +157,101 @@ const DiscordServerManagerView = () => {
       setError(err.message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadTemplates = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const response = await fetch('/api/discord-category-templates?limit=100')
+      if (!response.ok) {
+        throw new Error('Failed to load templates')
+      }
+      const data = await response.json()
+      setTemplates(data.docs || [])
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSaveTemplate = async () => {
+    if (!selectedCategoryId || !templateName) {
+      alert('Please select a category and enter a template name')
+      return
+    }
+
+    try {
+      setSavingTemplate(true)
+      const response = await fetch('/api/discord/templates/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          categoryId: selectedCategoryId,
+          templateName,
+          templateDescription,
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to save template')
+      }
+
+      // Clear form and reload templates
+      setSelectedCategoryId('')
+      setTemplateName('')
+      setTemplateDescription('')
+      await loadTemplates()
+      alert('Template saved successfully!')
+    } catch (err: any) {
+      alert(`Error: ${err.message}`)
+    } finally {
+      setSavingTemplate(false)
+    }
+  }
+
+  const handleApplyTemplate = async () => {
+    if (!selectedTemplateId || !newCategoryName) {
+      alert('Please select a template and enter a category name')
+      return
+    }
+
+    if (!confirm(`Create new category "${newCategoryName}" from this template?`)) {
+      return
+    }
+
+    try {
+      setApplyingTemplate(true)
+      const response = await fetch('/api/discord/templates/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          templateId: selectedTemplateId,
+          categoryName: newCategoryName,
+          isPrivate: isPrivateCategory,
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to apply template')
+      }
+
+      const result = await response.json()
+      setSelectedTemplateId('')
+      setNewCategoryName('')
+      setIsPrivateCategory(false)
+      
+      // Reload server structure to show new category
+      await loadServerStructure()
+      alert(`Success! Created category "${result.category.name}" with ${result.channels.length} channels`)
+    } catch (err: any) {
+      alert(`Error: ${err.message}`)
+    } finally {
+      setApplyingTemplate(false)
     }
   }
 
@@ -327,11 +444,18 @@ const DiscordServerManagerView = () => {
             </div>
 
             <div className="templates-grid">
+              {/* Save Template Section */}
               <div className="template-section">
-                <h4>Save New Template</h4>
+                <h4>💾 Save New Template</h4>
                 <p>Select a category from your server to save as a template:</p>
-                <div className="save-template-form">
-                  <select className="category-select">
+                
+                <div className="form-field">
+                  <label>Category</label>
+                  <select 
+                    className="category-select"
+                    value={selectedCategoryId}
+                    onChange={(e) => setSelectedCategoryId(e.target.value)}
+                  >
                     <option value="">Select a category...</option>
                     {structure?.categories.map((cat) => (
                       <option key={cat.id} value={cat.id}>
@@ -339,18 +463,107 @@ const DiscordServerManagerView = () => {
                       </option>
                     ))}
                   </select>
-                  <button className="save-template-button" disabled>
-                    Save as Template
-                  </button>
                 </div>
+
+                <div className="form-field">
+                  <label>Template Name *</label>
+                  <input
+                    type="text"
+                    className="text-input"
+                    placeholder="e.g., Team Channels, Staff Category"
+                    value={templateName}
+                    onChange={(e) => setTemplateName(e.target.value)}
+                  />
+                </div>
+
+                <div className="form-field">
+                  <label>Description (optional)</label>
+                  <textarea
+                    className="textarea-input"
+                    placeholder="What is this template for?"
+                    value={templateDescription}
+                    onChange={(e) => setTemplateDescription(e.target.value)}
+                    rows={2}
+                  />
+                </div>
+
+                <button 
+                  className="save-template-button"
+                  onClick={handleSaveTemplate}
+                  disabled={!selectedCategoryId || !templateName || savingTemplate}
+                >
+                  {savingTemplate ? 'Saving...' : 'Save Template'}
+                </button>
+
                 <p className="help-text">
                   💡 Templates save the category structure, channel names, types, and permissions
                 </p>
               </div>
 
+              {/* Apply Template Section */}
               <div className="template-section">
-                <h4>Saved Templates</h4>
-                <p>No templates saved yet. Save a category to get started!</p>
+                <h4>📁 Saved Templates ({templates.length})</h4>
+                
+                {templates.length === 0 ? (
+                  <p>No templates saved yet. Save a category to get started!</p>
+                ) : (
+                  <>
+                    <div className="templates-list">
+                      {templates.map((template) => (
+                        <div 
+                          key={template.id} 
+                          className={`template-card ${selectedTemplateId === template.id ? 'selected' : ''}`}
+                          onClick={() => setSelectedTemplateId(template.id)}
+                        >
+                          <div className="template-card-header">
+                            <h5>{template.name}</h5>
+                            <span className="template-channels">{template.channelCount} channels</span>
+                          </div>
+                          {template.description && (
+                            <p className="template-description">{template.description}</p>
+                          )}
+                          <p className="template-source">From: {template.sourceCategory}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {selectedTemplateId && (
+                      <div className="apply-template-form">
+                        <h5>Create Category from Template</h5>
+                        
+                        <div className="form-field">
+                          <label>New Category Name *</label>
+                          <input
+                            type="text"
+                            className="text-input"
+                            placeholder="e.g., ELMT Garden, Staff HQ"
+                            value={newCategoryName}
+                            onChange={(e) => setNewCategoryName(e.target.value)}
+                          />
+                        </div>
+
+                        <div className="form-field checkbox-field">
+                          <label>
+                            <input
+                              type="checkbox"
+                              checked={isPrivateCategory}
+                              onChange={(e) => setIsPrivateCategory(e.target.checked)}
+                            />
+                            <span>Make private (hide from @everyone)</span>
+                          </label>
+                        </div>
+
+                        <button
+                          className="apply-template-button"
+                          onClick={handleApplyTemplate}
+                          disabled={!newCategoryName || applyingTemplate}
+                        >
+                          {applyingTemplate ? 'Creating...' : 'Create Category'}
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </div>
           </div>
