@@ -479,6 +479,23 @@ export const Teams: CollectionConfig = {
         position: 'sidebar',
       },
     },
+    {
+      name: 'competitiveRating',
+      type: 'number',
+      admin: {
+        description: 'Team skill rating (SR) for sorting team cards',
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'discordCardMessageId',
+      type: 'text',
+      admin: {
+        description: 'Discord message ID for team card (auto-managed)',
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
     // UI fields for list view columns with custom cells for vertical centering
     {
       name: 'logoPreview',
@@ -536,7 +553,35 @@ export const Teams: CollectionConfig = {
     },
   ],
   hooks: {
-    afterChange: [createAuditLogHook('teams')],
+    afterChange: [
+      createAuditLogHook('teams'),
+      // Update Discord team card when roster, logo, or rating changes
+      async ({ doc, operation, previousDoc }) => {
+        // Only update on update operations (not create)
+        if (operation !== 'update') return
+
+        // Check if any trigger fields changed
+        const triggersChanged =
+          doc.roster !== previousDoc?.roster ||
+          doc.logo !== previousDoc?.logo ||
+          doc.competitiveRating !== previousDoc?.competitiveRating ||
+          doc.name !== previousDoc?.name
+
+        if (!triggersChanged) return
+
+        // Trigger Discord card update (async, don't block save)
+        if (typeof globalThis !== 'undefined') {
+          setImmediate(async () => {
+            try {
+              const { postOrUpdateTeamCard } = await import('../../discord/services/teamCards')
+              await postOrUpdateTeamCard({ teamId: doc.id })
+            } catch (error) {
+              console.error('Failed to update Discord team card:', error)
+            }
+          })
+        }
+      },
+    ],
     afterDelete: [createAuditLogDeleteHook('teams')],
     beforeValidate: [
       async ({ data, operation }) => {
