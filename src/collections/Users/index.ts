@@ -67,12 +67,7 @@ export const Users: CollectionConfig = {
       admin: {
         description: 'Profile picture for your account',
       },
-      access: {
-        // All authenticated users can read avatars
-        read: ({ req: { user } }) => !!user,
-        // All authenticated users can update their own avatar (collection-level access controls which user)
-        update: () => true,
-      },
+      // No field-level access needed - collection-level access already restricts to own document
     },
     {
       name: 'role',
