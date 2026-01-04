@@ -242,19 +242,229 @@
     }
   }
 
-  // Health view (placeholder)
+  // Health view
   .health-view {
-    @include glow-card($admin-accent-info);
-    padding: $spacing-2xl;
-    text-align: center;
-    min-height: 300px;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
+    gap: $spacing-2xl;
 
-    p {
-      color: $admin-text-secondary;
-      font-size: $font-size-lg;
+    .health-header {
+      .health-score-card {
+        @include glow-card($admin-accent-success);
+        padding: $spacing-2xl;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: $spacing-2xl;
+
+        @media (max-width: 768px) {
+          flex-direction: column;
+        }
+
+        .health-score {
+          display: flex;
+          align-items: center;
+          gap: $spacing-xl;
+
+          .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 4px solid;
+            position: relative;
+
+            &.excellent {
+              border-color: $admin-accent-success;
+              background: rgba($admin-accent-success, 0.1);
+            }
+
+            &.good {
+              border-color: $admin-accent-info;
+              background: rgba($admin-accent-info, 0.1);
+            }
+
+            &.fair {
+              border-color: #fbbf24;
+              background: rgba(#fbbf24, 0.1);
+            }
+
+            &.poor {
+              border-color: $admin-accent-error;
+              background: rgba($admin-accent-error, 0.1);
+            }
+
+            .score-number {
+              font-size: $font-size-3xl;
+              font-weight: $font-weight-bold;
+              color: $admin-text-primary;
+            }
+
+            .score-label {
+              font-size: $font-size-xs;
+              color: $admin-text-secondary;
+            }
+          }
+
+          .health-status {
+            h3 {
+              font-size: $font-size-xl;
+              font-weight: $font-weight-bold;
+              color: $admin-text-primary;
+              margin: 0 0 $spacing-xs 0;
+            }
+
+            p {
+              font-size: $font-size-sm;
+              color: $admin-text-secondary;
+              margin: 0;
+            }
+          }
+        }
+
+        .health-summary {
+          display: flex;
+          gap: $spacing-xl;
+
+          .summary-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: $spacing-xs;
+            padding: $spacing-md $spacing-lg;
+            border-radius: $radius-md;
+
+            &.error {
+              background: rgba($admin-accent-error, 0.1);
+              border: 1px solid rgba($admin-accent-error, 0.3);
+            }
+
+            &.warning {
+              background: rgba(#fbbf24, 0.1);
+              border: 1px solid rgba(#fbbf24, 0.3);
+            }
+
+            &.info {
+              background: rgba($admin-accent-info, 0.1);
+              border: 1px solid rgba($admin-accent-info, 0.3);
+            }
+
+            .count {
+              font-size: $font-size-2xl;
+              font-weight: $font-weight-bold;
+              color: $admin-text-primary;
+            }
+
+            .label {
+              font-size: $font-size-xs;
+              color: $admin-text-secondary;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+            }
+          }
+        }
+      }
+    }
+
+    .health-issues {
+      h4 {
+        font-size: $font-size-lg;
+        font-weight: $font-weight-semibold;
+        color: $admin-text-primary;
+        margin: 0 0 $spacing-lg 0;
+      }
+
+      .no-issues {
+        @include glow-card($admin-accent-success);
+        padding: $spacing-2xl;
+        text-align: center;
+
+        p {
+          color: $admin-text-primary;
+          font-size: $font-size-base;
+          margin: 0;
+        }
+      }
+
+      .issues-list {
+        display: flex;
+        flex-direction: column;
+        gap: $spacing-md;
+
+        .issue-card {
+          @include transparent-bg(0.02);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: $radius-md;
+          padding: $spacing-lg;
+          transition: all 0.2s ease;
+
+          &.error {
+            border-left: 4px solid $admin-accent-error;
+          }
+
+          &.warning {
+            border-left: 4px solid #fbbf24;
+          }
+
+          &.info {
+            border-left: 4px solid $admin-accent-info;
+          }
+
+          &:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateX(4px);
+          }
+
+          .issue-header {
+            margin-bottom: $spacing-sm;
+
+            .issue-badge {
+              display: inline-flex;
+              align-items: center;
+              gap: $spacing-xs;
+              padding: $spacing-xs $spacing-md;
+              border-radius: $radius-sm;
+              font-size: $font-size-xs;
+              font-weight: $font-weight-semibold;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+
+              &.error {
+                background: rgba($admin-accent-error, 0.2);
+                color: $admin-accent-error;
+              }
+
+              &.warning {
+                background: rgba(#fbbf24, 0.2);
+                color: #fbbf24;
+              }
+
+              &.info {
+                background: rgba($admin-accent-info, 0.2);
+                color: $admin-accent-info;
+              }
+            }
+          }
+
+          .issue-content {
+            .issue-message {
+              color: $admin-text-primary;
+              font-size: $font-size-base;
+              margin: 0 0 $spacing-sm 0;
+            }
+
+            .issue-suggestion {
+              color: $admin-text-secondary;
+              font-size: $font-size-sm;
+              margin: 0;
+              font-style: italic;
+            }
+          }
+        }
+      }
     }
   }
 }

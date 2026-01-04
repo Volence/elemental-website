@@ -49,9 +49,28 @@ interface ServerStats {
   }
 }
 
+interface HealthIssue {
+  type: 'warning' | 'error' | 'info'
+  category: string
+  message: string
+  suggestion?: string
+}
+
+interface ServerHealth {
+  score: number
+  status: 'excellent' | 'good' | 'fair' | 'poor'
+  issues: HealthIssue[]
+  summary: {
+    errors: number
+    warnings: number
+    info: number
+  }
+}
+
 const DiscordServerManagerView = () => {
   const [structure, setStructure] = useState<ServerStructure | null>(null)
   const [stats, setStats] = useState<ServerStats | null>(null)
+  const [health, setHealth] = useState<ServerHealth | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'structure' | 'stats' | 'health'>('structure')
@@ -63,6 +82,8 @@ const DiscordServerManagerView = () => {
   useEffect(() => {
     if (activeTab === 'stats' && !stats) {
       loadServerStats()
+    } else if (activeTab === 'health' && !health) {
+      loadServerHealth()
     }
   }, [activeTab])
 
@@ -93,6 +114,23 @@ const DiscordServerManagerView = () => {
       }
       const data = await response.json()
       setStats(data)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadServerHealth = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const response = await fetch('/api/discord/server/health')
+      if (!response.ok) {
+        throw new Error('Failed to load server health')
+      }
+      const data = await response.json()
+      setHealth(data)
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -275,9 +313,70 @@ const DiscordServerManagerView = () => {
           </div>
         )}
 
-        {activeTab === 'health' && (
+        {activeTab === 'health' && health && (
           <div className="health-view">
-            <p>Health check coming soon...</p>
+            <div className="health-header">
+              <div className="health-score-card">
+                <div className="health-score">
+                  <div className={`score-circle ${health.status}`}>
+                    <span className="score-number">{health.score}</span>
+                    <span className="score-label">/ 100</span>
+                  </div>
+                  <div className="health-status">
+                    <h3>{health.status.charAt(0).toUpperCase() + health.status.slice(1)}</h3>
+                    <p>Server Health</p>
+                  </div>
+                </div>
+                <div className="health-summary">
+                  {health.summary.errors > 0 && (
+                    <div className="summary-item error">
+                      <span className="count">{health.summary.errors}</span>
+                      <span className="label">Errors</span>
+                    </div>
+                  )}
+                  {health.summary.warnings > 0 && (
+                    <div className="summary-item warning">
+                      <span className="count">{health.summary.warnings}</span>
+                      <span className="label">Warnings</span>
+                    </div>
+                  )}
+                  {health.summary.info > 0 && (
+                    <div className="summary-item info">
+                      <span className="count">{health.summary.info}</span>
+                      <span className="label">Info</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="health-issues">
+              <h4>Issues & Recommendations</h4>
+              {health.issues.length === 0 ? (
+                <div className="no-issues">
+                  <p>✅ No issues found! Your server is in great shape.</p>
+                </div>
+              ) : (
+                <div className="issues-list">
+                  {health.issues.map((issue, idx) => (
+                    <div key={idx} className={`issue-card ${issue.type}`}>
+                      <div className="issue-header">
+                        <span className={`issue-badge ${issue.type}`}>
+                          {issue.type === 'error' ? '🔴' : issue.type === 'warning' ? '⚠️' : 'ℹ️'}
+                          {issue.category}
+                        </span>
+                      </div>
+                      <div className="issue-content">
+                        <p className="issue-message">{issue.message}</p>
+                        {issue.suggestion && (
+                          <p className="issue-suggestion">💡 {issue.suggestion}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
