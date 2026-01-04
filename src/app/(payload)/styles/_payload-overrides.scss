@@ -963,9 +963,7 @@ table {
     width: 100%;
     justify-content: center;
     margin-top: 0.75rem;
-    position: relative;
-    z-index: -1 !important; // Force below everything, including dropdowns
-    pointer-events: auto; // Ensure button still clickable
+    // Don't set z-index - let dropdowns handle their own layering
   }
   
   .array-field__remove-button,
