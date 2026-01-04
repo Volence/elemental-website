@@ -33,13 +33,6 @@ export const Matches: CollectionConfig = {
       // Show to admins and staff managers only
       return user.role !== 'admin' && user.role !== 'staff-manager'
     },
-    components: {
-      views: {
-        list: {
-          Component: '@/components/MatchesCustomList#default',
-        },
-      },
-    },
     listSearchableFields: ['title', 'opponent', 'team', 'region', 'league', 'season', 'status'],
     pagination: {
       defaultLimit: 10,
