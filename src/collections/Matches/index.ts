@@ -152,7 +152,6 @@ export const Matches: CollectionConfig = {
         components: {
           Field: '@/components/DeleteMatchButton#default',
         },
-        condition: (data) => !!data?.id, // Only show on existing matches, not when creating new ones
       },
     },
     {

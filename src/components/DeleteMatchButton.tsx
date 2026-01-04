@@ -2,14 +2,13 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button, toast } from '@payloadcms/ui'
+import { Button, toast, useDocumentInfo } from '@payloadcms/ui'
 
-interface DeleteMatchButtonProps {
-  id: number
-  title: string
-}
-
-export const DeleteMatchButton: React.FC<DeleteMatchButtonProps> = ({ id, title }) => {
+export const DeleteMatchButton: React.FC = () => {
+  const { id, title } = useDocumentInfo()
+  
+  // Don't render if no ID (creating new match)
+  if (!id) return null
   const [isDeleting, setIsDeleting] = useState(false)
   const router = useRouter()
 
