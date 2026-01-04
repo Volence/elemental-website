@@ -15,6 +15,8 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '10mb',
     },
+    // Enable instrumentation for Discord bot initialization
+    instrumentationHook: true,
   },
   images: {
     remotePatterns: [
