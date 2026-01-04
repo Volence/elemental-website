@@ -1,7 +1,4 @@
-/**
- * Empty component used to hide unwanted Payload UI elements
- */
+// Empty component used to hide UI elements in Payload admin
 const EmptyComponent = () => null
 
 export default EmptyComponent
-

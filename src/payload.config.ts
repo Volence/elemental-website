@@ -135,9 +135,8 @@ const config = buildConfig({
     push: process.env.PAYLOAD_DB_PUSH === 'true' || false,
   }),
   collections: [
-    // Hidden collections (Pages, Media)
+    // Hidden collections
     Pages,
-    Media,
     
     // PEOPLE: Core entities
     People,
@@ -164,6 +163,7 @@ const config = buildConfig({
     Users,
     IgnoredDuplicates,
     InviteLinks,
+    Media,
     
     // MONITORING: Security & Health
     AuditLogs,
