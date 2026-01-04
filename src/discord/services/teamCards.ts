@@ -1,6 +1,8 @@
 import type { EmbedBuilder, TextChannel } from 'discord.js'
 import { getDiscordClient } from '../bot'
-import { buildTeamEmbed, buildStaffEmbed } from '../utils/embeds'
+import { buildEnhancedTeamEmbed, buildStaffEmbed } from '../utils/embeds'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
 import type { Team } from '@/payload-types'
 
 export interface TeamCardOptions {
@@ -28,7 +30,12 @@ export async function postOrUpdateTeamCard(options: TeamCardOptions): Promise<st
     }
 
     // Fetch team data from database
-    const team = await fetchTeamData(teamId)
+    const payload = await getPayload({ config: configPromise })
+    const team = await payload.findByID({
+      collection: 'teams',
+      id: teamId,
+      depth: 2,
+    })
     if (!team) {
       console.log(`Team ${teamId} not found`)
       return null
@@ -42,7 +49,7 @@ export async function postOrUpdateTeamCard(options: TeamCardOptions): Promise<st
     }
 
     // Build the team embed
-    const embed = await buildTeamEmbed(team)
+    const embed = await buildEnhancedTeamEmbed(team, payload)
 
     // Check if team already has a card posted
     const existingMessageId = team.discordCardMessageId
@@ -98,20 +105,23 @@ export async function refreshAllTeamCards(): Promise<void> {
 
     console.log('🔄 Refreshing all team cards...')
 
+    // Get payload instance
+    const payload = await getPayload({ config: configPromise })
+
     // Step 1: Delete all existing team card messages (keep staff cards)
-    await deleteAllTeamCardMessages(channel)
+    await deleteAllTeamCardMessages(channel, payload)
 
     // Step 2: Post staff cards
-    await postStaffCards(channel)
+    await postStaffCards(channel, payload)
 
     // Step 3: Fetch and sort all teams
-    const teams = await fetchAllTeamsSorted()
+    const teams = await fetchAllTeamsSorted(payload)
 
     // Step 4: Post team cards in order
     for (const team of teams) {
-      const embed = await buildTeamEmbed(team)
+      const embed = await buildEnhancedTeamEmbed(team, payload)
       const message = await channel.send({ embeds: [embed] })
-      await saveTeamMessageId(team.id, message.id)
+      await saveTeamMessageId(team.id, message.id, payload)
       console.log(`✅ Posted card for ${team.name}`)
 
       // Small delay to avoid rate limiting
@@ -127,10 +137,9 @@ export async function refreshAllTeamCards(): Promise<void> {
 /**
  * Delete all team card messages from the channel
  */
-async function deleteAllTeamCardMessages(channel: TextChannel): Promise<void> {
+async function deleteAllTeamCardMessages(channel: TextChannel, payload: any): Promise<void> {
   try {
     // Fetch all teams with message IDs
-    const payload = (await import('payload')).default
     const teams = await payload.find({
       collection: 'teams',
       where: {
@@ -162,10 +171,8 @@ async function deleteAllTeamCardMessages(channel: TextChannel): Promise<void> {
 /**
  * Post staff department cards
  */
-async function postStaffCards(channel: TextChannel): Promise<void> {
+async function postStaffCards(channel: TextChannel, payload: any): Promise<void> {
   try {
-    const payload = (await import('payload')).default
-
     // Get all production staff
     const production = await payload.find({
       collection: 'production',
@@ -197,13 +204,13 @@ async function postStaffCards(channel: TextChannel): Promise<void> {
 /**
  * Fetch all teams sorted by region and SR (descending)
  */
-async function fetchAllTeamsSorted(): Promise<any[]> {
+async function fetchAllTeamsSorted(payload: any): Promise<any[]> {
   try {
-    const payload = (await import('payload')).default
     const result = await payload.find({
       collection: 'teams',
       limit: 1000,
       sort: 'region', // Sort by region first
+      depth: 2,
     })
 
     // Group by region, then sort by SR within each region
@@ -220,8 +227,8 @@ async function fetchAllTeamsSorted(): Promise<any[]> {
     // Sort teams within each region by competitive rating (SR) descending
     for (const [region, teams] of teamsByRegion.entries()) {
       teams.sort((a, b) => {
-        const aRating = a.competitiveRating || 0
-        const bRating = b.competitiveRating || 0
+        const aRating = parseRating(a.rating) || 0
+        const bRating = parseRating(b.rating) || 0
         return bRating - aRating // Descending order
       })
     }
@@ -240,28 +247,26 @@ async function fetchAllTeamsSorted(): Promise<any[]> {
 }
 
 /**
- * Fetch team data from database
+ * Parse rating string (e.g., "4.2K" -> 4200) for sorting
  */
-async function fetchTeamData(teamId: string | number): Promise<any | null> {
-  try {
-    const payload = (await import('payload')).default
-    const team = await payload.findByID({
-      collection: 'teams',
-      id: teamId,
-    })
-    return team
-  } catch (error) {
-    console.error('Error fetching team:', error)
-    return null
-  }
+function parseRating(rating: string | undefined): number {
+  if (!rating) return 0
+  const match = rating.match(/([0-9.]+)([KkMm]?)/)
+  if (!match) return 0
+  
+  const num = parseFloat(match[1])
+  const multiplier = match[2]?.toUpperCase()
+  
+  if (multiplier === 'K') return num * 1000
+  if (multiplier === 'M') return num * 1000000
+  return num
 }
 
 /**
  * Save Discord message ID to team document
  */
-async function saveTeamMessageId(teamId: string | number, messageId: string): Promise<void> {
+async function saveTeamMessageId(teamId: string | number, messageId: string, payload: any): Promise<void> {
   try {
-    const payload = (await import('payload')).default
     await payload.update({
       collection: 'teams',
       id: teamId,
