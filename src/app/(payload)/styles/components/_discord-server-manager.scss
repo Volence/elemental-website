@@ -7,16 +7,9 @@
 
   .manager-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
-    margin-bottom: $spacing-2xl;
-
-    h2 {
-      font-size: $font-size-2xl;
-      font-weight: $font-weight-bold;
-      color: $admin-text-primary;
-      margin: 0;
-    }
+    margin-bottom: $spacing-xl;
 
     .server-info {
       .member-count {

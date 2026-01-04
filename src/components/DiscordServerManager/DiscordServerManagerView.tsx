@@ -78,7 +78,6 @@ const DiscordServerManagerView = () => {
   return (
     <div className="discord-server-manager">
       <div className="manager-header">
-        <h2>Discord Server Manager</h2>
         <div className="server-info">
           {structure && (
             <span className="member-count">
