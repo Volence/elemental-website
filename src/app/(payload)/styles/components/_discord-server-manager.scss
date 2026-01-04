@@ -71,8 +71,8 @@
     transition: all 0.2s ease;
 
     &:hover {
-      background: rgba($admin-accent-danger, 0.2);
-      color: $admin-accent-danger;
+      background: rgba($admin-accent-error, 0.2);
+      color: $admin-accent-error;
     }
   }
 }
@@ -130,7 +130,7 @@
   }
 
   &.modal-button-danger {
-    @include glow-button($admin-accent-danger);
+    @include glow-button($admin-accent-error);
   }
 
   &.modal-button-warning {
@@ -151,8 +151,8 @@
   }
 
   &.alert-error {
-    background: rgba($admin-accent-danger, 0.1);
-    border: 1px solid rgba($admin-accent-danger, 0.3);
+    background: rgba($admin-accent-error, 0.1);
+    border: 1px solid rgba($admin-accent-error, 0.3);
   }
 
   &.alert-info {
@@ -687,11 +687,11 @@
                 }
 
                 &.delete-button {
-                  background: rgba($admin-accent-danger, 0.2);
-                  color: $admin-accent-danger;
+                  background: rgba($admin-accent-error, 0.2);
+                  color: $admin-accent-error;
 
                   &:hover {
-                    background: rgba($admin-accent-danger, 0.3);
+                    background: rgba($admin-accent-error, 0.3);
                     transform: scale(1.05);
                   }
                 }
@@ -1000,7 +1000,7 @@
       }
 
       .delete-button {
-        @include glow-button($admin-accent-danger);
+        @include glow-button($admin-accent-error);
         padding: $spacing-md;
         display: flex;
         align-items: center;
@@ -1110,9 +1110,9 @@
     }
 
     .delete-button:hover:not(:disabled) {
-      color: $admin-accent-danger;
-      border-color: $admin-accent-danger;
-      background: rgba($admin-accent-danger, 0.1);
+      color: $admin-accent-error;
+      border-color: $admin-accent-error;
+      background: rgba($admin-accent-error, 0.1);
     }
   }
 }
