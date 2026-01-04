@@ -1800,53 +1800,52 @@
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
+  }
+
+  .channel-type-option {
+    @include transparent-bg(0.03);
+    padding: $spacing-lg;
+    border-radius: $radius-sm;
+    border: 2px solid rgba($admin-accent-primary, 0.2);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+
+    input[type="radio"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      flex-shrink: 0;
     }
 
-    .channel-type-option {
-      @include transparent-bg(0.03);
-      padding: $spacing-lg;
-      border-radius: $radius-sm;
-      border: 2px solid rgba($admin-accent-primary, 0.2);
-      cursor: pointer;
-      transition: all 0.2s ease;
+    .channel-type-label {
       display: flex;
       align-items: center;
-      gap: $spacing-md;
+      gap: $spacing-sm;
+      flex: 1;
 
-      input[type="radio"] {
-        width: 20px;
-        height: 20px;
-        cursor: pointer;
+      .channel-type-icon {
+        font-size: $font-size-lg;
         flex-shrink: 0;
       }
 
-      .channel-type-label {
-        display: flex;
-        align-items: center;
-        gap: $spacing-sm;
-        flex: 1;
-
-        .channel-type-icon {
-          font-size: $font-size-lg;
-          flex-shrink: 0;
-        }
-
-        span:last-child {
-          color: $admin-text-primary;
-          font-size: $font-size-base;
-          font-weight: $font-weight-medium;
-        }
+      span:last-child {
+        color: $admin-text-primary;
+        font-size: $font-size-base;
+        font-weight: $font-weight-medium;
       }
+    }
 
-      &:hover {
-        border-color: rgba($admin-accent-primary, 0.5);
-        background: rgba($admin-accent-primary, 0.05);
-      }
+    &:hover {
+      border-color: rgba($admin-accent-primary, 0.5);
+      background: rgba($admin-accent-primary, 0.05);
+    }
 
-      &.selected {
-        border-color: $admin-accent-primary;
-        background: rgba($admin-accent-primary, 0.1);
-      }
+    &.selected {
+      border-color: $admin-accent-primary;
+      background: rgba($admin-accent-primary, 0.1);
     }
   }
 }
