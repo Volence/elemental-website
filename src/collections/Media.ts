@@ -28,7 +28,7 @@ export const Media: CollectionConfig = {
   },
   admin: {
     description: '🖼️ Upload and manage images, videos, and other media files used across the website.',
-    // No group - keep it available for avatar uploads but don't show in sidebar
+    group: 'System',
     hidden: ({ user }) => {
       if (!user) return true
       // Show to admins only in sidebar, but still accessible via upload fields for all users

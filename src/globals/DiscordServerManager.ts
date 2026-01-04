@@ -6,7 +6,7 @@ export const DiscordServerManager: GlobalConfig = {
   access: {
     read: ({ req: { user } }) => {
       // Only admins can access
-      return user?.roles?.includes('admin') || false
+      return (user as any)?.role === 'admin'
     },
   },
   admin: {
@@ -14,7 +14,7 @@ export const DiscordServerManager: GlobalConfig = {
     group: 'Discord',
     hidden: ({ user }) => {
       // Hide from sidebar if not admin
-      return !user?.roles?.includes('admin')
+      return (user as any)?.role !== 'admin'
     },
   },
   fields: [
