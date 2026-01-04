@@ -81,7 +81,7 @@ export async function postOrUpdateTeamCard(options: TeamCardOptions): Promise<st
 }
 
 /**
- * Refresh all team cards in order: Staff first, then teams by region/SR
+ * Refresh all team cards in order: Staff first, then teams by Division/SR
  */
 export async function refreshAllTeamCards(): Promise<void> {
   try {
@@ -108,13 +108,13 @@ export async function refreshAllTeamCards(): Promise<void> {
     // Get payload instance
     const payload = await getPayload({ config: configPromise })
 
-    // Step 1: Delete all existing team card messages (keep staff cards)
-    await deleteAllTeamCardMessages(channel, payload)
+    // Step 1: Delete ALL messages from the channel
+    await clearAllChannelMessages(channel)
 
     // Step 2: Post staff cards
     await postStaffCards(channel, payload)
 
-    // Step 3: Fetch and sort all teams
+    // Step 3: Fetch and sort all teams by Division > SR
     const teams = await fetchAllTeamsSorted(payload)
 
     // Step 4: Post team cards in order
@@ -122,7 +122,7 @@ export async function refreshAllTeamCards(): Promise<void> {
       const embed = await buildEnhancedTeamEmbed(team, payload)
       const message = await channel.send({ embeds: [embed] })
       await saveTeamMessageId(team.id, message.id, payload)
-      console.log(`✅ Posted card for ${team.name}`)
+      console.log(`✅ Posted card for ${team.name} (${team.league || 'Open'} - ${team.rating || 'N/A'})`)
 
       // Small delay to avoid rate limiting
       await new Promise((resolve) => setTimeout(resolve, 500))
@@ -131,6 +131,44 @@ export async function refreshAllTeamCards(): Promise<void> {
     console.log(`✅ Refreshed ${teams.length} team cards + staff cards`)
   } catch (error) {
     console.error('Error refreshing all team cards:', error)
+  }
+}
+
+/**
+ * Clear all messages from the channel
+ */
+async function clearAllChannelMessages(channel: TextChannel): Promise<void> {
+  try {
+    console.log('🗑️  Clearing all messages from channel...')
+    
+    let deleted = 0
+    let fetched = 0
+    
+    // Fetch and delete messages in batches
+    while (true) {
+      const messages = await channel.messages.fetch({ limit: 100 })
+      if (messages.size === 0) break
+      
+      fetched += messages.size
+      
+      // Delete messages one by one (bulk delete only works for messages < 14 days old)
+      for (const message of messages.values()) {
+        try {
+          await message.delete()
+          deleted++
+        } catch (error) {
+          console.log(`Failed to delete message ${message.id}`)
+        }
+        // Small delay between deletions to avoid rate limits
+        await new Promise((resolve) => setTimeout(resolve, 100))
+      }
+      
+      if (messages.size < 100) break
+    }
+    
+    console.log(`🗑️  Cleared ${deleted} messages from channel`)
+  } catch (error) {
+    console.error('Error clearing channel messages:', error)
   }
 }
 
@@ -234,42 +272,43 @@ async function postStaffCards(channel: TextChannel, payload: any): Promise<void>
 }
 
 /**
- * Fetch all teams sorted by region and SR (descending)
+ * Fetch all teams sorted by Division (Masters > Expert > Advanced > Open), then by SR within division
  */
 async function fetchAllTeamsSorted(payload: any): Promise<any[]> {
   try {
     const result = await payload.find({
       collection: 'teams',
       limit: 1000,
-      sort: 'region', // Sort by region first
       depth: 2,
     })
 
-    // Group by region, then sort by SR within each region
-    const teamsByRegion = new Map<string, any[]>()
+    // Define division order (Masters > Expert > Advanced > Open)
+    const divisionOrder = {
+      'Masters': 1,
+      'Expert': 2,
+      'Advanced': 3,
+      'Open': 4,
+    }
 
-    for (const team of result.docs) {
-      const region = team.region || 'Unknown'
-      if (!teamsByRegion.has(region)) {
-        teamsByRegion.set(region, [])
+    // Sort teams by division first, then by SR within each division
+    const sorted = result.docs.sort((a, b) => {
+      // Get division from FaceIt league or default to Open
+      const aDivision = a.league || 'Open'
+      const bDivision = b.league || 'Open'
+      
+      const aDivOrder = divisionOrder[aDivision as keyof typeof divisionOrder] || 999
+      const bDivOrder = divisionOrder[bDivision as keyof typeof divisionOrder] || 999
+      
+      // First sort by division
+      if (aDivOrder !== bDivOrder) {
+        return aDivOrder - bDivOrder
       }
-      teamsByRegion.get(region)!.push(team)
-    }
-
-    // Sort teams within each region by competitive rating (SR) descending
-    for (const [region, teams] of teamsByRegion.entries()) {
-      teams.sort((a, b) => {
-        const aRating = parseRating(a.rating) || 0
-        const bRating = parseRating(b.rating) || 0
-        return bRating - aRating // Descending order
-      })
-    }
-
-    // Flatten back to single array, maintaining region grouping
-    const sorted: any[] = []
-    for (const teams of teamsByRegion.values()) {
-      sorted.push(...teams)
-    }
+      
+      // Then sort by SR within same division (high to low)
+      const aRating = parseRating(a.rating) || 0
+      const bRating = parseRating(b.rating) || 0
+      return bRating - aRating
+    })
 
     return sorted
   } catch (error) {
