@@ -951,6 +951,8 @@ table {
     width: 100%;
     justify-content: center;
     margin-top: 0.75rem;
+    position: relative;
+    z-index: 1; // Lower than dropdowns (z-index: 9999)
   }
   
   .array-field__remove-button,

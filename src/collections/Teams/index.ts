@@ -580,21 +580,24 @@ export const Teams: CollectionConfig = {
         if (operation === 'update') {
           // Check if any trigger fields changed (deep comparison for arrays)
           const rosterChanged = JSON.stringify(doc.roster) !== JSON.stringify(previousDoc?.roster)
+          const subsChanged = JSON.stringify(doc.subs) !== JSON.stringify(previousDoc?.subs)
+          const managersChanged = JSON.stringify(doc.managers) !== JSON.stringify(previousDoc?.managers)
+          const coachesChanged = JSON.stringify(doc.coaches) !== JSON.stringify(previousDoc?.coaches)
           const logoChanged = doc.logo !== previousDoc?.logo
           const ratingChanged = doc.competitiveRating !== previousDoc?.competitiveRating
           const nameChanged = doc.name !== previousDoc?.name
           const messageIdChanged = doc.discordCardMessageId !== previousDoc?.discordCardMessageId
           
           // Only messageId changed? Skip (this is us saving the message ID)
-          if (messageIdChanged && !rosterChanged && !logoChanged && !ratingChanged && !nameChanged) {
+          if (messageIdChanged && !rosterChanged && !subsChanged && !managersChanged && !coachesChanged && !logoChanged && !ratingChanged && !nameChanged) {
             return
           }
 
-          const triggersChanged = rosterChanged || logoChanged || ratingChanged || nameChanged
+          const triggersChanged = rosterChanged || subsChanged || managersChanged || coachesChanged || logoChanged || ratingChanged || nameChanged
 
           if (!triggersChanged) return
           
-          console.log(`🔔 Discord card update triggered for ${doc.name} (roster: ${rosterChanged}, logo: ${logoChanged}, rating: ${ratingChanged}, name: ${nameChanged})`)
+          console.log(`🔔 Discord card update triggered for ${doc.name} (roster: ${rosterChanged}, subs: ${subsChanged}, managers: ${managersChanged}, coaches: ${coachesChanged}, logo: ${logoChanged}, rating: ${ratingChanged}, name: ${nameChanged})`)
 
           // Trigger Discord card update (async, don't block save)
           if (typeof globalThis !== 'undefined') {
