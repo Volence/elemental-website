@@ -384,6 +384,8 @@ select,
   border-radius: 6px;
   box-shadow: 0 0 8px rgba($admin-accent-info, 0.08);
   transition: all 0.2s ease;
+  position: relative;
+  z-index: 100 !important; // Higher than array buttons
   
   &:hover {
     border-color: rgba($admin-accent-info, 0.5);
@@ -941,11 +943,16 @@ table {
     // CRITICAL: Allow dropdowns to extend beyond the row
     overflow: visible !important;
     position: relative;
-    z-index: auto; // Don't create new stacking context
+    z-index: 1; // Low but positive z-index
     
     &:hover {
       transform: translateY(-1px);
-      z-index: auto; // Still don't create stacking context on hover
+      z-index: 1; // Keep consistent
+    }
+    
+    // When row has an open select, bump it up
+    &:has(.rs__menu) {
+      z-index: 1000 !important;
     }
   }
   
@@ -957,7 +964,8 @@ table {
     justify-content: center;
     margin-top: 0.75rem;
     position: relative;
-    z-index: 0; // Ensure it stays below dropdowns
+    z-index: -1 !important; // Force below everything, including dropdowns
+    pointer-events: auto; // Ensure button still clickable
   }
   
   .array-field__remove-button,
