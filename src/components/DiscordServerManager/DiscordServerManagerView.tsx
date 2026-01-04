@@ -24,8 +24,34 @@ interface ServerStructure {
   memberCount: number
 }
 
+interface ServerStats {
+  channels: {
+    total: number
+    text: number
+    voice: number
+    announcement: number
+    categories: number
+  }
+  roles: {
+    total: number
+  }
+  members: {
+    total: number
+    humans: number
+    bots: number
+    online: number
+  }
+  server: {
+    name: string
+    createdAt: string
+    premiumTier: number
+    boosts: number
+  }
+}
+
 const DiscordServerManagerView = () => {
   const [structure, setStructure] = useState<ServerStructure | null>(null)
+  const [stats, setStats] = useState<ServerStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'structure' | 'stats' | 'health'>('structure')
@@ -33,6 +59,12 @@ const DiscordServerManagerView = () => {
   useEffect(() => {
     loadServerStructure()
   }, [])
+
+  useEffect(() => {
+    if (activeTab === 'stats' && !stats) {
+      loadServerStats()
+    }
+  }, [activeTab])
 
   const loadServerStructure = async () => {
     try {
@@ -44,6 +76,23 @@ const DiscordServerManagerView = () => {
       }
       const data = await response.json()
       setStructure(data)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadServerStats = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const response = await fetch('/api/discord/server/stats')
+      if (!response.ok) {
+        throw new Error('Failed to load server statistics')
+      }
+      const data = await response.json()
+      setStats(data)
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -158,9 +207,71 @@ const DiscordServerManagerView = () => {
           </div>
         )}
 
-        {activeTab === 'stats' && (
+        {activeTab === 'stats' && stats && (
           <div className="stats-view">
-            <p>Statistics coming soon...</p>
+            <div className="stats-grid">
+              <div className="stat-card">
+                <h4>Channels</h4>
+                <div className="stat-main">{stats.channels.total}</div>
+                <div className="stat-breakdown">
+                  <div className="stat-item">
+                    <span className="stat-label"># Text:</span>
+                    <span className="stat-value">{stats.channels.text}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">🔊 Voice:</span>
+                    <span className="stat-value">{stats.channels.voice}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">📢 Announcements:</span>
+                    <span className="stat-value">{stats.channels.announcement}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">📁 Categories:</span>
+                    <span className="stat-value">{stats.channels.categories}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="stat-card">
+                <h4>Members</h4>
+                <div className="stat-main">{stats.members.total}</div>
+                <div className="stat-breakdown">
+                  <div className="stat-item">
+                    <span className="stat-label">👤 Humans:</span>
+                    <span className="stat-value">{stats.members.humans}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">🤖 Bots:</span>
+                    <span className="stat-value">{stats.members.bots}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">🟢 Online:</span>
+                    <span className="stat-value">{stats.members.online}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="stat-card">
+                <h4>Roles</h4>
+                <div className="stat-main">{stats.roles.total}</div>
+                <div className="stat-breakdown">
+                  <div className="stat-item">
+                    <span className="stat-label">Custom roles</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="stat-card">
+                <h4>Server Boosts</h4>
+                <div className="stat-main">{stats.server.boosts}</div>
+                <div className="stat-breakdown">
+                  <div className="stat-item">
+                    <span className="stat-label">Tier {stats.server.premiumTier}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
