@@ -138,30 +138,6 @@ const DiscordServerManagerView = () => {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="discord-server-manager">
-        <div className="loading-state">
-          <div className="spinner"></div>
-          <p>Loading Discord server structure...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="discord-server-manager">
-        <div className="error-state">
-          <p className="error-message">Error: {error}</p>
-          <button onClick={loadServerStructure} className="retry-button">
-            Retry
-          </button>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="discord-server-manager">
       <div className="manager-header">
@@ -178,24 +154,45 @@ const DiscordServerManagerView = () => {
         <button
           className={`tab ${activeTab === 'structure' ? 'active' : ''}`}
           onClick={() => setActiveTab('structure')}
+          disabled={loading}
         >
           Server Structure
         </button>
         <button
           className={`tab ${activeTab === 'stats' ? 'active' : ''}`}
           onClick={() => setActiveTab('stats')}
+          disabled={loading}
         >
           Statistics
         </button>
         <button
           className={`tab ${activeTab === 'health' ? 'active' : ''}`}
           onClick={() => setActiveTab('health')}
+          disabled={loading}
         >
           Health Check
         </button>
       </div>
 
       <div className="tab-content">
+        {loading && (
+          <div className="loading-overlay">
+            <div className="spinner"></div>
+            <p>Loading...</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="error-state">
+            <p className="error-message">Error: {error}</p>
+            <button onClick={loadServerStructure} className="retry-button">
+              Retry
+            </button>
+          </div>
+        )}
+
+        {!loading && !error && (
+          <>
         {activeTab === 'structure' && structure && (
           <div className="server-structure">
             <div className="structure-header">
@@ -378,6 +375,8 @@ const DiscordServerManagerView = () => {
               )}
             </div>
           </div>
+        )}
+        </>
         )}
       </div>
     </div>
