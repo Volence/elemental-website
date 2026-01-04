@@ -6,6 +6,8 @@ export async function POST(request: NextRequest) {
   try {
     const { id, name, type } = await request.json()
 
+    console.log('Rename request:', { id, name, type })
+
     if (!id || !name) {
       return NextResponse.json({ error: 'ID and name are required' }, { status: 400 })
     }
@@ -20,23 +22,38 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Guild not found' }, { status: 404 })
     }
 
-    if (type === 'category') {
-      const category = guild.channels.cache.get(id)
-      if (!category || category.type !== ChannelType.GuildCategory) {
-        return NextResponse.json({ error: 'Category not found' }, { status: 404 })
-      }
-      await category.setName(name)
-      return NextResponse.json({ success: true, name: category.name })
-    } else if (type === 'channel') {
-      const channel = guild.channels.cache.get(id)
-      if (!channel) {
-        return NextResponse.json({ error: 'Channel not found' }, { status: 404 })
-      }
-      await channel.setName(name)
-      return NextResponse.json({ success: true, name: channel.name })
+    // Fetch channel/category from Discord API instead of cache
+    let channel
+    try {
+      channel = await guild.channels.fetch(id)
+    } catch (fetchError) {
+      console.error('Failed to fetch channel:', fetchError)
+      return NextResponse.json({ error: 'Channel not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
+    if (!channel) {
+      return NextResponse.json({ error: 'Channel not found' }, { status: 404 })
+    }
+
+    console.log('Found channel:', channel.name, 'type:', channel.type)
+
+    // Rename the channel/category
+    try {
+      if (type === 'category' && channel.type !== ChannelType.GuildCategory) {
+        return NextResponse.json({ error: 'Not a category' }, { status: 400 })
+      }
+
+      await channel.setName(name)
+      console.log('Rename successful, new name:', channel.name)
+      
+      return NextResponse.json({ success: true, name: channel.name })
+    } catch (renameError: any) {
+      console.error('Failed to rename:', renameError)
+      return NextResponse.json(
+        { error: `Failed to rename: ${renameError.message}` },
+        { status: 500 }
+      )
+    }
   } catch (error: any) {
     console.error('Error renaming:', error)
     return NextResponse.json(

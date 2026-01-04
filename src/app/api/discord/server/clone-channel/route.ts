@@ -19,7 +19,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Guild not found' }, { status: 404 })
     }
 
-    const channel = guild.channels.cache.get(channelId)
+    // Fetch channel from Discord API instead of cache
+    let channel
+    try {
+      channel = await guild.channels.fetch(channelId)
+    } catch (fetchError) {
+      console.error('Failed to fetch channel:', fetchError)
+      return NextResponse.json({ error: 'Channel not found' }, { status: 404 })
+    }
+
     if (!channel) {
       return NextResponse.json({ error: 'Channel not found' }, { status: 404 })
     }

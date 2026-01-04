@@ -20,21 +20,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Guild not found' }, { status: 404 })
     }
 
-    if (type === 'category') {
-      const category = guild.channels.cache.get(id)
-      if (!category || category.type !== ChannelType.GuildCategory) {
-        return NextResponse.json({ error: 'Category not found' }, { status: 404 })
-      }
-      await category.delete()
-      return NextResponse.json({ success: true })
-    } else if (type === 'channel') {
-      const channel = guild.channels.cache.get(id)
-      if (!channel) {
-        return NextResponse.json({ error: 'Channel not found' }, { status: 404 })
-      }
-      await channel.delete()
-      return NextResponse.json({ success: true })
+    // Fetch channel/category from Discord API instead of cache
+    let channel
+    try {
+      channel = await guild.channels.fetch(id)
+    } catch (fetchError) {
+      console.error('Failed to fetch channel:', fetchError)
+      return NextResponse.json({ error: 'Channel/Category not found' }, { status: 404 })
     }
+
+    if (!channel) {
+      return NextResponse.json({ error: 'Channel/Category not found' }, { status: 404 })
+    }
+
+    if (type === 'category' && channel.type !== ChannelType.GuildCategory) {
+      return NextResponse.json({ error: 'Not a category' }, { status: 400 })
+    }
+
+    await channel.delete()
+    return NextResponse.json({ success: true })
 
     return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
   } catch (error: any) {
