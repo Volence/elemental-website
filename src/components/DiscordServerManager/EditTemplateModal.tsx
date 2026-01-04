@@ -53,7 +53,8 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
 
   // Load server roles when modal opens
   useEffect(() => {
-    if (isOpen && serverRoles.length === 0) {
+    if (isOpen) {
+      // Always reload roles when modal opens to ensure fresh data
       loadServerRoles()
     }
   }, [isOpen])
@@ -65,9 +66,11 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
       if (!response.ok) throw new Error('Failed to load server roles')
       
       const data = await response.json()
+      console.log('Loaded roles:', data.roles?.length || 0)
       setServerRoles(data.roles || [])
     } catch (error) {
       console.error('Failed to load server roles:', error)
+      setServerRoles([]) // Ensure it's set even on error
     } finally {
       setLoadingRoles(false)
     }
@@ -93,7 +96,9 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
     setIsSaving(true)
     try {
       await onSave(editedTemplate)
-      onClose()
+      // Don't close modal - let user continue editing or manually close
+    } catch (error) {
+      console.error('Failed to save template:', error)
     } finally {
       setIsSaving(false)
     }
@@ -284,35 +289,44 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
                         disabled={loadingRoles}
                         autoFocus
                       />
-                      {showRoleSearch === roleIndex && getAvailableRoles().length > 0 && (
+                      {showRoleSearch === roleIndex && !loadingRoles && (
                         <div className="role-search-results">
-                          {getAvailableRoles().slice(0, 10).map(serverRole => (
-                            <div
-                              key={serverRole.id}
-                              className="role-search-result-item"
-                              onClick={() => handleRoleSelect(roleIndex, serverRole.id)}
-                            >
-                              <span className="role-result-name">{serverRole.name}</span>
-                              {serverRole.color && (
-                                <span 
-                                  className="role-color-dot" 
-                                  style={{ backgroundColor: serverRole.color }}
-                                />
+                          {getAvailableRoles().length > 0 ? (
+                            <>
+                              {getAvailableRoles().slice(0, 10).map(serverRole => (
+                                <div
+                                  key={serverRole.id}
+                                  className="role-search-result-item"
+                                  onClick={() => handleRoleSelect(roleIndex, serverRole.id)}
+                                >
+                                  <span className="role-result-name">{serverRole.name}</span>
+                                  {serverRole.color && (
+                                    <span 
+                                      className="role-color-dot" 
+                                      style={{ backgroundColor: serverRole.color }}
+                                    />
+                                  )}
+                                </div>
+                              ))}
+                              {getAvailableRoles().length > 10 && (
+                                <div className="role-search-more">
+                                  +{getAvailableRoles().length - 10} more roles (keep typing to filter)
+                                </div>
                               )}
+                            </>
+                          ) : serverRoles.length === 0 ? (
+                            <div className="role-search-no-results">
+                              No roles available. All roles may already be selected.
                             </div>
-                          ))}
-                          {getAvailableRoles().length > 10 && (
-                            <div className="role-search-more">
-                              +{getAvailableRoles().length - 10} more roles (keep typing to filter)
+                          ) : roleSearchTerm ? (
+                            <div className="role-search-no-results">
+                              No roles found matching "{roleSearchTerm}"
+                            </div>
+                          ) : (
+                            <div className="role-search-no-results">
+                              Start typing to search for roles...
                             </div>
                           )}
-                        </div>
-                      )}
-                      {showRoleSearch === roleIndex && getAvailableRoles().length === 0 && roleSearchTerm && (
-                        <div className="role-search-results">
-                          <div className="role-search-no-results">
-                            No roles found matching "{roleSearchTerm}"
-                          </div>
                         </div>
                       )}
                     </div>
