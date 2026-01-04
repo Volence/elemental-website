@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDiscordClient } from '@/discord'
+import { ensureDiscordClient } from '@/discord/bot'
 import { ChannelType } from 'discord.js'
 
 export async function POST(request: NextRequest) {
@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'ID and name are required' }, { status: 400 })
     }
 
-    const client = getDiscordClient()
+    const client = await ensureDiscordClient()
     if (!client) {
       return NextResponse.json({ error: 'Discord client not initialized' }, { status: 500 })
     }
