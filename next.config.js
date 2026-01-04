@@ -30,11 +30,21 @@ const nextConfig = {
       }),
     ],
   },
-  webpack: (webpackConfig) => {
+  webpack: (webpackConfig, { isServer }) => {
     webpackConfig.resolve.extensionAlias = {
       '.cjs': ['.cts', '.cjs'],
       '.js': ['.ts', '.tsx', '.js', '.jsx'],
       '.mjs': ['.mts', '.mjs'],
+    }
+
+    // Exclude Discord.js and related packages from client bundle (server-only)
+    if (!isServer) {
+      webpackConfig.resolve.fallback = {
+        ...webpackConfig.resolve.fallback,
+        'discord.js': false,
+        '@discordjs/rest': false,
+        '@discordjs/builders': false,
+      }
     }
 
     return webpackConfig
