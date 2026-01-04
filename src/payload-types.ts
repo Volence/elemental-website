@@ -87,6 +87,7 @@ export interface Config {
     'error-logs': ErrorLog;
     'cron-job-runs': CronJobRun;
     'active-sessions': ActiveSession;
+    'discord-polls': DiscordPoll;
     redirects: Redirect;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
@@ -116,6 +117,7 @@ export interface Config {
     'error-logs': ErrorLogsSelect<false> | ErrorLogsSelect<true>;
     'cron-job-runs': CronJobRunsSelect<false> | CronJobRunsSelect<true>;
     'active-sessions': ActiveSessionsSelect<false> | ActiveSessionsSelect<true>;
+    'discord-polls': DiscordPollsSelect<false> | DiscordPollsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
@@ -662,6 +664,14 @@ export interface Team {
    * Tournaments this team is currently participating in (auto-generates weekly matches)
    */
   activeTournaments?: (number | TournamentTemplate)[] | null;
+  /**
+   * Team skill rating (SR) for sorting team cards
+   */
+  competitiveRating?: number | null;
+  /**
+   * Discord message ID for team card (auto-managed)
+   */
+  discordCardMessageId?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1099,6 +1109,10 @@ export interface User {
    * Profile picture for your account
    */
   avatar?: (number | null) | Media;
+  /**
+   * Your Discord User ID (18-19 digits). Link your Discord account to track polls you create via /schedulepoll. Right-click your profile in Discord → Copy User ID (requires Developer Mode enabled in Discord settings).
+   */
+  discordId?: string | null;
   /**
    * User role determines what they can access and edit in the CMS.
    */
@@ -1561,6 +1575,77 @@ export interface ActiveSession {
   createdAt: string;
 }
 /**
+ * 📊 View poll history and results from Discord
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discord-polls".
+ */
+export interface DiscordPoll {
+  id: number;
+  /**
+   * Name of the poll
+   */
+  pollName: string;
+  /**
+   * Discord message ID
+   */
+  messageId: string;
+  /**
+   * Discord channel ID where poll was posted
+   */
+  channelId: string;
+  /**
+   * Team this poll is for (optional)
+   */
+  team?: (number | null) | Team;
+  dateRange?: {
+    start?: string | null;
+    end?: string | null;
+  };
+  /**
+   * Time slot for the schedule (e.g., "8-10 EST")
+   */
+  timeSlot?: string | null;
+  /**
+   * Current status of the poll
+   */
+  status?: ('active' | 'closed' | 'scheduled') | null;
+  /**
+   * Admin user who created this poll (linked via Discord ID)
+   */
+  createdBy?: (number | null) | User;
+  /**
+   * How the poll was created
+   */
+  createdVia?: ('discord-command' | 'admin-panel') | null;
+  /**
+   * Cached vote data from Discord (auto-updated)
+   */
+  votes?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Generated schedule from poll results
+   */
+  schedule?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
@@ -1776,6 +1861,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'active-sessions';
         value: number | ActiveSession;
+      } | null)
+    | ({
+        relationTo: 'discord-polls';
+        value: number | DiscordPoll;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -2110,6 +2199,8 @@ export interface TeamsSelect<T extends boolean = true> {
   currentFaceitSeason?: T;
   slug?: T;
   activeTournaments?: T;
+  competitiveRating?: T;
+  discordCardMessageId?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2344,6 +2435,7 @@ export interface RecruitmentApplicationsSelect<T extends boolean = true> {
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
   avatar?: T;
+  discordId?: T;
   role?: T;
   assignedTeams?: T;
   departments?:
@@ -2461,6 +2553,30 @@ export interface ActiveSessionsSelect<T extends boolean = true> {
   ipAddress?: T;
   userAgent?: T;
   isActive?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discord-polls_select".
+ */
+export interface DiscordPollsSelect<T extends boolean = true> {
+  pollName?: T;
+  messageId?: T;
+  channelId?: T;
+  team?: T;
+  dateRange?:
+    | T
+    | {
+        start?: T;
+        end?: T;
+      };
+  timeSlot?: T;
+  status?: T;
+  createdBy?: T;
+  createdVia?: T;
+  votes?: T;
+  schedule?: T;
   updatedAt?: T;
   createdAt?: T;
 }

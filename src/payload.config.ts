@@ -211,6 +211,29 @@ const config = buildConfig({
     },
     tasks: [],
   },
+  onInit: async (payload) => {
+    // Initialize Discord bot on server startup
+    if (process.env.DISCORD_BOT_TOKEN) {
+      try {
+        console.log('🤖 Initializing Discord bot...')
+        const { ensureDiscordClient } = await import('./discord/bot')
+        const { registerCommands } = await import('./discord/commands/register')
+        const { setupInteractionHandlers } = await import('./discord/handlers/interactions')
+
+        const client = await ensureDiscordClient()
+        
+        if (client) {
+          await registerCommands()
+          setupInteractionHandlers()
+          console.log('✅ Discord bot fully initialized')
+        }
+      } catch (error) {
+        console.error('❌ Failed to initialize Discord bot:', error)
+      }
+    } else {
+      console.log('ℹ️  Discord bot disabled (DISCORD_BOT_TOKEN not set)')
+    }
+  },
 })
 
 export default config
