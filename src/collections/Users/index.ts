@@ -68,14 +68,10 @@ export const Users: CollectionConfig = {
         description: 'Profile picture for your account',
       },
       access: {
-        // Allow all authenticated users to update their own avatar
-        update: ({ req: { user } }) => {
-          if (!user) return false
-          // Admins can update anyone's avatar
-          if ((user as User).role === UserRole.ADMIN) return true
-          // Users can update their own avatar
-          return true
-        },
+        // All authenticated users can read avatars
+        read: ({ req: { user } }) => !!user,
+        // All authenticated users can update their own avatar (collection-level access controls which user)
+        update: () => true,
       },
     },
     {
