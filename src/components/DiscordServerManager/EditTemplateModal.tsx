@@ -281,7 +281,10 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
           
           <div className="roles-list">
             {editedTemplate.roles.map((role, roleIndex) => (
-              <div key={roleIndex} className="role-edit-card">
+              <div 
+                key={roleIndex} 
+                className={`role-edit-card ${showRoleSearch === roleIndex ? 'dropdown-open' : ''}`}
+              >
                 <div className="role-edit-header">
                   {role.name ? (
                     // Show selected role name with change button

@@ -23,10 +23,14 @@ export async function GET() {
       )
     }
 
+    // Fetch the guild with all data (this ensures cache is populated)
     const guild = await client.guilds.fetch(guildId)
     if (!guild) {
       return NextResponse.json({ error: 'Guild not found' }, { status: 404 })
     }
+
+    // Explicitly fetch roles to ensure they're in cache
+    await guild.roles.fetch()
 
     // Get server roles only - fast and lightweight
     const roles = Array.from(guild.roles.cache.values())
