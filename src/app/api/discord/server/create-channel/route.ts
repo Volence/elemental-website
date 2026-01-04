@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDiscordClient } from '@/discord/client'
+import { getDiscordClient } from '@/discord'
 import { ChannelType } from 'discord.js'
 
 export async function POST(request: NextRequest) {
