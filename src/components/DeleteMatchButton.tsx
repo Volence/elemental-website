@@ -6,11 +6,11 @@ import { Button, toast, useDocumentInfo } from '@payloadcms/ui'
 
 export const DeleteMatchButton: React.FC = () => {
   const { id, title } = useDocumentInfo()
+  const [isDeleting, setIsDeleting] = useState(false)
+  const router = useRouter()
   
   // Don't render if no ID (creating new match)
   if (!id) return null
-  const [isDeleting, setIsDeleting] = useState(false)
-  const router = useRouter()
 
   const handleDelete = async () => {
     const confirmed = window.confirm(
