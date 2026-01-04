@@ -1,3 +1,200 @@
+// Modal Styles
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100000;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-content {
+  background: $admin-bg-elevated;
+  border: 2px solid rgba($admin-accent-primary, 0.3);
+  border-radius: $radius-lg;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease;
+
+  &.modal-small {
+    width: 90%;
+    max-width: 500px;
+  }
+
+  &.modal-medium {
+    width: 90%;
+    max-width: 800px;
+  }
+
+  &.modal-large {
+    width: 95%;
+    max-width: 1200px;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-xl;
+  border-bottom: 1px solid rgba($admin-accent-primary, 0.2);
+
+  h3 {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-semibold;
+    color: $admin-text-primary;
+    margin: 0;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: $admin-text-secondary;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: $radius-sm;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba($admin-accent-danger, 0.2);
+      color: $admin-accent-danger;
+    }
+  }
+}
+
+.modal-body {
+  padding: $spacing-xl;
+  overflow-y: auto;
+  flex: 1;
+
+  @include custom-scrollbar;
+
+  p {
+    color: $admin-text-primary;
+    font-size: $font-size-base;
+    margin: 0;
+    line-height: 1.6;
+  }
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-md;
+  padding: $spacing-xl;
+  border-top: 1px solid rgba($admin-accent-primary, 0.2);
+}
+
+.modal-button {
+  padding: $spacing-md $spacing-xl;
+  border: none;
+  border-radius: $radius-sm;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &.modal-button-primary {
+    @include glow-button($admin-accent-primary);
+  }
+
+  &.modal-button-secondary {
+    background: rgba($admin-bg-base, 0.5);
+    color: $admin-text-secondary;
+    border: 1px solid rgba($admin-accent-primary, 0.3);
+
+    &:hover {
+      background: rgba($admin-bg-base, 0.8);
+      color: $admin-text-primary;
+      border-color: rgba($admin-accent-primary, 0.5);
+    }
+  }
+
+  &.modal-button-success {
+    @include glow-button($admin-accent-success);
+  }
+
+  &.modal-button-danger {
+    @include glow-button($admin-accent-danger);
+  }
+
+  &.modal-button-warning {
+    @include glow-button($admin-accent-warning);
+  }
+}
+
+.alert-modal-content {
+  display: flex;
+  align-items: center;
+  gap: $spacing-lg;
+  padding: $spacing-lg;
+  border-radius: $radius-sm;
+
+  &.alert-success {
+    background: rgba($admin-accent-success, 0.1);
+    border: 1px solid rgba($admin-accent-success, 0.3);
+  }
+
+  &.alert-error {
+    background: rgba($admin-accent-danger, 0.1);
+    border: 1px solid rgba($admin-accent-danger, 0.3);
+  }
+
+  &.alert-info {
+    background: rgba($admin-accent-info, 0.1);
+    border: 1px solid rgba($admin-accent-info, 0.3);
+  }
+
+  &.alert-warning {
+    background: rgba($admin-accent-warning, 0.1);
+    border: 1px solid rgba($admin-accent-warning, 0.3);
+  }
+
+  .alert-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 // Discord Server Manager Styles
 
 .discord-server-manager {
@@ -407,11 +604,11 @@
 
           .template-card {
             @include transparent-bg(0.03);
-            padding: $spacing-lg;
             border-radius: $radius-sm;
             border: 2px solid rgba($admin-accent-primary, 0.2);
-            cursor: pointer;
             transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
 
             &:hover {
               border-color: rgba($admin-accent-primary, 0.5);
@@ -423,37 +620,82 @@
               background: rgba($admin-accent-primary, 0.1);
             }
 
-            .template-card-header {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              margin-bottom: $spacing-sm;
+            .template-card-body {
+              padding: $spacing-lg;
+              cursor: pointer;
+              flex: 1;
 
-              h5 {
-                font-size: $font-size-base;
-                font-weight: $font-weight-semibold;
+              .template-card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: $spacing-sm;
+
+                h5 {
+                  font-size: $font-size-base;
+                  font-weight: $font-weight-semibold;
+                  color: $admin-text-primary;
+                  margin: 0;
+                }
+
+                .template-channels {
+                  @include glow-badge($admin-accent-info);
+                  padding: $spacing-xs $spacing-sm;
+                  font-size: $font-size-xs;
+                }
+              }
+
+              .template-description {
                 color: $admin-text-primary;
-                margin: 0;
+                font-size: $font-size-sm;
+                margin: 0 0 $spacing-xs 0;
               }
 
-              .template-channels {
-                @include glow-badge($admin-accent-info);
-                padding: $spacing-xs $spacing-sm;
+              .template-source {
+                color: $admin-text-secondary;
                 font-size: $font-size-xs;
+                margin: 0;
+                font-style: italic;
               }
             }
 
-            .template-description {
-              color: $admin-text-primary;
-              font-size: $font-size-sm;
-              margin: 0 0 $spacing-xs 0;
-            }
+            .template-card-actions {
+              display: flex;
+              gap: $spacing-xs;
+              padding: $spacing-md;
+              border-top: 1px solid rgba($admin-accent-primary, 0.2);
 
-            .template-source {
-              color: $admin-text-secondary;
-              font-size: $font-size-xs;
-              margin: 0;
-              font-style: italic;
+              .template-action-button {
+                flex: 1;
+                padding: $spacing-sm;
+                border: none;
+                border-radius: $radius-sm;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s ease;
+
+                &.edit-button {
+                  background: rgba($admin-accent-info, 0.2);
+                  color: $admin-accent-info;
+
+                  &:hover {
+                    background: rgba($admin-accent-info, 0.3);
+                    transform: scale(1.05);
+                  }
+                }
+
+                &.delete-button {
+                  background: rgba($admin-accent-danger, 0.2);
+                  color: $admin-accent-danger;
+
+                  &:hover {
+                    background: rgba($admin-accent-danger, 0.3);
+                    transform: scale(1.05);
+                  }
+                }
+              }
             }
           }
         }
@@ -690,6 +932,187 @@
           }
         }
       }
+    }
+  }
+}
+
+// Edit Template Modal Styles
+.edit-template-content {
+  .template-section-edit {
+    margin-bottom: $spacing-2xl;
+
+    .template-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: $spacing-lg;
+
+      h4 {
+        font-size: $font-size-lg;
+        font-weight: $font-weight-semibold;
+        color: $admin-text-primary;
+        margin: 0;
+      }
+
+      .add-button {
+        @include glow-button($admin-accent-success);
+        padding: $spacing-sm $spacing-lg;
+        display: flex;
+        align-items: center;
+        gap: $spacing-xs;
+        font-size: $font-size-sm;
+      }
+    }
+  }
+
+  .roles-list {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+  }
+
+  .role-edit-card {
+    @include transparent-bg(0.03);
+    padding: $spacing-lg;
+    border-radius: $radius-sm;
+    border: 1px solid rgba($admin-accent-primary, 0.2);
+
+    .role-edit-header {
+      display: flex;
+      gap: $spacing-md;
+      margin-bottom: $spacing-md;
+
+      .role-name-input {
+        flex: 1;
+        padding: $spacing-md;
+        background: rgba($admin-bg-base, 0.5);
+        border: 1px solid rgba($admin-accent-primary, 0.3);
+        border-radius: $radius-sm;
+        color: $admin-text-primary;
+        font-size: $font-size-base;
+        font-weight: $font-weight-semibold;
+
+        &:focus {
+          outline: none;
+          border-color: $admin-accent-primary;
+          box-shadow: 0 0 0 2px rgba($admin-accent-primary, 0.1);
+        }
+      }
+
+      .delete-button {
+        @include glow-button($admin-accent-danger);
+        padding: $spacing-md;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+
+    .permissions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: $spacing-sm;
+
+      .permission-checkbox {
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
+        padding: $spacing-xs;
+        cursor: pointer;
+        border-radius: $radius-xs;
+        transition: background 0.2s ease;
+
+        &:hover {
+          background: rgba($admin-accent-primary, 0.05);
+        }
+
+        input[type="checkbox"] {
+          width: 16px;
+          height: 16px;
+          cursor: pointer;
+        }
+
+        span {
+          color: $admin-text-primary;
+          font-size: $font-size-sm;
+          user-select: none;
+        }
+      }
+    }
+  }
+
+  .channels-list {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+  }
+
+  .channel-edit-card {
+    @include transparent-bg(0.03);
+    padding: $spacing-md;
+    border-radius: $radius-sm;
+    border: 1px solid rgba($admin-accent-primary, 0.2);
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+
+    .drag-handle {
+      color: $admin-text-secondary;
+      cursor: grab;
+      flex-shrink: 0;
+
+      &:active {
+        cursor: grabbing;
+      }
+    }
+
+    .channel-name-input {
+      flex: 1;
+      padding: $spacing-sm $spacing-md;
+      background: rgba($admin-bg-base, 0.5);
+      border: 1px solid rgba($admin-accent-primary, 0.3);
+      border-radius: $radius-sm;
+      color: $admin-text-primary;
+      font-size: $font-size-base;
+      font-family: 'Courier New', monospace;
+
+      &:focus {
+        outline: none;
+        border-color: $admin-accent-primary;
+        box-shadow: 0 0 0 2px rgba($admin-accent-primary, 0.1);
+      }
+    }
+
+    .move-button,
+    .delete-button {
+      padding: $spacing-sm;
+      background: rgba($admin-bg-base, 0.5);
+      border: 1px solid rgba($admin-accent-primary, 0.3);
+      border-radius: $radius-sm;
+      color: $admin-text-secondary;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+
+      &:hover:not(:disabled) {
+        color: $admin-text-primary;
+        border-color: $admin-accent-primary;
+        background: rgba($admin-accent-primary, 0.1);
+      }
+
+      &:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+      }
+    }
+
+    .delete-button:hover:not(:disabled) {
+      color: $admin-accent-danger;
+      border-color: $admin-accent-danger;
+      background: rgba($admin-accent-danger, 0.1);
     }
   }
 }

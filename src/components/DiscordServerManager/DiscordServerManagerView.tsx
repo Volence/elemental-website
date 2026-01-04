@@ -1,6 +1,9 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { AlertModal, ConfirmModal } from './Modal'
+import { EditTemplateModal } from './EditTemplateModal'
+import { Edit, Trash2 } from 'lucide-react'
 
 interface DiscordChannel {
   id: string
@@ -94,6 +97,25 @@ const DiscordServerManagerView = () => {
   const [isPrivateCategory, setIsPrivateCategory] = useState(false)
   const [savingTemplate, setSavingTemplate] = useState(false)
   const [applyingTemplate, setApplyingTemplate] = useState(false)
+  
+  // Modal state
+  const [alertModal, setAlertModal] = useState<{ isOpen: boolean; title: string; message: string; type?: 'success' | 'error' | 'info' | 'warning' }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    type: 'info'
+  })
+  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; title: string; message: string; onConfirm: () => void; confirmType?: 'success' | 'danger' | 'warning' }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+    confirmType: 'success'
+  })
+  const [editTemplateModal, setEditTemplateModal] = useState<{ isOpen: boolean; template: any | null }>({
+    isOpen: false,
+    template: null
+  })
 
   useEffect(() => {
     loadServerStructure()
@@ -179,7 +201,12 @@ const DiscordServerManagerView = () => {
 
   const handleSaveTemplate = async () => {
     if (!selectedCategoryId || !templateName) {
-      alert('Please select a category and enter a template name')
+      setAlertModal({
+        isOpen: true,
+        title: 'Validation Error',
+        message: 'Please select a category and enter a template name',
+        type: 'warning'
+      })
       return
     }
 
@@ -205,54 +232,167 @@ const DiscordServerManagerView = () => {
       setTemplateName('')
       setTemplateDescription('')
       await loadTemplates()
-      alert('Template saved successfully!')
+      setAlertModal({
+        isOpen: true,
+        title: 'Success',
+        message: 'Template saved successfully!',
+        type: 'success'
+      })
     } catch (err: any) {
-      alert(`Error: ${err.message}`)
+      setAlertModal({
+        isOpen: true,
+        title: 'Error',
+        message: err.message,
+        type: 'error'
+      })
     } finally {
       setSavingTemplate(false)
     }
   }
 
-  const handleApplyTemplate = async () => {
+  const handleApplyTemplate = () => {
     if (!selectedTemplateId || !newCategoryName) {
-      alert('Please select a template and enter a category name')
+      setAlertModal({
+        isOpen: true,
+        title: 'Validation Error',
+        message: 'Please select a template and enter a category name',
+        type: 'warning'
+      })
       return
     }
 
-    if (!confirm(`Create new category "${newCategoryName}" from this template?`)) {
-      return
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Create Category from Template',
+      message: `Create new category "${newCategoryName}" from this template?`,
+      confirmType: 'success',
+      onConfirm: async () => {
+        try {
+          setApplyingTemplate(true)
+          const response = await fetch('/api/discord/templates/apply', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              templateId: selectedTemplateId,
+              categoryName: newCategoryName,
+              isPrivate: isPrivateCategory,
+            }),
+          })
 
+          if (!response.ok) {
+            const error = await response.json()
+            throw new Error(error.error || 'Failed to apply template')
+          }
+
+          const result = await response.json()
+          setSelectedTemplateId('')
+          setNewCategoryName('')
+          setIsPrivateCategory(false)
+          
+          // Reload server structure to show new category
+          await loadServerStructure()
+          setAlertModal({
+            isOpen: true,
+            title: 'Success',
+            message: `Created category "${result.category.name}" with ${result.channels.length} channels`,
+            type: 'success'
+          })
+        } catch (err: any) {
+          setAlertModal({
+            isOpen: true,
+            title: 'Error',
+            message: err.message,
+            type: 'error'
+          })
+        } finally {
+          setApplyingTemplate(false)
+        }
+      }
+    })
+  }
+
+  const handleEditTemplate = (template: any) => {
+    setEditTemplateModal({
+      isOpen: true,
+      template
+    })
+  }
+
+  const handleSaveEditedTemplate = async (editedTemplate: any) => {
     try {
-      setApplyingTemplate(true)
-      const response = await fetch('/api/discord/templates/apply', {
+      const response = await fetch('/api/discord/templates/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          templateId: selectedTemplateId,
-          categoryName: newCategoryName,
-          isPrivate: isPrivateCategory,
+          templateId: editedTemplate.id,
+          name: editedTemplate.name,
+          description: editedTemplate.description,
+          roles: editedTemplate.roles,
+          channels: editedTemplate.channels,
         }),
       })
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.error || 'Failed to apply template')
+        throw new Error(error.error || 'Failed to update template')
       }
 
-      const result = await response.json()
-      setSelectedTemplateId('')
-      setNewCategoryName('')
-      setIsPrivateCategory(false)
-      
-      // Reload server structure to show new category
-      await loadServerStructure()
-      alert(`Success! Created category "${result.category.name}" with ${result.channels.length} channels`)
+      await loadTemplates()
+      setAlertModal({
+        isOpen: true,
+        title: 'Success',
+        message: 'Template updated successfully!',
+        type: 'success'
+      })
     } catch (err: any) {
-      alert(`Error: ${err.message}`)
-    } finally {
-      setApplyingTemplate(false)
+      setAlertModal({
+        isOpen: true,
+        title: 'Error',
+        message: err.message,
+        type: 'error'
+      })
     }
+  }
+
+  const handleDeleteTemplate = (template: any) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Template',
+      message: `Are you sure you want to delete the template "${template.name}"? This action cannot be undone.`,
+      confirmType: 'danger',
+      onConfirm: async () => {
+        try {
+          const response = await fetch('/api/discord/templates/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ templateId: template.id }),
+          })
+
+          if (!response.ok) {
+            const error = await response.json()
+            throw new Error(error.error || 'Failed to delete template')
+          }
+
+          await loadTemplates()
+          if (selectedTemplateId === template.id) {
+            setSelectedTemplateId('')
+          }
+          setAlertModal({
+            isOpen: true,
+            title: 'Success',
+            message: 'Template deleted successfully!',
+            type: 'success'
+          })
+        } catch (err: any) {
+          setAlertModal({
+            isOpen: true,
+            title: 'Error',
+            message: err.message,
+            type: 'error'
+          })
+        }
+      }
+    })
   }
 
   return (
@@ -513,16 +653,42 @@ const DiscordServerManagerView = () => {
                         <div 
                           key={template.id} 
                           className={`template-card ${selectedTemplateId === template.id ? 'selected' : ''}`}
-                          onClick={() => setSelectedTemplateId(template.id)}
                         >
-                          <div className="template-card-header">
-                            <h5>{template.name}</h5>
-                            <span className="template-channels">{template.channelCount} channels</span>
+                          <div 
+                            className="template-card-body"
+                            onClick={() => setSelectedTemplateId(template.id)}
+                          >
+                            <div className="template-card-header">
+                              <h5>{template.name}</h5>
+                              <span className="template-channels">{template.channelCount} channels</span>
+                            </div>
+                            {template.description && (
+                              <p className="template-description">{template.description}</p>
+                            )}
+                            <p className="template-source">From: {template.sourceCategory}</p>
                           </div>
-                          {template.description && (
-                            <p className="template-description">{template.description}</p>
-                          )}
-                          <p className="template-source">From: {template.sourceCategory}</p>
+                          <div className="template-card-actions">
+                            <button
+                              className="template-action-button edit-button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleEditTemplate(template)
+                              }}
+                              title="Edit template"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button
+                              className="template-action-button delete-button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleDeleteTemplate(template)
+                              }}
+                              title="Delete template"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -638,6 +804,31 @@ const DiscordServerManagerView = () => {
         </>
         )}
       </div>
+
+      {/* Modals */}
+      <AlertModal
+        isOpen={alertModal.isOpen}
+        onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
+        title={alertModal.title}
+        message={alertModal.message}
+        type={alertModal.type}
+      />
+
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        confirmType={confirmModal.confirmType}
+      />
+
+      <EditTemplateModal
+        isOpen={editTemplateModal.isOpen}
+        template={editTemplateModal.template}
+        onClose={() => setEditTemplateModal({ isOpen: false, template: null })}
+        onSave={handleSaveEditedTemplate}
+      />
     </div>
   )
 }
