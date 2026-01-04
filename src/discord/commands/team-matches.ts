@@ -72,10 +72,10 @@ export async function handleTeamMatches(interaction: ChatInputCommandInteraction
           matchLine += `\n[View Lobby](${match.faceitLobby})`
         }
 
-        matchLines.push(matchLine + '\n')
+        matchLines.push(matchLine)
       }
 
-      embed.setDescription(matchLines.join('\n'))
+      embed.setDescription(matchLines.join('\n\n'))
     }
 
     // Add team logo

@@ -61,23 +61,29 @@ export async function handleTeamHistory(interaction: ChatInputCommandInteraction
         const matchDate = new Date(match.date)
         const dateStr = `<t:${Math.floor(matchDate.getTime() / 1000)}:d>`
 
-        // Get scores
-        const teamScore = match.score?.elmtScore || 0
-        const opponentScore = match.score?.opponentScore || 0
-
-        const won = teamScore > opponentScore
-
-        if (won) wins++
-        else losses++
-
         // Get opponent name
         const opponentName = match.opponent || 'TBD'
 
-        // Result emoji
-        const resultEmoji = won ? '✅' : '❌'
+        // Get scores - only count as valid if both scores exist and at least one is > 1
+        const teamScore = match.score?.elmtScore
+        const opponentScore = match.score?.opponentScore
+        const hasValidScores = teamScore !== undefined && opponentScore !== undefined && 
+                               (teamScore > 1 || opponentScore > 1)
 
-        // Build match line
-        let matchLine = `${resultEmoji} **${teamScore}-${opponentScore}** vs ${opponentName} • ${dateStr}`
+        let matchLine = ''
+
+        if (hasValidScores) {
+          // Valid scores recorded
+          const won = teamScore > opponentScore
+          if (won) wins++
+          else losses++
+
+          const resultEmoji = won ? '✅' : '❌'
+          matchLine = `${resultEmoji} **${teamScore}-${opponentScore}** vs ${opponentName} • ${dateStr}`
+        } else {
+          // No valid scores - just show the match
+          matchLine = `vs ${opponentName} • ${dateStr}`
+        }
         
         // Add links if available
         const links: string[] = []
@@ -96,7 +102,7 @@ export async function handleTeamHistory(interaction: ChatInputCommandInteraction
 
       // Add W/L record at top
       embed.setDescription(
-        `**Record:** ${wins}W - ${losses}L\n\n${matchLines.join('\n')}`,
+        `**Record:** ${wins}W - ${losses}L\n\n${matchLines.join('\n\n')}`,
       )
     }
 

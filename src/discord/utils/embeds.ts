@@ -14,8 +14,11 @@ export async function buildEnhancedTeamEmbed(team: any, payload: Payload): Promi
     const logoUrl = typeof team.logo === 'string' ? team.logo : team.logo.url
     if (logoUrl) {
       const absoluteLogoUrl = getAbsoluteUrl(logoUrl)
+      console.log(`[Discord] Setting team logo: ${absoluteLogoUrl}`)
       embed.setThumbnail(absoluteLogoUrl)
     }
+  } else {
+    console.log(`[Discord] No logo found for team ${team.name}`)
   }
 
   // Build clean description with region and rating
