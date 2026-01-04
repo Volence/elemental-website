@@ -45,8 +45,8 @@ export async function handleTeamHistory(interaction: ChatInputCommandInteraction
     })
 
     const embed = new EmbedBuilder()
-      .setTitle(`📊 Match History - ${team.name}`)
-      .setColor(0x2ecc71)
+      .setTitle(`Match History • ${team.name}`)
+      .setColor(team.themeColor ? parseInt(team.themeColor.replace('#', ''), 16) : 0x2ecc71)
 
     if (!matches.docs.length) {
       embed.setDescription('No match history available.')
@@ -76,9 +76,22 @@ export async function handleTeamHistory(interaction: ChatInputCommandInteraction
         // Result emoji
         const resultEmoji = won ? '✅' : '❌'
 
-        matchLines.push(
-          `${resultEmoji} **${teamScore}-${opponentScore}** vs ${opponentName} (${dateStr})`,
-        )
+        // Build match line
+        let matchLine = `${resultEmoji} **${teamScore}-${opponentScore}** vs ${opponentName} • ${dateStr}`
+        
+        // Add links if available
+        const links: string[] = []
+        if (match.faceitLobby) {
+          links.push(`[Lobby](${match.faceitLobby})`)
+        }
+        if (match.vod) {
+          links.push(`[VOD](${match.vod})`)
+        }
+        if (links.length) {
+          matchLine += `\n${links.join(' • ')}`
+        }
+
+        matchLines.push(matchLine)
       }
 
       // Add W/L record at top

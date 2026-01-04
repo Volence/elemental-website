@@ -53,8 +53,8 @@ export async function handleTeamFaceit(interaction: ChatInputCommandInteraction)
     })
 
     const embed = new EmbedBuilder()
-      .setTitle(`🎮 FaceIt Stats - ${team.name}`)
-      .setColor(0xe67e22)
+      .setTitle(`Faceit Stats • ${team.name}`)
+      .setColor(team.themeColor ? parseInt(team.themeColor.replace('#', ''), 16) : 0xe67e22)
 
     if (!seasons.docs.length) {
       embed.setDescription('No active FaceIt season found.')
@@ -65,47 +65,44 @@ export async function handleTeamFaceit(interaction: ChatInputCommandInteraction)
       // Build stats description
       const stats: string[] = []
 
+      // Season info
+      const seasonParts: string[] = []
+      if (season.division) seasonParts.push(season.division)
+      if (season.region) seasonParts.push(season.region)
+      if (season.conference) seasonParts.push(season.conference)
+      if (seasonParts.length) {
+        stats.push(`**${seasonParts.join(' • ')}**`)
+      }
       if (season.seasonName) {
-        stats.push(`**Season:** ${season.seasonName}`)
+        stats.push(`${season.seasonName}`)
       }
-
-      if (season.division) {
-        stats.push(`**Division:** ${season.division}`)
-      }
-
-      if (season.region) {
-        stats.push(`**Region:** ${season.region}`)
-      }
-
-      if (season.conference) {
-        stats.push(`**Conference:** ${season.conference}`)
-      }
+      stats.push('\u200B') // Blank line
 
       // Record from standings
       const wins = standings.wins || 0
       const losses = standings.losses || 0
-      stats.push(`**Record:** ${wins}W - ${losses}L`)
+      stats.push(`**Record**\n${wins}W - ${losses}L`)
 
       // Win rate
       const totalGames = wins + losses
       if (totalGames > 0) {
         const winRate = ((wins / totalGames) * 100).toFixed(1)
-        stats.push(`**Win Rate:** ${winRate}%`)
+        stats.push(`**Win Rate**\n${winRate}%`)
       }
 
       // Ranking from standings
       if (standings.currentRank && standings.totalTeams) {
-        stats.push(`**Rank:** #${standings.currentRank} of ${standings.totalTeams}`)
+        stats.push(`**Rank**\n#${standings.currentRank} of ${standings.totalTeams}`)
       } else if (standings.currentRank) {
-        stats.push(`**Rank:** #${standings.currentRank}`)
+        stats.push(`**Rank**\n#${standings.currentRank}`)
       }
 
       // Points from standings
       if (standings.points !== undefined) {
-        stats.push(`**Points:** ${standings.points}`)
+        stats.push(`**Points**\n${standings.points}`)
       }
 
-      embed.setDescription(stats.join('\n'))
+      embed.setDescription(stats.join('\n\n'))
 
       // Add last updated timestamp
       if (season.lastSynced) {

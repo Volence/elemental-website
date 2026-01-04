@@ -45,8 +45,8 @@ export async function handleTeamMatches(interaction: ChatInputCommandInteraction
     })
 
     const embed = new EmbedBuilder()
-      .setTitle(`📅 Upcoming Matches - ${team.name}`)
-      .setColor(0x3498db)
+      .setTitle(`Upcoming Matches • ${team.name}`)
+      .setColor(team.themeColor ? parseInt(team.themeColor.replace('#', ''), 16) : 0x3498db)
 
     if (!matches.docs.length) {
       embed.setDescription('No upcoming matches scheduled.')
@@ -62,10 +62,17 @@ export async function handleTeamMatches(interaction: ChatInputCommandInteraction
         const opponentName = match.opponent || 'TBD'
 
         // Match league/division
-        const leagueInfo = match.league ? ` (${match.league})` : ''
+        const leagueInfo = match.league ? ` • ${match.league}` : ''
 
-        matchLines.push(`**vs ${opponentName}**${leagueInfo}`)
-        matchLines.push(`${dateStr}\n`)
+        // Build match line
+        let matchLine = `**vs ${opponentName}**${leagueInfo}\n${dateStr}`
+        
+        // Add lobby link if available
+        if (match.faceitLobby) {
+          matchLine += `\n[View Lobby](${match.faceitLobby})`
+        }
+
+        matchLines.push(matchLine + '\n')
       }
 
       embed.setDescription(matchLines.join('\n'))

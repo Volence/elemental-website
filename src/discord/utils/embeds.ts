@@ -6,27 +6,28 @@ import type { Payload } from 'payload'
  */
 export async function buildEnhancedTeamEmbed(team: any, payload: Payload): Promise<EmbedBuilder> {
   const embed = new EmbedBuilder()
-    .setTitle(`${team.name}`)
+    .setTitle(team.name)
     .setColor(team.themeColor ? parseInt(team.themeColor.replace('#', ''), 16) : getRegionColor(team.region))
 
-  // Team logo
+  // Team logo - ensure absolute URL
   if (team.logo) {
     const logoUrl = typeof team.logo === 'string' ? team.logo : team.logo.url
     if (logoUrl) {
-      embed.setThumbnail(getAbsoluteUrl(logoUrl))
+      const absoluteLogoUrl = getAbsoluteUrl(logoUrl)
+      embed.setThumbnail(absoluteLogoUrl)
     }
   }
 
-  // Build description with region and rating
+  // Build clean description with region and rating
   const descParts: string[] = []
   if (team.region) {
-    descParts.push(`🌍 **${team.region}**`)
+    descParts.push(`**${team.region}**`)
   }
   if (team.rating) {
-    descParts.push(`⭐ **SR ${team.rating}**`)
+    descParts.push(`**SR ${team.rating}**`)
   }
   if (descParts.length) {
-    embed.setDescription(descParts.join('  •  '))
+    embed.setDescription(descParts.join('  •  ') + '\n\u200B') // Add blank line
   }
 
   // Fetch and display FaceIt stats if available
@@ -57,8 +58,8 @@ export async function buildEnhancedTeamEmbed(team: any, payload: Payload): Promi
         }
 
         embed.addFields({
-          name: '🎮 FaceIt Competitive',
-          value: faceitInfo.join('\n'),
+          name: 'Faceit Competitive',
+          value: faceitInfo.join('\n') + '\n\u200B',
           inline: false,
         })
       }
@@ -67,7 +68,7 @@ export async function buildEnhancedTeamEmbed(team: any, payload: Payload): Promi
     }
   }
 
-  // Roster
+  // Roster - cleaner formatting
   if (team.roster && team.roster.length > 0) {
     const rosterByRole = {
       tank: [] as string[],
@@ -90,33 +91,33 @@ export async function buildEnhancedTeamEmbed(team: any, payload: Payload): Promi
     }
 
     const rosterLines: string[] = []
-    if (rosterByRole.tank.length) rosterLines.push(`🛡️ **Tank:** ${rosterByRole.tank.join(', ')}`)
-    if (rosterByRole.dps.length) rosterLines.push(`⚔️ **DPS:** ${rosterByRole.dps.join(', ')}`)
-    if (rosterByRole.support.length) rosterLines.push(`💚 **Support:** ${rosterByRole.support.join(', ')}`)
+    if (rosterByRole.tank.length) rosterLines.push(`**Tank**\n${rosterByRole.tank.join(', ')}`)
+    if (rosterByRole.dps.length) rosterLines.push(`**DPS**\n${rosterByRole.dps.join(', ')}`)
+    if (rosterByRole.support.length) rosterLines.push(`**Support**\n${rosterByRole.support.join(', ')}`)
 
     if (rosterLines.length) {
       embed.addFields({
-        name: '👥 Roster',
-        value: rosterLines.join('\n'),
+        name: 'Roster',
+        value: rosterLines.join('\n\n') + '\n\u200B',
         inline: false,
       })
     }
   }
 
-  // Staff (managers and coaches)
+  // Staff (managers and coaches) - cleaner formatting
   const staffLines: string[] = []
   if (team.manager && team.manager.length > 0) {
     const names = team.manager.map((m: any) => getPersonNameFromRelation(m.person)).filter(Boolean)
-    if (names.length) staffLines.push(`👔 **Manager:** ${names.join(', ')}`)
+    if (names.length) staffLines.push(`**Manager**\n${names.join(', ')}`)
   }
   if (team.coaches && team.coaches.length > 0) {
     const names = team.coaches.map((c: any) => getPersonNameFromRelation(c.person)).filter(Boolean)
-    if (names.length) staffLines.push(`🎓 **Coach:** ${names.join(', ')}`)
+    if (names.length) staffLines.push(`**Coach**\n${names.join(', ')}`)
   }
   if (staffLines.length) {
     embed.addFields({
-      name: '🎯 Staff',
-      value: staffLines.join('\n'),
+      name: 'Staff',
+      value: staffLines.join('\n\n'),
       inline: false,
     })
   }
