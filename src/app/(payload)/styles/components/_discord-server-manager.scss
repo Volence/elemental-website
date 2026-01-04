@@ -1129,9 +1129,34 @@
   padding: $spacing-xl;
   border-radius: $radius-md;
   transition: all 0.2s ease;
+  cursor: move;
 
   &:hover {
     transform: translateY(-2px);
+  }
+
+  &.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+  }
+
+  &.drag-over {
+    border-color: $admin-accent-success;
+    box-shadow: 0 0 0 3px rgba($admin-accent-success, 0.2);
+  }
+
+  .drag-handle {
+    color: $admin-text-secondary;
+    cursor: grab;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: $admin-text-primary;
+    }
+
+    &:active {
+      cursor: grabbing;
+    }
   }
 }
 
@@ -1320,10 +1345,21 @@
   border-radius: $radius-sm;
   border: 1px solid rgba($admin-accent-primary, 0.1);
   transition: all 0.2s ease;
+  cursor: move;
 
   &:hover {
     border-color: rgba($admin-accent-primary, 0.3);
     background: rgba($admin-accent-primary, 0.05);
+  }
+
+  &.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+  }
+
+  &.drag-over {
+    border-color: $admin-accent-success;
+    box-shadow: 0 0 0 2px rgba($admin-accent-success, 0.2);
   }
 }
 
@@ -1333,6 +1369,21 @@
   gap: $spacing-sm;
   flex: 1;
   min-width: 0;
+
+  .drag-handle {
+    color: $admin-text-secondary;
+    cursor: grab;
+    transition: color 0.2s ease;
+    flex-shrink: 0;
+
+    &:hover {
+      color: $admin-text-primary;
+    }
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
 
   .channel-type-icon {
     color: $admin-text-secondary;

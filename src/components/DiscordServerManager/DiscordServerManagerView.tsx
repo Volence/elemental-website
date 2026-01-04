@@ -636,6 +636,82 @@ const DiscordServerManagerView = () => {
     })
   }
 
+  const handleReorderCategories = async (fromIndex: number, toIndex: number) => {
+    if (!structure) return
+    
+    try {
+      const category = structure.categories[fromIndex]
+      const targetCategory = structure.categories[toIndex]
+      
+      // Calculate new position based on target
+      const newPosition = targetCategory.position
+
+      const response = await fetch('/api/discord/server/move', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          id: category.id, 
+          position: newPosition,
+          type: 'category'
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to reorder category')
+      }
+
+      await loadServerStructure()
+    } catch (err: any) {
+      setAlertModal({
+        isOpen: true,
+        title: 'Error',
+        message: err.message,
+        type: 'error'
+      })
+    }
+  }
+
+  const handleReorderChannels = async (categoryId: string, fromIndex: number, toIndex: number) => {
+    if (!structure) return
+    
+    const category = structure.categories.find(c => c.id === categoryId)
+    if (!category) return
+
+    try {
+      const channel = category.channels[fromIndex]
+      const targetChannel = category.channels[toIndex]
+      
+      // Calculate new position based on target
+      const newPosition = targetChannel.position
+
+      const response = await fetch('/api/discord/server/move', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          id: channel.id, 
+          position: newPosition,
+          parentId: categoryId,
+          type: 'channel'
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to reorder channel')
+      }
+
+      await loadServerStructure()
+    } catch (err: any) {
+      setAlertModal({
+        isOpen: true,
+        title: 'Error',
+        message: err.message,
+        type: 'error'
+      })
+    }
+  }
+
   return (
     <div className="discord-server-manager">
       <div className="manager-header">
@@ -708,10 +784,11 @@ const DiscordServerManagerView = () => {
             </div>
 
             <div className="categories-list">
-              {structure.categories.map((category) => (
+              {structure.categories.map((category, index) => (
                 <CategoryItem
                   key={category.id}
                   category={category}
+                  index={index}
                   onRename={handleRenameCategory}
                   onDelete={handleDeleteCategory}
                   onCopyId={handleCopyId}
@@ -722,6 +799,8 @@ const DiscordServerManagerView = () => {
                   onChannelClone={handleCloneChannel}
                   onChannelCopyId={handleCopyId}
                   onRefresh={loadServerStructure}
+                  onReorder={handleReorderCategories}
+                  onChannelReorder={handleReorderChannels}
                 />
               ))}
             </div>

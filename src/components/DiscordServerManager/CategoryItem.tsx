@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Layers, Copy, Edit2, Save, X, Trash2, FileText, Plus } from 'lucide-react'
+import { Layers, Copy, Edit2, Save, X, Trash2, FileText, Plus, GripVertical } from 'lucide-react'
 import { ChannelItem } from './ChannelItem'
 
 interface Channel {
@@ -20,6 +20,7 @@ interface Category {
 
 interface CategoryItemProps {
   category: Category
+  index: number
   onRename: (id: string, newName: string) => Promise<void>
   onDelete: (id: string, name: string) => void
   onCopyId: (id: string, label: string) => void
@@ -30,10 +31,13 @@ interface CategoryItemProps {
   onChannelClone: (id: string, name: string) => void
   onChannelCopyId: (id: string, label: string) => void
   onRefresh: () => void
+  onReorder: (fromIndex: number, toIndex: number) => void
+  onChannelReorder: (categoryId: string, fromIndex: number, toIndex: number) => void
 }
 
 export const CategoryItem: React.FC<CategoryItemProps> = ({
   category,
+  index,
   onRename,
   onDelete,
   onCopyId,
@@ -44,10 +48,14 @@ export const CategoryItem: React.FC<CategoryItemProps> = ({
   onChannelClone,
   onChannelCopyId,
   onRefresh,
+  onReorder,
+  onChannelReorder,
 }) => {
   const [isEditing, setIsEditing] = useState(false)
   const [editValue, setEditValue] = useState(category.name)
   const [isSaving, setIsSaving] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragOver, setDragOver] = useState(false)
 
   const handleSave = async () => {
     if (editValue && editValue !== category.name) {
@@ -68,10 +76,49 @@ export const CategoryItem: React.FC<CategoryItemProps> = ({
     setIsEditing(false)
   }
 
+  const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('categoryIndex', index.toString())
+    setIsDragging(true)
+  }
+
+  const handleDragEnd = () => {
+    setIsDragging(false)
+    setDragOver(false)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    setDragOver(true)
+  }
+
+  const handleDragLeave = () => {
+    setDragOver(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    const fromIndex = parseInt(e.dataTransfer.getData('categoryIndex'))
+    if (fromIndex !== index && !isNaN(fromIndex)) {
+      onReorder(fromIndex, index)
+    }
+    setDragOver(false)
+  }
+
   return (
-    <div className="category-item">
+    <div 
+      className={`category-item ${isDragging ? 'dragging' : ''} ${dragOver ? 'drag-over' : ''}`}
+      draggable={!isEditing}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <div className="category-header-row">
         <div className="category-title">
+          <GripVertical size={18} className="drag-handle" />
           <Layers size={18} className="category-icon" />
           {isEditing ? (
             <input
@@ -168,16 +215,18 @@ export const CategoryItem: React.FC<CategoryItemProps> = ({
             </button>
           </div>
         ) : (
-          category.channels.map((channel) => (
+          category.channels.map((channel, channelIndex) => (
             <ChannelItem
               key={channel.id}
               channel={channel}
               categoryId={category.id}
+              index={channelIndex}
               onRename={onChannelRename}
               onDelete={onChannelDelete}
               onClone={onChannelClone}
               onCopyId={onChannelCopyId}
               onRefresh={onRefresh}
+              onReorder={(fromIndex, toIndex) => onChannelReorder(category.id, fromIndex, toIndex)}
             />
           ))
         )}

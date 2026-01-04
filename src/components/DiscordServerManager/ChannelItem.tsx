@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Hash, Volume2, MessageSquare, Copy, Edit2, Save, X, Trash2, Copy as CopyIcon } from 'lucide-react'
+import { Hash, Volume2, MessageSquare, Copy, Edit2, Save, X, Trash2, Copy as CopyIcon, GripVertical } from 'lucide-react'
 
 interface Channel {
   id: string
@@ -13,23 +13,29 @@ interface Channel {
 interface ChannelItemProps {
   channel: Channel
   categoryId: string
+  index: number
   onRename: (id: string, newName: string) => Promise<void>
   onDelete: (id: string, name: string) => void
   onClone: (id: string, name: string) => void
   onCopyId: (id: string, label: string) => void
   onRefresh: () => void
+  onReorder: (fromIndex: number, toIndex: number) => void
 }
 
 export const ChannelItem: React.FC<ChannelItemProps> = ({
   channel,
+  index,
   onRename,
   onDelete,
   onClone,
   onCopyId,
+  onReorder,
 }) => {
   const [isEditing, setIsEditing] = useState(false)
   const [editValue, setEditValue] = useState(channel.name)
   const [isSaving, setIsSaving] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragOver, setDragOver] = useState(false)
 
   const handleSave = async () => {
     if (editValue && editValue !== channel.name) {
@@ -56,9 +62,48 @@ export const ChannelItem: React.FC<ChannelItemProps> = ({
     return <Hash size={14} className="channel-type-icon" />
   }
 
+  const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('channelIndex', index.toString())
+    setIsDragging(true)
+  }
+
+  const handleDragEnd = () => {
+    setIsDragging(false)
+    setDragOver(false)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    setDragOver(true)
+  }
+
+  const handleDragLeave = () => {
+    setDragOver(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    const fromIndex = parseInt(e.dataTransfer.getData('channelIndex'))
+    if (fromIndex !== index && !isNaN(fromIndex)) {
+      onReorder(fromIndex, index)
+    }
+    setDragOver(false)
+  }
+
   return (
-    <div className="channel-item">
+    <div 
+      className={`channel-item ${isDragging ? 'dragging' : ''} ${dragOver ? 'drag-over' : ''}`}
+      draggable={!isEditing}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <div className="channel-content">
+        <GripVertical size={12} className="drag-handle" />
         {getChannelIcon()}
         {isEditing ? (
           <input
