@@ -1,5 +1,10 @@
-import type { Interaction } from 'discord.js'
+import type { Interaction, ChatInputCommandInteraction } from 'discord.js'
 import { getDiscordClient } from '../bot'
+import { handleTeamInfo } from '../commands/team-info'
+import { handleTeamMatches } from '../commands/team-matches'
+import { handleTeamHistory } from '../commands/team-history'
+import { handleTeamFaceit } from '../commands/team-faceit'
+import { handleTeamAutocomplete } from '../utils/autocomplete'
 
 export function setupInteractionHandlers(): void {
   const client = getDiscordClient()
@@ -29,15 +34,31 @@ export function setupInteractionHandlers(): void {
   })
 }
 
-async function handleChatCommand(interaction: any): Promise<void> {
+async function handleChatCommand(interaction: ChatInputCommandInteraction): Promise<void> {
   const { commandName } = interaction
 
-  // Placeholder responses - will be implemented in Phase 3 & 4
   if (commandName === 'team') {
-    await interaction.reply({
-      content: '🚧 Team commands coming soon! (Phase 3 in progress)',
-      ephemeral: true,
-    })
+    const subcommand = interaction.options.getSubcommand()
+
+    switch (subcommand) {
+      case 'info':
+        await handleTeamInfo(interaction)
+        break
+      case 'matches':
+        await handleTeamMatches(interaction)
+        break
+      case 'history':
+        await handleTeamHistory(interaction)
+        break
+      case 'faceit':
+        await handleTeamFaceit(interaction)
+        break
+      default:
+        await interaction.reply({
+          content: '❌ Unknown subcommand',
+          ephemeral: true,
+        })
+    }
   } else if (commandName === 'schedulepoll') {
     await interaction.reply({
       content: '🚧 Schedule poll command coming soon! (Phase 4 in progress)',
@@ -47,12 +68,11 @@ async function handleChatCommand(interaction: any): Promise<void> {
 }
 
 async function handleAutocomplete(interaction: any): Promise<void> {
-  // Will be implemented in Phase 3 for team name autocomplete
-  const focusedValue = interaction.options.getFocused()
-  await interaction.respond([
-    { name: 'ELMT Garden (example)', value: 'elmt-garden' },
-    { name: 'ELMT Dragon (example)', value: 'elmt-dragon' },
-  ])
+  const { commandName } = interaction
+
+  if (commandName === 'team') {
+    await handleTeamAutocomplete(interaction)
+  }
 }
 
 async function handleButton(interaction: any): Promise<void> {
