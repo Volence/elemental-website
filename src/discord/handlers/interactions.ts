@@ -4,6 +4,7 @@ import { handleTeamInfo } from '../commands/team-info'
 import { handleTeamMatches } from '../commands/team-matches'
 import { handleTeamHistory } from '../commands/team-history'
 import { handleTeamFaceit } from '../commands/team-faceit'
+import { handleSchedulePoll } from '../commands/schedulepoll'
 import { handleTeamAutocomplete } from '../utils/autocomplete'
 
 export function setupInteractionHandlers(): void {
@@ -60,10 +61,7 @@ async function handleChatCommand(interaction: ChatInputCommandInteraction): Prom
         })
     }
   } else if (commandName === 'schedulepoll') {
-    await interaction.reply({
-      content: '🚧 Schedule poll command coming soon! (Phase 4 in progress)',
-      ephemeral: true,
-    })
+    await handleSchedulePoll(interaction)
   }
 }
 

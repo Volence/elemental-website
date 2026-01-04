@@ -26,6 +26,7 @@ import { AuditLogs } from './collections/AuditLogs'
 import { ErrorLogs } from './collections/ErrorLogs'
 import { CronJobRuns } from './collections/CronJobRuns'
 import { ActiveSessions } from './collections/ActiveSessions'
+import { DiscordPolls } from './collections/DiscordPolls'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { DataConsistency } from './globals/DataConsistency'
@@ -167,6 +168,9 @@ const config = buildConfig({
     ErrorLogs,
     CronJobRuns,
     ActiveSessions,
+    
+    // DISCORD: Bot integration
+    DiscordPolls,
   ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [

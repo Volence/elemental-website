@@ -70,6 +70,22 @@ export const Users: CollectionConfig = {
       // No field-level access needed - collection-level access already restricts to own document
     },
     {
+      name: 'discordId',
+      type: 'text',
+      admin: {
+        description: 'Your Discord User ID (18-19 digits). Link your Discord account to track polls you create via /schedulepoll. Right-click your profile in Discord → Copy User ID (requires Developer Mode enabled in Discord settings).',
+      },
+      // Users can set their own Discord ID
+      validate: (value) => {
+        if (!value) return true // Optional field
+        // Validate Discord snowflake format (18-19 digit number)
+        if (!/^\d{17,19}$/.test(value)) {
+          return 'Discord ID must be 17-19 digits. Enable Developer Mode in Discord and right-click your profile → Copy User ID'
+        }
+        return true
+      },
+    },
+    {
       name: 'role',
       type: 'select',
       // Don't mark as required - we'll handle it in the hook
