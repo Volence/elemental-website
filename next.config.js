@@ -44,6 +44,20 @@ const nextConfig = {
         'discord.js': false,
         '@discordjs/rest': false,
         '@discordjs/builders': false,
+        'zlib-sync': false,
+        'erlpack': false,
+        'bufferutil': false,
+        'utf-8-validate': false,
+      }
+      
+      // Also exclude discord.js from being processed by webpack on client
+      webpackConfig.externals = webpackConfig.externals || []
+      if (Array.isArray(webpackConfig.externals)) {
+        webpackConfig.externals.push({
+          'discord.js': 'commonjs discord.js',
+          '@discordjs/rest': 'commonjs @discordjs/rest',
+          '@discordjs/builders': 'commonjs @discordjs/builders',
+        })
       }
     }
 
