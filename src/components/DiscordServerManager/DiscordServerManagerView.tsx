@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { AlertModal, ConfirmModal } from './Modal'
 import { EditTemplateModal } from './EditTemplateModal'
+import { ApplyTemplateModal } from './ApplyTemplateModal'
 import { CreateChannelModal } from './CreateChannelModal'
 import { CategoryItem } from './CategoryItem'
 import { Edit, Trash2 } from 'lucide-react'
@@ -99,6 +100,10 @@ const DiscordServerManagerView = () => {
   const [isPrivateCategory, setIsPrivateCategory] = useState(false)
   const [savingTemplate, setSavingTemplate] = useState(false)
   const [applyingTemplate, setApplyingTemplate] = useState(false)
+  const [applyTemplateModal, setApplyTemplateModal] = useState<{ isOpen: boolean; template: any | null }>({
+    isOpen: false,
+    template: null
+  })
   
   // Modal state
   const [alertModal, setAlertModal] = useState<{ isOpen: boolean; title: string; message: string; type?: 'success' | 'error' | 'info' | 'warning' }>({
@@ -268,54 +273,68 @@ const DiscordServerManagerView = () => {
       return
     }
 
-    setConfirmModal({
+    // Find the selected template
+    const template = templates.find(t => t.id === selectedTemplateId)
+    if (!template) {
+      setAlertModal({
+        isOpen: true,
+        title: 'Error',
+        message: 'Selected template not found',
+        type: 'error'
+      })
+      return
+    }
+
+    // Open the apply template modal for customization
+    setApplyTemplateModal({
       isOpen: true,
-      title: 'Create Category from Template',
-      message: `Create new category "${newCategoryName}" from this template?`,
-      confirmType: 'success',
-      onConfirm: async () => {
-        try {
-          setApplyingTemplate(true)
-          const response = await fetch('/api/discord/templates/apply', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              templateId: selectedTemplateId,
-              categoryName: newCategoryName,
-              isPrivate: isPrivateCategory,
-            }),
-          })
-
-          if (!response.ok) {
-            const error = await response.json()
-            throw new Error(error.error || 'Failed to apply template')
-          }
-
-          const result = await response.json()
-          setSelectedTemplateId('')
-          setNewCategoryName('')
-          setIsPrivateCategory(false)
-          
-          // Reload server structure to show new category
-          await loadServerStructure()
-          setAlertModal({
-            isOpen: true,
-            title: 'Success',
-            message: `Created category "${result.category.name}" with ${result.channels.length} channels`,
-            type: 'success'
-          })
-        } catch (err: any) {
-          setAlertModal({
-            isOpen: true,
-            title: 'Error',
-            message: err.message,
-            type: 'error'
-          })
-        } finally {
-          setApplyingTemplate(false)
-        }
-      }
+      template
     })
+  }
+
+  const handleConfirmApplyTemplate = async (customizedData: { categoryName: string; channels: any[]; isPrivate: boolean }) => {
+    try {
+      setApplyingTemplate(true)
+      const response = await fetch('/api/discord/templates/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          templateId: selectedTemplateId,
+          categoryName: customizedData.categoryName,
+          isPrivate: customizedData.isPrivate,
+          customizedChannels: customizedData.channels, // Send customized channels
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to apply template')
+      }
+
+      const result = await response.json()
+      setSelectedTemplateId('')
+      setNewCategoryName('')
+      setIsPrivateCategory(false)
+      setApplyTemplateModal({ isOpen: false, template: null })
+      
+      // Reload server structure to show new category
+      await loadServerStructure()
+      setAlertModal({
+        isOpen: true,
+        title: 'Success',
+        message: `Created category "${result.category.name}" with ${result.channels.length} channels`,
+        type: 'success'
+      })
+    } catch (err: any) {
+      setAlertModal({
+        isOpen: true,
+        title: 'Error',
+        message: err.message,
+        type: 'error'
+      })
+    } finally {
+      setApplyingTemplate(false)
+    }
   }
 
   const handleEditTemplate = (template: any) => {
@@ -1175,6 +1194,15 @@ const DiscordServerManagerView = () => {
         template={editTemplateModal.template}
         onClose={() => setEditTemplateModal({ isOpen: false, template: null })}
         onSave={handleSaveEditedTemplate}
+      />
+
+      <ApplyTemplateModal
+        isOpen={applyTemplateModal.isOpen}
+        template={applyTemplateModal.template}
+        categoryName={newCategoryName}
+        isPrivate={isPrivateCategory}
+        onClose={() => setApplyTemplateModal({ isOpen: false, template: null })}
+        onApply={handleConfirmApplyTemplate}
       />
 
       <CreateChannelModal

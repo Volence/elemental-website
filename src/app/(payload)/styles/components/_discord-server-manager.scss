@@ -1670,7 +1670,129 @@
 
   .channel-type-options {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+}
+
+// Apply Template Modal Styles
+.apply-template-form {
+  .form-section {
+    margin-bottom: $spacing-xl;
+
+    .form-label {
+      display: block;
+      color: $admin-text-primary;
+      font-size: $font-size-base;
+      font-weight: $font-weight-semibold;
+      margin-bottom: $spacing-sm;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: $spacing-md;
+      background: rgba($admin-bg-base, 0.5);
+      border: 1px solid rgba($admin-accent-primary, 0.3);
+      border-radius: $radius-sm;
+      color: $admin-text-primary;
+      font-size: $font-size-base;
+      transition: all 0.2s ease;
+
+      &:focus {
+        outline: none;
+        border-color: $admin-accent-primary;
+        box-shadow: 0 0 0 2px rgba($admin-accent-primary, 0.1);
+      }
+
+      &::placeholder {
+        color: $admin-text-secondary;
+      }
+    }
+
+    .form-help {
+      margin-top: $spacing-xs;
+      color: $admin-text-secondary;
+      font-size: $font-size-sm;
+      font-style: italic;
+    }
+  }
+
+  .channels-edit-list {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+    margin-top: $spacing-md;
+    max-height: 400px;
+    overflow-y: auto;
+    @include custom-scrollbar;
+
+    .channel-edit-row {
+      display: flex;
+      align-items: center;
+      gap: $spacing-md;
+      padding: $spacing-md;
+      background: rgba($admin-bg-base, 0.5);
+      border: 1px solid rgba($admin-accent-primary, 0.2);
+      border-radius: $radius-sm;
+      transition: all 0.2s ease;
+
+      &:hover {
+        border-color: rgba($admin-accent-primary, 0.4);
+        background: rgba($admin-bg-base, 0.7);
+      }
+
+      .channel-type-indicator {
+        display: flex;
+        align-items: center;
+        gap: $spacing-xs;
+        min-width: 80px;
+        color: $admin-text-secondary;
+        font-size: $font-size-sm;
+
+        svg {
+          color: $admin-accent-primary;
+        }
+
+        .channel-type-label {
+          font-weight: $font-weight-medium;
+        }
+      }
+
+      .channel-name-input {
+        flex: 1;
+        padding: $spacing-sm $spacing-md;
+        background: rgba($admin-bg-base, 0.8);
+        border: 1px solid rgba($admin-accent-primary, 0.2);
+        border-radius: $radius-sm;
+        color: $admin-text-primary;
+        font-size: $font-size-base;
+        font-family: 'Courier New', monospace;
+        transition: all 0.2s ease;
+
+        &:focus {
+          outline: none;
+          border-color: $admin-accent-primary;
+          box-shadow: 0 0 0 2px rgba($admin-accent-primary, 0.1);
+        }
+
+        &::placeholder {
+          color: $admin-text-secondary;
+        }
+      }
+    }
+  }
+
+  .privacy-notice {
+    padding: $spacing-md;
+    background: rgba($admin-accent-primary, 0.1);
+    border: 1px solid rgba($admin-accent-primary, 0.3);
+    border-radius: $radius-sm;
+    color: $admin-text-primary;
+    font-size: $font-size-sm;
+
+    strong {
+      color: $admin-accent-primary;
+      font-weight: $font-weight-semibold;
     gap: $spacing-md;
     margin-top: $spacing-sm;
 

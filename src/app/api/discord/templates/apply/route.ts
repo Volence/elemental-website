@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { templateId, categoryName, isPrivate } = body
+    const { templateId, categoryName, isPrivate, customizedChannels } = body
 
     if (!templateId || !categoryName) {
       return NextResponse.json(
@@ -127,8 +127,11 @@ export async function POST(req: NextRequest) {
     // Create channels from template
     const createdChannels: any[] = []
 
-    if (templateData.channels && Array.isArray(templateData.channels)) {
-      for (const channelTemplate of templateData.channels) {
+    // Use customized channels if provided, otherwise use template channels
+    const channelsToCreate = customizedChannels || templateData.channels
+
+    if (channelsToCreate && Array.isArray(channelsToCreate)) {
+      for (const channelTemplate of channelsToCreate) {
         // Prepare channel permission overwrites
         const channelPermissionOverwrites: any[] = []
 
