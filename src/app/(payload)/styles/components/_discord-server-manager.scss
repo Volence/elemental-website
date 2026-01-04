@@ -1733,6 +1733,10 @@
       &:hover {
         border-color: rgba($admin-accent-primary, 0.4);
         background: rgba($admin-bg-base, 0.7);
+
+        .remove-channel-button {
+          opacity: 1;
+        }
       }
 
       .channel-type-indicator {
@@ -1773,6 +1777,36 @@
           color: $admin-text-secondary;
         }
       }
+
+      .remove-channel-button {
+        padding: $spacing-sm;
+        background: rgba($admin-accent-error, 0.1);
+        border: 1px solid rgba($admin-accent-error, 0.3);
+        border-radius: $radius-sm;
+        color: $admin-accent-error;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.6;
+
+        &:hover {
+          background: rgba($admin-accent-error, 0.2);
+          border-color: $admin-accent-error;
+          opacity: 1;
+        }
+      }
+    }
+
+    .no-channels-message {
+      padding: $spacing-xl;
+      text-align: center;
+      color: $admin-text-secondary;
+      font-style: italic;
+      background: rgba($admin-bg-base, 0.3);
+      border: 1px dashed rgba($admin-accent-primary, 0.3);
+      border-radius: $radius-sm;
     }
   }
 
@@ -1783,6 +1817,23 @@
     border-radius: $radius-sm;
     color: $admin-text-primary;
     font-size: $font-size-sm;
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+
+    // Styled checkbox for better visibility on green background
+    input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      accent-color: $admin-accent-primary;
+      flex-shrink: 0;
+    }
+
+    label {
+      cursor: pointer;
+      user-select: none;
+    }
 
     strong {
       color: $admin-accent-primary;

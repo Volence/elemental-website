@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Modal } from './Modal'
-import { Hash, Volume2, MessageSquare } from 'lucide-react'
+import { Hash, Volume2, MessageSquare, X } from 'lucide-react'
 
 interface TemplateChannel {
   name: string
@@ -44,7 +44,24 @@ export const ApplyTemplateModal: React.FC<ApplyTemplateModalProps> = ({
     setEditedChannels(updatedChannels)
   }
 
+  const handleRemoveChannel = (index: number) => {
+    const updatedChannels = editedChannels.filter((_, i) => i !== index)
+    setEditedChannels(updatedChannels)
+  }
+
   const handleApply = async () => {
+    // Validation
+    if (!editedCategoryName.trim()) {
+      alert('Please enter a category name')
+      return
+    }
+
+    if (editedChannels.length === 0) {
+      if (!confirm('You have removed all channels. Create an empty category?')) {
+        return
+      }
+    }
+
     setIsApplying(true)
     try {
       await onApply({
@@ -122,21 +139,35 @@ export const ApplyTemplateModal: React.FC<ApplyTemplateModalProps> = ({
           <p className="form-help">Edit channel names before creating (e.g., add team name)</p>
           
           <div className="channels-edit-list">
-            {editedChannels.map((channel, index) => (
-              <div key={index} className="channel-edit-row">
-                <div className="channel-type-indicator">
-                  {getChannelIcon(channel.type)}
-                  <span className="channel-type-label">{getChannelTypeName(channel.type)}</span>
-                </div>
-                <input
-                  type="text"
-                  className="channel-name-input"
-                  value={channel.name}
-                  onChange={(e) => handleChannelNameChange(index, e.target.value)}
-                  placeholder="channel-name"
-                />
+            {editedChannels.length === 0 ? (
+              <div className="no-channels-message">
+                No channels will be created. Add channels from a template or create an empty category.
               </div>
-            ))}
+            ) : (
+              editedChannels.map((channel, index) => (
+                <div key={index} className="channel-edit-row">
+                  <div className="channel-type-indicator">
+                    {getChannelIcon(channel.type)}
+                    <span className="channel-type-label">{getChannelTypeName(channel.type)}</span>
+                  </div>
+                  <input
+                    type="text"
+                    className="channel-name-input"
+                    value={channel.name}
+                    onChange={(e) => handleChannelNameChange(index, e.target.value)}
+                    placeholder="channel-name"
+                  />
+                  <button
+                    className="remove-channel-button"
+                    onClick={() => handleRemoveChannel(index)}
+                    title="Remove this channel"
+                    type="button"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
