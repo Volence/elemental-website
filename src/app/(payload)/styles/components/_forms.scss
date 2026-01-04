@@ -318,6 +318,11 @@
   position: absolute !important; // Break out of parent overflow constraints
 }
 
+// React Select menu portal (when rendered at document root)
+.rs__menu-portal {
+  z-index: 9999 !important;
+}
+
 .rs__menu-list {
   padding: 0.5rem;
   max-height: 300px; // Ensure dropdown can show enough options
