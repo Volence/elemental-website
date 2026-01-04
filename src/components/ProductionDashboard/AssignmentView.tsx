@@ -75,19 +75,13 @@ export function AssignmentView() {
         updateData.productionWorkflow = {
           ...pw,
           assignedObserver: userId,
-          // Remove user from observer signups
-          observerSignups: (pw.observerSignups || []).filter(u => 
-            (typeof u === 'number' ? u : u.id) !== userId
-          )
+          // Keep user in observer signups (allows unassignment without losing signup)
         }
       } else if (role === 'producer') {
         updateData.productionWorkflow = {
           ...pw,
           assignedProducer: userId,
-          // Remove user from producer signups
-          producerSignups: (pw.producerSignups || []).filter(u => 
-            (typeof u === 'number' ? u : u.id) !== userId
-          )
+          // Keep user in producer signups (allows unassignment without losing signup)
         }
       } else if (role === 'caster') {
         const existingCasters = pw.assignedCasters || []
@@ -97,10 +91,7 @@ export function AssignmentView() {
             ...existingCasters,
             { user: userId, style: casterStyle || 'both' }
           ],
-          // Remove user from caster signups
-          casterSignups: (pw.casterSignups || []).filter(c => 
-            (typeof c.user === 'number' ? c.user : c.user?.id) !== userId
-          )
+          // Keep user in caster signups (allows unassignment without losing signup)
         }
       }
 

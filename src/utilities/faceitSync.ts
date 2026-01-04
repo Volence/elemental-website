@@ -365,21 +365,37 @@ export async function syncTeamData(
           console.log(`[FaceIt Sync] Creating BYE match for ${matchDate.toISOString()}`)
         }
 
-        // Check if match already exists (same team, date within 1 hour window)
-        const oneHourBefore = new Date(matchDate.getTime() - 60 * 60 * 1000)
-        const oneHourAfter = new Date(matchDate.getTime() + 60 * 60 * 1000)
-
-        const existingMatches = await payload.find({
+        // Check if match already exists
+        // 1. Try to find by FaceIt ID first (most reliable, handles reschedules)
+        let existingMatches = await payload.find({
           collection: 'matches',
           where: {
             and: [
               { team: { equals: teamId } },
-              { date: { greater_than_equal: oneHourBefore.toISOString() } },
-              { date: { less_than_equal: oneHourAfter.toISOString() } },
+              { faceitMatchId: { equals: faceitMatch.origin.id } },
             ],
           },
           limit: 1,
         })
+
+        // 2. Fallback: Search by time window for old matches without faceitMatchId
+        if (existingMatches.docs.length === 0) {
+          const oneHourBefore = new Date(matchDate.getTime() - 60 * 60 * 1000)
+          const oneHourAfter = new Date(matchDate.getTime() + 60 * 60 * 1000)
+          
+          existingMatches = await payload.find({
+            collection: 'matches',
+            where: {
+              and: [
+                { team: { equals: teamId } },
+                { date: { greater_than_equal: oneHourBefore.toISOString() } },
+                { date: { less_than_equal: oneHourAfter.toISOString() } },
+                { faceitMatchId: { exists: false } }, // Only match old records without ID
+              ],
+            },
+            limit: 1,
+          })
+        }
 
         const isFinished = faceitMatch.status === 'finished'
         const didWin = isFinished && faceitMatch.winner === faceitTeamId
