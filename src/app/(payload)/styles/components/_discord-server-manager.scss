@@ -260,6 +260,84 @@
     }
   }
 
+  // Templates view
+  .templates-view {
+    .templates-header {
+      margin-bottom: $spacing-2xl;
+
+      h3 {
+        font-size: $font-size-xl;
+        font-weight: $font-weight-semibold;
+        color: $admin-text-primary;
+        margin: 0 0 $spacing-xs 0;
+      }
+
+      p {
+        color: $admin-text-secondary;
+        font-size: $font-size-sm;
+        margin: 0;
+      }
+    }
+
+    .templates-grid {
+      display: grid;
+      gap: $spacing-2xl;
+
+      .template-section {
+        @include glow-card($admin-accent-primary);
+        padding: $spacing-xl;
+
+        h4 {
+          font-size: $font-size-lg;
+          font-weight: $font-weight-semibold;
+          color: $admin-text-primary;
+          margin: 0 0 $spacing-md 0;
+        }
+
+        > p {
+          color: $admin-text-secondary;
+          font-size: $font-size-sm;
+          margin: 0 0 $spacing-lg 0;
+        }
+
+        .save-template-form {
+          display: flex;
+          gap: $spacing-md;
+          margin-bottom: $spacing-md;
+
+          .category-select {
+            flex: 1;
+            padding: $spacing-md;
+            background: rgba($admin-bg-base, 0.5);
+            border: 1px solid rgba($admin-accent-primary, 0.3);
+            border-radius: $radius-sm;
+            color: $admin-text-primary;
+            font-size: $font-size-base;
+
+            &:focus {
+              outline: none;
+              border-color: $admin-accent-primary;
+              box-shadow: 0 0 0 2px rgba($admin-accent-primary, 0.1);
+            }
+          }
+
+          .save-template-button {
+            @include glow-button($admin-accent-success);
+            padding: $spacing-md $spacing-xl;
+            white-space: nowrap;
+          }
+        }
+
+        .help-text {
+          color: $admin-text-secondary;
+          font-size: $font-size-xs;
+          font-style: italic;
+          margin: 0;
+        }
+      }
+    }
+  }
+
   // Health view
   .health-view {
     display: flex;

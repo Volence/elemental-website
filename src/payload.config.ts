@@ -40,6 +40,7 @@ import { DatabaseHealth } from './globals/DatabaseHealth'
 import { ActiveSessionsViewer } from './globals/ActiveSessionsViewer'
 import { ErrorHarvesterState } from './globals/ErrorHarvesterState'
 import { DiscordServerManager } from './globals/DiscordServerManager'
+import { DiscordCategoryTemplates } from './collections/DiscordCategoryTemplates'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
@@ -172,6 +173,7 @@ const config = buildConfig({
     
     // DISCORD: Bot integration
     DiscordPolls,
+    DiscordCategoryTemplates,
   ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [

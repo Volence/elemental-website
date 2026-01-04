@@ -88,6 +88,7 @@ export interface Config {
     'cron-job-runs': CronJobRun;
     'active-sessions': ActiveSession;
     'discord-polls': DiscordPoll;
+    'discord-category-templates': DiscordCategoryTemplate;
     redirects: Redirect;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
@@ -118,6 +119,7 @@ export interface Config {
     'cron-job-runs': CronJobRunsSelect<false> | CronJobRunsSelect<true>;
     'active-sessions': ActiveSessionsSelect<false> | ActiveSessionsSelect<true>;
     'discord-polls': DiscordPollsSelect<false> | DiscordPollsSelect<true>;
+    'discord-category-templates': DiscordCategoryTemplatesSelect<false> | DiscordCategoryTemplatesSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
@@ -1648,6 +1650,45 @@ export interface DiscordPoll {
   createdAt: string;
 }
 /**
+ * Saved Discord category templates for quick server setup
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discord-category-templates".
+ */
+export interface DiscordCategoryTemplate {
+  id: number;
+  /**
+   * Template name (e.g., "Team Channels", "Staff Category")
+   */
+  name: string;
+  /**
+   * What this template is for
+   */
+  description?: string | null;
+  /**
+   * Original category name this was copied from
+   */
+  sourceCategory?: string | null;
+  /**
+   * Number of channels in this template
+   */
+  channelCount?: number | null;
+  /**
+   * Template configuration (channels, permissions, etc.)
+   */
+  templateData:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
@@ -1867,6 +1908,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'discord-polls';
         value: number | DiscordPoll;
+      } | null)
+    | ({
+        relationTo: 'discord-category-templates';
+        value: number | DiscordCategoryTemplate;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -2579,6 +2624,19 @@ export interface DiscordPollsSelect<T extends boolean = true> {
   createdVia?: T;
   votes?: T;
   schedule?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discord-category-templates_select".
+ */
+export interface DiscordCategoryTemplatesSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  sourceCategory?: T;
+  channelCount?: T;
+  templateData?: T;
   updatedAt?: T;
   createdAt?: T;
 }

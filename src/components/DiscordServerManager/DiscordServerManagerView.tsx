@@ -73,7 +73,7 @@ const DiscordServerManagerView = () => {
   const [health, setHealth] = useState<ServerHealth | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'structure' | 'stats' | 'health'>('structure')
+  const [activeTab, setActiveTab] = useState<'structure' | 'stats' | 'health' | 'templates'>('structure')
 
   useEffect(() => {
     loadServerStructure()
@@ -171,6 +171,13 @@ const DiscordServerManagerView = () => {
           disabled={loading}
         >
           Health Check
+        </button>
+        <button
+          className={`tab ${activeTab === 'templates' ? 'active' : ''}`}
+          onClick={() => setActiveTab('templates')}
+          disabled={loading}
+        >
+          Templates
         </button>
       </div>
 
@@ -305,6 +312,45 @@ const DiscordServerManagerView = () => {
                     <span className="stat-label">Tier {stats.server.premiumTier}</span>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'templates' && (
+          <div className="templates-view">
+            <div className="templates-header">
+              <div>
+                <h3>Category Templates</h3>
+                <p>Save category configurations for quick reuse across teams</p>
+              </div>
+            </div>
+
+            <div className="templates-grid">
+              <div className="template-section">
+                <h4>Save New Template</h4>
+                <p>Select a category from your server to save as a template:</p>
+                <div className="save-template-form">
+                  <select className="category-select">
+                    <option value="">Select a category...</option>
+                    {structure?.categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name} ({cat.channels.length} channels)
+                      </option>
+                    ))}
+                  </select>
+                  <button className="save-template-button" disabled>
+                    Save as Template
+                  </button>
+                </div>
+                <p className="help-text">
+                  💡 Templates save the category structure, channel names, types, and permissions
+                </p>
+              </div>
+
+              <div className="template-section">
+                <h4>Saved Templates</h4>
+                <p>No templates saved yet. Save a category to get started!</p>
               </div>
             </div>
           </div>
