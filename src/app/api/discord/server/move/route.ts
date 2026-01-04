@@ -5,6 +5,8 @@ export async function POST(request: NextRequest) {
   try {
     const { id, position, parentId, type } = await request.json()
 
+    console.log('Move request:', { id, position, parentId, type })
+
     if (!id || position === undefined) {
       return NextResponse.json({ error: 'ID and position are required' }, { status: 400 })
     }
@@ -19,23 +21,42 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Guild not found' }, { status: 404 })
     }
 
-    const channel = guild.channels.cache.get(id)
+    // Fetch the channel from Discord (not cache) to ensure it exists
+    let channel
+    try {
+      channel = await guild.channels.fetch(id)
+    } catch (fetchError) {
+      console.error('Failed to fetch channel:', fetchError)
+      return NextResponse.json({ error: 'Channel not found' }, { status: 404 })
+    }
+
     if (!channel) {
       return NextResponse.json({ error: 'Channel not found' }, { status: 404 })
     }
 
+    console.log('Found channel:', channel.name, 'type:', channel.type)
+
     // Move/reorder the channel
-    const updates: any = { position }
-    if (type === 'channel' && parentId !== undefined) {
-      updates.parent = parentId || null
-    }
+    try {
+      // For channels, set parent first if needed, then position
+      if (type === 'channel' && parentId !== undefined && 'setParent' in channel) {
+        console.log('Setting parent to:', parentId)
+        await (channel as any).setParent(parentId || null)
+      }
 
-    await channel.setPosition(position, { relative: false })
-    if (type === 'channel' && parentId !== undefined && 'setParent' in channel) {
-      await (channel as any).setParent(parentId || null)
-    }
+      // Set position using absolute positioning
+      console.log('Setting position to:', position)
+      await channel.setPosition(position)
 
-    return NextResponse.json({ success: true })
+      console.log('Move successful')
+      return NextResponse.json({ success: true })
+    } catch (moveError: any) {
+      console.error('Failed to move channel:', moveError)
+      return NextResponse.json(
+        { error: `Failed to move: ${moveError.message}` },
+        { status: 500 }
+      )
+    }
   } catch (error: any) {
     console.error('Error moving:', error)
     return NextResponse.json(

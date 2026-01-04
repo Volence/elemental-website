@@ -641,10 +641,9 @@ const DiscordServerManagerView = () => {
     
     try {
       const category = structure.categories[fromIndex]
-      const targetCategory = structure.categories[toIndex]
       
-      // Calculate new position based on target
-      const newPosition = targetCategory.position
+      // Use toIndex as the new position directly
+      const newPosition = toIndex
 
       const response = await fetch('/api/discord/server/move', {
         method: 'POST',
@@ -680,10 +679,9 @@ const DiscordServerManagerView = () => {
 
     try {
       const channel = category.channels[fromIndex]
-      const targetChannel = category.channels[toIndex]
       
-      // Calculate new position based on target
-      const newPosition = targetChannel.position
+      // Use toIndex as the new position directly
+      const newPosition = toIndex
 
       const response = await fetch('/api/discord/server/move', {
         method: 'POST',
@@ -702,6 +700,12 @@ const DiscordServerManagerView = () => {
       }
 
       await loadServerStructure()
+      setAlertModal({
+        isOpen: true,
+        title: 'Success',
+        message: 'Channel reordered successfully!',
+        type: 'success'
+      })
     } catch (err: any) {
       setAlertModal({
         isOpen: true,
