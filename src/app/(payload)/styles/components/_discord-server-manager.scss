@@ -999,6 +999,62 @@
         }
       }
 
+      .role-name-display {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
+        padding: $spacing-md;
+        background: rgba($admin-bg-base, 0.5);
+        border: 1px solid rgba($admin-accent-primary, 0.3);
+        border-radius: $radius-sm;
+
+        .role-name-text {
+          color: $admin-text-primary;
+          font-size: $font-size-base;
+          font-weight: $font-weight-semibold;
+        }
+
+        .role-color-dot {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          border: 1px solid rgba(white, 0.2);
+        }
+      }
+
+      .role-select-dropdown {
+        flex: 1;
+        padding: $spacing-md;
+        background: rgba($admin-bg-base, 0.5);
+        border: 1px solid rgba($admin-accent-primary, 0.3);
+        border-radius: $radius-sm;
+        color: $admin-text-primary;
+        font-size: $font-size-base;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          border-color: $admin-accent-primary;
+        }
+
+        &:focus {
+          outline: none;
+          border-color: $admin-accent-primary;
+          box-shadow: 0 0 0 2px rgba($admin-accent-primary, 0.1);
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        option {
+          background: $admin-bg-base;
+          color: $admin-text-primary;
+        }
+      }
+
       .delete-button {
         @include glow-button($admin-accent-error);
         padding: $spacing-md;

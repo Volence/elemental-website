@@ -94,10 +94,22 @@ export async function GET() {
     await guild.members.fetch()
     const memberCount = guild.memberCount
 
+    // Get server roles
+    const roles = Array.from(guild.roles.cache.values())
+      .filter(role => role.name !== '@everyone') // Exclude @everyone
+      .sort((a, b) => b.position - a.position) // Sort by position (highest first)
+      .map(role => ({
+        id: role.id,
+        name: role.name,
+        color: role.hexColor,
+        position: role.position
+      }))
+
     return NextResponse.json({
       categories: sortedCategories,
       uncategorized,
       memberCount,
+      roles,
     })
   } catch (error: any) {
     console.error('Error fetching server structure:', error)

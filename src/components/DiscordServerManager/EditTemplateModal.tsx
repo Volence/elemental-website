@@ -18,6 +18,7 @@ interface TemplateChannel {
 }
 
 interface TemplateRole {
+  id?: string // Discord role ID
   name: string
   permissions: Record<string, boolean>
 }
@@ -45,15 +46,42 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
 }) => {
   const [editedTemplate, setEditedTemplate] = useState<EditedTemplate | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [serverRoles, setServerRoles] = useState<Array<{ id: string; name: string; color: string }>>([])
+  const [loadingRoles, setLoadingRoles] = useState(false)
+
+  // Load server roles when modal opens
+  useEffect(() => {
+    if (isOpen && serverRoles.length === 0) {
+      loadServerRoles()
+    }
+  }, [isOpen])
+
+  const loadServerRoles = async () => {
+    try {
+      setLoadingRoles(true)
+      const response = await fetch('/api/discord/server/structure')
+      if (!response.ok) throw new Error('Failed to load server roles')
+      
+      const data = await response.json()
+      setServerRoles(data.roles || [])
+    } catch (error) {
+      console.error('Failed to load server roles:', error)
+    } finally {
+      setLoadingRoles(false)
+    }
+  }
 
   useEffect(() => {
     if (template) {
+      // Extract data from templateData if it exists, otherwise use legacy structure
+      const templateData = template.templateData || template
+      
       setEditedTemplate({
         id: template.id,
         name: template.name,
         description: template.description || '',
-        roles: template.roles || [],
-        channels: template.channels || []
+        roles: templateData.roles || [],
+        channels: templateData.channels || []
       })
     }
   }, [template])
@@ -106,7 +134,7 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
     if (!editedTemplate) return
     setEditedTemplate({
       ...editedTemplate,
-      roles: [...editedTemplate.roles, { name: 'New Role', permissions: {} }]
+      roles: [...editedTemplate.roles, { name: '', permissions: {} }] // Empty name triggers dropdown
     })
   }
 
@@ -117,10 +145,17 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
     setEditedTemplate({ ...editedTemplate, roles: newRoles })
   }
 
-  const handleRoleNameChange = (index: number, name: string) => {
+  const handleRoleSelect = (index: number, roleId: string) => {
     if (!editedTemplate) return
+    const selectedRole = serverRoles.find(r => r.id === roleId)
+    if (!selectedRole) return
+    
     const newRoles = [...editedTemplate.roles]
-    newRoles[index] = { ...newRoles[index], name }
+    newRoles[index] = { 
+      ...newRoles[index], 
+      id: selectedRole.id,
+      name: selectedRole.name 
+    }
     setEditedTemplate({ ...editedTemplate, roles: newRoles })
   }
 
@@ -196,13 +231,39 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
             {editedTemplate.roles.map((role, roleIndex) => (
               <div key={roleIndex} className="role-edit-card">
                 <div className="role-edit-header">
-                  <input
-                    type="text"
-                    className="role-name-input"
-                    value={role.name}
-                    onChange={(e) => handleRoleNameChange(roleIndex, e.target.value)}
-                    placeholder="Role name"
-                  />
+                  {role.name ? (
+                    // Show selected role name
+                    <div className="role-name-display">
+                      <span className="role-name-text">{role.name}</span>
+                      {role.id && serverRoles.find(r => r.id === role.id)?.color && (
+                        <span 
+                          className="role-color-dot" 
+                          style={{ 
+                            backgroundColor: serverRoles.find(r => r.id === role.id)?.color 
+                          }}
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    // Show dropdown to select a role
+                    <select
+                      className="role-select-dropdown"
+                      value=""
+                      onChange={(e) => handleRoleSelect(roleIndex, e.target.value)}
+                      disabled={loadingRoles}
+                    >
+                      <option value="">
+                        {loadingRoles ? 'Loading roles...' : 'Select a role...'}
+                      </option>
+                      {serverRoles
+                        .filter(r => !editedTemplate.roles.some(er => er.id === r.id)) // Hide already selected roles
+                        .map(serverRole => (
+                          <option key={serverRole.id} value={serverRole.id}>
+                            {serverRole.name}
+                          </option>
+                        ))}
+                    </select>
+                  )}
                   <button
                     className="delete-button"
                     onClick={() => handleRemoveRole(roleIndex)}
