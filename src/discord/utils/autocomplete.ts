@@ -1,6 +1,6 @@
 import type { AutocompleteInteraction } from 'discord.js'
 import { getPayload } from 'payload'
-import config from '@/payload.config'
+import configPromise from '@payload-config'
 
 /**
  * Handle team name autocomplete
@@ -12,7 +12,7 @@ export async function handleTeamAutocomplete(
     const focusedValue = interaction.options.getFocused().toLowerCase()
 
     // Fetch teams from database
-    const payload = await getPayload({ config })
+    const payload = await getPayload({ config: configPromise })
     const teams = await payload.find({
       collection: 'teams',
       limit: 25, // Discord autocomplete max is 25 options

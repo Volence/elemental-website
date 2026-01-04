@@ -1,7 +1,7 @@
 import type { ChatInputCommandInteraction } from 'discord.js'
 import { EmbedBuilder } from 'discord.js'
 import { getPayload } from 'payload'
-import config from '@/payload.config'
+import configPromise from '@payload-config'
 
 export async function handleTeamMatches(interaction: ChatInputCommandInteraction): Promise<void> {
   const teamSlug = interaction.options.getString('team-name', true)
@@ -10,7 +10,7 @@ export async function handleTeamMatches(interaction: ChatInputCommandInteraction
     await interaction.deferReply()
 
     // Fetch team from database
-    const payload = await getPayload({ config })
+    const payload = await getPayload({ config: configPromise })
     const teamResult = await payload.find({
       collection: 'teams',
       where: {

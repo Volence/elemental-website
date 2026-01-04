@@ -1,6 +1,6 @@
 import type { ChatInputCommandInteraction } from 'discord.js'
 import { getPayload } from 'payload'
-import config from '@/payload.config'
+import configPromise from '@payload-config'
 import { buildTeamEmbed } from '../utils/embeds'
 
 export async function handleTeamInfo(interaction: ChatInputCommandInteraction): Promise<void> {
@@ -10,7 +10,7 @@ export async function handleTeamInfo(interaction: ChatInputCommandInteraction): 
     await interaction.deferReply()
 
     // Fetch team from database
-    const payload = await getPayload({ config })
+    const payload = await getPayload({ config: configPromise })
     const result = await payload.find({
       collection: 'teams',
       where: {
