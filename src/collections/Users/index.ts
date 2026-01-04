@@ -4,7 +4,7 @@ import { authenticated } from '../../access/authenticated'
 import { adminOnly, isAdmin } from '../../access/roles'
 import { UserRole } from '../../access/roles'
 import type { User } from '@/payload-types'
-import { createAuditLogHook, createAuditLogDeleteHook } from '../../utilities/auditLogger'
+import { createAuditLogDeleteHook } from '../../utilities/auditLogger'
 import { trackLogin, trackLogout } from '../../utilities/sessionTracker'
 
 export const Users: CollectionConfig = {
@@ -173,7 +173,29 @@ export const Users: CollectionConfig = {
     },
   ],
   hooks: {
-    afterChange: [createAuditLogHook('users')],
+    // Only log significant changes (role, assignedTeams), not trivial updates like avatar/name
+    afterChange: [
+      async ({ doc, req, operation, previousDoc }) => {
+        // Only log on create, not on every update
+        if (operation === 'create' && req.payload && req.user) {
+          try {
+            const { createAuditLog } = await import('../../utilities/auditLogger')
+            await createAuditLog(req.payload, {
+              user: req.user,
+              action: 'create',
+              collection: 'users',
+              documentId: doc.id,
+              documentTitle: doc.name || doc.email || `User #${doc.id}`,
+              req,
+            })
+          } catch (error) {
+            // Don't block the operation if audit logging fails
+            console.error('[Users] Failed to log user creation:', error)
+          }
+        }
+        return doc
+      },
+    ],
     afterDelete: [createAuditLogDeleteHook('users')],
     afterLogin: [
       async ({ req, user }) => {
