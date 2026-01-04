@@ -34,24 +34,46 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Channel not found' }, { status: 404 })
     }
 
-    console.log('Found channel:', channel.name, 'type:', channel.type)
+    console.log('Found channel:', channel.name, 'type:', channel.type, 'current position:', channel.position)
 
-    // Move/reorder the channel
+    // Move/reorder the channel or category
     try {
-      // For channels, set parent first if needed, then position
-      if (type === 'channel' && parentId !== undefined && 'setParent' in channel) {
+      // For non-category channels, set parent first if needed
+      if (type === 'channel' && parentId !== undefined && 'setParent' in channel && channel.type !== 4) {
         console.log('Setting parent to:', parentId)
         await (channel as any).setParent(parentId || null)
       }
 
-      // Set position using absolute positioning
+      // Set position with timeout protection
       console.log('Setting position to:', position)
-      await channel.setPosition(position)
+      
+      // Create a timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Position update timed out after 10 seconds')), 10000)
+      })
+
+      // Race between setPosition and timeout
+      await Promise.race([
+        channel.setPosition(position).then(() => {
+          console.log('Position update completed')
+        }),
+        timeoutPromise
+      ])
 
       console.log('Move successful')
       return NextResponse.json({ success: true })
     } catch (moveError: any) {
-      console.error('Failed to move channel:', moveError)
+      console.error('Failed to move channel/category:', moveError)
+      
+      // If it times out, still return success since Discord might be processing it
+      if (moveError.message.includes('timed out')) {
+        console.log('Timed out but returning success - Discord may still process it')
+        return NextResponse.json({ 
+          success: true, 
+          warning: 'Request may still be processing' 
+        })
+      }
+      
       return NextResponse.json(
         { error: `Failed to move: ${moveError.message}` },
         { status: 500 }
