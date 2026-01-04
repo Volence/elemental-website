@@ -233,7 +233,7 @@ export const Users: CollectionConfig = {
           }
         }
 
-        // Prevent non-admins from changing sensitive fields (role, assignedTeams)
+        // Prevent non-admins from changing sensitive fields (role, assignedTeams, timestamps)
         if (operation === 'update' && user && originalDoc) {
           if (user.role !== UserRole.ADMIN) {
             // If role was explicitly sent and differs from original, reject it
@@ -246,6 +246,9 @@ export const Users: CollectionConfig = {
               req.payload.logger.warn('Non-admin user attempted to change assignedTeams - prevented')
               data.assignedTeams = originalDoc.assignedTeams // Restore original
             }
+            // Remove timestamp fields - these should only be managed by Payload
+            delete data.createdAt
+            delete data.updatedAt
           }
         }
 
