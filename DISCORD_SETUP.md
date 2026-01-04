@@ -25,7 +25,12 @@ DISCORD_GUILD_ID=788140179248381993
 ```env
 # Discord Cards Channel (both staff and teams)
 DISCORD_CARDS_CHANNEL=1457238873326489723
+
+# Public Server URL (REQUIRED for team logos in Discord embeds)
+NEXT_PUBLIC_SERVER_URL=https://your-production-domain.com
 ```
+
+**Important**: Team logos in Discord embeds require `NEXT_PUBLIC_SERVER_URL` to be set to a **publicly accessible URL**. Local development URLs (localhost) will not work in Discord as Discord servers cannot access localhost.
 
 ## How to Get Values
 

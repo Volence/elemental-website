@@ -64,25 +64,43 @@ export async function handleTeamHistory(interaction: ChatInputCommandInteraction
         // Get opponent name
         const opponentName = match.opponent || 'TBD'
 
-        // Get scores - only count as valid if both scores exist and at least one is > 1
+        // Get scores
         const teamScore = match.score?.elmtScore
         const opponentScore = match.score?.opponentScore
         const hasValidScores = teamScore !== undefined && opponentScore !== undefined && 
                                (teamScore > 1 || opponentScore > 1)
 
+        // Determine win/loss - if no scores, check match title or assume from context
+        // For now, we'll look at the score if available, otherwise mark as "Played"
+        let result = ''
         let matchLine = ''
 
         if (hasValidScores) {
           // Valid scores recorded
           const won = teamScore > opponentScore
-          if (won) wins++
-          else losses++
-
-          const resultEmoji = won ? '✅' : '❌'
-          matchLine = `${resultEmoji} **${teamScore}-${opponentScore}** vs ${opponentName} • ${dateStr}`
+          if (won) {
+            wins++
+            result = '**Won**'
+          } else {
+            losses++
+            result = '**Lost**'
+          }
+          matchLine = `${result} **${teamScore}-${opponentScore}** vs ${opponentName} • ${dateStr}`
         } else {
-          // No valid scores - just show the match
-          matchLine = `vs ${opponentName} • ${dateStr}`
+          // No valid scores - need to determine win/loss from match title or other field
+          // Check if there's any indicator in the title
+          const titleLower = (match.title || '').toLowerCase()
+          if (titleLower.includes('(w)') || titleLower.includes('win')) {
+            wins++
+            result = '**Won**'
+          } else if (titleLower.includes('(l)') || titleLower.includes('loss')) {
+            losses++
+            result = '**Lost**'
+          } else {
+            // Can't determine - mark as played
+            result = 'Played'
+          }
+          matchLine = `${result} vs ${opponentName} • ${dateStr}`
         }
         
         // Add links if available
