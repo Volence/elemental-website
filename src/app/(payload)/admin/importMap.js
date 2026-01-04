@@ -66,6 +66,7 @@ import { default as default_b41852718c887b613f07fa372f5e410c } from '@/component
 import { default as default_9696e71ab6d0b177b492c0a63e1b5e83 } from '@/components/SocialMediaDashboard'
 import { default as default_f76c92028911e3d433af128d3a307d36 } from '@/components/SocialMediaConfig/TemplateInstructions'
 import { default as default_8e4d4e3438d12585a6d66d71f450349a } from '@/components/SocialMediaConfig/TemplateRowLabel'
+import { default as default_3da8454779e867d95ca2718c7ead313d } from '@/components/DiscordServerManager/DiscordServerManagerView'
 import { default as default_a1087e454b1b74ceaf1bf3fd38ecfc7a } from '@/components/DataConsistencyView'
 import { default as default_03160af9efa1fa5b8f41c67277172bb7 } from '@/components/AuditLogView'
 import { default as default_70c06c9f0db61e2d5f2e0b3cb36d3c0f } from '@/components/CronMonitorView'
@@ -149,6 +150,7 @@ export const importMap = {
   "@/components/SocialMediaDashboard#default": default_9696e71ab6d0b177b492c0a63e1b5e83,
   "@/components/SocialMediaConfig/TemplateInstructions#default": default_f76c92028911e3d433af128d3a307d36,
   "@/components/SocialMediaConfig/TemplateRowLabel#default": default_8e4d4e3438d12585a6d66d71f450349a,
+  "@/components/DiscordServerManager/DiscordServerManagerView#default": default_3da8454779e867d95ca2718c7ead313d,
   "@/components/DataConsistencyView#default": default_a1087e454b1b74ceaf1bf3fd38ecfc7a,
   "@/components/AuditLogView#default": default_03160af9efa1fa5b8f41c67277172bb7,
   "@/components/CronMonitorView#default": default_70c06c9f0db61e2d5f2e0b3cb36d3c0f,

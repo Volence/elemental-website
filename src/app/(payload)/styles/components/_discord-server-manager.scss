@@ -1,0 +1,218 @@
+// Discord Server Manager Styles
+
+.discord-server-manager {
+  padding: $spacing-2xl;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  .manager-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-2xl;
+
+    h2 {
+      font-size: $font-size-2xl;
+      font-weight: $font-weight-bold;
+      color: $admin-text-primary;
+      margin: 0;
+    }
+
+    .server-info {
+      .member-count {
+        @include glow-badge($admin-accent-success);
+        padding: $spacing-sm $spacing-lg;
+        font-size: $font-size-sm;
+      }
+    }
+  }
+
+  // Tabs
+  .tabs {
+    display: flex;
+    gap: $spacing-md;
+    border-bottom: 2px solid rgba($admin-accent-primary, 0.2);
+    margin-bottom: $spacing-2xl;
+
+    .tab {
+      @include transparent-bg(0.02);
+      padding: $spacing-md $spacing-xl;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: $admin-text-secondary;
+      font-size: $font-size-base;
+      font-weight: $font-weight-semibold;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: -2px;
+
+      &:hover {
+        color: $admin-text-primary;
+        background: rgba($admin-accent-primary, 0.05);
+      }
+
+      &.active {
+        color: $admin-accent-primary;
+        border-bottom-color: $admin-accent-primary;
+        background: rgba($admin-accent-primary, 0.08);
+      }
+    }
+  }
+
+  // Tab content
+  .tab-content {
+    min-height: 400px;
+  }
+
+  // Server Structure View
+  .server-structure {
+    .structure-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: $spacing-xl;
+
+      h3 {
+        font-size: $font-size-xl;
+        font-weight: $font-weight-semibold;
+        color: $admin-text-primary;
+        margin: 0;
+      }
+
+      .refresh-button {
+        @include glow-button($admin-accent-info);
+        padding: $spacing-sm $spacing-lg;
+        font-size: $font-size-sm;
+      }
+    }
+
+    .category {
+      @include glow-card($admin-accent-primary);
+      margin-bottom: $spacing-xl;
+      padding: $spacing-xl;
+
+      .category-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: $spacing-lg;
+        padding-bottom: $spacing-md;
+        border-bottom: 1px solid rgba($admin-accent-primary, 0.2);
+
+        h4 {
+          font-size: $font-size-lg;
+          font-weight: $font-weight-semibold;
+          color: $admin-text-primary;
+          margin: 0;
+        }
+
+        .channel-count {
+          @include glow-badge($admin-accent-info);
+          padding: $spacing-xs $spacing-md;
+          font-size: $font-size-xs;
+        }
+      }
+
+      .channels-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: $spacing-md;
+
+        .channel {
+          @include transparent-bg(0.03);
+          padding: $spacing-md;
+          border-radius: $radius-sm;
+          display: flex;
+          align-items: center;
+          gap: $spacing-sm;
+          border: 1px solid rgba($admin-accent-primary, 0.1);
+          transition: all 0.2s ease;
+
+          &:hover {
+            border-color: rgba($admin-accent-primary, 0.3);
+            background: rgba($admin-accent-primary, 0.05);
+            transform: translateY(-1px);
+          }
+
+          .channel-icon {
+            font-size: $font-size-lg;
+            flex-shrink: 0;
+          }
+
+          .channel-name {
+            color: $admin-text-primary;
+            font-size: $font-size-sm;
+            font-weight: $font-weight-medium;
+          }
+        }
+      }
+    }
+  }
+
+  // Loading State
+  .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-3xl;
+    min-height: 400px;
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid rgba($admin-accent-primary, 0.2);
+      border-top-color: $admin-accent-primary;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: $spacing-lg;
+    }
+
+    p {
+      color: $admin-text-secondary;
+      font-size: $font-size-base;
+    }
+  }
+
+  // Error State
+  .error-state {
+    @include glow-card($admin-accent-error);
+    padding: $spacing-2xl;
+    text-align: center;
+
+    .error-message {
+      color: $admin-text-primary;
+      font-size: $font-size-base;
+      margin-bottom: $spacing-lg;
+    }
+
+    .retry-button {
+      @include glow-button($admin-accent-primary);
+      padding: $spacing-md $spacing-xl;
+    }
+  }
+
+  // Stats & Health views (placeholders for now)
+  .stats-view,
+  .health-view {
+    @include glow-card($admin-accent-info);
+    padding: $spacing-2xl;
+    text-align: center;
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    p {
+      color: $admin-text-secondary;
+      font-size: $font-size-lg;
+    }
+  }
+}
+
+// Spinner animation
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

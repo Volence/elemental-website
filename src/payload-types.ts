@@ -135,6 +135,7 @@ export interface Config {
     'production-dashboard': ProductionDashboard;
     'social-media-settings': SocialMediaSetting;
     'social-media-config': SocialMediaConfig;
+    'discord-server-manager': DiscordServerManager;
     'data-consistency': DataConsistency;
     'audit-log-viewer': AuditLogViewer;
     'cron-monitor': CronMonitor;
@@ -149,6 +150,7 @@ export interface Config {
     'production-dashboard': ProductionDashboardSelect<false> | ProductionDashboardSelect<true>;
     'social-media-settings': SocialMediaSettingsSelect<false> | SocialMediaSettingsSelect<true>;
     'social-media-config': SocialMediaConfigSelect<false> | SocialMediaConfigSelect<true>;
+    'discord-server-manager': DiscordServerManagerSelect<false> | DiscordServerManagerSelect<true>;
     'data-consistency': DataConsistencySelect<false> | DataConsistencySelect<true>;
     'audit-log-viewer': AuditLogViewerSelect<false> | AuditLogViewerSelect<true>;
     'cron-monitor': CronMonitorSelect<false> | CronMonitorSelect<true>;
@@ -2822,6 +2824,17 @@ export interface SocialMediaConfig {
   createdAt?: string | null;
 }
 /**
+ * Manage Discord server structure, channels, categories, roles, and members.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discord-server-manager".
+ */
+export interface DiscordServerManager {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * 📊 Check and fix data consistency issues across collections.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2996,6 +3009,15 @@ export interface SocialMediaConfigSelect<T extends boolean = true> {
         originalContent?: T;
       };
   contentGuidelines?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discord-server-manager_select".
+ */
+export interface DiscordServerManagerSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

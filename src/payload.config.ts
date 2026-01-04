@@ -39,6 +39,7 @@ import { ErrorDashboard } from './globals/ErrorDashboard'
 import { DatabaseHealth } from './globals/DatabaseHealth'
 import { ActiveSessionsViewer } from './globals/ActiveSessionsViewer'
 import { ErrorHarvesterState } from './globals/ErrorHarvesterState'
+import { DiscordServerManager } from './globals/DiscordServerManager'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
@@ -179,6 +180,7 @@ const config = buildConfig({
     ProductionDashboard, // Production group
     SocialMediaSettings, // Social Media group
     SocialMediaConfig, // Social Media group
+    DiscordServerManager, // Discord group
     DataConsistency, // System group
     AuditLogViewer, // Monitoring group
     CronMonitor, // Monitoring group
