@@ -150,7 +150,9 @@ export const Matches: CollectionConfig = {
       type: 'ui',
       admin: {
         components: {
-          Field: '@/components/DeleteMatchButton#default',
+          Field: {
+            path: '@/components/DeleteMatchButton',
+          },
         },
       },
     },

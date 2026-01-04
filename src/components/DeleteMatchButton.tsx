@@ -9,8 +9,13 @@ export const DeleteMatchButton: React.FC = () => {
   const [isDeleting, setIsDeleting] = useState(false)
   const router = useRouter()
   
+  console.log('[DeleteMatchButton] Rendering - ID:', id, 'Title:', title)
+  
   // Don't render if no ID (creating new match)
-  if (!id) return null
+  if (!id) {
+    console.log('[DeleteMatchButton] No ID, not rendering')
+    return null
+  }
 
   const handleDelete = async () => {
     const confirmed = window.confirm(
@@ -43,13 +48,19 @@ export const DeleteMatchButton: React.FC = () => {
     }
   }
 
+  console.log('[DeleteMatchButton] Rendering button component')
+  
   return (
     <div 
       className="delete-match-container"
       style={{ 
-        marginTop: '2rem', 
-        paddingTop: '2rem', 
-        borderTop: '1px solid rgba(255, 255, 255, 0.1)' 
+        marginTop: '1rem',
+        marginBottom: '2rem', 
+        paddingTop: '1rem',
+        paddingBottom: '1rem', 
+        borderTop: '2px solid rgba(255, 68, 68, 0.3)',
+        borderBottom: '2px solid rgba(255, 68, 68, 0.3)',
+        backgroundColor: 'rgba(255, 68, 68, 0.05)'
       }}
     >
       <Button
