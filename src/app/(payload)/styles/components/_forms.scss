@@ -314,13 +314,13 @@
 .rs__menu {
   @include glow-card($admin-accent-info);
   margin-top: 0.5rem;
-  z-index: 9999 !important; // Ensure dropdown extends above all containers
+  z-index: 99999 !important; // Extremely high z-index to appear above everything
   position: absolute !important; // Break out of parent overflow constraints
 }
 
 // React Select menu portal (when rendered at document root)
 .rs__menu-portal {
-  z-index: 9999 !important;
+  z-index: 99999 !important;
 }
 
 .rs__menu-list {

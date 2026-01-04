@@ -929,6 +929,8 @@ table {
 .blocks-field {
   // Allow dropdowns to escape the container
   overflow: visible !important;
+  position: relative;
+  z-index: auto; // Don't create new stacking context
   
   .array-field__row,
   .blocks-field__row {
@@ -938,9 +940,12 @@ table {
     
     // CRITICAL: Allow dropdowns to extend beyond the row
     overflow: visible !important;
+    position: relative;
+    z-index: auto; // Don't create new stacking context
     
     &:hover {
       transform: translateY(-1px);
+      z-index: auto; // Still don't create stacking context on hover
     }
   }
   
@@ -952,7 +957,7 @@ table {
     justify-content: center;
     margin-top: 0.75rem;
     position: relative;
-    z-index: 1; // Lower than dropdowns (z-index: 9999)
+    z-index: 0; // Ensure it stays below dropdowns
   }
   
   .array-field__remove-button,
