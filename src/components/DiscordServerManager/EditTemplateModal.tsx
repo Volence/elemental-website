@@ -48,6 +48,8 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
   const [isSaving, setIsSaving] = useState(false)
   const [serverRoles, setServerRoles] = useState<Array<{ id: string; name: string; color: string }>>([])
   const [loadingRoles, setLoadingRoles] = useState(false)
+  const [roleSearchTerm, setRoleSearchTerm] = useState('')
+  const [showRoleSearch, setShowRoleSearch] = useState<number | null>(null) // Track which role index is searching
 
   // Load server roles when modal opens
   useEffect(() => {
@@ -132,10 +134,13 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
   // Role handlers
   const handleAddRole = () => {
     if (!editedTemplate) return
+    const newRoleIndex = editedTemplate.roles.length
     setEditedTemplate({
       ...editedTemplate,
-      roles: [...editedTemplate.roles, { name: '', permissions: {} }] // Empty name triggers dropdown
+      roles: [...editedTemplate.roles, { name: '', permissions: {} }] // Empty name triggers search
     })
+    setShowRoleSearch(newRoleIndex) // Show search for the new role
+    setRoleSearchTerm('') // Reset search term
   }
 
   const handleRemoveRole = (index: number) => {
@@ -143,6 +148,10 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
     const newRoles = [...editedTemplate.roles]
     newRoles.splice(index, 1)
     setEditedTemplate({ ...editedTemplate, roles: newRoles })
+    if (showRoleSearch === index) {
+      setShowRoleSearch(null)
+      setRoleSearchTerm('')
+    }
   }
 
   const handleRoleSelect = (index: number, roleId: string) => {
@@ -157,6 +166,24 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
       name: selectedRole.name 
     }
     setEditedTemplate({ ...editedTemplate, roles: newRoles })
+    setShowRoleSearch(null) // Hide search after selection
+    setRoleSearchTerm('') // Reset search term
+  }
+
+  // Filter roles based on search term
+  const getFilteredRoles = () => {
+    if (!roleSearchTerm) return serverRoles
+
+    const searchLower = roleSearchTerm.toLowerCase()
+    return serverRoles.filter(role => 
+      role.name.toLowerCase().includes(searchLower)
+    )
+  }
+
+  // Get available roles (not already selected)
+  const getAvailableRoles = () => {
+    const selectedRoleIds = editedTemplate?.roles.map(r => r.id).filter(Boolean) || []
+    return getFilteredRoles().filter(role => !selectedRoleIds.includes(role.id))
   }
 
   const handleRolePermissionChange = (roleIndex: number, perm: string, value: boolean) => {
@@ -245,24 +272,50 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
                       )}
                     </div>
                   ) : (
-                    // Show dropdown to select a role
-                    <select
-                      className="role-select-dropdown"
-                      value=""
-                      onChange={(e) => handleRoleSelect(roleIndex, e.target.value)}
-                      disabled={loadingRoles}
-                    >
-                      <option value="">
-                        {loadingRoles ? 'Loading roles...' : 'Select a role...'}
-                      </option>
-                      {serverRoles
-                        .filter(r => !editedTemplate.roles.some(er => er.id === r.id)) // Hide already selected roles
-                        .map(serverRole => (
-                          <option key={serverRole.id} value={serverRole.id}>
-                            {serverRole.name}
-                          </option>
-                        ))}
-                    </select>
+                    // Show search input to select a role
+                    <div className="role-search-container">
+                      <input
+                        type="text"
+                        className="role-search-input"
+                        placeholder={loadingRoles ? 'Loading roles...' : 'Search for a role...'}
+                        value={roleSearchTerm}
+                        onChange={(e) => setRoleSearchTerm(e.target.value)}
+                        onFocus={() => setShowRoleSearch(roleIndex)}
+                        disabled={loadingRoles}
+                        autoFocus
+                      />
+                      {showRoleSearch === roleIndex && getAvailableRoles().length > 0 && (
+                        <div className="role-search-results">
+                          {getAvailableRoles().slice(0, 10).map(serverRole => (
+                            <div
+                              key={serverRole.id}
+                              className="role-search-result-item"
+                              onClick={() => handleRoleSelect(roleIndex, serverRole.id)}
+                            >
+                              <span className="role-result-name">{serverRole.name}</span>
+                              {serverRole.color && (
+                                <span 
+                                  className="role-color-dot" 
+                                  style={{ backgroundColor: serverRole.color }}
+                                />
+                              )}
+                            </div>
+                          ))}
+                          {getAvailableRoles().length > 10 && (
+                            <div className="role-search-more">
+                              +{getAvailableRoles().length - 10} more roles (keep typing to filter)
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {showRoleSearch === roleIndex && getAvailableRoles().length === 0 && roleSearchTerm && (
+                        <div className="role-search-results">
+                          <div className="role-search-no-results">
+                            No roles found matching "{roleSearchTerm}"
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   )}
                   <button
                     className="delete-button"

@@ -16,6 +16,19 @@ export async function POST(request: NextRequest) {
 
     const payload = await getPayload({ config: configPromise })
 
+    // Get the existing template to preserve its structure
+    const existing = await payload.findByID({
+      collection: 'discord-category-templates',
+      id: templateId,
+    })
+
+    // Update templateData with new roles and channels
+    const updatedTemplateData = {
+      ...(existing.templateData || {}),
+      roles,
+      channels,
+    }
+
     // Update the template
     const updated = await payload.update({
       collection: 'discord-category-templates',
@@ -23,8 +36,8 @@ export async function POST(request: NextRequest) {
       data: {
         name,
         description,
-        roles,
-        channels,
+        templateData: updatedTemplateData,
+        channelCount: channels?.length || 0,
       },
     })
 

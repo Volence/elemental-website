@@ -1023,35 +1023,100 @@
         }
       }
 
-      .role-select-dropdown {
+      .role-search-container {
         flex: 1;
-        padding: $spacing-md;
-        background: rgba($admin-bg-base, 0.5);
-        border: 1px solid rgba($admin-accent-primary, 0.3);
-        border-radius: $radius-sm;
-        color: $admin-text-primary;
-        font-size: $font-size-base;
-        cursor: pointer;
-        transition: all 0.2s ease;
+        position: relative;
 
-        &:hover {
-          border-color: $admin-accent-primary;
-        }
-
-        &:focus {
-          outline: none;
-          border-color: $admin-accent-primary;
-          box-shadow: 0 0 0 2px rgba($admin-accent-primary, 0.1);
-        }
-
-        &:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        option {
-          background: $admin-bg-base;
+        .role-search-input {
+          width: 100%;
+          padding: $spacing-md;
+          background: rgba($admin-bg-base, 0.5);
+          border: 1px solid rgba($admin-accent-primary, 0.3);
+          border-radius: $radius-sm;
           color: $admin-text-primary;
+          font-size: $font-size-base;
+          transition: all 0.2s ease;
+
+          &:hover {
+            border-color: $admin-accent-primary;
+          }
+
+          &:focus {
+            outline: none;
+            border-color: $admin-accent-primary;
+            box-shadow: 0 0 0 2px rgba($admin-accent-primary, 0.1);
+          }
+
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+
+          &::placeholder {
+            color: $admin-text-secondary;
+          }
+        }
+
+        .role-search-results {
+          position: absolute;
+          top: calc(100% + $spacing-xs);
+          left: 0;
+          right: 0;
+          max-height: 300px;
+          overflow-y: auto;
+          background: $admin-bg-elevated;
+          border: 2px solid rgba($admin-accent-primary, 0.4);
+          border-radius: $radius-sm;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+          z-index: 1000;
+          @include custom-scrollbar;
+
+          .role-search-result-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: $spacing-md;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-bottom: 1px solid rgba($admin-accent-primary, 0.1);
+
+            &:last-child {
+              border-bottom: none;
+            }
+
+            &:hover {
+              background: rgba($admin-accent-primary, 0.1);
+            }
+
+            .role-result-name {
+              color: $admin-text-primary;
+              font-size: $font-size-base;
+            }
+
+            .role-color-dot {
+              width: 12px;
+              height: 12px;
+              border-radius: 50%;
+              border: 1px solid rgba(white, 0.2);
+            }
+          }
+
+          .role-search-more {
+            padding: $spacing-md;
+            text-align: center;
+            color: $admin-text-secondary;
+            font-size: $font-size-sm;
+            font-style: italic;
+            background: rgba($admin-accent-primary, 0.05);
+          }
+
+          .role-search-no-results {
+            padding: $spacing-md;
+            text-align: center;
+            color: $admin-text-secondary;
+            font-size: $font-size-sm;
+            font-style: italic;
+          }
         }
       }
 
