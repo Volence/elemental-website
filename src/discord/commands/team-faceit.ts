@@ -1,5 +1,7 @@
 import type { ChatInputCommandInteraction } from 'discord.js'
 import { EmbedBuilder } from 'discord.js'
+import { getPayload } from 'payload'
+import config from '@/payload.config'
 
 export async function handleTeamFaceit(interaction: ChatInputCommandInteraction): Promise<void> {
   const teamSlug = interaction.options.getString('team-name', true)
@@ -8,7 +10,7 @@ export async function handleTeamFaceit(interaction: ChatInputCommandInteraction)
     await interaction.deferReply()
 
     // Fetch team from database
-    const payload = (await import('payload')).default
+    const payload = await getPayload({ config })
     const teamResult = await payload.find({
       collection: 'teams',
       where: {
