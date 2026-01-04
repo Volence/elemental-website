@@ -92,7 +92,7 @@ export async function handleTeamHistory(interaction: ChatInputCommandInteraction
             losses++
             result = '**Lost**'
           }
-          matchLine = `${result} **${teamScore}-${opponentScore}** vs ${opponentName} • ${dateStr}`
+          matchLine = `${result} vs ${opponentName} • ${dateStr}`
         } else {
           // No valid scores - need to determine win/loss from match title or other field
           // Check if there's any indicator in the title

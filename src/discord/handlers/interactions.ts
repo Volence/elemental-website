@@ -23,12 +23,24 @@ export function setupInteractionHandlers(): void {
     } catch (error) {
       console.error('Error handling interaction:', error)
 
+      // Only try to respond if the interaction is still valid and hasn't timed out
       if (interaction.isRepliable()) {
-        const errorMessage = 'An error occurred while processing your request.'
-        if (interaction.deferred || interaction.replied) {
-          await interaction.followUp({ content: errorMessage, ephemeral: true })
-        } else {
-          await interaction.reply({ content: errorMessage, ephemeral: true })
+        try {
+          const errorMessage = 'An error occurred while processing your request.'
+          if (interaction.deferred || interaction.replied) {
+            await interaction.followUp({ content: errorMessage, ephemeral: true }).catch(() => {
+              // Interaction token expired, can't respond
+              console.log('Interaction token expired, unable to send error message')
+            })
+          } else {
+            await interaction.reply({ content: errorMessage, ephemeral: true }).catch(() => {
+              // Interaction token expired, can't respond
+              console.log('Interaction token expired, unable to send error message')
+            })
+          }
+        } catch (replyError) {
+          // Silently fail if we can't send the error message
+          console.log('Failed to send error message to Discord:', replyError)
         }
       }
     }

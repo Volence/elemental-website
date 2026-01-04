@@ -107,6 +107,21 @@ export async function buildEnhancedTeamEmbed(team: any, payload: Payload): Promi
     }
   }
 
+  // Subs
+  if (team.subs && team.subs.length > 0) {
+    const subs = team.subs
+      .map((sub: any) => getPersonNameFromRelation(sub.person))
+      .filter(Boolean)
+    
+    if (subs.length) {
+      embed.addFields({
+        name: 'Subs',
+        value: subs.join(', ') + '\n\u200B',
+        inline: false,
+      })
+    }
+  }
+
   // Staff (managers and coaches) - cleaner formatting
   const staffLines: string[] = []
   if (team.manager && team.manager.length > 0) {
