@@ -48,6 +48,14 @@ export async function handleTeamHistory(interaction: ChatInputCommandInteraction
       .setTitle(`Match History • ${team.name}`)
       .setColor(team.themeColor ? parseInt(team.themeColor.replace('#', ''), 16) : 0x2ecc71)
 
+    // Add team logo
+    if (team.logo) {
+      const logoUrl = typeof team.logo === 'string' ? team.logo : team.logo.url
+      if (logoUrl) {
+        embed.setThumbnail(getAbsoluteUrl(logoUrl))
+      }
+    }
+
     if (!matches.docs.length) {
       embed.setDescription('No match history available.')
     } else {
@@ -67,8 +75,7 @@ export async function handleTeamHistory(interaction: ChatInputCommandInteraction
         // Get scores
         const teamScore = match.score?.elmtScore
         const opponentScore = match.score?.opponentScore
-        const hasValidScores = teamScore !== undefined && opponentScore !== undefined && 
-                               (teamScore > 1 || opponentScore > 1)
+        const hasValidScores = teamScore !== undefined && opponentScore !== undefined
 
         // Determine win/loss - if no scores, check match title or assume from context
         // For now, we'll look at the score if available, otherwise mark as "Played"
@@ -124,12 +131,6 @@ export async function handleTeamHistory(interaction: ChatInputCommandInteraction
       )
     }
 
-    // Add team logo
-    if (team.logo && typeof team.logo === 'object' && team.logo.url) {
-      const logoUrl = getAbsoluteUrl(team.logo.url)
-      embed.setThumbnail(logoUrl)
-    }
-
     await interaction.editReply({ embeds: [embed] })
   } catch (error) {
     console.error('Error handling team history command:', error)
@@ -148,6 +149,7 @@ export async function handleTeamHistory(interaction: ChatInputCommandInteraction
 
 function getAbsoluteUrl(url: string): string {
   if (url.startsWith('http')) return url
-  const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+  // TEMPORARY: Hardcoded for testing Discord logo display
+  const baseUrl = 'https://elmt.gg'
   return `${baseUrl}${url}`
 }

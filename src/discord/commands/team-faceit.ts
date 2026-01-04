@@ -56,6 +56,14 @@ export async function handleTeamFaceit(interaction: ChatInputCommandInteraction)
       .setTitle(`Faceit Stats • ${team.name}`)
       .setColor(team.themeColor ? parseInt(team.themeColor.replace('#', ''), 16) : 0xe67e22)
 
+    // Add team logo
+    if (team.logo) {
+      const logoUrl = typeof team.logo === 'string' ? team.logo : team.logo.url
+      if (logoUrl) {
+        embed.setThumbnail(getAbsoluteUrl(logoUrl))
+      }
+    }
+
     if (!seasons.docs.length) {
       embed.setDescription('No active FaceIt season found.')
     } else {
@@ -114,12 +122,6 @@ export async function handleTeamFaceit(interaction: ChatInputCommandInteraction)
       }
     }
 
-    // Add team logo
-    if (team.logo && typeof team.logo === 'object' && team.logo.url) {
-      const logoUrl = getAbsoluteUrl(team.logo.url)
-      embed.setThumbnail(logoUrl)
-    }
-
     await interaction.editReply({ embeds: [embed] })
   } catch (error) {
     console.error('Error handling team faceit command:', error)
@@ -138,6 +140,7 @@ export async function handleTeamFaceit(interaction: ChatInputCommandInteraction)
 
 function getAbsoluteUrl(url: string): string {
   if (url.startsWith('http')) return url
-  const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+  // TEMPORARY: Hardcoded for testing Discord logo display
+  const baseUrl = 'https://elmt.gg'
   return `${baseUrl}${url}`
 }

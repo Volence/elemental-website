@@ -48,6 +48,14 @@ export async function handleTeamMatches(interaction: ChatInputCommandInteraction
       .setTitle(`Upcoming Matches • ${team.name}`)
       .setColor(team.themeColor ? parseInt(team.themeColor.replace('#', ''), 16) : 0x3498db)
 
+    // Add team logo
+    if (team.logo) {
+      const logoUrl = typeof team.logo === 'string' ? team.logo : team.logo.url
+      if (logoUrl) {
+        embed.setThumbnail(getAbsoluteUrl(logoUrl))
+      }
+    }
+
     if (!matches.docs.length) {
       embed.setDescription('No upcoming matches scheduled.')
     } else {
@@ -78,12 +86,6 @@ export async function handleTeamMatches(interaction: ChatInputCommandInteraction
       embed.setDescription(matchLines.join('\n\n'))
     }
 
-    // Add team logo
-    if (team.logo && typeof team.logo === 'object' && team.logo.url) {
-      const logoUrl = getAbsoluteUrl(team.logo.url)
-      embed.setThumbnail(logoUrl)
-    }
-
     await interaction.editReply({ embeds: [embed] })
   } catch (error) {
     console.error('Error handling team matches command:', error)
@@ -102,6 +104,7 @@ export async function handleTeamMatches(interaction: ChatInputCommandInteraction
 
 function getAbsoluteUrl(url: string): string {
   if (url.startsWith('http')) return url
-  const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+  // TEMPORARY: Hardcoded for testing Discord logo display
+  const baseUrl = 'https://elmt.gg'
   return `${baseUrl}${url}`
 }

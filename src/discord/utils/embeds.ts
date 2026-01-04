@@ -420,6 +420,7 @@ function getRegionColor(region: string | undefined): number {
 function getAbsoluteUrl(url: string): string {
   if (url.startsWith('http')) return url
 
-  const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+  // TEMPORARY: Hardcoded for testing Discord logo display
+  const baseUrl = 'https://elmt.gg'
   return `${baseUrl}${url}`
 }

@@ -23,7 +23,7 @@ export function buildCommands() {
       .addSubcommand((subcommand) =>
         subcommand
           .setName('matches')
-          .setDescription('Show upcoming matches')
+          .setDescription('Show upcoming matches for a team')
           .addStringOption((option) =>
             option
               .setName('team-name')
@@ -35,7 +35,7 @@ export function buildCommands() {
       .addSubcommand((subcommand) =>
         subcommand
           .setName('history')
-          .setDescription('Show recent match history')
+          .setDescription('Show match history for a team')
           .addStringOption((option) =>
             option
               .setName('team-name')
