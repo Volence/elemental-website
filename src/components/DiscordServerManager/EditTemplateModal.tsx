@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Modal } from './Modal'
-import { Plus, Trash2, GripVertical, ArrowUp, ArrowDown } from 'lucide-react'
+import { Plus, Trash2, GripVertical, ArrowUp, ArrowDown, Edit2 } from 'lucide-react'
 
 const COMMON_CATEGORY_PERMS = [
   'ViewChannel', 'SendMessages', 'ReadMessageHistory', 'Connect', 'Speak',
@@ -62,13 +62,23 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
   const loadServerRoles = async () => {
     try {
       setLoadingRoles(true)
-      const response = await fetch('/api/discord/server/structure')
-      if (!response.ok) throw new Error('Failed to load server roles')
+      
+      // Use lightweight roles-only endpoint (much faster!)
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout
+      
+      const response = await fetch('/api/discord/server/roles', {
+        signal: controller.signal
+      })
+      clearTimeout(timeoutId)
+      
+      if (!response.ok) {
+        throw new Error(`Failed to load server roles: ${response.status}`)
+      }
       
       const data = await response.json()
-      console.log('Loaded roles:', data.roles?.length || 0)
       setServerRoles(data.roles || [])
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load server roles:', error)
       setServerRoles([]) // Ensure it's set even on error
     } finally {
@@ -175,6 +185,16 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
     setRoleSearchTerm('') // Reset search term
   }
 
+  const handleChangeRole = (index: number) => {
+    if (!editedTemplate) return
+    const newRoles = [...editedTemplate.roles]
+    // Clear the role selection to show search again
+    newRoles[index] = { ...newRoles[index], id: undefined, name: '' }
+    setEditedTemplate({ ...editedTemplate, roles: newRoles })
+    setShowRoleSearch(index)
+    setRoleSearchTerm('')
+  }
+
   // Filter roles based on search term
   const getFilteredRoles = () => {
     if (!roleSearchTerm) return serverRoles
@@ -264,18 +284,27 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
               <div key={roleIndex} className="role-edit-card">
                 <div className="role-edit-header">
                   {role.name ? (
-                    // Show selected role name
-                    <div className="role-name-display">
-                      <span className="role-name-text">{role.name}</span>
-                      {role.id && serverRoles.find(r => r.id === role.id)?.color && (
-                        <span 
-                          className="role-color-dot" 
-                          style={{ 
-                            backgroundColor: serverRoles.find(r => r.id === role.id)?.color 
-                          }}
-                        />
-                      )}
-                    </div>
+                    // Show selected role name with change button
+                    <>
+                      <div className="role-name-display">
+                        <span className="role-name-text">{role.name}</span>
+                        {role.id && serverRoles.find(r => r.id === role.id)?.color && (
+                          <span 
+                            className="role-color-dot" 
+                            style={{ 
+                              backgroundColor: serverRoles.find(r => r.id === role.id)?.color 
+                            }}
+                          />
+                        )}
+                      </div>
+                      <button
+                        className="change-role-button"
+                        onClick={() => handleChangeRole(roleIndex)}
+                        title="Change role"
+                      >
+                        <Edit2 size={14} />
+                      </button>
+                    </>
                   ) : (
                     // Show search input to select a role
                     <div className="role-search-container">

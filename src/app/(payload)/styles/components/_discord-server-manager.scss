@@ -1120,6 +1120,15 @@
         }
       }
 
+      .change-role-button {
+        @include glow-button($admin-accent-primary);
+        padding: $spacing-sm $spacing-md;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: $font-size-sm;
+      }
+
       .delete-button {
         @include glow-button($admin-accent-error);
         padding: $spacing-md;
