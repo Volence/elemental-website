@@ -29,7 +29,7 @@ export const Media: CollectionConfig = {
   admin: {
     description: '🖼️ Upload and manage images, videos, and other media files used across the website.',
     group: 'Content',
-    hidden: true,
+    hidden: ({ user }) => !user, // Show to authenticated users (needed for avatar uploads)
   },
   fields: [
     {
