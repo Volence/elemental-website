@@ -405,15 +405,6 @@ async function fetchAllTeamsSorted(payload: any): Promise<any[]> {
       return bRating - aRating
     })
 
-    // Debug: Log sorted order
-    console.log('🔍 Team sort order:')
-    sorted.forEach((team, idx) => {
-      const division = (typeof team.currentFaceitLeague === 'object' && team.currentFaceitLeague?.division) 
-        ? team.currentFaceitLeague.division 
-        : 'Open'
-      console.log(`  ${idx + 1}. ${team.name} (${team.region || 'NO_REGION'} - ${division} - ${team.rating || 'N/A'})`)
-    })
-
     return sorted
   } catch (error) {
     console.error('Error fetching teams:', error)
