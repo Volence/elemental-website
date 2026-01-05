@@ -959,14 +959,12 @@
           border-radius: $radius-sm;
           box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
           z-index: 1000;
-          min-width: 180px;
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
+          min-width: 200px;
+          max-width: 200px;
 
           .channel-type-menu-item {
             width: 100%;
-            padding: $spacing-md $spacing-lg;
+            padding: $spacing-md;
             background: none;
             border: none;
             color: $admin-text-primary;
@@ -976,13 +974,16 @@
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
+            justify-content: flex-start;
             gap: $spacing-sm;
             white-space: nowrap;
-            flex-shrink: 0;
 
             svg {
               color: $admin-accent-primary;
-              flex-shrink: 0;
+              width: 14px;
+              height: 14px;
+              min-width: 14px;
+              min-height: 14px;
             }
 
             &:hover {
