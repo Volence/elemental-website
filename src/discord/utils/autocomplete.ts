@@ -11,11 +11,11 @@ export async function handleTeamAutocomplete(
   try {
     const focusedValue = interaction.options.getFocused().toLowerCase()
 
-    // Fetch teams from database
+    // Fetch teams from database (get all teams, not just 25)
     const payload = await getPayload({ config: configPromise })
     const teams = await payload.find({
       collection: 'teams',
-      limit: 25, // Discord autocomplete max is 25 options
+      limit: 100, // Fetch all teams (Discord limit is 25 choices, but we filter after)
       sort: 'name',
     })
 
@@ -24,7 +24,7 @@ export async function handleTeamAutocomplete(
       team.name.toLowerCase().includes(focusedValue),
     )
 
-    // Format for Discord autocomplete
+    // Format for Discord autocomplete (limit to 25 after filtering)
     const choices = filtered.slice(0, 25).map((team) => ({
       name: team.name,
       value: team.slug || team.name.toLowerCase().replace(/\s+/g, '-'),
