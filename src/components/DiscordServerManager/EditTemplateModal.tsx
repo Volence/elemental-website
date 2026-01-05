@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Modal } from './Modal'
-import { Plus, Trash2, GripVertical, ArrowUp, ArrowDown, Edit2 } from 'lucide-react'
+import { Plus, Trash2, GripVertical, ArrowUp, ArrowDown, Edit2, Hash, Volume2, MessageSquare } from 'lucide-react'
 
 const COMMON_CATEGORY_PERMS = [
   'ViewChannel', 'SendMessages', 'ReadMessageHistory', 'Connect', 'Speak',
@@ -50,6 +50,7 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
   const [loadingRoles, setLoadingRoles] = useState(false)
   const [roleSearchTerm, setRoleSearchTerm] = useState('')
   const [showRoleSearch, setShowRoleSearch] = useState<number | null>(null) // Track which role index is searching
+  const [showChannelTypeMenu, setShowChannelTypeMenu] = useState(false)
 
   // Load server roles when modal opens
   useEffect(() => {
@@ -115,12 +116,13 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
   }
 
   // Channel handlers
-  const handleAddChannel = () => {
+  const handleAddChannel = (type: number = 0) => {
     if (!editedTemplate) return
     setEditedTemplate({
       ...editedTemplate,
-      channels: [...editedTemplate.channels, { name: 'new-channel', type: 0 }]
+      channels: [...editedTemplate.channels, { name: 'new-channel', type }]
     })
+    setShowChannelTypeMenu(false)
   }
 
   const handleRemoveChannel = (index: number) => {
@@ -392,9 +394,40 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
         <div className="template-section-edit">
           <div className="template-section-header">
             <h4>Channels</h4>
-            <button className="add-button" onClick={handleAddChannel}>
-              <Plus size={16} /> Add Channel
-            </button>
+            <div className="add-channel-dropdown">
+              <button 
+                className="add-button" 
+                onClick={() => setShowChannelTypeMenu(!showChannelTypeMenu)}
+                type="button"
+              >
+                <Plus size={16} /> Add Channel
+              </button>
+              {showChannelTypeMenu && (
+                <div className="channel-type-menu">
+                  <button 
+                    className="channel-type-menu-item" 
+                    onClick={() => handleAddChannel(0)}
+                    type="button"
+                  >
+                    <Hash size={14} /> Text Channel
+                  </button>
+                  <button 
+                    className="channel-type-menu-item" 
+                    onClick={() => handleAddChannel(2)}
+                    type="button"
+                  >
+                    <Volume2 size={14} /> Voice Channel
+                  </button>
+                  <button 
+                    className="channel-type-menu-item" 
+                    onClick={() => handleAddChannel(15)}
+                    type="button"
+                  >
+                    <MessageSquare size={14} /> Forum Channel
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
           
           <div className="channels-list">

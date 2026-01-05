@@ -90,8 +90,7 @@ export async function GET() {
 
     uncategorized.sort((a, b) => a.position - b.position)
 
-    // Get member count
-    await guild.members.fetch()
+    // Get member count (use cached value, don't fetch all members - that's slow!)
     const memberCount = guild.memberCount
 
     // Get server roles

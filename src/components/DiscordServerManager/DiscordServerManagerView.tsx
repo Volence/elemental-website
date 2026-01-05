@@ -1088,7 +1088,7 @@ const DiscordServerManagerView = () => {
                         <button
                           className="apply-template-button"
                           onClick={handleApplyTemplate}
-                          disabled={!newCategoryName || applyingTemplate}
+                          disabled={applyingTemplate}
                         >
                           {applyingTemplate ? 'Creating...' : 'Create Category'}
                         </button>

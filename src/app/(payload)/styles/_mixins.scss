@@ -264,6 +264,7 @@
   color: white;
   backdrop-filter: blur(4px);
   transition: all 0.2s ease;
+  cursor: pointer; // ← Added
   
   &:hover {
     background: rgba($color, 0.15);
@@ -273,6 +274,12 @@
   &:active {
     transform: translateY(0);
     background: rgba($color, 0.2);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
   }
 }
 
