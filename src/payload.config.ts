@@ -159,7 +159,7 @@ const config = buildConfig({
     RecruitmentListings,
     RecruitmentApplications,
     
-    // DISCORD: Bot integration
+    // DISCORD: Bot integration (hidden but establishes group order)
     DiscordPolls,
     DiscordCategoryTemplates,
     
