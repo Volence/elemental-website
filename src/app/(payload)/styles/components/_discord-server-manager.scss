@@ -980,8 +980,10 @@
 
             svg {
               color: $admin-accent-primary;
-              width: 14px;
-              height: 14px;
+              width: 14px !important;
+              height: 14px !important;
+              max-width: 14px;
+              max-height: 14px;
               min-width: 14px;
               min-height: 14px;
             }
