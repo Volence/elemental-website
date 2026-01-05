@@ -412,7 +412,7 @@ async function formatFaceitStats(team: any): Promise<string> {
 
     if (!seasons.docs.length) return ''
 
-    const season = seasons.docs[0]
+    const season: any = seasons.docs[0]
     const wins = season.wins || 0
     const losses = season.losses || 0
     const division = season.division || 'Unranked'

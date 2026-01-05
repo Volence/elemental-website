@@ -14,7 +14,7 @@ export const DiscordPolls: CollectionConfig = {
     read: ({ req }) => {
       const user = req.user as User | undefined
       if (!user) return false
-      return hasAnyRole([UserRole.ADMIN, UserRole.TEAM_MANAGER, UserRole.STAFF_MANAGER])({
+      return hasAnyRole(UserRole.ADMIN, UserRole.TEAM_MANAGER, UserRole.STAFF_MANAGER)({
         req: { user },
       } as any)
     },

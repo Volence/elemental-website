@@ -20,8 +20,8 @@ export const DiscordServerManager: GlobalConfig = {
     components: {
       elements: {
         SaveButton: '@/components/EmptyComponent', // Hide save button (UI-only, no data to save)
-        SaveDraft: '@/components/EmptyComponent',
-        Publish: '@/components/EmptyComponent',
+        SaveDraftButton: '@/components/EmptyComponent',
+        PublishButton: '@/components/EmptyComponent',
       },
     },
   },

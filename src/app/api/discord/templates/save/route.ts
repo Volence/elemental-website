@@ -50,20 +50,21 @@ export async function POST(req: NextRequest) {
     // Get all channels in this category
     const channels = guild.channels.cache
       .filter(ch => ch && ch.parentId === categoryId)
-      .sort((a, b) => (a?.position || 0) - (b?.position || 0))
+      .sort((a, b) => ((a as any)?.position || 0) - ((b as any)?.position || 0))
 
     // Build channel templates
     const channelTemplates = channels.map(channel => {
+      const channelAny = channel as any
       const permissionOverwrites: any[] = []
       
-      channel?.permissionOverwrites?.cache.forEach((overwrite) => {
+      channelAny?.permissionOverwrites?.cache.forEach((overwrite: any) => {
         const permissions: Record<string, boolean | null> = {}
         
         // Convert bitfield to permission object
-        overwrite.allow.toArray().forEach(perm => {
+        overwrite.allow.toArray().forEach((perm: any) => {
           permissions[perm] = true
         })
-        overwrite.deny.toArray().forEach(perm => {
+        overwrite.deny.toArray().forEach((perm: any) => {
           permissions[perm] = false
         })
 
@@ -75,9 +76,9 @@ export async function POST(req: NextRequest) {
       })
 
       return {
-        name: channel?.name || 'unknown',
-        type: channel?.type,
-        position: channel?.position || 0,
+        name: channelAny?.name || 'unknown',
+        type: channelAny?.type,
+        position: channelAny?.position || 0,
         permissionOverwrites,
       }
     })

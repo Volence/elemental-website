@@ -372,7 +372,7 @@ async function fetchAllTeamsSorted(payload: any): Promise<any[]> {
     }
 
     // Sort teams by: 1) Region, 2) Division, 3) SR
-    const sorted = result.docs.sort((a, b) => {
+    const sorted = result.docs.sort((a: any, b: any) => {
       // First sort by region
       const aRegion = a.region || 'NA'
       const bRegion = b.region || 'NA'

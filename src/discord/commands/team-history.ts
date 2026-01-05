@@ -50,7 +50,8 @@ export async function handleTeamHistory(interaction: ChatInputCommandInteraction
 
     // Add team logo
     if (team.logo) {
-      const logoUrl = typeof team.logo === 'string' ? team.logo : team.logo.url
+      const logo: any = team.logo
+      const logoUrl = typeof logo === 'string' ? logo : logo.url
       if (logoUrl) {
         embed.setThumbnail(getAbsoluteUrl(logoUrl))
       }
@@ -82,7 +83,7 @@ export async function handleTeamHistory(interaction: ChatInputCommandInteraction
         let result = ''
         let matchLine = ''
 
-        if (hasValidScores) {
+        if (hasValidScores && teamScore !== null && opponentScore !== null) {
           // Valid scores recorded
           const won = teamScore > opponentScore
           if (won) {

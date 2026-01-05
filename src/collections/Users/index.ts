@@ -76,7 +76,7 @@ export const Users: CollectionConfig = {
         description: 'Your Discord User ID (18-19 digits). Link your Discord account to track polls you create via /schedulepoll. Right-click your profile in Discord → Copy User ID (requires Developer Mode enabled in Discord settings).',
       },
       // Users can set their own Discord ID
-      validate: (value) => {
+      validate: (value: any) => {
         if (!value) return true // Optional field
         // Validate Discord snowflake format (18-19 digit number)
         if (!/^\d{17,19}$/.test(value)) {

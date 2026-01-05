@@ -32,8 +32,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Channel not found' }, { status: 404 })
     }
 
+    // Check if channel is cloneable (not a thread)
+    if (!('clone' in channel)) {
+      return NextResponse.json({ error: 'This channel type cannot be cloned' }, { status: 400 })
+    }
+
     // Clone the channel (copies permissions, settings, etc.)
-    const clonedChannel = await channel.clone({
+    const clonedChannel = await (channel as any).clone({
       name: `${channel.name}-copy`
     })
 

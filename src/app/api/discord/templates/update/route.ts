@@ -23,8 +23,9 @@ export async function POST(request: NextRequest) {
     })
 
     // Update templateData with new roles and channels
+    const existingData = typeof existing.templateData === 'object' ? existing.templateData : {}
     const updatedTemplateData = {
-      ...(existing.templateData || {}),
+      ...(existingData as any),
       roles,
       channels,
     }

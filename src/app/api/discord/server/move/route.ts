@@ -34,14 +34,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Channel not found' }, { status: 404 })
     }
 
-    console.log('Found channel:', channel.name, 'type:', channel.type, 'current position:', channel.position)
+    const channelWithPosition = channel as any
+    console.log('Found channel:', channel.name, 'type:', channel.type, 'current position:', channelWithPosition.position)
 
     // Move/reorder the channel or category
     try {
       // For non-category channels, set parent first if needed
       if (type === 'channel' && parentId !== undefined && 'setParent' in channel && channel.type !== 4) {
         console.log('Setting parent to:', parentId)
-        await (channel as any).setParent(parentId || null)
+        await channelWithPosition.setParent(parentId || null)
       }
 
       // Set position with timeout protection
@@ -54,7 +55,7 @@ export async function POST(request: NextRequest) {
 
       // Race between setPosition and timeout
       await Promise.race([
-        channel.setPosition(position).then(() => {
+        channelWithPosition.setPosition(position).then(() => {
           console.log('Position update completed')
         }),
         timeoutPromise

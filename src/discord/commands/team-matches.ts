@@ -50,7 +50,8 @@ export async function handleTeamMatches(interaction: ChatInputCommandInteraction
 
     // Add team logo
     if (team.logo) {
-      const logoUrl = typeof team.logo === 'string' ? team.logo : team.logo.url
+      const logo: any = team.logo
+      const logoUrl = typeof logo === 'string' ? logo : logo.url
       if (logoUrl) {
         embed.setThumbnail(getAbsoluteUrl(logoUrl))
       }
