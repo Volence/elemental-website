@@ -354,7 +354,7 @@ html body aside nav > div:nth-child(7) .nav__link {
   }
 }
 
-// SYSTEM Section (Vibrant Orange)
+// DISCORD Section (Vibrant Orange)
 html body aside nav > div:nth-child(8) .nav__link {
   &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
@@ -406,3 +406,28 @@ html body aside nav > div:nth-child(9) .nav__link {
   }
 }
 
+// SYSTEM Section (Vibrant Pink - cycling back to start)
+html body aside nav > div:nth-child(10) .nav__link {
+  &:hover,
+  &:hover:not(:has(.nav__link-indicator)) {
+    background: transparent !important;
+    color: $tier-masters !important;
+    box-shadow: 0 0 20px rgba($tier-masters, 0.6) !important;
+    border: 1px solid rgba($tier-masters, 0.4) !important;
+    border-left: 3px solid $tier-masters !important;
+  }
+  
+  // Active state
+  &:has(.nav__link-indicator) {
+    background: transparent !important;
+    
+    .nav__link-indicator {
+      background: $tier-masters !important;
+      box-shadow: 0 0 16px rgba($tier-masters, 0.8) !important;
+    }
+    
+    .nav__link-label {
+      color: $tier-masters !important;
+    }
+  }
+}
