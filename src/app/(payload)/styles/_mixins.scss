@@ -23,6 +23,7 @@
     padding: $width;
     background: $gradient;
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     pointer-events: none;
@@ -360,9 +361,11 @@
   }
   
   &:focus {
-    background: rgba($color, 0.05);
-    border-color: rgba($color, 0.7);
-    box-shadow: 0 0 0 3px rgba($color, 0.15);
+    background: rgba($color, 0.06);
+    border-color: rgba($color, 0.8);
+    box-shadow: 
+      0 0 0 3px rgba($color, 0.2),
+      0 0 16px rgba($color, 0.25); // Added outer glow
     outline: none;
   }
   

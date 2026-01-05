@@ -174,11 +174,14 @@ button.drawer__close {
   pointer-events: auto !important;
   width: 36px !important;
   height: 36px !important;
-  background: rgba(255, 255, 255, 0.1) !important;
-  border-radius: 6px !important;
+  background: rgba($admin-accent-error, 0.1) !important;
+  border: 1px solid rgba($admin-accent-error, 0.5) !important;
+  border-radius: 50% !important; // CIRCULAR - Clean Glow design
+  box-shadow: 0 0 12px rgba($admin-accent-error, 0.15) !important;
   
   &:hover {
-    background: rgba(255, 255, 255, 0.15) !important;
+    background: rgba($admin-accent-error, 0.2) !important;
+    box-shadow: 0 0 20px rgba($admin-accent-error, 0.4) !important;
   }
   
   svg {

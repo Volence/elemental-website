@@ -48,10 +48,12 @@
     transition: all 0.2s ease;
     border-bottom: 1px solid var(--theme-elevation-250);
 
-    /* Row hover state */
+    /* Row hover state - Clean Glow enhanced */
     &:hover {
-      background-color: var(--theme-elevation-100);
-      box-shadow: inset 4px 0 0 #ec4899;
+      background-color: rgba(139, 92, 246, 0.04); // Subtle purple tint
+      box-shadow: 
+        inset 4px 0 0 #a855f7,  // Left accent bar
+        inset 0 0 12px rgba(139, 92, 246, 0.08); // Inner glow
       transform: translateX(2px);
 
       /* Make text slightly bolder on hover */

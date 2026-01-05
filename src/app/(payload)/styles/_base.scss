@@ -329,29 +329,8 @@ button[aria-label="Close"]:not(.hamburger__close) {
   @include glow-badge($admin-accent-error);
 }
 
-// --------------------------------------------
-// BUTTON UTILITIES
-// --------------------------------------------
-
-.admin-button {
-  @include glow-button($admin-accent-primary);
-}
-
-.admin-button--action {
-  @include glow-button($admin-accent-success);
-}
-
-.admin-button--danger {
-  @include glow-button($admin-accent-error);
-}
-
-.admin-button--info {
-  @include glow-button($admin-accent-info);
-}
-
-.admin-button--warning {
-  @include glow-button($admin-accent-warning);
-}
+// Button utilities - MOVED TO components/_buttons.scss
+// Do NOT add button styling here!
 
 // --------------------------------------------
 // LAYOUT UTILITIES

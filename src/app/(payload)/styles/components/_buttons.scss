@@ -1,17 +1,89 @@
 // ============================================
-// BUTTONS - Component-Specific Overrides
+// BUTTONS - Single Source of Truth
 // ============================================
 //
-// Base button styles are in _payload-overrides.scss
-// This file only contains:
+// ALL button styling should be defined here:
+//   - Color variants (semantic + tier-based)
 //   - Size variants
 //   - Icon-only buttons
 //   - Loading states
 //   - Special case buttons (close, array add, etc.)
 //
+// Do NOT add button styles elsewhere!
+//
 
 @import '../variables';
 @import '../mixins';
+
+// ============================================
+// COLOR VARIANTS - Semantic
+// ============================================
+
+.btn-primary,
+button.btn-primary {
+  @include glow-button($admin-accent-primary); // Purple
+}
+
+.btn-info,
+button.btn-info {
+  @include glow-button($admin-accent-info); // Cyan
+}
+
+.btn-success,
+button.btn-success {
+  @include glow-button($admin-accent-success); // Green
+}
+
+.btn-warning,
+button.btn-warning {
+  @include glow-button($admin-accent-warning); // Orange
+}
+
+.btn-error,
+button.btn-error,
+button[class*="delete"],
+button[class*="remove"] {
+  @include glow-button($admin-accent-error); // Red
+}
+
+// ============================================
+// COLOR VARIANTS - Tier-Based
+// ============================================
+
+.btn-masters,
+button.btn-masters {
+  @include glow-button($tier-masters); // Pink
+}
+
+.btn-expert,
+button.btn-expert {
+  @include glow-button($tier-expert); // Purple/Violet
+}
+
+.btn-advanced,
+button.btn-advanced {
+  @include glow-button($tier-advanced); // Blue
+}
+
+.btn-4k,
+button.btn-4k {
+  @include glow-button($tier-4k); // Emerald
+}
+
+.btn-35k,
+button.btn-35k {
+  @include glow-button($tier-35k); // Yellow
+}
+
+.btn-30k,
+button.btn-30k {
+  @include glow-button($tier-30k); // Lime
+}
+
+.btn-below,
+button.btn-below {
+  @include glow-button($tier-below); // Gray
+}
 
 // ============================================
 // SIZE VARIANTS
@@ -104,18 +176,32 @@ button[class*="expand"]:not(.array-field__add-row),
 
 // ============================================
 // CLOSE BUTTONS (Modals/Drawers)
+// Example: Click 'Add Manager' on any team edit page
 // ============================================
 
 .drawer__header-close,
+.doc-drawer__header-close, // Payload-specific
 .modal__close,
 button[aria-label="Close"]:not(.nav__mobile-close) {
   @include glow-button($admin-accent-error);
-  width: 2.5rem;
-  height: 2.5rem;
-  padding: 0.75rem;
+  width: 2.25rem !important;
+  height: 2.25rem !important;
+  min-width: 2.25rem !important;
+  padding: 0 !important;
+  border-radius: 50% !important; // Circular - needs !important to override Payload
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  
+  svg {
+    width: 16px;
+    height: 16px;
+  }
   
   &:hover:not(:disabled) {
-    transform: none; // Don't move up/down
+    transform: none;
+    box-shadow: 0 0 20px rgba($admin-accent-error, 0.5) !important; // Stronger glow
+    background: rgba($admin-accent-error, 0.2) !important;
   }
   
   &:active:not(:disabled) {
@@ -241,14 +327,8 @@ button[data-loading="true"] {
   border-radius: 6px 6px 0 0;
 }
 
-// Form submit buttons in doc controls
-.doc-controls button[type="submit"],
-.form-submit button {
-  @include glow-button($admin-accent-success);
-  font-weight: 600;
-  padding: 0.75rem 2rem;
-  min-height: 44px;
-}
+// Form submit buttons - handled by _payload-overrides.scss
+// DO NOT DUPLICATE HERE
 
 // Delete buttons in doc controls
 .doc-controls button[class*="delete"],
@@ -311,4 +391,28 @@ button.popup-button,
       width: 100%;
     }
   }
+}
+
+// ============================================
+// ADMIN UTILITY BUTTONS (moved from _base.scss)
+// ============================================
+
+.admin-button {
+  @include glow-button($admin-accent-primary);
+}
+
+.admin-button--action {
+  @include glow-button($admin-accent-success);
+}
+
+.admin-button--danger {
+  @include glow-button($admin-accent-error);
+}
+
+.admin-button--info {
+  @include glow-button($admin-accent-info);
+}
+
+.admin-button--warning {
+  @include glow-button($admin-accent-warning);
 }

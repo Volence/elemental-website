@@ -268,91 +268,8 @@ button[class*="btn"],
   }
 }
 
-// --------------------------------------------
-// BUTTON COLOR VARIANTS - Semantic
-// --------------------------------------------
-
-.btn-primary,
-button.btn-primary {
-  @include glow-button($admin-accent-primary); // Purple
-}
-
-.btn-info,
-button.btn-info {
-  @include glow-button($admin-accent-info); // Cyan
-}
-
-.btn-success,
-button.btn-success {
-  @include glow-button($admin-accent-success); // Green
-}
-
-.btn-warning,
-button.btn-warning {
-  @include glow-button($admin-accent-warning); // Orange
-}
-
-.btn-error,
-button.btn-error,
-button[class*="delete"],
-button[class*="remove"] {
-  @include glow-button($admin-accent-error); // Red
-}
-
-// --------------------------------------------
-// BUTTON COLOR VARIANTS - Tier-Based
-// --------------------------------------------
-
-.btn-masters,
-button.btn-masters {
-  @include glow-button($tier-masters); // Pink
-}
-
-.btn-expert,
-button.btn-expert {
-  @include glow-button($tier-expert); // Purple/Violet
-}
-
-.btn-advanced,
-button.btn-advanced {
-  @include glow-button($tier-advanced); // Blue
-}
-
-.btn-4k,
-button.btn-4k {
-  @include glow-button($tier-4k); // Emerald
-}
-
-.btn-35k,
-button.btn-35k {
-  @include glow-button($tier-35k); // Yellow
-}
-
-.btn-30k,
-button.btn-30k {
-  @include glow-button($tier-30k); // Lime
-}
-
-.btn-below,
-button.btn-below {
-  @include glow-button($tier-below); // Gray
-}
-
-// --------------------------------------------
-// BUTTON SIZE VARIANTS
-// --------------------------------------------
-
-.btn--sm,
-button.btn--sm {
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-}
-
-.btn--lg,
-button.btn--lg {
-  padding: 1rem 2rem;
-  font-size: 1rem;
-}
+// Button color and size variants - MOVED TO components/_buttons.scss
+// Do NOT add button styling here!
 
 // ============================================
 // FORMS & INPUTS - Clean Glow as Default
@@ -594,6 +511,7 @@ label:has(input[type="radio"]) {
       rgba($admin-accent-primary, 0.5)
     );
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     opacity: 0.6;

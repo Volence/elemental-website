@@ -116,6 +116,77 @@
   margin-bottom: 0.5rem;
 }
 
+// Month/Year dropdown selectors - match dark theme
+// Example: Click any date field on /admin/collections/matches/364
+.react-datepicker__month-dropdown-container,
+.react-datepicker__year-dropdown-container {
+  margin: 0 0.5rem;
+}
+
+.react-datepicker__month-read-view,
+.react-datepicker__year-read-view,
+.react-datepicker__month-dropdown-container select,
+.react-datepicker__year-dropdown-container select,
+.react-datepicker__month-select,
+.react-datepicker__year-select {
+  background: rgba($admin-accent-info, 0.1) !important;
+  border: 1px solid rgba($admin-accent-info, 0.4) !important;
+  border-radius: 6px !important;
+  color: $admin-text-primary !important;
+  color-scheme: dark !important; // Forces dark native dropdown rendering
+  padding: 0.25rem 0.5rem !important;
+  cursor: pointer;
+  
+  &:hover {
+    border-color: rgba($admin-accent-info, 0.6) !important;
+    background: rgba($admin-accent-info, 0.15) !important;
+  }
+  
+  option {
+    background: #1a1a2e; // Fallback for browsers that support it
+    color: white;
+  }
+}
+
+// Day name headers - improve visibility
+.react-datepicker__day-names {
+  .react-datepicker__day-name {
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
+  }
+}
+
+// Month/Year dropdown LISTS (the expanded menus)
+.react-datepicker__month-dropdown,
+.react-datepicker__year-dropdown {
+  background: rgba(0, 0, 0, 0.9) !important;
+  border: 1px solid rgba($admin-accent-info, 0.4) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+  overflow: hidden;
+}
+
+.react-datepicker__month-option,
+.react-datepicker__year-option {
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  padding: 0.5rem 1rem !important;
+  transition: all 0.15s ease;
+  
+  &:hover {
+    background: rgba($admin-accent-info, 0.2) !important;
+    color: white !important;
+  }
+  
+  &--selected,
+  &--selected_month,
+  &--selected_year {
+    background: rgba($admin-accent-info, 0.3) !important;
+    color: $admin-accent-info !important;
+    font-weight: 600;
+  }
+}
+
 // Navigation Arrows
 .react-datepicker__navigation {
   top: 1rem;
@@ -336,13 +407,16 @@
   border-radius: $radius-sm;
   cursor: pointer;
   transition: all 0.2s ease;
+  color: rgba(255, 255, 255, 0.9); // Explicit white text for contrast
   
   &:hover {
     background: rgba($admin-accent-info, 0.1);
+    color: white;
   }
   
   &--is-focused {
     background: rgba($admin-accent-info, 0.08);
+    color: white;
   }
   
   &--is-selected {
