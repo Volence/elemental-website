@@ -134,16 +134,10 @@ export function ScheduleBuilderView() {
       const pw = match.productionWorkflow!
       const teamName = getFullTeamName(match.team?.name || 'Unknown Team')
       const date = new Date(match.date)
+      const unixTimestamp = Math.floor(date.getTime() / 1000)
       
-      // Format date header (e.g., "Wednesday December 17th 20CET (2pm EST):")
-      const weekday = date.toLocaleDateString('en-US', { weekday: 'long' })
-      const month = date.toLocaleDateString('en-US', { month: 'long' })
-      const day = date.getDate()
-      const daySuffix = day === 1 || day === 21 || day === 31 ? 'st' : day === 2 || day === 22 ? 'nd' : day === 3 || day === 23 ? 'rd' : 'th'
-      const cetTime = date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris', hour12: false })
-      const estTime = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York', hour12: true }).toLowerCase()
-      
-      output += `${weekday} ${month} ${day}${daySuffix} ${cetTime}CET (${estTime} EST):\n\n`
+      // Discord timestamp with long date and short time format
+      output += `<t:${unixTimestamp}:F>:\n\n`
       
       // Match info
       output += `${teamName} vs ${match.opponent}\n`
@@ -180,39 +174,13 @@ export function ScheduleBuilderView() {
     }
 
     let output = '📺 **This Week\'s ELMT Broadcast Schedule**\n\n'
-    output += 'Here\'s everything being casted this week — come support our teams!\n'
-    output += '(Only the first match is not on twitch.tv/ElementalEsport — all others are streamed by us!)\n\n'
+    output += 'Here\'s everything being casted this week — come support our teams!\n\n'
 
     selectedMatches.forEach((match, index) => {
       const pw = match.productionWorkflow!
       const teamName = getFullTeamName(match.team?.name || 'Unknown Team')
       const date = new Date(match.date)
-      
-      // Format date as "Monday, December 1 — 9:00 PM EST"
-      const weekday = date.toLocaleDateString('en-US', { weekday: 'long' })
-      const month = date.toLocaleDateString('en-US', { month: 'long' })
-      const day = date.getDate()
-      const timeEST = date.toLocaleTimeString('en-US', { 
-        hour: 'numeric', 
-        minute: '2-digit', 
-        timeZone: 'America/New_York',
-        hour12: true 
-      }).toUpperCase()
-      
-      // Format time for CET if needed
-      const timeCET = date.toLocaleTimeString('en-GB', { 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        timeZone: 'Europe/Paris',
-        hour12: false 
-      })
-      
-      // Determine if EMEA (show CET) or NA/SA (show EST only)
-      const region = match.team?.region || match.region || 'NA'
-      const showCET = region === 'EMEA'
-      const dateTimeStr = showCET 
-        ? `${weekday}, ${month} ${day} — ${timeCET} CET / ${timeEST}` 
-        : `${weekday}, ${month} ${day} — ${timeEST}`
+      const unixTimestamp = Math.floor(date.getTime() / 1000)
       
       // Add dashed separator
       output += '─────────────────────────────────────────\n\n'
@@ -221,38 +189,30 @@ export function ScheduleBuilderView() {
       output += `## 🎮 **${teamName} vs ${match.opponent}**\n`
       
       // Region / Division • League
+      const region = match.team?.region || match.region || 'NA'
       const division = match.team?.division || 'Expert'
       const league = match.league || 'S7 Regular Season'
       output += `🌍 ${region} / ${division} • ${league}\n`
       
-      // Date and time
-      output += `🕐 ${dateTimeStr}\n`
+      // Discord timestamp (automatically localized)
+      output += `🕐 <t:${unixTimestamp}:F>\n`
       
-      // Check if this is full production (has all staff assigned)
-      const isFull = pw.coverageStatus === 'full' && pw.assignedObserver && pw.assignedProducer && pw.assignedCasters?.length
+      // Stream
+      output += `🎬 Stream: https://twitch.tv/elmt_gg\n`
       
-      if (isFull) {
-        // Full production - show stream, observer, casters, lobby
-        const streamUrl = match.stream?.url || 'https://twitch.tv/ElementalEsport'
-        output += `🎬 Stream: ${streamUrl}\n`
-        
-        const observer = getUserName(pw.assignedObserver as User)
-        output += `👁️ Observer: ${observer}\n`
-        
-        const casters = pw.assignedCasters?.map(c => getUserName(c.user as User)).join(' & ') || ''
-        output += `🎙️ Casters: ${casters}\n`
-      } else {
-        // External/partial production - just show casted by link
-        const casterLinks = pw.assignedCasters?.map(c => {
-          const casterName = getUserName(c.user as User)
-          // Generate Twitch link from caster name (lowercase, no spaces)
-          return `https://www.twitch.tv/${casterName.toLowerCase().replace(/\s+/g, '')}`
-        }).join(' ') || 'TBD'
-        
-        output += `🎙️ Casted by: ${casterLinks}\n`
-      }
+      // Observer
+      const observer = pw.assignedObserver ? getUserName(pw.assignedObserver as User) : 'TBD'
+      output += `👁️ Observer: ${observer}\n`
       
-      // FACEIT Lobby (always shown)
+      // Producer
+      const producer = pw.assignedProducer ? getUserName(pw.assignedProducer as User) : 'TBD'
+      output += `🎥 Producer: ${producer}\n`
+      
+      // Casters
+      const casters = pw.assignedCasters?.map(c => getUserName(c.user as User)).join(' & ') || 'TBD'
+      output += `🎙️ Casters: ${casters}\n`
+      
+      // FACEIT Lobby
       const faceitLink = match.stream?.url || 'https://www.faceit.com/en/ow2/room/[TBD]'
       output += `🔗 FACEIT Lobby: ${faceitLink}\n`
     })
