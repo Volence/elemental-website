@@ -79,16 +79,16 @@ export interface Config {
     'social-posts': SocialPost;
     'recruitment-listings': RecruitmentListing;
     'recruitment-applications': RecruitmentApplication;
-    users: User;
-    'ignored-duplicates': IgnoredDuplicate;
-    'invite-links': InviteLink;
-    media: Media;
+    'discord-polls': DiscordPoll;
+    'discord-category-templates': DiscordCategoryTemplate;
     'audit-logs': AuditLog;
     'error-logs': ErrorLog;
     'cron-job-runs': CronJobRun;
     'active-sessions': ActiveSession;
-    'discord-polls': DiscordPoll;
-    'discord-category-templates': DiscordCategoryTemplate;
+    users: User;
+    'ignored-duplicates': IgnoredDuplicate;
+    'invite-links': InviteLink;
+    media: Media;
     redirects: Redirect;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
@@ -110,16 +110,16 @@ export interface Config {
     'social-posts': SocialPostsSelect<false> | SocialPostsSelect<true>;
     'recruitment-listings': RecruitmentListingsSelect<false> | RecruitmentListingsSelect<true>;
     'recruitment-applications': RecruitmentApplicationsSelect<false> | RecruitmentApplicationsSelect<true>;
-    users: UsersSelect<false> | UsersSelect<true>;
-    'ignored-duplicates': IgnoredDuplicatesSelect<false> | IgnoredDuplicatesSelect<true>;
-    'invite-links': InviteLinksSelect<false> | InviteLinksSelect<true>;
-    media: MediaSelect<false> | MediaSelect<true>;
+    'discord-polls': DiscordPollsSelect<false> | DiscordPollsSelect<true>;
+    'discord-category-templates': DiscordCategoryTemplatesSelect<false> | DiscordCategoryTemplatesSelect<true>;
     'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
     'error-logs': ErrorLogsSelect<false> | ErrorLogsSelect<true>;
     'cron-job-runs': CronJobRunsSelect<false> | CronJobRunsSelect<true>;
     'active-sessions': ActiveSessionsSelect<false> | ActiveSessionsSelect<true>;
-    'discord-polls': DiscordPollsSelect<false> | DiscordPollsSelect<true>;
-    'discord-category-templates': DiscordCategoryTemplatesSelect<false> | DiscordCategoryTemplatesSelect<true>;
+    users: UsersSelect<false> | UsersSelect<true>;
+    'ignored-duplicates': IgnoredDuplicatesSelect<false> | IgnoredDuplicatesSelect<true>;
+    'invite-links': InviteLinksSelect<false> | InviteLinksSelect<true>;
+    media: MediaSelect<false> | MediaSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
@@ -138,12 +138,12 @@ export interface Config {
     'social-media-settings': SocialMediaSetting;
     'social-media-config': SocialMediaConfig;
     'discord-server-manager': DiscordServerManager;
-    'data-consistency': DataConsistency;
     'audit-log-viewer': AuditLogViewer;
     'cron-monitor': CronMonitor;
     'error-dashboard': ErrorDashboard;
     'active-sessions-viewer': ActiveSessionsViewer;
     'database-health': DatabaseHealth;
+    'data-consistency': DataConsistency;
     'error-harvester-state': ErrorHarvesterState;
   };
   globalsSelect: {
@@ -153,12 +153,12 @@ export interface Config {
     'social-media-settings': SocialMediaSettingsSelect<false> | SocialMediaSettingsSelect<true>;
     'social-media-config': SocialMediaConfigSelect<false> | SocialMediaConfigSelect<true>;
     'discord-server-manager': DiscordServerManagerSelect<false> | DiscordServerManagerSelect<true>;
-    'data-consistency': DataConsistencySelect<false> | DataConsistencySelect<true>;
     'audit-log-viewer': AuditLogViewerSelect<false> | AuditLogViewerSelect<true>;
     'cron-monitor': CronMonitorSelect<false> | CronMonitorSelect<true>;
     'error-dashboard': ErrorDashboardSelect<false> | ErrorDashboardSelect<true>;
     'active-sessions-viewer': ActiveSessionsViewerSelect<false> | ActiveSessionsViewerSelect<true>;
     'database-health': DatabaseHealthSelect<false> | DatabaseHealthSelect<true>;
+    'data-consistency': DataConsistencySelect<false> | DataConsistencySelect<true>;
     'error-harvester-state': ErrorHarvesterStateSelect<false> | ErrorHarvesterStateSelect<true>;
   };
   locale: null;
@@ -1320,85 +1320,112 @@ export interface RecruitmentApplication {
   createdAt: string;
 }
 /**
- * Pairs of people with similar names that are actually different people
+ * 📊 View poll history and results from Discord
  *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "ignored-duplicates".
+ * via the `definition` "discord-polls".
  */
-export interface IgnoredDuplicate {
+export interface DiscordPoll {
   id: number;
   /**
-   * First person in the pair
+   * Name of the poll
    */
-  person1: number | Person;
+  pollName: string;
   /**
-   * Second person in the pair
+   * Discord message ID
    */
-  person2: number | Person;
+  messageId: string;
   /**
-   * Display label (auto-generated)
+   * Discord channel ID where poll was posted
    */
-  label: string;
+  channelId: string;
   /**
-   * Optional note explaining why these are different people
+   * Team this poll is for (optional)
    */
-  reason?: string | null;
+  team?: (number | null) | Team;
+  dateRange?: {
+    start?: string | null;
+    end?: string | null;
+  };
+  /**
+   * Time slot for the schedule (e.g., "8-10 EST")
+   */
+  timeSlot?: string | null;
+  /**
+   * Current status of the poll
+   */
+  status?: ('active' | 'closed' | 'scheduled') | null;
+  /**
+   * Admin user who created this poll (linked via Discord ID)
+   */
+  createdBy?: (number | null) | User;
+  /**
+   * How the poll was created
+   */
+  createdVia?: ('discord-command' | 'admin-panel') | null;
+  /**
+   * Cached vote data from Discord (auto-updated)
+   */
+  votes?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Generated schedule from poll results
+   */
+  schedule?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
 /**
- * 🔗 Generate invite links for new users with pre-configured permissions.
+ * Saved Discord category templates for quick server setup
  *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "invite-links".
+ * via the `definition` "discord-category-templates".
  */
-export interface InviteLink {
+export interface DiscordCategoryTemplate {
   id: number;
   /**
-   * Unique token for this invite link (auto-generated)
+   * Template name (e.g., "Team Channels", "Staff Category")
    */
-  token: string;
+  name: string;
   /**
-   * The role the new user will be assigned when they sign up
+   * What this template is for
    */
-  role: 'admin' | 'staff-manager' | 'team-manager' | 'user';
+  description?: string | null;
   /**
-   * Teams the new user will have access to (only applicable for Team Managers and Staff Managers)
+   * Original category name this was copied from
    */
-  assignedTeams?: (number | Team)[] | null;
+  sourceCategory?: string | null;
   /**
-   * Which departments this user will have access to (mainly for User role)
+   * Number of channels in this template
    */
-  departments?: {
-    /**
-     * Grant access to Production Dashboard for signing up to matches (casters, observers, producers)
-     */
-    isProductionStaff?: boolean | null;
-    /**
-     * Grants access to the Social Media Dashboard (manage posts, content calendar)
-     */
-    isSocialMediaStaff?: boolean | null;
-  };
+  channelCount?: number | null;
   /**
-   * Optional: Pre-assign an email address for this invite
+   * Template configuration (channels, permissions, etc.)
    */
-  email?: string | null;
-  /**
-   * When this invite link expires (default: 7 days from creation)
-   */
-  expiresAt: string;
-  /**
-   * When this invite was used (null if not yet used)
-   */
-  usedAt?: string | null;
-  /**
-   * The user who used this invite
-   */
-  usedBy?: (number | null) | User;
-  /**
-   * The admin who created this invite
-   */
-  createdBy?: (number | null) | User;
+  templateData:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1579,112 +1606,85 @@ export interface ActiveSession {
   createdAt: string;
 }
 /**
- * 📊 View poll history and results from Discord
+ * Pairs of people with similar names that are actually different people
  *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "discord-polls".
+ * via the `definition` "ignored-duplicates".
  */
-export interface DiscordPoll {
+export interface IgnoredDuplicate {
   id: number;
   /**
-   * Name of the poll
+   * First person in the pair
    */
-  pollName: string;
+  person1: number | Person;
   /**
-   * Discord message ID
+   * Second person in the pair
    */
-  messageId: string;
+  person2: number | Person;
   /**
-   * Discord channel ID where poll was posted
+   * Display label (auto-generated)
    */
-  channelId: string;
+  label: string;
   /**
-   * Team this poll is for (optional)
+   * Optional note explaining why these are different people
    */
-  team?: (number | null) | Team;
-  dateRange?: {
-    start?: string | null;
-    end?: string | null;
-  };
-  /**
-   * Time slot for the schedule (e.g., "8-10 EST")
-   */
-  timeSlot?: string | null;
-  /**
-   * Current status of the poll
-   */
-  status?: ('active' | 'closed' | 'scheduled') | null;
-  /**
-   * Admin user who created this poll (linked via Discord ID)
-   */
-  createdBy?: (number | null) | User;
-  /**
-   * How the poll was created
-   */
-  createdVia?: ('discord-command' | 'admin-panel') | null;
-  /**
-   * Cached vote data from Discord (auto-updated)
-   */
-  votes?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  /**
-   * Generated schedule from poll results
-   */
-  schedule?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
+  reason?: string | null;
   updatedAt: string;
   createdAt: string;
 }
 /**
- * Saved Discord category templates for quick server setup
+ * 🔗 Generate invite links for new users with pre-configured permissions.
  *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "discord-category-templates".
+ * via the `definition` "invite-links".
  */
-export interface DiscordCategoryTemplate {
+export interface InviteLink {
   id: number;
   /**
-   * Template name (e.g., "Team Channels", "Staff Category")
+   * Unique token for this invite link (auto-generated)
    */
-  name: string;
+  token: string;
   /**
-   * What this template is for
+   * The role the new user will be assigned when they sign up
    */
-  description?: string | null;
+  role: 'admin' | 'staff-manager' | 'team-manager' | 'user';
   /**
-   * Original category name this was copied from
+   * Teams the new user will have access to (only applicable for Team Managers and Staff Managers)
    */
-  sourceCategory?: string | null;
+  assignedTeams?: (number | Team)[] | null;
   /**
-   * Number of channels in this template
+   * Which departments this user will have access to (mainly for User role)
    */
-  channelCount?: number | null;
+  departments?: {
+    /**
+     * Grant access to Production Dashboard for signing up to matches (casters, observers, producers)
+     */
+    isProductionStaff?: boolean | null;
+    /**
+     * Grants access to the Social Media Dashboard (manage posts, content calendar)
+     */
+    isSocialMediaStaff?: boolean | null;
+  };
   /**
-   * Template configuration (channels, permissions, etc.)
+   * Optional: Pre-assign an email address for this invite
    */
-  templateData:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
+  email?: string | null;
+  /**
+   * When this invite link expires (default: 7 days from creation)
+   */
+  expiresAt: string;
+  /**
+   * When this invite was used (null if not yet used)
+   */
+  usedAt?: string | null;
+  /**
+   * The user who used this invite
+   */
+  usedBy?: (number | null) | User;
+  /**
+   * The admin who created this invite
+   */
+  createdBy?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -1874,20 +1874,12 @@ export interface PayloadLockedDocument {
         value: number | RecruitmentApplication;
       } | null)
     | ({
-        relationTo: 'users';
-        value: number | User;
+        relationTo: 'discord-polls';
+        value: number | DiscordPoll;
       } | null)
     | ({
-        relationTo: 'ignored-duplicates';
-        value: number | IgnoredDuplicate;
-      } | null)
-    | ({
-        relationTo: 'invite-links';
-        value: number | InviteLink;
-      } | null)
-    | ({
-        relationTo: 'media';
-        value: number | Media;
+        relationTo: 'discord-category-templates';
+        value: number | DiscordCategoryTemplate;
       } | null)
     | ({
         relationTo: 'audit-logs';
@@ -1906,12 +1898,20 @@ export interface PayloadLockedDocument {
         value: number | ActiveSession;
       } | null)
     | ({
-        relationTo: 'discord-polls';
-        value: number | DiscordPoll;
+        relationTo: 'users';
+        value: number | User;
       } | null)
     | ({
-        relationTo: 'discord-category-templates';
-        value: number | DiscordCategoryTemplate;
+        relationTo: 'ignored-duplicates';
+        value: number | IgnoredDuplicate;
+      } | null)
+    | ({
+        relationTo: 'invite-links';
+        value: number | InviteLink;
+      } | null)
+    | ({
+        relationTo: 'media';
+        value: number | Media;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -2384,6 +2384,104 @@ export interface RecruitmentApplicationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discord-polls_select".
+ */
+export interface DiscordPollsSelect<T extends boolean = true> {
+  pollName?: T;
+  messageId?: T;
+  channelId?: T;
+  team?: T;
+  dateRange?:
+    | T
+    | {
+        start?: T;
+        end?: T;
+      };
+  timeSlot?: T;
+  status?: T;
+  createdBy?: T;
+  createdVia?: T;
+  votes?: T;
+  schedule?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discord-category-templates_select".
+ */
+export interface DiscordCategoryTemplatesSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  sourceCategory?: T;
+  channelCount?: T;
+  templateData?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-logs_select".
+ */
+export interface AuditLogsSelect<T extends boolean = true> {
+  user?: T;
+  action?: T;
+  collection?: T;
+  documentId?: T;
+  documentTitle?: T;
+  metadata?: T;
+  ipAddress?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "error-logs_select".
+ */
+export interface ErrorLogsSelect<T extends boolean = true> {
+  user?: T;
+  errorType?: T;
+  message?: T;
+  stack?: T;
+  url?: T;
+  severity?: T;
+  resolved?: T;
+  resolvedAt?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "cron-job-runs_select".
+ */
+export interface CronJobRunsSelect<T extends boolean = true> {
+  jobName?: T;
+  status?: T;
+  startTime?: T;
+  endTime?: T;
+  duration?: T;
+  summary?: T;
+  errors?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "active-sessions_select".
+ */
+export interface ActiveSessionsSelect<T extends boolean = true> {
+  user?: T;
+  loginTime?: T;
+  lastActivity?: T;
+  ipAddress?: T;
+  userAgent?: T;
+  isActive?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
@@ -2541,104 +2639,6 @@ export interface MediaSelect<T extends boolean = true> {
               filename?: T;
             };
       };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "audit-logs_select".
- */
-export interface AuditLogsSelect<T extends boolean = true> {
-  user?: T;
-  action?: T;
-  collection?: T;
-  documentId?: T;
-  documentTitle?: T;
-  metadata?: T;
-  ipAddress?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "error-logs_select".
- */
-export interface ErrorLogsSelect<T extends boolean = true> {
-  user?: T;
-  errorType?: T;
-  message?: T;
-  stack?: T;
-  url?: T;
-  severity?: T;
-  resolved?: T;
-  resolvedAt?: T;
-  notes?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "cron-job-runs_select".
- */
-export interface CronJobRunsSelect<T extends boolean = true> {
-  jobName?: T;
-  status?: T;
-  startTime?: T;
-  endTime?: T;
-  duration?: T;
-  summary?: T;
-  errors?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "active-sessions_select".
- */
-export interface ActiveSessionsSelect<T extends boolean = true> {
-  user?: T;
-  loginTime?: T;
-  lastActivity?: T;
-  ipAddress?: T;
-  userAgent?: T;
-  isActive?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "discord-polls_select".
- */
-export interface DiscordPollsSelect<T extends boolean = true> {
-  pollName?: T;
-  messageId?: T;
-  channelId?: T;
-  team?: T;
-  dateRange?:
-    | T
-    | {
-        start?: T;
-        end?: T;
-      };
-  timeSlot?: T;
-  status?: T;
-  createdBy?: T;
-  createdVia?: T;
-  votes?: T;
-  schedule?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "discord-category-templates_select".
- */
-export interface DiscordCategoryTemplatesSelect<T extends boolean = true> {
-  name?: T;
-  description?: T;
-  sourceCategory?: T;
-  channelCount?: T;
-  templateData?: T;
-  updatedAt?: T;
-  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2893,17 +2893,6 @@ export interface DiscordServerManager {
   createdAt?: string | null;
 }
 /**
- * 📊 Check and fix data consistency issues across collections.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "data-consistency".
- */
-export interface DataConsistency {
-  id: number;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
  * 🔍 View user action logs for security monitoring.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2954,6 +2943,17 @@ export interface ActiveSessionsViewer {
  * via the `definition` "database-health".
  */
 export interface DatabaseHealth {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * 📊 Check and fix data consistency issues across collections.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "data-consistency".
+ */
+export interface DataConsistency {
   id: number;
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -3082,15 +3082,6 @@ export interface DiscordServerManagerSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "data-consistency_select".
- */
-export interface DataConsistencySelect<T extends boolean = true> {
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "audit-log-viewer_select".
  */
 export interface AuditLogViewerSelect<T extends boolean = true> {
@@ -3130,6 +3121,15 @@ export interface ActiveSessionsViewerSelect<T extends boolean = true> {
  * via the `definition` "database-health_select".
  */
 export interface DatabaseHealthSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "data-consistency_select".
+ */
+export interface DataConsistencySelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

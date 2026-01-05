@@ -159,11 +159,9 @@ const config = buildConfig({
     RecruitmentListings,
     RecruitmentApplications,
     
-    // SYSTEM: Administration
-    Users,
-    IgnoredDuplicates,
-    InviteLinks,
-    Media,
+    // DISCORD: Bot integration
+    DiscordPolls,
+    DiscordCategoryTemplates,
     
     // MONITORING: Security & Health
     AuditLogs,
@@ -171,9 +169,11 @@ const config = buildConfig({
     CronJobRuns,
     ActiveSessions,
     
-    // DISCORD: Bot integration
-    DiscordPolls,
-    DiscordCategoryTemplates,
+    // SYSTEM: Administration
+    Users,
+    IgnoredDuplicates,
+    InviteLinks,
+    Media,
   ],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [
@@ -183,12 +183,12 @@ const config = buildConfig({
     SocialMediaSettings, // Social Media group
     SocialMediaConfig, // Social Media group
     DiscordServerManager, // Discord group
-    DataConsistency, // System group
     AuditLogViewer, // Monitoring group
     CronMonitor, // Monitoring group
     ErrorDashboard, // Monitoring group
     ActiveSessionsViewer, // Monitoring group
     DatabaseHealth, // Monitoring group
+    DataConsistency, // System group
     ErrorHarvesterState, // Internal state tracking (hidden)
   ],
   plugins: [
