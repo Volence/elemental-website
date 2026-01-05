@@ -40,6 +40,15 @@ export async function GET() {
     const voiceChannels = channels.filter(ch => ch?.type === ChannelType.GuildVoice).size
     const categories = channels.filter(ch => ch?.type === ChannelType.GuildCategory).size
     const announcementChannels = channels.filter(ch => ch?.type === ChannelType.GuildAnnouncement).size
+    const forumChannels = channels.filter(ch => ch?.type === ChannelType.GuildForum).size
+    const stageChannels = channels.filter(ch => ch?.type === ChannelType.GuildStageVoice).size
+    
+    // Count threads
+    const threads = guild.channels.cache.filter(ch => 
+      ch?.type === ChannelType.PublicThread ||
+      ch?.type === ChannelType.PrivateThread ||
+      ch?.type === ChannelType.AnnouncementThread
+    ).size
 
     // Count roles (excluding @everyone and bot roles)
     const roles = guild.roles.cache.filter(
@@ -58,12 +67,18 @@ export async function GET() {
       m.presence?.status === 'dnd'
     ).size
 
+    // Calculate actual channel count (excluding categories, which are containers)
+    const actualChannelCount = textChannels + voiceChannels + announcementChannels + forumChannels + stageChannels + threads
+
     return NextResponse.json({
       channels: {
-        total: channels.size,
+        total: actualChannelCount, // Categories are NOT channels, they're containers
         text: textChannels,
         voice: voiceChannels,
         announcement: announcementChannels,
+        forum: forumChannels,
+        stage: stageChannels,
+        threads: threads,
         categories: categories,
       },
       roles: {

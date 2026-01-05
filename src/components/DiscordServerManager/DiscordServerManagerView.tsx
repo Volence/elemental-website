@@ -36,6 +36,9 @@ interface ServerStats {
     text: number
     voice: number
     announcement: number
+    forum: number
+    stage: number
+    threads: number
     categories: number
   }
   roles: {
@@ -886,6 +889,18 @@ const DiscordServerManagerView = () => {
                   <div className="stat-item">
                     <span className="stat-label">🔊 Voice:</span>
                     <span className="stat-value">{stats.channels.voice}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">💬 Forum:</span>
+                    <span className="stat-value">{stats.channels.forum}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">🎭 Stage:</span>
+                    <span className="stat-value">{stats.channels.stage}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">🧵 Threads:</span>
+                    <span className="stat-value">{stats.channels.threads}</span>
                   </div>
                   <div className="stat-item">
                     <span className="stat-label">📢 Announcements:</span>
