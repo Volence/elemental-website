@@ -268,78 +268,8 @@ button[class*="btn"],
   }
 }
 
-// --------------------------------------------
-// BUTTON COLOR VARIANTS - Semantic
-// --------------------------------------------
-
-.btn-primary,
-button.btn-primary {
-  @include glow-button($admin-accent-primary); // Purple
-}
-
-.btn-info,
-button.btn-info {
-  @include glow-button($admin-accent-info); // Cyan
-}
-
-.btn-success,
-button.btn-success {
-  @include glow-button($admin-accent-success); // Green
-}
-
-.btn-warning,
-button.btn-warning {
-  @include glow-button($admin-accent-warning); // Orange
-}
-
-.btn-error,
-button.btn-error,
-button[class*="delete"],
-button[class*="remove"] {
-  @include glow-button($admin-accent-error); // Red
-}
-
-// --------------------------------------------
-// BUTTON COLOR VARIANTS - Tier-Based
-// --------------------------------------------
-
-.btn-masters,
-button.btn-masters {
-  @include glow-button($tier-masters); // Pink
-}
-
-.btn-expert,
-button.btn-expert {
-  @include glow-button($tier-expert); // Purple/Violet
-}
-
-.btn-advanced,
-button.btn-advanced {
-  @include glow-button($tier-advanced); // Blue
-}
-
-.btn-4k,
-button.btn-4k {
-  @include glow-button($tier-4k); // Emerald
-}
-
-.btn-35k,
-button.btn-35k {
-  @include glow-button($tier-35k); // Yellow
-}
-
-.btn-30k,
-button.btn-30k {
-  @include glow-button($tier-30k); // Lime
-}
-
-.btn-below,
-button.btn-below {
-  @include glow-button($tier-below); // Gray
-}
-
-// Button size variants - handled by components/_buttons.scss
-// DO NOT DUPLICATE HERE
+// Button color and size variants - MOVED TO components/_buttons.scss
+// Do NOT add button styling here!
 
 // ============================================
 // FORMS & INPUTS - Clean Glow as Default
