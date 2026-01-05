@@ -102,6 +102,24 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
     }
   }, [template])
 
+  const getChannelIcon = (type: number) => {
+    switch (type) {
+      case 0: return <Hash size={14} />
+      case 2: return <Volume2 size={14} />
+      case 15: return <span className="channel-icon-emoji">💬</span>
+      default: return <Hash size={14} />
+    }
+  }
+
+  const getChannelTypeName = (type: number) => {
+    switch (type) {
+      case 0: return 'Text'
+      case 2: return 'Voice'
+      case 15: return 'Forum'
+      default: return 'Text'
+    }
+  }
+
   const handleSave = async () => {
     if (!editedTemplate) return
     setIsSaving(true)
@@ -434,6 +452,10 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
             {editedTemplate.channels.map((channel, index) => (
               <div key={index} className="channel-edit-card">
                 <GripVertical className="drag-handle" size={16} />
+                <div className="channel-type-badge">
+                  {getChannelIcon(channel.type)}
+                  <span className="channel-type-label">{getChannelTypeName(channel.type)}</span>
+                </div>
                 <input
                   type="text"
                   className="channel-name-input"

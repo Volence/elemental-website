@@ -1267,6 +1267,32 @@
       }
     }
 
+    .channel-type-badge {
+      display: flex;
+      align-items: center;
+      gap: $spacing-xs;
+      padding: $spacing-xs $spacing-sm;
+      background: rgba($admin-accent-primary, 0.1);
+      border: 1px solid rgba($admin-accent-primary, 0.3);
+      border-radius: $radius-sm;
+      flex-shrink: 0;
+
+      svg, .channel-icon-emoji {
+        color: $admin-accent-primary;
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+      }
+
+      .channel-type-label {
+        color: $admin-text-primary;
+        font-size: $font-size-xs;
+        font-weight: $font-weight-medium;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+    }
+
     .channel-name-input {
       flex: 1;
       padding: $spacing-sm $spacing-md;
