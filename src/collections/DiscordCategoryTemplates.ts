@@ -11,10 +11,7 @@ export const DiscordCategoryTemplates: CollectionConfig = {
     group: 'Discord',
     useAsTitle: 'name',
     defaultColumns: ['name', 'description', 'channelCount', 'updatedAt'],
-    hidden: ({ user }) => {
-      // Show to admins to establish Discord group order
-      return (user as any)?.role !== 'admin'
-    },
+    hidden: () => true, // Hidden - accessed via Discord Server Manager UI
   },
   access: {
     create: ({ req: { user } }) => (user as any)?.role === 'admin',

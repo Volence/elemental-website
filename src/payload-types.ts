@@ -138,12 +138,12 @@ export interface Config {
     'social-media-settings': SocialMediaSetting;
     'social-media-config': SocialMediaConfig;
     'discord-server-manager': DiscordServerManager;
+    'data-consistency': DataConsistency;
     'audit-log-viewer': AuditLogViewer;
     'cron-monitor': CronMonitor;
     'error-dashboard': ErrorDashboard;
     'active-sessions-viewer': ActiveSessionsViewer;
     'database-health': DatabaseHealth;
-    'data-consistency': DataConsistency;
     'error-harvester-state': ErrorHarvesterState;
   };
   globalsSelect: {
@@ -153,12 +153,12 @@ export interface Config {
     'social-media-settings': SocialMediaSettingsSelect<false> | SocialMediaSettingsSelect<true>;
     'social-media-config': SocialMediaConfigSelect<false> | SocialMediaConfigSelect<true>;
     'discord-server-manager': DiscordServerManagerSelect<false> | DiscordServerManagerSelect<true>;
+    'data-consistency': DataConsistencySelect<false> | DataConsistencySelect<true>;
     'audit-log-viewer': AuditLogViewerSelect<false> | AuditLogViewerSelect<true>;
     'cron-monitor': CronMonitorSelect<false> | CronMonitorSelect<true>;
     'error-dashboard': ErrorDashboardSelect<false> | ErrorDashboardSelect<true>;
     'active-sessions-viewer': ActiveSessionsViewerSelect<false> | ActiveSessionsViewerSelect<true>;
     'database-health': DatabaseHealthSelect<false> | DatabaseHealthSelect<true>;
-    'data-consistency': DataConsistencySelect<false> | DataConsistencySelect<true>;
     'error-harvester-state': ErrorHarvesterStateSelect<false> | ErrorHarvesterStateSelect<true>;
   };
   locale: null;
@@ -2893,6 +2893,17 @@ export interface DiscordServerManager {
   createdAt?: string | null;
 }
 /**
+ * 📊 Check and fix data consistency issues across collections.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "data-consistency".
+ */
+export interface DataConsistency {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * 🔍 View user action logs for security monitoring.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2943,17 +2954,6 @@ export interface ActiveSessionsViewer {
  * via the `definition` "database-health".
  */
 export interface DatabaseHealth {
-  id: number;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
- * 📊 Check and fix data consistency issues across collections.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "data-consistency".
- */
-export interface DataConsistency {
   id: number;
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -3082,6 +3082,15 @@ export interface DiscordServerManagerSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "data-consistency_select".
+ */
+export interface DataConsistencySelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "audit-log-viewer_select".
  */
 export interface AuditLogViewerSelect<T extends boolean = true> {
@@ -3121,15 +3130,6 @@ export interface ActiveSessionsViewerSelect<T extends boolean = true> {
  * via the `definition` "database-health_select".
  */
 export interface DatabaseHealthSelect<T extends boolean = true> {
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "data-consistency_select".
- */
-export interface DataConsistencySelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

@@ -182,13 +182,13 @@ const config = buildConfig({
     ProductionDashboard, // Production group
     SocialMediaSettings, // Social Media group
     SocialMediaConfig, // Social Media group
-    DiscordServerManager, // Discord group
+    DiscordServerManager, // Discord group - placed here to establish group order
+    DataConsistency, // System group (shown in sidebar after Discord)
     AuditLogViewer, // Monitoring group
     CronMonitor, // Monitoring group
     ErrorDashboard, // Monitoring group
     ActiveSessionsViewer, // Monitoring group
     DatabaseHealth, // Monitoring group
-    DataConsistency, // System group
     ErrorHarvesterState, // Internal state tracking (hidden)
   ],
   plugins: [
