@@ -23,6 +23,7 @@ interface Match {
   date: string
   region: string
   league: string
+  faceitLobby?: string
   stream?: {
     url?: string
   }
@@ -142,8 +143,8 @@ export function ScheduleBuilderView() {
       // Match info
       output += `${teamName} vs ${match.opponent}\n`
       
-      // FACEIT Lobby (use stream URL or placeholder)
-      const faceitLink = match.stream?.url || 'https://www.faceit.com/en/ow2/room/[TBD]'
+      // FACEIT Lobby
+      const faceitLink = match.faceitLobby || 'https://www.faceit.com/en/ow2/room/[TBD]'
       output += `FACEIT Lobby: ${faceitLink}\n\n`
       
       // Staff assignments (with @ mentions)
@@ -210,7 +211,7 @@ export function ScheduleBuilderView() {
       output += `🎙️ Casters: ${casters}\n`
       
       // FACEIT Lobby
-      const faceitLink = match.stream?.url || 'https://www.faceit.com/en/ow2/room/[TBD]'
+      const faceitLink = match.faceitLobby || 'https://www.faceit.com/en/ow2/room/[TBD]'
       output += `🔗 FACEIT Lobby: ${faceitLink}\n`
     })
 
