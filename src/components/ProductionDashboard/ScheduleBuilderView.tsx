@@ -128,7 +128,7 @@ export function ScheduleBuilderView() {
       return '**No matches selected for broadcast this week.**\n\nUse the checkboxes to select matches to include in the schedule.'
     }
 
-    let output = ''
+    let output = 'Schedule for the week!\n\n'
 
     selectedMatches.forEach((match, index) => {
       const pw = match.productionWorkflow!
@@ -160,9 +160,6 @@ export function ScheduleBuilderView() {
         output += '\n' + '-'.repeat(80) + '\n\n'
       }
     })
-
-    output += '\n' + '-'.repeat(80) + '\n\n'
-    output += 'Schedule for the week!'
 
     return output
   }
