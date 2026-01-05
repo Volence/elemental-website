@@ -34,13 +34,8 @@ export const DiscordPolls: CollectionConfig = {
     defaultColumns: ['pollName', 'team', 'status', 'createdBy', 'createdAt'],
     description: '📊 View poll history and results from Discord',
     group: 'Discord',
-    hidden: ({ user }) => {
-      if (!user) return true
-      // Hide from users who aren't managers or admins
-      return !hasAnyRole([UserRole.ADMIN, UserRole.TEAM_MANAGER, UserRole.STAFF_MANAGER])({
-        req: { user },
-      } as any)
-    },
+    // Hidden until poll system is implemented
+    hidden: () => true,
   },
   fields: [
     {
