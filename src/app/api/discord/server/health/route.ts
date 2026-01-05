@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { ensureDiscordClient } from '@/discord/bot'
-import { ChannelType, PermissionsBitField } from 'discord.js'
+import { ChannelType, PermissionsBitField, REST, Routes } from 'discord.js'
 
 interface HealthIssue {
   type: 'warning' | 'error' | 'info'
@@ -128,6 +128,77 @@ export async function GET() {
         message: `${totalChannels} channels (approaching Discord limit of 500)`,
         suggestion: 'Monitor channel count and archive unused channels',
       })
+    }
+
+    // Check for members without roles (only @everyone)
+    try {
+      const discordToken = process.env.DISCORD_BOT_TOKEN
+      if (!discordToken) {
+        console.warn('DISCORD_BOT_TOKEN not configured, skipping member role check')
+      } else {
+        const rest = new REST({ version: '10' }).setToken(discordToken)
+        const fetchedMembers: any[] = []
+        let after: string | undefined = undefined
+        let hasMore = true
+
+        // Fetch first 1000 members for performance
+        while (hasMore && fetchedMembers.length < 1000) {
+          try {
+            const params = new URLSearchParams({ limit: '1000' })
+            if (after) params.set('after', after)
+
+            const batch = (await rest.get(Routes.guildMembers(guildId), {
+              query: params,
+            })) as any[]
+
+            if (batch && batch.length > 0) {
+              fetchedMembers.push(...batch)
+              after = batch[batch.length - 1].user.id
+              hasMore = batch.length === 1000
+              await new Promise(resolve => setTimeout(resolve, 100))
+            } else {
+              hasMore = false
+            }
+          } catch (fetchError: any) {
+            console.warn('Error fetching member batch for health check:', fetchError.message)
+            hasMore = false
+          }
+        }
+
+        const everyoneRoleId = guild.roles.everyone.id
+        const membersWithoutRoles = fetchedMembers.filter((member: any) => {
+          // Exclude bots
+          if (member.user?.bot) return false
+
+          const roles = member.roles || []
+          // Check if member only has @everyone role or no roles at all
+          return roles.length === 0 || (roles.length === 1 && roles[0] === everyoneRoleId)
+        })
+
+        if (membersWithoutRoles.length > 0) {
+          // Limit to first 20 for display
+          const displayMembers = membersWithoutRoles.slice(0, 20)
+          const memberList = displayMembers
+            .map(
+              (m: any) => m.nick || m.user.global_name || m.user.username || 'Unknown',
+            )
+            .join(', ')
+          const moreText =
+            membersWithoutRoles.length > 20
+              ? ` (and ${membersWithoutRoles.length - 20} more)`
+              : ''
+
+          issues.push({
+            type: 'info',
+            category: 'Members',
+            message: `${membersWithoutRoles.length} member(s) have no roles assigned (only @everyone)`,
+            suggestion: `Consider assigning roles to members: ${memberList}${moreText}`,
+          })
+        }
+      }
+    } catch (memberCheckError: any) {
+      console.warn('Error checking members without roles:', memberCheckError.message)
+      // Don't fail the entire health check if member check fails
     }
 
     // Calculate health score
