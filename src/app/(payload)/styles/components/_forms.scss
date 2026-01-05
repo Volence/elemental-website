@@ -336,13 +336,16 @@
   border-radius: $radius-sm;
   cursor: pointer;
   transition: all 0.2s ease;
+  color: rgba(255, 255, 255, 0.9); // Explicit white text for contrast
   
   &:hover {
     background: rgba($admin-accent-info, 0.1);
+    color: white;
   }
   
   &--is-focused {
     background: rgba($admin-accent-info, 0.08);
+    color: white;
   }
   
   &--is-selected {
