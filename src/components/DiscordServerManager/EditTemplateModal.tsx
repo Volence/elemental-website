@@ -423,7 +423,7 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
                     onClick={() => handleAddChannel(15)}
                     type="button"
                   >
-                    <MessageSquare size={14} /> Forum Channel
+                    <span className="channel-icon-emoji">💬</span> Forum Channel
                   </button>
                 </div>
               )}

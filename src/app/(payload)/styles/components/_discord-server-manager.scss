@@ -986,6 +986,18 @@
               max-height: 14px;
               min-width: 14px;
               min-height: 14px;
+              margin: 0 !important;
+              padding: 0 !important;
+              flex-shrink: 0;
+            }
+
+            .channel-icon-emoji {
+              font-size: 14px;
+              line-height: 14px;
+              width: 14px;
+              height: 14px;
+              display: inline-block;
+              text-align: center;
             }
 
             &:hover {
