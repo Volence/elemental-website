@@ -12,7 +12,10 @@ export const CronJobRuns: CollectionConfig = {
     defaultColumns: ['jobName', 'status', 'startTime', 'duration', 'createdAt'],
     description: '⏰ System-generated log of scheduled job executions.',
     group: 'Monitoring',
-    hidden: () => true, // Hidden from sidebar (use Monitoring globals instead)
+    hidden: ({ user }) => {
+      // Visible to admins to establish Monitoring group order before System
+      return (user as any)?.role !== 'admin'
+    },
   },
   access: {
     // Only admins can read cron job runs
