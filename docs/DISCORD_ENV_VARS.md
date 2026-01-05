@@ -15,7 +15,7 @@ DISCORD_GUILD_ID=your_server_id_here
 DISCORD_CLIENT_ID=your_client_id_here
 
 # Team Cards Channel ID (where team/staff cards are posted)
-DISCORD_TEAM_CARDS_CHANNEL_ID=1457238873326489723
+DISCORD_CARDS_CHANNEL=1457238873326489723
 
 # Public server URL (for team card images to load in Discord)
 NEXT_PUBLIC_SERVER_URL=https://elmt.gg
@@ -39,7 +39,7 @@ NEXT_PUBLIC_SERVER_URL=https://elmt.gg
 3. Go to "General Information"
 4. Copy the "Application ID"
 
-### DISCORD_TEAM_CARDS_CHANNEL_ID
+### DISCORD_CARDS_CHANNEL
 1. Enable Developer Mode in Discord
 2. Right-click the #server-info channel → Copy Channel ID
 
