@@ -241,14 +241,8 @@ button[data-loading="true"] {
   border-radius: 6px 6px 0 0;
 }
 
-// Form submit buttons in doc controls
-.doc-controls button[type="submit"],
-.form-submit button {
-  @include glow-button($admin-accent-success);
-  font-weight: 600;
-  padding: 0.75rem 2rem;
-  min-height: 44px;
-}
+// Form submit buttons - handled by _payload-overrides.scss
+// DO NOT DUPLICATE HERE
 
 // Delete buttons in doc controls
 .doc-controls button[class*="delete"],

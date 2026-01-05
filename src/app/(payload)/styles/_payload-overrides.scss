@@ -338,21 +338,8 @@ button.btn-below {
   @include glow-button($tier-below); // Gray
 }
 
-// --------------------------------------------
-// BUTTON SIZE VARIANTS
-// --------------------------------------------
-
-.btn--sm,
-button.btn--sm {
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-}
-
-.btn--lg,
-button.btn--lg {
-  padding: 1rem 2rem;
-  font-size: 1rem;
-}
+// Button size variants - handled by components/_buttons.scss
+// DO NOT DUPLICATE HERE
 
 // ============================================
 // FORMS & INPUTS - Clean Glow as Default
@@ -594,6 +581,7 @@ label:has(input[type="radio"]) {
       rgba($admin-accent-primary, 0.5)
     );
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     opacity: 0.6;
