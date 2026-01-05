@@ -128,33 +128,45 @@ export function ScheduleBuilderView() {
       return '**No matches selected for broadcast this week.**\n\nUse the checkboxes to select matches to include in the schedule.'
     }
 
-    let output = '**📺 This Week\'s Broadcasts - Internal Schedule**\n\n'
+    let output = ''
 
-    selectedMatches.forEach((match) => {
+    selectedMatches.forEach((match, index) => {
       const pw = match.productionWorkflow!
       const teamName = getFullTeamName(match.team?.name || 'Unknown Team')
       const date = new Date(match.date)
-      const dateStr = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-      const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })
-
-      output += `**${teamName}** vs ${match.opponent}\n`
-      output += `📅 ${dateStr} at ${timeStr}\n`
-
-      // Staff assignments
-      const observer = pw.assignedObserver ? getUserName(pw.assignedObserver as User) : 'TBD'
-      const producer = pw.assignedProducer ? getUserName(pw.assignedProducer as User) : 'TBD'
-      const casters = pw.assignedCasters?.map(c => getUserName(c.user as User)).join(', ') || 'TBD'
-
-      output += `👁️ Observer: ${observer}\n`
-      output += `🎬 Producer: ${producer}\n`
-      output += `🎙️ Casters: ${casters}\n`
-
-      if (match.stream?.url) {
-        output += `🔗 ${match.stream.url}\n`
+      
+      // Format date header (e.g., "Wednesday December 17th 20CET (2pm EST):")
+      const weekday = date.toLocaleDateString('en-US', { weekday: 'long' })
+      const month = date.toLocaleDateString('en-US', { month: 'long' })
+      const day = date.getDate()
+      const daySuffix = day === 1 || day === 21 || day === 31 ? 'st' : day === 2 || day === 22 ? 'nd' : day === 3 || day === 23 ? 'rd' : 'th'
+      const cetTime = date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris', hour12: false })
+      const estTime = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York', hour12: true }).toLowerCase()
+      
+      output += `${weekday} ${month} ${day}${daySuffix} ${cetTime}CET (${estTime} EST):\n\n`
+      
+      // Match info
+      output += `${teamName} vs ${match.opponent}\n`
+      
+      // FACEIT Lobby (use stream URL or placeholder)
+      const faceitLink = match.stream?.url || 'https://www.faceit.com/en/ow2/room/[TBD]'
+      output += `FACEIT Lobby: ${faceitLink}\n\n`
+      
+      // Staff assignments (with @ mentions)
+      const observer = pw.assignedObserver ? `@${getUserName(pw.assignedObserver as User)}` : 'TBD'
+      const casters = pw.assignedCasters?.map(c => `@${getUserName(c.user as User)}`).join(' & ') || 'TBD'
+      
+      output += `Observer: ${observer}\n`
+      output += `Casters: ${casters}\n`
+      
+      // Add separator if not last match
+      if (index < selectedMatches.length - 1) {
+        output += '\n' + '-'.repeat(80) + '\n\n'
       }
-
-      output += '\n'
     })
+
+    output += '\n' + '-'.repeat(80) + '\n\n'
+    output += 'Schedule for the week!'
 
     return output
   }
@@ -165,23 +177,48 @@ export function ScheduleBuilderView() {
       return '**No matches selected for broadcast this week.**'
     }
 
-    let output = '**📺 This Week\'s ELMT Broadcasts**\n\n'
-    output += 'Tune in to watch our teams compete!\n\n'
+    let output = '**📺 This Week\'s ELMT Broadcast Schedule**\n'
+    output += '═══════════════════════════════════\n\n'
 
-    selectedMatches.forEach((match) => {
+    selectedMatches.forEach((match, index) => {
+      const pw = match.productionWorkflow!
       const teamName = getFullTeamName(match.team?.name || 'Unknown Team')
       const date = new Date(match.date)
-      const dateStr = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-      const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })
-
-      output += `**${teamName}** vs ${match.opponent}\n`
-      output += `📅 ${dateStr} at ${timeStr}\n`
-
-      if (match.stream?.url) {
-        output += `🔗 ${match.stream.url}\n`
+      
+      // Discord timestamp (localized automatically) - format: <t:UNIX_TIMESTAMP:F>
+      const unixTimestamp = Math.floor(date.getTime() / 1000)
+      
+      // Team and match info
+      output += `🎮 **${teamName} vs ${match.opponent}**\n`
+      
+      // Region / Division • League
+      const region = match.team?.region || match.region || 'NA'
+      const division = match.team?.division || 'Expert'
+      const league = match.league || 'S7 Regular Season'
+      output += `🌍 ${region} / ${division} • ${league}\n`
+      
+      // Discord timestamp (automatically localized for each user)
+      output += `🕐 <t:${unixTimestamp}:F>\n`
+      
+      // Casters (with Twitch links if available)
+      const casters = pw.assignedCasters?.map(c => {
+        const casterName = getUserName(c.user as User)
+        // Placeholder for Twitch links - you'd need to add twitch username to user profile
+        return `https://www.twitch.tv/${casterName.toLowerCase().replace(/\s+/g, '')}`
+      }) || []
+      
+      if (casters.length > 0) {
+        output += `🎙️ Casted by: ${casters.join(' & ')}\n`
       }
-
-      output += '\n'
+      
+      // FACEIT Lobby
+      const faceitLink = match.stream?.url || 'https://www.faceit.com/en/ow2/room/[TBD]'
+      output += `🔗 FACEIT Lobby: ${faceitLink}\n`
+      
+      // Add separator if not last match
+      if (index < selectedMatches.length - 1) {
+        output += '\n───────────────────────────────────\n\n'
+      }
     })
 
     return output
