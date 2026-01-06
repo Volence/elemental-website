@@ -1506,15 +1506,17 @@ button.dropdown-indicator.dropdown-indicator,
     
     // Value container needs space on both sides
     .rs__value-container {
-      padding-left: 0.625rem !important;  // Space from left border
-      padding-right: 1.5rem !important;   // Space for indicator
+      padding-left: 0.75rem !important;  // More space from left border
+      padding-right: 1.5rem !important;  // Space for indicator
       overflow: hidden !important;
+      margin-left: 0 !important;
     }
     
     .rs__single-value {
       overflow: hidden !important;
       text-overflow: ellipsis !important;
       white-space: nowrap !important;
+      margin-left: 0.25rem !important;  // Extra margin from left
     }
   }
   
