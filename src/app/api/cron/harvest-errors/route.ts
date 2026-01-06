@@ -1,39 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { logError } from '@/utilities/errorLogger'
 import { startCronJob, completeCronJob, failCronJob } from '@/utilities/cronLogger'
-import { exec } from 'child_process'
-import { promisify } from 'util'
-
-const execAsync = promisify(exec)
 
 /**
- * Error Harvesting Cron Job
+ * Error Stats Cron Job
  * 
- * This job reads Payload logs and creates error entries in the Error Dashboard
- * for any errors that occurred. This catches database errors, API errors, and
- * any other errors that Payload logs.
+ * This job aggregates error statistics from the error-logs collection
+ * and updates the error dashboard with summary information.
  * 
  * Schedule: Run every 5 minutes
+ * 
+ * Note: Actual errors are captured by the global error handler in instrumentation.ts
+ * and logged directly to the error-logs collection. This cron just aggregates stats.
  */
-
-interface ParsedError {
-  message: string
-  timestamp: string
-  type: 'database' | 'api' | 'system' | 'backend'
-  stack?: string
-  severity: 'critical' | 'high' | 'medium' | 'low'
-  userId?: string | number
-}
 
 export async function POST(request: NextRequest) {
   let cronJobRunId: number | string | undefined
   
   try {
     // Authenticate the request
+    const cronSecret = request.headers.get('x-cron-secret')
     const authHeader = request.headers.get('authorization')
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    
+    const isAuthorized = 
+      cronSecret === process.env.CRON_SECRET ||
+      authHeader === `Bearer ${process.env.CRON_SECRET}`
+    
+    if (!isAuthorized) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -45,94 +39,103 @@ export async function POST(request: NextRequest) {
     // Start tracking this cron job run
     cronJobRunId = await startCronJob(payload, 'error-harvester')
 
-    // Get the last checked time to avoid re-processing
-    const state = await payload.findGlobal({
-      slug: 'error-harvester-state',
-    })
-
-    const lastCheckedAt = state.lastCheckedAt ? new Date(state.lastCheckedAt) : null
     const now = new Date()
+    const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
 
-    // Calculate how long to look back (default to 5 minutes, or since last check)
-    let lookbackMinutes = 5
-    if (lastCheckedAt) {
-      const minutesSinceLastCheck = Math.floor((now.getTime() - lastCheckedAt.getTime()) / 60000)
-      // Add 1 minute buffer to ensure we don't miss anything
-      lookbackMinutes = Math.min(minutesSinceLastCheck + 1, 10) // Max 10 minutes
-    }
-
-    // Get logs since last check (or last 5 minutes)
-    // Note: In production, you'd read from a logging service or log files
-    // For Docker, we can read from docker compose logs
-    const { stdout } = await execAsync(
-      `docker compose logs --since ${lookbackMinutes}m payload 2>&1 | grep -E "\\[ERROR\\]|error:|Error:" | tail -100`
-    )
-
-    const logLines = stdout.split('\n').filter(line => line.trim())
-    
-    if (logLines.length === 0) {
-      // Update the last checked time even when no errors found
-      await payload.updateGlobal({
-        slug: 'error-harvester-state',
-        data: {
-          lastCheckedAt: now.toISOString(),
-          lastRunErrors: 0,
-          totalRunCount: (state.totalRunCount || 0) + 1,
+    // Get error counts for different time periods
+    const [last24Hours, lastHour, unresolvedErrors] = await Promise.all([
+      payload.count({
+        collection: 'error-logs',
+        where: {
+          createdAt: { greater_than: oneDayAgo.toISOString() },
         },
-      })
-      
-      const summary = {
-        success: true,
-        message: 'No errors found in logs',
-        errorsProcessed: 0,
-      }
-      
-      // Mark cron job as completed
-      if (cronJobRunId) {
-        await completeCronJob(payload, cronJobRunId, summary)
-      }
-      
-      return NextResponse.json(summary)
-    }
+      }),
+      payload.count({
+        collection: 'error-logs',
+        where: {
+          createdAt: { greater_than: oneHourAgo.toISOString() },
+        },
+      }),
+      payload.count({
+        collection: 'error-logs',
+        where: {
+          resolved: { equals: false },
+        },
+      }),
+    ])
 
-    const errors = parseErrors(logLines)
-    let created = 0
+    // Get breakdown by severity for unresolved errors
+    const [criticalCount, highCount, mediumCount, lowCount] = await Promise.all([
+      payload.count({
+        collection: 'error-logs',
+        where: {
+          and: [
+            { resolved: { equals: false } },
+            { severity: { equals: 'critical' } },
+          ],
+        },
+      }),
+      payload.count({
+        collection: 'error-logs',
+        where: {
+          and: [
+            { resolved: { equals: false } },
+            { severity: { equals: 'high' } },
+          ],
+        },
+      }),
+      payload.count({
+        collection: 'error-logs',
+        where: {
+          and: [
+            { resolved: { equals: false } },
+            { severity: { equals: 'medium' } },
+          ],
+        },
+      }),
+      payload.count({
+        collection: 'error-logs',
+        where: {
+          and: [
+            { resolved: { equals: false } },
+            { severity: { equals: 'low' } },
+          ],
+        },
+      }),
+    ])
 
-    // Create error entries for EACH occurrence
-    // The Error Dashboard will group them and show counts + affected users
-    for (const error of errors) {
-      // Create the error log entry for each occurrence
-      await logError(payload, {
-        errorType: error.type,
-        message: error.message,
-        stack: error.stack,
-        severity: error.severity,
-        user: error.userId, // Include user if we can extract it
-      })
-      
-      created++
-    }
-
-    // Update the last checked time
-    await payload.updateGlobal({
-      slug: 'error-harvester-state',
-      data: {
-        lastCheckedAt: now.toISOString(),
-        lastRunErrors: created,
-        totalRunCount: (state.totalRunCount || 0) + 1,
+    // Get most recent errors for quick review
+    const recentErrors = await payload.find({
+      collection: 'error-logs',
+      where: {
+        resolved: { equals: false },
       },
+      sort: '-createdAt',
+      limit: 5,
     })
 
     const summary = {
       success: true,
-      message: `Harvested ${created} error occurrence(s) from logs`,
-      errorsCreated: created,
-      totalErrorsFound: errors.length,
-      lookbackMinutes,
-      lastCheckedAt: now.toISOString(),
-      previousCheckAt: lastCheckedAt?.toISOString() || 'never',
-      totalRuns: (state.totalRunCount || 0) + 1,
-      note: 'Error Dashboard will group identical errors and show counts + affected users',
+      timestamp: now.toISOString(),
+      stats: {
+        last24Hours: last24Hours.totalDocs,
+        lastHour: lastHour.totalDocs,
+        unresolved: unresolvedErrors.totalDocs,
+      },
+      bySeverity: {
+        critical: criticalCount.totalDocs,
+        high: highCount.totalDocs,
+        medium: mediumCount.totalDocs,
+        low: lowCount.totalDocs,
+      },
+      recentErrors: recentErrors.docs.map(e => ({
+        id: e.id,
+        message: e.message?.substring(0, 100) + (e.message && e.message.length > 100 ? '...' : ''),
+        severity: e.severity,
+        errorType: e.errorType,
+        createdAt: e.createdAt,
+      })),
     }
 
     // Mark cron job as completed
@@ -143,140 +146,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(summary)
 
   } catch (error: any) {
-    console.error('[Error Harvester] Failed:', error)
+    console.error('[Error Stats] Failed:', error)
     
     // Mark cron job as failed
     if (cronJobRunId) {
       const payload = await getPayload({ config: await configPromise })
-      await failCronJob(payload, cronJobRunId, error.message || 'Failed to harvest errors')
+      await failCronJob(payload, cronJobRunId, error.message || 'Failed to aggregate error stats')
     }
     
     return NextResponse.json(
       { 
         success: false, 
-        error: error.message || 'Failed to harvest errors',
+        error: error.message || 'Failed to aggregate error stats',
       },
       { status: 500 }
     )
   }
 }
-
-function parseErrors(logLines: string[]): ParsedError[] {
-  const errors: ParsedError[] = []
-  let currentError: ParsedError | null = null
-  let collectingStack = false
-
-  for (const line of logLines) {
-    // Skip empty lines
-    if (!line.trim()) continue
-
-    // Detect ERROR level logs
-    if (line.includes('[ERROR]') || line.includes('ERROR:')) {
-      // Save previous error if exists
-      if (currentError) {
-        errors.push(currentError)
-      }
-
-      // Extract error message
-      const message = extractErrorMessage(line)
-      
-      currentError = {
-        message,
-        timestamp: extractTimestamp(line),
-        type: categorizeError(message),
-        severity: determineSeverity(message),
-        stack: '',
-      }
-      collectingStack = true
-    } 
-    // Collect stack trace lines
-    else if (collectingStack && (line.includes('    at ') || line.includes('Error:'))) {
-      if (currentError) {
-        currentError.stack = (currentError.stack || '') + line + '\n'
-      }
-    }
-    // Stop collecting stack when we hit a non-stack line
-    else if (collectingStack && !line.includes('    at ')) {
-      collectingStack = false
-    }
-  }
-
-  // Push the last error
-  if (currentError) {
-    errors.push(currentError)
-  }
-
-  return errors
-}
-
-function extractErrorMessage(line: string): string {
-  // Try to extract message after [ERROR]: or ERROR:
-  let message = line
-
-  if (line.includes('[ERROR]')) {
-    message = line.split('[ERROR]')[1] || line
-  } else if (line.includes('ERROR:')) {
-    message = line.split('ERROR:')[1] || line
-  }
-
-  // Clean up ANSI color codes
-  message = message.replace(/\[\d+m/g, '').trim()
-
-  // Limit message length
-  if (message.length > 500) {
-    message = message.substring(0, 500) + '...'
-  }
-
-  return message
-}
-
-function extractTimestamp(line: string): string {
-  // Try to extract timestamp from log line
-  const timestampMatch = line.match(/\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}/)
-  return timestampMatch ? timestampMatch[0] : new Date().toISOString()
-}
-
-function categorizeError(message: string): 'database' | 'api' | 'system' | 'backend' {
-  const lowerMessage = message.toLowerCase()
-  
-  if (lowerMessage.includes('database') || 
-      lowerMessage.includes('query') || 
-      lowerMessage.includes('sql') ||
-      lowerMessage.includes('postgres') ||
-      lowerMessage.includes('drizzle')) {
-    return 'database'
-  }
-  
-  if (lowerMessage.includes('api') || 
-      lowerMessage.includes('request') || 
-      lowerMessage.includes('endpoint') ||
-      lowerMessage.includes('route')) {
-    return 'api'
-  }
-  
-  return 'system'
-}
-
-function determineSeverity(message: string): 'critical' | 'high' | 'medium' | 'low' {
-  const lowerMessage = message.toLowerCase()
-  
-  if (lowerMessage.includes('critical') || 
-      lowerMessage.includes('fatal') ||
-      lowerMessage.includes('cannot connect')) {
-    return 'critical'
-  }
-  
-  if (lowerMessage.includes('failed') || 
-      lowerMessage.includes('error deleting') ||
-      lowerMessage.includes('error updating') ||
-      lowerMessage.includes('transaction')) {
-    return 'high'
-  }
-  
-  if (lowerMessage.includes('warning') || lowerMessage.includes('deprecated')) {
-    return 'low'
-  }
-  
-  return 'medium'
-}
-

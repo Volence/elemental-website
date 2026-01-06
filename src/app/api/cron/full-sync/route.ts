@@ -8,10 +8,10 @@ import { startCronJob, completeCronJob, failCronJob } from '@/utilities/cronLogg
  * Full Sync Cron Job
  * POST /api/cron/full-sync
  * 
- * Runs once daily at 3 AM:
+ * Runs every 3 hours:
  * - Syncs ALL active FaceIt-enabled teams
- * - Catches reschedules, new matches, any missed updates
- * - Should be run during low-traffic hours
+ * - Updates match data, team records, standings
+ * - Ensures data stays fresh throughout the day
  * 
  * Requires: x-cron-secret header matching CRON_SECRET env var
  */
