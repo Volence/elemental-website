@@ -1504,9 +1504,10 @@ button.dropdown-indicator.dropdown-indicator,
       transform: translateY(-50%) !important;
     }
     
-    // Value container needs space
+    // Value container needs space on both sides
     .rs__value-container {
-      padding-right: 1.5rem !important;
+      padding-left: 0.625rem !important;  // Space from left border
+      padding-right: 1.5rem !important;   // Space for indicator
       overflow: hidden !important;
     }
     
@@ -1597,6 +1598,8 @@ button.dropdown-indicator.dropdown-indicator,
     width: 32px !important;
     height: 32px !important;
     min-width: 32px !important;
+    min-height: 32px !important;  // Prevent stretching
+    max-height: 32px !important;  // Force exact height
     padding: 0 !important;
     background: rgba($admin-accent-success, 0.1) !important;
     border: 1px solid rgba($admin-accent-success, 0.4) !important;
