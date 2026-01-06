@@ -47,14 +47,15 @@ export default function AuditLogView() {
       setLoading(true)
     }
     try {
-      let whereClause = {}
+      // Build query string using Payload's bracket syntax (not JSON stringify)
+      let queryParams = `limit=50&page=${page}&depth=1&sort=-createdAt`
       
       if (filter !== 'all') {
-        whereClause = { action: { equals: filter } }
+        queryParams += `&where[action][equals]=${filter}`
       }
 
       const response = await fetch(
-        `${serverURL}/api/audit-logs?where=${encodeURIComponent(JSON.stringify(whereClause))}&limit=50&page=${page}&depth=1&sort=-createdAt`,
+        `${serverURL}/api/audit-logs?${queryParams}`,
         {
           credentials: 'include',
         },
