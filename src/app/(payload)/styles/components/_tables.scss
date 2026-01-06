@@ -304,14 +304,14 @@
 }
 
 /* ============================================
- * Pagination Enhancements
- * Make it more prominent
+ * Pagination Enhancements - Clean Glow Style
+ * Example: Bottom of /admin/collections/people
  * ============================================ */
 
 .pagination {
   padding: 1.5rem 1rem;
-  background-color: var(--theme-elevation-50);
-  border-top: 1px solid var(--theme-elevation-250);
+  background-color: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid rgba($admin-accent-info, 0.2);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -319,7 +319,7 @@
 
   &__info {
     font-size: 0.875rem;
-    color: var(--theme-text-700);
+    color: rgba(255, 255, 255, 0.7);
     font-weight: 500;
   }
 
@@ -330,35 +330,43 @@
   }
 
   &__button {
-    min-width: 36px;
-    height: 36px;
+    min-width: 40px;
+    height: 40px;
     padding: 0.5rem;
-    border-radius: 6px;
-    border: 1px solid var(--theme-elevation-300);
-    background-color: var(--theme-elevation-100);
-    color: var(--theme-text);
+    border-radius: 8px;
+    border: 1px solid rgba($admin-accent-info, 0.3);
+    background: rgba($admin-accent-info, 0.05);
+    color: rgba(255, 255, 255, 0.8);
     font-weight: 500;
     transition: all 0.2s ease;
     cursor: pointer;
 
+    // Larger SVG arrows
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+
     &:hover:not(:disabled) {
-      background: linear-gradient(135deg, #ec489915, #a855f715);
-      border-color: #ec489950;
-      color: #ec4899;
+      background: rgba($admin-accent-info, 0.15);
+      border-color: rgba($admin-accent-info, 0.6);
+      color: white;
       transform: translateY(-1px);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 0 12px rgba($admin-accent-info, 0.3);
     }
 
     &:disabled {
-      opacity: 0.4;
+      opacity: 0.3;
       cursor: not-allowed;
     }
 
+    // Active page number - glowing cyan
     &--active {
-      background: linear-gradient(135deg, #ec4899, #a855f7);
-      border-color: transparent;
-      color: white;
-      font-weight: 600;
+      background: rgba($admin-accent-info, 0.2) !important;
+      border: 2px solid $admin-accent-info !important;
+      color: $admin-accent-info !important;
+      font-weight: 700;
+      box-shadow: 0 0 16px rgba($admin-accent-info, 0.4);
     }
   }
 
@@ -366,17 +374,88 @@
     margin-left: 1rem;
     padding: 0.5rem 0.75rem;
     border-radius: 6px;
-    border: 1px solid var(--theme-elevation-300);
-    background-color: var(--theme-elevation-100);
-    color: var(--theme-text);
+    border: 1px solid rgba($admin-accent-info, 0.3);
+    background: rgba($admin-accent-info, 0.05);
+    color: rgba(255, 255, 255, 0.8);
     font-size: 0.875rem;
     cursor: pointer;
     transition: all 0.2s ease;
 
     &:hover {
-      border-color: #ec489950;
-      background-color: var(--theme-elevation-150);
+      border-color: rgba($admin-accent-info, 0.6);
+      background: rgba($admin-accent-info, 0.15);
+      box-shadow: 0 0 10px rgba($admin-accent-info, 0.2);
     }
   }
 }
 
+/* ============================================
+ * Payload Pagination Controls - Clean Glow Override
+ * Targets actual Payload classes: .paginator__page, .clickable-arrow
+ * ============================================ */
+
+// Page number buttons
+.paginator__page {
+  min-width: 36px !important;
+  height: 36px !important;
+  border-radius: 6px !important;
+  border: 1px solid rgba($admin-accent-info, 0.3) !important;
+  background: rgba($admin-accent-info, 0.05) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  
+  &:hover:not(.paginator__page--is-current) {
+    background: rgba($admin-accent-info, 0.15) !important;
+    border-color: rgba($admin-accent-info, 0.6) !important;
+    color: white !important;
+    box-shadow: 0 0 12px rgba($admin-accent-info, 0.3) !important;
+  }
+  
+  // Active/current page - glowing cyan
+  &--is-current {
+    background: rgba($admin-accent-info, 0.2) !important;
+    border: 2px solid $admin-accent-info !important;
+    color: $admin-accent-info !important;
+    font-weight: 700 !important;
+    box-shadow: 0 0 16px rgba($admin-accent-info, 0.4) !important;
+  }
+}
+
+// Navigation arrows
+.clickable-arrow {
+  min-width: 36px !important;
+  height: 36px !important;
+  border-radius: 6px !important;
+  border: 1px solid rgba($admin-accent-info, 0.3) !important;
+  background: rgba($admin-accent-info, 0.05) !important;
+  transition: all 0.2s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  
+  svg {
+    width: 18px !important;
+    height: 18px !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+  }
+  
+  &:hover:not(:disabled) {
+    background: rgba($admin-accent-info, 0.15) !important;
+    border-color: rgba($admin-accent-info, 0.6) !important;
+    box-shadow: 0 0 12px rgba($admin-accent-info, 0.3) !important;
+    
+    svg {
+      color: white !important;
+    }
+  }
+  
+  &:disabled,
+  &--is-disabled {
+    opacity: 0.3 !important;
+    cursor: not-allowed !important;
+  }
+}
