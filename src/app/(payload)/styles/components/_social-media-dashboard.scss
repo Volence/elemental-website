@@ -1086,27 +1086,114 @@
 }
 
 // ============================================================================
-// PAYLOAD FILTER UI - Clean Glow Styling (Simplified & Fixed)  
+// PAYLOAD FILTER UI - Clean Glow Styling
 // ============================================================================
-// Minimal styling that doesn't break Payload's layout
-// Hide filter drawer by default - users should use Quick Filters instead
+// Style the filter drawer when it appears (do NOT hide it globally!)
 
-// Target the "Filter Social Posts where" drawer that appears
-// Hide it initially so quick filters don't trigger the drawer to open
+// Filter drawer styling when visible
 [class*="list-controls"] > div[class*="where"] {
-  display: none !important;
+  background: rgba(0, 0, 0, 0.95) !important;
+  border: 1px solid rgba($admin-accent-info, 0.3) !important;
+  border-radius: 8px !important;
+  padding: $spacing-lg !important;
+  margin-top: $spacing-md !important;
+}
+
+// ============================================================================
+// FILTER BUILDER (Where Builder) - Dark Theme Styling
+// ============================================================================
+
+// Main filter builder container
+.where-builder {
+  background: transparent !important;
   
-  // Show it when user manually opens via Filters button
-  // Payload might add an 'open' or 'active' class
-  &[class*="open"],
-  &[class*="active"],
-  &[class*="visible"] {
-    display: block !important;
-    background: rgba(var(--theme-elevation-0-rgb, 0, 0, 0), 0.95);
-    border: 1px solid rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3);
-    border-radius: 8px;
-    padding: $spacing-xl;
+  // "Filter [Collection] where" header
+  &__label {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-weight: 600 !important;
   }
+}
+
+// Also target via attribute selector (no nesting)
+[class*="where-builder"] {
+  background: transparent !important;
+  
+  > label {
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-weight: 600 !important;
+  }
+}
+
+// Filter rows and conditions
+.where-builder__and-filters,
+.where-builder__or-filters,
+[class*="condition"] {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 6px !important;
+  margin: $spacing-sm 0 !important;
+  padding: $spacing-md !important;
+}
+
+// Individual filter condition row
+.condition,
+.where-builder__condition {
+  display: flex;
+  gap: $spacing-sm;
+  align-items: center;
+  
+  // Field selector, operator, value inputs
+  select,
+  input:not([type="checkbox"]):not([type="radio"]) {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba($admin-accent-info, 0.3) !important;
+    border-radius: 6px !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    padding: $spacing-sm $spacing-md !important;
+    
+    &:focus {
+      border-color: rgba($admin-accent-info, 0.7) !important;
+      box-shadow: 0 0 0 3px rgba($admin-accent-info, 0.15) !important;
+    }
+  }
+  
+  option {
+    background: #1a1a2e !important;
+    color: white !important;
+  }
+}
+
+// Add filter button
+.where-builder__add-first-filter,
+.where-builder__add-or,
+.where-builder__add-and,
+[class*="add-filter"],
+[class*="add-or"],
+[class*="add-and"] {
+  @include glow-button($admin-accent-success);
+  padding: $spacing-sm $spacing-md !important;
+  font-size: 0.875rem !important;
+  margin: $spacing-sm 0 !important;
+}
+
+// Remove filter button
+.condition__remove,
+[class*="remove-condition"],
+button[aria-label*="Remove"] {
+  @include glow-button($admin-accent-error);
+  padding: $spacing-xs $spacing-sm !important;
+  min-width: 28px !important;
+  min-height: 28px !important;
+}
+
+// "And/Or" labels between conditions
+.where-builder__and-label,
+.where-builder__or-label {
+  color: rgba($admin-accent-info, 0.9) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.05em !important;
 }
 
 // Style the react-select controls (dropdowns)
@@ -1150,3 +1237,53 @@
     }
   }
 }
+
+// ============================================================================
+// COLUMN SELECTOR - Dark Theme Styling  
+// ============================================================================
+
+// Column dropdown container
+.column-selector,
+.list-controls__columns,
+#list-controls-columns {
+  background: rgba(0, 0, 0, 0.95) !important;
+  border: 1px solid rgba($admin-accent-info, 0.3) !important;
+  border-radius: 8px !important;
+  padding: $spacing-lg !important;
+  margin-top: $spacing-md !important;
+}
+
+// Column pills - use colorful variety
+.pill--style-light,
+.list-controls .pill {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid rgba($admin-accent-info, 0.5) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 0 6px rgba($admin-accent-info, 0.15) !important;
+  
+  &:hover {
+    border-color: rgba($admin-accent-info, 0.7) !important;
+    box-shadow: 0 0 12px rgba($admin-accent-info, 0.25) !important;
+    background: rgba($admin-accent-info, 0.1) !important;
+  }
+  
+  // Active/selected columns
+  &--has-action,
+  &.pill--style-light-has-action {
+    background: rgba($admin-accent-info, 0.15) !important;
+    border-color: rgba($admin-accent-info, 0.6) !important;
+    box-shadow: 0 0 8px rgba($admin-accent-info, 0.2) !important;
+  }
+}
+
+// X button on active pills
+.pill__x,
+[class*="pill__x"] {
+  color: rgba(255, 255, 255, 0.5) !important;
+  
+  &:hover {
+    color: $admin-accent-error !important;
+    background: rgba($admin-accent-error, 0.2) !important;
+  }
+}
+
