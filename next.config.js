@@ -37,7 +37,28 @@ const nextConfig = {
       '.mjs': ['.mts', '.mjs'],
     }
 
-    // Exclude Discord.js and related packages from client bundle (server-only)
+    // Externalize discord.js and its optional dependencies for both server and client
+    // These are server-only packages that shouldn't be bundled by webpack
+    const discordExternals = {
+      'discord.js': 'commonjs discord.js',
+      '@discordjs/rest': 'commonjs @discordjs/rest',
+      '@discordjs/builders': 'commonjs @discordjs/builders',
+      '@discordjs/ws': 'commonjs @discordjs/ws',
+      '@discordjs/collection': 'commonjs @discordjs/collection',
+      // Optional discord.js dependencies
+      'zlib-sync': 'commonjs zlib-sync',
+      'erlpack': 'commonjs erlpack',
+      'bufferutil': 'commonjs bufferutil',
+      'utf-8-validate': 'commonjs utf-8-validate',
+    }
+
+    // Add externals for both server and client
+    webpackConfig.externals = webpackConfig.externals || []
+    if (Array.isArray(webpackConfig.externals)) {
+      webpackConfig.externals.push(discordExternals)
+    }
+
+    // For client bundles, also add Node.js builtins to fallback
     if (!isServer) {
       webpackConfig.resolve.fallback = {
         ...webpackConfig.resolve.fallback,
@@ -59,21 +80,11 @@ const nextConfig = {
         '@discordjs/rest': false,
         '@discordjs/builders': false,
         '@discordjs/ws': false,
+        '@discordjs/collection': false,
         'zlib-sync': false,
         'erlpack': false,
         'bufferutil': false,
         'utf-8-validate': false,
-      }
-      
-      // Also exclude discord.js from being processed by webpack on client
-      webpackConfig.externals = webpackConfig.externals || []
-      if (Array.isArray(webpackConfig.externals)) {
-        webpackConfig.externals.push({
-          'discord.js': 'commonjs discord.js',
-          '@discordjs/rest': 'commonjs @discordjs/rest',
-          '@discordjs/builders': 'commonjs @discordjs/builders',
-          '@discordjs/ws': 'commonjs @discordjs/ws',
-        })
       }
     }
 

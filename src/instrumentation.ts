@@ -18,53 +18,57 @@ export async function register() {
 /**
  * Global Error Handlers
  * 
- * Catches unhandled errors and promise rejections, logging them to the
- * error-logs collection for visibility in the Error Dashboard.
+ * Catches unhandled errors and promise rejections.
+ * Logs to console with structured format for the error harvester to pick up.
  */
 function setupGlobalErrorHandlers() {
   // Handle uncaught exceptions
-  process.on('uncaughtException', async (error: Error) => {
-    console.error('[Global Error Handler] Uncaught Exception:', error)
-    await logErrorToDatabase(error, 'uncaughtException')
+  process.on('uncaughtException', (error: Error) => {
+    console.error('[CRITICAL_ERROR] uncaughtException:', error.message)
+    console.error('[CRITICAL_ERROR_STACK]', error.stack)
+    // Log to database asynchronously without blocking
+    logErrorToDatabase(error, 'uncaughtException').catch(() => {})
   })
 
   // Handle unhandled promise rejections
-  process.on('unhandledRejection', async (reason: unknown) => {
+  process.on('unhandledRejection', (reason: unknown) => {
     const error = reason instanceof Error ? reason : new Error(String(reason))
-    console.error('[Global Error Handler] Unhandled Rejection:', error)
-    await logErrorToDatabase(error, 'unhandledRejection')
+    console.error('[CRITICAL_ERROR] unhandledRejection:', error.message)
+    console.error('[CRITICAL_ERROR_STACK]', error.stack)
+    // Log to database asynchronously without blocking
+    logErrorToDatabase(error, 'unhandledRejection').catch(() => {})
   })
 
   console.log('✅ Global error handlers registered')
 }
 
 /**
- * Log error to the database
- * Uses dynamic import to avoid initialization issues
+ * Log error to the database via API call
+ * Uses fetch instead of importing Payload to avoid bundling issues
  */
 async function logErrorToDatabase(error: Error, source: string) {
   try {
-    // Dynamic imports to avoid build-time issues
-    const { getPayload } = await import('payload')
-    const configPromise = await import('@payload-config')
+    // Use internal API endpoint to log errors
+    // This avoids importing Payload which causes bundling issues
+    const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
     
-    const payload = await getPayload({ config: await configPromise.default })
-    
-    await payload.create({
-      collection: 'error-logs',
-      data: {
+    await fetch(`${serverUrl}/api/log-error`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-internal-secret': process.env.CRON_SECRET || '',
+      },
+      body: JSON.stringify({
         errorType: 'system',
         message: `[${source}] ${error.message}`,
         stack: error.stack,
         severity: 'critical',
-        resolved: false,
-      },
-      overrideAccess: true,
+      }),
     })
     
     console.log('[Global Error Handler] Error logged to database')
   } catch (logError) {
     // Don't throw - we don't want error logging to cause more errors
-    console.error('[Global Error Handler] Failed to log error to database:', logError)
+    console.error('[Global Error Handler] Failed to log error to database')
   }
 }
