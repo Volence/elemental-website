@@ -15,11 +15,9 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '10mb',
     },
-    // Enable instrumentation for Discord bot initialization
-    instrumentationHook: true,
-    // Mark Discord packages as server-only (don't bundle for client)
-    serverComponentsExternalPackages: ['discord.js', '@discordjs/rest', '@discordjs/builders'],
   },
+  // Mark Discord packages as server-only (moved from experimental in Next.js 15.x)
+  serverExternalPackages: ['discord.js', '@discordjs/rest', '@discordjs/builders', '@discordjs/ws'],
   images: {
     remotePatterns: [
       ...[NEXT_PUBLIC_SERVER_URL /* 'https://example.com' */].map((item) => {
@@ -43,9 +41,24 @@ const nextConfig = {
     if (!isServer) {
       webpackConfig.resolve.fallback = {
         ...webpackConfig.resolve.fallback,
+        // Node.js builtins
+        fs: false,
+        path: false,
+        os: false,
+        crypto: false,
+        stream: false,
+        http: false,
+        https: false,
+        zlib: false,
+        net: false,
+        tls: false,
+        child_process: false,
+        worker_threads: false,
+        // Discord.js packages
         'discord.js': false,
         '@discordjs/rest': false,
         '@discordjs/builders': false,
+        '@discordjs/ws': false,
         'zlib-sync': false,
         'erlpack': false,
         'bufferutil': false,
@@ -59,6 +72,7 @@ const nextConfig = {
           'discord.js': 'commonjs discord.js',
           '@discordjs/rest': 'commonjs @discordjs/rest',
           '@discordjs/builders': 'commonjs @discordjs/builders',
+          '@discordjs/ws': 'commonjs @discordjs/ws',
         })
       }
     }
