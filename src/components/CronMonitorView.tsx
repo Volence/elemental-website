@@ -42,22 +42,23 @@ export default function CronMonitorView() {
       setLoading(true)
     }
     try {
-      const whereConditions: any[] = []
+      // Build query string using Payload's bracket syntax
+      let queryParams = `limit=50&sort=-createdAt`
       
-      if (filter !== 'all') {
-        whereConditions.push({ jobName: { equals: filter } })
+      // Both filters active - use AND condition
+      if (filter !== 'all' && statusFilter !== 'all') {
+        queryParams += `&where[and][0][jobName][equals]=${filter}`
+        queryParams += `&where[and][1][status][equals]=${statusFilter}`
+      } else if (filter !== 'all') {
+        // Only job filter
+        queryParams += `&where[jobName][equals]=${filter}`
+      } else if (statusFilter !== 'all') {
+        // Only status filter
+        queryParams += `&where[status][equals]=${statusFilter}`
       }
-      
-      if (statusFilter !== 'all') {
-        whereConditions.push({ status: { equals: statusFilter } })
-      }
-
-      const whereClause = whereConditions.length > 0 
-        ? { and: whereConditions }
-        : {}
 
       const response = await fetch(
-        `${serverURL}/api/cron-job-runs?where=${encodeURIComponent(JSON.stringify(whereClause))}&limit=50&sort=-createdAt`,
+        `${serverURL}/api/cron-job-runs?${queryParams}`,
         {
           credentials: 'include',
         },

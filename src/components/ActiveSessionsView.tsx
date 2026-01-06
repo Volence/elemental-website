@@ -43,16 +43,17 @@ export default function ActiveSessionsView() {
       setLoading(true)
     }
     try {
-      let whereClause = {}
+      // Build query string using Payload's bracket syntax
+      let queryParams = `limit=100&depth=1&sort=-lastActivity`
 
       if (filter === 'active') {
-        whereClause = { isActive: { equals: true } }
+        queryParams += `&where[isActive][equals]=true`
       } else if (filter === 'inactive') {
-        whereClause = { isActive: { equals: false } }
+        queryParams += `&where[isActive][equals]=false`
       }
 
       const response = await fetch(
-        `${serverURL}/api/active-sessions?where=${encodeURIComponent(JSON.stringify(whereClause))}&limit=100&depth=1&sort=-lastActivity`,
+        `${serverURL}/api/active-sessions?${queryParams}`,
         {
           credentials: 'include',
         },
@@ -150,7 +151,7 @@ export default function ActiveSessionsView() {
               <div className="monitoring-stat-label">Total Active Sessions</div>
             </div>
             <div className="monitoring-stat-card">
-              <div className="monitoring-stat-value">{new Set(sessions.map(s => s.user.id)).size}</div>
+              <div className="monitoring-stat-value">{new Set(sessions.map(s => s.user?.id).filter(Boolean)).size}</div>
               <div className="monitoring-stat-label">Unique Users</div>
             </div>
           </div>
@@ -174,8 +175,8 @@ export default function ActiveSessionsView() {
                     <tr key={session.id}>
                       <td>
                         <div>
-                          <strong>{session.user.name || session.user.email}</strong>
-                          {session.user.name && (
+                          <strong>{session.user?.name || session.user?.email || 'Unknown User'}</strong>
+                          {session.user?.name && (
                             <div style={{ fontSize: '0.85rem', color: '#9ca3af' }}>
                               {session.user.email}
                             </div>
