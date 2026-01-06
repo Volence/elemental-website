@@ -116,15 +116,17 @@ h4,
 // FIELD LABELS
 // ============================================
 
+// Field labels - Clean Glow style (no uppercase - less "shouty")
+// Example: All edit forms like /admin/collections/teams/95
 .field-type > label,
 .field-type > .field-label,
 label.field-label,
 .render-fields > .field-type > label {
   font-size: 0.875rem;    // 14px
   font-weight: 600;
-  letter-spacing: 0.025em;
-  text-transform: uppercase;
-  color: $admin-text-secondary;
+  letter-spacing: 0.01em; // Reduced from 0.025em
+  text-transform: none;   // No longer uppercase
+  color: rgba(255, 255, 255, 0.85); // Improved contrast
   margin-bottom: 0.75rem;
   display: block;
 }
@@ -165,6 +167,7 @@ main p {
   }
 }
 
+// Help text and descriptions - improved visibility
 .field-description,
 [class*="description"],
 [class*="helper"],
@@ -172,7 +175,7 @@ main p {
 small {
   font-size: 0.875rem;    // 14px
   line-height: 1.5;
-  color: $admin-text-muted;
+  color: rgba(255, 255, 255, 0.55); // Improved from muted (was ~0.4)
   margin-top: 0.5rem;
   margin-bottom: 0;
 }
