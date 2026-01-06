@@ -80,6 +80,7 @@ import { default as default_c665fb14b647600ee6fac862e3d3aeb2 } from '@/component
 import { SectionThemeApplicator as SectionThemeApplicator_b4f71752b0da9dddb562ddd527781822 } from '@/components/SectionThemeApplicator'
 import { default as default_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/components/BeforeLogin'
 import { default as default_cb688d169ef5bf1426eea8968f0b9a29 } from '@/components/BeforeDashboard/DashboardNavLink'
+import { default as default_aeef0123fea1af819397817664b7330c } from '@/components/AdminProviders'
 
 export const importMap = {
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
@@ -163,5 +164,6 @@ export const importMap = {
   "@/components/FixDatePickerIcons#default": default_c665fb14b647600ee6fac862e3d3aeb2,
   "@/components/SectionThemeApplicator#SectionThemeApplicator": SectionThemeApplicator_b4f71752b0da9dddb562ddd527781822,
   "@/components/BeforeLogin#default": default_8a7ab0eb7ab5c511aba12e68480bfe5e,
-  "@/components/BeforeDashboard/DashboardNavLink#default": default_cb688d169ef5bf1426eea8968f0b9a29
+  "@/components/BeforeDashboard/DashboardNavLink#default": default_cb688d169ef5bf1426eea8968f0b9a29,
+  "@/components/AdminProviders#default": default_aeef0123fea1af819397817664b7330c
 }

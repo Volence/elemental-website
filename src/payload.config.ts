@@ -94,6 +94,8 @@ const config = buildConfig({
         Logo: '@/components/AdminLogo#default',
         Icon: '@/components/AdminLogo#default',
       },
+      // Providers wrap ALL admin pages with shared functionality
+      providers: ['@/components/AdminProviders#default'],
     },
     importMap: {
       baseDir: path.resolve(dirname),
