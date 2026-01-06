@@ -817,7 +817,7 @@ table {
   .tabs__nav {
     display: flex;
     gap: 0.5rem;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    border-bottom: none; // Removed - only active tab has underline
     margin-bottom: 1.5rem;
     
     button {
@@ -880,11 +880,16 @@ table {
     border-bottom: 3px solid $admin-accent-info !important;
     box-shadow: 0 4px 12px rgba($admin-accent-info, 0.25) !important;
   }
+  
+  // Suppress Payload's default ::after underline pseudo-elements
+  &::after {
+    display: none !important;
+  }
 }
 
-// Tab container bottom border
+// Tab container - no bottom border (active tab has its own underline)
 .tabs-field__tabs {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-bottom: none !important;
 }
 // Array fields (repeaters)
 .array-field,

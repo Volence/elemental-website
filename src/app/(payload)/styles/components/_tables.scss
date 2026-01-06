@@ -99,6 +99,32 @@
         }
       }
     }
+    
+    // Relationship cell pills/links (Teams column, etc.)
+    // These are the cyan-bordered pills in table cells
+    // Example: Teams column in /admin/collections/people
+    .relationship-cell a,
+    [class*="cell"] a[href*="/admin/collections/"]:not(:first-child) {
+      display: inline-flex;
+      padding: 0.25rem 0.5rem;
+      margin: 0.125rem;
+      border-radius: 4px;
+      border: 1px solid rgba($admin-accent-info, 0.5);
+      background: rgba($admin-accent-info, 0.05);
+      color: $admin-accent-info !important;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      text-decoration: none !important;
+      transition: all 0.2s ease;
+      box-shadow: 0 0 6px rgba($admin-accent-info, 0.15);
+      
+      &:hover {
+        background: rgba($admin-accent-info, 0.15);
+        border-color: $admin-accent-info;
+        box-shadow: 0 0 12px rgba($admin-accent-info, 0.3);
+        transform: translateY(-1px);
+      }
+    }
   }
 }
 

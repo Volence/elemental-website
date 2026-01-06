@@ -7,15 +7,17 @@
   margin-bottom: $spacing-lg;
   font-size: $font-size-sm;
   
+  // Empty state - dark theme styling
   &--empty {
-    background-color: var(--theme-elevation-100);
-    border: 1px solid var(--theme-elevation-300);
-    color: var(--theme-text-600);
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1); // Dark border, not light
+    color: rgba(255, 255, 255, 0.5);
   }
   
+  // Filled state - uses cyan accent
   &--filled {
-    background-color: var(--theme-info-50);
-    border: 1px solid var(--theme-info-300);
+    background-color: rgba($admin-accent-info, 0.05);
+    border: 1px solid rgba($admin-accent-info, 0.3);
   }
   
   &__stats {
