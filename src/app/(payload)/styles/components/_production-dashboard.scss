@@ -161,6 +161,13 @@
 .summary-stat {
   text-align: center;
   
+  // Reset pseudo-elements on the stat container to prevent inherited glow borders
+  &::before,
+  &::after {
+    display: none !important;
+    content: none !important;
+  }
+  
   &__value {
     font-size: 3rem;
     font-weight: 700;
@@ -191,6 +198,12 @@
   &--error {
     .summary-stat__value {
       color: rgba($admin-accent-error, 0.95);
+    }
+  }
+  
+  &--info {
+    .summary-stat__value {
+      color: rgba($admin-accent-info, 0.95);
     }
   }
 }
@@ -306,6 +319,63 @@
 // Legacy class name support
 .summary-workload {
   @extend .summary-table;
+}
+
+// Matches Needing Attention list
+.summary-match-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.summary-match {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  border-left: 3px solid rgba($admin-accent-warning, 0.5);
+  
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    
+    strong {
+      color: rgba(255, 255, 255, 0.95);
+      font-weight: 600;
+    }
+  }
+  
+  &__date {
+    font-size: 0.8125rem;
+    color: rgba(255, 255, 255, 0.5);
+  }
+}
+
+.summary-more {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+}
+
+.coverage-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  
+  &--none {
+    background: rgba($admin-accent-error, 0.15);
+    color: rgb(248, 113, 113);
+  }
+  
+  &--partial {
+    background: rgba($admin-accent-warning, 0.15);
+    color: rgb(251, 191, 36);
+  }
 }
 
 // ============================================

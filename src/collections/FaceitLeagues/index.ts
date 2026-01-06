@@ -34,8 +34,7 @@ export const FaceitLeagues: CollectionConfig = {
     },
     components: {
       beforeList: [
-        '@/components/FaceitBulkSync#default',
-        '@/components/FaceitLeaguesNotifications#default',
+        '@/components/FaceitLeaguesHeader#default',
       ],
     },
   },

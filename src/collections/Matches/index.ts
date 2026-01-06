@@ -132,27 +132,11 @@ export const Matches: CollectionConfig = {
   },
   fields: [
     {
-      name: 'viewOnSite',
+      name: 'matchActions',
       type: 'ui',
       admin: {
         components: {
-          Field: {
-            path: '@/components/ViewOnSiteButton',
-            clientProps: {
-              basePath: '/matches',
-            },
-          },
-        },
-      },
-    },
-    {
-      name: 'deleteButton',
-      type: 'ui',
-      admin: {
-        components: {
-          Field: {
-            path: '@/components/DeleteMatchButton',
-          },
+          Field: '@/components/MatchActions#default',
         },
       },
     },

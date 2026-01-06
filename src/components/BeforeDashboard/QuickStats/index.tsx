@@ -31,8 +31,6 @@ const QuickStats: React.FC = () => {
   if (!user) {
     return null
   }
-  
-  const isTeamManager = user.role === UserRole.TEAM_MANAGER
 
   const statCards = [
     {
@@ -69,8 +67,10 @@ const QuickStats: React.FC = () => {
     },
   ]
 
-  // Add staff stats if not team manager (team managers might not need these)
-  if (!isTeamManager) {
+  // Only add staff-related stats for admins and staff managers who can access those collections
+  const canAccessStaffCollections = user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER
+  
+  if (canAccessStaffCollections) {
     statCards.push(
       {
         label: 'Org Staff',

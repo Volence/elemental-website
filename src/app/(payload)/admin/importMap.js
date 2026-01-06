@@ -36,9 +36,8 @@ import { default as default_3be39f37c57c85dcea766fdec96c9113 } from '@/component
 import { default as default_18c292333f7a71cfdec38694246f96bb } from '@/components/BeforeDashboard/ReadOnlyStyles'
 import { default as default_1c78329ca40bdaea08398ce17076186a } from '@/components/TeamsListColumns/CellAlignmentStyles'
 import { default as default_d3aadc8f7d1aa70ce78ff0cfa164a82b } from '@/components/FaceitUrlHelper'
-import { default as default_d5aa1d40568040f475310b67e7154f0d } from '@/components/FaceitBulkSync'
-import { default as default_cf964bbe3d4a487a32a7dec96194ca0e } from '@/components/FaceitLeaguesNotifications'
-import { default as default_63218eba8cd72329b9710dfee173c7f7 } from '@/components/DeleteMatchButton'
+import { default as default_e937f5e9aab757c7fd786055646bb001 } from '@/components/FaceitLeaguesHeader'
+import { default as default_c23ccc3f844b47249d0225373601d9d0 } from '@/components/MatchActions'
 import { default as default_3b0c933eeb58b8ba9e1fb354f07641f1 } from '@/components/MatchesListColumns/TitleCell'
 import { default as default_aa7f6faaa886a93f7a640627f141e7c7 } from '@/components/MatchesCustomList'
 import { default as default_2e617cc3176ad62e33aa558930ac7655 } from '@/components/TournamentFaceitNotice'
@@ -122,9 +121,8 @@ export const importMap = {
   "@/components/BeforeDashboard/ReadOnlyStyles#default": default_18c292333f7a71cfdec38694246f96bb,
   "@/components/TeamsListColumns/CellAlignmentStyles#default": default_1c78329ca40bdaea08398ce17076186a,
   "@/components/FaceitUrlHelper#default": default_d3aadc8f7d1aa70ce78ff0cfa164a82b,
-  "@/components/FaceitBulkSync#default": default_d5aa1d40568040f475310b67e7154f0d,
-  "@/components/FaceitLeaguesNotifications#default": default_cf964bbe3d4a487a32a7dec96194ca0e,
-  "@/components/DeleteMatchButton#default": default_63218eba8cd72329b9710dfee173c7f7,
+  "@/components/FaceitLeaguesHeader#default": default_e937f5e9aab757c7fd786055646bb001,
+  "@/components/MatchActions#default": default_c23ccc3f844b47249d0225373601d9d0,
   "@/components/MatchesListColumns/TitleCell#default": default_3b0c933eeb58b8ba9e1fb354f07641f1,
   "@/components/MatchesCustomList#default": default_aa7f6faaa886a93f7a640627f141e7c7,
   "@/components/TournamentFaceitNotice#default": default_2e617cc3176ad62e33aa558930ac7655,

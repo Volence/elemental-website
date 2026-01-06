@@ -8,23 +8,23 @@ interface SummaryCardsProps {
 
 export function SummaryCards({ errorCount, warningCount, autoFixableCount }: SummaryCardsProps) {
   return (
-    <div className="summary-cards">
+    <div className="dc-stats">
       {/* Errors Card */}
-      <div className={`summary-card summary-card--errors ${errorCount === 0 ? 'summary-card--success' : ''}`}>
-        <h3 className="summary-card__value">{errorCount}</h3>
-        <p className="summary-card__label">Critical Errors</p>
+      <div className={`dc-stat dc-stat--error ${errorCount === 0 ? 'dc-stat--zero' : ''}`}>
+        <span className="dc-stat__value">{errorCount}</span>
+        <span className="dc-stat__label">Critical Errors</span>
       </div>
 
       {/* Warnings Card */}
-      <div className={`summary-card summary-card--warnings ${warningCount === 0 ? 'summary-card--success' : ''}`}>
-        <h3 className="summary-card__value">{warningCount}</h3>
-        <p className="summary-card__label">Warnings</p>
+      <div className={`dc-stat dc-stat--warning ${warningCount === 0 ? 'dc-stat--zero' : ''}`}>
+        <span className="dc-stat__value">{warningCount}</span>
+        <span className="dc-stat__label">Warnings</span>
       </div>
 
       {/* Auto-Fixable Card */}
-      <div className="summary-card summary-card--fixable">
-        <h3 className="summary-card__value">{autoFixableCount}</h3>
-        <p className="summary-card__label">Auto-Fixable</p>
+      <div className="dc-stat dc-stat--info">
+        <span className="dc-stat__value">{autoFixableCount}</span>
+        <span className="dc-stat__label">Auto-Fixable</span>
       </div>
     </div>
   )

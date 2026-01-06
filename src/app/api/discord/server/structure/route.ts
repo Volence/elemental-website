@@ -35,18 +35,17 @@ export async function GET() {
     // Organize channels by category
     const categories = new Map<string, any>()
     const uncategorized: any[] = []
+    const pendingChannels: any[] = []
 
+    // FIRST PASS: Process all categories first
     channels.forEach((channel) => {
       if (!channel) return
 
-      // Skip non-text/voice channels (e.g., threads, forums)
+      // Skip threads (they are not standalone channels)
       if (
-        ![
-          ChannelType.GuildText,
-          ChannelType.GuildVoice,
-          ChannelType.GuildCategory,
-          ChannelType.GuildAnnouncement,
-        ].includes(channel.type)
+        [ChannelType.PublicThread, ChannelType.PrivateThread, ChannelType.AnnouncementThread].includes(
+          channel.type,
+        )
       ) {
         return
       }
@@ -59,24 +58,35 @@ export async function GET() {
           position: channel.position,
           channels: [],
         })
-      } else {
-        // It's a channel
-        const channelData = {
+      } else if (
+        [
+          ChannelType.GuildText,
+          ChannelType.GuildVoice,
+          ChannelType.GuildAnnouncement,
+          ChannelType.GuildForum,
+          ChannelType.GuildStageVoice,
+        ].includes(channel.type)
+      ) {
+        // It's a regular channel - store for second pass
+        pendingChannels.push({
           id: channel.id,
           name: channel.name,
           type: channel.type,
           position: channel.position,
           parentId: channel.parentId,
-        }
+        })
+      }
+    })
 
-        if (channel.parentId && categories.has(channel.parentId)) {
-          // Add to category
-          const category = categories.get(channel.parentId)
-          category.channels.push(channelData)
-        } else {
-          // Add to uncategorized
-          uncategorized.push(channelData)
-        }
+    // SECOND PASS: Process channels now that all categories exist
+    pendingChannels.forEach((channelData) => {
+      if (channelData.parentId && categories.has(channelData.parentId)) {
+        // Add to category
+        const category = categories.get(channelData.parentId)
+        category.channels.push(channelData)
+      } else {
+        // Add to uncategorized
+        uncategorized.push(channelData)
       }
     })
 
