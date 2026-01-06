@@ -807,6 +807,8 @@ table {
 }
 
 // Tabs (for collection edit views)
+// Tabs - Clean Glow style with cyan underline
+// Example: Edit forms like /admin/collections/teams/95
 .tabs,
 .tabs-field {
   // Allow dropdowns to extend beyond tabs container
@@ -815,35 +817,75 @@ table {
   .tabs__nav {
     display: flex;
     gap: 0.5rem;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
     margin-bottom: 1.5rem;
     
     button {
       @include transparent-bg(0.02);
       border: 1px solid transparent;
-      border-bottom: none;
+      border-bottom: 3px solid transparent;
       border-radius: 8px 8px 0 0;
       padding: 0.75rem 1.5rem;
       font-weight: 500;
-      color: rgba(255, 255, 255, 0.7);
+      color: rgba(255, 255, 255, 0.6); // Improved inactive visibility
       transition: all 0.2s ease;
+      position: relative;
       
       &:hover {
         @include transparent-bg(0.05);
         color: rgba(255, 255, 255, 0.9);
+        border-bottom-color: rgba($admin-accent-info, 0.3);
       }
       
+      // Active tab - cyan underline with glow
       &[aria-selected="true"],
       &.active {
         @include transparent-bg(0.08);
-        border-color: rgba($admin-accent-primary, 0.5);
-        color: rgba(255, 255, 255, 1);
-        box-shadow: 0 0 12px rgba($admin-accent-primary, 0.15);
+        border-top-color: rgba($admin-accent-info, 0.3);
+        border-left-color: rgba($admin-accent-info, 0.3);
+        border-right-color: rgba($admin-accent-info, 0.3);
+        border-bottom: 3px solid $admin-accent-info !important;
+        color: white;
+        box-shadow: 
+          0 4px 12px rgba($admin-accent-info, 0.3),
+          inset 0 -2px 8px rgba($admin-accent-info, 0.1);
       }
     }
   }
 }
 
+// Payload Tabs - Correct selectors for Edit Forms
+// Uses .tabs-field__tab-button (not .tabs__nav)
+// Example: /admin/collections/teams/95
+.tabs-field__tab-button {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 3px solid transparent !important;
+  padding: 0.75rem 1.5rem !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+  font-weight: 500 !important;
+  font-size: 0.9375rem !important;
+  transition: all 0.2s ease !important;
+  opacity: 1 !important;
+  
+  &:hover:not(.tabs-field__tab-button--active) {
+    color: rgba(255, 255, 255, 0.85) !important;
+    border-bottom-color: rgba($admin-accent-info, 0.4) !important;
+  }
+  
+  // Active tab - cyan underline with glow
+  &--active,
+  &.tabs-field__tab-button--active {
+    color: $admin-accent-info !important;
+    border-bottom: 3px solid $admin-accent-info !important;
+    box-shadow: 0 4px 12px rgba($admin-accent-info, 0.25) !important;
+  }
+}
+
+// Tab container bottom border
+.tabs-field__tabs {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
 // Array fields (repeaters)
 .array-field,
 .blocks-field {
