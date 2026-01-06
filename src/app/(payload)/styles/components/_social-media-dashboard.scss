@@ -1095,45 +1095,47 @@
 // 4. Clean filter dropdowns
 
 // ===========================================
-// FIX 1: GHOST BORDERS - Maximum specificity overrides
+// FIX 1: GHOST BORDERS - Hide with display:none
 // ===========================================
 
-// Ultra-aggressive specificity: target with ID, doubled class, attribute selectors
-// The containers ALWAYS have no border/padding by default
-#list-controls-columns.list-controls__columns,
-#list-controls-where.list-controls__where,
-.list-controls .list-controls__columns,
-.list-controls .list-controls__where,
-div.list-controls__columns,
-div.list-controls__where,
-.list-controls__columns.list-controls__columns,
-.list-controls__where.list-controls__where {
+// The problem: Payload shows empty containers with padding/border when closed
+// Solution: Hide containers completely when not expanded, style them when expanded
+
+// When the toggle button shows aria-expanded="false", hide the container
+// Using :has() to check the button state and hide sibling containers
+.list-controls:has(#toggle-list-columns[aria-expanded="false"]) .list-controls__columns,
+.list-controls:has(#toggle-list-columns:not([aria-expanded="true"])) .list-controls__columns {
+  display: none !important;
+}
+
+.list-controls:has(#toggle-list-filters[aria-expanded="false"]) .list-controls__where,
+.list-controls:has(#toggle-list-filters:not([aria-expanded="true"])) .list-controls__where {
+  display: none !important;
+}
+
+// Fallback: Also hide any container with height animation set to 0
+[class*="list-controls__columns"][style*="height: 0"],
+[class*="list-controls__where"][style*="height: 0"],
+.rah-static--height-zero {
+  display: none !important;
+}
+
+// When OPEN, style the containers properly
+.list-controls__columns,
+.list-controls__where {
+  // Default styles when these are visible
   padding: 0 !important;
-  border: 0 !important;
-  border-width: 0 !important;
-  border-style: none !important;
+  border: none !important;
   margin: 0 !important;
   min-height: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
 }
 
-// Also target any wrapper divs
-.list-controls > div[class*="columns"],
-.list-controls > div[class*="where"] {
-  padding: 0 !important;
-  border: 0 !important;
-  margin: 0 !important;
-  min-height: 0 !important;
-  background: transparent !important;
-}
-
-// Style the INNER containers instead of the outer wrapper
-// This way when react-animate-height collapses, the inner container is hidden completely
+// Style the INNER containers (pill-selector, where-builder)
 .list-controls__columns .pill-selector,
 .list-controls__columns .column-selector,
-#list-controls-columns .pill-selector,
-#list-controls-columns .column-selector {
+#list-controls-columns .pill-selector {
   background: rgba(0, 0, 0, 0.95) !important;
   border: 1px solid rgba($admin-accent-info, 0.3) !important;
   border-radius: 8px !important;
@@ -1150,17 +1152,63 @@ div.list-controls__where,
   margin-top: 0.5rem !important;
 }
 
-// Target rah-static (react-animate-height) when height is zero
-.rah-static--height-zero,
-[style*="height: 0px"],
-[style*="height:0px"],
-[style*="height: 0;"],
-[style*="height:0;"] {
-  border: none !important;
-  background: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  overflow: hidden !important;
+// ===========================================
+// FIX 2: DROPDOWN INDICATORS - Purple theme (not red)
+// ===========================================
+
+// ULTRA SPECIFIC to override .where-builder .condition button which sets red
+// The order of selectors matters - most specific first
+.where-builder .condition button.dropdown-indicator,
+.where-builder .condition .dropdown-indicator,
+.where-builder button.dropdown-indicator,
+.condition button.dropdown-indicator,
+button.dropdown-indicator.dropdown-indicator,
+.dropdown-indicator.dropdown-indicator,
+.dropdown-indicator {
+  // Purple theme instead of red
+  color: rgba(168, 85, 247, 0.9) !important;
+  background-color: rgba(168, 85, 247, 0.1) !important;
+  background: rgba(168, 85, 247, 0.1) !important;
+  border-color: rgba(168, 85, 247, 0.4) !important;
+  border: 1px solid rgba(168, 85, 247, 0.4) !important;
+  
+  // Icon styling
+  .icon,
+  svg,
+  .dropdown-indicator__icon {
+    color: rgba(168, 85, 247, 0.9) !important;
+    fill: currentColor !important;
+    stroke: none !important;
+  }
+  
+  &:hover {
+    color: rgba(168, 85, 247, 1) !important;
+    background-color: rgba(168, 85, 247, 0.2) !important;
+    background: rgba(168, 85, 247, 0.2) !important;
+    border-color: rgba(168, 85, 247, 0.6) !important;
+    border: 1px solid rgba(168, 85, 247, 0.6) !important;
+  }
+}
+
+// Also target React-Select indicators
+.rs__indicator,
+.rs__dropdown-indicator {
+  color: rgba(168, 85, 247, 0.9) !important;
+  background: transparent !important;
+  
+  svg {
+    fill: currentColor !important;
+    color: inherit !important;
+  }
+}
+
+// Clear indicator should stay white (subtle)
+.rs__clear-indicator {
+  color: rgba(255, 255, 255, 0.5) !important;
+  
+  &:hover {
+    color: rgba(239, 68, 68, 0.9) !important;
+  }
 }
 
 // Column/Filter toggle buttons - fix chevron background
