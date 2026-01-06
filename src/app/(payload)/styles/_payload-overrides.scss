@@ -275,7 +275,7 @@ button[class*="btn"],
 // FORMS & INPUTS - Clean Glow as Default
 // ============================================
 
-// Text inputs
+// Text inputs - STRONG OVERRIDES to beat Payload defaults
 input[type="text"],
 input[type="email"],
 input[type="password"],
@@ -286,6 +286,18 @@ input[type="search"],
 textarea,
 .input {
   @include glow-input($admin-accent-primary);
+  
+  // Force dark theme - Payload likes to add white backgrounds
+  background: rgba(0, 0, 0, 0.15) !important;
+  color: rgba(255, 255, 255, 0.95) !important;
+  
+  &:focus {
+    background: rgba($admin-accent-primary, 0.08) !important;
+    border-color: rgba($admin-accent-primary, 0.7) !important;
+    box-shadow: 
+      0 0 0 3px rgba($admin-accent-primary, 0.2),
+      0 0 16px rgba($admin-accent-primary, 0.3) !important;
+  }
 }
 
 // Select dropdowns
@@ -341,17 +353,37 @@ select,
   }
 }
 
-// Checkboxes and radios
+// Checkboxes and radios - STRONG OVERRIDES
 input[type="checkbox"] {
   @include glow-checkbox($admin-accent-success, 18px);
   margin: 0;
   vertical-align: middle;
+  
+  // Force dark theme for checkboxes
+  background: rgba(0, 0, 0, 0.15) !important;
+  border: 2px solid rgba($admin-accent-success, 0.5) !important;
+  box-shadow: 0 0 8px rgba($admin-accent-success, 0.12) !important;
+  
+  &:checked {
+    background: rgba($admin-accent-success, 0.25) !important;
+    border-color: rgba($admin-accent-success, 0.9) !important;
+    box-shadow: 0 0 15px rgba($admin-accent-success, 0.35) !important;
+  }
+  
+  &:hover:not(:checked) {
+    background: rgba($admin-accent-success, 0.08) !important;
+    box-shadow: 0 0 12px rgba($admin-accent-success, 0.2) !important;
+  }
 }
 
 input[type="radio"] {
   @include glow-radio($admin-accent-success, 18px);
   margin: 0;
   vertical-align: middle;
+  
+  // Force dark theme for radios
+  background: rgba(0, 0, 0, 0.15) !important;
+  border: 2px solid rgba($admin-accent-success, 0.5) !important;
 }
 
 // Checkbox/radio labels
@@ -375,6 +407,15 @@ label:has(input[type="radio"]) {
   &:hover {
     color: rgba(255, 255, 255, 0.95);
   }
+}
+
+// Payload Checkbox container - remove white background
+.checkbox-input,
+.checkbox-input__input,
+[class*="checkbox-input"] {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 // ============================================
