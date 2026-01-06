@@ -79,29 +79,32 @@
   margin-bottom: $spacing-lg;
   
   &__link {
-    @include glow-button($admin-accent-success);
     display: inline-flex;
     align-items: center;
     gap: $gap-sm;
     padding: $padding-sm $padding-lg;
-    background: linear-gradient(135deg, rgb(34, 197, 94) 0%, rgb(22, 163, 74) 100%);
-    color: white;
+    // Subtle purple/cyan outline style to match theme
+    background: rgba($admin-accent-primary, 0.1);
+    color: rgba(255, 255, 255, 0.9);
     text-decoration: none;
     border-radius: $radius-sm;
     font-size: $font-size-sm;
-    font-weight: $font-weight-semibold;
-    border: 1px solid rgba(34, 197, 94, 0.5);
-    box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+    font-weight: $font-weight-medium;
+    border: 1px solid rgba($admin-accent-primary, 0.4);
+    box-shadow: 0 0 10px rgba($admin-accent-primary, 0.15);
     transition: all 0.2s ease;
     
     &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 0 30px rgba(34, 197, 94, 0.5);
+      background: rgba($admin-accent-primary, 0.2);
+      border-color: rgba($admin-accent-primary, 0.6);
+      box-shadow: 0 0 15px rgba($admin-accent-primary, 0.25);
+      color: white;
     }
   }
   
   &__icon {
     font-size: $font-size-base;
+    opacity: 0.8;
   }
 }
 

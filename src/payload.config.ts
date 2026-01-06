@@ -102,28 +102,7 @@ const config = buildConfig({
     avatar: {
       Component: '@/components/UserAvatar#default',
     },
-    livePreview: {
-      breakpoints: [
-        {
-          label: 'Mobile',
-          name: 'mobile',
-          width: 375,
-          height: 667,
-        },
-        {
-          label: 'Tablet',
-          name: 'tablet',
-          width: 768,
-          height: 1024,
-        },
-        {
-          label: 'Desktop',
-          name: 'desktop',
-          width: 1440,
-          height: 900,
-        },
-      ],
-    },
+    // Note: livePreview removed - no URL was configured so the Edit button was non-functional
   },
   // This config helps us configure global or default features that the other editors can inherit
   editor: defaultLexical,
