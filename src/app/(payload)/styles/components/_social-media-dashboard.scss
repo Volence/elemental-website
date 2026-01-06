@@ -1564,9 +1564,9 @@ button.dropdown-indicator.dropdown-indicator,
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    width: 28px !important;  // Same size
-    height: 28px !important;
-    min-width: 28px !important;
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
     padding: 0 !important;
     background: rgba($admin-accent-error, 0.1) !important;
     border: 1px solid rgba($admin-accent-error, 0.4) !important;
@@ -1577,8 +1577,8 @@ button.dropdown-indicator.dropdown-indicator,
     flex-shrink: 0 !important;
     
     svg {
-      width: 12px !important;
-      height: 12px !important;
+      width: 14px !important;
+      height: 14px !important;
     }
     
     &:hover {
@@ -1594,9 +1594,9 @@ button.dropdown-indicator.dropdown-indicator,
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    width: 28px !important;  // Same size as X
-    height: 28px !important;
-    min-width: 28px !important;
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
     padding: 0 !important;
     background: rgba($admin-accent-success, 0.1) !important;
     border: 1px solid rgba($admin-accent-success, 0.4) !important;
@@ -1607,8 +1607,8 @@ button.dropdown-indicator.dropdown-indicator,
     flex-shrink: 0 !important;
     
     svg {
-      width: 12px !important;
-      height: 12px !important;
+      width: 14px !important;
+      height: 14px !important;
     }
     
     &:hover {
