@@ -6,6 +6,7 @@ import { EditTemplateModal } from './EditTemplateModal'
 import { ApplyTemplateModal } from './ApplyTemplateModal'
 import { CreateChannelModal } from './CreateChannelModal'
 import { CategoryItem } from './CategoryItem'
+import TeamCardsTab from './TeamCardsTab'
 import { Edit, Trash2 } from 'lucide-react'
 
 interface DiscordChannel {
@@ -92,7 +93,7 @@ const DiscordServerManagerView = () => {
   const [templates, setTemplates] = useState<Template[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'structure' | 'stats' | 'health' | 'templates'>('structure')
+  const [activeTab, setActiveTab] = useState<'structure' | 'stats' | 'health' | 'templates' | 'team-cards'>('structure')
   
   // Template form state
   const [selectedCategoryId, setSelectedCategoryId] = useState('')
@@ -787,6 +788,13 @@ const DiscordServerManagerView = () => {
         >
           Templates
         </button>
+        <button
+          className={`tab ${activeTab === 'team-cards' ? 'active' : ''}`}
+          onClick={() => setActiveTab('team-cards')}
+          disabled={loading}
+        >
+          🎴 Team Cards
+        </button>
       </div>
 
       <div className="tab-content">
@@ -1181,6 +1189,12 @@ const DiscordServerManagerView = () => {
               )}
             </div>
           </div>
+        )}
+
+        {activeTab === 'team-cards' && (
+          <TeamCardsTab 
+            onAlert={(title, message, type) => setAlertModal({ isOpen: true, title, message, type })}
+          />
         )}
         </>
         )}

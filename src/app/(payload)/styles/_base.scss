@@ -61,6 +61,11 @@ html {
   background-color: $admin-bg-base;
 }
 
+// Ensure compatibility with Next.js scroll behavior detection
+html[data-scroll-behavior="smooth"] {
+  scroll-behavior: smooth;
+}
+
 html[data-theme='dark'],
 html[data-theme='light'] {
   opacity: 1;

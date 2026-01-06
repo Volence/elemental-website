@@ -1997,3 +1997,288 @@
     transform: rotate(360deg);
   }
 }
+
+// Team Cards Tab Styles
+.team-cards-tab {
+  .team-cards-header {
+    margin-bottom: $spacing-xl;
+
+    h3 {
+      font-size: $font-size-xl;
+      font-weight: $font-weight-semibold;
+      color: $admin-text-primary;
+      margin: 0 0 $spacing-sm 0;
+    }
+
+    .description {
+      color: $admin-text-secondary;
+      font-size: $font-size-base;
+      margin: 0;
+    }
+  }
+
+  .team-cards-actions {
+    display: flex;
+    gap: $spacing-lg;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    margin-bottom: $spacing-xl;
+    padding: $spacing-xl;
+    background: rgba(#a855f7, 0.05);
+    border: 1px solid rgba(#a855f7, 0.2);
+    border-radius: $radius-md;
+
+    .action-btn--soft {
+      @include glow-button($admin-accent-info);
+      padding: $spacing-md $spacing-xl;
+      font-weight: $font-weight-semibold;
+    }
+
+    .action-btn--full {
+      @include glow-button($admin-accent-error);
+      padding: $spacing-md $spacing-xl;
+      font-weight: $font-weight-semibold;
+    }
+
+    .action-info {
+      flex: 1;
+      min-width: 300px;
+      font-size: $font-size-sm;
+      color: $admin-text-secondary;
+
+      p {
+        margin: $spacing-xs 0;
+      }
+    }
+  }
+
+  .result-message {
+    padding: $spacing-lg $spacing-xl;
+    border-radius: $radius-md;
+    margin-bottom: $spacing-xl;
+
+    &--success {
+      background: rgba($admin-accent-success, 0.1);
+      border: 1px solid rgba($admin-accent-success, 0.3);
+      color: $admin-accent-success;
+    }
+
+    &--error {
+      background: rgba($admin-accent-error, 0.1);
+      border: 1px solid rgba($admin-accent-error, 0.3);
+      color: $admin-accent-error;
+    }
+
+    p {
+      margin: $spacing-sm 0 0 0;
+      font-size: $font-size-sm;
+    }
+
+    details {
+      margin-top: $spacing-md;
+
+      summary {
+        cursor: pointer;
+        font-size: $font-size-sm;
+      }
+
+      ul {
+        margin: $spacing-sm 0;
+        padding-left: $spacing-xl;
+        font-size: $font-size-sm;
+      }
+    }
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: $spacing-lg;
+    margin-bottom: $spacing-xl;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+
+    .stat-card {
+      padding: $spacing-xl;
+      text-align: center;
+      background: rgba($admin-accent-primary, 0.03);
+      border: 1px solid rgba($admin-accent-primary, 0.15);
+      border-radius: $radius-md;
+
+      .stat-value {
+        font-size: 2.5rem;
+        font-weight: $font-weight-bold;
+        color: $admin-accent-primary;
+        margin-bottom: $spacing-xs;
+        position: relative;
+
+        // Reset any inherited ::before/::after styles
+        &::before,
+        &::after {
+          display: none !important;
+        }
+
+        &--success {
+          color: $admin-accent-success;
+        }
+
+        &--warning {
+          color: $admin-accent-warning;
+        }
+      }
+
+      .stat-label {
+        font-size: $font-size-sm;
+        color: $admin-text-secondary;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+    }
+  }
+
+  .teams-table-container {
+    @include glow-card($admin-accent-primary);
+    overflow-x: auto;
+    border-radius: $radius-md;
+
+    .teams-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: $font-size-sm;
+
+      thead {
+        background: rgba($admin-accent-primary, 0.08);
+        border-bottom: 1px solid rgba($admin-accent-primary, 0.2);
+
+        th {
+          padding: $spacing-md $spacing-lg;
+          text-align: left;
+          font-weight: $font-weight-semibold;
+          color: $admin-text-secondary;
+          text-transform: uppercase;
+          font-size: $font-size-xs;
+          letter-spacing: 0.5px;
+        }
+      }
+
+      tbody {
+        tr {
+          border-bottom: 1px solid rgba($admin-accent-primary, 0.1);
+          transition: background-color 0.2s ease;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          &:hover {
+            background: rgba($admin-accent-primary, 0.05);
+          }
+        }
+
+        td {
+          padding: $spacing-md $spacing-lg;
+          color: $admin-text-primary;
+        }
+      }
+
+      .team-cell {
+        display: flex;
+        align-items: center;
+        gap: $spacing-md;
+
+        .team-logo {
+          width: 28px;
+          height: 28px;
+          object-fit: contain;
+          border-radius: $radius-xs;
+        }
+      }
+
+      .status-badge {
+        display: inline-block;
+        padding: $spacing-xs $spacing-sm;
+        border-radius: $radius-sm;
+        font-size: $font-size-xs;
+        font-weight: $font-weight-semibold;
+
+        &--success {
+          background: rgba($admin-accent-success, 0.15);
+          color: $admin-accent-success;
+        }
+
+        &--warning {
+          background: rgba($admin-accent-warning, 0.15);
+          color: $admin-accent-warning;
+        }
+      }
+
+      .message-id {
+        font-family: monospace;
+        font-size: $font-size-xs;
+        padding: $spacing-xs $spacing-sm;
+        background: rgba($admin-accent-primary, 0.05);
+        border-radius: $radius-xs;
+        cursor: help;
+      }
+
+      .no-id {
+        color: $admin-text-secondary;
+      }
+
+      .time-cell {
+        font-size: $font-size-xs;
+        color: $admin-text-secondary;
+      }
+    }
+  }
+
+  .commands-section {
+    margin-top: $spacing-2xl;
+    padding: $spacing-xl;
+    background: rgba($admin-accent-primary, 0.02);
+    border: 1px solid rgba($admin-accent-primary, 0.1);
+    border-radius: $radius-md;
+
+    h4 {
+      margin: 0 0 $spacing-lg 0;
+      font-size: $font-size-lg;
+      color: $admin-text-primary;
+    }
+
+    .commands-list {
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-md;
+
+      .command-item {
+        display: flex;
+        gap: $spacing-lg;
+        align-items: center;
+
+        code {
+          font-family: monospace;
+          font-size: $font-size-sm;
+          padding: $spacing-sm $spacing-md;
+          background: rgba(#a855f7, 0.15);
+          border: 1px solid rgba(#a855f7, 0.3);
+          border-radius: $radius-xs;
+          color: #a855f7;
+          min-width: 140px;
+        }
+
+        span {
+          font-size: $font-size-sm;
+          color: $admin-text-secondary;
+        }
+      }
+    }
+  }
+
+  .loading-state {
+    text-align: center;
+    padding: $spacing-3xl;
+    color: $admin-text-secondary;
+  }
+}

@@ -19,13 +19,13 @@ export async function postOrUpdateTeamCard(options: TeamCardOptions): Promise<st
   try {
     const client = await ensureDiscordClient()
     if (!client) {
-      console.log('Discord client not available')
+      console.log('[TeamCards] Discord client not available')
       return null
     }
 
     const channelId = process.env.DISCORD_CARDS_CHANNEL
     if (!channelId) {
-      console.log('DISCORD_CARDS_CHANNEL not configured')
+      console.log('[TeamCards] DISCORD_CARDS_CHANNEL not configured')
       return null
     }
 
@@ -37,14 +37,14 @@ export async function postOrUpdateTeamCard(options: TeamCardOptions): Promise<st
       depth: 2,
     })
     if (!team) {
-      console.log(`Team ${teamId} not found`)
+      console.log(`[TeamCards] Team ${teamId} not found`)
       return null
     }
 
     // Get the Discord channel
     const channel = (await client.channels.fetch(channelId)) as TextChannel
     if (!channel || !channel.isTextBased()) {
-      console.log(`Channel ${channelId} not found or not a text channel`)
+      console.log(`[TeamCards] Channel ${channelId} not found or not a text channel`)
       return null
     }
 
@@ -57,25 +57,47 @@ export async function postOrUpdateTeamCard(options: TeamCardOptions): Promise<st
     if (existingMessageId && !forceRepost) {
       // Try to edit existing message
       try {
+        console.log(`[TeamCards] Attempting to edit existing message ${existingMessageId} for ${team.name}`)
         const message = await channel.messages.fetch(existingMessageId)
         await message.edit({ embeds: [embed] })
-        console.log(`✅ Updated team card for ${team.name}`)
+        console.log(`✅ [TeamCards] Updated team card for ${team.name} (message: ${existingMessageId})`)
         return existingMessageId
       } catch (error: any) {
-        console.log(`Message ${existingMessageId} not found, will repost`)
+        // Check if this is a "message not found" error (10008) or "unknown message" (10014)
+        const isMessageNotFound = error.code === 10008 || error.code === 10014 || 
+          error.message?.includes('Unknown Message') || 
+          error.message?.includes('not found')
+        
+        if (isMessageNotFound) {
+          console.log(`[TeamCards] ⚠️ Message ${existingMessageId} no longer exists for ${team.name}, clearing stale ID and reposting`)
+          // Clear the stale message ID from the database
+          await payload.update({
+            collection: 'teams',
+            id: teamId,
+            data: { discordCardMessageId: null },
+            context: { skipDiscordUpdate: true },
+          })
+        } else {
+          // Other error (permissions, rate limit, etc.) - don't repost, just log and return
+          console.error(`[TeamCards] ❌ Failed to edit message ${existingMessageId} for ${team.name}:`, error.message || error)
+          console.log(`[TeamCards] Keeping existing message ID to prevent duplicates. Error code: ${error.code}`)
+          // Return the existing ID even though edit failed - prevents duplicate posts
+          return existingMessageId
+        }
       }
     }
 
-    // Post new message
+    // Post new message (either no existing ID, forceRepost=true, or old message was deleted)
+    console.log(`[TeamCards] Posting NEW card for ${team.name} (forceRepost: ${forceRepost}, hadExistingId: ${!!existingMessageId})`)
     const message = await channel.send({ embeds: [embed] })
-    console.log(`✅ Posted new team card for ${team.name}`)
+    console.log(`✅ [TeamCards] Posted new team card for ${team.name} (message: ${message.id})`)
 
     // Save message ID to database
     await saveTeamMessageId(teamId, message.id, payload)
 
     return message.id
   } catch (error) {
-    console.error('Error posting/updating team card:', error)
+    console.error('[TeamCards] Error posting/updating team card:', error)
     return null
   }
 }

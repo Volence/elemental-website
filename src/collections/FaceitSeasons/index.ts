@@ -309,6 +309,44 @@ export const FaceitSeasons: CollectionConfig = {
         return data
       },
     ],
+    afterChange: [
+      async ({ doc, previousDoc, operation }) => {
+        // Skip on create - card will be created when team is first set up
+        if (operation === 'create') return
+        
+        // Check if standings data changed (record, rank, etc.)
+        const prevStandings = previousDoc?.standings || {}
+        const newStandings = doc.standings || {}
+        
+        const standingsChanged = 
+          prevStandings.wins !== newStandings.wins ||
+          prevStandings.losses !== newStandings.losses ||
+          prevStandings.currentRank !== newStandings.currentRank ||
+          prevStandings.totalTeams !== newStandings.totalTeams
+        
+        if (!standingsChanged) return
+        
+        // Get the team ID from the season
+        const teamId = typeof doc.team === 'object' ? doc.team.id : doc.team
+        if (!teamId) return
+        
+        console.log(`[FaceitSeasons] 📊 Standings changed for season ${doc.id} (team: ${teamId}) - triggering Discord card update`)
+        console.log(`[FaceitSeasons]   Record: ${prevStandings.wins || 0}-${prevStandings.losses || 0} → ${newStandings.wins || 0}-${newStandings.losses || 0}`)
+        console.log(`[FaceitSeasons]   Rank: #${prevStandings.currentRank || '?'} → #${newStandings.currentRank || '?'}`)
+        
+        // Trigger async Discord card update (don't block the save)
+        if (typeof globalThis !== 'undefined') {
+          setImmediate(async () => {
+            try {
+              const { postOrUpdateTeamCard } = await import('../../discord/services/teamCards')
+              await postOrUpdateTeamCard({ teamId })
+            } catch (error) {
+              console.error('[FaceitSeasons] Failed to update Discord team card:', error)
+            }
+          })
+        }
+      },
+    ],
   },
 }
 

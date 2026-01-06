@@ -86,7 +86,7 @@ const config = buildConfig({
       // Custom navigation links in the sidebar
       beforeNavLinks: [
         '@/components/BeforeDashboard/DashboardNavLink',
-        '@/components/BeforeDashboard/ReadOnlyStyles#default',
+        '@/components/BeforeDashboard/SidebarScrollPreserver#default',
       ],
       // No custom afterNavLinks - Payload provides its own logout button
       // Custom logo for admin panel breadcrumbs
