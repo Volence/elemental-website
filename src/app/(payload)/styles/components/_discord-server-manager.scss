@@ -1615,6 +1615,30 @@
   .channel-type-icon {
     color: $admin-text-secondary;
     flex-shrink: 0;
+    width: 16px !important;
+    height: 16px !important;
+    min-width: 16px;
+    max-width: 16px;
+    min-height: 16px;
+    max-height: 16px;
+    
+    // Force SVG elements to respect size
+    &, svg {
+      width: 16px !important;
+      height: 16px !important;
+    }
+    
+    // Emoji variant for forum channels
+    &.channel-type-emoji {
+      font-size: 14px;
+      line-height: 1;
+      width: auto !important;
+      height: auto !important;
+      min-width: auto;
+      max-width: none;
+      min-height: auto;
+      max-height: none;
+    }
   }
 
   .channel-name {
@@ -1968,8 +1992,14 @@
       flex: 1;
 
       .channel-type-icon {
-        font-size: $font-size-lg;
+        width: 18px !important;
+        height: 18px !important;
         flex-shrink: 0;
+        
+        &, svg {
+          width: 18px !important;
+          height: 18px !important;
+        }
       }
 
       span:last-child {

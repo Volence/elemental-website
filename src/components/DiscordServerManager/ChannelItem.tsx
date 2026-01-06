@@ -58,7 +58,7 @@ export const ChannelItem: React.FC<ChannelItemProps> = ({
 
   const getChannelIcon = () => {
     if (channel.type === 2) return <Volume2 size={14} className="channel-type-icon" />
-    if (channel.type === 15) return <MessageSquare size={14} className="channel-type-icon" />
+    if (channel.type === 15) return <span className="channel-type-icon channel-type-emoji">📋</span>
     return <Hash size={14} className="channel-type-icon" />
   }
 
