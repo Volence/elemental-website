@@ -1,5 +1,8 @@
 services:
   payload:
+    # Use pre-built image from GHCR (pushed by CI/CD)
+    # Falls back to local build if image not available
+    image: ${PAYLOAD_IMAGE:-ghcr.io/volence/elemental-website:latest}
     build:
       context: .
       dockerfile: Dockerfile
