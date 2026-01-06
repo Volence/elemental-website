@@ -782,6 +782,12 @@ table {
   padding-bottom: $spacing-xs !important; // Minimal padding
 }
 
+// Hide the Edit tab - Live Preview not configured, makes button redundant
+.doc-tabs__tabs .doc-tab[title="Edit"],
+.doc-tabs__tabs .doc-tab[aria-label="Edit"] {
+  display: none !important;
+}
+
 // ============================================
 // TOASTS & NOTIFICATIONS
 // ============================================
