@@ -65,24 +65,22 @@ jobs:
             # Log in to GitHub Container Registry (using PAT)
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
             
-            # Pull the latest image
-            docker pull ghcr.io/${{ github.repository }}:latest
-            
-            # Stop and remove old container
-            docker stop elemental-website-payload-1 2>/dev/null || true
-            docker rm elemental-website-payload-1 2>/dev/null || true
-            
-            # Remove any locally-built images to prevent confusion
-            docker rmi elemental-website-payload 2>/dev/null || true
+            # Pull the latest image first (fail fast if image doesn't exist)
+            echo "📦 Pulling latest image..."
+            if ! docker pull ghcr.io/${{ github.repository }}:latest; then
+              echo "❌ Failed to pull image, aborting deploy"
+              exit 1
+            fi
             
             # Get postgres password from env file
             POSTGRES_PASS=$(grep POSTGRES_PASSWORD .env.production | cut -d= -f2)
             
-            # Start new container using the GHCR image directly
+            # Start new container with a temporary name first
+            echo "🚀 Starting new container..."
             docker run -d \
-              --name elemental-website-payload-1 \
+              --name elemental-website-payload-new \
               --restart unless-stopped \
-              -p 127.0.0.1:3000:3000 \
+              -p 127.0.0.1:3001:3000 \
               --env-file .env.production \
               -e DATABASE_URI="postgresql://payload:${POSTGRES_PASS}@elemental-website-postgres-1:5432/payload" \
               -e NODE_ENV=production \
@@ -90,10 +88,47 @@ jobs:
               -v elemental-website_media:/app/public/media \
               ghcr.io/${{ github.repository }}:latest
             
-            # Clean up old images to save space
-            docker image prune -f
+            # Wait for new container to be healthy
+            echo "⏳ Waiting for new container to start..."
+            sleep 15
             
-            echo "✅ Container started with GHCR image"
+            # Check if new container is running and healthy
+            if curl -s -f http://localhost:3001/api/health > /dev/null 2>&1; then
+              echo "✅ New container is healthy, switching over..."
+              
+              # Stop old container
+              docker stop elemental-website-payload-1 2>/dev/null || true
+              docker rm elemental-website-payload-1 2>/dev/null || true
+              
+              # Stop new container, reconfigure port, rename
+              docker stop elemental-website-payload-new
+              docker rm elemental-website-payload-new
+              
+              # Start final container with correct name and port
+              docker run -d \
+                --name elemental-website-payload-1 \
+                --restart unless-stopped \
+                -p 127.0.0.1:3000:3000 \
+                --env-file .env.production \
+                -e DATABASE_URI="postgresql://payload:${POSTGRES_PASS}@elemental-website-postgres-1:5432/payload" \
+                -e NODE_ENV=production \
+                --network elemental-website_default \
+                -v elemental-website_media:/app/public/media \
+                ghcr.io/${{ github.repository }}:latest
+              
+              echo "✅ Deployment complete!"
+            else
+              echo "❌ New container failed health check, rolling back..."
+              docker logs elemental-website-payload-new --tail=30 2>&1 || true
+              docker stop elemental-website-payload-new 2>/dev/null || true
+              docker rm elemental-website-payload-new 2>/dev/null || true
+              echo "Old container preserved, deploy failed"
+              exit 1
+            fi
+            
+            # Clean up old images
+            docker image prune -f
+            docker rmi elemental-website-payload 2>/dev/null || true
 
       - name: Verify Deployment
         uses: appleboy/ssh-action@v1.2.2
@@ -102,30 +137,29 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Wait for the app to be ready
-            echo "Waiting for app to start..."
+            echo "🔍 Verifying deployment..."
             sleep 10
             
             # Check if container is running
             if docker ps | grep -q "elemental-website-payload-1"; then
               echo "✅ Container is running"
             else
-              echo "❌ Container is not running"
+              echo "❌ Container is not running!"
               docker logs elemental-website-payload-1 --tail=30 2>&1 || true
               exit 1
             fi
             
             # Check if app responds to health check
-            for i in {1..12}; do
+            for i in {1..6}; do
               if curl -s -f http://localhost:3000/api/health > /dev/null 2>&1; then
                 echo "✅ Health check passed!"
-                docker logs elemental-website-payload-1 --tail=10 2>&1 || true
+                docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}' | head -5
                 exit 0
               fi
-              echo "Waiting for health check... ($i/12)"
+              echo "Waiting for health check... ($i/6)"
               sleep 5
             done
             
-            echo "⚠️ Health check timed out, checking logs..."
+            echo "⚠️ Health check timed out"
             docker logs elemental-website-payload-1 --tail=30 2>&1 || true
             exit 1

@@ -357,6 +357,7 @@ const DiscordServerManagerView = () => {
           templateId: editedTemplate.id,
           name: editedTemplate.name,
           description: editedTemplate.description,
+          categoryName: editedTemplate.categoryName,
           roles: editedTemplate.roles,
           channels: editedTemplate.channels,
         }),

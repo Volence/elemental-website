@@ -27,6 +27,7 @@ interface EditedTemplate {
   id: string
   name: string
   description?: string
+  categoryName: string
   roles: TemplateRole[]
   channels: TemplateChannel[]
 }
@@ -96,6 +97,7 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
         id: template.id,
         name: template.name,
         description: template.description || '',
+        categoryName: templateData.category?.name || template.sourceCategory || '',
         roles: templateData.roles || [],
         channels: templateData.channels || []
       })
@@ -288,6 +290,19 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
             onChange={(e) => setEditedTemplate({ ...editedTemplate, description: e.target.value })}
             rows={2}
           />
+        </div>
+
+        {/* Default Category Name */}
+        <div className="form-field">
+          <label>Default Category Name</label>
+          <input
+            type="text"
+            className="text-input"
+            value={editedTemplate.categoryName}
+            onChange={(e) => setEditedTemplate({ ...editedTemplate, categoryName: e.target.value })}
+            placeholder="e.g., Team Channel, Staff Category"
+          />
+          <small className="form-hint">This will be the suggested name when applying this template</small>
         </div>
 
         {/* Category Default Permissions */}

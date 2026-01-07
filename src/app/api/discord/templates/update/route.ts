@@ -4,7 +4,7 @@ import { getPayload } from 'payload'
 
 export async function POST(request: NextRequest) {
   try {
-    const { templateId, name, description, roles, channels } = await request.json()
+    const { templateId, name, description, categoryName, roles, channels } = await request.json()
 
     if (!templateId) {
       return NextResponse.json({ error: 'Template ID is required' }, { status: 400 })
@@ -22,12 +22,16 @@ export async function POST(request: NextRequest) {
       id: templateId,
     })
 
-    // Update templateData with new roles and channels
+    // Update templateData with new roles, channels, and category name
     const existingData = typeof existing.templateData === 'object' ? existing.templateData : {}
     const updatedTemplateData = {
       ...(existingData as any),
       roles,
       channels,
+      category: {
+        ...((existingData as any).category || {}),
+        name: categoryName || (existingData as any).category?.name || '',
+      },
     }
 
     // Update the template
