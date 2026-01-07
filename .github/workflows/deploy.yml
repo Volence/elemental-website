@@ -68,12 +68,32 @@ jobs:
             # Pull the latest image
             docker pull ghcr.io/${{ github.repository }}:latest
             
-            # Stop old container and start new one (minimal downtime)
-            docker compose -f docker-compose.prod.yml stop payload
-            docker compose -f docker-compose.prod.yml up -d payload
+            # Stop and remove old container
+            docker stop elemental-website-payload-1 2>/dev/null || true
+            docker rm elemental-website-payload-1 2>/dev/null || true
+            
+            # Remove any locally-built images to prevent confusion
+            docker rmi elemental-website-payload 2>/dev/null || true
+            
+            # Get postgres password from env file
+            POSTGRES_PASS=$(grep POSTGRES_PASSWORD .env.production | cut -d= -f2)
+            
+            # Start new container using the GHCR image directly
+            docker run -d \
+              --name elemental-website-payload-1 \
+              --restart unless-stopped \
+              -p 127.0.0.1:3000:3000 \
+              --env-file .env.production \
+              -e DATABASE_URI="postgresql://payload:${POSTGRES_PASS}@elemental-website-postgres-1:5432/payload" \
+              -e NODE_ENV=production \
+              --network elemental-website_default \
+              -v elemental-website_media:/app/public/media \
+              ghcr.io/${{ github.repository }}:latest
             
             # Clean up old images to save space
             docker image prune -f
+            
+            echo "✅ Container started with GHCR image"
 
       - name: Verify Deployment
         uses: appleboy/ssh-action@v1.2.2
@@ -82,19 +102,30 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/ubuntu/elemental-website
+            # Wait for the app to be ready
+            echo "Waiting for app to start..."
+            sleep 10
             
-            # Wait for container to be healthy
-            echo "Waiting for container to become healthy..."
-            for i in {1..30}; do
-              if docker compose -f docker-compose.prod.yml ps payload | grep -q "healthy"; then
-                echo "✅ Container is healthy!"
+            # Check if container is running
+            if docker ps | grep -q "elemental-website-payload-1"; then
+              echo "✅ Container is running"
+            else
+              echo "❌ Container is not running"
+              docker logs elemental-website-payload-1 --tail=30 2>&1 || true
+              exit 1
+            fi
+            
+            # Check if app responds to health check
+            for i in {1..12}; do
+              if curl -s -f http://localhost:3000/api/health > /dev/null 2>&1; then
+                echo "✅ Health check passed!"
+                docker logs elemental-website-payload-1 --tail=10 2>&1 || true
                 exit 0
               fi
-              echo "Waiting... ($i/30)"
-              sleep 2
+              echo "Waiting for health check... ($i/12)"
+              sleep 5
             done
             
-            echo "⚠️ Container health check timed out, checking logs..."
-            docker compose -f docker-compose.prod.yml logs --tail=20 payload
+            echo "⚠️ Health check timed out, checking logs..."
+            docker logs elemental-website-payload-1 --tail=30 2>&1 || true
             exit 1
