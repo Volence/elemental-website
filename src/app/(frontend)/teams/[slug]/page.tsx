@@ -13,6 +13,7 @@ import { TeamSubstitutesSection } from './components/TeamSubstitutesSection'
 import { TeamRecruitmentSection } from './components/TeamRecruitmentSection'
 import CompetitiveSection from './components/CompetitiveSection'
 import { getRoleColor, getRegionColor, getTeamColor } from './utils/teamColors'
+import { ParticleBackground } from '@/components/ParticleBackground'
 
 // Skip static generation during build - pages will be generated on-demand
 export const dynamic = 'force-dynamic'
@@ -103,9 +104,10 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
     : ''
 
   return (
-    <div className="pt-8 pb-24 min-h-screen">
+    <div className="relative pt-8 pb-24 min-h-screen overflow-hidden">
+      <ParticleBackground particleCount={20} />
       {/* Breadcrumbs */}
-      <div className="container max-w-7xl mb-6">
+      <div className="container max-w-7xl mb-6 relative z-10">
         <Breadcrumbs
           items={[{ label: 'Teams', href: '/teams' }, { label: team.name }]}
         />
@@ -123,7 +125,7 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
         gradientClass={gradientClass}
       />
 
-      <div className="container max-w-7xl animate-fade-in">
+      <div className="container max-w-7xl animate-fade-in relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-8">
           {/* Enhanced Sidebar with Stats */}
           <TeamStatsSidebar

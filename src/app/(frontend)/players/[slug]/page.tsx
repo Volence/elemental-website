@@ -13,6 +13,7 @@ import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { getMediaUrl } from '@/utilities/getMediaUrl'
 import { getOrgRoleIcon, getOrgRoleLabel } from '@/utilities/roleIcons'
 import { getRoleColors, getTierFromRating } from '@/utilities/tierColors'
+import { ParticleBackground } from '@/components/ParticleBackground'
 
 type Args = {
   params: Promise<{
@@ -156,8 +157,10 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
   }
 
   return (
-    <div className="pt-8 pb-24 min-h-screen animate-fade-in">
-      <div className="container max-w-6xl">
+    <div className="relative pt-8 pb-24 min-h-screen animate-fade-in overflow-hidden">
+      <ParticleBackground particleCount={20} />
+      
+      <div className="container max-w-6xl relative z-10">
         {/* Breadcrumbs */}
         <div className="mb-6">
           <Breadcrumbs

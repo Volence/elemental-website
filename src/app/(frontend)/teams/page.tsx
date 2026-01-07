@@ -3,6 +3,7 @@ import Link from 'next/link'
 import React from 'react'
 import { getAllTeams } from '@/utilities/getTeams'
 import { TeamCard } from '@/components/TeamCard'
+import { ParticleBackground } from '@/components/ParticleBackground'
 
 export const dynamic = 'force-dynamic'
 
@@ -74,8 +75,10 @@ export default async function TeamsPage() {
   const totalTeams = allTeams.length
 
   return (
-    <div className="pt-8 pb-24 min-h-[calc(100vh-200px)]">
-      <div className="container mb-16">
+    <div className="relative pt-8 pb-24 min-h-[calc(100vh-200px)] overflow-hidden">
+      <ParticleBackground particleCount={25} />
+      
+      <div className="container mb-16 relative z-10">
         <div className="text-center mb-12">
           <h1 className="text-5xl md:text-6xl font-black mb-6 tracking-tight" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3)' }}>
             Our Teams
