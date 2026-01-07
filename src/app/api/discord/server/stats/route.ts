@@ -67,12 +67,12 @@ export async function GET() {
       m.presence?.status === 'dnd'
     ).size
 
-    // Calculate actual channel count (excluding categories, which are containers)
-    const actualChannelCount = textChannels + voiceChannels + announcementChannels + forumChannels + stageChannels + threads
+    // Calculate actual channel count (excluding categories and threads, which are containers/subchannels)
+    const actualChannelCount = textChannels + voiceChannels + announcementChannels + forumChannels + stageChannels
 
     return NextResponse.json({
       channels: {
-        total: actualChannelCount, // Categories are NOT channels, they're containers
+        total: actualChannelCount, // Categories and threads are NOT counted in total
         text: textChannels,
         voice: voiceChannels,
         announcement: announcementChannels,

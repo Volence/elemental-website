@@ -112,8 +112,15 @@ export async function GET() {
       })
     }
 
-    // Check for channels approaching Discord limits
-    const totalChannels = guild.channels.cache.size
+    // Check for channels approaching Discord limits (excluding categories and threads)
+    const actualChannels = guild.channels.cache.filter(ch => 
+      ch && 
+      ch.type !== ChannelType.GuildCategory &&
+      ch.type !== ChannelType.PublicThread &&
+      ch.type !== ChannelType.PrivateThread &&
+      ch.type !== ChannelType.AnnouncementThread
+    )
+    const totalChannels = actualChannels.size
     if (totalChannels > 450) {
       issues.push({
         type: 'error',
