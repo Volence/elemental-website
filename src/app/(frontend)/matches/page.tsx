@@ -5,9 +5,10 @@ import { getPayload } from 'payload'
 import { MatchesSearchBar } from '@/components/MatchesSearchBar'
 import { MatchesHeader } from './components/MatchesHeader'
 import { LiveBanner } from './components/LiveBanner'
-import { UpcomingMatches } from './components/UpcomingMatches'
+import { ClientUpcomingMatches } from './components/ClientUpcomingMatches'
 import { PastMatches } from './components/PastMatches'
 import { NoResults } from './components/NoResults'
+import { ParticleBackground } from '@/components/ParticleBackground'
 
 export const dynamic = 'force-dynamic' // Always render dynamically to fetch fresh data
 
@@ -136,8 +137,11 @@ export default async function MatchesPage({
   })
 
   return (
-    <div className="pt-8 pb-24 min-h-screen">
-      <div className="container max-w-5xl">
+    <div className="relative pt-8 pb-24 min-h-screen animate-fade-in overflow-hidden">
+      {/* Subtle background effects */}
+      <ParticleBackground particleCount={25} />
+      
+      <div className="container max-w-5xl relative z-10">
         {/* Header */}
         <MatchesHeader
           upcomingCount={upcomingMatches.totalDocs}
@@ -151,7 +155,7 @@ export default async function MatchesPage({
         <MatchesSearchBar initialQuery={searchQuery} />
 
         {/* Upcoming Matches Section */}
-        <UpcomingMatches matches={filteredUpcoming} searchQuery={searchQuery} />
+        <ClientUpcomingMatches matches={filteredUpcoming} searchQuery={searchQuery} />
 
         {/* Show message when search returns no results in either section */}
         {searchQuery && filteredUpcoming.length === 0 && filteredPast.length === 0 && (

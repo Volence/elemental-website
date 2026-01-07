@@ -11,7 +11,7 @@ export function MatchesHeader({ upcomingCount, pastCount }: MatchesHeaderProps) 
       <h1 className="text-5xl md:text-6xl font-black mb-6 tracking-tight text-shadow-hero">
         Matches
       </h1>
-      <div className="w-32 h-1.5 bg-gradient-to-r from-[hsl(var(--accent-blue))] via-[hsl(var(--accent-green))] to-[hsl(var(--accent-gold))] mx-auto mb-6 shadow-[0_0_30px_rgba(56,189,248,0.5)] rounded-full" />
+      <div className="w-32 h-1.5 bg-gradient-to-r from-cyan-400 via-pink-500 to-purple-500 mx-auto mb-6 shadow-[0_0_30px_rgba(236,72,153,0.5)] rounded-full" />
       <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
         ELMT Match Schedule & Results
       </p>

@@ -1,15 +1,22 @@
+'use client'
+
 import React from 'react'
 import { Calendar } from 'lucide-react'
 import Link from 'next/link'
 import { MatchCard } from './MatchCard'
+import { getLocalDateKey, formatLocalDateLabel } from '@/components/LocalDateTime'
 
-interface UpcomingMatchesProps {
+interface ClientUpcomingMatchesProps {
   matches: any[] // TODO: Type this with Match[]
   searchQuery?: string
 }
 
-export function UpcomingMatches({ matches, searchQuery }: UpcomingMatchesProps) {
-  // Helper function to group matches by day (in EST timezone)
+/**
+ * Client-side component for grouping and displaying upcoming matches.
+ * Uses the user's local timezone for date grouping and display.
+ */
+export function ClientUpcomingMatches({ matches, searchQuery }: ClientUpcomingMatchesProps) {
+  // Group matches by day in user's local timezone
   const groupMatchesByDay = (matchDocs: any[]) => {
     const grouped: Record<string, any[]> = {}
 
@@ -20,16 +27,8 @@ export function UpcomingMatches({ matches, searchQuery }: UpcomingMatchesProps) 
         const matchDate = new Date(match.date as string)
         if (isNaN(matchDate.getTime())) return
 
-        // Format the date in EST timezone to get the correct day
-        // This prevents late-night EST matches from being grouped under the next UTC day
-        const estDateParts = new Intl.DateTimeFormat('en-CA', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          timeZone: 'America/New_York',
-        }).format(matchDate)
-        
-        const dateKey = estDateParts // Format: YYYY-MM-DD
+        // Get the date key in user's local timezone
+        const dateKey = getLocalDateKey(matchDate)
 
         if (!grouped[dateKey]) {
           grouped[dateKey] = []
@@ -83,16 +82,8 @@ export function UpcomingMatches({ matches, searchQuery }: UpcomingMatchesProps) 
       ) : (
         <div className="space-y-8">
           {Object.entries(matchesByDay).map(([dateKey, dayMatches]) => {
-            // Parse the YYYY-MM-DD date key and format in EST
-            const [year, month, day] = dateKey.split('-').map(Number)
-            const displayDate = new Date(year, month - 1, day, 12, 0, 0) // Noon to avoid timezone issues
-            const dateLabel = new Intl.DateTimeFormat('en-US', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-              timeZone: 'America/New_York',
-            }).format(displayDate)
+            // Format the date label in user's local timezone
+            const dateLabel = formatLocalDateLabel(dateKey)
 
             return (
               <div key={dateKey}>
@@ -118,4 +109,3 @@ export function UpcomingMatches({ matches, searchQuery }: UpcomingMatchesProps) 
     </div>
   )
 }
-

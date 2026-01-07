@@ -8,6 +8,7 @@ import { StaffHeader } from './components/StaffHeader'
 import { OrganizationStaffSection } from './components/OrganizationStaffSection'
 import { ProductionStaffSection } from './components/ProductionStaffSection'
 import { EsportsStaffSection } from './components/EsportsStaffSection'
+import { ParticleBackground } from '@/components/ParticleBackground'
 
 export const dynamic = 'force-dynamic' // Always render dynamically to fetch fresh data
 
@@ -222,10 +223,13 @@ export default async function StaffPage() {
     const groupedOrgStaff = groupOrganizationStaff(orgStaff)
 
     return (
-      <div className="pt-8 pb-24 min-h-screen animate-fade-in">
+      <div className="relative pt-8 pb-24 min-h-screen animate-fade-in overflow-hidden">
+        {/* Subtle background effects */}
+        <ParticleBackground particleCount={25} />
+        
         <StaffHeader />
 
-        <div className="container space-y-10">
+        <div className="container space-y-10 relative z-10">
           {/* Organization Staff Sections */}
           <OrganizationStaffSection
             groupedOrgStaff={groupedOrgStaff}

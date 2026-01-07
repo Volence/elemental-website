@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import React from 'react'
+import { ParticleBackground } from '@/components/ParticleBackground'
 
 export const metadata: Metadata = {
   title: 'Seminars | Elemental (ELMT)',
@@ -15,14 +16,17 @@ const YOUTUBE_VIDEO_ID = 'kqX--4KlMXI'
 
 export default function SeminarsPage() {
   return (
-    <div className="pt-8 pb-24 min-h-screen animate-fade-in">
-      <div className="container max-w-6xl">
+    <div className="relative pt-8 pb-24 min-h-screen animate-fade-in overflow-hidden">
+      {/* Subtle background effects */}
+      <ParticleBackground particleCount={25} />
+      
+      <div className="container max-w-6xl relative z-10">
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-5xl md:text-6xl font-black mb-4 tracking-tight" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
             Seminars
           </h1>
-          <div className="w-24 h-1 bg-gradient-to-r from-[hsl(var(--accent-blue))] via-[hsl(var(--accent-green))] to-[hsl(var(--accent-gold))] mx-auto mb-6 shadow-[0_0_20px_rgba(56,189,248,0.4)]" />
+          <div className="w-24 h-1 bg-gradient-to-r from-cyan-400 via-pink-500 to-purple-500 mx-auto mb-6 shadow-[0_0_20px_rgba(236,72,153,0.4)]" />
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
             Learn from various Overwatch 2 coaches and content creators on various topics.
           </p>

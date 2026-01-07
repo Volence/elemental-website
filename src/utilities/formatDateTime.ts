@@ -19,7 +19,7 @@ export const formatDateTime = (timestamp: string | Date): string => {
 }
 
 /**
- * Format date as "Monday, December 21"
+ * Format date as "Monday, December 21" in user's local timezone
  * @param date - Date object or string
  * @returns Formatted date string
  */
@@ -33,9 +33,9 @@ export function formatDate(date: Date | string): string {
 }
 
 /**
- * Format time as "3:30 PM"
+ * Format time as "3:30 PM EST" in user's local timezone with timezone abbreviation
  * @param date - Date object or string
- * @returns Formatted time string
+ * @returns Formatted time string with timezone
  */
 export function formatTime(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date
@@ -43,6 +43,7 @@ export function formatTime(date: Date | string): string {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
+    timeZoneName: 'short',
   }).format(d)
 }
 

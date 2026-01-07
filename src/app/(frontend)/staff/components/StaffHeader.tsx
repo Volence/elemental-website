@@ -10,7 +10,7 @@ export function StaffHeader() {
         >
           Staff
         </h1>
-        <div className="w-24 h-1 bg-gradient-to-r from-[hsl(var(--accent-blue))] via-[hsl(var(--accent-green))] to-[hsl(var(--accent-gold))] mx-auto mb-6 shadow-[0_0_20px_rgba(56,189,248,0.4)]" />
+        <div className="w-24 h-1 bg-gradient-to-r from-cyan-400 via-pink-500 to-purple-500 mx-auto mb-6 shadow-[0_0_20px_rgba(236,72,153,0.4)]" />
         <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
           Meet the dedicated staff members who make Elemental possible - from team management to
           production.

@@ -1,9 +1,11 @@
+'use client'
+
 import React from 'react'
 import Link from 'next/link'
 import { Calendar, Globe, Play, ExternalLink, Trophy } from 'lucide-react'
 import { TeamLogo } from '@/components/TeamLogo'
 import { getMatchStatus } from '@/utilities/getMatchStatus'
-import { formatDate } from '@/utilities/formatDateTime'
+import { LocalDateTime } from '@/components/LocalDateTime'
 
 interface PastMatchCardProps {
   match: any // TODO: Type this properly with Match type
@@ -170,7 +172,7 @@ export function PastMatchCard({ match }: PastMatchCardProps) {
         {/* Date */}
         <div className="flex items-center gap-2">
           <Calendar className="w-4 h-4 text-muted-foreground" />
-          <span className="text-muted-foreground">{formatDate(matchDate)}</span>
+          <LocalDateTime date={matchDate} format="date-only" className="text-muted-foreground" />
         </div>
 
         {/* Region/League */}

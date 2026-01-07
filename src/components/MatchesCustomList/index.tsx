@@ -135,6 +135,7 @@ export default function MatchesCustomList() {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
+      timeZoneName: 'short',
     })
   }
 

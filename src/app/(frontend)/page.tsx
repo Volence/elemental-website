@@ -10,6 +10,9 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { Calendar, TrendingUp, UserPlus } from 'lucide-react'
 import { getTierFromRating } from '@/utilities/tierColors'
+import { LocalDateTime } from '@/components/LocalDateTime'
+import { ParticleBackground } from '@/components/ParticleBackground'
+import { ParallaxHero } from '@/components/ParallaxHero'
 
 export const dynamic = 'force-dynamic' // Always render dynamically to fetch fresh data
 
@@ -98,27 +101,23 @@ export default async function HomePage() {
   return (
     <>
       {/* Hero Section with Banner */}
-      <section className="relative w-full h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <Image
-            src="/logos/banner.jpg"
-            alt="Elemental Banner"
-            fill
-            priority
-            className="object-cover"
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/50" />
-        </div>
+      <ParallaxHero
+        imageSrc="/logos/banner.jpg"
+        imageAlt="Elemental Banner"
+        parallaxSpeed={0.4}
+      >
+        {/* Animated Background Effects */}
+        <ParticleBackground particleCount={40} className="z-[1]" />
+        
         <div className="relative z-10 container text-center text-white">
-          <h1 className="text-5xl md:text-7xl font-bold mb-4 drop-shadow-2xl tracking-tight">
+          <h1 className="text-5xl md:text-7xl font-bold mb-4 drop-shadow-2xl tracking-tight animate-fade-in">
             ELEMENTAL
           </h1>
-          <p className="text-xl md:text-2xl font-light drop-shadow-lg tracking-wider">
+          <p className="text-xl md:text-2xl font-light drop-shadow-lg tracking-wider animate-fade-in" style={{ animationDelay: '0.2s' }}>
             ELMT
           </p>
         </div>
-      </section>
+      </ParallaxHero>
 
       {/* Upcoming Matches Section */}
       {upcomingMatches.length > 0 && (
@@ -126,7 +125,7 @@ export default async function HomePage() {
           <div className="container max-w-5xl">
             <div className="text-center mb-12">
               <h2 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">Upcoming Matches</h2>
-              <div className="w-24 h-1 bg-gradient-to-r from-[hsl(var(--accent-blue))] via-[hsl(var(--accent-green))] to-[hsl(var(--accent-gold))] mx-auto mb-6 shadow-[0_0_20px_rgba(56,189,248,0.4)]" />
+              <div className="w-24 h-1 bg-gradient-to-r from-cyan-400 via-pink-500 to-purple-500 mx-auto mb-6 shadow-[0_0_20px_rgba(236,72,153,0.4)]" />
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                 Don't miss our next scheduled matches
               </p>
@@ -171,11 +170,7 @@ export default async function HomePage() {
                           <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
                             <div className="flex items-center gap-1">
                               <Calendar className="w-3 h-3" />
-                              {matchDate.toLocaleDateString('en-US', { 
-                                month: 'short', 
-                                day: 'numeric',
-                                year: 'numeric'
-                              })}
+                              <LocalDateTime date={match.date as string} format="short" />
                             </div>
                             {match.league && tierColors && (
                               <span 
@@ -232,7 +227,7 @@ export default async function HomePage() {
         <div className="container">
           <div className="text-center mb-10">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">Our Teams</h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-[hsl(var(--accent-blue))] via-[hsl(var(--accent-green))] to-[hsl(var(--accent-gold))] mx-auto mb-6 shadow-[0_0_20px_rgba(56,189,248,0.4)]" />
+            <div className="w-24 h-1 bg-gradient-to-r from-cyan-400 via-pink-500 to-purple-500 mx-auto mb-6 shadow-[0_0_20px_rgba(236,72,153,0.4)]" />
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
               Elemental is home to multiple competitive teams, each representing different 
               elements and playstyles. Explore our roster and follow our journey.
@@ -286,7 +281,7 @@ export default async function HomePage() {
         <div className="container max-w-4xl">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">About Us</h2>
-            <div className="w-24 h-1 bg-gradient-to-r from-[hsl(var(--accent-blue))] via-[hsl(var(--accent-green))] to-[hsl(var(--accent-gold))] mx-auto shadow-[0_0_20px_rgba(56,189,248,0.4)]" />
+            <div className="w-24 h-1 bg-gradient-to-r from-cyan-400 via-pink-500 to-purple-500 mx-auto shadow-[0_0_20px_rgba(236,72,153,0.4)]" />
           </div>
           <div className="prose prose-lg dark:prose-invert max-w-none">
             <p className="text-lg leading-relaxed mb-6 text-muted-foreground">
