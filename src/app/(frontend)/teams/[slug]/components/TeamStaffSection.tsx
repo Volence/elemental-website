@@ -33,7 +33,7 @@ export function TeamStaffSection({
 
   if (!hasAnyStaff) {
     return (
-      <div className="p-10 rounded-xl border-2 border-dashed border-border bg-gradient-to-br from-card to-card/50 text-center">
+      <div className="p-10 rounded-xl border border-cyan-500/20 bg-gradient-to-br from-cyan-500/5 to-pink-500/5 text-center">
         <Shield className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-40" />
         <h3 className="text-xl font-bold mb-2">No Staff Information</h3>
         <p className="text-muted-foreground mb-4">

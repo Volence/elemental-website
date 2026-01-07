@@ -117,9 +117,9 @@ export const RecruitmentListings: React.FC<RecruitmentListingsProps> = ({ listin
   return (
     <>
       {/* Filters */}
-      <div className="mb-8 rounded-lg border border-gray-700 bg-gray-800 p-6">
+      <div className="mb-8 rounded-lg border border-cyan-500/20 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm p-6">
         <div className="mb-4 flex items-center gap-2 text-white">
-          <Filter className="h-5 w-5" />
+          <Filter className="h-5 w-5 text-cyan-400" />
           <h3 className="text-lg font-semibold">Filter Positions</h3>
         </div>
 
@@ -130,7 +130,7 @@ export const RecruitmentListings: React.FC<RecruitmentListingsProps> = ({ listin
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="w-full rounded-lg border border-gray-600 bg-gray-700 px-4 py-2 text-white focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full rounded-lg border border-cyan-500/30 bg-slate-800/50 px-4 py-2 text-white focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
             >
               <option value="all">All Categories</option>
               <option value="player">Player Positions</option>
@@ -188,7 +188,7 @@ export const RecruitmentListings: React.FC<RecruitmentListingsProps> = ({ listin
                 setRegionFilter('all')
                 setRoleFilter('all')
               }}
-              className="text-sm text-primary-400 hover:text-primary-300"
+              className="text-sm text-cyan-400 hover:text-cyan-300"
             >
               Clear filters
             </button>
@@ -198,7 +198,7 @@ export const RecruitmentListings: React.FC<RecruitmentListingsProps> = ({ listin
 
       {/* Listings */}
       {filteredListings.length === 0 ? (
-        <div className="mx-auto max-w-2xl rounded-lg border border-gray-700 bg-gray-800 p-12 text-center">
+        <div className="mx-auto max-w-2xl rounded-lg border border-cyan-500/20 bg-gradient-to-br from-cyan-500/5 to-pink-500/5 p-12 text-center">
           <h2 className="mb-4 text-2xl font-semibold text-white">No Matching Positions</h2>
           <p className="text-gray-400">
             No positions match your current filters. Try adjusting your filters or{' '}
@@ -208,7 +208,7 @@ export const RecruitmentListings: React.FC<RecruitmentListingsProps> = ({ listin
                 setRegionFilter('all')
                 setRoleFilter('all')
               }}
-              className="text-primary-400 hover:underline"
+              className="text-cyan-400 hover:underline"
             >
               clear all filters
             </button>

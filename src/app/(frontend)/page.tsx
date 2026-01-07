@@ -214,7 +214,7 @@ export default async function HomePage() {
             </div>
             
             <div className="text-center">
-              <Button asChild size="lg" className="text-lg px-8">
+              <Button asChild size="lg" variant="glow" className="text-lg px-8">
                 <Link href="/matches">View All Matches</Link>
               </Button>
             </div>
@@ -232,7 +232,7 @@ export default async function HomePage() {
               Elemental is home to multiple competitive teams, each representing different 
               elements and playstyles. Explore our roster and follow our journey.
             </p>
-            <Button asChild size="lg" className="text-lg px-8">
+            <Button asChild size="lg" variant="glow" className="text-lg px-8">
               <Link href="/teams">View All Teams</Link>
             </Button>
           </div>
@@ -268,7 +268,7 @@ export default async function HomePage() {
                   ? ' We have 1 open position available.'
                   : ` We have ${openPositionsCount} open positions available.`}
               </p>
-              <Button asChild size="lg" className="text-lg px-8 bg-yellow-500 hover:bg-yellow-400 text-black">
+              <Button asChild size="lg" variant="glowYellow" className="text-lg px-8">
                 <Link href="/recruitment">See Open Positions →</Link>
               </Button>
             </div>

@@ -84,7 +84,7 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({ listing, tea
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4">
-      <div className="relative w-full max-w-2xl rounded-lg bg-gray-800 p-6 shadow-xl">
+      <div className="relative w-full max-w-2xl rounded-lg border-t-2 border-cyan-500 bg-gradient-to-br from-slate-800 to-slate-900 p-6 shadow-xl">
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -137,7 +137,7 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({ listing, tea
                 value={discordHandle}
                 onChange={(e) => setDiscordHandle(e.target.value)}
                 placeholder="e.g., username or username#1234"
-                className="w-full rounded-lg border border-gray-600 bg-gray-700 px-4 py-2 text-white placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full rounded-lg border border-cyan-500/30 bg-slate-800/50 px-4 py-2 text-white placeholder-gray-400 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
               />
               <p className="mt-1 text-xs text-gray-400">
                 We'll contact you here if you're selected for tryouts
@@ -180,14 +180,14 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({ listing, tea
                 type="button"
                 onClick={onClose}
                 disabled={isSubmitting}
-                className="flex-1 rounded-lg border border-gray-600 px-4 py-2 font-semibold text-gray-300 transition-colors hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex-1 rounded-lg border border-cyan-500/30 px-4 py-2 font-semibold text-gray-300 transition-colors hover:border-cyan-500/60 hover:bg-slate-700/50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 rounded-lg bg-primary-600 px-4 py-2 font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex-1 rounded-lg border-2 border-cyan-500 bg-cyan-500/10 px-4 py-2 font-semibold text-white transition-all hover:bg-cyan-500/20 hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSubmitting ? 'Submitting...' : 'Submit Application'}
               </button>

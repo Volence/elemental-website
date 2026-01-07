@@ -80,9 +80,9 @@ export const RecruitmentCard: React.FC<RecruitmentCardProps> = ({ listing, team 
   return (
     <>
       <div 
-        className="group relative overflow-hidden rounded-lg border-t border-r border-b border-gray-700 bg-gray-800 p-6 transition-all duration-200 hover:border-gray-600 hover:bg-gray-750"
+        className="group relative overflow-hidden rounded-lg border border-cyan-500/20 bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm p-6 transition-all duration-300 hover:border-cyan-500/40 hover:shadow-[0_0_20px_rgba(6,182,212,0.15)]"
         style={tierColors ? { 
-          borderLeft: `4px solid ${tierColors.borderColor}`,
+          borderLeft: `3px solid ${tierColors.borderColor}`,
           boxShadow: `inset 4px 0 12px -8px ${tierColors.borderColor}`
         } : {}}
       >
@@ -125,7 +125,7 @@ export const RecruitmentCard: React.FC<RecruitmentCardProps> = ({ listing, team 
         <div className="flex gap-4">
           <Link
             href={`/recruitment/${listing.id}`}
-            className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-gray-600 bg-gray-700 px-4 py-2 font-semibold text-white transition-colors hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-800"
+            className="flex flex-1 items-center justify-center gap-2 rounded-lg border-2 border-cyan-500/50 bg-transparent px-4 py-2 font-semibold text-white transition-all hover:border-pink-500/70 hover:shadow-[0_0_16px_rgba(236,72,153,0.3)] focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-gray-800"
           >
             View Details
             <ArrowRight className="h-4 w-4" />

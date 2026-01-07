@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { ArrowLeft, Building2, Users, Briefcase } from 'lucide-react'
 import { ApplyButton } from '../components/ApplyButton'
 import { formatDate } from '@/utilities/formatDateTime'
+import { ParticleBackground } from '@/components/ParticleBackground'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -98,7 +99,9 @@ export default async function StaffRecruitmentPage() {
   }))
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="relative min-h-screen">
+      <ParticleBackground />
+      <div className="container mx-auto px-4 py-12 relative z-10">
       {/* Back Button */}
       <Link
         href="/recruitment"
@@ -110,12 +113,13 @@ export default async function StaffRecruitmentPage() {
 
       {/* Header */}
       <div className="mb-12 text-center">
-        <div className="mb-4 inline-flex items-center justify-center rounded-full bg-primary-500/20 p-4">
-          <Building2 className="h-12 w-12 text-primary-400" />
+        <div className="mb-4 inline-flex items-center justify-center rounded-full bg-cyan-500/20 p-4">
+          <Building2 className="h-12 w-12 text-cyan-400" />
         </div>
         <h1 className="mb-4 text-4xl font-bold text-white md:text-5xl">
           Join Our Organization
         </h1>
+        <div className="w-24 h-1 bg-gradient-to-r from-cyan-400 via-pink-500 to-purple-500 mx-auto mb-6 shadow-[0_0_20px_rgba(236,72,153,0.4)]" />
         <p className="mx-auto max-w-2xl text-lg text-gray-300">
           Help build and grow Elemental Esports. We're looking for talented individuals to join our
           team in various organizational roles.
@@ -125,18 +129,18 @@ export default async function StaffRecruitmentPage() {
       {/* Stats */}
       {listings.length > 0 && (
         <div className="mb-12 grid gap-6 sm:grid-cols-3">
-          <div className="rounded-lg border border-gray-700 bg-gray-800 p-6 text-center">
-            <div className="mb-2 text-3xl font-bold text-primary-400">{listings.length}</div>
+          <div className="rounded-lg border border-cyan-500/20 bg-gradient-to-br from-slate-800/80 to-slate-900/80 p-6 text-center hover:border-cyan-500/40 transition-all">
+            <div className="mb-2 text-3xl font-bold text-cyan-400">{listings.length}</div>
             <div className="text-sm text-gray-400">Open Positions</div>
           </div>
-          <div className="rounded-lg border border-gray-700 bg-gray-800 p-6 text-center">
-            <div className="mb-2 text-3xl font-bold text-primary-400">
+          <div className="rounded-lg border border-cyan-500/20 bg-gradient-to-br from-slate-800/80 to-slate-900/80 p-6 text-center hover:border-cyan-500/40 transition-all">
+            <div className="mb-2 text-3xl font-bold text-pink-400">
               {Object.keys(roleCategories).length}
             </div>
             <div className="text-sm text-gray-400">Departments</div>
           </div>
-          <div className="rounded-lg border border-gray-700 bg-gray-800 p-6 text-center">
-            <div className="mb-2 text-3xl font-bold text-primary-400">Remote</div>
+          <div className="rounded-lg border border-cyan-500/20 bg-gradient-to-br from-slate-800/80 to-slate-900/80 p-6 text-center hover:border-cyan-500/40 transition-all">
+            <div className="mb-2 text-3xl font-bold text-purple-400">Remote</div>
             <div className="text-sm text-gray-400">Work Location</div>
           </div>
         </div>
@@ -144,15 +148,15 @@ export default async function StaffRecruitmentPage() {
 
       {/* No Positions Message */}
       {listings.length === 0 && (
-        <div className="rounded-lg border border-gray-700 bg-gray-800 p-12 text-center">
-          <Building2 className="mx-auto mb-4 h-16 w-16 text-gray-600" />
+        <div className="rounded-lg border border-cyan-500/20 bg-gradient-to-br from-cyan-500/5 to-pink-500/5 p-12 text-center">
+          <Building2 className="mx-auto mb-4 h-16 w-16 text-cyan-500/50" />
           <h3 className="mb-2 text-xl font-semibold text-white">No Open Positions</h3>
           <p className="text-gray-400">
             We don't have any organizational staff positions open at the moment. Check back soon!
           </p>
           <Link
             href="/recruitment"
-            className="mt-6 inline-block rounded-lg bg-primary-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-primary-700"
+            className="mt-6 inline-block rounded-lg border-2 border-cyan-500 bg-transparent px-6 py-3 font-semibold text-white transition-all hover:border-pink-500 hover:shadow-[0_0_20px_rgba(236,72,153,0.4)]"
           >
             View All Recruitment
           </Link>
@@ -168,13 +172,13 @@ export default async function StaffRecruitmentPage() {
                 <div key={categoryName}>
                   <h2 className="mb-6 flex items-center gap-4 text-2xl font-bold text-white">
                     {categoryName === 'Community & Events' && (
-                      <Users className="h-6 w-6 text-primary-400" />
+                      <Users className="h-6 w-6 text-yellow-400" />
                     )}
                     {categoryName === 'Content & Media' && (
-                      <Briefcase className="h-6 w-6 text-primary-400" />
+                      <Briefcase className="h-6 w-6 text-pink-400" />
                     )}
                     {categoryName === 'Production' && (
-                      <Building2 className="h-6 w-6 text-primary-400" />
+                      <Building2 className="h-6 w-6 text-cyan-400" />
                     )}
                     {categoryName}
                   </h2>
@@ -188,7 +192,7 @@ export default async function StaffRecruitmentPage() {
                       return (
                         <div
                           key={listing.id}
-                          className="rounded-lg border border-gray-700 bg-gray-800 p-6 transition-all hover:border-gray-600"
+                          className="rounded-lg border border-cyan-500/20 bg-gradient-to-br from-slate-800/90 to-slate-900/90 p-6 transition-all hover:border-cyan-500/40 hover:shadow-[0_0_20px_rgba(6,182,212,0.15)]"
                         >
                           <div className="mb-4 flex items-start justify-between">
                             <div>
@@ -209,7 +213,7 @@ export default async function StaffRecruitmentPage() {
                           <div className="flex gap-4">
                             <Link
                               href={`/recruitment/${listing.id}`}
-                              className="flex-1 rounded-lg border border-gray-600 bg-gray-700 px-4 py-2 text-center font-semibold text-white transition-colors hover:bg-gray-600"
+                              className="flex-1 rounded-lg border-2 border-cyan-500/50 bg-transparent px-4 py-2 text-center font-semibold text-white transition-all hover:border-pink-500/70 hover:shadow-[0_0_16px_rgba(236,72,153,0.3)]"
                             >
                               View Details
                             </Link>
@@ -258,6 +262,7 @@ export default async function StaffRecruitmentPage() {
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }

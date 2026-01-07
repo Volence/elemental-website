@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { ArrowLeft, MapPin, Users, Calendar } from 'lucide-react'
 import { getGameRoleIcon } from '@/utilities/roleIcons'
 import { formatDate } from '@/utilities/formatDateTime'
+import { ParticleBackground } from '@/components/ParticleBackground'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -170,7 +171,9 @@ export default async function RecruitmentDetailPage({ params }: Props) {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="relative min-h-screen">
+      <ParticleBackground />
+      <div className="container mx-auto px-4 py-12 relative z-10">
       {/* Back Button */}
       <Link
         href="/recruitment"
@@ -243,7 +246,7 @@ export default async function RecruitmentDetailPage({ params }: Props) {
       <div className="grid gap-8 lg:grid-cols-3">
         {/* Left Column - Details */}
         <div className="lg:col-span-2">
-          <div className="rounded-lg border border-gray-700 bg-gray-800 p-6">
+          <div className="rounded-lg border border-cyan-500/20 bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm p-6">
             <h2 className="mb-4 text-2xl font-bold text-white">Position Details</h2>
 
             <div className="mb-6">
@@ -252,7 +255,7 @@ export default async function RecruitmentDetailPage({ params }: Props) {
             </div>
 
             {team && listing.category === 'player' && (
-              <div className="mt-6 border-t border-gray-700 pt-6">
+              <div className="mt-6 border-t border-cyan-500/20 pt-6">
                 <h3 className="mb-3 text-lg font-semibold text-gray-300">About the Team</h3>
                 {team.roster && team.roster.length > 0 && (
                   <p className="mb-2 flex items-center gap-2 text-gray-400">
@@ -262,7 +265,7 @@ export default async function RecruitmentDetailPage({ params }: Props) {
                 )}
                 <Link
                   href={`/teams/${team.slug}`}
-                  className="mt-3 inline-block text-primary-500 hover:text-primary-400"
+                  className="mt-3 inline-block text-cyan-400 hover:text-cyan-300"
                 >
                   View Full Team Profile →
                 </Link>
@@ -273,7 +276,7 @@ export default async function RecruitmentDetailPage({ params }: Props) {
 
         {/* Right Column - Apply */}
         <div>
-          <div className="sticky top-8 rounded-lg border border-gray-700 bg-gray-800 p-6">
+          <div className="sticky top-8 rounded-lg border border-cyan-500/20 bg-gradient-to-br from-slate-800/90 to-slate-900/90 backdrop-blur-sm p-6">
             <h3 className="mb-4 text-xl font-bold text-white">Ready to Apply?</h3>
             <p className="mb-6 text-sm text-gray-300">
               Submit your application and we'll get back to you soon!
@@ -281,7 +284,7 @@ export default async function RecruitmentDetailPage({ params }: Props) {
 
             <ApplyButton listing={listing} team={team || undefined} />
 
-            <div className="mt-6 border-t border-gray-700 pt-6">
+            <div className="mt-6 border-t border-cyan-500/20 pt-6">
               <h4 className="mb-3 text-sm font-semibold text-gray-400">Application Process</h4>
               <ol className="space-y-2 text-sm text-gray-300">
                 <li className="flex gap-2">
@@ -313,10 +316,11 @@ export default async function RecruitmentDetailPage({ params }: Props) {
         <h2 className="mb-6 text-2xl font-bold text-white">Other Open Positions</h2>
         <Link
           href="/recruitment"
-          className="inline-block rounded-lg bg-gray-800 px-6 py-3 text-gray-300 transition-colors hover:bg-gray-700"
+          className="inline-block rounded-lg border-2 border-cyan-500 bg-transparent px-6 py-3 text-slate-800 dark:text-white font-semibold transition-all hover:border-pink-500 hover:shadow-[0_0_16px_rgba(236,72,153,0.3)]"
         >
           View All Openings →
         </Link>
+      </div>
       </div>
     </div>
   )

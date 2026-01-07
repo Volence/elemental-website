@@ -131,13 +131,13 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
 
   return (
     <section className="mb-8">
-      <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-xl border border-slate-700/50 overflow-hidden backdrop-blur-sm">
-        <div className="p-6 border-b border-slate-700/50">
+      <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-xl border border-cyan-500/20 overflow-hidden backdrop-blur-sm hover:border-cyan-500/40 transition-all">
+        <div className="p-6 border-b border-cyan-500/20">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold text-white flex items-center gap-2">
               🏆 FaceIt Competitive
             </h2>
-            <div className="px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-md text-sm font-medium text-blue-300">
+            <div className="px-3 py-1 bg-cyan-500/20 border border-cyan-500/30 rounded-md text-sm font-medium text-cyan-300">
               {standing.season}
             </div>
           </div>
@@ -145,11 +145,6 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
 
         {/* Current Season Standings */}
         <div className="p-6">
-          <div className="mb-4">
-            <span className="inline-block px-3 py-1 bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30 rounded-md text-sm font-semibold text-purple-200">
-              {standing.division} {standing.region}
-            </span>
-          </div>
           <div className="grid grid-cols-2 gap-6">
             <div>
               <div className="text-sm text-slate-400 uppercase tracking-wide mb-1">Rank</div>
@@ -174,10 +169,10 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
                 return (
                   <div 
                     key={match.id} 
-                    className={`flex items-center justify-between p-4 bg-slate-800/50 rounded-lg border transition-colors ${
+                    className={`flex items-center justify-between p-4 bg-slate-800/50 rounded-lg border transition-all ${
                       isBye 
                         ? 'border-slate-600/30 opacity-60' 
-                        : 'border-blue-500/20 hover:border-blue-500/40'
+                        : 'border-cyan-500/20 hover:border-cyan-500/40 hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]'
                     }`}
                   >
                     <div className="flex-1">
@@ -191,7 +186,7 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
                         href={match.roomLink} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/30 rounded-md text-sm font-medium text-blue-300 transition-colors"
+                        className="px-4 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 border-2 border-cyan-500/50 hover:border-cyan-500 rounded-md text-sm font-medium text-cyan-300 transition-all hover:shadow-[0_0_15px_rgba(6,182,212,0.3)]"
                       >
                         Match Room →
                       </a>
@@ -207,7 +202,7 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
         {recentResults.length > 0 && (
           <div className="px-6 pb-6">
             <button 
-              className="flex items-center gap-2 text-lg font-semibold text-white mb-3 hover:text-blue-300 transition-colors"
+              className="flex items-center gap-2 text-lg font-semibold text-white mb-3 hover:text-cyan-300 transition-colors"
               onClick={() => setShowPastMatches(!showPastMatches)}
             >
               <span className="transform transition-transform" style={{ transform: showPastMatches ? 'rotate(90deg)' : 'rotate(0deg)' }}>
@@ -270,9 +265,9 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
 
         {/* Historical Seasons */}
         {historicalSeasons.length > 0 && (
-          <div className="px-6 pb-6 border-t border-slate-700/50 pt-6">
+          <div className="px-6 pb-6 border-t border-cyan-500/20 pt-6">
             <button 
-              className="flex items-center gap-2 text-lg font-semibold text-white mb-3 hover:text-blue-300 transition-colors"
+              className="flex items-center gap-2 text-lg font-semibold text-white mb-3 hover:text-cyan-300 transition-colors"
               onClick={() => setShowHistory(!showHistory)}
             >
               <span className="transform transition-transform" style={{ transform: showHistory ? 'rotate(90deg)' : 'rotate(0deg)' }}>

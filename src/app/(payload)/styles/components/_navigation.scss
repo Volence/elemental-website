@@ -221,23 +221,22 @@ nav button[type="button"]:last-child {
 // SECTION-BASED NAV COLORING
 // ============================================
 // Ultra-specific approach: Target by nth-child of nav container
-// Adjusted for correct positioning (there's a hidden element or Dashboard counts)
+// Index 1 = Dashboard link, groups start at index 2
 // VIBRANT NEON GLOW - matching badge intensity
 
-// PEOPLE Section (Vibrant Pink)
-html body aside nav > div:nth-child(3) .nav__link {
+// PEOPLE Section (Vibrant Pink) - nth-child(2)
+html body aside nav > div:nth-child(2) .nav__link {
   &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
-    background: transparent !important; // No background - just glow and border
+    background: transparent !important;
     color: $tier-masters !important;
     box-shadow: 0 0 20px rgba($tier-masters, 0.6) !important;
     border: 1px solid rgba($tier-masters, 0.4) !important;
-    border-left: 3px solid $tier-masters !important; // Thicker left accent
+    border-left: 3px solid $tier-masters !important;
   }
   
-  // Active state
   &:has(.nav__link-indicator) {
-    background: transparent !important; // No background
+    background: transparent !important;
     
     .nav__link-indicator {
       background: $tier-masters !important;
@@ -250,8 +249,8 @@ html body aside nav > div:nth-child(3) .nav__link {
   }
 }
 
-// STAFF Section (Vibrant Purple)
-html body aside nav > div:nth-child(4) .nav__link {
+// STAFF Section (Vibrant Purple) - nth-child(3)
+html body aside nav > div:nth-child(3) .nav__link {
   &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
     background: transparent !important;
@@ -261,7 +260,6 @@ html body aside nav > div:nth-child(4) .nav__link {
     border-left: 3px solid $tier-expert !important;
   }
   
-  // Active state
   &:has(.nav__link-indicator) {
     background: transparent !important;
     
@@ -276,8 +274,8 @@ html body aside nav > div:nth-child(4) .nav__link {
   }
 }
 
-// PRODUCTION Section (Vibrant Cyan)
-html body aside nav > div:nth-child(5) .nav__link {
+// PRODUCTION Section (Vibrant Cyan) - nth-child(4)
+html body aside nav > div:nth-child(4) .nav__link {
   &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
     background: transparent !important;
@@ -287,7 +285,6 @@ html body aside nav > div:nth-child(5) .nav__link {
     border-left: 3px solid $tier-4k !important;
   }
   
-  // Active state
   &:has(.nav__link-indicator) {
     background: transparent !important;
     
@@ -302,8 +299,8 @@ html body aside nav > div:nth-child(5) .nav__link {
   }
 }
 
-// SOCIAL MEDIA Section (Vibrant Blue)
-html body aside nav > div:nth-child(6) .nav__link {
+// SOCIAL MEDIA Section (Vibrant Blue) - nth-child(5)
+html body aside nav > div:nth-child(5) .nav__link {
   &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
     background: transparent !important;
@@ -313,7 +310,6 @@ html body aside nav > div:nth-child(6) .nav__link {
     border-left: 3px solid $tier-advanced !important;
   }
   
-  // Active state
   &:has(.nav__link-indicator) {
     background: transparent !important;
     
@@ -328,8 +324,8 @@ html body aside nav > div:nth-child(6) .nav__link {
   }
 }
 
-// RECRUITMENT Section (Vibrant Green)
-html body aside nav > div:nth-child(7) .nav__link {
+// RECRUITMENT Section (Vibrant Green) - nth-child(6)
+html body aside nav > div:nth-child(6) .nav__link {
   &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
     background: transparent !important;
@@ -339,7 +335,6 @@ html body aside nav > div:nth-child(7) .nav__link {
     border-left: 3px solid $tier-35k !important;
   }
   
-  // Active state
   &:has(.nav__link-indicator) {
     background: transparent !important;
     
@@ -354,8 +349,8 @@ html body aside nav > div:nth-child(7) .nav__link {
   }
 }
 
-// DISCORD Section (Vibrant Orange)
-html body aside nav > div:nth-child(8) .nav__link {
+// DISCORD Section (Vibrant Orange) - nth-child(7)
+html body aside nav > div:nth-child(7) .nav__link {
   &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
     background: transparent !important;
@@ -365,7 +360,6 @@ html body aside nav > div:nth-child(8) .nav__link {
     border-left: 3px solid $tier-below !important;
   }
   
-  // Active state
   &:has(.nav__link-indicator) {
     background: transparent !important;
     
@@ -380,8 +374,8 @@ html body aside nav > div:nth-child(8) .nav__link {
   }
 }
 
-// MONITORING Section (Vibrant Yellow)
-html body aside nav > div:nth-child(9) .nav__link {
+// MONITORING Section (Vibrant Yellow) - nth-child(8)
+html body aside nav > div:nth-child(8) .nav__link {
   &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
     background: transparent !important;
@@ -391,7 +385,6 @@ html body aside nav > div:nth-child(9) .nav__link {
     border-left: 3px solid $tier-30k !important;
   }
   
-  // Active state
   &:has(.nav__link-indicator) {
     background: transparent !important;
     
@@ -406,8 +399,8 @@ html body aside nav > div:nth-child(9) .nav__link {
   }
 }
 
-// SYSTEM Section (Vibrant Pink - cycling back to start)
-html body aside nav > div:nth-child(10) .nav__link {
+// SYSTEM Section (Vibrant Pink - cycling back to start) - nth-child(9)
+html body aside nav > div:nth-child(9) .nav__link {
   &:hover,
   &:hover:not(:has(.nav__link-indicator)) {
     background: transparent !important;
@@ -417,7 +410,6 @@ html body aside nav > div:nth-child(10) .nav__link {
     border-left: 3px solid $tier-masters !important;
   }
   
-  // Active state
   &:has(.nav__link-indicator) {
     background: transparent !important;
     
@@ -431,3 +423,4 @@ html body aside nav > div:nth-child(10) .nav__link {
     }
   }
 }
+

@@ -269,7 +269,7 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
                     <Shield className="w-6 h-6 text-primary" />
                     Staff Positions
                   </h2>
-                  <div className="w-20 h-1 bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 rounded-full"></div>
+                  <div className="w-20 h-1 bg-gradient-to-r from-cyan-400 via-pink-500 to-purple-500 rounded-full shadow-[0_0_12px_rgba(236,72,153,0.4)]"></div>
                 </div>
                 <div className="space-y-6">
                   {player.staffRoles.organization && player.staffRoles.organization.length > 0 && (
@@ -421,7 +421,7 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
             )}
 
             {/* Quick Info Card */}
-            <div className="p-6 rounded-2xl border-2 border-dashed border-border/50 bg-gradient-to-br from-muted/30 to-muted/10 backdrop-blur-sm">
+            <div className="p-6 rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-cyan-500/5 to-pink-500/5 backdrop-blur-sm hover:border-cyan-500/50 transition-all">
               <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4">
                 Quick Info
               </h3>
