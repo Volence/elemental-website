@@ -7,7 +7,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  # Docker requires lowercase image names
+  IMAGE_NAME: volence/elemental-website
 
 jobs:
   build-and-deploy:
@@ -67,7 +68,7 @@ jobs:
             
             # Pull the latest image first (fail fast if image doesn't exist)
             echo "📦 Pulling latest image..."
-            if ! docker pull ghcr.io/${{ github.repository }}:latest; then
+            if ! docker pull ghcr.io/volence/elemental-website:latest; then
               echo "❌ Failed to pull image, aborting deploy"
               exit 1
             fi
@@ -86,7 +87,7 @@ jobs:
               -e NODE_ENV=production \
               --network elemental-website_default \
               -v elemental-website_media:/app/public/media \
-              ghcr.io/${{ github.repository }}:latest
+              ghcr.io/volence/elemental-website:latest
             
             # Wait for new container to be healthy
             echo "⏳ Waiting for new container to start..."
@@ -114,7 +115,7 @@ jobs:
                 -e NODE_ENV=production \
                 --network elemental-website_default \
                 -v elemental-website_media:/app/public/media \
-                ghcr.io/${{ github.repository }}:latest
+                ghcr.io/volence/elemental-website:latest
               
               echo "✅ Deployment complete!"
             else
