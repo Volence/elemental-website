@@ -46,6 +46,8 @@ ENV NEXT_BUILD_SKIP_DB=${DATABASE_URI:+0}${DATABASE_URI:-1}
 # IMPORTANT: Database must be available during build for standalone output to be created
 # Pages are configured as dynamic and will be generated at runtime when the app starts
 # Use npm for build (consistent with install step, avoids pnpm cache issues)
+# NODE_OPTIONS limits V8 optimizations that can cause issues under QEMU ARM64 emulation
+ENV NODE_OPTIONS="--max-old-space-size=4096 --no-opt"
 RUN npm run build
 
 # Verify standalone output was created (required for production deployment)
