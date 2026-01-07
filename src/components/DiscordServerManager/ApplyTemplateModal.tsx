@@ -34,9 +34,12 @@ export const ApplyTemplateModal: React.FC<ApplyTemplateModalProps> = ({
     if (template) {
       const templateData = template.templateData || template
       setEditedChannels(templateData.channels || [])
+      // Use the saved category name from template as default
+      // This allows users to set "T." as default and just add the team name
+      const savedCategoryName = templateData.category?.name || template.sourceCategory || ''
+      setEditedCategoryName(savedCategoryName)
     }
-    setEditedCategoryName(categoryName)
-  }, [template, categoryName])
+  }, [template])
 
   const handleChannelNameChange = (index: number, newName: string) => {
     const updatedChannels = [...editedChannels]
