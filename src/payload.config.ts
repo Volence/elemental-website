@@ -46,6 +46,7 @@ import { GraphicsDashboard } from './globals/GraphicsDashboard'
 import { VideoEditingDashboard } from './globals/VideoEditingDashboard'
 import { EventsDashboard } from './globals/EventsDashboard'
 import { ScoutingDashboard } from './globals/ScoutingDashboard'
+import { GraphicsAnchor, VideoAnchor, EventsAnchor } from './collections/DepartmentAnchors'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
@@ -141,7 +142,12 @@ const config = buildConfig({
     // SOCIAL MEDIA: Department - Content & calendar
     SocialPosts,
     
-    // RECRUITMENT: Growth
+    // DEPARTMENT ANCHORS: Position department groups after Social Media
+    EventsAnchor, // Events group - first
+    GraphicsAnchor, // Graphics group
+    VideoAnchor, // Video group
+    
+    // SCOUTING & RECRUITING: Growth
     RecruitmentListings,
     RecruitmentApplications,
     
@@ -171,10 +177,12 @@ const config = buildConfig({
     ProductionDashboard, // Production group
     SocialMediaSettings, // Social Media group
     SocialMediaConfig, // Social Media group
+    // Department dashboards (placed here to appear near Production/Social Media in sidebar)
     GraphicsDashboard, // Graphics group
     VideoEditingDashboard, // Video group
     EventsDashboard, // Events group
     ScoutingDashboard, // Scouting group
+    // Other utility sections
     DiscordServerManager, // Discord group
     AuditLogViewer, // Monitoring group
     CronMonitor, // Monitoring group

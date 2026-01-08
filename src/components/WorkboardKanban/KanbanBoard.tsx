@@ -30,6 +30,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ department, title }) =
   const [filter, setFilter] = useState({
     priority: 'all',
     hideComplete: false,
+    showArchived: false,
   })
   
   const fetchTasks = useCallback(async () => {
@@ -103,6 +104,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ department, title }) =
       if (task.status !== status) return false
       if (filter.hideComplete && status === 'complete') return false
       if (filter.priority !== 'all' && task.priority !== filter.priority) return false
+      // Hide archived tasks unless showArchived is enabled
+      if (!filter.showArchived && task.archived) return false
       return true
     })
   }
@@ -113,11 +116,14 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ department, title }) =
       'in-progress': 0,
       review: 0,
       complete: 0,
+      archived: 0,
       total: tasks.length,
     }
     
     tasks.forEach((task) => {
-      if (task.status && counts[task.status as keyof typeof counts] !== undefined) {
+      if (task.archived) {
+        counts.archived++
+      } else if (task.status && counts[task.status as keyof typeof counts] !== undefined) {
         counts[task.status as keyof typeof counts]++
       }
     })
@@ -140,7 +146,6 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ department, title }) =
     <div className="workboard">
       <div className="workboard__header">
         <div className="workboard__title-section">
-          <h1 className="workboard__title">{title}</h1>
           <div className="workboard__stats">
             <span className="workboard__stat">📋 {counts.backlog} backlog</span>
             <span className="workboard__stat">🔄 {counts['in-progress']} in progress</span>
@@ -168,6 +173,15 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ department, title }) =
               onChange={(e) => setFilter({ ...filter, hideComplete: e.target.checked })}
             />
             Hide Complete
+          </label>
+          
+          <label className="workboard__toggle">
+            <input
+              type="checkbox"
+              checked={filter.showArchived}
+              onChange={(e) => setFilter({ ...filter, showArchived: e.target.checked })}
+            />
+            Show Archived ({counts.archived})
           </label>
           
           <button onClick={fetchTasks} className="workboard__btn workboard__btn--refresh">

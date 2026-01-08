@@ -76,7 +76,7 @@ export const RecruitmentListings: CollectionConfig = {
     useAsTitle: 'id',
     defaultColumns: ['teamDisplay', 'roleDisplay', 'status', 'createdAt', 'actions'],
     description: '📋 Manage open player positions and recruitment listings.',
-    group: 'Recruitment',
+    group: 'Scouting & Recruiting',
     hidden: ({ user }) => {
       if (!user) return true
       // Hide from regular users - only show to managers and admins

@@ -168,9 +168,9 @@ button[aria-label="Close"]:not(.hamburger__close) {
   @include glow-badge;
 }
 
-// Apply clean glow to cards
+// Apply clean glow to cards (excluding workboard cards which have their own styling)
 .card,
-[class*="card"]:not([class*="stat-card"]):not([class*="dashboard-stats"]):not([class*="assigned-teams"]) {
+[class*="card"]:not([class*="stat-card"]):not([class*="dashboard-stats"]):not([class*="assigned-teams"]):not([class*="workboard"]) {
   @include glow-card;
 }
 

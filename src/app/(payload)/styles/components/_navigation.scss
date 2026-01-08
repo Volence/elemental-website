@@ -424,3 +424,78 @@ html body aside nav > div:nth-child(9) .nav__link {
   }
 }
 
+// DEPARTMENTS Section (Vibrant Purple - cycling) - nth-child(10)
+html body aside nav > div:nth-child(10) .nav__link {
+  &:hover,
+  &:hover:not(:has(.nav__link-indicator)) {
+    background: transparent !important;
+    color: $tier-expert !important;
+    box-shadow: 0 0 20px rgba($tier-expert, 0.6) !important;
+    border: 1px solid rgba($tier-expert, 0.4) !important;
+    border-left: 3px solid $tier-expert !important;
+  }
+  
+  &:has(.nav__link-indicator) {
+    background: transparent !important;
+    
+    .nav__link-indicator {
+      background: $tier-expert !important;
+      box-shadow: 0 0 16px rgba($tier-expert, 0.8) !important;
+    }
+    
+    .nav__link-label {
+      color: $tier-expert !important;
+    }
+  }
+}
+
+// Extra Section (Vibrant Cyan - cycling) - nth-child(11)
+html body aside nav > div:nth-child(11) .nav__link {
+  &:hover,
+  &:hover:not(:has(.nav__link-indicator)) {
+    background: transparent !important;
+    color: $tier-4k !important;
+    box-shadow: 0 0 20px rgba($tier-4k, 0.6) !important;
+    border: 1px solid rgba($tier-4k, 0.4) !important;
+    border-left: 3px solid $tier-4k !important;
+  }
+  
+  &:has(.nav__link-indicator) {
+    background: transparent !important;
+    
+    .nav__link-indicator {
+      background: $tier-4k !important;
+      box-shadow: 0 0 16px rgba($tier-4k, 0.8) !important;
+    }
+    
+    .nav__link-label {
+      color: $tier-4k !important;
+    }
+  }
+}
+
+// Extra Section (Vibrant Blue - cycling) - nth-child(12)
+html body aside nav > div:nth-child(12) .nav__link {
+  &:hover,
+  &:hover:not(:has(.nav__link-indicator)) {
+    background: transparent !important;
+    color: $tier-advanced !important;
+    box-shadow: 0 0 20px rgba($tier-advanced, 0.6) !important;
+    border: 1px solid rgba($tier-advanced, 0.4) !important;
+    border-left: 3px solid $tier-advanced !important;
+  }
+  
+  &:has(.nav__link-indicator) {
+    background: transparent !important;
+    
+    .nav__link-indicator {
+      background: $tier-advanced !important;
+      box-shadow: 0 0 16px rgba($tier-advanced, 0.8) !important;
+    }
+    
+    .nav__link-label {
+      color: $tier-advanced !important;
+    }
+  }
+}
+

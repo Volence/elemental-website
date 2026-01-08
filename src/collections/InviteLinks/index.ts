@@ -98,6 +98,42 @@ export const InviteLinks: CollectionConfig = {
             description: 'Grants access to the Social Media Dashboard (manage posts, content calendar)',
           },
         },
+        {
+          name: 'isGraphicsStaff',
+          type: 'checkbox',
+          label: 'Graphics Staff',
+          defaultValue: false,
+          admin: {
+            description: 'Grants access to the Graphics Dashboard (create graphics, manage requests)',
+          },
+        },
+        {
+          name: 'isVideoStaff',
+          type: 'checkbox',
+          label: 'Video Staff',
+          defaultValue: false,
+          admin: {
+            description: 'Grants access to the Video Editing Dashboard (clips, montages, edits)',
+          },
+        },
+        {
+          name: 'isEventsStaff',
+          type: 'checkbox',
+          label: 'Events Staff',
+          defaultValue: false,
+          admin: {
+            description: 'Grants access to the Events Dashboard (movie nights, PUGs, seminars)',
+          },
+        },
+        {
+          name: 'isScoutingStaff',
+          type: 'checkbox',
+          label: 'Scouting Staff',
+          defaultValue: false,
+          admin: {
+            description: 'Grants access to the Scouting Dashboard (team research, player profiles)',
+          },
+        },
       ],
     },
     {

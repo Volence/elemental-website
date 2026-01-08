@@ -77,6 +77,9 @@ export interface Config {
     'tournament-templates': TournamentTemplate;
     'faceit-seasons': FaceitSeason;
     'social-posts': SocialPost;
+    'events-anchor': EventsAnchor;
+    'graphics-anchor': GraphicsAnchor;
+    'video-anchor': VideoAnchor;
     'recruitment-listings': RecruitmentListing;
     'recruitment-applications': RecruitmentApplication;
     tasks: Task;
@@ -109,6 +112,9 @@ export interface Config {
     'tournament-templates': TournamentTemplatesSelect<false> | TournamentTemplatesSelect<true>;
     'faceit-seasons': FaceitSeasonsSelect<false> | FaceitSeasonsSelect<true>;
     'social-posts': SocialPostsSelect<false> | SocialPostsSelect<true>;
+    'events-anchor': EventsAnchorSelect<false> | EventsAnchorSelect<true>;
+    'graphics-anchor': GraphicsAnchorSelect<false> | GraphicsAnchorSelect<true>;
+    'video-anchor': VideoAnchorSelect<false> | VideoAnchorSelect<true>;
     'recruitment-listings': RecruitmentListingsSelect<false> | RecruitmentListingsSelect<true>;
     'recruitment-applications': RecruitmentApplicationsSelect<false> | RecruitmentApplicationsSelect<true>;
     tasks: TasksSelect<false> | TasksSelect<true>;
@@ -1257,6 +1263,42 @@ export interface SocialPost {
   createdAt: string;
 }
 /**
+ * Internal - use Events Dashboard instead
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events-anchor".
+ */
+export interface EventsAnchor {
+  id: number;
+  placeholder?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Internal - use Graphics Dashboard instead
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "graphics-anchor".
+ */
+export interface GraphicsAnchor {
+  id: number;
+  placeholder?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Internal - use Video Editing Dashboard instead
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "video-anchor".
+ */
+export interface VideoAnchor {
+  id: number;
+  placeholder?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * 📋 Manage open player positions and recruitment listings.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1473,6 +1515,14 @@ export interface Task {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Archive to hide from Kanban board (still searchable)
+   */
+  archived?: boolean | null;
+  /**
+   * When task was archived
+   */
+  archivedAt?: string | null;
   /**
    * When task was marked complete
    */
@@ -1825,6 +1875,22 @@ export interface InviteLink {
      * Grants access to the Social Media Dashboard (manage posts, content calendar)
      */
     isSocialMediaStaff?: boolean | null;
+    /**
+     * Grants access to the Graphics Dashboard (create graphics, manage requests)
+     */
+    isGraphicsStaff?: boolean | null;
+    /**
+     * Grants access to the Video Editing Dashboard (clips, montages, edits)
+     */
+    isVideoStaff?: boolean | null;
+    /**
+     * Grants access to the Events Dashboard (movie nights, PUGs, seminars)
+     */
+    isEventsStaff?: boolean | null;
+    /**
+     * Grants access to the Scouting Dashboard (team research, player profiles)
+     */
+    isScoutingStaff?: boolean | null;
   };
   /**
    * Optional: Pre-assign an email address for this invite
@@ -2025,6 +2091,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'social-posts';
         value: number | SocialPost;
+      } | null)
+    | ({
+        relationTo: 'events-anchor';
+        value: number | EventsAnchor;
+      } | null)
+    | ({
+        relationTo: 'graphics-anchor';
+        value: number | GraphicsAnchor;
+      } | null)
+    | ({
+        relationTo: 'video-anchor';
+        value: number | VideoAnchor;
       } | null)
     | ({
         relationTo: 'recruitment-listings';
@@ -2520,6 +2598,33 @@ export interface SocialPostsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events-anchor_select".
+ */
+export interface EventsAnchorSelect<T extends boolean = true> {
+  placeholder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "graphics-anchor_select".
+ */
+export interface GraphicsAnchorSelect<T extends boolean = true> {
+  placeholder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "video-anchor_select".
+ */
+export interface VideoAnchorSelect<T extends boolean = true> {
+  placeholder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "recruitment-listings_select".
  */
 export interface RecruitmentListingsSelect<T extends boolean = true> {
@@ -2584,6 +2689,8 @@ export interface TasksSelect<T extends boolean = true> {
         createdAt?: T;
         id?: T;
       };
+  archived?: T;
+  archivedAt?: T;
   completedAt?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2748,6 +2855,10 @@ export interface InviteLinksSelect<T extends boolean = true> {
     | {
         isProductionStaff?: T;
         isSocialMediaStaff?: T;
+        isGraphicsStaff?: T;
+        isVideoStaff?: T;
+        isEventsStaff?: T;
+        isScoutingStaff?: T;
       };
   email?: T;
   expiresAt?: T;

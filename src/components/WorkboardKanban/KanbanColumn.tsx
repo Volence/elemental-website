@@ -52,10 +52,11 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
 
   return (
     <div
-      className="workboard-column"
+      className={`workboard-column workboard-column--${status}`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
+      data-status={status}
     >
       <div className="workboard-column__header">
         <span className="workboard-column__icon">{statusIcons[status]}</span>
@@ -69,6 +70,7 @@ export const KanbanColumn: React.FC<KanbanColumnProps> = ({
             key={task.id}
             draggable
             onDragStart={(e) => handleDragStart(e, task.id)}
+            data-status={status}
           >
             <TaskCard task={task} onClick={onTaskClick} />
           </div>

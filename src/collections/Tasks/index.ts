@@ -352,7 +352,25 @@ export const Tasks: CollectionConfig = {
         },
       ],
     },
-    // Sidebar fields
+    // Sidebar fields - Archive and completion tracking
+    {
+      name: 'archived',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        position: 'sidebar',
+        description: 'Archive to hide from Kanban board (still searchable)',
+      },
+    },
+    {
+      name: 'archivedAt',
+      type: 'date',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'When task was archived',
+      },
+    },
     {
       name: 'completedAt',
       type: 'date',
@@ -365,7 +383,7 @@ export const Tasks: CollectionConfig = {
   ],
   hooks: {
     beforeChange: [
-      async ({ data, operation }) => {
+      async ({ data, operation, originalDoc }) => {
         if (!data) return data
         
         // Auto-set completedAt when status changes to complete
@@ -373,6 +391,13 @@ export const Tasks: CollectionConfig = {
           data.completedAt = new Date().toISOString()
         } else if (data.status !== 'complete') {
           data.completedAt = null
+        }
+        
+        // Auto-set archivedAt when archived changes
+        if (data.archived && !originalDoc?.archived) {
+          data.archivedAt = new Date().toISOString()
+        } else if (!data.archived && originalDoc?.archived) {
+          data.archivedAt = null
         }
         
         return data

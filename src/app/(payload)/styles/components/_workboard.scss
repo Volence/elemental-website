@@ -2,8 +2,12 @@
  * WORKBOARD KANBAN STYLES
  * 
  * Styles for the universal workboard/kanban system
- * Used by Graphics, Video, Events, Scouting dashboards
+ * Uses the Clean Glow design system for consistent styling
+ * Used by Graphics, Video, Events, Scouting, Social Media dashboards
  */
+
+@import '../variables';
+@import '../mixins';
 
 // ============================================
 // WORKBOARD CONTAINER
@@ -21,7 +25,7 @@
     gap: 1rem;
     margin-bottom: 1.5rem;
     padding-bottom: 1rem;
-    border-bottom: 1px solid var(--theme-elevation-100);
+    border-bottom: 1px solid rgba($admin-accent-info, 0.2);
   }
   
   &__title-section {
@@ -34,6 +38,7 @@
     margin: 0;
     font-size: 1.75rem;
     font-weight: 700;
+    color: white;
   }
   
   &__stats {
@@ -41,13 +46,19 @@
     flex-wrap: wrap;
     gap: 1rem;
     font-size: 0.875rem;
-    color: var(--theme-elevation-500);
+    color: rgba(255, 255, 255, 0.6);
   }
   
   &__stat {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.35rem;
+    
+    // Add glow badge style to stat numbers
+    span:last-child {
+      color: $admin-accent-info;
+      font-weight: 600;
+    }
   }
   
   &__actions {
@@ -58,17 +69,17 @@
   }
   
   &__filter {
+    @include glow-select($admin-accent-info);
     padding: 0.5rem 0.75rem;
-    background: var(--theme-input-bg);
-    border: 1px solid var(--theme-elevation-100);
-    border-radius: 4px;
-    color: var(--theme-elevation-800);
     font-size: 0.875rem;
-    cursor: pointer;
+    min-width: 120px;
+    color-scheme: dark;
+    background-color: rgba(15, 18, 25, 0.95);
     
-    &:focus {
-      outline: none;
-      border-color: var(--theme-elevation-300);
+    option {
+      background-color: rgb(25, 30, 40);
+      color: white;
+      padding: 0.5rem;
     }
   }
   
@@ -77,48 +88,34 @@
     align-items: center;
     gap: 0.5rem;
     font-size: 0.875rem;
-    color: var(--theme-elevation-600);
+    color: rgba(255, 255, 255, 0.7);
     cursor: pointer;
     
     input {
+      @include glow-checkbox($admin-accent-success);
       cursor: pointer;
     }
   }
   
   &__btn {
+    @include glow-button($admin-accent-success);
     padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 4px;
     font-size: 0.875rem;
     font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
     
     &--primary {
-      background: linear-gradient(135deg, var(--theme-success-500), var(--theme-success-400));
-      color: white;
-      
-      &:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(var(--theme-success-500), 0.3);
-      }
+      @include glow-button($admin-accent-success);
     }
     
     &--refresh {
-      background: var(--theme-elevation-50);
-      border: 1px solid var(--theme-elevation-150);
-      color: var(--theme-elevation-700);
-      
-      &:hover {
-        background: var(--theme-elevation-100);
-      }
+      @include glow-button($admin-accent-info);
     }
   }
   
   &__board {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
+    gap: 1.25rem;
     min-height: 60vh;
     
     @media (max-width: 1200px) {
@@ -132,49 +129,57 @@
 }
 
 // ============================================
-// KANBAN COLUMN
+// KANBAN COLUMN - Clean Glow Styled
 // ============================================
 
 .workboard-column {
-  background: var(--theme-elevation-50);
-  border: 1px solid var(--theme-elevation-100);
-  border-radius: 8px;
+  @include transparent-bg(0.05);
+  border: 1px solid rgba($admin-accent-primary, 0.25);
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
   max-height: 70vh;
-  transition: border-color 0.2s ease;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+  
+  // Subtle column glow
+  box-shadow: 0 0 15px rgba($admin-accent-primary, 0.05);
   
   &--drag-over {
-    border-color: var(--theme-success-500);
-    background: var(--theme-elevation-100);
+    border-color: rgba($admin-accent-success, 0.7);
+    box-shadow: 0 0 25px rgba($admin-accent-success, 0.2);
+    background: rgba($admin-accent-success, 0.05);
   }
   
   &__header {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 1rem;
-    border-bottom: 1px solid var(--theme-elevation-100);
-    background: var(--theme-elevation-75);
-    border-radius: 8px 8px 0 0;
+    gap: 0.625rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid rgba($admin-accent-primary, 0.15);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
+    border-radius: 12px 12px 0 0;
   }
   
   &__icon {
     font-size: 1.25rem;
+    filter: drop-shadow(0 0 4px rgba($admin-accent-info, 0.5));
   }
   
   &__title {
     font-weight: 600;
     flex: 1;
+    color: white;
+    font-size: 0.95rem;
   }
   
   &__count {
-    background: var(--theme-elevation-200);
-    color: var(--theme-elevation-700);
-    padding: 0.125rem 0.5rem;
-    border-radius: 999px;
+    @include glow-badge($admin-accent-info);
+    padding: 0.25rem 0.625rem;
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 700;
+    min-width: 24px;
+    text-align: center;
   }
   
   &__tasks {
@@ -183,106 +188,159 @@
     padding: 0.75rem;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.625rem;
+    @include custom-scrollbar;
   }
   
   &__empty {
     text-align: center;
-    color: var(--theme-elevation-400);
+    color: rgba(255, 255, 255, 0.4);
     padding: 2rem 1rem;
     font-style: italic;
+    font-size: 0.875rem;
   }
 }
 
 // ============================================
-// TASK CARD
+// UNIFIED TASK ITEM - Trello-style Design
 // ============================================
+// Uses task-item instead of task-card to avoid
+// global [class*="card"] selector conflict
 
-.workboard-task-card {
-  background: var(--theme-bg);
-  border: 1px solid var(--theme-elevation-100);
-  border-radius: 6px;
-  padding: 0.75rem;
+.task-item {
+  background: rgba(25, 28, 35, 0.95);
+  border-left: 3px solid $admin-accent-info;
+  padding: 0.625rem 0.75rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
+  border-radius: 4px;
   
   &:hover {
-    border-color: var(--theme-elevation-200);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: rgba(35, 40, 50, 0.98);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   }
   
-  &[draggable="true"] {
-    cursor: grab;
-    
-    &:active {
-      cursor: grabbing;
-    }
+  // Header: Title + Priority
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
   }
   
   &__title {
-    font-weight: 600;
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
+    font-weight: 500;
+    font-size: 0.875rem;
     line-height: 1.3;
+    color: white;
+    flex: 1;
   }
   
-  &__meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.375rem;
-    margin-bottom: 0.5rem;
-  }
-  
-  &__type {
-    background: var(--theme-elevation-100);
-    color: var(--theme-elevation-700);
-    padding: 0.125rem 0.375rem;
-    border-radius: 4px;
-    font-size: 0.7rem;
-    text-transform: capitalize;
-  }
-  
+  // Priority badge - small pill in corner
   &__priority {
-    font-size: 0.7rem;
-  }
-  
-  &__due {
-    font-size: 0.75rem;
-    color: var(--theme-elevation-600);
-    margin-bottom: 0.5rem;
+    padding: 0.1rem 0.35rem;
+    font-size: 0.55rem;
+    font-weight: 600;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    flex-shrink: 0;
     
-    &--overdue {
-      color: var(--theme-error-500);
-      font-weight: 600;
+    &--high, &--urgent {
+      background: rgba($admin-accent-error, 0.2);
+      color: $admin-accent-error;
+    }
+    
+    &--medium {
+      background: rgba($admin-accent-warning, 0.2);
+      color: $admin-accent-warning;
+    }
+    
+    &--low {
+      background: rgba($admin-accent-success, 0.2);
+      color: $admin-accent-success;
     }
   }
   
+  // Footer: Date + Assignees
+  &__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.375rem;
+  }
+  
+  // Meta info container (date, attachments, comments)
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  &__date,
+  &__attachments,
+  &__comments {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.45);
+  }
+  
+  &__date--overdue {
+    color: $admin-accent-error;
+    font-weight: 600;
+  }
+  
+  // Assignee avatars - circular initials
   &__assignees {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem;
+    margin-left: auto;
   }
   
-  &__assignee {
-    background: var(--theme-elevation-100);
-    color: var(--theme-elevation-700);
-    padding: 0.125rem 0.375rem;
-    border-radius: 4px;
-    font-size: 0.7rem;
-  }
-  
-  &__more {
-    background: var(--theme-elevation-200);
-    color: var(--theme-elevation-600);
-    padding: 0.125rem 0.375rem;
-    border-radius: 4px;
-    font-size: 0.7rem;
+  &__avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba($admin-accent-info, 0.3);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.6rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: -6px;
+    
+    &:first-child {
+      margin-left: 0;
+    }
+    
+    &--more {
+      background: rgba(255, 255, 255, 0.15);
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.5rem;
+    }
   }
 }
 
+// Column-based left border colors
+.workboard-column--backlog .task-item {
+  border-left-color: $admin-accent-info;
+}
+
+.workboard-column--in-progress .task-item {
+  border-left-color: $admin-accent-warning;
+}
+
+.workboard-column--review .task-item {
+  border-left-color: $admin-accent-primary;
+}
+
+.workboard-column--complete .task-item {
+  border-left-color: $admin-accent-success;
+}
+
 // ============================================
-// TASK MODAL
+// TASK MODAL - Clean Glow Design
 // ============================================
 
 .workboard-modal-overlay {
@@ -291,7 +349,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -300,38 +359,48 @@
 }
 
 .workboard-modal {
-  background: var(--theme-bg);
-  border-radius: 12px;
+  @include glow-card($admin-accent-info);
+  background: rgba(15, 15, 25, 0.95) !important;
+  border-radius: 16px;
   width: 100%;
   max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 
+    0 0 40px rgba($admin-accent-info, 0.15),
+    0 20px 60px rgba(0, 0, 0, 0.5);
+  @include custom-scrollbar;
   
   &__header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid var(--theme-elevation-100);
+    border-bottom: 1px solid rgba($admin-accent-info, 0.2);
+    background: linear-gradient(180deg, rgba($admin-accent-info, 0.05), transparent);
     
     h2 {
       margin: 0;
       font-size: 1.25rem;
+      color: $admin-accent-success;
+      font-weight: 700;
     }
   }
   
   &__close {
-    background: none;
-    border: none;
+    @include glow-button($admin-accent-error);
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
     font-size: 1.25rem;
-    cursor: pointer;
-    color: var(--theme-elevation-500);
-    padding: 0.25rem;
+    padding: 0.25rem 0.5rem;
     line-height: 1;
+    color: rgba(255, 255, 255, 0.6);
     
     &:hover {
-      color: var(--theme-elevation-800);
+      color: $admin-accent-error;
+      background: rgba($admin-accent-error, 0.1) !important;
+      transform: none;
     }
   }
   
@@ -348,36 +417,48 @@
     gap: 0.5rem;
     
     label {
-      font-weight: 500;
+      font-weight: 600;
       font-size: 0.875rem;
-      color: var(--theme-elevation-700);
+      color: rgba(255, 255, 255, 0.85);
     }
     
     input[type="text"],
     input[type="date"],
     textarea,
     select {
-      padding: 0.625rem 0.75rem;
-      background: var(--theme-input-bg);
-      border: 1px solid var(--theme-elevation-150);
-      border-radius: 6px;
-      font-size: 0.9rem;
-      color: var(--theme-elevation-900);
+      @include glow-input($admin-accent-info);
       width: 100%;
       
-      &:focus {
-        outline: none;
-        border-color: var(--theme-elevation-300);
-      }
-      
       &::placeholder {
-        color: var(--theme-elevation-400);
+        color: rgba(255, 255, 255, 0.35);
+      }
+    }
+    
+    // Style select dropdowns for dark theme
+    select {
+      color-scheme: dark;
+      background-color: rgba(15, 18, 25, 0.95);
+      
+      option {
+        background-color: rgb(25, 30, 40);
+        color: white;
+        padding: 0.5rem;
+        
+        &:hover,
+        &:checked {
+          background-color: rgba($admin-accent-info, 0.3);
+        }
       }
     }
     
     textarea {
       resize: vertical;
-      min-height: 80px;
+      min-height: 90px;
+    }
+    
+    // Fix date input to use native picker styling
+    input[type="date"] {
+      color-scheme: dark;
     }
   }
   
@@ -394,76 +475,298 @@
   &__assignees {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.625rem;
     max-height: 200px;
     overflow-y: auto;
-    padding: 0.5rem;
-    background: var(--theme-elevation-50);
-    border-radius: 6px;
-    border: 1px solid var(--theme-elevation-100);
+    padding: 0.75rem;
+    @include transparent-bg(0.05);
+    border-radius: 8px;
+    border: 1px solid rgba($admin-accent-info, 0.2);
+    @include custom-scrollbar;
   }
   
   &__assignee-option {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.375rem 0.625rem;
-    background: var(--theme-bg);
-    border: 1px solid var(--theme-elevation-150);
-    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
     cursor: pointer;
     font-size: 0.8rem;
-    transition: all 0.15s ease;
+    transition: all 0.2s ease;
     
     &:hover {
-      background: var(--theme-elevation-100);
+      background: rgba(255, 255, 255, 0.08);
     }
     
-    input:checked + span {
-      font-weight: 600;
+    input[type="checkbox"] {
+      @include glow-checkbox($admin-accent-success, 16px);
+    }
+    
+    &:has(input:checked) {
+      background: rgba($admin-accent-success, 0.1);
+      
+      span {
+        color: white;
+        font-weight: 600;
+      }
+    }
+  }
+  
+  // Inline attachments section
+  &__attachments {
+    @include transparent-bg(0.05);
+    border-radius: 8px;
+    border: 1px solid rgba($admin-accent-info, 0.2);
+    padding: 0.75rem;
+  }
+  
+  &__attachment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  &__attachment-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  // Thumbnail for image attachments
+  &__attachment-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.2);
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+  
+  // Icon for non-image attachments
+  &__attachment-icon {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+  }
+  
+  // Info section (name + actions + description)
+  &__attachment-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    padding-left: 0.75rem;
+  }
+  
+  // Row for filename + save button
+  &__attachment-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  &__attachment-name {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.8);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+  }
+  
+  // Description input
+  &__attachment-desc {
+    width: 100%;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    outline: none;
+    transition: all 0.2s ease;
+    
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.35);
+    }
+    
+    &:focus {
+      border-color: rgba($admin-accent-info, 0.4);
+      background: rgba(255, 255, 255, 0.08);
+    }
+  }
+  
+  &__attachment-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  &__attachment-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+    color: $admin-accent-success;
+    background: rgba($admin-accent-success, 0.15);
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: rgba($admin-accent-success, 0.25);
+      color: lighten($admin-accent-success, 10%);
+    }
+  }
+  
+  &__attachment-remove {
+    background: rgba($admin-accent-error, 0.2);
+    color: $admin-accent-error;
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: 0.65rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    margin-left: 0.5rem;
+    
+    &:hover {
+      background: rgba($admin-accent-error, 0.4);
+    }
+  }
+  
+  &__upload-area {
+    display: flex;
+    align-items: center;
+  }
+  
+  &__file-input {
+    display: none;
+  }
+  
+  &__upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem 1rem;
+    background: rgba($admin-accent-info, 0.15);
+    color: $admin-accent-info;
+    border: 1px dashed rgba($admin-accent-info, 0.4);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: rgba($admin-accent-info, 0.25);
+      border-color: rgba($admin-accent-info, 0.6);
     }
   }
   
   &__actions {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
     gap: 0.75rem;
-    margin-top: 0.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--theme-elevation-100);
+    margin-top: 0.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid rgba($admin-accent-info, 0.15);
+  }
+  
+  &__danger-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  &__primary-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: auto;
   }
   
   &__btn {
-    padding: 0.625rem 1.25rem;
+    padding: 0.6rem 1rem;
     border: none;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    font-weight: 500;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
     
     &--secondary {
-      background: var(--theme-elevation-100);
-      color: var(--theme-elevation-700);
-      
-      &:hover {
-        background: var(--theme-elevation-200);
-      }
+      @include glow-button($admin-accent-info);
+      background: transparent !important;
     }
     
     &--primary {
-      background: linear-gradient(135deg, var(--theme-success-500), var(--theme-success-400));
-      color: white;
+      @include glow-button($admin-accent-success);
       
-      &:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(var(--theme-success-500), 0.3);
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+    }
+    
+    &--danger {
+      background: rgba($admin-accent-error, 0.15);
+      color: $admin-accent-error;
+      border: 1px solid rgba($admin-accent-error, 0.3);
+      
+      &:hover:not(:disabled) {
+        background: rgba($admin-accent-error, 0.25);
+        border-color: rgba($admin-accent-error, 0.5);
       }
       
       &:disabled {
-        opacity: 0.6;
+        opacity: 0.5;
         cursor: not-allowed;
-        transform: none;
+      }
+    }
+    
+    &--archive {
+      background: rgba($admin-accent-warning, 0.15);
+      color: $admin-accent-warning;
+      border: 1px solid rgba($admin-accent-warning, 0.3);
+      
+      &:hover:not(:disabled) {
+        background: rgba($admin-accent-warning, 0.25);
+        border-color: rgba($admin-accent-warning, 0.5);
+      }
+      
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
       }
     }
   }
@@ -479,16 +782,17 @@
   align-items: center;
   justify-content: center;
   min-height: 50vh;
-  gap: 1rem;
-  color: var(--theme-elevation-500);
+  gap: 1.25rem;
+  color: rgba(255, 255, 255, 0.6);
   
   &__spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid var(--theme-elevation-150);
-    border-top-color: var(--theme-success-500);
+    width: 48px;
+    height: 48px;
+    border: 3px solid rgba($admin-accent-info, 0.2);
+    border-top-color: $admin-accent-info;
     border-radius: 50%;
     animation: spin 1s linear infinite;
+    box-shadow: 0 0 20px rgba($admin-accent-info, 0.3);
   }
 }
 
@@ -497,3 +801,171 @@
     transform: rotate(360deg);
   }
 }
+
+// ============================================
+// PRIORITY DOT ANIMATION
+// ============================================
+
+.workboard-task-card__priority::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.workboard-task-card__priority--high::before {
+  background: $admin-accent-error;
+  box-shadow: 0 0 8px $admin-accent-error;
+}
+
+.workboard-task-card__priority--medium::before {
+  background: $admin-accent-warning;
+  box-shadow: 0 0 8px $admin-accent-warning;
+}
+
+.workboard-task-card__priority--low::before {
+  background: $admin-accent-success;
+  box-shadow: 0 0 8px $admin-accent-success;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(0.9);
+  }
+}
+
+// ============================================
+// CONFIRM MODAL
+// ============================================
+
+.confirm-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.15s ease;
+}
+
+.confirm-modal {
+  background: linear-gradient(135deg, rgba(20, 25, 35, 0.98), rgba(15, 18, 25, 0.98));
+  border: 1px solid rgba($admin-accent-info, 0.2);
+  border-radius: 12px;
+  padding: 2.5rem 3rem;
+  max-width: 420px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 
+    0 0 30px rgba(0, 0, 0, 0.5),
+    0 0 60px rgba($admin-accent-info, 0.1);
+  animation: slideUp 0.2s ease;
+  
+  &__title {
+    color: white;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0 0 1rem 0;
+  }
+  
+  &__message {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95rem;
+    margin: 0 auto 2rem auto;
+    padding: 1rem 1.5rem !important;
+    line-height: 1.6;
+    max-width: 100%;
+    // Reset any inherited styles
+    border: none !important;
+    background: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    
+    // Reset pseudo-elements
+    &::before,
+    &::after {
+      display: none !important;
+      content: none !important;
+    }
+  }
+  
+  &__actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+  }
+  
+  &__btn {
+    padding: 0.6rem 1.25rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 100px;
+    
+    &--cancel {
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+    }
+    
+    &--danger {
+      background: rgba($admin-accent-error, 0.9);
+      color: white;
+      
+      &:hover {
+        background: $admin-accent-error;
+        box-shadow: 0 0 15px rgba($admin-accent-error, 0.5);
+      }
+    }
+    
+    &--warning {
+      background: rgba($admin-accent-warning, 0.9);
+      color: white;
+      
+      &:hover {
+        background: $admin-accent-warning;
+        box-shadow: 0 0 15px rgba($admin-accent-warning, 0.5);
+      }
+    }
+    
+    &--info {
+      background: rgba($admin-accent-info, 0.9);
+      color: white;
+      
+      &:hover {
+        background: $admin-accent-info;
+        box-shadow: 0 0 15px rgba($admin-accent-info, 0.5);
+      }
+    }
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+

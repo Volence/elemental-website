@@ -6,7 +6,7 @@ export const ScoutingDashboard: GlobalConfig = {
   label: 'Scouting Dashboard',
   admin: {
     description: '🔍 Manage enemy team research, player profiles, and match analysis',
-    group: 'Scouting',
+    group: 'Scouting & Recruiting',
     hidden: ({ user }) => {
       if (!user) return true
       const u = user as any

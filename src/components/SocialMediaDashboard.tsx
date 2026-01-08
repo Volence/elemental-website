@@ -4,6 +4,7 @@ import React, { useState } from 'react'
 import { CalendarView } from './SocialMediaDashboard/CalendarView'
 import { WeeklyGoals } from './SocialMediaDashboard/WeeklyGoals'
 import { TemplatesView } from './SocialMediaDashboard/TemplatesView'
+import { KanbanBoard } from './WorkboardKanban'
 
 export default function SocialMediaDashboard() {
   const [activeTab, setActiveTab] = useState('calendar')
@@ -16,6 +17,13 @@ export default function SocialMediaDashboard() {
           onClick={() => setActiveTab('calendar')}
         >
           📅 Calendar
+        </button>
+        
+        <button 
+          className={`social-media-dashboard__tab ${activeTab === 'workboard' ? 'social-media-dashboard__tab--active' : ''}`}
+          onClick={() => setActiveTab('workboard')}
+        >
+          📋 Workboard
         </button>
         
         <button 
@@ -35,6 +43,7 @@ export default function SocialMediaDashboard() {
       
       <div className="social-media-dashboard__content">
         {activeTab === 'calendar' && <CalendarView />}
+        {activeTab === 'workboard' && <KanbanBoard department="social-media" title="Social Media Workboard" />}
         {activeTab === 'goals' && <WeeklyGoals />}
         {activeTab === 'templates' && <TemplatesView />}
       </div>

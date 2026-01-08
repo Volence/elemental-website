@@ -115,6 +115,10 @@ export async function POST(request: Request): Promise<Response> {
         departments: {
           isProductionStaff: invite.departments?.isProductionStaff || false,
           isSocialMediaStaff: invite.departments?.isSocialMediaStaff || false,
+          isGraphicsStaff: invite.departments?.isGraphicsStaff || false,
+          isVideoStaff: invite.departments?.isVideoStaff || false,
+          isEventsStaff: invite.departments?.isEventsStaff || false,
+          isScoutingStaff: invite.departments?.isScoutingStaff || false,
         },
       },
     })

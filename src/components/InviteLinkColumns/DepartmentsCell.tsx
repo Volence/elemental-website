@@ -7,6 +7,10 @@ interface DepartmentsCellProps {
     departments?: {
       isProductionStaff?: boolean
       isSocialMediaStaff?: boolean
+      isGraphicsStaff?: boolean
+      isVideoStaff?: boolean
+      isEventsStaff?: boolean
+      isScoutingStaff?: boolean
     }
   }
 }
@@ -26,6 +30,22 @@ export default function DepartmentsCell({ rowData }: DepartmentsCellProps) {
 
   if (departments.isSocialMediaStaff) {
     departmentBadges.push({ name: 'Social Media', emoji: '📱', color: 'success' })
+  }
+
+  if (departments.isGraphicsStaff) {
+    departmentBadges.push({ name: 'Graphics', emoji: '🎨', color: 'warning' })
+  }
+
+  if (departments.isVideoStaff) {
+    departmentBadges.push({ name: 'Video', emoji: '🎬', color: 'error' })
+  }
+
+  if (departments.isEventsStaff) {
+    departmentBadges.push({ name: 'Events', emoji: '🎉', color: 'success' })
+  }
+
+  if (departments.isScoutingStaff) {
+    departmentBadges.push({ name: 'Scouting', emoji: '🔍', color: 'info' })
   }
 
   if (departmentBadges.length === 0) {
