@@ -41,6 +41,11 @@ import { ActiveSessionsViewer } from './globals/ActiveSessionsViewer'
 import { ErrorHarvesterState } from './globals/ErrorHarvesterState'
 import { DiscordServerManager } from './globals/DiscordServerManager'
 import { DiscordCategoryTemplates } from './collections/DiscordCategoryTemplates'
+import { Tasks } from './collections/Tasks'
+import { GraphicsDashboard } from './globals/GraphicsDashboard'
+import { VideoEditingDashboard } from './globals/VideoEditingDashboard'
+import { EventsDashboard } from './globals/EventsDashboard'
+import { ScoutingDashboard } from './globals/ScoutingDashboard'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
@@ -140,6 +145,9 @@ const config = buildConfig({
     RecruitmentListings,
     RecruitmentApplications,
     
+    // WORKBOARD: Universal task management (hidden, accessed via dashboards)
+    Tasks,
+    
     // DISCORD: Bot integration (hidden but establishes group order)
     DiscordPolls,
     DiscordCategoryTemplates,
@@ -163,6 +171,10 @@ const config = buildConfig({
     ProductionDashboard, // Production group
     SocialMediaSettings, // Social Media group
     SocialMediaConfig, // Social Media group
+    GraphicsDashboard, // Graphics group
+    VideoEditingDashboard, // Video group
+    EventsDashboard, // Events group
+    ScoutingDashboard, // Scouting group
     DiscordServerManager, // Discord group
     AuditLogViewer, // Monitoring group
     CronMonitor, // Monitoring group

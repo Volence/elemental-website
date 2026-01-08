@@ -90,3 +90,48 @@ export const isSocialMediaStaff = ({ req: { user } }: AccessArgs<User>): boolean
          (user as User).role === UserRole.ADMIN ||
          (user as User).role === UserRole.STAFF_MANAGER
 }
+
+/**
+ * Check if user has graphics staff access
+ */
+export const isGraphicsStaff = ({ req: { user } }: AccessArgs<User>): boolean => {
+  if (!user) return false
+  const u = user as any
+  return u.departments?.isGraphicsStaff === true || 
+         (user as User).role === UserRole.ADMIN ||
+         (user as User).role === UserRole.STAFF_MANAGER
+}
+
+/**
+ * Check if user has video editing staff access
+ */
+export const isVideoStaff = ({ req: { user } }: AccessArgs<User>): boolean => {
+  if (!user) return false
+  const u = user as any
+  return u.departments?.isVideoStaff === true || 
+         (user as User).role === UserRole.ADMIN ||
+         (user as User).role === UserRole.STAFF_MANAGER
+}
+
+/**
+ * Check if user has events staff access
+ */
+export const isEventsStaff = ({ req: { user } }: AccessArgs<User>): boolean => {
+  if (!user) return false
+  const u = user as any
+  return u.departments?.isEventsStaff === true || 
+         (user as User).role === UserRole.ADMIN ||
+         (user as User).role === UserRole.STAFF_MANAGER
+}
+
+/**
+ * Check if user has scouting staff access
+ */
+export const isScoutingStaff = ({ req: { user } }: AccessArgs<User>): boolean => {
+  if (!user) return false
+  const u = user as any
+  return u.departments?.isScoutingStaff === true || 
+         (user as User).role === UserRole.ADMIN ||
+         (user as User).role === UserRole.STAFF_MANAGER
+}
+

@@ -79,6 +79,7 @@ export interface Config {
     'social-posts': SocialPost;
     'recruitment-listings': RecruitmentListing;
     'recruitment-applications': RecruitmentApplication;
+    tasks: Task;
     'discord-polls': DiscordPoll;
     'discord-category-templates': DiscordCategoryTemplate;
     'audit-logs': AuditLog;
@@ -110,6 +111,7 @@ export interface Config {
     'social-posts': SocialPostsSelect<false> | SocialPostsSelect<true>;
     'recruitment-listings': RecruitmentListingsSelect<false> | RecruitmentListingsSelect<true>;
     'recruitment-applications': RecruitmentApplicationsSelect<false> | RecruitmentApplicationsSelect<true>;
+    tasks: TasksSelect<false> | TasksSelect<true>;
     'discord-polls': DiscordPollsSelect<false> | DiscordPollsSelect<true>;
     'discord-category-templates': DiscordCategoryTemplatesSelect<false> | DiscordCategoryTemplatesSelect<true>;
     'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
@@ -137,6 +139,10 @@ export interface Config {
     'production-dashboard': ProductionDashboard;
     'social-media-settings': SocialMediaSetting;
     'social-media-config': SocialMediaConfig;
+    'graphics-dashboard': GraphicsDashboard;
+    'video-editing-dashboard': VideoEditingDashboard;
+    'events-dashboard': EventsDashboard;
+    'scouting-dashboard': ScoutingDashboard;
     'discord-server-manager': DiscordServerManager;
     'audit-log-viewer': AuditLogViewer;
     'cron-monitor': CronMonitor;
@@ -152,6 +158,10 @@ export interface Config {
     'production-dashboard': ProductionDashboardSelect<false> | ProductionDashboardSelect<true>;
     'social-media-settings': SocialMediaSettingsSelect<false> | SocialMediaSettingsSelect<true>;
     'social-media-config': SocialMediaConfigSelect<false> | SocialMediaConfigSelect<true>;
+    'graphics-dashboard': GraphicsDashboardSelect<false> | GraphicsDashboardSelect<true>;
+    'video-editing-dashboard': VideoEditingDashboardSelect<false> | VideoEditingDashboardSelect<true>;
+    'events-dashboard': EventsDashboardSelect<false> | EventsDashboardSelect<true>;
+    'scouting-dashboard': ScoutingDashboardSelect<false> | ScoutingDashboardSelect<true>;
     'discord-server-manager': DiscordServerManagerSelect<false> | DiscordServerManagerSelect<true>;
     'audit-log-viewer': AuditLogViewerSelect<false> | AuditLogViewerSelect<true>;
     'cron-monitor': CronMonitorSelect<false> | CronMonitorSelect<true>;
@@ -1137,6 +1147,22 @@ export interface User {
      * Grants access to Social Media Dashboard (manage posts, content calendar)
      */
     isSocialMediaStaff?: boolean | null;
+    /**
+     * Grants access to Graphics Dashboard (view requests, manage projects)
+     */
+    isGraphicsStaff?: boolean | null;
+    /**
+     * Grants access to Video Editing Dashboard (clips, montages, seminars)
+     */
+    isVideoStaff?: boolean | null;
+    /**
+     * Grants access to Events Dashboard (movie nights, PUGs, seminars, tournaments)
+     */
+    isEventsStaff?: boolean | null;
+    /**
+     * Grants access to Scouting Dashboard (enemy team intel, research)
+     */
+    isScoutingStaff?: boolean | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -1316,6 +1342,141 @@ export interface RecruitmentApplication {
    * Archive old applications to hide them from active list
    */
   archived?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * 📋 Universal task management for all departments.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tasks".
+ */
+export interface Task {
+  id: number;
+  /**
+   * What needs to be done
+   */
+  title: string;
+  /**
+   * Detailed requirements and notes
+   */
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Which department owns this task
+   */
+  department: 'graphics' | 'video' | 'events' | 'scouting' | 'production' | 'social-media';
+  /**
+   * Type of work (depends on department)
+   */
+  taskType?:
+    | (
+        | 'graphics-logo'
+        | 'graphics-banner'
+        | 'graphics-overlay'
+        | 'graphics-thumbnail'
+        | 'graphics-social-graphic'
+        | 'graphics-other'
+        | 'video-clips-of-week'
+        | 'video-roster-reveal'
+        | 'video-montage'
+        | 'video-seminar-edit'
+        | 'video-highlight-reel'
+        | 'video-other'
+        | 'events-movie-night'
+        | 'events-game-night'
+        | 'events-pug'
+        | 'events-seminar'
+        | 'events-tournament'
+        | 'events-other'
+        | 'scouting-team-research'
+        | 'scouting-player-profile'
+        | 'scouting-match-analysis'
+        | 'scouting-other'
+      )
+    | null;
+  /**
+   * Current status
+   */
+  status: 'backlog' | 'in-progress' | 'review' | 'complete';
+  /**
+   * Priority level
+   */
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  /**
+   * When this is needed
+   */
+  dueDate?: string | null;
+  /**
+   * Staff member(s) working on this
+   */
+  assignedTo?: (number | User)[] | null;
+  /**
+   * Who submitted this request (for cross-department work)
+   */
+  requestedBy?: (number | null) | User;
+  /**
+   * Link to related content
+   */
+  relatedItems?: {
+    /**
+     * Related match (for graphics, clips, etc.)
+     */
+    match?: (number | null) | Match;
+    /**
+     * Related social media post
+     */
+    socialPost?: (number | null) | SocialPost;
+    /**
+     * Related recruitment listing (for scouting)
+     */
+    recruitmentListing?: (number | null) | RecruitmentListing;
+    /**
+     * Related team
+     */
+    team?: (number | null) | Team;
+  };
+  /**
+   * Reference files, examples, deliverables
+   */
+  attachments?:
+    | {
+        file?: (number | null) | Media;
+        /**
+         * Description of this attachment
+         */
+        label?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Discussion thread
+   */
+  comments?:
+    | {
+        author: number | User;
+        content: string;
+        createdAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * When task was marked complete
+   */
+  completedAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1874,6 +2035,10 @@ export interface PayloadLockedDocument {
         value: number | RecruitmentApplication;
       } | null)
     | ({
+        relationTo: 'tasks';
+        value: number | Task;
+      } | null)
+    | ({
         relationTo: 'discord-polls';
         value: number | DiscordPoll;
       } | null)
@@ -2384,6 +2549,47 @@ export interface RecruitmentApplicationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tasks_select".
+ */
+export interface TasksSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  department?: T;
+  taskType?: T;
+  status?: T;
+  priority?: T;
+  dueDate?: T;
+  assignedTo?: T;
+  requestedBy?: T;
+  relatedItems?:
+    | T
+    | {
+        match?: T;
+        socialPost?: T;
+        recruitmentListing?: T;
+        team?: T;
+      };
+  attachments?:
+    | T
+    | {
+        file?: T;
+        label?: T;
+        id?: T;
+      };
+  comments?:
+    | T
+    | {
+        author?: T;
+        content?: T;
+        createdAt?: T;
+        id?: T;
+      };
+  completedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "discord-polls_select".
  */
 export interface DiscordPollsSelect<T extends boolean = true> {
@@ -2495,6 +2701,10 @@ export interface UsersSelect<T extends boolean = true> {
     | {
         isProductionStaff?: T;
         isSocialMediaStaff?: T;
+        isGraphicsStaff?: T;
+        isVideoStaff?: T;
+        isEventsStaff?: T;
+        isScoutingStaff?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -2882,6 +3092,50 @@ export interface SocialMediaConfig {
   createdAt?: string | null;
 }
 /**
+ * 🎨 Manage graphics requests, projects, and asset library
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "graphics-dashboard".
+ */
+export interface GraphicsDashboard {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * 🎬 Manage video projects, clips of the week, and edits
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "video-editing-dashboard".
+ */
+export interface VideoEditingDashboard {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * 🎉 Manage movie nights, game nights, PUGs, seminars, and tournaments
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events-dashboard".
+ */
+export interface EventsDashboard {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * 🔍 Manage enemy team research, player profiles, and match analysis
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "scouting-dashboard".
+ */
+export interface ScoutingDashboard {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * Manage Discord server structure, channels, categories, roles, and members.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3067,6 +3321,42 @@ export interface SocialMediaConfigSelect<T extends boolean = true> {
         originalContent?: T;
       };
   contentGuidelines?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "graphics-dashboard_select".
+ */
+export interface GraphicsDashboardSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "video-editing-dashboard_select".
+ */
+export interface VideoEditingDashboardSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events-dashboard_select".
+ */
+export interface EventsDashboardSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "scouting-dashboard_select".
+ */
+export interface ScoutingDashboardSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

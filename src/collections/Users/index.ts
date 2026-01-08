@@ -184,7 +184,42 @@ export const Users: CollectionConfig = {
             description: 'Grants access to Social Media Dashboard (manage posts, content calendar)',
           },
         },
-        // Future: isGraphicsStaff, isMediaStaff, isScoutingStaff, isEventsStaff
+        {
+          name: 'isGraphicsStaff',
+          type: 'checkbox',
+          label: 'Graphics Staff',
+          defaultValue: false,
+          admin: {
+            description: 'Grants access to Graphics Dashboard (view requests, manage projects)',
+          },
+        },
+        {
+          name: 'isVideoStaff',
+          type: 'checkbox',
+          label: 'Video Editing Staff',
+          defaultValue: false,
+          admin: {
+            description: 'Grants access to Video Editing Dashboard (clips, montages, seminars)',
+          },
+        },
+        {
+          name: 'isEventsStaff',
+          type: 'checkbox',
+          label: 'Events Staff',
+          defaultValue: false,
+          admin: {
+            description: 'Grants access to Events Dashboard (movie nights, PUGs, seminars, tournaments)',
+          },
+        },
+        {
+          name: 'isScoutingStaff',
+          type: 'checkbox',
+          label: 'Scouting Staff',
+          defaultValue: false,
+          admin: {
+            description: 'Grants access to Scouting Dashboard (enemy team intel, research)',
+          },
+        },
       ],
     },
   ],
