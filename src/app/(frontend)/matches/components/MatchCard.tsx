@@ -135,19 +135,27 @@ export function MatchCard({ match, showCountdown = true }: MatchCardProps) {
     const days = Math.floor(timeUntil / (1000 * 60 * 60 * 24))
     const hours = Math.floor((timeUntil % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
     const minutes = Math.floor((timeUntil % (1000 * 60 * 60)) / (1000 * 60))
+    const totalHours = Math.floor(timeUntil / (1000 * 60 * 60))
 
     let countdownText = ''
-    if (days > 0) {
+    if (days >= 2) {
+      // 2+ days: show "Xd"
+      countdownText = `${days}d`
+    } else if (totalHours >= 24) {
+      // 24-48 hours: show "1d Xh"
       countdownText = `${days}d ${hours}h`
-    } else if (hours > 0) {
-      countdownText = `${hours}h ${minutes}m`
-    } else if (minutes > 0) {
+    } else if (totalHours >= 1) {
+      // 1-24 hours: show "Xh Ym"
+      countdownText = `${totalHours}h ${minutes}m`
+    } else if (minutes >= 5) {
+      // 5-60 minutes: show "Xm"
       countdownText = `${minutes}m`
     } else {
+      // Less than 5 minutes
       countdownText = 'Starting soon'
     }
 
-    const isUrgent = hours < 1 && days === 0 && timeUntil > 0
+    const isUrgent = totalHours < 1 && timeUntil > 0
 
     return (
       <span

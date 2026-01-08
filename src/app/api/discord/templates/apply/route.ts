@@ -132,58 +132,15 @@ export async function POST(req: NextRequest) {
 
     if (channelsToCreate && Array.isArray(channelsToCreate)) {
       for (const channelTemplate of channelsToCreate) {
-        // Prepare channel permission overwrites
-        const channelPermissionOverwrites: any[] = []
-
-        if (channelTemplate.permissionOverwrites && Array.isArray(channelTemplate.permissionOverwrites)) {
-          for (const overwrite of channelTemplate.permissionOverwrites) {
-            // Find existing role/member
-            let targetId = overwrite.id
-            if (overwrite.type === 0) {
-              // Role - find by ID first
-              const role = guild.roles.cache.get(overwrite.id)
-              if (!role) {
-                console.log(`[Template] Skipping permission for role ${overwrite.id} - does not exist`)
-                continue
-              }
-              targetId = role.id
-            }
-
-            // Convert permissions
-            const allow: bigint[] = []
-            const deny: bigint[] = []
-
-            if (overwrite.permissions) {
-              for (const [perm, value] of Object.entries(overwrite.permissions)) {
-                if (value === null || value === undefined) continue
-
-                const permissionFlag = (PermissionFlagsBits as any)[perm]
-                if (!permissionFlag) continue
-
-                if (value === true) {
-                  allow.push(permissionFlag)
-                } else if (value === false) {
-                  deny.push(permissionFlag)
-                }
-              }
-            }
-
-            channelPermissionOverwrites.push({
-              id: targetId,
-              type: overwrite.type,
-              allow,
-              deny,
-            })
-          }
-        }
-
-        // Create channel
+        // Create channel WITHOUT per-channel permission overwrites
+        // Channels in a category automatically inherit the category's permissions
+        // This prevents old role permissions from the source category being applied
         const channel = await guild.channels.create({
           name: channelTemplate.name,
           type: channelTemplate.type,
           parent: category.id,
           position: channelTemplate.position,
-          permissionOverwrites: channelPermissionOverwrites.length > 0 ? channelPermissionOverwrites : undefined,
+          // Note: No permissionOverwrites - channels inherit from category
           reason: `Created from template: ${template.name}`,
         })
 

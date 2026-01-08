@@ -34,10 +34,13 @@ export default async function MatchesPage({
   const currentPage = Math.max(1, parseInt(params.page || '1', 10))
   const searchQuery = params.q?.toLowerCase() || ''
 
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  // Calculate the cutoff time: matches started more than 2 hours ago are "completed"
+  // This matches the getMatchStatus() logic
+  const twoHoursAgo = new Date()
+  twoHoursAgo.setHours(twoHoursAgo.getHours() - 2)
 
-  // Get upcoming matches (from today onwards) - Only show matches marked for schedule
+  // Get upcoming matches (not yet completed) - Only show matches marked for schedule
+  // A match is "upcoming" or "live" if it hasn't been started more than 2 hours ago
   let upcomingMatches
   try {
     upcomingMatches = await payload.find({
@@ -46,7 +49,7 @@ export default async function MatchesPage({
         and: [
           {
             date: {
-              greater_than_equal: today.toISOString(),
+              greater_than_equal: twoHoursAgo.toISOString(),
             },
           },
           {
@@ -66,7 +69,7 @@ export default async function MatchesPage({
     upcomingMatches = { docs: [], totalDocs: 0, page: 1, totalPages: 0 }
   }
 
-  // Get past matches (before today) with pagination - Only show matches marked for schedule
+  // Get past matches (completed - started more than 2 hours ago) with pagination
   let pastMatches
   try {
     pastMatches = await payload.find({
@@ -75,7 +78,7 @@ export default async function MatchesPage({
         and: [
           {
             date: {
-              less_than: today.toISOString(),
+              less_than: twoHoursAgo.toISOString(),
             },
           },
           {
@@ -125,15 +128,18 @@ export default async function MatchesPage({
   const filteredUpcoming = filterMatches(upcomingMatches.docs)
   const filteredPast = filterMatches(pastMatches.docs)
 
-  // Check for live matches (happening right now - within 4 hours of start time)
+  // Check for live matches (happening right now - within 2 hours of start time)
+  // This matches the getMatchStatus() logic used in MatchCard
   const now = new Date()
   const liveMatches = filteredUpcoming.filter((match) => {
     if (!match.date) return false
     const matchDate = new Date(match.date as string)
-    const hoursSinceStart = (now.getTime() - matchDate.getTime()) / (1000 * 60 * 60)
-    // Consider match live if it started within the last 4 hours and hasn't been marked as completed
+    const msSinceStart = now.getTime() - matchDate.getTime()
+    const hoursSinceStart = msSinceStart / (1000 * 60 * 60)
+    // Consider match live if it started within the last 2 hours (consistent with getMatchStatus)
+    // Also exclude if match has a score entered (completed)
     const hasScore = match.score?.elmtScore != null && match.score?.opponentScore != null
-    return hoursSinceStart >= 0 && hoursSinceStart <= 4 && !hasScore
+    return msSinceStart >= 0 && hoursSinceStart <= 2 && !hasScore
   })
 
   return (

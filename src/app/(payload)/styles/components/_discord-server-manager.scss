@@ -140,8 +140,8 @@
 
 .alert-modal-content {
   display: flex;
-  align-items: center;
-  gap: $spacing-lg;
+  align-items: flex-start;
+  gap: $spacing-md;
   padding: $spacing-lg;
   border-radius: $radius-sm;
 
@@ -166,12 +166,13 @@
   }
 
   .alert-icon {
-    font-size: 2rem;
-    flex-shrink: 0;
+    font-size: 1.25rem;
+    line-height: 1;
   }
 
   p {
     margin: 0;
+    line-height: 1.5;
   }
 }
 
@@ -524,7 +525,7 @@
           .text-input {
             width: 100%;
             padding: $spacing-md;
-            background: rgba($admin-bg-base, 0.5);
+            background: rgba($admin-bg-base, 0.8);
             border: 1px solid rgba($admin-accent-primary, 0.3);
             border-radius: $radius-sm;
             color: $admin-text-primary;
@@ -534,6 +535,13 @@
               outline: none;
               border-color: $admin-accent-primary;
               box-shadow: 0 0 0 2px rgba($admin-accent-primary, 0.1);
+            }
+
+            // Style dropdown options to match dark theme
+            option {
+              background: $admin-bg-elevated;
+              color: $admin-text-primary;
+              padding: $spacing-sm;
             }
           }
 
@@ -1863,6 +1871,15 @@
 
         svg {
           color: $admin-accent-primary;
+          flex-shrink: 0;
+          width: 14px !important;
+          height: 14px !important;
+          min-width: 14px;
+          min-height: 14px;
+          max-width: 14px;
+          max-height: 14px;
+          margin: 0 !important;
+          padding: 0 !important;
         }
 
         .channel-type-label {
@@ -1924,34 +1941,38 @@
     }
   }
 
-  .privacy-notice {
+  // Privacy toggle checkbox in modal
+  .privacy-toggle {
     padding: $spacing-md;
-    background: rgba($admin-accent-primary, 0.1);
-    border: 1px solid rgba($admin-accent-primary, 0.3);
+    background: rgba($admin-accent-info, 0.08);
+    border: 1px solid rgba($admin-accent-info, 0.25);
     border-radius: $radius-sm;
-    color: $admin-text-primary;
-    font-size: $font-size-sm;
-    display: flex;
-    align-items: center;
-    gap: $spacing-md;
 
-    // Styled checkbox for better visibility on green background
-    input[type="checkbox"] {
-      width: 20px;
-      height: 20px;
-      cursor: pointer;
-      accent-color: $admin-accent-primary;
-      flex-shrink: 0;
-    }
-
-    label {
+    .privacy-checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
       cursor: pointer;
       user-select: none;
-    }
+      color: $admin-text-primary;
+      font-size: $font-size-sm;
 
-    strong {
-      color: $admin-accent-primary;
-      font-weight: $font-weight-semibold;
+      input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: $admin-accent-info;
+        flex-shrink: 0;
+      }
+
+      svg {
+        color: $admin-accent-info;
+        flex-shrink: 0;
+      }
+
+      span {
+        font-weight: $font-weight-medium;
+      }
     }
   }
 }

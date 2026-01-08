@@ -5,6 +5,7 @@ import { Calendar } from 'lucide-react'
 import Link from 'next/link'
 import { MatchCard } from './MatchCard'
 import { getLocalDateKey, formatLocalDateLabel } from '@/components/LocalDateTime'
+import { getMatchStatus } from '@/utilities/getMatchStatus'
 
 interface ClientUpcomingMatchesProps {
   matches: any[] // TODO: Type this with Match[]
@@ -14,8 +15,17 @@ interface ClientUpcomingMatchesProps {
 /**
  * Client-side component for grouping and displaying upcoming matches.
  * Uses the user's local timezone for date grouping and display.
+ * Filters out matches that are already completed (more than 2 hours past start time).
  */
 export function ClientUpcomingMatches({ matches, searchQuery }: ClientUpcomingMatchesProps) {
+  // Filter out completed matches - they should appear in Past Matches instead
+  const activeMatches = matches.filter((match) => {
+    if (!match.date) return false
+    const status = getMatchStatus(match.date, match.status || 'scheduled')
+    // Only show upcoming and live matches, not completed ones
+    return status === 'upcoming' || status === 'live'
+  })
+
   // Group matches by day in user's local timezone
   const groupMatchesByDay = (matchDocs: any[]) => {
     const grouped: Record<string, any[]> = {}
@@ -42,10 +52,10 @@ export function ClientUpcomingMatches({ matches, searchQuery }: ClientUpcomingMa
     return grouped
   }
 
-  const matchesByDay = groupMatchesByDay(matches)
+  const matchesByDay = groupMatchesByDay(activeMatches)
 
   // Show section when no search query or when there are results
-  if (searchQuery && matches.length === 0) {
+  if (searchQuery && activeMatches.length === 0) {
     return null
   }
 
@@ -55,7 +65,7 @@ export function ClientUpcomingMatches({ matches, searchQuery }: ClientUpcomingMa
         <div className="w-2 h-8 bg-primary rounded-full" />
         Upcoming Matches
       </h2>
-      {matches.length === 0 ? (
+      {activeMatches.length === 0 ? (
         <div className="text-center py-16 bg-gradient-to-br from-card to-card/50 rounded-xl border-2 border-dashed border-border">
           <div className="max-w-md mx-auto">
             <Calendar className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />

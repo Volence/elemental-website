@@ -105,9 +105,26 @@ export function getLocalDateKey(date: Date | string): string {
 
 /**
  * Format a date label for section headers
+ * Handles both Date objects and YYYY-MM-DD date key strings
  */
 export function formatLocalDateLabel(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date
+  let d: Date
+  
+  if (typeof date === 'string') {
+    // Check if it's a YYYY-MM-DD format (from getLocalDateKey)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      // Parse as local date by adding noon time to avoid timezone issues
+      // "2026-01-07" becomes "2026-01-07T12:00:00" in local timezone
+      const [year, month, day] = date.split('-').map(Number)
+      d = new Date(year, month - 1, day, 12, 0, 0)
+    } else {
+      // It's an ISO string or other format
+      d = new Date(date)
+    }
+  } else {
+    d = date
+  }
+  
   return d.toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',

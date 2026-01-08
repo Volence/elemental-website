@@ -6,6 +6,7 @@ import { Calendar, Globe, Play, ExternalLink, Trophy } from 'lucide-react'
 import { TeamLogo } from '@/components/TeamLogo'
 import { getMatchStatus } from '@/utilities/getMatchStatus'
 import { LocalDateTime } from '@/components/LocalDateTime'
+import { getTierFromRating } from '@/utilities/tierColors'
 
 interface PastMatchCardProps {
   match: any // TODO: Type this properly with Match type
@@ -37,6 +38,9 @@ export function PastMatchCard({ match }: PastMatchCardProps) {
     match.date as string,
     (match.status as 'scheduled' | 'cancelled') || 'scheduled',
   )
+
+  // Get tier colors based on league or team rating
+  const tierColors = getTierFromRating(match.league || team?.rating)
 
   // Parse match title to make ELMT team name clickable
   const renderMatchTitle = () => {
@@ -93,7 +97,13 @@ export function PastMatchCard({ match }: PastMatchCardProps) {
   }
 
   return (
-    <div className="p-6 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-lg hover:border-primary/20 hover:shadow-xl transition-all duration-200">
+    <div 
+      className="p-6 border-t-2 border-r-2 border-b-2 border-border rounded-xl bg-gradient-to-br from-card to-card/50 shadow-lg hover:border-primary/20 hover:shadow-xl transition-all duration-200 relative overflow-hidden"
+      style={{ 
+        borderLeft: `4px solid ${tierColors.borderColor}`,
+        boxShadow: `inset 4px 0 12px -8px ${tierColors.borderColor}`
+      }}
+    >
       {/* Header with Team Logo and Badges */}
       <div className="flex items-center justify-between gap-4 mb-4">
         {/* Team Logo and Title */}

@@ -136,9 +136,24 @@ export default async function HomePage() {
                 const team = match.team && typeof match.team === 'object' ? match.team : null
                 const matchDate = new Date(match.date)
                 const now = new Date()
-                const daysUntil = Math.ceil((matchDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-                const isToday = daysUntil === 0
+                const timeUntil = matchDate.getTime() - now.getTime()
+                const hoursUntil = Math.floor(timeUntil / (1000 * 60 * 60))
+                const minutesUntil = Math.floor((timeUntil % (1000 * 60 * 60)) / (1000 * 60))
+                const daysUntil = Math.ceil(timeUntil / (1000 * 60 * 60 * 24))
+                const isToday = hoursUntil < 24 && timeUntil > 0
                 const isSoon = daysUntil <= 3
+                
+                // Determine countdown text
+                let countdownText = ''
+                if (hoursUntil < 1 && timeUntil > 0) {
+                  countdownText = minutesUntil <= 5 ? 'Starting soon' : `${minutesUntil}m`
+                } else if (hoursUntil < 24) {
+                  countdownText = `${hoursUntil}h ${minutesUntil}m`
+                } else if (daysUntil === 1) {
+                  countdownText = '1 Day'
+                } else {
+                  countdownText = `${daysUntil} Days`
+                }
                 
                 // Get tier colors for the league badge
                 const tierColors = match.league ? getTierFromRating(match.league) : null
@@ -193,17 +208,17 @@ export default async function HomePage() {
                         {isToday ? (
                           <div className="px-4 py-2 rounded-lg bg-primary/20 border-2 border-primary font-bold text-primary animate-pulse-glow">
                             <TrendingUp className="w-5 h-5 inline mr-2" />
-                            TODAY
+                            {countdownText}
                           </div>
                         ) : isSoon ? (
                           <div className="px-4 py-2 rounded-lg bg-orange-500/20 border-2 border-orange-500/50 font-bold text-orange-400">
                             <TrendingUp className="w-5 h-5 inline mr-2" />
-                            {daysUntil} {daysUntil === 1 ? 'Day' : 'Days'}
+                            {countdownText}
                           </div>
                         ) : (
                           <div className="px-4 py-2 rounded-lg bg-muted/30 border border-border text-muted-foreground font-medium">
                             <TrendingUp className="w-4 h-4 inline mr-2" />
-                            {daysUntil} Days
+                            {countdownText}
                           </div>
                         )}
                       </div>

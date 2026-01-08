@@ -267,11 +267,11 @@ const DiscordServerManagerView = () => {
   }
 
   const handleApplyTemplate = () => {
-    if (!selectedTemplateId || !newCategoryName) {
+    if (!selectedTemplateId) {
       setAlertModal({
         isOpen: true,
         title: 'Validation Error',
-        message: 'Please select a template and enter a category name',
+        message: 'Please select a template',
         type: 'warning'
       })
       return
@@ -1086,28 +1086,7 @@ const DiscordServerManagerView = () => {
                     {selectedTemplateId && (
                       <div className="apply-template-form">
                         <h5>Create Category from Template</h5>
-                        
-                        <div className="form-field">
-                          <label>New Category Name *</label>
-                          <input
-                            type="text"
-                            className="text-input"
-                            placeholder="e.g., ELMT Garden, Staff HQ"
-                            value={newCategoryName}
-                            onChange={(e) => setNewCategoryName(e.target.value)}
-                          />
-                        </div>
-
-                        <div className="form-field checkbox-field">
-                          <label>
-                            <input
-                              type="checkbox"
-                              checked={isPrivateCategory}
-                              onChange={(e) => setIsPrivateCategory(e.target.checked)}
-                            />
-                            <span>Make private (hide from @everyone)</span>
-                          </label>
-                        </div>
+                        <p className="form-help">Click the button below to customize and create your category</p>
 
                         <button
                           className="apply-template-button"

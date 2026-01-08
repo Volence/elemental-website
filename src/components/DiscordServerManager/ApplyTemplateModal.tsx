@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Modal } from './Modal'
-import { Hash, Volume2, MessageSquare, X } from 'lucide-react'
+import { Hash, Volume2, MessagesSquare, X, Lock } from 'lucide-react'
 
 interface TemplateChannel {
   name: string
@@ -29,6 +29,7 @@ export const ApplyTemplateModal: React.FC<ApplyTemplateModalProps> = ({
   const [editedCategoryName, setEditedCategoryName] = useState(categoryName)
   const [editedChannels, setEditedChannels] = useState<TemplateChannel[]>([])
   const [isApplying, setIsApplying] = useState(false)
+  const [isPrivateCategory, setIsPrivateCategory] = useState(isPrivate)
 
   useEffect(() => {
     if (template) {
@@ -38,8 +39,9 @@ export const ApplyTemplateModal: React.FC<ApplyTemplateModalProps> = ({
       // This allows users to set "T." as default and just add the team name
       const savedCategoryName = templateData.category?.name || template.sourceCategory || ''
       setEditedCategoryName(savedCategoryName)
+      setIsPrivateCategory(isPrivate)
     }
-  }, [template])
+  }, [template, isPrivate])
 
   const handleChannelNameChange = (index: number, newName: string) => {
     const updatedChannels = [...editedChannels]
@@ -70,7 +72,7 @@ export const ApplyTemplateModal: React.FC<ApplyTemplateModalProps> = ({
       await onApply({
         categoryName: editedCategoryName,
         channels: editedChannels,
-        isPrivate
+        isPrivate: isPrivateCategory
       })
       onClose()
     } finally {
@@ -82,7 +84,7 @@ export const ApplyTemplateModal: React.FC<ApplyTemplateModalProps> = ({
     switch (type) {
       case 0: return <Hash size={14} />
       case 2: return <Volume2 size={14} />
-      case 15: return <MessageSquare size={14} />
+      case 15: return <MessagesSquare size={14} />
       default: return <Hash size={14} />
     }
   }
@@ -174,11 +176,17 @@ export const ApplyTemplateModal: React.FC<ApplyTemplateModalProps> = ({
           </div>
         </div>
 
-        {isPrivate && (
-          <div className="privacy-notice">
-            <strong>🔒 Private Category:</strong> This category will be hidden from @everyone
-          </div>
-        )}
+        <div className="form-section privacy-toggle">
+          <label className="privacy-checkbox-label">
+            <input
+              type="checkbox"
+              checked={isPrivateCategory}
+              onChange={(e) => setIsPrivateCategory(e.target.checked)}
+            />
+            <Lock size={14} />
+            <span>Make private (hide from @everyone)</span>
+          </label>
+        </div>
       </div>
     </Modal>
   )
