@@ -33,12 +33,44 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Channel/Category not found' }, { status: 404 })
     }
 
-    if (type === 'category' && channel.type !== ChannelType.GuildCategory) {
-      return NextResponse.json({ error: 'Not a category' }, { status: 400 })
+    if (type === 'category') {
+      if (channel.type !== ChannelType.GuildCategory) {
+        return NextResponse.json({ error: 'Not a category' }, { status: 400 })
+      }
+
+      // Discord doesn't auto-delete children when deleting a category
+      // Find all channels that belong to this category and delete them first
+      const childChannels = guild.channels.cache.filter(
+        ch => ch.parentId === id && ch.id !== id
+      )
+
+      console.log(`[Delete Category] Deleting ${childChannels.size} child channels from category ${channel.name}`)
+
+      // Delete child channels with rate limit protection
+      for (const [, childChannel] of childChannels) {
+        try {
+          await childChannel.delete(`Deleting category "${channel.name}" and its contents`)
+          // Small delay to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 300))
+        } catch (childError) {
+          console.error(`Failed to delete child channel ${childChannel.name}:`, childError)
+          // Continue with other channels
+        }
+      }
+
+      // Now delete the category itself
+      await channel.delete()
+      return NextResponse.json({ 
+        success: true, 
+        deletedChannels: childChannels.size 
+      })
     }
 
-    await channel.delete()
-    return NextResponse.json({ success: true })
+    // For regular channels, just delete
+    if (type === 'channel') {
+      await channel.delete()
+      return NextResponse.json({ success: true })
+    }
 
     return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
   } catch (error: any) {
