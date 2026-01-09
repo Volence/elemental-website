@@ -257,6 +257,47 @@ export const Tasks: CollectionConfig = {
         },
       ],
     },
+    // Cross-department request tracking
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'isRequest',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: {
+            description: 'Is this a request from another department?',
+            width: '33%',
+          },
+        },
+        {
+          name: 'requestedByDepartment',
+          type: 'select',
+          options: [
+            { label: 'Graphics', value: 'graphics' },
+            { label: 'Video Editing', value: 'video' },
+            { label: 'Events', value: 'events' },
+            { label: 'Scouting', value: 'scouting' },
+            { label: 'Production', value: 'production' },
+            { label: 'Social Media', value: 'social-media' },
+          ],
+          admin: {
+            description: 'Which department made this request?',
+            width: '33%',
+            condition: (data: any) => data?.isRequest === true,
+          },
+        },
+        {
+          name: 'requestNotes',
+          type: 'textarea',
+          admin: {
+            description: 'Special notes from the requesting department',
+            width: '33%',
+            condition: (data: any) => data?.isRequest === true,
+          },
+        },
+      ],
+    },
     // Related items
     {
       name: 'relatedItems',

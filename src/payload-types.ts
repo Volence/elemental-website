@@ -1471,6 +1471,18 @@ export interface Task {
    */
   requestedBy?: (number | null) | User;
   /**
+   * Is this a request from another department?
+   */
+  isRequest?: boolean | null;
+  /**
+   * Which department made this request?
+   */
+  requestedByDepartment?: ('graphics' | 'video' | 'events' | 'scouting' | 'production' | 'social-media') | null;
+  /**
+   * Special notes from the requesting department
+   */
+  requestNotes?: string | null;
+  /**
    * Link to related content
    */
   relatedItems?: {
@@ -2666,6 +2678,9 @@ export interface TasksSelect<T extends boolean = true> {
   dueDate?: T;
   assignedTo?: T;
   requestedBy?: T;
+  isRequest?: T;
+  requestedByDepartment?: T;
+  requestNotes?: T;
   relatedItems?:
     | T
     | {

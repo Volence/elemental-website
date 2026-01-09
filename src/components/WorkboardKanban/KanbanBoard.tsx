@@ -7,6 +7,26 @@ import { KanbanColumn } from './KanbanColumn'
 import { TaskModal } from './TaskModal'
 import type { Task } from '@/payload-types'
 
+// Request matrix: which departments can request from which
+const REQUEST_MATRIX: Record<string, string[]> = {
+  'social-media': ['graphics', 'video'],
+  'events': ['social-media', 'graphics', 'video'],
+  'video': ['graphics', 'social-media'],
+  'graphics': ['social-media'],
+  'scouting': ['social-media', 'graphics'],
+  'production': ['graphics', 'video'],
+}
+
+// Department display names
+const DEPT_NAMES: Record<string, string> = {
+  'graphics': 'Graphics',
+  'video': 'Video',
+  'events': 'Events',
+  'scouting': 'Scouting',
+  'production': 'Production',
+  'social-media': 'Social Media',
+}
+
 interface KanbanBoardProps {
   department: string
   title: string
@@ -24,9 +44,12 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ department, title }) =
   const serverURL = config?.serverURL || ''
   
   const [tasks, setTasks] = useState<Task[]>([])
+  const [outgoingRequests, setOutgoingRequests] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [requestTarget, setRequestTarget] = useState<string | null>(null)
+  const [showOutgoing, setShowOutgoing] = useState(false)
   const [filter, setFilter] = useState({
     priority: 'all',
     hideComplete: false,
@@ -35,12 +58,16 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ department, title }) =
   
   const fetchTasks = useCallback(async () => {
     try {
-      const whereClause = {
-        department: { equals: department },
-      }
+      // Use bracket notation for query
+      const queryParams = new URLSearchParams({
+        'where[department][equals]': department,
+        'limit': '200',
+        'sort': 'priority',
+        'depth': '1',
+      })
       
       const res = await fetch(
-        `${serverURL}/api/tasks?where=${encodeURIComponent(JSON.stringify(whereClause))}&limit=200&sort=priority`,
+        `${serverURL}/api/tasks?${queryParams.toString()}`,
         { credentials: 'include' }
       )
       
@@ -56,23 +83,69 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ department, title }) =
     }
   }, [department, serverURL])
   
+  // Fetch requests made by this department to others (exclude archived)
+  const fetchOutgoingRequests = useCallback(async () => {
+    try {
+      const queryParams = new URLSearchParams({
+        'where[requestedByDepartment][equals]': department,
+        'where[isRequest][equals]': 'true',
+        'where[archived][equals]': 'false',
+        'limit': '50',
+        'sort': '-createdAt',
+        'depth': '1',
+      })
+      
+      const res = await fetch(
+        `${serverURL}/api/tasks?${queryParams.toString()}`,
+        { credentials: 'include' }
+      )
+      
+      if (res.ok) {
+        const data = await res.json()
+        setOutgoingRequests(data.docs || [])
+      }
+    } catch (err) {
+      console.error('Failed to fetch outgoing requests:', err)
+    }
+  }, [department, serverURL])
+  
   useEffect(() => {
     fetchTasks()
+    fetchOutgoingRequests()
     
     // Auto-refresh every 30 seconds
-    const interval = setInterval(fetchTasks, 30000)
+    const interval = setInterval(() => {
+      fetchTasks()
+      fetchOutgoingRequests()
+    }, 30000)
     return () => clearInterval(interval)
-  }, [fetchTasks])
+  }, [fetchTasks, fetchOutgoingRequests])
   
   const handleTaskClick = (task: Task) => {
     setSelectedTask(task)
+    setRequestTarget(null)
     setIsModalOpen(true)
   }
   
   const handleNewTask = () => {
     setSelectedTask(null)
+    setRequestTarget(null)
     setIsModalOpen(true)
   }
+  
+  const handleNewRequest = (targetDept: string) => {
+    setSelectedTask(null)
+    setRequestTarget(targetDept)
+    setIsModalOpen(true)
+  }
+  
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setRequestTarget(null)
+  }
+  
+  // Get departments this department can request from
+  const canRequestFrom = REQUEST_MATRIX[department] || []
   
   const handleDrop = async (taskId: number, newStatus: string) => {
     // Optimistic update
@@ -188,11 +261,72 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ department, title }) =
             🔄 Refresh
           </button>
           
+          {canRequestFrom.length > 0 && (
+            <div className="workboard__request-dropdown">
+              <button type="button" className="workboard__btn workboard__btn--request">
+                📨 Request From...
+              </button>
+              <div className="workboard__request-menu">
+                {canRequestFrom.map((targetDept) => (
+                  <button
+                    type="button"
+                    key={targetDept}
+                    className="workboard__request-option"
+                    onClick={() => handleNewRequest(targetDept)}
+                  >
+                    {DEPT_NAMES[targetDept] || targetDept}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          
           <button onClick={handleNewTask} className="workboard__btn workboard__btn--primary">
             + New Task
           </button>
         </div>
       </div>
+      
+      {/* Outgoing Requests Toggle */}
+      {outgoingRequests.length > 0 && (
+        <div className="workboard__outgoing-header">
+          <button 
+            type="button"
+            className="workboard__outgoing-toggle"
+            onClick={() => setShowOutgoing(!showOutgoing)}
+          >
+            {showOutgoing ? '▼' : '▶'} 📤 Outgoing Requests ({outgoingRequests.length})
+          </button>
+        </div>
+      )}
+      
+      {/* Outgoing Requests List */}
+      {showOutgoing && outgoingRequests.length > 0 && (
+        <div className="workboard__outgoing-list">
+          {outgoingRequests.map((req) => (
+            <div 
+              key={req.id} 
+              className="workboard__outgoing-item"
+              onClick={() => handleTaskClick(req)}
+            >
+              <div className="workboard__outgoing-info">
+                <span className="workboard__outgoing-title">{req.title}</span>
+                <span className="workboard__outgoing-dept">
+                  → {DEPT_NAMES[req.department as string] || req.department}
+                </span>
+              </div>
+              <div className="workboard__outgoing-status">
+                <span className={`workboard__status-badge workboard__status-badge--${req.status}`}>
+                  {req.status === 'backlog' && '📋 Backlog'}
+                  {req.status === 'in-progress' && '🔄 In Progress'}
+                  {req.status === 'review' && '👀 Review'}
+                  {req.status === 'complete' && '✅ Complete'}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       
       <div className="workboard__board">
         {COLUMNS.map((col) => {
@@ -213,10 +347,15 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ department, title }) =
       
       <TaskModal
         task={selectedTask}
-        department={department}
+        department={requestTarget || department}
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={fetchTasks}
+        onClose={handleCloseModal}
+        onSave={() => {
+          fetchTasks()
+          fetchOutgoingRequests()
+        }}
+        isRequest={!!requestTarget}
+        requestedByDepartment={requestTarget ? department : undefined}
       />
     </div>
   )

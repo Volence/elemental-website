@@ -15,12 +15,24 @@ const priorityLabels: Record<string, string> = {
   urgent: 'Urgent',
 }
 
+// Department display names
+const DEPT_NAMES: Record<string, string> = {
+  'graphics': 'Graphics',
+  'video': 'Video',
+  'events': 'Events',
+  'scouting': 'Scouting',
+  'production': 'Production',
+  'social-media': 'Social Media',
+}
+
 export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
   const assignees = task.assignedTo || []
   const attachments = task.attachments || []
   const dueDate = task.dueDate ? new Date(task.dueDate) : null
   const isOverdue = dueDate && dueDate < new Date() && task.status !== 'complete'
   const priority = task.priority || 'medium'
+  const isRequest = task.isRequest === true
+  const requestedByDept = task.requestedByDepartment
   
   const getAssigneeName = (user: any): string => {
     if (typeof user === 'object' && user !== null) {
@@ -39,9 +51,16 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
 
   return (
     <div
-      className="task-item"
+      className={`task-item ${isRequest ? 'task-item--request' : ''}`}
       onClick={() => onClick(task)}
     >
+      {/* Request Badge */}
+      {isRequest && requestedByDept && (
+        <div className="task-item__request-badge">
+          📨 Request from {DEPT_NAMES[requestedByDept] || requestedByDept}
+        </div>
+      )}
+      
       {/* Header: Title + Priority */}
       <div className="task-item__header">
         <span className="task-item__title">{task.title}</span>
@@ -88,3 +107,4 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
 }
 
 export default TaskCard
+

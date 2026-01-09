@@ -110,6 +110,144 @@
     &--refresh {
       @include glow-button($admin-accent-info);
     }
+    
+    &--request {
+      @include glow-button($admin-accent-warning);
+    }
+  }
+  
+  // Request dropdown
+  &__request-dropdown {
+    position: relative;
+    
+    &:hover .workboard__request-menu,
+    &:focus-within .workboard__request-menu {
+      display: flex;
+    }
+  }
+  
+  &__request-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% - 2px); // Overlap slightly to prevent gap
+    left: 0;
+    z-index: 100;
+    flex-direction: column;
+    min-width: 160px;
+    padding: 0.5rem 0;
+    padding-top: 0.75rem; // Extra padding at top to create hover bridge
+    background: linear-gradient(135deg, rgba(20, 25, 35, 0.98), rgba(15, 18, 25, 0.98));
+    border: 1px solid rgba($admin-accent-warning, 0.3);
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+  
+  &__request-option {
+    padding: 0.6rem 1rem;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: left;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: rgba($admin-accent-warning, 0.2);
+      color: $admin-accent-warning;
+    }
+  }
+  
+  // Outgoing Requests Section
+  &__outgoing-header {
+    margin: 1rem 0;
+  }
+  
+  &__outgoing-toggle {
+    @include glow-button($admin-accent-info);
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background: rgba(20, 25, 35, 0.8) !important;
+    width: 100%;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  &__outgoing-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: rgba(15, 18, 25, 0.6);
+    border: 1px solid rgba($admin-accent-info, 0.2);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+  
+  &__outgoing-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: rgba(25, 30, 40, 0.9);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: rgba(35, 40, 55, 0.95);
+      transform: translateX(4px);
+    }
+  }
+  
+  &__outgoing-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  &__outgoing-title {
+    font-weight: 500;
+    color: white;
+  }
+  
+  &__outgoing-dept {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+  }
+  
+  &__outgoing-status {
+    flex-shrink: 0;
+  }
+  
+  &__status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    
+    &--backlog {
+      background: rgba($admin-accent-info, 0.2);
+      color: $admin-accent-info;
+    }
+    
+    &--in-progress {
+      background: rgba($admin-accent-warning, 0.2);
+      color: $admin-accent-warning;
+    }
+    
+    &--review {
+      background: rgba(#8b5cf6, 0.2);
+      color: #a78bfa;
+    }
+    
+    &--complete {
+      background: rgba($admin-accent-success, 0.2);
+      color: $admin-accent-success;
+    }
   }
   
   &__board {
@@ -219,6 +357,27 @@
     background: rgba(35, 40, 50, 0.98);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  }
+  
+  // Request card styling - orange/yellow border
+  &--request {
+    border-left-color: $admin-accent-warning;
+    background: rgba(30, 28, 25, 0.95);
+    
+    &:hover {
+      box-shadow: 0 4px 12px rgba($admin-accent-warning, 0.2);
+    }
+  }
+  
+  // Request badge
+  &__request-badge {
+    font-size: 0.65rem;
+    color: $admin-accent-warning;
+    padding: 0.2rem 0.5rem;
+    background: rgba($admin-accent-warning, 0.15);
+    border-radius: 10px;
+    margin-bottom: 0.5rem;
+    width: fit-content;
   }
   
   // Header: Title + Priority
@@ -385,6 +544,29 @@
       color: $admin-accent-success;
       font-weight: 700;
     }
+  }
+  
+  &__header-title {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    
+    h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      color: $admin-accent-success;
+      font-weight: 700;
+    }
+  }
+  
+  &__request-badge {
+    font-size: 0.75rem;
+    color: $admin-accent-warning;
+    padding: 0.25rem 0.75rem;
+    background: rgba($admin-accent-warning, 0.15);
+    border-radius: 12px;
+    border: 1px solid rgba($admin-accent-warning, 0.3);
+    width: fit-content;
   }
   
   &__close {

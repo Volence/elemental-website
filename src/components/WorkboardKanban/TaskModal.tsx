@@ -12,12 +12,24 @@ interface TaskModalProps {
   isOpen: boolean
   onClose: () => void
   onSave: () => void
+  isRequest?: boolean
+  requestedByDepartment?: string
 }
 
 interface AttachmentItem {
   file: number | Media | null
   label?: string | null
   id?: string | null
+}
+
+// Department display names
+const DEPT_NAMES: Record<string, string> = {
+  'graphics': 'Graphics',
+  'video': 'Video',
+  'events': 'Events',
+  'scouting': 'Scouting',
+  'production': 'Production',
+  'social-media': 'Social Media',
 }
 
 const STATUS_OPTIONS = [
@@ -40,6 +52,8 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   isOpen,
   onClose,
   onSave,
+  isRequest = false,
+  requestedByDepartment,
 }) => {
   const { config } = useConfig()
   const serverURL = config?.serverURL || ''
@@ -257,6 +271,16 @@ export const TaskModal: React.FC<TaskModalProps> = ({
           file: typeof att.file === 'object' && att.file ? att.file.id : att.file,
           label: att.label || undefined,
         })),
+        // Request tracking fields
+        isRequest: isRequest || undefined,
+        requestedByDepartment: requestedByDepartment || undefined,
+      }
+      
+      // When editing an existing task, preserve its original department
+      // Only set department from prop when creating a new task
+      if (task) {
+        // For existing tasks, use the task's current department
+        payload.department = task.department
       }
       
       // Only include taskType if it has a value
@@ -363,7 +387,14 @@ export const TaskModal: React.FC<TaskModalProps> = ({
     <div className="workboard-modal-overlay" onClick={onClose}>
       <div className="workboard-modal" onClick={(e) => e.stopPropagation()}>
         <div className="workboard-modal__header">
-          <h2>{task ? 'Edit Task' : 'New Task'}</h2>
+          <div className="workboard-modal__header-title">
+            <h2>{task ? 'Edit Task' : isRequest ? '📨 New Request' : 'New Task'}</h2>
+            {isRequest && requestedByDepartment && (
+              <span className="workboard-modal__request-badge">
+                Request from {DEPT_NAMES[requestedByDepartment] || requestedByDepartment}
+              </span>
+            )}
+          </div>
           <button className="workboard-modal__close" onClick={onClose}>
             ✕
           </button>
