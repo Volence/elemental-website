@@ -1,27 +1,74 @@
 import type { CollectionConfig } from 'payload'
-import { authenticated } from '../access/authenticated'
-import { hasAnyRole, UserRole } from '../access/roles'
+import { UserRole } from '../access/roles'
 import type { User } from '@/payload-types'
 
 export const DiscordPolls: CollectionConfig = {
   slug: 'discord-polls',
   labels: {
-    singular: 'Poll',
-    plural: 'Poll History',
+    singular: 'Schedule',
+    plural: 'Schedules',
   },
   access: {
-    // Team managers, staff managers, and admins can view polls
+    // Team managers see only their team's polls, admins/staff managers see all
     read: ({ req }) => {
       const user = req.user as User | undefined
       if (!user) return false
-      return hasAnyRole(UserRole.ADMIN, UserRole.TEAM_MANAGER, UserRole.STAFF_MANAGER)({
-        req: { user },
-      } as any)
+      
+      // Admins and Staff Managers can see all polls
+      if (user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER) {
+        return true
+      }
+      
+      // Team Managers can only see polls for their assigned teams
+      if (user.role === UserRole.TEAM_MANAGER) {
+        const assignedTeams = user.assignedTeams
+        if (!assignedTeams || !Array.isArray(assignedTeams) || assignedTeams.length === 0) {
+          return false // No assigned teams = no polls visible
+        }
+        
+        // Extract team IDs (handles both populated objects and raw IDs)
+        const teamIds = assignedTeams.map((team: any) =>
+          typeof team === 'number' ? team : (team?.id || team)
+        )
+        
+        // Return a where clause that filters to only their teams' polls
+        return {
+          team: { in: teamIds },
+        }
+      }
+      
+      return false
     },
     // Only the system can create (via Discord commands)
     create: () => true,
-    // Nobody can update manually (updated via Discord interactions)
-    update: () => false,
+    // Allow updates for schedule editing in admin panel (same access as read)
+    update: ({ req }) => {
+      const user = req.user as User | undefined
+      if (!user) return false
+      
+      // Admins and Staff Managers can update all polls
+      if (user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER) {
+        return true
+      }
+      
+      // Team Managers can update polls for their assigned teams
+      if (user.role === UserRole.TEAM_MANAGER) {
+        const assignedTeams = user.assignedTeams
+        if (!assignedTeams || !Array.isArray(assignedTeams) || assignedTeams.length === 0) {
+          return false
+        }
+        
+        const teamIds = assignedTeams.map((team: any) =>
+          typeof team === 'number' ? team : (team?.id || team)
+        )
+        
+        return {
+          team: { in: teamIds },
+        }
+      }
+      
+      return false
+    },
     // Only admins can delete
     delete: ({ req }) => {
       const user = req.user as User | undefined
@@ -32,75 +79,56 @@ export const DiscordPolls: CollectionConfig = {
   admin: {
     useAsTitle: 'pollName',
     defaultColumns: ['pollName', 'team', 'status', 'createdBy', 'createdAt'],
-    description: '📊 View poll history and results from Discord',
-    group: 'Discord',
-    // Hidden until poll system is implemented
-    hidden: () => true,
+    description: '📊 Manage availability polls and weekly schedules',
+    group: 'Scheduling',
+    components: {
+      beforeList: ['@/components/PollScopeToggle#default'],
+    },
   },
   fields: [
+    // ============================================
+    // MAIN CONTENT AREA - Votes & Schedule Editor
+    // ============================================
     {
-      name: 'pollName',
-      type: 'text',
-      required: true,
+      type: 'collapsible',
+      label: 'Availability Overview',
       admin: {
-        description: 'Name of the poll',
+        initCollapsed: true,
       },
-    },
-    {
-      name: 'messageId',
-      type: 'text',
-      required: true,
-      admin: {
-        description: 'Discord message ID',
-        readOnly: true,
-      },
-    },
-    {
-      name: 'channelId',
-      type: 'text',
-      required: true,
-      admin: {
-        description: 'Discord channel ID where poll was posted',
-        readOnly: true,
-      },
-    },
-    {
-      name: 'team',
-      type: 'relationship',
-      relationTo: 'teams',
-      admin: {
-        description: 'Team this poll is for (optional)',
-      },
-    },
-    {
-      name: 'dateRange',
-      type: 'group',
       fields: [
         {
-          name: 'start',
-          type: 'date',
+          name: 'votes',
+          type: 'json',
           admin: {
-            date: {
-              pickerAppearance: 'dayOnly',
-            },
-          },
-        },
-        {
-          name: 'end',
-          type: 'date',
-          admin: {
-            date: {
-              pickerAppearance: 'dayOnly',
+            readOnly: true,
+            components: {
+              Field: '@/components/VotesDisplay#default',
             },
           },
         },
       ],
     },
     {
-      name: 'timeSlot',
-      type: 'text',
+      name: 'schedule',
+      type: 'json',
       admin: {
-        description: 'Time slot for the schedule (e.g., "8-10 EST")',
+        components: {
+          Field: '@/components/ScheduleEditor#default',
+        },
+      },
+    },
+    
+    // ============================================
+    // SIDEBAR - Poll Details & Metadata
+    // ============================================
+    {
+      name: 'team',
+      type: 'relationship',
+      relationTo: 'teams',
+      admin: {
+        position: 'sidebar',
+        description: 'Auto-linked from thread',
+        readOnly: true,
       },
     },
     {
@@ -113,7 +141,62 @@ export const DiscordPolls: CollectionConfig = {
         { label: 'Scheduled', value: 'scheduled' },
       ],
       admin: {
-        description: 'Current status of the poll',
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'timeSlot',
+      type: 'text',
+      admin: {
+        position: 'sidebar',
+        description: 'e.g., "8-10 EST"',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'dateRangeDisplay',
+      label: 'Date Range',
+      type: 'text',
+      virtual: true,
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Poll date range',
+      },
+      hooks: {
+        afterRead: [
+          ({ siblingData }) => {
+            const start = siblingData?.dateRange?.start
+            const end = siblingData?.dateRange?.end
+            if (start && end) {
+              const startDate = new Date(start)
+              const endDate = new Date(end)
+              const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' }
+              return `${startDate.toLocaleDateString('en-US', options)} - ${endDate.toLocaleDateString('en-US', options)}`
+            }
+            return 'Not set'
+          },
+        ],
+      },
+    },
+    {
+      name: 'publishedToCalendar',
+      type: 'checkbox',
+      label: 'Published to Calendar Thread',
+      defaultValue: false,
+      admin: {
+        position: 'sidebar',
+        description: 'Set automatically when schedule is published',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'calendarMessageId',
+      type: 'text',
+      admin: {
+        position: 'sidebar',
+        description: 'Discord message ID (for updating existing post)',
+        readOnly: true,
       },
     },
     {
@@ -121,7 +204,8 @@ export const DiscordPolls: CollectionConfig = {
       type: 'relationship',
       relationTo: 'users',
       admin: {
-        description: 'Admin user who created this poll (linked via Discord ID)',
+        position: 'sidebar',
+        description: 'Created by',
         readOnly: true,
       },
     },
@@ -134,25 +218,62 @@ export const DiscordPolls: CollectionConfig = {
         { label: 'Admin Panel', value: 'admin-panel' },
       ],
       admin: {
-        description: 'How the poll was created',
+        position: 'sidebar',
         readOnly: true,
       },
     },
+    
+    // ============================================
+    // HIDDEN FIELDS - Discord IDs (still stored)
+    // ============================================
     {
-      name: 'votes',
-      type: 'json',
+      name: 'pollName',
+      type: 'text',
+      required: true,
       admin: {
-        description: 'Cached vote data from Discord (auto-updated)',
-        readOnly: true,
+        hidden: true, // Already in page title
       },
     },
     {
-      name: 'schedule',
-      type: 'json',
+      name: 'messageId',
+      type: 'text',
+      required: true,
       admin: {
-        description: 'Generated schedule from poll results',
-        readOnly: true,
+        hidden: true, // Technical field
       },
+    },
+    {
+      name: 'channelId',
+      type: 'text',
+      required: true,
+      admin: {
+        hidden: true, // Technical field
+      },
+    },
+    {
+      name: 'threadId',
+      type: 'text',
+      admin: {
+        hidden: true, // Technical field
+      },
+    },
+    {
+      name: 'dateRange',
+      type: 'group',
+      admin: {
+        hidden: true, // Displayed via virtual field
+      },
+      fields: [
+        {
+          name: 'start',
+          type: 'date',
+        },
+        {
+          name: 'end',
+          type: 'date',
+        },
+      ],
     },
   ],
+  timestamps: true,
 }

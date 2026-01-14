@@ -84,7 +84,9 @@ export interface Config {
     'recruitment-applications': RecruitmentApplication;
     tasks: Task;
     'discord-polls': DiscordPoll;
+    'quick-scrims': QuickScrim;
     'discord-category-templates': DiscordCategoryTemplate;
+    'watched-threads': WatchedThread;
     'audit-logs': AuditLog;
     'error-logs': ErrorLog;
     'cron-job-runs': CronJobRun;
@@ -119,7 +121,9 @@ export interface Config {
     'recruitment-applications': RecruitmentApplicationsSelect<false> | RecruitmentApplicationsSelect<true>;
     tasks: TasksSelect<false> | TasksSelect<true>;
     'discord-polls': DiscordPollsSelect<false> | DiscordPollsSelect<true>;
+    'quick-scrims': QuickScrimsSelect<false> | QuickScrimsSelect<true>;
     'discord-category-templates': DiscordCategoryTemplatesSelect<false> | DiscordCategoryTemplatesSelect<true>;
+    'watched-threads': WatchedThreadsSelect<false> | WatchedThreadsSelect<true>;
     'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
     'error-logs': ErrorLogsSelect<false> | ErrorLogsSelect<true>;
     'cron-job-runs': CronJobRunsSelect<false> | CronJobRunsSelect<true>;
@@ -676,6 +680,39 @@ export interface Team {
    * 📊 Current active season data (auto-populated)
    */
   currentFaceitSeason?: (number | null) | FaceitSeason;
+  /**
+   * Role format for schedules
+   */
+  rolePreset?: ('specific' | 'generic' | 'custom') | null;
+  /**
+   * Comma-separated roles (e.g., "Tank, DPS, Support")
+   */
+  customRoles?: string | null;
+  /**
+   * Thread IDs for poll and schedule automation. Right-click a thread → Copy Link → Extract the ID.
+   */
+  discordThreads?: {
+    /**
+     * Thread where availability polls are posted (auto-links polls to this team)
+     */
+    availabilityThreadId?: string | null;
+    /**
+     * Thread where weekly schedules are published
+     */
+    calendarThreadId?: string | null;
+    /**
+     * Thread for day-of reminders and scrim details
+     */
+    scheduleThreadId?: string | null;
+    /**
+     * Thread where scrim codes/results are posted (Phase 2)
+     */
+    scrimCodesThreadId?: string | null;
+  };
+  /**
+   * Default time slot for schedules (e.g., "8-10 EST")
+   */
+  defaultTimeSlot?: string | null;
   /**
    * URL-friendly identifier (auto-generated from name)
    */
@@ -1543,52 +1580,13 @@ export interface Task {
   createdAt: string;
 }
 /**
- * 📊 View poll history and results from Discord
+ * 📊 Manage availability polls and weekly schedules
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "discord-polls".
  */
 export interface DiscordPoll {
   id: number;
-  /**
-   * Name of the poll
-   */
-  pollName: string;
-  /**
-   * Discord message ID
-   */
-  messageId: string;
-  /**
-   * Discord channel ID where poll was posted
-   */
-  channelId: string;
-  /**
-   * Team this poll is for (optional)
-   */
-  team?: (number | null) | Team;
-  dateRange?: {
-    start?: string | null;
-    end?: string | null;
-  };
-  /**
-   * Time slot for the schedule (e.g., "8-10 EST")
-   */
-  timeSlot?: string | null;
-  /**
-   * Current status of the poll
-   */
-  status?: ('active' | 'closed' | 'scheduled') | null;
-  /**
-   * Admin user who created this poll (linked via Discord ID)
-   */
-  createdBy?: (number | null) | User;
-  /**
-   * How the poll was created
-   */
-  createdVia?: ('discord-command' | 'admin-panel') | null;
-  /**
-   * Cached vote data from Discord (auto-updated)
-   */
   votes?:
     | {
         [k: string]: unknown;
@@ -1598,9 +1596,6 @@ export interface DiscordPoll {
     | number
     | boolean
     | null;
-  /**
-   * Generated schedule from poll results
-   */
   schedule?:
     | {
         [k: string]: unknown;
@@ -1610,6 +1605,99 @@ export interface DiscordPoll {
     | number
     | boolean
     | null;
+  /**
+   * Auto-linked from thread
+   */
+  team?: (number | null) | Team;
+  status?: ('active' | 'closed' | 'scheduled') | null;
+  /**
+   * e.g., "8-10 EST"
+   */
+  timeSlot?: string | null;
+  /**
+   * Poll date range
+   */
+  dateRangeDisplay?: string | null;
+  /**
+   * Set automatically when schedule is published
+   */
+  publishedToCalendar?: boolean | null;
+  /**
+   * Discord message ID (for updating existing post)
+   */
+  calendarMessageId?: string | null;
+  /**
+   * Created by
+   */
+  createdBy?: (number | null) | User;
+  createdVia?: ('discord-command' | 'admin-panel') | null;
+  pollName: string;
+  messageId: string;
+  channelId: string;
+  threadId?: string | null;
+  dateRange?: {
+    start?: string | null;
+    end?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Post scrim announcements for teams with fixed schedules (no poll needed)
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "quick-scrims".
+ */
+export interface QuickScrim {
+  id: number;
+  title?: string | null;
+  team: number | Team;
+  scrimDate: string;
+  scrimTime: string;
+  /**
+   * Players for this scrim. Select from team roster or check "Ringer" to pick anyone.
+   */
+  roster?:
+    | {
+        role: 'tank' | 'dps' | 'fdps' | 'hitscan' | 'support' | 'ms' | 'fs';
+        /**
+         * Ringer (show all players)
+         */
+        isRinger?: boolean | null;
+        /**
+         * Select from team roster
+         */
+        rosterPlayer?: (number | null) | Person;
+        rosterPlayerName?: string | null;
+        /**
+         * Select any player
+         */
+        ringerPlayer?: (number | null) | Person;
+        ringerName?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  opponent?: string | null;
+  /**
+   * Opponent team lineup
+   */
+  opponentRoster?: string | null;
+  host?: ('us' | 'them') | null;
+  contact?: string | null;
+  mapPool?: string | null;
+  /**
+   * Hero bans enabled
+   */
+  heroBans?: boolean | null;
+  /**
+   * Staggers enabled
+   */
+  staggers?: boolean | null;
+  notes?: string | null;
+  /**
+   * Posted to Discord
+   */
+  posted?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1649,6 +1737,57 @@ export interface DiscordCategoryTemplate {
     | number
     | boolean
     | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * 📌 Forum threads that are automatically kept active
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "watched-threads".
+ */
+export interface WatchedThread {
+  id: number;
+  /**
+   * Discord thread/forum post ID
+   */
+  threadId: string;
+  /**
+   * Name of the thread/forum post
+   */
+  threadName: string;
+  /**
+   * Parent channel ID
+   */
+  channelId: string;
+  /**
+   * Parent channel name (for display)
+   */
+  channelName?: string | null;
+  /**
+   * Discord server/guild ID
+   */
+  guildId: string;
+  /**
+   * Whether auto-keepalive is active for this thread
+   */
+  status?: ('active' | 'paused' | 'deleted') | null;
+  /**
+   * User who added this thread to the watch list
+   */
+  addedBy?: (number | null) | User;
+  /**
+   * Discord ID of user who added this thread
+   */
+  addedByDiscordId?: string | null;
+  /**
+   * Last time this thread was auto-unarchived
+   */
+  lastKeptAliveAt?: string | null;
+  /**
+   * Number of times thread has been auto-unarchived
+   */
+  keepAliveCount?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2133,8 +2272,16 @@ export interface PayloadLockedDocument {
         value: number | DiscordPoll;
       } | null)
     | ({
+        relationTo: 'quick-scrims';
+        value: number | QuickScrim;
+      } | null)
+    | ({
         relationTo: 'discord-category-templates';
         value: number | DiscordCategoryTemplate;
+      } | null)
+    | ({
+        relationTo: 'watched-threads';
+        value: number | WatchedThread;
       } | null)
     | ({
         relationTo: 'audit-logs';
@@ -2406,6 +2553,17 @@ export interface TeamsSelect<T extends boolean = true> {
   currentFaceitLeague?: T;
   faceitShowCompetitiveSection?: T;
   currentFaceitSeason?: T;
+  rolePreset?: T;
+  customRoles?: T;
+  discordThreads?:
+    | T
+    | {
+        availabilityThreadId?: T;
+        calendarThreadId?: T;
+        scheduleThreadId?: T;
+        scrimCodesThreadId?: T;
+      };
+  defaultTimeSlot?: T;
   slug?: T;
   activeTournaments?: T;
   competitiveRating?: T;
@@ -2715,22 +2873,58 @@ export interface TasksSelect<T extends boolean = true> {
  * via the `definition` "discord-polls_select".
  */
 export interface DiscordPollsSelect<T extends boolean = true> {
+  votes?: T;
+  schedule?: T;
+  team?: T;
+  status?: T;
+  timeSlot?: T;
+  dateRangeDisplay?: T;
+  publishedToCalendar?: T;
+  calendarMessageId?: T;
+  createdBy?: T;
+  createdVia?: T;
   pollName?: T;
   messageId?: T;
   channelId?: T;
-  team?: T;
+  threadId?: T;
   dateRange?:
     | T
     | {
         start?: T;
         end?: T;
       };
-  timeSlot?: T;
-  status?: T;
-  createdBy?: T;
-  createdVia?: T;
-  votes?: T;
-  schedule?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "quick-scrims_select".
+ */
+export interface QuickScrimsSelect<T extends boolean = true> {
+  title?: T;
+  team?: T;
+  scrimDate?: T;
+  scrimTime?: T;
+  roster?:
+    | T
+    | {
+        role?: T;
+        isRinger?: T;
+        rosterPlayer?: T;
+        rosterPlayerName?: T;
+        ringerPlayer?: T;
+        ringerName?: T;
+        id?: T;
+      };
+  opponent?: T;
+  opponentRoster?: T;
+  host?: T;
+  contact?: T;
+  mapPool?: T;
+  heroBans?: T;
+  staggers?: T;
+  notes?: T;
+  posted?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2744,6 +2938,24 @@ export interface DiscordCategoryTemplatesSelect<T extends boolean = true> {
   sourceCategory?: T;
   channelCount?: T;
   templateData?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "watched-threads_select".
+ */
+export interface WatchedThreadsSelect<T extends boolean = true> {
+  threadId?: T;
+  threadName?: T;
+  channelId?: T;
+  channelName?: T;
+  guildId?: T;
+  status?: T;
+  addedBy?: T;
+  addedByDiscordId?: T;
+  lastKeptAliveAt?: T;
+  keepAliveCount?: T;
   updatedAt?: T;
   createdAt?: T;
 }

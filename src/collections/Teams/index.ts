@@ -433,6 +433,85 @@ export const Teams: CollectionConfig = {
             },
           ],
         },
+        {
+          label: 'Scheduling',
+          description: 'Configure poll and schedule automation for this team',
+          fields: [
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'rolePreset',
+                  type: 'select',
+                  defaultValue: 'specific',
+                  admin: {
+                    description: 'Role format for schedules',
+                    width: '50%',
+                  },
+                  options: [
+                    { label: 'Specific (Tank, Hitscan, Flex DPS, MS, FS)', value: 'specific' },
+                    { label: 'Generic (Tank, DPS, Support)', value: 'generic' },
+                    { label: 'Custom', value: 'custom' },
+                  ],
+                },
+                {
+                  name: 'customRoles',
+                  type: 'text',
+                  admin: {
+                    description: 'Comma-separated roles (e.g., "Tank, DPS, Support")',
+                    width: '50%',
+                    condition: (data) => data.rolePreset === 'custom',
+                  },
+                },
+              ],
+            },
+            {
+              name: 'discordThreads',
+              type: 'group',
+              label: 'Discord Forum Threads',
+              admin: {
+                description: 'Thread IDs for poll and schedule automation. Right-click a thread → Copy Link → Extract the ID.',
+              },
+              fields: [
+                {
+                  name: 'availabilityThreadId',
+                  type: 'text',
+                  admin: {
+                    description: 'Thread where availability polls are posted (auto-links polls to this team)',
+                  },
+                },
+                {
+                  name: 'calendarThreadId',
+                  type: 'text',
+                  admin: {
+                    description: 'Thread where weekly schedules are published',
+                  },
+                },
+                {
+                  name: 'scheduleThreadId',
+                  type: 'text',
+                  admin: {
+                    description: 'Thread for day-of reminders and scrim details',
+                  },
+                },
+                {
+                  name: 'scrimCodesThreadId',
+                  type: 'text',
+                  admin: {
+                    description: 'Thread where scrim codes/results are posted (Phase 2)',
+                  },
+                },
+              ],
+            },
+            {
+              name: 'defaultTimeSlot',
+              type: 'text',
+              admin: {
+                description: 'Default time slot for schedules (e.g., "8-10 EST")',
+              },
+            },
+          ],
+        },
       ],
     },
     {

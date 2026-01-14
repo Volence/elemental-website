@@ -55,6 +55,10 @@ import { default as default_1f089b8c2a27470c9bbc5822da887828 } from '@/component
 import { default as default_4b32192632526300c4dfce3ec06124cb } from '@/components/RecruitmentListColumns/ListingCell'
 import { default as default_46b3ed67e65478b5cdaa83f2b09fc358 } from '@/components/RecruitmentApplicationColumns/PositionCell'
 import { default as default_91b673ad90a59e578cd7d9f0fa7f0d19 } from '@/components/RecruitmentApplicationColumns/ActionsCell'
+import { default as default_d11a66a204e3df3a186a3bc326f6d7e4 } from '@/components/VotesDisplay'
+import { default as default_7c520a493bba693939ee544b7090b356 } from '@/components/ScheduleEditor'
+import { default as default_187be048b128856df5138905b5a2ba07 } from '@/components/PollScopeToggle'
+import { default as default_49d3e56f02d2afcbf0a007b8c136093d } from '@/components/QuickScrimPost'
 import { default as default_af352f4805551eefd7ae0beaaee692c1 } from '@/components/InviteLinkFields/CopyLinkField'
 import { default as default_c88412ef156346181b651c19a855fdb0 } from '@/components/InviteLinkColumns/DepartmentsCell'
 import { default as default_83b754ffb26a9a06f67ecd0cafa4ac31 } from '@/components/InviteLinkColumns/StatusCell'
@@ -144,6 +148,10 @@ export const importMap = {
   "@/components/RecruitmentListColumns/ListingCell#default": default_4b32192632526300c4dfce3ec06124cb,
   "@/components/RecruitmentApplicationColumns/PositionCell#default": default_46b3ed67e65478b5cdaa83f2b09fc358,
   "@/components/RecruitmentApplicationColumns/ActionsCell#default": default_91b673ad90a59e578cd7d9f0fa7f0d19,
+  "@/components/VotesDisplay#default": default_d11a66a204e3df3a186a3bc326f6d7e4,
+  "@/components/ScheduleEditor#default": default_7c520a493bba693939ee544b7090b356,
+  "@/components/PollScopeToggle#default": default_187be048b128856df5138905b5a2ba07,
+  "@/components/QuickScrimPost#default": default_49d3e56f02d2afcbf0a007b8c136093d,
   "@/components/InviteLinkFields/CopyLinkField#default": default_af352f4805551eefd7ae0beaaee692c1,
   "@/components/InviteLinkColumns/DepartmentsCell#default": default_c88412ef156346181b651c19a855fdb0,
   "@/components/InviteLinkColumns/StatusCell#default": default_83b754ffb26a9a06f67ecd0cafa4ac31,

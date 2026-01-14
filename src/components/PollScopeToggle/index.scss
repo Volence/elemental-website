@@ -1,0 +1,98 @@
+.poll-scope-toggle {
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: flex-end;
+
+  &__container {
+    position: relative;
+  }
+
+  &__button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--theme-elevation-100);
+    border: 1px solid var(--theme-elevation-200);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: var(--theme-text);
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--theme-elevation-150);
+      border-color: var(--theme-elevation-300);
+    }
+  }
+
+  &__icon {
+    font-size: 1rem;
+  }
+
+  &__label {
+    font-weight: 500;
+  }
+
+  &__arrow {
+    font-size: 0.65rem;
+    opacity: 0.6;
+    transition: transform 0.2s ease;
+
+    &--open {
+      transform: rotate(180deg);
+    }
+  }
+
+  &__dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.25rem;
+    background: var(--theme-elevation-100);
+    border: 1px solid var(--theme-elevation-200);
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+    min-width: 220px;
+    overflow: hidden;
+  }
+
+  &__option {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    color: var(--theme-text);
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: var(--theme-elevation-150);
+    }
+
+    &--active {
+      background: var(--theme-elevation-200);
+      
+      &:hover {
+        background: var(--theme-elevation-200);
+      }
+    }
+
+    &-icon {
+      display: inline-block;
+      margin-right: 0.5rem;
+    }
+
+    &-desc {
+      font-size: 0.75rem;
+      opacity: 0.6;
+      margin-left: 1.5rem;
+    }
+  }
+}

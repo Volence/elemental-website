@@ -2,6 +2,7 @@ import * as migration_20251217_055734 from "./20251217_055734";
 import * as migration_20251218_130100 from "./20251218_130100";
 import * as migration_20251222_190839_add_recruitment_collections from "./20251222_190839_add_recruitment_collections";
 import * as migration_20251229_150200_add_complete_status from "./20251229_150200_add_complete_status";
+import * as migration_20260113_201500_add_quick_scrims from "./20260113_201500_add_quick_scrims";
 
 export const migrations = [
   {
@@ -24,4 +25,10 @@ export const migrations = [
     down: migration_20251229_150200_add_complete_status.down,
     name: "20251229_150200_add_complete_status",
   },
+  {
+    up: migration_20260113_201500_add_quick_scrims.up,
+    down: migration_20260113_201500_add_quick_scrims.down,
+    name: "20260113_201500_add_quick_scrims",
+  },
 ];
+

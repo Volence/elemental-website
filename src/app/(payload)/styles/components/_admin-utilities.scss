@@ -364,3 +364,37 @@
   }
 }
 
+// ============================================
+// Sticky Document Controls (Save button row)
+// ============================================
+// Makes the Save button always visible when editing documents
+
+// Fix the actual blocker - main.collection-edit has overflow: hidden auto
+main.collection-edit {
+  overflow: visible !important;
+}
+
+.doc-controls {
+  position: sticky !important;
+  top: 0;
+  z-index: 100;
+  background: var(--theme-elevation-0);
+  border-bottom: 1px solid var(--theme-elevation-200);
+  
+  // Add subtle shadow when scrolled
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    right: 0;
+    height: 10px;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.15) 0%,
+      transparent 100%
+    );
+    pointer-events: none;
+  }
+}
+

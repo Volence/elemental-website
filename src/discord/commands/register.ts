@@ -84,6 +84,23 @@ export function buildCommands() {
           .setDescription('Time slot (default: 8-10 EST)')
           .setRequired(false),
       ),
+
+    // Thread Keep-Alive command
+    new SlashCommandBuilder()
+      .setName('tka')
+      .setDescription('Keep forum thread active (auto-unarchive)')
+      .addStringOption((option) =>
+        option
+          .setName('action')
+          .setDescription('Action to take')
+          .setRequired(false)
+          .addChoices(
+            { name: 'Toggle (add or remove)', value: 'toggle' },
+            { name: 'Add to watch list', value: 'add' },
+            { name: 'Remove from watch list', value: 'remove' },
+            { name: 'Check status', value: 'status' },
+          ),
+      ),
   ].map((command) => command.toJSON())
 }
 

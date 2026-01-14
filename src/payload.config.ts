@@ -27,6 +27,8 @@ import { ErrorLogs } from './collections/ErrorLogs'
 import { CronJobRuns } from './collections/CronJobRuns'
 import { ActiveSessions } from './collections/ActiveSessions'
 import { DiscordPolls } from './collections/DiscordPolls'
+import { QuickScrims } from './collections/QuickScrims'
+import { WatchedThreads } from './collections/WatchedThreads'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { DataConsistency } from './globals/DataConsistency'
@@ -154,9 +156,11 @@ const config = buildConfig({
     // WORKBOARD: Universal task management (hidden, accessed via dashboards)
     Tasks,
     
-    // DISCORD: Bot integration (hidden but establishes group order)
+    // DISCORD: Bot integration
     DiscordPolls,
+    QuickScrims,
     DiscordCategoryTemplates,
+    WatchedThreads,
     
     // MONITORING: Security & Health
     AuditLogs,
@@ -224,12 +228,14 @@ const config = buildConfig({
         const { ensureDiscordClient } = await import('./discord/bot')
         const { registerCommands } = await import('./discord/commands/register')
         const { setupInteractionHandlers } = await import('./discord/handlers/interactions')
+        const { startThreadKeepAlive } = await import('./discord/services/threadKeepAlive')
 
         const client = await ensureDiscordClient()
         
         if (client) {
           await registerCommands()
           setupInteractionHandlers()
+          startThreadKeepAlive()
           console.log('✅ Discord bot fully initialized')
         }
       } catch (error) {

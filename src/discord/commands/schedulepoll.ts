@@ -1,5 +1,6 @@
 import type { ChatInputCommandInteraction } from 'discord.js'
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } from 'discord.js'
+import { registerPollForNotifications } from '../handlers/poll-handlers'
 
 // Discord's maximum poll duration is 768 hours (32 days)
 // Duration is specified in hours
@@ -156,6 +157,14 @@ export async function handleSchedulePoll(
         .setCustomId('poll_summary')
         .setLabel('Quick Summary')
         .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId('poll_missing')
+        .setLabel("Who Hasn't Voted")
+        .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId('poll_notify_toggle')
+        .setLabel('🔔 Notify on Vote')
+        .setStyle(ButtonStyle.Secondary),
     )
 
     const pollMessage = await resolvedChannel.send({
@@ -169,11 +178,17 @@ export async function handleSchedulePoll(
       components: [buttons, secondRow],
     })
 
-    // Save poll to database with creator info
+    // Register poll for notifications
+    registerPollForNotifications(pollMessage.id, resolvedChannel.id, interaction.guildId || '')
+    
+    // For forum threads, the channel is the thread itself
+    const threadId = resolvedChannel.isThread() ? resolvedChannel.id : undefined
+    
     await savePollToDatabase({
       pollName,
       messageId: pollMessage.id,
-      channelId: resolvedChannel.id,
+      channelId: resolvedChannel.isThread() && resolvedChannel.parentId ? resolvedChannel.parentId : resolvedChannel.id,
+      threadId,
       creatorId: interaction.user.id,
       dateRange: { start: dates[0], end: dates[dates.length - 1] },
       timeSlot,
@@ -200,12 +215,15 @@ async function savePollToDatabase(data: {
   pollName: string
   messageId: string
   channelId: string
+  threadId?: string
   creatorId: string
   dateRange: { start: Date; end: Date }
   timeSlot: string
 }): Promise<void> {
   try {
-    const payload = (await import('payload')).default
+    const { getPayload } = await import('payload')
+    const configPromise = await import('@/payload.config')
+    const payload = await getPayload({ config: configPromise.default })
 
     // Try to find user by Discord ID
     const users = await payload.find({
@@ -220,22 +238,43 @@ async function savePollToDatabase(data: {
 
     const createdBy = users.docs.length > 0 ? users.docs[0].id : undefined
 
+    // Auto-detect team based on thread ID matching a team's availabilityThreadId
+    let team: number | undefined = undefined
+    if (data.threadId) {
+      const teams = await payload.find({
+        collection: 'teams',
+        where: {
+          'discordThreads.availabilityThreadId': {
+            equals: data.threadId,
+          },
+        },
+        limit: 1,
+      })
+      if (teams.docs.length > 0) {
+        team = teams.docs[0].id as number
+        console.log(`🔗 Auto-linked poll to team: ${teams.docs[0].name}`)
+      }
+    }
+
     // Save to DiscordPolls collection
     await payload.create({
-      collection: 'discord-polls',
+      collection: 'discord-polls' as any,
       data: {
         pollName: data.pollName,
         messageId: data.messageId,
         channelId: data.channelId,
+        threadId: data.threadId,
+        team,
         dateRange: {
-          start: data.dateRange.start.toISOString(),
-          end: data.dateRange.end.toISOString(),
+          // Use YYYY-MM-DD format to avoid timezone issues (toISOString shifts dates)
+          start: data.dateRange.start.toLocaleDateString('en-CA'), // en-CA gives YYYY-MM-DD format
+          end: data.dateRange.end.toLocaleDateString('en-CA'),
         },
         timeSlot: data.timeSlot,
         status: 'active',
         createdBy,
         createdVia: 'discord-command',
-      },
+      } as any,
     })
 
     console.log(`✅ Saved poll "${data.pollName}" to database`)
