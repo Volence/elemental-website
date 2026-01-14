@@ -3,6 +3,7 @@ import * as migration_20251218_130100 from "./20251218_130100";
 import * as migration_20251222_190839_add_recruitment_collections from "./20251222_190839_add_recruitment_collections";
 import * as migration_20251229_150200_add_complete_status from "./20251229_150200_add_complete_status";
 import * as migration_20260113_201500_add_quick_scrims from "./20260113_201500_add_quick_scrims";
+import * as migration_20260114_021700_add_scouting_wiki_phase1 from "./20260114_021700_add_scouting_wiki_phase1";
 
 export const migrations = [
   {
@@ -30,5 +31,9 @@ export const migrations = [
     down: migration_20260113_201500_add_quick_scrims.down,
     name: "20260113_201500_add_quick_scrims",
   },
+  {
+    up: migration_20260114_021700_add_scouting_wiki_phase1.up,
+    down: migration_20260114_021700_add_scouting_wiki_phase1.down,
+    name: "20260114_021700_add_scouting_wiki_phase1",
+  },
 ];
-

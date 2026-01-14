@@ -29,6 +29,10 @@ import { ActiveSessions } from './collections/ActiveSessions'
 import { DiscordPolls } from './collections/DiscordPolls'
 import { QuickScrims } from './collections/QuickScrims'
 import { WatchedThreads } from './collections/WatchedThreads'
+import { Heroes } from './collections/Heroes'
+import { OpponentTeams } from './collections/OpponentTeams'
+import { ScoutReports } from './collections/ScoutReports'
+import { ScrimOutcomes } from './collections/ScrimOutcomes'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { DataConsistency } from './globals/DataConsistency'
@@ -48,6 +52,7 @@ import { GraphicsDashboard } from './globals/GraphicsDashboard'
 import { VideoEditingDashboard } from './globals/VideoEditingDashboard'
 import { EventsDashboard } from './globals/EventsDashboard'
 import { ScoutingDashboard } from './globals/ScoutingDashboard'
+import { MapPool } from './globals/MapPool'
 import { GraphicsAnchor, VideoAnchor, EventsAnchor } from './collections/DepartmentAnchors'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
@@ -149,7 +154,13 @@ const config = buildConfig({
     GraphicsAnchor, // Graphics group
     VideoAnchor, // Video group
     
-    // SCOUTING & RECRUITING: Growth
+    // SCOUTING: Team intelligence
+    Heroes,
+    OpponentTeams,
+    ScoutReports,
+    ScrimOutcomes,
+    
+    // RECRUITING: Growth
     RecruitmentListings,
     RecruitmentApplications,
     
@@ -186,6 +197,7 @@ const config = buildConfig({
     VideoEditingDashboard, // Video group
     EventsDashboard, // Events group
     ScoutingDashboard, // Scouting group
+    MapPool, // Scouting group - map configuration
     // Other utility sections
     DiscordServerManager, // Discord group
     AuditLogViewer, // Monitoring group

@@ -80,6 +80,8 @@ export interface Config {
     'events-anchor': EventsAnchor;
     'graphics-anchor': GraphicsAnchor;
     'video-anchor': VideoAnchor;
+    heroes: Hero;
+    'opponent-teams': OpponentTeam;
     'recruitment-listings': RecruitmentListing;
     'recruitment-applications': RecruitmentApplication;
     tasks: Task;
@@ -117,6 +119,8 @@ export interface Config {
     'events-anchor': EventsAnchorSelect<false> | EventsAnchorSelect<true>;
     'graphics-anchor': GraphicsAnchorSelect<false> | GraphicsAnchorSelect<true>;
     'video-anchor': VideoAnchorSelect<false> | VideoAnchorSelect<true>;
+    heroes: HeroesSelect<false> | HeroesSelect<true>;
+    'opponent-teams': OpponentTeamsSelect<false> | OpponentTeamsSelect<true>;
     'recruitment-listings': RecruitmentListingsSelect<false> | RecruitmentListingsSelect<true>;
     'recruitment-applications': RecruitmentApplicationsSelect<false> | RecruitmentApplicationsSelect<true>;
     tasks: TasksSelect<false> | TasksSelect<true>;
@@ -153,6 +157,7 @@ export interface Config {
     'video-editing-dashboard': VideoEditingDashboard;
     'events-dashboard': EventsDashboard;
     'scouting-dashboard': ScoutingDashboard;
+    'map-pool': MapPool;
     'discord-server-manager': DiscordServerManager;
     'audit-log-viewer': AuditLogViewer;
     'cron-monitor': CronMonitor;
@@ -172,6 +177,7 @@ export interface Config {
     'video-editing-dashboard': VideoEditingDashboardSelect<false> | VideoEditingDashboardSelect<true>;
     'events-dashboard': EventsDashboardSelect<false> | EventsDashboardSelect<true>;
     'scouting-dashboard': ScoutingDashboardSelect<false> | ScoutingDashboardSelect<true>;
+    'map-pool': MapPoolSelect<false> | MapPoolSelect<true>;
     'discord-server-manager': DiscordServerManagerSelect<false> | DiscordServerManagerSelect<true>;
     'audit-log-viewer': AuditLogViewerSelect<false> | AuditLogViewerSelect<true>;
     'cron-monitor': CronMonitorSelect<false> | CronMonitorSelect<true>;
@@ -1336,6 +1342,107 @@ export interface VideoAnchor {
   createdAt: string;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "heroes".
+ */
+export interface Hero {
+  id: number;
+  /**
+   * Hero name (e.g., Tracer, Winston)
+   */
+  name: string;
+  role: 'tank' | 'dps' | 'support';
+  /**
+   * Is this hero currently in the game?
+   */
+  active?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * External teams for scouting and scrim tracking
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "opponent-teams".
+ */
+export interface OpponentTeam {
+  id: number;
+  /**
+   * Current team name
+   */
+  name: string;
+  /**
+   * Historical name changes
+   */
+  previousNames?:
+    | {
+        name: string;
+        changedDate?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Skill tier or SR range
+   */
+  rank?: string | null;
+  status?: ('active' | 'inactive' | 'archived' | 'disbanded') | null;
+  region?: ('na' | 'eu' | 'apac') | null;
+  /**
+   * Primary contact for scrims
+   */
+  contact?: string | null;
+  /**
+   * Active team members
+   */
+  currentRoster?:
+    | {
+        /**
+         * Link to person (for tracking across teams)
+         */
+        person?: (number | null) | Person;
+        position: 'tank' | 'hitscan' | 'fdps' | 'ms' | 'fs';
+        playerNotes?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Former team members
+   */
+  previousRoster?:
+    | {
+        person?: (number | null) | Person;
+        position?: ('tank' | 'hitscan' | 'fdps' | 'ms' | 'fs') | null;
+        leftDate?: string | null;
+        notes?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Overall team tendencies, playstyle, etc.
+   */
+  generalNotes?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * When archived, roster moves to previous
+   */
+  archivedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * 📋 Manage open player positions and recruitment listings.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2256,6 +2363,14 @@ export interface PayloadLockedDocument {
         value: number | VideoAnchor;
       } | null)
     | ({
+        relationTo: 'heroes';
+        value: number | Hero;
+      } | null)
+    | ({
+        relationTo: 'opponent-teams';
+        value: number | OpponentTeam;
+      } | null)
+    | ({
         relationTo: 'recruitment-listings';
         value: number | RecruitmentListing;
       } | null)
@@ -2790,6 +2905,56 @@ export interface GraphicsAnchorSelect<T extends boolean = true> {
  */
 export interface VideoAnchorSelect<T extends boolean = true> {
   placeholder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "heroes_select".
+ */
+export interface HeroesSelect<T extends boolean = true> {
+  name?: T;
+  role?: T;
+  active?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "opponent-teams_select".
+ */
+export interface OpponentTeamsSelect<T extends boolean = true> {
+  name?: T;
+  previousNames?:
+    | T
+    | {
+        name?: T;
+        changedDate?: T;
+        id?: T;
+      };
+  rank?: T;
+  status?: T;
+  region?: T;
+  contact?: T;
+  currentRoster?:
+    | T
+    | {
+        person?: T;
+        position?: T;
+        playerNotes?: T;
+        id?: T;
+      };
+  previousRoster?:
+    | T
+    | {
+        person?: T;
+        position?: T;
+        leftDate?: T;
+        notes?: T;
+        id?: T;
+      };
+  generalNotes?: T;
+  archivedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3474,6 +3639,34 @@ export interface ScoutingDashboard {
   createdAt?: string | null;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "map-pool".
+ */
+export interface MapPool {
+  id: number;
+  /**
+   * All Overwatch 2 competitive maps
+   */
+  maps?:
+    | {
+        name: string;
+        type: 'control' | 'hybrid' | 'flashpoint' | 'push' | 'escort';
+        /**
+         * Submaps/points for Control maps (max 3)
+         */
+        submaps?:
+          | {
+              name: string;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * Manage Discord server structure, channels, categories, roles, and members.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3695,6 +3888,28 @@ export interface EventsDashboardSelect<T extends boolean = true> {
  * via the `definition` "scouting-dashboard_select".
  */
 export interface ScoutingDashboardSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "map-pool_select".
+ */
+export interface MapPoolSelect<T extends boolean = true> {
+  maps?:
+    | T
+    | {
+        name?: T;
+        type?: T;
+        submaps?:
+          | T
+          | {
+              name?: T;
+              id?: T;
+            };
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
