@@ -1,19 +1,21 @@
-# Database Backup & Restore System
+# Database & Media Backup System
 
 ## Overview
-Automated daily and hourly backups of the PostgreSQL database to prevent data loss.
+Automated daily and hourly backups of the PostgreSQL database and media files to prevent data loss.
 
 ## Automated Backups
 
 ### Schedule
-- **Hourly**: Every hour on the hour (for safety during data recovery period)
-- **Daily**: Every day at 2:00 AM server time
-- **Retention**: Last 30 days of backups are kept
+- **Hourly**: Database only, every hour on the hour
+- **Daily at 2 AM**: Full backup (database + media volume)
+- **Database Retention**: Last 30 days
+- **Media Retention**: Last 7 days (larger files)
 
 ### Backup Location
 All backups are stored in: `/home/ubuntu/backups/`
 
-Files are named: `payload_backup_YYYYMMDD_HHMMSS.sql.gz`
+- Database: `payload_backup_YYYYMMDD_HHMMSS.sql.gz`
+- Media: `media_backup_YYYYMMDD_HHMMSS.tar.gz`
 
 ### Backup Logs
 Backup execution logs are stored in: `/home/ubuntu/backups/backup.log`
