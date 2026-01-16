@@ -26,8 +26,10 @@ export async function handleThreadKeepAlive(
     const parentName = thread.parent?.name || 'Unknown'
     const guildId = thread.guildId || ''
 
-    // Dynamic import to avoid bundling issues
-    const payload = (await import('payload')).default
+    // Use getPayload with config for proper initialization
+    const { getPayload } = await import('payload')
+    const configPromise = await import('@/payload.config')
+    const payload = await getPayload({ config: configPromise.default })
 
     // Check if thread is already being watched
     // Using 'as any' because payload types need to be regenerated after adding WatchedThreads collection
