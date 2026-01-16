@@ -61,7 +61,7 @@ export const Tasks: CollectionConfig = {
     plural: 'Tasks',
   },
   access: {
-    // Staff can read tasks for their department(s)
+    // Staff can read tasks for their department(s) OR requests they made to other departments
     read: ({ req: { user } }) => {
       if (!user) return false
       const u = user as any
@@ -80,12 +80,15 @@ export const Tasks: CollectionConfig = {
       
       if (departments.length === 0) return false
       
-      // Return query to filter by user's departments
+      // Return query to filter by user's departments OR outgoing requests from their department
       return {
-        department: {
-          in: departments,
-        },
-      }
+        or: [
+          // Tasks owned by user's departments
+          { department: { in: departments } },
+          // Requests made BY user's departments (so they can see outgoing requests)
+          { requestedByDepartment: { in: departments } },
+        ],
+      } as any
     },
     // Any authenticated staff with department access can create tasks
     create: ({ req: { user } }) => {

@@ -1,6 +1,7 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect } from 'react'
+import { useStepNav } from '@payloadcms/ui'
 import { KanbanBoard } from './WorkboardKanban'
 import './DepartmentWorkboard.scss'
 
@@ -10,10 +11,28 @@ import './DepartmentWorkboard.scss'
  * the anchor collections to match the dashboard styling.
  */
 
-function DashboardWrapper({ children }: { children: React.ReactNode }) {
+function DashboardWrapper({ 
+  children, 
+  title, 
+  groupLabel 
+}: { 
+  children: React.ReactNode
+  title: string
+  groupLabel: string
+}) {
+  const { setStepNav } = useStepNav()
+  
+  useEffect(() => {
+    setStepNav([
+      { label: groupLabel },
+      { label: title },
+    ])
+  }, [setStepNav, title, groupLabel])
+  
   return (
     <div className="department-workboard">
       <div className="department-workboard__inner">
+        <h1 className="department-workboard__title">{title}</h1>
         {children}
       </div>
     </div>
@@ -22,7 +41,7 @@ function DashboardWrapper({ children }: { children: React.ReactNode }) {
 
 export function GraphicsWorkboard() {
   return (
-    <DashboardWrapper>
+    <DashboardWrapper title="Graphics Dashboard" groupLabel="Graphics">
       <KanbanBoard department="graphics" title="🎨 Graphics Dashboard" />
     </DashboardWrapper>
   )
@@ -30,7 +49,7 @@ export function GraphicsWorkboard() {
 
 export function VideoWorkboard() {
   return (
-    <DashboardWrapper>
+    <DashboardWrapper title="Video Dashboard" groupLabel="Video">
       <KanbanBoard department="video" title="🎥 Video Dashboard" />
     </DashboardWrapper>
   )
@@ -38,10 +57,11 @@ export function VideoWorkboard() {
 
 export function EventsWorkboard() {
   return (
-    <DashboardWrapper>
+    <DashboardWrapper title="Events Dashboard" groupLabel="Events">
       <KanbanBoard department="events" title="🎉 Events Dashboard" />
     </DashboardWrapper>
   )
 }
 
 export default { GraphicsWorkboard, VideoWorkboard, EventsWorkboard }
+

@@ -14,6 +14,16 @@
       display: none;
     }
   }
+  
+  &__title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin: 0 0 1.5rem 0;
+    color: var(--theme-elevation-1000);
+    
+    // Match other Payload admin page titles
+    letter-spacing: -0.01em;
+  }
 }
 
 // Hide the default collection list UI when workboard is shown

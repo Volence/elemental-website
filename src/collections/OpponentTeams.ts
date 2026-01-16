@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { UserRole } from '@/access/roles'
+import { UserRole, isScoutingStaff } from '@/access/roles'
 
 export const OpponentTeams: CollectionConfig = {
   slug: 'opponent-teams',
@@ -12,20 +12,37 @@ export const OpponentTeams: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'rank', 'status', 'region'],
     description: 'External teams for scouting and scrim tracking',
+    // Only show to scouting staff and staff-manager+
+    hidden: ({ user }) => {
+      if (!user) return true
+      const u = user as any
+      if (u.role === UserRole.ADMIN || u.role === UserRole.STAFF_MANAGER) return false
+      if (u.departments?.isScoutingStaff) return false
+      return true
+    },
   },
   access: {
-    read: () => true,
-    create: ({ req }) => {
-      if (!req.user) return false
-      return [UserRole.ADMIN, UserRole.STAFF_MANAGER, UserRole.TEAM_MANAGER].includes(
-        req.user.role as UserRole,
-      )
+    // Only scouting staff and staff-manager+ can read
+    read: (args) => {
+      const { req: { user } } = args
+      if (!user) return false
+      const u = user as any
+      if (u.role === UserRole.ADMIN || u.role === UserRole.STAFF_MANAGER) return true
+      return isScoutingStaff(args)
     },
-    update: ({ req }) => {
-      if (!req.user) return false
-      return [UserRole.ADMIN, UserRole.STAFF_MANAGER, UserRole.TEAM_MANAGER].includes(
-        req.user.role as UserRole,
-      )
+    create: (args) => {
+      const { req: { user } } = args
+      if (!user) return false
+      const u = user as any
+      if ([UserRole.ADMIN, UserRole.STAFF_MANAGER].includes(u.role as UserRole)) return true
+      return isScoutingStaff(args)
+    },
+    update: (args) => {
+      const { req: { user } } = args
+      if (!user) return false
+      const u = user as any
+      if ([UserRole.ADMIN, UserRole.STAFF_MANAGER].includes(u.role as UserRole)) return true
+      return isScoutingStaff(args)
     },
     delete: ({ req }) => {
       if (!req.user) return false
