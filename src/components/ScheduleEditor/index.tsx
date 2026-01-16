@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useCallback, useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useField, useFormFields, useDocumentInfo, useFormModified, toast } from '@payloadcms/ui'
 import { publishScheduleAction } from '@/actions/publish-schedule'
 import { postScrimReminderAction } from '@/actions/post-scrim-reminder'
@@ -1396,6 +1397,7 @@ const ScrimOutcomeButton: React.FC<ScrimOutcomeButtonProps> = ({
 // Publish button component with modal
 const PublishButton: React.FC = () => {
   const { id } = useDocumentInfo()
+  const router = useRouter()
   const isModified = useFormModified()
   const [isPublishing, setIsPublishing] = useState(false)
   const [showModal, setShowModal] = useState(false)
@@ -1409,6 +1411,8 @@ const PublishButton: React.FC = () => {
       const result = await publishScheduleAction(Number(id))
       if (result.success) {
         toast.success('Schedule published to Discord!')
+        // Refresh to update the calendarMessageId field in UI
+        router.refresh()
       } else {
         toast.error(result.error || 'Failed to publish')
       }

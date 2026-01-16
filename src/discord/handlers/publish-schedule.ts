@@ -202,6 +202,7 @@ export async function publishScheduleToDiscord(pollId: number): Promise<{ succes
       collection: 'discord-polls',
       id: pollId,
       depth: 1, // Populate team
+      overrideAccess: true, // Ensure fresh data
     })
 
     if (!poll) {
