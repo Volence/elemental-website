@@ -8,7 +8,7 @@ export const ScrimOutcomes: CollectionConfig = {
     plural: 'Scrim Outcomes',
   },
   admin: {
-    group: 'Organization',
+    group: 'Competitive',
     useAsTitle: 'title',
     defaultColumns: ['title', 'yourTeam', 'opponentTeam', 'rating', 'scrimDate'],
     description: 'Post-scrim feedback and ratings per team',
