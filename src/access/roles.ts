@@ -64,10 +64,10 @@ export const adminOnly: AccessCheck = ({ req: { user } }) => {
  */
 export const isProductionStaff = ({ req: { user } }: AccessArgs<User>): boolean => {
   if (!user) return false
-  const u = user as any
+  const u = user as User
   return u.departments?.isProductionStaff === true || 
-         (user as User).role === UserRole.ADMIN ||
-         (user as User).role === UserRole.STAFF_MANAGER
+         u.role === UserRole.ADMIN ||
+         u.role === UserRole.STAFF_MANAGER
 }
 
 /**
@@ -85,10 +85,10 @@ export const isProductionManager = ({ req: { user } }: AccessArgs<User>): boolea
  */
 export const isSocialMediaStaff = ({ req: { user } }: AccessArgs<User>): boolean => {
   if (!user) return false
-  const u = user as any
+  const u = user as User
   return u.departments?.isSocialMediaStaff === true || 
-         (user as User).role === UserRole.ADMIN ||
-         (user as User).role === UserRole.STAFF_MANAGER
+         u.role === UserRole.ADMIN ||
+         u.role === UserRole.STAFF_MANAGER
 }
 
 /**
@@ -96,10 +96,10 @@ export const isSocialMediaStaff = ({ req: { user } }: AccessArgs<User>): boolean
  */
 export const isGraphicsStaff = ({ req: { user } }: AccessArgs<User>): boolean => {
   if (!user) return false
-  const u = user as any
+  const u = user as User
   return u.departments?.isGraphicsStaff === true || 
-         (user as User).role === UserRole.ADMIN ||
-         (user as User).role === UserRole.STAFF_MANAGER
+         u.role === UserRole.ADMIN ||
+         u.role === UserRole.STAFF_MANAGER
 }
 
 /**
@@ -107,10 +107,10 @@ export const isGraphicsStaff = ({ req: { user } }: AccessArgs<User>): boolean =>
  */
 export const isVideoStaff = ({ req: { user } }: AccessArgs<User>): boolean => {
   if (!user) return false
-  const u = user as any
+  const u = user as User
   return u.departments?.isVideoStaff === true || 
-         (user as User).role === UserRole.ADMIN ||
-         (user as User).role === UserRole.STAFF_MANAGER
+         u.role === UserRole.ADMIN ||
+         u.role === UserRole.STAFF_MANAGER
 }
 
 /**
@@ -118,10 +118,10 @@ export const isVideoStaff = ({ req: { user } }: AccessArgs<User>): boolean => {
  */
 export const isEventsStaff = ({ req: { user } }: AccessArgs<User>): boolean => {
   if (!user) return false
-  const u = user as any
+  const u = user as User
   return u.departments?.isEventsStaff === true || 
-         (user as User).role === UserRole.ADMIN ||
-         (user as User).role === UserRole.STAFF_MANAGER
+         u.role === UserRole.ADMIN ||
+         u.role === UserRole.STAFF_MANAGER
 }
 
 /**
@@ -129,9 +129,9 @@ export const isEventsStaff = ({ req: { user } }: AccessArgs<User>): boolean => {
  */
 export const isScoutingStaff = ({ req: { user } }: AccessArgs<User>): boolean => {
   if (!user) return false
-  const u = user as any
+  const u = user as User
   return u.departments?.isScoutingStaff === true || 
-         (user as User).role === UserRole.ADMIN ||
-         (user as User).role === UserRole.STAFF_MANAGER
+         u.role === UserRole.ADMIN ||
+         u.role === UserRole.STAFF_MANAGER
 }
 

@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import type { User } from '@/payload-types'
 
 export const DiscordCategoryTemplates: CollectionConfig = {
   slug: 'discord-category-templates',
@@ -14,10 +15,10 @@ export const DiscordCategoryTemplates: CollectionConfig = {
     hidden: true, // Not needed in sidebar
   },
   access: {
-    create: ({ req: { user } }) => (user as any)?.role === 'admin',
-    read: ({ req: { user } }) => (user as any)?.role === 'admin',
-    update: ({ req: { user } }) => (user as any)?.role === 'admin',
-    delete: ({ req: { user } }) => (user as any)?.role === 'admin',
+    create: ({ req: { user } }) => (user as User)?.role === 'admin',
+    read: ({ req: { user } }) => (user as User)?.role === 'admin',
+    update: ({ req: { user } }) => (user as User)?.role === 'admin',
+    delete: ({ req: { user } }) => (user as User)?.role === 'admin',
   },
   fields: [
     {
