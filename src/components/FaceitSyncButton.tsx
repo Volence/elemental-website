@@ -32,9 +32,9 @@ export default function FaceitSyncButton({ value, ...props }: any) {
     lastSynced,
     sync,
   } = useFaceitSync({
-    teamId,
+    teamId: teamId as number | string | undefined,
     faceitTeamId: faceitTeamId?.value as string | undefined,
-    leagueId,
+    leagueId: leagueId as number | string | undefined,
   })
 
   const handleSync = async () => {
@@ -49,7 +49,7 @@ export default function FaceitSyncButton({ value, ...props }: any) {
   
   return (
     <div className="faceit-sync-button">
-      {currentFaceitLeague?.value && !leagueData && (
+      {leagueId && !leagueData && (
         <div className="faceit-sync-button__status faceit-sync-button__status--loading">
           ⏳ Loading league configuration...
         </div>
