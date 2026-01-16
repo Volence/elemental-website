@@ -8,7 +8,7 @@ export const OpponentTeams: CollectionConfig = {
     plural: 'Opponent Teams',
   },
   admin: {
-    group: 'Scouting',
+    group: 'Competitive',
     useAsTitle: 'name',
     defaultColumns: ['name', 'rank', 'status', 'region'],
     description: 'External teams for scouting and scrim tracking',
@@ -33,6 +33,16 @@ export const OpponentTeams: CollectionConfig = {
     },
   },
   fields: [
+    // Wiki link button
+    {
+      name: 'viewWikiButton',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '@/components/ViewWikiButton#default',
+        },
+      },
+    },
     // Basic Info
     {
       name: 'name',
@@ -90,15 +100,24 @@ export const OpponentTeams: CollectionConfig = {
       options: [
         { label: 'NA', value: 'na' },
         { label: 'EU', value: 'eu' },
+        { label: 'SA', value: 'sa' },
         { label: 'APAC', value: 'apac' },
       ],
     },
     {
-      name: 'contact',
+      name: 'managerContact',
       type: 'text',
       admin: {
         placeholder: 'Discord username',
-        description: 'Primary contact for scrims',
+        description: 'Team manager for scheduling scrims',
+      },
+    },
+    {
+      name: 'battleNet',
+      type: 'text',
+      admin: {
+        placeholder: 'BattleTag#1234',
+        description: 'In-game contact for lobby invites',
       },
     },
 

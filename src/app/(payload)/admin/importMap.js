@@ -46,6 +46,11 @@ import { default as default_048c297467b6adbf2ab886ee3bbecc66 } from '@/component
 import { default as default_cbd62d152faae83563323bc6e1990a3d } from '@/components/SocialPostFields/ContentWithTemplate'
 import { default as default_f52f291ae9aadfb75185249ec10b563b } from '@/components/SocialPostColumns/StatusCell'
 import { default as default_6b7ab1bcf3858d76397d35f4ac810b8c } from '@/components/SocialPostColumns/QuickFilters'
+import { GraphicsWorkboard as GraphicsWorkboard_f4dd7e7806bf98c1c8970f346133cd5f } from '@/components/DepartmentWorkboard'
+import { VideoWorkboard as VideoWorkboard_f4dd7e7806bf98c1c8970f346133cd5f } from '@/components/DepartmentWorkboard'
+import { EventsWorkboard as EventsWorkboard_f4dd7e7806bf98c1c8970f346133cd5f } from '@/components/DepartmentWorkboard'
+import { default as default_d9817958d5724d91ec10855d6e9a32a2 } from '@/components/ViewWikiButton'
+import { default as default_dc2c323b20f6177c2131d5b0800696bc } from '@/components/PopulateRosterButton'
 import { default as default_ed1e8d66015b6bb359c4bd3a3c1c4e16 } from '@/components/RecruitmentFields/CategorySelectField'
 import { default as default_cf24fd1a27e289c739c233304f5b861d } from '@/components/RecruitmentFields/TeamRelationshipField'
 import { default as default_ec72e2a2a07bfec297bbb538e037e4b8 } from '@/components/RecruitmentFields/RoleSelectField'
@@ -58,7 +63,6 @@ import { default as default_91b673ad90a59e578cd7d9f0fa7f0d19 } from '@/component
 import { default as default_d11a66a204e3df3a186a3bc326f6d7e4 } from '@/components/VotesDisplay'
 import { default as default_7c520a493bba693939ee544b7090b356 } from '@/components/ScheduleEditor'
 import { default as default_187be048b128856df5138905b5a2ba07 } from '@/components/PollScopeToggle'
-import { default as default_49d3e56f02d2afcbf0a007b8c136093d } from '@/components/QuickScrimPost'
 import { default as default_af352f4805551eefd7ae0beaaee692c1 } from '@/components/InviteLinkFields/CopyLinkField'
 import { default as default_c88412ef156346181b651c19a855fdb0 } from '@/components/InviteLinkColumns/DepartmentsCell'
 import { default as default_83b754ffb26a9a06f67ecd0cafa4ac31 } from '@/components/InviteLinkColumns/StatusCell'
@@ -66,12 +70,13 @@ import { RowLabel as RowLabel_ec255a65fa6fa8d1faeb09cf35284224 } from '@/Header/
 import { RowLabel as RowLabel_1f6ff6ff633e3695d348f4f3c58f1466 } from '@/Footer/RowLabel'
 import { default as default_c68ab0b1bbf77fcff4337c949e1b628c } from '@/components/ProductionDashboardView'
 import { default as default_b41852718c887b613f07fa372f5e410c } from '@/components/EmptyComponent'
-import { default as default_9696e71ab6d0b177b492c0a63e1b5e83 } from '@/components/SocialMediaDashboard'
 import { default as default_f76c92028911e3d433af128d3a307d36 } from '@/components/SocialMediaConfig/TemplateInstructions'
 import { default as default_8e4d4e3438d12585a6d66d71f450349a } from '@/components/SocialMediaConfig/TemplateRowLabel'
+import { default as default_9696e71ab6d0b177b492c0a63e1b5e83 } from '@/components/SocialMediaDashboard'
 import { default as default_7f9e3cd549c4b514317a78b827ef89f7 } from '@/components/GraphicsDashboardView'
 import { default as default_556abb975c19a689444f28829e3cfd07 } from '@/components/VideoEditingDashboardView'
 import { default as default_0fd855c5040c9c75d8034c9571c63b28 } from '@/components/EventsDashboardView'
+import { default as default_ba04f04a79d2b32fad9572c3ee72f7be } from '@/components/OpponentWikiView'
 import { default as default_8853ab073b7fdbf17139706839ad1c69 } from '@/components/ScoutingDashboardView'
 import { default as default_3da8454779e867d95ca2718c7ead313d } from '@/components/DiscordServerManager/DiscordServerManagerView'
 import { default as default_03160af9efa1fa5b8f41c67277172bb7 } from '@/components/AuditLogView'
@@ -139,6 +144,11 @@ export const importMap = {
   "@/components/SocialPostFields/ContentWithTemplate#default": default_cbd62d152faae83563323bc6e1990a3d,
   "@/components/SocialPostColumns/StatusCell#default": default_f52f291ae9aadfb75185249ec10b563b,
   "@/components/SocialPostColumns/QuickFilters#default": default_6b7ab1bcf3858d76397d35f4ac810b8c,
+  "@/components/DepartmentWorkboard#GraphicsWorkboard": GraphicsWorkboard_f4dd7e7806bf98c1c8970f346133cd5f,
+  "@/components/DepartmentWorkboard#VideoWorkboard": VideoWorkboard_f4dd7e7806bf98c1c8970f346133cd5f,
+  "@/components/DepartmentWorkboard#EventsWorkboard": EventsWorkboard_f4dd7e7806bf98c1c8970f346133cd5f,
+  "@/components/ViewWikiButton#default": default_d9817958d5724d91ec10855d6e9a32a2,
+  "@/components/PopulateRosterButton#default": default_dc2c323b20f6177c2131d5b0800696bc,
   "@/components/RecruitmentFields/CategorySelectField#default": default_ed1e8d66015b6bb359c4bd3a3c1c4e16,
   "@/components/RecruitmentFields/TeamRelationshipField#default": default_cf24fd1a27e289c739c233304f5b861d,
   "@/components/RecruitmentFields/RoleSelectField#default": default_ec72e2a2a07bfec297bbb538e037e4b8,
@@ -151,7 +161,6 @@ export const importMap = {
   "@/components/VotesDisplay#default": default_d11a66a204e3df3a186a3bc326f6d7e4,
   "@/components/ScheduleEditor#default": default_7c520a493bba693939ee544b7090b356,
   "@/components/PollScopeToggle#default": default_187be048b128856df5138905b5a2ba07,
-  "@/components/QuickScrimPost#default": default_49d3e56f02d2afcbf0a007b8c136093d,
   "@/components/InviteLinkFields/CopyLinkField#default": default_af352f4805551eefd7ae0beaaee692c1,
   "@/components/InviteLinkColumns/DepartmentsCell#default": default_c88412ef156346181b651c19a855fdb0,
   "@/components/InviteLinkColumns/StatusCell#default": default_83b754ffb26a9a06f67ecd0cafa4ac31,
@@ -159,12 +168,13 @@ export const importMap = {
   "@/Footer/RowLabel#RowLabel": RowLabel_1f6ff6ff633e3695d348f4f3c58f1466,
   "@/components/ProductionDashboardView#default": default_c68ab0b1bbf77fcff4337c949e1b628c,
   "@/components/EmptyComponent#default": default_b41852718c887b613f07fa372f5e410c,
-  "@/components/SocialMediaDashboard#default": default_9696e71ab6d0b177b492c0a63e1b5e83,
   "@/components/SocialMediaConfig/TemplateInstructions#default": default_f76c92028911e3d433af128d3a307d36,
   "@/components/SocialMediaConfig/TemplateRowLabel#default": default_8e4d4e3438d12585a6d66d71f450349a,
+  "@/components/SocialMediaDashboard#default": default_9696e71ab6d0b177b492c0a63e1b5e83,
   "@/components/GraphicsDashboardView#default": default_7f9e3cd549c4b514317a78b827ef89f7,
   "@/components/VideoEditingDashboardView#default": default_556abb975c19a689444f28829e3cfd07,
   "@/components/EventsDashboardView#default": default_0fd855c5040c9c75d8034c9571c63b28,
+  "@/components/OpponentWikiView#default": default_ba04f04a79d2b32fad9572c3ee72f7be,
   "@/components/ScoutingDashboardView#default": default_8853ab073b7fdbf17139706839ad1c69,
   "@/components/DiscordServerManager/DiscordServerManagerView#default": default_3da8454779e867d95ca2718c7ead313d,
   "@/components/AuditLogView#default": default_03160af9efa1fa5b8f41c67277172bb7,

@@ -8,7 +8,7 @@ export const ScoutReports: CollectionConfig = {
     plural: 'Scout Reports',
   },
   admin: {
-    group: 'Scouting',
+    group: 'Competitive',
     useAsTitle: 'title',
     defaultColumns: ['title', 'opponentTeam', 'status', 'patchVersion', 'updatedAt'],
     description: 'Patch-based intelligence on opponent teams',
@@ -33,7 +33,7 @@ export const ScoutReports: CollectionConfig = {
     },
   },
   fields: [
-    // Virtual title field
+    // Virtual title field (auto-generated)
     {
       name: 'title',
       type: 'text',
@@ -43,8 +43,7 @@ export const ScoutReports: CollectionConfig = {
       hooks: {
         beforeChange: [
           async ({ data, req }) => {
-            if (data?.opponentTeam && data?.patchVersion) {
-              // Try to get team name
+            if (data?.opponentTeam) {
               let teamName = 'Unknown Team'
               if (typeof data.opponentTeam === 'number') {
                 try {
@@ -57,7 +56,8 @@ export const ScoutReports: CollectionConfig = {
                   // Ignore
                 }
               }
-              return `${teamName} - ${data.patchVersion}`
+              const patch = data.patchVersion || 'Draft'
+              return `${teamName} - ${patch}`
             }
             return data?.title || 'New Scout Report'
           },
@@ -65,12 +65,36 @@ export const ScoutReports: CollectionConfig = {
       },
     },
 
-    // Core fields
+    // ===== SIDEBAR FIELDS =====
     {
       name: 'opponentTeam',
       type: 'relationship',
       relationTo: 'opponent-teams',
-      required: true,
+      // NOT required - allow partial saves
+      admin: {
+        position: 'sidebar',
+        description: 'Team being scouted',
+      },
+    },
+    {
+      name: 'patchVersion',
+      type: 'text',
+      // NOT required - allow partial saves
+      admin: {
+        position: 'sidebar',
+        placeholder: 'Season 14, Mid-Season Patch',
+        description: 'Game version/season',
+      },
+    },
+    {
+      name: 'status',
+      type: 'select',
+      defaultValue: 'draft',
+      options: [
+        { label: '📝 Draft', value: 'draft' },
+        { label: '✅ Active', value: 'active' },
+        { label: '📦 Archived', value: 'archived' },
+      ],
       admin: {
         position: 'sidebar',
       },
@@ -93,298 +117,233 @@ export const ScoutReports: CollectionConfig = {
         ],
       },
     },
-    {
-      name: 'patchVersion',
-      type: 'text',
-      required: true,
-      admin: {
-        position: 'sidebar',
-        placeholder: 'Season 14, Mid-Season Patch',
-        description: 'Game version/season this report covers',
-      },
-    },
-    {
-      name: 'status',
-      type: 'select',
-      defaultValue: 'active',
-      options: [
-        { label: 'Active', value: 'active' },
-        { label: 'Archived', value: 'archived' },
-      ],
-      admin: {
-        position: 'sidebar',
-      },
-    },
 
-    // Roster snapshot
+    // ===== ROSTER SNAPSHOT =====
+    {
+      name: 'populateRosterButton',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '@/components/PopulateRosterButton#default',
+        },
+      },
+    },
     {
       name: 'rosterSnapshot',
       type: 'array',
+      labels: {
+        singular: 'Player',
+        plural: 'Roster Snapshot',
+      },
       admin: {
-        description: 'Roster at time of report (frozen snapshot)',
+        description: 'Opponent roster at time of scouting (use Populate button above)',
       },
       fields: [
         {
-          name: 'person',
-          type: 'relationship',
-          relationTo: 'people',
-        },
-        {
-          name: 'position',
-          type: 'select',
-          options: [
-            { label: 'Tank', value: 'tank' },
-            { label: 'Hitscan', value: 'hitscan' },
-            { label: 'Flex DPS', value: 'fdps' },
-            { label: 'Main Support', value: 'ms' },
-            { label: 'Flex Support', value: 'fs' },
+          type: 'row',
+          fields: [
+            {
+              name: 'person',
+              type: 'relationship',
+              relationTo: 'people',
+              admin: {
+                width: '50%',
+              },
+            },
+            {
+              name: 'position',
+              type: 'select',
+              admin: {
+                width: '30%',
+              },
+              options: [
+                { label: 'Tank', value: 'tank' },
+                { label: 'Hitscan', value: 'hitscan' },
+                { label: 'Flex DPS', value: 'fdps' },
+                { label: 'Main Support', value: 'ms' },
+                { label: 'Flex Support', value: 'fs' },
+              ],
+            },
+            {
+              name: 'nickname',
+              type: 'text',
+              admin: {
+                width: '20%',
+                placeholder: 'Alias',
+              },
+            },
           ],
-        },
-        {
-          name: 'nickname',
-          type: 'text',
-          admin: {
-            placeholder: 'In-game name if different',
-          },
         },
       ],
     },
 
-    // Map Analysis
+    // ===== MAP GAMES (main data entry area) =====
     {
-      name: 'mapAnalysis',
+      name: 'mapGames',
       type: 'array',
+      labels: {
+        singular: 'Map',
+        plural: 'Map Games',
+      },
       admin: {
-        description: 'Per-map performance and composition data',
+        description: 'Add maps as you review VODs. Each map can have rounds and notes.',
+        initCollapsed: false,
       },
       fields: [
+        // Map header row
         {
           type: 'row',
           fields: [
             {
               name: 'map',
-              type: 'text',
-              required: true,
+              type: 'relationship',
+              relationTo: 'maps',
               admin: {
                 width: '40%',
-                placeholder: 'Ilios',
               },
             },
             {
-              name: 'submap',
-              type: 'text',
-              admin: {
-                width: '30%',
-                placeholder: 'Lighthouse (optional)',
-              },
-            },
-            {
-              name: 'comfort',
+              name: 'mapResult',
               type: 'select',
               admin: {
-                width: '30%',
+                width: '20%',
               },
               options: [
-                { label: '🟢 Dominate', value: 'dominate' },
-                { label: '🟢 Exceed', value: 'exceed' },
-                { label: '🟡 Neutral', value: 'neutral' },
-                { label: '🔴 Struggle', value: 'struggle' },
-                { label: '🔴 Got Rolled', value: 'gotrolled' },
-                { label: '⬛ Not Played', value: 'notplayed' },
+                { label: '✅ Win', value: 'win' },
+                { label: '❌ Loss', value: 'loss' },
+                { label: '❓ Unknown', value: 'unknown' },
               ],
             },
-          ],
-        },
-        {
-          type: 'row',
-          fields: [
             {
-              name: 'timesPlayed',
-              type: 'number',
-              admin: {
-                width: '25%',
-                placeholder: 'Times played',
-              },
-            },
-            {
-              name: 'winLoss',
+              name: 'replayCode',
               type: 'text',
               admin: {
-                width: '25%',
-                placeholder: 'W-L (e.g., 6-2)',
+                width: '40%',
+                placeholder: 'Replay code',
               },
             },
           ],
         },
+
+        // Bans for this map
         {
-          name: 'notes',
-          type: 'textarea',
-          admin: {
-            placeholder: 'Map-specific observations...',
-          },
-        },
-        // Game Timeline (full hero tracking)
-        {
-          name: 'gameTimeline',
+          name: 'bans',
           type: 'array',
+          labels: {
+            singular: 'Ban',
+            plural: 'Hero Bans',
+          },
           admin: {
-            description: 'Hero picks and switches per game',
+            description: 'Hero bans on this map',
+            initCollapsed: true,
           },
           fields: [
             {
-              name: 'gameNumber',
-              type: 'number',
-              admin: {
-                placeholder: '1, 2, 3...',
-              },
-            },
-            {
-              name: 'result',
-              type: 'select',
-              options: [
-                { label: 'Win', value: 'win' },
-                { label: 'Loss', value: 'loss' },
-              ],
-            },
-            {
-              name: 'events',
-              type: 'array',
+              type: 'row',
               fields: [
                 {
-                  type: 'row',
-                  fields: [
-                    {
-                      name: 'timestamp',
-                      type: 'text',
-                      admin: {
-                        width: '20%',
-                        placeholder: 'Start, 2:30',
-                      },
-                    },
-                    {
-                      name: 'player',
-                      type: 'relationship',
-                      relationTo: 'people',
-                      admin: {
-                        width: '30%',
-                      },
-                    },
-                    {
-                      name: 'hero',
-                      type: 'relationship',
-                      relationTo: 'heroes',
-                      admin: {
-                        width: '30%',
-                      },
-                    },
-                    {
-                      name: 'eventType',
-                      type: 'select',
-                      defaultValue: 'start',
-                      admin: {
-                        width: '20%',
-                      },
-                      options: [
-                        { label: 'Start', value: 'start' },
-                        { label: 'Switch', value: 'switch' },
-                      ],
-                    },
+                  name: 'hero',
+                  type: 'relationship',
+                  relationTo: 'heroes',
+                  admin: {
+                    width: '60%',
+                  },
+                },
+                {
+                  name: 'direction',
+                  type: 'select',
+                  admin: {
+                    width: '40%',
+                  },
+                  options: [
+                    { label: '🚫 They Ban', value: 'theyban' },
+                    { label: '🎯 Opponent Bans', value: 'opponentban' },
                   ],
                 },
               ],
             },
           ],
         },
-      ],
-    },
 
-    // Ban Analysis
-    {
-      name: 'banAnalysis',
-      type: 'array',
-      admin: {
-        description: 'Hero ban patterns per map with win/loss data',
-      },
-      fields: [
+        // Rounds/Submaps
         {
-          type: 'row',
+          name: 'rounds',
+          type: 'array',
+          labels: {
+            singular: 'Round',
+            plural: 'Rounds',
+          },
+          admin: {
+            description: 'Attack/Defense or submaps (e.g., Gardens, Lighthouse)',
+            initCollapsed: false,
+          },
           fields: [
             {
-              name: 'map',
-              type: 'text',
-              required: true,
-              admin: {
-                width: '30%',
-                placeholder: 'Map name',
-              },
-            },
-            {
-              name: 'hero',
-              type: 'relationship',
-              relationTo: 'heroes',
-              admin: {
-                width: '35%',
-              },
-            },
-            {
-              name: 'direction',
-              type: 'select',
-              admin: {
-                width: '35%',
-              },
-              options: [
-                { label: 'They Ban', value: 'theyban' },
-                { label: 'We Ban', value: 'weban' },
-                { label: 'Either Side', value: 'either' },
+              type: 'row',
+              fields: [
+                {
+                  name: 'roundName',
+                  type: 'text',
+                  admin: {
+                    width: '30%',
+                    placeholder: 'Attack, Defense, Gardens...',
+                  },
+                },
+                {
+                  name: 'roundResult',
+                  type: 'select',
+                  admin: {
+                    width: '20%',
+                  },
+                  options: [
+                    { label: '✅ Win', value: 'win' },
+                    { label: '❌ Loss', value: 'loss' },
+                  ],
+                },
+                {
+                  name: 'heroPicksText',
+                  type: 'textarea',
+                  admin: {
+                    placeholder: 'Tank: Orisa→Sigma\nDPS: Widow\nDPS: Sombra→Tracer\nSupport: Lucio\nSupport: Bap→Illari',
+                    description: 'One role per line, use arrows for switches',
+                  },
+                },
               ],
             },
-          ],
-        },
-        {
-          type: 'row',
-          fields: [
             {
-              name: 'count',
-              type: 'number',
+              name: 'roundNotes',
+              type: 'textarea',
               admin: {
-                width: '25%',
-                placeholder: 'Times banned',
-              },
-            },
-            {
-              name: 'winsWhenBanned',
-              type: 'number',
-              admin: {
-                width: '25%',
-                placeholder: 'Wins',
-              },
-            },
-            {
-              name: 'lossesWhenBanned',
-              type: 'number',
-              admin: {
-                width: '25%',
-                placeholder: 'Losses',
+                placeholder: 'Observations for this round...',
               },
             },
           ],
         },
+
+        // Map-level notes
         {
-          name: 'notes',
-          type: 'textarea',
+          name: 'mapNotes',
+          type: 'richText',
           admin: {
-            placeholder: 'Ban context (e.g., "Counter ban when we go Lucio")',
+            description: 'Overall observations for this map',
           },
         },
       ],
     },
 
-    // Notes & Recommendations
+    // ===== OVERALL NOTES & ANALYSIS =====
     {
-      name: 'quickNotes',
+      name: 'overallNotes',
       type: 'richText',
       admin: {
-        description: 'Important observations (IMPORTANT!! section)',
+        description: 'Trends noticed across all maps — playstyle, tendencies, patterns',
+      },
+    },
+    {
+      name: 'weaknesses',
+      type: 'richText',
+      admin: {
+        description: 'Exploitable weaknesses to target',
       },
     },
     {

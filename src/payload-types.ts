@@ -77,16 +77,18 @@ export interface Config {
     'tournament-templates': TournamentTemplate;
     'faceit-seasons': FaceitSeason;
     'social-posts': SocialPost;
-    'events-anchor': EventsAnchor;
     'graphics-anchor': GraphicsAnchor;
     'video-anchor': VideoAnchor;
+    'events-anchor': EventsAnchor;
     heroes: Hero;
+    maps: Map;
     'opponent-teams': OpponentTeam;
+    'scout-reports': ScoutReport;
+    'scrim-outcomes': ScrimOutcome;
     'recruitment-listings': RecruitmentListing;
     'recruitment-applications': RecruitmentApplication;
     tasks: Task;
     'discord-polls': DiscordPoll;
-    'quick-scrims': QuickScrim;
     'discord-category-templates': DiscordCategoryTemplate;
     'watched-threads': WatchedThread;
     'audit-logs': AuditLog;
@@ -116,16 +118,18 @@ export interface Config {
     'tournament-templates': TournamentTemplatesSelect<false> | TournamentTemplatesSelect<true>;
     'faceit-seasons': FaceitSeasonsSelect<false> | FaceitSeasonsSelect<true>;
     'social-posts': SocialPostsSelect<false> | SocialPostsSelect<true>;
-    'events-anchor': EventsAnchorSelect<false> | EventsAnchorSelect<true>;
     'graphics-anchor': GraphicsAnchorSelect<false> | GraphicsAnchorSelect<true>;
     'video-anchor': VideoAnchorSelect<false> | VideoAnchorSelect<true>;
+    'events-anchor': EventsAnchorSelect<false> | EventsAnchorSelect<true>;
     heroes: HeroesSelect<false> | HeroesSelect<true>;
+    maps: MapsSelect<false> | MapsSelect<true>;
     'opponent-teams': OpponentTeamsSelect<false> | OpponentTeamsSelect<true>;
+    'scout-reports': ScoutReportsSelect<false> | ScoutReportsSelect<true>;
+    'scrim-outcomes': ScrimOutcomesSelect<false> | ScrimOutcomesSelect<true>;
     'recruitment-listings': RecruitmentListingsSelect<false> | RecruitmentListingsSelect<true>;
     'recruitment-applications': RecruitmentApplicationsSelect<false> | RecruitmentApplicationsSelect<true>;
     tasks: TasksSelect<false> | TasksSelect<true>;
     'discord-polls': DiscordPollsSelect<false> | DiscordPollsSelect<true>;
-    'quick-scrims': QuickScrimsSelect<false> | QuickScrimsSelect<true>;
     'discord-category-templates': DiscordCategoryTemplatesSelect<false> | DiscordCategoryTemplatesSelect<true>;
     'watched-threads': WatchedThreadsSelect<false> | WatchedThreadsSelect<true>;
     'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
@@ -151,13 +155,13 @@ export interface Config {
     header: Header;
     footer: Footer;
     'production-dashboard': ProductionDashboard;
-    'social-media-settings': SocialMediaSetting;
     'social-media-config': SocialMediaConfig;
+    'social-media-settings': SocialMediaSetting;
     'graphics-dashboard': GraphicsDashboard;
     'video-editing-dashboard': VideoEditingDashboard;
     'events-dashboard': EventsDashboard;
+    'opponent-wiki': OpponentWiki;
     'scouting-dashboard': ScoutingDashboard;
-    'map-pool': MapPool;
     'discord-server-manager': DiscordServerManager;
     'audit-log-viewer': AuditLogViewer;
     'cron-monitor': CronMonitor;
@@ -171,13 +175,13 @@ export interface Config {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'production-dashboard': ProductionDashboardSelect<false> | ProductionDashboardSelect<true>;
-    'social-media-settings': SocialMediaSettingsSelect<false> | SocialMediaSettingsSelect<true>;
     'social-media-config': SocialMediaConfigSelect<false> | SocialMediaConfigSelect<true>;
+    'social-media-settings': SocialMediaSettingsSelect<false> | SocialMediaSettingsSelect<true>;
     'graphics-dashboard': GraphicsDashboardSelect<false> | GraphicsDashboardSelect<true>;
     'video-editing-dashboard': VideoEditingDashboardSelect<false> | VideoEditingDashboardSelect<true>;
     'events-dashboard': EventsDashboardSelect<false> | EventsDashboardSelect<true>;
+    'opponent-wiki': OpponentWikiSelect<false> | OpponentWikiSelect<true>;
     'scouting-dashboard': ScoutingDashboardSelect<false> | ScoutingDashboardSelect<true>;
-    'map-pool': MapPoolSelect<false> | MapPoolSelect<true>;
     'discord-server-manager': DiscordServerManagerSelect<false> | DiscordServerManagerSelect<true>;
     'audit-log-viewer': AuditLogViewerSelect<false> | AuditLogViewerSelect<true>;
     'cron-monitor': CronMonitorSelect<false> | CronMonitorSelect<true>;
@@ -1306,19 +1310,7 @@ export interface SocialPost {
   createdAt: string;
 }
 /**
- * Internal - use Events Dashboard instead
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "events-anchor".
- */
-export interface EventsAnchor {
-  id: number;
-  placeholder?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Internal - use Graphics Dashboard instead
+ * 🎨 Graphics department dashboard
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "graphics-anchor".
@@ -1330,12 +1322,24 @@ export interface GraphicsAnchor {
   createdAt: string;
 }
 /**
- * Internal - use Video Editing Dashboard instead
+ * 🎥 Video department dashboard
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "video-anchor".
  */
 export interface VideoAnchor {
+  id: number;
+  placeholder?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * 🎉 Events department dashboard
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events-anchor".
+ */
+export interface EventsAnchor {
   id: number;
   placeholder?: string | null;
   updatedAt: string;
@@ -1356,6 +1360,28 @@ export interface Hero {
    * Is this hero currently in the game?
    */
   active?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Overwatch 2 competitive maps
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "maps".
+ */
+export interface Map {
+  id: number;
+  name: string;
+  type: 'control' | 'hybrid' | 'flashpoint' | 'push' | 'escort';
+  /**
+   * Submaps/points for Control maps (max 3)
+   */
+  submaps?:
+    | {
+        name: string;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1386,11 +1412,15 @@ export interface OpponentTeam {
    */
   rank?: string | null;
   status?: ('active' | 'inactive' | 'archived' | 'disbanded') | null;
-  region?: ('na' | 'eu' | 'apac') | null;
+  region?: ('na' | 'eu' | 'sa' | 'apac') | null;
   /**
-   * Primary contact for scrims
+   * Team manager for scheduling scrims
    */
-  contact?: string | null;
+  managerContact?: string | null;
+  /**
+   * In-game contact for lobby invites
+   */
+  battleNet?: string | null;
   /**
    * Active team members
    */
@@ -1439,6 +1469,294 @@ export interface OpponentTeam {
    * When archived, roster moves to previous
    */
   archivedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Patch-based intelligence on opponent teams
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "scout-reports".
+ */
+export interface ScoutReport {
+  id: number;
+  title?: string | null;
+  /**
+   * Team being scouted
+   */
+  opponentTeam?: (number | null) | OpponentTeam;
+  /**
+   * Game version/season
+   */
+  patchVersion?: string | null;
+  status?: ('draft' | 'active' | 'archived') | null;
+  reportedBy?: (number | null) | User;
+  /**
+   * Opponent roster at time of scouting (use Populate button above)
+   */
+  rosterSnapshot?:
+    | {
+        person?: (number | null) | Person;
+        position?: ('tank' | 'hitscan' | 'fdps' | 'ms' | 'fs') | null;
+        nickname?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Add maps as you review VODs. Each map can have rounds and notes.
+   */
+  mapGames?:
+    | {
+        map?: (number | null) | Map;
+        mapResult?: ('win' | 'loss' | 'unknown') | null;
+        replayCode?: string | null;
+        /**
+         * Hero bans on this map
+         */
+        bans?:
+          | {
+              hero?: (number | null) | Hero;
+              direction?: ('theyban' | 'opponentban') | null;
+              id?: string | null;
+            }[]
+          | null;
+        /**
+         * Attack/Defense or submaps (e.g., Gardens, Lighthouse)
+         */
+        rounds?:
+          | {
+              roundName?: string | null;
+              roundResult?: ('win' | 'loss') | null;
+              /**
+               * One role per line, use arrows for switches
+               */
+              heroPicksText?: string | null;
+              roundNotes?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        /**
+         * Overall observations for this map
+         */
+        mapNotes?: {
+          root: {
+            type: string;
+            children: {
+              type: any;
+              version: number;
+              [k: string]: unknown;
+            }[];
+            direction: ('ltr' | 'rtl') | null;
+            format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+            indent: number;
+            version: number;
+          };
+          [k: string]: unknown;
+        } | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Trends noticed across all maps — playstyle, tendencies, patterns
+   */
+  overallNotes?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Exploitable weaknesses to target
+   */
+  weaknesses?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Strategic recommendations for playing against this team
+   */
+  recommendations?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Post-scrim feedback and ratings per team
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "scrim-outcomes".
+ */
+export interface ScrimOutcome {
+  id: number;
+  title?: string | null;
+  /**
+   * Link to a schedule (optional)
+   */
+  scrim?: (number | null) | DiscordPoll;
+  /**
+   * Which of your teams played
+   */
+  yourTeam: number | Team;
+  opponentTeam: number | OpponentTeam;
+  scrimDate: string;
+  /**
+   * How did the scrim go?
+   */
+  rating: 'easywin' | 'closewin' | 'neutral' | 'closeloss' | 'gotrolled';
+  /**
+   * Should we scrim this team again?
+   */
+  worthScrimAgain: 'yes' | 'maybe' | 'no';
+  /**
+   * Results per map
+   */
+  mapsPlayed?:
+    | {
+        map: string;
+        result?: ('win' | 'loss' | 'draw') | null;
+        score?: string | null;
+        notes?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Post-scrim thoughts and observations
+   */
+  overallNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * 📅 Create and manage team schedules - from polls or manually. Supports multi-block days, ringers, and Discord posting.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discord-polls".
+ */
+export interface DiscordPoll {
+  id: number;
+  votes?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  schedule?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Team this schedule belongs to
+   */
+  team: number | Team;
+  status?: ('active' | 'closed' | 'scheduled') | null;
+  /**
+   * e.g., "8-10 EST"
+   */
+  timeSlot?: string | null;
+  /**
+   * Poll date range
+   */
+  dateRangeDisplay?: string | null;
+  /**
+   * Set automatically when schedule is published
+   */
+  publishedToCalendar?: boolean | null;
+  /**
+   * Discord message ID (for updating existing post)
+   */
+  calendarMessageId?: string | null;
+  /**
+   * Created by
+   */
+  createdBy?: (number | null) | User;
+  /**
+   * How this schedule was created
+   */
+  createdVia?: ('discord-command' | 'admin-panel') | null;
+  /**
+   * Name for this schedule (e.g., "Week of Jan 20")
+   */
+  pollName: string;
+  messageId?: string | null;
+  channelId?: string | null;
+  threadId?: string | null;
+  dateRange?: {
+    start?: string | null;
+    end?: string | null;
+  };
+  /**
+   * Who did you scrim against?
+   */
+  opponentTeam?: (number | null) | OpponentTeam;
+  /**
+   * How did we perform?
+   */
+  ourRating?: ('easywin' | 'closewin' | 'neutral' | 'closeloss' | 'gotrolled') | null;
+  /**
+   * How strong was the opponent?
+   */
+  opponentRating?: ('weak' | 'average' | 'strong' | 'verystrong') | null;
+  /**
+   * Should we scrim this team again?
+   */
+  worthScrimAgain?: ('yes' | 'maybe' | 'no') | null;
+  /**
+   * Record results per map
+   */
+  mapsPlayed?:
+    | {
+        map?: (number | null) | Map;
+        result?: ('win' | 'loss' | 'draw') | null;
+        score?: string | null;
+        mapNotes?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Post-scrim thoughts, areas to improve, etc.
+   */
+  scrimNotes?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1683,128 +2001,6 @@ export interface Task {
    * When task was marked complete
    */
   completedAt?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * 📊 Manage availability polls and weekly schedules
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "discord-polls".
- */
-export interface DiscordPoll {
-  id: number;
-  votes?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  schedule?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
-  /**
-   * Auto-linked from thread
-   */
-  team?: (number | null) | Team;
-  status?: ('active' | 'closed' | 'scheduled') | null;
-  /**
-   * e.g., "8-10 EST"
-   */
-  timeSlot?: string | null;
-  /**
-   * Poll date range
-   */
-  dateRangeDisplay?: string | null;
-  /**
-   * Set automatically when schedule is published
-   */
-  publishedToCalendar?: boolean | null;
-  /**
-   * Discord message ID (for updating existing post)
-   */
-  calendarMessageId?: string | null;
-  /**
-   * Created by
-   */
-  createdBy?: (number | null) | User;
-  createdVia?: ('discord-command' | 'admin-panel') | null;
-  pollName: string;
-  messageId: string;
-  channelId: string;
-  threadId?: string | null;
-  dateRange?: {
-    start?: string | null;
-    end?: string | null;
-  };
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Post scrim announcements for teams with fixed schedules (no poll needed)
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "quick-scrims".
- */
-export interface QuickScrim {
-  id: number;
-  title?: string | null;
-  team: number | Team;
-  scrimDate: string;
-  scrimTime: string;
-  /**
-   * Players for this scrim. Select from team roster or check "Ringer" to pick anyone.
-   */
-  roster?:
-    | {
-        role: 'tank' | 'dps' | 'fdps' | 'hitscan' | 'support' | 'ms' | 'fs';
-        /**
-         * Ringer (show all players)
-         */
-        isRinger?: boolean | null;
-        /**
-         * Select from team roster
-         */
-        rosterPlayer?: (number | null) | Person;
-        rosterPlayerName?: string | null;
-        /**
-         * Select any player
-         */
-        ringerPlayer?: (number | null) | Person;
-        ringerName?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  opponent?: string | null;
-  /**
-   * Opponent team lineup
-   */
-  opponentRoster?: string | null;
-  host?: ('us' | 'them') | null;
-  contact?: string | null;
-  mapPool?: string | null;
-  /**
-   * Hero bans enabled
-   */
-  heroBans?: boolean | null;
-  /**
-   * Staggers enabled
-   */
-  staggers?: boolean | null;
-  notes?: string | null;
-  /**
-   * Posted to Discord
-   */
-  posted?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2351,10 +2547,6 @@ export interface PayloadLockedDocument {
         value: number | SocialPost;
       } | null)
     | ({
-        relationTo: 'events-anchor';
-        value: number | EventsAnchor;
-      } | null)
-    | ({
         relationTo: 'graphics-anchor';
         value: number | GraphicsAnchor;
       } | null)
@@ -2363,12 +2555,28 @@ export interface PayloadLockedDocument {
         value: number | VideoAnchor;
       } | null)
     | ({
+        relationTo: 'events-anchor';
+        value: number | EventsAnchor;
+      } | null)
+    | ({
         relationTo: 'heroes';
         value: number | Hero;
       } | null)
     | ({
+        relationTo: 'maps';
+        value: number | Map;
+      } | null)
+    | ({
         relationTo: 'opponent-teams';
         value: number | OpponentTeam;
+      } | null)
+    | ({
+        relationTo: 'scout-reports';
+        value: number | ScoutReport;
+      } | null)
+    | ({
+        relationTo: 'scrim-outcomes';
+        value: number | ScrimOutcome;
       } | null)
     | ({
         relationTo: 'recruitment-listings';
@@ -2385,10 +2593,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'discord-polls';
         value: number | DiscordPoll;
-      } | null)
-    | ({
-        relationTo: 'quick-scrims';
-        value: number | QuickScrim;
       } | null)
     | ({
         relationTo: 'discord-category-templates';
@@ -2883,15 +3087,6 @@ export interface SocialPostsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "events-anchor_select".
- */
-export interface EventsAnchorSelect<T extends boolean = true> {
-  placeholder?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "graphics-anchor_select".
  */
 export interface GraphicsAnchorSelect<T extends boolean = true> {
@@ -2910,12 +3105,37 @@ export interface VideoAnchorSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events-anchor_select".
+ */
+export interface EventsAnchorSelect<T extends boolean = true> {
+  placeholder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "heroes_select".
  */
 export interface HeroesSelect<T extends boolean = true> {
   name?: T;
   role?: T;
   active?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "maps_select".
+ */
+export interface MapsSelect<T extends boolean = true> {
+  name?: T;
+  type?: T;
+  submaps?:
+    | T
+    | {
+        name?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2935,7 +3155,8 @@ export interface OpponentTeamsSelect<T extends boolean = true> {
   rank?: T;
   status?: T;
   region?: T;
-  contact?: T;
+  managerContact?: T;
+  battleNet?: T;
   currentRoster?:
     | T
     | {
@@ -2955,6 +3176,80 @@ export interface OpponentTeamsSelect<T extends boolean = true> {
       };
   generalNotes?: T;
   archivedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "scout-reports_select".
+ */
+export interface ScoutReportsSelect<T extends boolean = true> {
+  title?: T;
+  opponentTeam?: T;
+  patchVersion?: T;
+  status?: T;
+  reportedBy?: T;
+  rosterSnapshot?:
+    | T
+    | {
+        person?: T;
+        position?: T;
+        nickname?: T;
+        id?: T;
+      };
+  mapGames?:
+    | T
+    | {
+        map?: T;
+        mapResult?: T;
+        replayCode?: T;
+        bans?:
+          | T
+          | {
+              hero?: T;
+              direction?: T;
+              id?: T;
+            };
+        rounds?:
+          | T
+          | {
+              roundName?: T;
+              roundResult?: T;
+              heroPicksText?: T;
+              roundNotes?: T;
+              id?: T;
+            };
+        mapNotes?: T;
+        id?: T;
+      };
+  overallNotes?: T;
+  weaknesses?: T;
+  recommendations?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "scrim-outcomes_select".
+ */
+export interface ScrimOutcomesSelect<T extends boolean = true> {
+  title?: T;
+  scrim?: T;
+  yourTeam?: T;
+  opponentTeam?: T;
+  scrimDate?: T;
+  rating?: T;
+  worthScrimAgain?: T;
+  mapsPlayed?:
+    | T
+    | {
+        map?: T;
+        result?: T;
+        score?: T;
+        notes?: T;
+        id?: T;
+      };
+  overallNotes?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3058,38 +3353,20 @@ export interface DiscordPollsSelect<T extends boolean = true> {
         start?: T;
         end?: T;
       };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "quick-scrims_select".
- */
-export interface QuickScrimsSelect<T extends boolean = true> {
-  title?: T;
-  team?: T;
-  scrimDate?: T;
-  scrimTime?: T;
-  roster?:
+  opponentTeam?: T;
+  ourRating?: T;
+  opponentRating?: T;
+  worthScrimAgain?: T;
+  mapsPlayed?:
     | T
     | {
-        role?: T;
-        isRinger?: T;
-        rosterPlayer?: T;
-        rosterPlayerName?: T;
-        ringerPlayer?: T;
-        ringerName?: T;
+        map?: T;
+        result?: T;
+        score?: T;
+        mapNotes?: T;
         id?: T;
       };
-  opponent?: T;
-  opponentRoster?: T;
-  host?: T;
-  contact?: T;
-  mapPool?: T;
-  heroBans?: T;
-  staggers?: T;
-  notes?: T;
-  posted?: T;
+  scrimNotes?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3500,17 +3777,6 @@ export interface ProductionDashboard {
   createdAt?: string | null;
 }
 /**
- * 📱 Manage social media posts, content calendar, and posting schedule
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "social-media-settings".
- */
-export interface SocialMediaSetting {
-  id: number;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
  * ⚙️ Configure templates, goals, and content guidelines for social media posts
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3595,6 +3861,17 @@ export interface SocialMediaConfig {
   createdAt?: string | null;
 }
 /**
+ * 📱 Manage social media posts, content calendar, and posting schedule
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "social-media-settings".
+ */
+export interface SocialMediaSetting {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * 🎨 Manage graphics requests, projects, and asset library
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3628,6 +3905,17 @@ export interface EventsDashboard {
   createdAt?: string | null;
 }
 /**
+ * 📖 Comprehensive intel profiles for opponent teams
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "opponent-wiki".
+ */
+export interface OpponentWiki {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * 🔍 Manage enemy team research, player profiles, and match analysis
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3635,34 +3923,6 @@ export interface EventsDashboard {
  */
 export interface ScoutingDashboard {
   id: number;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "map-pool".
- */
-export interface MapPool {
-  id: number;
-  /**
-   * All Overwatch 2 competitive maps
-   */
-  maps?:
-    | {
-        name: string;
-        type: 'control' | 'hybrid' | 'flashpoint' | 'push' | 'escort';
-        /**
-         * Submaps/points for Control maps (max 3)
-         */
-        submaps?:
-          | {
-              name: string;
-              id?: string | null;
-            }[]
-          | null;
-        id?: string | null;
-      }[]
-    | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -3821,15 +4081,6 @@ export interface ProductionDashboardSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "social-media-settings_select".
- */
-export interface SocialMediaSettingsSelect<T extends boolean = true> {
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "social-media-config_select".
  */
 export interface SocialMediaConfigSelect<T extends boolean = true> {
@@ -3852,6 +4103,15 @@ export interface SocialMediaConfigSelect<T extends boolean = true> {
         originalContent?: T;
       };
   contentGuidelines?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "social-media-settings_select".
+ */
+export interface SocialMediaSettingsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -3885,31 +4145,18 @@ export interface EventsDashboardSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "scouting-dashboard_select".
+ * via the `definition` "opponent-wiki_select".
  */
-export interface ScoutingDashboardSelect<T extends boolean = true> {
+export interface OpponentWikiSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "map-pool_select".
+ * via the `definition` "scouting-dashboard_select".
  */
-export interface MapPoolSelect<T extends boolean = true> {
-  maps?:
-    | T
-    | {
-        name?: T;
-        type?: T;
-        submaps?:
-          | T
-          | {
-              name?: T;
-              id?: T;
-            };
-        id?: T;
-      };
+export interface ScoutingDashboardSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

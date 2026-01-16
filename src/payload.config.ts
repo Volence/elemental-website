@@ -27,12 +27,13 @@ import { ErrorLogs } from './collections/ErrorLogs'
 import { CronJobRuns } from './collections/CronJobRuns'
 import { ActiveSessions } from './collections/ActiveSessions'
 import { DiscordPolls } from './collections/DiscordPolls'
-import { QuickScrims } from './collections/QuickScrims'
+
 import { WatchedThreads } from './collections/WatchedThreads'
 import { Heroes } from './collections/Heroes'
 import { OpponentTeams } from './collections/OpponentTeams'
 import { ScoutReports } from './collections/ScoutReports'
 import { ScrimOutcomes } from './collections/ScrimOutcomes'
+import { Maps } from './collections/Maps'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { DataConsistency } from './globals/DataConsistency'
@@ -52,7 +53,8 @@ import { GraphicsDashboard } from './globals/GraphicsDashboard'
 import { VideoEditingDashboard } from './globals/VideoEditingDashboard'
 import { EventsDashboard } from './globals/EventsDashboard'
 import { ScoutingDashboard } from './globals/ScoutingDashboard'
-import { MapPool } from './globals/MapPool'
+import { OpponentWiki } from './globals/OpponentWiki'
+
 import { GraphicsAnchor, VideoAnchor, EventsAnchor } from './collections/DepartmentAnchors'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
@@ -149,13 +151,14 @@ const config = buildConfig({
     // SOCIAL MEDIA: Department - Content & calendar
     SocialPosts,
     
-    // DEPARTMENT ANCHORS: Position department groups after Social Media
-    EventsAnchor, // Events group - first
+    // DEPARTMENT WORKBOARDS: Show Kanban boards for each department
     GraphicsAnchor, // Graphics group
     VideoAnchor, // Video group
+    EventsAnchor, // Events group
     
-    // SCOUTING: Team intelligence
+    // COMPETITIVE: Team intelligence (renamed from Scouting)
     Heroes,
+    Maps,
     OpponentTeams,
     ScoutReports,
     ScrimOutcomes,
@@ -169,7 +172,6 @@ const config = buildConfig({
     
     // DISCORD: Bot integration
     DiscordPolls,
-    QuickScrims,
     DiscordCategoryTemplates,
     WatchedThreads,
     
@@ -190,22 +192,28 @@ const config = buildConfig({
     Header, 
     Footer, 
     ProductionDashboard, // Production group
-    SocialMediaSettings, // Social Media group
-    SocialMediaConfig, // Social Media group
-    // Department dashboards (placed here to appear near Production/Social Media in sidebar)
+    SocialMediaConfig, // Social Media group - Settings first
+    SocialMediaSettings, // Social Media group - Dashboard second
+    
+    // Department dashboards - placed here so groups appear after Social Media
     GraphicsDashboard, // Graphics group
     VideoEditingDashboard, // Video group
     EventsDashboard, // Events group
-    ScoutingDashboard, // Scouting group
-    MapPool, // Scouting group - map configuration
-    // Other utility sections
+    
+    // Competitive/Recruiting dashboards
+    OpponentWiki, // Competitive group - opponent intel profiles
+    ScoutingDashboard, // Recruiting group
+
+    // Discord management
     DiscordServerManager, // Discord group
-    AuditLogViewer, // Monitoring group
-    CronMonitor, // Monitoring group
-    ErrorDashboard, // Monitoring group
-    ActiveSessionsViewer, // Monitoring group
-    DatabaseHealth, // Monitoring group
-    DataConsistency, // System group
+    
+    // System & Monitoring (admin only)
+    AuditLogViewer,
+    CronMonitor,
+    ErrorDashboard,
+    ActiveSessionsViewer,
+    DatabaseHealth,
+    DataConsistency,
     ErrorHarvesterState, // Internal state tracking (hidden)
   ],
   plugins: [

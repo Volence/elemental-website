@@ -8,10 +8,11 @@ export const ScrimOutcomes: CollectionConfig = {
     plural: 'Scrim Outcomes',
   },
   admin: {
-    group: 'Scouting',
+    group: 'Competitive',
     useAsTitle: 'title',
     defaultColumns: ['title', 'yourTeam', 'opponentTeam', 'rating', 'scrimDate'],
     description: 'Post-scrim feedback and ratings per team',
+    hidden: true, // Deprecated - outcomes now tracked in Schedules
   },
   access: {
     read: ({ req }) => {
@@ -94,10 +95,10 @@ export const ScrimOutcomes: CollectionConfig = {
     {
       name: 'scrim',
       type: 'relationship',
-      relationTo: 'quick-scrims',
+      relationTo: 'discord-polls', // Changed from quick-scrims to schedules
       admin: {
         position: 'sidebar',
-        description: 'Link to the scrim (optional)',
+        description: 'Link to a schedule (optional)',
       },
     },
     {

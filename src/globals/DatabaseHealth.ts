@@ -6,7 +6,7 @@ export const DatabaseHealth: GlobalConfig = {
   label: 'Database Health',
   admin: {
     description: '📊 System overview and health monitoring.',
-    group: 'Monitoring',
+    group: 'System',
     hideAPIURL: true,
     components: {
       elements: {

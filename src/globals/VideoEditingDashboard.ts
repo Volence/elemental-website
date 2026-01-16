@@ -7,14 +7,7 @@ export const VideoEditingDashboard: GlobalConfig = {
   admin: {
     description: '🎬 Manage video projects, clips of the week, and edits',
     group: 'Video',
-    hidden: ({ user }) => {
-      if (!user) return true
-      const u = user as any
-      // Show to admins and staff managers
-      if (user.role === 'admin' || user.role === 'staff-manager') return false
-      // Show to video staff
-      return !u.departments?.isVideoStaff
-    },
+    hidden: true, // Hidden - use Video Workboard instead
     hideAPIURL: true,
     components: {
       elements: {

@@ -1,21 +1,32 @@
 import type { CollectionConfig } from 'payload'
+import { isEventsStaff } from '@/access/roles'
 
 /**
- * Anchor collection to establish Events group position in sidebar.
- * This ensures the Events group appears after Social Media in the admin navigation.
- * The collection is visible in the sidebar but will always show 0 items.
+ * Events Workboard - Shows Kanban board for events department tasks.
+ * This collection is empty but displays the workboard UI component.
  */
 export const EventsAnchor: CollectionConfig = {
   slug: 'events-anchor',
   labels: {
-    singular: 'Events Request',
-    plural: 'Events Requests',
+    singular: 'Events Dashboard',
+    plural: 'Events Dashboard',
   },
   admin: {
     group: 'Events',
-    description: 'Internal - use Events Dashboard instead',
-    // Visible in sidebar to establish group order
-    hidden: false,
+    description: '🎉 Events department dashboard',
+    hidden: ({ user }) => {
+      if (!user) return true
+      const u = user as any
+      // Show to events staff, admins, and staff managers
+      return !(u.departments?.isEventsStaff || user.role === 'admin' || user.role === 'staff-manager')
+    },
+    components: {
+      views: {
+        list: {
+          Component: '@/components/DepartmentWorkboard#EventsWorkboard',
+        },
+      },
+    },
   },
   fields: [
     {
@@ -24,8 +35,7 @@ export const EventsAnchor: CollectionConfig = {
     },
   ],
   access: {
-    // Allow read but collection will always be empty
-    read: () => true,
+    read: isEventsStaff,
     create: () => false,
     update: () => false,
     delete: () => false,

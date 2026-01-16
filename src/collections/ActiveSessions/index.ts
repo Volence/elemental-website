@@ -11,7 +11,7 @@ export const ActiveSessions: CollectionConfig = {
     useAsTitle: 'user',
     defaultColumns: ['user', 'loginTime', 'lastActivity', 'isActive', 'ipAddress'],
     description: '👥 Track active admin panel sessions for security monitoring.',
-    group: 'Monitoring',
+    group: 'System',
     hidden: () => true, // Hidden from sidebar (use Monitoring globals instead)
   },
   access: {

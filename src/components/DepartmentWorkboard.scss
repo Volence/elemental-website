@@ -1,0 +1,39 @@
+.department-workboard {
+  // Match global document styling
+  padding: 0;
+  
+  &__inner {
+    // Remove default collection list view padding and add dashboard-like styling
+    padding: 1.5rem;
+    min-height: calc(100vh - 120px);
+    
+    // Override any collection list view defaults
+    .collection-list__header,
+    .list-controls,
+    .table {
+      display: none;
+    }
+  }
+}
+
+// Hide the default collection list UI when workboard is shown
+.collection--graphics-anchor,
+.collection--video-anchor,
+.collection--events-anchor {
+  .collection-list__header {
+    display: none;
+  }
+  
+  .list-controls {
+    display: none;
+  }
+  
+  .table {
+    display: none;
+  }
+  
+  // Show only the custom view
+  .render-custom-component {
+    display: block;
+  }
+}

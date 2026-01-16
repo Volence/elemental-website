@@ -6,7 +6,7 @@ export const AuditLogViewer: GlobalConfig = {
   label: 'Audit Log',
   admin: {
     description: '🔍 View user action logs for security monitoring.',
-    group: 'Monitoring',
+    group: 'System',
     hideAPIURL: true,
     components: {
       elements: {

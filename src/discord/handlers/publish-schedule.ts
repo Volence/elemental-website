@@ -6,23 +6,38 @@ import type { TextChannel, ThreadChannel } from 'discord.js'
 interface PlayerSlot {
   role: string
   playerId: string | null
+  isRinger?: boolean
+  ringerName?: string
+}
+
+interface ScrimDetails {
+  opponentTeamId?: number | null
+  opponent: string
+  opponentRoster: string
+  contact: string
+  host: 'us' | 'them' | ''
+  mapPool: string
+  heroBans: boolean
+  staggers: boolean
+  notes: string
+}
+
+interface TimeBlock {
+  id: string
+  time: string
+  slots: PlayerSlot[]
+  scrim?: ScrimDetails
+  reminderPosted?: boolean
 }
 
 interface DaySchedule {
   date: string
-  slots: PlayerSlot[]
-  scrim?: {
-    opponent: string
-    opponentRoster: string
-    contact: string
-    time: string
-    host: 'us' | 'them' | ''
-    mapPool: string
-    heroBans: boolean
-    staggers: boolean
-    notes: string
-  }
   enabled: boolean
+  useAllMembers?: boolean
+  blocks: TimeBlock[]
+  // Legacy fields for backward compatibility
+  slots?: PlayerSlot[]
+  scrim?: ScrimDetails & { time?: string }
 }
 
 interface ScheduleData {
@@ -40,11 +55,15 @@ interface VoteData {
 }
 
 /**
- * Format a schedule for Discord posting
+ * Format a schedule for Discord posting with code blocks per day
+ * @param schedule - The schedule data
+ * @param playerMap - Pre-built map of player IDs to display names (from votes and/or People records)
+ * @param pollName - Name of the poll/schedule
+ * @param timeSlot - Default time slot for legacy format
  */
-function formatScheduleMessage(
+function formatScheduleMessageWithMap(
   schedule: ScheduleData,
-  votes: VoteData[] | null,
+  playerMap: Map<string, string>,
   pollName: string,
   timeSlot: string,
 ): string {
@@ -54,66 +73,112 @@ function formatScheduleMessage(
     return `📅 **Schedule: ${pollName}**\n\nNo scrim days scheduled this week.`
   }
 
-  // Build player ID → name map from votes
-  const playerMap = new Map<string, string>()
-  if (votes) {
-    for (const day of votes) {
-      for (const voter of day.voters) {
-        playerMap.set(voter.id, voter.displayName || voter.username)
-      }
-    }
-  }
-
-  let message = `📅 **Schedule: ${pollName}**\n`
-  message += `━━━━━━━━━━━━━━━━━━━━━━━━\n\n`
+  let message = `📅 **${pollName}**\n`
 
   for (const day of enabledDays) {
-    const scrimTime = day.scrim?.time || timeSlot
+    // Get blocks - migrate legacy format if needed
+    let blocks: TimeBlock[] = []
     
-    // === DATE/TIME ===
-    message += `**${day.date}** | ${scrimTime}\n\n`
-    
-    // === OUR ROSTER ===
-    message += `**Our Roster:**\n`
-    for (const slot of day.slots) {
-      const playerName = slot.playerId ? playerMap.get(slot.playerId) || '?' : '—'
-      message += `${slot.role}: ${playerName}\n`
+    if (day.blocks && day.blocks.length > 0) {
+      blocks = day.blocks
+    } else if (day.slots) {
+      // Legacy format - create virtual block
+      blocks = [{
+        id: 'legacy',
+        time: day.scrim?.time || timeSlot,
+        slots: day.slots,
+        scrim: day.scrim ? {
+          opponentTeamId: null,
+          opponent: day.scrim.opponent,
+          opponentRoster: day.scrim.opponentRoster,
+          contact: day.scrim.contact,
+          host: day.scrim.host,
+          mapPool: day.scrim.mapPool,
+          heroBans: day.scrim.heroBans,
+          staggers: day.scrim.staggers,
+          notes: day.scrim.notes,
+        } : undefined,
+      }]
     }
-    
-    // === VS OPPONENT + HOST ===
-    if (day.scrim?.opponent) {
-      message += `\n🆚 **vs ${day.scrim.opponent}**`
-      if (day.scrim.host) {
-        message += ` — ${day.scrim.host === 'us' ? 'We host' : 'They host'}`
+
+    if (blocks.length === 0) continue
+
+    // Format each block
+    for (let i = 0; i < blocks.length; i++) {
+      const block = blocks[i]
+      
+      // === HEADER (outside code block) ===
+      if (blocks.length > 1) {
+        message += `\n**${day.date}** • Block ${i + 1} • ${block.time}\n`
+      } else {
+        message += `\n**${day.date}** • ${block.time}\n`
       }
-      message += `\n`
-    }
+      
+      // === CODE BLOCK START ===
+      message += '```\n'
+      
+      // Status line
+      if (block.scrim?.opponent) {
+        const hostText = block.scrim.host === 'us' ? 'We host' : block.scrim.host === 'them' ? 'They host' : ''
+        message += `🆚 vs ${block.scrim.opponent}${hostText ? ` — ${hostText}` : ''}\n\n`
+      } else {
+        message += `🔍 Looking for Scrim\n\n`
+      }
+      
+      // === ROSTER (aligned) ===
+      const filledSlots = block.slots.filter(s => s.playerId || (s.isRinger && s.ringerName))
+      const totalSlots = block.slots.length
+      
+      // Pad role names for alignment (find longest role name)
+      const maxRoleLen = Math.max(...block.slots.map(s => (s.role || 'Role').length), 10)
+      
+      for (const slot of block.slots) {
+        let playerName = '—'
+        if (slot.isRinger && slot.ringerName) {
+          playerName = `${slot.ringerName} ✦` // Star indicates ringer
+        } else if (slot.playerId) {
+          playerName = playerMap.get(slot.playerId) || '?'
+        }
+        const role = (slot.role || 'Role').padEnd(maxRoleLen)
+        message += `${role}  ${playerName}\n`
+      }
+      
+      // Roster summary
+      if (filledSlots.length === totalSlots && totalSlots > 0) {
+        message += `\n✓ Roster confirmed\n`
+      } else if (filledSlots.length > 0) {
+        message += `\n${filledSlots.length}/${totalSlots} slots filled\n`
+      }
+      
+      // === SETTINGS LINE ===
+      const settings: string[] = []
+      if (block.scrim?.heroBans) settings.push('Hero Bans')
+      if (block.scrim?.staggers) settings.push('Staggers')
+      if (block.scrim?.mapPool) settings.push(`Maps: ${block.scrim.mapPool}`)
+      if (settings.length > 0) {
+        message += `⚙️ ${settings.join(' • ')}\n`
+      }
+      
+      // === CONTACT ===
+      if (block.scrim?.contact) {
+        message += `📞 ${block.scrim.contact}\n`
+      }
+      
+      // === THEIR ROSTER (inside code block) ===
+      if (block.scrim?.opponentRoster) {
+        message += `\n─── Their Roster ───\n${block.scrim.opponentRoster}\n`
+      }
 
-    // === CONTACT ===
-    if (day.scrim?.contact) {
-      message += `📞 Contact: ${day.scrim.contact}\n`
+      // === NOTES (inside code block) ===
+      if (block.scrim?.notes) {
+        message += `\n📝 ${block.scrim.notes}\n`
+      }
+      
+      // === CODE BLOCK END ===
+      message += '```'
     }
-
-    // === RULES ===
-    const rules: string[] = []
-    if (day.scrim?.mapPool) rules.push(`Maps: ${day.scrim.mapPool}`)
-    rules.push(`Hero Bans: ${day.scrim?.heroBans ? 'On' : 'Off'}`)
-    if (day.scrim?.staggers) rules.push(`Staggers: On`)
-    if (rules.length > 0) {
-      message += `⚙️ ${rules.join(' • ')}\n`
-    }
-
-    // === THEIR ROSTER ===
-    if (day.scrim?.opponentRoster) {
-      message += `\n**Their Roster:**\n${day.scrim.opponentRoster}\n`
-    }
-
-    // === NOTES ===
-    if (day.scrim?.notes) {
-      message += `\n📝 ${day.scrim.notes}\n`
-    }
-
-    message += `\n━━━━━━━━━━━━━━━━━━━━━━━━\n\n`
+    
+    message += '\n'
   }
 
   return message.trim()
@@ -162,9 +227,55 @@ export async function publishScheduleToDiscord(pollId: number): Promise<{ succes
     const timeSlot = (poll.timeSlot as string) || '8-10 EST'
     const pollName = poll.pollName as string
     const existingMessageId = poll.calendarMessageId as string | null
+    
+    console.log(`📋 Publishing schedule for "${pollName}" - existing message ID: ${existingMessageId || 'none'}`)
 
-    // Format the message
-    const formattedMessage = formatScheduleMessage(schedule, votes, pollName, timeSlot)
+    // Collect all player IDs from the schedule that need name resolution
+    const playerIdsToResolve = new Set<string>()
+    for (const day of schedule.days) {
+      if (day.blocks) {
+        for (const block of day.blocks) {
+          for (const slot of block.slots) {
+            if (slot.playerId && !slot.isRinger) {
+              playerIdsToResolve.add(slot.playerId)
+            }
+          }
+        }
+      }
+    }
+
+    // Build player ID → name map from votes (Discord IDs)
+    const playerMap = new Map<string, string>()
+    if (votes) {
+      for (const day of votes) {
+        for (const voter of day.voters) {
+          playerMap.set(voter.id, voter.displayName || voter.username)
+        }
+      }
+    }
+
+    // For any IDs not in votes, try to look them up as People records
+    const missingIds = Array.from(playerIdsToResolve).filter(id => !playerMap.has(id))
+    if (missingIds.length > 0) {
+      try {
+        // Fetch People records for missing IDs
+        const peopleResult = await payload.find({
+          collection: 'people',
+          where: {
+            id: { in: missingIds.map(id => parseInt(id)) },
+          },
+          limit: missingIds.length,
+        })
+        for (const person of peopleResult.docs) {
+          playerMap.set(String(person.id), (person as any).name || 'Unknown')
+        }
+      } catch (e) {
+        console.log('Could not fetch People records:', e)
+      }
+    }
+
+    // Format the message (pass pre-built playerMap)
+    const formattedMessage = formatScheduleMessageWithMap(schedule, playerMap, pollName, timeSlot)
 
     // Get the thread
     const thread = await client.channels.fetch(calendarThreadId) as TextChannel | ThreadChannel | null
@@ -201,6 +312,7 @@ export async function publishScheduleToDiscord(pollId: number): Promise<{ succes
         publishedToCalendar: true,
         calendarMessageId: messageId,
       },
+      overrideAccess: true, // Bypass field validation in server context
     })
 
     return { success: true }

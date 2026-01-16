@@ -6,7 +6,7 @@ export const CronMonitor: GlobalConfig = {
   label: 'Cron Jobs',
   admin: {
     description: '⏰ Monitor scheduled job executions and performance.',
-    group: 'Monitoring',
+    group: 'System',
     hideAPIURL: true,
     components: {
       elements: {

@@ -8,13 +8,15 @@ import { EmbedBuilder, type TextChannel, type ThreadChannel } from 'discord.js'
 interface PlayerSlot {
   role: string
   playerId: string | null
+  isRinger?: boolean
+  ringerName?: string
 }
 
 interface ScrimDetails {
+  opponentTeamId?: number | null
   opponent: string
   opponentRoster: string
   contact: string
-  time: string
   host: 'us' | 'them' | ''
   mapPool: string
   heroBans: boolean
@@ -22,11 +24,22 @@ interface ScrimDetails {
   notes: string
 }
 
-interface DaySchedule {
-  date: string
+interface TimeBlock {
+  id: string
+  time: string
   slots: PlayerSlot[]
   scrim?: ScrimDetails
+  reminderPosted?: boolean
+}
+
+interface DaySchedule {
+  date: string
   enabled: boolean
+  useAllMembers?: boolean
+  blocks: TimeBlock[]
+  // Legacy fields for backward compatibility
+  slots?: PlayerSlot[]
+  scrim?: ScrimDetails & { time?: string }
 }
 
 interface ScheduleData {
@@ -48,10 +61,10 @@ interface VoteData {
  */
 function createScrimEmbed(
   day: DaySchedule,
+  block: TimeBlock,
   playerMap: Map<string, string>,
-  timeSlot: string,
 ): EmbedBuilder {
-  const scrimTime = day.scrim?.time || timeSlot
+  const scrimTime = block.time
   
   const embed = new EmbedBuilder()
     .setColor(0xf59e0b) // Amber/orange color
@@ -62,10 +75,10 @@ function createScrimEmbed(
   
   // Time and opponent
   description += `**${scrimTime}**`
-  if (day.scrim?.opponent) {
-    description += ` vs **${day.scrim.opponent}**`
-    if (day.scrim.host) {
-      description += ` • ${day.scrim.host === 'us' ? 'We host' : 'They host'}`
+  if (block.scrim?.opponent) {
+    description += ` vs **${block.scrim.opponent}**`
+    if (block.scrim.host) {
+      description += ` • ${block.scrim.host === 'us' ? 'We host' : 'They host'}`
     }
   }
   description += '\n'
@@ -75,8 +88,13 @@ function createScrimEmbed(
   
   // Our roster (simple list)
   description += '**Roster**\n'
-  for (const slot of day.slots) {
-    const playerName = slot.playerId ? playerMap.get(slot.playerId) || '?' : '—'
+  for (const slot of block.slots) {
+    let playerName = '—'
+    if (slot.isRinger && slot.ringerName) {
+      playerName = `${slot.ringerName} (ringer)`
+    } else if (slot.playerId) {
+      playerName = playerMap.get(slot.playerId) || '?'
+    }
     description += `${slot.role}: ${playerName}\n`
   }
   
@@ -85,38 +103,39 @@ function createScrimEmbed(
   
   // Match details
   const details: string[] = []
-  if (day.scrim?.contact) details.push(`Contact: ${day.scrim.contact}`)
-  if (day.scrim?.mapPool) details.push(`Maps: ${day.scrim.mapPool}`)
-  details.push(`Hero Bans: ${day.scrim?.heroBans ? 'On' : 'Off'}`)
-  details.push(`Staggers: ${day.scrim?.staggers ? 'On' : 'Off'}`)
+  if (block.scrim?.contact) details.push(`Contact: ${block.scrim.contact}`)
+  if (block.scrim?.mapPool) details.push(`Maps: ${block.scrim.mapPool}`)
+  details.push(`Hero Bans: ${block.scrim?.heroBans ? 'On' : 'Off'}`)
+  details.push(`Staggers: ${block.scrim?.staggers ? 'On' : 'Off'}`)
   
   description += details.join('\n') + '\n'
   
   embed.setDescription(description)
   
   // Their Roster (only if provided, as a separate field)
-  if (day.scrim?.opponentRoster) {
+  if (block.scrim?.opponentRoster) {
     embed.addFields({
       name: 'Their Roster',
-      value: day.scrim.opponentRoster.substring(0, 1024),
+      value: block.scrim.opponentRoster.substring(0, 1024),
       inline: false,
     })
   }
   
   // Notes in footer
-  if (day.scrim?.notes) {
-    embed.setFooter({ text: day.scrim.notes })
+  if (block.scrim?.notes) {
+    embed.setFooter({ text: block.scrim.notes })
   }
   
   return embed
 }
 
 /**
- * Post a scrim reminder for a specific day to the Schedule thread
+ * Post a scrim reminder for a specific block to the Schedule thread
  */
 export async function postScrimReminder(
   pollId: number,
-  dayDate: string
+  dayDate: string,
+  blockTime?: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const client = await ensureDiscordClient()
@@ -156,6 +175,38 @@ export async function postScrimReminder(
       return { success: false, error: 'This day is not enabled' }
     }
 
+    // Find the specific block (or use first/only block, or migrate legacy data)
+    let block: TimeBlock | undefined
+    
+    if (day.blocks && day.blocks.length > 0) {
+      // New format: find block by time, or use first block
+      block = blockTime 
+        ? day.blocks.find(b => b.time === blockTime) 
+        : day.blocks[0]
+    } else if (day.slots && day.scrim) {
+      // Legacy format: create a virtual block from legacy data
+      block = {
+        id: 'legacy',
+        time: day.scrim.time || '8-10 EST',
+        slots: day.slots,
+        scrim: {
+          opponentTeamId: null,
+          opponent: day.scrim.opponent,
+          opponentRoster: day.scrim.opponentRoster,
+          contact: day.scrim.contact,
+          host: day.scrim.host,
+          mapPool: day.scrim.mapPool,
+          heroBans: day.scrim.heroBans,
+          staggers: day.scrim.staggers,
+          notes: day.scrim.notes,
+        },
+      }
+    }
+
+    if (!block) {
+      return { success: false, error: 'No time block found for this day' }
+    }
+
     // Get Schedule thread ID
     const scheduleThreadId = team?.discordThreads?.scheduleThreadId
     if (!scheduleThreadId) {
@@ -172,11 +223,8 @@ export async function postScrimReminder(
       }
     }
 
-    // Get default time slot from team
-    const timeSlot = (team as any)?.discordThreads?.defaultTimeSlot || '8-10 EST'
-
     // Create the embed
-    const embed = createScrimEmbed(day, playerMap, timeSlot)
+    const embed = createScrimEmbed(day, block, playerMap)
 
     // Fetch the Schedule thread
     const thread = await client.channels.fetch(scheduleThreadId) as TextChannel | ThreadChannel | null
@@ -186,7 +234,7 @@ export async function postScrimReminder(
 
     // Post the reminder as an embed
     await thread.send({ embeds: [embed] })
-    console.log(`✅ Posted scrim reminder for "${dayDate}" in poll "${pollName}"`)
+    console.log(`✅ Posted scrim reminder for "${dayDate}" (${block.time}) in poll "${pollName}"`)
 
     return { success: true }
   } catch (error) {

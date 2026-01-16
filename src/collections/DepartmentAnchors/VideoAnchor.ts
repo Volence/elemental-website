@@ -1,21 +1,32 @@
 import type { CollectionConfig } from 'payload'
+import { isVideoStaff } from '@/access/roles'
 
 /**
- * Anchor collection to establish Video group position in sidebar.
- * This ensures the Video group appears after Graphics in the admin navigation.
- * The collection is visible in the sidebar but will always show 0 items.
+ * Video Workboard - Shows Kanban board for video department tasks.
+ * This collection is empty but displays the workboard UI component.
  */
 export const VideoAnchor: CollectionConfig = {
   slug: 'video-anchor',
   labels: {
-    singular: 'Video Request',
-    plural: 'Video Requests',
+    singular: 'Video Dashboard',
+    plural: 'Video Dashboard',
   },
   admin: {
     group: 'Video',
-    description: 'Internal - use Video Editing Dashboard instead',
-    // Visible in sidebar to establish group order
-    hidden: false,
+    description: '🎥 Video department dashboard',
+    hidden: ({ user }) => {
+      if (!user) return true
+      const u = user as any
+      // Show to video staff, admins, and staff managers
+      return !(u.departments?.isVideoStaff || user.role === 'admin' || user.role === 'staff-manager')
+    },
+    components: {
+      views: {
+        list: {
+          Component: '@/components/DepartmentWorkboard#VideoWorkboard',
+        },
+      },
+    },
   },
   fields: [
     {
@@ -24,8 +35,7 @@ export const VideoAnchor: CollectionConfig = {
     },
   ],
   access: {
-    // Allow read but collection will always be empty
-    read: () => true,
+    read: isVideoStaff,
     create: () => false,
     update: () => false,
     delete: () => false,

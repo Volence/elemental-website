@@ -11,7 +11,7 @@ export const CronJobRuns: CollectionConfig = {
     useAsTitle: 'jobName',
     defaultColumns: ['jobName', 'status', 'startTime', 'duration', 'createdAt'],
     description: '⏰ System-generated log of scheduled job executions.',
-    group: 'Monitoring',
+    group: 'System',
     hidden: ({ user }) => {
       // Visible to admins to establish Monitoring group order before System
       return (user as any)?.role !== 'admin'

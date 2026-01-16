@@ -7,14 +7,7 @@ export const GraphicsDashboard: GlobalConfig = {
   admin: {
     description: '🎨 Manage graphics requests, projects, and asset library',
     group: 'Graphics',
-    hidden: ({ user }) => {
-      if (!user) return true
-      const u = user as any
-      // Show to admins and staff managers
-      if (user.role === 'admin' || user.role === 'staff-manager') return false
-      // Show to graphics staff
-      return !u.departments?.isGraphicsStaff
-    },
+    hidden: true, // Hidden - use Graphics Workboard instead
     hideAPIURL: true,
     components: {
       elements: {

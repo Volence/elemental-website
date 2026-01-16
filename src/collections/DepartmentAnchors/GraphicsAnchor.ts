@@ -1,21 +1,32 @@
 import type { CollectionConfig } from 'payload'
+import { isGraphicsStaff } from '@/access/roles'
 
 /**
- * Anchor collection to establish Graphics group position in sidebar.
- * This ensures the Graphics group appears after Events in the admin navigation.
- * The collection is visible in the sidebar but will always show 0 items.
+ * Graphics Workboard - Shows Kanban board for graphics department tasks.
+ * This collection is empty but displays the workboard UI component.
  */
 export const GraphicsAnchor: CollectionConfig = {
   slug: 'graphics-anchor',
   labels: {
-    singular: 'Graphics Request',
-    plural: 'Graphics Requests',
+    singular: 'Graphics Dashboard',
+    plural: 'Graphics Dashboard',
   },
   admin: {
     group: 'Graphics',
-    description: 'Internal - use Graphics Dashboard instead',
-    // Visible in sidebar to establish group order
-    hidden: false,
+    description: '🎨 Graphics department dashboard',
+    hidden: ({ user }) => {
+      if (!user) return true
+      const u = user as any
+      // Show to graphics staff, admins, and staff managers
+      return !(u.departments?.isGraphicsStaff || user.role === 'admin' || user.role === 'staff-manager')
+    },
+    components: {
+      views: {
+        list: {
+          Component: '@/components/DepartmentWorkboard#GraphicsWorkboard',
+        },
+      },
+    },
   },
   fields: [
     {
@@ -24,8 +35,7 @@ export const GraphicsAnchor: CollectionConfig = {
     },
   ],
   access: {
-    // Allow read but collection will always be empty
-    read: () => true,
+    read: isGraphicsStaff,
     create: () => false,
     update: () => false,
     delete: () => false,

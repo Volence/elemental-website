@@ -11,7 +11,7 @@ export const ErrorLogs: CollectionConfig = {
     useAsTitle: 'message',
     defaultColumns: ['errorType', 'severity', 'message', 'user', 'resolved', 'createdAt'],
     description: '⚠️ System-generated log of errors for debugging and monitoring.',
-    group: 'Monitoring',
+    group: 'System',
     hidden: () => true, // Hidden from sidebar (use Monitoring globals instead)
   },
   access: {

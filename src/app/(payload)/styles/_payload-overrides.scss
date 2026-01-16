@@ -12,6 +12,34 @@
 @import './mixins';
 
 // ============================================
+// GLOBAL FORM PLACEHOLDER STYLING
+// ============================================
+// Make placeholders clearly distinguishable from real content
+// by reducing opacity - only targets actual input placeholders
+
+input[type="text"]::placeholder,
+input[type="email"]::placeholder,
+input[type="password"]::placeholder,
+input[type="number"]::placeholder,
+input[type="search"]::placeholder,
+input:not([type])::placeholder,
+textarea::placeholder {
+  color: rgba(255, 255, 255, 0.35) !important;
+  font-style: italic;
+}
+
+// Ensure add-row button text is not affected by placeholder styling
+.array-field__add-button,
+.blocks-field__add-button {
+  font-style: normal !important;
+  
+  span {
+    opacity: 1 !important;
+    color: inherit !important;
+  }
+}
+
+// ============================================
 // POPUPS - Hide unwanted visible popups
 // ============================================
 
@@ -758,18 +786,134 @@ table {
     @include glow-button($admin-accent-success); // Green for save
   }
   
-  // Hide the doc-controls popup by default (the three dots menu)
-  &__popup {
-    display: none !important;
+  // Popup container - position relative so content can be absolute
+  .popup {
+    position: relative;
+    display: inline-flex;
+    width: auto;
+    height: auto;
+  }
+  
+  // Three dots menu button - make it compact
+  .popup-button,
+  button.popup-button {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    max-width: 36px !important;
+    padding: 0 !important;
+    border-radius: 6px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     
-    // Show only when explicitly opened by Payload
-    &[style*="display: block"],
-    &[data-state="open"],
-    &.popup--active {
-      display: block !important;
+    svg {
+      width: 18px;
+      height: 18px;
     }
   }
   
+  // Popup content - hide by default and position absolutely
+  .popup__content {
+    display: none !important;
+    position: absolute !important;
+    top: 100% !important;
+    right: 0 !important;
+    z-index: 1000 !important;
+    min-width: 180px;
+    margin-top: 8px;
+    padding: 0.5rem;
+    background: rgba(20, 20, 25, 0.95) !important;
+    border: 1px solid rgba($admin-accent-primary, 0.3) !important;
+    border-radius: 8px !important;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 12px rgba($admin-accent-primary, 0.15);
+  }
+  
+  // Show popup content only when active
+  .popup--active .popup__content,
+  .popup.popup--active .popup__content {
+    display: flex !important;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  // All popup menu actions - base styling
+  .popup__content a,
+  .popup__content button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 0.875rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    background: transparent;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    white-space: nowrap;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba($admin-accent-primary, 0.3);
+    }
+    
+    svg {
+      width: 16px;
+      height: 16px;
+      opacity: 0.7;
+    }
+  }
+  
+  // Create New - make it look like a primary action
+  .popup__content a[href*="create"] {
+    background: rgba($admin-accent-success, 0.15);
+    border: 1px solid rgba($admin-accent-success, 0.4);
+    color: rgba(255, 255, 255, 0.95);
+    
+    &:hover {
+      background: rgba($admin-accent-success, 0.25);
+      border-color: rgba($admin-accent-success, 0.6);
+      box-shadow: 0 0 10px rgba($admin-accent-success, 0.2);
+    }
+    
+    svg {
+      color: $admin-accent-success;
+      opacity: 1;
+    }
+  }
+  
+  // Duplicate button - subtle styling
+  .popup__content button:not([class*="delete"]) {
+    &:hover {
+      background: rgba($admin-accent-info, 0.1);
+      border-color: rgba($admin-accent-info, 0.3);
+    }
+  }
+  
+  // Delete - separated with visual distinction
+  .popup__content button[class*="delete"] {
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0 0 6px 6px;
+    color: rgba($admin-accent-error, 0.9);
+    
+    &:hover {
+      background: rgba($admin-accent-error, 0.15);
+      border-color: rgba($admin-accent-error, 0.3);
+      color: $admin-accent-error;
+    }
+    
+    svg {
+      color: $admin-accent-error;
+    }
+  }
+  
+  // Style delete buttons outside popup too
   button[class*="delete"],
   button[class*="remove"] {
     @include glow-button($admin-accent-error); // Red for delete

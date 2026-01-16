@@ -1,12 +1,12 @@
 import type { GlobalConfig } from 'payload'
 import { isScoutingStaff } from '../access/roles'
 
-export const ScoutingDashboard: GlobalConfig = {
-  slug: 'scouting-dashboard',
-  label: 'Scouting Dashboard',
+export const OpponentWiki: GlobalConfig = {
+  slug: 'opponent-wiki',
+  label: 'Opponent Wiki',
   admin: {
-    description: '🔍 Manage enemy team research, player profiles, and match analysis',
-    group: 'Recruiting',
+    description: '📖 Comprehensive intel profiles for opponent teams',
+    group: 'Competitive',
     hidden: ({ user }) => {
       if (!user) return true
       const u = user as any
@@ -30,7 +30,7 @@ export const ScoutingDashboard: GlobalConfig = {
       type: 'ui',
       admin: {
         components: {
-          Field: '@/components/ScoutingDashboardView#default',
+          Field: '@/components/OpponentWikiView#default',
         },
       },
     },

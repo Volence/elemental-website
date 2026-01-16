@@ -30,8 +30,12 @@ export const Teams: CollectionConfig = {
              user.role === UserRole.TEAM_MANAGER || 
              user.role === UserRole.STAFF_MANAGER
     },
-    // Only admins can delete teams
-    delete: adminOnly,
+    // Admins and staff managers can delete teams
+    delete: ({ req }) => {
+      const user = req.user as User | undefined
+      if (!user) return false
+      return user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER
+    },
     // Anyone can read teams (public)
     read: anyone,
     // Admins and staff managers can update all teams, team managers can only update their assigned teams
@@ -65,7 +69,7 @@ export const Teams: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['logoPreview', 'nameCell', 'regionCell', 'ratingCell', 'status', 'updatedAtCell'],
     description: '🏆 Manage all Elemental teams, including rosters, staff, and achievements.',
-    group: 'People',
+    group: 'Organization',
     hidden: ({ user }) => {
       if (!user) return true
       // Hide from regular users - only show to managers and admins

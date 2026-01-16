@@ -6,7 +6,7 @@ export const ActiveSessionsViewer: GlobalConfig = {
   label: 'Active Sessions',
   admin: {
     description: '👥 Monitor currently logged-in admin panel users',
-    group: 'Monitoring',
+    group: 'System',
     hideAPIURL: true,
     components: {
       elements: {

@@ -1,0 +1,361 @@
+.scrim-analytics {
+  padding: 1.5rem;
+  background: var(--theme-elevation-50);
+  border-radius: 8px;
+  
+  &--loading,
+  &--error,
+  &--empty {
+    text-align: center;
+    padding: 3rem;
+    color: var(--theme-elevation-500);
+  }
+  
+  &--error {
+    color: #ef4444;
+  }
+  
+  &__header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    
+    h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: var(--theme-text);
+    }
+  }
+  
+  &__summary {
+    display: flex;
+    gap: 1.5rem;
+  }
+  
+  &__stat {
+    font-size: 0.875rem;
+    color: var(--theme-elevation-600);
+    
+    strong {
+      color: var(--theme-text);
+      font-size: 1.125rem;
+    }
+  }
+  
+  &__tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--theme-elevation-200);
+    padding-bottom: 0.5rem;
+  }
+  
+  &__tab {
+    padding: 0.75rem 1.25rem;
+    background: transparent;
+    border: none;
+    border-radius: 6px 6px 0 0;
+    color: var(--theme-elevation-500);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: var(--theme-elevation-100);
+      color: var(--theme-text);
+    }
+    
+    &--active {
+      background: var(--theme-elevation-100);
+      color: var(--theme-text);
+      border-bottom: 2px solid #8b5cf6;
+    }
+  }
+  
+  // Search
+  &__search {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--theme-elevation-100);
+    border: 1px solid var(--theme-elevation-300);
+    border-radius: 6px;
+    color: var(--theme-text);
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+    
+    &:focus {
+      outline: none;
+      border-color: #8b5cf6;
+    }
+    
+    &::placeholder {
+      color: var(--theme-elevation-400);
+    }
+  }
+  
+  &__no-results {
+    text-align: center;
+    padding: 2rem;
+    color: var(--theme-elevation-500);
+  }
+  
+  // Opponent Cards
+  &__opponent-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  &__opponent-card {
+    background: var(--theme-elevation-100);
+    border: 1px solid var(--theme-elevation-200);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  &__opponent-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.875rem 1rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    
+    &:hover {
+      background: var(--theme-elevation-150);
+    }
+  }
+  
+  &__opponent-info {
+    flex: 1;
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+  
+  &__opponent-name {
+    font-weight: 600;
+    color: var(--theme-text);
+  }
+  
+  &__opponent-count {
+    font-size: 0.8125rem;
+    color: var(--theme-elevation-500);
+  }
+  
+  &__worth-badge {
+    padding: 0.25rem 0.625rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+  }
+  
+  &__expand-icon {
+    font-size: 0.75rem;
+    color: var(--theme-elevation-500);
+  }
+  
+  &__opponent-details {
+    padding: 1rem;
+    border-top: 1px solid var(--theme-elevation-200);
+    background: var(--theme-elevation-50);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  
+  &__latest {
+    h4 {
+      margin: 0 0 0.5rem;
+      font-size: 0.8125rem;
+      color: var(--theme-elevation-500);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  }
+  
+  &__ratings {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  
+  &__rating {
+    font-size: 0.875rem;
+    color: var(--theme-text);
+  }
+  
+  // Map Stats Grid
+  &__opponent-maps {
+    h4 {
+      margin: 0 0 0.5rem;
+      font-size: 0.8125rem;
+      color: var(--theme-elevation-500);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  }
+  
+  &__map-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.5rem;
+  }
+  
+  &__map-mini {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    background: var(--theme-elevation-100);
+    border-radius: 4px;
+  }
+  
+  &__map-name {
+    font-size: 0.8125rem;
+    color: var(--theme-text);
+  }
+  
+  &__map-rate {
+    font-size: 0.75rem;
+    font-weight: 600;
+    
+    &--good {
+      color: #22c55e;
+    }
+    
+    &--bad {
+      color: #ef4444;
+    }
+  }
+  
+  // History Timeline
+  &__history {
+    h4 {
+      margin: 0 0 0.75rem;
+      font-size: 0.8125rem;
+      color: var(--theme-elevation-500);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  }
+  
+  &__timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    border-left: 2px solid var(--theme-elevation-300);
+    padding-left: 1rem;
+    margin-left: 0.5rem;
+  }
+  
+  &__timeline-item {
+    position: relative;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      left: -1.25rem;
+      top: 0.5rem;
+      width: 8px;
+      height: 8px;
+      background: #8b5cf6;
+      border-radius: 50%;
+    }
+  }
+  
+  &__timeline-date {
+    font-size: 0.75rem;
+    color: var(--theme-elevation-500);
+    margin-bottom: 0.25rem;
+    display: block;
+  }
+  
+  &__timeline-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--theme-text);
+  }
+  
+  &__timeline-notes {
+    width: 100%;
+    margin: 0.25rem 0 0;
+    font-size: 0.8125rem;
+    color: var(--theme-elevation-600);
+    font-style: italic;
+  }
+  
+  // Map Performance Table
+  &__maps {
+    h3 {
+      margin: 0 0 1rem;
+      font-size: 1.125rem;
+      color: var(--theme-text);
+    }
+  }
+  
+  &__map-table {
+    width: 100%;
+    border-collapse: collapse;
+    
+    th, td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--theme-elevation-200);
+    }
+    
+    th {
+      font-size: 0.75rem;
+      color: var(--theme-elevation-500);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+      background: var(--theme-elevation-100);
+    }
+    
+    td {
+      font-size: 0.875rem;
+      color: var(--theme-text);
+    }
+  }
+  
+  &__row--weak {
+    background: rgba(239, 68, 68, 0.1);
+  }
+  
+  &__map-cell {
+    font-weight: 500;
+  }
+  
+  &__win-cell {
+    color: #22c55e;
+    font-weight: 600;
+  }
+  
+  &__loss-cell {
+    color: #ef4444;
+    font-weight: 600;
+  }
+  
+  &__draw-cell {
+    color: #f59e0b;
+    font-weight: 600;
+  }
+  
+  &__rate-cell {
+    font-weight: 700;
+    
+    &--good {
+      color: #22c55e;
+    }
+    
+    &--bad {
+      color: #ef4444;
+    }
+  }
+}

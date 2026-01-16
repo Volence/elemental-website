@@ -69,18 +69,18 @@ export const DiscordPolls: CollectionConfig = {
       
       return false
     },
-    // Only admins can delete
+    // Admins and staff managers can delete
     delete: ({ req }) => {
       const user = req.user as User | undefined
       if (!user) return false
-      return user.role === UserRole.ADMIN
+      return user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER
     },
   },
   admin: {
     useAsTitle: 'pollName',
     defaultColumns: ['pollName', 'team', 'status', 'createdBy', 'createdAt'],
-    description: '📊 Manage availability polls and weekly schedules',
-    group: 'Scheduling',
+    description: '📅 Create and manage team schedules - from polls or manually. Supports multi-block days, ringers, and Discord posting.',
+    group: 'Competitive',
     components: {
       beforeList: ['@/components/PollScopeToggle#default'],
     },
@@ -125,10 +125,25 @@ export const DiscordPolls: CollectionConfig = {
       name: 'team',
       type: 'relationship',
       relationTo: 'teams',
+      required: true,
       admin: {
         position: 'sidebar',
-        description: 'Auto-linked from thread',
-        readOnly: true,
+        description: 'Team this schedule belongs to',
+      },
+      // Filter to assigned teams for team managers
+      filterOptions: ({ user }) => {
+        // Server-side operations (no user) - allow all teams
+        if (!user) return true
+        if (user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER) {
+          return true
+        }
+        if (user.role === UserRole.TEAM_MANAGER && (user as any).assignedTeams?.length) {
+          const teamIds = ((user as any).assignedTeams as any[]).map((t) =>
+            typeof t === 'object' ? t.id : t,
+          )
+          return { id: { in: teamIds } }
+        }
+        return false
       },
     },
     {
@@ -147,10 +162,10 @@ export const DiscordPolls: CollectionConfig = {
     {
       name: 'timeSlot',
       type: 'text',
+      defaultValue: '8-10 EST',
       admin: {
         position: 'sidebar',
         description: 'e.g., "8-10 EST"',
-        readOnly: true,
       },
     },
     {
@@ -212,42 +227,55 @@ export const DiscordPolls: CollectionConfig = {
     {
       name: 'createdVia',
       type: 'select',
-      defaultValue: 'discord-command',
+      defaultValue: 'admin-panel', // Default to manual for admin-created schedules
       options: [
-        { label: 'Discord Command', value: 'discord-command' },
-        { label: 'Admin Panel', value: 'admin-panel' },
+        { label: 'Discord Poll', value: 'discord-command' },
+        { label: 'Manual Entry', value: 'admin-panel' },
       ],
       admin: {
         position: 'sidebar',
-        readOnly: true,
+        description: 'How this schedule was created',
       },
     },
     
     // ============================================
-    // HIDDEN FIELDS - Discord IDs (still stored)
+    // SCHEDULE NAME (visible for manual creation)
     // ============================================
     {
       name: 'pollName',
+      label: 'Schedule Name',
       type: 'text',
       required: true,
       admin: {
-        hidden: true, // Already in page title
+        description: 'Name for this schedule (e.g., "Week of Jan 20")',
+      },
+      hooks: {
+        beforeChange: [
+          ({ value, data }) => {
+            // Auto-generate name if not provided
+            if (!value && data?.team) {
+              const date = new Date()
+              const month = date.toLocaleDateString('en-US', { month: 'short' })
+              const day = date.getDate()
+              return `Schedule ${month} ${day}`
+            }
+            return value
+          },
+        ],
       },
     },
     {
       name: 'messageId',
       type: 'text',
-      required: true,
       admin: {
-        hidden: true, // Technical field
+        hidden: true, // Technical field - optional for manual schedules
       },
     },
     {
       name: 'channelId',
       type: 'text',
-      required: true,
       admin: {
-        hidden: true, // Technical field
+        hidden: true, // Technical field - optional for manual schedules
       },
     },
     {
@@ -271,6 +299,136 @@ export const DiscordPolls: CollectionConfig = {
         {
           name: 'end',
           type: 'date',
+        },
+      ],
+    },
+    
+    // ============================================
+    // SCRIM OUTCOME - Post-scrim feedback
+    // ============================================
+    {
+      type: 'collapsible',
+      label: 'Scrim Outcome',
+      admin: {
+        initCollapsed: true,
+        description: 'Record the results after scrimmaging',
+      },
+      fields: [
+        {
+          name: 'opponentTeam',
+          type: 'relationship',
+          relationTo: 'opponent-teams',
+          admin: {
+            description: 'Who did you scrim against?',
+          },
+        },
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'ourRating',
+              label: 'Our Performance',
+              type: 'select',
+              admin: {
+                width: '50%',
+                description: 'How did we perform?',
+              },
+              options: [
+                { label: '✅ Easy Win', value: 'easywin' },
+                { label: '🔥 Close Win', value: 'closewin' },
+                { label: '😐 Neutral', value: 'neutral' },
+                { label: '😓 Close Loss', value: 'closeloss' },
+                { label: '💀 Got Rolled', value: 'gotrolled' },
+              ],
+            },
+            {
+              name: 'opponentRating',
+              label: 'Opponent Strength',
+              type: 'select',
+              admin: {
+                width: '50%',
+                description: 'How strong was the opponent?',
+              },
+              options: [
+                { label: '🟢 Weak', value: 'weak' },
+                { label: '🟡 Average', value: 'average' },
+                { label: '🔴 Strong', value: 'strong' },
+                { label: '💀 Very Strong', value: 'verystrong' },
+              ],
+            },
+          ],
+        },
+        {
+          name: 'worthScrimAgain',
+          label: 'Worth Scrimming Again?',
+          type: 'select',
+          admin: {
+            description: 'Should we scrim this team again?',
+          },
+          options: [
+            { label: '👍 Yes', value: 'yes' },
+            { label: '🤔 Maybe', value: 'maybe' },
+            { label: '👎 No', value: 'no' },
+          ],
+        },
+        {
+          name: 'mapsPlayed',
+          label: 'Maps Played',
+          type: 'array',
+          admin: {
+            description: 'Record results per map',
+          },
+          fields: [
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'map',
+                  type: 'relationship',
+                  relationTo: 'maps',
+                  admin: {
+                    width: '40%',
+                  },
+                },
+                {
+                  name: 'result',
+                  type: 'select',
+                  admin: {
+                    width: '30%',
+                  },
+                  options: [
+                    { label: '✅ Win', value: 'win' },
+                    { label: '❌ Loss', value: 'loss' },
+                    { label: '🔄 Draw', value: 'draw' },
+                  ],
+                },
+                {
+                  name: 'score',
+                  type: 'text',
+                  admin: {
+                    width: '30%',
+                    placeholder: '2-1',
+                  },
+                },
+              ],
+            },
+            {
+              name: 'mapNotes',
+              type: 'textarea',
+              admin: {
+                placeholder: 'Map-specific notes...',
+              },
+            },
+          ],
+        },
+        {
+          name: 'scrimNotes',
+          label: 'Overall Notes',
+          type: 'textarea',
+          admin: {
+            description: 'Post-scrim thoughts, areas to improve, etc.',
+            placeholder: 'e.g., "We need to practice against Ball more", "Our ult economy was bad on control"',
+          },
         },
       ],
     },

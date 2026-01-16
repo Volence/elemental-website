@@ -8,7 +8,7 @@ export const Heroes: CollectionConfig = {
     plural: 'Heroes',
   },
   admin: {
-    group: 'Scouting',
+    group: 'Competitive',
     useAsTitle: 'name',
     defaultColumns: ['name', 'role', 'active'],
   },

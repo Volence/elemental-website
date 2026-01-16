@@ -7,14 +7,7 @@ export const EventsDashboard: GlobalConfig = {
   admin: {
     description: '🎉 Manage movie nights, game nights, PUGs, seminars, and tournaments',
     group: 'Events',
-    hidden: ({ user }) => {
-      if (!user) return true
-      const u = user as any
-      // Show to admins and staff managers
-      if (user.role === 'admin' || user.role === 'staff-manager') return false
-      // Show to events staff
-      return !u.departments?.isEventsStaff
-    },
+    hidden: true, // Hidden - use Events Workboard instead
     hideAPIURL: true,
     components: {
       elements: {

@@ -6,7 +6,7 @@ export const ErrorDashboard: GlobalConfig = {
   label: 'Error Dashboard',
   admin: {
     description: '⚠️ Monitor and track application errors for debugging.',
-    group: 'Monitoring',
+    group: 'System',
     hideAPIURL: true,
     components: {
       elements: {

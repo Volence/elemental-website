@@ -1,0 +1,729 @@
+// Opponent Wiki View Styles
+// Used for displaying comprehensive intel on opponent teams
+
+.opponent-wiki {
+  padding: $spacing-lg;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  // ============================================
+  // HEADER
+  // ============================================
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: $spacing-lg;
+    padding-bottom: $spacing-md;
+    margin-bottom: $spacing-md;
+    border-bottom: 1px solid rgba($admin-accent-primary, 0.2);
+
+    h1 {
+      margin: 0;
+      font-size: 1.75rem;
+      color: $admin-text-primary;
+    }
+  }
+
+  &__team-info {
+    flex: 1;
+  }
+
+  &__badges {
+    display: flex;
+    gap: $spacing-xs;
+    margin-top: $spacing-xs;
+
+    .badge {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      border-radius: 4px;
+      background: rgba($admin-accent-primary, 0.15);
+      color: rgba($admin-text-primary, 0.9);
+      border: 1px solid rgba($admin-accent-primary, 0.3);
+
+      &-info {
+        background: rgba($admin-accent-info, 0.15);
+        border-color: rgba($admin-accent-info, 0.3);
+        color: $admin-accent-info;
+      }
+
+      &-success {
+        background: rgba($admin-accent-success, 0.15);
+        border-color: rgba($admin-accent-success, 0.3);
+        color: $admin-accent-success;
+      }
+
+      &-warning {
+        background: rgba($admin-accent-warning, 0.15);
+        border-color: rgba($admin-accent-warning, 0.3);
+        color: $admin-accent-warning;
+      }
+    }
+  }
+
+  &__previous-names {
+    margin-top: $spacing-xs;
+    color: rgba($admin-text-primary, 0.5);
+    font-style: italic;
+  }
+
+  &__contacts {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+  }
+
+  &__contact {
+    padding: $spacing-sm $spacing-md;
+    background: rgba($admin-accent-primary, 0.1);
+    border: 1px solid rgba($admin-accent-primary, 0.2);
+    border-radius: 6px;
+    color: rgba($admin-text-primary, 0.8);
+    white-space: nowrap;
+  }
+
+  // ============================================
+  // TABS
+  // ============================================
+  &__tabs {
+    display: flex;
+    gap: $spacing-xs;
+    margin-bottom: $spacing-md;
+    border-bottom: 1px solid rgba($admin-text-primary, 0.1);
+    padding-bottom: $spacing-xs;
+    overflow-x: auto;
+  }
+
+  &__tab {
+    padding: $spacing-sm $spacing-md;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px 6px 0 0;
+    color: rgba($admin-text-primary, 0.6);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    font-size: 0.875rem;
+
+    &:hover {
+      color: rgba($admin-text-primary, 0.9);
+      background: rgba($admin-text-primary, 0.05);
+    }
+
+    &--active {
+      color: $admin-text-primary;
+      background: rgba($admin-accent-primary, 0.15);
+      border-color: rgba($admin-accent-primary, 0.3);
+      border-bottom-color: transparent;
+    }
+  }
+
+  // ============================================
+  // CONTENT
+  // ============================================
+  &__content {
+    min-height: 400px;
+  }
+
+  &__empty {
+    padding: $spacing-xl;
+    text-align: center;
+    color: rgba($admin-text-primary, 0.5);
+
+    .btn {
+      margin-top: $spacing-md;
+    }
+  }
+
+  &__loading,
+  &__error {
+    padding: $spacing-xl;
+    text-align: center;
+    color: rgba($admin-text-primary, 0.5);
+  }
+
+  &__error {
+    color: $admin-accent-error;
+  }
+
+  // ============================================
+  // OVERVIEW TAB
+  // ============================================
+  &__roster-section {
+    h3 {
+      margin-bottom: $spacing-md;
+      color: $admin-text-primary;
+      font-size: 1.125rem;
+    }
+  }
+
+  &__roster-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: $spacing-md;
+  }
+
+  &__roster-card {
+    padding: $spacing-md;
+    background: rgba($admin-accent-primary, 0.08);
+    border: 1px solid rgba($admin-accent-primary, 0.2);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: rgba($admin-accent-primary, 0.4);
+      background: rgba($admin-accent-primary, 0.12);
+    }
+  }
+
+  &__roster-position {
+    font-size: 0.75rem;
+    color: $admin-accent-primary;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: $spacing-xs;
+  }
+
+  &__roster-name {
+    font-size: 1rem;
+    font-weight: 500;
+    color: $admin-text-primary;
+  }
+
+  &__roster-notes {
+    margin-top: $spacing-xs;
+    font-size: 0.8rem;
+    color: rgba($admin-text-primary, 0.6);
+    font-style: italic;
+  }
+
+  &__roster-source {
+    display: block;
+    margin-bottom: $spacing-sm;
+    font-size: 0.75rem;
+    color: rgba($admin-text-primary, 0.4);
+  }
+
+  // Map Performance Stats
+  &__map-stats {
+    margin-top: $spacing-xl;
+    padding-top: $spacing-lg;
+    border-top: 1px solid rgba($admin-text-primary, 0.1);
+
+    h3, h4 {
+      margin-bottom: $spacing-md;
+      color: $admin-text-primary;
+      font-size: 1.125rem;
+    }
+  }
+
+  &__perf-summary {
+    display: flex;
+    gap: $spacing-lg;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: $spacing-md;
+    background: rgba($admin-accent-primary, 0.08);
+    border-radius: 8px;
+    border: 1px solid rgba($admin-accent-primary, 0.2);
+  }
+
+  &__perf-stat {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: $admin-text-primary;
+  }
+
+  &__perf-rate {
+    font-size: 1rem;
+    color: $admin-accent-primary;
+    font-weight: 500;
+  }
+
+  &__perf-games {
+    font-size: 0.85rem;
+    color: rgba($admin-text-primary, 0.5);
+  }
+
+  &__stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: $spacing-md;
+  }
+
+  &__stat-card {
+    padding: $spacing-md;
+    border-radius: 8px;
+    background: rgba($admin-text-primary, 0.05);
+    border: 1px solid rgba($admin-text-primary, 0.1);
+    text-align: center;
+
+    &--strong {
+      border-color: rgba($admin-accent-success, 0.3);
+      background: rgba($admin-accent-success, 0.08);
+    }
+
+    &--weak {
+      border-color: rgba($admin-accent-error, 0.3);
+      background: rgba($admin-accent-error, 0.08);
+    }
+
+    &--neutral {
+      border-color: rgba($admin-accent-warning, 0.3);
+      background: rgba($admin-accent-warning, 0.08);
+    }
+  }
+
+  &__stat-map {
+    font-weight: 600;
+    font-size: 1rem;
+    color: $admin-text-primary;
+    margin-bottom: $spacing-xs;
+  }
+
+  &__stat-record {
+    font-size: 0.9rem;
+    color: rgba($admin-text-primary, 0.8);
+    margin-bottom: $spacing-xs;
+  }
+
+  &__stat-winrate {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: $admin-accent-primary;
+  }
+
+  &__stat-played {
+    font-size: 0.75rem;
+    color: rgba($admin-text-primary, 0.5);
+    margin-top: $spacing-xs;
+  }
+
+  &__previous-roster {
+    margin-top: $spacing-lg;
+    padding-top: $spacing-md;
+    border-top: 1px solid rgba($admin-text-primary, 0.1);
+
+    h4 {
+      color: rgba($admin-text-primary, 0.7);
+      font-size: 0.9rem;
+      margin-bottom: $spacing-sm;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      li {
+        padding: $spacing-xs 0;
+        color: rgba($admin-text-primary, 0.5);
+        font-size: 0.85rem;
+      }
+    }
+  }
+
+  // ============================================
+  // INTEL TAB
+  // ============================================
+  &__intel-header {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    margin-bottom: $spacing-lg;
+    flex-wrap: wrap;
+
+    small {
+      color: rgba($admin-text-primary, 0.5);
+    }
+    
+    .btn-small {
+      padding: 0.25rem 0.75rem;
+      font-size: 0.75rem;
+    }
+  }
+
+  &__map-analysis {
+    margin-top: $spacing-lg;
+    
+    h4 {
+      margin-bottom: $spacing-md;
+      color: $admin-text-primary;
+    }
+  }
+
+  &__map-list {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+  }
+
+  &__game-card {
+    padding: $spacing-md;
+    border-radius: 8px;
+    background: rgba($admin-text-primary, 0.03);
+    border: 1px solid rgba($admin-text-primary, 0.1);
+
+    &--win {
+      border-color: rgba($admin-accent-success, 0.3);
+      background: rgba($admin-accent-success, 0.05);
+    }
+
+    &--loss {
+      border-color: rgba($admin-accent-error, 0.3);
+      background: rgba($admin-accent-error, 0.05);
+    }
+  }
+
+  &__game-header {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    flex-wrap: wrap;
+    margin-bottom: $spacing-sm;
+  }
+
+  &__game-map {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: $admin-text-primary;
+  }
+
+  &__replay-code {
+    font-size: 0.8rem;
+    color: rgba($admin-text-primary, 0.5);
+    font-family: monospace;
+  }
+
+  &__game-bans {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    flex-wrap: wrap;
+    margin-bottom: $spacing-sm;
+    padding: $spacing-xs $spacing-sm;
+    background: rgba($admin-text-primary, 0.03);
+    border-radius: 4px;
+
+    strong {
+      color: rgba($admin-text-primary, 0.6);
+      font-size: 0.8rem;
+    }
+  }
+
+  &__ban-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 4px;
+    background: rgba($admin-accent-error, 0.15);
+    color: rgba($admin-text-primary, 0.9);
+  }
+
+  &__game-rounds {
+    margin-top: $spacing-sm;
+    border-top: 1px solid rgba($admin-text-primary, 0.1);
+    padding-top: $spacing-sm;
+  }
+
+  &__round {
+    padding: $spacing-sm;
+    margin-bottom: $spacing-sm;
+    background: rgba($admin-text-primary, 0.02);
+    border-radius: 6px;
+    border-left: 3px solid rgba($admin-accent-primary, 0.3);
+  }
+
+  &__round-header {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-xs;
+  }
+
+  &__round-name {
+    font-weight: 500;
+    color: $admin-text-primary;
+  }
+
+  &__hero-picks {
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: rgba($admin-text-primary, 0.8);
+    background: rgba($admin-text-primary, 0.05);
+    padding: $spacing-sm;
+    border-radius: 4px;
+    margin: $spacing-xs 0;
+    white-space: pre-wrap;
+    line-height: 1.4;
+  }
+
+  &__round-notes {
+    font-size: 0.8rem;
+    color: rgba($admin-text-primary, 0.6);
+    font-style: italic;
+    margin-top: $spacing-xs;
+  }
+
+  &__notes-section {
+    margin-top: $spacing-lg;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+  }
+
+  &__note-block {
+    padding: $spacing-md;
+    border-radius: 8px;
+    background: rgba($admin-text-primary, 0.03);
+    border: 1px solid rgba($admin-text-primary, 0.1);
+
+    h4 {
+      margin-bottom: $spacing-sm;
+      color: $admin-text-primary;
+    }
+
+    &--weakness {
+      border-color: rgba($admin-accent-warning, 0.3);
+      background: rgba($admin-accent-warning, 0.05);
+    }
+
+    &--recommendation {
+      border-color: rgba($admin-accent-success, 0.3);
+      background: rgba($admin-accent-success, 0.05);
+    }
+  }
+
+  &__rich-text {
+    font-size: 0.9rem;
+    color: rgba($admin-text-primary, 0.8);
+    line-height: 1.6;
+
+    p {
+      margin-bottom: $spacing-sm;
+    }
+  }
+
+  &__nickname {
+    font-size: 0.85rem;
+    color: rgba($admin-text-primary, 0.5);
+    font-style: italic;
+  }
+
+  // ============================================
+  // SCRIM HISTORY TAB
+  // ============================================
+  &__scrim-list {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+  }
+
+  &__scrim-card {
+    padding: $spacing-md;
+    background: rgba($admin-text-primary, 0.03);
+    border: 1px solid rgba($admin-text-primary, 0.1);
+    border-radius: 8px;
+  }
+
+  &__scrim-header {
+    display: flex;
+    gap: $spacing-md;
+    align-items: center;
+    margin-bottom: $spacing-sm;
+    flex-wrap: wrap;
+  }
+
+  &__scrim-date {
+    font-weight: 500;
+    color: $admin-text-primary;
+  }
+
+  &__scrim-rating,
+  &__scrim-worth {
+    font-size: 0.85rem;
+    color: rgba($admin-text-primary, 0.7);
+  }
+
+  &__scrim-maps {
+    display: flex;
+    gap: $spacing-xs;
+    flex-wrap: wrap;
+    margin-bottom: $spacing-sm;
+  }
+
+  &__map-result {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 4px;
+    background: rgba($admin-text-primary, 0.1);
+
+    &--win {
+      background: rgba($admin-accent-success, 0.2);
+      color: $admin-accent-success;
+    }
+
+    &--loss {
+      background: rgba($admin-accent-error, 0.2);
+      color: $admin-accent-error;
+    }
+
+    &--draw {
+      background: rgba($admin-accent-warning, 0.2);
+      color: $admin-accent-warning;
+    }
+  }
+
+  &__scrim-notes {
+    font-size: 0.85rem;
+    color: rgba($admin-text-primary, 0.6);
+    font-style: italic;
+  }
+
+  // ============================================
+  // BAN ANALYSIS TAB
+  // ============================================
+  &__bans {
+    h4 {
+      margin-bottom: $spacing-md;
+      color: $admin-text-primary;
+    }
+  }
+
+  &__ban-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: $spacing-md;
+  }
+
+  &__ban-card {
+    padding: $spacing-md;
+    background: rgba($admin-accent-error, 0.08);
+    border: 1px solid rgba($admin-accent-error, 0.2);
+    border-radius: 8px;
+  }
+
+  &__ban-hero {
+    font-weight: 500;
+    color: $admin-text-primary;
+    margin-bottom: $spacing-xs;
+  }
+
+  &__ban-count {
+    font-size: 0.9rem;
+    color: $admin-accent-error;
+    margin-bottom: $spacing-xs;
+  }
+
+  &__ban-record,
+  &__ban-maps {
+    font-size: 0.8rem;
+    color: rgba($admin-text-primary, 0.6);
+  }
+
+  // ============================================
+  // ARCHIVE TAB
+  // ============================================
+  &__archive {
+    h4 {
+      margin-bottom: $spacing-md;
+      color: $admin-text-primary;
+    }
+  }
+
+  &__archive-list {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+  }
+
+  &__archive-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $spacing-sm $spacing-md;
+    background: rgba($admin-text-primary, 0.03);
+    border: 1px solid rgba($admin-text-primary, 0.1);
+    border-radius: 6px;
+    color: rgba($admin-text-primary, 0.8);
+    text-decoration: none;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba($admin-accent-primary, 0.1);
+      border-color: rgba($admin-accent-primary, 0.3);
+    }
+  }
+
+  &__archive-patch {
+    font-weight: 500;
+  }
+
+  &__archive-date {
+    font-size: 0.85rem;
+    color: rgba($admin-text-primary, 0.5);
+  }
+
+  // ============================================
+  // TEAM GRID (Landing Page)
+  // ============================================
+  &__team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: $spacing-md;
+    margin-top: $spacing-md;
+  }
+
+  &__team-card {
+    display: block;
+    padding: $spacing-md $spacing-lg;
+    background: rgba($admin-accent-primary, 0.08);
+    border: 1px solid rgba($admin-accent-primary, 0.2);
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba($admin-accent-primary, 0.15);
+      border-color: rgba($admin-accent-primary, 0.4);
+      transform: translateY(-2px);
+    }
+  }
+
+  &__team-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: $admin-text-primary;
+    margin-bottom: $spacing-xs;
+  }
+
+  &__team-meta {
+    display: flex;
+    gap: $spacing-xs;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: $spacing-xs;
+
+    .badge {
+      padding: 0.2rem 0.5rem;
+      font-size: 0.7rem;
+      border-radius: 4px;
+      background: rgba($admin-accent-primary, 0.15);
+      color: rgba($admin-text-primary, 0.8);
+    }
+  }
+
+  &__report-count {
+    font-size: 0.8rem;
+    color: rgba($admin-text-primary, 0.6);
+  }
+
+  &__team-date {
+    font-size: 0.75rem;
+    color: rgba($admin-text-primary, 0.4);
+    margin-top: $spacing-xs;
+  }
+}
