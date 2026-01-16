@@ -20,8 +20,17 @@
 
 // Hide duplicate close button - Payload renders both .drawer__close AND .doc-drawer__header-close
 // We only want the styled one (.doc-drawer__header-close with the X icon)
+// Using button.drawer__close for higher specificity
+button.drawer__close,
 .drawer__close {
   display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
 }
 
 // Modal content area - use double class for higher specificity
@@ -163,10 +172,10 @@
 }
 
 // Style close button properly - use specific selectors
+// NOTE: .drawer__close is hidden earlier - only style the header close buttons
 .doc-drawer__header button[aria-label="Close"],
 .doc-drawer .drawer__header button[aria-label="Close"],
-.drawer__header button[aria-label="Close"],
-button.drawer__close {
+.drawer__header button[aria-label="Close"] {
   @extend %close-button-pattern;
   display: flex !important;
   position: absolute !important;

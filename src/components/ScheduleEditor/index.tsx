@@ -89,9 +89,9 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
     fetchData()
   }, [])
 
-  // Fetch team members when team is available
+  // Fetch team members and role preset when team is available
   useEffect(() => {
-    const fetchTeamMembers = async () => {
+    const fetchTeamData = async () => {
       if (!team) return
       const teamId = typeof team === 'object' ? team.id : team
       if (!teamId) return
@@ -101,9 +101,9 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
         const res = await fetch(`/api/teams/${teamId}?depth=1`)
         if (res.ok) {
           const teamData = await res.json()
-          // roster is array of { person: People, role: string }
+          
+          // Set team members from roster
           const roster = teamData.roster || []
-          // Map roster entries to player format, extracting the person object
           const mappedMembers = roster
             .filter((entry: any) => entry.person && typeof entry.person === 'object')
             .map((entry: any) => ({
@@ -113,32 +113,31 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
             }))
           console.log('Team members loaded:', mappedMembers.length)
           setTeamMembers(mappedMembers)
+          
+          // Set roles from team's rolePreset (at root level, not in discordThreads)
+          // Teams collection uses 'specific' but our preset map uses 'ow2-specific'
+          let preset = teamData.rolePreset || 'ow2-specific'
+          if (preset === 'specific') preset = 'ow2-specific' // Map Teams value to preset key
+          
+          console.log('Team rolePreset:', teamData.rolePreset, '-> using:', preset)
+          
+          if (preset === 'custom' && teamData.customRoles) {
+            // customRoles is comma-separated string, convert to array
+            const customRolesArray = teamData.customRoles.split(',').map((r: string) => r.trim()).filter(Boolean)
+            if (customRolesArray.length > 0) {
+              console.log('Setting custom roles:', customRolesArray)
+              setRoles(customRolesArray)
+            }
+          } else if (rolePresets[preset]) {
+            console.log('Setting preset roles:', rolePresets[preset])
+            setRoles(rolePresets[preset])
+          }
         }
       } catch (error) {
-        console.error('Failed to fetch team members:', error)
+        console.error('Failed to fetch team data:', error)
       }
     }
-    fetchTeamMembers()
-  }, [team])
-
-  // Update roles when team data is available
-  useEffect(() => {
-    if (team && typeof team === 'object') {
-      // rolePreset is at root level, not inside discordThreads
-      // Teams collection uses 'specific' but our preset map uses 'ow2-specific'
-      let preset = team.rolePreset || 'ow2-specific'
-      if (preset === 'specific') preset = 'ow2-specific' // Map Teams value to preset key
-      
-      if (preset === 'custom' && team.customRoles) {
-        // customRoles is comma-separated string, convert to array
-        const customRolesArray = team.customRoles.split(',').map((r: string) => r.trim()).filter(Boolean)
-        if (customRolesArray.length > 0) {
-          setRoles(customRolesArray)
-        }
-      } else if (rolePresets[preset]) {
-        setRoles(rolePresets[preset])
-      }
-    }
+    fetchTeamData()
   }, [team])
 
   // Helper to generate unique block IDs
@@ -220,6 +219,39 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
   }, [value, votes, timeSlot, createDefaultBlock, migrateToBlocks])
 
   const [schedule, setSchedule] = useState<ScheduleData>(createInitialSchedule)
+
+  // Update existing block slots when team's role preset changes
+  // This ensures blocks use the correct roles even if they were created with old presets
+  useEffect(() => {
+    if (schedule.days.length === 0 || roles.length === 0) return
+    
+    // Check if any block has different slot count than current roles.length
+    const needsMigration = schedule.days.some(day => 
+      day.blocks.some(block => block.slots.length !== roles.length)
+    )
+    
+    if (!needsMigration) return
+    
+    console.log('Migrating blocks to new role preset:', roles)
+    
+    const migratedDays = schedule.days.map(day => ({
+      ...day,
+      blocks: day.blocks.map(block => {
+        // Keep existing player assignments where possible, matched by role position
+        const newSlots = roles.map((role, i) => {
+          // Try to preserve the player assignment from the same position
+          const existingSlot = block.slots[i]
+          return {
+            role,
+            playerId: existingSlot?.playerId || null
+          }
+        })
+        return { ...block, slots: newSlots }
+      })
+    }))
+    
+    setSchedule(prev => ({ ...prev, days: migratedDays }))
+  }, [roles, schedule.days.length]) // Don't include schedule.days to avoid infinite loop
 
   // Sync schedule changes to field
   const updateSchedule = useCallback(
