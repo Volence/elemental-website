@@ -73,6 +73,11 @@ export interface Config {
     'faceit-leagues': FaceitLeague;
     production: Production;
     'organization-staff': OrganizationStaff;
+    heroes: Hero;
+    maps: Map;
+    'opponent-teams': OpponentTeam;
+    'scout-reports': ScoutReport;
+    'scrim-outcomes': ScrimOutcome;
     matches: Match;
     'tournament-templates': TournamentTemplate;
     'faceit-seasons': FaceitSeason;
@@ -80,11 +85,6 @@ export interface Config {
     'graphics-anchor': GraphicsAnchor;
     'video-anchor': VideoAnchor;
     'events-anchor': EventsAnchor;
-    heroes: Hero;
-    maps: Map;
-    'opponent-teams': OpponentTeam;
-    'scout-reports': ScoutReport;
-    'scrim-outcomes': ScrimOutcome;
     'recruitment-listings': RecruitmentListing;
     'recruitment-applications': RecruitmentApplication;
     tasks: Task;
@@ -114,6 +114,11 @@ export interface Config {
     'faceit-leagues': FaceitLeaguesSelect<false> | FaceitLeaguesSelect<true>;
     production: ProductionSelect<false> | ProductionSelect<true>;
     'organization-staff': OrganizationStaffSelect<false> | OrganizationStaffSelect<true>;
+    heroes: HeroesSelect<false> | HeroesSelect<true>;
+    maps: MapsSelect<false> | MapsSelect<true>;
+    'opponent-teams': OpponentTeamsSelect<false> | OpponentTeamsSelect<true>;
+    'scout-reports': ScoutReportsSelect<false> | ScoutReportsSelect<true>;
+    'scrim-outcomes': ScrimOutcomesSelect<false> | ScrimOutcomesSelect<true>;
     matches: MatchesSelect<false> | MatchesSelect<true>;
     'tournament-templates': TournamentTemplatesSelect<false> | TournamentTemplatesSelect<true>;
     'faceit-seasons': FaceitSeasonsSelect<false> | FaceitSeasonsSelect<true>;
@@ -121,11 +126,6 @@ export interface Config {
     'graphics-anchor': GraphicsAnchorSelect<false> | GraphicsAnchorSelect<true>;
     'video-anchor': VideoAnchorSelect<false> | VideoAnchorSelect<true>;
     'events-anchor': EventsAnchorSelect<false> | EventsAnchorSelect<true>;
-    heroes: HeroesSelect<false> | HeroesSelect<true>;
-    maps: MapsSelect<false> | MapsSelect<true>;
-    'opponent-teams': OpponentTeamsSelect<false> | OpponentTeamsSelect<true>;
-    'scout-reports': ScoutReportsSelect<false> | ScoutReportsSelect<true>;
-    'scrim-outcomes': ScrimOutcomesSelect<false> | ScrimOutcomesSelect<true>;
     'recruitment-listings': RecruitmentListingsSelect<false> | RecruitmentListingsSelect<true>;
     'recruitment-applications': RecruitmentApplicationsSelect<false> | RecruitmentApplicationsSelect<true>;
     tasks: TasksSelect<false> | TasksSelect<true>;
@@ -1004,348 +1004,6 @@ export interface OrganizationStaff {
   createdAt: string;
 }
 /**
- * ⚔️ Manage competitive matches for Elemental teams. Include match details, scores, streams, and VODs.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "matches".
- */
-export interface Match {
-  id: number;
-  /**
-   * Match type affects how it appears in Weekly View
-   */
-  matchType: 'team-match' | 'organization-event' | 'show-match' | 'content-production';
-  /**
-   * Which ELMT team is playing (required for team matches)
-   */
-  team?: (number | null) | Team;
-  /**
-   * Opponent team name
-   */
-  opponent?: string | null;
-  /**
-   * Match date and time
-   */
-  date: string;
-  region: 'NA' | 'EMEA' | 'SA';
-  league: 'Masters' | 'Expert' | 'Advanced' | 'Open';
-  /**
-   * Season identifier (e.g., "S7 Regular Season")
-   */
-  season?: string | null;
-  /**
-   * Matches are automatically marked Complete 2 hours after their scheduled time
-   */
-  status: 'scheduled' | 'complete' | 'cancelled';
-  /**
-   * Match title (auto-generated from team + opponent if left blank). You can override the auto-generated title by entering a custom one here.
-   */
-  title?: string | null;
-  titleCell?: string | null;
-  score?: {
-    /**
-     * ELMT team score
-     */
-    elmtScore?: number | null;
-    /**
-     * Opponent team score
-     */
-    opponentScore?: number | null;
-  };
-  stream?: {
-    /**
-     * Twitch stream URL
-     */
-    url?: string | null;
-    /**
-     * Who is streaming (e.g., "twitch.tv/elmt_gg" or "twitch.tv/bullskunk")
-     */
-    streamedBy?: string | null;
-  };
-  /**
-   * FACEIT lobby URL (auto-populated if synced from FaceIt)
-   */
-  faceitLobby?: string | null;
-  /**
-   * FaceIt Room ID (for generating room links) - auto-populated by sync
-   */
-  faceitRoomId?: string | null;
-  /**
-   * FaceIt Match ID - auto-populated by sync
-   */
-  faceitMatchId?: string | null;
-  /**
-   * VOD/replay URL (YouTube or Twitch)
-   */
-  vod?: string | null;
-  productionWorkflow?: {
-    priority?: ('none' | 'low' | 'medium' | 'high' | 'urgent') | null;
-    /**
-     * When this match was auto-generated
-     */
-    weekGenerated?: string | null;
-    /**
-     * Archived matches hidden from Weekly View
-     */
-    isArchived?: boolean | null;
-    /**
-     * Staff who are AVAILABLE to observe (not yet confirmed)
-     */
-    observerSignups?: (number | User)[] | null;
-    /**
-     * Staff who are AVAILABLE to produce (not yet confirmed)
-     */
-    producerSignups?: (number | User)[] | null;
-    /**
-     * Staff who are AVAILABLE to cast (not yet confirmed)
-     */
-    casterSignups?:
-      | {
-          user: number | User;
-          style?: ('play-by-play' | 'color' | 'both') | null;
-          id?: string | null;
-        }[]
-      | null;
-    /**
-     * CONFIRMED observer who WILL work this match (1 max)
-     */
-    assignedObserver?: (number | null) | User;
-    /**
-     * CONFIRMED producer who WILL work this match (1 max)
-     */
-    assignedProducer?: (number | null) | User;
-    /**
-     * CONFIRMED casters who WILL work this match (2 max)
-     */
-    assignedCasters?:
-      | {
-          user: number | User;
-          style?: ('play-by-play' | 'color' | 'both') | null;
-          id?: string | null;
-        }[]
-      | null;
-    /**
-     * Auto-calculated: none/partial/full
-     */
-    coverageStatus?: ('none' | 'partial' | 'full') | null;
-    /**
-     * Include in Schedule Generator export
-     */
-    includeInSchedule?: boolean | null;
-    /**
-     * Internal production notes
-     */
-    productionNotes?: {
-      root: {
-        type: string;
-        children: {
-          type: any;
-          version: number;
-          [k: string]: unknown;
-        }[];
-        direction: ('ltr' | 'rtl') | null;
-        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-        indent: number;
-        version: number;
-      };
-      [k: string]: unknown;
-    } | null;
-  };
-  /**
-   * Auto-populated from FaceIt API
-   */
-  syncedFromFaceit?: boolean | null;
-  /**
-   * Link to FaceIt season data
-   */
-  faceitSeasonId?: (number | null) | FaceitSeason;
-  slug?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * 👤 Manage admin users who can access the CMS. Assign roles to control what each user can edit.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
- */
-export interface User {
-  id: number;
-  name?: string | null;
-  /**
-   * Profile picture for your account
-   */
-  avatar?: (number | null) | Media;
-  /**
-   * Your Discord User ID (18-19 digits). Link your Discord account to track polls you create via /schedulepoll. Right-click your profile in Discord → Copy User ID (requires Developer Mode enabled in Discord settings).
-   */
-  discordId?: string | null;
-  /**
-   * User role determines what they can access and edit in the CMS.
-   */
-  role?: ('admin' | 'staff-manager' | 'team-manager' | 'user') | null;
-  /**
-   * For Team Managers: Restrict editing to only these teams. For Staff Managers & Admins: Quick access links to these teams (they can still edit all teams).
-   */
-  assignedTeams?: (number | Team)[] | null;
-  /**
-   * Grant access to department-specific tools and dashboards
-   */
-  departments?: {
-    /**
-     * Grants access to Production Dashboard (view schedule, sign up for matches)
-     */
-    isProductionStaff?: boolean | null;
-    /**
-     * Grants access to Social Media Dashboard (manage posts, content calendar)
-     */
-    isSocialMediaStaff?: boolean | null;
-    /**
-     * Grants access to Graphics Dashboard (view requests, manage projects)
-     */
-    isGraphicsStaff?: boolean | null;
-    /**
-     * Grants access to Video Editing Dashboard (clips, montages, seminars)
-     */
-    isVideoStaff?: boolean | null;
-    /**
-     * Grants access to Events Dashboard (movie nights, PUGs, seminars, tournaments)
-     */
-    isEventsStaff?: boolean | null;
-    /**
-     * Grants access to Scouting Dashboard (enemy team intel, research)
-     */
-    isScoutingStaff?: boolean | null;
-  };
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
-}
-/**
- * 📱 Manage social media posts and content calendar.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "social-posts".
- */
-export interface SocialPost {
-  id: number;
-  /**
-   * Internal title to identify this post (not shown publicly)
-   */
-  title: string;
-  /**
-   * The text content of the post (can be drafted later)
-   */
-  content?: string | null;
-  /**
-   * Category of the post (for tracking and color-coding)
-   */
-  postType:
-    | 'Match Promo'
-    | 'Stream Announcement'
-    | 'Community Engagement'
-    | 'Original Content'
-    | 'Repost/Share'
-    | 'Other';
-  /**
-   * Which platform this post is for
-   */
-  platform: 'Twitter/X';
-  /**
-   * When to post this content (optional for drafts/backlog)
-   */
-  scheduledDate?: string | null;
-  /**
-   * Current status of the post
-   */
-  status: 'Draft' | 'Ready for Review' | 'Approved' | 'Scheduled' | 'Posted';
-  /**
-   * SM staff member responsible for this post
-   */
-  assignedTo: number | User;
-  /**
-   * Admin who approved this post
-   */
-  approvedBy?: (number | null) | User;
-  /**
-   * If this post is promoting a specific match
-   */
-  relatedMatch?: (number | null) | Match;
-  /**
-   * Images, videos, or other media for this post
-   */
-  mediaAttachments?:
-    | {
-        media?: (number | null) | Media;
-        /**
-         * Or link to external media
-         */
-        url?: string | null;
-        /**
-         * Alt text for accessibility
-         */
-        altText?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Internal notes for reviewers (not visible in the post)
-   */
-  notes?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * 🎨 Graphics department dashboard
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "graphics-anchor".
- */
-export interface GraphicsAnchor {
-  id: number;
-  placeholder?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * 🎥 Video department dashboard
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "video-anchor".
- */
-export interface VideoAnchor {
-  id: number;
-  placeholder?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * 🎉 Events department dashboard
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "events-anchor".
- */
-export interface EventsAnchor {
-  id: number;
-  placeholder?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "heroes".
  */
@@ -1614,6 +1272,78 @@ export interface ScoutReport {
   createdAt: string;
 }
 /**
+ * 👤 Manage admin users who can access the CMS. Assign roles to control what each user can edit.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: number;
+  name?: string | null;
+  /**
+   * Profile picture for your account
+   */
+  avatar?: (number | null) | Media;
+  /**
+   * Your Discord User ID (18-19 digits). Link your Discord account to track polls you create via /schedulepoll. Right-click your profile in Discord → Copy User ID (requires Developer Mode enabled in Discord settings).
+   */
+  discordId?: string | null;
+  /**
+   * User role determines what they can access and edit in the CMS.
+   */
+  role?: ('admin' | 'staff-manager' | 'team-manager' | 'user') | null;
+  /**
+   * For Team Managers: Restrict editing to only these teams. For Staff Managers & Admins: Quick access links to these teams (they can still edit all teams).
+   */
+  assignedTeams?: (number | Team)[] | null;
+  /**
+   * Grant access to department-specific tools and dashboards
+   */
+  departments?: {
+    /**
+     * Grants access to Production Dashboard (view schedule, sign up for matches)
+     */
+    isProductionStaff?: boolean | null;
+    /**
+     * Grants access to Social Media Dashboard (manage posts, content calendar)
+     */
+    isSocialMediaStaff?: boolean | null;
+    /**
+     * Grants access to Graphics Dashboard (view requests, manage projects)
+     */
+    isGraphicsStaff?: boolean | null;
+    /**
+     * Grants access to Video Editing Dashboard (clips, montages, seminars)
+     */
+    isVideoStaff?: boolean | null;
+    /**
+     * Grants access to Events Dashboard (movie nights, PUGs, seminars, tournaments)
+     */
+    isEventsStaff?: boolean | null;
+    /**
+     * Grants access to Scouting Dashboard (enemy team intel, research)
+     */
+    isScoutingStaff?: boolean | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+}
+/**
  * Post-scrim feedback and ratings per team
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1757,6 +1487,276 @@ export interface DiscordPoll {
    * Post-scrim thoughts, areas to improve, etc.
    */
   scrimNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * ⚔️ Manage competitive matches for Elemental teams. Include match details, scores, streams, and VODs.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "matches".
+ */
+export interface Match {
+  id: number;
+  /**
+   * Match type affects how it appears in Weekly View
+   */
+  matchType: 'team-match' | 'organization-event' | 'show-match' | 'content-production';
+  /**
+   * Which ELMT team is playing (required for team matches)
+   */
+  team?: (number | null) | Team;
+  /**
+   * Opponent team name
+   */
+  opponent?: string | null;
+  /**
+   * Match date and time
+   */
+  date: string;
+  region: 'NA' | 'EMEA' | 'SA';
+  league: 'Masters' | 'Expert' | 'Advanced' | 'Open';
+  /**
+   * Season identifier (e.g., "S7 Regular Season")
+   */
+  season?: string | null;
+  /**
+   * Matches are automatically marked Complete 2 hours after their scheduled time
+   */
+  status: 'scheduled' | 'complete' | 'cancelled';
+  /**
+   * Match title (auto-generated from team + opponent if left blank). You can override the auto-generated title by entering a custom one here.
+   */
+  title?: string | null;
+  titleCell?: string | null;
+  score?: {
+    /**
+     * ELMT team score
+     */
+    elmtScore?: number | null;
+    /**
+     * Opponent team score
+     */
+    opponentScore?: number | null;
+  };
+  stream?: {
+    /**
+     * Twitch stream URL
+     */
+    url?: string | null;
+    /**
+     * Who is streaming (e.g., "twitch.tv/elmt_gg" or "twitch.tv/bullskunk")
+     */
+    streamedBy?: string | null;
+  };
+  /**
+   * FACEIT lobby URL (auto-populated if synced from FaceIt)
+   */
+  faceitLobby?: string | null;
+  /**
+   * FaceIt Room ID (for generating room links) - auto-populated by sync
+   */
+  faceitRoomId?: string | null;
+  /**
+   * FaceIt Match ID - auto-populated by sync
+   */
+  faceitMatchId?: string | null;
+  /**
+   * VOD/replay URL (YouTube or Twitch)
+   */
+  vod?: string | null;
+  productionWorkflow?: {
+    priority?: ('none' | 'low' | 'medium' | 'high' | 'urgent') | null;
+    /**
+     * When this match was auto-generated
+     */
+    weekGenerated?: string | null;
+    /**
+     * Archived matches hidden from Weekly View
+     */
+    isArchived?: boolean | null;
+    /**
+     * Staff who are AVAILABLE to observe (not yet confirmed)
+     */
+    observerSignups?: (number | User)[] | null;
+    /**
+     * Staff who are AVAILABLE to produce (not yet confirmed)
+     */
+    producerSignups?: (number | User)[] | null;
+    /**
+     * Staff who are AVAILABLE to cast (not yet confirmed)
+     */
+    casterSignups?:
+      | {
+          user: number | User;
+          style?: ('play-by-play' | 'color' | 'both') | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * CONFIRMED observer who WILL work this match (1 max)
+     */
+    assignedObserver?: (number | null) | User;
+    /**
+     * CONFIRMED producer who WILL work this match (1 max)
+     */
+    assignedProducer?: (number | null) | User;
+    /**
+     * CONFIRMED casters who WILL work this match (2 max)
+     */
+    assignedCasters?:
+      | {
+          user: number | User;
+          style?: ('play-by-play' | 'color' | 'both') | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Auto-calculated: none/partial/full
+     */
+    coverageStatus?: ('none' | 'partial' | 'full') | null;
+    /**
+     * Include in Schedule Generator export
+     */
+    includeInSchedule?: boolean | null;
+    /**
+     * Internal production notes
+     */
+    productionNotes?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+  };
+  /**
+   * Auto-populated from FaceIt API
+   */
+  syncedFromFaceit?: boolean | null;
+  /**
+   * Link to FaceIt season data
+   */
+  faceitSeasonId?: (number | null) | FaceitSeason;
+  slug?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * 📱 Manage social media posts and content calendar.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "social-posts".
+ */
+export interface SocialPost {
+  id: number;
+  /**
+   * Internal title to identify this post (not shown publicly)
+   */
+  title: string;
+  /**
+   * The text content of the post (can be drafted later)
+   */
+  content?: string | null;
+  /**
+   * Category of the post (for tracking and color-coding)
+   */
+  postType:
+    | 'Match Promo'
+    | 'Stream Announcement'
+    | 'Community Engagement'
+    | 'Original Content'
+    | 'Repost/Share'
+    | 'Other';
+  /**
+   * Which platform this post is for
+   */
+  platform: 'Twitter/X';
+  /**
+   * When to post this content (optional for drafts/backlog)
+   */
+  scheduledDate?: string | null;
+  /**
+   * Current status of the post
+   */
+  status: 'Draft' | 'Ready for Review' | 'Approved' | 'Scheduled' | 'Posted';
+  /**
+   * SM staff member responsible for this post
+   */
+  assignedTo: number | User;
+  /**
+   * Admin who approved this post
+   */
+  approvedBy?: (number | null) | User;
+  /**
+   * If this post is promoting a specific match
+   */
+  relatedMatch?: (number | null) | Match;
+  /**
+   * Images, videos, or other media for this post
+   */
+  mediaAttachments?:
+    | {
+        media?: (number | null) | Media;
+        /**
+         * Or link to external media
+         */
+        url?: string | null;
+        /**
+         * Alt text for accessibility
+         */
+        altText?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Internal notes for reviewers (not visible in the post)
+   */
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * 🎨 Graphics department dashboard
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "graphics-anchor".
+ */
+export interface GraphicsAnchor {
+  id: number;
+  placeholder?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * 🎥 Video department dashboard
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "video-anchor".
+ */
+export interface VideoAnchor {
+  id: number;
+  placeholder?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * 🎉 Events department dashboard
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events-anchor".
+ */
+export interface EventsAnchor {
+  id: number;
+  placeholder?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2531,6 +2531,26 @@ export interface PayloadLockedDocument {
         value: number | OrganizationStaff;
       } | null)
     | ({
+        relationTo: 'heroes';
+        value: number | Hero;
+      } | null)
+    | ({
+        relationTo: 'maps';
+        value: number | Map;
+      } | null)
+    | ({
+        relationTo: 'opponent-teams';
+        value: number | OpponentTeam;
+      } | null)
+    | ({
+        relationTo: 'scout-reports';
+        value: number | ScoutReport;
+      } | null)
+    | ({
+        relationTo: 'scrim-outcomes';
+        value: number | ScrimOutcome;
+      } | null)
+    | ({
         relationTo: 'matches';
         value: number | Match;
       } | null)
@@ -2557,26 +2577,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'events-anchor';
         value: number | EventsAnchor;
-      } | null)
-    | ({
-        relationTo: 'heroes';
-        value: number | Hero;
-      } | null)
-    | ({
-        relationTo: 'maps';
-        value: number | Map;
-      } | null)
-    | ({
-        relationTo: 'opponent-teams';
-        value: number | OpponentTeam;
-      } | null)
-    | ({
-        relationTo: 'scout-reports';
-        value: number | ScoutReport;
-      } | null)
-    | ({
-        relationTo: 'scrim-outcomes';
-        value: number | ScrimOutcome;
       } | null)
     | ({
         relationTo: 'recruitment-listings';
@@ -2935,6 +2935,147 @@ export interface OrganizationStaffSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "heroes_select".
+ */
+export interface HeroesSelect<T extends boolean = true> {
+  name?: T;
+  role?: T;
+  active?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "maps_select".
+ */
+export interface MapsSelect<T extends boolean = true> {
+  name?: T;
+  type?: T;
+  submaps?:
+    | T
+    | {
+        name?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "opponent-teams_select".
+ */
+export interface OpponentTeamsSelect<T extends boolean = true> {
+  name?: T;
+  previousNames?:
+    | T
+    | {
+        name?: T;
+        changedDate?: T;
+        id?: T;
+      };
+  rank?: T;
+  status?: T;
+  region?: T;
+  managerContact?: T;
+  battleNet?: T;
+  currentRoster?:
+    | T
+    | {
+        person?: T;
+        position?: T;
+        playerNotes?: T;
+        id?: T;
+      };
+  previousRoster?:
+    | T
+    | {
+        person?: T;
+        position?: T;
+        leftDate?: T;
+        notes?: T;
+        id?: T;
+      };
+  generalNotes?: T;
+  archivedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "scout-reports_select".
+ */
+export interface ScoutReportsSelect<T extends boolean = true> {
+  title?: T;
+  opponentTeam?: T;
+  patchVersion?: T;
+  status?: T;
+  reportedBy?: T;
+  rosterSnapshot?:
+    | T
+    | {
+        person?: T;
+        position?: T;
+        nickname?: T;
+        id?: T;
+      };
+  mapGames?:
+    | T
+    | {
+        map?: T;
+        mapResult?: T;
+        replayCode?: T;
+        bans?:
+          | T
+          | {
+              hero?: T;
+              direction?: T;
+              id?: T;
+            };
+        rounds?:
+          | T
+          | {
+              roundName?: T;
+              roundResult?: T;
+              heroPicksText?: T;
+              roundNotes?: T;
+              id?: T;
+            };
+        mapNotes?: T;
+        id?: T;
+      };
+  overallNotes?: T;
+  weaknesses?: T;
+  recommendations?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "scrim-outcomes_select".
+ */
+export interface ScrimOutcomesSelect<T extends boolean = true> {
+  title?: T;
+  scrim?: T;
+  yourTeam?: T;
+  opponentTeam?: T;
+  scrimDate?: T;
+  rating?: T;
+  worthScrimAgain?: T;
+  mapsPlayed?:
+    | T
+    | {
+        map?: T;
+        result?: T;
+        score?: T;
+        notes?: T;
+        id?: T;
+      };
+  overallNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "matches_select".
  */
 export interface MatchesSelect<T extends boolean = true> {
@@ -3109,147 +3250,6 @@ export interface VideoAnchorSelect<T extends boolean = true> {
  */
 export interface EventsAnchorSelect<T extends boolean = true> {
   placeholder?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "heroes_select".
- */
-export interface HeroesSelect<T extends boolean = true> {
-  name?: T;
-  role?: T;
-  active?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "maps_select".
- */
-export interface MapsSelect<T extends boolean = true> {
-  name?: T;
-  type?: T;
-  submaps?:
-    | T
-    | {
-        name?: T;
-        id?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "opponent-teams_select".
- */
-export interface OpponentTeamsSelect<T extends boolean = true> {
-  name?: T;
-  previousNames?:
-    | T
-    | {
-        name?: T;
-        changedDate?: T;
-        id?: T;
-      };
-  rank?: T;
-  status?: T;
-  region?: T;
-  managerContact?: T;
-  battleNet?: T;
-  currentRoster?:
-    | T
-    | {
-        person?: T;
-        position?: T;
-        playerNotes?: T;
-        id?: T;
-      };
-  previousRoster?:
-    | T
-    | {
-        person?: T;
-        position?: T;
-        leftDate?: T;
-        notes?: T;
-        id?: T;
-      };
-  generalNotes?: T;
-  archivedAt?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "scout-reports_select".
- */
-export interface ScoutReportsSelect<T extends boolean = true> {
-  title?: T;
-  opponentTeam?: T;
-  patchVersion?: T;
-  status?: T;
-  reportedBy?: T;
-  rosterSnapshot?:
-    | T
-    | {
-        person?: T;
-        position?: T;
-        nickname?: T;
-        id?: T;
-      };
-  mapGames?:
-    | T
-    | {
-        map?: T;
-        mapResult?: T;
-        replayCode?: T;
-        bans?:
-          | T
-          | {
-              hero?: T;
-              direction?: T;
-              id?: T;
-            };
-        rounds?:
-          | T
-          | {
-              roundName?: T;
-              roundResult?: T;
-              heroPicksText?: T;
-              roundNotes?: T;
-              id?: T;
-            };
-        mapNotes?: T;
-        id?: T;
-      };
-  overallNotes?: T;
-  weaknesses?: T;
-  recommendations?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "scrim-outcomes_select".
- */
-export interface ScrimOutcomesSelect<T extends boolean = true> {
-  title?: T;
-  scrim?: T;
-  yourTeam?: T;
-  opponentTeam?: T;
-  scrimDate?: T;
-  rating?: T;
-  worthScrimAgain?: T;
-  mapsPlayed?:
-    | T
-    | {
-        map?: T;
-        result?: T;
-        score?: T;
-        notes?: T;
-        id?: T;
-      };
-  overallNotes?: T;
   updatedAt?: T;
   createdAt?: T;
 }

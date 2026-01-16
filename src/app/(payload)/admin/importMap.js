@@ -37,6 +37,8 @@ import { default as default_18c292333f7a71cfdec38694246f96bb } from '@/component
 import { default as default_1c78329ca40bdaea08398ce17076186a } from '@/components/TeamsListColumns/CellAlignmentStyles'
 import { default as default_d3aadc8f7d1aa70ce78ff0cfa164a82b } from '@/components/FaceitUrlHelper'
 import { default as default_e937f5e9aab757c7fd786055646bb001 } from '@/components/FaceitLeaguesHeader'
+import { default as default_d9817958d5724d91ec10855d6e9a32a2 } from '@/components/ViewWikiButton'
+import { default as default_dc2c323b20f6177c2131d5b0800696bc } from '@/components/PopulateRosterButton'
 import { default as default_c23ccc3f844b47249d0225373601d9d0 } from '@/components/MatchActions'
 import { default as default_3b0c933eeb58b8ba9e1fb354f07641f1 } from '@/components/MatchesListColumns/TitleCell'
 import { default as default_aa7f6faaa886a93f7a640627f141e7c7 } from '@/components/MatchesCustomList'
@@ -49,8 +51,6 @@ import { default as default_6b7ab1bcf3858d76397d35f4ac810b8c } from '@/component
 import { GraphicsWorkboard as GraphicsWorkboard_f4dd7e7806bf98c1c8970f346133cd5f } from '@/components/DepartmentWorkboard'
 import { VideoWorkboard as VideoWorkboard_f4dd7e7806bf98c1c8970f346133cd5f } from '@/components/DepartmentWorkboard'
 import { EventsWorkboard as EventsWorkboard_f4dd7e7806bf98c1c8970f346133cd5f } from '@/components/DepartmentWorkboard'
-import { default as default_d9817958d5724d91ec10855d6e9a32a2 } from '@/components/ViewWikiButton'
-import { default as default_dc2c323b20f6177c2131d5b0800696bc } from '@/components/PopulateRosterButton'
 import { default as default_ed1e8d66015b6bb359c4bd3a3c1c4e16 } from '@/components/RecruitmentFields/CategorySelectField'
 import { default as default_cf24fd1a27e289c739c233304f5b861d } from '@/components/RecruitmentFields/TeamRelationshipField'
 import { default as default_ec72e2a2a07bfec297bbb538e037e4b8 } from '@/components/RecruitmentFields/RoleSelectField'
@@ -135,6 +135,8 @@ export const importMap = {
   "@/components/TeamsListColumns/CellAlignmentStyles#default": default_1c78329ca40bdaea08398ce17076186a,
   "@/components/FaceitUrlHelper#default": default_d3aadc8f7d1aa70ce78ff0cfa164a82b,
   "@/components/FaceitLeaguesHeader#default": default_e937f5e9aab757c7fd786055646bb001,
+  "@/components/ViewWikiButton#default": default_d9817958d5724d91ec10855d6e9a32a2,
+  "@/components/PopulateRosterButton#default": default_dc2c323b20f6177c2131d5b0800696bc,
   "@/components/MatchActions#default": default_c23ccc3f844b47249d0225373601d9d0,
   "@/components/MatchesListColumns/TitleCell#default": default_3b0c933eeb58b8ba9e1fb354f07641f1,
   "@/components/MatchesCustomList#default": default_aa7f6faaa886a93f7a640627f141e7c7,
@@ -147,8 +149,6 @@ export const importMap = {
   "@/components/DepartmentWorkboard#GraphicsWorkboard": GraphicsWorkboard_f4dd7e7806bf98c1c8970f346133cd5f,
   "@/components/DepartmentWorkboard#VideoWorkboard": VideoWorkboard_f4dd7e7806bf98c1c8970f346133cd5f,
   "@/components/DepartmentWorkboard#EventsWorkboard": EventsWorkboard_f4dd7e7806bf98c1c8970f346133cd5f,
-  "@/components/ViewWikiButton#default": default_d9817958d5724d91ec10855d6e9a32a2,
-  "@/components/PopulateRosterButton#default": default_dc2c323b20f6177c2131d5b0800696bc,
   "@/components/RecruitmentFields/CategorySelectField#default": default_ed1e8d66015b6bb359c4bd3a3c1c4e16,
   "@/components/RecruitmentFields/TeamRelationshipField#default": default_cf24fd1a27e289c739c233304f5b861d,
   "@/components/RecruitmentFields/RoleSelectField#default": default_ec72e2a2a07bfec297bbb538e037e4b8,

@@ -143,6 +143,13 @@ const config = buildConfig({
     Production,
     OrganizationStaff,
     
+    // COMPETITIVE: Team intelligence (right after Organization)
+    Heroes,
+    Maps,
+    OpponentTeams,
+    ScoutReports,
+    ScrimOutcomes,
+    
     // PRODUCTION: Department - Matches & broadcasts
     Matches,
     TournamentTemplates,
@@ -155,13 +162,6 @@ const config = buildConfig({
     GraphicsAnchor, // Graphics group
     VideoAnchor, // Video group
     EventsAnchor, // Events group
-    
-    // COMPETITIVE: Team intelligence (renamed from Scouting)
-    Heroes,
-    Maps,
-    OpponentTeams,
-    ScoutReports,
-    ScrimOutcomes,
     
     // RECRUITING: Growth
     RecruitmentListings,
