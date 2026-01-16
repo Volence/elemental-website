@@ -8,7 +8,7 @@ export const OpponentTeams: CollectionConfig = {
     plural: 'Opponent Teams',
   },
   admin: {
-    group: 'Competitive',
+    group: 'Organization',
     useAsTitle: 'name',
     defaultColumns: ['name', 'rank', 'status', 'region'],
     description: 'External teams for scouting and scrim tracking',

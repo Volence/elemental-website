@@ -8,7 +8,7 @@ export const ScoutReports: CollectionConfig = {
     plural: 'Scout Reports',
   },
   admin: {
-    group: 'Competitive',
+    group: 'Organization',
     useAsTitle: 'title',
     defaultColumns: ['title', 'opponentTeam', 'status', 'patchVersion', 'updatedAt'],
     description: 'Patch-based intelligence on opponent teams',

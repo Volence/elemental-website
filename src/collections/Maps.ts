@@ -8,7 +8,7 @@ export const Maps: CollectionConfig = {
     plural: 'Maps',
   },
   admin: {
-    group: 'Competitive',
+    group: 'Organization',
     useAsTitle: 'name',
     defaultColumns: ['name', 'type'],
     description: 'Overwatch 2 competitive maps',

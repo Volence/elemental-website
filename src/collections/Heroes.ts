@@ -8,7 +8,7 @@ export const Heroes: CollectionConfig = {
     plural: 'Heroes',
   },
   admin: {
-    group: 'Competitive',
+    group: 'Organization',
     useAsTitle: 'name',
     defaultColumns: ['name', 'role', 'active'],
     // Only show to scouting staff and staff-manager+
