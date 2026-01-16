@@ -16,7 +16,7 @@ import './index.scss'
 // Role presets matching Teams collection
 const rolePresets: Record<string, string[]> = {
   'ow2-specific': ['Tank', 'Hitscan', 'Flex DPS', 'Main Support', 'Flex Support'],
-  'generic': ['Tank', 'DPS', 'Support'],
+  'generic': ['Tank', 'DPS', 'DPS', 'Support', 'Support'],
   'custom': [], // Will use customRoles from team
 }
 
@@ -124,9 +124,17 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
   // Update roles when team data is available
   useEffect(() => {
     if (team && typeof team === 'object') {
-      const preset = team.discordThreads?.rolePreset || 'ow2-specific'
-      if (preset === 'custom' && team.discordThreads?.customRoles) {
-        setRoles(team.discordThreads.customRoles)
+      // rolePreset is at root level, not inside discordThreads
+      // Teams collection uses 'specific' but our preset map uses 'ow2-specific'
+      let preset = team.rolePreset || 'ow2-specific'
+      if (preset === 'specific') preset = 'ow2-specific' // Map Teams value to preset key
+      
+      if (preset === 'custom' && team.customRoles) {
+        // customRoles is comma-separated string, convert to array
+        const customRolesArray = team.customRoles.split(',').map((r: string) => r.trim()).filter(Boolean)
+        if (customRolesArray.length > 0) {
+          setRoles(customRolesArray)
+        }
       } else if (rolePresets[preset]) {
         setRoles(rolePresets[preset])
       }

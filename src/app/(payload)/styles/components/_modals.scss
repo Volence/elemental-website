@@ -18,6 +18,12 @@
   backdrop-filter: blur(8px);
 }
 
+// Hide duplicate close button - Payload renders both .drawer__close AND .doc-drawer__header-close
+// We only want the styled one (.doc-drawer__header-close with the X icon)
+.drawer__close {
+  display: none !important;
+}
+
 // Modal content area - use double class for higher specificity
 .modal.modal .modal__content,
 .drawer.drawer .drawer__content {
