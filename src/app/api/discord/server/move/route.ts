@@ -5,8 +5,6 @@ export async function POST(request: NextRequest) {
   try {
     const { id, position, parentId, type } = await request.json()
 
-    console.log('Move request:', { id, position, parentId, type })
-
     if (!id || position === undefined) {
       return NextResponse.json({ error: 'ID and position are required' }, { status: 400 })
     }
@@ -35,18 +33,15 @@ export async function POST(request: NextRequest) {
     }
 
     const channelWithPosition = channel as any
-    console.log('Found channel:', channel.name, 'type:', channel.type, 'current position:', channelWithPosition.position)
 
     // Move/reorder the channel or category
     try {
       // For non-category channels, set parent first if needed
       if (type === 'channel' && parentId !== undefined && 'setParent' in channel && channel.type !== 4) {
-        console.log('Setting parent to:', parentId)
         await channelWithPosition.setParent(parentId || null)
       }
 
       // Set position with timeout protection
-      console.log('Setting position to:', position)
       
       // Create a timeout promise
       const timeoutPromise = new Promise((_, reject) => {
@@ -55,20 +50,16 @@ export async function POST(request: NextRequest) {
 
       // Race between setPosition and timeout
       await Promise.race([
-        channelWithPosition.setPosition(position).then(() => {
-          console.log('Position update completed')
-        }),
+        channelWithPosition.setPosition(position),
         timeoutPromise
       ])
 
-      console.log('Move successful')
       return NextResponse.json({ success: true })
     } catch (moveError: any) {
       console.error('Failed to move channel/category:', moveError)
       
       // If it times out, still return success since Discord might be processing it
       if (moveError.message.includes('timed out')) {
-        console.log('Timed out but returning success - Discord may still process it')
         return NextResponse.json({ 
           success: true, 
           warning: 'Request may still be processing' 

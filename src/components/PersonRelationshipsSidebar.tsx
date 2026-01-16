@@ -25,8 +25,6 @@ const PersonRelationshipsSidebar: React.FC = () => {
         // Note: roster and subs are arrays of objects with {person, role}, so we need to fetch with depth and filter in JS
         const teamsRes = await fetch(`/api/teams?limit=100&depth=1`)
         const teamsData = await teamsRes.json()
-        console.log(`Fetched ${teamsData.docs?.length || 0} teams for person ${id}`)
-        console.log('Person ID type:', typeof id, 'Value:', id)
 
         // Fetch organization staff (depth 0 to get role field)
         const orgStaffRes = await fetch(`/api/organization-staff?where[person][equals]=${id}&limit=100&depth=0`)
@@ -39,7 +37,6 @@ const PersonRelationshipsSidebar: React.FC = () => {
         // Process teams to determine roles
         const teamRoles: Array<{ teamId: number; teamName: string; role: string }> = []
         for (const team of teamsData.docs || []) {
-          console.log(`\n--- Checking team "${team.name}" (ID: ${team.id}) ---`)
           const roles: string[] = []
           
           // Check roster (array of {person, role} objects)
@@ -51,7 +48,6 @@ const PersonRelationshipsSidebar: React.FC = () => {
                 // Add the specific role (Tank, DPS, Support)
                 const roleLabel = item.role ? item.role.charAt(0).toUpperCase() + item.role.slice(1) : 'Player'
                 rosterRoles.push(roleLabel)
-                console.log(`  ✅ Match: Roster - ${roleLabel}`)
               }
             })
             if (rosterRoles.length > 0) {
@@ -65,7 +61,6 @@ const PersonRelationshipsSidebar: React.FC = () => {
               const personId = typeof item.person === 'object' ? item.person?.id : item.person
               if (personId == id) { // Use == for type coercion
                 roles.push('Substitute')
-                console.log(`  ✅ Match: Substitute`)
               }
             })
           }
@@ -76,7 +71,6 @@ const PersonRelationshipsSidebar: React.FC = () => {
               const personId = typeof item.person === 'object' ? item.person?.id : item.person
               if (personId == id) { // Use == for type coercion
                 roles.push('Captain')
-                console.log(`  ✅ Match: Captain`)
               }
             })
           }
@@ -87,7 +81,6 @@ const PersonRelationshipsSidebar: React.FC = () => {
               const personId = typeof item.person === 'object' ? item.person?.id : item.person
               if (personId == id) { // Use == for type coercion
                 roles.push('Coach')
-                console.log(`  ✅ Match: Coach`)
               }
             })
           }
@@ -98,7 +91,6 @@ const PersonRelationshipsSidebar: React.FC = () => {
               const personId = typeof item.person === 'object' ? item.person?.id : item.person
               if (personId == id) { // Use == for type coercion
                 roles.push('Manager')
-                console.log(`  ✅ Match: Manager`)
               }
             })
           }
@@ -110,20 +102,17 @@ const PersonRelationshipsSidebar: React.FC = () => {
                 const personId = typeof item.person === 'object' ? item.person?.id : item.person
                 if (personId == id) { // Use == for type coercion
                   roles.push('Co-Captain')
-                  console.log(`  ✅ Match: Co-Captain`)
                 }
               })
             } else {
               const coCaptainId = typeof team.coCaptain === 'object' ? team.coCaptain?.id : team.coCaptain
               if (coCaptainId == id) {
                 roles.push('Co-Captain')
-                console.log(`  ✅ Match: Co-Captain`)
               }
             }
           }
 
           if (roles.length > 0) {
-            console.log(`✅ Found person ${id} in team "${team.name}" with roles:`, roles)
             teamRoles.push({
               teamId: team.id,
               teamName: team.name,
@@ -131,7 +120,6 @@ const PersonRelationshipsSidebar: React.FC = () => {
             })
           }
         }
-        console.log(`Final team roles array for person ${id}:`, teamRoles)
 
         // Helper function to format production type labels
         const formatProductionType = (type: string): string => {

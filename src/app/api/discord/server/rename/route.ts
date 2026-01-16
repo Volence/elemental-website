@@ -6,8 +6,6 @@ export async function POST(request: NextRequest) {
   try {
     const { id, name, type } = await request.json()
 
-    console.log('Rename request:', { id, name, type })
-
     if (!id || !name) {
       return NextResponse.json({ error: 'ID and name are required' }, { status: 400 })
     }
@@ -35,8 +33,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Channel not found' }, { status: 404 })
     }
 
-    console.log('Found channel:', channel.name, 'type:', channel.type)
-
     // Rename the channel/category
     try {
       if (type === 'category' && channel.type !== ChannelType.GuildCategory) {
@@ -44,7 +40,6 @@ export async function POST(request: NextRequest) {
       }
 
       await channel.setName(name)
-      console.log('Rename successful, new name:', channel.name)
       
       return NextResponse.json({ success: true, name: channel.name })
     } catch (renameError: any) {
