@@ -222,36 +222,49 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
 
   // Update existing block slots when team's role preset changes
   // This ensures blocks use the correct roles even if they were created with old presets
+  // Use roles.join() to create a stable dependency that changes when role array contents change
+  const rolesKey = roles.join('|')
   useEffect(() => {
-    if (schedule.days.length === 0 || roles.length === 0) return
-    
-    // Check if any block has different slot count than current roles.length
-    const needsMigration = schedule.days.some(day => 
-      day.blocks.some(block => block.slots.length !== roles.length)
-    )
-    
-    if (!needsMigration) return
-    
-    console.log('Migrating blocks to new role preset:', roles)
-    
-    const migratedDays = schedule.days.map(day => ({
-      ...day,
-      blocks: day.blocks.map(block => {
-        // Keep existing player assignments where possible, matched by role position
-        const newSlots = roles.map((role, i) => {
-          // Try to preserve the player assignment from the same position
-          const existingSlot = block.slots[i]
-          return {
-            role,
-            playerId: existingSlot?.playerId || null
-          }
+    // Use functional update to get current schedule without depending on it
+    setSchedule(currentSchedule => {
+      if (currentSchedule.days.length === 0 || roles.length === 0) return currentSchedule
+      
+      // Check if any block has different roles than current preset
+      // Compare both slot count AND role names
+      const needsMigration = currentSchedule.days.some(day => 
+        day.blocks.some(block => {
+          // Different slot count means we need to migrate
+          if (block.slots.length !== roles.length) return true
+          // Same slot count but different role names - also need to migrate
+          const existingRoles = block.slots.map(s => s.role)
+          const rolesMatch = roles.every((role, i) => role === existingRoles[i])
+          return !rolesMatch
         })
-        return { ...block, slots: newSlots }
-      })
-    }))
-    
-    setSchedule(prev => ({ ...prev, days: migratedDays }))
-  }, [roles, schedule.days.length]) // Don't include schedule.days to avoid infinite loop
+      )
+      
+      if (!needsMigration) return currentSchedule
+      
+      console.log('Migrating blocks to new role preset:', roles)
+      
+      const migratedDays = currentSchedule.days.map(day => ({
+        ...day,
+        blocks: day.blocks.map(block => {
+          // Keep existing player assignments where possible, matched by role position
+          const newSlots = roles.map((role, i) => {
+            // Try to preserve the player assignment from the same position
+            const existingSlot = block.slots[i]
+            return {
+              role,
+              playerId: existingSlot?.playerId || null
+            }
+          })
+          return { ...block, slots: newSlots }
+        })
+      }))
+      
+      return { ...currentSchedule, days: migratedDays }
+    })
+  }, [rolesKey]) // Depend on roles content, not reference
 
   // Sync schedule changes to field
   const updateSchedule = useCallback(
