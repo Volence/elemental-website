@@ -213,12 +213,36 @@ export async function postScrimReminder(
       return { success: false, error: 'Schedule thread not configured for this team' }
     }
 
-    // Build player ID → name map from votes
+    // Build player ID → name map by fetching from People collection
+    // Slots store People collection IDs (numbers), not Discord IDs
     const playerMap = new Map<string, string>()
-    if (votes) {
-      for (const voteDay of votes) {
-        for (const voter of voteDay.voters) {
-          playerMap.set(voter.id, voter.displayName || voter.username)
+    
+    // Collect all unique player IDs from all blocks
+    const allPlayerIds = new Set<string>()
+    for (const daySchedule of schedule.days) {
+      for (const b of daySchedule.blocks || []) {
+        for (const slot of b.slots) {
+          if (slot.playerId && !slot.isRinger) {
+            allPlayerIds.add(slot.playerId)
+          }
+        }
+      }
+    }
+    
+    // Fetch players from People collection if we have IDs
+    if (allPlayerIds.size > 0) {
+      const playerIds = Array.from(allPlayerIds).map(id => Number(id)).filter(id => !isNaN(id))
+      if (playerIds.length > 0) {
+        const people = await payload.find({
+          collection: 'people',
+          where: {
+            id: { in: playerIds }
+          },
+          limit: playerIds.length,
+        })
+        
+        for (const person of people.docs) {
+          playerMap.set(String(person.id), person.name || 'Unknown')
         }
       }
     }
