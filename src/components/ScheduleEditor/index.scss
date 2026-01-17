@@ -949,6 +949,15 @@
       }
     }
 
+    // Fix dropdown options for dark mode - use explicit dark colors
+    select {
+      option {
+        background: #1a1a2e; // Dark background for dropdown options
+        color: #e5e5e5; // Light text for readability
+        padding: 0.5rem;
+      }
+    }
+
     textarea {
       resize: vertical;
       min-height: 60px;
@@ -1058,6 +1067,11 @@
     > select {
       width: 85px;
       flex: 0 0 85px;
+
+      option {
+        background: #1a1a2e;
+        color: #e5e5e5;
+      }
     }
 
     // Score input - fixed narrow width (direct child, not in autocomplete)
