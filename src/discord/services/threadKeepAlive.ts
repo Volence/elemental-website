@@ -84,8 +84,18 @@ async function runKeepAlive(): Promise<void> {
         // Unarchive if archived
         if (thread.archived) {
           await thread.setArchived(false)
-          keptAliveCount++
           console.log(`  ✅ Unarchived: ${threadDoc.threadName}`)
+        }
+
+        // Bump the thread by posting and immediately deleting a message
+        // This triggers "activity" and makes the thread appear in the recently active list
+        try {
+          const bumpMessage = await thread.send({ content: '📌' })
+          await bumpMessage.delete()
+          keptAliveCount++
+        } catch (bumpError) {
+          // Log but don't fail - thread is still unarchived
+          console.log(`  ⚠️ Could not bump ${threadDoc.threadName}: ${(bumpError as Error).message}`)
         }
 
         // Update the lastKeptAliveAt timestamp
