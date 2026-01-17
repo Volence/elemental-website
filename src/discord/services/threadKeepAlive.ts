@@ -87,16 +87,48 @@ async function runKeepAlive(): Promise<void> {
           console.log(`  ✅ Unarchived: ${threadDoc.threadName}`)
         }
 
-        // Bump the thread by posting and immediately deleting a message
-        // This triggers "activity" and makes the thread appear in the recently active list
+        // Try to bump the thread by toggling forum tags (silent, no notifications)
+        // This only works for forum channel threads that have available tags
+        let bumped = false
         try {
-          const bumpMessage = await thread.send({ content: '📌' })
-          await bumpMessage.delete()
-          keptAliveCount++
-        } catch (bumpError) {
-          // Log but don't fail - thread is still unarchived
-          console.log(`  ⚠️ Could not bump ${threadDoc.threadName}: ${(bumpError as Error).message}`)
+          // Check if this is a forum thread with available tags
+          const parent = thread.parent
+          if (parent && 'availableTags' in parent && parent.availableTags.length > 0) {
+            const availableTags = parent.availableTags
+            const currentTags = thread.appliedTags || []
+            
+            // Find a tag we can toggle (preferably one not currently applied)
+            const unusedTag = availableTags.find(t => !currentTags.includes(t.id))
+            
+            if (unusedTag) {
+              // Add then remove the tag to trigger activity
+              await thread.setAppliedTags([...currentTags, unusedTag.id])
+              await thread.setAppliedTags(currentTags)
+              bumped = true
+              keptAliveCount++
+              console.log(`  📌 Bumped via tag toggle: ${threadDoc.threadName}`)
+            } else if (currentTags.length > 0) {
+              // All tags are applied, remove and re-add one
+              const tagToToggle = currentTags[0]
+              const tagsWithoutFirst = currentTags.slice(1)
+              await thread.setAppliedTags(tagsWithoutFirst)
+              await thread.setAppliedTags(currentTags)
+              bumped = true
+              keptAliveCount++
+              console.log(`  📌 Bumped via tag toggle: ${threadDoc.threadName}`)
+            }
+          }
+        } catch (tagError) {
+          // Tag toggle failed, log but continue
+          console.log(`  ⚠️ Tag toggle failed for ${threadDoc.threadName}: ${(tagError as Error).message}`)
         }
+
+        // If tag toggle didn't work (not a forum thread or no tags), just keep it unarchived
+        if (!bumped) {
+          keptAliveCount++
+          console.log(`  ✅ Kept alive (unarchive only): ${threadDoc.threadName}`)
+        }
+
 
         // Update the lastKeptAliveAt timestamp
         await payload.update({
