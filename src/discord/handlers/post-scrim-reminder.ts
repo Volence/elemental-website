@@ -231,7 +231,11 @@ export async function postScrimReminder(
     
     // Fetch players from People collection if we have IDs
     if (allPlayerIds.size > 0) {
-      const playerIds = Array.from(allPlayerIds).map(id => Number(id)).filter(id => !isNaN(id))
+      // Filter to only valid database IDs (reasonable size, not Discord user IDs which are 15+ digits)
+      const playerIds = Array.from(allPlayerIds)
+        .map(id => Number(id))
+        .filter(id => !isNaN(id) && id > 0 && id < 1000000) // Database IDs are typically under 1 million
+      
       if (playerIds.length > 0) {
         const people = await payload.find({
           collection: 'people',
@@ -244,6 +248,12 @@ export async function postScrimReminder(
         for (const person of people.docs) {
           playerMap.set(String(person.id), person.name || 'Unknown')
         }
+      }
+      
+      // Log if we skipped invalid IDs (likely Discord user IDs from old data)
+      const skippedCount = allPlayerIds.size - playerIds.length
+      if (skippedCount > 0) {
+        console.log(`⚠️ Skipped ${skippedCount} invalid player ID(s) - likely Discord IDs from old data`)
       }
     }
 

@@ -416,9 +416,24 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
   // Toggle day enabled/disabled
   const toggleDay = (dayIndex: number) => {
     const newDays = [...schedule.days]
-    newDays[dayIndex] = {
-      ...newDays[dayIndex],
-      enabled: !newDays[dayIndex].enabled,
+    const day = newDays[dayIndex]
+    const willBeEnabled = !day.enabled
+    
+    // When enabling a day, update block times to use the current timeSlot field value
+    if (willBeEnabled && timeSlot) {
+      newDays[dayIndex] = {
+        ...day,
+        enabled: true,
+        blocks: day.blocks.map(block => ({
+          ...block,
+          time: timeSlot // Apply the current timeSlot setting
+        }))
+      }
+    } else {
+      newDays[dayIndex] = {
+        ...day,
+        enabled: willBeEnabled,
+      }
     }
     updateSchedule({ ...schedule, days: newDays })
   }
