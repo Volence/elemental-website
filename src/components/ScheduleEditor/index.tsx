@@ -102,17 +102,36 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
         if (res.ok) {
           const teamData = await res.json()
           
-          // Set team members from roster
+          // Set team members from roster AND subs
           const roster = teamData.roster || []
-          const mappedMembers = roster
+          const subs = teamData.subs || []
+          
+          // Map roster members
+          const rosterMembers = roster
             .filter((entry: any) => entry.person && typeof entry.person === 'object')
             .map((entry: any) => ({
               id: String(entry.person.id),
               username: entry.person.name || 'Unknown',
               displayName: entry.person.name || 'Unknown',
             }))
-          console.log('Team members loaded:', mappedMembers.length)
-          setTeamMembers(mappedMembers)
+          
+          // Map subs (they have a person field too)
+          const subMembers = subs
+            .filter((entry: any) => entry.person && typeof entry.person === 'object')
+            .map((entry: any) => ({
+              id: String(entry.person.id),
+              username: entry.person.name || 'Unknown',
+              displayName: `${entry.person.name || 'Unknown'} (Sub)`,
+            }))
+          
+          // Combine roster and subs, deduplicate by ID
+          const allMembers = [...rosterMembers, ...subMembers]
+          const uniqueMembers = allMembers.filter((member, index, arr) => 
+            arr.findIndex(m => m.id === member.id) === index
+          )
+          
+          console.log('Team members loaded:', rosterMembers.length, 'roster +', subMembers.length, 'subs')
+          setTeamMembers(uniqueMembers)
           
           // Set roles from team's rolePreset (at root level, not in discordThreads)
           // Teams collection uses 'specific' but our preset map uses 'ow2-specific'
