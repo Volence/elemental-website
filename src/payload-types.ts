@@ -83,6 +83,7 @@ export interface Config {
     'faceit-seasons': FaceitSeason;
     'social-posts': SocialPost;
     'graphics-anchor': GraphicsAnchor;
+    'graphics-assets': GraphicsAsset;
     'video-anchor': VideoAnchor;
     'events-anchor': EventsAnchor;
     'recruitment-listings': RecruitmentListing;
@@ -102,11 +103,16 @@ export interface Config {
     redirects: Redirect;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
+    'payload-folders': FolderInterface;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    'payload-folders': {
+      documentsAndFolders: 'payload-folders' | 'graphics-assets';
+    };
+  };
   collectionsSelect: {
     pages: PagesSelect<false> | PagesSelect<true>;
     people: PeopleSelect<false> | PeopleSelect<true>;
@@ -124,6 +130,7 @@ export interface Config {
     'faceit-seasons': FaceitSeasonsSelect<false> | FaceitSeasonsSelect<true>;
     'social-posts': SocialPostsSelect<false> | SocialPostsSelect<true>;
     'graphics-anchor': GraphicsAnchorSelect<false> | GraphicsAnchorSelect<true>;
+    'graphics-assets': GraphicsAssetsSelect<false> | GraphicsAssetsSelect<true>;
     'video-anchor': VideoAnchorSelect<false> | VideoAnchorSelect<true>;
     'events-anchor': EventsAnchorSelect<false> | EventsAnchorSelect<true>;
     'recruitment-listings': RecruitmentListingsSelect<false> | RecruitmentListingsSelect<true>;
@@ -143,6 +150,7 @@ export interface Config {
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
+    'payload-folders': PayloadFoldersSelect<false> | PayloadFoldersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -1737,6 +1745,63 @@ export interface GraphicsAnchor {
   createdAt: string;
 }
 /**
+ * 📁 Graphics department file library. Drag & drop files, create folders to organize.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "graphics-assets".
+ */
+export interface GraphicsAsset {
+  id: number;
+  folder?: (number | null) | FolderInterface;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-folders".
+ */
+export interface FolderInterface {
+  id: number;
+  name: string;
+  folder?: (number | null) | FolderInterface;
+  documentsAndFolders?: {
+    docs?: (
+      | {
+          relationTo?: 'payload-folders';
+          value: number | FolderInterface;
+        }
+      | {
+          relationTo?: 'graphics-assets';
+          value: number | GraphicsAsset;
+        }
+    )[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  folderType?: 'graphics-assets'[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * 🎥 Video department dashboard
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2571,6 +2636,10 @@ export interface PayloadLockedDocument {
         value: number | GraphicsAnchor;
       } | null)
     | ({
+        relationTo: 'graphics-assets';
+        value: number | GraphicsAsset;
+      } | null)
+    | ({
         relationTo: 'video-anchor';
         value: number | VideoAnchor;
       } | null)
@@ -2637,6 +2706,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'redirects';
         value: number | Redirect;
+      } | null)
+    | ({
+        relationTo: 'payload-folders';
+        value: number | FolderInterface;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -3237,6 +3310,38 @@ export interface GraphicsAnchorSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "graphics-assets_select".
+ */
+export interface GraphicsAssetsSelect<T extends boolean = true> {
+  folder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "video-anchor_select".
  */
 export interface VideoAnchorSelect<T extends boolean = true> {
@@ -3682,6 +3787,18 @@ export interface PayloadJobsSelect<T extends boolean = true> {
   queue?: T;
   waitUntil?: T;
   processing?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-folders_select".
+ */
+export interface PayloadFoldersSelect<T extends boolean = true> {
+  name?: T;
+  folder?: T;
+  documentsAndFolders?: T;
+  folderType?: T;
   updatedAt?: T;
   createdAt?: T;
 }

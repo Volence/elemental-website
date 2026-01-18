@@ -49,6 +49,7 @@ import { ErrorHarvesterState } from './globals/ErrorHarvesterState'
 import { DiscordServerManager } from './globals/DiscordServerManager'
 import { DiscordCategoryTemplates } from './collections/DiscordCategoryTemplates'
 import { Tasks } from './collections/Tasks'
+import { GraphicsAssets } from './collections/GraphicsAssets'
 import { GraphicsDashboard } from './globals/GraphicsDashboard'
 import { VideoEditingDashboard } from './globals/VideoEditingDashboard'
 import { EventsDashboard } from './globals/EventsDashboard'
@@ -65,6 +66,7 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 const config = buildConfig({
+  // folders: {}, // Disabled - requires database migrations before enabling
   admin: {
     meta: {
       titleSuffix: '- Elemental Admin',
@@ -160,6 +162,7 @@ const config = buildConfig({
     
     // DEPARTMENT WORKBOARDS: Show Kanban boards for each department
     GraphicsAnchor, // Graphics group
+    GraphicsAssets, // Graphics asset library with folder support
     VideoAnchor, // Video group
     EventsAnchor, // Events group
     

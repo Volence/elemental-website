@@ -49,6 +49,8 @@ import { default as default_cbd62d152faae83563323bc6e1990a3d } from '@/component
 import { default as default_f52f291ae9aadfb75185249ec10b563b } from '@/components/SocialPostColumns/StatusCell'
 import { default as default_6b7ab1bcf3858d76397d35f4ac810b8c } from '@/components/SocialPostColumns/QuickFilters'
 import { GraphicsWorkboard as GraphicsWorkboard_f4dd7e7806bf98c1c8970f346133cd5f } from '@/components/DepartmentWorkboard'
+import { FolderTableCell as FolderTableCell_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
+import { FolderField as FolderField_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 import { VideoWorkboard as VideoWorkboard_f4dd7e7806bf98c1c8970f346133cd5f } from '@/components/DepartmentWorkboard'
 import { EventsWorkboard as EventsWorkboard_f4dd7e7806bf98c1c8970f346133cd5f } from '@/components/DepartmentWorkboard'
 import { default as default_ed1e8d66015b6bb359c4bd3a3c1c4e16 } from '@/components/RecruitmentFields/CategorySelectField'
@@ -66,6 +68,7 @@ import { default as default_187be048b128856df5138905b5a2ba07 } from '@/component
 import { default as default_af352f4805551eefd7ae0beaaee692c1 } from '@/components/InviteLinkFields/CopyLinkField'
 import { default as default_c88412ef156346181b651c19a855fdb0 } from '@/components/InviteLinkColumns/DepartmentsCell'
 import { default as default_83b754ffb26a9a06f67ecd0cafa4ac31 } from '@/components/InviteLinkColumns/StatusCell'
+import { FolderTypeField as FolderTypeField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
 import { RowLabel as RowLabel_ec255a65fa6fa8d1faeb09cf35284224 } from '@/Header/RowLabel'
 import { RowLabel as RowLabel_1f6ff6ff633e3695d348f4f3c58f1466 } from '@/Footer/RowLabel'
 import { default as default_c68ab0b1bbf77fcff4337c949e1b628c } from '@/components/ProductionDashboardView'
@@ -147,6 +150,8 @@ export const importMap = {
   "@/components/SocialPostColumns/StatusCell#default": default_f52f291ae9aadfb75185249ec10b563b,
   "@/components/SocialPostColumns/QuickFilters#default": default_6b7ab1bcf3858d76397d35f4ac810b8c,
   "@/components/DepartmentWorkboard#GraphicsWorkboard": GraphicsWorkboard_f4dd7e7806bf98c1c8970f346133cd5f,
+  "@payloadcms/ui/rsc#FolderTableCell": FolderTableCell_ab83ff7e88da8d3530831f296ec4756a,
+  "@payloadcms/ui/rsc#FolderField": FolderField_ab83ff7e88da8d3530831f296ec4756a,
   "@/components/DepartmentWorkboard#VideoWorkboard": VideoWorkboard_f4dd7e7806bf98c1c8970f346133cd5f,
   "@/components/DepartmentWorkboard#EventsWorkboard": EventsWorkboard_f4dd7e7806bf98c1c8970f346133cd5f,
   "@/components/RecruitmentFields/CategorySelectField#default": default_ed1e8d66015b6bb359c4bd3a3c1c4e16,
@@ -164,6 +169,7 @@ export const importMap = {
   "@/components/InviteLinkFields/CopyLinkField#default": default_af352f4805551eefd7ae0beaaee692c1,
   "@/components/InviteLinkColumns/DepartmentsCell#default": default_c88412ef156346181b651c19a855fdb0,
   "@/components/InviteLinkColumns/StatusCell#default": default_83b754ffb26a9a06f67ecd0cafa4ac31,
+  "@payloadcms/ui#FolderTypeField": FolderTypeField_3817bf644402e67bfe6577f60ef982de,
   "@/Header/RowLabel#RowLabel": RowLabel_ec255a65fa6fa8d1faeb09cf35284224,
   "@/Footer/RowLabel#RowLabel": RowLabel_1f6ff6ff633e3695d348f4f3c58f1466,
   "@/components/ProductionDashboardView#default": default_c68ab0b1bbf77fcff4337c949e1b628c,
