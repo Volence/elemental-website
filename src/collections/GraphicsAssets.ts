@@ -55,6 +55,13 @@ export const GraphicsAssets: CollectionConfig = {
     description: '📁 Graphics department file library. Drag & drop files, create folders to organize.',
     group: 'Graphics',
     useAsTitle: 'filename',
+    components: {
+      views: {
+        list: {
+          Component: '@/components/FileBrowser/FileBrowserView',
+        },
+      },
+    },
   },
   access: {
     create: canWriteGraphicsAssets,

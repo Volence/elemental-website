@@ -66,7 +66,9 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 const config = buildConfig({
-  // folders: {}, // Disabled - requires database migrations before enabling
+  folders: {
+    browseByFolder: false, // Hide the sidebar view - we use custom file browser
+  },
   admin: {
     meta: {
       titleSuffix: '- Elemental Admin',

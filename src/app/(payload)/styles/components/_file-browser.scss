@@ -1,0 +1,562 @@
+.file-browser {
+  padding: 1.5rem;
+  min-height: 500px;
+  position: relative;
+
+  &--loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &--dragging {
+    background: rgba(var(--theme-elevation-150), 0.5);
+  }
+  
+  &--selecting {
+    cursor: crosshair;
+    user-select: none;
+  }
+
+  &__spinner {
+    color: var(--theme-elevation-500);
+    font-size: 1rem;
+  }
+
+  // Header with breadcrumbs and actions
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  // Breadcrumb navigation
+  &__breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+  }
+
+  &__breadcrumb {
+    background: none;
+    border: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.85);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      background: rgba(34, 211, 238, 0.1);
+      color: rgba(34, 211, 238, 1);
+    }
+
+    &--active {
+      color: white;
+      font-weight: 600;
+      cursor: default;
+    }
+
+    &-icon {
+      font-size: 1.1rem;
+    }
+
+    &-separator {
+      color: rgba(255, 255, 255, 0.3);
+      margin: 0 0.125rem;
+    }
+  }
+
+  // Action buttons
+  &__actions {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  &__btn {
+    padding: 0.6rem 1.1rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+
+    &--primary {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.9), rgba(5, 150, 105, 0.9));
+      color: white;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+
+      &:hover {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 1), rgba(5, 150, 105, 1));
+        box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+        transform: translateY(-1px);
+      }
+    }
+
+    &--secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+
+      &:hover {
+        background: rgba(34, 211, 238, 0.15);
+        border-color: rgba(34, 211, 238, 0.4);
+        color: rgba(34, 211, 238, 1);
+      }
+    }
+  }
+
+  // Drop overlay
+  &__drop-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(34, 211, 238, 0.08);
+    border: 3px dashed rgba(34, 211, 238, 0.6);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    pointer-events: none;
+    backdrop-filter: blur(4px);
+  }
+
+  &__drop-message {
+    background: linear-gradient(145deg, rgba(30, 35, 45, 0.95), rgba(20, 25, 35, 0.98));
+    padding: 2rem 3rem;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5),
+                0 0 30px rgba(34, 211, 238, 0.2);
+    border: 1px solid rgba(34, 211, 238, 0.3);
+    color: white;
+    font-weight: 500;
+  }
+
+  &__drop-icon {
+    display: block;
+    font-size: 3.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  // File/folder grid
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1.25rem;
+    position: relative;
+    user-select: none;
+    min-height: 200px;
+    padding: 0.5rem;
+    margin: -0.5rem;
+    
+    &--selecting {
+      cursor: crosshair;
+    }
+  }
+
+  // Marquee selection box
+  &__selection-box {
+    position: absolute;
+    background: rgba(168, 85, 247, 0.15);
+    border: 2px solid rgba(168, 85, 247, 0.6);
+    border-radius: 4px;
+    pointer-events: none;
+    z-index: 50;
+  }
+
+  // Individual item (folder or file)
+  &__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.25rem 1rem;
+    border-radius: 12px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-decoration: none;
+    color: inherit;
+
+    &:hover {
+      background: rgba(34, 211, 238, 0.05);
+      border-color: rgba(34, 211, 238, 0.4);
+      box-shadow: 0 0 20px rgba(34, 211, 238, 0.1);
+      transform: translateY(-2px);
+    }
+
+    &--selected {
+      border-color: rgba(16, 185, 129, 0.5);
+      background: rgba(16, 185, 129, 0.08);
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.12);
+    }
+
+    &--folder {
+      min-height: 140px;
+      justify-content: center;
+      gap: 1rem;
+      
+      .file-browser__item-icon {
+        font-size: 3.5rem;
+        line-height: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+        transition: transform 0.2s ease;
+      }
+      
+      &:hover .file-browser__item-icon {
+        transform: scale(1.08);
+      }
+    }
+
+    &--file {
+      .file-browser__item-preview {
+        width: 100%;
+        height: 85px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0.75rem;
+        background: transparent;
+        border-radius: 6px;
+        overflow: hidden;
+
+        img {
+          max-width: 100%;
+          max-height: 100%;
+          object-fit: contain;
+          filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3));
+        }
+      }
+    }
+
+    &-icon {
+      &--large {
+        font-size: 2.5rem;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+      }
+    }
+
+    &-name {
+      font-size: 0.85rem;
+      font-weight: 500;
+      text-align: center;
+      word-break: break-word;
+      max-width: 100%;
+      line-height: 1.4;
+      color: rgba(255, 255, 255, 0.95);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+      display: -webkit-box;
+      line-clamp: 2;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    &-meta {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 0.25rem;
+    }
+  }
+
+  // Empty state
+  &__empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--theme-elevation-500);
+
+    &-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    &-text {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      color: var(--theme-text);
+    }
+
+    &-hint {
+      font-size: 0.9rem;
+    }
+  }
+
+  // ==================== BULK ACTION TOOLBAR ====================
+  &__toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--theme-elevation-100);
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+
+    &-count {
+      font-weight: 500;
+      margin-right: 0.5rem;
+      color: var(--theme-text);
+    }
+
+    &-btn {
+      padding: 0.4rem 0.75rem;
+      border: none;
+      border-radius: 4px;
+      background: var(--theme-elevation-200);
+      color: var(--theme-text);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      &:hover {
+        background: var(--theme-elevation-300);
+      }
+
+      &--danger {
+        background: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+
+        &:hover {
+          background: rgba(239, 68, 68, 0.3);
+        }
+      }
+    }
+  }
+
+  // ==================== UPLOAD PROGRESS ====================
+  &__upload-progress {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--theme-elevation-100);
+    border-radius: 6px;
+    margin-bottom: 1rem;
+
+    span {
+      font-size: 0.85rem;
+      color: var(--theme-elevation-600);
+    }
+
+    &-bar {
+      flex: 1;
+      height: 8px;
+      background: var(--theme-elevation-200);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    &-fill {
+      height: 100%;
+      background: var(--theme-success-500);
+      transition: width 0.3s ease;
+    }
+  }
+
+  // ==================== CONTEXT MENU ====================
+  &__context-menu {
+    position: fixed;
+    z-index: 1000;
+    background: var(--theme-elevation-100);
+    border: 1px solid var(--theme-elevation-200);
+    border-radius: 6px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    min-width: 160px;
+    padding: 0.25rem 0;
+
+    button {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 0.6rem 1rem;
+      border: none;
+      background: none;
+      color: var(--theme-text);
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-align: left;
+
+      &:hover {
+        background: var(--theme-elevation-200);
+      }
+
+      &.danger {
+        color: #ef4444;
+
+        &:hover {
+          background: rgba(239, 68, 68, 0.15);
+        }
+      }
+    }
+  }
+
+  &__context-divider {
+    border: none;
+    border-top: 1px solid var(--theme-elevation-300);
+    margin: 0.25rem 0;
+  }
+
+  // ==================== MODALS ====================
+  &__modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1001;
+  }
+
+  &__modal {
+    background: var(--theme-elevation-100);
+    border-radius: 8px;
+    padding: 1.5rem;
+    min-width: 320px;
+    max-width: 400px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+
+    h3 {
+      margin: 0 0 1rem;
+      font-size: 1.1rem;
+      color: var(--theme-text);
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      border: 1px solid var(--theme-elevation-300);
+      border-radius: 4px;
+      background: var(--theme-elevation-50);
+      color: var(--theme-text);
+      font-size: 0.9rem;
+
+      &:focus {
+        outline: none;
+        border-color: var(--theme-success-500);
+      }
+    }
+
+    &-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      margin-top: 1rem;
+
+      button {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.15s ease;
+
+        &:first-child {
+          background: var(--theme-elevation-200);
+          color: var(--theme-text);
+
+          &:hover {
+            background: var(--theme-elevation-300);
+          }
+        }
+
+        &:last-child {
+          background: var(--theme-success-500);
+          color: white;
+
+          &:hover {
+            background: var(--theme-success-400);
+          }
+
+          &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+          }
+        }
+      }
+    }
+  }
+
+  // ==================== FOLDER LIST (MOVE MODAL) ====================
+  &__folder-list {
+    max-height: 300px;
+    overflow-y: auto;
+    margin: 1rem 0;
+    border: 1px solid var(--theme-elevation-200);
+    border-radius: 4px;
+  }
+
+  &__folder-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    border: none;
+    border-bottom: 1px solid var(--theme-elevation-200);
+    background: none;
+    color: var(--theme-text);
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-align: left;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background: var(--theme-elevation-150);
+    }
+  }
+
+  // ==================== MESSAGE MODAL ====================
+  &__modal--message {
+    max-width: 420px;
+    text-align: center;
+  }
+
+  &__modal-message {
+    margin: 0 0 1rem;
+    color: var(--theme-elevation-600);
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  &__modal-btn--danger {
+    background: #ef4444 !important;
+    color: white !important;
+
+    &:hover {
+      background: #dc2626 !important;
+    }
+  }
+}
+
+// ==================== GRAPHICS-ASSETS EDIT VIEW FIXES ====================
+// Hide the duplicate folder badge in the document header area
+// (Payload shows folder in both header and as a field - hide the header one)
+.doc-controls__meta-icons .move-doc-to-folder {
+  display: none !important;
+}

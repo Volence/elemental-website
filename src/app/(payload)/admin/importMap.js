@@ -51,6 +51,7 @@ import { default as default_6b7ab1bcf3858d76397d35f4ac810b8c } from '@/component
 import { GraphicsWorkboard as GraphicsWorkboard_f4dd7e7806bf98c1c8970f346133cd5f } from '@/components/DepartmentWorkboard'
 import { FolderTableCell as FolderTableCell_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 import { FolderField as FolderField_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
+import { default as default_84d1cf001f7124d9b07380704ce8cd26 } from '@/components/FileBrowser/FileBrowserView'
 import { VideoWorkboard as VideoWorkboard_f4dd7e7806bf98c1c8970f346133cd5f } from '@/components/DepartmentWorkboard'
 import { EventsWorkboard as EventsWorkboard_f4dd7e7806bf98c1c8970f346133cd5f } from '@/components/DepartmentWorkboard'
 import { default as default_ed1e8d66015b6bb359c4bd3a3c1c4e16 } from '@/components/RecruitmentFields/CategorySelectField'
@@ -152,6 +153,7 @@ export const importMap = {
   "@/components/DepartmentWorkboard#GraphicsWorkboard": GraphicsWorkboard_f4dd7e7806bf98c1c8970f346133cd5f,
   "@payloadcms/ui/rsc#FolderTableCell": FolderTableCell_ab83ff7e88da8d3530831f296ec4756a,
   "@payloadcms/ui/rsc#FolderField": FolderField_ab83ff7e88da8d3530831f296ec4756a,
+  "@/components/FileBrowser/FileBrowserView#default": default_84d1cf001f7124d9b07380704ce8cd26,
   "@/components/DepartmentWorkboard#VideoWorkboard": VideoWorkboard_f4dd7e7806bf98c1c8970f346133cd5f,
   "@/components/DepartmentWorkboard#EventsWorkboard": EventsWorkboard_f4dd7e7806bf98c1c8970f346133cd5f,
   "@/components/RecruitmentFields/CategorySelectField#default": default_ed1e8d66015b6bb359c4bd3a3c1c4e16,
