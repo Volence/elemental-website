@@ -285,6 +285,22 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
           if (block.slots.length > roles.length) {
             return block
           }
+          // If block has same slot count, only migrate if it matches a preset exactly
+          if (block.slots.length === roles.length) {
+            const commonPresets = [
+              ['Tank', 'Hitscan', 'Flex DPS', 'Main Support', 'Flex Support'],
+              ['Tank', 'DPS', 'DPS', 'Support', 'Support'],
+            ]
+            const existingRoles = block.slots.map(s => s.role)
+            const matchesAnyPresetExactly = commonPresets.some(preset => 
+              preset.every((role, i) => role === existingRoles[i])
+            )
+            // If block doesn't match any preset exactly, user has customized - don't migrate
+            if (!matchesAnyPresetExactly) {
+              return block
+            }
+            // Block matches a preset but maybe not the team's current preset - migrate to new preset
+          }
           // Upgrade: create preset slots + preserve any existing player assignments + any extras
           const presetSlots = roles.map((role, i) => {
             const existingSlot = block.slots[i]
