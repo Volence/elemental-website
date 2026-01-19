@@ -213,9 +213,15 @@ export async function postScrimReminder(
       return { success: false, error: 'Schedule thread not configured for this team' }
     }
 
-    // Build player ID → name map by fetching from People collection
-    // Slots store People collection IDs (numbers), not Discord IDs
+    // Build player ID → name map from votes (Discord IDs) first
     const playerMap = new Map<string, string>()
+    if (votes) {
+      for (const day of votes) {
+        for (const voter of day.voters) {
+          playerMap.set(voter.id, voter.displayName || voter.username)
+        }
+      }
+    }
     
     // Collect all unique player IDs from all blocks
     const allPlayerIds = new Set<string>()
@@ -229,31 +235,27 @@ export async function postScrimReminder(
       }
     }
     
-    // Fetch players from People collection if we have IDs
-    if (allPlayerIds.size > 0) {
-      // Filter to only valid database IDs (reasonable size, not Discord user IDs which are 15+ digits)
-      const playerIds = Array.from(allPlayerIds)
-        .map(id => Number(id))
-        .filter(id => !isNaN(id) && id > 0 && id < 1000000) // Database IDs are typically under 1 million
-      
-      if (playerIds.length > 0) {
-        const people = await payload.find({
-          collection: 'people',
-          where: {
-            id: { in: playerIds }
-          },
-          limit: playerIds.length,
-        })
-        
-        for (const person of people.docs) {
-          playerMap.set(String(person.id), person.name || 'Unknown')
+    // For any IDs not in votes, try to look them up as People records
+    const missingIds = Array.from(allPlayerIds).filter(id => !playerMap.has(id))
+    if (missingIds.length > 0) {
+      try {
+        // Filter to only valid numeric IDs
+        const numericIds = missingIds.map(id => parseInt(id)).filter(id => !isNaN(id) && id > 0)
+        if (numericIds.length > 0) {
+          const people = await payload.find({
+            collection: 'people',
+            where: {
+              id: { in: numericIds }
+            },
+            limit: numericIds.length,
+          })
+          
+          for (const person of people.docs) {
+            playerMap.set(String(person.id), person.name || 'Unknown')
+          }
         }
-      }
-      
-      // Log if we skipped invalid IDs (likely Discord user IDs from old data)
-      const skippedCount = allPlayerIds.size - playerIds.length
-      if (skippedCount > 0) {
-        console.log(`⚠️ Skipped ${skippedCount} invalid player ID(s) - likely Discord IDs from old data`)
+      } catch (e) {
+        console.log('Could not fetch People records:', e)
       }
     }
 
