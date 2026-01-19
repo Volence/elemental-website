@@ -240,23 +240,36 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
   const [schedule, setSchedule] = useState<ScheduleData>(createInitialSchedule)
 
   // Update existing block slots when team's role preset changes
-  // This ensures blocks use the correct roles even if they were created with old presets
-  // Use roles.join() to create a stable dependency that changes when role array contents change
+  // Only migrate blocks that have FEWER slots than the preset (upgrading old data)
+  // Never remove extra slots or overwrite user-customized roles
   const rolesKey = roles.join('|')
   useEffect(() => {
     // Use functional update to get current schedule without depending on it
     setSchedule(currentSchedule => {
       if (currentSchedule.days.length === 0 || roles.length === 0) return currentSchedule
       
-      // Check if any block has different roles than current preset
-      // Compare both slot count AND role names
+      // Only migrate blocks that need MORE slots (upgrading from older preset)
+      // Never migrate blocks that have extra slots (user added them intentionally)
       const needsMigration = currentSchedule.days.some(day => 
         day.blocks.some(block => {
-          // Different slot count means we need to migrate
-          if (block.slots.length !== roles.length) return true
-          // Same slot count but different role names - also need to migrate
-          const existingRoles = block.slots.map(s => s.role)
-          const rolesMatch = roles.every((role, i) => role === existingRoles[i])
+          // If block has MORE slots than preset, user added extras - don't migrate
+          if (block.slots.length > roles.length) return false
+          // If block has FEWER slots than preset, it needs upgrading
+          if (block.slots.length < roles.length) return true
+          // Same slot count - only migrate if this looks like an unedited preset
+          // (all base roles match exactly - user hasn't customized)
+          const baseRolesMatch = block.slots.every((slot, i) => {
+            // Check against common presets to detect customization
+            const commonPresets = [
+              ['Tank', 'Hitscan', 'Flex DPS', 'Main Support', 'Flex Support'],
+              ['Tank', 'DPS', 'DPS', 'Support', 'Support'],
+            ]
+            return commonPresets.some(preset => preset[i] === slot.role)
+          })
+          // If roles don't match any common preset, user customized - don't migrate
+          if (!baseRolesMatch) return false
+          // Check if current roles match the new preset
+          const rolesMatch = roles.every((role, i) => role === block.slots[i]?.role)
           return !rolesMatch
         })
       )
@@ -268,16 +281,23 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
       const migratedDays = currentSchedule.days.map(day => ({
         ...day,
         blocks: day.blocks.map(block => {
-          // Keep existing player assignments where possible, matched by role position
-          const newSlots = roles.map((role, i) => {
-            // Try to preserve the player assignment from the same position
+          // If block has more slots than preset, preserve everything
+          if (block.slots.length > roles.length) {
+            return block
+          }
+          // Upgrade: create preset slots + preserve any existing player assignments + any extras
+          const presetSlots = roles.map((role, i) => {
             const existingSlot = block.slots[i]
             return {
               role,
-              playerId: existingSlot?.playerId || null
+              playerId: existingSlot?.playerId || null,
+              isRinger: existingSlot?.isRinger,
+              ringerName: existingSlot?.ringerName,
             }
           })
-          return { ...block, slots: newSlots }
+          // Preserve any extra slots beyond preset length
+          const extraSlots = block.slots.slice(roles.length)
+          return { ...block, slots: [...presetSlots, ...extraSlots] }
         })
       }))
       

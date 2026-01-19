@@ -15,6 +15,7 @@ interface VoteData {
     id: string
     username: string
     displayName: string
+    role?: string | null // Discord role (Tank, Flex DPS, etc.)
   }>
   roleBreakdown?: Record<string, number> | null
 }
@@ -74,13 +75,19 @@ export const VotesDisplay: React.FC<{ path: string }> = ({ path }) => {
 }
 
 const DayCard: React.FC<{ day: VoteData; timeSlot: string }> = ({ day, timeSlot }) => {
-  // Group voters by role (if role data exists)
-  const roleBreakdown = day.roleBreakdown || {}
-  const hasRoles = Object.keys(roleBreakdown).length > 0
-
-  // For now, we show all voters under "Available" since we don't have per-voter role data
-  // The roleBreakdown only has counts, not who is in each role
-  // TODO: When we have per-voter role data, group them properly
+  // Group voters by their role field (from Discord roles)
+  const votersByRole = new Map<string, string[]>()
+  
+  day.voters.forEach(voter => {
+    const role = voter.role || 'Other' // Use 'Other' for voters without a role
+    if (!votersByRole.has(role)) {
+      votersByRole.set(role, [])
+    }
+    votersByRole.get(role)!.push(voter.displayName || voter.username)
+  })
+  
+  // Check if we have any role data
+  const hasPerVoterRoles = day.voters.some(v => v.role)
   
   return (
     <div className="votes-display__day-card">
@@ -90,29 +97,32 @@ const DayCard: React.FC<{ day: VoteData; timeSlot: string }> = ({ day, timeSlot 
       </div>
       
       <div className="votes-display__day-content">
-        {hasRoles ? (
-          // Show role breakdown
+        {hasPerVoterRoles ? (
+          // Show voters grouped by their Discord role
           <>
             {roleOrder.map((role) => {
-              const count = roleBreakdown[role] || 0
+              const playersForRole = votersByRole.get(role) || []
               return (
                 <div key={role} className="votes-display__role-row">
                   <span className="votes-display__role-label">{role}:</span>
-                  <span className="votes-display__role-count">
-                    {count > 0 ? `${count} available` : '—'}
+                  <span className="votes-display__role-voters">
+                    {playersForRole.length > 0 ? playersForRole.join(', ') : '—'}
                   </span>
                 </div>
               )
             })}
-            <div className="votes-display__role-row votes-display__role-row--available">
-              <span className="votes-display__role-label">Available:</span>
-              <span className="votes-display__role-voters">
-                {day.voters.map((v) => v.displayName || v.username).join(', ') || '—'}
-              </span>
-            </div>
+            {/* Show 'Other' if there are players without a recognized role */}
+            {votersByRole.has('Other') && (
+              <div className="votes-display__role-row votes-display__role-row--available">
+                <span className="votes-display__role-label">Available:</span>
+                <span className="votes-display__role-voters">
+                  {votersByRole.get('Other')!.join(', ')}
+                </span>
+              </div>
+            )}
           </>
         ) : (
-          // No role data - just show who's available
+          // No per-voter role data - just show who's available
           <div className="votes-display__available">
             <span className="votes-display__available-label">Available:</span>
             <span className="votes-display__available-voters">

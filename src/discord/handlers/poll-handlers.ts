@@ -1272,11 +1272,25 @@ export async function syncVotesToDatabase(
     const voteData = answerDetails.map(({ answer, voters, roleBuckets }) => ({
       date: answer.text,
       voterCount: voters.length,
-      voters: voters.map((voter) => ({
-        id: voter.id,
-        username: voter.username,
-        displayName: (voter as any).displayName || voter.username,
-      })),
+      voters: voters.map((voter) => {
+        // Find voter's role from roleBuckets (reverse lookup)
+        let voterRole: string | null = null
+        if (roleBuckets) {
+          for (const [role, mentions] of roleBuckets.entries()) {
+            // mentions are formatted as <@userId>
+            if (mentions.some(m => m.includes(voter.id))) {
+              voterRole = role
+              break
+            }
+          }
+        }
+        return {
+          id: voter.id,
+          username: voter.username,
+          displayName: (voter as any).displayName || voter.username,
+          role: voterRole, // NEW: Store the voter's Discord role
+        }
+      }),
       roleBreakdown: roleBuckets
         ? Object.fromEntries(
             Array.from(roleBuckets.entries()).map(([role, mentions]) => [role, mentions.length]),
