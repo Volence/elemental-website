@@ -256,19 +256,19 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
           if (block.slots.length > roles.length) return false
           // If block has FEWER slots than preset, it needs upgrading
           if (block.slots.length < roles.length) return true
-          // Same slot count - only migrate if this looks like an unedited preset
-          // (all base roles match exactly - user hasn't customized)
-          const baseRolesMatch = block.slots.every((slot, i) => {
-            // Check against common presets to detect customization
-            const commonPresets = [
-              ['Tank', 'Hitscan', 'Flex DPS', 'Main Support', 'Flex Support'],
-              ['Tank', 'DPS', 'DPS', 'Support', 'Support'],
-            ]
-            return commonPresets.some(preset => preset[i] === slot.role)
-          })
-          // If roles don't match any common preset, user customized - don't migrate
-          if (!baseRolesMatch) return false
-          // Check if current roles match the new preset
+          // Same slot count - only migrate if the ENTIRE block matches a complete preset exactly
+          // (meaning user hasn't customized any roles)
+          const commonPresets = [
+            ['Tank', 'Hitscan', 'Flex DPS', 'Main Support', 'Flex Support'],
+            ['Tank', 'DPS', 'DPS', 'Support', 'Support'],
+          ]
+          const existingRoles = block.slots.map(s => s.role)
+          const matchesAnyPresetExactly = commonPresets.some(preset => 
+            preset.every((role, i) => role === existingRoles[i])
+          )
+          // If block doesn't match any preset exactly, user has customized - don't migrate
+          if (!matchesAnyPresetExactly) return false
+          // Check if current roles match the new preset (team's setting)
           const rolesMatch = roles.every((role, i) => role === block.slots[i]?.role)
           return !rolesMatch
         })
