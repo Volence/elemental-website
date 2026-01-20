@@ -263,14 +263,15 @@ const config = buildConfig({
         const { ensureDiscordClient } = await import('./discord/bot')
         const { registerCommands } = await import('./discord/commands/register')
         const { setupInteractionHandlers } = await import('./discord/handlers/interactions')
-        const { startThreadKeepAlive } = await import('./discord/services/threadKeepAlive')
+        // TKA disabled - can't achieve visible-in-sidebar without sending messages
+        // const { startThreadKeepAlive } = await import('./discord/services/threadKeepAlive')
 
         const client = await ensureDiscordClient()
         
         if (client) {
           await registerCommands()
           setupInteractionHandlers()
-          startThreadKeepAlive()
+          // startThreadKeepAlive()  // TKA disabled
           console.log('✅ Discord bot fully initialized')
         }
       } catch (error) {
