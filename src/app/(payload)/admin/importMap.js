@@ -77,6 +77,7 @@ import { default as default_b41852718c887b613f07fa372f5e410c } from '@/component
 import { default as default_f76c92028911e3d433af128d3a307d36 } from '@/components/SocialMediaConfig/TemplateInstructions'
 import { default as default_8e4d4e3438d12585a6d66d71f450349a } from '@/components/SocialMediaConfig/TemplateRowLabel'
 import { default as default_9696e71ab6d0b177b492c0a63e1b5e83 } from '@/components/SocialMediaDashboard'
+import { default as default_69378a60ec387dcf194ebba1e8e4b127 } from '@/components/UnifiedCalendar/UnifiedCalendarView'
 import { default as default_7f9e3cd549c4b514317a78b827ef89f7 } from '@/components/GraphicsDashboardView'
 import { default as default_556abb975c19a689444f28829e3cfd07 } from '@/components/VideoEditingDashboardView'
 import { default as default_0fd855c5040c9c75d8034c9571c63b28 } from '@/components/EventsDashboardView'
@@ -96,8 +97,10 @@ import { default as default_c665fb14b647600ee6fac862e3d3aeb2 } from '@/component
 import { SectionThemeApplicator as SectionThemeApplicator_b4f71752b0da9dddb562ddd527781822 } from '@/components/SectionThemeApplicator'
 import { default as default_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/components/BeforeLogin'
 import { default as default_cb688d169ef5bf1426eea8968f0b9a29 } from '@/components/BeforeDashboard/DashboardNavLink'
+import { default as default_564fb21592d27251bcff7c5e897d4dbc } from '@/components/BeforeDashboard/CalendarNavLink'
 import { default as default_75e49641b1d841f24cd53ee63100b3ae } from '@/components/BeforeDashboard/SidebarScrollPreserver'
 import { default as default_aeef0123fea1af819397817664b7330c } from '@/components/AdminProviders'
+import { default as default_1afe941534b3971b0de8f4fbeca9a6d3 } from '@/components/UnifiedCalendar'
 
 export const importMap = {
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
@@ -179,6 +182,7 @@ export const importMap = {
   "@/components/SocialMediaConfig/TemplateInstructions#default": default_f76c92028911e3d433af128d3a307d36,
   "@/components/SocialMediaConfig/TemplateRowLabel#default": default_8e4d4e3438d12585a6d66d71f450349a,
   "@/components/SocialMediaDashboard#default": default_9696e71ab6d0b177b492c0a63e1b5e83,
+  "@/components/UnifiedCalendar/UnifiedCalendarView#default": default_69378a60ec387dcf194ebba1e8e4b127,
   "@/components/GraphicsDashboardView#default": default_7f9e3cd549c4b514317a78b827ef89f7,
   "@/components/VideoEditingDashboardView#default": default_556abb975c19a689444f28829e3cfd07,
   "@/components/EventsDashboardView#default": default_0fd855c5040c9c75d8034c9571c63b28,
@@ -198,6 +202,8 @@ export const importMap = {
   "@/components/SectionThemeApplicator#SectionThemeApplicator": SectionThemeApplicator_b4f71752b0da9dddb562ddd527781822,
   "@/components/BeforeLogin#default": default_8a7ab0eb7ab5c511aba12e68480bfe5e,
   "@/components/BeforeDashboard/DashboardNavLink#default": default_cb688d169ef5bf1426eea8968f0b9a29,
+  "@/components/BeforeDashboard/CalendarNavLink#default": default_564fb21592d27251bcff7c5e897d4dbc,
   "@/components/BeforeDashboard/SidebarScrollPreserver#default": default_75e49641b1d841f24cd53ee63100b3ae,
-  "@/components/AdminProviders#default": default_aeef0123fea1af819397817664b7330c
+  "@/components/AdminProviders#default": default_aeef0123fea1af819397817664b7330c,
+  "@/components/UnifiedCalendar#default": default_1afe941534b3971b0de8f4fbeca9a6d3
 }

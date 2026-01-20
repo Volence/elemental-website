@@ -165,6 +165,7 @@ export interface Config {
     'production-dashboard': ProductionDashboard;
     'social-media-config': SocialMediaConfig;
     'social-media-settings': SocialMediaSetting;
+    'organization-calendar': OrganizationCalendar;
     'graphics-dashboard': GraphicsDashboard;
     'video-editing-dashboard': VideoEditingDashboard;
     'events-dashboard': EventsDashboard;
@@ -185,6 +186,7 @@ export interface Config {
     'production-dashboard': ProductionDashboardSelect<false> | ProductionDashboardSelect<true>;
     'social-media-config': SocialMediaConfigSelect<false> | SocialMediaConfigSelect<true>;
     'social-media-settings': SocialMediaSettingsSelect<false> | SocialMediaSettingsSelect<true>;
+    'organization-calendar': OrganizationCalendarSelect<false> | OrganizationCalendarSelect<true>;
     'graphics-dashboard': GraphicsDashboardSelect<false> | GraphicsDashboardSelect<true>;
     'video-editing-dashboard': VideoEditingDashboardSelect<false> | VideoEditingDashboardSelect<true>;
     'events-dashboard': EventsDashboardSelect<false> | EventsDashboardSelect<true>;
@@ -3989,6 +3991,17 @@ export interface SocialMediaSetting {
   createdAt?: string | null;
 }
 /**
+ * 📅 View all scheduled tasks, matches, and social posts across departments
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organization-calendar".
+ */
+export interface OrganizationCalendar {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * 🎨 Manage graphics requests, projects, and asset library
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4229,6 +4242,15 @@ export interface SocialMediaConfigSelect<T extends boolean = true> {
  * via the `definition` "social-media-settings_select".
  */
 export interface SocialMediaSettingsSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "organization-calendar_select".
+ */
+export interface OrganizationCalendarSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

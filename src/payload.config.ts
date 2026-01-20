@@ -55,6 +55,7 @@ import { VideoEditingDashboard } from './globals/VideoEditingDashboard'
 import { EventsDashboard } from './globals/EventsDashboard'
 import { ScoutingDashboard } from './globals/ScoutingDashboard'
 import { OpponentWiki } from './globals/OpponentWiki'
+import { OrganizationCalendar } from './globals/OrganizationCalendar'
 
 import { GraphicsAnchor, VideoAnchor, EventsAnchor } from './collections/DepartmentAnchors'
 import { plugins } from './plugins'
@@ -105,6 +106,7 @@ const config = buildConfig({
       // Custom navigation links in the sidebar
       beforeNavLinks: [
         '@/components/BeforeDashboard/DashboardNavLink',
+        '@/components/BeforeDashboard/CalendarNavLink#default',
         '@/components/BeforeDashboard/SidebarScrollPreserver#default',
       ],
       // No custom afterNavLinks - Payload provides its own logout button
@@ -115,6 +117,13 @@ const config = buildConfig({
       },
       // Providers wrap ALL admin pages with shared functionality
       providers: ['@/components/AdminProviders#default'],
+      // Custom admin views
+      views: {
+        calendar: {
+          Component: '@/components/UnifiedCalendar#default',
+          path: '/calendar',
+        },
+      },
     },
     importMap: {
       baseDir: path.resolve(dirname),
@@ -200,7 +209,8 @@ const config = buildConfig({
     SocialMediaConfig, // Social Media group - Settings first
     SocialMediaSettings, // Social Media group - Dashboard second
     
-    // Department dashboards - placed here so groups appear after Social Media
+    // Department dashboards
+    OrganizationCalendar, // Departments group - cross-department calendar
     GraphicsDashboard, // Graphics group
     VideoEditingDashboard, // Video group
     EventsDashboard, // Events group
