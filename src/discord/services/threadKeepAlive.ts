@@ -92,30 +92,47 @@ async function runKeepAlive(): Promise<void> {
         let bumped = false
         try {
           // Check if this is a forum thread with available tags
-          const parent = thread.parent
-          if (parent && 'availableTags' in parent && parent.availableTags.length > 0) {
-            const availableTags = parent.availableTags
-            const currentTags = thread.appliedTags || []
+          // Need to fetch the parent channel to get forum tags
+          const parentId = thread.parentId
+          if (parentId) {
+            const parentChannel = await client.channels.fetch(parentId).catch(() => null)
             
-            // Find a tag we can toggle (preferably one not currently applied)
-            const unusedTag = availableTags.find(t => !currentTags.includes(t.id))
-            
-            if (unusedTag) {
-              // Add then remove the tag to trigger activity
-              await thread.setAppliedTags([...currentTags, unusedTag.id])
-              await thread.setAppliedTags(currentTags)
-              bumped = true
-              keptAliveCount++
-              console.log(`  📌 Bumped via tag toggle: ${threadDoc.threadName}`)
-            } else if (currentTags.length > 0) {
-              // All tags are applied, remove and re-add one
-              const tagToToggle = currentTags[0]
-              const tagsWithoutFirst = currentTags.slice(1)
-              await thread.setAppliedTags(tagsWithoutFirst)
-              await thread.setAppliedTags(currentTags)
-              bumped = true
-              keptAliveCount++
-              console.log(`  📌 Bumped via tag toggle: ${threadDoc.threadName}`)
+            if (parentChannel && 'availableTags' in parentChannel) {
+              const availableTags = (parentChannel as any).availableTags || []
+              const currentTags = thread.appliedTags || []
+              
+              console.log(`  🏷️ Thread ${threadDoc.threadName}: ${availableTags.length} available tags, ${currentTags.length} applied`)
+              
+              if (availableTags.length > 0) {
+                // Find a tag we can toggle (preferably one not currently applied)
+                const unusedTag = availableTags.find((t: any) => !currentTags.includes(t.id))
+                
+                if (unusedTag) {
+                  // Add then remove the tag to trigger activity
+                  await thread.setAppliedTags([...currentTags, unusedTag.id])
+                  await new Promise(resolve => setTimeout(resolve, 500)) // Small delay between changes
+                  await thread.setAppliedTags(currentTags)
+                  bumped = true
+                  keptAliveCount++
+                  console.log(`  📌 Bumped via tag toggle (add/remove): ${threadDoc.threadName}`)
+                } else if (currentTags.length > 0) {
+                  // All tags are applied, remove and re-add one
+                  const tagToToggle = currentTags[0]
+                  const tagsWithoutFirst = currentTags.slice(1)
+                  await thread.setAppliedTags(tagsWithoutFirst)
+                  await new Promise(resolve => setTimeout(resolve, 500)) // Small delay between changes
+                  await thread.setAppliedTags(currentTags)
+                  bumped = true
+                  keptAliveCount++
+                  console.log(`  📌 Bumped via tag toggle (remove/add): ${threadDoc.threadName}`)
+                } else {
+                  console.log(`  ⚠️ No tags to toggle for ${threadDoc.threadName} (0 applied, can't toggle)`)
+                }
+              } else {
+                console.log(`  ⚠️ Forum has no available tags for ${threadDoc.threadName}`)
+              }
+            } else {
+              console.log(`  ℹ️ Not a forum thread (no availableTags): ${threadDoc.threadName}`)
             }
           }
         } catch (tagError) {
