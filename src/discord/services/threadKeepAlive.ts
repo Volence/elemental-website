@@ -87,60 +87,55 @@ async function runKeepAlive(): Promise<void> {
           console.log(`  ✅ Unarchived: ${threadDoc.threadName}`)
         }
 
-        // Try to bump the thread by toggling forum tags (silent, no notifications)
-        // This only works for forum channel threads that have available tags
+        // Try to bump the thread by adding/removing a reaction to the starter message
+        // This triggers activity without sending a message
         let bumped = false
         try {
-          // Check if this is a forum thread with available tags
-          // Need to fetch the parent channel to get forum tags
-          const parentId = thread.parentId
-          if (parentId) {
-            const parentChannel = await client.channels.fetch(parentId).catch(() => null)
+          // Fetch the starter message (first message in the thread)
+          const starterMessage = await thread.fetchStarterMessage().catch(() => null)
+          
+          if (starterMessage) {
+            // Add a reaction then remove it
+            const bumpEmoji = '👀' // Eyes emoji - subtle and doesn't draw attention
+            await starterMessage.react(bumpEmoji)
+            await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1 second
             
-            if (parentChannel && 'availableTags' in parentChannel) {
-              const availableTags = (parentChannel as any).availableTags || []
-              const currentTags = thread.appliedTags || []
+            // Remove our reaction
+            const botReaction = starterMessage.reactions.cache.get(bumpEmoji)
+            if (botReaction) {
+              await botReaction.users.remove(client.user?.id)
+            }
+            
+            bumped = true
+            keptAliveCount++
+            console.log(`  📌 Bumped via reaction: ${threadDoc.threadName}`)
+          } else {
+            // No starter message, try to get the first message in the thread
+            const messages = await thread.messages.fetch({ limit: 1 })
+            const firstMessage = messages.first()
+            
+            if (firstMessage) {
+              const bumpEmoji = '👀'
+              await firstMessage.react(bumpEmoji)
+              await new Promise(resolve => setTimeout(resolve, 1000))
               
-              console.log(`  🏷️ Thread ${threadDoc.threadName}: ${availableTags.length} available tags, ${currentTags.length} applied`)
-              
-              if (availableTags.length > 0) {
-                // Find a tag we can toggle (preferably one not currently applied)
-                const unusedTag = availableTags.find((t: any) => !currentTags.includes(t.id))
-                
-                if (unusedTag) {
-                  // Add then remove the tag to trigger activity
-                  await thread.setAppliedTags([...currentTags, unusedTag.id])
-                  await new Promise(resolve => setTimeout(resolve, 500)) // Small delay between changes
-                  await thread.setAppliedTags(currentTags)
-                  bumped = true
-                  keptAliveCount++
-                  console.log(`  📌 Bumped via tag toggle (add/remove): ${threadDoc.threadName}`)
-                } else if (currentTags.length > 0) {
-                  // All tags are applied, remove and re-add one
-                  const tagToToggle = currentTags[0]
-                  const tagsWithoutFirst = currentTags.slice(1)
-                  await thread.setAppliedTags(tagsWithoutFirst)
-                  await new Promise(resolve => setTimeout(resolve, 500)) // Small delay between changes
-                  await thread.setAppliedTags(currentTags)
-                  bumped = true
-                  keptAliveCount++
-                  console.log(`  📌 Bumped via tag toggle (remove/add): ${threadDoc.threadName}`)
-                } else {
-                  console.log(`  ⚠️ No tags to toggle for ${threadDoc.threadName} (0 applied, can't toggle)`)
-                }
-              } else {
-                console.log(`  ⚠️ Forum has no available tags for ${threadDoc.threadName}`)
+              const botReaction = firstMessage.reactions.cache.get(bumpEmoji)
+              if (botReaction) {
+                await botReaction.users.remove(client.user?.id)
               }
+              
+              bumped = true
+              keptAliveCount++
+              console.log(`  📌 Bumped via reaction (first msg): ${threadDoc.threadName}`)
             } else {
-              console.log(`  ℹ️ Not a forum thread (no availableTags): ${threadDoc.threadName}`)
+              console.log(`  ⚠️ No messages found in thread: ${threadDoc.threadName}`)
             }
           }
-        } catch (tagError) {
-          // Tag toggle failed, log but continue
-          console.log(`  ⚠️ Tag toggle failed for ${threadDoc.threadName}: ${(tagError as Error).message}`)
+        } catch (reactionError) {
+          console.log(`  ⚠️ Reaction bump failed for ${threadDoc.threadName}: ${(reactionError as Error).message}`)
         }
 
-        // If tag toggle didn't work (not a forum thread or no tags), just keep it unarchived
+        // If reaction didn't work, just keep it unarchived
         if (!bumped) {
           keptAliveCount++
           console.log(`  ✅ Kept alive (unarchive only): ${threadDoc.threadName}`)
