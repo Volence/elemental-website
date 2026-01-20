@@ -87,56 +87,32 @@ async function runKeepAlive(): Promise<void> {
           console.log(`  ✅ Unarchived: ${threadDoc.threadName}`)
         }
 
-        // Try to bump the thread by adding/removing a reaction to the starter message
-        // This triggers activity without sending a message
-        let bumped = false
+        // Keep thread alive by toggling autoArchiveDuration
+        // This is the Thread-Watcher approach - toggle between 7 days and 3 days
+        // This prevents auto-archive without sending messages
+        let keptAlive = false
         try {
-          // Fetch the starter message (first message in the thread)
-          const starterMessage = await thread.fetchStarterMessage().catch(() => null)
-          
-          if (starterMessage) {
-            // Add a reaction then remove it
-            const bumpEmoji = '👀' // Eyes emoji - subtle and doesn't draw attention
-            await starterMessage.react(bumpEmoji)
-            await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1 second
+          if (!thread.locked && thread.manageable) {
+            // Toggle autoArchiveDuration: if 7 days (10080), set to 3 days (4320), else set to 7 days
+            const currentDuration = thread.autoArchiveDuration || 10080
+            const newDuration = currentDuration === 10080 ? 4320 : 10080
             
-            // Remove our reaction
-            const botReaction = starterMessage.reactions.cache.get(bumpEmoji)
-            if (botReaction) {
-              await botReaction.users.remove(client.user?.id)
-            }
-            
-            bumped = true
+            await thread.setAutoArchiveDuration(newDuration)
+            keptAlive = true
             keptAliveCount++
-            console.log(`  📌 Bumped via reaction: ${threadDoc.threadName}`)
-          } else {
-            // No starter message, try to get the first message in the thread
-            const messages = await thread.messages.fetch({ limit: 1 })
-            const firstMessage = messages.first()
-            
-            if (firstMessage) {
-              const bumpEmoji = '👀'
-              await firstMessage.react(bumpEmoji)
-              await new Promise(resolve => setTimeout(resolve, 1000))
-              
-              const botReaction = firstMessage.reactions.cache.get(bumpEmoji)
-              if (botReaction) {
-                await botReaction.users.remove(client.user?.id)
-              }
-              
-              bumped = true
-              keptAliveCount++
-              console.log(`  📌 Bumped via reaction (first msg): ${threadDoc.threadName}`)
-            } else {
-              console.log(`  ⚠️ No messages found in thread: ${threadDoc.threadName}`)
-            }
+            console.log(`  📌 Kept alive (duration ${currentDuration} → ${newDuration}): ${threadDoc.threadName}`)
+          } else if (!thread.manageable) {
+            // Can't manage thread, just keep it unarchived
+            keptAlive = true
+            keptAliveCount++
+            console.log(`  ✅ Kept alive (unarchive only, no manage perms): ${threadDoc.threadName}`)
           }
-        } catch (reactionError) {
-          console.log(`  ⚠️ Reaction bump failed for ${threadDoc.threadName}: ${(reactionError as Error).message}`)
+        } catch (durationError) {
+          console.log(`  ⚠️ Duration toggle failed for ${threadDoc.threadName}: ${(durationError as Error).message}`)
         }
 
-        // If reaction didn't work, just keep it unarchived
-        if (!bumped) {
+        // Fallback: just count as kept alive if we at least unarchived it
+        if (!keptAlive) {
           keptAliveCount++
           console.log(`  ✅ Kept alive (unarchive only): ${threadDoc.threadName}`)
         }
