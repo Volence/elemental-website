@@ -19,6 +19,7 @@ const generateURL: GenerateURL<Page> = ({ doc }) => {
 }
 
 export const plugins: Plugin[] = [
+  // @ts-expect-error - Payload plugin version type mismatch
   redirectsPlugin({
     collections: ['pages'],
     overrides: {
@@ -41,6 +42,7 @@ export const plugins: Plugin[] = [
         })
       },
       hooks: {
+        // @ts-ignore - Payload plugin type mismatch
         afterChange: [revalidateRedirects],
       },
     },
