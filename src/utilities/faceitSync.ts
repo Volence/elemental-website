@@ -477,6 +477,17 @@ export async function syncTeamData(
 
     console.log(`[FaceIt Sync] Team ${teamId} complete: ${matchesCreated} created, ${matchesUpdated} updated out of ${matches.length} fetched`)
 
+    // 6. Update the Discord team card with fresh data from DB
+    // This ensures the server-info channel shows current standings
+    try {
+      const { postOrUpdateTeamCard } = await import('@/discord/services/teamCards')
+      await postOrUpdateTeamCard({ teamId })
+      console.log(`[FaceIt Sync] Updated Discord card for team ${teamId}`)
+    } catch (discordError) {
+      // Log but don't fail sync if Discord update fails
+      console.warn(`[FaceIt Sync] Failed to update Discord card for team ${teamId}:`, discordError)
+    }
+
     return {
       success: true,
       teamId,
