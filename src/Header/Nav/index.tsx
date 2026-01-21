@@ -30,6 +30,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
     { label: 'Teams', href: '/teams' },
     { label: 'Matches', href: '/matches' },
     { label: 'Seminars', href: '/seminars' },
+    { label: 'Calendar', href: '/calendar' },
     { label: 'Staff', href: '/staff' },
   ]
 

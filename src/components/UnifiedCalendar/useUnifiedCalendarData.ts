@@ -46,7 +46,7 @@ export function useUnifiedCalendarData({
 
     try {
       // Fetch all data sources in parallel
-      const [tasksRes, postsRes, matchesRes] = await Promise.all([
+      const [tasksRes, postsRes, matchesRes, calendarEventsRes] = await Promise.all([
         // Fetch tasks with dueDate in range
         fetch(`/api/tasks?${new URLSearchParams({
           where: JSON.stringify({
@@ -81,12 +81,24 @@ export function useUnifiedCalendarData({
           `where[productionWorkflow.includeInSchedule][equals]=true&` +
           `sort=date&limit=200&depth=0`
         ),
+        // Fetch global calendar events that overlap with the view range
+        // An event overlaps if: it starts before range ends AND (ends after range starts OR has no end date)
+        // This handles multi-day events that span across the view window
+        fetch(`/api/global-calendar-events?` +
+          `where[or][0][and][0][dateStart][less_than]=${encodeURIComponent(endISO)}&` +
+          `where[or][0][and][1][dateEnd][greater_than_equal]=${encodeURIComponent(startISO)}&` +
+          `where[or][1][and][0][dateStart][less_than]=${encodeURIComponent(endISO)}&` +
+          `where[or][1][and][1][dateStart][greater_than_equal]=${encodeURIComponent(startISO)}&` +
+          `where[or][1][and][2][dateEnd][exists]=false&` +
+          `sort=dateStart&limit=200&depth=0`
+        ),
       ])
 
-      const [tasksData, postsData, matchesData] = await Promise.all([
+      const [tasksData, postsData, matchesData, calendarEventsData] = await Promise.all([
         tasksRes.json(),
         postsRes.json(),
         matchesRes.json(),
+        calendarEventsRes.json(),
       ])
 
       const calendarItems: CalendarItem[] = []
@@ -148,6 +160,30 @@ export function useUnifiedCalendarData({
               opponent: match.opponent,
               league: match.league,
               region: match.region,
+            },
+          })
+        }
+      }
+
+      // Normalize global calendar events
+      if (calendarEventsData.docs) {
+        for (const event of calendarEventsData.docs) {
+          if (!event.dateStart) continue
+          calendarItems.push({
+            id: String(event.id),
+            type: 'calendar-event',
+            title: event.title || 'Event',
+            date: new Date(event.dateStart),
+            dateEnd: event.dateEnd ? new Date(event.dateEnd) : undefined,
+            department: 'competitive',
+            status: undefined,
+            href: `/admin/collections/global-calendar-events/${event.id}`,
+            meta: {
+              eventType: event.eventType,
+              internalEventType: event.internalEventType,
+              region: event.region,
+              links: event.links,
+              description: event.description,
             },
           })
         }

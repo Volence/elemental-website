@@ -66,6 +66,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
     priority: 'medium',
     taskType: '',
     dueDate: '',
+    addToGlobalCalendar: false,
   })
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -83,6 +84,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
         priority: task.priority || 'medium',
         taskType: task.taskType || '',
         dueDate: task.dueDate ? task.dueDate.split('T')[0] : '',
+        addToGlobalCalendar: task.addToGlobalCalendar || false,
       })
       setSelectedAssignees(
         (task.assignedTo || []).map((u: any) => (typeof u === 'number' ? u : u.id))
@@ -105,6 +107,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
         priority: 'medium',
         taskType: '',
         dueDate: '',
+        addToGlobalCalendar: false,
       })
       setSelectedAssignees([])
       setAttachments([])
@@ -266,6 +269,8 @@ export const TaskModal: React.FC<TaskModalProps> = ({
         department,
         assignedTo: selectedAssignees,
         dueDate: formData.dueDate || null,
+        // Calendar visibility
+        addToGlobalCalendar: formData.addToGlobalCalendar,
         // Include attachments - extract just the file ID
         attachments: attachments.map(att => ({
           file: typeof att.file === 'object' && att.file ? att.file.id : att.file,
@@ -461,6 +466,21 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               />
             </div>
           </div>
+          
+          {/* Show on Public Calendar - only for Events department */}
+          {department === 'events' && (
+            <div className="workboard-modal__field workboard-modal__field--calendar-toggle">
+              <label className="workboard-modal__calendar-toggle">
+                <input
+                  type="checkbox"
+                  checked={formData.addToGlobalCalendar}
+                  onChange={(e) => setFormData({ ...formData, addToGlobalCalendar: e.target.checked })}
+                />
+                <span>📅 Show on Public Calendar</span>
+              </label>
+              <small>When enabled, this event will appear on the public calendar and Discord</small>
+            </div>
+          )}
           
           <div className="workboard-modal__field">
             <label>Assigned To</label>

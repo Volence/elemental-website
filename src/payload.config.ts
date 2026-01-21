@@ -56,6 +56,7 @@ import { EventsDashboard } from './globals/EventsDashboard'
 import { ScoutingDashboard } from './globals/ScoutingDashboard'
 import { OpponentWiki } from './globals/OpponentWiki'
 import { OrganizationCalendar } from './globals/OrganizationCalendar'
+import { GlobalCalendarEvents } from './collections/GlobalCalendarEvents'
 
 import { GraphicsAnchor, VideoAnchor, EventsAnchor } from './collections/DepartmentAnchors'
 import { plugins } from './plugins'
@@ -152,7 +153,8 @@ const config = buildConfig({
     Teams,
     FaceitLeagues,
     
-    // STAFF: Who manages operations
+    // ORGANIZATION: Calendar & Staff
+    GlobalCalendarEvents,
     Production,
     OrganizationStaff,
     

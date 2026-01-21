@@ -101,6 +101,7 @@ import { default as default_564fb21592d27251bcff7c5e897d4dbc } from '@/component
 import { default as default_75e49641b1d841f24cd53ee63100b3ae } from '@/components/BeforeDashboard/SidebarScrollPreserver'
 import { default as default_aeef0123fea1af819397817664b7330c } from '@/components/AdminProviders'
 import { default as default_1afe941534b3971b0de8f4fbeca9a6d3 } from '@/components/UnifiedCalendar'
+import { CollectionCards as CollectionCards_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 
 export const importMap = {
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
@@ -205,5 +206,6 @@ export const importMap = {
   "@/components/BeforeDashboard/CalendarNavLink#default": default_564fb21592d27251bcff7c5e897d4dbc,
   "@/components/BeforeDashboard/SidebarScrollPreserver#default": default_75e49641b1d841f24cd53ee63100b3ae,
   "@/components/AdminProviders#default": default_aeef0123fea1af819397817664b7330c,
-  "@/components/UnifiedCalendar#default": default_1afe941534b3971b0de8f4fbeca9a6d3
+  "@/components/UnifiedCalendar#default": default_1afe941534b3971b0de8f4fbeca9a6d3,
+  "@payloadcms/ui/rsc#CollectionCards": CollectionCards_ab83ff7e88da8d3530831f296ec4756a
 }

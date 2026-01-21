@@ -101,6 +101,11 @@ export function buildCommands() {
             { name: 'Check status', value: 'status' },
           ),
       ),
+
+    // Calendar command - show upcoming competitive events
+    new SlashCommandBuilder()
+      .setName('calendar')
+      .setDescription('View upcoming competitive events (FACEIT, OWCS, Community, etc.)'),
   ].map((command) => command.toJSON())
 }
 

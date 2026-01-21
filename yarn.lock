@@ -1036,7 +1036,7 @@
     tslib "^2.6.2"
     ws "^8.17.0"
 
-"@dnd-kit/accessibility@^3.0.0":
+"@dnd-kit/accessibility@^3.0.0", "@dnd-kit/accessibility@^3.1.1":
   version "3.1.1"
   resolved "https://registry.npmjs.org/@dnd-kit/accessibility/-/accessibility-3.1.1.tgz"
   integrity sha512-2P+YgaXF+gRsIihwwY1gCsQSYnu9Zyj2py8kY5fFvUM1qm2WA2u639R6YNVfU4GWr+ZM5mqEsfHZZLoRONbemw==
@@ -1052,6 +1052,31 @@
     "@dnd-kit/utilities" "^3.2.1"
     tslib "^2.0.0"
 
+"@dnd-kit/core@6.3.1":
+  version "6.3.1"
+  resolved "https://registry.yarnpkg.com/@dnd-kit/core/-/core-6.3.1.tgz#4c36406a62c7baac499726f899935f93f0e6d003"
+  integrity sha512-xkGBRQQab4RLwgXxoqETICr6S5JlogafbhNsidmrkVv2YRs5MLwpjoF2qpiGjQt8S9AoxtIV603s0GIUpY5eYQ==
+  dependencies:
+    "@dnd-kit/accessibility" "^3.1.1"
+    "@dnd-kit/utilities" "^3.2.2"
+    tslib "^2.0.0"
+
+"@dnd-kit/modifiers@9.0.0":
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/@dnd-kit/modifiers/-/modifiers-9.0.0.tgz#96a0280c77b10c716ef79d9792ce7ad04370771d"
+  integrity sha512-ybiLc66qRGuZoC20wdSSG6pDXFikui/dCNGthxv4Ndy8ylErY0N3KVxY2bgo7AWwIbxDmXDg3ylAFmnrjcbVvw==
+  dependencies:
+    "@dnd-kit/utilities" "^3.2.2"
+    tslib "^2.0.0"
+
+"@dnd-kit/sortable@10.0.0":
+  version "10.0.0"
+  resolved "https://registry.yarnpkg.com/@dnd-kit/sortable/-/sortable-10.0.0.tgz#1f9382b90d835cd5c65d92824fa9dafb78c4c3e8"
+  integrity sha512-+xqhmIIzvAYMGfBYYnbKuNicfSsk4RksY2XdmJhT+HAC01nix6fHCztU68jooFiMUB01Ky3F0FyOvhG/BZrWkg==
+  dependencies:
+    "@dnd-kit/utilities" "^3.2.2"
+    tslib "^2.0.0"
+
 "@dnd-kit/sortable@7.0.2":
   version "7.0.2"
   resolved "https://registry.npmjs.org/@dnd-kit/sortable/-/sortable-7.0.2.tgz"
@@ -1060,7 +1085,7 @@
     "@dnd-kit/utilities" "^3.2.0"
     tslib "^2.0.0"
 
-"@dnd-kit/utilities@3.2.2", "@dnd-kit/utilities@^3.2.0", "@dnd-kit/utilities@^3.2.1":
+"@dnd-kit/utilities@3.2.2", "@dnd-kit/utilities@^3.2.0", "@dnd-kit/utilities@^3.2.1", "@dnd-kit/utilities@^3.2.2":
   version "3.2.2"
   resolved "https://registry.npmjs.org/@dnd-kit/utilities/-/utilities-3.2.2.tgz"
   integrity sha512-+MKAJEOfaBe5SmV6t34p80MMKhjvUz0vRrvVJbPT0WElzaOJ/1xs+D+KDv+tD/NE5ujfrChEcshd4fLn0wpiqg==
@@ -2353,12 +2378,12 @@
   resolved "https://registry.npmjs.org/@payloadcms/admin-bar/-/admin-bar-3.68.0.tgz"
   integrity sha512-AgDT/0WAbMP+/IoVeKySJ1W9XBb9O1z5YxHfZXRIOpyp/sYm82HviX0QjJBbMJtkr/3dVcOeAFnQERRtvABOwg==
 
-"@payloadcms/db-postgres@3.68.0":
-  version "3.68.0"
-  resolved "https://registry.npmjs.org/@payloadcms/db-postgres/-/db-postgres-3.68.0.tgz"
-  integrity sha512-T8N8Gb7IvHjkhLZNXshFem1FC9JNmT3y+PWYSPiUzg8wDUxMVtRjD+zH7AMGRMtWeuvBnq1piv12kFBvNOZQ+g==
+"@payloadcms/db-postgres@^3.72.0":
+  version "3.72.0"
+  resolved "https://registry.yarnpkg.com/@payloadcms/db-postgres/-/db-postgres-3.72.0.tgz#e9fda496ad92e1b944e9daab161d6979344880a0"
+  integrity sha512-RzehHdDupPUeA8eSaGDQVqJMvcgRukEaIAKF2KMI32FTlwjeeCprhs1IOVDYD9dGgyADpXMfqyTVqyB8Fdea2A==
   dependencies:
-    "@payloadcms/drizzle" "3.68.0"
+    "@payloadcms/drizzle" "3.72.0"
     "@types/pg" "8.10.2"
     console-table-printer "2.12.1"
     drizzle-kit "0.31.7"
@@ -2368,10 +2393,10 @@
     to-snake-case "1.0.0"
     uuid "10.0.0"
 
-"@payloadcms/drizzle@3.68.0":
-  version "3.68.0"
-  resolved "https://registry.npmjs.org/@payloadcms/drizzle/-/drizzle-3.68.0.tgz"
-  integrity sha512-mqsEfrbck3ZUTtsI2sZyQFJ9HuO9/1CDGIAMMRhprdkh1VhS3gXjOEkzryHRJPVGQ3IBNxK7e/iDTXxI/+Ug9w==
+"@payloadcms/drizzle@3.72.0":
+  version "3.72.0"
+  resolved "https://registry.yarnpkg.com/@payloadcms/drizzle/-/drizzle-3.72.0.tgz#abef12fa72338af86de6b5cede5720531ba42c1d"
+  integrity sha512-X8Wo3WbLASeceMaixqOWqNqQ9YOiXTiE08V8nlbODWh3CO8026vU2oqPz7YKKKb5aVX1dirg5uArExAWZrmYuQ==
   dependencies:
     console-table-printer "2.12.1"
     dequal "2.0.3"
@@ -2391,6 +2416,16 @@
   version "3.68.0"
   resolved "https://registry.npmjs.org/@payloadcms/graphql/-/graphql-3.68.0.tgz"
   integrity sha512-uFQWusOJuvieEeL0mueZ0hQoS6rG91I1nTIcOV0OdxSmtOt4p1EQh8ZEAKuYZ2t3cPNgK1O2cfbelvZ+DwY7Kw==
+  dependencies:
+    graphql-scalars "1.22.2"
+    pluralize "8.0.0"
+    ts-essentials "10.0.3"
+    tsx "4.20.6"
+
+"@payloadcms/graphql@3.72.0":
+  version "3.72.0"
+  resolved "https://registry.yarnpkg.com/@payloadcms/graphql/-/graphql-3.72.0.tgz#d2afc3bedcf78b23063e34614aa63355ef6d3132"
+  integrity sha512-ciLr5cNBxLoB0N+KmoXaBue/ZIieok4Xtgfn8Wdg1KuqG9rpBRTJrQdv580WubcO45j9qJVo4m89eeeZm8Pp3g==
   dependencies:
     graphql-scalars "1.22.2"
     pluralize "8.0.0"
@@ -2429,6 +2464,28 @@
     sass "1.77.4"
     uuid "10.0.0"
 
+"@payloadcms/next@^3.72.0":
+  version "3.72.0"
+  resolved "https://registry.yarnpkg.com/@payloadcms/next/-/next-3.72.0.tgz#7df769ae1a644d55d3453b9cb419767c2cdfc5e7"
+  integrity sha512-2/ng6iL/auwqWVj+hKixnYE6/ECs7ZRf1pieJaQT/T8T4gZrY2KiQjjRIFs5Zp1clfY/6tQq5BmBiXO6dypnkA==
+  dependencies:
+    "@dnd-kit/core" "6.3.1"
+    "@dnd-kit/modifiers" "9.0.0"
+    "@dnd-kit/sortable" "10.0.0"
+    "@payloadcms/graphql" "3.72.0"
+    "@payloadcms/translations" "3.72.0"
+    "@payloadcms/ui" "3.72.0"
+    busboy "^1.6.0"
+    dequal "2.0.3"
+    file-type "19.3.0"
+    graphql-http "^1.22.0"
+    graphql-playground-html "1.6.30"
+    http-status "2.1.0"
+    path-to-regexp "6.3.0"
+    qs-esm "7.0.2"
+    sass "1.77.4"
+    uuid "10.0.0"
+
 "@payloadcms/payload-cloud@3.68.0":
   version "3.68.0"
   resolved "https://registry.npmjs.org/@payloadcms/payload-cloud/-/payload-cloud-3.68.0.tgz"
@@ -2450,10 +2507,10 @@
     "@payloadcms/ui" "3.68.0"
     escape-html "^1.0.3"
 
-"@payloadcms/plugin-nested-docs@3.68.0":
-  version "3.68.0"
-  resolved "https://registry.npmjs.org/@payloadcms/plugin-nested-docs/-/plugin-nested-docs-3.68.0.tgz"
-  integrity sha512-JYCgulGPJPiPcBLNkfav4LnMEzGXLVvKgP082x4Dzbc3Mpvr+O+xI46uvuDaiiBe+4qBQy0q5CwgoM8jOGUDHQ==
+"@payloadcms/plugin-nested-docs@^3.72.0":
+  version "3.72.0"
+  resolved "https://registry.yarnpkg.com/@payloadcms/plugin-nested-docs/-/plugin-nested-docs-3.72.0.tgz#60c9b70d45bd1cbba1b93eef66b5f48bd31a70a7"
+  integrity sha512-aJdewarZLIdSd+Ku+c/+beEli+lEpXKiZjtyhNaW0N+b7ADrrs+BFfXY7Mb8wsTJ9kRML9UzuZznT+hSMQLsDw==
 
 "@payloadcms/plugin-redirects@3.68.0":
   version "3.68.0"
@@ -2479,10 +2536,10 @@
     "@payloadcms/translations" "3.68.0"
     "@payloadcms/ui" "3.68.0"
 
-"@payloadcms/richtext-lexical@3.68.0":
-  version "3.68.0"
-  resolved "https://registry.npmjs.org/@payloadcms/richtext-lexical/-/richtext-lexical-3.68.0.tgz"
-  integrity sha512-F1nHIq2h5PEfNyREK7sDxkiVydMzLAQ1ODewpx5VKYSoFdXy5r3rKbsmZPSPzbpTsTCX6N7LeNYNCjmkj5iy0Q==
+"@payloadcms/richtext-lexical@^3.72.0":
+  version "3.72.0"
+  resolved "https://registry.yarnpkg.com/@payloadcms/richtext-lexical/-/richtext-lexical-3.72.0.tgz#7751c9c85e6927d43c146b70606cd2af728eb24d"
+  integrity sha512-GJfEsMGpDt5jbFuoqQvdiICGd1slaBOPSHtn+hnmQvaZCFaFR5fG3pP2Weux9O2ViKppN5fNm/01VZiDf9rWhg==
   dependencies:
     "@lexical/clipboard" "0.35.0"
     "@lexical/headless" "0.35.0"
@@ -2495,8 +2552,8 @@
     "@lexical/selection" "0.35.0"
     "@lexical/table" "0.35.0"
     "@lexical/utils" "0.35.0"
-    "@payloadcms/translations" "3.68.0"
-    "@payloadcms/ui" "3.68.0"
+    "@payloadcms/translations" "3.72.0"
+    "@payloadcms/ui" "3.72.0"
     "@types/uuid" "10.0.0"
     acorn "8.12.1"
     bson-objectid "2.0.4"
@@ -2520,6 +2577,13 @@
   dependencies:
     date-fns "4.1.0"
 
+"@payloadcms/translations@3.72.0":
+  version "3.72.0"
+  resolved "https://registry.yarnpkg.com/@payloadcms/translations/-/translations-3.72.0.tgz#b11f3b3dc8b5685de6695e714509dbd39570e283"
+  integrity sha512-oV9zoyQkKwif8n3/9lFTu9cTeVv4QJ0h73cjQB4SQncvNweUyTxUDaEjTg/u8nrjcktOQNdSI27cxirX11EiDA==
+  dependencies:
+    date-fns "4.1.0"
+
 "@payloadcms/ui@3.68.0":
   version "3.68.0"
   resolved "https://registry.npmjs.org/@payloadcms/ui/-/ui-3.68.0.tgz"
@@ -2534,6 +2598,35 @@
     "@faceless-ui/window-info" "3.0.1"
     "@monaco-editor/react" "4.7.0"
     "@payloadcms/translations" "3.68.0"
+    bson-objectid "2.0.4"
+    date-fns "4.1.0"
+    dequal "2.0.3"
+    md5 "2.3.0"
+    object-to-formdata "4.5.1"
+    qs-esm "7.0.2"
+    react-datepicker "7.6.0"
+    react-image-crop "10.1.8"
+    react-select "5.9.0"
+    scheduler "0.25.0"
+    sonner "^1.7.2"
+    ts-essentials "10.0.3"
+    use-context-selector "2.0.0"
+    uuid "10.0.0"
+
+"@payloadcms/ui@3.72.0", "@payloadcms/ui@^3.72.0":
+  version "3.72.0"
+  resolved "https://registry.yarnpkg.com/@payloadcms/ui/-/ui-3.72.0.tgz#1be7380c45f3dfcca435485d4f1a6c192ead530a"
+  integrity sha512-RCH6IpRKm1nr+H7JYGXw3fi4h89+TXzwOt5E7R0dnEd6BAPNdXx9/TU5nfnNdV/gLS5o9w3Mf7JV0OE7cC+1DQ==
+  dependencies:
+    "@date-fns/tz" "1.2.0"
+    "@dnd-kit/core" "6.3.1"
+    "@dnd-kit/sortable" "10.0.0"
+    "@dnd-kit/utilities" "3.2.2"
+    "@faceless-ui/modal" "3.0.0"
+    "@faceless-ui/scroll-info" "2.0.0"
+    "@faceless-ui/window-info" "3.0.1"
+    "@monaco-editor/react" "4.7.0"
+    "@payloadcms/translations" "3.72.0"
     bson-objectid "2.0.4"
     date-fns "4.1.0"
     dequal "2.0.3"
@@ -7050,6 +7143,44 @@ payload@3.68.0:
     uuid "10.0.0"
     ws "^8.16.0"
 
+payload@^3.72.0:
+  version "3.72.0"
+  resolved "https://registry.yarnpkg.com/payload/-/payload-3.72.0.tgz#b6424967de9db36bba4bce3cbf2d1d7ddecfcb74"
+  integrity sha512-e31n0dJP7h2bR8YR2SbajzuLWAQ3OvZwrZJCSsN1IjZB5k+Se/lPkNZ383UAhwZj7OHog1kkZieaBnSQ33tvmw==
+  dependencies:
+    "@next/env" "^15.1.5"
+    "@payloadcms/translations" "3.72.0"
+    "@types/busboy" "1.5.4"
+    ajv "8.17.1"
+    bson-objectid "2.0.4"
+    busboy "^1.6.0"
+    ci-info "^4.1.0"
+    console-table-printer "2.12.1"
+    croner "9.1.0"
+    dataloader "2.2.3"
+    deepmerge "4.3.1"
+    file-type "19.3.0"
+    get-tsconfig "4.8.1"
+    http-status "2.1.0"
+    image-size "2.0.2"
+    ipaddr.js "2.2.0"
+    jose "5.9.6"
+    json-schema-to-typescript "15.0.3"
+    minimist "1.2.8"
+    path-to-regexp "6.3.0"
+    pino "9.14.0"
+    pino-pretty "13.1.2"
+    pluralize "8.0.0"
+    qs-esm "7.0.2"
+    range-parser "1.2.1"
+    sanitize-filename "1.6.3"
+    scmp "2.1.0"
+    ts-essentials "10.0.3"
+    tsx "4.20.3"
+    undici "7.18.2"
+    uuid "10.0.0"
+    ws "^8.16.0"
+
 peek-readable@^5.1.4:
   version "5.4.2"
   resolved "https://registry.npmjs.org/peek-readable/-/peek-readable-5.4.2.tgz"
@@ -7421,6 +7552,11 @@ quick-format-unescaped@^4.0.3:
   version "4.0.4"
   resolved "https://registry.npmjs.org/quick-format-unescaped/-/quick-format-unescaped-4.0.4.tgz"
   integrity sha512-tYC1Q1hgyRuHgloV/YXs2w15unPVh8qfu/qCTfhTYamaw7fyhumKa2yGpdSo87vY32rIclj+4fWYQXUMs9EHvg==
+
+range-parser@1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/range-parser/-/range-parser-1.2.1.tgz#3cf37023d199e1c24d1a55b84800c2f3e6468031"
+  integrity sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==
 
 react-datepicker@7.6.0:
   version "7.6.0"
@@ -8568,6 +8704,11 @@ undici@7.10.0:
   version "7.10.0"
   resolved "https://registry.npmjs.org/undici/-/undici-7.10.0.tgz"
   integrity sha512-u5otvFBOBZvmdjWLVW+5DAc9Nkq8f24g0O9oY7qw2JVIF1VocIFoyz9JFkuVOS2j41AufeO0xnlweJ2RLT8nGw==
+
+undici@7.18.2:
+  version "7.18.2"
+  resolved "https://registry.yarnpkg.com/undici/-/undici-7.18.2.tgz#6cf724ef799a67d94fd55adf66b1e184176efcdf"
+  integrity sha512-y+8YjDFzWdQlSE9N5nzKMT3g4a5UBX1HKowfdXh0uvAnTaqqwqB92Jt4UXBAeKekDs5IaDKyJFR4X1gYVCgXcw==
 
 unfetch@^4.2.0:
   version "4.2.0"

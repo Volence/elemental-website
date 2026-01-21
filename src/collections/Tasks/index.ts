@@ -1,4 +1,6 @@
 import type { CollectionConfig } from 'payload'
+import { getPayload } from 'payload'
+import config from '@payload-config'
 import { authenticated } from '../../access/authenticated'
 import { 
   adminOnly, 
@@ -398,6 +400,26 @@ export const Tasks: CollectionConfig = {
     },
     // Sidebar fields - Archive and completion tracking
     {
+      name: 'addToGlobalCalendar',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        position: 'sidebar',
+        description: 'Show this event on the public calendar and Discord',
+      },
+    },
+    {
+      name: 'linkedCalendarEvent',
+      type: 'relationship',
+      relationTo: 'global-calendar-events',
+      admin: {
+        position: 'sidebar',
+        description: 'Linked calendar event (auto-managed)',
+        readOnly: true,
+        condition: (data) => data?.addToGlobalCalendar === true,
+      },
+    },
+    {
       name: 'archived',
       type: 'checkbox',
       defaultValue: false,
@@ -467,6 +489,90 @@ export const Tasks: CollectionConfig = {
         }
         
         return data
+      },
+    ],
+    afterChange: [
+      async ({ doc, previousDoc, req, operation, context }) => {
+        // Skip if this update was triggered by our own sync to avoid infinite loop
+        if (context?.skipCalendarSync) return
+        
+        // Sync with GlobalCalendarEvents when addToGlobalCalendar changes
+        if (!doc) return
+        
+        const wasOnCalendar = previousDoc?.addToGlobalCalendar === true
+        const isOnCalendar = doc.addToGlobalCalendar === true
+        
+        // Only sync if calendar status changed or relevant fields changed
+        const needsSync = wasOnCalendar !== isOnCalendar || 
+          (isOnCalendar && (
+            doc.title !== previousDoc?.title ||
+            doc.dueDate !== previousDoc?.dueDate ||
+            doc.department !== previousDoc?.department
+          ))
+        
+        if (!needsSync) return
+        
+        // Run sync in background (non-blocking) to prevent save from hanging
+        // Get standalone payload instance since request may have ended by the time this runs
+        const taskId = doc.id
+        const taskTitle = doc.title
+        const taskDueDate = doc.dueDate
+        const existingEventId = doc.linkedCalendarEvent
+        const prevEventId = previousDoc?.linkedCalendarEvent
+        
+        setImmediate(async () => {
+          try {
+            // Get fresh payload instance for background operation
+            const payload = await getPayload({ config })
+            
+            if (isOnCalendar && taskDueDate) {
+              const calendarData = {
+                title: taskTitle,
+                eventType: 'internal' as const,
+                internalEventType: 'other' as const,
+                region: 'global' as const,
+                dateStart: taskDueDate,
+                publishToDiscord: true,
+              }
+              
+              if (existingEventId) {
+                // Update existing
+                await payload.update({
+                  collection: 'global-calendar-events',
+                  id: existingEventId,
+                  data: calendarData,
+                })
+                console.log(`[Tasks] Updated calendar event ${existingEventId} for task ${taskId}`)
+              } else {
+                // Create new and link back
+                const newEvent = await payload.create({
+                  collection: 'global-calendar-events',
+                  data: calendarData,
+                })
+                
+                // Update task with link to calendar event
+                await payload.update({
+                  collection: 'tasks',
+                  id: taskId,
+                  data: {
+                    linkedCalendarEvent: newEvent.id,
+                  },
+                  context: { skipCalendarSync: true },
+                })
+                console.log(`[Tasks] Created calendar event ${newEvent.id} and linked to task ${taskId}`)
+              }
+            } else if (wasOnCalendar && !isOnCalendar && prevEventId) {
+              // Remove from calendar
+              await payload.delete({
+                collection: 'global-calendar-events',
+                id: prevEventId,
+              })
+              console.log(`[Tasks] Deleted calendar event ${prevEventId} for task ${taskId}`)
+            }
+          } catch (error) {
+            console.error('[Tasks] Error syncing to GlobalCalendarEvents:', error)
+          }
+        })
       },
     ],
   },

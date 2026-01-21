@@ -607,6 +607,19 @@ label:has(input[type="radio"]) {
   box-shadow: 
     0 4px 16px rgba(0, 0, 0, 0.3),
     0 0 12px rgba($admin-accent-primary, 0.15);
+  
+  // Ensure popup content doesn't extend page when active
+  &.popup--active {
+    position: relative;
+    z-index: 99999;
+    
+    .popup__content {
+      position: fixed !important;
+      z-index: 99999 !important;
+      max-height: 80vh !important;
+      overflow-y: auto !important;
+    }
+  }
 }
 
 .popup__content {
@@ -790,21 +803,25 @@ table {
     }
   }
   
-  // Popup content - hide by default and position absolutely
-  .popup__content {
+  // Popup content - override Payload's JavaScript-set inline positioning
+  // Target specifically .doc-controls__popup which has inline `top: 1379px` etc.
+  .popup__content,
+  &.doc-controls__popup .popup__content,
+  .popup__content.popup--v-bottom {
     display: none !important;
-    position: absolute !important;
-    top: 100% !important;
-    right: 0 !important;
-    z-index: 1000 !important;
+    position: fixed !important;
+    top: 70px !important;  // Override inline style
+    right: 20px !important;
+    left: auto !important;  // Override inline style
+    bottom: auto !important;
+    z-index: 99999 !important;
     min-width: 180px;
-    margin-top: 8px;
     padding: 0.5rem;
-    background: rgba(20, 20, 25, 0.95) !important;
-    border: 1px solid rgba($admin-accent-primary, 0.3) !important;
+    background: rgba(20, 20, 25, 0.98) !important;
+    border: 1px solid rgba($admin-accent-primary, 0.4) !important;
     border-radius: 8px !important;
     backdrop-filter: blur(12px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 12px rgba($admin-accent-primary, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 16px rgba($admin-accent-primary, 0.2);
   }
   
   // Show popup content only when active
@@ -1664,3 +1681,29 @@ section[class*="fields"] {
   border-width: 0;
 }
 
+// ============================================
+// DOC-CONTROLS POPUP FIX
+// Payload renders popups via Portal directly under <body>,
+// so parent selectors like .doc-controls__popup .popup__content don't work.
+// Target the popup content classes directly on body.
+// ============================================
+body > .popup__content,
+body > .popup__content.popup--v-bottom,
+body > .popup__content.popup--size-large,
+.popup__content.popup--v-bottom.popup--size-large {
+  position: fixed !important;
+  top: 70px !important;
+  right: 20px !important;
+  left: auto !important;
+  bottom: auto !important;
+  z-index: 999999 !important;
+  min-width: 180px !important;
+  max-height: 80vh !important;
+  overflow-y: auto !important;
+  padding: 0.5rem !important;
+  background: rgba(20, 20, 25, 0.98) !important;
+  border: 1px solid rgba($admin-accent-primary, 0.4) !important;
+  border-radius: 8px !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 16px rgba($admin-accent-primary, 0.2) !important;
+}
