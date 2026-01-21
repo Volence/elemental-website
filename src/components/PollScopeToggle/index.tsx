@@ -14,7 +14,8 @@ export const PollScopeToggle: React.FC = () => {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   
-  const [scope, setScope] = useState<Scope>('my-teams')
+  // Default to 'all-teams' for staff-managers (changed from 'my-teams')
+  const [scope, setScope] = useState<Scope>('all-teams')
   const [isOpen, setIsOpen] = useState(false)
 
   // Check if user has permission to see all teams
@@ -27,10 +28,14 @@ export const PollScopeToggle: React.FC = () => {
   ).filter(Boolean)
 
   // Load saved preference from localStorage
+  // Staff managers should default to 'all-teams' since they have access to all teams
   useEffect(() => {
     if (typeof window !== 'undefined' && canSeeAllTeams) {
       const saved = localStorage.getItem('poll-scope-preference')
-      if (saved === 'all-teams') {
+      if (saved === 'my-teams') {
+        setScope('my-teams')
+      } else {
+        // Default to 'all-teams' for staff managers
         setScope('all-teams')
       }
     }
