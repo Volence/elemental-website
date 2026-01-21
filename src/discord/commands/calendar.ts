@@ -71,6 +71,7 @@ export async function handleCalendar(interaction: ChatInputCommandInteraction): 
     const now = new Date()
     const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
     
+    // Fetch global calendar events
     const events = await payload.find({
       collection: 'global-calendar-events',
       where: {
@@ -89,7 +90,41 @@ export async function handleCalendar(interaction: ChatInputCommandInteraction): 
       limit: 15,
     })
     
-    if (events.docs.length === 0) {
+    // Fetch broadcast matches (those marked for schedule, like on the website)
+    const matches = await payload.find({
+      collection: 'matches',
+      where: {
+        and: [
+          { date: { greater_than_equal: now.toISOString() } },
+          { date: { less_than: thirtyDaysFromNow.toISOString() } },
+          { 'productionWorkflow.includeInSchedule': { equals: true } },
+          { status: { not_equals: 'complete' } },
+        ],
+      },
+      sort: 'date',
+      limit: 15,
+      depth: 1,
+    })
+    
+    // Convert matches to calendar event format
+    const matchEvents = matches.docs.map((match: any) => ({
+      id: match.id,
+      title: match.title || `${(match.team as any)?.name || 'TBD'} vs ${match.opponent || 'TBD'}`,
+      eventType: 'match' as const,
+      dateStart: match.date,
+      dateEnd: match.date,
+      region: match.region || 'NA',
+      league: match.league || 'FACEIT',
+      streamUrl: match.stream?.url,
+    }))
+    
+    // Combine and sort all events by date
+    const allEvents = [
+      ...events.docs.map((e: any) => ({ ...e, sortDate: new Date(e.dateStart) })),
+      ...matchEvents.map((m: any) => ({ ...m, sortDate: new Date(m.dateStart) })),
+    ].sort((a, b) => a.sortDate.getTime() - b.sortDate.getTime())
+    
+    if (allEvents.length === 0) {
       await interaction.editReply({
         content: '📅 No upcoming events scheduled for the next 30 days.',
       })
@@ -99,16 +134,24 @@ export async function handleCalendar(interaction: ChatInputCommandInteraction): 
     // Build embed content
     let description = ''
     
-    for (const event of events.docs as CalendarEvent[]) {
+    for (const event of allEvents) {
+      // Check if this is a match or a calendar event
+      const isMatch = event.eventType === 'match'
+      
       // Get emoji based on event type
-      let emoji = EVENT_TYPE_EMOJI[event.eventType] || '📅'
-      if (event.eventType === 'internal' && event.internalEventType) {
-        emoji = INTERNAL_TYPE_EMOJI[event.internalEventType] || emoji
+      let emoji = '📅'
+      if (isMatch) {
+        emoji = '📺' // TV emoji for broadcast matches
+      } else {
+        emoji = EVENT_TYPE_EMOJI[event.eventType] || '📅'
+        if (event.eventType === 'internal' && event.internalEventType) {
+          emoji = INTERNAL_TYPE_EMOJI[event.internalEventType] || emoji
+        }
       }
       
       // Region badge
       const regionBadge = event.region && event.region !== 'global' 
-        ? ` **[${event.region}]**` 
+        ? ` **[${event.region.toUpperCase()}]**` 
         : ''
       
       // Date formatting
@@ -116,11 +159,19 @@ export async function handleCalendar(interaction: ChatInputCommandInteraction): 
       const dateEnd = event.dateEnd ? new Date(event.dateEnd) : undefined
       const dateStr = formatDateRange(dateStart, dateEnd)
       
-      // Links
-      const linksStr = formatLinks(event.links)
+      // Links (for calendar events) or stream (for matches)
+      let linksStr = ''
+      if (isMatch && event.streamUrl) {
+        linksStr = `[Watch Live](${event.streamUrl})`
+      } else if (!isMatch && event.links) {
+        linksStr = formatLinks(event.links)
+      }
+      
+      // League info for matches
+      const leagueInfo = isMatch ? ` • ${event.league}` : ''
       
       // Build event entry
-      description += `${emoji} **${event.title}**${regionBadge}\n`
+      description += `${emoji} **${event.title}**${regionBadge}${leagueInfo}\n`
       description += `   📆 ${dateStr}\n`
       if (linksStr) {
         description += `   🔗 ${linksStr}\n`
@@ -183,6 +234,7 @@ export async function updateCalendarChannel(): Promise<void> {
     const now = new Date()
     const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
     
+    // Fetch global calendar events
     const events = await payload.find({
       collection: 'global-calendar-events',
       where: {
@@ -201,28 +253,80 @@ export async function updateCalendarChannel(): Promise<void> {
       limit: 20,
     })
     
+    // Fetch broadcast matches (those marked for schedule, like on the website)
+    const matches = await payload.find({
+      collection: 'matches',
+      where: {
+        and: [
+          { date: { greater_than_equal: now.toISOString() } },
+          { date: { less_than: thirtyDaysFromNow.toISOString() } },
+          { 'productionWorkflow.includeInSchedule': { equals: true } },
+          { status: { not_equals: 'complete' } },
+        ],
+      },
+      sort: 'date',
+      limit: 20,
+      depth: 1,
+    })
+    
+    // Convert matches to calendar event format
+    const matchEvents = matches.docs.map((match: any) => ({
+      id: match.id,
+      title: match.title || `${(match.team as any)?.name || 'TBD'} vs ${match.opponent || 'TBD'}`,
+      eventType: 'match' as const,
+      dateStart: match.date,
+      dateEnd: match.date,
+      region: match.region || 'NA',
+      league: match.league || 'FACEIT',
+      streamUrl: match.stream?.url,
+    }))
+    
+    // Combine and sort all events by date
+    const allEvents = [
+      ...events.docs.map((e: any) => ({ ...e, sortDate: new Date(e.dateStart) })),
+      ...matchEvents.map((m: any) => ({ ...m, sortDate: new Date(m.dateStart) })),
+    ].sort((a, b) => a.sortDate.getTime() - b.sortDate.getTime())
+    
     // Build embed content
-    let description = events.docs.length === 0 
+    let description = allEvents.length === 0 
       ? '*No upcoming events scheduled.*'
       : ''
     
-    for (const event of events.docs as CalendarEvent[]) {
-      let emoji = EVENT_TYPE_EMOJI[event.eventType] || '📅'
-      if (event.eventType === 'internal' && event.internalEventType) {
-        emoji = INTERNAL_TYPE_EMOJI[event.internalEventType] || emoji
+    for (const event of allEvents) {
+      // Check if this is a match or a calendar event
+      const isMatch = event.eventType === 'match'
+      
+      // Get emoji
+      let emoji = '📅'
+      if (isMatch) {
+        emoji = '📺' // TV emoji for broadcast matches
+      } else {
+        emoji = EVENT_TYPE_EMOJI[event.eventType] || '📅'
+        if (event.eventType === 'internal' && event.internalEventType) {
+          emoji = INTERNAL_TYPE_EMOJI[event.internalEventType] || emoji
+        }
       }
       
       const regionBadge = event.region && event.region !== 'global' 
-        ? ` **[${event.region}]**` 
+        ? ` **[${event.region.toUpperCase()}]**` 
         : ''
       
       const dateStart = new Date(event.dateStart)
       const dateEnd = event.dateEnd ? new Date(event.dateEnd) : undefined
       const dateStr = formatDateRange(dateStart, dateEnd)
       
-      const linksStr = formatLinks(event.links)
+      // Links (for calendar events) or stream (for matches)
+      let linksStr = ''
+      if (isMatch && event.streamUrl) {
+        linksStr = `[Watch Live](${event.streamUrl})`
+      } else if (!isMatch && event.links) {
+        linksStr = formatLinks(event.links)
+      }
       
-      description += `${emoji} **${event.title}**${regionBadge}\n`
+      // League info for matches
+      const leagueInfo = isMatch ? ` • ${event.league}` : ''
+      
+      description += `${emoji} **${event.title}**${regionBadge}${leagueInfo}\n`
       description += `   📆 ${dateStr}\n`
       if (linksStr) {
         description += `   🔗 ${linksStr}\n`
