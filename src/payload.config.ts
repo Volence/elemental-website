@@ -265,15 +265,15 @@ const config = buildConfig({
         const { ensureDiscordClient } = await import('./discord/bot')
         const { registerCommands } = await import('./discord/commands/register')
         const { setupInteractionHandlers } = await import('./discord/handlers/interactions')
-        // TKA disabled - can't achieve visible-in-sidebar without sending messages
-        // const { startThreadKeepAlive } = await import('./discord/services/threadKeepAlive')
+        // Thread Keep-Alive: Automatically keeps watched threads active using autoArchiveDuration toggling
+        const { startThreadKeepAlive } = await import('./discord/services/threadKeepAlive')
 
         const client = await ensureDiscordClient()
         
         if (client) {
           await registerCommands()
           setupInteractionHandlers()
-          // startThreadKeepAlive()  // TKA disabled
+          startThreadKeepAlive()  // Re-enabled - uses Thread-Watcher approach
           console.log('✅ Discord bot fully initialized')
         }
       } catch (error) {
