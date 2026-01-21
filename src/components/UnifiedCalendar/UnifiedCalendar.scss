@@ -249,19 +249,27 @@
     gap: 8px;
   }
 
+  // Month view uses CSS table for guaranteed column alignment
+  &__month {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 1px;
+  }
+
   &__month-header {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 1px;
-    margin-bottom: 6px;
+    display: table-row;
   }
 
   &__month-header-day {
+    display: table-cell;
     text-align: center;
     color: rgba(255, 255, 255, 0.5);
     font-size: 0.75rem;
     font-weight: 500;
     padding: 6px;
+    width: calc(100% / 7);
   }
 
   &__month-grid {
@@ -313,31 +321,31 @@
 
   // New Week-based Month View Structure
   &__month-week {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    
-    &:last-child {
-      border-bottom: none;
-    }
+    display: table-row-group;
+  }
+
+  &__month-week-row {
+    display: table-row;
   }
 
   &__month-week-dates {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 1px;
+    display: table-row;
     background: rgba(10, 10, 16, 0.95);
   }
 
   &__month-week-date {
+    display: table-cell;
     text-align: center;
     padding: 6px 4px;
     font-size: 0.85rem;
     font-weight: 500;
     color: rgba(255, 255, 255, 0.9);
+    width: calc(100% / 7);
+    background: rgba(10, 10, 16, 0.95);
 
     &--today {
       color: #3b82f6;
       background: rgba(59, 130, 246, 0.1);
-      border-radius: 4px;
     }
 
     &--other {
@@ -409,19 +417,18 @@
   }
 
   &__month-week-content {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 1px;
+    display: table-row;
     background: rgba(255, 255, 255, 0.03);
   }
 
   &__month-week-cell {
+    display: table-cell;
+    vertical-align: top;
     background: rgba(10, 10, 16, 0.95);
     min-height: 50px;
     padding: 4px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+    width: calc(100% / 7);
+    overflow: hidden;
 
     &--other {
       opacity: 0.4;
