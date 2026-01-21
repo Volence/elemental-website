@@ -17,6 +17,37 @@ export const GlobalCalendarEvents: CollectionConfig = {
     // All authenticated users can read (for calendar display)
     read: authenticated,
   },
+  hooks: {
+    afterChange: [
+      async ({ doc, operation }) => {
+        // Update Discord calendar channel when events are created/updated
+        try {
+          const { updateCalendarChannel } = await import('@/discord/commands/calendar')
+          // Small delay to ensure database changes are committed
+          setTimeout(() => {
+            updateCalendarChannel().catch(console.error)
+          }, 1000)
+        } catch (error) {
+          console.error('[GlobalCalendarEvents] Failed to update Discord calendar:', error)
+        }
+        return doc
+      },
+    ],
+    afterDelete: [
+      async ({ doc }) => {
+        // Update Discord calendar channel when events are deleted
+        try {
+          const { updateCalendarChannel } = await import('@/discord/commands/calendar')
+          setTimeout(() => {
+            updateCalendarChannel().catch(console.error)
+          }, 1000)
+        } catch (error) {
+          console.error('[GlobalCalendarEvents] Failed to update Discord calendar:', error)
+        }
+        return doc
+      },
+    ],
+  },
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'eventType', 'region', 'dateStart', 'dateEnd', 'publishToDiscord'],
