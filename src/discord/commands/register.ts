@@ -129,7 +129,6 @@ export async function registerCommands(): Promise<void> {
   const guildId = process.env.DISCORD_GUILD_ID
 
   if (!token || !clientId || !guildId) {
-    console.log('⚠️  Skipping command registration - missing environment variables')
     return
   }
 
@@ -137,14 +136,12 @@ export async function registerCommands(): Promise<void> {
   const commands = buildCommands()
 
   try {
-    console.log(`🔄 Registering ${commands.length} slash commands...`)
 
     // Register commands to guild (faster than global)
     await rest.put(Routes.applicationGuildCommands(clientId, guildId), {
       body: commands,
     })
 
-    console.log(`✅ Successfully registered ${commands.length} slash commands`)
   } catch (error) {
     console.error('❌ Failed to register commands:', error)
     throw error

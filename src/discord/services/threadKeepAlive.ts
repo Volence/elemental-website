@@ -9,7 +9,6 @@ const KEEP_ALIVE_INTERVAL_MS = 2 * 60 * 60 * 1000
 export function startThreadKeepAlive(): void {
   if (keepAliveInterval) return
 
-  console.log('🔄 Starting thread keep-alive service (every 2 hours)')
 
   // Delay first run to ensure Payload collections are fully initialized
   setTimeout(() => {
@@ -25,14 +24,12 @@ export function stopThreadKeepAlive(): void {
   if (keepAliveInterval) {
     clearInterval(keepAliveInterval)
     keepAliveInterval = null
-    console.log('🛑 Stopped thread keep-alive service')
   }
 }
 
 async function runKeepAlive(): Promise<void> {
   const client = getDiscordClient()
   if (!client) {
-    console.log('Thread keep-alive: Discord client not ready')
     return
   }
 
@@ -56,7 +53,6 @@ async function runKeepAlive(): Promise<void> {
       return
     }
 
-    console.log(`📌 Checking ${watchedThreads.docs.length} watched threads...`)
 
     let keptAliveCount = 0
     let errorCount = 0
@@ -75,7 +71,6 @@ async function runKeepAlive(): Promise<void> {
               status: 'deleted',
             } as any,
           })
-          console.log(`  ❌ Thread ${threadDoc.threadName} no longer exists, marked as deleted`)
           continue
         }
 
@@ -84,7 +79,6 @@ async function runKeepAlive(): Promise<void> {
         // Unarchive if archived
         if (thread.archived) {
           await thread.setArchived(false)
-          console.log(`  ✅ Unarchived: ${threadDoc.threadName}`)
         }
 
         // Keep thread alive by toggling autoArchiveDuration
@@ -100,21 +94,17 @@ async function runKeepAlive(): Promise<void> {
             await thread.setAutoArchiveDuration(newDuration)
             keptAlive = true
             keptAliveCount++
-            console.log(`  📌 Kept alive (duration ${currentDuration} → ${newDuration}): ${threadDoc.threadName}`)
           } else if (!thread.manageable) {
             // Can't manage thread, just keep it unarchived
             keptAlive = true
             keptAliveCount++
-            console.log(`  ✅ Kept alive (unarchive only, no manage perms): ${threadDoc.threadName}`)
           }
         } catch (durationError) {
-          console.log(`  ⚠️ Duration toggle failed for ${threadDoc.threadName}: ${(durationError as Error).message}`)
         }
 
         // Fallback: just count as kept alive if we at least unarchived it
         if (!keptAlive) {
           keptAliveCount++
-          console.log(`  ✅ Kept alive (unarchive only): ${threadDoc.threadName}`)
         }
 
 
@@ -135,7 +125,6 @@ async function runKeepAlive(): Promise<void> {
     }
 
     if (keptAliveCount > 0 || errorCount > 0) {
-      console.log(`📌 Thread keep-alive complete: ${keptAliveCount} unarchived, ${errorCount} errors`)
     }
   } catch (error) {
     console.error('Thread keep-alive service error:', error)

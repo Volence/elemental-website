@@ -542,7 +542,6 @@ export const Tasks: CollectionConfig = {
                   id: existingEventId,
                   data: calendarData,
                 })
-                console.log(`[Tasks] Updated calendar event ${existingEventId} for task ${taskId}`)
               } else {
                 // Create new and link back
                 const newEvent = await payload.create({
@@ -559,7 +558,6 @@ export const Tasks: CollectionConfig = {
                   },
                   context: { skipCalendarSync: true },
                 })
-                console.log(`[Tasks] Created calendar event ${newEvent.id} and linked to task ${taskId}`)
               }
             } else if (wasOnCalendar && !isOnCalendar && prevEventId) {
               // Remove from calendar
@@ -567,7 +565,6 @@ export const Tasks: CollectionConfig = {
                 collection: 'global-calendar-events',
                 id: prevEventId,
               })
-              console.log(`[Tasks] Deleted calendar event ${prevEventId} for task ${taskId}`)
             }
           } catch (error) {
             console.error('[Tasks] Error syncing to GlobalCalendarEvents:', error)

@@ -26,8 +26,6 @@ export async function initializeDiscordBot(): Promise<Client> {
   const clientId = process.env.DISCORD_CLIENT_ID
 
   if (!token || !guildId || !clientId) {
-    console.log('⚠️  Discord bot disabled - missing environment variables')
-    console.log('   Required: DISCORD_BOT_TOKEN, DISCORD_GUILD_ID, DISCORD_CLIENT_ID')
     return null as any
   }
 
@@ -36,7 +34,6 @@ export async function initializeDiscordBot(): Promise<Client> {
     return client
   }
 
-  console.log('🤖 Initializing Discord bot...')
 
   // Create client with necessary intents
   client = new Client({
@@ -48,7 +45,6 @@ export async function initializeDiscordBot(): Promise<Client> {
 
   // Ready event
   client.once(Events.ClientReady, (readyClient) => {
-    console.log(`✅ Discord bot ready! Logged in as ${readyClient.user.tag}`)
     readyClient.user.setPresence({
       activities: [{ name: 'Elemental Esports', type: ActivityType.Watching }],
       status: 'online',
@@ -63,7 +59,6 @@ export async function initializeDiscordBot(): Promise<Client> {
   // Login
   try {
     await client.login(token)
-    console.log('🔗 Discord bot connected to server')
   } catch (error) {
     console.error('❌ Failed to login to Discord:', error)
     throw error
@@ -74,9 +69,7 @@ export async function initializeDiscordBot(): Promise<Client> {
 
 export async function shutdownDiscordBot(): Promise<void> {
   if (client) {
-    console.log('🔌 Shutting down Discord bot...')
     await client.destroy()
     client = null
-    console.log('✅ Discord bot shut down')
   }
 }

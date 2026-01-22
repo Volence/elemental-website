@@ -15,14 +15,12 @@ export async function GET() {
       await payload.findGlobal({
         slug: 'data-consistency',
       })
-      console.log('✅ data-consistency global already exists')
     } catch (error) {
       // Global doesn't exist, create it
       await payload.updateGlobal({
         slug: 'data-consistency',
         data: {},
       })
-      console.log('✅ Created data-consistency global')
     }
 
     // Initialize Production Dashboard Global
@@ -30,14 +28,12 @@ export async function GET() {
       await payload.findGlobal({
         slug: 'production-dashboard',
       })
-      console.log('✅ production-dashboard global already exists')
     } catch (error) {
       // Global doesn't exist, create it
       await payload.updateGlobal({
         slug: 'production-dashboard',
         data: {},
       })
-      console.log('✅ Created production-dashboard global')
     }
 
     return NextResponse.json({

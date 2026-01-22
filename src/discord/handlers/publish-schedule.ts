@@ -229,7 +229,6 @@ export async function publishScheduleToDiscord(pollId: number): Promise<{ succes
     const pollName = poll.pollName as string
     const existingMessageId = poll.calendarMessageId as string | null
     
-    console.log(`📋 Publishing schedule for "${pollName}" - existing message ID: ${existingMessageId || 'none'}`)
 
     // Collect all player IDs from the schedule that need name resolution
     const playerIdsToResolve = new Set<string>()
@@ -271,7 +270,6 @@ export async function publishScheduleToDiscord(pollId: number): Promise<{ succes
           playerMap.set(String(person.id), (person as any).name || 'Unknown')
         }
       } catch (e) {
-        console.log('Could not fetch People records:', e)
       }
     }
 
@@ -291,10 +289,8 @@ export async function publishScheduleToDiscord(pollId: number): Promise<{ succes
       try {
         const existingMessage = await thread.messages.fetch(existingMessageId)
         await existingMessage.edit(formattedMessage)
-        console.log(`✅ Updated existing schedule for poll "${pollName}"`)
       } catch (fetchError) {
         // Message was deleted or not found, create a new one
-        console.log(`⚠️  Existing message not found, creating new one for "${pollName}"`)
         const newMessage = await thread.send(formattedMessage)
         messageId = newMessage.id
       }
@@ -302,7 +298,6 @@ export async function publishScheduleToDiscord(pollId: number): Promise<{ succes
       // First publish - create new message
       const newMessage = await thread.send(formattedMessage)
       messageId = newMessage.id
-      console.log(`✅ Published new schedule for poll "${pollName}"`)
     }
 
     // Update poll with message ID and published flag

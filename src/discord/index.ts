@@ -20,7 +20,6 @@ export async function startDiscordBot(): Promise<void> {
     // Setup interaction handlers
     setupInteractionHandlers()
 
-    console.log('✅ Discord bot fully initialized')
   } catch (error) {
     console.error('❌ Failed to start Discord bot:', error)
   }

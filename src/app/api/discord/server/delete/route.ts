@@ -44,7 +44,6 @@ export async function POST(request: NextRequest) {
         ch => ch.parentId === id && ch.id !== id
       )
 
-      console.log(`[Delete Category] Deleting ${childChannels.size} child channels from category ${channel.name}`)
 
       // Delete child channels with rate limit protection
       for (const [, childChannel] of childChannels) {

@@ -45,17 +45,14 @@ export function setupInteractionHandlers(): void {
           if (interaction.deferred || interaction.replied) {
             await interaction.followUp({ content: errorMessage, ephemeral: true }).catch(() => {
               // Interaction token expired, can't respond
-              console.log('Interaction token expired, unable to send error message')
             })
           } else {
             await interaction.reply({ content: errorMessage, ephemeral: true }).catch(() => {
               // Interaction token expired, can't respond
-              console.log('Interaction token expired, unable to send error message')
             })
           }
         } catch (replyError) {
           // Silently fail if we can't send the error message
-          console.log('Failed to send error message to Discord:', replyError)
         }
       }
     }

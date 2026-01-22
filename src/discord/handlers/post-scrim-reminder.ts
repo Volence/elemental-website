@@ -255,7 +255,6 @@ export async function postScrimReminder(
           }
         }
       } catch (e) {
-        console.log('Could not fetch People records:', e)
       }
     }
 
@@ -270,7 +269,6 @@ export async function postScrimReminder(
 
     // Post the reminder as an embed
     await thread.send({ embeds: [embed] })
-    console.log(`✅ Posted scrim reminder for "${dayDate}" (${block.time}) in poll "${pollName}"`)
 
     return { success: true }
   } catch (error) {

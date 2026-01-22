@@ -196,7 +196,6 @@ export async function cleanupStaleSessions(payload: Payload): Promise<number> {
       })
     }
 
-    console.log(`[Session Tracker] Cleaned up ${staleSessions.docs.length} stale sessions`)
     return staleSessions.docs.length
   } catch (error) {
     console.error('[Session Tracker] Failed to cleanup stale sessions:', error)

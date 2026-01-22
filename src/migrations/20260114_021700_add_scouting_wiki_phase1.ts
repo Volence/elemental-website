@@ -160,7 +160,6 @@ export async function up({ payload }: MigrateUpArgs): Promise<void> {
     ALTER TABLE payload_locked_documents_rels ADD COLUMN IF NOT EXISTS opponent_teams_id integer;
   `)
 
-  console.log('✅ Scouting Wiki Phase 1 tables created')
 }
 
 export async function down({ payload }: MigrateDownArgs): Promise<void> {

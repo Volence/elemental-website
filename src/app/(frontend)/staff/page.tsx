@@ -174,7 +174,6 @@ export default async function StaffPage() {
 
     // Debug logging in development
     if (process.env.NODE_ENV === 'development') {
-      console.log('[Staff Page] Debug info:', {
         totalTeams: allTeams.length,
         managersBeforeFilter: allManagers.length,
         coachesBeforeFilter: allCoaches.length,

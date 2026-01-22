@@ -81,7 +81,6 @@ export async function POST(req: NextRequest) {
         }
 
         if (!existingRole) {
-          console.log(`[Template] Skipping role "${roleTemplate.name}" - does not exist in server`)
           continue
         }
 

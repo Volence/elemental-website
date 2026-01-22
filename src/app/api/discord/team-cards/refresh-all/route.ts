@@ -35,7 +35,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
     }
     
-    console.log(`[API] Full refresh triggered by ${userData.user.email}`)
     
     // Import and call the refresh function
     const { refreshAllTeamCards } = await import('@/discord/services/teamCards')

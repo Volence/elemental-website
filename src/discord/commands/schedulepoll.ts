@@ -252,7 +252,6 @@ async function savePollToDatabase(data: {
       })
       if (teams.docs.length > 0) {
         team = teams.docs[0].id as number
-        console.log(`🔗 Auto-linked poll to team: ${teams.docs[0].name}`)
       }
     }
 
@@ -277,7 +276,6 @@ async function savePollToDatabase(data: {
       } as any,
     })
 
-    console.log(`✅ Saved poll "${data.pollName}" to database`)
   } catch (error) {
     console.error('Failed to save poll to database:', error)
   }

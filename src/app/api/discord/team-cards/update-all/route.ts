@@ -34,7 +34,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
     }
     
-    console.log(`[API] Soft refresh triggered by ${userData.user.email}`)
     
     // Fetch all teams
     const teams = await payload.find({
@@ -67,7 +66,6 @@ export async function POST(request: Request) {
       }
     }
     
-    console.log(`[API] Soft refresh complete: ${updated} updated, ${failed} failed`)
     
     return NextResponse.json({ 
       success: true, 

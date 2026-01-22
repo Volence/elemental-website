@@ -306,10 +306,8 @@ export const People: CollectionConfig = {
         if (!doc.name || String(doc.name).trim() === '') {
           if (doc.slug && String(doc.slug).trim() !== '') {
             doc.name = String(doc.slug)
-            console.log('[People afterRead] Using slug as name for ID:', doc.id, 'slug:', doc.slug)
           } else if (doc.id) {
             doc.name = `Person ${doc.id}`
-            console.log('[People afterRead] Using ID as name for ID:', doc.id)
           } else {
             doc.name = 'Untitled'
           }

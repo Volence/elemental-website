@@ -330,9 +330,6 @@ export const FaceitSeasons: CollectionConfig = {
         const teamId = typeof doc.team === 'object' ? doc.team.id : doc.team
         if (!teamId) return
         
-        console.log(`[FaceitSeasons] 📊 Standings changed for season ${doc.id} (team: ${teamId}) - triggering Discord card update`)
-        console.log(`[FaceitSeasons]   Record: ${prevStandings.wins || 0}-${prevStandings.losses || 0} → ${newStandings.wins || 0}-${newStandings.losses || 0}`)
-        console.log(`[FaceitSeasons]   Rank: #${prevStandings.currentRank || '?'} → #${newStandings.currentRank || '?'}`)
         
         // Trigger async Discord card update (don't block the save)
         if (typeof globalThis !== 'undefined') {

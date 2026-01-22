@@ -15,7 +15,6 @@ export async function POST(request: Request) {
     
     // Allow if cron secret matches (for automated jobs)
     if (cronSecret && cronSecret === process.env.CRON_SECRET) {
-      console.log('[FaceIt API] Sync triggered by cron job')
     }
     // TODO: Add admin authentication check here
     // For now, we'll allow the request (since we're testing locally)
@@ -32,7 +31,6 @@ export async function POST(request: Request) {
       errors: results.filter(r => !r.success).map(r => r.error),
     }
     
-    console.log('[FaceIt API] Sync completed:', summary)
     
     return NextResponse.json(summary)
     

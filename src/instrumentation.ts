@@ -4,14 +4,12 @@
 export async function register() {
   // Only run on server (not on edge runtime or client)
   if (process.env.NEXT_RUNTIME === 'nodejs') {
-    console.log('🚀 Server instrumentation started')
 
     // Set up global error handlers for unhandled errors
     setupGlobalErrorHandlers()
 
     // Discord bot initialization moved to avoid build-time bundling issues
     // Bot will initialize on first API request instead
-    console.log('ℹ️  Discord bot will initialize on first use')
   }
 }
 
@@ -39,7 +37,6 @@ function setupGlobalErrorHandlers() {
     logErrorToDatabase(error, 'unhandledRejection').catch(() => {})
   })
 
-  console.log('✅ Global error handlers registered')
 }
 
 /**
@@ -66,7 +63,6 @@ async function logErrorToDatabase(error: Error, source: string) {
       }),
     })
     
-    console.log('[Global Error Handler] Error logged to database')
   } catch (logError) {
     // Don't throw - we don't want error logging to cause more errors
     console.error('[Global Error Handler] Failed to log error to database')

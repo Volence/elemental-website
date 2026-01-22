@@ -133,7 +133,6 @@ async function closeMatchingListings(
       },
     })
 
-    console.log(
       `Auto-closed ${category} recruitment listing ${listing.id} (Team: ${teamName}, Role: ${role}, Filled by: ${person.name})`,
     )
   }

@@ -34,9 +34,6 @@ const ColorPickerField: React.FC = () => {
       setBrowserName(detectBrowser())
       
       // Debug log
-      console.log('ColorPicker - Browser:', detectBrowser())
-      console.log('ColorPicker - EyeDropper support:', hasEyeDropper)
-      console.log('ColorPicker - Window.EyeDropper:', (window as any).EyeDropper)
     }
   }, [])
 
@@ -169,7 +166,6 @@ const ColorPickerField: React.FC = () => {
       setValue(result.sRGBHex)
     } catch (e) {
       // User cancelled or error occurred
-      console.log('EyeDropper cancelled or failed:', e)
     }
   }
 

@@ -36,12 +36,10 @@ export async function POST(
     // TODO: Check admin authentication
     // For now, we'll allow the request (testing locally)
     
-    console.log(`[FaceIt API] Syncing team ${teamId} with FaceIt team ${faceitTeamId}, stage ${stageId}...`)
     
     const result = await syncTeamData(teamId, faceitTeamId, championshipId, leagueId, seasonId, stageId)
     
     if (result.success) {
-      console.log(`[FaceIt API] Team ${teamId} synced successfully:`, result)
       return NextResponse.json(result)
     } else {
       console.error(`[FaceIt API] Team ${teamId} sync failed:`, result.error)

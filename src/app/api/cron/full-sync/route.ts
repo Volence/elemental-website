@@ -30,7 +30,6 @@ export async function POST(request: Request) {
       )
     }
     
-    console.log('[Full Sync] Starting full sync cron job...')
     
     const payload = await getPayload({ config: await configPromise })
     
@@ -53,7 +52,6 @@ export async function POST(request: Request) {
       limit: 100,
     })
     
-    console.log(`[Full Sync] Found ${teams.docs.length} FaceIt-enabled teams to sync`)
     
     if (teams.docs.length === 0) {
       const summary = {
@@ -94,7 +92,6 @@ export async function POST(request: Request) {
           continue
         }
         
-        console.log(`[Full Sync] Syncing team: ${team.name}`)
         
         const syncResult = await syncTeamData(
           team.id,
@@ -162,7 +159,6 @@ export async function POST(request: Request) {
       results, // Include individual team results for debugging
     }
     
-    console.log('[Full Sync] Completed:', summary)
     
     // Mark cron job as completed or failed based on overall success
     if (cronJobRunId) {

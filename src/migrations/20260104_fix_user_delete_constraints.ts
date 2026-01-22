@@ -43,7 +43,6 @@ export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
       ON DELETE SET NULL;
   `)
   
-  console.log('✅ Updated foreign key constraints to allow user deletion')
 }
 
 export async function down({ payload, req }: MigrateDownArgs): Promise<void> {
@@ -76,6 +75,5 @@ export async function down({ payload, req }: MigrateDownArgs): Promise<void> {
       REFERENCES "users"("id");
   `)
   
-  console.log('⚠️  Reverted foreign key constraints (user deletion now restricted)')
 }
 

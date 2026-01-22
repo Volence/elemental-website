@@ -645,7 +645,6 @@ export const Teams: CollectionConfig = {
 
         // NEW TEAM CREATED - Refresh all cards to maintain sort order
         if (operation === 'create') {
-          console.log(`🆕 New team created: ${doc.name} - refreshing all Discord cards`)
           if (typeof globalThis !== 'undefined') {
             setImmediate(async () => {
               try {
@@ -680,7 +679,6 @@ export const Teams: CollectionConfig = {
 
           if (!triggersChanged) return
           
-          console.log(`🔔 Discord card update triggered for ${doc.name} (roster: ${rosterChanged}, subs: ${subsChanged}, manager: ${managerChanged}, coaches: ${coachesChanged}, logo: ${logoChanged}, rating: ${ratingChanged}, name: ${nameChanged})`)
 
           // Trigger Discord card update (async, don't block save)
           if (typeof globalThis !== 'undefined') {
@@ -700,7 +698,6 @@ export const Teams: CollectionConfig = {
       createAuditLogDeleteHook('teams'),
       // Refresh all Discord cards when team is deleted to maintain sort order
       async ({ doc }) => {
-        console.log(`🗑️ Team deleted: ${doc.name} - refreshing all Discord cards`)
         if (typeof globalThis !== 'undefined') {
           setImmediate(async () => {
             try {

@@ -9,11 +9,9 @@ export const DeleteMatchButton: React.FC = () => {
   const [isDeleting, setIsDeleting] = useState(false)
   const router = useRouter()
   
-  console.log('[DeleteMatchButton] Rendering - ID:', id, 'Title:', title)
   
   // Don't render if no ID (creating new match)
   if (!id) {
-    console.log('[DeleteMatchButton] No ID, not rendering')
     return null
   }
 
@@ -48,7 +46,6 @@ export const DeleteMatchButton: React.FC = () => {
     }
   }
 
-  console.log('[DeleteMatchButton] Rendering button component')
   
   return (
     <div 

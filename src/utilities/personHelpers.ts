@@ -168,7 +168,6 @@ export function getPhotoUrlFromPerson(person: any): string | null {
   if (typeof person.photo === 'object' && person.photo !== null) {
     // Debug logging in development
     if (process.env.NODE_ENV === 'development' && person.photo.url) {
-      console.log('[getPhotoUrlFromPerson] Found photo for:', person.name, 'URL:', person.photo.url)
     }
     return person.photo.url || null
   }

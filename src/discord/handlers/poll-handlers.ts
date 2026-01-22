@@ -877,7 +877,6 @@ export async function handlePollMissing(interaction: ButtonInteraction): Promise
 
     const missingVoters = channelMembers.filter((member) => !allVoters.has(member.id))
 
-    console.log(
       `Channel members: ${channelMembers.length}, Voters: ${allVoters.size}, Missing: ${missingVoters.length}`,
     )
 
@@ -1262,7 +1261,6 @@ export async function syncVotesToDatabase(
     })
 
     if (polls.docs.length === 0) {
-      console.log(`Poll with messageId ${messageId} not found in database, skipping sync`)
       return
     }
 
@@ -1307,7 +1305,6 @@ export async function syncVotesToDatabase(
       } as any,
     })
 
-    console.log(`✅ Synced votes for poll "${(poll as any).pollName}" to database`)
   } catch (error) {
     console.error('Failed to sync votes to database:', error)
   }

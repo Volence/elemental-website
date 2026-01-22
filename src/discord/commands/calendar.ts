@@ -283,19 +283,16 @@ const CALENDAR_CATEGORIES = {
 export async function updateCalendarChannel(): Promise<void> {
   const channelId = process.env.DISCORD_CALENDAR_CHANNEL_ID || '1442545728223449180'
   
-  console.log(`[Calendar] Updating calendar channel: ${channelId}`)
   
   try {
     const { ensureDiscordClient } = await import('../bot')
     const client = await ensureDiscordClient()
     if (!client) {
-      console.log('[Calendar] Discord client not available')
       return
     }
     
     const channel = await client.channels.fetch(channelId)
     if (!channel || !channel.isTextBased()) {
-      console.log('[Calendar] Invalid calendar channel')
       return
     }
     
@@ -481,10 +478,8 @@ export async function updateCalendarChannel(): Promise<void> {
     // Edit existing message or post new one (Discord allows up to 10 embeds per message)
     if (existingMessage) {
       await existingMessage.edit({ embeds })
-      console.log(`[Calendar] Updated existing message with ${embeds.length} category embeds`)
     } else {
       await textChannel.send({ embeds })
-      console.log(`[Calendar] Created new message with ${embeds.length} category embeds`)
     }
     
   } catch (error) {

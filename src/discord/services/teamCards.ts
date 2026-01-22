@@ -19,13 +19,11 @@ export async function postOrUpdateTeamCard(options: TeamCardOptions): Promise<st
   try {
     const client = await ensureDiscordClient()
     if (!client) {
-      console.log('[TeamCards] Discord client not available')
       return null
     }
 
     const channelId = process.env.DISCORD_CARDS_CHANNEL
     if (!channelId) {
-      console.log('[TeamCards] DISCORD_CARDS_CHANNEL not configured')
       return null
     }
 
@@ -37,14 +35,12 @@ export async function postOrUpdateTeamCard(options: TeamCardOptions): Promise<st
       depth: 2,
     })
     if (!team) {
-      console.log(`[TeamCards] Team ${teamId} not found`)
       return null
     }
 
     // Get the Discord channel
     const channel = (await client.channels.fetch(channelId)) as TextChannel
     if (!channel || !channel.isTextBased()) {
-      console.log(`[TeamCards] Channel ${channelId} not found or not a text channel`)
       return null
     }
 
@@ -57,10 +53,8 @@ export async function postOrUpdateTeamCard(options: TeamCardOptions): Promise<st
     if (existingMessageId && !forceRepost) {
       // Try to edit existing message
       try {
-        console.log(`[TeamCards] Attempting to edit existing message ${existingMessageId} for ${team.name}`)
         const message = await channel.messages.fetch(existingMessageId)
         await message.edit({ embeds: [embed] })
-        console.log(`✅ [TeamCards] Updated team card for ${team.name} (message: ${existingMessageId})`)
         return existingMessageId
       } catch (error: any) {
         // Check if this is a "message not found" error (10008) or "unknown message" (10014)
@@ -69,7 +63,6 @@ export async function postOrUpdateTeamCard(options: TeamCardOptions): Promise<st
           error.message?.includes('not found')
         
         if (isMessageNotFound) {
-          console.log(`[TeamCards] ⚠️ Message ${existingMessageId} no longer exists for ${team.name}, clearing stale ID and reposting`)
           // Clear the stale message ID from the database
           await payload.update({
             collection: 'teams',
@@ -80,7 +73,6 @@ export async function postOrUpdateTeamCard(options: TeamCardOptions): Promise<st
         } else {
           // Other error (permissions, rate limit, etc.) - don't repost, just log and return
           console.error(`[TeamCards] ❌ Failed to edit message ${existingMessageId} for ${team.name}:`, error.message || error)
-          console.log(`[TeamCards] Keeping existing message ID to prevent duplicates. Error code: ${error.code}`)
           // Return the existing ID even though edit failed - prevents duplicate posts
           return existingMessageId
         }
@@ -88,9 +80,7 @@ export async function postOrUpdateTeamCard(options: TeamCardOptions): Promise<st
     }
 
     // Post new message (either no existing ID, forceRepost=true, or old message was deleted)
-    console.log(`[TeamCards] Posting NEW card for ${team.name} (forceRepost: ${forceRepost}, hadExistingId: ${!!existingMessageId})`)
     const message = await channel.send({ embeds: [embed] })
-    console.log(`✅ [TeamCards] Posted new team card for ${team.name} (message: ${message.id})`)
 
     // Save message ID to database
     await saveTeamMessageId(teamId, message.id, payload)
@@ -109,23 +99,19 @@ export async function refreshAllTeamCards(): Promise<void> {
   try {
     const client = await ensureDiscordClient()
     if (!client) {
-      console.log('Discord client not available')
       return
     }
 
     const channelId = process.env.DISCORD_CARDS_CHANNEL
     if (!channelId) {
-      console.log('DISCORD_CARDS_CHANNEL not configured')
       return
     }
 
     const channel = (await client.channels.fetch(channelId)) as TextChannel
     if (!channel || !channel.isTextBased()) {
-      console.log(`Channel ${channelId} not found or not a text channel`)
       return
     }
 
-    console.log('🔄 Refreshing all team cards...')
 
     // Get payload instance
     const payload = await getPayload({ config: configPromise })
@@ -150,13 +136,11 @@ export async function refreshAllTeamCards(): Promise<void> {
       const division = (typeof team.currentFaceitLeague === 'object' && team.currentFaceitLeague?.division) 
         ? team.currentFaceitLeague.division 
         : 'Open'
-      console.log(`✅ Posted card for ${team.name} (${team.region || 'NA'} - ${division} - ${team.rating || 'N/A'})`)
 
       // Small delay to avoid rate limiting
       await new Promise((resolve) => setTimeout(resolve, 500))
     }
 
-    console.log(`✅ Refreshed ${teams.length} team cards + staff cards`)
   } catch (error) {
     console.error('Error refreshing all team cards:', error)
   }
@@ -167,7 +151,6 @@ export async function refreshAllTeamCards(): Promise<void> {
  */
 async function clearAllChannelMessages(channel: TextChannel): Promise<void> {
   try {
-    console.log(`🗑️  Clearing all messages from channel ${channel.name} (${channel.id})...`)
     
     let deleted = 0
     let fetched = 0
@@ -178,7 +161,6 @@ async function clearAllChannelMessages(channel: TextChannel): Promise<void> {
     while (iterations < 50) { // Safety limit
       iterations++
       const messages = await channel.messages.fetch({ limit: 100 })
-      console.log(`   Batch ${iterations}: Fetched ${messages.size} messages`)
       
       if (messages.size === 0) break
       
@@ -193,9 +175,7 @@ async function clearAllChannelMessages(channel: TextChannel): Promise<void> {
         try {
           const bulkDeleted = await channel.bulkDelete(recentMessages, true)
           deleted += bulkDeleted.size
-          console.log(`   Bulk deleted ${bulkDeleted.size} recent messages`)
         } catch (error: any) {
-          console.log(`   Bulk delete failed: ${error.message}, falling back to individual delete`)
           // Fallback: delete individually
           for (const message of recentMessages.values()) {
             try {
@@ -203,7 +183,6 @@ async function clearAllChannelMessages(channel: TextChannel): Promise<void> {
               deleted++
               await new Promise((resolve) => setTimeout(resolve, 100))
             } catch (err: any) {
-              console.log(`   Failed to delete message ${message.id}: ${err.message}`)
             }
           }
         }
@@ -211,13 +190,11 @@ async function clearAllChannelMessages(channel: TextChannel): Promise<void> {
       
       // Delete old messages one by one
       if (oldMessages.size > 0) {
-        console.log(`   Deleting ${oldMessages.size} old messages individually...`)
         for (const message of oldMessages.values()) {
           try {
             await message.delete()
             deleted++
           } catch (error: any) {
-            console.log(`   Failed to delete old message ${message.id}: ${error.message}`)
           }
           // Delay to avoid rate limits (slower for old messages)
           await new Promise((resolve) => setTimeout(resolve, 150))
@@ -227,7 +204,6 @@ async function clearAllChannelMessages(channel: TextChannel): Promise<void> {
       if (messages.size < 100) break
     }
     
-    console.log(`🗑️  Cleared ${deleted}/${fetched} messages from channel in ${iterations} batches`)
   } catch (error) {
     console.error('Error clearing channel messages:', error)
   }
@@ -261,7 +237,6 @@ async function deleteAllTeamCardMessages(channel: TextChannel, payload: any): Pr
       }
     }
 
-    console.log(`🗑️  Deleted ${teams.docs.length} team card messages`)
   } catch (error) {
     console.error('Error deleting team card messages:', error)
   }
@@ -319,7 +294,6 @@ async function postStaffCards(channel: TextChannel, payload: any): Promise<void>
       if (staffMembers.length > 0) {
         const embed = buildStaffEmbed(roleLabels[role] || role, staffMembers)
         await channel.send({ embeds: [embed] })
-        console.log(`✅ Posted ${roleLabels[role]} card (${staffMembers.length} members)`)
         
         // Small delay to avoid rate limiting
         await new Promise((resolve) => setTimeout(resolve, 300))
@@ -351,7 +325,6 @@ async function postStaffCards(channel: TextChannel, payload: any): Promise<void>
     if (casters.length > 0) {
       const embed = buildStaffEmbed('Caster', casters)
       await channel.send({ embeds: [embed] })
-      console.log(`✅ Posted Caster card (${casters.length} members)`)
       await new Promise((resolve) => setTimeout(resolve, 300))
     }
 
@@ -359,7 +332,6 @@ async function postStaffCards(channel: TextChannel, payload: any): Promise<void>
     if (production.length > 0) {
       const embed = buildStaffEmbed('Production', production)
       await channel.send({ embeds: [embed] })
-      console.log(`✅ Posted Production card (${production.length} members)`)
       await new Promise((resolve) => setTimeout(resolve, 300))
     }
   } catch (error) {

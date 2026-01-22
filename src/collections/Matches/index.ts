@@ -58,7 +58,6 @@ export const Matches: CollectionConfig = {
           
           if (matchDate < twoHoursAgo) {
             data.status = 'complete'
-            console.log(`[Matches] Auto-completed match: ${data.title || 'Untitled'}`)
           }
         }
         return data

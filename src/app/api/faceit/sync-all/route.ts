@@ -35,7 +35,6 @@ export async function POST(request: Request) {
       limit: 100,
     })
     
-    console.log(`[FaceIt Bulk Sync] Found ${teams.docs.length} teams to sync`)
     
     if (teams.docs.length === 0) {
       return NextResponse.json({
@@ -75,7 +74,6 @@ export async function POST(request: Request) {
           continue
         }
         
-        console.log(`[FaceIt Bulk Sync] Syncing team: ${team.name}`)
         
         const syncResult = await syncTeamData(
           team.id,
@@ -131,7 +129,6 @@ export async function POST(request: Request) {
       matchesUpdated: totalMatchesUpdated,
     }
     
-    console.log(`[FaceIt Bulk Sync] Complete:`, summary)
     
     return NextResponse.json({
       success: true,

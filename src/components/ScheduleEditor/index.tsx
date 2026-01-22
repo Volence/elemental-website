@@ -130,7 +130,6 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
             arr.findIndex(m => m.id === member.id) === index
           )
           
-          console.log('Team members loaded:', rosterMembers.length, 'roster +', subMembers.length, 'subs')
           setTeamMembers(uniqueMembers)
           
           // Set roles from team's rolePreset (at root level, not in discordThreads)
@@ -138,17 +137,14 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
           let preset = teamData.rolePreset || 'ow2-specific'
           if (preset === 'specific') preset = 'ow2-specific' // Map Teams value to preset key
           
-          console.log('Team rolePreset:', teamData.rolePreset, '-> using:', preset)
           
           if (preset === 'custom' && teamData.customRoles) {
             // customRoles is comma-separated string, convert to array
             const customRolesArray = teamData.customRoles.split(',').map((r: string) => r.trim()).filter(Boolean)
             if (customRolesArray.length > 0) {
-              console.log('Setting custom roles:', customRolesArray)
               setRoles(customRolesArray)
             }
           } else if (rolePresets[preset]) {
-            console.log('Setting preset roles:', rolePresets[preset])
             setRoles(rolePresets[preset])
           }
         }
@@ -276,7 +272,6 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
       
       if (!needsMigration) return currentSchedule
       
-      console.log('Migrating blocks to new role preset:', roles)
       
       const migratedDays = currentSchedule.days.map(day => ({
         ...day,
