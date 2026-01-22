@@ -67,9 +67,9 @@ export async function handleCalendar(interaction: ChatInputCommandInteraction): 
   try {
     const payload = await getPayload({ config: configPromise })
     
-    // Fetch upcoming events (next 30 days, publishToDiscord enabled)
+    // Fetch upcoming events (next 60 days, publishToDiscord enabled)
     const now = new Date()
-    const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
+    const sixtyDaysFromNow = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000)
     
     // Fetch global calendar events
     const events = await payload.find({
@@ -83,7 +83,7 @@ export async function handleCalendar(interaction: ChatInputCommandInteraction): 
               { dateEnd: { greater_than_equal: now.toISOString() } },
             ],
           },
-          { dateStart: { less_than: thirtyDaysFromNow.toISOString() } },
+          { dateStart: { less_than: sixtyDaysFromNow.toISOString() } },
         ],
       },
       sort: 'dateStart',
@@ -96,7 +96,7 @@ export async function handleCalendar(interaction: ChatInputCommandInteraction): 
       where: {
         and: [
           { date: { greater_than_equal: now.toISOString() } },
-          { date: { less_than: thirtyDaysFromNow.toISOString() } },
+          { date: { less_than: sixtyDaysFromNow.toISOString() } },
           { 'productionWorkflow.includeInSchedule': { equals: true } },
           { status: { not_equals: 'complete' } },
         ],
@@ -256,9 +256,9 @@ export async function updateCalendarChannel(): Promise<void> {
     
     const payload = await getPayload({ config: configPromise })
     
-    // Fetch upcoming events
+    // Fetch upcoming events (60 days ahead)
     const now = new Date()
-    const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
+    const sixtyDaysFromNow = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000)
     
     // Fetch global calendar events
     const events = await payload.find({
@@ -272,7 +272,7 @@ export async function updateCalendarChannel(): Promise<void> {
               { dateEnd: { greater_than_equal: now.toISOString() } },
             ],
           },
-          { dateStart: { less_than: thirtyDaysFromNow.toISOString() } },
+          { dateStart: { less_than: sixtyDaysFromNow.toISOString() } },
         ],
       },
       sort: 'dateStart',
@@ -285,7 +285,7 @@ export async function updateCalendarChannel(): Promise<void> {
       where: {
         and: [
           { date: { greater_than_equal: now.toISOString() } },
-          { date: { less_than: thirtyDaysFromNow.toISOString() } },
+          { date: { less_than: sixtyDaysFromNow.toISOString() } },
           { 'productionWorkflow.includeInSchedule': { equals: true } },
           { status: { not_equals: 'complete' } },
         ],
@@ -413,7 +413,7 @@ export async function updateCalendarChannel(): Promise<void> {
     if (embeds.length === 0) {
       const emptyEmbed = new EmbedBuilder()
         .setTitle('📅 Upcoming Events')
-        .setDescription('*No upcoming events scheduled for the next 30 days.*')
+        .setDescription('*No upcoming events scheduled for the next 60 days.*')
         .setColor(0x5865F2)
         .setFooter({
           text: `Last updated: ${new Date().toLocaleString('en-US', { 
@@ -427,24 +427,20 @@ export async function updateCalendarChannel(): Promise<void> {
       embeds.push(emptyEmbed)
     }
     
-    // Delete old bot messages and post new ones
+    // Find existing bot message or create new one
     const messages = await textChannel.messages.fetch({ limit: 20 })
-    const botMessages = messages.filter(
+    const existingMessage = messages.find(
       m => m.author.id === client.user?.id && m.embeds.length > 0
     )
     
-    // Delete old messages
-    for (const [, msg] of botMessages) {
-      try {
-        await msg.delete()
-      } catch (e) {
-        // Ignore deletion errors
-      }
+    // Edit existing message or post new one (Discord allows up to 10 embeds per message)
+    if (existingMessage) {
+      await existingMessage.edit({ embeds })
+      console.log(`[Calendar] Updated existing message with ${embeds.length} category embeds`)
+    } else {
+      await textChannel.send({ embeds })
+      console.log(`[Calendar] Created new message with ${embeds.length} category embeds`)
     }
-    
-    // Post new embeds (Discord allows up to 10 embeds per message)
-    await textChannel.send({ embeds })
-    console.log(`[Calendar] Posted ${embeds.length} category embeds`)
     
   } catch (error) {
     console.error('[Calendar] Error updating calendar channel:', error)
