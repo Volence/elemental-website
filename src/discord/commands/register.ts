@@ -105,7 +105,21 @@ export function buildCommands() {
     // Calendar command - show upcoming competitive events
     new SlashCommandBuilder()
       .setName('calendar')
-      .setDescription('View upcoming competitive events (FACEIT, OWCS, Community, etc.)'),
+      .setDescription('View upcoming competitive events (FACEIT, OWCS, Community, etc.)')
+      .addStringOption((option) =>
+        option
+          .setName('type')
+          .setDescription('Filter by event type')
+          .setRequired(false)
+          .addChoices(
+            { name: 'All Events', value: 'all' },
+            { name: 'Competitive (FaceIt + OWCS)', value: 'competitive' },
+            { name: 'Broadcast Schedule', value: 'broadcasts' },
+            { name: 'Seminars', value: 'seminars' },
+            { name: 'Internal Events', value: 'internal' },
+            { name: 'Community Events', value: 'community' },
+          ),
+      ),
   ].map((command) => command.toJSON())
 }
 

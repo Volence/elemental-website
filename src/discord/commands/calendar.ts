@@ -67,6 +67,9 @@ export async function handleCalendar(interaction: ChatInputCommandInteraction): 
   try {
     const payload = await getPayload({ config: configPromise })
     
+    // Get the type filter option (default: 'all')
+    const filterType = interaction.options.getString('type') || 'all'
+    
     // Fetch upcoming events (next 60 days, publishToDiscord enabled)
     const now = new Date()
     const sixtyDaysFromNow = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000)
@@ -87,7 +90,7 @@ export async function handleCalendar(interaction: ChatInputCommandInteraction): 
         ],
       },
       sort: 'dateStart',
-      limit: 15,
+      limit: 50,
     })
     
     // Fetch broadcast matches (those marked for schedule, like on the website)
@@ -102,7 +105,7 @@ export async function handleCalendar(interaction: ChatInputCommandInteraction): 
         ],
       },
       sort: 'date',
-      limit: 15,
+      limit: 20,
       depth: 1,
     })
     
@@ -118,15 +121,57 @@ export async function handleCalendar(interaction: ChatInputCommandInteraction): 
       streamUrl: match.stream?.url,
     }))
     
-    // Combine and sort all events by date
-    const allEvents = [
-      ...events.docs.map((e: any) => ({ ...e, sortDate: new Date(e.dateStart) })),
-      ...matchEvents.map((m: any) => ({ ...m, sortDate: new Date(m.dateStart) })),
-    ].sort((a, b) => a.sortDate.getTime() - b.sortDate.getTime())
+    // Categorize and filter events based on the selected type
+    let filteredEvents: any[] = []
     
-    if (allEvents.length === 0) {
+    if (filterType === 'all') {
+      // Combine all events
+      filteredEvents = [
+        ...events.docs.map((e: any) => ({ ...e, sortDate: new Date(e.dateStart) })),
+        ...matchEvents.map((m: any) => ({ ...m, sortDate: new Date(m.dateStart) })),
+      ]
+    } else if (filterType === 'competitive') {
+      // FaceIt + OWCS
+      filteredEvents = (events.docs as any[])
+        .filter(e => e.eventType === 'faceit' || e.eventType === 'owcs')
+        .map((e: any) => ({ ...e, sortDate: new Date(e.dateStart) }))
+    } else if (filterType === 'broadcasts') {
+      // Streamed matches only
+      filteredEvents = matchEvents.map((m: any) => ({ ...m, sortDate: new Date(m.dateStart) }))
+    } else if (filterType === 'seminars') {
+      // Internal seminars
+      filteredEvents = (events.docs as any[])
+        .filter(e => e.eventType === 'internal' && e.internalEventType === 'seminar')
+        .map((e: any) => ({ ...e, sortDate: new Date(e.dateStart) }))
+    } else if (filterType === 'internal') {
+      // Internal events (excluding seminars, which have their own category)
+      filteredEvents = (events.docs as any[])
+        .filter(e => e.eventType === 'internal' && e.internalEventType !== 'seminar')
+        .map((e: any) => ({ ...e, sortDate: new Date(e.dateStart) }))
+    } else if (filterType === 'community') {
+      // Community events
+      filteredEvents = (events.docs as any[])
+        .filter(e => e.eventType === 'community')
+        .map((e: any) => ({ ...e, sortDate: new Date(e.dateStart) }))
+    }
+    
+    // Sort by date
+    filteredEvents.sort((a, b) => a.sortDate.getTime() - b.sortDate.getTime())
+    
+    // Get filter name for display
+    const filterNames: Record<string, string> = {
+      all: 'All Events',
+      competitive: 'Competitive Events',
+      broadcasts: 'Broadcast Schedule',
+      seminars: 'Seminars',
+      internal: 'Internal Events',
+      community: 'Community Events',
+    }
+    const filterName = filterNames[filterType] || 'Events'
+    
+    if (filteredEvents.length === 0) {
       await interaction.editReply({
-        content: '📅 No upcoming events scheduled for the next 30 days.',
+        content: `📅 No upcoming ${filterName.toLowerCase()} scheduled for the next 60 days.`,
       })
       return
     }
@@ -134,7 +179,7 @@ export async function handleCalendar(interaction: ChatInputCommandInteraction): 
     // Build embed content
     let description = ''
     
-    for (const event of allEvents) {
+    for (const event of filteredEvents) {
       // Check if this is a match or a calendar event
       const isMatch = event.eventType === 'match'
       
@@ -182,7 +227,7 @@ export async function handleCalendar(interaction: ChatInputCommandInteraction): 
     // Create embed
     const { EmbedBuilder } = await import('discord.js')
     const embed = new EmbedBuilder()
-      .setTitle('📅 Upcoming Events')
+      .setTitle(`📅 ${filterName}`)
       .setDescription(description.trim())
       .setColor(0x5865F2) // Discord blurple
       .setFooter({ 
