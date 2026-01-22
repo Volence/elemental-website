@@ -214,9 +214,11 @@ export async function handleCalendar(interaction: ChatInputCommandInteraction): 
 export async function updateCalendarChannel(): Promise<void> {
   const channelId = process.env.DISCORD_CALENDAR_CHANNEL_ID || '1442545728223449180'
   
+  console.log(`[Calendar] Updating calendar channel: ${channelId}`)
+  
   try {
-    const { getDiscordClient } = await import('../bot')
-    const client = getDiscordClient()
+    const { ensureDiscordClient } = await import('../bot')
+    const client = await ensureDiscordClient()
     if (!client) {
       console.log('[Calendar] Discord client not available')
       return
