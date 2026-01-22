@@ -207,9 +207,33 @@ export async function handleCalendar(interaction: ChatInputCommandInteraction): 
   }
 }
 
+// Category definitions with colors and emojis for the channel calendar
+const CALENDAR_CATEGORIES = {
+  competitive: {
+    title: '⚔️ Competitive Events',
+    color: 0xFF9A00, // Gold/Orange
+  },
+  broadcasts: {
+    title: '📺 Broadcast Schedule',
+    color: 0x9146FF, // Twitch Purple
+  },
+  seminars: {
+    title: '🎓 Seminars',
+    color: 0x5865F2, // Discord Blurple
+  },
+  internal: {
+    title: '🏠 Internal Events',
+    color: 0x1ABC9C, // Teal
+  },
+  community: {
+    title: '🎉 Community Events',
+    color: 0x57F287, // Green
+  },
+}
+
 /**
- * Update the auto-updating calendar message in a designated channel
- * This edits existing messages rather than posting new ones
+ * Update the auto-updating calendar messages in a designated channel
+ * Creates separate color-coded embeds for each category
  */
 export async function updateCalendarChannel(): Promise<void> {
   const channelId = process.env.DISCORD_CALENDAR_CHANNEL_ID || '1442545728223449180'
@@ -252,10 +276,10 @@ export async function updateCalendarChannel(): Promise<void> {
         ],
       },
       sort: 'dateStart',
-      limit: 20,
+      limit: 50,
     })
     
-    // Fetch broadcast matches (those marked for schedule, like on the website)
+    // Fetch broadcast matches
     const matches = await payload.find({
       collection: 'matches',
       where: {
@@ -283,90 +307,147 @@ export async function updateCalendarChannel(): Promise<void> {
       streamUrl: match.stream?.url,
     }))
     
-    // Combine and sort all events by date
-    const allEvents = [
-      ...events.docs.map((e: any) => ({ ...e, sortDate: new Date(e.dateStart) })),
-      ...matchEvents.map((m: any) => ({ ...m, sortDate: new Date(m.dateStart) })),
-    ].sort((a, b) => a.sortDate.getTime() - b.sortDate.getTime())
+    // Categorize events
+    const categorizedEvents: Record<string, any[]> = {
+      competitive: [],
+      broadcasts: [],
+      seminars: [],
+      internal: [],
+      community: [],
+    }
     
-    // Build embed content
-    let description = allEvents.length === 0 
-      ? '*No upcoming events scheduled.*'
-      : ''
-    
-    for (const event of allEvents) {
-      // Check if this is a match or a calendar event
-      const isMatch = event.eventType === 'match'
-      
-      // Get emoji
-      let emoji = '📅'
-      if (isMatch) {
-        emoji = '📺' // TV emoji for broadcast matches
-      } else {
-        emoji = EVENT_TYPE_EMOJI[event.eventType] || '📅'
-        if (event.eventType === 'internal' && event.internalEventType) {
-          emoji = INTERNAL_TYPE_EMOJI[event.internalEventType] || emoji
+    // Categorize calendar events
+    for (const event of events.docs as any[]) {
+      if (event.eventType === 'faceit' || event.eventType === 'owcs') {
+        categorizedEvents.competitive.push(event)
+      } else if (event.eventType === 'community') {
+        categorizedEvents.community.push(event)
+      } else if (event.eventType === 'internal') {
+        if (event.internalEventType === 'seminar') {
+          categorizedEvents.seminars.push(event)
+        } else {
+          categorizedEvents.internal.push(event)
         }
       }
-      
-      const regionBadge = event.region && event.region !== 'global' 
-        ? ` **[${event.region.toUpperCase()}]**` 
-        : ''
-      
-      const dateStart = new Date(event.dateStart)
-      const dateEnd = event.dateEnd ? new Date(event.dateEnd) : undefined
-      const dateStr = formatDateRange(dateStart, dateEnd)
-      
-      // Links (for calendar events) or stream (for matches)
-      let linksStr = ''
-      if (isMatch && event.streamUrl) {
-        linksStr = `[Watch Live](${event.streamUrl})`
-      } else if (!isMatch && event.links) {
-        linksStr = formatLinks(event.links)
-      }
-      
-      // League info for matches
-      const leagueInfo = isMatch ? ` • ${event.league}` : ''
-      
-      description += `${emoji} **${event.title}**${regionBadge}${leagueInfo}\n`
-      description += `   📆 ${dateStr}\n`
-      if (linksStr) {
-        description += `   🔗 ${linksStr}\n`
-      }
-      description += '\n'
+    }
+    
+    // Add matches to broadcasts
+    categorizedEvents.broadcasts = matchEvents
+    
+    // Sort each category by date
+    for (const key of Object.keys(categorizedEvents)) {
+      categorizedEvents[key].sort((a, b) => 
+        new Date(a.dateStart).getTime() - new Date(b.dateStart).getTime()
+      )
     }
     
     const { EmbedBuilder } = await import('discord.js')
-    const embed = new EmbedBuilder()
-      .setTitle('📅 Upcoming Events')
-      .setDescription(description.trim())
-      .setColor(0x5865F2)
-      .setFooter({ 
+    const textChannel = channel as import('discord.js').TextChannel
+    
+    // Build embeds for each category
+    const embeds: import('discord.js').EmbedBuilder[] = []
+    
+    for (const [categoryKey, category] of Object.entries(CALENDAR_CATEGORIES)) {
+      const categoryEvents = categorizedEvents[categoryKey]
+      
+      // Skip empty categories
+      if (categoryEvents.length === 0) continue
+      
+      let description = ''
+      
+      for (const event of categoryEvents) {
+        const isMatch = event.eventType === 'match'
+        
+        // Region badge
+        const regionBadge = event.region && event.region !== 'global' 
+          ? ` **[${String(event.region).toUpperCase()}]**` 
+          : ''
+        
+        // Date formatting
+        const dateStart = new Date(event.dateStart)
+        const dateEnd = event.dateEnd ? new Date(event.dateEnd) : undefined
+        const dateStr = formatDateRange(dateStart, dateEnd)
+        
+        // Links
+        let linksStr = ''
+        if (isMatch && event.streamUrl) {
+          linksStr = `[Watch Live](${event.streamUrl})`
+        } else if (!isMatch && event.links) {
+          linksStr = formatLinks(event.links)
+        }
+        
+        // League info for matches
+        const leagueInfo = isMatch ? ` • ${event.league}` : ''
+        
+        // Build event entry
+        description += `• **${event.title}**${regionBadge}${leagueInfo}\n`
+        description += `  📆 ${dateStr}`
+        if (linksStr) {
+          description += ` • 🔗 ${linksStr}`
+        }
+        description += '\n'
+      }
+      
+      const embed = new EmbedBuilder()
+        .setTitle(category.title)
+        .setDescription(description.trim())
+        .setColor(category.color)
+      
+      embeds.push(embed)
+    }
+    
+    // Add a footer to the last embed
+    if (embeds.length > 0) {
+      embeds[embeds.length - 1].setFooter({
         text: `Last updated: ${new Date().toLocaleString('en-US', { 
           month: 'short', 
           day: 'numeric', 
           hour: 'numeric', 
           minute: '2-digit',
           hour12: true 
-        })}` 
+        })}`
       })
+    }
     
-    // Try to find and edit existing bot message, or create new one
-    const textChannel = channel as import('discord.js').TextChannel
-    const messages = await textChannel.messages.fetch({ limit: 10 })
-    const botMessage = messages.find(
-      m => m.author.id === client.user?.id && m.embeds.some(e => e.title === '📅 Upcoming Events')
+    // If no events at all, create a single embed
+    if (embeds.length === 0) {
+      const emptyEmbed = new EmbedBuilder()
+        .setTitle('📅 Upcoming Events')
+        .setDescription('*No upcoming events scheduled for the next 30 days.*')
+        .setColor(0x5865F2)
+        .setFooter({
+          text: `Last updated: ${new Date().toLocaleString('en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            hour: 'numeric', 
+            minute: '2-digit',
+            hour12: true 
+          })}`
+        })
+      embeds.push(emptyEmbed)
+    }
+    
+    // Delete old bot messages and post new ones
+    const messages = await textChannel.messages.fetch({ limit: 20 })
+    const botMessages = messages.filter(
+      m => m.author.id === client.user?.id && m.embeds.length > 0
     )
     
-    if (botMessage) {
-      await botMessage.edit({ embeds: [embed] })
-      console.log('[Calendar] Updated existing calendar message')
-    } else {
-      await textChannel.send({ embeds: [embed] })
-      console.log('[Calendar] Created new calendar message')
+    // Delete old messages
+    for (const [, msg] of botMessages) {
+      try {
+        await msg.delete()
+      } catch (e) {
+        // Ignore deletion errors
+      }
     }
+    
+    // Post new embeds (Discord allows up to 10 embeds per message)
+    await textChannel.send({ embeds })
+    console.log(`[Calendar] Posted ${embeds.length} category embeds`)
     
   } catch (error) {
     console.error('[Calendar] Error updating calendar channel:', error)
   }
 }
+
