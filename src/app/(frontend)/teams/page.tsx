@@ -7,14 +7,20 @@ import { ParticleBackground } from '@/components/ParticleBackground'
 
 export const dynamic = 'force-dynamic'
 
-export const metadata: Metadata = {
-  title: 'Our Teams | Elemental (ELMT)',
-  description: 'Explore all of Elemental\'s competitive Overwatch 2 teams competing at the highest levels.',
-  openGraph: {
-    title: 'Our Teams | Elemental (ELMT)',
-    description: 'Explore all of Elemental\'s competitive Overwatch 2 teams competing at the highest levels.',
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const allTeams = await getAllTeams()
+  const teamCount = allTeams.length
+  
+  return {
+    title: 'ELMT Teams - Overwatch 2 Esports | Elemental',
+    description: `Explore ${teamCount} ELMT Overwatch 2 esports teams competing in FACEIT Expert, Advanced, Master, and Open divisions across NA, EMEA, and SA regions.`,
+    openGraph: {
+      title: 'ELMT Teams - Overwatch 2 Esports | Elemental',
+      description: `Explore ${teamCount} ELMT Overwatch 2 esports teams competing in FACEIT Expert, Advanced, Master, and Open divisions across NA, EMEA, and SA regions.`,
+    },
+  }
 }
+
 
 // Group teams by region (teams are already sorted by rating from getAllTeams)
 function groupTeamsByRegion(teams: Awaited<ReturnType<typeof getAllTeams>>) {

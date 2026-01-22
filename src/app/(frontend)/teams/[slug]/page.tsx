@@ -45,12 +45,23 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
 
     const region = team.region || 'International'
     
+    // Get tier name from rating if available
+    const rating = team.rating || ''
+    let tierKeyword = ''
+    if (rating.toLowerCase().includes('master')) tierKeyword = 'Masters'
+    else if (rating.toLowerCase().includes('expert')) tierKeyword = 'Expert'
+    else if (rating.toLowerCase().includes('advanced')) tierKeyword = 'Advanced'
+    else if (rating.toLowerCase().includes('open')) tierKeyword = 'Open'
+    
+    const tierSuffix = tierKeyword ? ` | FACEIT ${tierKeyword}` : ''
+    const tierDesc = tierKeyword ? ` competing in FACEIT ${tierKeyword}` : ''
+    
     return {
-      title: `ELMT ${team.name} | Elemental`,
-      description: `View roster, staff, and any achievements for ELMT ${team.name}.`,
+      title: `ELMT ${team.name} - ${region} Overwatch 2 Team${tierSuffix} | Elemental`,
+      description: `ELMT ${team.name} is an Overwatch 2 esports team in ${region}${tierDesc}. View roster, staff, match history, and open recruitment positions.`,
       openGraph: {
-        title: `ELMT ${team.name} | Elemental`,
-        description: `View roster, staff, and any achievements for ELMT ${team.name}.`,
+        title: `ELMT ${team.name} - ${region} Overwatch 2 Team | Elemental`,
+        description: `ELMT ${team.name} is an Overwatch 2 esports team in ${region}${tierDesc}. View roster, staff, match history, and open recruitment positions.`,
         images: team.logo ? [{ url: team.logo }] : undefined,
       },
     }
@@ -103,8 +114,31 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
     ? getTeamColor(team.name, slug, team.region, getRegionColor)
     : ''
 
+  // Build JSON-LD structured data for this team
+  const teamJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SportsTeam",
+    "name": `ELMT ${team.name}`,
+    "sport": "Overwatch 2",
+    "url": `https://elmt.gg/teams/${slug}`,
+    "logo": team.logo || "https://elmt.gg/logos/org.png",
+    "memberOf": {
+      "@type": "SportsOrganization",
+      "name": "Elemental",
+      "alternateName": "ELMT",
+      "url": "https://elmt.gg"
+    },
+    ...(team.region && { "location": { "@type": "Place", "name": team.region } }),
+    ...(team.rating && { "description": `Overwatch 2 esports team competing in FACEIT ${team.rating}` })
+  }
+
   return (
     <div className="relative pt-8 pb-24 min-h-screen overflow-hidden">
+      {/* SportsTeam Schema for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(teamJsonLd) }}
+      />
       <ParticleBackground particleCount={20} />
       {/* Breadcrumbs */}
       <div className="container max-w-7xl mb-6 relative z-10">

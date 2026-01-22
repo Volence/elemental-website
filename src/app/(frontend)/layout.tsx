@@ -25,6 +25,26 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <InitTheme />
         <link href="/logos/org.png" rel="icon" type="image/png" />
         <link href="/logos/org.png" rel="apple-touch-icon" />
+        {/* Organization Schema for SEO */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SportsOrganization",
+              "name": "Elemental",
+              "alternateName": "ELMT",
+              "url": "https://elmt.gg",
+              "logo": "https://elmt.gg/logos/org.png",
+              "sport": "Overwatch 2",
+              "description": "Premier Overwatch 2 esports organization with competitive teams across Expert, Advanced, Master, and Open divisions.",
+              "sameAs": [
+                "https://twitter.com/ELMTgg",
+                "https://discord.gg/elmt"
+              ]
+            })
+          }}
+        />
       </head>
       <body>
         <Providers>
