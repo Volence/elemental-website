@@ -172,23 +172,6 @@ export default async function StaffPage() {
       }
     })
 
-    // Debug logging in development
-    if (process.env.NODE_ENV === 'development') {
-        totalTeams: allTeams.length,
-        managersBeforeFilter: allManagers.length,
-        coachesBeforeFilter: allCoaches.length,
-        captainsBeforeFilter: allCaptains.length,
-        sampleTeam: allTeams[0]
-          ? {
-              name: allTeams[0].name,
-              managerCount: allTeams[0].manager?.length || 0,
-              coachesCount: allTeams[0].coaches?.length || 0,
-              captainCount: allTeams[0].captain?.length || 0,
-            }
-          : null,
-      })
-    }
-
     // Filter out entries with empty names (person relationship not populated)
     const validManagers = allManagers.filter((m) => m.name && m.name.trim() !== '')
     const validCoaches = allCoaches.filter((c) => c.name && c.name.trim() !== '')
