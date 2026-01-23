@@ -7,18 +7,23 @@ const SITE_URL =
 module.exports = {
   siteUrl: SITE_URL,
   generateRobotsTxt: true,
+  generateIndexSitemap: false, // We use custom sitemap.xml instead
   // Exclude internal sitemaps and dynamic routes (handled by custom sitemaps)
   exclude: [
     '/posts-sitemap.xml',
     '/pages-sitemap.xml',
     '/teams-sitemap.xml',
+    '/players-sitemap.xml',
     '/teams/*',           // Handled by teams-sitemap.xml
+    '/players/*',         // Handled by players-sitemap.xml
     '/posts/*',
     '/admin/*',
     '/api/*',
     '/invite/*',
     '/production/*',
     '/next/*',
+    '/casters/*',
+    '/seminars',          // Already in pages-sitemap.xml
     '/**/page',           // Exclude internal Next.js routes
   ],
   robotsTxtOptions: {
@@ -29,8 +34,10 @@ module.exports = {
       },
     ],
     additionalSitemaps: [
+      `${SITE_URL}/sitemap.xml`,
       `${SITE_URL}/teams-sitemap.xml`,
       `${SITE_URL}/pages-sitemap.xml`,
+      `${SITE_URL}/players-sitemap.xml`,
     ],
   },
   // Transform to set proper priorities for core pages
