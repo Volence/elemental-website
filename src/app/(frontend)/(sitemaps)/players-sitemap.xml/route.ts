@@ -94,6 +94,14 @@ const getPlayersSitemap = unstable_cache(
       return []
     }
 
+    // Filter to only integer IDs (Postgres uses integers, some legacy data might have MongoDB ObjectIds)
+    const integerIds = Array.from(validPersonIds)
+      .filter((id): id is number => typeof id === 'number' && Number.isInteger(id))
+
+    if (integerIds.length === 0) {
+      return []
+    }
+
     // 4. Fetch the actual people with their slugs
     const people = await payload.find({
       collection: 'people',
@@ -102,7 +110,7 @@ const getPlayersSitemap = unstable_cache(
       pagination: false,
       where: {
         id: {
-          in: Array.from(validPersonIds),
+          in: integerIds,
         },
       },
       select: {
