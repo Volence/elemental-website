@@ -7,25 +7,11 @@ const SITE_URL =
 module.exports = {
   siteUrl: SITE_URL,
   generateRobotsTxt: true,
-  generateIndexSitemap: false, // We use custom sitemap.xml instead
-  // Exclude internal sitemaps and dynamic routes (handled by custom sitemaps)
-  exclude: [
-    '/posts-sitemap.xml',
-    '/pages-sitemap.xml',
-    '/teams-sitemap.xml',
-    '/players-sitemap.xml',
-    '/teams/*',           // Handled by teams-sitemap.xml
-    '/players/*',         // Handled by players-sitemap.xml
-    '/posts/*',
-    '/admin/*',
-    '/api/*',
-    '/invite/*',
-    '/production/*',
-    '/next/*',
-    '/casters/*',
-    '/seminars',          // Already in pages-sitemap.xml
-    '/**/page',           // Exclude internal Next.js routes
-  ],
+  generateIndexSitemap: false,
+  // Don't generate any sitemap files - we have dynamic routes for all sitemaps
+  outDir: './public',
+  // Exclude all pages from sitemap generation (we use custom dynamic routes)
+  exclude: ['*'],
   robotsTxtOptions: {
     policies: [
       {
@@ -40,19 +26,4 @@ module.exports = {
       `${SITE_URL}/players-sitemap.xml`,
     ],
   },
-  // Transform to set proper priorities for core pages
-  transform: async (config, path) => {
-    // High priority core pages
-    const highPriorityPages = ['/', '/matches', '/calendar', '/seminars', '/staff', '/recruitment']
-    const priority = highPriorityPages.includes(path) ? 0.9 : 0.7
-    const changefreq = path === '/' ? 'daily' : 'weekly'
-
-    return {
-      loc: path,
-      changefreq,
-      priority,
-      lastmod: new Date().toISOString(),
-    }
-  },
 }
-
