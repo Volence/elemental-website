@@ -31,9 +31,19 @@ const getPagesSitemap = unstable_cache(
 
     const dateFallback = new Date().toISOString()
 
-    const defaultSitemap: Array<{ loc: string; lastmod: string }> = []
+    // Static core pages that always exist (not from CMS)
+    const staticPages = [
+      { loc: `${SITE_URL}/`, lastmod: dateFallback, changefreq: 'daily', priority: 1.0 },
+      { loc: `${SITE_URL}/matches`, lastmod: dateFallback, changefreq: 'daily', priority: 0.9 },
+      { loc: `${SITE_URL}/calendar`, lastmod: dateFallback, changefreq: 'daily', priority: 0.9 },
+      { loc: `${SITE_URL}/seminars`, lastmod: dateFallback, changefreq: 'weekly', priority: 0.8 },
+      { loc: `${SITE_URL}/staff`, lastmod: dateFallback, changefreq: 'weekly', priority: 0.8 },
+      { loc: `${SITE_URL}/recruitment`, lastmod: dateFallback, changefreq: 'weekly', priority: 0.9 },
+      { loc: `${SITE_URL}/casters`, lastmod: dateFallback, changefreq: 'weekly', priority: 0.7 },
+    ]
 
-    const sitemap = results.docs
+    // CMS-managed pages
+    const cmsPages = results.docs
       ? results.docs
           .filter((page) => Boolean(page?.slug))
           .map((page) => {
@@ -44,7 +54,7 @@ const getPagesSitemap = unstable_cache(
           })
       : []
 
-    return [...defaultSitemap, ...sitemap]
+    return [...staticPages, ...cmsPages]
   },
   ['pages-sitemap'],
   {
