@@ -33,25 +33,23 @@ const getPagesSitemap = unstable_cache(
 
     // Static core pages that always exist (not from CMS)
     const staticPages = [
-      { loc: `${SITE_URL}/`, lastmod: dateFallback, changefreq: 'daily', priority: 1.0 },
-      { loc: `${SITE_URL}/matches`, lastmod: dateFallback, changefreq: 'daily', priority: 0.9 },
-      { loc: `${SITE_URL}/calendar`, lastmod: dateFallback, changefreq: 'daily', priority: 0.9 },
-      { loc: `${SITE_URL}/seminars`, lastmod: dateFallback, changefreq: 'weekly', priority: 0.8 },
-      { loc: `${SITE_URL}/staff`, lastmod: dateFallback, changefreq: 'weekly', priority: 0.8 },
-      { loc: `${SITE_URL}/recruitment`, lastmod: dateFallback, changefreq: 'weekly', priority: 0.9 },
-      { loc: `${SITE_URL}/casters`, lastmod: dateFallback, changefreq: 'weekly', priority: 0.7 },
+      { loc: `${SITE_URL}/`, lastmod: dateFallback, changefreq: 'daily' as const, priority: 1.0 },
+      { loc: `${SITE_URL}/matches`, lastmod: dateFallback, changefreq: 'daily' as const, priority: 0.9 },
+      { loc: `${SITE_URL}/calendar`, lastmod: dateFallback, changefreq: 'daily' as const, priority: 0.9 },
+      { loc: `${SITE_URL}/seminars`, lastmod: dateFallback, changefreq: 'weekly' as const, priority: 0.8 },
+      { loc: `${SITE_URL}/staff`, lastmod: dateFallback, changefreq: 'weekly' as const, priority: 0.8 },
+      { loc: `${SITE_URL}/recruitment`, lastmod: dateFallback, changefreq: 'weekly' as const, priority: 0.9 },
+      { loc: `${SITE_URL}/casters`, lastmod: dateFallback, changefreq: 'weekly' as const, priority: 0.7 },
     ]
 
     // CMS-managed pages
     const cmsPages = results.docs
       ? results.docs
           .filter((page) => Boolean(page?.slug))
-          .map((page) => {
-            return {
-              loc: page?.slug === 'home' ? `${SITE_URL}/` : `${SITE_URL}/${page?.slug}`,
-              lastmod: page.updatedAt || dateFallback,
-            }
-          })
+          .map((page) => ({
+            loc: page?.slug === 'home' ? `${SITE_URL}/` : `${SITE_URL}/${page?.slug}`,
+            lastmod: String(page.updatedAt || dateFallback),
+          }))
       : []
 
     return [...staticPages, ...cmsPages]
