@@ -877,9 +877,6 @@ export async function handlePollMissing(interaction: ButtonInteraction): Promise
 
     const missingVoters = channelMembers.filter((member) => !allVoters.has(member.id))
 
-      `Channel members: ${channelMembers.length}, Voters: ${allVoters.size}, Missing: ${missingVoters.length}`,
-    )
-
     if (missingVoters.length === 0 && channelMembers.length > 0) {
       await interaction.editReply({
         content: `✅ Everyone who can see this channel has voted! (${channelMembers.length} ${channelMembers.length === 1 ? 'person' : 'people'})`,

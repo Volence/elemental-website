@@ -132,9 +132,6 @@ async function closeMatchingListings(
         filledBy: person.id,
       },
     })
-
-      `Auto-closed ${category} recruitment listing ${listing.id} (Team: ${teamName}, Role: ${role}, Filled by: ${person.name})`,
-    )
   }
 }
 
