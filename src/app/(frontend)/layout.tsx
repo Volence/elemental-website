@@ -77,5 +77,6 @@ export const metadata: Metadata = {
   openGraph: mergeOpenGraph(),
   twitter: {
     card: 'summary_large_image',
+    images: [`${getServerSideURL()}/logos/og-image.jpg`],
   },
 }

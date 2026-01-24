@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useAuth } from '@payloadcms/ui'
 
@@ -17,15 +17,22 @@ export const PollScopeToggle: React.FC = () => {
   // Default to 'all-teams' for staff-managers (changed from 'my-teams')
   const [scope, setScope] = useState<Scope>('all-teams')
   const [isOpen, setIsOpen] = useState(false)
+  
+  // Track if we've already applied the initial filter to prevent infinite loops
+  const hasAppliedFilter = useRef(false)
+  const lastAppliedScope = useRef<Scope | null>(null)
 
   // Check if user has permission to see all teams
   const canSeeAllTeams = user?.role === 'admin' || user?.role === 'staff-manager'
 
-  // Get assigned team IDs
+  // Get assigned team IDs - memoize to prevent reference changes
   const assignedTeams = (user as any)?.assignedTeams || []
   const teamIds = assignedTeams.map((team: any) =>
     typeof team === 'number' ? team : (team?.id || team)
   ).filter(Boolean)
+  
+  // Convert to string for stable comparison
+  const teamIdsKey = teamIds.join(',')
 
   // Load saved preference from localStorage
   // Staff managers should default to 'all-teams' since they have access to all teams
@@ -41,24 +48,37 @@ export const PollScopeToggle: React.FC = () => {
     }
   }, [canSeeAllTeams])
 
-  // Apply filter when scope changes
+  // Apply filter when scope changes - using stable dependencies to prevent infinite loop
   useEffect(() => {
     if (!canSeeAllTeams || teamIds.length === 0) return
-
-    const params = new URLSearchParams(searchParams.toString())
     
-    if (scope === 'my-teams') {
-      // Apply team filter
-      params.delete('where[team][in]')
-      params.set('where[team][in]', teamIds.join(','))
-    } else {
-      // Remove team filter to show all
-      params.delete('where[team][in]')
+    // Prevent infinite loop: only update if scope actually changed
+    if (lastAppliedScope.current === scope && hasAppliedFilter.current) {
+      return
     }
 
-    const newUrl = `${pathname}?${params.toString()}`
-    router.replace(newUrl, { scroll: false })
-  }, [scope, canSeeAllTeams, teamIds, pathname, searchParams, router])
+    const currentTeamFilter = searchParams.get('where[team][in]')
+    const expectedFilter = scope === 'my-teams' ? teamIdsKey : null
+    
+    // Only update URL if the filter actually needs to change
+    if (scope === 'my-teams' && currentTeamFilter !== teamIdsKey) {
+      const params = new URLSearchParams(searchParams.toString())
+      params.set('where[team][in]', teamIdsKey)
+      lastAppliedScope.current = scope
+      hasAppliedFilter.current = true
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false })
+    } else if (scope === 'all-teams' && currentTeamFilter !== null) {
+      const params = new URLSearchParams(searchParams.toString())
+      params.delete('where[team][in]')
+      lastAppliedScope.current = scope
+      hasAppliedFilter.current = true
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false })
+    } else {
+      // Filter is already correct, just mark as applied
+      lastAppliedScope.current = scope
+      hasAppliedFilter.current = true
+    }
+  }, [scope, canSeeAllTeams, teamIdsKey, pathname, searchParams, router])
 
   // Don't show toggle if user can't see all teams or has no assigned teams
   if (!canSeeAllTeams || teamIds.length === 0) {

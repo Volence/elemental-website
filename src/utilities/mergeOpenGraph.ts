@@ -6,7 +6,10 @@ const defaultOpenGraph: Metadata['openGraph'] = {
   description: 'Elemental (ELMT) - A premier Overwatch 2 esports organization dedicated to competitive excellence. Follow our teams, players, and journey in the competitive Overwatch 2 scene.',
   images: [
     {
-      url: `${getServerSideURL()}/logos/org.png`,
+      url: `${getServerSideURL()}/logos/og-image.jpg`,
+      width: 1200,
+      height: 630,
+      alt: 'Elemental - Overwatch 2 Esports Organization',
     },
   ],
   siteName: 'Elemental Esports',
