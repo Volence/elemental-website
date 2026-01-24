@@ -58,8 +58,10 @@ export function ParallaxHero({
           alt={imageAlt}
           fill
           priority
+          fetchPriority="high"
           className="object-cover"
           sizes="100vw"
+          quality={85}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
       </div>

@@ -25,6 +25,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <InitTheme />
         <link href="/logos/org.png" rel="icon" type="image/png" />
         <link href="/logos/org.png" rel="apple-touch-icon" />
+        {/* Preload hero banner for better LCP */}
+        <link
+          rel="preload"
+          as="image"
+          href="/logos/banner.jpg"
+          imageSrcSet="/logos/banner-mobile.jpg 1200w, /logos/banner.jpg 2250w"
+          imageSizes="100vw"
+        />
         {/* Organization Schema for SEO */}
         <script
           type="application/ld+json"
