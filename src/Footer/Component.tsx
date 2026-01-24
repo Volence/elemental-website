@@ -23,7 +23,7 @@ const TikTokIcon: React.FC<{ className?: string }> = ({ className }) => (
 
 const socialLinks = [
   { name: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/elmt_gg/', gradient: 'linear-gradient(to bottom right, rgb(168 85 247), rgb(236 72 153))' },
-  { name: 'TikTok', icon: TikTokIcon, href: 'https://www.tiktok.com/@elementalesports_', gradient: 'linear-gradient(to bottom right, rgb(34 211 238), rgb(236 72 153))' },
+  { name: 'TikTok', icon: TikTokIcon, href: 'https://www.tiktok.com/@elmt_gg', gradient: 'linear-gradient(to bottom right, rgb(34 211 238), rgb(236 72 153))' },
   { name: 'YouTube', icon: Youtube, href: 'https://www.youtube.com/@ELMT_GG', gradient: 'linear-gradient(to bottom right, rgb(239 68 68), rgb(220 38 38))' },
   { name: 'Twitter', icon: Twitter, href: 'https://x.com/ELMT_GG', gradient: 'linear-gradient(to bottom right, rgb(96 165 250), rgb(59 130 246))' },
   { name: 'Discord', icon: MessageCircle, href: 'https://discord.gg/elmt', gradient: 'linear-gradient(to bottom right, rgb(99 102 241), rgb(79 70 229))' },

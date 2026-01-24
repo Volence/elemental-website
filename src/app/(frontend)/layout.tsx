@@ -39,8 +39,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               "sport": "Overwatch 2",
               "description": "Premier Overwatch 2 esports organization with competitive teams across Expert, Advanced, Master, and Open divisions.",
               "sameAs": [
-                "https://twitter.com/ELMTgg",
-                "https://discord.gg/elmt"
+                "https://x.com/ELMT_GG",
+                "https://discord.gg/elmt",
+                "https://www.youtube.com/@ELMT_GG",
+                "https://www.tiktok.com/@elmt_gg"
               ]
             })
           }}
