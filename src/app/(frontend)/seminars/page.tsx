@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import React from 'react'
 import { ParticleBackground } from '@/components/ParticleBackground'
+import { YouTubeFacade } from '@/components/YouTubeFacade'
 
 export const metadata: Metadata = {
   title: 'Seminars | Elemental (ELMT)',
@@ -32,16 +33,14 @@ export default function SeminarsPage() {
           </p>
         </div>
 
-        {/* YouTube Playlist Embed */}
+        {/* YouTube Playlist Embed - Using Facade for performance */}
         <div className="mb-12">
           <div className="relative w-full rounded-xl overflow-hidden shadow-2xl border-2 border-border bg-gradient-to-br from-card to-card/50 p-2" style={{ paddingBottom: 'calc(56.25% + 16px)' }}>
-            <iframe
-              className="absolute top-2 left-2 right-2 bottom-2 w-[calc(100%-16px)] h-[calc(100%-16px)] rounded-lg"
-              src={`https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?list=${YOUTUBE_PLAYLIST_ID}&rel=0&modestbranding=1`}
+            <YouTubeFacade
+              videoId={YOUTUBE_VIDEO_ID}
+              playlistId={YOUTUBE_PLAYLIST_ID}
               title="Elemental Seminars Playlist"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-              loading="lazy"
+              className="absolute top-2 left-2 right-2 bottom-2 w-[calc(100%-16px)] h-[calc(100%-16px)] rounded-lg"
             />
           </div>
           <div className="mt-4 text-center">
@@ -75,4 +74,5 @@ export default function SeminarsPage() {
     </div>
   )
 }
+
 

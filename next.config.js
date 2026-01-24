@@ -28,6 +28,11 @@ const nextConfig = {
           protocol: url.protocol.replace(':', ''),
         }
       }),
+      // YouTube thumbnails for facade component
+      {
+        hostname: 'img.youtube.com',
+        protocol: 'https',
+      },
     ],
   },
   webpack: (webpackConfig, { isServer }) => {
