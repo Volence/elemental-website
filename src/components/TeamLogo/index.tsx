@@ -1,5 +1,7 @@
 'use client'
 
+import Image from 'next/image'
+
 interface TeamLogoProps {
   src: string
   alt: string
@@ -18,40 +20,37 @@ export function TeamLogo({
   fill = false,
   width,
   height,
-  sizes,
+  sizes = '(max-width: 640px) 80px, (max-width: 768px) 100px, 120px',
   priority = false,
 }: TeamLogoProps) {
   // Normalize the src path (ensure it starts with / and handle any issues)
   const normalizedSrc = src?.startsWith('/') ? src : `/${src}`
 
-  // Use regular img tag instead of Next.js Image for static logos
-  const style = fill 
-    ? { width: '100%', height: '100%', objectFit: 'contain' as const }
-    : width && height 
-      ? { width: `${width}px`, height: `${height}px`, objectFit: 'contain' as const }
-      : { objectFit: 'contain' as const }
-
   if (fill) {
     return (
-      <img
+      <Image
         src={normalizedSrc}
         alt={alt}
-        className={className}
-        style={style}
+        fill
+        className={`object-contain ${className || ''}`}
+        sizes={sizes}
+        priority={priority}
         loading={priority ? 'eager' : 'lazy'}
       />
     )
   }
 
   return (
-    <img
+    <Image
       src={normalizedSrc}
       alt={alt}
-      className={className}
-      width={width}
-      height={height}
-      style={style}
+      width={width || 120}
+      height={height || 120}
+      className={`object-contain ${className || ''}`}
+      sizes={sizes}
+      priority={priority}
       loading={priority ? 'eager' : 'lazy'}
     />
   )
 }
+
