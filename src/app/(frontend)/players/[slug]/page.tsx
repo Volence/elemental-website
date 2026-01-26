@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import type { Media } from '@/payload-types'
 import React from 'react'
-import { notFound } from 'next/navigation'
+import { redirect } from 'next/navigation'
 import { getPlayerByName, getAllPlayerNames } from '@/utilities/getPlayer'
 import { SocialLinks } from '@/components/SocialLinks'
 import { Shield, Crown, Share2, Users, Mic, Eye, Video } from 'lucide-react'
@@ -123,13 +123,13 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
   const playerName = playerNames.find((name) => formatPlayerSlug(name) === slug)
   
   if (!playerName) {
-    notFound()
+    redirect('/teams')
   }
   
   const player = await getPlayerByName(playerName)
   
   if (!player) {
-    notFound()
+    redirect('/teams')
   }
 
   // Get player initials for avatar

@@ -39,7 +39,6 @@ const getPagesSitemap = unstable_cache(
       { loc: `${SITE_URL}/seminars`, lastmod: dateFallback, changefreq: 'weekly' as const, priority: 0.8 },
       { loc: `${SITE_URL}/staff`, lastmod: dateFallback, changefreq: 'weekly' as const, priority: 0.8 },
       { loc: `${SITE_URL}/recruitment`, lastmod: dateFallback, changefreq: 'weekly' as const, priority: 0.9 },
-      { loc: `${SITE_URL}/casters`, lastmod: dateFallback, changefreq: 'weekly' as const, priority: 0.7 },
     ]
 
     // CMS-managed pages
