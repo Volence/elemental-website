@@ -42,6 +42,10 @@ ENV PAYLOAD_SECRET=${PAYLOAD_SECRET}
 # NEXT_BUILD_SKIP_DB is set to 1 if DATABASE_URI is empty, 0 if provided
 ENV NEXT_BUILD_SKIP_DB=${DATABASE_URI:+0}${DATABASE_URI:-1}
 
+# Google Analytics 4 - Public Measurement ID (embedded at build time)
+# This is not a secret - it's visible in page source on any GA-enabled site
+ENV NEXT_PUBLIC_GA_MEASUREMENT_ID=G-LS4RTBQY5T
+
 # Build the application
 # IMPORTANT: Database must be available during build for standalone output to be created
 # Pages are configured as dynamic and will be generated at runtime when the app starts
