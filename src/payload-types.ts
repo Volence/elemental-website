@@ -1260,11 +1260,35 @@ export interface Match {
    */
   matchType: 'team-match' | 'organization-event' | 'show-match' | 'content-production';
   /**
-   * Which ELMT team is playing (required for team matches)
+   * Is Team 1 an ELMT team or external?
+   */
+  team1Type?: ('internal' | 'external') | null;
+  /**
+   * Select ELMT team
+   */
+  team1Internal?: (number | null) | Team;
+  /**
+   * Enter external team name
+   */
+  team1External?: string | null;
+  /**
+   * Is Team 2 an ELMT team or external?
+   */
+  team2Type?: ('internal' | 'external') | null;
+  /**
+   * Select ELMT team
+   */
+  team2Internal?: (number | null) | Team;
+  /**
+   * Enter external team name
+   */
+  team2External?: string | null;
+  /**
+   * ⚠️ LEGACY: Use Team 1 fields above instead. Kept for backwards compatibility.
    */
   team?: (number | null) | Team;
   /**
-   * Opponent team name
+   * ⚠️ LEGACY: Use Team 2 fields above instead. Kept for backwards compatibility.
    */
   opponent?: string | null;
   /**
@@ -1395,6 +1419,10 @@ export interface Match {
       [k: string]: unknown;
     } | null;
   };
+  /**
+   * Tournament slot for pre-match signups (not a confirmed match yet)
+   */
+  isTournamentSlot?: boolean | null;
   /**
    * Auto-populated from FaceIt API
    */
@@ -3243,6 +3271,12 @@ export interface ScrimOutcomesSelect<T extends boolean = true> {
  */
 export interface MatchesSelect<T extends boolean = true> {
   matchType?: T;
+  team1Type?: T;
+  team1Internal?: T;
+  team1External?: T;
+  team2Type?: T;
+  team2Internal?: T;
+  team2External?: T;
   team?: T;
   opponent?: T;
   date?: T;
@@ -3296,6 +3330,7 @@ export interface MatchesSelect<T extends boolean = true> {
         includeInSchedule?: T;
         productionNotes?: T;
       };
+  isTournamentSlot?: T;
   syncedFromFaceit?: T;
   faceitSeasonId?: T;
   slug?: T;

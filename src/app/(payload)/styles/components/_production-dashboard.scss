@@ -826,12 +826,38 @@
   &:last-child {
     border-bottom: none;
   }
+  
+  // Tournament slot modifier
+  &--tournament-slot {
+    background: rgba(255, 193, 7, 0.05);
+    border-left: 3px solid rgba(255, 193, 7, 0.5);
+  }
 
   &__title {
     font-size: 1rem;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.9);
     margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  
+  &__slot-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+    border: 1px solid rgba(255, 193, 7, 0.4);
+    border-radius: 4px;
+    white-space: nowrap;
   }
 
   &__stats {
@@ -1177,6 +1203,54 @@
     color: var(--theme-elevation-100);
     padding: 0.5rem;
   }
+}
+
+// Team editor specific styles
+.production-dashboard__team-cell {
+  min-width: 180px;
+}
+
+.production-dashboard__team-editor {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.production-dashboard__type-toggle {
+  flex-shrink: 0;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba($admin-accent-info, 0.2);
+  color: $admin-accent-info;
+  border: 1px solid rgba($admin-accent-info, 0.4);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  
+  &:hover {
+    background: rgba($admin-accent-info, 0.3);
+    border-color: rgba($admin-accent-info, 0.6);
+  }
+  
+  &--external {
+    background: rgba(255, 152, 0, 0.2);
+    color: #ff9800;
+    border-color: rgba(255, 152, 0, 0.4);
+    
+    &:hover {
+      background: rgba(255, 152, 0, 0.3);
+      border-color: rgba(255, 152, 0, 0.6);
+    }
+  }
+}
+
+.production-dashboard__team-name {
+  font-weight: 500;
+  color: var(--theme-elevation-100);
 }
 
 // ============================================
@@ -2262,3 +2336,270 @@
   }
 }
 
+// ============================================
+// BULK TOURNAMENT CREATOR
+// ============================================
+
+.bulk-tournament-creator {
+  @include glow-card($admin-accent-info);
+  padding: 2rem;
+  max-width: 800px;
+
+  &__header {
+    margin-bottom: 2rem;
+
+    h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: rgba($admin-accent-info, 0.95);
+      margin: 0 0 0.5rem 0;
+    }
+
+    p {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin: 0;
+    }
+  }
+
+  &__config {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    border: 1px solid rgba($admin-accent-info, 0.2);
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    select,
+    input {
+      padding: 0.75rem 1rem;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.95rem;
+
+      &:focus {
+        outline: none;
+        border-color: rgba($admin-accent-info, 0.6);
+      }
+    }
+
+    &--wide {
+      grid-column: 1 / -1;
+    }
+  }
+
+  &__dates-section {
+    margin-bottom: 2rem;
+  }
+
+  &__dates-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    h4 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.9);
+      margin: 0;
+    }
+  }
+
+  &__add-btn {
+    @include glow-button($admin-accent-info);
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  &__date-picker {
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    border: 1px solid rgba($admin-accent-info, 0.2);
+    margin-bottom: 1rem;
+  }
+
+  &__date-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  &__nav-btn {
+    @include glow-button($admin-accent-info);
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+
+  &__date-range {
+    font-size: 1rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  &__date-picker-hint {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0 0 1rem 0;
+  }
+
+  &__date-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.5rem;
+  }
+
+  &__date-btn {
+    padding: 0.5rem 0.75rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.8rem;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      background: rgba($admin-accent-info, 0.1);
+      border-color: rgba($admin-accent-info, 0.3);
+    }
+
+    &.selected {
+      background: rgba($admin-accent-info, 0.2);
+      border-color: $admin-accent-info;
+      color: white;
+    }
+
+    &.already-added {
+      opacity: 0.4;
+      cursor: not-allowed;
+      text-decoration: line-through;
+    }
+  }
+
+  &__confirm-dates-btn {
+    @include glow-button($admin-accent-success);
+    margin-top: 1rem;
+    width: 100%;
+    padding: 0.75rem;
+  }
+
+  &__slots {
+    margin-bottom: 2rem;
+
+    h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.9);
+      margin: 0 0 1rem 0;
+    }
+  }
+
+  &__slots-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  &__slot {
+    display: grid;
+    grid-template-columns: 140px 1fr 100px 40px;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  &__slot-date {
+    font-weight: 600;
+    color: rgba($admin-accent-info, 0.95);
+    font-size: 0.9rem;
+  }
+
+  &__slot-title,
+  &__slot-time {
+    padding: 0.5rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.875rem;
+
+    &:focus {
+      outline: none;
+      border-color: rgba($admin-accent-info, 0.5);
+    }
+  }
+
+  &__slot-remove {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba($admin-accent-error, 0.1);
+    border: 1px solid rgba($admin-accent-error, 0.3);
+    border-radius: 4px;
+    color: $admin-accent-error;
+    cursor: pointer;
+
+    &:hover {
+      background: rgba($admin-accent-error, 0.2);
+    }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  &__cancel-btn {
+    @include glow-button($admin-accent-warning);
+    padding: 0.75rem 1.5rem;
+  }
+
+  &__create-btn {
+    @include glow-button($admin-accent-success);
+    padding: 0.75rem 2rem;
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+}

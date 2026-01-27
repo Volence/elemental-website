@@ -73,37 +73,55 @@ export const Matches: CollectionConfig = {
         
         if (titleIsEmpty) {
           try {
-            let teamName = ''
-            let opponentName = data.opponent || 'TBD'
-            
-            // Fetch the team name if available
-            if (data.team) {
-              if (typeof data.team === 'number') {
-                const team = await req.payload.findByID({
-                  collection: 'teams',
-                  id: data.team,
-                  depth: 0,
-                })
-                teamName = team?.name || ''
-              } else if (typeof data.team === 'object' && data.team !== null) {
-                teamName = (data.team as any).name || ''
+            // Helper to get team name from new flexible fields OR legacy fields
+            const getTeamName = async (typeField: string, internalField: string, externalField: string, legacyField?: string) => {
+              const type = (data as any)[typeField]
+              const internalId = (data as any)[internalField]
+              const externalName = (data as any)[externalField]
+              
+              // New flexible fields take priority
+              if (type === 'internal' && internalId) {
+                if (typeof internalId === 'number') {
+                  const team = await req.payload.findByID({ collection: 'teams', id: internalId, depth: 0 })
+                  return team?.name ? `ELMT ${team.name}` : 'ELMT'
+                } else if (typeof internalId === 'object' && internalId !== null) {
+                  return internalId.name ? `ELMT ${internalId.name}` : 'ELMT'
+                }
+              } else if (type === 'external' && externalName) {
+                return externalName
               }
+              
+              // Fallback to legacy field if new fields not set
+              if (legacyField && (data as any)[legacyField]) {
+                const legacyValue = (data as any)[legacyField]
+                if (typeof legacyValue === 'number') {
+                  const team = await req.payload.findByID({ collection: 'teams', id: legacyValue, depth: 0 })
+                  return team?.name ? `ELMT ${team.name}` : 'ELMT'
+                } else if (typeof legacyValue === 'object' && legacyValue !== null) {
+                  return legacyValue.name ? `ELMT ${legacyValue.name}` : 'ELMT'
+                } else if (typeof legacyValue === 'string') {
+                  return legacyValue
+                }
+              }
+              return null
             }
             
-            // Generate title with different formats based on what's available
-            if (teamName && opponentName !== 'TBD') {
-              data.title = `ELMT ${teamName} vs ${opponentName}`
-            } else if (teamName) {
-              data.title = `ELMT ${teamName} vs TBD`
-            } else if (opponentName !== 'TBD') {
-              data.title = `ELMT vs ${opponentName}`
+            const team1Name = await getTeamName('team1Type', 'team1Internal', 'team1External', 'team')
+            const team2Name = await getTeamName('team2Type', 'team2Internal', 'team2External', 'opponent')
+            
+            // Generate title based on what's available
+            if (team1Name && team2Name) {
+              data.title = `${team1Name} vs ${team2Name}`
+            } else if (team1Name) {
+              data.title = `${team1Name} vs TBD`
+            } else if (team2Name) {
+              data.title = `TBD vs ${team2Name}`
             } else {
-              data.title = 'ELMT Match'
+              data.title = 'Match TBD'
             }
           } catch (error) {
             console.error('Error auto-generating match title:', error)
-            // Fallback if something goes wrong
-            data.title = data.opponent ? `ELMT vs ${data.opponent}` : 'ELMT Match'
+            data.title = 'Match'
           }
         }
         
@@ -161,22 +179,88 @@ export const Matches: CollectionConfig = {
                 description: 'Match type affects how it appears in Weekly View',
               },
             },
+            // --- Team 1 (Your side) ---
+            {
+              name: 'team1Type',
+              type: 'select',
+              defaultValue: 'internal',
+              options: [
+                { label: 'ELMT Team', value: 'internal' },
+                { label: 'Other Team', value: 'external' },
+              ],
+              admin: {
+                description: 'Is Team 1 an ELMT team or external?',
+              },
+            },
+            {
+              name: 'team1Internal',
+              type: 'relationship',
+              relationTo: 'teams',
+              required: false,
+              admin: {
+                description: 'Select ELMT team',
+                condition: (data) => data.team1Type === 'internal',
+              },
+            },
+            {
+              name: 'team1External',
+              type: 'text',
+              required: false,
+              admin: {
+                description: 'Enter external team name',
+                condition: (data) => data.team1Type === 'external',
+              },
+            },
+            // --- Team 2 (Opponent side) ---
+            {
+              name: 'team2Type',
+              type: 'select',
+              defaultValue: 'external',
+              options: [
+                { label: 'ELMT Team', value: 'internal' },
+                { label: 'Other Team', value: 'external' },
+              ],
+              admin: {
+                description: 'Is Team 2 an ELMT team or external?',
+              },
+            },
+            {
+              name: 'team2Internal',
+              type: 'relationship',
+              relationTo: 'teams',
+              required: false,
+              admin: {
+                description: 'Select ELMT team',
+                condition: (data) => data.team2Type === 'internal',
+              },
+            },
+            {
+              name: 'team2External',
+              type: 'text',
+              required: false,
+              admin: {
+                description: 'Enter external team name',
+                condition: (data) => data.team2Type === 'external',
+              },
+            },
+            // --- Legacy fields (kept for backwards compatibility) ---
             {
               name: 'team',
               type: 'relationship',
               relationTo: 'teams',
               required: false,
               admin: {
-                description: 'Which ELMT team is playing (required for team matches)',
-                condition: (data) => data.matchType === 'team-match',
+                description: '⚠️ LEGACY: Use Team 1 fields above instead. Kept for backwards compatibility.',
+                condition: () => false, // Hide from UI, only used by existing data/API
               },
             },
             {
               name: 'opponent',
               type: 'text',
-              required: false, // Changed to optional for blank match generation
+              required: false,
               admin: {
-                description: 'Opponent team name',
+                description: '⚠️ LEGACY: Use Team 2 fields above instead. Kept for backwards compatibility.',
+                condition: () => false, // Hide from UI, only used by existing data/API
               },
             },
             {
@@ -212,6 +296,7 @@ export const Matches: CollectionConfig = {
                     { label: 'Expert', value: 'Expert' },
                     { label: 'Advanced', value: 'Advanced' },
                     { label: 'Open', value: 'Open' },
+                    // NOTE: 'Other' option requires migration - add back after migration
                   ],
                 },
               ],
@@ -525,6 +610,16 @@ export const Matches: CollectionConfig = {
           ],
         },
       ],
+    },
+    // Tournament slot flag (for bulk-created pre-match signups)
+    {
+      name: 'isTournamentSlot',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        position: 'sidebar',
+        description: 'Tournament slot for pre-match signups (not a confirmed match yet)',
+      },
     },
     // FaceIt Integration (sidebar)
     {

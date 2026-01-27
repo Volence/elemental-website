@@ -57,6 +57,12 @@ export default async function MatchesPage({
               equals: true,
             },
           },
+          // Exclude tournament slots (internal admin items)
+          {
+            isTournamentSlot: {
+              not_equals: true,
+            },
+          },
         ],
       },
       sort: 'date',
@@ -84,6 +90,12 @@ export default async function MatchesPage({
           {
             'productionWorkflow.includeInSchedule': {
               equals: true,
+            },
+          },
+          // Exclude tournament slots (internal admin items)
+          {
+            isTournamentSlot: {
+              not_equals: true,
             },
           },
         ],

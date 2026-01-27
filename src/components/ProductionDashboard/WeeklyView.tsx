@@ -3,11 +3,26 @@
 import React, { useState, useEffect } from 'react'
 import { Button, toast } from '@payloadcms/ui'
 
+interface Team {
+  id: number
+  name: string
+  region?: string
+}
+
 interface Match {
   id: number
   title: string
   matchType: string
+  // Legacy field (backwards compatibility)
   team: any
+  // New flexible team fields
+  team1Type?: 'internal' | 'external'
+  team1Internal?: any
+  team1External?: string
+  team2Type?: 'internal' | 'external'
+  team2Internal?: any
+  team2External?: string
+  isTournamentSlot?: boolean
   opponent: string
   date: string
   region: string
@@ -20,8 +35,29 @@ interface Match {
   }
 }
 
+// Helper to get team name from new or legacy fields
+const getTeam1Name = (match: Match): string => {
+  // First try new flexible fields
+  if (match.team1Type === 'internal' && match.team1Internal) {
+    return match.team1Internal.name || 'ELMT Team'
+  }
+  if (match.team1Type === 'external' && match.team1External) {
+    return match.team1External
+  }
+  // Fallback to legacy field
+  if (match.team?.name) {
+    return match.team.name
+  }
+  // Tournament slot without team assigned
+  if (match.isTournamentSlot) {
+    return '🎯 Tournament Slot'
+  }
+  return 'TBD'
+}
+
 export function WeeklyView() {
   const [matches, setMatches] = useState<Match[]>([])
+  const [teams, setTeams] = useState<Team[]>([])
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [filterRegion, setFilterRegion] = useState('all')
@@ -32,7 +68,18 @@ export function WeeklyView() {
 
   useEffect(() => {
     fetchMatches()
+    fetchTeams()
   }, [showArchived])
+
+  const fetchTeams = async () => {
+    try {
+      const response = await fetch('/api/teams?limit=500&sort=name')
+      const data = await response.json()
+      setTeams(data.docs || [])
+    } catch (error) {
+      console.error('Error fetching teams:', error)
+    }
+  }
 
   const fetchMatches = async () => {
     try {
@@ -105,6 +152,127 @@ export function WeeklyView() {
   const addManualMatch = () => {
     // Navigate to create new match
     window.location.href = '/admin/collections/matches/create'
+  }
+
+  // Immediate update for team selection (no debounce needed)
+  const updateTeamField = async (
+    matchId: number, 
+    teamNum: 1 | 2, 
+    type: 'internal' | 'external', 
+    value: number | string | null
+  ) => {
+    try {
+      const match = matches.find(m => m.id === matchId)
+      if (!match) return
+
+      // Build update data
+      const updateData: any = {}
+      
+      if (teamNum === 1) {
+        updateData.team1Type = type
+        if (type === 'internal') {
+          updateData.team1Internal = value
+          updateData.team1External = null
+        } else {
+          updateData.team1Internal = null
+          updateData.team1External = value
+        }
+      } else {
+        updateData.team2Type = type
+        if (type === 'internal') {
+          updateData.team2Internal = value
+          updateData.team2External = null
+        } else {
+          updateData.team2Internal = null
+          updateData.team2External = value
+        }
+        // Also update legacy opponent field for backwards compatibility
+        if (type === 'external') {
+          updateData.opponent = value
+        } else {
+          const selectedTeam = teams.find(t => t.id === value)
+          updateData.opponent = selectedTeam?.name || ''
+        }
+      }
+
+      // Update title based on team changes
+      const team1Name = teamNum === 1 
+        ? (type === 'internal' ? teams.find(t => t.id === value)?.name : value as string) || 'TBD'
+        : (match.team1Internal?.name || match.team1External || match.team?.name || 'TBD')
+      const team2Name = teamNum === 2
+        ? (type === 'internal' ? teams.find(t => t.id === value)?.name : value as string) || 'TBD'
+        : (match.opponent || 'TBD')
+      updateData.title = `${team1Name} vs ${team2Name}`
+
+      // Update local state immediately
+      setMatches(prevMatches =>
+        prevMatches.map(m => {
+          if (m.id !== matchId) return m
+          if (teamNum === 1) {
+            const selectedTeam = type === 'internal' ? teams.find(t => t.id === value) : undefined
+            return {
+              ...m,
+              team1Type: type,
+              team1Internal: selectedTeam,
+              team1External: type === 'external' ? (value as string) : undefined,
+            }
+          } else {
+            const selectedTeam = type === 'internal' ? teams.find(t => t.id === value) : undefined
+            return {
+              ...m,
+              team2Type: type,
+              team2Internal: selectedTeam,
+              team2External: type === 'external' ? (value as string) : undefined,
+              opponent: type === 'external' ? (value as string) : selectedTeam?.name || '',
+            }
+          }
+        })
+      )
+
+      await fetch(`/api/matches/${matchId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updateData),
+      })
+      toast.success(teamNum === 1 ? 'Team 1 updated' : 'Opponent updated')
+    } catch (error) {
+      console.error('Error updating team:', error)
+      toast.error('Failed to update team')
+    }
+  }
+
+  // Toggle team type between internal and external
+  const toggleTeamType = (matchId: number, teamNum: 1 | 2) => {
+    const match = matches.find(m => m.id === matchId)
+    if (!match) return
+    
+    const currentType = teamNum === 1 ? match.team1Type : match.team2Type
+    const newType = currentType === 'internal' ? 'external' : 'internal'
+    
+    // Preserve data when toggling: convert internal team to external name, or vice versa
+    let newValue: number | string | null = null
+    
+    if (newType === 'external') {
+      // Switching to external: use team name as text
+      if (teamNum === 1 && match.team1Internal) {
+        newValue = match.team1Internal.name || ''
+      } else if (teamNum === 2 && match.team2Internal) {
+        newValue = match.team2Internal.name || ''
+      } else if (teamNum === 2) {
+        newValue = match.opponent || ''
+      }
+    } else {
+      // Switching to internal: try to find matching team by name
+      const externalName = teamNum === 1 ? match.team1External : (match.team2External || match.opponent)
+      if (externalName) {
+        const matchingTeam = teams.find(t => 
+          t.name.toLowerCase() === externalName.toLowerCase()
+        )
+        newValue = matchingTeam?.id || null
+      }
+    }
+    
+    updateTeamField(matchId, teamNum, newType, newValue)
   }
 
   const updateMatchField = async (matchId: number, field: string, value: any) => {
@@ -306,18 +474,72 @@ export function WeeklyView() {
                   const lobbyKey = `${match.id}-faceitLobby`
                   return (
                     <tr key={match.id}>
-                      <td>{match.team?.name || 'Unknown Team'}</td>
+                      <td className="production-dashboard__team-cell">
+                        {/* Team 1: Toggle + Dropdown/Input */}
+                        <div className="production-dashboard__team-editor">
+                          <button
+                            className={`production-dashboard__type-toggle ${match.team1Type === 'external' ? 'production-dashboard__type-toggle--external' : ''}`}
+                            onClick={() => toggleTeamType(match.id, 1)}
+                            title={match.team1Type === 'external' ? 'Switch to ELMT Team' : 'Switch to External Team'}
+                          >
+                            {match.team1Type === 'external' ? 'Other' : 'ELMT'}
+                          </button>
+                          {match.team1Type === 'external' ? (
+                            <input
+                              type="text"
+                              value={match.team1External || ''}
+                              onChange={(e) => updateTeamField(match.id, 1, 'external', e.target.value)}
+                              className="production-dashboard__inline-input"
+                              placeholder="Team name"
+                            />
+                          ) : (
+                            <select
+                              value={match.team1Internal?.id || ''}
+                              onChange={(e) => updateTeamField(match.id, 1, 'internal', e.target.value ? parseInt(e.target.value) : null)}
+                              className="production-dashboard__inline-input"
+                            >
+                              <option value="">Select team...</option>
+                              {teams.map(team => (
+                                <option key={team.id} value={team.id}>{team.name}</option>
+                              ))}
+                            </select>
+                          )}
+                        </div>
+                      </td>
                       <td>{match.region}</td>
                       <td>{match.league}</td>
                       <td>{new Date(match.date).toLocaleString()}</td>
-                      <td>
-                        <input
-                          type="text"
-                          value={editingValues[opponentKey] ?? match.opponent ?? ''}
-                          onChange={(e) => updateMatchField(match.id, 'opponent', e.target.value)}
-                          className="production-dashboard__inline-input"
-                          placeholder="Opponent name"
-                        />
+                      <td className="production-dashboard__team-cell">
+                        {/* Team 2 / Opponent: Toggle + Dropdown/Input */}
+                        <div className="production-dashboard__team-editor">
+                          <button
+                            className={`production-dashboard__type-toggle ${match.team2Type === 'internal' ? '' : 'production-dashboard__type-toggle--external'}`}
+                            onClick={() => toggleTeamType(match.id, 2)}
+                            title={match.team2Type === 'internal' ? 'Switch to External Team' : 'Switch to ELMT Team'}
+                          >
+                            {match.team2Type === 'internal' ? 'ELMT' : 'Other'}
+                          </button>
+                          {match.team2Type === 'internal' ? (
+                            <select
+                              value={match.team2Internal?.id || ''}
+                              onChange={(e) => updateTeamField(match.id, 2, 'internal', e.target.value ? parseInt(e.target.value) : null)}
+                              className="production-dashboard__inline-input"
+                            >
+                              <option value="">Select team...</option>
+                              {teams.map(team => (
+                                <option key={team.id} value={team.id}>{team.name}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            <input
+                              type="text"
+                              value={match.opponent || ''}
+                              onChange={(e) => updateTeamField(match.id, 2, 'external', e.target.value)}
+                              className="production-dashboard__inline-input"
+                              placeholder="Opponent name"
+                            />
+                          )}
+                        </div>
                       </td>
                       <td>
                         <input

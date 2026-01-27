@@ -7,6 +7,7 @@ import { StaffSignupsView } from './ProductionDashboard/StaffSignupsView'
 import { AssignmentView } from './ProductionDashboard/AssignmentView'
 import { ScheduleBuilderView } from './ProductionDashboard/ScheduleBuilderView'
 import { SummaryView } from './ProductionDashboard/SummaryView'
+import { BulkTournamentCreator } from './ProductionDashboard/BulkTournamentCreator'
 
 export default function ProductionDashboardView() {
   const { user } = useAuth()
@@ -28,6 +29,12 @@ export default function ProductionDashboardView() {
               onClick={() => setActiveTab('weekly')}
             >
               Weekly View
+            </button>
+            <button 
+              className={`production-dashboard__tab ${activeTab === 'bulk' ? 'production-dashboard__tab--active' : ''}`}
+              onClick={() => setActiveTab('bulk')}
+            >
+              Bulk Create
             </button>
           </>
         )}
@@ -67,6 +74,7 @@ export default function ProductionDashboardView() {
       
       <div className="production-dashboard__content">
         {activeTab === 'weekly' && isProductionManager && <WeeklyView />}
+        {activeTab === 'bulk' && isProductionManager && <BulkTournamentCreator onSuccess={() => setActiveTab('signups')} />}
         {activeTab === 'signups' && <StaffSignupsView />}
         {activeTab === 'assignment' && isProductionManager && <AssignmentView />}
         {activeTab === 'schedule' && isProductionManager && <ScheduleBuilderView />}
@@ -75,5 +83,3 @@ export default function ProductionDashboardView() {
     </div>
   )
 }
-
-

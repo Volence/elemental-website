@@ -18,7 +18,16 @@ interface Match {
   id: number
   title: string
   matchType: string
+  // Legacy field
   team: any
+  // New flexible team fields
+  team1Type?: 'internal' | 'external'
+  team1Internal?: any
+  team1External?: string
+  team2Type?: 'internal' | 'external'
+  team2Internal?: any
+  team2External?: string
+  isTournamentSlot?: boolean
   opponent: string
   date: string
   region: string
@@ -34,6 +43,23 @@ interface Match {
     assignedProducer?: User | number | null
     assignedCasters?: CasterInfo[]
   }
+}
+
+// Helper to get team name from new or legacy fields
+const getTeam1Name = (match: Match): string => {
+  if (match.team1Type === 'internal' && match.team1Internal) {
+    return match.team1Internal.name || 'ELMT Team'
+  }
+  if (match.team1Type === 'external' && match.team1External) {
+    return match.team1External
+  }
+  if (match.team?.name) {
+    return match.team.name
+  }
+  if (match.isTournamentSlot) {
+    return 'Tournament Slot'
+  }
+  return 'TBD'
 }
 
 export function ScheduleBuilderView() {
@@ -77,15 +103,34 @@ export function ScheduleBuilderView() {
       const match = matches.find(m => m.id === matchId)
       if (!match) return
 
+      // When adding to schedule, check if it's a tournament slot with missing info
+      if (!currentValue && match.isTournamentSlot) {
+        const hasTeam1 = match.team1Internal || match.team1External || match.team
+        const hasTeam2 = match.team2Internal || match.team2External || match.opponent
+        
+        if (!hasTeam1 || !hasTeam2) {
+          toast.error('⚠️ This slot is missing team info. Please fill in both teams before adding to schedule.')
+          return
+        }
+      }
+
+      const updateData: any = {
+        productionWorkflow: {
+          ...match.productionWorkflow,
+          includeInSchedule: !currentValue
+        }
+      }
+
+      // When adding a tournament slot to schedule, convert it to a real match
+      if (!currentValue && match.isTournamentSlot) {
+        updateData.isTournamentSlot = false
+        toast.info('🎯 Converting tournament slot to confirmed match')
+      }
+
       await fetch(`/api/matches/${matchId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          productionWorkflow: {
-            ...match.productionWorkflow,
-            includeInSchedule: !currentValue
-          }
-        }),
+        body: JSON.stringify(updateData),
       })
 
       // Update local state
@@ -93,6 +138,7 @@ export function ScheduleBuilderView() {
         m.id === matchId
           ? {
               ...m,
+              isTournamentSlot: !currentValue ? false : m.isTournamentSlot,
               productionWorkflow: {
                 ...m.productionWorkflow!,
                 includeInSchedule: !currentValue
@@ -133,7 +179,7 @@ export function ScheduleBuilderView() {
 
     selectedMatches.forEach((match, index) => {
       const pw = match.productionWorkflow!
-      const teamName = getFullTeamName(match.team?.name || 'Unknown Team')
+      const teamName = getFullTeamName(getTeam1Name(match))
       const date = new Date(match.date)
       const unixTimestamp = Math.floor(date.getTime() / 1000)
       
@@ -176,7 +222,7 @@ export function ScheduleBuilderView() {
 
     selectedMatches.forEach((match, index) => {
       const pw = match.productionWorkflow!
-      const teamName = getFullTeamName(match.team?.name || 'Unknown Team')
+      const teamName = getFullTeamName(getTeam1Name(match))
       const date = new Date(match.date)
       const unixTimestamp = Math.floor(date.getTime() / 1000)
       

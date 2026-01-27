@@ -24,6 +24,7 @@ interface Match {
   opponent: string
   region?: string
   faceitLobby?: string
+  isTournamentSlot?: boolean
   productionWorkflow?: {
     observerSignups?: (User | number)[]
     producerSignups?: (User | number)[]
@@ -679,8 +680,13 @@ export function StaffSignupsView() {
                         })
 
                         return (
-                          <div key={match.id} className="time-slot-match">
-                            <div className="time-slot-match__title">{match.title}</div>
+                          <div key={match.id} className={`time-slot-match ${match.isTournamentSlot ? 'time-slot-match--tournament-slot' : ''}`}>
+                            <div className="time-slot-match__title">
+                              {match.title}
+                              {match.isTournamentSlot && (
+                                <span className="time-slot-match__slot-badge">🎯 Tournament Slot</span>
+                              )}
+                            </div>
                             <div className="time-slot-match__stats">
                               <div className="time-slot-match__stat">
                                 <span>👁️ Observers:</span>
@@ -720,10 +726,15 @@ export function StaffSignupsView() {
               const assignedRoles = getMyAssignedRoles(match, currentUserId)
 
               return (
-                <div key={match.id} className="my-signup-card my-signup-card--assigned">
+                <div key={match.id} className={`my-signup-card my-signup-card--assigned ${match.isTournamentSlot ? 'my-signup-card--tournament-slot' : ''}`}>
                   <div className="my-signup-card__header">
                     <div>
-                      <h4>{match.title}</h4>
+                      <h4>
+                        {match.title}
+                        {match.isTournamentSlot && (
+                          <span className="time-slot-match__slot-badge">🎯 Slot</span>
+                        )}
+                      </h4>
                       <p className="my-signup-card__date">
                         {new Date(match.date).toLocaleDateString('en-US', {
                           weekday: 'short',

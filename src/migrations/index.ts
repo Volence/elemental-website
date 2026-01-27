@@ -4,6 +4,7 @@ import * as migration_20251222_190839_add_recruitment_collections from "./202512
 import * as migration_20251229_150200_add_complete_status from "./20251229_150200_add_complete_status";
 import * as migration_20260113_201500_add_quick_scrims from "./20260113_201500_add_quick_scrims";
 import * as migration_20260114_021700_add_scouting_wiki_phase1 from "./20260114_021700_add_scouting_wiki_phase1";
+import * as migration_20260127_153700_add_flexible_team_fields from "./20260127_153700_add_flexible_team_fields";
 
 export const migrations = [
   {
@@ -35,5 +36,10 @@ export const migrations = [
     up: migration_20260114_021700_add_scouting_wiki_phase1.up,
     down: migration_20260114_021700_add_scouting_wiki_phase1.down,
     name: "20260114_021700_add_scouting_wiki_phase1",
+  },
+  {
+    up: migration_20260127_153700_add_flexible_team_fields.up,
+    down: migration_20260127_153700_add_flexible_team_fields.down,
+    name: "20260127_153700_add_flexible_team_fields",
   },
 ];

@@ -40,7 +40,7 @@ export function MatchCard({ match, showCountdown = true }: MatchCardProps) {
     matchDate = new Date() // Fallback to current date
   }
 
-  // Safely extract team relationship
+  // Safely extract team relationship (Team 1 - usually the "home" ELMT team)
   const team =
     match.team &&
     typeof match.team === 'object' &&
@@ -48,7 +48,27 @@ export function MatchCard({ match, showCountdown = true }: MatchCardProps) {
     typeof match.team.slug === 'string' &&
     typeof match.team.name === 'string'
       ? match.team
+      : // Also check new team1Internal field
+        match.team1Internal &&
+        typeof match.team1Internal === 'object' &&
+        match.team1Internal !== null &&
+        typeof match.team1Internal.slug === 'string' &&
+        typeof match.team1Internal.name === 'string'
+          ? match.team1Internal
+          : null
+
+  // Check if Team 2 is also an internal ELMT team (for scrims/showmatches)
+  const team2 =
+    match.team2Type === 'internal' &&
+    match.team2Internal &&
+    typeof match.team2Internal === 'object' &&
+    match.team2Internal !== null &&
+    typeof match.team2Internal.slug === 'string' &&
+    typeof match.team2Internal.name === 'string'
+      ? match.team2Internal
       : null
+  
+  const isDualInternalMatch = team && team2
 
   // Calculate the actual match status based on date
   const displayStatus = getMatchStatus(
@@ -66,16 +86,39 @@ export function MatchCard({ match, showCountdown = true }: MatchCardProps) {
     // If title is empty, generate one from team + opponent
     if (!title || title.trim() === '') {
       const teamName = team?.name || ''
-      const opponent = match.opponent || 'TBD'
+      const opponentName = team2?.name || match.opponent || 'TBD'
 
-      if (teamName && opponent !== 'TBD') {
-        title = `ELMT ${teamName} vs ${opponent}`
+      if (teamName && opponentName !== 'TBD') {
+        title = isDualInternalMatch 
+          ? `${teamName} vs ${opponentName}`  // Both ELMT teams, no prefix
+          : `ELMT ${teamName} vs ${opponentName}`
       } else if (teamName) {
         title = `ELMT ${teamName} vs TBD`
-      } else if (opponent !== 'TBD') {
-        title = `ELMT vs ${opponent}`
+      } else if (opponentName !== 'TBD') {
+        title = `ELMT vs ${opponentName}`
       } else {
         title = 'ELMT Match'
+      }
+    }
+
+    // For dual internal matches, make both team names links
+    if (isDualInternalMatch && team && team2) {
+      const vsIndex = title.toLowerCase().indexOf(' vs ')
+      if (vsIndex !== -1) {
+        const beforeVs = title.substring(0, vsIndex).trim()
+        const afterVs = title.substring(vsIndex + 4).trim()
+        
+        return (
+          <span>
+            <Link href={`/teams/${team.slug}`} className="text-primary hover:underline">
+              {beforeVs}
+            </Link>
+            {' vs '}
+            <Link href={`/teams/${team2.slug}`} className="text-primary hover:underline">
+              {afterVs}
+            </Link>
+          </span>
+        )
       }
     }
 
@@ -446,8 +489,38 @@ export function MatchCard({ match, showCountdown = true }: MatchCardProps) {
       <div className="relative z-10">
       {/* Header with Team Logos and Status */}
       <div className="flex items-center justify-between gap-6 mb-6">
-        {/* ELMT Team Logo */}
-        {team && team.logo && (
+        {/* Team Logo(s) */}
+        {isDualInternalMatch ? (
+          // Dual internal match: Show both ELMT team logos
+          <div className="flex items-center gap-3">
+            <Link href={`/teams/${team.slug}`} className="flex flex-col items-center gap-1 group">
+              <div className="relative w-14 h-14 rounded-lg bg-gradient-to-br from-white/10 to-white/5 ring-2 ring-primary/30 group-hover:ring-primary/60 p-2 flex-shrink-0 transition-all">
+                <TeamLogo
+                  src={team.logo}
+                  alt={`${team.name} Logo`}
+                  fill
+                  className="object-contain"
+                  sizes="56px"
+                />
+              </div>
+              <span className="text-xs font-bold text-primary">{team.name}</span>
+            </Link>
+            <span className="text-lg font-bold text-muted-foreground">VS</span>
+            <Link href={`/teams/${team2.slug}`} className="flex flex-col items-center gap-1 group">
+              <div className="relative w-14 h-14 rounded-lg bg-gradient-to-br from-white/10 to-white/5 ring-2 ring-primary/30 group-hover:ring-primary/60 p-2 flex-shrink-0 transition-all">
+                <TeamLogo
+                  src={team2.logo}
+                  alt={`${team2.name} Logo`}
+                  fill
+                  className="object-contain"
+                  sizes="56px"
+                />
+              </div>
+              <span className="text-xs font-bold text-primary">{team2.name}</span>
+            </Link>
+          </div>
+        ) : team && team.logo ? (
+          // Standard match: Single ELMT team logo
           <div className="flex items-center gap-4">
             <div className="relative w-16 h-16 rounded-lg bg-gradient-to-br from-white/10 to-white/5 ring-2 ring-white/20 p-2 flex-shrink-0">
               <TeamLogo
@@ -460,7 +533,7 @@ export function MatchCard({ match, showCountdown = true }: MatchCardProps) {
             </div>
             <div className="text-sm font-bold text-primary">ELMT {team.name}</div>
           </div>
-        )}
+        ) : null}
 
         <div className="flex items-center gap-4 flex-shrink-0">
           {/* League Badge */}

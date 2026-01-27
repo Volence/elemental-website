@@ -402,7 +402,14 @@ export async function syncTeamData(
         }
         
         const matchData: any = {
+          // Legacy field (for backwards compatibility)
           team: teamId,
+          // New flexible team fields
+          team1Type: 'internal',
+          team1Internal: teamId,
+          team2Type: 'external',
+          team2External: opponentName,
+          // Other fields
           opponent: opponentName,
           date: matchDate.toISOString(),
           region: team.region || 'NA',
@@ -440,6 +447,11 @@ export async function syncTeamData(
             faceitRoomId: matchData.faceitRoomId,
             faceitSeasonId: matchData.faceitSeasonId,
             syncedFromFaceit: true,
+            // Update new team fields (but preserve if already set manually)
+            team1Type: existing.team1Type || 'internal',
+            team1Internal: existing.team1Internal || teamId,
+            team2Type: existing.team2Type || 'external',
+            team2External: existing.team2External || matchData.opponent,
           }
           
           // Add score if match is finished
