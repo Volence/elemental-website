@@ -251,7 +251,16 @@ export const Users: CollectionConfig = {
     afterLogin: [
       async ({ req, user }) => {
         if (user && req.payload) {
-          await trackLogin(req.payload, user as User, req)
+          // Fire-and-forget: defer session tracking to avoid deadlock with Payload's
+          // built-in users_sessions table. Both tables have FK to users and compete
+          // for row locks during login, causing deadlocks.
+          const payload = req.payload
+          const userData = user as User
+          setTimeout(() => {
+            trackLogin(payload, userData, req).catch((err) => {
+              console.error('[Session Tracker] Deferred trackLogin failed:', err)
+            })
+          }, 100)
         }
       },
     ],
