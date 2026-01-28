@@ -367,8 +367,9 @@ export function WeeklyView() {
   })
 
   // Group by team for team matches
-  const teamMatches = filteredMatches.filter(m => m.matchType === 'team-match')
-  const orgEvents = filteredMatches.filter(m => m.matchType !== 'team-match')
+  // Include matches with matchType='team-match' OR no matchType (older matches before schema change)
+  const teamMatches = filteredMatches.filter(m => m.matchType === 'team-match' || !m.matchType)
+  const orgEvents = filteredMatches.filter(m => m.matchType && m.matchType !== 'team-match')
 
   if (loading) {
     return <div className="production-dashboard__loading">Loading matches...</div>

@@ -58,10 +58,12 @@ export default async function MatchesPage({
             },
           },
           // Exclude tournament slots (internal admin items)
+          // Use OR to handle old matches where field doesn't exist
           {
-            isTournamentSlot: {
-              not_equals: true,
-            },
+            or: [
+              { isTournamentSlot: { equals: false } },
+              { isTournamentSlot: { exists: false } },
+            ],
           },
         ],
       },
@@ -93,10 +95,12 @@ export default async function MatchesPage({
             },
           },
           // Exclude tournament slots (internal admin items)
+          // Use OR to handle old matches where field doesn't exist
           {
-            isTournamentSlot: {
-              not_equals: true,
-            },
+            or: [
+              { isTournamentSlot: { equals: false } },
+              { isTournamentSlot: { exists: false } },
+            ],
           },
         ],
       },
