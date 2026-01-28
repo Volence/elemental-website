@@ -57,14 +57,7 @@ export default async function MatchesPage({
               equals: true,
             },
           },
-          // Exclude tournament slots (internal admin items)
-          // Use OR to handle old matches where field doesn't exist
-          {
-            or: [
-              { isTournamentSlot: { equals: false } },
-              { isTournamentSlot: { exists: false } },
-            ],
-          },
+
         ],
       },
       sort: 'date',
@@ -94,14 +87,7 @@ export default async function MatchesPage({
               equals: true,
             },
           },
-          // Exclude tournament slots (internal admin items)
-          // Use OR to handle old matches where field doesn't exist
-          {
-            or: [
-              { isTournamentSlot: { equals: false } },
-              { isTournamentSlot: { exists: false } },
-            ],
-          },
+
         ],
       },
       sort: '-date', // Most recent first
