@@ -57,7 +57,34 @@ export async function GET(
       })
     }
     
-    // Get all matches for this team and season
+    // Check if this season is archived (inactive with archived matches)
+    const season = await payload.findByID({
+      collection: 'faceit-seasons',
+      id: faceitSeasonId,
+    })
+    
+    // If season is archived and has archived matches, return those
+    if (season && !season.isActive && season.archivedMatches && (season.archivedMatches as any[]).length > 0) {
+      const archivedMatches = season.archivedMatches as any[]
+      
+      return NextResponse.json({
+        scheduled: [], // No upcoming matches for archived seasons
+        results: archivedMatches.map((match: any, index: number) => ({
+          id: index,
+          date: match.matchDate,
+          opponent: match.opponent,
+          result: match.result,
+          score: null,
+          elmtScore: null,
+          opponentScore: null,
+          roomLink: match.faceitMatchId ? `https://www.faceit.com/en/ow2/room/${match.faceitMatchId}` : null,
+          faceitRoomId: match.faceitMatchId,
+        })),
+        isArchived: true,
+      })
+    }
+    
+    // Get all matches for this team and season (live data)
     const now = new Date()
     
     // Scheduled matches (future)

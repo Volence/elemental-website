@@ -5,12 +5,57 @@ import { useField, TextInput, FieldLabel } from '@payloadcms/ui'
 
 const ColorPickerField: React.FC = () => {
   const { value, setValue } = useField<string>({ path: 'themeColor' })
-  const logoField = useField<string>({ path: 'logo' })
+  const logoField = useField<string | number | { url?: string }>({ path: 'logo' })
+  const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [lightness, setLightness] = useState(50)
   const [supportsEyeDropper, setSupportsEyeDropper] = useState(false)
   const [browserName, setBrowserName] = useState('Unknown')
   const [isPickingColor, setIsPickingColor] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  // Fetch logo URL when we have an ID
+  useEffect(() => {
+    const fetchLogoUrl = async (id: number) => {
+      try {
+        const response = await fetch(`/api/graphics-assets/${id}?depth=0`)
+        if (response.ok) {
+          const data = await response.json()
+          setLogoUrl(data.url || null)
+        }
+      } catch (error) {
+        console.error('[ColorPickerField] Error fetching logo:', error)
+      }
+    }
+
+    const logoValue = logoField.value
+    if (!logoValue) {
+      setLogoUrl(null)
+      return
+    }
+
+    // If it's a number (ID), fetch the document
+    if (typeof logoValue === 'number') {
+      fetchLogoUrl(logoValue)
+      return
+    }
+
+    // If it's a string that looks like an ID, parse and fetch
+    if (typeof logoValue === 'string' && !isNaN(Number(logoValue)) && !logoValue.startsWith('/')) {
+      fetchLogoUrl(Number(logoValue))
+      return
+    }
+
+    // If it's a string path (legacy), use directly
+    if (typeof logoValue === 'string') {
+      setLogoUrl(logoValue)
+      return
+    }
+
+    // If it's already an object with url
+    if (typeof logoValue === 'object' && logoValue !== null && 'url' in logoValue && logoValue.url) {
+      setLogoUrl(logoValue.url)
+    }
+  }, [logoField.value])
 
   // Detect browser name
   const detectBrowser = () => {
@@ -296,7 +341,7 @@ const ColorPickerField: React.FC = () => {
       </div>
 
       {/* Logo Preview for Color Picking */}
-      {logoField.value && (
+      {logoUrl && (
         <div style={{ marginBottom: '12px' }}>
           <div style={{ 
             fontSize: '12px', 
@@ -318,7 +363,7 @@ const ColorPickerField: React.FC = () => {
             maxWidth: '200px',
           }}>
             <img
-              src={logoField.value}
+              src={logoUrl}
               alt="Team Logo"
               style={{ 
                 display: 'block',

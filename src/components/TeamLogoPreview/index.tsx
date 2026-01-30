@@ -1,23 +1,82 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useFormFields } from '@payloadcms/ui'
+
+interface FileData {
+  url?: string
+  filename?: string
+}
 
 /**
  * Component that displays a live preview of the team logo
- * Shows next to the logo path field in the Teams edit form
+ * Shows next to the logo field in the Teams edit form
  */
 const TeamLogoPreview: React.FC = () => {
-  const logoPath = useFormFields(([fields]) => {
-    return fields?.logo?.value as string | undefined
+  const [fileData, setFileData] = useState<FileData | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  const logoField = useFormFields(([fields]) => {
+    const logoValue = fields?.logo?.value
+    return logoValue
   })
+
+  // Fetch file data when we have an ID
+  useEffect(() => {
+    const fetchFileData = async (id: number) => {
+      setLoading(true)
+      try {
+        const response = await fetch(`/api/graphics-assets/${id}?depth=0`)
+        if (response.ok) {
+          const data = await response.json()
+          setFileData({
+            url: data.url,
+            filename: data.filename,
+          })
+        }
+      } catch (error) {
+        console.error('[TeamLogoPreview] Error fetching file:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (!logoField) {
+      setFileData(null)
+      return
+    }
+
+    // If it's a number (ID), fetch the document
+    if (typeof logoField === 'number') {
+      fetchFileData(logoField)
+      return
+    }
+
+    // If it's a string (ID as string), parse and fetch
+    if (typeof logoField === 'string' && !isNaN(Number(logoField))) {
+      fetchFileData(Number(logoField))
+      return
+    }
+
+    // If it's already an object with url
+    if (typeof logoField === 'object' && logoField !== null && 'url' in logoField) {
+      setFileData({
+        url: (logoField as any).url,
+        filename: (logoField as any).filename,
+      })
+    }
+  }, [logoField])
 
   return (
     <div className="team-logo-preview">
       <div className="team-logo-preview__label">
         Logo Preview
       </div>
-      {!logoPath || typeof logoPath !== 'string' || logoPath.trim() === '' ? (
+      {loading ? (
+        <div className="team-logo-preview__container team-logo-preview__container--empty">
+          Loading...
+        </div>
+      ) : !fileData?.url ? (
         <div className="team-logo-preview__container team-logo-preview__container--empty">
           <div className="team-logo-preview__empty-icon">
             <svg
@@ -33,33 +92,34 @@ const TeamLogoPreview: React.FC = () => {
               />
             </svg>
           </div>
-          No logo set
+          No logo selected
         </div>
       ) : (
         <div className="team-logo-preview__container team-logo-preview__container--filled">
           <div className="team-logo-preview__image-wrapper">
             <img
-              src={logoPath}
+              src={fileData.url}
               alt="Team logo preview"
               className="team-logo-preview__image"
               onError={(e) => {
-                // If image fails to load, show error message
                 const target = e.target as HTMLImageElement
                 target.style.display = 'none'
                 const parent = target.parentElement
                 if (parent) {
                   parent.innerHTML = `
                     <div class="team-logo-preview__error">
-                      ⚠️ Logo not found at this path
+                      ⚠️ Logo failed to load
                     </div>
                   `
                 }
               }}
             />
           </div>
-          <div className="team-logo-preview__path">
-            {logoPath}
-          </div>
+          {fileData.filename && (
+            <div className="team-logo-preview__path">
+              {fileData.filename}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -67,7 +127,4 @@ const TeamLogoPreview: React.FC = () => {
 }
 
 export default TeamLogoPreview
-
-
-
 

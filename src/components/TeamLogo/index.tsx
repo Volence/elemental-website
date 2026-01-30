@@ -35,7 +35,7 @@ export function TeamLogo({
         className={`object-contain ${className || ''}`}
         sizes={sizes}
         priority={priority}
-        loading={priority ? 'eager' : 'lazy'}
+        loading="eager"
       />
     )
   }
@@ -49,7 +49,7 @@ export function TeamLogo({
       className={`object-contain ${className || ''}`}
       sizes={sizes}
       priority={priority}
-      loading={priority ? 'eager' : 'lazy'}
+      loading="eager"
     />
   )
 }

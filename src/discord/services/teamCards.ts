@@ -96,21 +96,27 @@ export async function postOrUpdateTeamCard(options: TeamCardOptions): Promise<st
  * Refresh all team cards in order: Staff first, then teams by Division/SR
  */
 export async function refreshAllTeamCards(): Promise<void> {
+  console.log('[TeamCards] 🔄 Starting refreshAllTeamCards...')
   try {
     const client = await ensureDiscordClient()
     if (!client) {
+      console.log('[TeamCards] ⚠️ No Discord client available, skipping refresh')
       return
     }
 
     const channelId = process.env.DISCORD_CARDS_CHANNEL
     if (!channelId) {
+      console.log('[TeamCards] ⚠️ DISCORD_CARDS_CHANNEL not set, skipping refresh')
       return
     }
 
     const channel = (await client.channels.fetch(channelId)) as TextChannel
     if (!channel || !channel.isTextBased()) {
+      console.log('[TeamCards] ⚠️ Could not fetch cards channel, skipping refresh')
       return
     }
+
+    console.log('[TeamCards] ✓ Connected to Discord, refreshing cards...')
 
 
     // Get payload instance

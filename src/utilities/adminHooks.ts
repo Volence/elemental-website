@@ -76,12 +76,29 @@ export function useAssignedTeams() {
         }
 
         const data = await response.json()
-        const fetchedTeams: AssignedTeam[] = (data.docs || []).map((team: any) => ({
-          id: team.id,
-          name: team.name || 'Untitled Team',
-          slug: team.slug,
-          logo: team.logo,
-        }))
+        const fetchedTeams: AssignedTeam[] = (data.docs || []).map((team: any) => {
+          // Extract logo URL from upload relationship (prefer filename for static path)
+          let logoUrl = '/logos/org.png'
+          if (team.logo) {
+            if (typeof team.logo === 'string') {
+              logoUrl = team.logo // Legacy string format
+            } else if (typeof team.logo === 'object') {
+              // Prefer filename-based static path
+              if (team.logo.filename) {
+                logoUrl = `/graphics-assets/${team.logo.filename}`
+              } else if (team.logo.url) {
+                logoUrl = team.logo.url
+              }
+            }
+          }
+          
+          return {
+            id: team.id,
+            name: team.name || 'Untitled Team',
+            slug: team.slug,
+            logo: logoUrl,
+          }
+        })
 
         setTeams(fetchedTeams)
       } catch (err) {

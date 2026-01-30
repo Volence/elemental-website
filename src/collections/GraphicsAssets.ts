@@ -10,24 +10,12 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 /**
- * Access: Graphics staff OR Staff managers can read and write
- * Team managers can read only
- * Admins always have full access
+ * Access: Graphics assets are publicly readable (needed for team logos, etc.)
+ * Write access restricted to graphics staff, staff managers, and admins
  */
-const canReadGraphicsAssets = ({ req: { user } }: AccessArgs<User>): boolean => {
-  if (!user) return false
-  const u = user as User
-  
-  // Admins and staff managers always have access
-  if (u.role === UserRole.ADMIN || u.role === UserRole.STAFF_MANAGER) return true
-  
-  // Team managers can read
-  if (u.role === UserRole.TEAM_MANAGER) return true
-  
-  // Graphics staff can read
-  if (u.departments?.isGraphicsStaff === true) return true
-  
-  return false
+const canReadGraphicsAssets = (): boolean => {
+  // Allow public read access for graphics assets (team logos, etc.)
+  return true
 }
 
 const canWriteGraphicsAssets = ({ req: { user } }: AccessArgs<User>): boolean => {

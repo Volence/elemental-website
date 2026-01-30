@@ -10,6 +10,7 @@ import { TeamStatsSidebar } from './components/TeamStatsSidebar'
 import { TeamStaffSection } from './components/TeamStaffSection'
 import { TeamRosterSection } from './components/TeamRosterSection'
 import { TeamSubstitutesSection } from './components/TeamSubstitutesSection'
+import { SeasonHistorySection } from './components/SeasonHistorySection'
 import { TeamRecruitmentSection } from './components/TeamRecruitmentSection'
 import CompetitiveSection from './components/CompetitiveSection'
 import { getRoleColor, getRegionColor, getTeamColor } from './utils/teamColors'
@@ -168,6 +169,7 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
             rosterCount={rosterCount}
             subsCount={subsCount}
             achievementsCount={team.achievements?.length || 0}
+            showSeasonHistory={team.faceitEnabled}
           />
 
           {/* Main Content */}
@@ -193,6 +195,11 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
 
             {/* Subs - Only show if there are subs */}
             <TeamSubstitutesSection subs={team.subs} />
+
+            {/* Season History - Only show if team has FaceIt enabled */}
+            {team.faceitEnabled && (
+              <SeasonHistorySection teamId={team.id} />
+            )}
           </main>
         </div>
       </div>

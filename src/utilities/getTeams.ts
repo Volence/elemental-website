@@ -2,6 +2,7 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { sortTeams } from './sortTeams'
 import { isPopulatedPerson, getPersonNameFromRelationship, getSocialLinksFromPerson, getPhotoUrlFromPerson } from './personHelpers'
+import { getLogoUrl } from './getLogoUrl'
 import type { Team as PayloadTeam } from '@/payload-types'
 
 // Type aliases for Payload team entry types
@@ -130,12 +131,11 @@ function extractPersonData(entry: TeamEntry): { name: string; photoUrl?: string 
  */
 function transformPayloadTeam(payloadTeam: PayloadTeam): Team | null {
   try {
-    // Validate required fields
-    if (!payloadTeam.slug || !payloadTeam.name || !payloadTeam.logo) {
+    // Validate required fields (logo is optional - getLogoUrl provides fallback)
+    if (!payloadTeam.slug || !payloadTeam.name) {
       console.warn(`[getTeams] Skipping team with missing required fields:`, {
         slug: payloadTeam.slug,
         name: payloadTeam.name,
-        logo: payloadTeam.logo,
         id: payloadTeam.id,
       })
       return null
@@ -146,7 +146,7 @@ function transformPayloadTeam(payloadTeam: PayloadTeam): Team | null {
       id: payloadTeam.id,
       slug: payloadTeam.slug,
       name: payloadTeam.name,
-      logo: payloadTeam.logo,
+      logo: getLogoUrl(payloadTeam.logo),
       region: payloadTeam.region || undefined,
       rating: payloadTeam.rating || undefined,
       themeColor: payloadTeam.themeColor || undefined,
@@ -232,8 +232,8 @@ export async function getAllTeams(): Promise<Team[]> {
       collection: 'teams',
       limit: 1000,
       pagination: false,
-      overrideAccess: false,
-      depth: 2, // Populate People relationships (depth 2 needed for nested relationships in arrays)
+      overrideAccess: true, // Override access to ensure logo relationship is populated
+      depth: 2, // Populate relationships (logo, people, etc.)
     })
 
     // Transform teams and filter out any that failed transformation
@@ -276,8 +276,8 @@ export async function getTeamBySlug(slug: string): Promise<Team | undefined> {
         },
       },
       limit: 1,
-      overrideAccess: false,
-      depth: 2, // Populate People relationships and their nested photo relationship
+      overrideAccess: true, // Override access to ensure logo relationship is populated
+      depth: 2, // Populate relationships (logo, people, etc.)
     })
 
     if (result.docs.length === 0) {

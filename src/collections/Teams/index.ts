@@ -117,10 +117,23 @@ export const Teams: CollectionConfig = {
             },
             {
               name: 'logo',
-              type: 'text',
-              required: true,
+              type: 'relationship',
+              relationTo: 'graphics-assets',
+              hasMany: false,
+              filterOptions: {
+                mimeType: { contains: 'image' },
+              },
               admin: {
-                description: 'Path to logo image (e.g., /logos/elmt_garden.png). Logo should be uploaded to /public/logos/',
+                description: 'Select the team logo image from the Files library',
+                allowCreate: true,
+              },
+            },
+            // Cached filename for fast list view display (auto-populated on save)
+            {
+              name: 'logoFilename',
+              type: 'text',
+              admin: {
+                hidden: true, // Hidden from UI, auto-managed
               },
             },
             {
@@ -645,11 +658,13 @@ export const Teams: CollectionConfig = {
 
         // NEW TEAM CREATED - Refresh all cards to maintain sort order
         if (operation === 'create') {
+          console.log(`[Teams Hook] Team created: ${doc.name}, triggering Discord refresh...`)
           if (typeof globalThis !== 'undefined') {
             setImmediate(async () => {
               try {
                 const { refreshAllTeamCards } = await import('../../discord/services/teamCards')
                 await refreshAllTeamCards()
+                console.log('[Teams Hook] Discord refresh completed for create')
               } catch (error) {
                 console.error('Failed to refresh Discord team cards:', error)
               }
@@ -698,11 +713,13 @@ export const Teams: CollectionConfig = {
       createAuditLogDeleteHook('teams'),
       // Refresh all Discord cards when team is deleted to maintain sort order
       async ({ doc }) => {
+        console.log(`[Teams Hook] Team deleted: ${doc.name}, triggering Discord refresh...`)
         if (typeof globalThis !== 'undefined') {
           setImmediate(async () => {
             try {
               const { refreshAllTeamCards } = await import('../../discord/services/teamCards')
               await refreshAllTeamCards()
+              console.log('[Teams Hook] Discord refresh completed for delete')
             } catch (error) {
               console.error('Failed to refresh Discord team cards after deletion:', error)
             }
@@ -721,8 +738,29 @@ export const Teams: CollectionConfig = {
     ],
     beforeChange: [
       async ({ data, req, operation }) => {
+        // Cache logo filename for fast list view display
+        if (data.logo && typeof data.logo === 'number') {
+          try {
+            const logoAsset = await req.payload.findByID({
+              collection: 'graphics-assets',
+              id: data.logo,
+            })
+            if (logoAsset?.filename) {
+              data.logoFilename = logoAsset.filename
+            }
+          } catch (e) {
+            // Ignore errors, keep existing logoFilename
+          }
+        } else if (!data.logo) {
+          data.logoFilename = null
+        }
+        
         // Auto-create/update FaceitSeason when currentFaceitLeague is selected
-        if (data.faceitEnabled && data.currentFaceitLeague && data.faceitTeamId) {
+        // Only run on update (not create) since we need a valid team ID
+        const teamId = data.id || req.data?.id
+        const hasValidTeamId = teamId && typeof teamId === 'number' && !isNaN(teamId)
+        
+        if (operation === 'update' && hasValidTeamId && data.faceitEnabled && data.currentFaceitLeague && data.faceitTeamId) {
           try {
             const league = await req.payload.findByID({
               collection: 'faceit-leagues',

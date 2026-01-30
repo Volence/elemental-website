@@ -10,6 +10,7 @@ import { ArrowLeft, MapPin, Users, Calendar } from 'lucide-react'
 import { getGameRoleIcon } from '@/utilities/roleIcons'
 import { formatDate } from '@/utilities/formatDateTime'
 import { ParticleBackground } from '@/components/ParticleBackground'
+import { getLogoUrl } from '@/utilities/getLogoUrl'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -115,7 +116,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       openGraph: {
         title,
         description,
-        images: team?.logo ? [{ url: team.logo }] : [{ url: '/logos/org.png' }],
+        images: [{ url: getLogoUrl(team?.logo, '/logos/org.png') }],
       },
     }
   } catch (error) {
@@ -204,9 +205,9 @@ export default async function RecruitmentDetailPage({ params }: Props) {
 
         {team && (
           <div className="mb-6 flex items-center gap-4">
-            {team.logo && (
+            {getLogoUrl(team.logo) !== '/logos/org.png' && (
               <img
-                src={team.logo}
+                src={getLogoUrl(team.logo)}
                 alt={`${team.name} logo`}
                 className="h-16 w-16 rounded-lg object-contain"
               />
@@ -282,7 +283,7 @@ export default async function RecruitmentDetailPage({ params }: Props) {
               Submit your application and we'll get back to you soon!
             </p>
 
-            <ApplyButton listing={listing} team={team || undefined} />
+            <ApplyButton listing={listing} team={team ? { name: team.name, logo: getLogoUrl(team.logo) } : undefined} />
 
             <div className="mt-6 border-t border-cyan-500/20 pt-6">
               <h4 className="mb-3 text-sm font-semibold text-gray-400">Application Process</h4>

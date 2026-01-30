@@ -18,6 +18,70 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  
+  &__finalize {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: 1rem;
+    padding-left: 1rem;
+    border-left: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  
+  &__filter-input {
+    width: 13rem;
+    padding: 0.4rem 0.6rem;
+    background-color: var(--theme-elevation-100);
+    border: 1px solid var(--theme-elevation-200);
+    border-radius: 4px;
+    color: var(--theme-text);
+    font-size: 0.875rem;
+    
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+    
+    &:focus {
+      outline: none;
+      border-color: var(--theme-elevation-400);
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+    }
+  }
+  
+  &__preview {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.375rem;
+    padding-top: 0.5rem;
+    width: 100%;
+  }
+  
+  &__preview-label {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-right: 0.25rem;
+  }
+  
+  &__preview-tag {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    background-color: rgba(6, 182, 212, 0.15);
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: rgb(103, 232, 249);
+  }
+  
+  &__preview-more {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
   }
   
   &__progress {
@@ -193,6 +257,270 @@
     span {
       color: rgba(255, 255, 255, 0.4);
       font-size: 0.75rem;
+    }
+  }
+  
+  // ===== Finalized Seasons Section =====
+  &__finalized {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  
+  &__finalized-details {
+    background: rgba($admin-accent-info, 0.03);
+    border: 1px solid rgba($admin-accent-info, 0.15);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  &__finalized-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.15s;
+    
+    &:hover {
+      background: rgba($admin-accent-info, 0.05);
+    }
+    
+    &::-webkit-details-marker {
+      display: none;
+    }
+    
+    &::before {
+      content: '▶';
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.4);
+      transition: transform 0.15s;
+    }
+    
+    details[open] &::before {
+      transform: rotate(90deg);
+    }
+  }
+  
+  &__finalized-icon {
+    font-size: 1rem;
+  }
+  
+  &__finalized-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: $admin-accent-info;
+  }
+  
+  &__finalized-content {
+    padding: 1rem;
+    border-top: 1px solid rgba($admin-accent-info, 0.1);
+  }
+  
+  &__finalized-hint {
+    font-size: 0.8125rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 0.75rem;
+  }
+  
+  &__finalized-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  &__finalized-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.65rem 0.85rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 6px;
+  }
+  
+  &__finalized-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+  
+  &__finalized-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: white;
+  }
+  
+  &__finalized-date {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+  }
+  
+  &__finalized-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  &__finalized-btn {
+    padding: 0.35rem 0.65rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+    
+    &--view {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: rgba(255, 255, 255, 0.7);
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.12);
+        color: white;
+      }
+    }
+    
+    &--restore {
+      background: rgba($admin-accent-success, 0.15);
+      border: 1px solid rgba($admin-accent-success, 0.3);
+      color: $admin-accent-success;
+      
+      &:hover {
+        background: rgba($admin-accent-success, 0.25);
+      }
+    }
+  }
+  
+  // Expandable finalized league item
+  &__finalized-item-details {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 6px;
+    overflow: hidden;
+    
+    &[open] {
+      background: rgba(255, 255, 255, 0.03);
+    }
+  }
+  
+  &__finalized-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.65rem 0.85rem;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+    
+    &::-webkit-details-marker {
+      display: none;
+    }
+    
+    // Arrow on the left
+    &::before {
+      content: '▶';
+      font-size: 0.65rem;
+      color: rgba(255, 255, 255, 0.3);
+      transition: transform 0.15s;
+      flex-shrink: 0;
+    }
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+  }
+  
+  // Arrow rotation when open
+  &__finalized-item-details[open] > &__finalized-item::before {
+    transform: rotate(90deg);
+  }
+  
+  &__finalized-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+  
+  &__finalized-meta {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+  }
+  
+  // Team seasons list inside finalized league
+  &__team-seasons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.5rem 0.85rem 0.85rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  &__team-season {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba($admin-accent-info, 0.05);
+    border: 1px solid rgba($admin-accent-info, 0.15);
+    border-radius: 5px;
+    text-decoration: none;
+    transition: all 0.15s;
+    
+    &:hover {
+      background: rgba($admin-accent-info, 0.1);
+      border-color: rgba($admin-accent-info, 0.25);
+    }
+  }
+  
+  &__team-season-name {
+    flex: 1;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: white;
+  }
+  
+  &__team-season-matches {
+    font-size: 0.75rem;
+    color: $admin-accent-info;
+    padding: 0.2rem 0.5rem;
+    background: rgba($admin-accent-info, 0.1);
+    border-radius: 4px;
+  }
+  
+  &__team-season-restore {
+    padding: 0.25rem 0.5rem;
+    background: rgba($admin-accent-success, 0.1);
+    border: 1px solid rgba($admin-accent-success, 0.25);
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: $admin-accent-success;
+    cursor: pointer;
+    transition: all 0.15s;
+    
+    &:hover {
+      background: rgba($admin-accent-success, 0.2);
+      border-color: rgba($admin-accent-success, 0.4);
+    }
+  }
+  
+  &__team-season-edit {
+    padding: 0.25rem 0.5rem;
+    background: rgba($admin-accent-warning, 0.1);
+    border: 1px solid rgba($admin-accent-warning, 0.25);
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: $admin-accent-warning;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    
+    &:hover {
+      background: rgba($admin-accent-warning, 0.2);
+      border-color: rgba($admin-accent-warning, 0.4);
     }
   }
 }

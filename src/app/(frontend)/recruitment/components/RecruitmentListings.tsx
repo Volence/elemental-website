@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react'
 import type { RecruitmentListing, Team } from '@/payload-types'
 import { RecruitmentCard } from './RecruitmentCard'
 import { Filter } from 'lucide-react'
+import { getLogoUrl } from '@/utilities/getLogoUrl'
 
 interface RecruitmentListingsProps {
   listings: RecruitmentListing[]
@@ -225,9 +226,9 @@ export const RecruitmentListings: React.FC<RecruitmentListingsProps> = ({ listin
                 {playerTeams.map(({ team, listings }) => (
                   <div key={team.id}>
                     <div className="mb-6 flex items-center gap-4">
-                      {team.logo && (
+                      {getLogoUrl(team.logo) !== '/logos/org.png' && (
                         <img
-                          src={team.logo}
+                          src={getLogoUrl(team.logo)}
                           alt={`${team.name} logo`}
                           className="h-16 w-16 rounded-lg object-contain"
                         />
@@ -243,7 +244,7 @@ export const RecruitmentListings: React.FC<RecruitmentListingsProps> = ({ listin
                     </div>
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                       {listings.map((listing) => (
-                        <RecruitmentCard key={listing.id} listing={listing} team={team} />
+                        <RecruitmentCard key={listing.id} listing={listing} team={{ name: team.name, logo: getLogoUrl(team.logo), rating: team.rating, region: team.region }} />
                       ))}
                     </div>
                   </div>
@@ -260,9 +261,9 @@ export const RecruitmentListings: React.FC<RecruitmentListingsProps> = ({ listin
                 {teamStaffTeams.map(({ team, listings }) => (
                   <div key={team.id}>
                     <div className="mb-6 flex items-center gap-4">
-                      {team.logo && (
+                      {getLogoUrl(team.logo) !== '/logos/org.png' && (
                         <img
-                          src={team.logo}
+                          src={getLogoUrl(team.logo)}
                           alt={`${team.name} logo`}
                           className="h-16 w-16 rounded-lg object-contain"
                         />
@@ -278,7 +279,7 @@ export const RecruitmentListings: React.FC<RecruitmentListingsProps> = ({ listin
                     </div>
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                       {listings.map((listing) => (
-                        <RecruitmentCard key={listing.id} listing={listing} team={team} />
+                        <RecruitmentCard key={listing.id} listing={listing} team={{ name: team.name, logo: getLogoUrl(team.logo), rating: team.rating, region: team.region }} />
                       ))}
                     </div>
                   </div>

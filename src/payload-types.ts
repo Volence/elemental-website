@@ -579,9 +579,10 @@ export interface Team {
    */
   name: string;
   /**
-   * Path to logo image (e.g., /logos/elmt_garden.png). Logo should be uploaded to /public/logos/
+   * Select the team logo image from the Files library
    */
-  logo: string;
+  logo?: (number | null) | GraphicsAsset;
+  logoFilename?: string | null;
   /**
    * Geographic region where the team competes
    */
@@ -755,6 +756,63 @@ export interface Team {
   createdAt: string;
 }
 /**
+ * 📁 Graphics department file library. Drag & drop files, create folders to organize.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "graphics-assets".
+ */
+export interface GraphicsAsset {
+  id: number;
+  folder?: (number | null) | FolderInterface;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-folders".
+ */
+export interface FolderInterface {
+  id: number;
+  name: string;
+  folder?: (number | null) | FolderInterface;
+  documentsAndFolders?: {
+    docs?: (
+      | {
+          relationTo?: 'payload-folders';
+          value: number | FolderInterface;
+        }
+      | {
+          relationTo?: 'graphics-assets';
+          value: number | GraphicsAsset;
+        }
+    )[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  folderType?: 'graphics-assets'[] | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * ⚙️ FaceIt league templates - Admin-only. Teams select from these when enabling FaceIt.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -804,7 +862,7 @@ export interface FaceitLeague {
   createdAt: string;
 }
 /**
- * 🏆 Team FaceIt seasons - Auto-managed through team pages (backend only)
+ * 🏆 Team FaceIt seasons - Can be used to edit archived match data for finalized seasons
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "faceit-seasons".
@@ -900,6 +958,25 @@ export interface FaceitSeason {
    * Data source (for future integrations)
    */
   dataSource?: 'faceit' | null;
+  /**
+   * When this season was archived/finalized
+   */
+  archivedAt?: string | null;
+  /**
+   * Historical match data preserved when season was finalized. Editable for corrections.
+   */
+  archivedMatches?:
+    | {
+        matchDate?: string | null;
+        opponent?: string | null;
+        result?: ('win' | 'loss' | 'pending') | null;
+        /**
+         * FACEIT match ID for Room link
+         */
+        faceitMatchId?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   /**
    * Hide this season from frontend historical display (data preserved)
    */
@@ -2048,63 +2125,6 @@ export interface GraphicsAnchor {
   createdAt: string;
 }
 /**
- * 📁 Graphics department file library. Drag & drop files, create folders to organize.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "graphics-assets".
- */
-export interface GraphicsAsset {
-  id: number;
-  folder?: (number | null) | FolderInterface;
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
-  sizes?: {
-    thumbnail?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-  };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "payload-folders".
- */
-export interface FolderInterface {
-  id: number;
-  name: string;
-  folder?: (number | null) | FolderInterface;
-  documentsAndFolders?: {
-    docs?: (
-      | {
-          relationTo?: 'payload-folders';
-          value: number | FolderInterface;
-        }
-      | {
-          relationTo?: 'graphics-assets';
-          value: number | GraphicsAsset;
-        }
-    )[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  folderType?: 'graphics-assets'[] | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * 🎥 Video department dashboard
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2991,6 +3011,7 @@ export interface PeopleSelect<T extends boolean = true> {
 export interface TeamsSelect<T extends boolean = true> {
   name?: T;
   logo?: T;
+  logoFilename?: T;
   region?: T;
   rating?: T;
   themeColor?: T;
@@ -3394,6 +3415,16 @@ export interface FaceitSeasonsSelect<T extends boolean = true> {
       };
   lastSynced?: T;
   dataSource?: T;
+  archivedAt?: T;
+  archivedMatches?:
+    | T
+    | {
+        matchDate?: T;
+        opponent?: T;
+        result?: T;
+        faceitMatchId?: T;
+        id?: T;
+      };
   hideHistoricalData?: T;
   updatedAt?: T;
   createdAt?: T;

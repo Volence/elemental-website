@@ -137,6 +137,18 @@ export const ApplyTemplateModal: React.FC<ApplyTemplateModalProps> = ({
           <p className="form-help">This will be the name of the Discord category</p>
         </div>
 
+        <div className="form-section privacy-toggle">
+          <label className="privacy-checkbox-label">
+            <input
+              type="checkbox"
+              checked={isPrivateCategory}
+              onChange={(e) => setIsPrivateCategory(e.target.checked)}
+            />
+            <Lock size={14} />
+            <span>Make private (hide from @everyone)</span>
+          </label>
+        </div>
+
         <div className="form-section">
           <label className="form-label">
             Channels ({editedChannels.length})
@@ -174,18 +186,6 @@ export const ApplyTemplateModal: React.FC<ApplyTemplateModalProps> = ({
               ))
             )}
           </div>
-        </div>
-
-        <div className="form-section privacy-toggle">
-          <label className="privacy-checkbox-label">
-            <input
-              type="checkbox"
-              checked={isPrivateCategory}
-              onChange={(e) => setIsPrivateCategory(e.target.checked)}
-            />
-            <Lock size={14} />
-            <span>Make private (hide from @everyone)</span>
-          </label>
         </div>
       </div>
     </Modal>

@@ -1,6 +1,7 @@
 import React from 'react'
-import { Users, MapPin, Star, Lock, Trophy } from 'lucide-react'
+import { Users, MapPin, Star, Lock, Trophy, History } from 'lucide-react'
 import { getTierFromRating } from '@/utilities/tierColors'
+import Link from 'next/link'
 
 interface TeamStatsSidebarProps {
   region?: string
@@ -8,6 +9,7 @@ interface TeamStatsSidebarProps {
   rosterCount: number
   subsCount: number
   achievementsCount: number
+  showSeasonHistory?: boolean
 }
 
 export function TeamStatsSidebar({
@@ -16,6 +18,7 @@ export function TeamStatsSidebar({
   rosterCount,
   subsCount,
   achievementsCount,
+  showSeasonHistory,
 }: TeamStatsSidebarProps) {
   const tierColors = rating ? getTierFromRating(rating) : null
 
@@ -77,6 +80,19 @@ export function TeamStatsSidebar({
               </div>
               <span className="text-sm font-bold">{achievementsCount}</span>
             </div>
+          )}
+
+          {showSeasonHistory && (
+            <a 
+              href="#faceit-history" 
+              className="flex items-center justify-between py-3 px-4 rounded-lg bg-background/50 hover:bg-background/80 transition-colors cursor-pointer"
+            >
+              <div className="flex items-center gap-2">
+                <History className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-muted-foreground">FACEIT History</span>
+              </div>
+              <span className="text-sm font-bold text-primary">View ↓</span>
+            </a>
           )}
         </div>
       </div>

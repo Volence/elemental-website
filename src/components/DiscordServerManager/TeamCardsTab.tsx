@@ -49,18 +49,35 @@ export default function TeamCardsTab({ onAlert }: TeamCardsTabProps) {
       
       if (response.ok) {
         const data = await response.json()
-        const teamData: TeamCardInfo[] = data.docs.map((team: any) => ({
-          id: team.id,
-          name: team.name,
-          slug: team.slug,
-          logo: team.logo,
-          region: team.region,
-          division: typeof team.currentFaceitLeague === 'object' 
-            ? team.currentFaceitLeague?.division 
-            : undefined,
-          discordCardMessageId: team.discordCardMessageId,
-          updatedAt: team.updatedAt,
-        }))
+        const teamData: TeamCardInfo[] = data.docs.map((team: any) => {
+          // Extract logo URL from upload relationship (prefer filename for static path)
+          let logoUrl: string | undefined = undefined
+          if (team.logo) {
+            if (typeof team.logo === 'string') {
+              logoUrl = team.logo
+            } else if (typeof team.logo === 'object') {
+              // Prefer filename-based static path
+              if (team.logo.filename) {
+                logoUrl = `/graphics-assets/${team.logo.filename}`
+              } else if (team.logo.url) {
+                logoUrl = team.logo.url
+              }
+            }
+          }
+          
+          return {
+            id: team.id,
+            name: team.name,
+            slug: team.slug,
+            logo: logoUrl,
+            region: team.region,
+            division: typeof team.currentFaceitLeague === 'object' 
+              ? team.currentFaceitLeague?.division 
+              : undefined,
+            discordCardMessageId: team.discordCardMessageId,
+            updatedAt: team.updatedAt,
+          }
+        })
         setTeams(teamData)
       }
     } catch (error) {

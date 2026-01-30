@@ -2,6 +2,24 @@ import { EmbedBuilder } from 'discord.js'
 import type { Payload } from 'payload'
 
 /**
+ * Get logo URL from team, prioritizing filename-based static path
+ */
+function getTeamLogoUrl(logo: unknown): string | null {
+  if (!logo) return null
+  if (typeof logo === 'string') return logo
+  if (typeof logo === 'object' && logo !== null) {
+    const logoObj = logo as { url?: string | null; filename?: string | null }
+    // Prefer filename-based static path (no auth required)
+    if (logoObj.filename) {
+      return `/graphics-assets/${logoObj.filename}`
+    }
+    // Fallback to API url
+    if (logoObj.url) return logoObj.url
+  }
+  return null
+}
+
+/**
  * Build an enhanced team info embed with SR, logo, and proper formatting
  */
 export async function buildEnhancedTeamEmbed(team: any, payload: Payload): Promise<EmbedBuilder> {
@@ -16,12 +34,10 @@ export async function buildEnhancedTeamEmbed(team: any, payload: Payload): Promi
   }
 
   // Team logo - ensure absolute URL
-  if (team.logo) {
-    const logoUrl = typeof team.logo === 'string' ? team.logo : team.logo.url
-    if (logoUrl) {
-      const absoluteLogoUrl = getAbsoluteUrl(logoUrl)
-      embed.setThumbnail(absoluteLogoUrl)
-    }
+  const logoPath = getTeamLogoUrl(team.logo)
+  if (logoPath) {
+    const absoluteLogoUrl = getAbsoluteUrl(logoPath)
+    embed.setThumbnail(absoluteLogoUrl)
   }
 
   // Build clean description with region and rating
@@ -176,9 +192,10 @@ export async function buildTeamEmbed(team: any): Promise<EmbedBuilder> {
   }
 
   // Team logo as thumbnail
-  if (team.logo && typeof team.logo === 'object' && team.logo.url) {
-    const logoUrl = getAbsoluteUrl(team.logo.url)
-    embed.setThumbnail(logoUrl)
+  const logoPath = getTeamLogoUrl(team.logo)
+  if (logoPath) {
+    const absoluteLogoUrl = getAbsoluteUrl(logoPath)
+    embed.setThumbnail(absoluteLogoUrl)
   }
 
   // Competitive rating badge

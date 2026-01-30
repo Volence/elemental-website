@@ -18,9 +18,9 @@ export const FaceitSeasons: CollectionConfig = {
   admin: {
     useAsTitle: 'seasonName',
     defaultColumns: ['team', 'faceitLeague', 'seasonName', 'isActive', 'lastSynced'],
-    description: '🏆 Team FaceIt seasons - Auto-managed through team pages (backend only)',
-    group: 'Production',
-    hidden: true, // Hidden from nav, managed through team pages
+    description: '🏆 Team FaceIt seasons - Can be used to edit archived match data for finalized seasons',
+    group: 'Competitive',
+    // Collection is now visible for editing archived match data
   },
   fields: [
     // URL Helper (makes it easy to fill in IDs)
@@ -269,6 +269,67 @@ export const FaceitSeasons: CollectionConfig = {
             description: 'Data source (for future integrations)',
             readOnly: true,
           },
+        },
+      ],
+    },
+    
+    // Archive Data (populated when season is finalized)
+    {
+      name: 'archivedAt',
+      type: 'date',
+      admin: {
+        date: {
+          pickerAppearance: 'dayAndTime',
+        },
+        description: 'When this season was archived/finalized',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'archivedMatches',
+      type: 'array',
+      admin: {
+        description: 'Historical match data preserved when season was finalized. Editable for corrections.',
+      },
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'matchDate',
+              type: 'date',
+              admin: {
+                date: {
+                  pickerAppearance: 'dayAndTime',
+                },
+              },
+            },
+            {
+              name: 'opponent',
+              type: 'text',
+            },
+          ],
+        },
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'result',
+              type: 'select',
+              options: [
+                { label: 'Win', value: 'win' },
+                { label: 'Loss', value: 'loss' },
+                { label: 'Pending', value: 'pending' },
+              ],
+            },
+            {
+              name: 'faceitMatchId',
+              type: 'text',
+              admin: {
+                description: 'FACEIT match ID for Room link',
+              },
+            },
+          ],
         },
       ],
     },
