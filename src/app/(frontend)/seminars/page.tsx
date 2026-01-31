@@ -15,9 +15,35 @@ export const metadata: Metadata = {
 const YOUTUBE_PLAYLIST_ID = 'PLGrawZhb1-1CzrYXs_iiWmtWzASAif2Lv'
 const YOUTUBE_VIDEO_ID = 'kqX--4KlMXI'
 
+// VideoObject structured data for Google Search Console video indexing
+const videoStructuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'VideoObject',
+  name: 'Elemental Seminars - Overwatch 2 Coaching & Educational Content',
+  description: 'Educational seminars from various Overwatch 2 coaches and content creators on competitive gameplay, strategies, and insights.',
+  thumbnailUrl: `https://img.youtube.com/vi/${YOUTUBE_VIDEO_ID}/maxresdefault.jpg`,
+  uploadDate: '2024-01-01T00:00:00Z', // Approximate upload date
+  contentUrl: `https://www.youtube.com/watch?v=${YOUTUBE_VIDEO_ID}`,
+  embedUrl: `https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?list=${YOUTUBE_PLAYLIST_ID}`,
+  publisher: {
+    '@type': 'Organization',
+    name: 'Elemental Esports',
+    logo: {
+      '@type': 'ImageObject',
+      url: 'https://elmt.gg/logos/org.png',
+    },
+  },
+}
+
 export default function SeminarsPage() {
   return (
     <div className="relative pt-8 pb-24 min-h-screen animate-fade-in overflow-hidden">
+      {/* VideoObject structured data for Google Search Console */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(videoStructuredData) }}
+      />
+      
       {/* Subtle background effects */}
       <ParticleBackground particleCount={25} />
       
@@ -74,5 +100,3 @@ export default function SeminarsPage() {
     </div>
   )
 }
-
-
