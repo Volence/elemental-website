@@ -84,6 +84,7 @@ jobs:
               -e NODE_ENV=production \
               --network elemental-website_default \
               -v elemental-website_media:/app/public/media \
+              -v elemental-website_graphics_assets:/app/public/graphics-assets \
               ghcr.io/volence/elemental-website:latest
             
             # Wait for new container to be healthy
@@ -112,6 +113,7 @@ jobs:
                 -e NODE_ENV=production \
                 --network elemental-website_default \
                 -v elemental-website_media:/app/public/media \
+                -v elemental-website_graphics_assets:/app/public/graphics-assets \
                 ghcr.io/volence/elemental-website:latest
               
               echo "✅ Deployment complete!"
