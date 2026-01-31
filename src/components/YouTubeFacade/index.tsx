@@ -55,7 +55,7 @@ export function YouTubeFacade({
   return (
     <button
       onClick={handleClick}
-      className={`relative group cursor-pointer bg-black ${className}`}
+      className={`group cursor-pointer bg-black ${className}`}
       aria-label={`Play ${title}`}
       type="button"
     >
