@@ -215,16 +215,32 @@ export async function POST(request: NextRequest) {
               })
             }
 
-            // Update season with archived data
-            await payload.update({
-              collection: 'faceit-seasons',
-              id: season.id,
-              data: {
-                isActive: false,
-                archivedAt: new Date().toISOString(),
-                archivedMatches: archivedMatches,
-              },
-            })
+            // Update season with archived data using direct SQL to bypass Payload's ObjectID generation
+            // (Payload generates MongoDB-style IDs for array items but DB expects serial integers)
+            const drizzle = payload.db?.drizzle
+            if (!drizzle) {
+              throw new Error('Drizzle ORM not available')
+            }
+            
+            // Dynamic import sql template tag
+            const { sql } = await import('drizzle-orm')
+            
+            // First update the season record itself
+            await drizzle.execute(sql`
+              UPDATE faceit_seasons 
+              SET is_active = false, archived_at = ${new Date().toISOString()}
+              WHERE id = ${season.id}
+            `)
+            
+            // Then insert archived matches directly (let DB generate IDs)
+            for (let i = 0; i < archivedMatches.length; i++) {
+              const match = archivedMatches[i]
+              await drizzle.execute(sql`
+                INSERT INTO faceit_seasons_archived_matches 
+                (_order, _parent_id, match_date, opponent, result, faceit_match_id)
+                VALUES (${i + 1}, ${season.id}, ${match.matchDate}, ${match.opponent}, ${match.result}, ${match.faceitMatchId})
+              `)
+            }
 
             results.seasonsArchived++
             results.matchesArchived += archivedMatches.length
