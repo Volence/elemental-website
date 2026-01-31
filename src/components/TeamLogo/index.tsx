@@ -1,9 +1,10 @@
 'use client'
 
 import Image from 'next/image'
+import { getLogoUrl } from '@/utilities/getLogoUrl'
 
 interface TeamLogoProps {
-  src: string
+  src: unknown // Accept any type - could be string, number, or object from relationship
   alt: string
   className?: string
   fill?: boolean
@@ -23,8 +24,10 @@ export function TeamLogo({
   sizes = '(max-width: 640px) 80px, (max-width: 768px) 100px, 120px',
   priority = false,
 }: TeamLogoProps) {
-  // Normalize the src path (ensure it starts with / and handle any issues)
-  const normalizedSrc = src?.startsWith('/') ? src : `/${src}`
+  // Use getLogoUrl to normalize any input (string, number ID, or object)
+  const resolvedUrl = getLogoUrl(src)
+  // Ensure it starts with /
+  const normalizedSrc = resolvedUrl.startsWith('/') ? resolvedUrl : `/${resolvedUrl}`
 
   if (fill) {
     return (
