@@ -202,7 +202,10 @@ export async function POST(request: NextRequest) {
                 opponentName = standingsNames.get(opponentId) || await fetchTeamName(opponentId)
                 opponentCache.set(opponentId, opponentName)
               }
-              opponentName = opponentName || 'BYE'
+              // Treat missing, empty, or 'Unknown' opponent as BYE
+              if (!opponentName || opponentName === 'Unknown') {
+                opponentName = 'BYE'
+              }
 
               const isFinished = match.status === 'finished'
               const didWin = isFinished && match.winner === faceitTeamId
@@ -256,6 +259,12 @@ export async function POST(request: NextRequest) {
               UPDATE faceit_seasons 
               SET is_active = false, archived_at = ${new Date().toISOString()}
               WHERE id = ${season.id}
+            `)
+            
+            // Delete any existing archived matches for this season (allows re-finalization)
+            await drizzle.execute(sql`
+              DELETE FROM faceit_seasons_archived_matches 
+              WHERE _parent_id = ${season.id}
             `)
             
             // Then insert archived matches directly (let DB generate IDs)
