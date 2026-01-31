@@ -207,17 +207,22 @@ export async function POST(request: NextRequest) {
               const isFinished = match.status === 'finished'
               const didWin = isFinished && match.winner === faceitTeamId
 
-              // Safely parse match date - FACEIT schedule is Unix timestamp in seconds
+              // Safely parse match date - FACEIT schedule could be seconds or milliseconds
               let matchDate: string
               try {
-                const scheduleMs = match.origin?.schedule 
-                  ? match.origin.schedule * 1000  // Convert seconds to milliseconds
-                  : null
-                const parsedDate = scheduleMs ? new Date(scheduleMs) : null
-                if (parsedDate && !isNaN(parsedDate.getTime())) {
-                  matchDate = parsedDate.toISOString()
+                const schedule = match.origin?.schedule
+                if (schedule) {
+                  // Heuristic: if value > 10^12, it's already milliseconds (year 2001+)
+                  // If value < 10^12, it's seconds and needs conversion
+                  const scheduleMs = schedule > 1e12 ? schedule : schedule * 1000
+                  const parsedDate = new Date(scheduleMs)
+                  if (!isNaN(parsedDate.getTime()) && parsedDate.getFullYear() > 2000 && parsedDate.getFullYear() < 2100) {
+                    matchDate = parsedDate.toISOString()
+                  } else {
+                    matchDate = new Date().toISOString() // Fallback if date is unreasonable
+                  }
                 } else {
-                  matchDate = new Date().toISOString() // Fallback to now if invalid
+                  matchDate = new Date().toISOString()
                 }
               } catch {
                 matchDate = new Date().toISOString()
