@@ -58,7 +58,7 @@ export async function GET(
         record: `${wins}-${losses}`,
         wins,
         losses,
-        rank: standings.rank || null,
+        rank: standings.currentRank || null,
         totalTeams: standings.totalTeams || null,
         points: standings.points || null,
         archivedAt: season.archivedAt,

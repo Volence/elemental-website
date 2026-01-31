@@ -236,6 +236,11 @@ export async function POST(request: NextRequest) {
               })
             }
 
+            // Deduplicate matches by faceitMatchId (handles duplicate BYE entries)
+            const uniqueMatches = archivedMatches.filter((match, index, self) => 
+              index === self.findIndex(m => m.faceitMatchId === match.faceitMatchId)
+            )
+
             // Update season with archived data using direct SQL to bypass Payload's ObjectID generation
             // (Payload generates MongoDB-style IDs for array items but DB expects serial integers)
             const drizzle = payload.db?.drizzle
@@ -254,8 +259,8 @@ export async function POST(request: NextRequest) {
             `)
             
             // Then insert archived matches directly (let DB generate IDs)
-            for (let i = 0; i < archivedMatches.length; i++) {
-              const match = archivedMatches[i]
+            for (let i = 0; i < uniqueMatches.length; i++) {
+              const match = uniqueMatches[i]
               await drizzle.execute(sql`
                 INSERT INTO faceit_seasons_archived_matches 
                 (_order, _parent_id, match_date, opponent, result, faceit_match_id)
@@ -264,7 +269,7 @@ export async function POST(request: NextRequest) {
             }
 
             results.seasonsArchived++
-            results.matchesArchived += archivedMatches.length
+            results.matchesArchived += uniqueMatches.length
 
 
 
