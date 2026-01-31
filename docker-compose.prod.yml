@@ -11,6 +11,7 @@ services:
       - '127.0.0.1:3000:3000'  # Only bind to localhost (Nginx will proxy)
     volumes:
       - media:/app/public/media
+      - graphics_assets:/app/public/graphics-assets
     env_file:
       - .env.production
     environment:
@@ -47,3 +48,4 @@ services:
 volumes:
   postgres_data:
   media:
+  graphics_assets:
