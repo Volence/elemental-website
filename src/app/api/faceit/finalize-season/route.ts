@@ -207,8 +207,24 @@ export async function POST(request: NextRequest) {
               const isFinished = match.status === 'finished'
               const didWin = isFinished && match.winner === faceitTeamId
 
+              // Safely parse match date - FACEIT schedule is Unix timestamp in seconds
+              let matchDate: string
+              try {
+                const scheduleMs = match.origin?.schedule 
+                  ? match.origin.schedule * 1000  // Convert seconds to milliseconds
+                  : null
+                const parsedDate = scheduleMs ? new Date(scheduleMs) : null
+                if (parsedDate && !isNaN(parsedDate.getTime())) {
+                  matchDate = parsedDate.toISOString()
+                } else {
+                  matchDate = new Date().toISOString() // Fallback to now if invalid
+                }
+              } catch {
+                matchDate = new Date().toISOString()
+              }
+
               archivedMatches.push({
-                matchDate: new Date(match.origin.schedule).toISOString(),
+                matchDate,
                 opponent: opponentName,
                 result: isFinished ? (didWin ? 'win' : 'loss') : 'pending',
                 faceitMatchId: match.origin.id,
