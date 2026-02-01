@@ -22,12 +22,12 @@ export const Maps: CollectionConfig = {
     },
   },
   access: {
-    // Only scouting staff and staff-manager+ can read
+    // Scouting staff, team managers, and staff-manager+ can read
     read: (args) => {
       const { req: { user } } = args
       if (!user) return false
       const u = user as any
-      if (u.role === UserRole.ADMIN || u.role === UserRole.STAFF_MANAGER) return true
+      if (u.role === UserRole.ADMIN || u.role === UserRole.STAFF_MANAGER || u.role === UserRole.TEAM_MANAGER) return true
       return isScoutingStaff(args)
     },
     create: ({ req }) => {
