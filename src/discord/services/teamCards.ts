@@ -385,12 +385,22 @@ async function fetchAllTeamsSorted(payload: any): Promise<any[]> {
       
       // Then sort by division within same region
       // Division is in currentFaceitLeague.division (populated with depth: 2)
-      const aDivision = (typeof a.currentFaceitLeague === 'object' && a.currentFaceitLeague?.division) 
-        ? a.currentFaceitLeague.division 
-        : 'Open'
-      const bDivision = (typeof b.currentFaceitLeague === 'object' && b.currentFaceitLeague?.division)
-        ? b.currentFaceitLeague.division
-        : 'Open'
+      // Fall back to checking rating text for "FACEIT Masters/Expert/Advanced"
+      const getDivision = (team: any): string => {
+        // First check linked league
+        if (typeof team.currentFaceitLeague === 'object' && team.currentFaceitLeague?.division) {
+          return team.currentFaceitLeague.division
+        }
+        // Fall back to parsing rating text for FACEIT divisions
+        const rating = team.rating?.toLowerCase() || ''
+        if (rating.includes('masters')) return 'Masters'
+        if (rating.includes('expert')) return 'Expert'
+        if (rating.includes('advanced')) return 'Advanced'
+        return 'Open'
+      }
+      
+      const aDivision = getDivision(a)
+      const bDivision = getDivision(b)
       
       const aDivOrder = divisionOrder[aDivision as keyof typeof divisionOrder] || 999
       const bDivOrder = divisionOrder[bDivision as keyof typeof divisionOrder] || 999
