@@ -32,10 +32,17 @@ const redirects = async () => {
     permanent: true, // 301
   }))
 
+  // Redirect for malformed URL reported in Google Search Console
+  const malformedRedirects = [
+    { source: '/%26', destination: '/', permanent: true }, // /& → homepage
+    { source: '/teams/eclipse', destination: '/teams', permanent: true }, // deleted team
+  ]
+
   const redirects = [
     internetExplorerRedirect,
     castersRedirect,
     ...deletedPlayerRedirects,
+    ...malformedRedirects,
   ]
 
   return redirects

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+import { redirect } from 'next/navigation'
 import React from 'react'
 import { getPayload } from 'payload'
 import config from '@payload-config'
@@ -79,7 +79,7 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
   const team = await getTeamBySlug(slug)
 
   if (!team) {
-    notFound()
+    redirect('/teams')
   }
 
   const rosterCount = team.roster?.length || 0
