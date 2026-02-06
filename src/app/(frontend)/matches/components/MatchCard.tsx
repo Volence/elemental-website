@@ -497,6 +497,7 @@ export function MatchCard({ match, showCountdown = true }: MatchCardProps) {
               <div className="relative w-14 h-14 rounded-lg bg-gradient-to-br from-white/10 to-white/5 ring-2 ring-primary/30 group-hover:ring-primary/60 p-2 flex-shrink-0 transition-all">
                 <TeamLogo
                   src={team.logo}
+                  logoFilename={team.logoFilename}
                   alt={`${team.name} Logo`}
                   fill
                   className="object-contain"
@@ -510,6 +511,7 @@ export function MatchCard({ match, showCountdown = true }: MatchCardProps) {
               <div className="relative w-14 h-14 rounded-lg bg-gradient-to-br from-white/10 to-white/5 ring-2 ring-primary/30 group-hover:ring-primary/60 p-2 flex-shrink-0 transition-all">
                 <TeamLogo
                   src={team2.logo}
+                  logoFilename={team2.logoFilename}
                   alt={`${team2.name} Logo`}
                   fill
                   className="object-contain"
@@ -519,12 +521,13 @@ export function MatchCard({ match, showCountdown = true }: MatchCardProps) {
               <span className="text-xs font-bold text-primary">{team2.name}</span>
             </Link>
           </div>
-        ) : team && team.logo ? (
+        ) : team && (team.logo || team.logoFilename) ? (
           // Standard match: Single ELMT team logo
           <div className="flex items-center gap-4">
             <div className="relative w-16 h-16 rounded-lg bg-gradient-to-br from-white/10 to-white/5 ring-2 ring-white/20 p-2 flex-shrink-0">
               <TeamLogo
                 src={team.logo}
+                logoFilename={team.logoFilename}
                 alt={`${team.name} Logo`}
                 fill
                 className="object-contain"

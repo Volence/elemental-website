@@ -24,7 +24,7 @@ export function PastMatchCard({ match }: PastMatchCardProps) {
     matchDate = new Date()
   }
 
-  // Safely extract team relationship
+  // Safely extract team relationship (Team 1 - usually the "home" ELMT team)
   const team =
     match.team &&
     typeof match.team === 'object' &&
@@ -32,7 +32,14 @@ export function PastMatchCard({ match }: PastMatchCardProps) {
     typeof match.team.slug === 'string' &&
     typeof match.team.name === 'string'
       ? match.team
-      : null
+      : // Also check new team1Internal field
+        match.team1Internal &&
+        typeof match.team1Internal === 'object' &&
+        match.team1Internal !== null &&
+        typeof match.team1Internal.slug === 'string' &&
+        typeof match.team1Internal.name === 'string'
+          ? match.team1Internal
+          : null
 
   const displayStatus = getMatchStatus(
     match.date as string,
@@ -108,10 +115,11 @@ export function PastMatchCard({ match }: PastMatchCardProps) {
       <div className="flex items-center justify-between gap-4 mb-4">
         {/* Team Logo and Title */}
         <div className="flex items-center gap-4 flex-1">
-          {team && team.logo && (
+          {team && (team.logo || team.logoFilename) && (
             <div className="relative w-12 h-12 rounded-lg bg-gradient-to-br from-white/10 to-white/5 ring-2 ring-white/15 p-1.5 flex-shrink-0">
               <TeamLogo
                 src={team.logo}
+                logoFilename={team.logoFilename}
                 alt={`${team.name} Logo`}
                 fill
                 className="object-contain"

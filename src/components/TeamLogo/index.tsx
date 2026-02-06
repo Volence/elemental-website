@@ -12,6 +12,7 @@ interface TeamLogoProps {
   height?: number
   sizes?: string
   priority?: boolean
+  logoFilename?: string | null // Cached filename from Teams collection for fallback
 }
 
 export function TeamLogo({
@@ -23,9 +24,11 @@ export function TeamLogo({
   height,
   sizes = '(max-width: 640px) 80px, (max-width: 768px) 100px, 120px',
   priority = false,
+  logoFilename,
 }: TeamLogoProps) {
   // Use getLogoUrl to normalize any input (string, number ID, or object)
-  const resolvedUrl = getLogoUrl(src)
+  // Pass logoFilename as fallback for when logo is just an ID
+  const resolvedUrl = getLogoUrl(src, { logoFilename })
   // Ensure it starts with /
   const normalizedSrc = resolvedUrl.startsWith('/') ? resolvedUrl : `/${resolvedUrl}`
 
