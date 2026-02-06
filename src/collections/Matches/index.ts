@@ -68,10 +68,14 @@ export const Matches: CollectionConfig = {
         // Guard against undefined data
         if (!data) return data
         
-        // Auto-generate title if not provided or empty string
+        // Auto-generate title if:
+        // 1. Title is empty/not provided
+        // 2. Title contains 'TBD' (indicating placeholder that should be updated)
         const titleIsEmpty = !data.title || (typeof data.title === 'string' && data.title.trim() === '')
+        const titleHasTBD = typeof data.title === 'string' && data.title.includes('TBD')
+        const shouldRegenerateTitle = titleIsEmpty || titleHasTBD
         
-        if (titleIsEmpty) {
+        if (shouldRegenerateTitle) {
           try {
             // Helper to get team name from new flexible fields OR legacy fields
             const getTeamName = async (typeField: string, internalField: string, externalField: string, legacyField?: string) => {
