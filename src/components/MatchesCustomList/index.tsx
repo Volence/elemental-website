@@ -73,7 +73,10 @@ export default function MatchesCustomList() {
         setLoading(true)
       }
       
-      let upcomingQuery = 'where[status][equals]=scheduled&sort=date&limit=100&depth=1'
+      // Only show matches that are scheduled AND have dates within the last 2 hours or in the future
+      // This prevents past matches that are still marked 'scheduled' from appearing in upcoming
+      const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+      let upcomingQuery = `where[status][equals]=scheduled&where[date][greater_than]=${twoHoursAgo}&sort=date&limit=100&depth=1`
       const offset = (completedPage - 1) * COMPLETED_PAGE_SIZE
       let completedQuery = `where[status][in][0]=complete&where[status][in][1]=cancelled&sort=-date&limit=${COMPLETED_PAGE_SIZE}&offset=${offset}&depth=1`
       
