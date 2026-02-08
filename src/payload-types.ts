@@ -84,6 +84,7 @@ export interface Config {
     'faceit-seasons': FaceitSeason;
     'social-posts': SocialPost;
     'graphics-anchor': GraphicsAnchor;
+    'branding-guide-anchor': BrandingGuideAnchor;
     'graphics-assets': GraphicsAsset;
     'video-anchor': VideoAnchor;
     'events-anchor': EventsAnchor;
@@ -132,6 +133,7 @@ export interface Config {
     'faceit-seasons': FaceitSeasonsSelect<false> | FaceitSeasonsSelect<true>;
     'social-posts': SocialPostsSelect<false> | SocialPostsSelect<true>;
     'graphics-anchor': GraphicsAnchorSelect<false> | GraphicsAnchorSelect<true>;
+    'branding-guide-anchor': BrandingGuideAnchorSelect<false> | BrandingGuideAnchorSelect<true>;
     'graphics-assets': GraphicsAssetsSelect<false> | GraphicsAssetsSelect<true>;
     'video-anchor': VideoAnchorSelect<false> | VideoAnchorSelect<true>;
     'events-anchor': EventsAnchorSelect<false> | EventsAnchorSelect<true>;
@@ -595,6 +597,14 @@ export interface Team {
    * Custom theme color for the team page hero background. Pick a color that complements the logo. Leave empty to auto-detect based on team name.
    */
   themeColor?: string | null;
+  /**
+   * Primary branding color (bright neon outline/glow). Used in the Clean Glow logo system.
+   */
+  brandingPrimary?: string | null;
+  /**
+   * Secondary branding color (bright neon outline/glow). Used in the Clean Glow logo system.
+   */
+  brandingSecondary?: string | null;
   /**
    * Optional team bio or description to display on the team page. Great for team history, philosophy, or fun facts!
    */
@@ -2125,6 +2135,18 @@ export interface GraphicsAnchor {
   createdAt: string;
 }
 /**
+ * 🎨 Visual branding color guide for all teams
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "branding-guide-anchor".
+ */
+export interface BrandingGuideAnchor {
+  id: number;
+  placeholder?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * 🎥 Video department dashboard
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2750,6 +2772,10 @@ export interface PayloadLockedDocument {
         value: number | GraphicsAnchor;
       } | null)
     | ({
+        relationTo: 'branding-guide-anchor';
+        value: number | BrandingGuideAnchor;
+      } | null)
+    | ({
         relationTo: 'graphics-assets';
         value: number | GraphicsAsset;
       } | null)
@@ -3015,6 +3041,8 @@ export interface TeamsSelect<T extends boolean = true> {
   region?: T;
   rating?: T;
   themeColor?: T;
+  brandingPrimary?: T;
+  brandingSecondary?: T;
   bio?: T;
   active?: T;
   achievements?:
@@ -3460,6 +3488,15 @@ export interface SocialPostsSelect<T extends boolean = true> {
  * via the `definition` "graphics-anchor_select".
  */
 export interface GraphicsAnchorSelect<T extends boolean = true> {
+  placeholder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "branding-guide-anchor_select".
+ */
+export interface BrandingGuideAnchorSelect<T extends boolean = true> {
   placeholder?: T;
   updatedAt?: T;
   createdAt?: T;

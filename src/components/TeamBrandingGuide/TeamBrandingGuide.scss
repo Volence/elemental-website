@@ -1,0 +1,392 @@
+/* ═══════════════════════════════════════════════
+   Team Branding Guide
+   Compact, dark-canvas layout for neon preview.
+   Uses very specific class names to prevent
+   Payload admin CSS from leaking in.
+   ═══════════════════════════════════════════════ */
+
+/* ── Nuclear reset for this view ── */
+.tbg, .tbg *, .tc, .tc * {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+/* Selectively restore only what we need */
+
+/* ── Page container ── */
+.tbg {
+  min-height: 100vh;
+  background: #0b0b12 !important;
+  margin: -20px;
+  margin-top: -70px;
+  padding-top: 80px;
+}
+
+.tbg__wrap {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px 32px 80px;
+}
+
+/* ── Header ── */
+.tbg__hd {
+  text-align: center;
+  margin-bottom: 48px;
+}
+.tbg__hd h1 {
+  font-size: 24px;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 4px;
+}
+.tbg__subtitle {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.3);
+  margin: 0 0 14px;
+}
+.tbg__legend {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.tbg__legend span {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+}
+.tbg__legend strong {
+  color: rgba(255, 255, 255, 0.65);
+  font-weight: 600;
+}
+
+.tbg__msg {
+  text-align: center;
+  padding: 60px;
+  color: rgba(255, 255, 255, 0.35);
+}
+.tbg__msg--err { color: #e53935; }
+
+/* ── Region sections ── */
+.tbg__section { margin-bottom: 48px; }
+
+.tbg__rg {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  margin: 0 0 16px 14px;
+  padding: 28px 0 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+/* ── Card grid ── */
+.tbg__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+/* ═══ TEAM CARD ═══ */
+.tc {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+  transition: background 0.15s;
+}
+.tc:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* ── Glow header bar ── */
+.tc__glow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  min-height: 44px;
+  border-left: 3px solid !important; /* color set inline */
+  box-shadow: inset 0 0 30px transparent !important; /* overridden inline */
+}
+
+.tc__logo-svg {
+  flex-shrink: 0;
+  width: var(--logo-size, 34px) !important;
+  height: var(--logo-size, 34px) !important;
+}
+
+.tc__name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tc__badge {
+  font-size: 11px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50% !important;
+  flex-shrink: 0;
+  font-weight: 700;
+}
+.tc__badge--saving { color: #ffc107; background: rgba(255, 193, 7, 0.15) !important; }
+.tc__badge--saved  { color: #4caf50; background: rgba(76, 175, 80, 0.15) !important; }
+.tc__badge--error  { color: #f44336; background: rgba(244, 67, 54, 0.15) !important; }
+
+.tc__edit {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px !important;
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 13px;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+}
+.tc__edit:hover {
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* ── Horizontal rows ── */
+.tc__box-row {
+  display: flex;
+  gap: 10px;
+  padding: 4px 14px;
+}
+
+.tc__preview-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tc__preview-label {
+  font-size: 9px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Preview boxes ── */
+.tc__preview-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  border-radius: 6px !important;
+  border: 2px solid var(--tc-clr, #333) !important;
+  background-color: var(--tc-bg, transparent) !important;
+  box-shadow: var(--tc-glow, none) !important;
+  transition: box-shadow 0.2s;
+}
+
+.tc__preview-text {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 8px;
+}
+
+/* ── Large pinwheel preview ── */
+.tc__pinwheel-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 14px 20px;
+  background: var(--tc-card-bg, #000);
+  border-radius: 0 0 7px 7px;
+}
+
+/* ── Color picker row ── */
+.tc__color {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tc__swatch {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  flex-shrink: 0;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: none !important; /* overridden inline for glow */
+}
+
+.tc__native {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  opacity: 0 !important;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+}
+
+.tc__hex {
+  width: 64px;
+  height: 22px;
+  padding: 0 5px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 4px !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  font-size: 10px;
+  letter-spacing: 0.3px;
+}
+.tc__hex:focus {
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+.tc__hex::placeholder {
+  color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* ── Background color picker (header) ── */
+.tbg__bg-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+
+  label {
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.35);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+}
+
+.tbg__bg-reset {
+  padding: 3px 10px !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 4px !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: rgba(255, 255, 255, 0.45) !important;
+  font-size: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+  }
+}
+
+/* ── Quick color reference table ── */
+.tbg__ref-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 14px;
+  max-width: calc(100% - 28px);
+
+  th, td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  }
+
+  th {
+    font-size: 9px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.35);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding-bottom: 10px;
+  }
+
+  td {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  code {
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.55);
+    letter-spacing: 0.3px;
+  }
+
+  tbody tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+  }
+}
+
+.tbg__ref-name {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.tbg__ref-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tbg__ref-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tbg__ref-copy {
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.15s;
+  position: relative;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  &:active {
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.tbg__ref-copied {
+  font-size: 9px;
+  font-weight: 600;
+  color: #4ade80;
+  margin-left: 6px;
+  animation: tbg-fade 1.5s ease-out forwards;
+}
+
+@keyframes tbg-fade {
+  0% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}

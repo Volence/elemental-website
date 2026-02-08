@@ -58,7 +58,7 @@ import { OpponentWiki } from './globals/OpponentWiki'
 import { OrganizationCalendar } from './globals/OrganizationCalendar'
 import { GlobalCalendarEvents } from './collections/GlobalCalendarEvents'
 
-import { GraphicsAnchor, VideoAnchor, EventsAnchor } from './collections/DepartmentAnchors'
+import { GraphicsAnchor, BrandingGuideAnchor, VideoAnchor, EventsAnchor } from './collections/DepartmentAnchors'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
@@ -175,6 +175,7 @@ const config = buildConfig({
     
     // DEPARTMENT WORKBOARDS: Show Kanban boards for each department
     GraphicsAnchor, // Graphics group
+    BrandingGuideAnchor, // Graphics group - team color branding guide
     GraphicsAssets, // Graphics asset library with folder support
     VideoAnchor, // Video group
     EventsAnchor, // Events group

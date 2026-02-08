@@ -20,6 +20,7 @@ import { default as default_00c104303d223c5ad174a97bdf6b198b } from '@/component
 import { default as default_890f375c2e64cfbf8289c4ab4ee8f2a1 } from '@/components/PeopleListColumns/StaffPositionsCell'
 import { default as default_04cdbc390d38c074fb71cb7d83ceaa88 } from '@/components/PeopleListColumns/TeamsCell'
 import { default as default_765c32446158099d5cf3659ccd46167a } from '@/collections/Teams/ColorPickerField'
+import { default as default_de3249083376ab0290efd4284159f820 } from '@/collections/Teams/BrandingColorField'
 import { default as default_befd121dc2c708f29d17ef6cf6b47565 } from '@/components/TeamTabCounts/StaffCount'
 import { default as default_f6633e5ce5f4aebde4e8dd97802e545a } from '@/components/TeamTabCounts/RosterCount'
 import { TeamUrlHelper as TeamUrlHelper_d3aadc8f7d1aa70ce78ff0cfa164a82b } from '@/components/FaceitUrlHelper'
@@ -49,6 +50,7 @@ import { default as default_cbd62d152faae83563323bc6e1990a3d } from '@/component
 import { default as default_f52f291ae9aadfb75185249ec10b563b } from '@/components/SocialPostColumns/StatusCell'
 import { default as default_6b7ab1bcf3858d76397d35f4ac810b8c } from '@/components/SocialPostColumns/QuickFilters'
 import { GraphicsWorkboard as GraphicsWorkboard_f4dd7e7806bf98c1c8970f346133cd5f } from '@/components/DepartmentWorkboard'
+import { default as default_8a2500a4e3906ab75bb39c8e12630e9a } from '@/components/TeamBrandingGuide'
 import { FolderTableCell as FolderTableCell_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 import { FolderField as FolderField_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 import { default as default_84d1cf001f7124d9b07380704ce8cd26 } from '@/components/FileBrowser/FileBrowserView'
@@ -126,6 +128,7 @@ export const importMap = {
   "@/components/PeopleListColumns/StaffPositionsCell#default": default_890f375c2e64cfbf8289c4ab4ee8f2a1,
   "@/components/PeopleListColumns/TeamsCell#default": default_04cdbc390d38c074fb71cb7d83ceaa88,
   "@/collections/Teams/ColorPickerField#default": default_765c32446158099d5cf3659ccd46167a,
+  "@/collections/Teams/BrandingColorField#default": default_de3249083376ab0290efd4284159f820,
   "@/components/TeamTabCounts/StaffCount#default": default_befd121dc2c708f29d17ef6cf6b47565,
   "@/components/TeamTabCounts/RosterCount#default": default_f6633e5ce5f4aebde4e8dd97802e545a,
   "@/components/FaceitUrlHelper#TeamUrlHelper": TeamUrlHelper_d3aadc8f7d1aa70ce78ff0cfa164a82b,
@@ -155,6 +158,7 @@ export const importMap = {
   "@/components/SocialPostColumns/StatusCell#default": default_f52f291ae9aadfb75185249ec10b563b,
   "@/components/SocialPostColumns/QuickFilters#default": default_6b7ab1bcf3858d76397d35f4ac810b8c,
   "@/components/DepartmentWorkboard#GraphicsWorkboard": GraphicsWorkboard_f4dd7e7806bf98c1c8970f346133cd5f,
+  "@/components/TeamBrandingGuide#default": default_8a2500a4e3906ab75bb39c8e12630e9a,
   "@payloadcms/ui/rsc#FolderTableCell": FolderTableCell_ab83ff7e88da8d3530831f296ec4756a,
   "@payloadcms/ui/rsc#FolderField": FolderField_ab83ff7e88da8d3530831f296ec4756a,
   "@/components/FileBrowser/FileBrowserView#default": default_84d1cf001f7124d9b07380704ce8cd26,

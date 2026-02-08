@@ -173,6 +173,40 @@ export const Teams: CollectionConfig = {
               },
             },
             {
+              name: 'brandingPrimary',
+              type: 'text',
+              admin: {
+                description: 'Primary branding color (bright neon outline/glow). Used in the Clean Glow logo system.',
+                components: {
+                  Field: {
+                    path: '@/collections/Teams/BrandingColorField#default',
+                    clientProps: {
+                      path: 'brandingPrimary',
+                      label: 'Branding Primary (Glow)',
+                      description: 'Bright neon color for outlines and glow effects',
+                    },
+                  },
+                },
+              },
+            },
+            {
+              name: 'brandingSecondary',
+              type: 'text',
+              admin: {
+                description: 'Secondary branding color (bright neon outline/glow). Used in the Clean Glow logo system.',
+                components: {
+                  Field: {
+                    path: '@/collections/Teams/BrandingColorField#default',
+                    clientProps: {
+                      path: 'brandingSecondary',
+                      label: 'Branding Secondary (Fill)',
+                      description: 'Second neon color for fills and secondary elements',
+                    },
+                  },
+                },
+              },
+            },
+            {
               name: 'bio',
               type: 'textarea',
               admin: {

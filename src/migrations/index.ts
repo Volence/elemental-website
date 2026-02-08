@@ -5,6 +5,7 @@ import * as migration_20251229_150200_add_complete_status from "./20251229_15020
 import * as migration_20260113_201500_add_quick_scrims from "./20260113_201500_add_quick_scrims";
 import * as migration_20260114_021700_add_scouting_wiki_phase1 from "./20260114_021700_add_scouting_wiki_phase1";
 import * as migration_20260127_153700_add_flexible_team_fields from "./20260127_153700_add_flexible_team_fields";
+import * as migration_20260207_235400_add_team_branding_colors from "./20260207_235400_add_team_branding_colors";
 
 export const migrations = [
   {
@@ -41,5 +42,10 @@ export const migrations = [
     up: migration_20260127_153700_add_flexible_team_fields.up,
     down: migration_20260127_153700_add_flexible_team_fields.down,
     name: "20260127_153700_add_flexible_team_fields",
+  },
+  {
+    up: migration_20260207_235400_add_team_branding_colors.up,
+    down: migration_20260207_235400_add_team_branding_colors.down,
+    name: "20260207_235400_add_team_branding_colors",
   },
 ];

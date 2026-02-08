@@ -1,0 +1,393 @@
+'use client'
+
+import React, { useEffect, useState, useCallback, useRef } from 'react'
+import { useStepNav } from '@payloadcms/ui'
+import './TeamBrandingGuide.scss'
+
+interface TeamData {
+  id: number
+  name: string
+  slug?: string
+  region?: string
+  brandingPrimary?: string | null
+  brandingSecondary?: string | null
+  logoFilename?: string | null
+  themeColor?: string | null
+}
+
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
+
+const REGION_ORDER = ['NA', 'EMEA', 'SA', 'Other']
+const REGION_LABELS: Record<string, string> = {
+  NA: 'North America',
+  EMEA: 'EMEA',
+  SA: 'South America',
+  Other: 'Unassigned',
+}
+
+// ELMT pinwheel — exact 8 petal paths extracted from org.ai
+// Color mapping: RED group + GREEN group → PRIMARY, BLUE group + ORANGE group → SECONDARY
+// Pattern: p,p,s,s,p,p,s,s going clockwise (pairs)
+const PETALS: { d: string; color: 'p' | 's' }[] = [
+  // RED group → PRIMARY (top area)
+  { d: 'M 366.488 385.625 C 354.914 370.113 325.266 362.828 287.316 359.312 C 319.309 312.957 366.570 277.551 422.035 260.062 C 385.609 291.207 361.617 329.793 366.488 385.625 Z', color: 'p' },
+  { d: 'M 534.289 326.828 C 494.590 366.621 475.922 405.578 468.449 456.109 C 461.191 452.020 449.672 444.570 438.422 432.309 C 434.559 428.102 430.730 423.320 427.121 417.922 C 408.570 390.148 406.730 362.340 406.609 350.922 C 404.129 309.559 435.070 275.551 499.141 248.840 C 502.910 247.270 506.801 245.719 510.809 244.199 C 548.922 227.840 573.871 198.531 592.012 162.5 C 605.039 237.762 579.961 288.828 534.289 326.828 Z', color: 'p' },
+  // BLUE group → SECONDARY (right area)
+  { d: 'M 757.566 474.812 C 710.516 419.156 651.734 381.766 565.039 387.805 C 589.227 370.977 600.930 326.781 607.016 270.242 C 688.922 306.477 748.062 383.441 757.566 474.812 Z', color: 's' },
+  { d: 'M 545.941 427.953 C 620.676 414.828 671.387 440.086 709.125 486.082 C 748.633 526.059 787.320 544.863 837.5 552.383 C 832.047 562.215 820.559 579.777 799.570 594.008 C 772 612.691 744.379 614.543 733.039 614.664 C 689.547 617.309 654.246 582.215 627.070 509.727 C 610.824 471.352 581.719 446.219 545.941 427.953 Z', color: 's' },
+  // GREEN group → PRIMARY (bottom area)
+  { d: 'M 715.137 641.781 C 714.160 643.195 713.176 644.602 712.176 646 C 683.199 686.438 642.441 718.172 594.785 736.406 L 594.777 736.406 C 591.906 737.508 589.031 738.551 586.105 739.543 C 620.160 708.156 641.891 669.391 637.121 614.805 C 648.723 630.352 677.754 637.969 715.137 641.781 Z', color: 'p' },
+  { d: 'M 413.312 837.5 C 400.281 762.238 425.363 711.168 471.035 673.164 C 510.734 633.379 529.406 594.422 536.875 543.887 C 546.637 549.379 564.078 560.945 578.203 582.086 C 596.758 609.848 598.598 637.664 598.719 649.082 C 601.344 692.883 566.496 728.430 494.512 755.797 C 456.410 772.160 431.449 801.473 413.312 837.5 Z', color: 'p' },
+  // ORANGE group → SECONDARY (left area)
+  { d: 'M 435.969 617.031 C 412.020 633.688 399.746 675.898 393.070 730.441 C 319.762 697.262 265.043 631.316 248.430 551.762 L 248.430 551.754 C 247.586 547.715 246.840 543.641 246.195 539.531 C 293.496 590.188 352.363 622.855 435.969 617.031 Z', color: 's' },
+  { d: 'M 454.059 572.477 C 379.324 585.602 328.613 560.340 290.875 514.348 C 251.367 474.371 212.680 455.562 162.5 448.043 C 167.953 438.215 179.441 420.648 200.430 406.422 C 228 387.738 255.621 385.883 266.961 385.762 C 310.453 383.121 345.754 418.211 372.930 490.703 C 389.176 529.078 418.281 554.211 454.059 572.477 Z', color: 's' },
+]
+
+function BrandedLogo({ primary, secondary, size = 34 }: { primary: string; secondary: string; size?: number }) {
+  // Center the logo: original paths are in ~(160,160)-(840,840) range, center ~500,500
+  return (
+    <svg
+      className="tc__logo-svg"
+      viewBox="130 130 740 740"
+      style={{ '--logo-size': `${size}px` } as React.CSSProperties}
+    >
+      <defs>
+        <filter id={`glow-${primary}-${secondary}`} x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="8" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+      {/* Glow layer */}
+      {PETALS.map((petal, i) => {
+        const c = petal.color === 'p' ? primary : secondary
+        return (
+          <path
+            key={`g${i}`}
+            d={petal.d}
+            fill="none"
+            stroke={c}
+            strokeWidth="6"
+            strokeLinejoin="round"
+            filter={`url(#glow-${primary}-${secondary})`}
+            opacity="0.5"
+          />
+        )
+      })}
+      {/* Crisp layer */}
+      {PETALS.map((petal, i) => {
+        const c = petal.color === 'p' ? primary : secondary
+        return (
+          <path
+            key={`c${i}`}
+            d={petal.d}
+            fill={`${c}30`}
+            stroke={c}
+            strokeWidth="2"
+            strokeLinejoin="round"
+          />
+        )
+      })}
+    </svg>
+  )
+}
+
+function TeamCard({
+  team,
+  onSave,
+}: {
+  team: TeamData
+  onSave: (id: number, field: string, value: string) => Promise<void>
+}) {
+  const [primary, setPrimary] = useState(team.brandingPrimary || team.themeColor || '')
+  const [secondary, setSecondary] = useState(team.brandingSecondary || '')
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const clearRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    setPrimary(team.brandingPrimary || team.themeColor || '')
+    setSecondary(team.brandingSecondary || '')
+  }, [team.brandingPrimary, team.brandingSecondary, team.themeColor])
+
+  const save = useCallback(
+    (field: string, val: string) => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      if (clearRef.current) clearTimeout(clearRef.current)
+      debounceRef.current = setTimeout(async () => {
+        setSaveStatus('saving')
+        try {
+          await onSave(team.id, field, val)
+          setSaveStatus('saved')
+          clearRef.current = setTimeout(() => setSaveStatus('idle'), 1800)
+        } catch {
+          setSaveStatus('error')
+          clearRef.current = setTimeout(() => setSaveStatus('idle'), 2500)
+        }
+      }, 600)
+    },
+    [team.id, onSave],
+  )
+
+  const p = primary || '#555'
+  const s = secondary || '#333'
+
+  return (
+    <div className="tc">
+      {/* Header bar — name only */}
+      <div
+        className="tc__glow"
+        style={{
+          background: `linear-gradient(135deg, ${s}55, ${p}22)`,
+          borderLeft: `3px solid ${p}`,
+          boxShadow: `inset 0 0 30px ${s}15, 0 0 20px ${p}15`,
+        }}
+      >
+        <span className="tc__name" style={{ color: p, textShadow: `0 0 14px ${p}88` }}>
+          {team.name}
+        </span>
+        {saveStatus !== 'idle' && (
+          <span className={`tc__badge tc__badge--${saveStatus}`}>
+            {saveStatus === 'saving' ? '…' : saveStatus === 'saved' ? '✓' : '!'}
+          </span>
+        )}
+        <a href={`/admin/collections/teams/${team.id}`} className="tc__edit" title="Edit team">✎</a>
+      </div>
+
+      {/* Preview boxes row */}
+      <div className="tc__box-row">
+        <div className="tc__preview-col">
+          <div className="tc__preview-label">Primary · Glow / Stroke</div>
+          <div
+            className="tc__preview-box"
+            style={{
+              '--tc-clr': p,
+              '--tc-bg': `${p}33`,
+              '--tc-glow': primary ? `0 0 12px ${p}44, inset 0 0 12px ${p}22` : 'none',
+            } as React.CSSProperties}
+          >
+            <span className="tc__preview-text" style={{ color: p, textShadow: `0 0 8px ${p}88` }}>
+              {team.name}
+            </span>
+          </div>
+        </div>
+        <div className="tc__preview-col">
+          <div className="tc__preview-label">Secondary · Fill / Shadow</div>
+          <div
+            className="tc__preview-box"
+            style={{
+              '--tc-clr': s,
+              '--tc-bg': `${s}33`,
+              '--tc-glow': secondary ? `0 0 12px ${s}44, inset 0 0 12px ${s}22` : 'none',
+            } as React.CSSProperties}
+          >
+            <span className="tc__preview-text" style={{ color: s, textShadow: `0 0 8px ${s}88` }}>
+              {team.name}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Color inputs row */}
+      <div className="tc__box-row">
+        <div className="tc__color">
+          <div className="tc__swatch" style={{ backgroundColor: p, boxShadow: primary ? `0 0 10px ${p}66` : 'none' }}>
+            <input
+              type="color"
+              value={p}
+              onChange={(e) => { setPrimary(e.target.value); save('brandingPrimary', e.target.value) }}
+              className="tc__native"
+              title="Pick primary color"
+            />
+          </div>
+          <input
+            type="text"
+            value={primary}
+            onChange={(e) => { setPrimary(e.target.value); save('brandingPrimary', e.target.value) }}
+            placeholder="#—"
+            className="tc__hex"
+            spellCheck={false}
+            maxLength={7}
+          />
+        </div>
+        <div className="tc__color">
+          <div className="tc__swatch" style={{ backgroundColor: s, boxShadow: secondary ? `0 0 10px ${s}66` : 'none' }}>
+            <input
+              type="color"
+              value={s}
+              onChange={(e) => { setSecondary(e.target.value); save('brandingSecondary', e.target.value) }}
+              className="tc__native"
+              title="Pick secondary color"
+            />
+          </div>
+          <input
+            type="text"
+            value={secondary}
+            onChange={(e) => { setSecondary(e.target.value); save('brandingSecondary', e.target.value) }}
+            placeholder="#—"
+            className="tc__hex"
+            spellCheck={false}
+            maxLength={7}
+          />
+        </div>
+      </div>
+
+      {/* Large pinwheel preview */}
+      <div className="tc__pinwheel-preview">
+        <BrandedLogo primary={p} secondary={s} size={200} />
+      </div>
+    </div>
+  )
+}
+
+/** Clickable hex code that copies to clipboard */
+function CopyHex({ color }: { color: string }) {
+  const [copied, setCopied] = useState(false)
+  const copy = () => {
+    navigator.clipboard.writeText(color)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+  return (
+    <span className="tbg__ref-cell tbg__ref-copy" onClick={copy} title="Click to copy">
+      <span className="tbg__ref-dot" style={{ backgroundColor: color }} />
+      <code>{color}</code>
+      {copied && <span className="tbg__ref-copied">Copied!</span>}
+    </span>
+  )
+}
+
+export default function TeamBrandingGuide() {
+  const { setStepNav } = useStepNav()
+  const [teams, setTeams] = useState<TeamData[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [bgColor, setBgColor] = useState('#000000')
+
+  useEffect(() => {
+    setStepNav([{ label: 'Graphics' }, { label: 'Team Branding Guide' }])
+  }, [setStepNav])
+
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const res = await fetch('/api/teams?limit=100&sort=name&depth=0')
+        if (!res.ok) throw new Error('Failed to fetch teams')
+        setTeams((await res.json()).docs || [])
+      } catch (err: any) {
+        setError(err.message)
+      } finally {
+        setLoading(false)
+      }
+    })()
+  }, [])
+
+  const handleSave = useCallback(async (id: number, field: string, val: string) => {
+    const res = await fetch(`/api/teams/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ [field]: val }),
+    })
+    if (!res.ok) throw new Error('Save failed')
+  }, [])
+
+  const grouped = REGION_ORDER.reduce<Record<string, TeamData[]>>((acc, r) => {
+    const list = teams.filter((t) =>
+      r === 'Other' ? !t.region || !['NA', 'EMEA', 'SA'].includes(t.region) : t.region === r,
+    )
+    if (list.length) acc[r] = list
+    return acc
+  }, {})
+
+  if (loading) return <div className="tbg"><p className="tbg__msg">Loading…</p></div>
+  if (error) return <div className="tbg"><p className="tbg__msg tbg__msg--err">{error}</p></div>
+
+  return (
+    <div className="tbg">
+      <div className="tbg__wrap">
+        <header className="tbg__hd">
+          <h1>Team Branding Guide</h1>
+          <p className="tbg__subtitle">Clean Glow · 2-Color System</p>
+          <div className="tbg__legend">
+            <span><strong>Primary</strong> — Neon glow, outlines, text stroke</span>
+            <span><strong>Secondary</strong> — Fills, shadows, dark accents</span>
+            <span>Preview backgrounds show each color at 20% opacity over black</span>
+            <span><strong>Neon effect</strong> — Each shape is rendered twice: a blurred copy behind (Gaussian blur filter) creates the glow, then a crisp copy is drawn on top</span>
+          </div>
+          <div className="tbg__bg-picker">
+            <label>Preview Background</label>
+            <div className="tc__swatch" style={{ backgroundColor: bgColor }}>
+              <input
+                type="color"
+                value={bgColor}
+                onChange={(e) => setBgColor(e.target.value)}
+                className="tc__native"
+                title="Preview background color"
+              />
+            </div>
+            <input
+              type="text"
+              value={bgColor}
+              onChange={(e) => setBgColor(e.target.value)}
+              className="tc__hex"
+              spellCheck={false}
+              maxLength={7}
+            />
+            {bgColor !== '#000000' && (
+              <button className="tbg__bg-reset" onClick={() => setBgColor('#000000')}>Reset</button>
+            )}
+          </div>
+        </header>
+
+        {Object.entries(grouped).map(([region, list]) => (
+          <section key={region} className="tbg__section">
+            <h2 className="tbg__rg">{REGION_LABELS[region]}</h2>
+            <div className="tbg__grid" style={{ '--tc-card-bg': bgColor } as React.CSSProperties}>
+              {list.map((t) => (
+                <TeamCard key={t.id} team={t} onSave={handleSave} />
+              ))}
+            </div>
+          </section>
+        ))}
+
+        {/* Quick color reference */}
+        <section className="tbg__section">
+          <h2 className="tbg__rg">Quick Color Reference</h2>
+          <table className="tbg__ref-table">
+            <thead>
+              <tr>
+                <th>Team</th>
+                <th>Primary</th>
+                <th>Secondary</th>
+              </tr>
+            </thead>
+            <tbody>
+              {teams.map((t) => (
+                <tr key={t.id}>
+                  <td className="tbg__ref-name">{t.name}</td>
+                  <td>
+                    {t.brandingPrimary ? (
+                      <CopyHex color={t.brandingPrimary} />
+                    ) : (
+                      <span className="tbg__ref-cell"><code>—</code></span>
+                    )}
+                  </td>
+                  <td>
+                    {t.brandingSecondary ? (
+                      <CopyHex color={t.brandingSecondary} />
+                    ) : (
+                      <span className="tbg__ref-cell"><code>—</code></span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      </div>
+    </div>
+  )
+}
