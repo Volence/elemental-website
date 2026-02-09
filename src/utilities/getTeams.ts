@@ -230,6 +230,9 @@ export async function getAllTeams(): Promise<Team[]> {
     
     const result = await payload.find({
       collection: 'teams',
+      where: {
+        active: { equals: true },
+      },
       limit: 1000,
       pagination: false,
       overrideAccess: true, // Override access to ensure logo relationship is populated
@@ -271,9 +274,10 @@ export async function getTeamBySlug(slug: string): Promise<Team | undefined> {
     const result = await payload.find({
       collection: 'teams',
       where: {
-        slug: {
-          equals: slug,
-        },
+        and: [
+          { slug: { equals: slug } },
+          { active: { equals: true } },
+        ],
       },
       limit: 1,
       overrideAccess: true, // Override access to ensure logo relationship is populated

@@ -100,44 +100,60 @@ function TeamCard({
   onSave,
 }: {
   team: TeamData
-  onSave: (id: number, field: string, value: string) => Promise<void>
+  onSave: (id: number, updates: Record<string, string>) => Promise<void>
 }) {
-  const [primary, setPrimary] = useState(team.brandingPrimary || team.themeColor || '')
-  const [secondary, setSecondary] = useState(team.brandingSecondary || '')
+  // Saved values (source of truth from server)
+  const [savedPrimary, setSavedPrimary] = useState(team.brandingPrimary || team.themeColor || '')
+  const [savedSecondary, setSavedSecondary] = useState(team.brandingSecondary || '')
+
+  // Local editing values
+  const [primary, setPrimary] = useState(savedPrimary)
+  const [secondary, setSecondary] = useState(savedSecondary)
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const clearRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // Sync when team data changes from parent
   useEffect(() => {
-    setPrimary(team.brandingPrimary || team.themeColor || '')
-    setSecondary(team.brandingSecondary || '')
+    const newPrimary = team.brandingPrimary || team.themeColor || ''
+    const newSecondary = team.brandingSecondary || ''
+    setSavedPrimary(newPrimary)
+    setSavedSecondary(newSecondary)
+    setPrimary(newPrimary)
+    setSecondary(newSecondary)
   }, [team.brandingPrimary, team.brandingSecondary, team.themeColor])
 
-  const save = useCallback(
-    (field: string, val: string) => {
-      if (debounceRef.current) clearTimeout(debounceRef.current)
-      if (clearRef.current) clearTimeout(clearRef.current)
-      debounceRef.current = setTimeout(async () => {
-        setSaveStatus('saving')
-        try {
-          await onSave(team.id, field, val)
-          setSaveStatus('saved')
-          clearRef.current = setTimeout(() => setSaveStatus('idle'), 1800)
-        } catch {
-          setSaveStatus('error')
-          clearRef.current = setTimeout(() => setSaveStatus('idle'), 2500)
-        }
-      }, 600)
-    },
-    [team.id, onSave],
-  )
+  const isDirty = primary !== savedPrimary || secondary !== savedSecondary
+
+  const handleSave = useCallback(async () => {
+    if (clearRef.current) clearTimeout(clearRef.current)
+    setSaveStatus('saving')
+    try {
+      const updates: Record<string, string> = {}
+      if (primary !== savedPrimary) updates.brandingPrimary = primary
+      if (secondary !== savedSecondary) updates.brandingSecondary = secondary
+      await onSave(team.id, updates)
+      setSavedPrimary(primary)
+      setSavedSecondary(secondary)
+      setSaveStatus('saved')
+      clearRef.current = setTimeout(() => setSaveStatus('idle'), 1800)
+    } catch {
+      setSaveStatus('error')
+      clearRef.current = setTimeout(() => setSaveStatus('idle'), 2500)
+    }
+  }, [team.id, primary, secondary, savedPrimary, savedSecondary, onSave])
+
+  const handleReset = useCallback(() => {
+    setPrimary(savedPrimary)
+    setSecondary(savedSecondary)
+    setSaveStatus('idle')
+  }, [savedPrimary, savedSecondary])
 
   const p = primary || '#555'
   const s = secondary || '#333'
 
   return (
     <div className="tc">
-      {/* Header bar — name only */}
+      {/* Header bar — name + save/reset */}
       <div
         className="tc__glow"
         style={{
@@ -149,7 +165,13 @@ function TeamCard({
         <span className="tc__name" style={{ color: p, textShadow: `0 0 14px ${p}88` }}>
           {team.name}
         </span>
-        {saveStatus !== 'idle' && (
+        {isDirty && (
+          <div className="tc__actions">
+            <button className="tc__btn tc__btn--save" onClick={handleSave} title="Save changes">Save</button>
+            <button className="tc__btn tc__btn--reset" onClick={handleReset} title="Discard changes">✕</button>
+          </div>
+        )}
+        {!isDirty && saveStatus !== 'idle' && (
           <span className={`tc__badge tc__badge--${saveStatus}`}>
             {saveStatus === 'saving' ? '…' : saveStatus === 'saved' ? '✓' : '!'}
           </span>
@@ -198,7 +220,7 @@ function TeamCard({
             <input
               type="color"
               value={p}
-              onChange={(e) => { setPrimary(e.target.value); save('brandingPrimary', e.target.value) }}
+              onChange={(e) => setPrimary(e.target.value)}
               className="tc__native"
               title="Pick primary color"
             />
@@ -206,7 +228,7 @@ function TeamCard({
           <input
             type="text"
             value={primary}
-            onChange={(e) => { setPrimary(e.target.value); save('brandingPrimary', e.target.value) }}
+            onChange={(e) => setPrimary(e.target.value)}
             placeholder="#—"
             className="tc__hex"
             spellCheck={false}
@@ -218,7 +240,7 @@ function TeamCard({
             <input
               type="color"
               value={s}
-              onChange={(e) => { setSecondary(e.target.value); save('brandingSecondary', e.target.value) }}
+              onChange={(e) => setSecondary(e.target.value)}
               className="tc__native"
               title="Pick secondary color"
             />
@@ -226,7 +248,7 @@ function TeamCard({
           <input
             type="text"
             value={secondary}
-            onChange={(e) => { setSecondary(e.target.value); save('brandingSecondary', e.target.value) }}
+            onChange={(e) => setSecondary(e.target.value)}
             placeholder="#—"
             className="tc__hex"
             spellCheck={false}
@@ -285,11 +307,11 @@ export default function TeamBrandingGuide() {
     })()
   }, [])
 
-  const handleSave = useCallback(async (id: number, field: string, val: string) => {
+  const handleSave = useCallback(async (id: number, updates: Record<string, string>) => {
     const res = await fetch(`/api/teams/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ [field]: val }),
+      body: JSON.stringify(updates),
     })
     if (!res.ok) throw new Error('Save failed')
   }, [])

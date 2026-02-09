@@ -159,6 +159,51 @@
   background: rgba(255, 255, 255, 0.06) !important;
 }
 
+/* ── Save / Reset buttons ── */
+.tc__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.tc__btn {
+  padding: 2px 8px !important;
+  border-radius: 4px !important;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  line-height: 1.6;
+}
+
+.tc__btn--save {
+  background: rgba(76, 175, 80, 0.2) !important;
+  color: #4caf50 !important;
+  border: 1px solid rgba(76, 175, 80, 0.35) !important;
+
+  &:hover {
+    background: rgba(76, 175, 80, 0.35) !important;
+    color: #66bb6a !important;
+  }
+}
+
+.tc__btn--reset {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  font-size: 11px;
+  padding: 2px 6px !important;
+
+  &:hover {
+    background: rgba(244, 67, 54, 0.15) !important;
+    color: #f44336 !important;
+    border-color: rgba(244, 67, 54, 0.35) !important;
+  }
+}
+
 /* ── Horizontal rows ── */
 .tc__box-row {
   display: flex;

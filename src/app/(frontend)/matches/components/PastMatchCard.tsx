@@ -41,6 +41,19 @@ export function PastMatchCard({ match }: PastMatchCardProps) {
           ? match.team1Internal
           : null
 
+  // Check if Team 2 is also an internal ELMT team (for scrims/showmatches)
+  const team2 =
+    match.team2Type === 'internal' &&
+    match.team2Internal &&
+    typeof match.team2Internal === 'object' &&
+    match.team2Internal !== null &&
+    typeof match.team2Internal.slug === 'string' &&
+    typeof match.team2Internal.name === 'string'
+      ? match.team2Internal
+      : null
+
+  const isDualInternalMatch = team && team2
+
   const displayStatus = getMatchStatus(
     match.date as string,
     (match.status as 'scheduled' | 'cancelled') || 'scheduled',
@@ -56,16 +69,39 @@ export function PastMatchCard({ match }: PastMatchCardProps) {
     // If title is empty, generate one from team + opponent
     if (!title || title.trim() === '') {
       const teamName = team?.name || ''
-      const opponent = match.opponent || 'TBD'
+      const opponentName = team2?.name || match.opponent || 'TBD'
 
-      if (teamName && opponent !== 'TBD') {
-        title = `ELMT ${teamName} vs ${opponent}`
+      if (teamName && opponentName !== 'TBD') {
+        title = isDualInternalMatch
+          ? `${teamName} vs ${opponentName}`
+          : `ELMT ${teamName} vs ${opponentName}`
       } else if (teamName) {
         title = `ELMT ${teamName} vs TBD`
-      } else if (opponent !== 'TBD') {
-        title = `ELMT vs ${opponent}`
+      } else if (opponentName !== 'TBD') {
+        title = `ELMT vs ${opponentName}`
       } else {
         title = 'ELMT Match'
+      }
+    }
+
+    // For dual internal matches, make both team names links
+    if (isDualInternalMatch && team && team2) {
+      const vsIndex = title.toLowerCase().indexOf(' vs ')
+      if (vsIndex !== -1) {
+        const beforeVs = title.substring(0, vsIndex).trim()
+        const afterVs = title.substring(vsIndex + 4).trim()
+
+        return (
+          <span>
+            <Link href={`/teams/${team.slug}`} className="text-primary hover:underline">
+              {beforeVs}
+            </Link>
+            {' vs '}
+            <Link href={`/teams/${team2.slug}`} className="text-primary hover:underline">
+              {afterVs}
+            </Link>
+          </span>
+        )
       }
     }
 
@@ -113,9 +149,38 @@ export function PastMatchCard({ match }: PastMatchCardProps) {
     >
       {/* Header with Team Logo and Badges */}
       <div className="flex items-center justify-between gap-4 mb-4">
-        {/* Team Logo and Title */}
+        {/* Team Logo(s) and Title */}
         <div className="flex items-center gap-4 flex-1">
-          {team && (team.logo || team.logoFilename) && (
+          {isDualInternalMatch ? (
+            // Dual internal match: Show both ELMT team logos
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Link href={`/teams/${team.slug}`} className="group">
+                <div className="relative w-12 h-12 rounded-lg bg-gradient-to-br from-white/10 to-white/5 ring-2 ring-primary/30 group-hover:ring-primary/60 p-1.5 transition-all">
+                  <TeamLogo
+                    src={team.logo}
+                    logoFilename={team.logoFilename}
+                    alt={`${team.name} Logo`}
+                    fill
+                    className="object-contain"
+                    sizes="48px"
+                  />
+                </div>
+              </Link>
+              <span className="text-xs font-bold text-muted-foreground">VS</span>
+              <Link href={`/teams/${team2.slug}`} className="group">
+                <div className="relative w-12 h-12 rounded-lg bg-gradient-to-br from-white/10 to-white/5 ring-2 ring-primary/30 group-hover:ring-primary/60 p-1.5 transition-all">
+                  <TeamLogo
+                    src={team2.logo}
+                    logoFilename={team2.logoFilename}
+                    alt={`${team2.name} Logo`}
+                    fill
+                    className="object-contain"
+                    sizes="48px"
+                  />
+                </div>
+              </Link>
+            </div>
+          ) : team && (team.logo || team.logoFilename) ? (
             <div className="relative w-12 h-12 rounded-lg bg-gradient-to-br from-white/10 to-white/5 ring-2 ring-white/15 p-1.5 flex-shrink-0">
               <TeamLogo
                 src={team.logo}
@@ -126,7 +191,7 @@ export function PastMatchCard({ match }: PastMatchCardProps) {
                 sizes="48px"
               />
             </div>
-          )}
+          ) : null}
           <div>
             <h3 className="text-lg font-bold mb-1">{renderMatchTitle()}</h3>
             <div className="flex items-center gap-2">
