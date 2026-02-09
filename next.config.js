@@ -19,6 +19,11 @@ const nextConfig = {
   // Mark Discord packages as server-only (moved from experimental in Next.js 15.x)
   serverExternalPackages: ['discord.js', '@discordjs/rest', '@discordjs/builders', '@discordjs/ws'],
   images: {
+    // Serve optimized images inline (not as downloads)
+    // Default 'attachment' causes Vivaldi and other strict browsers to show alt text
+    contentDispositionType: 'inline',
+    // Remove restrictive sandbox CSP from optimized images
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       ...[NEXT_PUBLIC_SERVER_URL /* 'https://example.com' */].map((item) => {
         const url = new URL(item)
