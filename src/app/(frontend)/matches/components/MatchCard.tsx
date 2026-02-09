@@ -90,7 +90,7 @@ export function MatchCard({ match, showCountdown = true }: MatchCardProps) {
 
       if (teamName && opponentName !== 'TBD') {
         title = isDualInternalMatch 
-          ? `${teamName} vs ${opponentName}`  // Both ELMT teams, no prefix
+          ? `ELMT ${teamName} vs ELMT ${opponentName}`
           : `ELMT ${teamName} vs ${opponentName}`
       } else if (teamName) {
         title = `ELMT ${teamName} vs TBD`
@@ -98,6 +98,22 @@ export function MatchCard({ match, showCountdown = true }: MatchCardProps) {
         title = `ELMT vs ${opponentName}`
       } else {
         title = 'ELMT Match'
+      }
+    } else if (team?.name) {
+      // Fix existing titles missing "ELMT" prefix for internal teams
+      const teamName = team.name
+      if (title.startsWith(teamName + ' vs') && !title.startsWith('ELMT ')) {
+        title = `ELMT ${title}`
+      }
+      // Also fix team2 prefix for internal-vs-internal matches
+      if (isDualInternalMatch && team2?.name) {
+        const vsIndex = title.toLowerCase().indexOf(' vs ')
+        if (vsIndex !== -1) {
+          const afterVs = title.substring(vsIndex + 4).trim()
+          if (afterVs === team2.name || afterVs.toLowerCase() === team2.name.toLowerCase()) {
+            title = title.substring(0, vsIndex + 4) + `ELMT ${team2.name}`
+          }
+        }
       }
     }
 

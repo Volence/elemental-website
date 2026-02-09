@@ -73,7 +73,7 @@ export function PastMatchCard({ match }: PastMatchCardProps) {
 
       if (teamName && opponentName !== 'TBD') {
         title = isDualInternalMatch
-          ? `${teamName} vs ${opponentName}`
+          ? `ELMT ${teamName} vs ELMT ${opponentName}`
           : `ELMT ${teamName} vs ${opponentName}`
       } else if (teamName) {
         title = `ELMT ${teamName} vs TBD`
@@ -81,6 +81,22 @@ export function PastMatchCard({ match }: PastMatchCardProps) {
         title = `ELMT vs ${opponentName}`
       } else {
         title = 'ELMT Match'
+      }
+    } else if (team?.name) {
+      // Fix existing titles missing "ELMT" prefix for internal teams
+      const teamName = team.name
+      if (title.startsWith(teamName + ' vs') && !title.startsWith('ELMT ')) {
+        title = `ELMT ${title}`
+      }
+      // Also fix team2 prefix for internal-vs-internal matches
+      if (isDualInternalMatch && team2?.name) {
+        const vsIndex = title.toLowerCase().indexOf(' vs ')
+        if (vsIndex !== -1) {
+          const afterVs = title.substring(vsIndex + 4).trim()
+          if (afterVs === team2.name || afterVs.toLowerCase() === team2.name.toLowerCase()) {
+            title = title.substring(0, vsIndex + 4) + `ELMT ${team2.name}`
+          }
+        }
       }
     }
 
@@ -149,49 +165,22 @@ export function PastMatchCard({ match }: PastMatchCardProps) {
     >
       {/* Header with Team Logo and Badges */}
       <div className="flex items-center justify-between gap-4 mb-4">
-        {/* Team Logo(s) and Title */}
+        {/* Team1 Logo and Title */}
         <div className="flex items-center gap-4 flex-1">
-          {isDualInternalMatch ? (
-            // Dual internal match: Show both ELMT team logos
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <Link href={`/teams/${team.slug}`} className="group">
-                <div className="relative w-12 h-12 rounded-lg bg-gradient-to-br from-white/10 to-white/5 ring-2 ring-primary/30 group-hover:ring-primary/60 p-1.5 transition-all">
-                  <TeamLogo
-                    src={team.logo}
-                    logoFilename={team.logoFilename}
-                    alt={`${team.name} Logo`}
-                    fill
-                    className="object-contain"
-                    sizes="48px"
-                  />
-                </div>
-              </Link>
-              <span className="text-xs font-bold text-muted-foreground">VS</span>
-              <Link href={`/teams/${team2.slug}`} className="group">
-                <div className="relative w-12 h-12 rounded-lg bg-gradient-to-br from-white/10 to-white/5 ring-2 ring-primary/30 group-hover:ring-primary/60 p-1.5 transition-all">
-                  <TeamLogo
-                    src={team2.logo}
-                    logoFilename={team2.logoFilename}
-                    alt={`${team2.name} Logo`}
-                    fill
-                    className="object-contain"
-                    sizes="48px"
-                  />
-                </div>
-              </Link>
-            </div>
-          ) : team && (team.logo || team.logoFilename) ? (
-            <div className="relative w-12 h-12 rounded-lg bg-gradient-to-br from-white/10 to-white/5 ring-2 ring-white/15 p-1.5 flex-shrink-0">
-              <TeamLogo
-                src={team.logo}
-                logoFilename={team.logoFilename}
-                alt={`${team.name} Logo`}
-                fill
-                className="object-contain"
-                sizes="48px"
-              />
-            </div>
-          ) : null}
+          {team && (team.logo || team.logoFilename) && (
+            <Link href={`/teams/${team.slug}`} className="group flex-shrink-0">
+              <div className="relative w-12 h-12 rounded-lg bg-gradient-to-br from-white/10 to-white/5 ring-2 ring-primary/30 group-hover:ring-primary/60 p-1.5 transition-all">
+                <TeamLogo
+                  src={team.logo}
+                  logoFilename={team.logoFilename}
+                  alt={`${team.name} Logo`}
+                  fill
+                  className="object-contain"
+                  sizes="48px"
+                />
+              </div>
+            </Link>
+          )}
           <div>
             <h3 className="text-lg font-bold mb-1">{renderMatchTitle()}</h3>
             <div className="flex items-center gap-2">
@@ -204,16 +193,32 @@ export function PastMatchCard({ match }: PastMatchCardProps) {
           </div>
         </div>
 
-        {/* Status Badge */}
-        <span
-          className={`
-                            px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wide flex-shrink-0
+        {/* Team2 Logo (for internal-vs-internal matches) + Status Badge */}
+        <div className="flex items-center gap-3 flex-shrink-0">
+          {isDualInternalMatch && team2 && (team2.logo || team2.logoFilename) && (
+            <Link href={`/teams/${team2.slug}`} className="group">
+              <div className="relative w-12 h-12 rounded-lg bg-gradient-to-br from-white/10 to-white/5 ring-2 ring-primary/30 group-hover:ring-primary/60 p-1.5 transition-all">
+                <TeamLogo
+                  src={team2.logo}
+                  logoFilename={team2.logoFilename}
+                  alt={`${team2.name} Logo`}
+                  fill
+                  className="object-contain"
+                  sizes="48px"
+                />
+              </div>
+            </Link>
+          )}
+          <span
+            className={`
+                            px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wide
                             ${displayStatus === 'completed' ? 'bg-gray-500/10 text-gray-500 border border-gray-500/20' : ''}
                             ${displayStatus === 'cancelled' ? 'bg-yellow-500/15 text-yellow-500 border border-yellow-500/30' : ''}
                           `}
-        >
-          {displayStatus}
-        </span>
+          >
+            {displayStatus}
+          </span>
+        </div>
       </div>
 
       {/* Score Display */}

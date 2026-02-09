@@ -75,41 +75,41 @@ export const Matches: CollectionConfig = {
         const titleHasTBD = typeof data.title === 'string' && data.title.includes('TBD')
         const shouldRegenerateTitle = titleIsEmpty || titleHasTBD
         
+        // Helper to get team name from new flexible fields OR legacy fields
+        const getTeamName = async (typeField: string, internalField: string, externalField: string, legacyField?: string) => {
+          const type = (data as any)[typeField]
+          const internalId = (data as any)[internalField]
+          const externalName = (data as any)[externalField]
+          
+          // New flexible fields take priority
+          if (type === 'internal' && internalId) {
+            if (typeof internalId === 'number') {
+              const team = await req.payload.findByID({ collection: 'teams', id: internalId, depth: 0 })
+              return team?.name ? `ELMT ${team.name}` : 'ELMT'
+            } else if (typeof internalId === 'object' && internalId !== null) {
+              return internalId.name ? `ELMT ${internalId.name}` : 'ELMT'
+            }
+          } else if (type === 'external' && externalName) {
+            return externalName
+          }
+          
+          // Fallback to legacy field if new fields not set
+          if (legacyField && (data as any)[legacyField]) {
+            const legacyValue = (data as any)[legacyField]
+            if (typeof legacyValue === 'number') {
+              const team = await req.payload.findByID({ collection: 'teams', id: legacyValue, depth: 0 })
+              return team?.name ? `ELMT ${team.name}` : 'ELMT'
+            } else if (typeof legacyValue === 'object' && legacyValue !== null) {
+              return legacyValue.name ? `ELMT ${legacyValue.name}` : 'ELMT'
+            } else if (typeof legacyValue === 'string') {
+              return legacyValue
+            }
+          }
+          return null
+        }
+
         if (shouldRegenerateTitle) {
           try {
-            // Helper to get team name from new flexible fields OR legacy fields
-            const getTeamName = async (typeField: string, internalField: string, externalField: string, legacyField?: string) => {
-              const type = (data as any)[typeField]
-              const internalId = (data as any)[internalField]
-              const externalName = (data as any)[externalField]
-              
-              // New flexible fields take priority
-              if (type === 'internal' && internalId) {
-                if (typeof internalId === 'number') {
-                  const team = await req.payload.findByID({ collection: 'teams', id: internalId, depth: 0 })
-                  return team?.name ? `ELMT ${team.name}` : 'ELMT'
-                } else if (typeof internalId === 'object' && internalId !== null) {
-                  return internalId.name ? `ELMT ${internalId.name}` : 'ELMT'
-                }
-              } else if (type === 'external' && externalName) {
-                return externalName
-              }
-              
-              // Fallback to legacy field if new fields not set
-              if (legacyField && (data as any)[legacyField]) {
-                const legacyValue = (data as any)[legacyField]
-                if (typeof legacyValue === 'number') {
-                  const team = await req.payload.findByID({ collection: 'teams', id: legacyValue, depth: 0 })
-                  return team?.name ? `ELMT ${team.name}` : 'ELMT'
-                } else if (typeof legacyValue === 'object' && legacyValue !== null) {
-                  return legacyValue.name ? `ELMT ${legacyValue.name}` : 'ELMT'
-                } else if (typeof legacyValue === 'string') {
-                  return legacyValue
-                }
-              }
-              return null
-            }
-            
             const team1Name = await getTeamName('team1Type', 'team1Internal', 'team1External', 'team')
             const team2Name = await getTeamName('team2Type', 'team2Internal', 'team2External', 'opponent')
             
@@ -126,6 +126,43 @@ export const Matches: CollectionConfig = {
           } catch (error) {
             console.error('Error auto-generating match title:', error)
             data.title = 'Match'
+          }
+        } else if (typeof data.title === 'string' && data.title.includes(' vs ')) {
+          // Fix existing titles missing "ELMT" prefix for internal teams
+          try {
+            // Get the raw internal team name (without ELMT prefix) for team 1
+            const team1Type = (data as any).team1Type
+            const team1InternalId = (data as any).team1Internal
+            let team1RawName: string | null = null
+            
+            if (team1Type === 'internal' && team1InternalId) {
+              if (typeof team1InternalId === 'number') {
+                const team = await req.payload.findByID({ collection: 'teams', id: team1InternalId, depth: 0 })
+                team1RawName = team?.name || null
+              } else if (typeof team1InternalId === 'object' && team1InternalId !== null) {
+                team1RawName = team1InternalId.name || null
+              }
+            } else if (!team1Type) {
+              // Legacy: check the 'team' field
+              const legacyTeam = (data as any).team
+              if (typeof legacyTeam === 'number') {
+                const team = await req.payload.findByID({ collection: 'teams', id: legacyTeam, depth: 0 })
+                team1RawName = team?.name || null
+              } else if (typeof legacyTeam === 'object' && legacyTeam !== null) {
+                team1RawName = legacyTeam.name || null
+              }
+            }
+            
+            if (team1RawName) {
+              const title = data.title
+              // Check if title starts with the raw team name without ELMT prefix
+              if (title.startsWith(team1RawName + ' vs') && !title.startsWith('ELMT ')) {
+                data.title = `ELMT ${title}`
+              }
+            }
+          } catch (error) {
+            // Don't fail the save if prefix fix errors
+            console.error('Error fixing ELMT prefix:', error)
           }
         }
         
