@@ -38,6 +38,7 @@ export function TeamLogo({
         src={normalizedSrc}
         alt={alt}
         fill
+        unoptimized
         className={`object-contain ${className || ''}`}
         sizes={sizes}
         priority={priority}
@@ -52,6 +53,7 @@ export function TeamLogo({
       alt={alt}
       width={width || 120}
       height={height || 120}
+      unoptimized
       className={`object-contain ${className || ''}`}
       sizes={sizes}
       priority={priority}
