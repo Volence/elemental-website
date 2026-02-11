@@ -8,6 +8,7 @@ import type { Team } from '@/payload-types'
 export interface TeamCardOptions {
   teamId: string | number
   forceRepost?: boolean
+  fallbackMessageId?: string | null
 }
 
 /**
@@ -48,7 +49,11 @@ export async function postOrUpdateTeamCard(options: TeamCardOptions): Promise<st
     const embed = await buildEnhancedTeamEmbed(team, payload)
 
     // Check if team already has a card posted
-    const existingMessageId = team.discordCardMessageId
+    // Use fallbackMessageId if the DB value was cleared (e.g., readOnly field stripped during admin save)
+    const existingMessageId = team.discordCardMessageId || options.fallbackMessageId || null
+    if (!team.discordCardMessageId && options.fallbackMessageId) {
+      console.log(`[TeamCards] ⚠️ Using fallback message ID for ${team.name} (DB value was null, fallback: ${options.fallbackMessageId})`)
+    }
 
     if (existingMessageId && !forceRepost) {
       // Try to edit existing message

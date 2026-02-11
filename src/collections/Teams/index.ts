@@ -734,7 +734,9 @@ export const Teams: CollectionConfig = {
             setImmediate(async () => {
               try {
                 const { postOrUpdateTeamCard } = await import('../../discord/services/teamCards')
-                await postOrUpdateTeamCard({ teamId: doc.id })
+                // Pass previousDoc's message ID as fallback in case the field was cleared during save
+                const fallbackMessageId = previousDoc?.discordCardMessageId || doc.discordCardMessageId || null
+                await postOrUpdateTeamCard({ teamId: doc.id, fallbackMessageId })
               } catch (error) {
                 console.error('Failed to update Discord team card:', error)
               }
@@ -772,6 +774,27 @@ export const Teams: CollectionConfig = {
     ],
     beforeChange: [
       async ({ data, req, operation }) => {
+        // Preserve discordCardMessageId - this readOnly field may not be included
+        // in admin form submissions, which would cause it to be cleared and
+        // result in duplicate Discord cards being posted instead of edited
+        if (operation === 'update' && !data.discordCardMessageId) {
+          try {
+            const teamId = data.id || req.data?.id
+            if (teamId) {
+              const existingDoc = await req.payload.findByID({
+                collection: 'teams',
+                id: teamId,
+                depth: 0,
+              })
+              if (existingDoc?.discordCardMessageId) {
+                data.discordCardMessageId = existingDoc.discordCardMessageId
+              }
+            }
+          } catch (e) {
+            // Don't block save if lookup fails
+          }
+        }
+
         // Cache logo filename for fast list view display
         if (data.logo && typeof data.logo === 'number') {
           try {
