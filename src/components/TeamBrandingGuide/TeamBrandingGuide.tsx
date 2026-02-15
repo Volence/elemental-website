@@ -136,11 +136,12 @@ function TeamCard({
       setSavedSecondary(secondary)
       setSaveStatus('saved')
       clearRef.current = setTimeout(() => setSaveStatus('idle'), 1800)
-    } catch {
+    } catch (err) {
+      console.error(`[BrandingGuide] Save failed for team ${team.id} (${team.name}):`, err)
       setSaveStatus('error')
       clearRef.current = setTimeout(() => setSaveStatus('idle'), 2500)
     }
-  }, [team.id, primary, secondary, savedPrimary, savedSecondary, onSave])
+  }, [team.id, team.name, primary, secondary, savedPrimary, savedSecondary, onSave])
 
   const handleReset = useCallback(() => {
     setPrimary(savedPrimary)
@@ -167,8 +168,8 @@ function TeamCard({
         </span>
         {isDirty && (
           <div className="tc__actions">
-            <button className="tc__btn tc__btn--save" onClick={handleSave} title="Save changes">Save</button>
-            <button className="tc__btn tc__btn--reset" onClick={handleReset} title="Discard changes">✕</button>
+            <button type="button" className="tc__btn tc__btn--save" onClick={handleSave} title="Save changes">Save</button>
+            <button type="button" className="tc__btn tc__btn--reset" onClick={handleReset} title="Discard changes">✕</button>
           </div>
         )}
         {!isDirty && saveStatus !== 'idle' && (
@@ -310,10 +311,15 @@ export default function TeamBrandingGuide() {
   const handleSave = useCallback(async (id: number, updates: Record<string, string>) => {
     const res = await fetch(`/api/teams/${id}`, {
       method: 'PATCH',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates),
     })
-    if (!res.ok) throw new Error('Save failed')
+    if (!res.ok) {
+      const text = await res.text().catch(() => '')
+      console.error(`[BrandingGuide] PATCH /api/teams/${id} failed:`, res.status, text)
+      throw new Error(`Save failed: ${res.status}`)
+    }
   }, [])
 
   const grouped = REGION_ORDER.reduce<Record<string, TeamData[]>>((acc, r) => {
