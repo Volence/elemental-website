@@ -128,6 +128,14 @@ const config = buildConfig({
           Component: '@/components/ScrimUpload#default',
           path: '/scrim-upload',
         },
+        scrimList: {
+          Component: '@/components/ScrimList#default',
+          path: '/scrims',
+        },
+        scrimMapDetail: {
+          Component: '@/components/ScrimMapDetail#default',
+          path: '/scrim-map',
+        },
       },
     },
     importMap: {
