@@ -1,0 +1,623 @@
+// Prisma schema for Scrim Analytics (Parsertime integration)
+// These tables live alongside Payload CMS tables in the same Postgres database.
+// All table names use @@map("scrim_*") to avoid collisions with Payload tables.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================================
+// Core Scrim Models
+// ============================================================================
+
+model Scrim {
+  id        Int       @id @default(autoincrement())
+  name      String
+  date      DateTime
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  // Links to Payload CMS team by ID (not a Prisma relation since Team lives in Payload)
+  payloadTeamId Int?
+  creatorEmail  String
+  maps      ScrimMap[]
+
+  @@map("scrim_scrims")
+  @@index([payloadTeamId])
+}
+
+model ScrimMap {
+  id         Int            @id @default(autoincrement())
+  name       String
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  replayCode String?
+  scrim      Scrim          @relation(fields: [scrimId], references: [id], onDelete: Cascade)
+  scrimId    Int
+  mapData    ScrimMapData[]
+
+  @@map("scrim_maps")
+  @@index([scrimId])
+}
+
+model ScrimMapData {
+  id        Int      @id @default(autoincrement())
+  scrimId   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  map   ScrimMap @relation(fields: [mapId], references: [id], onDelete: Cascade)
+  mapId Int
+
+  // Event relations
+  defensiveAssists  ScrimDefensiveAssist[]
+  dvaRemechs        ScrimDvaRemech[]
+  echoDuplicateEnds ScrimEchoDuplicateEnd[]
+  echoDuplicateStarts ScrimEchoDuplicateStart[]
+  heroSpawns        ScrimHeroSpawn[]
+  heroSwaps         ScrimHeroSwap[]
+  kills             ScrimKill[]
+  matchEnds         ScrimMatchEnd[]
+  matchStarts       ScrimMatchStart[]
+  mercyRezs         ScrimMercyRez[]
+  objectivesCaptured ScrimObjectiveCaptured[]
+  objectivesUpdated  ScrimObjectiveUpdated[]
+  offensiveAssists   ScrimOffensiveAssist[]
+  payloadProgress    ScrimPayloadProgress[]
+  playerStats        ScrimPlayerStat[]
+  pointProgress      ScrimPointProgress[]
+  remechCharged      ScrimRemechCharged[]
+  roundEnds          ScrimRoundEnd[]
+  roundStarts        ScrimRoundStart[]
+  setupCompletes     ScrimSetupComplete[]
+  ultimateCharged    ScrimUltimateCharged[]
+  ultimateEnds       ScrimUltimateEnd[]
+  ultimateStarts     ScrimUltimateStart[]
+  calculatedStats    ScrimCalculatedStat[]
+
+  @@map("scrim_map_data")
+  @@index([scrimId])
+  @@index([mapId])
+}
+
+// ============================================================================
+// Enums
+// ============================================================================
+
+enum ScrimEventType {
+  defensive_assist
+  dva_remech
+  echo_duplicate_end
+  echo_duplicate_start
+  hero_spawn
+  hero_swap
+  kill
+  match_end
+  match_start
+  mercy_rez
+  objective_captured
+  objective_updated
+  offensive_assist
+  payload_progress
+  point_progress
+  player_stat
+  remech_charged
+  round_end
+  round_start
+  setup_complete
+  ultimate_charged
+  ultimate_end
+  ultimate_start
+
+  @@map("scrim_event_type")
+}
+
+enum ScrimMapType {
+  Clash
+  Control
+  Escort
+  Flashpoint
+  Hybrid
+  Push
+
+  @@map("scrim_map_type")
+}
+
+enum ScrimRole {
+  TANK
+  DAMAGE
+  SUPPORT
+
+  @@map("scrim_role")
+}
+
+enum ScrimCalculatedStatType {
+  FLETA_DEADLIFT_PERCENTAGE
+  FIRST_PICK_PERCENTAGE
+  FIRST_PICK_COUNT
+  FIRST_DEATH_PERCENTAGE
+  FIRST_DEATH_COUNT
+  MVP_SCORE
+  MAP_MVP_COUNT
+  AJAX_COUNT
+  AVERAGE_ULT_CHARGE_TIME
+  AVERAGE_TIME_TO_USE_ULT
+  AVERAGE_DROUGHT_TIME
+  KILLS_PER_ULTIMATE
+  DUEL_WINRATE_PERCENTAGE
+  FIGHT_REVERSAL_PERCENTAGE
+
+  @@map("scrim_calculated_stat_type")
+}
+
+// ============================================================================
+// Calculated Stats
+// ============================================================================
+
+model ScrimCalculatedStat {
+  id         Int                    @id @default(autoincrement())
+  scrimId    Int
+  playerName String
+  hero       String
+  role       ScrimRole
+  stat       ScrimCalculatedStatType
+  value      Float
+  createdAt  DateTime               @default(now())
+  updatedAt  DateTime               @updatedAt
+  mapData    ScrimMapData           @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId  Int
+
+  @@map("scrim_calculated_stats")
+  @@index([scrimId, mapDataId])
+  @@index([playerName, hero, stat])
+}
+
+// ============================================================================
+// Event Models (23 event types)
+// ============================================================================
+
+model ScrimDefensiveAssist {
+  id              Int            @id @default(autoincrement())
+  scrimId         Int
+  event_type      ScrimEventType @default(defensive_assist)
+  match_time      Float
+  player_team     String
+  player_name     String
+  player_hero     String
+  hero_duplicated String
+  mapData         ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId       Int?
+
+  @@map("scrim_defensive_assists")
+  @@index([scrimId])
+  @@index([mapDataId])
+}
+
+model ScrimDvaRemech {
+  id          Int            @id @default(autoincrement())
+  scrimId     Int
+  event_type  ScrimEventType @default(dva_remech)
+  match_time  Float
+  player_team String
+  player_name String
+  player_hero String
+  ultimate_id Int
+  mapData     ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId   Int?
+
+  @@map("scrim_dva_remechs")
+  @@index([scrimId])
+  @@index([mapDataId])
+}
+
+model ScrimEchoDuplicateEnd {
+  id          Int            @id @default(autoincrement())
+  scrimId     Int
+  event_type  ScrimEventType @default(echo_duplicate_end)
+  match_time  Float
+  player_team String
+  player_name String
+  player_hero String
+  ultimate_id Int
+  mapData     ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId   Int?
+
+  @@map("scrim_echo_duplicate_ends")
+  @@index([scrimId])
+  @@index([mapDataId])
+}
+
+model ScrimEchoDuplicateStart {
+  id              Int            @id @default(autoincrement())
+  scrimId         Int
+  event_type      ScrimEventType @default(echo_duplicate_start)
+  match_time      Float
+  player_team     String
+  player_name     String
+  player_hero     String
+  hero_duplicated String
+  ultimate_id     Int
+  mapData         ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId       Int?
+
+  @@map("scrim_echo_duplicate_starts")
+  @@index([scrimId])
+  @@index([mapDataId])
+}
+
+model ScrimHeroSpawn {
+  id               Int            @id @default(autoincrement())
+  scrimId          Int
+  event_type       ScrimEventType @default(hero_spawn)
+  match_time       Float
+  player_team      String
+  player_name      String
+  player_hero      String
+  previous_hero    Int?
+  hero_time_played Float
+  mapData          ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId        Int?
+
+  @@map("scrim_hero_spawns")
+  @@index([scrimId])
+  @@index([mapDataId])
+}
+
+model ScrimHeroSwap {
+  id               Int            @id @default(autoincrement())
+  scrimId          Int
+  event_type       ScrimEventType @default(hero_swap)
+  match_time       Float
+  player_team      String
+  player_name      String
+  player_hero      String
+  previous_hero    String
+  hero_time_played Float
+  mapData          ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId        Int?
+
+  @@map("scrim_hero_swaps")
+  @@index([scrimId])
+  @@index([mapDataId])
+}
+
+model ScrimKill {
+  id               Int            @id @default(autoincrement())
+  scrimId          Int
+  event_type       ScrimEventType @default(kill)
+  match_time       Float
+  attacker_team    String
+  attacker_name    String
+  attacker_hero    String
+  victim_team      String
+  victim_name      String
+  victim_hero      String
+  event_ability    String
+  event_damage     Int
+  is_critical_hit  String
+  is_environmental String
+  mapData          ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId        Int?
+
+  @@map("scrim_kills")
+  @@index([scrimId])
+  @@index([mapDataId])
+}
+
+model ScrimMatchEnd {
+  id           Int            @id @default(autoincrement())
+  scrimId      Int
+  event_type   ScrimEventType @default(match_end)
+  match_time   Float
+  round_number Int
+  team_1_score Int
+  team_2_score Int
+  mapData      ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId    Int?
+
+  @@map("scrim_match_ends")
+  @@index([scrimId])
+  @@index([mapDataId])
+}
+
+model ScrimMatchStart {
+  id          Int            @id @default(autoincrement())
+  scrimId     Int
+  event_type  ScrimEventType @default(match_start)
+  match_time  Float
+  map_name    String
+  map_type    ScrimMapType
+  team_1_name String
+  team_2_name String
+  mapData     ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId   Int?
+
+  @@map("scrim_match_starts")
+  @@index([scrimId])
+  @@index([mapDataId])
+}
+
+model ScrimMercyRez {
+  id                 Int            @id @default(autoincrement())
+  scrimId            Int
+  event_type         ScrimEventType @default(mercy_rez)
+  match_time         Float
+  resurrecter_team   String
+  resurrecter_player String
+  resurrecter_hero   String
+  resurrectee_team   String
+  resurrectee_player String
+  resurrectee_hero   String
+  mapData            ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId          Int?
+
+  @@map("scrim_mercy_rezs")
+  @@index([scrimId])
+  @@index([mapDataId])
+}
+
+model ScrimObjectiveCaptured {
+  id                      Int            @id @default(autoincrement())
+  scrimId                 Int
+  event_type              ScrimEventType @default(objective_captured)
+  match_time              Float
+  round_number            Int
+  capturing_team          String
+  objective_index         Int
+  control_team_1_progress Float
+  control_team_2_progress Float
+  match_time_remaining    Float
+  mapData                 ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId               Int?
+
+  @@map("scrim_objectives_captured")
+  @@index([scrimId])
+  @@index([mapDataId])
+}
+
+model ScrimObjectiveUpdated {
+  id                       Int            @id @default(autoincrement())
+  scrimId                  Int
+  event_type               ScrimEventType @default(objective_updated)
+  match_time               Float
+  round_number             Int
+  previous_objective_index Int
+  current_objective_index  Int
+  mapData                  ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId                Int?
+
+  @@map("scrim_objectives_updated")
+  @@index([scrimId])
+  @@index([mapDataId])
+}
+
+model ScrimOffensiveAssist {
+  id              Int            @id @default(autoincrement())
+  scrimId         Int
+  event_type      ScrimEventType @default(offensive_assist)
+  match_time      Float
+  player_team     String
+  player_name     String
+  player_hero     String
+  hero_duplicated String
+  mapData         ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId       Int?
+
+  @@map("scrim_offensive_assists")
+  @@index([scrimId])
+  @@index([mapDataId])
+}
+
+model ScrimPayloadProgress {
+  id                       Int            @id @default(autoincrement())
+  scrimId                  Int
+  event_type               ScrimEventType @default(payload_progress)
+  match_time               Float
+  round_number             Int
+  capturing_team           String
+  objective_index          Int
+  payload_capture_progress Float
+  mapData                  ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId                Int?
+
+  @@map("scrim_payload_progress")
+  @@index([scrimId])
+  @@index([mapDataId])
+}
+
+model ScrimPlayerStat {
+  id                           Int            @id @default(autoincrement())
+  scrimId                      Int
+  event_type                   ScrimEventType @default(player_stat)
+  match_time                   Float
+  round_number                 Int
+  player_team                  String
+  player_name                  String
+  player_hero                  String
+  eliminations                 Int
+  final_blows                  Int
+  deaths                       Int
+  all_damage_dealt             Float
+  barrier_damage_dealt         Float
+  hero_damage_dealt            Float
+  healing_dealt                Float
+  healing_received             Float
+  self_healing                 Float
+  damage_taken                 Float
+  damage_blocked               Float
+  defensive_assists            Int
+  offensive_assists            Int
+  ultimates_earned             Int
+  ultimates_used               Int
+  multikill_best               Int
+  multikills                   Int
+  solo_kills                   Int
+  objective_kills              Int
+  environmental_kills          Int
+  environmental_deaths         Int
+  critical_hits                Int
+  critical_hit_accuracy        Float
+  scoped_accuracy              Float
+  scoped_critical_hit_accuracy Float
+  scoped_critical_hit_kills    Int
+  shots_fired                  Int
+  shots_hit                    Int
+  shots_missed                 Int
+  scoped_shots                 Int
+  scoped_shots_hit             Int
+  weapon_accuracy              Float
+  hero_time_played             Float
+  mapData                      ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId                    Int?
+
+  @@map("scrim_player_stats")
+  @@index([scrimId])
+  @@index([mapDataId])
+}
+
+model ScrimPointProgress {
+  id                     Int            @id @default(autoincrement())
+  scrimId                Int
+  event_type             ScrimEventType @default(point_progress)
+  match_time             Float
+  round_number           Int
+  capturing_team         String
+  objective_index        Int
+  point_capture_progress Float
+  mapData                ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId              Int?
+
+  @@map("scrim_point_progress")
+  @@index([scrimId])
+  @@index([mapDataId])
+}
+
+model ScrimRemechCharged {
+  id              Int            @id @default(autoincrement())
+  scrimId         Int
+  event_type      ScrimEventType @default(remech_charged)
+  match_time      Float
+  player_team     String
+  player_name     String
+  player_hero     String
+  hero_duplicated String
+  ultimate_id     Int
+  mapData         ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId       Int?
+
+  @@map("scrim_remech_charged")
+  @@index([scrimId])
+  @@index([mapDataId])
+}
+
+model ScrimRoundEnd {
+  id                      Int            @id @default(autoincrement())
+  scrimId                 Int
+  event_type              ScrimEventType @default(round_end)
+  match_time              Float
+  round_number            Int
+  capturing_team          String
+  team_1_score            Int
+  team_2_score            Int
+  objective_index         Int
+  control_team_1_progress Float
+  control_team_2_progress Float
+  match_time_remaining    Float
+  mapData                 ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId               Int?
+
+  @@map("scrim_round_ends")
+  @@index([scrimId])
+  @@index([mapDataId])
+}
+
+model ScrimRoundStart {
+  id              Int            @id @default(autoincrement())
+  scrimId         Int
+  event_type      ScrimEventType @default(round_start)
+  match_time      Float
+  round_number    Int
+  capturing_team  String
+  team_1_score    Int
+  team_2_score    Int
+  objective_index Int
+  mapData         ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId       Int?
+
+  @@map("scrim_round_starts")
+  @@index([scrimId])
+  @@index([mapDataId])
+}
+
+model ScrimSetupComplete {
+  id                   Int            @id @default(autoincrement())
+  scrimId              Int
+  event_type           ScrimEventType @default(setup_complete)
+  match_time           Float
+  round_number         Int
+  match_time_remaining Float
+  mapData              ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId            Int?
+
+  @@map("scrim_setup_completes")
+  @@index([scrimId])
+  @@index([mapDataId])
+}
+
+model ScrimUltimateCharged {
+  id              Int            @id @default(autoincrement())
+  scrimId         Int
+  event_type      ScrimEventType @default(ultimate_charged)
+  match_time      Float
+  player_team     String
+  player_name     String
+  player_hero     String
+  hero_duplicated String
+  ultimate_id     Int
+  mapData         ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId       Int?
+
+  @@map("scrim_ultimate_charged")
+  @@index([scrimId])
+  @@index([mapDataId])
+}
+
+model ScrimUltimateEnd {
+  id              Int            @id @default(autoincrement())
+  scrimId         Int
+  event_type      ScrimEventType @default(ultimate_end)
+  match_time      Float
+  player_team     String
+  player_name     String
+  player_hero     String
+  hero_duplicated String
+  ultimate_id     Int
+  mapData         ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId       Int?
+
+  @@map("scrim_ultimate_ends")
+  @@index([scrimId])
+  @@index([mapDataId])
+}
+
+model ScrimUltimateStart {
+  id              Int            @id @default(autoincrement())
+  scrimId         Int
+  event_type      ScrimEventType @default(ultimate_start)
+  match_time      Float
+  player_team     String
+  player_name     String
+  player_hero     String
+  hero_duplicated String
+  ultimate_id     Int
+  mapData         ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId       Int?
+
+  @@map("scrim_ultimate_starts")
+  @@index([scrimId])
+  @@index([mapDataId])
+}
