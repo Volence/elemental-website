@@ -124,6 +124,10 @@ const config = buildConfig({
           Component: '@/components/UnifiedCalendar#default',
           path: '/calendar',
         },
+        scrimUpload: {
+          Component: '@/components/ScrimUpload#default',
+          path: '/scrim-upload',
+        },
       },
     },
     importMap: {
