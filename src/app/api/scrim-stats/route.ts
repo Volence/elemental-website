@@ -104,8 +104,11 @@ export async function GET(req: NextRequest) {
     actualMaxTime,
   )
 
-  // Score: prefer match_end > latest round_start (carries cumulative score) > latest round_end
-  const scoreSource = matchEnd ?? lastRoundStart ?? lastRoundEnd
+  // Score: prefer match_end > latest round_end
+  // Note: round_start scores are NOT reliable — in scrim practice mode, Escort maps
+  // reset team_2_score to max (3) at round 2 start so the other team can play the
+  // full map distance, regardless of actual round 1 result
+  const scoreSource = matchEnd ?? lastRoundEnd
   const team1Score = scoreSource?.team_1_score ?? 0
   const team2Score = scoreSource?.team_2_score ?? 0
 
