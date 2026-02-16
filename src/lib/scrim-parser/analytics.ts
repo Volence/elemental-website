@@ -339,7 +339,7 @@ export async function calculateXFactor(
   const dPer10Raw = await prisma.$queryRaw<Array<{ deaths_per_10: number }>>`
     SELECT (SUM(deaths) / NULLIF(SUM(hero_time_played / 600), 0)) AS deaths_per_10
     FROM "scrim_player_stats"
-    WHERE "MapDataId" = ${mapId} AND "player_name" = ${playerName}
+    WHERE "mapDataId" = ${mapId} AND "player_name" = ${playerName}
   `
   const dp10 = dPer10Raw[0]?.deaths_per_10 ?? 5
   const deathsScore = dp10 > 5 ? 0 - dp10 : 1 + dp10

@@ -157,12 +157,12 @@ export async function calculateStatsForMap(
     WITH maxTime AS (
       SELECT MAX("match_time") AS max_time
       FROM "scrim_player_stats"
-      WHERE "MapDataId" = ${mapId}
+      WHERE "mapDataId" = ${mapId}
     )
     SELECT DISTINCT ps."player_name"
     FROM "scrim_player_stats" ps
     INNER JOIN maxTime m ON ps."match_time" = m.max_time
-    WHERE ps."MapDataId" = ${mapId}
+    WHERE ps."mapDataId" = ${mapId}
   `
 
   const playerNames = finalStats.map((r) => r.player_name)

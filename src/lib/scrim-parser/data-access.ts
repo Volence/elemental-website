@@ -27,7 +27,7 @@ export async function getFinalRoundStats(mapId: number) {
     Array<{
       id: number
       scrimId: number
-      MapDataId: number
+      mapDataId: number
       match_time: number
       round_number: number
       player_name: string
@@ -71,12 +71,12 @@ export async function getFinalRoundStats(mapId: number) {
     WITH maxTime AS (
       SELECT MAX("match_time") AS max_time
       FROM "scrim_player_stats"
-      WHERE "MapDataId" = ${mapId}
+      WHERE "mapDataId" = ${mapId}
     )
     SELECT ps.*
     FROM "scrim_player_stats" ps
     INNER JOIN maxTime m ON ps."match_time" = m.max_time
-    WHERE ps."MapDataId" = ${mapId}
+    WHERE ps."mapDataId" = ${mapId}
   `
 
   return removeDuplicateRows(rows)
@@ -97,7 +97,7 @@ export async function getPlayerFinalStats(mapId: number, playerName: string) {
     Array<{
       id: number
       scrimId: number
-      MapDataId: number
+      mapDataId: number
       match_time: number
       round_number: number
       player_name: string
@@ -141,12 +141,12 @@ export async function getPlayerFinalStats(mapId: number, playerName: string) {
     WITH maxTime AS (
       SELECT MAX("match_time") AS max_time
       FROM "scrim_player_stats"
-      WHERE "MapDataId" = ${mapId}
+      WHERE "mapDataId" = ${mapId}
     )
     SELECT ps.*
     FROM "scrim_player_stats" ps
     INNER JOIN maxTime m ON ps."match_time" = m.max_time
-    WHERE ps."MapDataId" = ${mapId}
+    WHERE ps."mapDataId" = ${mapId}
       AND ps."player_name" = ${playerName}
   `
 
