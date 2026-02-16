@@ -70,30 +70,53 @@ type MapStats = {
 type SortKey = keyof PlayerRow
 type SortDir = 'asc' | 'desc'
 
+// ── Design tokens ──
+const CYAN = '#06b6d4'
+const CYAN_DIM = 'rgba(6, 182, 212, 0.12)'
+const GREEN = '#22c55e'
+const GREEN_DIM = 'rgba(34, 197, 94, 0.08)'
+const RED = '#ef4444'
+const RED_DIM = 'rgba(239, 68, 68, 0.08)'
+const PURPLE = '#8b5cf6'
+const PURPLE_DIM = 'rgba(139, 92, 246, 0.08)'
+const AMBER = '#f59e0b'
+const BG_CARD = '#1a1a2e'
+const BG_CARD_HOVER = '#1e1e36'
+const BORDER = 'rgba(255, 255, 255, 0.06)'
+const BORDER_ACCENT = 'rgba(6, 182, 212, 0.2)'
+const TEXT_PRIMARY = '#f0f0f5'
+const TEXT_SECONDARY = '#71717a'
+const TEXT_DIM = '#52525b'
+
 const CARD_STYLE: React.CSSProperties = {
-  background: 'var(--theme-elevation-50, #222)',
-  border: '1px solid var(--theme-elevation-150, #333)',
-  borderRadius: '10px',
+  background: BG_CARD,
+  border: `1px solid ${BORDER}`,
+  borderRadius: '12px',
   padding: '20px',
+  transition: 'border-color 0.2s, box-shadow 0.2s',
 }
 
 const LABEL_STYLE: React.CSSProperties = {
-  fontSize: '12px',
-  color: 'var(--theme-text-secondary, #888)',
+  fontSize: '11px',
+  color: TEXT_SECONDARY,
   textTransform: 'uppercase' as const,
-  letterSpacing: '0.5px',
-  marginBottom: '6px',
+  letterSpacing: '1px',
+  fontWeight: 600,
+  marginBottom: '8px',
 }
 
 const VALUE_STYLE: React.CSSProperties = {
-  fontSize: '24px',
+  fontSize: '26px',
   fontWeight: 700,
+  color: TEXT_PRIMARY,
+  letterSpacing: '-0.5px',
+  lineHeight: 1.2,
 }
 
 const SUB_STYLE: React.CSSProperties = {
   fontSize: '12px',
-  color: 'var(--theme-text-secondary, #888)',
-  marginTop: '4px',
+  color: TEXT_DIM,
+  marginTop: '6px',
 }
 
 function toTimestamp(seconds: number): string {
@@ -103,7 +126,11 @@ function toTimestamp(seconds: number): string {
 }
 
 function formatNumber(n: number): string {
-  return n.toLocaleString()
+  return n.toLocaleString(undefined, { maximumFractionDigits: 0 })
+}
+
+function sumStat(players: PlayerRow[], key: keyof PlayerRow): number {
+  return players.reduce((acc, p) => acc + (p[key] as number), 0)
 }
 
 /**
@@ -142,16 +169,16 @@ export default function ScrimMapDetailView() {
 
   if (loading) {
     return (
-      <div style={{ padding: '40px', textAlign: 'center', color: 'var(--theme-text-secondary, #888)' }}>
-        Loading map analytics…
+      <div style={{ padding: '60px', textAlign: 'center', color: TEXT_SECONDARY }}>
+        <div style={{ fontSize: '14px' }}>Loading map analytics…</div>
       </div>
     )
   }
   if (error || !data) {
     return (
-      <div style={{ padding: '40px', textAlign: 'center' }}>
-        <p style={{ color: 'var(--theme-error-500, #ef4444)' }}>❌ {error || 'Unknown error'}</p>
-        <a href="/admin/scrims" style={{ color: 'var(--theme-text-secondary, #888)', fontSize: '13px' }}>
+      <div style={{ padding: '60px', textAlign: 'center' }}>
+        <p style={{ color: RED, marginBottom: '12px' }}>❌ {error || 'Unknown error'}</p>
+        <a href="/admin/scrims" style={{ color: TEXT_SECONDARY, fontSize: '13px' }}>
           ← Back to scrims
         </a>
       </div>
@@ -181,88 +208,98 @@ export default function ScrimMapDetailView() {
     ? data.calculatedStats.find((s) => s.playerName === selectedPlayer)
     : null
 
+  // Parse score for win/loss coloring
+  const [s1, s2] = data.summary.score.split(' - ').map(Number)
+  const team1Won = s1 > s2
+  const team2Won = s2 > s1
+
   return (
-    <div style={{ padding: '40px', maxWidth: '1100px', margin: '0 auto' }}>
+    <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto', fontFamily: "'Inter', -apple-system, sans-serif" }}>
       {/* Header */}
-      <div style={{ marginBottom: '28px' }}>
-        <a href="/admin/scrims" style={{ color: 'var(--theme-text-secondary, #888)', fontSize: '13px', textDecoration: 'none' }}>
+      <div style={{ marginBottom: '32px' }}>
+        <a href="/admin/scrims" style={{ color: TEXT_SECONDARY, fontSize: '12px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px', transition: 'color 0.15s' }}>
           ← Back to scrims
         </a>
-        <h1 style={{ fontSize: '26px', fontWeight: 700, marginTop: '8px', marginBottom: '4px' }}>
-          {data.mapName}
-        </h1>
-        <p style={{ color: 'var(--theme-text-secondary, #888)', fontSize: '13px' }}>
-          {data.teams.team1} vs {data.teams.team2} · {data.mapType}
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '16px', marginTop: '12px' }}>
+          <h1 style={{ fontSize: '32px', fontWeight: 800, margin: 0, color: TEXT_PRIMARY, letterSpacing: '-0.5px' }}>
+            {data.mapName}
+          </h1>
+          <span style={{
+            fontSize: '11px',
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            letterSpacing: '1px',
+            padding: '3px 10px',
+            borderRadius: '4px',
+            background: CYAN_DIM,
+            color: CYAN,
+          }}>
+            {data.mapType}
+          </span>
+        </div>
+        <p style={{ color: TEXT_SECONDARY, fontSize: '14px', marginTop: '6px' }}>
+          <span style={{ color: team1Won ? GREEN : team2Won ? TEXT_SECONDARY : TEXT_PRIMARY, fontWeight: team1Won ? 600 : 400 }}>{data.teams.team1}</span>
+          {' '}vs{' '}
+          <span style={{ color: team2Won ? GREEN : team1Won ? TEXT_SECONDARY : TEXT_PRIMARY, fontWeight: team2Won ? 600 : 400 }}>{data.teams.team2}</span>
         </p>
       </div>
 
       {/* Summary Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: data.summary.distance ? 'repeat(5, 1fr)' : 'repeat(4, 1fr)', gap: '12px', marginBottom: '28px' }}>
-        <div style={CARD_STYLE}>
-          <div style={LABEL_STYLE}>Match Time</div>
-          <div style={VALUE_STYLE}>{toTimestamp(data.summary.matchTime)}</div>
-          <div style={SUB_STYLE}>{(data.summary.matchTime / 60).toFixed(1)} minutes</div>
-        </div>
-        <div style={CARD_STYLE}>
-          <div style={LABEL_STYLE}>Score</div>
-          <div style={VALUE_STYLE}>{data.summary.score}</div>
-          <div style={SUB_STYLE}>{data.mapType}</div>
-        </div>
+      <div style={{ display: 'grid', gridTemplateColumns: data.summary.distance ? 'repeat(5, 1fr)' : 'repeat(4, 1fr)', gap: '12px', marginBottom: '32px' }}>
+        <SummaryCard label="Match Time" value={toTimestamp(data.summary.matchTime)} sub={`${(data.summary.matchTime / 60).toFixed(1)} minutes`} />
+        <SummaryCard
+          label="Score"
+          value={data.summary.score}
+          sub={team1Won ? `${data.teams.team1} wins` : team2Won ? `${data.teams.team2} wins` : 'Draw'}
+          accentColor={CYAN}
+        />
         {data.summary.distance && (
-          <div style={CARD_STYLE}>
-            <div style={LABEL_STYLE}>Distance Pushed</div>
-            <div style={VALUE_STYLE} title={`${data.summary.distance.round1.team} vs ${data.summary.distance.round2.team}`}>
-              {data.summary.distance.round1.meters}m - {data.summary.distance.round2.meters !== null ? `${data.summary.distance.round2.meters}m` : '?'}
-            </div>
-            <div style={SUB_STYLE}>
-              {data.summary.distance.round1.team} · {data.summary.distance.round2.team}
-            </div>
-          </div>
+          <SummaryCard
+            label="Distance Pushed"
+            value={`${data.summary.distance.round1.meters}m - ${data.summary.distance.round2.meters !== null ? `${data.summary.distance.round2.meters}m` : '?'}`}
+            sub={`${data.summary.distance.round1.team} · ${data.summary.distance.round2.team}`}
+            accentColor={AMBER}
+          />
         )}
-        <div style={CARD_STYLE}>
-          <div style={LABEL_STYLE}>Hero Damage</div>
-          <div style={VALUE_STYLE} title={`${data.teams.team1} vs ${data.teams.team2}`}>
-            {formatNumber(data.summary.team1Damage)} - {formatNumber(data.summary.team2Damage)}
-          </div>
-          <div style={SUB_STYLE}>
-            {data.summary.team1Damage > data.summary.team2Damage ? data.teams.team1 : data.teams.team2} dealt more
-          </div>
-        </div>
-        <div style={CARD_STYLE}>
-          <div style={LABEL_STYLE}>Healing</div>
-          <div style={VALUE_STYLE} title={`${data.teams.team1} vs ${data.teams.team2}`}>
-            {formatNumber(data.summary.team1Healing)} - {formatNumber(data.summary.team2Healing)}
-          </div>
-          <div style={SUB_STYLE}>
-            {data.summary.team1Healing > data.summary.team2Healing ? data.teams.team1 : data.teams.team2} healed more
-          </div>
-        </div>
+        <SummaryCard
+          label="Hero Damage"
+          value={`${formatNumber(data.summary.team1Damage)} - ${formatNumber(data.summary.team2Damage)}`}
+          sub={`${data.summary.team1Damage > data.summary.team2Damage ? data.teams.team1 : data.teams.team2} dealt more`}
+          accentColor={RED}
+        />
+        <SummaryCard
+          label="Healing"
+          value={`${formatNumber(data.summary.team1Healing)} - ${formatNumber(data.summary.team2Healing)}`}
+          sub={`${data.summary.team1Healing > data.summary.team2Healing ? data.teams.team1 : data.teams.team2} healed more`}
+          accentColor={GREEN}
+        />
       </div>
 
       {/* Stat Table */}
       <div style={{ ...CARD_STYLE, padding: 0, overflow: 'hidden', marginBottom: '28px' }}>
-        <div style={{ padding: '16px 20px 8px', fontWeight: 600, fontSize: '15px' }}>
+        <div style={{ padding: '16px 20px 10px', fontWeight: 700, fontSize: '15px', color: TEXT_PRIMARY, borderBottom: `1px solid ${BORDER}` }}>
           Player Stats
         </div>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--theme-elevation-150, #333)' }}>
+              <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
                 {(['name', 'hero', 'eliminations', 'assists', 'deaths', 'finalBlows', 'damage', 'healing'] as SortKey[]).map((col) => (
                   <th
                     key={col}
                     onClick={() => handleSort(col)}
                     style={{
-                      padding: '10px 12px',
+                      padding: '10px 14px',
                       textAlign: col === 'name' || col === 'hero' ? 'left' : 'right',
                       cursor: 'pointer',
                       fontWeight: sortKey === col ? 700 : 500,
-                      color: sortKey === col ? 'var(--theme-text, #fff)' : 'var(--theme-text-secondary, #888)',
-                      fontSize: '11px',
+                      color: sortKey === col ? CYAN : TEXT_SECONDARY,
+                      fontSize: '10px',
                       textTransform: 'uppercase',
-                      letterSpacing: '0.3px',
+                      letterSpacing: '0.5px',
                       whiteSpace: 'nowrap',
                       userSelect: 'none',
+                      transition: 'color 0.15s',
                     }}
                   >
                     {col === 'finalBlows' ? 'FB' : col.charAt(0).toUpperCase() + col.slice(1)}
@@ -273,99 +310,108 @@ export default function ScrimMapDetailView() {
             </thead>
             <tbody>
               {/* Team 1 */}
-              <tr>
-                <td colSpan={8} style={{
-                  padding: '8px 12px 4px',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  color: 'var(--theme-success-500, #22c55e)',
-                  background: 'rgba(34, 197, 94, 0.05)',
-                }}>
-                  {data.teams.team1}
-                </td>
-              </tr>
+              <TeamHeader name={data.teams.team1} color={GREEN} bgColor={GREEN_DIM} won={team1Won} />
               {team1Players.map((p) => (
-                <PlayerRow key={p.name + p.hero} player={p} onClick={() => setSelectedPlayer(p.name)} selected={selectedPlayer === p.name} />
+                <StatRow key={p.name + p.hero} player={p} onClick={() => setSelectedPlayer(p.name)} selected={selectedPlayer === p.name} />
               ))}
+              <TeamTotalRow players={team1Players} color={GREEN} />
               {/* Team 2 */}
-              <tr>
-                <td colSpan={8} style={{
-                  padding: '12px 12px 4px',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                  color: 'var(--theme-error-500, #ef4444)',
-                  background: 'rgba(239, 68, 68, 0.05)',
-                }}>
-                  {data.teams.team2}
-                </td>
-              </tr>
+              <TeamHeader name={data.teams.team2} color={RED} bgColor={RED_DIM} won={team2Won} />
               {team2Players.map((p) => (
-                <PlayerRow key={p.name + p.hero} player={p} onClick={() => setSelectedPlayer(p.name)} selected={selectedPlayer === p.name} />
+                <StatRow key={p.name + p.hero} player={p} onClick={() => setSelectedPlayer(p.name)} selected={selectedPlayer === p.name} />
               ))}
+              <TeamTotalRow players={team2Players} color={RED} />
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Analysis Section */}
-      <div style={{ ...CARD_STYLE, marginBottom: '28px' }}>
-        <div style={{ fontWeight: 600, fontSize: '15px', marginBottom: '12px' }}>Fight Analysis</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
-          <div>
-            📊 <strong>{data.analysis.totalFights}</strong> fights identified
+      {/* Fight Analysis */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '28px' }}>
+        <div style={CARD_STYLE}>
+          <div style={LABEL_STYLE}>Total Fights</div>
+          <div style={{ ...VALUE_STYLE, fontSize: '32px', color: CYAN }}>{data.analysis.totalFights}</div>
+          <div style={SUB_STYLE}>teamfights identified</div>
+        </div>
+        <div style={CARD_STYLE}>
+          <div style={LABEL_STYLE}>First Deaths</div>
+          <div style={{ display: 'flex', gap: '16px', marginTop: '4px' }}>
+            <div>
+              <div style={{ fontSize: '20px', fontWeight: 700, color: data.analysis.team1FirstDeathPct > 50 ? RED : GREEN }}>
+                {data.analysis.team1FirstDeathPct}%
+              </div>
+              <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '2px' }}>
+                {data.teams.team1} ({data.analysis.team1FirstDeaths})
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: '20px', fontWeight: 700, color: data.analysis.team2FirstDeathPct > 50 ? RED : GREEN }}>
+                {data.analysis.team2FirstDeathPct}%
+              </div>
+              <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '2px' }}>
+                {data.teams.team2} ({data.analysis.team2FirstDeaths})
+              </div>
+            </div>
           </div>
-          <div>
-            💀 {data.teams.team1} got first death in{' '}
-            <span style={{ color: data.analysis.team1FirstDeathPct > 50 ? '#ef4444' : '#22c55e', fontWeight: 600 }}>
-              {data.analysis.team1FirstDeathPct}%
-            </span>{' '}
-            of fights ({data.analysis.team1FirstDeaths}/{data.analysis.totalFights})
-          </div>
-          <div>
-            💀 {data.teams.team2} got first death in{' '}
-            <span style={{ color: data.analysis.team2FirstDeathPct > 50 ? '#ef4444' : '#22c55e', fontWeight: 600 }}>
-              {data.analysis.team2FirstDeathPct}%
-            </span>{' '}
-            of fights ({data.analysis.team2FirstDeaths}/{data.analysis.totalFights})
-          </div>
-          <div>
-            ⚡ Ultimate kills: {data.teams.team1}{' '}
-            <strong>{data.analysis.team1UltKills}</strong> vs {data.teams.team2}{' '}
-            <strong>{data.analysis.team2UltKills}</strong>
+        </div>
+        <div style={CARD_STYLE}>
+          <div style={LABEL_STYLE}>Ultimate Kills</div>
+          <div style={{ display: 'flex', gap: '16px', marginTop: '4px' }}>
+            <div>
+              <div style={{ fontSize: '20px', fontWeight: 700, color: PURPLE }}>
+                {data.analysis.team1UltKills}
+              </div>
+              <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '2px' }}>
+                {data.teams.team1}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: '20px', fontWeight: 700, color: PURPLE }}>
+                {data.analysis.team2UltKills}
+              </div>
+              <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '2px' }}>
+                {data.teams.team2}
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Player Detail Card */}
       {selectedCalcStat && (
-        <div style={{ ...CARD_STYLE, marginBottom: '28px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <div style={{ ...CARD_STYLE, marginBottom: '28px', borderColor: BORDER_ACCENT }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <div>
-              <div style={{ fontWeight: 700, fontSize: '18px' }}>{selectedCalcStat.playerName}</div>
-              <div style={{ fontSize: '13px', color: 'var(--theme-text-secondary, #888)' }}>
+              <div style={{ fontWeight: 800, fontSize: '20px', color: TEXT_PRIMARY }}>{selectedCalcStat.playerName}</div>
+              <div style={{ fontSize: '13px', color: TEXT_SECONDARY, marginTop: '2px' }}>
                 {selectedCalcStat.hero} · {selectedCalcStat.role}
               </div>
             </div>
             <button
               onClick={() => setSelectedPlayer(null)}
-              style={{ background: 'none', border: 'none', color: 'var(--theme-text-secondary, #888)', cursor: 'pointer', fontSize: '18px' }}
+              style={{
+                background: 'rgba(255,255,255,0.06)',
+                border: 'none',
+                borderRadius: '6px',
+                color: TEXT_SECONDARY,
+                cursor: 'pointer',
+                fontSize: '14px',
+                padding: '6px 10px',
+                transition: 'all 0.15s',
+              }}
             >
               ✕
             </button>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' }}>
-            <StatMini label="First Pick %" value={`${selectedCalcStat.firstPickPercentage}%`} sub={`${selectedCalcStat.firstPickCount} picks`} />
-            <StatMini label="First Death %" value={`${selectedCalcStat.firstDeathPercentage}%`} sub={`${selectedCalcStat.firstDeathCount} deaths`} />
-            <StatMini label="Fleta Deadlift" value={`${selectedCalcStat.fletaDeadliftPercentage}%`} />
-            <StatMini label="Fight Reversal" value={`${selectedCalcStat.fightReversalPercentage}%`} />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '16px' }}>
+            <StatMini label="First Pick %" value={`${selectedCalcStat.firstPickPercentage}%`} sub={`${selectedCalcStat.firstPickCount} picks`} color={GREEN} />
+            <StatMini label="First Death %" value={`${selectedCalcStat.firstDeathPercentage}%`} sub={`${selectedCalcStat.firstDeathCount} deaths`} color={RED} />
+            <StatMini label="Fleta Deadlift" value={`${selectedCalcStat.fletaDeadliftPercentage}%`} color={CYAN} />
+            <StatMini label="Fight Reversal" value={`${selectedCalcStat.fightReversalPercentage}%`} color={PURPLE} />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '16px' }}>
             <StatMini label="Avg Ult Charge" value={`${selectedCalcStat.averageUltChargeTime}s`} />
             <StatMini label="Avg Ult Hold" value={`${selectedCalcStat.averageTimeToUseUlt}s`} />
             <StatMini label="Kills per Ult" value={`${selectedCalcStat.killsPerUltimate}`} />
@@ -373,7 +419,7 @@ export default function ScrimMapDetailView() {
           </div>
 
           {selectedCalcStat.ajaxCount > 0 && (
-            <div style={{ fontSize: '13px', padding: '8px 12px', background: 'rgba(239, 68, 68, 0.08)', borderRadius: '6px', marginBottom: '16px' }}>
+            <div style={{ fontSize: '13px', padding: '10px 14px', background: RED_DIM, borderRadius: '8px', marginBottom: '16px', border: `1px solid rgba(239, 68, 68, 0.15)` }}>
               🎺 <strong>{selectedCalcStat.ajaxCount}</strong> Ajax{selectedCalcStat.ajaxCount !== 1 ? 'es' : ''} (died during Lúcio ult)
             </div>
           )}
@@ -381,22 +427,23 @@ export default function ScrimMapDetailView() {
           {/* Duel Matchups */}
           {selectedCalcStat.duels.length > 0 && (
             <div>
-              <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px' }}>Duel Matchups</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '6px' }}>
+              <div style={{ fontWeight: 700, fontSize: '13px', marginBottom: '10px', color: TEXT_PRIMARY }}>Duel Matchups</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '6px' }}>
                 {selectedCalcStat.duels.map((d, i) => (
                   <div
                     key={`${d.heroName}-${i}`}
                     style={{
                       display: 'flex',
                       justifyContent: 'space-between',
-                      padding: '6px 10px',
-                      borderRadius: '6px',
-                      background: 'var(--theme-elevation-100, #2a2a2a)',
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      background: 'rgba(255,255,255,0.03)',
+                      border: `1px solid ${BORDER}`,
                       fontSize: '12px',
                     }}
                   >
-                    <span style={{ fontWeight: 500 }}>{d.heroName}</span>
-                    <span style={{ color: d.winRate >= 50 ? '#22c55e' : '#ef4444', fontWeight: 600 }}>
+                    <span style={{ fontWeight: 500, color: TEXT_PRIMARY }}>{d.heroName}</span>
+                    <span style={{ color: d.winRate >= 50 ? GREEN : RED, fontWeight: 700 }}>
                       {d.wins}W-{d.losses}L ({d.winRate}%)
                     </span>
                   </div>
@@ -411,9 +458,9 @@ export default function ScrimMapDetailView() {
       {!selectedPlayer && data.calculatedStats.length > 0 && (
         <div style={CARD_STYLE}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-            <div style={{ fontWeight: 600, fontSize: '15px' }}>
+            <div style={{ fontWeight: 700, fontSize: '15px', color: TEXT_PRIMARY }}>
               Advanced Stats
-              <span style={{ fontWeight: 400, fontSize: '12px', color: 'var(--theme-text-secondary, #888)', marginLeft: '8px' }}>
+              <span style={{ fontWeight: 400, fontSize: '12px', color: TEXT_DIM, marginLeft: '10px' }}>
                 Click a player row above for full detail
               </span>
             </div>
@@ -422,16 +469,16 @@ export default function ScrimMapDetailView() {
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid var(--theme-elevation-150, #333)' }}>
+                <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
                   {['Player', 'Hero', 'FP%', 'FD%', 'Fleta%', 'Ult Charge', 'Ult Hold', 'K/Ult', 'Drought'].map((h) => (
                     <th key={h} style={{
-                      padding: '8px 10px',
+                      padding: '10px 12px',
                       textAlign: h === 'Player' || h === 'Hero' ? 'left' : 'right',
-                      fontWeight: 500,
-                      color: 'var(--theme-text-secondary, #888)',
+                      fontWeight: 600,
+                      color: TEXT_SECONDARY,
                       textTransform: 'uppercase',
                       fontSize: '10px',
-                      letterSpacing: '0.3px',
+                      letterSpacing: '0.5px',
                     }}>
                       {h}
                     </th>
@@ -443,17 +490,17 @@ export default function ScrimMapDetailView() {
                   <tr
                     key={s.playerName}
                     onClick={() => setSelectedPlayer(s.playerName)}
-                    style={{ cursor: 'pointer', borderBottom: '1px solid var(--theme-elevation-100, #2a2a2a)' }}
+                    style={{ cursor: 'pointer', borderBottom: `1px solid ${BORDER}`, transition: 'background 0.15s' }}
                   >
-                    <td style={{ padding: '8px 10px', fontWeight: 500 }}>{s.playerName}</td>
-                    <td style={{ padding: '8px 10px' }}>{s.hero}</td>
-                    <td style={{ padding: '8px 10px', textAlign: 'right' }}>{s.firstPickPercentage}%</td>
-                    <td style={{ padding: '8px 10px', textAlign: 'right' }}>{s.firstDeathPercentage}%</td>
-                    <td style={{ padding: '8px 10px', textAlign: 'right' }}>{s.fletaDeadliftPercentage}%</td>
-                    <td style={{ padding: '8px 10px', textAlign: 'right' }}>{s.averageUltChargeTime}s</td>
-                    <td style={{ padding: '8px 10px', textAlign: 'right' }}>{s.averageTimeToUseUlt}s</td>
-                    <td style={{ padding: '8px 10px', textAlign: 'right' }}>{s.killsPerUltimate}</td>
-                    <td style={{ padding: '8px 10px', textAlign: 'right' }}>{s.droughtTime}s</td>
+                    <td style={{ padding: '10px 12px', fontWeight: 600, color: TEXT_PRIMARY }}>{s.playerName}</td>
+                    <td style={{ padding: '10px 12px', color: TEXT_SECONDARY }}>{s.hero}</td>
+                    <td style={{ padding: '10px 12px', textAlign: 'right', color: s.firstPickPercentage > 20 ? GREEN : TEXT_PRIMARY }}>{s.firstPickPercentage}%</td>
+                    <td style={{ padding: '10px 12px', textAlign: 'right', color: s.firstDeathPercentage > 20 ? RED : TEXT_PRIMARY }}>{s.firstDeathPercentage}%</td>
+                    <td style={{ padding: '10px 12px', textAlign: 'right' }}>{s.fletaDeadliftPercentage}%</td>
+                    <td style={{ padding: '10px 12px', textAlign: 'right' }}>{s.averageUltChargeTime}s</td>
+                    <td style={{ padding: '10px 12px', textAlign: 'right' }}>{s.averageTimeToUseUlt}s</td>
+                    <td style={{ padding: '10px 12px', textAlign: 'right' }}>{s.killsPerUltimate}</td>
+                    <td style={{ padding: '10px 12px', textAlign: 'right' }}>{s.droughtTime}s</td>
                   </tr>
                 ))}
               </tbody>
@@ -462,6 +509,91 @@ export default function ScrimMapDetailView() {
         </div>
       )}
     </div>
+  )
+}
+
+// ── Sub-components ──
+
+function SummaryCard({ label, value, sub, accentColor }: { label: string; value: string; sub: string; accentColor?: string }) {
+  return (
+    <div style={{
+      ...CARD_STYLE,
+      borderTop: accentColor ? `2px solid ${accentColor}` : `2px solid ${BORDER}`,
+      position: 'relative',
+    }}>
+      <div style={LABEL_STYLE}>{label}</div>
+      <div style={{ ...VALUE_STYLE, color: accentColor ?? TEXT_PRIMARY }}>{value}</div>
+      <div style={SUB_STYLE}>{sub}</div>
+    </div>
+  )
+}
+
+function TeamHeader({ name, color, bgColor, won }: { name: string; color: string; bgColor: string; won: boolean }) {
+  return (
+    <tr>
+      <td colSpan={8} style={{
+        padding: '12px 14px 6px',
+        fontSize: '11px',
+        fontWeight: 700,
+        textTransform: 'uppercase',
+        letterSpacing: '1px',
+        color,
+        background: bgColor,
+        borderLeft: `3px solid ${color}`,
+      }}>
+        {name} {won && <span style={{ fontSize: '10px', opacity: 0.7, marginLeft: '6px' }}>WIN</span>}
+      </td>
+    </tr>
+  )
+}
+
+function TeamTotalRow({ players, color }: { players: PlayerRow[]; color: string }) {
+  const borderColor = color === GREEN ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)'
+  const bgColor = color === GREEN ? 'rgba(34, 197, 94, 0.04)' : 'rgba(239, 68, 68, 0.04)'
+  const cellStyle: React.CSSProperties = {
+    padding: '10px 14px',
+    textAlign: 'right',
+    fontWeight: 700,
+    fontSize: '13px',
+    fontVariantNumeric: 'tabular-nums',
+    color,
+  }
+  return (
+    <tr style={{ borderBottom: `2px solid ${borderColor}`, background: bgColor }}>
+      <td style={{ ...cellStyle, textAlign: 'left', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }} colSpan={2}>
+        Team Total
+      </td>
+      <td style={cellStyle}>{sumStat(players, 'eliminations')}</td>
+      <td style={cellStyle}>{sumStat(players, 'assists')}</td>
+      <td style={cellStyle}>{sumStat(players, 'deaths')}</td>
+      <td style={cellStyle}>{sumStat(players, 'finalBlows')}</td>
+      <td style={cellStyle}>{formatNumber(sumStat(players, 'damage'))}</td>
+      <td style={cellStyle}>{formatNumber(sumStat(players, 'healing'))}</td>
+    </tr>
+  )
+}
+
+/** Single stat table row */
+function StatRow({ player, onClick, selected }: { player: PlayerRow; onClick: () => void; selected: boolean }) {
+  return (
+    <tr
+      onClick={onClick}
+      style={{
+        cursor: 'pointer',
+        borderBottom: `1px solid ${BORDER}`,
+        background: selected ? PURPLE_DIM : 'transparent',
+        transition: 'background 0.15s',
+      }}
+    >
+      <td style={{ padding: '10px 14px', fontWeight: 600, color: TEXT_PRIMARY }}>{player.name}</td>
+      <td style={{ padding: '10px 14px', color: TEXT_SECONDARY }}>{player.hero}</td>
+      <td style={{ padding: '10px 14px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{player.eliminations}</td>
+      <td style={{ padding: '10px 14px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{player.assists}</td>
+      <td style={{ padding: '10px 14px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{player.deaths}</td>
+      <td style={{ padding: '10px 14px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{player.finalBlows}</td>
+      <td style={{ padding: '10px 14px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{formatNumber(player.damage)}</td>
+      <td style={{ padding: '10px 14px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{formatNumber(player.healing)}</td>
+    </tr>
   )
 }
 
@@ -482,17 +614,18 @@ function ColumnKeyToggle() {
       <button
         onClick={() => setOpen(!open)}
         style={{
-          background: open ? 'var(--theme-elevation-200, #3a3a3a)' : 'var(--theme-elevation-100, #2a2a2a)',
-          border: '1px solid var(--theme-elevation-200, #3a3a3a)',
+          background: open ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)',
+          border: `1px solid ${BORDER}`,
           borderRadius: '6px',
-          padding: '4px 10px',
+          padding: '5px 12px',
           fontSize: '11px',
-          color: 'var(--theme-text-secondary, #aaa)',
+          color: TEXT_SECONDARY,
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           gap: '4px',
           transition: 'all 0.15s',
+          fontWeight: 500,
         }}
         title="Show column definitions"
       >
@@ -500,22 +633,22 @@ function ColumnKeyToggle() {
       </button>
       {open && (
         <div style={{
-          marginTop: '2px',
+          marginTop: '4px',
           position: 'absolute',
           right: 0,
           zIndex: 10,
-          background: 'var(--theme-elevation-100, #2a2a2a)',
-          border: '1px solid var(--theme-elevation-200, #3a3a3a)',
-          borderRadius: '8px',
-          padding: '12px 16px',
-          minWidth: '340px',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+          background: '#1e1e36',
+          border: `1px solid ${BORDER_ACCENT}`,
+          borderRadius: '10px',
+          padding: '14px 18px',
+          minWidth: '360px',
+          boxShadow: '0 12px 32px rgba(0,0,0,0.5)',
         }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {entries.map(([abbr, desc]) => (
-              <div key={abbr} style={{ display: 'flex', gap: '10px', fontSize: '12px', lineHeight: '1.4' }}>
-                <span style={{ fontWeight: 700, color: 'var(--theme-text, #fff)', minWidth: '70px', flexShrink: 0 }}>{abbr}</span>
-                <span style={{ color: 'var(--theme-text-secondary, #aaa)' }}>{desc}</span>
+              <div key={abbr} style={{ display: 'flex', gap: '10px', fontSize: '12px', lineHeight: '1.5' }}>
+                <span style={{ fontWeight: 700, color: CYAN, minWidth: '75px', flexShrink: 0 }}>{abbr}</span>
+                <span style={{ color: TEXT_SECONDARY }}>{desc}</span>
               </div>
             ))}
           </div>
@@ -525,43 +658,20 @@ function ColumnKeyToggle() {
   )
 }
 
-/** Single stat table row */
-function PlayerRow({ player, onClick, selected }: { player: PlayerRow; onClick: () => void; selected: boolean }) {
-  return (
-    <tr
-      onClick={onClick}
-      style={{
-        cursor: 'pointer',
-        borderBottom: '1px solid var(--theme-elevation-100, #2a2a2a)',
-        background: selected ? 'rgba(99, 102, 241, 0.08)' : 'transparent',
-        transition: 'background 0.15s',
-      }}
-    >
-      <td style={{ padding: '8px 12px', fontWeight: 500 }}>{player.name}</td>
-      <td style={{ padding: '8px 12px' }}>{player.hero}</td>
-      <td style={{ padding: '8px 12px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{player.eliminations}</td>
-      <td style={{ padding: '8px 12px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{player.assists}</td>
-      <td style={{ padding: '8px 12px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{player.deaths}</td>
-      <td style={{ padding: '8px 12px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{player.finalBlows}</td>
-      <td style={{ padding: '8px 12px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{formatNumber(player.damage)}</td>
-      <td style={{ padding: '8px 12px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{formatNumber(player.healing)}</td>
-    </tr>
-  )
-}
-
 /** Mini stat card used in the player detail section */
-function StatMini({ label, value, sub }: { label: string; value: string; sub?: string }) {
+function StatMini({ label, value, sub, color }: { label: string; value: string; sub?: string; color?: string }) {
   return (
     <div style={{
-      padding: '10px 12px',
-      borderRadius: '8px',
-      background: 'var(--theme-elevation-100, #2a2a2a)',
+      padding: '12px 14px',
+      borderRadius: '10px',
+      background: 'rgba(255,255,255,0.03)',
+      border: `1px solid ${BORDER}`,
     }}>
-      <div style={{ fontSize: '10px', color: 'var(--theme-text-secondary, #888)', textTransform: 'uppercase', letterSpacing: '0.3px', marginBottom: '4px' }}>
+      <div style={{ fontSize: '10px', color: TEXT_SECONDARY, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', fontWeight: 600 }}>
         {label}
       </div>
-      <div style={{ fontSize: '18px', fontWeight: 700 }}>{value}</div>
-      {sub && <div style={{ fontSize: '11px', color: 'var(--theme-text-secondary, #888)', marginTop: '2px' }}>{sub}</div>}
+      <div style={{ fontSize: '20px', fontWeight: 800, color: color ?? TEXT_PRIMARY }}>{value}</div>
+      {sub && <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '3px' }}>{sub}</div>}
     </div>
   )
 }
