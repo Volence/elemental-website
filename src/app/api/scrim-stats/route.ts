@@ -28,6 +28,7 @@ export async function GET(req: NextRequest) {
   // Fetch all data in parallel
   const [
     matchStart,
+    matchEnd,
     finalRound,
     finalRoundStats,
     fights,
@@ -42,6 +43,10 @@ export async function GET(req: NextRequest) {
         team_1_name: true,
         team_2_name: true,
       },
+    }),
+    prisma.scrimMatchEnd.findFirst({
+      where: { mapDataId: mapId },
+      orderBy: { round_number: 'desc' },
     }),
     prisma.scrimRoundEnd.findFirst({
       where: { mapDataId: mapId },
@@ -85,8 +90,8 @@ export async function GET(req: NextRequest) {
     mapType: matchStart.map_type,
     teams: { team1, team2 },
     summary: {
-      matchTime: finalRound?.match_time ?? 0,
-      score: `${finalRound?.team_1_score ?? 0} - ${finalRound?.team_2_score ?? 0}`,
+      matchTime: matchEnd?.match_time ?? finalRound?.match_time ?? 0,
+      score: `${matchEnd?.team_1_score ?? finalRound?.team_1_score ?? 0} - ${matchEnd?.team_2_score ?? finalRound?.team_2_score ?? 0}`,
       team1Damage: round(team1Damage),
       team2Damage: round(team2Damage),
       team1Healing: round(team1Healing),
@@ -113,6 +118,16 @@ export async function GET(req: NextRequest) {
       team1UltKills,
       team2UltKills,
     },
-    calculatedStats,
+    calculatedStats: calculatedStats.map((s) => ({
+      ...s,
+      duels: s.duels.map((d) => ({
+        heroName: d.enemy_hero,
+        wins: d.enemy_deaths,
+        losses: d.enemy_kills,
+        winRate: (d.enemy_deaths + d.enemy_kills) > 0
+          ? round((d.enemy_deaths / (d.enemy_deaths + d.enemy_kills)) * 100)
+          : 0,
+      })),
+    })),
   })
 }

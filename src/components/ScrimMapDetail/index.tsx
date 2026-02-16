@@ -368,9 +368,9 @@ export default function ScrimMapDetailView() {
             <div>
               <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: '8px' }}>Duel Matchups</div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '6px' }}>
-                {selectedCalcStat.duels.map((d) => (
+                {selectedCalcStat.duels.map((d, i) => (
                   <div
-                    key={d.heroName}
+                    key={`${d.heroName}-${i}`}
                     style={{
                       display: 'flex',
                       justifyContent: 'space-between',
@@ -395,11 +395,14 @@ export default function ScrimMapDetailView() {
       {/* All Player Calculated Stats */}
       {!selectedPlayer && data.calculatedStats.length > 0 && (
         <div style={CARD_STYLE}>
-          <div style={{ fontWeight: 600, fontSize: '15px', marginBottom: '12px' }}>
-            Advanced Stats
-            <span style={{ fontWeight: 400, fontSize: '12px', color: 'var(--theme-text-secondary, #888)', marginLeft: '8px' }}>
-              Click a player row above for full detail
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+            <div style={{ fontWeight: 600, fontSize: '15px' }}>
+              Advanced Stats
+              <span style={{ fontWeight: 400, fontSize: '12px', color: 'var(--theme-text-secondary, #888)', marginLeft: '8px' }}>
+                Click a player row above for full detail
+              </span>
+            </div>
+            <ColumnKeyToggle />
           </div>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
@@ -440,6 +443,66 @@ export default function ScrimMapDetailView() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** Collapsible column key for the Advanced Stats table */
+function ColumnKeyToggle() {
+  const [open, setOpen] = React.useState(false)
+  const entries = [
+    ['FP%', 'First Pick — % of fights where this player got the opening kill'],
+    ['FD%', 'First Death — % of fights where this player died first'],
+    ['Fleta%', 'Fleta Deadlift — player\'s final blows as a % relative to teammates'],
+    ['Ult Charge', 'Average seconds to fully charge ultimate'],
+    ['Ult Hold', 'Average seconds between charging and using ultimate'],
+    ['K/Ult', 'Average kills generated per ultimate used'],
+    ['Drought', 'Average seconds between kills'],
+  ]
+  return (
+    <div style={{ position: 'relative' }}>
+      <button
+        onClick={() => setOpen(!open)}
+        style={{
+          background: open ? 'var(--theme-elevation-200, #3a3a3a)' : 'var(--theme-elevation-100, #2a2a2a)',
+          border: '1px solid var(--theme-elevation-200, #3a3a3a)',
+          borderRadius: '6px',
+          padding: '4px 10px',
+          fontSize: '11px',
+          color: 'var(--theme-text-secondary, #aaa)',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+          transition: 'all 0.15s',
+        }}
+        title="Show column definitions"
+      >
+        ℹ️ Key
+      </button>
+      {open && (
+        <div style={{
+          marginTop: '2px',
+          position: 'absolute',
+          right: 0,
+          zIndex: 10,
+          background: 'var(--theme-elevation-100, #2a2a2a)',
+          border: '1px solid var(--theme-elevation-200, #3a3a3a)',
+          borderRadius: '8px',
+          padding: '12px 16px',
+          minWidth: '340px',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+        }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {entries.map(([abbr, desc]) => (
+              <div key={abbr} style={{ display: 'flex', gap: '10px', fontSize: '12px', lineHeight: '1.4' }}>
+                <span style={{ fontWeight: 700, color: 'var(--theme-text, #fff)', minWidth: '70px', flexShrink: 0 }}>{abbr}</span>
+                <span style={{ color: 'var(--theme-text-secondary, #aaa)' }}>{desc}</span>
+              </div>
+            ))}
           </div>
         </div>
       )}
