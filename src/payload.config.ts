@@ -136,6 +136,14 @@ const config = buildConfig({
           Component: '@/components/ScrimMapDetail#default',
           path: '/scrim-map',
         },
+        scrimPlayerList: {
+          Component: '@/components/ScrimPlayerList#default',
+          path: '/scrim-players',
+        },
+        scrimPlayerDetail: {
+          Component: '@/components/ScrimPlayerDetail#default',
+          path: '/scrim-player-detail',
+        },
       },
     },
     importMap: {
