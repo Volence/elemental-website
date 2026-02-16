@@ -38,7 +38,7 @@ export async function POST(request: Request) {
 
     const formData = await request.formData()
     const files = formData.getAll('files') as File[]
-    const name = formData.get('name') as string
+    const name = (formData.get('name') as string) || (formData.get('scrimName') as string) || `Scrim ${new Date().toLocaleDateString()}`
     const dateStr = formData.get('date') as string
     const teamIdStr = formData.get('teamId') as string | null
 
@@ -46,15 +46,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No files uploaded' }, { status: 400 })
     }
 
-    if (!name) {
-      return NextResponse.json({ error: 'Scrim name is required' }, { status: 400 })
-    }
-
-    // Validate files are .txt
+    // Validate files are .txt or .csv
     for (const file of files) {
-      if (!file.name.endsWith('.txt')) {
+      if (!file.name.endsWith('.txt') && !file.name.endsWith('.csv')) {
         return NextResponse.json(
-          { error: `Invalid file type: ${file.name}. Only .txt files are supported.` },
+          { error: `Invalid file type: ${file.name}. Only .txt and .csv files are supported.` },
           { status: 400 },
         )
       }
