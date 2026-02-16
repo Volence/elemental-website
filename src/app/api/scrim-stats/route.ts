@@ -32,6 +32,7 @@ export async function GET(req: NextRequest) {
     lastRoundEnd,
     lastRoundStart,
     maxKillTime,
+    payloadProgress,
     finalRoundStats,
     fights,
     ultimateKills,
@@ -54,7 +55,7 @@ export async function GET(req: NextRequest) {
       where: { mapDataId: mapId },
       orderBy: { round_number: 'desc' },
     }),
-    // Latest round_start carries the cumulative score from previous rounds
+    // Latest round_start (used for round/team mapping)
     prisma.scrimRoundStart.findFirst({
       where: { mapDataId: mapId },
       orderBy: { round_number: 'desc' },
@@ -62,6 +63,14 @@ export async function GET(req: NextRequest) {
     // Actual max event time (handles truncated logs where round 2 has no round_end)
     prisma.$queryRaw<[{ max_time: number | null }]>`
       SELECT MAX(match_time) as max_time FROM scrim_kills WHERE "mapDataId" = ${mapId}
+    `,
+    // Payload progress per round — for Escort distance-based scoring
+    prisma.$queryRaw<Array<{ round_number: number; capturing_team: string; max_progress: number }>>`
+      SELECT round_number, capturing_team, MAX(payload_capture_progress) as max_progress
+      FROM scrim_payload_progress
+      WHERE "mapDataId" = ${mapId}
+      GROUP BY round_number, capturing_team
+      ORDER BY round_number
     `,
     getFinalRoundStats(mapId),
     groupKillsIntoFights(mapId),
@@ -104,13 +113,41 @@ export async function GET(req: NextRequest) {
     actualMaxTime,
   )
 
-  // Score: prefer match_end > latest round_end
-  // Note: round_start scores are NOT reliable — in scrim practice mode, Escort maps
-  // reset team_2_score to max (3) at round 2 start so the other team can play the
-  // full map distance, regardless of actual round 1 result
-  const scoreSource = matchEnd ?? lastRoundEnd
-  const team1Score = scoreSource?.team_1_score ?? 0
-  const team2Score = scoreSource?.team_2_score ?? 0
+  // ── Score calculation ──
+  // For Escort maps in scrim/practice mode, round_end score is always 0-0.
+  // The practice code resets distance at round 2 start so both teams play the full map.
+  // Real score is determined by comparing payload distance pushed per round:
+  //   - Team that pushed further gets +1
+  //   - If both pushed the same distance, it's a draw (0-0)
+  let team1Score = 0
+  let team2Score = 0
+
+  if (matchEnd) {
+    // If we have a match_end event, use its authoritative score
+    team1Score = matchEnd.team_1_score ?? 0
+    team2Score = matchEnd.team_2_score ?? 0
+  } else if (matchStart.map_type === 'Escort' && payloadProgress.length > 0) {
+    // Escort distance comparison: each round has an attacking team
+    // Round 1: team1 attacks, Round 2: team2 attacks (teams swap sides)
+    const round1Progress = payloadProgress.find(p => p.round_number === 1)
+    const round2Progress = payloadProgress.find(p => p.round_number === 2)
+
+    const round1Distance = round1Progress?.max_progress ?? 0
+    const round2Distance = round2Progress?.max_progress ?? 0
+
+    // Compare: if team 2 pushed further than team 1, team 2 wins (+1)
+    // If team 1 pushed further, team 1 wins (+1)
+    if (round2Distance > round1Distance) {
+      team2Score = 1
+    } else if (round1Distance > round2Distance) {
+      team1Score = 1
+    }
+    // Equal distance = 0-0 draw
+  } else {
+    // Non-Escort maps or no payload data: use round_end score
+    team1Score = lastRoundEnd?.team_1_score ?? 0
+    team2Score = lastRoundEnd?.team_2_score ?? 0
+  }
 
   return NextResponse.json({
     mapName: matchStart.map_name,
