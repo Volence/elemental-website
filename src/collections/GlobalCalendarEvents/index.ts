@@ -21,14 +21,18 @@ export const GlobalCalendarEvents: CollectionConfig = {
     afterChange: [
       async ({ doc, operation }) => {
         // Update Discord calendar channel when events are created/updated
+        console.log(`[GlobalCalendarEvents] afterChange fired: operation=${operation}, title="${doc?.title}"`)
         try {
           const { updateCalendarChannel } = await import('@/discord/commands/calendar')
           // Small delay to ensure database changes are committed
           setTimeout(() => {
-            updateCalendarChannel().catch(console.error)
+            console.log('[GlobalCalendarEvents] setTimeout fired, calling updateCalendarChannel')
+            updateCalendarChannel().catch((err) => {
+              console.error('[GlobalCalendarEvents] updateCalendarChannel error:', err)
+            })
           }, 1000)
         } catch (error) {
-          console.error('[GlobalCalendarEvents] Failed to update Discord calendar:', error)
+          console.error('[GlobalCalendarEvents] Failed to import/call Discord calendar update:', error)
         }
         return doc
       },
@@ -36,13 +40,17 @@ export const GlobalCalendarEvents: CollectionConfig = {
     afterDelete: [
       async ({ doc }) => {
         // Update Discord calendar channel when events are deleted
+        console.log(`[GlobalCalendarEvents] afterDelete fired: title="${doc?.title}"`)
         try {
           const { updateCalendarChannel } = await import('@/discord/commands/calendar')
           setTimeout(() => {
-            updateCalendarChannel().catch(console.error)
+            console.log('[GlobalCalendarEvents] setTimeout fired (delete), calling updateCalendarChannel')
+            updateCalendarChannel().catch((err) => {
+              console.error('[GlobalCalendarEvents] updateCalendarChannel error (delete):', err)
+            })
           }, 1000)
         } catch (error) {
-          console.error('[GlobalCalendarEvents] Failed to update Discord calendar:', error)
+          console.error('[GlobalCalendarEvents] Failed to import/call Discord calendar update (delete):', error)
         }
         return doc
       },
