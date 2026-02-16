@@ -149,6 +149,10 @@ export async function GET(req: NextRequest) {
     team2Score = lastRoundEnd?.team_2_score ?? 0
   }
 
+  // Distance data for objective-based maps (Escort, Hybrid, Push)
+  const round1Progress = payloadProgress.find(p => p.round_number === 1)
+  const round2Progress = payloadProgress.find(p => p.round_number === 2)
+
   return NextResponse.json({
     mapName: matchStart.map_name,
     mapType: matchStart.map_type,
@@ -160,6 +164,19 @@ export async function GET(req: NextRequest) {
       team2Damage: round(team2Damage),
       team1Healing: round(team1Healing),
       team2Healing: round(team2Healing),
+      // Distance pushed per round (for Escort/Hybrid/Push maps)
+      ...(payloadProgress.length > 0 && {
+        distance: {
+          round1: {
+            team: round1Progress?.capturing_team ?? team1,
+            meters: round(round1Progress?.max_progress ?? 0),
+          },
+          round2: {
+            team: round2Progress?.capturing_team ?? team2,
+            meters: round(round2Progress?.max_progress ?? 0),
+          },
+        },
+      }),
     },
     players: finalRoundStats.map((p) => ({
       name: p.player_name,

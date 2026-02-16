@@ -49,6 +49,10 @@ type MapStats = {
     team2Damage: number
     team1Healing: number
     team2Healing: number
+    distance?: {
+      round1: { team: string; meters: number }
+      round2: { team: string; meters: number }
+    }
   }
   players: PlayerRow[]
   analysis: {
@@ -193,7 +197,7 @@ export default function ScrimMapDetailView() {
       </div>
 
       {/* Summary Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '28px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: data.summary.distance ? 'repeat(5, 1fr)' : 'repeat(4, 1fr)', gap: '12px', marginBottom: '28px' }}>
         <div style={CARD_STYLE}>
           <div style={LABEL_STYLE}>Match Time</div>
           <div style={VALUE_STYLE}>{toTimestamp(data.summary.matchTime)}</div>
@@ -204,6 +208,17 @@ export default function ScrimMapDetailView() {
           <div style={VALUE_STYLE}>{data.summary.score}</div>
           <div style={SUB_STYLE}>{data.mapType}</div>
         </div>
+        {data.summary.distance && (
+          <div style={CARD_STYLE}>
+            <div style={LABEL_STYLE}>Distance Pushed</div>
+            <div style={VALUE_STYLE} title={`${data.summary.distance.round1.team} vs ${data.summary.distance.round2.team}`}>
+              {data.summary.distance.round1.meters}m - {data.summary.distance.round2.meters}m
+            </div>
+            <div style={SUB_STYLE}>
+              {data.summary.distance.round1.team} · {data.summary.distance.round2.team}
+            </div>
+          </div>
+        )}
         <div style={CARD_STYLE}>
           <div style={LABEL_STYLE}>Hero Damage</div>
           <div style={VALUE_STYLE} title={`${data.teams.team1} vs ${data.teams.team2}`}>
