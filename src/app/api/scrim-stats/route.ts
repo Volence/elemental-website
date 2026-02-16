@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
     matchStart,
     matchEnd,
     lastRoundEnd,
-    lastRoundStart,
+    allRoundStarts,
     maxKillTime,
     payloadProgress,
     finalRoundStats,
@@ -55,10 +55,11 @@ export async function GET(req: NextRequest) {
       where: { mapDataId: mapId },
       orderBy: { round_number: 'desc' },
     }),
-    // Latest round_start (used for round/team mapping)
-    prisma.scrimRoundStart.findFirst({
+    // All round_starts — used for per-round attacking team names
+    prisma.scrimRoundStart.findMany({
       where: { mapDataId: mapId },
-      orderBy: { round_number: 'desc' },
+      orderBy: { round_number: 'asc' },
+      select: { round_number: true, capturing_team: true },
     }),
     // Actual max event time (handles truncated logs where round 2 has no round_end)
     prisma.$queryRaw<[{ max_time: number | null }]>`
@@ -87,6 +88,10 @@ export async function GET(req: NextRequest) {
 
   const team1 = matchStart.team_1_name ?? 'Team 1'
   const team2 = matchStart.team_2_name ?? 'Team 2'
+
+  // Get attacking team per round from round_start data
+  const round1Start = allRoundStarts.find(r => r.round_number === 1)
+  const round2Start = allRoundStarts.find(r => r.round_number === 2)
 
   // Team aggregates from final round stats
   const team1Stats = finalRoundStats.filter((p) => p.player_team === team1)
@@ -122,36 +127,41 @@ export async function GET(req: NextRequest) {
   let team1Score = 0
   let team2Score = 0
 
+  const round1Progress = payloadProgress.find(p => p.round_number === 1)
+  const round2Progress = payloadProgress.find(p => p.round_number === 2)
+
   if (matchEnd) {
     // If we have a match_end event, use its authoritative score
     team1Score = matchEnd.team_1_score ?? 0
     team2Score = matchEnd.team_2_score ?? 0
   } else if (matchStart.map_type === 'Escort' && payloadProgress.length > 0) {
-    // Escort distance comparison: each round has an attacking team
-    // Round 1: team1 attacks, Round 2: team2 attacks (teams swap sides)
-    const round1Progress = payloadProgress.find(p => p.round_number === 1)
-    const round2Progress = payloadProgress.find(p => p.round_number === 2)
-
     const round1Distance = round1Progress?.max_progress ?? 0
     const round2Distance = round2Progress?.max_progress ?? 0
 
-    // Compare: if team 2 pushed further than team 1, team 2 wins (+1)
-    // If team 1 pushed further, team 1 wins (+1)
     if (round2Distance > round1Distance) {
       team2Score = 1
     } else if (round1Distance > round2Distance) {
       team1Score = 1
     }
-    // Equal distance = 0-0 draw
   } else {
-    // Non-Escort maps or no payload data: use round_end score
     team1Score = lastRoundEnd?.team_1_score ?? 0
     team2Score = lastRoundEnd?.team_2_score ?? 0
   }
 
   // Distance data for objective-based maps (Escort, Hybrid, Push)
-  const round1Progress = payloadProgress.find(p => p.round_number === 1)
-  const round2Progress = payloadProgress.find(p => p.round_number === 2)
+  // Use round_start.capturing_team for correct team names per round
+  const distanceData = payloadProgress.length > 0 ? {
+    distance: {
+      round1: {
+        team: round1Start?.capturing_team ?? round1Progress?.capturing_team ?? team1,
+        meters: round(round1Progress?.max_progress ?? 0),
+      },
+      round2: {
+        team: round2Start?.capturing_team ?? round2Progress?.capturing_team ?? team2,
+        meters: round2Progress ? round(round2Progress.max_progress) : null, // null = incomplete/truncated
+      },
+    },
+  } : {}
 
   return NextResponse.json({
     mapName: matchStart.map_name,
@@ -164,19 +174,7 @@ export async function GET(req: NextRequest) {
       team2Damage: round(team2Damage),
       team1Healing: round(team1Healing),
       team2Healing: round(team2Healing),
-      // Distance pushed per round (for Escort/Hybrid/Push maps)
-      ...(payloadProgress.length > 0 && {
-        distance: {
-          round1: {
-            team: round1Progress?.capturing_team ?? team1,
-            meters: round(round1Progress?.max_progress ?? 0),
-          },
-          round2: {
-            team: round2Progress?.capturing_team ?? team2,
-            meters: round(round2Progress?.max_progress ?? 0),
-          },
-        },
-      }),
+      ...distanceData,
     },
     players: finalRoundStats.map((p) => ({
       name: p.player_name,

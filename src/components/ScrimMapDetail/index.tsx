@@ -51,7 +51,7 @@ type MapStats = {
     team2Healing: number
     distance?: {
       round1: { team: string; meters: number }
-      round2: { team: string; meters: number }
+      round2: { team: string; meters: number | null }
     }
   }
   players: PlayerRow[]
@@ -212,7 +212,7 @@ export default function ScrimMapDetailView() {
           <div style={CARD_STYLE}>
             <div style={LABEL_STYLE}>Distance Pushed</div>
             <div style={VALUE_STYLE} title={`${data.summary.distance.round1.team} vs ${data.summary.distance.round2.team}`}>
-              {data.summary.distance.round1.meters}m - {data.summary.distance.round2.meters}m
+              {data.summary.distance.round1.meters}m - {data.summary.distance.round2.meters !== null ? `${data.summary.distance.round2.meters}m` : '?'}
             </div>
             <div style={SUB_STYLE}>
               {data.summary.distance.round1.team} · {data.summary.distance.round2.team}
