@@ -281,7 +281,7 @@ const CALENDAR_CATEGORIES = {
  * Creates separate color-coded embeds for each category
  */
 export async function updateCalendarChannel(): Promise<void> {
-  const channelId = process.env.DISCORD_CALENDAR_CHANNEL_ID || '1442545728223449180'
+  const channelId = process.env.DISCORD_CALENDAR_CHANNEL_ID || '1463686479850242171'
   
   console.log('[Calendar] updateCalendarChannel called, channel:', channelId)
   
