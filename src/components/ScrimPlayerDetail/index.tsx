@@ -218,33 +218,44 @@ export default function ScrimPlayerDetailView() {
         <div style={{ padding: '16px 20px 10px', fontWeight: 700, fontSize: '15px', color: TEXT_PRIMARY, borderBottom: `1px solid ${BORDER}` }}>
           Hero Pool
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1px', background: BORDER }}>
-          {data.heroPool.map((h) => (
-            <div key={h.hero} style={{ padding: '16px 20px', background: BG_CARD }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
-                <span style={{ fontWeight: 700, fontSize: '14px', color: TEXT_PRIMARY }}>{h.hero}</span>
-                <span style={{ fontSize: '11px', color: TEXT_DIM }}>{h.mapsPlayed} map{h.mapsPlayed !== 1 ? 's' : ''}</span>
+        <div style={{ display: 'grid', gridTemplateColumns: data.heroPool.length >= 3 ? '1fr' : '1fr 1fr', minHeight: '160px' }}>
+          {/* Left: Hero stat cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(data.heroPool.length, 3)}, 1fr)`, gap: '1px', background: BORDER }}>
+            {data.heroPool.map((h) => (
+              <div key={h.hero} style={{ padding: '16px 20px', background: BG_CARD }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
+                  <span style={{ fontWeight: 700, fontSize: '14px', color: TEXT_PRIMARY }}>{h.hero}</span>
+                  <span style={{ fontSize: '11px', color: TEXT_DIM }}>{h.mapsPlayed} map{h.mapsPlayed !== 1 ? 's' : ''}</span>
+                </div>
+                <div style={{ fontSize: '12px', color: TEXT_SECONDARY, display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Time</span>
+                    <span style={{ color: TEXT_PRIMARY, fontWeight: 500 }}>{formatTime(h.totalTime)}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Elims / Deaths</span>
+                    <span style={{ color: TEXT_PRIMARY, fontWeight: 500 }}>{h.totalElims} / {h.totalDeaths}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Damage</span>
+                    <span style={{ color: TEXT_PRIMARY, fontWeight: 500 }}>{formatNumber(h.totalDamage)}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>Healing</span>
+                    <span style={{ color: TEXT_PRIMARY, fontWeight: 500 }}>{formatNumber(h.totalHealing)}</span>
+                  </div>
+                </div>
               </div>
-              <div style={{ fontSize: '12px', color: TEXT_SECONDARY, display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Time</span>
-                  <span style={{ color: TEXT_PRIMARY, fontWeight: 500 }}>{formatTime(h.totalTime)}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Elims / Deaths</span>
-                  <span style={{ color: TEXT_PRIMARY, fontWeight: 500 }}>{h.totalElims} / {h.totalDeaths}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Damage</span>
-                  <span style={{ color: TEXT_PRIMARY, fontWeight: 500 }}>{formatNumber(h.totalDamage)}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Healing</span>
-                  <span style={{ color: TEXT_PRIMARY, fontWeight: 500 }}>{formatNumber(h.totalHealing)}</span>
-                </div>
-              </div>
+            ))}
+          </div>
+
+          {/* Right: Playtime distribution chart (only shown when < 3 heroes) */}
+          {data.heroPool.length < 3 && (
+            <div style={{ padding: '20px 24px', background: BG_CARD, borderLeft: `1px solid ${BORDER}`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <div style={{ ...LABEL_STYLE, marginBottom: '16px' }}>Playtime Distribution</div>
+              <HeroPlaytimeChart heroPool={data.heroPool} />
             </div>
-          ))}
+          )}
         </div>
       </div>
 
@@ -357,3 +368,44 @@ function SummaryCard({ label, value, sub, accentColor }: { label: string; value:
     </div>
   )
 }
+
+const BAR_COLORS = [CYAN, PURPLE, GREEN, AMBER, RED, '#ec4899', '#6366f1']
+
+function HeroPlaytimeChart({ heroPool }: { heroPool: HeroPoolEntry[] }) {
+  const totalTime = heroPool.reduce((a, h) => a + h.totalTime, 0)
+  if (totalTime === 0) return null
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      {heroPool.map((h, i) => {
+        const pct = Math.round((h.totalTime / totalTime) * 100)
+        const color = BAR_COLORS[i % BAR_COLORS.length]
+        return (
+          <div key={h.hero}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '12px' }}>
+              <span style={{ color: TEXT_PRIMARY, fontWeight: 600 }}>{h.hero}</span>
+              <span style={{ color: TEXT_SECONDARY }}>{pct}% · {formatTime(h.totalTime)}</span>
+            </div>
+            <div style={{
+              width: '100%',
+              height: '8px',
+              borderRadius: '4px',
+              background: 'rgba(255,255,255,0.04)',
+              overflow: 'hidden',
+            }}>
+              <div style={{
+                width: `${pct}%`,
+                height: '100%',
+                borderRadius: '4px',
+                background: `linear-gradient(90deg, ${color}, ${color}88)`,
+                transition: 'width 0.6s ease',
+                minWidth: pct > 0 ? '4px' : '0',
+              }} />
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
