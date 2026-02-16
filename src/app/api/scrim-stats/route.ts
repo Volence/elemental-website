@@ -29,7 +29,9 @@ export async function GET(req: NextRequest) {
   const [
     matchStart,
     matchEnd,
-    finalRound,
+    lastRoundEnd,
+    lastRoundStart,
+    maxKillTime,
     finalRoundStats,
     fights,
     ultimateKills,
@@ -52,6 +54,15 @@ export async function GET(req: NextRequest) {
       where: { mapDataId: mapId },
       orderBy: { round_number: 'desc' },
     }),
+    // Latest round_start carries the cumulative score from previous rounds
+    prisma.scrimRoundStart.findFirst({
+      where: { mapDataId: mapId },
+      orderBy: { round_number: 'desc' },
+    }),
+    // Actual max event time (handles truncated logs where round 2 has no round_end)
+    prisma.$queryRaw<[{ max_time: number | null }]>`
+      SELECT MAX(match_time) as max_time FROM scrim_kills WHERE "mapDataId" = ${mapId}
+    `,
     getFinalRoundStats(mapId),
     groupKillsIntoFights(mapId),
     prisma.scrimKill.findMany({
@@ -85,13 +96,26 @@ export async function GET(req: NextRequest) {
   const team1UltKills = ultimateKills.filter((k) => k.attacker_team === team1).length
   const team2UltKills = ultimateKills.filter((k) => k.attacker_team === team2).length
 
+  // Match time: use the latest event time available
+  const actualMaxTime = maxKillTime?.[0]?.max_time ?? 0
+  const matchTime = Math.max(
+    matchEnd?.match_time ?? 0,
+    lastRoundEnd?.match_time ?? 0,
+    actualMaxTime,
+  )
+
+  // Score: prefer match_end > latest round_start (carries cumulative score) > latest round_end
+  const scoreSource = matchEnd ?? lastRoundStart ?? lastRoundEnd
+  const team1Score = scoreSource?.team_1_score ?? 0
+  const team2Score = scoreSource?.team_2_score ?? 0
+
   return NextResponse.json({
     mapName: matchStart.map_name,
     mapType: matchStart.map_type,
     teams: { team1, team2 },
     summary: {
-      matchTime: matchEnd?.match_time ?? finalRound?.match_time ?? 0,
-      score: `${matchEnd?.team_1_score ?? finalRound?.team_1_score ?? 0} - ${matchEnd?.team_2_score ?? finalRound?.team_2_score ?? 0}`,
+      matchTime,
+      score: `${team1Score} - ${team2Score}`,
       team1Damage: round(team1Damage),
       team2Damage: round(team2Damage),
       team1Healing: round(team1Healing),
