@@ -103,6 +103,11 @@ import { default as default_564fb21592d27251bcff7c5e897d4dbc } from '@/component
 import { default as default_75e49641b1d841f24cd53ee63100b3ae } from '@/components/BeforeDashboard/SidebarScrollPreserver'
 import { default as default_aeef0123fea1af819397817664b7330c } from '@/components/AdminProviders'
 import { default as default_1afe941534b3971b0de8f4fbeca9a6d3 } from '@/components/UnifiedCalendar'
+import { default as default_3eb41fb0fd2d2f02da596f6a73470a78 } from '@/components/ScrimUpload'
+import { default as default_6958564633b07bf10a31c4d70cda22d6 } from '@/components/ScrimList'
+import { default as default_9ec33daa0e67db091c33dffcd7d6fe8c } from '@/components/ScrimMapDetail'
+import { default as default_bb749a9664290763bdcee9a7a2e21d71 } from '@/components/ScrimPlayerList'
+import { default as default_50afaf46bd911ad37e7cf3060e9213d8 } from '@/components/ScrimPlayerDetail'
 import { CollectionCards as CollectionCards_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 
 export const importMap = {
@@ -211,5 +216,10 @@ export const importMap = {
   "@/components/BeforeDashboard/SidebarScrollPreserver#default": default_75e49641b1d841f24cd53ee63100b3ae,
   "@/components/AdminProviders#default": default_aeef0123fea1af819397817664b7330c,
   "@/components/UnifiedCalendar#default": default_1afe941534b3971b0de8f4fbeca9a6d3,
+  "@/components/ScrimUpload#default": default_3eb41fb0fd2d2f02da596f6a73470a78,
+  "@/components/ScrimList#default": default_6958564633b07bf10a31c4d70cda22d6,
+  "@/components/ScrimMapDetail#default": default_9ec33daa0e67db091c33dffcd7d6fe8c,
+  "@/components/ScrimPlayerList#default": default_bb749a9664290763bdcee9a7a2e21d71,
+  "@/components/ScrimPlayerDetail#default": default_50afaf46bd911ad37e7cf3060e9213d8,
   "@payloadcms/ui/rsc#CollectionCards": CollectionCards_ab83ff7e88da8d3530831f296ec4756a
 }

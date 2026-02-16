@@ -1,6 +1,10 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import KillfeedTab from './KillfeedTab'
+import ChartsTab from './ChartsTab'
+import EventsTab from './EventsTab'
+import CompareTab from './CompareTab'
 
 type PlayerRow = {
   name: string
@@ -137,6 +141,16 @@ function sumStat(players: PlayerRow[], key: keyof PlayerRow): number {
  * Admin view — map-level scrim analytics dashboard.
  * Accessible at /admin/scrim-map?mapId=N.
  */
+type TabId = 'overview' | 'killfeed' | 'charts' | 'events' | 'compare'
+
+const TABS: { id: TabId; label: string }[] = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'killfeed', label: 'Killfeed' },
+  { id: 'charts', label: 'Charts' },
+  { id: 'events', label: 'Events' },
+  { id: 'compare', label: 'Compare' },
+]
+
 export default function ScrimMapDetailView() {
   const [data, setData] = useState<MapStats | null>(null)
   const [loading, setLoading] = useState(true)
@@ -144,17 +158,20 @@ export default function ScrimMapDetailView() {
   const [sortKey, setSortKey] = useState<SortKey>('team')
   const [sortDir, setSortDir] = useState<SortDir>('asc')
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<TabId>('overview')
+  const [mapId, setMapId] = useState<string>('')
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    const mapId = params.get('mapId')
-    if (!mapId) {
+    const id = params.get('mapId')
+    if (!id) {
       setError('No mapId provided')
       setLoading(false)
       return
     }
+    setMapId(id)
 
-    fetch(`/api/scrim-stats?mapId=${mapId}`)
+    fetch(`/api/scrim-stats?mapId=${id}`)
       .then((r) => r.json())
       .then((d) => {
         if (d.error) {
@@ -244,6 +261,45 @@ export default function ScrimMapDetailView() {
         </p>
       </div>
 
+      {/* Tab Navigation */}
+      <div style={{ display: 'flex', gap: '0', marginBottom: '28px', borderBottom: `1px solid ${BORDER}` }}>
+        {TABS.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            style={{
+              padding: '10px 18px',
+              fontSize: '13px',
+              fontWeight: activeTab === tab.id ? 600 : 400,
+              color: activeTab === tab.id ? CYAN : TEXT_SECONDARY,
+              background: 'transparent',
+              border: 'none',
+              borderBottom: activeTab === tab.id ? `2px solid ${CYAN}` : '2px solid transparent',
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+              fontFamily: 'inherit',
+              marginBottom: '-1px',
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab: Killfeed */}
+      {activeTab === 'killfeed' && mapId && <KillfeedTab mapId={mapId} />}
+
+      {/* Tab: Charts */}
+      {activeTab === 'charts' && mapId && <ChartsTab mapId={mapId} />}
+
+      {/* Tab: Events */}
+      {activeTab === 'events' && mapId && <EventsTab mapId={mapId} />}
+
+      {/* Tab: Compare */}
+      {activeTab === 'compare' && mapId && <CompareTab mapId={mapId} />}
+
+      {/* Tab: Overview (existing content) */}
+      {activeTab === 'overview' && <>
       {/* Summary Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: data.summary.distance ? 'repeat(5, 1fr)' : 'repeat(4, 1fr)', gap: '12px', marginBottom: '32px' }}>
         <SummaryCard label="Match Time" value={toTimestamp(data.summary.matchTime)} sub={`${(data.summary.matchTime / 60).toFixed(1)} minutes`} />
@@ -508,6 +564,7 @@ export default function ScrimMapDetailView() {
           </div>
         </div>
       )}
+      </>}
     </div>
   )
 }

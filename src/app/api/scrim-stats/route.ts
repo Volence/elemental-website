@@ -25,6 +25,24 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'mapId must be a number' }, { status: 400 })
   }
 
+  const tab = url.searchParams.get('tab')
+
+  // ── Tab-specific endpoints ──
+
+  if (tab === 'killfeed') {
+    return getKillfeedData(mapId)
+  }
+
+  if (tab === 'events') {
+    return getEventsData(mapId)
+  }
+
+  if (tab === 'compare') {
+    return getCompareData(mapId)
+  }
+
+  // ── Overview (existing behavior) ──
+
   // Fetch all data in parallel
   const [
     matchStart,
@@ -119,11 +137,6 @@ export async function GET(req: NextRequest) {
   )
 
   // ── Score calculation ──
-  // For Escort maps in scrim/practice mode, round_end score is always 0-0.
-  // The practice code resets distance at round 2 start so both teams play the full map.
-  // Real score is determined by comparing payload distance pushed per round:
-  //   - Team that pushed further gets +1
-  //   - If both pushed the same distance, it's a draw (0-0)
   let team1Score = 0
   let team2Score = 0
 
@@ -131,7 +144,6 @@ export async function GET(req: NextRequest) {
   const round2Progress = payloadProgress.find(p => p.round_number === 2)
 
   if (matchEnd) {
-    // If we have a match_end event, use its authoritative score
     team1Score = matchEnd.team_1_score ?? 0
     team2Score = matchEnd.team_2_score ?? 0
   } else if (matchStart.map_type === 'Escort' && payloadProgress.length > 0) {
@@ -149,7 +161,6 @@ export async function GET(req: NextRequest) {
   }
 
   // Distance data for objective-based maps (Escort, Hybrid, Push)
-  // Use round_start.capturing_team for correct team names per round
   const distanceData = payloadProgress.length > 0 ? {
     distance: {
       round1: {
@@ -158,7 +169,7 @@ export async function GET(req: NextRequest) {
       },
       round2: {
         team: round2Start?.capturing_team ?? round2Progress?.capturing_team ?? team2,
-        meters: round2Progress ? round(round2Progress.max_progress) : null, // null = incomplete/truncated
+        meters: round2Progress ? round(round2Progress.max_progress) : null,
       },
     },
   } : {}
@@ -210,3 +221,240 @@ export async function GET(req: NextRequest) {
     })),
   })
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// Tab-specific data handlers
+// ══════════════════════════════════════════════════════════════════════
+
+async function getKillfeedData(mapId: number) {
+  const [matchStart, fights] = await Promise.all([
+    prisma.scrimMatchStart.findFirst({
+      where: { mapDataId: mapId },
+      select: { team_1_name: true, team_2_name: true },
+    }),
+    groupKillsIntoFights(mapId),
+  ])
+
+  if (!matchStart) {
+    return NextResponse.json({ error: 'Map not found' }, { status: 404 })
+  }
+
+  const team1 = matchStart.team_1_name ?? 'Team 1'
+  const team2 = matchStart.team_2_name ?? 'Team 2'
+
+  // Compute fight winners and per-team kill/death counts
+  let team1FightWins = 0
+  let team2FightWins = 0
+  let team1Kills = 0
+  let team2Kills = 0
+
+  const fightData = fights.map((fight, i) => {
+    // Count kills per team in this fight (exclude Resurrect from kill counting)
+    const t1Kills = fight.kills.filter(k => k.attacker_team === team1 && k.event_ability !== 'Resurrect').length
+    const t2Kills = fight.kills.filter(k => k.attacker_team === team2 && k.event_ability !== 'Resurrect').length
+    team1Kills += t1Kills
+    team2Kills += t2Kills
+
+    // Fight winner = team with more kills
+    let winner = 'Draw'
+    if (t1Kills > t2Kills) { winner = team1; team1FightWins++ }
+    else if (t2Kills > t1Kills) { winner = team2; team2FightWins++ }
+
+    return {
+      fightNumber: i + 1,
+      start: round(fight.start),
+      end: round(fight.end),
+      winner,
+      kills: fight.kills.map(k => ({
+        time: round(k.match_time),
+        attackerTeam: k.attacker_team,
+        attackerName: k.attacker_name,
+        attackerHero: k.attacker_hero,
+        victimTeam: k.victim_team,
+        victimName: k.victim_name,
+        victimHero: k.victim_hero,
+        ability: k.event_ability,
+        damage: k.event_damage,
+        isCritical: k.is_critical_hit === '1' || k.is_critical_hit === 'True',
+        isEnvironmental: k.is_environmental === '1' || k.is_environmental === 'True',
+      })),
+    }
+  })
+
+  const matchTime = fights.length > 0
+    ? round(fights[fights.length - 1].end - fights[0].start)
+    : 0
+
+  return NextResponse.json({
+    teams: { team1, team2 },
+    matchTime,
+    team1Kills,
+    team2Kills,
+    team1Deaths: team2Kills,
+    team2Deaths: team1Kills,
+    team1FightWins,
+    team2FightWins,
+    fights: fightData,
+  })
+}
+
+async function getEventsData(mapId: number) {
+  const [matchStart, roundStarts, roundEnds, objectivesCaptured, ultStarts, ultEnds] = await Promise.all([
+    prisma.scrimMatchStart.findFirst({
+      where: { mapDataId: mapId },
+      select: { team_1_name: true, team_2_name: true, map_name: true, map_type: true, match_time: true },
+    }),
+    prisma.scrimRoundStart.findMany({
+      where: { mapDataId: mapId },
+      orderBy: { match_time: 'asc' },
+    }),
+    prisma.scrimRoundEnd.findMany({
+      where: { mapDataId: mapId },
+      orderBy: { match_time: 'asc' },
+    }),
+    prisma.scrimObjectiveCaptured.findMany({
+      where: { mapDataId: mapId },
+      orderBy: { match_time: 'asc' },
+    }),
+    prisma.scrimUltimateStart.findMany({
+      where: { mapDataId: mapId },
+      orderBy: { match_time: 'asc' },
+      select: {
+        match_time: true,
+        player_team: true,
+        player_name: true,
+        player_hero: true,
+        ultimate_id: true,
+      },
+    }),
+    prisma.scrimUltimateEnd.findMany({
+      where: { mapDataId: mapId },
+      orderBy: { match_time: 'asc' },
+      select: {
+        match_time: true,
+        player_team: true,
+        player_name: true,
+        player_hero: true,
+        ultimate_id: true,
+      },
+    }),
+  ])
+
+  if (!matchStart) {
+    return NextResponse.json({ error: 'Map not found' }, { status: 404 })
+  }
+
+  // Build match events timeline
+  type MatchEvent = { time: number; type: string; description: string; team?: string }
+  const matchEvents: MatchEvent[] = []
+
+  // Match start
+  matchEvents.push({
+    time: round(matchStart.match_time),
+    type: 'match_start',
+    description: `Match started on ${matchStart.map_name} (${matchStart.map_type})`,
+  })
+
+  // Round starts
+  for (const rs of roundStarts) {
+    matchEvents.push({
+      time: round(rs.match_time),
+      type: 'round_start',
+      description: `Round ${rs.round_number} started`,
+      team: rs.capturing_team,
+    })
+  }
+
+  // Round ends
+  for (const re of roundEnds) {
+    matchEvents.push({
+      time: round(re.match_time),
+      type: 'round_end',
+      description: `Round ${re.round_number} ended (${re.team_1_score} - ${re.team_2_score})`,
+      team: re.capturing_team,
+    })
+  }
+
+  // Objective captures
+  for (const oc of objectivesCaptured) {
+    matchEvents.push({
+      time: round(oc.match_time),
+      type: 'objective_captured',
+      description: `${oc.capturing_team} captured objective ${oc.objective_index + 1}`,
+      team: oc.capturing_team,
+    })
+  }
+
+  matchEvents.sort((a, b) => a.time - b.time)
+
+  // Build ultimates timeline
+  const ultimates = ultStarts.map(us => ({
+    time: round(us.match_time),
+    team: us.player_team,
+    player: us.player_name,
+    hero: us.player_hero,
+    ultimateId: us.ultimate_id,
+    // Find matching end event for duration
+    endTime: ultEnds.find(ue =>
+      ue.ultimate_id === us.ultimate_id &&
+      ue.player_name === us.player_name
+    )?.match_time ? round(ultEnds.find(ue =>
+      ue.ultimate_id === us.ultimate_id &&
+      ue.player_name === us.player_name
+    )!.match_time) : null,
+  }))
+
+  return NextResponse.json({
+    teams: {
+      team1: matchStart.team_1_name ?? 'Team 1',
+      team2: matchStart.team_2_name ?? 'Team 2',
+    },
+    matchEvents,
+    ultimates,
+  })
+}
+
+async function getCompareData(mapId: number) {
+  const [matchStart, playerStats] = await Promise.all([
+    prisma.scrimMatchStart.findFirst({
+      where: { mapDataId: mapId },
+      select: { team_1_name: true, team_2_name: true },
+    }),
+    getFinalRoundStats(mapId),
+  ])
+
+  if (!matchStart) {
+    return NextResponse.json({ error: 'Map not found' }, { status: 404 })
+  }
+
+  const team1 = matchStart.team_1_name ?? 'Team 1'
+  const team2 = matchStart.team_2_name ?? 'Team 2'
+
+  const formatPlayer = (p: typeof playerStats[0]) => ({
+    name: p.player_name,
+    team: p.player_team,
+    hero: p.player_hero,
+    eliminations: p.eliminations,
+    deaths: p.deaths,
+    finalBlows: p.final_blows,
+    heroDamage: round(p.hero_damage_dealt),
+    healingDealt: round(p.healing_dealt),
+    damageTaken: round(p.damage_taken),
+    damageBlocked: round(p.damage_blocked),
+    assists: p.defensive_assists + p.offensive_assists,
+    timePlayed: round(p.hero_time_played),
+    ultimatesEarned: p.ultimates_earned,
+    ultimatesUsed: p.ultimates_used,
+    soloKills: p.solo_kills,
+    objectiveKills: p.objective_kills,
+    criticalHits: p.critical_hits,
+    weaponAccuracy: round(p.weapon_accuracy),
+  })
+
+  return NextResponse.json({
+    teams: { team1, team2 },
+    team1Players: playerStats.filter(p => p.player_team === team1).map(formatPlayer),
+    team2Players: playerStats.filter(p => p.player_team === team2).map(formatPlayer),
+  })
+}
+
