@@ -561,70 +561,86 @@ function HeroDetailSection({ hero: h, color, isExpanded, onToggle }: {
       {/* Animated expanded detail area */}
       <AnimatedCollapse isOpen={isExpanded}>
         <div style={{ borderTop: `1px solid ${BORDER_GLOW}`, padding: '24px' }}>
-          {/* Top row: Avatar + 4 highlight cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr 1fr 1fr 1fr', gap: '14px', marginBottom: '20px', alignItems: 'stretch' }}>
-            {/* Large avatar */}
+          {/* Hero identity row + highlight cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: '20px', marginBottom: '20px' }}>
+            {/* Large avatar with key stat ring */}
             <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px',
               background: `radial-gradient(circle, ${color}0c 0%, transparent 70%)`,
               borderRadius: '12px',
               border: `1px solid ${BORDER}`,
+              padding: '16px 12px',
             }}>
-              <HeroAvatar portrait={h.portrait} heroName={h.hero} size={72} color={color} />
+              <HeroAvatar portrait={h.portrait} heroName={h.hero} size={80} color={color} />
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '20px', fontWeight: 700, color: kd_color(kd), textShadow: `0 0 12px ${kd_color(kd)}44` }}>
+                  {kd} K/D
+                </div>
+                <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '2px' }}>
+                  {formatDecimal(timeMins, 1)} min played
+                </div>
+              </div>
             </div>
-            <MiniStatCard label="Ultimates Used" value={String(h.ultimatesUsed)} sub={`${formatDecimal(h.ultsPer10)} per 10 min`} color={PURPLE} />
-            <MiniStatCard label="Hero Damage Dealt" value={formatNumber(h.totalDamage)} sub={`${formatNumber(h.damagePer10)} per 10 min`} color={RED} />
-            <MiniStatCard label="Final Blows" value={String(h.totalFB)} sub={`${formatDecimal(h.fbPer10)} per 10 min`} color={AMBER} />
-            <MiniStatCard label="Solo Kills" value={String(h.soloKills)} sub={`${formatDecimal(h.soloKillsPer10)} per 10 min`} color={CYAN} />
+            {/* Highlight cards grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+              <MiniStatCard label="Eliminations" value={String(h.totalElims)} sub={`${formatDecimal(h.elimsPer10)} /10 min`} color={CYAN} />
+              <MiniStatCard label="Hero Damage" value={formatNumber(h.totalDamage)} sub={`${formatNumber(h.damagePer10)} /10 min`} color={RED} />
+              <MiniStatCard label="Healing Dealt" value={formatNumber(h.totalHealing)} sub={`${formatNumber(h.healingPer10)} /10 min`} color={GREEN} />
+              <MiniStatCard label="Ultimates Used" value={String(h.ultimatesUsed)} sub={`${formatDecimal(h.ultsPer10)} /10 min`} color={PURPLE} />
+            </div>
           </div>
 
-          {/* Full stat table */}
-          <div style={{
-            background: BG_INNER,
-            border: `1px solid ${BORDER_GLOW}`,
-            borderRadius: '10px',
-            overflow: 'hidden',
-            boxShadow: `inset 0 1px 0 rgba(255,255,255,0.02)`,
-          }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-              <thead>
-                <tr style={{ borderBottom: `1px solid ${BORDER_GLOW}` }}>
-                  <th style={{ ...TH_STYLE, textAlign: 'left' }}>Stat</th>
-                  <th style={{ ...TH_STYLE, textAlign: 'right' }}>Total</th>
-                  <th style={{ ...TH_STYLE, textAlign: 'right' }}>Avg/10 min</th>
-                </tr>
-              </thead>
-              <tbody>
-                <StatTableRow label="Hero Time Played" total={`${formatDecimal(timeMins)} mins`} avg="—" />
-                <StatTableRow label="Eliminations" total={String(h.totalElims)} avg={formatDecimal(h.elimsPer10)} />
-                <StatTableRow label="Final Blows" total={String(h.totalFB)} avg={formatDecimal(h.fbPer10)} />
-                <StatTableRow label="Deaths" total={String(h.totalDeaths)} avg={formatDecimal(h.deathsPer10)} />
-                <StatTableRow label="All Damage Dealt" total={formatNumber(h.allDamageDealt)} avg={formatNumber(h.damagePer10)} />
-                <StatTableRow label="Barrier Damage Dealt" total={formatNumber(h.barrierDamageDealt)} avg={timeMins > 0 ? formatNumber(Math.round(h.barrierDamageDealt / timeMins * 10)) : '0'} />
-                <StatTableRow label="Hero Damage Dealt" total={formatNumber(h.totalDamage)} avg={formatNumber(h.damagePer10)} />
-                <StatTableRow label="Healing Dealt" total={formatNumber(h.totalHealing)} avg={formatNumber(h.healingPer10)} />
-                <StatTableRow label="Healing Received" total={formatNumber(h.healingReceived)} avg={timeMins > 0 ? formatNumber(Math.round(h.healingReceived / timeMins * 10)) : '0'} />
-                <StatTableRow label="Self Healing" total={formatNumber(h.selfHealing)} avg={timeMins > 0 ? formatNumber(Math.round(h.selfHealing / timeMins * 10)) : '0'} />
-                <StatTableRow label="Damage Taken" total={formatNumber(h.damageTaken)} avg={timeMins > 0 ? formatNumber(Math.round(h.damageTaken / timeMins * 10)) : '0'} />
-                <StatTableRow label="Damage Blocked" total={formatNumber(h.damageBlocked)} avg={timeMins > 0 ? formatNumber(Math.round(h.damageBlocked / timeMins * 10)) : '0'} />
-                <StatTableRow label="Defensive Assists" total={String(h.defensiveAssists)} avg={timeMins > 0 ? formatDecimal(h.defensiveAssists / timeMins * 10) : '0'} />
-                <StatTableRow label="Offensive Assists" total={String(h.offensiveAssists)} avg={timeMins > 0 ? formatDecimal(h.offensiveAssists / timeMins * 10) : '0'} />
-                <StatTableRow label="Ultimates Earned" total={String(h.ultimatesEarned)} avg={formatDecimal(h.ultsPer10)} />
-                <StatTableRow label="Ultimates Used" total={String(h.ultimatesUsed)} avg={formatDecimal(h.ultsPer10)} />
-                <StatTableRow label="Solo Kills" total={String(h.soloKills)} avg={formatDecimal(h.soloKillsPer10)} />
-                <StatTableRow label="Objective Kills" total={String(h.objectiveKills)} avg={timeMins > 0 ? formatDecimal(h.objectiveKills / timeMins * 10) : '0'} />
-                <StatTableRow label="Environmental Kills" total={String(h.environmentalKills)} avg="—" />
-                <StatTableRow label="Environmental Deaths" total={String(h.environmentalDeaths)} avg="—" />
-                <StatTableRow label="Critical Hits" total={String(h.criticalHits)} avg={timeMins > 0 ? formatDecimal(h.criticalHits / timeMins * 10) : '0'} />
-                <StatTableRow label="Multikills" total={String(h.multikills)} avg="—" />
-                <StatTableRow label="Multikill Best" total={String(h.multikillBest)} avg="—" />
-                <StatTableRow label="Weapon Accuracy" total={formatPct(h.weaponAccuracy)} avg="—" />
-                <StatTableRow label="Critical Hit Accuracy" total={formatPct(h.criticalHitAccuracy)} avg="—" />
-                {h.scopedAccuracy > 0 && (
-                  <StatTableRow label="Scoped Accuracy" total={formatPct(h.scopedAccuracy)} avg="—" />
-                )}
-              </tbody>
-            </table>
+          {/* Categorized stat groups — 3-column grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px' }}>
+            <StatGroupCard title="⚔️ Combat" color={RED} stats={[
+              { label: 'Eliminations', value: String(h.totalElims), sub: `${formatDecimal(h.elimsPer10)} /10` },
+              { label: 'Final Blows', value: String(h.totalFB), sub: `${formatDecimal(h.fbPer10)} /10` },
+              { label: 'Solo Kills', value: String(h.soloKills), sub: `${formatDecimal(h.soloKillsPer10)} /10` },
+              { label: 'Deaths', value: String(h.totalDeaths), sub: `${formatDecimal(h.deathsPer10)} /10` },
+              { label: 'Objective Kills', value: String(h.objectiveKills), sub: timeMins > 0 ? `${formatDecimal(h.objectiveKills / timeMins * 10)} /10` : '—' },
+              { label: 'Env. Kills', value: String(h.environmentalKills) },
+              { label: 'Env. Deaths', value: String(h.environmentalDeaths) },
+              { label: 'Multikills', value: String(h.multikills) },
+              { label: 'Best Multi', value: String(h.multikillBest) },
+            ]} />
+
+            <StatGroupCard title="💥 Damage & Survivability" color={AMBER} stats={[
+              { label: 'All Damage', value: formatNumber(h.allDamageDealt), sub: `${formatNumber(h.damagePer10)} /10` },
+              { label: 'Hero Damage', value: formatNumber(h.totalDamage) },
+              { label: 'Barrier Damage', value: formatNumber(h.barrierDamageDealt), sub: timeMins > 0 ? `${formatNumber(Math.round(h.barrierDamageDealt / timeMins * 10))} /10` : '—' },
+              { label: 'Damage Taken', value: formatNumber(h.damageTaken), sub: timeMins > 0 ? `${formatNumber(Math.round(h.damageTaken / timeMins * 10))} /10` : '—' },
+              { label: 'Damage Blocked', value: formatNumber(h.damageBlocked), sub: timeMins > 0 ? `${formatNumber(Math.round(h.damageBlocked / timeMins * 10))} /10` : '—' },
+            ]} />
+
+            <StatGroupCard title="💚 Healing & Support" color={GREEN} stats={[
+              { label: 'Healing Dealt', value: formatNumber(h.totalHealing), sub: `${formatNumber(h.healingPer10)} /10` },
+              { label: 'Healing Received', value: formatNumber(h.healingReceived), sub: timeMins > 0 ? `${formatNumber(Math.round(h.healingReceived / timeMins * 10))} /10` : '—' },
+              { label: 'Self Healing', value: formatNumber(h.selfHealing), sub: timeMins > 0 ? `${formatNumber(Math.round(h.selfHealing / timeMins * 10))} /10` : '—' },
+              { label: 'Def. Assists', value: String(h.defensiveAssists), sub: timeMins > 0 ? `${formatDecimal(h.defensiveAssists / timeMins * 10)} /10` : '—' },
+              { label: 'Off. Assists', value: String(h.offensiveAssists), sub: timeMins > 0 ? `${formatDecimal(h.offensiveAssists / timeMins * 10)} /10` : '—' },
+            ]} />
+
+            <StatGroupCard title="⚡ Ultimates" color={PURPLE} stats={[
+              { label: 'Ults Earned', value: String(h.ultimatesEarned), sub: `${formatDecimal(h.ultsPer10)} /10` },
+              { label: 'Ults Used', value: String(h.ultimatesUsed), sub: `${formatDecimal(h.ultsPer10)} /10` },
+              { label: 'K/D Ratio', value: kd, sub: parseFloat(kd) >= 2 ? 'Excellent' : parseFloat(kd) >= 1 ? 'Positive' : 'Negative' },
+            ]} />
+
+            <StatGroupCard title="🎯 Accuracy" color={CYAN} stats={[
+              { label: 'Weapon Accuracy', value: formatPct(h.weaponAccuracy) },
+              { label: 'Crit Accuracy', value: formatPct(h.criticalHitAccuracy) },
+              { label: 'Critical Hits', value: String(h.criticalHits), sub: timeMins > 0 ? `${formatDecimal(h.criticalHits / timeMins * 10)} /10` : '—' },
+              ...(h.scopedAccuracy > 0 ? [{ label: 'Scoped Accuracy', value: formatPct(h.scopedAccuracy) }] : []),
+            ]} />
+
+            <StatGroupCard title="📊 Per 10 Min Overview" color={TEXT_SECONDARY} stats={[
+              { label: 'Elims /10', value: formatDecimal(h.elimsPer10) },
+              { label: 'Deaths /10', value: formatDecimal(h.deathsPer10) },
+              { label: 'FB /10', value: formatDecimal(h.fbPer10) },
+              { label: 'Damage /10', value: formatNumber(h.damagePer10) },
+              { label: 'Healing /10', value: formatNumber(h.healingPer10) },
+              { label: 'Ults /10', value: formatDecimal(h.ultsPer10) },
+            ]} />
           </div>
         </div>
       </AnimatedCollapse>
@@ -632,13 +648,63 @@ function HeroDetailSection({ hero: h, color, isExpanded, onToggle }: {
   )
 }
 
-const TH_STYLE: React.CSSProperties = {
-  padding: '10px 16px',
-  fontSize: '10px',
-  textTransform: 'uppercase',
-  letterSpacing: '0.8px',
-  color: TEXT_SECONDARY,
-  fontWeight: 600,
+/** K/D ratio color helper */
+function kd_color(kd: string): string {
+  const v = parseFloat(kd)
+  if (v >= 2) return GREEN
+  if (v < 1) return RED
+  return TEXT_PRIMARY
+}
+
+type StatGroupItem = { label: string; value: string; sub?: string }
+
+/** Categorized stat group card — compact label-value pairs in a glassmorphic container */
+function StatGroupCard({ title, color, stats }: { title: string; color: string; stats: StatGroupItem[] }) {
+  return (
+    <div style={{
+      background: BG_INNER,
+      border: `1px solid ${BORDER_GLOW}`,
+      borderTop: `2px solid ${color}`,
+      borderRadius: '10px',
+      overflow: 'hidden',
+      animation: 'fadeSlideIn 0.3s ease-out',
+    }}>
+      {/* Group header */}
+      <div style={{
+        padding: '10px 14px',
+        borderBottom: `1px solid ${BORDER}`,
+        fontSize: '12px',
+        fontWeight: 700,
+        color: TEXT_PRIMARY,
+        letterSpacing: '0.3px',
+        textShadow: `0 0 12px ${color}22`,
+      }}>
+        {title}
+      </div>
+      {/* Stat rows */}
+      <div style={{ padding: '6px 0' }}>
+        {stats.map((s, i) => (
+          <div
+            key={i}
+            style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '5px 14px',
+              transition: 'background 0.15s',
+              cursor: 'default',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+          >
+            <span style={{ fontSize: '12px', color: TEXT_SECONDARY, fontWeight: 500 }}>{s.label}</span>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+              <span style={{ fontSize: '13px', fontWeight: 700, color: TEXT_PRIMARY, fontVariantNumeric: 'tabular-nums' }}>{s.value}</span>
+              {s.sub && <span style={{ fontSize: '10px', color: TEXT_DIM, fontVariantNumeric: 'tabular-nums' }}>{s.sub}</span>}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 /** Quick stat shown in collapsed hero header */
@@ -678,21 +744,6 @@ function MiniStatCard({ label, value, sub, color }: { label: string; value: stri
       </div>
       <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '4px', position: 'relative' }}>{sub}</div>
     </div>
-  )
-}
-
-/** Individual row in the stat table */
-function StatTableRow({ label, total, avg }: { label: string; total: string; avg: string }) {
-  return (
-    <tr
-      style={{ borderBottom: `1px solid ${BORDER}`, transition: 'background 0.15s' }}
-      onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
-      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-    >
-      <td style={{ padding: '8px 16px', color: TEXT_SECONDARY, fontWeight: 500 }}>{label}</td>
-      <td style={{ padding: '8px 16px', textAlign: 'right', color: TEXT_PRIMARY, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{total}</td>
-      <td style={{ padding: '8px 16px', textAlign: 'right', color: TEXT_DIM, fontVariantNumeric: 'tabular-nums' }}>{avg}</td>
-    </tr>
   )
 }
 
