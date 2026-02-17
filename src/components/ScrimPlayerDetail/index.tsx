@@ -60,6 +60,13 @@ type HeroPoolEntry = {
   healingPer10: number
   ultsPer10: number
   soloKillsPer10: number
+  // Advanced per-hero stats
+  avgFletaPct: number
+  avgFirstPickPct: number
+  avgFirstDeathPct: number
+  avgUltChargeTime: number
+  avgKillsPerUlt: number
+  avgDroughtTime: number
 }
 
 type MapEntry = {
@@ -643,7 +650,9 @@ function HeroDetailSection({ hero: h, color, isExpanded, onToggle }: {
             <StatGroupCard title="⚡ Ultimates" color={PURPLE} stats={[
               { label: 'Ults Earned', value: String(h.ultimatesEarned), sub: `${formatDecimal(h.ultsPer10)} /10` },
               { label: 'Ults Used', value: String(h.ultimatesUsed), sub: `${formatDecimal(h.ultsPer10)} /10` },
-              { label: 'K/D Ratio', value: kd, sub: parseFloat(kd) >= 2 ? 'Excellent' : parseFloat(kd) >= 1 ? 'Positive' : 'Negative' },
+              { label: 'Avg Charge Time', value: `${h.avgUltChargeTime}s` },
+              { label: 'Kills / Ult', value: formatDecimal(h.avgKillsPerUlt) },
+              { label: 'Drought', value: `${h.avgDroughtTime}s` },
             ]} />
 
             <StatGroupCard title="🎯 Accuracy" color={CYAN} stats={[
@@ -651,6 +660,12 @@ function HeroDetailSection({ hero: h, color, isExpanded, onToggle }: {
               { label: 'Crit Accuracy', value: formatPct(h.criticalHitAccuracy) },
               { label: 'Critical Hits', value: String(h.criticalHits), sub: timeMins > 0 ? `${formatDecimal(h.criticalHits / timeMins * 10)} /10` : '—' },
               ...(h.scopedAccuracy > 0 ? [{ label: 'Scoped Accuracy', value: formatPct(h.scopedAccuracy) }] : []),
+            ]} />
+
+            <StatGroupCard title="🏆 Performance" color={GREEN} stats={[
+              { label: 'Fleta Deadlift', value: `${h.avgFletaPct}%`, sub: 'Earns 50%+ of team final blows' },
+              { label: 'First Pick', value: `${h.avgFirstPickPct}%`, sub: `Across ${h.mapsPlayed} map${h.mapsPlayed !== 1 ? 's' : ''}` },
+              { label: 'First Death', value: `${h.avgFirstDeathPct}%`, sub: h.avgFirstDeathPct > 20 ? 'High — watch positioning' : 'Healthy' },
             ]} />
 
             <StatGroupCard title="📊 Per 10 Min Overview" color={TEXT_SECONDARY} stats={[

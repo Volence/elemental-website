@@ -337,6 +337,14 @@ async function getPlayerDetail(playerName: string) {
     .map(([hero, s]) => {
       const mapCount = s.maps.size
       const t10 = s.time > 0 ? 600 / s.time : 0  // per-10-minute multiplier
+
+      // Aggregate advanced stats for maps where this hero was played
+      const heroMapIds = [...s.maps]
+      const heroAdvanced = heroMapIds
+        .map((mdId) => advancedStatsMap.get(mdId))
+        .filter((a): a is NonNullable<typeof a> => a != null)
+      const advCount = heroAdvanced.length
+
       return {
         hero,
         portrait: portraits.get(heroNameToSlug(hero)) ?? null,
@@ -376,6 +384,13 @@ async function getPlayerDetail(playerName: string) {
         healingPer10: round(s.healing * t10),
         ultsPer10: round(s.ultsUsed * t10),
         soloKillsPer10: round(s.soloKills * t10),
+        // Advanced per-hero stats (averaged across maps played on this hero)
+        avgFletaPct: advCount > 0 ? round(heroAdvanced.reduce((a, h) => a + (h.fletaDeadliftPercentage ?? 0), 0) / advCount) : 0,
+        avgFirstPickPct: advCount > 0 ? round(heroAdvanced.reduce((a, h) => a + (h.firstPickPercentage ?? 0), 0) / advCount) : 0,
+        avgFirstDeathPct: advCount > 0 ? round(heroAdvanced.reduce((a, h) => a + (h.firstDeathPercentage ?? 0), 0) / advCount) : 0,
+        avgUltChargeTime: advCount > 0 ? round(heroAdvanced.reduce((a, h) => a + (h.averageUltChargeTime ?? 0), 0) / advCount) : 0,
+        avgKillsPerUlt: advCount > 0 ? round(heroAdvanced.reduce((a, h) => a + (h.killsPerUltimate ?? 0), 0) / advCount) : 0,
+        avgDroughtTime: advCount > 0 ? round(heroAdvanced.reduce((a, h) => a + (h.droughtTime ?? 0), 0) / advCount) : 0,
       }
     })
     .sort((a, b) => b.totalTime - a.totalTime)
