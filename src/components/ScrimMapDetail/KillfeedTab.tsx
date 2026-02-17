@@ -3,55 +3,60 @@
 import React, { useState, useEffect } from 'react'
 import { getHeroIconUrl, formatAbility, loadHeroPortraits } from '@/lib/scrim-parser/heroIcons'
 
-// ── Design tokens (shared) ──
+// ── Clean Glow Design Tokens ──
 const CYAN = '#06b6d4'
 const GREEN = '#22c55e'
 const RED = '#ef4444'
 const TEXT_PRIMARY = '#e2e8f0'
 const TEXT_SECONDARY = '#94a3b8'
 const TEXT_DIM = '#64748b'
-const BG_CARD = 'rgba(15, 23, 42, 0.6)'
-const BORDER = 'rgba(148, 163, 184, 0.08)'
 
+// Clean glow: ultra-transparent backgrounds with glowing borders
 const CARD_STYLE: React.CSSProperties = {
-  background: BG_CARD,
+  background: 'rgba(0, 0, 0, 0.05)',
+  backdropFilter: 'blur(6px)',
   borderRadius: '12px',
   padding: '20px 24px',
-  border: `1px solid ${BORDER}`,
+  border: `1px solid rgba(6, 182, 212, 0.15)`,
 }
 
 const LABEL_STYLE: React.CSSProperties = {
   fontSize: '10px',
   fontWeight: 600,
   textTransform: 'uppercase',
-  letterSpacing: '1px',
+  letterSpacing: '1.2px',
   color: TEXT_SECONDARY,
 }
 
-// ── Hero Icon Component ──
+// ── Hero Icon with Team-Colored Glow Border ──
 function HeroIcon({ hero, teamColor }: { hero: string; teamColor: string }) {
   const [failed, setFailed] = useState(false)
-  const size = 24
+  const size = 28
   const url = getHeroIconUrl(hero)
 
+  const borderStyle: React.CSSProperties = {
+    width: size,
+    height: size,
+    borderRadius: '4px',
+    border: `2px solid ${teamColor}`,
+    boxShadow: `0 0 6px ${teamColor}44`,
+    flexShrink: 0,
+    overflow: 'hidden',
+  }
+
   if (failed || !url) {
-    // Fallback: colored square with first letter
     return (
       <div
         title={hero}
         style={{
-          width: size,
-          height: size,
-          borderRadius: '4px',
-          background: `${teamColor}22`,
-          border: `1px solid ${teamColor}44`,
+          ...borderStyle,
+          background: `${teamColor}18`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: '11px',
+          fontSize: '12px',
           fontWeight: 700,
           color: teamColor,
-          flexShrink: 0,
         }}
       >
         {hero.charAt(0)}
@@ -60,19 +65,21 @@ function HeroIcon({ hero, teamColor }: { hero: string; teamColor: string }) {
   }
 
   return (
-    <img
-      src={url}
-      alt={hero}
-      title={hero}
-      width={size}
-      height={size}
-      onError={() => setFailed(true)}
-      style={{
-        borderRadius: '4px',
-        flexShrink: 0,
-        objectFit: 'cover',
-      }}
-    />
+    <div style={borderStyle}>
+      <img
+        src={url}
+        alt={hero}
+        title={hero}
+        width={size - 4}
+        height={size - 4}
+        onError={() => setFailed(true)}
+        style={{
+          borderRadius: '2px',
+          objectFit: 'cover',
+          display: 'block',
+        }}
+      />
+    </div>
   )
 }
 
@@ -117,6 +124,44 @@ function toTimestamp(seconds: number): string {
   return `${String(m).padStart(2, '0')}m ${String(s).padStart(2, '0')}s`
 }
 
+// ── Summary stat card with left accent glow bar ──
+function StatCard({
+  label,
+  children,
+  accentColor,
+}: {
+  label: string
+  children: React.ReactNode
+  accentColor: string
+}) {
+  return (
+    <div
+      style={{
+        ...CARD_STYLE,
+        position: 'relative',
+        paddingLeft: '28px',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Glow accent bar */}
+      <div
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: '3px',
+          background: accentColor,
+          boxShadow: `0 0 8px ${accentColor}66`,
+          borderRadius: '12px 0 0 12px',
+        }}
+      />
+      <div style={LABEL_STYLE}>{label}</div>
+      {children}
+    </div>
+  )
+}
+
 export default function KillfeedTab({ mapId }: { mapId: string }) {
   const [data, setData] = useState<KillfeedData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -134,56 +179,70 @@ export default function KillfeedTab({ mapId }: { mapId: string }) {
   if (loading) return <div style={{ padding: '40px', textAlign: 'center', color: TEXT_SECONDARY }}>Loading killfeed…</div>
   if (!data) return <div style={{ padding: '40px', textAlign: 'center', color: RED }}>Failed to load killfeed</div>
 
+  const BORDER_SUBTLE = 'rgba(148, 163, 184, 0.06)'
+
   return (
     <div>
-      {/* Summary Cards */}
+      {/* Summary Cards with accent bars */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '28px' }}>
-        <div style={CARD_STYLE}>
-          <div style={LABEL_STYLE}>Total Match Time</div>
+        <StatCard label="Total Match Time" accentColor={CYAN}>
           <div style={{ fontSize: '26px', fontWeight: 700, color: TEXT_PRIMARY, marginTop: '6px' }}>{toTimestamp(data.matchTime)}</div>
           <div style={{ fontSize: '12px', color: TEXT_DIM, marginTop: '4px' }}>{(data.matchTime / 60).toFixed(1)} minutes</div>
-        </div>
-        <div style={CARD_STYLE}>
-          <div style={LABEL_STYLE}>Kills</div>
+        </StatCard>
+        <StatCard label="Kills" accentColor={GREEN}>
           <div style={{ fontSize: '26px', fontWeight: 700, marginTop: '6px' }}>
             <span style={{ color: GREEN }}>{data.team1Kills}</span>
             <span style={{ color: TEXT_DIM }}> / </span>
             <span style={{ color: RED }}>{data.team2Kills}</span>
           </div>
           <div style={{ fontSize: '12px', color: TEXT_DIM, marginTop: '4px' }}>{data.teams.team1} / {data.teams.team2}</div>
-        </div>
-        <div style={CARD_STYLE}>
-          <div style={LABEL_STYLE}>Deaths</div>
+        </StatCard>
+        <StatCard label="Deaths" accentColor={RED}>
           <div style={{ fontSize: '26px', fontWeight: 700, marginTop: '6px' }}>
             <span style={{ color: GREEN }}>{data.team1Deaths}</span>
             <span style={{ color: TEXT_DIM }}> / </span>
             <span style={{ color: RED }}>{data.team2Deaths}</span>
           </div>
           <div style={{ fontSize: '12px', color: TEXT_DIM, marginTop: '4px' }}>{data.teams.team1} / {data.teams.team2}</div>
-        </div>
-        <div style={CARD_STYLE}>
-          <div style={LABEL_STYLE}>Fight Wins</div>
+        </StatCard>
+        <StatCard label="Fight Wins" accentColor="#a855f7">
           <div style={{ fontSize: '26px', fontWeight: 700, marginTop: '6px' }}>
             <span style={{ color: GREEN }}>{data.team1FightWins}</span>
             <span style={{ color: TEXT_DIM }}> / </span>
             <span style={{ color: RED }}>{data.team2FightWins}</span>
           </div>
           <div style={{ fontSize: '12px', color: TEXT_DIM, marginTop: '4px' }}>{data.teams.team1} / {data.teams.team2}</div>
-        </div>
+        </StatCard>
       </div>
 
-      {/* Killfeed Table */}
-      <div style={{ ...CARD_STYLE, padding: 0, overflow: 'hidden' }}>
-        <div style={{ padding: '16px 20px 10px', fontWeight: 700, fontSize: '15px', color: TEXT_PRIMARY, borderBottom: `1px solid ${BORDER}` }}>
+      {/* Killfeed Table with glass effect */}
+      <div
+        style={{
+          background: 'rgba(0, 0, 0, 0.05)',
+          backdropFilter: 'blur(6px)',
+          borderRadius: '12px',
+          border: '1px solid rgba(6, 182, 212, 0.12)',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            padding: '14px 20px 10px',
+            fontWeight: 700,
+            fontSize: '15px',
+            color: TEXT_PRIMARY,
+            borderBottom: `1px solid ${BORDER_SUBTLE}`,
+            background: 'rgba(6, 182, 212, 0.03)',
+          }}
+        >
           Killfeed
         </div>
 
         {data.fights.map((fight) => (
           <div key={fight.fightNumber}>
-            {/* Fight kills */}
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
               <thead>
-                <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
+                <tr style={{ borderBottom: `1px solid ${BORDER_SUBTLE}` }}>
                   <th style={{ ...thStyle, textAlign: 'left', width: '100px' }}>Time</th>
                   <th style={{ ...thStyle, textAlign: 'left' }}>Kill</th>
                   <th style={{ ...thStyle, textAlign: 'left', width: '140px' }}>Method</th>
@@ -198,21 +257,29 @@ export default function KillfeedTab({ mapId }: { mapId: string }) {
                   const victimColor = kill.victimTeam === data.teams.team1 ? GREEN : RED
 
                   return (
-                    <tr key={ki} style={{ borderBottom: `1px solid ${BORDER}`, transition: 'background 0.15s' }}>
+                    <tr
+                      key={ki}
+                      style={{
+                        borderBottom: `1px solid ${BORDER_SUBTLE}`,
+                        transition: 'background 0.15s',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(6, 182, 212, 0.04)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                    >
                       <td style={{ padding: '10px 14px', fontFamily: 'monospace', fontSize: '12px', color: TEXT_DIM }}>
                         {kill.time.toFixed(2)} ({toTimestamp(kill.time)})
                       </td>
                       <td style={{ padding: '10px 14px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'nowrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'nowrap' }}>
                           <HeroIcon hero={kill.attackerHero} teamColor={attackerColor} />
-                          <span style={{ fontWeight: 600, color: attackerColor }}>
+                          <span style={{ fontWeight: 600, color: attackerColor, textShadow: `0 0 8px ${attackerColor}33` }}>
                             {kill.attackerName}
                           </span>
-                          <span style={{ color: TEXT_DIM, margin: '0 2px' }}>
+                          <span style={{ color: TEXT_DIM, margin: '0 2px', fontSize: '14px' }}>
                             {kill.ability === 'Resurrect' ? '💚' : '→'}
                           </span>
                           <HeroIcon hero={kill.victimHero} teamColor={victimColor} />
-                          <span style={{ fontWeight: 600, color: victimColor }}>
+                          <span style={{ fontWeight: 600, color: victimColor, textShadow: `0 0 8px ${victimColor}33` }}>
                             {kill.victimName}
                           </span>
                         </div>
@@ -228,7 +295,15 @@ export default function KillfeedTab({ mapId }: { mapId: string }) {
                       <td style={{ padding: '10px 14px', textAlign: 'right', color: TEXT_DIM, fontSize: '12px' }}>
                         {ki === 0 ? toTimestamp(fight.end) : ''}
                       </td>
-                      <td style={{ padding: '10px 14px', textAlign: 'right', fontWeight: 600, fontSize: '12px', color: fight.winner === data.teams.team1 ? GREEN : fight.winner === data.teams.team2 ? RED : TEXT_DIM }}>
+                      <td
+                        style={{
+                          padding: '10px 14px',
+                          textAlign: 'right',
+                          fontWeight: 600,
+                          fontSize: '12px',
+                          color: fight.winner === data.teams.team1 ? GREEN : fight.winner === data.teams.team2 ? RED : TEXT_DIM,
+                        }}
+                      >
                         {ki === 0 ? fight.winner : ''}
                       </td>
                     </tr>
@@ -236,8 +311,20 @@ export default function KillfeedTab({ mapId }: { mapId: string }) {
                 })}
               </tbody>
             </table>
-            {/* Fight separator */}
-            <div style={{ textAlign: 'center', padding: '6px 0', fontSize: '11px', color: TEXT_DIM, background: 'rgba(255,255,255,0.02)', borderBottom: `1px solid ${BORDER}` }}>
+            {/* Fight separator with subtle glow */}
+            <div
+              style={{
+                textAlign: 'center',
+                padding: '8px 0',
+                fontSize: '11px',
+                fontWeight: 600,
+                letterSpacing: '0.5px',
+                color: CYAN,
+                background: 'rgba(6, 182, 212, 0.04)',
+                borderBottom: `1px solid ${BORDER_SUBTLE}`,
+                textShadow: `0 0 12px ${CYAN}44`,
+              }}
+            >
               Fight {fight.fightNumber}
             </div>
           </div>
