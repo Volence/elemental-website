@@ -686,7 +686,7 @@ function StatRow({ player, onClick, selected }: { player: PlayerRow; onClick: ()
   const cell: React.CSSProperties = { padding: '10px 12px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }
   return (
     <tr
-      onClick={onClick}
+      onClick={() => window.location.href = `/admin/scrim-player-detail?player=${encodeURIComponent(player.name)}`}
       style={{
         cursor: 'pointer',
         borderBottom: `1px solid ${BORDER}`,
@@ -694,7 +694,7 @@ function StatRow({ player, onClick, selected }: { player: PlayerRow; onClick: ()
         transition: 'background 0.15s',
       }}
     >
-      <td style={{ padding: '10px 12px', fontWeight: 600, color: TEXT_PRIMARY }}>{player.name}</td>
+      <td style={{ padding: '10px 12px', fontWeight: 600, color: CYAN }}>{player.name}</td>
       <td style={{ padding: '10px 12px', color: TEXT_SECONDARY }}>{player.hero}</td>
       <td style={{ padding: '10px 12px', color: TEXT_DIM, fontSize: '12px' }}>{player.role}</td>
       <td style={{ ...cell, color: TEXT_DIM }}>{timeStr}</td>
