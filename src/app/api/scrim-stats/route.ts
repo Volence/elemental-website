@@ -37,6 +37,10 @@ export async function GET(req: NextRequest) {
     return getEventsData(mapId)
   }
 
+  if (tab === 'charts') {
+    return getChartsData(mapId)
+  }
+
   if (tab === 'compare') {
     return getCompareData(mapId)
   }
@@ -458,3 +462,85 @@ async function getCompareData(mapId: number) {
   })
 }
 
+// ── Hero → Role mapping (Overwatch 2) ──
+const HERO_ROLES: Record<string, 'Tank' | 'Damage' | 'Support'> = {
+  // Tanks
+  'D.Va': 'Tank', 'Doomfist': 'Tank', 'Junker Queen': 'Tank', 'Mauga': 'Tank',
+  'Orisa': 'Tank', 'Ramattra': 'Tank', 'Reinhardt': 'Tank', 'Roadhog': 'Tank',
+  'Sigma': 'Tank', 'Winston': 'Tank', 'Wrecking Ball': 'Tank', 'Zarya': 'Tank', 'Hazard': 'Tank',
+  // Damage
+  'Ashe': 'Damage', 'Bastion': 'Damage', 'Cassidy': 'Damage', 'Echo': 'Damage',
+  'Freja': 'Damage', 'Genji': 'Damage', 'Hanzo': 'Damage', 'Junkrat': 'Damage',
+  'Mei': 'Damage', 'Pharah': 'Damage', 'Reaper': 'Damage', 'Sojourn': 'Damage',
+  'Soldier: 76': 'Damage', 'Sombra': 'Damage', 'Symmetra': 'Damage', 'Torbjörn': 'Damage',
+  'Tracer': 'Damage', 'Venture': 'Damage', 'Widowmaker': 'Damage',
+  // Support
+  'Ana': 'Support', 'Baptiste': 'Support', 'Brigitte': 'Support', 'Illari': 'Support',
+  'Juno': 'Support', 'Kiriko': 'Support', 'Lifeweaver': 'Support', 'Lúcio': 'Support',
+  'Mercy': 'Support', 'Moira': 'Support', 'Zenyatta': 'Support',
+}
+
+function getRoleForHero(hero: string): 'Tank' | 'Damage' | 'Support' {
+  return HERO_ROLES[hero] ?? 'Damage'
+}
+
+async function getChartsData(mapId: number) {
+  const [matchStart, playerStats] = await Promise.all([
+    prisma.scrimMatchStart.findFirst({
+      where: { mapDataId: mapId },
+      select: { team_1_name: true, team_2_name: true },
+    }),
+    prisma.scrimPlayerStat.findMany({
+      where: { mapDataId: mapId },
+      select: {
+        round_number: true,
+        player_team: true,
+        player_hero: true,
+        final_blows: true,
+        hero_damage_dealt: true,
+      },
+    }),
+  ])
+
+  if (!matchStart) {
+    return NextResponse.json({ error: 'Map not found' }, { status: 404 })
+  }
+
+  const team1 = matchStart.team_1_name ?? 'Team 1'
+  const team2 = matchStart.team_2_name ?? 'Team 2'
+
+  // ── Final Blows By Role ──
+  const roleData = { Tank: { team1: 0, team2: 0 }, Damage: { team1: 0, team2: 0 }, Support: { team1: 0, team2: 0 } }
+
+  // Use the highest round_number stats (final) for each player
+  const maxRound = Math.max(...playerStats.map(s => s.round_number), 0)
+  const finalStats = playerStats.filter(s => s.round_number === maxRound)
+
+  for (const stat of finalStats) {
+    const role = getRoleForHero(stat.player_hero)
+    if (stat.player_team === team1) {
+      roleData[role].team1 += stat.final_blows
+    } else {
+      roleData[role].team2 += stat.final_blows
+    }
+  }
+
+  // ── Cumulative Hero Damage By Round ──
+  const rounds = [...new Set(playerStats.map(s => s.round_number))].sort((a, b) => a - b)
+  const damageByRound = rounds.map(roundNum => {
+    const roundStats = playerStats.filter(s => s.round_number === roundNum)
+    const t1Damage = round(roundStats.filter(s => s.player_team === team1).reduce((a, s) => a + s.hero_damage_dealt, 0))
+    const t2Damage = round(roundStats.filter(s => s.player_team === team2).reduce((a, s) => a + s.hero_damage_dealt, 0))
+    return { round: roundNum, team1Damage: t1Damage, team2Damage: t2Damage }
+  })
+
+  return NextResponse.json({
+    teams: { team1, team2 },
+    finalBlowsByRole: {
+      Tank: { team1: roleData.Tank.team1, team2: roleData.Tank.team2 },
+      Damage: { team1: roleData.Damage.team1, team2: roleData.Damage.team2 },
+      Support: { team1: roleData.Support.team1, team2: roleData.Support.team2 },
+    },
+    damageByRound,
+  })
+}

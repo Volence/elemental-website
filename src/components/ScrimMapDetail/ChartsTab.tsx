@@ -43,25 +43,39 @@ type KillfeedData = {
   fights: FightData[]
 }
 
+type ChartsAPIData = {
+  teams: { team1: string; team2: string }
+  finalBlowsByRole: {
+    Tank: { team1: number; team2: number }
+    Damage: { team1: number; team2: number }
+    Support: { team1: number; team2: number }
+  }
+  damageByRound: { round: number; team1Damage: number; team2Damage: number }[]
+}
+
 export default function ChartsTab({ mapId }: { mapId: string }) {
   const [data, setData] = useState<KillfeedData | null>(null)
+  const [chartsData, setChartsData] = useState<ChartsAPIData | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Reuse killfeed data for charts
-    fetch(`/api/scrim-stats?mapId=${mapId}&tab=killfeed`)
-      .then((r) => r.json())
-      .then((d) => setData(d))
+    Promise.all([
+      fetch(`/api/scrim-stats?mapId=${mapId}&tab=killfeed`).then(r => r.json()),
+      fetch(`/api/scrim-stats?mapId=${mapId}&tab=charts`).then(r => r.json()),
+    ])
+      .then(([killfeed, charts]) => {
+        setData(killfeed)
+        setChartsData(charts)
+      })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [mapId])
 
-  // Build SVG chart data
+  // Build SVG chart data for kills-by-fight
   const chartData = useMemo(() => {
     if (!data || data.fights.length === 0) return null
 
     const team1 = data.teams.team1
-    // Group kills into 15-second intervals across the entire match
     const allKills = data.fights.flatMap(f => f.kills)
     if (allKills.length === 0) return null
 
@@ -74,11 +88,8 @@ export default function ChartsTab({ mapId }: { mapId: string }) {
       const killsInBucket = allKills.filter(k =>
         k.time >= t && k.time < t + bucketSize && k.ability !== 'Resurrect'
       )
-
-      // Use camelCase property since this is API response data
       const t1 = killsInBucket.filter(k => k.attackerTeam === team1).length
       const t2 = killsInBucket.filter(k => k.attackerTeam !== team1).length
-
       buckets.push({ time: t, team1: t1, team2: -t2 })
     }
 
@@ -91,7 +102,7 @@ export default function ChartsTab({ mapId }: { mapId: string }) {
   const { buckets } = chartData
   const maxVal = Math.max(...buckets.map(b => Math.abs(b.team1)), ...buckets.map(b => Math.abs(b.team2)), 1)
 
-  // SVG dimensions
+  // SVG dimensions for kills chart
   const W = 1100
   const H = 400
   const PAD = { top: 40, bottom: 60, left: 50, right: 30 }
@@ -99,26 +110,23 @@ export default function ChartsTab({ mapId }: { mapId: string }) {
   const plotH = H - PAD.top - PAD.bottom
   const midY = PAD.top + plotH / 2
 
-  // Scale functions
   const xScale = (i: number) => PAD.left + (i / Math.max(buckets.length - 1, 1)) * plotW
   const yScale = (v: number) => midY - (v / maxVal) * (plotH / 2)
 
-  // Build polyline points
   const team1Points = buckets.map((b, i) => `${xScale(i)},${yScale(b.team1)}`).join(' ')
   const team2Points = buckets.map((b, i) => `${xScale(i)},${yScale(b.team2)}`).join(' ')
 
-  // Y-axis ticks
   const yTicks: number[] = []
   for (let v = -maxVal; v <= maxVal; v++) {
     if (v !== 0) yTicks.push(v)
   }
   yTicks.push(0)
 
-  // X-axis labels (every 4th bucket)
   const xLabels = buckets.filter((_, i) => i % 4 === 0 || i === buckets.length - 1)
 
   return (
     <div>
+      {/* ── Kills By Fight Line Chart ── */}
       <div style={CARD_STYLE}>
         <div style={{ fontWeight: 700, fontSize: '15px', color: TEXT_PRIMARY, marginBottom: '4px' }}>
           Kills By Fight
@@ -126,22 +134,18 @@ export default function ChartsTab({ mapId }: { mapId: string }) {
         </div>
 
         <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto' }}>
-          {/* Grid lines */}
           {yTicks.map(v => (
             <line key={v} x1={PAD.left} y1={yScale(v)} x2={W - PAD.right} y2={yScale(v)}
               stroke="rgba(148, 163, 184, 0.06)" strokeWidth={1} />
           ))}
-          {/* Zero line */}
           <line x1={PAD.left} y1={midY} x2={W - PAD.right} y2={midY}
             stroke="rgba(148, 163, 184, 0.15)" strokeWidth={1} />
 
-          {/* Y-axis labels */}
           {yTicks.filter(v => Number.isInteger(v)).map(v => (
             <text key={v} x={PAD.left - 10} y={yScale(v)} textAnchor="end" dominantBaseline="middle"
               fill={TEXT_DIM} fontSize={11}>{Math.abs(v)}</text>
           ))}
 
-          {/* X-axis labels */}
           {xLabels.map((b) => {
             const idx = buckets.indexOf(b)
             return (
@@ -150,20 +154,17 @@ export default function ChartsTab({ mapId }: { mapId: string }) {
             )
           })}
 
-          {/* Team 1 line */}
           <polyline points={team1Points} fill="none" stroke={CYAN} strokeWidth={2} strokeLinejoin="round" />
           {buckets.map((b, i) => (
             <circle key={`t1-${i}`} cx={xScale(i)} cy={yScale(b.team1)} r={3} fill={CYAN} opacity={0.7} />
           ))}
 
-          {/* Team 2 line */}
           <polyline points={team2Points} fill="none" stroke={RED} strokeWidth={2} strokeLinejoin="round" />
           {buckets.map((b, i) => (
             <circle key={`t2-${i}`} cx={xScale(i)} cy={yScale(b.team2)} r={3} fill={RED} opacity={0.7} />
           ))}
         </svg>
 
-        {/* Legend */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginTop: '8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}>
             <div style={{ width: '12px', height: '3px', background: CYAN, borderRadius: '2px' }} />
@@ -182,7 +183,7 @@ export default function ChartsTab({ mapId }: { mapId: string }) {
         </p>
       </div>
 
-      {/* Per-fight breakdown */}
+      {/* ── Per-fight breakdown cards ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '10px', marginTop: '20px' }}>
         {data.fights.map((fight) => {
           const t1Kills = fight.kills.filter(k => k.attackerTeam === data.teams.team1 && k.ability !== 'Resurrect').length
@@ -202,6 +203,230 @@ export default function ChartsTab({ mapId }: { mapId: string }) {
           )
         })}
       </div>
+
+      {/* ── Final Blows By Role + Cumulative Damage ── */}
+      {chartsData && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '20px' }}>
+          {/* Final Blows By Role Bar Chart */}
+          <FinalBlowsByRoleChart data={chartsData} />
+          {/* Cumulative Hero Damage By Round Area Chart */}
+          <CumulativeDamageChart data={chartsData} />
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Final Blows By Role (Bar Chart) ──
+function FinalBlowsByRoleChart({ data }: { data: ChartsAPIData }) {
+  const roles = ['Tank', 'Damage', 'Support'] as const
+  const maxFB = Math.max(
+    ...roles.map(r => data.finalBlowsByRole[r].team1),
+    ...roles.map(r => data.finalBlowsByRole[r].team2),
+    1
+  )
+
+  const W = 500
+  const H = 320
+  const PAD = { top: 30, bottom: 40, left: 40, right: 20 }
+  const plotW = W - PAD.left - PAD.right
+  const plotH = H - PAD.top - PAD.bottom
+
+  const barGroupWidth = plotW / roles.length
+  const barWidth = barGroupWidth * 0.3
+  const gap = barGroupWidth * 0.1
+
+  // Y-axis ticks
+  const yTickCount = Math.min(maxFB, 6)
+  const yTicks = Array.from({ length: yTickCount + 1 }, (_, i) => Math.round((maxFB / yTickCount) * i))
+
+  return (
+    <div style={CARD_STYLE}>
+      <div style={{ fontWeight: 700, fontSize: '15px', color: TEXT_PRIMARY, marginBottom: '4px' }}>
+        Final Blows By Role
+        <span style={{ fontWeight: 400, fontSize: '12px', color: TEXT_DIM, marginLeft: '8px' }}>ⓘ</span>
+      </div>
+
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto' }}>
+        {/* Y-axis grid lines and labels */}
+        {yTicks.map(v => {
+          const y = PAD.top + plotH - (v / maxFB) * plotH
+          return (
+            <g key={v}>
+              <line x1={PAD.left} y1={y} x2={W - PAD.right} y2={y}
+                stroke="rgba(148, 163, 184, 0.06)" strokeWidth={1} />
+              <text x={PAD.left - 8} y={y} textAnchor="end" dominantBaseline="middle"
+                fill={TEXT_DIM} fontSize={11}>{v}</text>
+            </g>
+          )
+        })}
+        {/* Bottom axis line */}
+        <line x1={PAD.left} y1={PAD.top + plotH} x2={W - PAD.right} y2={PAD.top + plotH}
+          stroke="rgba(148, 163, 184, 0.15)" strokeWidth={1} />
+
+        {/* Bars */}
+        {roles.map((role, i) => {
+          const groupX = PAD.left + i * barGroupWidth + barGroupWidth / 2
+          const t1Val = data.finalBlowsByRole[role].team1
+          const t2Val = data.finalBlowsByRole[role].team2
+          const t1Height = (t1Val / maxFB) * plotH
+          const t2Height = (t2Val / maxFB) * plotH
+
+          return (
+            <g key={role}>
+              {/* Team 1 bar */}
+              <rect
+                x={groupX - barWidth - gap / 2}
+                y={PAD.top + plotH - t1Height}
+                width={barWidth}
+                height={t1Height}
+                fill={CYAN}
+                rx={2}
+              />
+              {/* Team 2 bar */}
+              <rect
+                x={groupX + gap / 2}
+                y={PAD.top + plotH - t2Height}
+                width={barWidth}
+                height={t2Height}
+                fill={RED}
+                rx={2}
+              />
+              {/* Role label */}
+              <text x={groupX} y={H - PAD.bottom + 20} textAnchor="middle"
+                fill={TEXT_DIM} fontSize={11}>{role}</text>
+            </g>
+          )
+        })}
+      </svg>
+
+      {/* Legend */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginTop: '4px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}>
+          <div style={{ width: '10px', height: '10px', background: CYAN, borderRadius: '2px' }} />
+          <span style={{ color: TEXT_SECONDARY }}>{data.teams.team1}</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}>
+          <div style={{ width: '10px', height: '10px', background: RED, borderRadius: '2px' }} />
+          <span style={{ color: TEXT_SECONDARY }}>{data.teams.team2}</span>
+        </div>
+      </div>
+
+      <p style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '8px', lineHeight: 1.5 }}>
+        This chart shows the number of final blows by role for each team. The roles are split into Tank, Damage, and Support.
+        The x-axis represents the role, and the y-axis represents the number of final blows.
+      </p>
+    </div>
+  )
+}
+
+// ── Cumulative Hero Damage By Round (Area Chart) ──
+function CumulativeDamageChart({ data }: { data: ChartsAPIData }) {
+  const rounds = data.damageByRound
+  if (rounds.length === 0) return null
+
+  // Build cumulative sums
+  const cumulative = rounds.reduce<{ round: number; team1: number; team2: number }[]>((acc, r, i) => {
+    const prev = i > 0 ? acc[i - 1] : { team1: 0, team2: 0 }
+    acc.push({
+      round: r.round,
+      team1: prev.team1 + r.team1Damage,
+      team2: prev.team2 + r.team2Damage,
+    })
+    return acc
+  }, [])
+
+  const maxDmg = Math.max(...cumulative.map(c => c.team1), ...cumulative.map(c => c.team2), 1)
+
+  const W = 500
+  const H = 320
+  const PAD = { top: 30, bottom: 40, left: 60, right: 20 }
+  const plotW = W - PAD.left - PAD.right
+  const plotH = H - PAD.top - PAD.bottom
+
+  const xScale = (i: number) => PAD.left + (i / Math.max(cumulative.length - 1, 1)) * plotW
+  const yScale = (v: number) => PAD.top + plotH - (v / maxDmg) * plotH
+
+  // Build polylines and area paths
+  const t1Line = cumulative.map((c, i) => `${xScale(i)},${yScale(c.team1)}`).join(' ')
+  const t2Line = cumulative.map((c, i) => `${xScale(i)},${yScale(c.team2)}`).join(' ')
+
+  // Area fill paths (polygon from line to bottom)
+  const t1Area = `${PAD.left},${PAD.top + plotH} ` + t1Line + ` ${xScale(cumulative.length - 1)},${PAD.top + plotH}`
+  const t2Area = `${PAD.left},${PAD.top + plotH} ` + t2Line + ` ${xScale(cumulative.length - 1)},${PAD.top + plotH}`
+
+  // Y-axis ticks
+  const yTickCount = 4
+  const yTicks = Array.from({ length: yTickCount + 1 }, (_, i) => Math.round((maxDmg / yTickCount) * i))
+
+  return (
+    <div style={CARD_STYLE}>
+      <div style={{ fontWeight: 700, fontSize: '15px', color: TEXT_PRIMARY, marginBottom: '4px' }}>
+        Cumulative Hero Damage By Round
+        <span style={{ fontWeight: 400, fontSize: '12px', color: TEXT_DIM, marginLeft: '8px' }}>ⓘ</span>
+      </div>
+
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto' }}>
+        {/* Y-axis grid lines */}
+        {yTicks.map(v => {
+          const y = yScale(v)
+          return (
+            <g key={v}>
+              <line x1={PAD.left} y1={y} x2={W - PAD.right} y2={y}
+                stroke="rgba(148, 163, 184, 0.06)" strokeWidth={1} />
+              <text x={PAD.left - 8} y={y} textAnchor="end" dominantBaseline="middle"
+                fill={TEXT_DIM} fontSize={10}>{v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}</text>
+            </g>
+          )
+        })}
+
+        {/* Vertical round dividers */}
+        {cumulative.map((_, i) => (
+          <line key={i} x1={xScale(i)} y1={PAD.top} x2={xScale(i)} y2={PAD.top + plotH}
+            stroke="rgba(148, 163, 184, 0.06)" strokeWidth={1} strokeDasharray="4,4" />
+        ))}
+
+        {/* Team 1 area fill */}
+        <polygon points={t1Area} fill={CYAN} opacity={0.12} />
+        {/* Team 2 area fill */}
+        <polygon points={t2Area} fill={RED} opacity={0.12} />
+
+        {/* Team 1 line */}
+        <polyline points={t1Line} fill="none" stroke={CYAN} strokeWidth={2} strokeLinejoin="round" />
+        {cumulative.map((c, i) => (
+          <circle key={`t1-${i}`} cx={xScale(i)} cy={yScale(c.team1)} r={3} fill={CYAN} />
+        ))}
+
+        {/* Team 2 line */}
+        <polyline points={t2Line} fill="none" stroke={RED} strokeWidth={2} strokeLinejoin="round" />
+        {cumulative.map((c, i) => (
+          <circle key={`t2-${i}`} cx={xScale(i)} cy={yScale(c.team2)} r={3} fill={RED} />
+        ))}
+
+        {/* X-axis labels */}
+        {cumulative.map((c, i) => (
+          <text key={i} x={xScale(i)} y={H - PAD.bottom + 20} textAnchor="middle"
+            fill={TEXT_DIM} fontSize={10}>Round {c.round}</text>
+        ))}
+      </svg>
+
+      {/* Legend */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginTop: '4px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}>
+          <div style={{ width: '12px', height: '3px', background: CYAN, borderRadius: '2px' }} />
+          <span style={{ color: TEXT_SECONDARY }}>{data.teams.team1}</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}>
+          <div style={{ width: '12px', height: '3px', background: RED, borderRadius: '2px' }} />
+          <span style={{ color: TEXT_SECONDARY }}>{data.teams.team2}</span>
+        </div>
+      </div>
+
+      <p style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '8px', lineHeight: 1.5 }}>
+        This chart shows the hero damage done by round for each team. The x-axis represents the round,
+        and the y-axis represents the damage done. Note that the damage done in round 2 includes the
+        damage done in round 1.
+      </p>
     </div>
   )
 }
