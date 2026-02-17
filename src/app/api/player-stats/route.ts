@@ -29,11 +29,29 @@ type PlayerMapRow = {
   eliminations: number
   final_blows: number
   deaths: number
+  all_damage_dealt: number
+  barrier_damage_dealt: number
   hero_damage_dealt: number
   healing_dealt: number
+  healing_received: number
+  self_healing: number
+  damage_taken: number
+  damage_blocked: number
   hero_time_played: number
   defensive_assists: number
   offensive_assists: number
+  ultimates_earned: number
+  ultimates_used: number
+  solo_kills: number
+  objective_kills: number
+  environmental_kills: number
+  environmental_deaths: number
+  critical_hits: number
+  critical_hit_accuracy: number
+  weapon_accuracy: number
+  multikill_best: number
+  multikills: number
+  scoped_accuracy: number
 }
 
 type MapInfoRow = {
@@ -136,11 +154,29 @@ async function getPlayerDetail(playerName: string) {
       eliminations,
       final_blows,
       deaths,
+      all_damage_dealt,
+      barrier_damage_dealt,
       hero_damage_dealt,
       healing_dealt,
+      healing_received,
+      self_healing,
+      damage_taken,
+      damage_blocked,
       hero_time_played,
       defensive_assists,
-      offensive_assists
+      offensive_assists,
+      ultimates_earned,
+      ultimates_used,
+      solo_kills,
+      objective_kills,
+      environmental_kills,
+      environmental_deaths,
+      critical_hits,
+      critical_hit_accuracy,
+      weapon_accuracy,
+      multikill_best,
+      multikills,
+      scoped_accuracy
     FROM final_stats
     WHERE player_name = ${playerName}
     ORDER BY player_name, player_hero, "mapDataId", id DESC
@@ -244,9 +280,24 @@ async function getPlayerDetail(playerName: string) {
   maps.sort((a, b) => new Date(b.scrimDate).getTime() - new Date(a.scrimDate).getTime())
 
   // Hero pool: aggregate per hero across all maps
-  const heroStats = new Map<string, { maps: Set<number>; elims: number; deaths: number; damage: number; healing: number; time: number; fb: number }>()
+  type HeroAgg = {
+    maps: Set<number>; elims: number; deaths: number; damage: number; healing: number; time: number; fb: number;
+    allDamage: number; barrierDamage: number; healingReceived: number; selfHealing: number;
+    damageTaken: number; damageBlocked: number; defAssists: number; offAssists: number;
+    ultsEarned: number; ultsUsed: number; soloKills: number; objKills: number;
+    envKills: number; envDeaths: number; critHits: number; critAccuracy: number;
+    weaponAccuracy: number; multikillBest: number; multikills: number; scopedAccuracy: number;
+  }
+  const heroStats = new Map<string, HeroAgg>()
   for (const row of playerMaps) {
-    const existing = heroStats.get(row.player_hero) ?? { maps: new Set(), elims: 0, deaths: 0, damage: 0, healing: 0, time: 0, fb: 0 }
+    const existing = heroStats.get(row.player_hero) ?? {
+      maps: new Set(), elims: 0, deaths: 0, damage: 0, healing: 0, time: 0, fb: 0,
+      allDamage: 0, barrierDamage: 0, healingReceived: 0, selfHealing: 0,
+      damageTaken: 0, damageBlocked: 0, defAssists: 0, offAssists: 0,
+      ultsEarned: 0, ultsUsed: 0, soloKills: 0, objKills: 0,
+      envKills: 0, envDeaths: 0, critHits: 0, critAccuracy: 0,
+      weaponAccuracy: 0, multikillBest: 0, multikills: 0, scopedAccuracy: 0,
+    }
     existing.maps.add(row.mapDataId)
     existing.elims += row.eliminations
     existing.deaths += row.deaths
@@ -254,20 +305,74 @@ async function getPlayerDetail(playerName: string) {
     existing.healing += row.healing_dealt
     existing.time += row.hero_time_played
     existing.fb += row.final_blows
+    existing.allDamage += row.all_damage_dealt
+    existing.barrierDamage += row.barrier_damage_dealt
+    existing.healingReceived += row.healing_received
+    existing.selfHealing += row.self_healing
+    existing.damageTaken += row.damage_taken
+    existing.damageBlocked += row.damage_blocked
+    existing.defAssists += row.defensive_assists
+    existing.offAssists += row.offensive_assists
+    existing.ultsEarned += row.ultimates_earned
+    existing.ultsUsed += row.ultimates_used
+    existing.soloKills += row.solo_kills
+    existing.objKills += row.objective_kills
+    existing.envKills += row.environmental_kills
+    existing.envDeaths += row.environmental_deaths
+    existing.critHits += row.critical_hits
+    // For accuracy fields, we'll average across maps later
+    existing.critAccuracy += row.critical_hit_accuracy
+    existing.weaponAccuracy += row.weapon_accuracy
+    existing.multikillBest = Math.max(existing.multikillBest, row.multikill_best)
+    existing.multikills += row.multikills
+    existing.scopedAccuracy += row.scoped_accuracy
     heroStats.set(row.player_hero, existing)
   }
 
   const heroPool = [...heroStats.entries()]
-    .map(([hero, stats]) => ({
-      hero,
-      mapsPlayed: stats.maps.size,
-      totalTime: round(stats.time),
-      totalElims: stats.elims,
-      totalDeaths: stats.deaths,
-      totalDamage: round(stats.damage),
-      totalHealing: round(stats.healing),
-      totalFB: stats.fb,
-    }))
+    .map(([hero, s]) => {
+      const mapCount = s.maps.size
+      const t10 = s.time > 0 ? 600 / s.time : 0  // per-10-minute multiplier
+      return {
+        hero,
+        mapsPlayed: mapCount,
+        totalTime: round(s.time),
+        totalElims: s.elims,
+        totalDeaths: s.deaths,
+        totalDamage: round(s.damage),
+        totalHealing: round(s.healing),
+        totalFB: s.fb,
+        // Extended stats
+        allDamageDealt: round(s.allDamage),
+        barrierDamageDealt: round(s.barrierDamage),
+        healingReceived: round(s.healingReceived),
+        selfHealing: round(s.selfHealing),
+        damageTaken: round(s.damageTaken),
+        damageBlocked: round(s.damageBlocked),
+        defensiveAssists: s.defAssists,
+        offensiveAssists: s.offAssists,
+        ultimatesEarned: s.ultsEarned,
+        ultimatesUsed: s.ultsUsed,
+        soloKills: s.soloKills,
+        objectiveKills: s.objKills,
+        environmentalKills: s.envKills,
+        environmentalDeaths: s.envDeaths,
+        criticalHits: s.critHits,
+        criticalHitAccuracy: mapCount > 0 ? round(s.critAccuracy / mapCount) : 0,
+        weaponAccuracy: mapCount > 0 ? round(s.weaponAccuracy / mapCount) : 0,
+        multikillBest: s.multikillBest,
+        multikills: s.multikills,
+        scopedAccuracy: mapCount > 0 ? round(s.scopedAccuracy / mapCount) : 0,
+        // Per-10-min rates
+        elimsPer10: round(s.elims * t10),
+        deathsPer10: round(s.deaths * t10),
+        fbPer10: round(s.fb * t10),
+        damagePer10: round(s.damage * t10),
+        healingPer10: round(s.healing * t10),
+        ultsPer10: round(s.ultsUsed * t10),
+        soloKillsPer10: round(s.soloKills * t10),
+      }
+    })
     .sort((a, b) => b.totalTime - a.totalTime)
 
   // Career totals
