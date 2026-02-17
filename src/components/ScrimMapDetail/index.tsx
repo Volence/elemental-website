@@ -96,7 +96,7 @@ const COLUMN_DEFS: { key: SortKey; label: string; align: 'left' | 'right' }[] = 
   { key: 'healing', label: 'Healing Dealt', align: 'right' },
 ]
 
-// ── Design tokens ──
+// ── Design tokens (Clean Glow) ──
 const CYAN = '#06b6d4'
 const CYAN_DIM = 'rgba(6, 182, 212, 0.12)'
 const GREEN = '#22c55e'
@@ -106,8 +106,8 @@ const RED_DIM = 'rgba(239, 68, 68, 0.08)'
 const PURPLE = '#8b5cf6'
 const PURPLE_DIM = 'rgba(139, 92, 246, 0.08)'
 const AMBER = '#f59e0b'
-const BG_CARD = '#1a1a2e'
-const BG_CARD_HOVER = '#1e1e36'
+const BG_CARD = 'rgba(15, 15, 30, 0.7)'
+const BG_CARD_HOVER = 'rgba(20, 20, 40, 0.8)'
 const BORDER = 'rgba(255, 255, 255, 0.06)'
 const BORDER_ACCENT = 'rgba(6, 182, 212, 0.2)'
 const TEXT_PRIMARY = '#f0f0f5'
@@ -116,10 +116,13 @@ const TEXT_DIM = '#52525b'
 
 const CARD_STYLE: React.CSSProperties = {
   background: BG_CARD,
+  backdropFilter: 'blur(12px)',
+  WebkitBackdropFilter: 'blur(12px)',
   border: `1px solid ${BORDER}`,
   borderRadius: '12px',
   padding: '20px',
   transition: 'border-color 0.2s, box-shadow 0.2s',
+  boxShadow: '0 0 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.03)',
 }
 
 const LABEL_STYLE: React.CSSProperties = {
@@ -253,7 +256,7 @@ export default function ScrimMapDetailView() {
   const team2Won = s2 > s1
 
   return (
-    <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto', fontFamily: "'Inter', -apple-system, sans-serif" }}>
+    <div style={{ padding: '40px', maxWidth: '1600px', margin: '0 auto', fontFamily: "'Inter', -apple-system, sans-serif" }}>
       {/* Header */}
       <div style={{ marginBottom: '32px' }}>
         <a href="/admin/scrims" style={{ color: TEXT_SECONDARY, fontSize: '12px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px', transition: 'color 0.15s' }}>
@@ -410,48 +413,48 @@ export default function ScrimMapDetailView() {
 
       {/* Fight Analysis */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '28px' }}>
-        <div style={CARD_STYLE}>
+        <div style={{ ...CARD_STYLE, borderTop: `2px solid ${CYAN}`, boxShadow: `0 0 20px rgba(0,0,0,0.3), 0 0 30px ${CYAN}08` }}>
           <div style={LABEL_STYLE}>Total Fights</div>
-          <div style={{ ...VALUE_STYLE, fontSize: '32px', color: CYAN }}>{data.analysis.totalFights}</div>
+          <div style={{ ...VALUE_STYLE, fontSize: '32px', color: CYAN, textShadow: `0 0 20px ${CYAN}44` }}>{data.analysis.totalFights}</div>
           <div style={SUB_STYLE}>teamfights identified</div>
         </div>
-        <div style={CARD_STYLE}>
+        <div style={{ ...CARD_STYLE, borderTop: `2px solid ${RED}`, boxShadow: `0 0 20px rgba(0,0,0,0.3), 0 0 30px ${RED}08` }}>
           <div style={LABEL_STYLE}>First Deaths</div>
-          <div style={{ display: 'flex', gap: '16px', marginTop: '4px' }}>
+          <div style={{ display: 'flex', gap: '24px', marginTop: '4px' }}>
             <div>
-              <div style={{ fontSize: '20px', fontWeight: 700, color: data.analysis.team1FirstDeathPct > 50 ? RED : GREEN }}>
+              <div style={{ fontSize: '22px', fontWeight: 700, color: data.analysis.team1FirstDeathPct > 50 ? RED : GREEN, textShadow: `0 0 12px ${data.analysis.team1FirstDeathPct > 50 ? RED : GREEN}44` }}>
                 {data.analysis.team1FirstDeathPct}%
               </div>
-              <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '2px' }}>
+              <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '4px' }}>
                 {data.teams.team1} ({data.analysis.team1FirstDeaths})
               </div>
             </div>
             <div>
-              <div style={{ fontSize: '20px', fontWeight: 700, color: data.analysis.team2FirstDeathPct > 50 ? RED : GREEN }}>
+              <div style={{ fontSize: '22px', fontWeight: 700, color: data.analysis.team2FirstDeathPct > 50 ? RED : GREEN, textShadow: `0 0 12px ${data.analysis.team2FirstDeathPct > 50 ? RED : GREEN}44` }}>
                 {data.analysis.team2FirstDeathPct}%
               </div>
-              <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '2px' }}>
+              <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '4px' }}>
                 {data.teams.team2} ({data.analysis.team2FirstDeaths})
               </div>
             </div>
           </div>
         </div>
-        <div style={CARD_STYLE}>
+        <div style={{ ...CARD_STYLE, borderTop: `2px solid ${PURPLE}`, boxShadow: `0 0 20px rgba(0,0,0,0.3), 0 0 30px ${PURPLE}08` }}>
           <div style={LABEL_STYLE}>Ultimate Kills</div>
-          <div style={{ display: 'flex', gap: '16px', marginTop: '4px' }}>
+          <div style={{ display: 'flex', gap: '24px', marginTop: '4px' }}>
             <div>
-              <div style={{ fontSize: '20px', fontWeight: 700, color: PURPLE }}>
+              <div style={{ fontSize: '22px', fontWeight: 700, color: PURPLE, textShadow: `0 0 12px ${PURPLE}44` }}>
                 {data.analysis.team1UltKills}
               </div>
-              <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '2px' }}>
+              <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '4px' }}>
                 {data.teams.team1}
               </div>
             </div>
             <div>
-              <div style={{ fontSize: '20px', fontWeight: 700, color: PURPLE }}>
+              <div style={{ fontSize: '22px', fontWeight: 700, color: PURPLE, textShadow: `0 0 12px ${PURPLE}44` }}>
                 {data.analysis.team2UltKills}
               </div>
-              <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '2px' }}>
+              <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '4px' }}>
                 {data.teams.team2}
               </div>
             </div>
@@ -605,13 +608,21 @@ function SummaryCard({ label, value, sub, accentColor, icon }: { label: string; 
       borderTop: `2px solid ${ac}`,
       position: 'relative',
       overflow: 'hidden',
+      boxShadow: `0 0 20px rgba(0,0,0,0.3), 0 0 30px ${ac}08`,
     }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      {/* Subtle radial glow in background */}
+      <div style={{
+        position: 'absolute', top: '-20px', right: '-20px',
+        width: '120px', height: '120px',
+        background: `radial-gradient(circle, ${ac}0a 0%, transparent 70%)`,
+        pointerEvents: 'none',
+      }} />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative' }}>
         <div style={LABEL_STYLE}>{label}</div>
         {icon && <span style={{ fontSize: '16px', opacity: 0.5 }}>{icon}</span>}
       </div>
-      <div style={{ ...VALUE_STYLE, color: ac, marginTop: '4px', fontSize: '22px' }}>{value}</div>
-      <div style={{ ...SUB_STYLE, lineHeight: 1.4 }}>{sub}</div>
+      <div style={{ ...VALUE_STYLE, color: ac, marginTop: '4px', fontSize: '22px', textShadow: `0 0 16px ${ac}44`, position: 'relative' }}>{value}</div>
+      <div style={{ ...SUB_STYLE, lineHeight: 1.4, position: 'relative' }}>{sub}</div>
     </div>
   )
 }
