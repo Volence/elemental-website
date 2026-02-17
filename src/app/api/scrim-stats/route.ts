@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma'
 import { getFinalRoundStats } from '@/lib/scrim-parser/data-access'
 import { groupKillsIntoFights, round } from '@/lib/scrim-parser/utils'
 import { calculateStatsForMap } from '@/lib/scrim-parser/calculate-stats'
+import { heroRoleMapping } from '@/lib/scrim-parser/heroes'
 
 /**
  * GET /api/scrim-stats?mapId=N
@@ -195,13 +196,18 @@ export async function GET(req: NextRequest) {
       name: p.player_name,
       team: p.player_team,
       hero: p.player_hero,
+      role: (heroRoleMapping as Record<string, string>)[p.player_hero] ?? 'Damage',
       eliminations: p.eliminations,
       assists: p.defensive_assists + p.offensive_assists,
       deaths: p.deaths,
-      damage: p.hero_damage_dealt,
-      healing: p.healing_dealt,
+      damage: round(p.hero_damage_dealt),
+      healing: round(p.healing_dealt),
       finalBlows: p.final_blows,
       timePlayed: p.hero_time_played,
+      kd: p.deaths > 0 ? round(p.eliminations / p.deaths) : p.eliminations,
+      kad: p.deaths > 0 ? round((p.eliminations + (p.defensive_assists + p.offensive_assists)) / p.deaths) : p.eliminations + (p.defensive_assists + p.offensive_assists),
+      damageReceived: round(p.damage_taken),
+      healingReceived: round(p.healing_received),
     })),
     analysis: {
       totalFights: fights.length,
