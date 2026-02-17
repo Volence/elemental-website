@@ -243,7 +243,26 @@ export default function ScrimPlayerDetailView() {
     : data.career.eliminations.toString()
 
   return (
-    <div style={{ padding: '40px', maxWidth: '1600px', margin: '0 auto', fontFamily: "'Inter', -apple-system, sans-serif" }}>
+    <div style={{
+      position: 'relative',
+      minHeight: '100vh',
+      background: `
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(6, 182, 212, 0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 100%, rgba(139, 92, 246, 0.05) 0%, transparent 50%),
+        radial-gradient(ellipse 40% 60% at 10% 50%, rgba(6, 182, 212, 0.03) 0%, transparent 50%),
+        linear-gradient(180deg, #0a0e1a 0%, #0d1117 40%, #0a0e1a 100%)
+      `,
+      overflow: 'hidden',
+    }}>
+      {/* Ambient floating glow orbs */}
+      <div style={{ position: 'absolute', top: '10%', right: '5%', width: '400px', height: '400px', background: `radial-gradient(circle, ${CYAN}06 0%, transparent 70%)`, borderRadius: '50%', pointerEvents: 'none', animation: 'glowPulse 8s ease-in-out infinite' }} />
+      <div style={{ position: 'absolute', bottom: '20%', left: '3%', width: '300px', height: '300px', background: `radial-gradient(circle, ${PURPLE}05 0%, transparent 70%)`, borderRadius: '50%', pointerEvents: 'none', animation: 'glowPulse 10s ease-in-out infinite 2s' }} />
+      {/* Top edge glow line */}
+      <div style={{ position: 'absolute', top: 0, left: '10%', right: '10%', height: '1px', background: `linear-gradient(90deg, transparent, ${CYAN}22, transparent)`, pointerEvents: 'none' }} />
+      {/* Vignette overlay */}
+      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.3) 100%)', pointerEvents: 'none', zIndex: 0 }} />
+
+      <div style={{ position: 'relative', zIndex: 1, padding: '40px', maxWidth: '1600px', margin: '0 auto', fontFamily: "'Inter', -apple-system, sans-serif" }}>
       {/* Header */}
       <div style={{ marginBottom: '32px' }}>
         <a href="/admin/scrim-players" style={{ color: TEXT_SECONDARY, fontSize: '12px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px', transition: 'color 0.2s' }}>
@@ -378,6 +397,7 @@ export default function ScrimPlayerDetailView() {
             </tbody>
           </table>
         </div>
+      </div>
       </div>
     </div>
   )
