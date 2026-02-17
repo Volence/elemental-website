@@ -233,9 +233,26 @@ export default function KillfeedTab({ mapId }: { mapId: string }) {
             color: TEXT_PRIMARY,
             borderBottom: `1px solid ${BORDER_SUBTLE}`,
             background: 'rgba(6, 182, 212, 0.03)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
           }}
         >
           Killfeed
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', color: TEXT_DIM }}>
+              <span style={{ ...tagStyle, background: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.25)' }}>CRIT</span>
+              Critical Hit
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', color: TEXT_DIM }}>
+              <span style={{ ...tagStyle, background: 'rgba(6, 182, 212, 0.12)', color: CYAN, border: '1px solid rgba(6, 182, 212, 0.25)' }}>ENV</span>
+              Environmental
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', color: TEXT_DIM }}>
+              <span style={{ ...tagStyle, background: 'rgba(34, 197, 94, 0.12)', color: GREEN, border: '1px solid rgba(34, 197, 94, 0.25)' }}>RES</span>
+              Resurrect
+            </span>
+          </div>
         </div>
 
         {data.fights.map((fight) => (
@@ -283,7 +300,12 @@ export default function KillfeedTab({ mapId }: { mapId: string }) {
                         </div>
                       </td>
                       <td style={{ padding: '10px 14px', color: TEXT_SECONDARY, fontSize: '12px' }}>
-                        {formatAbility(kill.ability)}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                          {formatAbility(kill.ability)}
+                          {kill.isCritical && <span style={{ ...tagStyle, background: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.25)' }}>CRIT</span>}
+                          {kill.isEnvironmental && <span style={{ ...tagStyle, background: 'rgba(6, 182, 212, 0.12)', color: CYAN, border: '1px solid rgba(6, 182, 212, 0.25)' }}>ENV</span>}
+                          {kill.ability === 'Resurrect' && <span style={{ ...tagStyle, background: 'rgba(34, 197, 94, 0.12)', color: GREEN, border: '1px solid rgba(34, 197, 94, 0.25)' }}>RES</span>}
+                        </div>
                       </td>
                       <td style={{ padding: '10px 14px', textAlign: 'right', color: TEXT_DIM, fontSize: '12px' }}>
                         {ki === 0 ? toTimestamp(fight.start) : ''}
@@ -337,4 +359,13 @@ const thStyle: React.CSSProperties = {
   fontSize: '10px',
   textTransform: 'uppercase',
   letterSpacing: '0.5px',
+}
+
+const tagStyle: React.CSSProperties = {
+  fontSize: '9px',
+  fontWeight: 700,
+  letterSpacing: '0.5px',
+  padding: '2px 5px',
+  borderRadius: '3px',
+  lineHeight: 1,
 }
