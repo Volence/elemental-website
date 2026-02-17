@@ -275,9 +275,7 @@ export default function KillfeedTab({ mapId }: { mapId: string }) {
                           <span style={{ fontWeight: 600, color: attackerColor, textShadow: `0 0 8px ${attackerColor}33` }}>
                             {kill.attackerName}
                           </span>
-                          <span style={{ color: TEXT_DIM, margin: '0 2px', fontSize: '14px' }}>
-                            {kill.ability === 'Resurrect' ? '💚' : '→'}
-                          </span>
+                          <span style={{ color: TEXT_DIM, margin: '0 2px', fontSize: '14px' }}>→</span>
                           <HeroIcon hero={kill.victimHero} teamColor={victimColor} />
                           <span style={{ fontWeight: 600, color: victimColor, textShadow: `0 0 8px ${victimColor}33` }}>
                             {kill.victimName}
@@ -286,8 +284,6 @@ export default function KillfeedTab({ mapId }: { mapId: string }) {
                       </td>
                       <td style={{ padding: '10px 14px', color: TEXT_SECONDARY, fontSize: '12px' }}>
                         {formatAbility(kill.ability)}
-                        {kill.isCritical && <span style={{ color: '#f59e0b', marginLeft: '4px' }}>💥</span>}
-                        {kill.isEnvironmental && <span style={{ color: CYAN, marginLeft: '4px' }}>🌊</span>}
                       </td>
                       <td style={{ padding: '10px 14px', textAlign: 'right', color: TEXT_DIM, fontSize: '12px' }}>
                         {ki === 0 ? toTimestamp(fight.start) : ''}
