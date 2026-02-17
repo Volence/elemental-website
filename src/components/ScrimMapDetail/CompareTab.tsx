@@ -1,22 +1,18 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { getHeroIconUrl, loadHeroPortraits } from '@/lib/scrim-parser/heroIcons'
 
+// ── Clean Glow Design Tokens ──
 const CYAN = '#06b6d4'
 const GREEN = '#22c55e'
 const RED = '#ef4444'
+const PURPLE = '#8b5cf6'
+const AMBER = '#f59e0b'
 const TEXT_PRIMARY = '#e2e8f0'
 const TEXT_SECONDARY = '#94a3b8'
 const TEXT_DIM = '#64748b'
-const BG_CARD = 'rgba(15, 23, 42, 0.6)'
-const BORDER = 'rgba(148, 163, 184, 0.08)'
-
-const CARD_STYLE: React.CSSProperties = {
-  background: BG_CARD,
-  borderRadius: '12px',
-  padding: '20px 24px',
-  border: `1px solid ${BORDER}`,
-}
+const BORDER_SUBTLE = 'rgba(148, 163, 184, 0.06)'
 
 type ComparePlayer = {
   name: string
@@ -45,39 +41,185 @@ type CompareData = {
   team2Players: ComparePlayer[]
 }
 
-function formatNumber(n: number): string {
-  return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(Math.round(n))
+function formatMinutes(seconds: number): string {
+  return (seconds / 60).toFixed(2)
 }
 
-function toTimestamp(seconds: number): string {
-  const m = Math.floor(seconds / 60)
-  const s = Math.floor(seconds % 60)
-  return `${m}m ${String(s).padStart(2, '0')}s`
+function per10(value: number, timePlayed: number): string {
+  if (timePlayed <= 0) return '0'
+  return ((value / timePlayed) * 600).toFixed(2)
 }
 
-function StatBar({ label, value, maxValue, color }: { label: string; value: number; maxValue: number; color: string }) {
-  const pct = maxValue > 0 ? Math.min((value / maxValue) * 100, 100) : 0
+function formatBigNumber(n: number): string {
+  if (n >= 10000) return `${(n / 1000).toFixed(1)}k`
+  return n.toFixed(n % 1 !== 0 ? 2 : 0)
+}
+
+// ── Hero Portrait ──
+function HeroPortrait({ hero, teamColor }: { hero: string; teamColor: string }) {
+  const [failed, setFailed] = useState(false)
+  const url = getHeroIconUrl(hero)
+  const size = 120
+
+  if (failed || !url) {
+    return (
+      <div
+        title={hero}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: '8px',
+          border: `2px solid ${teamColor}`,
+          boxShadow: `0 0 12px ${teamColor}44, inset 0 0 20px rgba(0,0,0,0.3)`,
+          background: `${teamColor}12`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '36px',
+          fontWeight: 700,
+          color: teamColor,
+        }}
+      >
+        {hero.charAt(0)}
+      </div>
+    )
+  }
+
   return (
-    <div style={{ marginBottom: '8px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '3px' }}>
-        <span style={{ color: TEXT_DIM }}>{label}</span>
-        <span style={{ color: TEXT_PRIMARY, fontWeight: 600 }}>{typeof value === 'number' && value >= 1000 ? formatNumber(value) : value}</span>
-      </div>
-      <div style={{ height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', overflow: 'hidden' }}>
-        <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: '2px', transition: 'width 0.5s ease' }} />
-      </div>
+    <div
+      style={{
+        width: size,
+        height: size,
+        borderRadius: '8px',
+        border: `2px solid ${teamColor}`,
+        boxShadow: `0 0 12px ${teamColor}44`,
+        overflow: 'hidden',
+        flexShrink: 0,
+      }}
+    >
+      <img
+        src={url}
+        alt={hero}
+        title={hero}
+        width={size - 4}
+        height={size - 4}
+        onError={() => setFailed(true)}
+        style={{ objectFit: 'cover', display: 'block', width: '100%', height: '100%' }}
+      />
     </div>
+  )
+}
+
+// ── Stat Card ──
+function StatCard({
+  label,
+  value,
+  sub,
+  accentColor,
+  icon,
+}: {
+  label: string
+  value: string | number
+  sub: string
+  accentColor: string
+  icon?: string
+}) {
+  return (
+    <div
+      style={{
+        background: 'rgba(0, 0, 0, 0.05)',
+        backdropFilter: 'blur(4px)',
+        borderRadius: '8px',
+        border: `1px solid ${BORDER_SUBTLE}`,
+        padding: '14px 16px',
+        position: 'relative',
+        overflow: 'hidden',
+        transition: 'background 0.15s',
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.background = `${accentColor}06`)}
+      onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(0, 0, 0, 0.05)')}
+    >
+      {/* Left accent */}
+      <div
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: '2px',
+          background: accentColor,
+          boxShadow: `0 0 6px ${accentColor}44`,
+        }}
+      />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+        <span style={{ fontSize: '11px', color: TEXT_DIM, textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>
+          {label}
+        </span>
+        {icon && <span style={{ fontSize: '14px', opacity: 0.6 }}>{icon}</span>}
+      </div>
+      <div
+        style={{
+          fontSize: '22px',
+          fontWeight: 700,
+          color: TEXT_PRIMARY,
+          lineHeight: 1,
+          marginBottom: '6px',
+          textShadow: `0 0 12px ${accentColor}22`,
+        }}
+      >
+        {value}
+      </div>
+      <div style={{ fontSize: '11px', color: TEXT_DIM, lineHeight: 1.3 }}>{sub}</div>
+    </div>
+  )
+}
+
+// ── Player Tab Button ──
+function PlayerTab({
+  name,
+  isActive,
+  teamColor,
+  onClick,
+}: {
+  name: string
+  isActive: boolean
+  teamColor: string
+  onClick: () => void
+}) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        padding: '6px 14px',
+        borderRadius: '6px',
+        border: isActive ? `1px solid ${teamColor}` : `1px solid ${BORDER_SUBTLE}`,
+        background: isActive ? `${teamColor}18` : 'transparent',
+        color: isActive ? TEXT_PRIMARY : TEXT_DIM,
+        fontSize: '12px',
+        fontWeight: isActive ? 700 : 500,
+        cursor: 'pointer',
+        transition: 'all 0.15s',
+        boxShadow: isActive ? `0 0 8px ${teamColor}33` : 'none',
+        textShadow: isActive ? `0 0 8px ${teamColor}44` : 'none',
+      }}
+    >
+      {name}
+    </button>
   )
 }
 
 export default function CompareTab({ mapId }: { mapId: string }) {
   const [data, setData] = useState<CompareData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [selectedT1, setSelectedT1] = useState(0)
+  const [selectedT2, setSelectedT2] = useState(0)
 
   useEffect(() => {
-    fetch(`/api/scrim-stats?mapId=${mapId}&tab=compare`)
-      .then((r) => r.json())
-      .then((d) => setData(d))
+    Promise.all([
+      fetch(`/api/scrim-stats?mapId=${mapId}&tab=compare`).then((r) => r.json()),
+      loadHeroPortraits(),
+    ])
+      .then(([d]) => setData(d))
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [mapId])
@@ -85,93 +227,182 @@ export default function CompareTab({ mapId }: { mapId: string }) {
   if (loading) return <div style={{ padding: '40px', textAlign: 'center', color: TEXT_SECONDARY }}>Loading comparison…</div>
   if (!data) return <div style={{ padding: '40px', textAlign: 'center', color: RED }}>Failed to load compare data</div>
 
-  // Find max values across all players for consistent bar scaling
-  const allPlayers = [...data.team1Players, ...data.team2Players]
-  const maxElims = Math.max(...allPlayers.map(p => p.eliminations), 1)
-  const maxDeaths = Math.max(...allPlayers.map(p => p.deaths), 1)
-  const maxDamage = Math.max(...allPlayers.map(p => p.heroDamage), 1)
-  const maxHealing = Math.max(...allPlayers.map(p => p.healingDealt), 1)
+  const t1Player = data.team1Players[selectedT1]
+  const t2Player = data.team2Players[selectedT2]
 
-  const renderPlayerCard = (player: ComparePlayer, color: string, index: number) => (
-    <div key={`${player.name}-${player.hero}-${index}`} style={{
-      ...CARD_STYLE,
-      padding: '16px 20px',
-    }}>
-      <div style={{ marginBottom: '12px' }}>
-        <div style={{ fontWeight: 700, fontSize: '16px', color: TEXT_PRIMARY }}>{player.name}</div>
-        <div style={{ fontSize: '12px', color: TEXT_SECONDARY, marginTop: '2px' }}>
-          {player.hero} · {toTimestamp(player.timePlayed)}
+  const renderPlayerStats = (player: ComparePlayer | undefined, teamColor: string) => {
+    if (!player) {
+      return <div style={{ padding: '40px', textAlign: 'center', color: TEXT_DIM }}>No player data</div>
+    }
+
+    const tp = player.timePlayed
+    const kdRatio = player.deaths > 0 ? (player.eliminations / player.deaths).toFixed(2) : player.eliminations.toString()
+
+    return (
+      <div>
+        {/* Hero header */}
+        <div
+          style={{
+            background: 'rgba(0, 0, 0, 0.05)',
+            backdropFilter: 'blur(6px)',
+            borderRadius: '10px',
+            border: `1px solid ${teamColor}18`,
+            padding: '16px 20px',
+            marginBottom: '12px',
+            display: 'flex',
+            gap: '16px',
+            alignItems: 'center',
+          }}
+        >
+          <HeroPortrait hero={player.hero} teamColor={teamColor} />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: '13px', color: TEXT_DIM, marginBottom: '4px' }}>Player Statistics</div>
+            <div style={{ fontSize: '22px', fontWeight: 700, color: TEXT_PRIMARY, marginBottom: '2px' }}>
+              {player.hero}
+            </div>
+            <div style={{ fontSize: '13px', color: TEXT_SECONDARY }}>
+              K/D Ratio: <span style={{ color: teamColor, fontWeight: 600 }}>{kdRatio}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats grid — 2-column layout matching parsertime */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+          <StatCard
+            label="Time Played"
+            value={`${formatMinutes(tp)} min`}
+            sub={`100% of match time`}
+            accentColor={CYAN}
+            icon="⏱"
+          />
+          <StatCard
+            label="Eliminations"
+            value={`${player.eliminations} Elims`}
+            sub={`${per10(player.eliminations, tp)} elims per 10 min`}
+            accentColor={CYAN}
+            icon="🎯"
+          />
+          <StatCard
+            label="Deaths"
+            value={`${player.deaths} Deaths`}
+            sub={`${per10(player.deaths, tp)} deaths per 10 min`}
+            accentColor={RED}
+            icon="💀"
+          />
+          <StatCard
+            label="Ultimates Used"
+            value={`${player.ultimatesUsed} Ults`}
+            sub={`${per10(player.ultimatesUsed, tp)} ults per 10 min`}
+            accentColor={PURPLE}
+            icon="⚡"
+          />
+          <StatCard
+            label="Hero Damage Dealt"
+            value={`${formatBigNumber(player.heroDamage)} Dmg`}
+            sub={`${formatBigNumber(Number(per10(player.heroDamage, tp)))} dmg per 10 min`}
+            accentColor={AMBER}
+            icon="💥"
+          />
+          <StatCard
+            label="Healing Dealt"
+            value={`${formatBigNumber(player.healingDealt)} Heal`}
+            sub={`${formatBigNumber(Number(per10(player.healingDealt, tp)))} heal per 10 min`}
+            accentColor={GREEN}
+            icon="💚"
+          />
+          <StatCard
+            label="Final Blows"
+            value={`${player.finalBlows} Final Blows`}
+            sub={`${per10(player.finalBlows, tp)} per 10 min`}
+            accentColor={CYAN}
+            icon="🗡"
+          />
+          <StatCard
+            label="Solo Kills"
+            value={`${player.soloKills} Solo Kill${player.soloKills !== 1 ? 's' : ''}`}
+            sub={`${per10(player.soloKills, tp)} per 10 min`}
+            accentColor={PURPLE}
+            icon="✦"
+          />
+          <StatCard
+            label="Damage Blocked"
+            value={`${formatBigNumber(player.damageBlocked)} Blocked`}
+            sub={`${formatBigNumber(Number(per10(player.damageBlocked, tp)))} per 10 min`}
+            accentColor={CYAN}
+            icon="🛡"
+          />
+          <StatCard
+            label="Damage Taken"
+            value={`${formatBigNumber(player.damageTaken)} Taken`}
+            sub={`${formatBigNumber(Number(per10(player.damageTaken, tp)))} per 10 min`}
+            accentColor={RED}
+            icon="🔥"
+          />
         </div>
       </div>
-
-      <StatBar label="Eliminations" value={player.eliminations} maxValue={maxElims} color={color} />
-      <StatBar label="Deaths" value={player.deaths} maxValue={maxDeaths} color={RED} />
-      <StatBar label="Hero Damage" value={player.heroDamage} maxValue={maxDamage} color={color} />
-      <StatBar label="Healing Dealt" value={player.healingDealt} maxValue={maxHealing} color={GREEN} />
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginTop: '12px', paddingTop: '12px', borderTop: `1px solid ${BORDER}` }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '16px', fontWeight: 700, color: TEXT_PRIMARY }}>{player.finalBlows}</div>
-          <div style={{ fontSize: '9px', color: TEXT_DIM, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Final Blows</div>
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '16px', fontWeight: 700, color: TEXT_PRIMARY }}>{player.soloKills}</div>
-          <div style={{ fontSize: '9px', color: TEXT_DIM, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Solo Kills</div>
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '16px', fontWeight: 700, color: TEXT_PRIMARY }}>{player.assists}</div>
-          <div style={{ fontSize: '9px', color: TEXT_DIM, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Assists</div>
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '16px', fontWeight: 700, color: TEXT_PRIMARY }}>{player.ultimatesUsed}</div>
-          <div style={{ fontSize: '9px', color: TEXT_DIM, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Ults Used</div>
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '16px', fontWeight: 700, color: TEXT_PRIMARY }}>{player.criticalHits}</div>
-          <div style={{ fontSize: '9px', color: TEXT_DIM, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Crits</div>
-        </div>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '16px', fontWeight: 700, color: TEXT_PRIMARY }}>{(player.weaponAccuracy).toFixed(0)}%</div>
-          <div style={{ fontSize: '9px', color: TEXT_DIM, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Accuracy</div>
-        </div>
-      </div>
-    </div>
-  )
+    )
+  }
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-      {/* Team 1 */}
+      {/* ── Team 1 ── */}
       <div>
-        <div style={{
-          fontWeight: 700,
-          fontSize: '16px',
-          color: GREEN,
-          marginBottom: '14px',
-          paddingBottom: '8px',
-          borderBottom: `2px solid ${GREEN}`,
-        }}>
+        <div
+          style={{
+            fontWeight: 700,
+            fontSize: '14px',
+            color: GREEN,
+            marginBottom: '10px',
+            textShadow: `0 0 12px ${GREEN}44`,
+          }}
+        >
           {data.teams.team1}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {data.team1Players.map((p, i) => renderPlayerCard(p, CYAN, i))}
+
+        {/* Player tabs */}
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '14px' }}>
+          {data.team1Players.map((p, i) => (
+            <PlayerTab
+              key={`${p.name}-${p.hero}-${i}`}
+              name={p.name}
+              isActive={selectedT1 === i}
+              teamColor={GREEN}
+              onClick={() => setSelectedT1(i)}
+            />
+          ))}
         </div>
+
+        {renderPlayerStats(t1Player, GREEN)}
       </div>
 
-      {/* Team 2 */}
+      {/* ── Team 2 ── */}
       <div>
-        <div style={{
-          fontWeight: 700,
-          fontSize: '16px',
-          color: RED,
-          marginBottom: '14px',
-          paddingBottom: '8px',
-          borderBottom: `2px solid ${RED}`,
-        }}>
+        <div
+          style={{
+            fontWeight: 700,
+            fontSize: '14px',
+            color: RED,
+            marginBottom: '10px',
+            textShadow: `0 0 12px ${RED}44`,
+          }}
+        >
           {data.teams.team2}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {data.team2Players.map((p, i) => renderPlayerCard(p, RED, i))}
+
+        {/* Player tabs */}
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '14px' }}>
+          {data.team2Players.map((p, i) => (
+            <PlayerTab
+              key={`${p.name}-${p.hero}-${i}`}
+              name={p.name}
+              isActive={selectedT2 === i}
+              teamColor={RED}
+              onClick={() => setSelectedT2(i)}
+            />
+          ))}
         </div>
+
+        {renderPlayerStats(t2Player, RED)}
       </div>
     </div>
   )
