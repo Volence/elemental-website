@@ -390,7 +390,7 @@ async function getPlayerDetail(playerName: string) {
         avgFirstDeathPct: advCount > 0 ? round(heroAdvanced.reduce((a, h) => a + (h.firstDeathPercentage ?? 0), 0) / advCount) : 0,
         avgUltChargeTime: advCount > 0 ? round(heroAdvanced.reduce((a, h) => a + (h.averageUltChargeTime ?? 0), 0) / advCount) : 0,
         avgKillsPerUlt: advCount > 0 ? round(heroAdvanced.reduce((a, h) => a + (h.killsPerUltimate ?? 0), 0) / advCount) : 0,
-        avgDroughtTime: advCount > 0 ? round(heroAdvanced.reduce((a, h) => a + (h.droughtTime ?? 0), 0) / advCount) : 0,
+        avgUltHoldTime: advCount > 0 ? round(heroAdvanced.reduce((a, h) => a + (h.averageTimeToUseUlt ?? 0), 0) / advCount) : 0,
       }
     })
     .sort((a, b) => b.totalTime - a.totalTime)

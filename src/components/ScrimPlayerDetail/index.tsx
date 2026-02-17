@@ -66,7 +66,7 @@ type HeroPoolEntry = {
   avgFirstDeathPct: number
   avgUltChargeTime: number
   avgKillsPerUlt: number
-  avgDroughtTime: number
+  avgUltHoldTime: number
 }
 
 type MapEntry = {
@@ -652,7 +652,7 @@ function HeroDetailSection({ hero: h, color, isExpanded, onToggle }: {
               { label: 'Ults Used', value: String(h.ultimatesUsed), sub: `${formatDecimal(h.ultsPer10)} /10` },
               { label: 'Avg Charge Time', value: `${h.avgUltChargeTime}s` },
               { label: 'Kills / Ult', value: formatDecimal(h.avgKillsPerUlt) },
-              { label: 'Drought', value: `${h.avgDroughtTime}s` },
+              { label: 'Avg Hold Time', value: `${h.avgUltHoldTime}s`, sub: 'Charged → used' },
             ]} />
 
             <StatGroupCard title="🎯 Accuracy" color={CYAN} stats={[
