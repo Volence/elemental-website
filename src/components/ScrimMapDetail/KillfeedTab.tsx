@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { getHeroIconUrl, formatAbility, loadHeroPortraits } from '@/lib/scrim-parser/heroIcons'
 
 // ── Design tokens (shared) ──
 const CYAN = '#06b6d4'
@@ -25,6 +26,54 @@ const LABEL_STYLE: React.CSSProperties = {
   textTransform: 'uppercase',
   letterSpacing: '1px',
   color: TEXT_SECONDARY,
+}
+
+// ── Hero Icon Component ──
+function HeroIcon({ hero, teamColor }: { hero: string; teamColor: string }) {
+  const [failed, setFailed] = useState(false)
+  const size = 24
+  const url = getHeroIconUrl(hero)
+
+  if (failed || !url) {
+    // Fallback: colored square with first letter
+    return (
+      <div
+        title={hero}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: '4px',
+          background: `${teamColor}22`,
+          border: `1px solid ${teamColor}44`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '11px',
+          fontWeight: 700,
+          color: teamColor,
+          flexShrink: 0,
+        }}
+      >
+        {hero.charAt(0)}
+      </div>
+    )
+  }
+
+  return (
+    <img
+      src={url}
+      alt={hero}
+      title={hero}
+      width={size}
+      height={size}
+      onError={() => setFailed(true)}
+      style={{
+        borderRadius: '4px',
+        flexShrink: 0,
+        objectFit: 'cover',
+      }}
+    />
+  )
 }
 
 // ── Types ──
@@ -73,9 +122,11 @@ export default function KillfeedTab({ mapId }: { mapId: string }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`/api/scrim-stats?mapId=${mapId}&tab=killfeed`)
-      .then((r) => r.json())
-      .then((d) => setData(d))
+    Promise.all([
+      fetch(`/api/scrim-stats?mapId=${mapId}&tab=killfeed`).then((r) => r.json()),
+      loadHeroPortraits(),
+    ])
+      .then(([d]) => setData(d))
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [mapId])
@@ -142,44 +193,47 @@ export default function KillfeedTab({ mapId }: { mapId: string }) {
                 </tr>
               </thead>
               <tbody>
-                {fight.kills.map((kill, ki) => (
-                  <tr key={ki} style={{ borderBottom: `1px solid ${BORDER}`, transition: 'background 0.15s' }}>
-                    <td style={{ padding: '10px 14px', fontFamily: 'monospace', fontSize: '12px', color: TEXT_DIM }}>
-                      {kill.time.toFixed(2)} ({toTimestamp(kill.time)})
-                    </td>
-                    <td style={{ padding: '10px 14px' }}>
-                      <span style={{ fontWeight: 600, color: kill.attackerTeam === data.teams.team1 ? GREEN : RED }}>
-                        {kill.attackerName}
-                      </span>
-                      <span style={{ color: TEXT_DIM, fontSize: '11px', margin: '0 6px' }}>
-                        ({kill.attackerHero})
-                      </span>
-                      <span style={{ color: TEXT_DIM, margin: '0 6px' }}>
-                        {kill.ability === 'Resurrect' ? '💚' : '→'}
-                      </span>
-                      <span style={{ fontWeight: 600, color: kill.victimTeam === data.teams.team1 ? GREEN : RED }}>
-                        {kill.victimName}
-                      </span>
-                      <span style={{ color: TEXT_DIM, fontSize: '11px', margin: '0 6px' }}>
-                        ({kill.victimHero})
-                      </span>
-                    </td>
-                    <td style={{ padding: '10px 14px', color: TEXT_SECONDARY, fontSize: '12px' }}>
-                      {kill.ability}
-                      {kill.isCritical && <span style={{ color: '#f59e0b', marginLeft: '4px' }}>💥</span>}
-                      {kill.isEnvironmental && <span style={{ color: CYAN, marginLeft: '4px' }}>🌊</span>}
-                    </td>
-                    <td style={{ padding: '10px 14px', textAlign: 'right', color: TEXT_DIM, fontSize: '12px' }}>
-                      {ki === 0 ? toTimestamp(fight.start) : ''}
-                    </td>
-                    <td style={{ padding: '10px 14px', textAlign: 'right', color: TEXT_DIM, fontSize: '12px' }}>
-                      {ki === 0 ? toTimestamp(fight.end) : ''}
-                    </td>
-                    <td style={{ padding: '10px 14px', textAlign: 'right', fontWeight: 600, fontSize: '12px', color: fight.winner === data.teams.team1 ? GREEN : fight.winner === data.teams.team2 ? RED : TEXT_DIM }}>
-                      {ki === 0 ? fight.winner : ''}
-                    </td>
-                  </tr>
-                ))}
+                {fight.kills.map((kill, ki) => {
+                  const attackerColor = kill.attackerTeam === data.teams.team1 ? GREEN : RED
+                  const victimColor = kill.victimTeam === data.teams.team1 ? GREEN : RED
+
+                  return (
+                    <tr key={ki} style={{ borderBottom: `1px solid ${BORDER}`, transition: 'background 0.15s' }}>
+                      <td style={{ padding: '10px 14px', fontFamily: 'monospace', fontSize: '12px', color: TEXT_DIM }}>
+                        {kill.time.toFixed(2)} ({toTimestamp(kill.time)})
+                      </td>
+                      <td style={{ padding: '10px 14px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'nowrap' }}>
+                          <HeroIcon hero={kill.attackerHero} teamColor={attackerColor} />
+                          <span style={{ fontWeight: 600, color: attackerColor }}>
+                            {kill.attackerName}
+                          </span>
+                          <span style={{ color: TEXT_DIM, margin: '0 2px' }}>
+                            {kill.ability === 'Resurrect' ? '💚' : '→'}
+                          </span>
+                          <HeroIcon hero={kill.victimHero} teamColor={victimColor} />
+                          <span style={{ fontWeight: 600, color: victimColor }}>
+                            {kill.victimName}
+                          </span>
+                        </div>
+                      </td>
+                      <td style={{ padding: '10px 14px', color: TEXT_SECONDARY, fontSize: '12px' }}>
+                        {formatAbility(kill.ability)}
+                        {kill.isCritical && <span style={{ color: '#f59e0b', marginLeft: '4px' }}>💥</span>}
+                        {kill.isEnvironmental && <span style={{ color: CYAN, marginLeft: '4px' }}>🌊</span>}
+                      </td>
+                      <td style={{ padding: '10px 14px', textAlign: 'right', color: TEXT_DIM, fontSize: '12px' }}>
+                        {ki === 0 ? toTimestamp(fight.start) : ''}
+                      </td>
+                      <td style={{ padding: '10px 14px', textAlign: 'right', color: TEXT_DIM, fontSize: '12px' }}>
+                        {ki === 0 ? toTimestamp(fight.end) : ''}
+                      </td>
+                      <td style={{ padding: '10px 14px', textAlign: 'right', fontWeight: 600, fontSize: '12px', color: fight.winner === data.teams.team1 ? GREEN : fight.winner === data.teams.team2 ? RED : TEXT_DIM }}>
+                        {ki === 0 ? fight.winner : ''}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
             {/* Fight separator */}
