@@ -303,7 +303,11 @@ async function getKillfeedData(mapId: number) {
 }
 
 async function getEventsData(mapId: number) {
-  const [matchStart, roundStarts, roundEnds, objectivesCaptured, ultStarts, ultEnds] = await Promise.all([
+  const [
+    matchStart, roundStarts, roundEnds, objectivesCaptured,
+    ultStarts, ultEnds, kills, mercyRezzes, pointProgress, defensiveAssists,
+    fights,
+  ] = await Promise.all([
     prisma.scrimMatchStart.findFirst({
       where: { mapDataId: mapId },
       select: { team_1_name: true, team_2_name: true, map_name: true, map_type: true, match_time: true },
@@ -342,14 +346,37 @@ async function getEventsData(mapId: number) {
         ultimate_id: true,
       },
     }),
+    prisma.scrimKill.findMany({
+      where: { mapDataId: mapId },
+      orderBy: { match_time: 'asc' },
+    }),
+    prisma.scrimMercyRez.findMany({
+      where: { mapDataId: mapId },
+      orderBy: { match_time: 'asc' },
+    }),
+    prisma.scrimPointProgress.findMany({
+      where: { mapDataId: mapId },
+      orderBy: { match_time: 'asc' },
+    }),
+    prisma.scrimDefensiveAssist.findMany({
+      where: { mapDataId: mapId },
+      orderBy: { match_time: 'asc' },
+    }),
+    groupKillsIntoFights(mapId),
   ])
 
   if (!matchStart) {
     return NextResponse.json({ error: 'Map not found' }, { status: 404 })
   }
 
+  const team1 = matchStart.team_1_name ?? 'Team 1'
+  const team2 = matchStart.team_2_name ?? 'Team 2'
+
   // Build match events timeline
-  type MatchEvent = { time: number; type: string; description: string; team?: string }
+  type MatchEvent = {
+    time: number; type: string; description: string;
+    team?: string; player?: string; hero?: string; killCount?: number
+  }
   const matchEvents: MatchEvent[] = []
 
   // Match start
@@ -389,30 +416,147 @@ async function getEventsData(mapId: number) {
     })
   }
 
+  // ── Multikills: group kills by attacker within each fight ──
+  for (let fi = 0; fi < fights.length; fi++) {
+    const fight = fights[fi]
+    const attackerKills = new Map<string, { team: string; hero: string; count: number }>()
+    for (const k of fight.kills) {
+      if (k.event_ability === 'Resurrect') continue
+      const key = k.attacker_name
+      const existing = attackerKills.get(key)
+      if (existing) {
+        existing.count++
+      } else {
+        attackerKills.set(key, { team: k.attacker_team, hero: k.attacker_hero, count: 1 })
+      }
+    }
+    for (const [name, info] of attackerKills) {
+      if (info.count >= 3) {
+        matchEvents.push({
+          time: round(fight.start),
+          type: 'multikill',
+          description: `During fight ${fi + 1}, ${name} got a multikill, killing ${info.count} players.`,
+          team: info.team,
+          player: name,
+          hero: info.hero,
+          killCount: info.count,
+        })
+      }
+    }
+  }
+
+  // ── Ultimate kills: kills that occurred during an ult window ──
+  for (const us of ultStarts) {
+    const ue = ultEnds.find(e =>
+      e.ultimate_id === us.ultimate_id && e.player_name === us.player_name
+    )
+    const endTime = ue?.match_time ?? us.match_time + 10
+    const ultKills = kills.filter(k =>
+      k.attacker_name === us.player_name &&
+      k.match_time >= us.match_time &&
+      k.match_time <= endTime
+    )
+    if (ultKills.length > 0) {
+      matchEvents.push({
+        time: round(us.match_time),
+        type: 'ultimate_kill',
+        description: `${us.player_name} killed ${ultKills.length} player${ultKills.length !== 1 ? 's' : ''} with/during their ultimate.`,
+        team: us.player_team,
+        player: us.player_name,
+        hero: us.player_hero,
+        killCount: ultKills.length,
+      })
+    }
+  }
+
+  // ── Mercy rezzes ──
+  for (const rez of mercyRezzes) {
+    matchEvents.push({
+      time: round(rez.match_time),
+      type: 'mercy_rez',
+      description: `${rez.resurrecter_player} resurrected ${rez.resurrectee_player}.`,
+      team: rez.resurrecter_team,
+      player: rez.resurrecter_player,
+      hero: rez.resurrecter_hero,
+    })
+  }
+
+  // ── Point control changes ──
+  // Detect when capturing team changes by tracking consecutive entries
+  let lastCapturingTeam = ''
+  for (const pp of pointProgress) {
+    if (pp.capturing_team && pp.capturing_team !== lastCapturingTeam) {
+      matchEvents.push({
+        time: round(pp.match_time),
+        type: 'point_control',
+        description: `${pp.capturing_team} took control of the point.`,
+        team: pp.capturing_team,
+      })
+      lastCapturingTeam = pp.capturing_team
+    }
+  }
+
   matchEvents.sort((a, b) => a.time - b.time)
 
-  // Build ultimates timeline
-  const ultimates = ultStarts.map(us => ({
-    time: round(us.match_time),
-    team: us.player_team,
-    player: us.player_name,
-    hero: us.player_hero,
-    ultimateId: us.ultimate_id,
-    // Find matching end event for duration
-    endTime: ultEnds.find(ue =>
-      ue.ultimate_id === us.ultimate_id &&
-      ue.player_name === us.player_name
-    )?.match_time ? round(ultEnds.find(ue =>
-      ue.ultimate_id === us.ultimate_id &&
-      ue.player_name === us.player_name
-    )!.match_time) : null,
+  // ── Build enriched ultimates timeline ──
+  // Determine round boundaries for round grouping
+  const roundBoundaries = roundStarts.map((rs, i) => ({
+    roundNumber: rs.round_number,
+    start: rs.match_time,
+    end: roundEnds[i]?.match_time ?? Infinity,
   }))
 
+  const ultimates = ultStarts.map(us => {
+    const ue = ultEnds.find(e =>
+      e.ultimate_id === us.ultimate_id && e.player_name === us.player_name
+    )
+    const endTime = ue?.match_time ?? null
+
+    // Kills during ult window
+    const ultWindow = endTime ?? us.match_time + 10
+    const killsDuringUlt = kills.filter(k =>
+      k.attacker_name === us.player_name &&
+      k.match_time >= us.match_time &&
+      k.match_time <= ultWindow
+    ).length
+
+    // Defensive assists (saves) during ult window
+    const savesDuringUlt = defensiveAssists.filter(da =>
+      da.player_name === us.player_name &&
+      da.match_time >= us.match_time &&
+      da.match_time <= ultWindow
+    ).length
+
+    // Determine round number
+    const roundNum = roundBoundaries.find(rb =>
+      us.match_time >= rb.start && us.match_time <= rb.end
+    )?.roundNumber ?? null
+
+    // Determine fight number
+    let fightNum: number | null = null
+    for (let fi = 0; fi < fights.length; fi++) {
+      if (us.match_time >= fights[fi].start - 2 && us.match_time <= fights[fi].end + 2) {
+        fightNum = fi + 1
+        break
+      }
+    }
+
+    return {
+      time: round(us.match_time),
+      team: us.player_team,
+      player: us.player_name,
+      hero: us.player_hero,
+      ultimateId: us.ultimate_id,
+      endTime: endTime ? round(endTime) : null,
+      killsDuringUlt,
+      savesDuringUlt,
+      roundNumber: roundNum,
+      fightNumber: fightNum,
+    }
+  })
+
   return NextResponse.json({
-    teams: {
-      team1: matchStart.team_1_name ?? 'Team 1',
-      team2: matchStart.team_2_name ?? 'Team 2',
-    },
+    teams: { team1, team2 },
     matchEvents,
     ultimates,
   })
