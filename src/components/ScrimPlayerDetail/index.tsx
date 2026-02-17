@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 
 // ── Types ──
 
@@ -23,6 +23,7 @@ type CareerStats = {
 
 type HeroPoolEntry = {
   hero: string
+  portrait: string | null
   mapsPlayed: number
   totalTime: number
   totalElims: number
@@ -102,25 +103,26 @@ const AMBER = '#f59e0b'
 const BG_CARD = 'rgba(15, 15, 30, 0.7)'
 const BG_INNER = 'rgba(20, 20, 40, 0.5)'
 const BORDER = 'rgba(255, 255, 255, 0.06)'
+const BORDER_GLOW = 'rgba(255, 255, 255, 0.08)'
 const TEXT_PRIMARY = '#f0f0f5'
 const TEXT_SECONDARY = '#71717a'
 const TEXT_DIM = '#52525b'
 
 const CARD_STYLE: React.CSSProperties = {
   background: BG_CARD,
-  backdropFilter: 'blur(12px)',
-  WebkitBackdropFilter: 'blur(12px)',
+  backdropFilter: 'blur(16px)',
+  WebkitBackdropFilter: 'blur(16px)',
   border: `1px solid ${BORDER}`,
-  borderRadius: '12px',
+  borderRadius: '14px',
   padding: '20px',
-  boxShadow: '0 0 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.03)',
+  boxShadow: '0 4px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
 }
 
 const LABEL_STYLE: React.CSSProperties = {
   fontSize: '11px',
   color: TEXT_SECONDARY,
   textTransform: 'uppercase' as const,
-  letterSpacing: '1px',
+  letterSpacing: '1.2px',
   fontWeight: 600,
   marginBottom: '8px',
 }
@@ -146,6 +148,26 @@ function formatPct(n: number): string {
   return `${n.toFixed(1)}%`
 }
 
+// ── Inject global keyframes for the glow pulse animation ──
+const STYLE_ID = 'scrim-player-detail-glow-styles'
+function ensureGlobalStyles() {
+  if (typeof document === 'undefined') return
+  if (document.getElementById(STYLE_ID)) return
+  const style = document.createElement('style')
+  style.id = STYLE_ID
+  style.textContent = `
+    @keyframes glowPulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  `
+  document.head.appendChild(style)
+}
+
 /**
  * Admin view — individual player analytics dashboard.
  * Accessible at /admin/scrim-player?player=Name.
@@ -159,6 +181,7 @@ export default function ScrimPlayerDetailView() {
   const [expandedHero, setExpandedHero] = useState<string | null>(null)
 
   useEffect(() => {
+    ensureGlobalStyles()
     const params = new URLSearchParams(window.location.search)
     const player = params.get('player')
     if (!player) {
@@ -173,7 +196,6 @@ export default function ScrimPlayerDetailView() {
         if (d.error) setError(d.error)
         else {
           setData(d)
-          // Auto-expand the most played hero
           if (d.heroPool?.length > 0) setExpandedHero(d.heroPool[0].hero)
         }
       })
@@ -224,16 +246,19 @@ export default function ScrimPlayerDetailView() {
     <div style={{ padding: '40px', maxWidth: '1600px', margin: '0 auto', fontFamily: "'Inter', -apple-system, sans-serif" }}>
       {/* Header */}
       <div style={{ marginBottom: '32px' }}>
-        <a href="/admin/scrim-players" style={{ color: TEXT_SECONDARY, fontSize: '12px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+        <a href="/admin/scrim-players" style={{ color: TEXT_SECONDARY, fontSize: '12px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px', transition: 'color 0.2s' }}>
           ← Back to players
         </a>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '16px', marginTop: '12px' }}>
-          <h1 style={{ fontSize: '32px', fontWeight: 800, margin: 0, color: TEXT_PRIMARY, letterSpacing: '-0.5px', textShadow: `0 0 30px ${CYAN}22` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '12px' }}>
+          <h1 style={{ fontSize: '32px', fontWeight: 800, margin: 0, color: TEXT_PRIMARY, letterSpacing: '-0.5px', textShadow: `0 0 40px ${CYAN}33` }}>
             {data.player.name}
           </h1>
           <span style={{
             fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px',
-            padding: '3px 10px', borderRadius: '4px', background: CYAN_DIM, color: CYAN, boxShadow: `0 0 8px ${CYAN}22`,
+            padding: '3px 10px', borderRadius: '6px',
+            background: `linear-gradient(135deg, ${CYAN_DIM}, rgba(6, 182, 212, 0.06))`,
+            color: CYAN, boxShadow: `0 0 12px ${CYAN}22, inset 0 1px 0 rgba(255,255,255,0.05)`,
+            border: `1px solid ${CYAN}22`,
           }}>
             {data.player.mostPlayedHero}
           </span>
@@ -241,11 +266,11 @@ export default function ScrimPlayerDetailView() {
         <p style={{ color: TEXT_SECONDARY, fontSize: '14px', marginTop: '6px' }}>
           {data.player.team} · {data.player.mapsPlayed} map{data.player.mapsPlayed !== 1 ? 's' : ''} played
         </p>
-        <div style={{ width: '60px', height: '3px', background: `linear-gradient(90deg, ${CYAN}, transparent)`, borderRadius: '2px', marginTop: '8px' }} />
+        <div style={{ width: '60px', height: '3px', background: `linear-gradient(90deg, ${CYAN}, ${CYAN}00)`, borderRadius: '2px', marginTop: '8px' }} />
       </div>
 
       {/* Career Summary Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '32px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px', marginBottom: '32px' }}>
         <SummaryCard label="K/D Ratio" value={kd} sub={`${data.career.eliminations} E / ${data.career.deaths} D`} accentColor={CYAN} icon="⚔️" />
         <SummaryCard label="Total Damage" value={formatNumber(data.career.damage)} sub={`${formatNumber(Math.round(data.career.damage / data.player.mapsPlayed))} avg per map`} accentColor={RED} icon="💥" />
         <SummaryCard label="Total Healing" value={formatNumber(data.career.healing)} sub={`${formatNumber(Math.round(data.career.healing / data.player.mapsPlayed))} avg per map`} accentColor={GREEN} icon="💚" />
@@ -253,11 +278,11 @@ export default function ScrimPlayerDetailView() {
       </div>
 
       {/* Hero Pool — Playtime Distribution */}
-      <div style={{ ...CARD_STYLE, marginBottom: '28px' }}>
+      <div style={{ ...CARD_STYLE, marginBottom: '20px' }}>
         <div style={{ fontWeight: 700, fontSize: '15px', color: TEXT_PRIMARY, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          Hero Pool
+          <span style={{ textShadow: `0 0 20px ${CYAN}22` }}>Hero Pool</span>
           <span style={{ fontSize: '11px', color: TEXT_DIM, fontWeight: 400 }}>
-            {data.heroPool.length} hero{data.heroPool.length !== 1 ? 'es' : ''} · Click a hero to expand details
+            {data.heroPool.length} hero{data.heroPool.length !== 1 ? 'es' : ''} · Click a hero to expand
           </span>
         </div>
         <HeroPlaytimeChart heroPool={data.heroPool} expandedHero={expandedHero} onHeroClick={setExpandedHero} />
@@ -279,10 +304,10 @@ export default function ScrimPlayerDetailView() {
       })}
 
       {/* Map History */}
-      <div style={{ ...CARD_STYLE, padding: 0, overflow: 'hidden', marginTop: '28px' }}>
+      <div style={{ ...CARD_STYLE, padding: 0, overflow: 'hidden', marginTop: '20px' }}>
         <div style={{ padding: '16px 20px 10px', fontWeight: 700, fontSize: '15px', color: TEXT_PRIMARY, borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span>Map History</span>
-          <span style={{ fontWeight: 400, fontSize: '12px', color: TEXT_DIM }}>Click map to view full details</span>
+          <span style={{ textShadow: `0 0 20px ${CYAN}22` }}>Map History</span>
+          <span style={{ fontWeight: 400, fontSize: '12px', color: TEXT_DIM }}>Click to view full details</span>
         </div>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', minWidth: '1100px' }}>
@@ -312,7 +337,8 @@ export default function ScrimPlayerDetailView() {
                       fontWeight: mapSortKey === col.key ? 700 : 500,
                       color: mapSortKey === col.key ? CYAN : TEXT_SECONDARY,
                       fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px',
-                      whiteSpace: 'nowrap', userSelect: 'none', transition: 'color 0.15s',
+                      whiteSpace: 'nowrap', userSelect: 'none', transition: 'color 0.2s',
+                      textShadow: mapSortKey === col.key ? `0 0 8px ${CYAN}44` : 'none',
                     }}
                   >
                     {col.label}
@@ -326,11 +352,11 @@ export default function ScrimPlayerDetailView() {
                 <tr
                   key={m.mapDataId}
                   onClick={() => window.location.href = `/admin/scrim-map?mapId=${m.mapDataId}`}
-                  style={{ cursor: 'pointer', borderBottom: `1px solid ${BORDER}`, transition: 'background 0.15s' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(6, 182, 212, 0.04)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  style={{ cursor: 'pointer', borderBottom: `1px solid ${BORDER}`, transition: 'background 0.2s, box-shadow 0.2s' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(6, 182, 212, 0.04)'; e.currentTarget.style.boxShadow = `inset 3px 0 0 ${CYAN}44` }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.boxShadow = 'none' }}
                 >
-                  <td style={{ padding: '10px 12px', fontWeight: 600, color: CYAN, whiteSpace: 'nowrap' }}>
+                  <td style={{ padding: '10px 12px', fontWeight: 600, color: CYAN, whiteSpace: 'nowrap', textShadow: `0 0 8px ${CYAN}22` }}>
                     {m.mapName}
                     <span style={{ fontSize: '10px', color: TEXT_DIM, marginLeft: '6px', fontWeight: 400 }}>{m.mapType}</span>
                   </td>
@@ -359,6 +385,105 @@ export default function ScrimPlayerDetailView() {
 
 // ── Sub-components ──
 
+/** Animated collapse wrapper — uses max-height transition */
+function AnimatedCollapse({ isOpen, children }: { isOpen: boolean; children: React.ReactNode }) {
+  const contentRef = useRef<HTMLDivElement>(null)
+  const [maxHeight, setMaxHeight] = useState<string>(isOpen ? 'none' : '0px')
+  const [opacity, setOpacity] = useState(isOpen ? 1 : 0)
+
+  useEffect(() => {
+    if (isOpen) {
+      // Measure content then animate in
+      const el = contentRef.current
+      if (el) {
+        const height = el.scrollHeight
+        setMaxHeight(`${height}px`)
+        setOpacity(1)
+        // After transition, remove max-height constraint so content can resize
+        const timer = setTimeout(() => setMaxHeight('none'), 350)
+        return () => clearTimeout(timer)
+      }
+    } else {
+      // Snap to measured height first, then animate to 0
+      const el = contentRef.current
+      if (el) {
+        setMaxHeight(`${el.scrollHeight}px`)
+        // Force reflow before setting to 0
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setMaxHeight('0px')
+            setOpacity(0)
+          })
+        })
+      } else {
+        setMaxHeight('0px')
+        setOpacity(0)
+      }
+    }
+  }, [isOpen])
+
+  return (
+    <div
+      ref={contentRef}
+      style={{
+        maxHeight,
+        opacity,
+        overflow: 'hidden',
+        transition: 'max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease',
+      }}
+    >
+      {children}
+    </div>
+  )
+}
+
+/** Hero avatar with glow ring */
+function HeroAvatar({ portrait, heroName, size = 52, color }: { portrait: string | null; heroName: string; size?: number; color: string }) {
+  return (
+    <div style={{
+      width: size,
+      height: size,
+      borderRadius: '50%',
+      background: `linear-gradient(135deg, ${color}33, ${color}11)`,
+      border: `2px solid ${color}66`,
+      boxShadow: `0 0 16px ${color}33, inset 0 0 8px ${color}11`,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
+      flexShrink: 0,
+      position: 'relative',
+    }}>
+      {portrait ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={portrait}
+          alt={heroName}
+          style={{
+            width: size - 4,
+            height: size - 4,
+            borderRadius: '50%',
+            objectFit: 'cover',
+          }}
+        />
+      ) : (
+        <span style={{ fontSize: size * 0.4, color: `${color}88` }}>
+          {heroName.charAt(0)}
+        </span>
+      )}
+      {/* Glow ring animation */}
+      <div style={{
+        position: 'absolute',
+        inset: '-2px',
+        borderRadius: '50%',
+        border: `1px solid ${color}44`,
+        animation: 'glowPulse 3s ease-in-out infinite',
+        pointerEvents: 'none',
+      }} />
+    </div>
+  )
+}
+
 /** Top-level hero detail section — expanded view with full stat breakdown */
 function HeroDetailSection({ hero: h, color, isExpanded, onToggle }: {
   hero: HeroPoolEntry; color: string; isExpanded: boolean; onToggle: () => void
@@ -373,9 +498,12 @@ function HeroDetailSection({ hero: h, color, isExpanded, onToggle }: {
       overflow: 'hidden',
       marginBottom: '12px',
       borderLeft: `3px solid ${color}`,
-      transition: 'all 0.2s ease',
+      transition: 'box-shadow 0.3s ease, border-color 0.3s ease',
+      boxShadow: isExpanded
+        ? `0 4px 30px rgba(0,0,0,0.4), 0 0 30px ${color}11, inset 0 1px 0 rgba(255,255,255,0.04)`
+        : `0 4px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)`,
     }}>
-      {/* Header / Collapsed row — always visible */}
+      {/* Header — always visible */}
       <div
         onClick={onToggle}
         style={{
@@ -384,31 +512,34 @@ function HeroDetailSection({ hero: h, color, isExpanded, onToggle }: {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          transition: 'background 0.15s',
+          transition: 'background 0.2s',
           position: 'relative',
           overflow: 'hidden',
         }}
         onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
         onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
       >
-        {/* Radial glow */}
+        {/* Radial glow behind avatar */}
         <div style={{
-          position: 'absolute', top: '-30px', left: '-30px',
-          width: '150px', height: '150px',
-          background: `radial-gradient(circle, ${color}0a 0%, transparent 70%)`,
+          position: 'absolute', top: '-40px', left: '-20px',
+          width: '180px', height: '180px',
+          background: `radial-gradient(circle, ${color}0c 0%, transparent 70%)`,
           pointerEvents: 'none',
         }} />
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', position: 'relative' }}>
-          <span style={{ fontWeight: 700, fontSize: '18px', color: TEXT_PRIMARY, textShadow: `0 0 12px ${color}33` }}>
-            {h.hero}
-          </span>
-          <span style={{ fontSize: '12px', color: TEXT_DIM }}>
-            {h.mapsPlayed} map{h.mapsPlayed !== 1 ? 's' : ''} · {formatTime(h.totalTime)}
-          </span>
+          <HeroAvatar portrait={h.portrait} heroName={h.hero} size={48} color={color} />
+          <div>
+            <span style={{ fontWeight: 700, fontSize: '18px', color: TEXT_PRIMARY, textShadow: `0 0 16px ${color}33` }}>
+              {h.hero}
+            </span>
+            <div style={{ fontSize: '12px', color: TEXT_DIM, marginTop: '2px' }}>
+              {h.mapsPlayed} map{h.mapsPlayed !== 1 ? 's' : ''} · {formatTime(h.totalTime)}
+            </div>
+          </div>
         </div>
 
-        {/* Quick stats in the collapsed header */}
+        {/* Quick stats in header */}
         <div style={{ display: 'flex', gap: '24px', alignItems: 'center', position: 'relative' }}>
           <QuickStat label="K/D" value={kd} color={parseFloat(kd) >= 2 ? GREEN : parseFloat(kd) < 1 ? RED : TEXT_PRIMARY} />
           <QuickStat label="Elims" value={String(h.totalElims)} />
@@ -416,17 +547,31 @@ function HeroDetailSection({ hero: h, color, isExpanded, onToggle }: {
           <QuickStat label="Dmg" value={formatNumber(h.totalDamage)} />
           <QuickStat label="Heal" value={formatNumber(h.totalHealing)} />
           <QuickStat label="Ults" value={String(h.ultimatesUsed)} />
-          <span style={{ fontSize: '16px', color: TEXT_DIM, transition: 'transform 0.2s', transform: isExpanded ? 'rotate(180deg)' : 'none' }}>
+          <span style={{
+            fontSize: '16px', color: TEXT_DIM,
+            transition: 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+            transform: isExpanded ? 'rotate(180deg)' : 'none',
+            display: 'inline-block',
+          }}>
             ▾
           </span>
         </div>
       </div>
 
-      {/* Expanded detail area */}
-      {isExpanded && (
-        <div style={{ borderTop: `1px solid ${BORDER}`, padding: '24px' }}>
-          {/* Top row: 4 highlight cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
+      {/* Animated expanded detail area */}
+      <AnimatedCollapse isOpen={isExpanded}>
+        <div style={{ borderTop: `1px solid ${BORDER_GLOW}`, padding: '24px' }}>
+          {/* Top row: Avatar + 4 highlight cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr 1fr 1fr 1fr', gap: '14px', marginBottom: '20px', alignItems: 'stretch' }}>
+            {/* Large avatar */}
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: `radial-gradient(circle, ${color}0c 0%, transparent 70%)`,
+              borderRadius: '12px',
+              border: `1px solid ${BORDER}`,
+            }}>
+              <HeroAvatar portrait={h.portrait} heroName={h.hero} size={72} color={color} />
+            </div>
             <MiniStatCard label="Ultimates Used" value={String(h.ultimatesUsed)} sub={`${formatDecimal(h.ultsPer10)} per 10 min`} color={PURPLE} />
             <MiniStatCard label="Hero Damage Dealt" value={formatNumber(h.totalDamage)} sub={`${formatNumber(h.damagePer10)} per 10 min`} color={RED} />
             <MiniStatCard label="Final Blows" value={String(h.totalFB)} sub={`${formatDecimal(h.fbPer10)} per 10 min`} color={AMBER} />
@@ -436,16 +581,17 @@ function HeroDetailSection({ hero: h, color, isExpanded, onToggle }: {
           {/* Full stat table */}
           <div style={{
             background: BG_INNER,
-            border: `1px solid ${BORDER}`,
-            borderRadius: '8px',
+            border: `1px solid ${BORDER_GLOW}`,
+            borderRadius: '10px',
             overflow: 'hidden',
+            boxShadow: `inset 0 1px 0 rgba(255,255,255,0.02)`,
           }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
               <thead>
-                <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
-                  <th style={{ padding: '10px 16px', textAlign: 'left', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px', color: TEXT_SECONDARY, fontWeight: 600 }}>Stat</th>
-                  <th style={{ padding: '10px 16px', textAlign: 'right', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px', color: TEXT_SECONDARY, fontWeight: 600 }}>Total</th>
-                  <th style={{ padding: '10px 16px', textAlign: 'right', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px', color: TEXT_SECONDARY, fontWeight: 600 }}>Avg/10 min</th>
+                <tr style={{ borderBottom: `1px solid ${BORDER_GLOW}` }}>
+                  <th style={{ ...TH_STYLE, textAlign: 'left' }}>Stat</th>
+                  <th style={{ ...TH_STYLE, textAlign: 'right' }}>Total</th>
+                  <th style={{ ...TH_STYLE, textAlign: 'right' }}>Avg/10 min</th>
                 </tr>
               </thead>
               <tbody>
@@ -481,9 +627,18 @@ function HeroDetailSection({ hero: h, color, isExpanded, onToggle }: {
             </table>
           </div>
         </div>
-      )}
+      </AnimatedCollapse>
     </div>
   )
+}
+
+const TH_STYLE: React.CSSProperties = {
+  padding: '10px 16px',
+  fontSize: '10px',
+  textTransform: 'uppercase',
+  letterSpacing: '0.8px',
+  color: TEXT_SECONDARY,
+  fontWeight: 600,
 }
 
 /** Quick stat shown in collapsed hero header */
@@ -501,23 +656,24 @@ function MiniStatCard({ label, value, sub, color }: { label: string; value: stri
   return (
     <div style={{
       background: BG_INNER,
-      border: `1px solid ${BORDER}`,
+      border: `1px solid ${BORDER_GLOW}`,
       borderTop: `2px solid ${color}`,
-      borderRadius: '8px',
+      borderRadius: '10px',
       padding: '16px',
       position: 'relative',
       overflow: 'hidden',
+      animation: 'fadeSlideIn 0.3s ease-out',
     }}>
       <div style={{
         position: 'absolute', top: '-15px', right: '-15px',
-        width: '80px', height: '80px',
-        background: `radial-gradient(circle, ${color}08 0%, transparent 70%)`,
+        width: '90px', height: '90px',
+        background: `radial-gradient(circle, ${color}0a 0%, transparent 70%)`,
         pointerEvents: 'none',
       }} />
-      <div style={{ fontSize: '11px', color: TEXT_SECONDARY, textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600, marginBottom: '6px', position: 'relative' }}>
+      <div style={{ fontSize: '11px', color: TEXT_SECONDARY, textTransform: 'uppercase', letterSpacing: '0.8px', fontWeight: 600, marginBottom: '6px', position: 'relative' }}>
         {label}
       </div>
-      <div style={{ fontSize: '22px', fontWeight: 700, color, letterSpacing: '-0.5px', textShadow: `0 0 12px ${color}44`, position: 'relative' }}>
+      <div style={{ fontSize: '22px', fontWeight: 700, color, letterSpacing: '-0.5px', textShadow: `0 0 16px ${color}44`, position: 'relative' }}>
         {value}
       </div>
       <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '4px', position: 'relative' }}>{sub}</div>
@@ -529,7 +685,7 @@ function MiniStatCard({ label, value, sub, color }: { label: string; value: stri
 function StatTableRow({ label, total, avg }: { label: string; total: string; avg: string }) {
   return (
     <tr
-      style={{ borderBottom: `1px solid ${BORDER}`, transition: 'background 0.1s' }}
+      style={{ borderBottom: `1px solid ${BORDER}`, transition: 'background 0.15s' }}
       onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.02)')}
       onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
     >
@@ -548,19 +704,19 @@ function SummaryCard({ label, value, sub, accentColor, icon }: { label: string; 
       borderTop: `2px solid ${ac}`,
       position: 'relative',
       overflow: 'hidden',
-      boxShadow: `0 0 20px rgba(0,0,0,0.3), 0 0 30px ${ac}08`,
+      boxShadow: `0 4px 30px rgba(0,0,0,0.4), 0 0 40px ${ac}08`,
     }}>
       <div style={{
         position: 'absolute', top: '-20px', right: '-20px',
-        width: '120px', height: '120px',
-        background: `radial-gradient(circle, ${ac}0a 0%, transparent 70%)`,
+        width: '130px', height: '130px',
+        background: `radial-gradient(circle, ${ac}0c 0%, transparent 70%)`,
         pointerEvents: 'none',
       }} />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative' }}>
         <div style={LABEL_STYLE}>{label}</div>
         {icon && <span style={{ fontSize: '16px', opacity: 0.5 }}>{icon}</span>}
       </div>
-      <div style={{ fontSize: '26px', fontWeight: 700, color: ac, letterSpacing: '-0.5px', lineHeight: 1.2, textShadow: `0 0 16px ${ac}44`, position: 'relative' }}>
+      <div style={{ fontSize: '26px', fontWeight: 700, color: ac, letterSpacing: '-0.5px', lineHeight: 1.2, textShadow: `0 0 20px ${ac}44`, position: 'relative' }}>
         {value}
       </div>
       <div style={{ fontSize: '12px', color: TEXT_DIM, marginTop: '6px', position: 'relative' }}>{sub}</div>
@@ -582,10 +738,13 @@ function HeroPlaytimeChart({ heroPool, expandedHero, onHeroClick }: { heroPool: 
           <div
             key={h.hero}
             onClick={() => onHeroClick(h.hero)}
-            style={{ cursor: 'pointer', padding: '4px 0', transition: 'opacity 0.15s', opacity: expandedHero && !isSelected ? 0.5 : 1 }}
+            style={{ cursor: 'pointer', padding: '4px 0', transition: 'opacity 0.2s', opacity: expandedHero && !isSelected ? 0.45 : 1 }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '12px' }}>
-              <span style={{ color: isSelected ? color : TEXT_PRIMARY, fontWeight: 600, transition: 'color 0.15s' }}>{h.hero}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px', fontSize: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <HeroAvatar portrait={h.portrait} heroName={h.hero} size={24} color={color} />
+                <span style={{ color: isSelected ? color : TEXT_PRIMARY, fontWeight: 600, transition: 'color 0.2s', textShadow: isSelected ? `0 0 8px ${color}44` : 'none' }}>{h.hero}</span>
+              </div>
               <span style={{ color: TEXT_SECONDARY }}>{pct}% · {formatTime(h.totalTime)}</span>
             </div>
             <div style={{
@@ -595,8 +754,8 @@ function HeroPlaytimeChart({ heroPool, expandedHero, onHeroClick }: { heroPool: 
               <div style={{
                 width: `${pct}%`, height: '100%', borderRadius: '4px',
                 background: `linear-gradient(90deg, ${color}, ${color}88)`,
-                boxShadow: isSelected ? `0 0 12px ${color}66` : `0 0 4px ${color}22`,
-                transition: 'width 0.6s ease, box-shadow 0.2s',
+                boxShadow: isSelected ? `0 0 14px ${color}66` : `0 0 4px ${color}22`,
+                transition: 'width 0.6s ease, box-shadow 0.3s',
                 minWidth: pct > 0 ? '4px' : '0',
               }} />
             </div>

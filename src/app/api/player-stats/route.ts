@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { round } from '@/lib/scrim-parser/utils'
 import { calculateStats } from '@/lib/scrim-parser/calculate-stats'
+import { loadHeroPortraits, heroNameToSlug } from '@/lib/scrim-parser/heroIcons'
 
 // ────────────────────────────────────────────────────────────────────────
 // GET /api/player-stats
@@ -329,12 +330,16 @@ async function getPlayerDetail(playerName: string) {
     heroStats.set(row.player_hero, existing)
   }
 
+  // Load hero portraits for avatar URLs
+  const portraits = await loadHeroPortraits()
+
   const heroPool = [...heroStats.entries()]
     .map(([hero, s]) => {
       const mapCount = s.maps.size
       const t10 = s.time > 0 ? 600 / s.time : 0  // per-10-minute multiplier
       return {
         hero,
+        portrait: portraits.get(heroNameToSlug(hero)) ?? null,
         mapsPlayed: mapCount,
         totalTime: round(s.time),
         totalElims: s.elims,
