@@ -183,26 +183,84 @@ export default function ChartsTab({ mapId }: { mapId: string }) {
         </p>
       </div>
 
-      {/* ── Per-fight breakdown cards ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '10px', marginTop: '20px' }}>
-        {data.fights.map((fight) => {
-          const t1Kills = fight.kills.filter(k => k.attackerTeam === data.teams.team1 && k.ability !== 'Resurrect').length
-          const t2Kills = fight.kills.filter(k => k.attackerTeam === data.teams.team2 && k.ability !== 'Resurrect').length
-          return (
-            <div key={fight.fightNumber} style={{ ...CARD_STYLE, padding: '14px 16px', textAlign: 'center' }}>
-              <div style={{ fontSize: '10px', color: TEXT_DIM, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>Fight {fight.fightNumber}</div>
-              <div style={{ fontSize: '20px', fontWeight: 700 }}>
-                <span style={{ color: GREEN }}>{t1Kills}</span>
-                <span style={{ color: TEXT_DIM }}> – </span>
-                <span style={{ color: RED }}>{t2Kills}</span>
+      {/* ── Fight Momentum Strip ── */}
+      {(() => {
+        const team1 = data.teams.team1
+        const team2 = data.teams.team2
+        const t1Wins = data.fights.filter(f => f.winner === team1).length
+        const t2Wins = data.fights.filter(f => f.winner === team2).length
+        const draws = data.fights.filter(f => f.winner !== team1 && f.winner !== team2).length
+
+        return (
+          <div style={{ ...CARD_STYLE, marginTop: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <div style={{ fontWeight: 700, fontSize: '15px', color: TEXT_PRIMARY }}>
+                Fight Momentum
               </div>
-              <div style={{ fontSize: '11px', color: fight.winner === data.teams.team1 ? GREEN : fight.winner === data.teams.team2 ? RED : TEXT_DIM, fontWeight: 600, marginTop: '4px' }}>
-                {fight.winner}
+              <div style={{ display: 'flex', gap: '16px', fontSize: '13px' }}>
+                <span style={{ color: GREEN, fontWeight: 600 }}>{team1}: {t1Wins}W</span>
+                {draws > 0 && <span style={{ color: TEXT_DIM }}>{draws} Draw{draws > 1 ? 's' : ''}</span>}
+                <span style={{ color: RED, fontWeight: 600 }}>{team2}: {t2Wins}W</span>
               </div>
             </div>
-          )
-        })}
-      </div>
+
+            {/* Strip */}
+            <div style={{ display: 'flex', gap: '3px', height: '48px', borderRadius: '8px', overflow: 'hidden' }}>
+              {data.fights.map((fight) => {
+                const t1K = fight.kills.filter(k => k.attackerTeam === team1 && k.ability !== 'Resurrect').length
+                const t2K = fight.kills.filter(k => k.attackerTeam !== team1 && k.ability !== 'Resurrect').length
+                const isT1Win = fight.winner === team1
+                const isT2Win = fight.winner === team2
+                const isDraw = !isT1Win && !isT2Win
+
+                const bg = isT1Win ? 'rgba(34, 197, 94, 0.25)' : isT2Win ? 'rgba(239, 68, 68, 0.25)' : 'rgba(148, 163, 184, 0.1)'
+                const borderColor = isT1Win ? GREEN : isT2Win ? RED : TEXT_DIM
+                const textColor = isT1Win ? GREEN : isT2Win ? RED : TEXT_DIM
+
+                return (
+                  <div
+                    key={fight.fightNumber}
+                    title={`Fight ${fight.fightNumber}: ${t1K}-${t2K} (${isDraw ? 'Draw' : fight.winner})`}
+                    style={{
+                      flex: 1,
+                      background: bg,
+                      borderBottom: `3px solid ${borderColor}`,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'default',
+                      transition: 'background 0.15s',
+                      minWidth: 0,
+                    }}
+                  >
+                    <div style={{ fontSize: '10px', color: TEXT_DIM, lineHeight: 1 }}>{fight.fightNumber}</div>
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: textColor, lineHeight: 1.3 }}>
+                      {t1K}–{t2K}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Legend */}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '10px', fontSize: '11px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <div style={{ width: '14px', height: '4px', background: GREEN, borderRadius: '2px' }} />
+                <span style={{ color: TEXT_SECONDARY }}>{team1} Win</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <div style={{ width: '14px', height: '4px', background: RED, borderRadius: '2px' }} />
+                <span style={{ color: TEXT_SECONDARY }}>{team2} Win</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <div style={{ width: '14px', height: '4px', background: TEXT_DIM, borderRadius: '2px' }} />
+                <span style={{ color: TEXT_SECONDARY }}>Draw</span>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* ── Final Blows By Role + Cumulative Damage ── */}
       {chartsData && (
