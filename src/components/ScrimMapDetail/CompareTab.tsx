@@ -92,8 +92,8 @@ export default function CompareTab({ mapId }: { mapId: string }) {
   const maxDamage = Math.max(...allPlayers.map(p => p.heroDamage), 1)
   const maxHealing = Math.max(...allPlayers.map(p => p.healingDealt), 1)
 
-  const renderPlayerCard = (player: ComparePlayer, color: string) => (
-    <div key={player.name} style={{
+  const renderPlayerCard = (player: ComparePlayer, color: string, index: number) => (
+    <div key={`${player.name}-${player.hero}-${index}`} style={{
       ...CARD_STYLE,
       padding: '16px 20px',
     }}>
@@ -153,7 +153,7 @@ export default function CompareTab({ mapId }: { mapId: string }) {
           {data.teams.team1}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {data.team1Players.map(p => renderPlayerCard(p, CYAN))}
+          {data.team1Players.map((p, i) => renderPlayerCard(p, CYAN, i))}
         </div>
       </div>
 
@@ -170,7 +170,7 @@ export default function CompareTab({ mapId }: { mapId: string }) {
           {data.teams.team2}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {data.team2Players.map(p => renderPlayerCard(p, RED))}
+          {data.team2Players.map((p, i) => renderPlayerCard(p, RED, i))}
         </div>
       </div>
     </div>
