@@ -57,6 +57,10 @@ export const InviteLinks: CollectionConfig = {
           value: 'team-manager',
         },
         {
+          label: 'Player',
+          value: 'player',
+        },
+        {
           label: 'User',
           value: 'user',
         },
@@ -69,7 +73,7 @@ export const InviteLinks: CollectionConfig = {
       hasMany: true,
       admin: {
         description: 'Teams the new user will have access to (only applicable for Team Managers and Staff Managers)',
-        condition: (data) => data.role === 'team-manager' || data.role === 'staff-manager',
+        condition: (data) => data.role === 'team-manager' || data.role === 'staff-manager' || data.role === 'player',
       },
     },
     {
@@ -135,6 +139,16 @@ export const InviteLinks: CollectionConfig = {
           },
         },
       ],
+    },
+    {
+      name: 'linkedPerson',
+      type: 'relationship',
+      relationTo: 'people',
+      hasMany: false,
+      admin: {
+        description: 'Optional: Pre-link this invite to a Person record (connects user to their BattleTags and scrim stats)',
+        condition: (data) => data.role === 'player' || data.role === 'team-manager',
+      },
     },
     {
       name: 'email',

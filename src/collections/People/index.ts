@@ -177,6 +177,24 @@ export const People: CollectionConfig = {
       ],
     },
     {
+      name: 'gameAliases',
+      type: 'array',
+      label: 'Game Aliases',
+      admin: {
+        description: 'In-game names this person uses. Matched against scrim log player names for automatic stat attribution. Internal only.',
+      },
+      fields: [
+        {
+          name: 'alias',
+          type: 'text',
+          required: true,
+          admin: {
+            description: 'In-game display name exactly as it appears in scrim logs (e.g., "Soup", "xXSlayerXx")',
+          },
+        },
+      ],
+    },
+    {
       name: 'notes',
       type: 'textarea',
       admin: {

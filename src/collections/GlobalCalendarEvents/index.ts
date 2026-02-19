@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { authenticated } from '../../access/authenticated'
-import { isEventsStaff } from '../../access/roles'
+import { isEventsStaff, hideFromPlayers } from '../../access/roles'
 import type { User } from '@/payload-types'
 
 export const GlobalCalendarEvents: CollectionConfig = {
@@ -61,6 +61,7 @@ export const GlobalCalendarEvents: CollectionConfig = {
     defaultColumns: ['title', 'eventType', 'region', 'dateStart', 'dateEnd', 'publishToDiscord'],
     description: '📅 Global calendar events for competitive dates, tournaments, and community events',
     group: 'Organization',
+    hidden: hideFromPlayers,
     listSearchableFields: ['title', 'description'],
   },
   // Disable document locking to avoid ObjectId type mismatch with Postgres

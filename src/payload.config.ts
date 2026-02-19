@@ -72,6 +72,7 @@ const config = buildConfig({
     browseByFolder: false, // Hide the sidebar view - we use custom file browser
   },
   admin: {
+    theme: 'dark',
     meta: {
       titleSuffix: '- Elemental Admin',
       description: 'Elemental Esports admin panel - manage teams, players, matches, and content.',
@@ -108,6 +109,7 @@ const config = buildConfig({
       beforeNavLinks: [
         '@/components/BeforeDashboard/DashboardNavLink',
         '@/components/BeforeDashboard/CalendarNavLink#default',
+        '@/components/BeforeDashboard/ScrimAnalyticsNavLinks#default',
         '@/components/BeforeDashboard/SidebarScrollPreserver#default',
       ],
       // No custom afterNavLinks - Payload provides its own logout button
@@ -123,6 +125,34 @@ const config = buildConfig({
         calendar: {
           Component: '@/components/UnifiedCalendar#default',
           path: '/calendar',
+        },
+        scrimUpload: {
+          Component: '@/components/ScrimUpload/Route#default',
+          path: '/scrim-upload',
+        },
+        scrimList: {
+          Component: '@/components/ScrimList/Route#default',
+          path: '/scrims',
+        },
+        scrimMapDetail: {
+          Component: '@/components/ScrimMapDetail/Route#default',
+          path: '/scrim-map',
+        },
+        scrimPlayerList: {
+          Component: '@/components/ScrimPlayerList/Route#default',
+          path: '/scrim-players',
+        },
+        scrimPlayerDetail: {
+          Component: '@/components/ScrimPlayerDetail/Route#default',
+          path: '/scrim-player-detail',
+        },
+        scrimTeamDetail: {
+          Component: '@/components/ScrimTeamDetail/Route#default',
+          path: '/scrim-team',
+        },
+        scrimHeroDetail: {
+          Component: '@/components/ScrimHeroDetail/Route#default',
+          path: '/scrim-heroes',
         },
       },
     },

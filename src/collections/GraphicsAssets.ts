@@ -4,7 +4,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import type { AccessArgs } from 'payload'
 import type { User } from '@/payload-types'
-import { UserRole } from '../access/roles'
+import { UserRole, hideFromPlayers } from '../access/roles'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -42,6 +42,7 @@ export const GraphicsAssets: CollectionConfig = {
   admin: {
     description: '📁 Graphics department file library. Drag & drop files, create folders to organize.',
     group: 'Graphics',
+    hidden: hideFromPlayers,
     useAsTitle: 'filename',
     components: {
       views: {

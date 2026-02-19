@@ -290,6 +290,96 @@
   }
 }
 
+// ============================================
+// Scrim Analytics Nav Group
+// ============================================
+
+.scrim-nav {
+  margin: 0;
+
+  &__toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    width: 100%;
+    padding: $padding-sm $padding-md;
+    color: var(--theme-text-500, rgba(255, 255, 255, 0.7));
+    background-color: transparent;
+    border: none;
+    border-radius: $radius-sm;
+    cursor: pointer;
+    font-weight: $font-weight-normal;
+    font-size: $font-size-sm;
+    line-height: 1.25rem;
+    transition: all 0.15s ease;
+    margin: 0;
+    text-align: left;
+
+    &--active {
+      color: var(--theme-text);
+    }
+
+    &:hover {
+      background-color: var(--theme-elevation-100, rgba(255, 255, 255, 0.05));
+      color: var(--theme-text);
+    }
+  }
+
+  &__icon {
+    flex-shrink: 0;
+  }
+
+  &__label {
+    flex: 1;
+  }
+
+  &__chevron {
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+
+    &--open {
+      transform: rotate(180deg);
+    }
+  }
+
+  &__links {
+    padding-left: 0.5rem;
+  }
+
+  &__link {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: $padding-sm $padding-md;
+    color: var(--theme-text-500, rgba(255, 255, 255, 0.7));
+    text-decoration: none;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-normal;
+    line-height: 1.25rem;
+    background-color: transparent;
+    transition: all 0.15s ease;
+    border-radius: $radius-sm;
+    margin: 0;
+
+    &--active {
+      color: var(--theme-text);
+      font-weight: $font-weight-medium;
+      background-color: var(--theme-elevation-200, rgba(255, 255, 255, 0.1));
+    }
+
+    &:hover:not(&--active) {
+      background-color: var(--theme-elevation-100, rgba(255, 255, 255, 0.05));
+      color: var(--theme-text);
+    }
+  }
+
+  &__link-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
+}
+
 .data-consistency-nav-link {
   margin: 0;
   

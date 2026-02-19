@@ -103,7 +103,7 @@ export async function POST(request: Request): Promise<Response> {
       )
     }
 
-    // Create the user with the role, teams, and departments from the invite
+    // Create the user with the role, teams, departments, and linkedPerson from the invite
     const newUser = await payload.create({
       collection: 'users',
       data: {
@@ -112,6 +112,7 @@ export async function POST(request: Request): Promise<Response> {
         password,
         role: invite.role,
         assignedTeams: invite.assignedTeams,
+        linkedPerson: (invite as any).linkedPerson ?? undefined,
         departments: {
           isProductionStaff: invite.departments?.isProductionStaff || false,
           isSocialMediaStaff: invite.departments?.isSocialMediaStaff || false,

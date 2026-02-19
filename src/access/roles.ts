@@ -6,6 +6,7 @@ export enum UserRole {
   ADMIN = 'admin',
   TEAM_MANAGER = 'team-manager',
   STAFF_MANAGER = 'staff-manager',
+  PLAYER = 'player',
   USER = 'user',
 }
 
@@ -133,5 +134,31 @@ export const isScoutingStaff = ({ req: { user } }: AccessArgs<User>): boolean =>
   return u.departments?.isScoutingStaff === true || 
          u.role === UserRole.ADMIN ||
          u.role === UserRole.STAFF_MANAGER
+}
+
+/**
+ * Check if user can view scrim analytics (admin, staff-manager, team-manager, or player)
+ */
+export const isScrimViewer = ({ req: { user } }: AccessArgs<User>): boolean => {
+  if (!user) return false
+  const role = (user as User).role as UserRole
+  return (
+    role === UserRole.ADMIN ||
+    role === UserRole.STAFF_MANAGER ||
+    role === UserRole.TEAM_MANAGER ||
+    role === UserRole.PLAYER
+  )
+}
+
+/**
+ * Helper for admin.hidden - hides collections from player/user roles in sidebar.
+ * Use as: admin: { hidden: hideFromPlayers }
+ * This only affects sidebar visibility, not API access.
+ * Uses 'any' for user type since Payload's admin.hidden provides ClientUser, not full User.
+ */
+export const hideFromPlayers = ({ user }: { user: any }): boolean => {
+  if (!user) return false
+  const role = user.role as UserRole
+  return role === UserRole.PLAYER || role === UserRole.USER
 }
 

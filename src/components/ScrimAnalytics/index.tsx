@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import RangeFilter, { type RangeValue } from '@/components/RangeFilter'
 import './ScrimAnalytics.scss'
 
 interface MapStat {
@@ -76,12 +77,13 @@ export const ScrimAnalytics: React.FC<ScrimAnalyticsProps> = ({ teamId, teamName
   const [activeTab, setActiveTab] = useState<'opponents' | 'maps'>('opponents')
   const [searchTerm, setSearchTerm] = useState('')
   const [expandedOpponent, setExpandedOpponent] = useState<string | null>(null)
+  const [range, setRange] = useState<RangeValue>('last20')
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true)
-        const res = await fetch(`/api/scrim-analytics?teamId=${teamId}`)
+        const res = await fetch(`/api/scrim-analytics?teamId=${teamId}&range=${range}`)
         if (!res.ok) throw new Error('Failed to fetch analytics')
         const json = await res.json()
         setData(json)
@@ -92,7 +94,7 @@ export const ScrimAnalytics: React.FC<ScrimAnalyticsProps> = ({ teamId, teamName
       }
     }
     fetchData()
-  }, [teamId])
+  }, [teamId, range])
 
   if (loading) {
     return <div className="scrim-analytics scrim-analytics--loading">Loading analytics...</div>
@@ -112,16 +114,19 @@ export const ScrimAnalytics: React.FC<ScrimAnalyticsProps> = ({ teamId, teamName
 
   return (
     <div className="scrim-analytics">
-      <div className="scrim-analytics__header">
-        <h2>📊 Scrim Analytics {teamName && `- ${teamName}`}</h2>
-        <div className="scrim-analytics__summary">
-          <span className="scrim-analytics__stat">
-            <strong>{data.totalScrims}</strong> total scrims
-          </span>
-          <span className="scrim-analytics__stat">
-            <strong>{data.uniqueOpponents}</strong> unique opponents
-          </span>
+      <div className="scrim-analytics__header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h2>📊 Scrim Analytics {teamName && `- ${teamName}`}</h2>
+          <div className="scrim-analytics__summary">
+            <span className="scrim-analytics__stat">
+              <strong>{data.totalScrims}</strong> total scrims
+            </span>
+            <span className="scrim-analytics__stat">
+              <strong>{data.uniqueOpponents}</strong> unique opponents
+            </span>
+          </div>
         </div>
+        <RangeFilter value={range} onChange={setRange} />
       </div>
 
       <div className="scrim-analytics__tabs">

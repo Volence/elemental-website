@@ -36,13 +36,14 @@ interface MapStats {
 }
 
 /**
- * GET /api/scrim-analytics?teamId=123
+ * GET /api/scrim-analytics?teamId=123&range=last20|last50|last30d|all
  * Returns aggregated scrim analytics for a specific team
  */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const teamId = searchParams.get('teamId')
+    const range = searchParams.get('range') ?? 'last20'
 
     if (!teamId) {
       return NextResponse.json({ error: 'teamId is required' }, { status: 400 })
@@ -60,15 +61,20 @@ export async function GET(request: NextRequest) {
       depth: 0,
     })
 
-    // Aggregate the data
-    const opponentMap = new Map<string, OpponentStats>()
-    const overallMapStats = new Map<string, { wins: number; losses: number; draws: number }>()
+    // First pass: collect all scrim entries with dates for range filtering
+    type ScrimEntry = {
+      schedule: any
+      day: any
+      block: any
+      date: Date
+      mapCount: number
+    }
+    const allEntries: ScrimEntry[] = []
 
     for (const schedule of schedules.docs) {
-      // The schedule data is stored in the 'schedule' JSON field
       const scheduleData = (schedule as any).schedule
       const days = scheduleData?.days || []
-      const scheduleDate = (schedule as any).weekStart || (schedule as any).pollName || ''
+      const weekStart = (schedule as any).weekStart
 
       for (const day of days) {
         if (!day.enabled) continue
@@ -78,72 +84,105 @@ export async function GET(request: NextRequest) {
           const scrim = block.scrim
           const outcome = block.outcome
 
-          // Only process blocks that have both scrim info and outcome
           if (!scrim?.opponent || !outcome) continue
 
-          const opponentKey = scrim.opponentTeamId?.toString() || scrim.opponent
-          const opponentName = scrim.opponent
+          const scrimDate = weekStart ? new Date(weekStart) : new Date(0)
+          const mapCount = Array.isArray(outcome.mapsPlayed) ? outcome.mapsPlayed.length : 0
 
-          // Get or create opponent stats
-          if (!opponentMap.has(opponentKey)) {
-            opponentMap.set(opponentKey, {
-              opponentTeamId: scrim.opponentTeamId || null,
-              opponentName,
-              scrims: [],
-              mapStats: {},
-            })
+          allEntries.push({ schedule, day, block, date: scrimDate, mapCount })
+        }
+      }
+    }
+
+    // Sort by date descending and apply range filter
+    allEntries.sort((a, b) => b.date.getTime() - a.date.getTime())
+
+    let filteredEntries = allEntries
+    if (range === 'last20' || range === 'last50') {
+      const limit = range === 'last20' ? 20 : 50
+      // Count maps until we reach the limit
+      let mapCount = 0
+      let cutIdx = filteredEntries.length
+      for (let i = 0; i < filteredEntries.length; i++) {
+        mapCount += filteredEntries[i].mapCount || 1
+        if (mapCount >= limit) { cutIdx = i + 1; break }
+      }
+      filteredEntries = filteredEntries.slice(0, cutIdx)
+    } else if (range === 'last30d') {
+      const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+      filteredEntries = filteredEntries.filter(e => e.date >= cutoff)
+    }
+
+    // Aggregate the filtered data
+    const opponentMap = new Map<string, OpponentStats>()
+    const overallMapStats = new Map<string, { wins: number; losses: number; draws: number }>()
+
+    for (const entry of filteredEntries) {
+      const scrim = entry.block.scrim
+      const outcome = entry.block.outcome
+      const scheduleDate = (entry.schedule as any).weekStart || (entry.schedule as any).pollName || ''
+
+      const opponentKey = scrim.opponentTeamId?.toString() || scrim.opponent
+      const opponentName = scrim.opponent
+
+      // Get or create opponent stats
+      if (!opponentMap.has(opponentKey)) {
+        opponentMap.set(opponentKey, {
+          opponentTeamId: scrim.opponentTeamId || null,
+          opponentName,
+          scrims: [],
+          mapStats: {},
+        })
+      }
+
+      const opponentStats = opponentMap.get(opponentKey)!
+
+      // Add this scrim to the opponent's history
+      const scrimRecord: ScrimOutcome = {
+        opponentTeamId: scrim.opponentTeamId,
+        opponentName,
+        date: `${scheduleDate} - ${entry.day.label || ''}`,
+        ourRating: outcome.ourRating,
+        opponentRating: outcome.opponentRating,
+        worthScrimAgain: outcome.worthScrimAgain,
+        mapsPlayed: outcome.mapsPlayed,
+        scrimNotes: outcome.scrimNotes,
+      }
+
+      opponentStats.scrims.push(scrimRecord)
+
+      // Update latest ratings (assuming we process in order)
+      if (outcome.worthScrimAgain) {
+        opponentStats.latestWorthScrimAgain = outcome.worthScrimAgain
+      }
+      if (outcome.ourRating) {
+        opponentStats.latestOurRating = outcome.ourRating
+      }
+      if (outcome.opponentRating) {
+        opponentStats.latestOpponentRating = outcome.opponentRating
+      }
+
+      // Aggregate map stats
+      if (outcome.mapsPlayed && Array.isArray(outcome.mapsPlayed)) {
+        for (const map of outcome.mapsPlayed) {
+          if (!map.mapName) continue
+
+          // Per-opponent map stats
+          if (!opponentStats.mapStats[map.mapName]) {
+            opponentStats.mapStats[map.mapName] = { wins: 0, losses: 0, draws: 0 }
           }
+          if (map.result === 'win') opponentStats.mapStats[map.mapName].wins++
+          else if (map.result === 'loss') opponentStats.mapStats[map.mapName].losses++
+          else if (map.result === 'draw') opponentStats.mapStats[map.mapName].draws++
 
-          const opponentStats = opponentMap.get(opponentKey)!
-
-          // Add this scrim to the opponent's history
-          const scrimRecord: ScrimOutcome = {
-            opponentTeamId: scrim.opponentTeamId,
-            opponentName,
-            date: `${scheduleDate} - ${day.label || ''}`,
-            ourRating: outcome.ourRating,
-            opponentRating: outcome.opponentRating,
-            worthScrimAgain: outcome.worthScrimAgain,
-            mapsPlayed: outcome.mapsPlayed,
-            scrimNotes: outcome.scrimNotes,
+          // Overall map stats
+          if (!overallMapStats.has(map.mapName)) {
+            overallMapStats.set(map.mapName, { wins: 0, losses: 0, draws: 0 })
           }
-
-          opponentStats.scrims.push(scrimRecord)
-
-          // Update latest ratings (assuming we process in order)
-          if (outcome.worthScrimAgain) {
-            opponentStats.latestWorthScrimAgain = outcome.worthScrimAgain
-          }
-          if (outcome.ourRating) {
-            opponentStats.latestOurRating = outcome.ourRating
-          }
-          if (outcome.opponentRating) {
-            opponentStats.latestOpponentRating = outcome.opponentRating
-          }
-
-          // Aggregate map stats
-          if (outcome.mapsPlayed && Array.isArray(outcome.mapsPlayed)) {
-            for (const map of outcome.mapsPlayed) {
-              if (!map.mapName) continue
-
-              // Per-opponent map stats
-              if (!opponentStats.mapStats[map.mapName]) {
-                opponentStats.mapStats[map.mapName] = { wins: 0, losses: 0, draws: 0 }
-              }
-              if (map.result === 'win') opponentStats.mapStats[map.mapName].wins++
-              else if (map.result === 'loss') opponentStats.mapStats[map.mapName].losses++
-              else if (map.result === 'draw') opponentStats.mapStats[map.mapName].draws++
-
-              // Overall map stats
-              if (!overallMapStats.has(map.mapName)) {
-                overallMapStats.set(map.mapName, { wins: 0, losses: 0, draws: 0 })
-              }
-              const overall = overallMapStats.get(map.mapName)!
-              if (map.result === 'win') overall.wins++
-              else if (map.result === 'loss') overall.losses++
-              else if (map.result === 'draw') overall.draws++
-            }
-          }
+          const overall = overallMapStats.get(map.mapName)!
+          if (map.result === 'win') overall.wins++
+          else if (map.result === 'loss') overall.losses++
+          else if (map.result === 'draw') overall.draws++
         }
       }
     }
