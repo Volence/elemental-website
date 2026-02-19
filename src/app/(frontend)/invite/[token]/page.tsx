@@ -85,6 +85,7 @@ export default async function InvitePage({ params }: PageProps) {
     'admin': 'Admin',
     'team-manager': 'Team Manager',
     'staff-manager': 'Staff Manager',
+    'player': 'Player',
     'user': 'User',
   }
 
