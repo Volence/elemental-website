@@ -298,11 +298,11 @@ export default function ScrimUploadView() {
         setOpponentNameOverride('')
       } else {
         setState('error')
-        setResult({ message: data.error || 'Upload failed', error: data.error })
+        setResult({ message: data.error || 'Upload failed', error: data.error } as UploadResult)
       }
     } catch {
       setState('error')
-      setResult({ message: 'Network error — could not reach the server', error: 'Network error' })
+      setResult({ message: 'Network error — could not reach the server', error: 'Network error' } as UploadResult)
     }
   }, [files, scrimName, teamId, playerMappings, opponentNameOverride, opponentTeam])
 

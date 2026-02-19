@@ -65,8 +65,10 @@ export async function GET(request: Request) {
 
     const simplified = people.docs.map((person) => {
       const aliases: string[] = []
-      if (Array.isArray((person as Record<string, unknown>).gameAliases)) {
-        for (const entry of (person as Record<string, unknown>).gameAliases as { alias?: string }[]) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const personAny = person as any
+      if (Array.isArray(personAny.gameAliases)) {
+        for (const entry of personAny.gameAliases as { alias?: string }[]) {
           if (entry.alias) {
             aliases.push(entry.alias)
           }

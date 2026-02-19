@@ -252,7 +252,8 @@ export async function POST(request: NextRequest) {
             }
             
             // Dynamic import sql template tag
-            const { sql } = await import('drizzle-orm')
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dual drizzle-orm version conflict (Payload bundles its own copy)
+            const { sql } = await import('drizzle-orm') as any
             
             // First update the season record itself
             await drizzle.execute(sql`
