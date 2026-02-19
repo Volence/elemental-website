@@ -76,6 +76,7 @@ function EventIcon({ type }: { type: string }) {
     multikill: { symbol: '✦', color: PURPLE },
     ultimate_kill: { symbol: '⚡', color: AMBER },
     mercy_rez: { symbol: '✚', color: GREEN },
+    ajax: { symbol: '✕', color: AMBER },
   }
   const icon = iconMap[type] || { symbol: '•', color: TEXT_DIM }
 
@@ -191,10 +192,10 @@ export default function EventsTab({ mapId }: { mapId: string }) {
       {/* ── Match Events ── */}
       <div
         style={{
-          background: 'rgba(0, 0, 0, 0.05)',
-          backdropFilter: 'blur(6px)',
+          background: 'rgba(255, 255, 255, 0.03)',
+          backdropFilter: 'blur(12px)',
           borderRadius: '12px',
-          border: '1px solid rgba(6, 182, 212, 0.12)',
+          border: '1px solid rgba(255, 255, 255, 0.06)',
           overflow: 'hidden',
         }}
       >
@@ -285,10 +286,10 @@ export default function EventsTab({ mapId }: { mapId: string }) {
       {/* ── Ultimates Used ── */}
       <div
         style={{
-          background: 'rgba(0, 0, 0, 0.05)',
-          backdropFilter: 'blur(6px)',
+          background: 'rgba(255, 255, 255, 0.03)',
+          backdropFilter: 'blur(12px)',
           borderRadius: '12px',
-          border: '1px solid rgba(139, 92, 246, 0.12)',
+          border: '1px solid rgba(255, 255, 255, 0.06)',
           overflow: 'hidden',
         }}
       >

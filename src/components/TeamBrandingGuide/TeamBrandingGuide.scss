@@ -83,7 +83,7 @@
 /* ── Card grid ── */
 .tbg__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
   gap: 14px;
 }
 
@@ -92,7 +92,6 @@
   background: rgba(255, 255, 255, 0.02) !important;
   border: 1px solid rgba(255, 255, 255, 0.05) !important;
   border-radius: 8px !important;
-  overflow: hidden;
   transition: background 0.15s;
 }
 .tc:hover {
@@ -252,14 +251,51 @@
   padding: 0 8px;
 }
 
-/* ── Large pinwheel preview ── */
-.tc__pinwheel-preview {
+/* ── Large pinwheel previews (side by side) ── */
+.tc__pinwheel-row {
   display: flex;
+  gap: 1px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 0 0 7px 7px;
+}
+
+.tc__pinwheel-preview {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 16px 14px 20px;
+  padding: 12px 20px 14px;
   background: var(--tc-card-bg, #000);
-  border-radius: 0 0 7px 7px;
+  overflow: visible;
+}
+
+.tc__pinwheel-preview--opaque {
+  /* Checkerboard hint to show it's opaque */
+  background-image:
+    linear-gradient(45deg, rgba(255,255,255,0.03) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255,255,255,0.03) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.03) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.03) 75%);
+  background-size: 12px 12px;
+  background-position: 0 0, 0 6px, 6px -6px, -6px 0px;
+  background-color: var(--tc-card-bg, #000);
+}
+
+.tc__pinwheel-label {
+  font-size: 8px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 6px;
+}
+
+.tc__pinwheel-desc {
+  font-size: 8px;
+  color: rgba(255, 255, 255, 0.2);
+  margin-top: 6px;
+  text-align: center;
 }
 
 /* ── Color picker row ── */
@@ -346,6 +382,50 @@
     background: rgba(255, 255, 255, 0.08) !important;
     color: rgba(255, 255, 255, 0.7) !important;
   }
+}
+
+/* ── Slider ── */
+.tbg__slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 120px;
+  height: 4px;
+  border-radius: 2px !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  outline: none !important;
+  cursor: pointer;
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50% !important;
+    background: rgba(255, 255, 255, 0.7) !important;
+    border: 2px solid rgba(255, 255, 255, 0.2) !important;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  &::-webkit-slider-thumb:hover {
+    background: #fff !important;
+  }
+
+  &::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50% !important;
+    background: rgba(255, 255, 255, 0.7) !important;
+    border: 2px solid rgba(255, 255, 255, 0.2) !important;
+    cursor: pointer;
+  }
+}
+
+.tbg__slider-value {
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  min-width: 28px;
+  text-align: right;
 }
 
 /* ── Quick color reference table ── */

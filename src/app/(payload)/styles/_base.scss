@@ -77,8 +77,9 @@ html[data-theme='light'] {
 
 // Hide default dashboard cards (collections in sidebar instead)
 .dashboard__cards,
-.dashboard__group {
-  display: none;
+.dashboard__group,
+.dashboard__card-list {
+  display: none !important;
 }
 
 .dashboard,

@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { authenticated } from '../../access/authenticated'
 import { anyone } from '../../access/anyone'
-import { adminOnly } from '../../access/roles'
+import { adminOnly, hideFromPlayers } from '../../access/roles'
 
 export const FaceitSeasons: CollectionConfig = {
   slug: 'faceit-seasons',
@@ -20,7 +20,7 @@ export const FaceitSeasons: CollectionConfig = {
     defaultColumns: ['team', 'faceitLeague', 'seasonName', 'isActive', 'lastSynced'],
     description: '🏆 Team FaceIt seasons - Can be used to edit archived match data for finalized seasons',
     group: 'Competitive',
-    // Collection is now visible for editing archived match data
+    hidden: hideFromPlayers,
   },
   fields: [
     // URL Helper (makes it easy to fill in IDs)

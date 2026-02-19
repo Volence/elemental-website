@@ -96,11 +96,9 @@ export const Users: CollectionConfig = {
         // Read-only for non-admins is handled in the access control and hooks
       },
       access: {
-        // Only admins and staff managers can read roles
+        // All authenticated users can read role (needed for client-side role checks in nav/UI)
         read: ({ req: { user } }) => {
-          if (!user) return false
-          const typedUser = user as User
-          return typedUser.role === UserRole.ADMIN || typedUser.role === UserRole.STAFF_MANAGER
+          return Boolean(user)
         },
         // Only admins can update the role field
         update: ({ req }) => {
@@ -122,10 +120,35 @@ export const Users: CollectionConfig = {
           value: UserRole.TEAM_MANAGER,
         },
         {
+          label: 'Player',
+          value: UserRole.PLAYER,
+        },
+        {
           label: 'User',
           value: UserRole.USER,
         },
       ],
+    },
+    {
+      name: 'linkedPerson',
+      type: 'relationship',
+      relationTo: 'people',
+      hasMany: false,
+      admin: {
+        description: 'Link this user account to a Person record. Used for players to connect their login to their BattleTags and team roster membership.',
+        condition: (data) => data.role === UserRole.PLAYER || data.role === UserRole.TEAM_MANAGER || data.role === UserRole.ADMIN,
+      },
+      access: {
+        read: ({ req: { user } }) => {
+          if (!user) return false
+          const typedUser = user as User
+          return typedUser.role === UserRole.ADMIN || typedUser.role === UserRole.STAFF_MANAGER || typedUser.role === UserRole.PLAYER
+        },
+        update: ({ req }) => {
+          const user = req.user as User | undefined
+          return user?.role === UserRole.ADMIN
+        },
+      },
     },
     {
       name: 'assignedTeams',
@@ -133,15 +156,18 @@ export const Users: CollectionConfig = {
       relationTo: 'teams',
       hasMany: true,
       admin: {
-        description: 'For Team Managers: Restrict editing to only these teams. For Staff Managers & Admins: Quick access links to these teams (they can still edit all teams).',
-        condition: (data) => data.role === UserRole.ADMIN || data.role === UserRole.TEAM_MANAGER || data.role === UserRole.STAFF_MANAGER,
+        description: 'For Team Managers & Players: Determines which team\'s scrim data they can access. For Staff Managers & Admins: Quick access links (they can still see all teams).',
+        condition: (data) => data.role === UserRole.ADMIN || data.role === UserRole.TEAM_MANAGER || data.role === UserRole.STAFF_MANAGER || data.role === UserRole.PLAYER,
       },
       access: {
-        // Only admins and staff managers can read assignedTeams
+        // Admins, staff managers, team managers, and players can read their own assignedTeams
         read: ({ req: { user } }) => {
           if (!user) return false
           const typedUser = user as User
-          return typedUser.role === UserRole.ADMIN || typedUser.role === UserRole.STAFF_MANAGER
+          if (typedUser.role === UserRole.ADMIN || typedUser.role === UserRole.STAFF_MANAGER) return true
+          // Players and team managers can read their own assignedTeams
+          if (typedUser.role === UserRole.PLAYER || typedUser.role === UserRole.TEAM_MANAGER) return true
+          return false
         },
         // Only admins can update the assignedTeams field
         update: ({ req }) => {
@@ -156,7 +182,7 @@ export const Users: CollectionConfig = {
       label: 'Department Access',
       admin: {
         description: 'Grant access to department-specific tools and dashboards',
-        condition: (data) => data.role !== UserRole.ADMIN,
+        condition: (data) => data.role !== UserRole.ADMIN && data.role !== UserRole.PLAYER,
       },
       access: {
         // Only admins and staff managers can read department settings

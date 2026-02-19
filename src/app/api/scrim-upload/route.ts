@@ -13,7 +13,7 @@
  */
 
 import { NextResponse } from 'next/server'
-import { parseScrimLog, createScrimFromParsedData } from '@/lib/scrim-parser'
+import { parseScrimLog, validateScrimLog, createScrimFromParsedData } from '@/lib/scrim-parser'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 
@@ -27,11 +27,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check role — only admin and manager can upload
+    // Check role — admin, staff-manager, and team-manager can upload
     const userRole = (user as { role?: string }).role
-    if (userRole !== 'admin' && userRole !== 'manager') {
+    const canUpload = userRole === 'admin' || userRole === 'staff-manager' || userRole === 'team-manager'
+    if (!canUpload) {
       return NextResponse.json(
-        { error: 'Insufficient permissions. Only admins and managers can upload scrims.' },
+        { error: 'Insufficient permissions. Only admins, staff managers, and team managers can upload scrims.' },
         { status: 403 },
       )
     }
@@ -40,7 +41,32 @@ export async function POST(request: Request) {
     const files = formData.getAll('files') as File[]
     const name = (formData.get('name') as string) || (formData.get('scrimName') as string) || `Scrim ${new Date().toLocaleDateString()}`
     const dateStr = formData.get('date') as string
-    const teamIdStr = formData.get('teamId') as string | null
+    let teamIdStr = formData.get('teamId') as string | null
+
+    // For team-managers: auto-set team to their first assigned team if not specified
+    if (!teamIdStr && userRole === 'team-manager') {
+      const typedUser = user as { assignedTeams?: Array<number | { id: number }> }
+      if (typedUser.assignedTeams?.length) {
+        const firstTeam = typedUser.assignedTeams[0]
+        teamIdStr = String(typeof firstTeam === 'number' ? firstTeam : firstTeam.id)
+      }
+    }
+
+    const playerMappingsStr = formData.get('playerMappings') as string | null
+    const opponentNameOverride = (formData.get('opponentName') as string | null)?.trim() || null
+    const playerMappings: Record<string, number> = {}
+    if (playerMappingsStr) {
+      try {
+        const parsed = JSON.parse(playerMappingsStr)
+        for (const [name, id] of Object.entries(parsed)) {
+          if (id && !isNaN(Number(id))) {
+            playerMappings[name] = Number(id)
+          }
+        }
+      } catch {
+        // Ignore invalid JSON — proceed without mappings
+      }
+    }
 
     if (!files.length) {
       return NextResponse.json({ error: 'No files uploaded' }, { status: 400 })
@@ -60,18 +86,18 @@ export async function POST(request: Request) {
     const parsedMaps = []
     for (const file of files) {
       const content = await file.text()
+
+      // Validate file is a ScrimTime log before parsing
+      const validationError = validateScrimLog(content)
+      if (validationError) {
+        return NextResponse.json(
+          { error: `File "${file.name}": ${validationError}` },
+          { status: 400 },
+        )
+      }
+
       try {
         const parsedData = parseScrimLog(content)
-
-        // Validate that the file has at least a match_start event
-        if (!parsedData.match_start?.length) {
-          return NextResponse.json(
-            {
-              error: `File "${file.name}" does not contain a valid match_start event. Is this a ScrimTime log file?`,
-            },
-            { status: 400 },
-          )
-        }
 
         parsedMaps.push({
           fileContent: content,
@@ -94,7 +120,9 @@ export async function POST(request: Request) {
       date: dateStr ? new Date(dateStr) : new Date(),
       payloadTeamId: teamIdStr ? parseInt(teamIdStr, 10) : null,
       creatorEmail: user.email,
+      opponentName: opponentNameOverride,
       maps: parsedMaps,
+      playerMappings,
     })
 
     // Build a summary response

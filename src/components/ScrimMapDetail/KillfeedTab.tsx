@@ -13,11 +13,11 @@ const TEXT_DIM = '#64748b'
 
 // Clean glow: ultra-transparent backgrounds with glowing borders
 const CARD_STYLE: React.CSSProperties = {
-  background: 'rgba(0, 0, 0, 0.05)',
-  backdropFilter: 'blur(6px)',
+  background: 'rgba(255, 255, 255, 0.03)',
+  backdropFilter: 'blur(12px)',
   borderRadius: '12px',
   padding: '20px 24px',
-  border: `1px solid rgba(6, 182, 212, 0.15)`,
+  border: `1px solid rgba(255, 255, 255, 0.06)`,
 }
 
 const LABEL_STYLE: React.CSSProperties = {
@@ -218,10 +218,10 @@ export default function KillfeedTab({ mapId }: { mapId: string }) {
       {/* Killfeed Table with glass effect */}
       <div
         style={{
-          background: 'rgba(0, 0, 0, 0.05)',
-          backdropFilter: 'blur(6px)',
+          background: 'rgba(255, 255, 255, 0.03)',
+          backdropFilter: 'blur(12px)',
           borderRadius: '12px',
-          border: '1px solid rgba(6, 182, 212, 0.12)',
+          border: '1px solid rgba(255, 255, 255, 0.06)',
           overflow: 'hidden',
         }}
       >

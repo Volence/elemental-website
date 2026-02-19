@@ -8,8 +8,8 @@ const RED = '#ef4444'
 const TEXT_PRIMARY = '#e2e8f0'
 const TEXT_SECONDARY = '#94a3b8'
 const TEXT_DIM = '#64748b'
-const BG_CARD = 'rgba(15, 23, 42, 0.6)'
-const BORDER = 'rgba(148, 163, 184, 0.08)'
+const BG_CARD = 'rgba(255, 255, 255, 0.03)'
+const BORDER = 'rgba(255, 255, 255, 0.06)'
 const GREEN = '#22c55e'
 
 const CARD_STYLE: React.CSSProperties = {
@@ -17,6 +17,7 @@ const CARD_STYLE: React.CSSProperties = {
   borderRadius: '12px',
   padding: '20px 24px',
   border: `1px solid ${BORDER}`,
+  backdropFilter: 'blur(12px)',
 }
 
 type KillEntry = {

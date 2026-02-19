@@ -100,14 +100,17 @@ import { SectionThemeApplicator as SectionThemeApplicator_b4f71752b0da9dddb562dd
 import { default as default_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/components/BeforeLogin'
 import { default as default_cb688d169ef5bf1426eea8968f0b9a29 } from '@/components/BeforeDashboard/DashboardNavLink'
 import { default as default_564fb21592d27251bcff7c5e897d4dbc } from '@/components/BeforeDashboard/CalendarNavLink'
+import { default as default_ab6e10b6b3865462fbf89efa35889b3d } from '@/components/BeforeDashboard/ScrimAnalyticsNavLinks'
 import { default as default_75e49641b1d841f24cd53ee63100b3ae } from '@/components/BeforeDashboard/SidebarScrollPreserver'
 import { default as default_aeef0123fea1af819397817664b7330c } from '@/components/AdminProviders'
 import { default as default_1afe941534b3971b0de8f4fbeca9a6d3 } from '@/components/UnifiedCalendar'
-import { default as default_3eb41fb0fd2d2f02da596f6a73470a78 } from '@/components/ScrimUpload'
-import { default as default_6958564633b07bf10a31c4d70cda22d6 } from '@/components/ScrimList'
-import { default as default_9ec33daa0e67db091c33dffcd7d6fe8c } from '@/components/ScrimMapDetail'
-import { default as default_bb749a9664290763bdcee9a7a2e21d71 } from '@/components/ScrimPlayerList'
-import { default as default_50afaf46bd911ad37e7cf3060e9213d8 } from '@/components/ScrimPlayerDetail'
+import { default as default_5f96af94fd29a7fa1e87fa3501f9e389 } from '@/components/ScrimUpload/Route'
+import { default as default_32b53b290bff18166c7f0c6cf1c91a06 } from '@/components/ScrimList/Route'
+import { default as default_bdff09751c710a3004781be3d6039e13 } from '@/components/ScrimMapDetail/Route'
+import { default as default_efcd8c569eb014794fe2ff123537efbf } from '@/components/ScrimPlayerList/Route'
+import { default as default_b71ffd6e4c02fc236b7c4ff5b8c745c1 } from '@/components/ScrimPlayerDetail/Route'
+import { default as default_ddd2842e99d7eefc935ddf1f43a96c52 } from '@/components/ScrimTeamDetail/Route'
+import { default as default_fcc5c38e7b961a7b6570d53be1c36a5a } from '@/components/ScrimHeroDetail/Route'
 import { CollectionCards as CollectionCards_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 
 export const importMap = {
@@ -213,13 +216,16 @@ export const importMap = {
   "@/components/BeforeLogin#default": default_8a7ab0eb7ab5c511aba12e68480bfe5e,
   "@/components/BeforeDashboard/DashboardNavLink#default": default_cb688d169ef5bf1426eea8968f0b9a29,
   "@/components/BeforeDashboard/CalendarNavLink#default": default_564fb21592d27251bcff7c5e897d4dbc,
+  "@/components/BeforeDashboard/ScrimAnalyticsNavLinks#default": default_ab6e10b6b3865462fbf89efa35889b3d,
   "@/components/BeforeDashboard/SidebarScrollPreserver#default": default_75e49641b1d841f24cd53ee63100b3ae,
   "@/components/AdminProviders#default": default_aeef0123fea1af819397817664b7330c,
   "@/components/UnifiedCalendar#default": default_1afe941534b3971b0de8f4fbeca9a6d3,
-  "@/components/ScrimUpload#default": default_3eb41fb0fd2d2f02da596f6a73470a78,
-  "@/components/ScrimList#default": default_6958564633b07bf10a31c4d70cda22d6,
-  "@/components/ScrimMapDetail#default": default_9ec33daa0e67db091c33dffcd7d6fe8c,
-  "@/components/ScrimPlayerList#default": default_bb749a9664290763bdcee9a7a2e21d71,
-  "@/components/ScrimPlayerDetail#default": default_50afaf46bd911ad37e7cf3060e9213d8,
+  "@/components/ScrimUpload/Route#default": default_5f96af94fd29a7fa1e87fa3501f9e389,
+  "@/components/ScrimList/Route#default": default_32b53b290bff18166c7f0c6cf1c91a06,
+  "@/components/ScrimMapDetail/Route#default": default_bdff09751c710a3004781be3d6039e13,
+  "@/components/ScrimPlayerList/Route#default": default_efcd8c569eb014794fe2ff123537efbf,
+  "@/components/ScrimPlayerDetail/Route#default": default_b71ffd6e4c02fc236b7c4ff5b8c745c1,
+  "@/components/ScrimTeamDetail/Route#default": default_ddd2842e99d7eefc935ddf1f43a96c52,
+  "@/components/ScrimHeroDetail/Route#default": default_fcc5c38e7b961a7b6570d53be1c36a5a,
   "@payloadcms/ui/rsc#CollectionCards": CollectionCards_ab83ff7e88da8d3530831f296ec4756a
 }

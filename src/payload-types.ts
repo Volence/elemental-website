@@ -562,6 +562,18 @@ export interface Person {
       | null;
   };
   /**
+   * In-game names this person uses. Matched against scrim log player names for automatic stat attribution. Internal only.
+   */
+  gameAliases?:
+    | {
+        /**
+         * In-game display name exactly as it appears in scrim logs (e.g., "Soup", "xXSlayerXx")
+         */
+        alias: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
    * Internal notes about this person (not displayed publicly)
    */
   notes?: string | null;
@@ -1282,9 +1294,13 @@ export interface User {
   /**
    * User role determines what they can access and edit in the CMS.
    */
-  role?: ('admin' | 'staff-manager' | 'team-manager' | 'user') | null;
+  role?: ('admin' | 'staff-manager' | 'team-manager' | 'player' | 'user') | null;
   /**
-   * For Team Managers: Restrict editing to only these teams. For Staff Managers & Admins: Quick access links to these teams (they can still edit all teams).
+   * Link this user account to a Person record. Used for players to connect their login to their BattleTags and team roster membership.
+   */
+  linkedPerson?: (number | null) | Person;
+  /**
+   * For Team Managers & Players: Determines which team's scrim data they can access. For Staff Managers & Admins: Quick access links (they can still see all teams).
    */
   assignedTeams?: (number | Team)[] | null;
   /**
@@ -2513,7 +2529,7 @@ export interface InviteLink {
   /**
    * The role the new user will be assigned when they sign up
    */
-  role: 'admin' | 'staff-manager' | 'team-manager' | 'user';
+  role: 'admin' | 'staff-manager' | 'team-manager' | 'player' | 'user';
   /**
    * Teams the new user will have access to (only applicable for Team Managers and Staff Managers)
    */
@@ -2547,6 +2563,10 @@ export interface InviteLink {
      */
     isScoutingStaff?: boolean | null;
   };
+  /**
+   * Optional: Pre-link this invite to a Person record (connects user to their BattleTags and scrim stats)
+   */
+  linkedPerson?: (number | null) | Person;
   /**
    * Optional: Pre-assign an email address for this invite
    */
@@ -3025,6 +3045,12 @@ export interface PeopleSelect<T extends boolean = true> {
               url?: T;
               id?: T;
             };
+      };
+  gameAliases?:
+    | T
+    | {
+        alias?: T;
+        id?: T;
       };
   notes?: T;
   updatedAt?: T;
@@ -3771,6 +3797,7 @@ export interface UsersSelect<T extends boolean = true> {
   avatar?: T;
   discordId?: T;
   role?: T;
+  linkedPerson?: T;
   assignedTeams?: T;
   departments?:
     | T
@@ -3829,6 +3856,7 @@ export interface InviteLinksSelect<T extends boolean = true> {
         isEventsStaff?: T;
         isScoutingStaff?: T;
       };
+  linkedPerson?: T;
   email?: T;
   expiresAt?: T;
   usedAt?: T;

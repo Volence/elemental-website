@@ -1,12 +1,14 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
+import RangeFilter, { type RangeValue } from '@/components/RangeFilter'
 
 // ── Types ──
 
 type PlayerInfo = {
   name: string
   team: string
+  payloadTeamId: number | null
   mostPlayedHero: string
   mapsPlayed: number
 }
@@ -67,6 +69,7 @@ type HeroPoolEntry = {
   avgUltChargeTime: number
   avgKillsPerUlt: number
   avgUltHoldTime: number
+  avgDroughtTime: number
 }
 
 type MapEntry = {
@@ -90,15 +93,38 @@ type MapEntry = {
   drought: number
 }
 
+type TrendEntry = {
+  scrimDate: string
+  scrimName: string
+  mapCount: number
+  elimsPer10: number; fbPer10: number; deathsPer10: number
+  damagePer10: number; healingPer10: number; damageTakenPer10: number
+  damageBlockedPer10: number; ultsEarnedPer10: number
+  soloKillsPer10: number; envKillsPer10: number
+}
+
+type HeroMatchup = { hero: string; count: number }
+
+type MapWinrate = { map: string; wins: number; losses: number; draws: number; total: number; winrate: number }
+type MapTypeWinrate = { mapType: string; wins: number; losses: number; draws: number; total: number; winrate: number }
+type FBMethod = { method: string; count: number }
+
 type PlayerData = {
   player: PlayerInfo
   career: CareerStats
   heroPool: HeroPoolEntry[]
   maps: MapEntry[]
+  trendData: TrendEntry[]
+  heroMatchups: { killedMost: HeroMatchup[]; diedToMost: HeroMatchup[] }
+  mapWinrates: MapWinrate[]
+  mapTypeWinrates: MapTypeWinrate[]
+  roleTimeSplit: Record<string, number>
+  finalBlowsByMethod: FBMethod[]
 }
 
 type MapSortKey = keyof MapEntry
 type SortDir = 'asc' | 'desc'
+type TabKey = 'overview' | 'analytics' | 'charts'
 
 // ── Design tokens (Clean Glow) ──
 const CYAN = '#06b6d4'
@@ -107,8 +133,8 @@ const GREEN = '#22c55e'
 const RED = '#ef4444'
 const PURPLE = '#8b5cf6'
 const AMBER = '#f59e0b'
-const BG_CARD = 'rgba(15, 15, 30, 0.7)'
-const BG_INNER = 'rgba(20, 20, 40, 0.5)'
+const BG_CARD = 'rgba(255, 255, 255, 0.03)'
+const BG_INNER = 'rgba(255, 255, 255, 0.02)'
 const BORDER = 'rgba(255, 255, 255, 0.06)'
 const BORDER_GLOW = 'rgba(255, 255, 255, 0.08)'
 const TEXT_PRIMARY = '#f0f0f5'
@@ -186,29 +212,46 @@ export default function ScrimPlayerDetailView() {
   const [mapSortKey, setMapSortKey] = useState<MapSortKey>('scrimDate')
   const [mapSortDir, setMapSortDir] = useState<SortDir>('desc')
   const [expandedHero, setExpandedHero] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<TabKey>('overview')
+  const [analyticsHero, setAnalyticsHero] = useState<string | null>(null)
+  const [chartsHero, setChartsHero] = useState<string | null>(null)
+  const [chartsMap, setChartsMap] = useState<string>('all')
+  const [trendStat, setTrendStat] = useState<string>('damagePer10')
+  const [range, setRange] = useState<RangeValue>('last20')
 
   useEffect(() => {
     ensureGlobalStyles()
     const params = new URLSearchParams(window.location.search)
+    const personId = params.get('personId')
     const player = params.get('player')
-    if (!player) {
+
+    if (!personId && !player) {
       setError('No player specified')
       setLoading(false)
       return
     }
 
-    fetch(`/api/player-stats?player=${encodeURIComponent(player)}`)
+    // Prefer personId (merged profile) over raw player name
+    const apiUrl = personId
+      ? `/api/player-stats?personId=${encodeURIComponent(personId)}&range=${range}`
+      : `/api/player-stats?player=${encodeURIComponent(player!)}&range=${range}`
+
+    fetch(apiUrl)
       .then((r) => r.json())
       .then((d) => {
         if (d.error) setError(d.error)
         else {
           setData(d)
-          if (d.heroPool?.length > 0) setExpandedHero(d.heroPool[0].hero)
+          if (d.heroPool?.length > 0) {
+            setExpandedHero(d.heroPool[0].hero)
+            setAnalyticsHero(d.heroPool[0].hero)
+            setChartsHero(d.heroPool[0].hero)
+          }
         }
       })
       .catch(() => setError('Failed to fetch player stats'))
       .finally(() => setLoading(false))
-  }, [])
+  }, [range])
 
   if (loading) {
     return (
@@ -252,7 +295,7 @@ export default function ScrimPlayerDetailView() {
   return (
     <div style={{
       position: 'relative',
-      minHeight: '100vh',
+      minHeight: '100%',
       background: `
         radial-gradient(ellipse 80% 50% at 50% -20%, rgba(6, 182, 212, 0.08) 0%, transparent 60%),
         radial-gradient(ellipse 60% 40% at 80% 100%, rgba(139, 92, 246, 0.05) 0%, transparent 50%),
@@ -275,26 +318,55 @@ export default function ScrimPlayerDetailView() {
         <a href="/admin/scrim-players" style={{ color: TEXT_SECONDARY, fontSize: '12px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px', transition: 'color 0.2s' }}>
           ← Back to players
         </a>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginTop: '12px' }}>
-          <h1 style={{ fontSize: '32px', fontWeight: 800, margin: 0, color: TEXT_PRIMARY, letterSpacing: '-0.5px', textShadow: `0 0 40px ${CYAN}33` }}>
-            {data.player.name}
-          </h1>
-          <span style={{
-            fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px',
-            padding: '3px 10px', borderRadius: '6px',
-            background: `linear-gradient(135deg, ${CYAN_DIM}, rgba(6, 182, 212, 0.06))`,
-            color: CYAN, boxShadow: `0 0 12px ${CYAN}22, inset 0 1px 0 rgba(255,255,255,0.05)`,
-            border: `1px solid ${CYAN}22`,
-          }}>
-            {data.player.mostPlayedHero}
-          </span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '12px' }}>
+          <div>
+            <h1 style={{ fontSize: '32px', fontWeight: 800, margin: 0, color: TEXT_PRIMARY, letterSpacing: '-0.5px', textShadow: `0 0 40px ${CYAN}33` }}>
+              {data.player.name}
+            </h1>
+            <p style={{ color: TEXT_SECONDARY, fontSize: '14px', marginTop: '6px' }}>
+              {data.player.payloadTeamId ? (
+                <a
+                  href={`/admin/scrim-team?teamId=${data.player.payloadTeamId}`}
+                  style={{ color: CYAN, textDecoration: 'none', fontWeight: 600, transition: 'opacity 0.2s' }}
+                  onMouseEnter={e => { e.currentTarget.style.opacity = '0.8'; e.currentTarget.style.textDecoration = 'underline' }}
+                  onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.textDecoration = 'none' }}
+                >
+                  {data.player.team}
+                </a>
+              ) : (
+                data.player.team
+              )} · {data.player.mapsPlayed} map{data.player.mapsPlayed !== 1 ? 's' : ''} played
+            </p>
+          </div>
+          <RangeFilter value={range} onChange={setRange} />
         </div>
-        <p style={{ color: TEXT_SECONDARY, fontSize: '14px', marginTop: '6px' }}>
-          {data.player.team} · {data.player.mapsPlayed} map{data.player.mapsPlayed !== 1 ? 's' : ''} played
-        </p>
         <div style={{ width: '60px', height: '3px', background: `linear-gradient(90deg, ${CYAN}, ${CYAN}00)`, borderRadius: '2px', marginTop: '8px' }} />
       </div>
 
+      {/* Tab Bar */}
+      <div style={{ display: 'flex', gap: '0', marginBottom: '28px', borderBottom: `1px solid ${BORDER}` }}>
+        {(['overview', 'analytics', 'charts'] as TabKey[]).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              padding: '10px 24px', fontSize: '13px', fontWeight: activeTab === tab ? 700 : 500,
+              color: activeTab === tab ? CYAN : TEXT_SECONDARY,
+              borderBottom: activeTab === tab ? `2px solid ${CYAN}` : '2px solid transparent',
+              textTransform: 'capitalize', letterSpacing: '0.3px',
+              transition: 'all 0.2s', marginBottom: '-1px',
+              textShadow: activeTab === tab ? `0 0 12px ${CYAN}44` : 'none',
+              fontFamily: "'Inter', -apple-system, sans-serif",
+            }}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* ═══════════ Overview Tab ═══════════ */}
+      {activeTab === 'overview' && <>
       {/* Career Summary Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px', marginBottom: '32px' }}>
         <SummaryCard label="K/D Ratio" value={kd} sub={`${data.career.eliminations} E / ${data.career.deaths} D`} accentColor={CYAN} icon="⚔️" />
@@ -376,7 +448,7 @@ export default function ScrimPlayerDetailView() {
             <tbody>
               {sortedMaps.map((m) => (
                 <tr
-                  key={m.mapDataId}
+                  key={`${m.mapDataId}-${m.hero}`}
                   onClick={() => window.location.href = `/admin/scrim-map?mapId=${m.mapDataId}`}
                   style={{ cursor: 'pointer', borderBottom: `1px solid ${BORDER}`, transition: 'background 0.2s, box-shadow 0.2s' }}
                   onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(6, 182, 212, 0.04)'; e.currentTarget.style.boxShadow = `inset 3px 0 0 ${CYAN}44` }}
@@ -405,9 +477,493 @@ export default function ScrimPlayerDetailView() {
           </table>
         </div>
       </div>
+      </>}
+
+      {/* ═══════════ Analytics Tab ═══════════ */}
+      {activeTab === 'analytics' && renderAnalyticsTab()}
+
+      {/* ═══════════ Charts Tab ═══════════ */}
+      {activeTab === 'charts' && renderChartsTab()}
+
       </div>
     </div>
   )
+
+  function renderAnalyticsTab() {
+    if (!data) return null
+    const selHero = data.heroPool.find((h) => h.hero === analyticsHero) ?? data.heroPool[0]
+    if (!selHero) return <div style={{ color: TEXT_DIM }}>No hero data available.</div>
+    const heroMaps = data.maps.filter((m) => m.hero === selHero.hero)
+    // Performance Score: composite of Fleta% (weighted 0.4) + FirstPick% (0.35) − FirstDeath% (0.25)
+    const perfScore = Math.max(0, Math.round(
+      selHero.avgFletaPct * 0.4 + selHero.avgFirstPickPct * 0.35 - selHero.avgFirstDeathPct * 0.25
+    ))
+    return (
+      <>
+        {/* Hero Selector Pill Bar */}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px' }}>
+          {data.heroPool.map((h, idx) => {
+            const isActive = h.hero === analyticsHero
+            const col = BAR_COLORS[idx % BAR_COLORS.length]
+            return (
+              <button
+                key={h.hero}
+                onClick={() => setAnalyticsHero(h.hero)}
+                style={{
+                  background: isActive ? `linear-gradient(135deg, ${col}22, ${col}11)` : BG_CARD,
+                  border: `1px solid ${isActive ? col + '66' : BORDER}`,
+                  borderRadius: '8px', padding: '6px 14px', cursor: 'pointer',
+                  color: isActive ? col : TEXT_SECONDARY, fontSize: '12px', fontWeight: isActive ? 700 : 500,
+                  transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '6px',
+                  boxShadow: isActive ? `0 0 16px ${col}22` : 'none',
+                  fontFamily: "'Inter', -apple-system, sans-serif",
+                }}
+              >
+                {h.portrait && <img src={h.portrait} alt={h.hero} style={{ width: 18, height: 18, borderRadius: '50%' }} />}
+                {h.hero}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* 4 Stat Cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px', marginBottom: '28px' }}>
+          <AnalyticsCard title="Avg Ult Charge Time" value={`${selHero.avgUltChargeTime}s`} icon="⚡"
+            desc="Average time to build an ultimate. Lower is better — indicates consistent damage or healing output." color={CYAN} />
+          <AnalyticsCard title="Avg Time to Use Ult" value={`${selHero.avgUltHoldTime}s`} icon="⏱️"
+            desc="Average time from charging ult to using it. High values may indicate holding ult too long." color={PURPLE} />
+          <AnalyticsCard title="Avg Drought Time" value={`${selHero.avgDroughtTime}s`} icon="💀"
+            desc="Average time between kills. A high drought time can indicate you&apos;re not participating in fights often enough." color={AMBER} />
+          <AnalyticsCard title="Performance Score" value={`${perfScore} pts`} icon="🏆"
+            desc={`Composite score: Fleta% (${selHero.avgFletaPct}%) × 0.4 + FP% (${selHero.avgFirstPickPct}%) × 0.35 − FD% (${selHero.avgFirstDeathPct}%) × 0.25`} color={GREEN} />
+        </div>
+
+        {/* Per-Map Trend Table for Selected Hero */}
+        <div style={{ ...CARD_STYLE, padding: 0, overflow: 'hidden' }}>
+          <div style={{ padding: '16px 20px 10px', fontWeight: 700, fontSize: '15px', color: TEXT_PRIMARY, borderBottom: `1px solid ${BORDER}`, display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ textShadow: `0 0 20px ${CYAN}22` }}>Map-by-Map Analytics</span>
+            <span style={{ fontWeight: 400, fontSize: '12px', color: TEXT_DIM }}>{heroMaps.length} map{heroMaps.length !== 1 ? 's' : ''} on {selHero.hero}</span>
+          </div>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', minWidth: '900px' }}>
+              <thead>
+                <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
+                  {['Map', 'Date', 'FP%', 'FD%', 'Fleta%', 'Ult Charge', 'Ult Hold', 'K/Ult', 'Drought', 'Elims', 'Deaths', 'Damage'].map((label) => (
+                    <th key={label} style={{ padding: '10px 12px', textAlign: label === 'Map' || label === 'Date' ? 'left' : 'right', fontWeight: 500, color: TEXT_SECONDARY, fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {heroMaps.map((m) => (
+                  <tr key={m.mapDataId} style={{ borderBottom: `1px solid ${BORDER}`, transition: 'background 0.2s' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(6, 182, 212, 0.04)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                  >
+                    <td style={{ padding: '10px 12px', fontWeight: 600, color: CYAN, whiteSpace: 'nowrap', textShadow: `0 0 8px ${CYAN}22` }}>
+                      {m.mapName} <span style={{ fontSize: '10px', color: TEXT_DIM, fontWeight: 400 }}>{m.mapType}</span>
+                    </td>
+                    <td style={{ padding: '10px 12px', color: TEXT_DIM, fontSize: '11px', whiteSpace: 'nowrap' }}>{formatDate(m.scrimDate)}</td>
+                    <td style={{ padding: '10px 12px', textAlign: 'right', color: m.firstPickPct > 20 ? GREEN : TEXT_PRIMARY, fontWeight: m.firstPickPct > 20 ? 600 : 400 }}>{m.firstPickPct}%</td>
+                    <td style={{ padding: '10px 12px', textAlign: 'right', color: m.firstDeathPct > 20 ? RED : TEXT_PRIMARY, fontWeight: m.firstDeathPct > 20 ? 600 : 400 }}>{m.firstDeathPct}%</td>
+                    <td style={{ padding: '10px 12px', textAlign: 'right' }}>{m.fletaPct}%</td>
+                    <td style={{ padding: '10px 12px', textAlign: 'right' }}>{m.ultCharge}s</td>
+                    <td style={{ padding: '10px 12px', textAlign: 'right' }}>{m.ultHold}s</td>
+                    <td style={{ padding: '10px 12px', textAlign: 'right' }}>{m.kPerUlt}</td>
+                    <td style={{ padding: '10px 12px', textAlign: 'right' }}>{m.drought}s</td>
+                    <td style={{ padding: '10px 12px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{m.eliminations}</td>
+                    <td style={{ padding: '10px 12px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{m.deaths}</td>
+                    <td style={{ padding: '10px 12px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{formatNumber(m.damage)}</td>
+                  </tr>
+                ))}
+                {heroMaps.length === 0 && (
+                  <tr><td colSpan={12} style={{ padding: '24px', textAlign: 'center', color: TEXT_DIM }}>No maps found for {selHero.hero}.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Role Time Split — Donut Chart */}
+        {data.roleTimeSplit && Object.values(data.roleTimeSplit).some(v => v > 0) && (
+          <div style={{ ...CARD_STYLE, marginTop: '24px' }}>
+            <div style={{ ...LABEL_STYLE, marginBottom: '16px' }}>⏱️ Role Time Split</div>
+            <div style={{ display: 'flex', gap: '32px', alignItems: 'center', justifyContent: 'center' }}>
+              {/* SVG Donut */}
+              <svg width={140} height={140} viewBox="0 0 140 140">
+                {(() => {
+                  const roles = Object.entries(data.roleTimeSplit).filter(([, v]) => v > 0)
+                  const total = roles.reduce((a, [, v]) => a + v, 0)
+                  const colors: Record<string, string> = { Tank: CYAN, Damage: RED, Support: GREEN }
+                  let offset = 0
+                  return roles.map(([role, val]) => {
+                    const pct = val / total
+                    const dashLen = pct * 2 * Math.PI * 50
+                    const dashGap = 2 * Math.PI * 50 - dashLen
+                    const r = (
+                      <circle
+                        key={role}
+                        cx={70} cy={70} r={50}
+                        fill="none"
+                        stroke={colors[role] ?? AMBER}
+                        strokeWidth={18}
+                        strokeDasharray={`${dashLen} ${dashGap}`}
+                        strokeDashoffset={-offset}
+                        transform="rotate(-90 70 70)"
+                        style={{ transition: 'stroke-dashoffset 0.6s ease' }}
+                      />
+                    )
+                    offset += dashLen
+                    return r
+                  })
+                })()}
+                <text x={70} y={70} textAnchor="middle" dominantBaseline="central" fill={TEXT_PRIMARY} fontSize={14} fontWeight={700}>
+                  {formatTime(Object.values(data.roleTimeSplit).reduce((a, v) => a + v, 0))}
+                </text>
+              </svg>
+              {/* Legend */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {Object.entries(data.roleTimeSplit).filter(([, v]) => v > 0).map(([role, val]) => {
+                  const total = Object.values(data.roleTimeSplit).reduce((a, v) => a + v, 0)
+                  const pct = total > 0 ? ((val / total) * 100).toFixed(1) : '0'
+                  const colors: Record<string, string> = { Tank: CYAN, Damage: RED, Support: GREEN }
+                  return (
+                    <div key={role} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ width: 12, height: 12, borderRadius: '3px', background: colors[role] ?? AMBER, boxShadow: `0 0 8px ${(colors[role] ?? AMBER)}44` }} />
+                      <span style={{ color: TEXT_PRIMARY, fontSize: '13px', fontWeight: 600, minWidth: '70px' }}>{role}</span>
+                      <span style={{ color: TEXT_SECONDARY, fontSize: '12px' }}>{formatTime(val)} ({pct}%)</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Map Winrates */}
+        {data.mapWinrates.length > 0 && (
+          <div style={{ ...CARD_STYLE, marginTop: '24px' }}>
+            <div style={{ ...LABEL_STYLE, marginBottom: '16px' }}>🗺️ Map Winrates</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+              {/* By Map */}
+              <div>
+                <div style={{ fontSize: '11px', color: TEXT_DIM, marginBottom: '10px', fontWeight: 600, letterSpacing: '0.5px' }}>BY MAP</div>
+                {data.mapWinrates.map(m => {
+                  const maxTotal = Math.max(...data.mapWinrates.map(x => x.total))
+                  return (
+                    <div key={m.map} style={{ marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                        <span style={{ fontSize: '12px', color: TEXT_PRIMARY, fontWeight: 500 }}>{m.map}</span>
+                        <span style={{ fontSize: '11px', color: m.winrate >= 50 ? GREEN : RED, fontWeight: 600 }}>
+                          {m.winrate}% <span style={{ color: TEXT_DIM, fontWeight: 400 }}>({m.wins}W {m.losses}L{m.draws > 0 ? ` ${m.draws}D` : ''})</span>
+                        </span>
+                      </div>
+                      <div style={{ height: '6px', background: BG_INNER, borderRadius: '3px', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${(m.total / maxTotal) * 100}%`, borderRadius: '3px', background: `linear-gradient(90deg, ${m.winrate >= 50 ? GREEN : RED}66, ${m.winrate >= 50 ? GREEN : RED}33)`, transition: 'width 0.4s ease' }} />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+              {/* By Map Type */}
+              <div>
+                <div style={{ fontSize: '11px', color: TEXT_DIM, marginBottom: '10px', fontWeight: 600, letterSpacing: '0.5px' }}>BY MAP TYPE</div>
+                {data.mapTypeWinrates.map(m => {
+                  const maxTotal = Math.max(...data.mapTypeWinrates.map(x => x.total))
+                  return (
+                    <div key={m.mapType} style={{ marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                        <span style={{ fontSize: '12px', color: TEXT_PRIMARY, fontWeight: 500 }}>{m.mapType}</span>
+                        <span style={{ fontSize: '11px', color: m.winrate >= 50 ? GREEN : RED, fontWeight: 600 }}>
+                          {m.winrate}% <span style={{ color: TEXT_DIM, fontWeight: 400 }}>({m.wins}W {m.losses}L{m.draws > 0 ? ` ${m.draws}D` : ''})</span>
+                        </span>
+                      </div>
+                      <div style={{ height: '6px', background: BG_INNER, borderRadius: '3px', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${(m.total / maxTotal) * 100}%`, borderRadius: '3px', background: `linear-gradient(90deg, ${m.winrate >= 50 ? GREEN : RED}66, ${m.winrate >= 50 ? GREEN : RED}33)`, transition: 'width 0.4s ease' }} />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Hero Matchups — Killed Most / Died To Most */}
+        {(data.heroMatchups.killedMost.length > 0 || data.heroMatchups.diedToMost.length > 0) && (
+          <div style={{ ...CARD_STYLE, marginTop: '24px' }}>
+            <div style={{ ...LABEL_STYLE, marginBottom: '16px' }}>⚔️ Hero Matchups</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px' }}>
+              {/* Killed Most */}
+              <div>
+                <div style={{ fontSize: '11px', color: GREEN, marginBottom: '10px', fontWeight: 600, letterSpacing: '0.5px' }}>ELIMINATED MOST</div>
+                {data.heroMatchups.killedMost.map((m, i) => {
+                  const maxCount = data.heroMatchups.killedMost[0]?.count ?? 1
+                  return (
+                    <div key={m.hero} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '11px', color: TEXT_DIM, width: '16px', textAlign: 'right' }}>{i + 1}.</span>
+                      <span style={{ fontSize: '12px', color: TEXT_PRIMARY, fontWeight: 500, minWidth: '100px' }}>{m.hero}</span>
+                      <div style={{ flex: 1, height: '6px', background: BG_INNER, borderRadius: '3px', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${(m.count / maxCount) * 100}%`, borderRadius: '3px', background: `linear-gradient(90deg, ${GREEN}88, ${GREEN}44)`, transition: 'width 0.4s ease' }} />
+                      </div>
+                      <span style={{ fontSize: '12px', color: GREEN, fontWeight: 700, minWidth: '30px', textAlign: 'right' }}>{m.count}</span>
+                    </div>
+                  )
+                })}
+              </div>
+              {/* Died To Most */}
+              <div>
+                <div style={{ fontSize: '11px', color: RED, marginBottom: '10px', fontWeight: 600, letterSpacing: '0.5px' }}>DIED TO MOST</div>
+                {data.heroMatchups.diedToMost.map((m, i) => {
+                  const maxCount = data.heroMatchups.diedToMost[0]?.count ?? 1
+                  return (
+                    <div key={m.hero} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '11px', color: TEXT_DIM, width: '16px', textAlign: 'right' }}>{i + 1}.</span>
+                      <span style={{ fontSize: '12px', color: TEXT_PRIMARY, fontWeight: 500, minWidth: '100px' }}>{m.hero}</span>
+                      <div style={{ flex: 1, height: '6px', background: BG_INNER, borderRadius: '3px', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${(m.count / maxCount) * 100}%`, borderRadius: '3px', background: `linear-gradient(90deg, ${RED}88, ${RED}44)`, transition: 'width 0.4s ease' }} />
+                      </div>
+                      <span style={{ fontSize: '12px', color: RED, fontWeight: 700, minWidth: '30px', textAlign: 'right' }}>{m.count}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Final Blows By Method */}
+        {data.finalBlowsByMethod.length > 0 && (
+          <div style={{ ...CARD_STYLE, marginTop: '24px' }}>
+            <div style={{ ...LABEL_STYLE, marginBottom: '16px' }}>🎯 Final Blows By Method</div>
+            {(() => {
+              const maxCount = data.finalBlowsByMethod[0]?.count ?? 1
+              const total = data.finalBlowsByMethod.reduce((a, m) => a + m.count, 0)
+              return data.finalBlowsByMethod.map((m, i) => (
+                <div key={m.method} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '12px', color: TEXT_PRIMARY, fontWeight: 500, minWidth: '130px' }}>{m.method}</span>
+                  <div style={{ flex: 1, height: '8px', background: BG_INNER, borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${(m.count / maxCount) * 100}%`, borderRadius: '4px', background: `linear-gradient(90deg, ${BAR_COLORS[i % BAR_COLORS.length]}88, ${BAR_COLORS[i % BAR_COLORS.length]}44)`, transition: 'width 0.4s ease' }} />
+                  </div>
+                  <span style={{ fontSize: '12px', color: BAR_COLORS[i % BAR_COLORS.length], fontWeight: 700, minWidth: '40px', textAlign: 'right' }}>{m.count}</span>
+                  <span style={{ fontSize: '10px', color: TEXT_DIM, minWidth: '36px' }}>({total > 0 ? ((m.count / total) * 100).toFixed(1) : 0}%)</span>
+                </div>
+              ))
+            })()}
+          </div>
+        )}
+      </>
+    )
+  }
+
+  function renderChartsTab() {
+    if (!data) return null
+    const selHero = data.heroPool.find((h) => h.hero === chartsHero) ?? data.heroPool[0]
+    if (!selHero) return <div style={{ color: TEXT_DIM }}>No hero data available.</div>
+
+    // All maps this hero has played on
+    const heroMaps = data.maps.filter((m) => m.hero === selHero.hero)
+
+    // Distinct map names for the map selector
+    const mapNames = [...new Set(heroMaps.map((m) => m.mapName))]
+
+    // Filter by selected map (or all)
+    const filteredMaps = chartsMap === 'all'
+      ? heroMaps
+      : heroMaps.filter((m) => m.mapName === chartsMap)
+
+    // Sort chronologically by scrim date
+    const sortedMaps = [...filteredMaps].sort(
+      (a, b) => new Date(a.scrimDate).getTime() - new Date(b.scrimDate).getTime()
+    )
+
+    // Build chart data with rich tooltip info
+    const chartData = sortedMaps.map((m) => {
+      const date = new Date(m.scrimDate)
+      const label = chartsMap === 'all'
+        ? m.mapName
+        : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      return {
+        label,
+        damage: m.damage,
+        finalBlows: m.finalBlows,
+        eliminations: m.eliminations,
+        healing: m.healing,
+        // Rich tooltip context
+        tooltip: {
+          scrimName: m.scrimName,
+          date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          mapName: m.mapName,
+          mapType: m.mapType,
+          elims: m.eliminations,
+          deaths: m.deaths,
+          damage: m.damage,
+          healing: m.healing,
+          kd: m.deaths > 0 ? (m.eliminations / m.deaths).toFixed(2) : m.eliminations.toString(),
+        },
+      }
+    })
+
+    const isFiltered = chartsMap !== 'all'
+
+    return (
+      <>
+        {/* Hero Selector Pill Bar */}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
+          {data.heroPool.map((h, idx) => {
+            const isActive = h.hero === chartsHero
+            const col = BAR_COLORS[idx % BAR_COLORS.length]
+            return (
+              <button
+                key={h.hero}
+                onClick={() => { setChartsHero(h.hero); setChartsMap('all') }}
+                style={{
+                  background: isActive ? `linear-gradient(135deg, ${col}22, ${col}11)` : BG_CARD,
+                  border: `1px solid ${isActive ? col + '66' : BORDER}`,
+                  borderRadius: '8px', padding: '6px 14px', cursor: 'pointer',
+                  color: isActive ? col : TEXT_SECONDARY, fontSize: '12px', fontWeight: isActive ? 700 : 500,
+                  transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '6px',
+                  boxShadow: isActive ? `0 0 16px ${col}22` : 'none',
+                  fontFamily: "'Inter', -apple-system, sans-serif",
+                }}
+              >
+                {h.portrait && <img src={h.portrait} alt={h.hero} style={{ width: 18, height: 18, borderRadius: '50%' }} />}
+                {h.hero}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Map Selector Pill Bar */}
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '24px' }}>
+          <button
+            onClick={() => setChartsMap('all')}
+            style={{
+              background: chartsMap === 'all' ? `linear-gradient(135deg, ${CYAN}22, ${CYAN}11)` : BG_INNER,
+              border: `1px solid ${chartsMap === 'all' ? CYAN + '55' : BORDER}`,
+              borderRadius: '6px', padding: '5px 12px', cursor: 'pointer',
+              color: chartsMap === 'all' ? CYAN : TEXT_DIM, fontSize: '11px', fontWeight: chartsMap === 'all' ? 700 : 500,
+              transition: 'all 0.2s', fontFamily: "'Inter', -apple-system, sans-serif",
+            }}
+          >
+            All Maps
+          </button>
+          {mapNames.map((name) => {
+            const isActive = chartsMap === name
+            const count = heroMaps.filter((m) => m.mapName === name).length
+            return (
+              <button
+                key={name}
+                onClick={() => setChartsMap(name)}
+                style={{
+                  background: isActive ? `linear-gradient(135deg, ${CYAN}22, ${CYAN}11)` : BG_INNER,
+                  border: `1px solid ${isActive ? CYAN + '55' : BORDER}`,
+                  borderRadius: '6px', padding: '5px 12px', cursor: 'pointer',
+                  color: isActive ? CYAN : TEXT_DIM, fontSize: '11px', fontWeight: isActive ? 700 : 500,
+                  transition: 'all 0.2s', fontFamily: "'Inter', -apple-system, sans-serif",
+                }}
+              >
+                {name} <span style={{ opacity: 0.5, marginLeft: '4px' }}>({count})</span>
+              </button>
+            )
+          })}
+        </div>
+
+        {chartData.length === 0 ? (
+          <div style={{ ...CARD_STYLE, textAlign: 'center', padding: '48px', color: TEXT_DIM }}>No data found for {selHero.hero}{chartsMap !== 'all' ? ` on ${chartsMap}` : ''}.</div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+            <InlineSvgChart
+              title={isFiltered ? 'Hero Damage Over Time' : 'Hero Damage by Map'}
+              color={CYAN}
+              data={chartData.map((d) => ({ label: d.label, value: d.damage }))}
+              formatter={formatNumber}
+              tooltipData={chartData.map((d) => d.tooltip)}
+            />
+            <InlineSvgChart
+              title={isFiltered ? 'Final Blows Over Time' : 'Final Blows by Map'}
+              color={GREEN}
+              data={chartData.map((d) => ({ label: d.label, value: d.finalBlows }))}
+              tooltipData={chartData.map((d) => d.tooltip)}
+            />
+            <InlineSvgChart
+              title={isFiltered ? 'Eliminations Over Time' : 'Eliminations by Map'}
+              color={AMBER}
+              data={chartData.map((d) => ({ label: d.label, value: d.eliminations }))}
+              tooltipData={chartData.map((d) => d.tooltip)}
+            />
+            <InlineSvgChart
+              title={isFiltered ? 'Healing Over Time' : 'Healing by Map'}
+              color={PURPLE}
+              data={chartData.map((d) => ({ label: d.label, value: d.healing }))}
+              formatter={formatNumber}
+              tooltipData={chartData.map((d) => d.tooltip)}
+            />
+          </div>
+        )}
+
+        {chartData.length > 0 && (
+          <p style={{ color: TEXT_DIM, fontSize: '11px', marginTop: '12px', textAlign: 'center' }}>
+            {isFiltered
+              ? `Showing ${selHero.hero} on ${chartsMap} across ${chartData.length} scrim${chartData.length !== 1 ? 's' : ''}, sorted by date.`
+              : `Showing ${selHero.hero}'s stats across ${chartData.length} map${chartData.length !== 1 ? 's' : ''}.`}
+          </p>
+        )}
+
+        {/* ── Per-Scrim Trend Chart ── */}
+        {data.trendData.length > 1 && (() => {
+          const TREND_STATS: Record<string, { label: string; color: string }> = {
+            elimsPer10: { label: 'Eliminations /10', color: AMBER },
+            fbPer10: { label: 'Final Blows /10', color: GREEN },
+            deathsPer10: { label: 'Deaths /10', color: RED },
+            damagePer10: { label: 'Damage /10', color: CYAN },
+            healingPer10: { label: 'Healing /10', color: PURPLE },
+            damageTakenPer10: { label: 'Damage Taken /10', color: '#ec4899' },
+            damageBlockedPer10: { label: 'Damage Blocked /10', color: '#6366f1' },
+            ultsEarnedPer10: { label: 'Ults Earned /10', color: AMBER },
+            soloKillsPer10: { label: 'Solo Kills /10', color: GREEN },
+            envKillsPer10: { label: 'Env Kills /10', color: RED },
+          }
+          const selectedStat = TREND_STATS[trendStat] ?? TREND_STATS.damagePer10
+          const trendChartData = data.trendData.map(t => ({
+            label: new Date(t.scrimDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+            value: (t as Record<string, unknown>)[trendStat] as number ?? 0,
+          }))
+
+          return (
+            <div style={{ marginTop: '28px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <div style={{ fontWeight: 700, fontSize: '15px', color: TEXT_PRIMARY, textShadow: `0 0 20px ${selectedStat.color}22` }}>
+                  📈 Per-Scrim Trend — {selectedStat.label}
+                </div>
+                <select
+                  value={trendStat}
+                  onChange={e => setTrendStat(e.target.value)}
+                  style={{
+                    background: BG_CARD, border: `1px solid ${BORDER}`, borderRadius: '8px',
+                    padding: '6px 12px', color: TEXT_PRIMARY, fontSize: '12px',
+                    cursor: 'pointer', fontFamily: "'Inter', -apple-system, sans-serif",
+                  }}
+                >
+                  {Object.entries(TREND_STATS).map(([key, { label }]) => (
+                    <option key={key} value={key} style={{ background: '#1a1a2e' }}>{label}</option>
+                  ))}
+                </select>
+              </div>
+              <InlineSvgChart
+                title={selectedStat.label}
+                color={selectedStat.color}
+                data={trendChartData}
+                formatter={trendStat.includes('damage') || trendStat.includes('healing') || trendStat.includes('Damage') || trendStat.includes('Healing') ? formatNumber : undefined}
+              />
+              <p style={{ color: TEXT_DIM, fontSize: '11px', marginTop: '8px', textAlign: 'center' }}>
+                Showing {selectedStat.label.toLowerCase()} across {data.trendData.length} scrim{data.trendData.length !== 1 ? 's' : ''}, sorted chronologically.
+              </p>
+            </div>
+          )
+        })()}
+      </>
+    )
+  }
 }
 
 // ── Sub-components ──
@@ -848,6 +1404,215 @@ function HeroPlaytimeChart({ heroPool, expandedHero, onHeroClick }: { heroPool: 
           </div>
         )
       })}
+    </div>
+  )
+}
+
+/** Analytics stat card — icon, large value, small descriptive text */
+function AnalyticsCard({ title, value, icon, desc, color }: { title: string; value: string; icon: string; desc: string; color: string }) {
+  return (
+    <div style={{
+      ...CARD_STYLE, padding: '20px', display: 'flex', flexDirection: 'column', gap: '10px',
+      borderColor: `${color}22`, position: 'relative', overflow: 'hidden',
+    }}>
+      {/* Accent glow */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: `linear-gradient(90deg, transparent, ${color}44, transparent)` }} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span style={{ fontSize: '20px' }}>{icon}</span>
+        <span style={{ fontSize: '11px', color: TEXT_SECONDARY, textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600 }}>{title}</span>
+      </div>
+      <div style={{ fontSize: '28px', fontWeight: 800, color, letterSpacing: '-0.5px', textShadow: `0 0 20px ${color}33`, fontVariantNumeric: 'tabular-nums' }}>
+        {value}
+      </div>
+      <p style={{ fontSize: '11px', color: TEXT_DIM, lineHeight: '1.5', margin: 0 }}>{desc}</p>
+    </div>
+  )
+}
+
+/** Inline SVG line + area chart — zero-dependency, Clean Glow styled */
+type TooltipInfo = {
+  scrimName: string
+  date: string
+  mapName: string
+  mapType: string
+  elims: number
+  deaths: number
+  damage: number
+  healing: number
+  kd: string
+}
+
+function InlineSvgChart({ title, color, data, formatter, tooltipData }: {
+  title: string
+  color: string
+  data: { label: string; value: number }[]
+  formatter?: (n: number) => string
+  tooltipData?: TooltipInfo[]
+}) {
+  const [hovered, setHovered] = React.useState<number | null>(null)
+  const fmt = formatter ?? ((n: number) => n.toString())
+
+  if (data.length === 0) return null
+
+  const W = 600, H = 280, PAD_L = 70, PAD_R = 24, PAD_TOP = 36, PAD_BOT = 48
+  const chartW = W - PAD_L - PAD_R
+  const chartH = H - PAD_TOP - PAD_BOT
+  const maxVal = Math.max(...data.map((d) => d.value), 1)
+  // Keep minVal at 0 for cleaner baselines, unless there are negative values
+  const minVal = Math.min(...data.map((d) => d.value), 0)
+  const range = maxVal - minVal || 1
+  // Add 10% padding to top of range so points don't touch the ceiling
+  const paddedMax = maxVal + range * 0.1
+  const paddedRange = paddedMax - minVal || 1
+
+  const points = data.map((d, i) => ({
+    x: PAD_L + (data.length === 1 ? chartW / 2 : (i / (data.length - 1)) * chartW),
+    y: PAD_TOP + chartH - ((d.value - minVal) / paddedRange) * chartH,
+    ...d,
+  }))
+
+  const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
+  const areaPath = linePath + ` L ${points[points.length - 1].x} ${PAD_TOP + chartH} L ${points[0].x} ${PAD_TOP + chartH} Z`
+
+  // Horizontal grid lines (5 lines: 0%, 25%, 50%, 75%, 100%)
+  const GRID_COUNT = 5
+  const gridLines = Array.from({ length: GRID_COUNT }, (_, i) => {
+    const frac = i / (GRID_COUNT - 1)
+    return {
+      y: PAD_TOP + chartH * (1 - frac),
+      val: Math.round(minVal + frac * paddedRange),
+    }
+  })
+
+  const gradId = `grad-${title.replace(/\s+/g, '-')}-${color.replace('#', '')}`
+
+  return (
+    <div style={{ ...CARD_STYLE, padding: '20px' }}>
+      <div style={{ fontWeight: 700, fontSize: '14px', color: TEXT_PRIMARY, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ width: 12, height: 12, borderRadius: '3px', background: color, boxShadow: `0 0 8px ${color}66` }} />
+        <span style={{ textShadow: `0 0 20px ${color}33` }}>{title}</span>
+        <span style={{ fontSize: '11px', color: TEXT_DIM, fontWeight: 400, marginLeft: 'auto' }}>{data.length} map{data.length !== 1 ? 's' : ''}</span>
+      </div>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ display: 'block', width: '100%', height: '280px' }} preserveAspectRatio="xMidYMid meet">
+        {/* Background */}
+        <rect x={PAD_L} y={PAD_TOP} width={chartW} height={chartH} fill="rgba(255,255,255,0.015)" rx={4} />
+
+        {/* Grid lines + Y-axis labels */}
+        {gridLines.map((g, i) => (
+          <g key={i}>
+            <line x1={PAD_L} y1={g.y} x2={PAD_L + chartW} y2={g.y}
+              stroke={i === 0 ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.06)'}
+              strokeWidth={i === 0 ? 1.5 : 1}
+              strokeDasharray={i === 0 ? undefined : '4 4'} />
+            <text x={PAD_L - 10} y={g.y + 4} fill={TEXT_SECONDARY} fontSize={12} textAnchor="end" fontFamily="'Inter', sans-serif" fontWeight={500}>
+              {fmt(g.val)}
+            </text>
+          </g>
+        ))}
+
+        {/* Y-axis line */}
+        <line x1={PAD_L} y1={PAD_TOP} x2={PAD_L} y2={PAD_TOP + chartH} stroke="rgba(255,255,255,0.1)" strokeWidth={1} />
+
+        {/* Area fill gradient */}
+        <defs>
+          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity={0.35} />
+            <stop offset="70%" stopColor={color} stopOpacity={0.08} />
+            <stop offset="100%" stopColor={color} stopOpacity={0.01} />
+          </linearGradient>
+        </defs>
+        <path d={areaPath} fill={`url(#${gradId})`} />
+
+        {/* Main line */}
+        <path d={linePath} fill="none" stroke={color} strokeWidth={3} strokeLinejoin="round" strokeLinecap="round" />
+
+        {/* Glow line */}
+        <path d={linePath} fill="none" stroke={color} strokeWidth={8} strokeLinejoin="round" strokeLinecap="round" opacity={0.2} style={{ filter: 'blur(6px)' }} />
+
+        {/* Data points + X labels + value labels */}
+        {points.map((p, i) => (
+          <g key={i}
+            onMouseEnter={() => setHovered(i)}
+            onMouseLeave={() => setHovered(null)}
+            style={{ cursor: 'pointer' }}
+          >
+            {/* Vertical guide on hover */}
+            {hovered === i && (
+              <line x1={p.x} y1={PAD_TOP} x2={p.x} y2={PAD_TOP + chartH} stroke={`${color}33`} strokeWidth={1} strokeDasharray="3 3" />
+            )}
+            {/* Hit area */}
+            <circle cx={p.x} cy={p.y} r={20} fill="transparent" />
+
+            {/* Outer ring */}
+            <circle cx={p.x} cy={p.y} r={hovered === i ? 10 : 6} fill="none" stroke={`${color}44`} strokeWidth={1.5}
+              style={{ transition: 'all 0.2s' }} />
+            {/* Inner dot */}
+            <circle cx={p.x} cy={p.y} r={hovered === i ? 6 : 4} fill={color}
+              style={{ transition: 'all 0.2s', filter: `drop-shadow(0 0 ${hovered === i ? 10 : 4}px ${color})` }} />
+
+            {/* Value label above dot (always visible) */}
+            <text x={p.x} y={p.y - 16} fill={hovered === i ? TEXT_PRIMARY : `${color}cc`} fontSize={12} textAnchor="middle"
+              fontWeight={700} fontFamily="'Inter', sans-serif" style={{ transition: 'fill 0.2s' }}>
+              {fmt(p.value)}
+            </text>
+
+            {/* X-axis label */}
+            <text x={p.x} y={PAD_TOP + chartH + 20} fill={hovered === i ? TEXT_PRIMARY : TEXT_DIM} fontSize={11}
+              textAnchor="middle" fontFamily="'Inter', sans-serif" fontWeight={hovered === i ? 600 : 400}
+              style={{ transition: 'fill 0.2s' }}>
+              {p.label.length > 14 ? p.label.slice(0, 12) + '…' : p.label}
+            </text>
+
+            {/* Hover tooltip */}
+            {hovered === i && (() => {
+              const tip = tooltipData?.[i]
+              if (tip) {
+                // Rich tooltip with scrim context
+                const boxW = 180, boxH = 80
+                // Position tooltip to the right by default, flip if near right edge
+                const tipX = p.x + 16 + boxW > W ? p.x - boxW - 16 : p.x + 16
+                const tipY = Math.max(4, Math.min(p.y - boxH / 2, H - boxH - 4))
+                return (
+                  <g>
+                    <rect x={tipX} y={tipY} width={boxW} height={boxH} rx={8}
+                      fill="rgba(8, 10, 22, 0.96)" stroke={`${color}55`} strokeWidth={1.5} />
+                    {/* Scrim name */}
+                    <text x={tipX + 10} y={tipY + 16} fill={color} fontSize={11} fontWeight={700} fontFamily="'Inter', sans-serif">
+                      {tip.scrimName.length > 22 ? tip.scrimName.slice(0, 20) + '…' : tip.scrimName}
+                    </text>
+                    {/* Date + Map type */}
+                    <text x={tipX + 10} y={tipY + 30} fill={TEXT_DIM} fontSize={9} fontFamily="'Inter', sans-serif">
+                      {tip.date} · {tip.mapType}
+                    </text>
+                    {/* Divider */}
+                    <line x1={tipX + 10} y1={tipY + 36} x2={tipX + boxW - 10} y2={tipY + 36} stroke="rgba(255,255,255,0.08)" />
+                    {/* Stats row */}
+                    <text x={tipX + 10} y={tipY + 52} fill={TEXT_SECONDARY} fontSize={9} fontFamily="'Inter', sans-serif">
+                      K/D: <tspan fill={TEXT_PRIMARY} fontWeight={700}>{tip.kd}</tspan>
+                      {'  '}E: <tspan fill={TEXT_PRIMARY} fontWeight={700}>{tip.elims}</tspan>
+                      {'  '}D: <tspan fill={TEXT_PRIMARY} fontWeight={700}>{tip.deaths}</tspan>
+                    </text>
+                    <text x={tipX + 10} y={tipY + 66} fill={TEXT_SECONDARY} fontSize={9} fontFamily="'Inter', sans-serif">
+                      Dmg: <tspan fill={CYAN} fontWeight={700}>{formatNumber(tip.damage)}</tspan>
+                      {'  '}Heal: <tspan fill={GREEN} fontWeight={700}>{formatNumber(tip.healing)}</tspan>
+                    </text>
+                  </g>
+                )
+              }
+              // Simple tooltip fallback
+              return (
+                <g>
+                  <rect x={p.x - 50} y={p.y - 44} width={100} height={24} rx={6}
+                    fill="rgba(10, 14, 26, 0.95)" stroke={`${color}66`} strokeWidth={1.5} />
+                  <text x={p.x} y={p.y - 28} fill={TEXT_PRIMARY} fontSize={12} textAnchor="middle" fontWeight={700} fontFamily="'Inter', sans-serif">
+                    {fmt(p.value)} — {p.label}
+                  </text>
+                </g>
+              )
+            })()}
+          </g>
+        ))}
+      </svg>
     </div>
   )
 }

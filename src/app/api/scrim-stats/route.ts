@@ -5,6 +5,65 @@ import { groupKillsIntoFights, round } from '@/lib/scrim-parser/utils'
 import { calculateStatsForMap } from '@/lib/scrim-parser/calculate-stats'
 import { heroRoleMapping } from '@/lib/scrim-parser/heroes'
 
+// ── Display Name Resolution ──
+// Resolves raw log team names → Payload Team names and player names → Person names
+type DisplayNames = {
+  teamName: (raw: string) => string           // maps raw team name to Payload team name
+  playerName: (raw: string) => string         // maps raw player name to Person display name
+  payloadTeamId: number | null                // Payload team ID for linking
+}
+
+async function resolveMapDisplayNames(mapId: number): Promise<DisplayNames> {
+  // 1. Resolve Payload team name via scrim → payloadTeamId → teams
+  const teamRow = await prisma.$queryRaw<[{ raw_team1: string; raw_team2: string; payload_team: string | null; payload_team_id: number | null }]>`
+    SELECT ms.team_1_name as raw_team1, ms.team_2_name as raw_team2, t.name as payload_team, s."payloadTeamId" as payload_team_id
+    FROM scrim_match_starts ms
+    JOIN scrim_map_data md ON md.id = ms."mapDataId"
+    JOIN scrim_scrims s ON s.id = md."scrimId"
+    LEFT JOIN teams t ON s."payloadTeamId" = t.id
+    WHERE ms."mapDataId" = ${mapId}
+    LIMIT 1
+  `
+
+  // Build team name map: for "our" team, use the Payload name; opponent keeps raw name
+  const teamNameMap = new Map<string, string>()
+  const payloadTeamId = teamRow?.[0]?.payload_team_id ?? null
+  if (teamRow?.[0]?.payload_team) {
+    const payloadTeam = teamRow[0].payload_team
+    // Identify "our" team by finding which raw team has players with personId set
+    const ourTeamRaw = await prisma.$queryRaw<[{ player_team: string }]>`
+      SELECT DISTINCT player_team
+      FROM scrim_player_stats
+      WHERE "mapDataId" = ${mapId} AND "personId" IS NOT NULL
+      LIMIT 1
+    `
+    if (ourTeamRaw?.[0]) {
+      teamNameMap.set(ourTeamRaw[0].player_team, payloadTeam)
+    } else {
+      // Fallback: team1 is typically "our" team per upload convention
+      if (teamRow[0].raw_team1) teamNameMap.set(teamRow[0].raw_team1, payloadTeam)
+    }
+  }
+
+  // 2. Resolve player names via personId → people
+  const playerRows = await prisma.$queryRaw<Array<{ player_name: string; person_name: string }>>`
+    SELECT DISTINCT ps.player_name, p.name as person_name
+    FROM scrim_player_stats ps
+    JOIN people p ON ps."personId" = p.id
+    WHERE ps."mapDataId" = ${mapId} AND ps."personId" IS NOT NULL
+  `
+  const playerNameMap = new Map<string, string>()
+  for (const row of playerRows) {
+    playerNameMap.set(row.player_name, row.person_name)
+  }
+
+  return {
+    teamName: (raw: string) => teamNameMap.get(raw) ?? raw,
+    playerName: (raw: string) => playerNameMap.get(raw) ?? raw,
+    payloadTeamId,
+  }
+}
+
 /**
  * GET /api/scrim-stats?mapId=N
  * Returns complete map-level analytics:
@@ -60,6 +119,9 @@ export async function GET(req: NextRequest) {
     fights,
     ultimateKills,
     calculatedStats,
+    lucioUltStarts,
+    lucioUltEnds,
+    allKillsForAjax,
   ] = await Promise.all([
     prisma.scrimMatchStart.findFirst({
       where: { mapDataId: mapId },
@@ -103,14 +165,34 @@ export async function GET(req: NextRequest) {
       select: { attacker_team: true },
     }),
     calculateStatsForMap(mapId),
+    // Ajax detection: fetch Lúcio ult starts/ends and all kills
+    prisma.scrimUltimateStart.findMany({
+      where: { mapDataId: mapId, player_hero: { in: ['Lúcio', 'Lucio'] } },
+      orderBy: { match_time: 'asc' },
+      select: { match_time: true, player_team: true, player_name: true, player_hero: true, ultimate_id: true },
+    }),
+    prisma.scrimUltimateEnd.findMany({
+      where: { mapDataId: mapId, player_hero: { in: ['Lúcio', 'Lucio'] } },
+      orderBy: { match_time: 'asc' },
+      select: { match_time: true, player_name: true, ultimate_id: true },
+    }),
+    prisma.scrimKill.findMany({
+      where: { mapDataId: mapId },
+      select: { match_time: true, victim_name: true, victim_hero: true },
+    }),
   ])
 
   if (!matchStart) {
     return NextResponse.json({ error: 'Map not found' }, { status: 404 })
   }
 
-  const team1 = matchStart.team_1_name ?? 'Team 1'
-  const team2 = matchStart.team_2_name ?? 'Team 2'
+  const rawTeam1 = matchStart.team_1_name ?? 'Team 1'
+  const rawTeam2 = matchStart.team_2_name ?? 'Team 2'
+  const dn = await resolveMapDisplayNames(mapId)
+  const team1 = rawTeam1
+  const team2 = rawTeam2
+  const displayTeam1 = dn.teamName(rawTeam1)
+  const displayTeam2 = dn.teamName(rawTeam2)
 
   // Get attacking team per round from round_start data
   const round1Start = allRoundStarts.find(r => r.round_number === 1)
@@ -169,11 +251,11 @@ export async function GET(req: NextRequest) {
   const distanceData = payloadProgress.length > 0 ? {
     distance: {
       round1: {
-        team: round1Start?.capturing_team ?? round1Progress?.capturing_team ?? team1,
+        team: dn.teamName(round1Start?.capturing_team ?? round1Progress?.capturing_team ?? team1),
         meters: round(round1Progress?.max_progress ?? 0),
       },
       round2: {
-        team: round2Start?.capturing_team ?? round2Progress?.capturing_team ?? team2,
+        team: dn.teamName(round2Start?.capturing_team ?? round2Progress?.capturing_team ?? team2),
         meters: round2Progress ? round(round2Progress.max_progress) : null,
       },
     },
@@ -182,7 +264,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     mapName: matchStart.map_name,
     mapType: matchStart.map_type,
-    teams: { team1, team2 },
+    teams: { team1: displayTeam1, team2: displayTeam2, payloadTeamId: dn.payloadTeamId },
     summary: {
       matchTime,
       score: `${team1Score} - ${team2Score}`,
@@ -193,8 +275,8 @@ export async function GET(req: NextRequest) {
       ...distanceData,
     },
     players: finalRoundStats.map((p) => ({
-      name: p.player_name,
-      team: p.player_team,
+      name: dn.playerName(p.player_name),
+      team: dn.teamName(p.player_team),
       hero: p.player_hero,
       role: (heroRoleMapping as Record<string, string>)[p.player_hero] ?? 'Damage',
       eliminations: p.eliminations,
@@ -217,6 +299,36 @@ export async function GET(req: NextRequest) {
       team2FirstDeathPct: fights.length > 0 ? round(((fights.length - team1FirstDeaths) / fights.length) * 100) : 0,
       team1UltKills,
       team2UltKills,
+      // Ajax detection: Lúcio killed during Sound Barrier cast
+      ajaxes: lucioUltStarts.filter(us => {
+        const ue = lucioUltEnds.find(e =>
+          e.ultimate_id === us.ultimate_id && e.player_name === us.player_name
+        )
+        // If no ult end, the ult was cancelled
+        if (!ue) {
+          // Verify the Lúcio actually died near the ult start time
+          return allKillsForAjax.some(k =>
+            k.victim_name === us.player_name &&
+            (k.victim_hero === 'Lúcio' || k.victim_hero === 'Lucio') &&
+            k.match_time >= us.match_time &&
+            k.match_time <= us.match_time + 3
+          )
+        }
+        // If ult end is very close to ult start (< 1s), it was likely cancelled
+        if (ue.match_time - us.match_time < 1) {
+          return allKillsForAjax.some(k =>
+            k.victim_name === us.player_name &&
+            (k.victim_hero === 'Lúcio' || k.victim_hero === 'Lucio') &&
+            k.match_time >= us.match_time &&
+            k.match_time <= ue.match_time + 0.5
+          )
+        }
+        return false
+      }).map(us => ({
+        time: round(us.match_time),
+        team: dn.teamName(us.player_team),
+        player: dn.playerName(us.player_name),
+      })),
     },
     calculatedStats: calculatedStats.map((s) => ({
       ...s,
@@ -249,8 +361,13 @@ async function getKillfeedData(mapId: number) {
     return NextResponse.json({ error: 'Map not found' }, { status: 404 })
   }
 
-  const team1 = matchStart.team_1_name ?? 'Team 1'
-  const team2 = matchStart.team_2_name ?? 'Team 2'
+  const rawTeam1 = matchStart.team_1_name ?? 'Team 1'
+  const rawTeam2 = matchStart.team_2_name ?? 'Team 2'
+  const dn = await resolveMapDisplayNames(mapId)
+  const team1 = rawTeam1
+  const team2 = rawTeam2
+  const displayTeam1 = dn.teamName(rawTeam1)
+  const displayTeam2 = dn.teamName(rawTeam2)
 
   // Compute fight winners and per-team kill/death counts
   let team1FightWins = 0
@@ -267,8 +384,8 @@ async function getKillfeedData(mapId: number) {
 
     // Fight winner = team with more kills
     let winner = 'Draw'
-    if (t1Kills > t2Kills) { winner = team1; team1FightWins++ }
-    else if (t2Kills > t1Kills) { winner = team2; team2FightWins++ }
+    if (t1Kills > t2Kills) { winner = displayTeam1; team1FightWins++ }
+    else if (t2Kills > t1Kills) { winner = displayTeam2; team2FightWins++ }
 
     return {
       fightNumber: i + 1,
@@ -277,11 +394,11 @@ async function getKillfeedData(mapId: number) {
       winner,
       kills: fight.kills.map(k => ({
         time: round(k.match_time),
-        attackerTeam: k.attacker_team,
-        attackerName: k.attacker_name,
+        attackerTeam: dn.teamName(k.attacker_team),
+        attackerName: dn.playerName(k.attacker_name),
         attackerHero: k.attacker_hero,
-        victimTeam: k.victim_team,
-        victimName: k.victim_name,
+        victimTeam: dn.teamName(k.victim_team),
+        victimName: dn.playerName(k.victim_name),
         victimHero: k.victim_hero,
         ability: k.event_ability,
         damage: k.event_damage,
@@ -296,7 +413,7 @@ async function getKillfeedData(mapId: number) {
     : 0
 
   return NextResponse.json({
-    teams: { team1, team2 },
+    teams: { team1: displayTeam1, team2: displayTeam2 },
     matchTime,
     team1Kills,
     team2Kills,
@@ -375,8 +492,13 @@ async function getEventsData(mapId: number) {
     return NextResponse.json({ error: 'Map not found' }, { status: 404 })
   }
 
-  const team1 = matchStart.team_1_name ?? 'Team 1'
-  const team2 = matchStart.team_2_name ?? 'Team 2'
+  const rawTeam1 = matchStart.team_1_name ?? 'Team 1'
+  const rawTeam2 = matchStart.team_2_name ?? 'Team 2'
+  const dn = await resolveMapDisplayNames(mapId)
+  const team1 = rawTeam1
+  const team2 = rawTeam2
+  const displayTeam1 = dn.teamName(rawTeam1)
+  const displayTeam2 = dn.teamName(rawTeam2)
 
   // Build match events timeline
   type MatchEvent = {
@@ -398,7 +520,7 @@ async function getEventsData(mapId: number) {
       time: round(rs.match_time),
       type: 'round_start',
       description: `Round ${rs.round_number} started`,
-      team: rs.capturing_team,
+      team: dn.teamName(rs.capturing_team),
     })
   }
 
@@ -408,7 +530,7 @@ async function getEventsData(mapId: number) {
       time: round(re.match_time),
       type: 'round_end',
       description: `Round ${re.round_number} ended (${re.team_1_score} - ${re.team_2_score})`,
-      team: re.capturing_team,
+      team: dn.teamName(re.capturing_team),
     })
   }
 
@@ -417,8 +539,8 @@ async function getEventsData(mapId: number) {
     matchEvents.push({
       time: round(oc.match_time),
       type: 'objective_captured',
-      description: `${oc.capturing_team} captured objective ${oc.objective_index + 1}`,
-      team: oc.capturing_team,
+      description: `${dn.teamName(oc.capturing_team)} captured objective ${oc.objective_index + 1}`,
+      team: dn.teamName(oc.capturing_team),
     })
   }
 
@@ -441,9 +563,9 @@ async function getEventsData(mapId: number) {
         matchEvents.push({
           time: round(fight.start),
           type: 'multikill',
-          description: `During fight ${fi + 1}, ${name} got a multikill, killing ${info.count} players.`,
-          team: info.team,
-          player: name,
+          description: `During fight ${fi + 1}, ${dn.playerName(name)} got a multikill, killing ${info.count} players.`,
+          team: dn.teamName(info.team),
+          player: dn.playerName(name),
           hero: info.hero,
           killCount: info.count,
         })
@@ -466,9 +588,9 @@ async function getEventsData(mapId: number) {
       matchEvents.push({
         time: round(us.match_time),
         type: 'ultimate_kill',
-        description: `${us.player_name} killed ${ultKills.length} player${ultKills.length !== 1 ? 's' : ''} with/during their ultimate.`,
-        team: us.player_team,
-        player: us.player_name,
+        description: `${dn.playerName(us.player_name)} killed ${ultKills.length} player${ultKills.length !== 1 ? 's' : ''} with/during their ultimate.`,
+        team: dn.teamName(us.player_team),
+        player: dn.playerName(us.player_name),
         hero: us.player_hero,
         killCount: ultKills.length,
       })
@@ -480,9 +602,9 @@ async function getEventsData(mapId: number) {
     matchEvents.push({
       time: round(rez.match_time),
       type: 'mercy_rez',
-      description: `${rez.resurrecter_player} resurrected ${rez.resurrectee_player}.`,
-      team: rez.resurrecter_team,
-      player: rez.resurrecter_player,
+      description: `${dn.playerName(rez.resurrecter_player)} resurrected ${dn.playerName(rez.resurrectee_player)}.`,
+      team: dn.teamName(rez.resurrecter_team),
+      player: dn.playerName(rez.resurrecter_player),
       hero: rez.resurrecter_hero,
     })
   }
@@ -495,10 +617,48 @@ async function getEventsData(mapId: number) {
       matchEvents.push({
         time: round(pp.match_time),
         type: 'point_control',
-        description: `${pp.capturing_team} took control of the point.`,
-        team: pp.capturing_team,
+        description: `${dn.teamName(pp.capturing_team)} took control of the point.`,
+        team: dn.teamName(pp.capturing_team),
       })
       lastCapturingTeam = pp.capturing_team
+    }
+  }
+
+  // ── Ajax detection: Lúcio killed during Sound Barrier cast ──
+  const lucioStarts = ultStarts.filter(us =>
+    us.player_hero === 'Lúcio' || us.player_hero === 'Lucio'
+  )
+  for (const us of lucioStarts) {
+    const ue = ultEnds.find(e =>
+      e.ultimate_id === us.ultimate_id && e.player_name === us.player_name
+    )
+    let isAjax = false
+    if (!ue) {
+      // No ult end — check if Lúcio died near ult start
+      isAjax = kills.some(k =>
+        k.victim_name === us.player_name &&
+        (k.victim_hero === 'Lúcio' || k.victim_hero === 'Lucio') &&
+        k.match_time >= us.match_time &&
+        k.match_time <= us.match_time + 3
+      )
+    } else if (ue.match_time - us.match_time < 1) {
+      // Ult end very close to start — likely cancelled
+      isAjax = kills.some(k =>
+        k.victim_name === us.player_name &&
+        (k.victim_hero === 'Lúcio' || k.victim_hero === 'Lucio') &&
+        k.match_time >= us.match_time &&
+        k.match_time <= ue.match_time + 0.5
+      )
+    }
+    if (isAjax) {
+      matchEvents.push({
+        time: round(us.match_time),
+        type: 'ajax',
+        description: `${dn.playerName(us.player_name)}'s Sound Barrier was cancelled (Ajax)!`,
+        team: dn.teamName(us.player_team),
+        player: dn.playerName(us.player_name),
+        hero: us.player_hero,
+      })
     }
   }
 
@@ -549,8 +709,8 @@ async function getEventsData(mapId: number) {
 
     return {
       time: round(us.match_time),
-      team: us.player_team,
-      player: us.player_name,
+      team: dn.teamName(us.player_team),
+      player: dn.playerName(us.player_name),
       hero: us.player_hero,
       ultimateId: us.ultimate_id,
       endTime: endTime ? round(endTime) : null,
@@ -562,7 +722,7 @@ async function getEventsData(mapId: number) {
   })
 
   return NextResponse.json({
-    teams: { team1, team2 },
+    teams: { team1: displayTeam1, team2: displayTeam2 },
     matchEvents,
     ultimates,
   })
@@ -581,12 +741,17 @@ async function getCompareData(mapId: number) {
     return NextResponse.json({ error: 'Map not found' }, { status: 404 })
   }
 
-  const team1 = matchStart.team_1_name ?? 'Team 1'
-  const team2 = matchStart.team_2_name ?? 'Team 2'
+  const rawTeam1 = matchStart.team_1_name ?? 'Team 1'
+  const rawTeam2 = matchStart.team_2_name ?? 'Team 2'
+  const dn = await resolveMapDisplayNames(mapId)
+  const team1 = rawTeam1
+  const team2 = rawTeam2
+  const displayTeam1 = dn.teamName(rawTeam1)
+  const displayTeam2 = dn.teamName(rawTeam2)
 
   const formatPlayer = (p: typeof playerStats[0]) => ({
-    name: p.player_name,
-    team: p.player_team,
+    name: dn.playerName(p.player_name),
+    team: dn.teamName(p.player_team),
     hero: p.player_hero,
     eliminations: p.eliminations,
     deaths: p.deaths,
@@ -606,28 +771,32 @@ async function getCompareData(mapId: number) {
   })
 
   return NextResponse.json({
-    teams: { team1, team2 },
+    teams: { team1: displayTeam1, team2: displayTeam2 },
     team1Players: playerStats.filter(p => p.player_team === team1).map(formatPlayer),
     team2Players: playerStats.filter(p => p.player_team === team2).map(formatPlayer),
   })
 }
 
 // ── Hero → Role mapping (Overwatch 2) ──
+// Keep in sync with src/lib/scrim-parser/heroes.ts
 const HERO_ROLES: Record<string, 'Tank' | 'Damage' | 'Support'> = {
   // Tanks
-  'D.Va': 'Tank', 'Doomfist': 'Tank', 'Junker Queen': 'Tank', 'Mauga': 'Tank',
-  'Orisa': 'Tank', 'Ramattra': 'Tank', 'Reinhardt': 'Tank', 'Roadhog': 'Tank',
-  'Sigma': 'Tank', 'Winston': 'Tank', 'Wrecking Ball': 'Tank', 'Zarya': 'Tank', 'Hazard': 'Tank',
+  'D.Va': 'Tank', 'Domina': 'Tank', 'Doomfist': 'Tank', 'Hazard': 'Tank',
+  'Junker Queen': 'Tank', 'Mauga': 'Tank', 'Orisa': 'Tank', 'Ramattra': 'Tank',
+  'Reinhardt': 'Tank', 'Roadhog': 'Tank', 'Sigma': 'Tank', 'Winston': 'Tank',
+  'Wrecking Ball': 'Tank', 'Zarya': 'Tank',
   // Damage
-  'Ashe': 'Damage', 'Bastion': 'Damage', 'Cassidy': 'Damage', 'Echo': 'Damage',
-  'Freja': 'Damage', 'Genji': 'Damage', 'Hanzo': 'Damage', 'Junkrat': 'Damage',
-  'Mei': 'Damage', 'Pharah': 'Damage', 'Reaper': 'Damage', 'Sojourn': 'Damage',
-  'Soldier: 76': 'Damage', 'Sombra': 'Damage', 'Symmetra': 'Damage', 'Torbjörn': 'Damage',
-  'Tracer': 'Damage', 'Venture': 'Damage', 'Widowmaker': 'Damage',
+  'Anran': 'Damage', 'Ashe': 'Damage', 'Bastion': 'Damage', 'Cassidy': 'Damage',
+  'Echo': 'Damage', 'Emre': 'Damage', 'Freja': 'Damage', 'Genji': 'Damage',
+  'Hanzo': 'Damage', 'Junkrat': 'Damage', 'Mei': 'Damage', 'Pharah': 'Damage',
+  'Reaper': 'Damage', 'Sojourn': 'Damage', 'Soldier: 76': 'Damage', 'Sombra': 'Damage',
+  'Symmetra': 'Damage', 'Torbjörn': 'Damage', 'Tracer': 'Damage', 'Vendetta': 'Damage',
+  'Venture': 'Damage', 'Widowmaker': 'Damage',
   // Support
   'Ana': 'Support', 'Baptiste': 'Support', 'Brigitte': 'Support', 'Illari': 'Support',
-  'Juno': 'Support', 'Kiriko': 'Support', 'Lifeweaver': 'Support', 'Lúcio': 'Support',
-  'Mercy': 'Support', 'Moira': 'Support', 'Zenyatta': 'Support',
+  'Jetpack Cat': 'Support', 'Juno': 'Support', 'Kiriko': 'Support', 'Lifeweaver': 'Support',
+  'Lúcio': 'Support', 'Mercy': 'Support', 'Mizuki': 'Support', 'Moira': 'Support',
+  'Wuyang': 'Support', 'Zenyatta': 'Support',
 }
 
 function getRoleForHero(hero: string): 'Tank' | 'Damage' | 'Support' {
@@ -656,8 +825,13 @@ async function getChartsData(mapId: number) {
     return NextResponse.json({ error: 'Map not found' }, { status: 404 })
   }
 
-  const team1 = matchStart.team_1_name ?? 'Team 1'
-  const team2 = matchStart.team_2_name ?? 'Team 2'
+  const rawTeam1 = matchStart.team_1_name ?? 'Team 1'
+  const rawTeam2 = matchStart.team_2_name ?? 'Team 2'
+  const dn = await resolveMapDisplayNames(mapId)
+  const team1 = rawTeam1
+  const team2 = rawTeam2
+  const displayTeam1 = dn.teamName(rawTeam1)
+  const displayTeam2 = dn.teamName(rawTeam2)
 
   // ── Final Blows By Role ──
   const roleData = { Tank: { team1: 0, team2: 0 }, Damage: { team1: 0, team2: 0 }, Support: { team1: 0, team2: 0 } }
@@ -685,7 +859,7 @@ async function getChartsData(mapId: number) {
   })
 
   return NextResponse.json({
-    teams: { team1, team2 },
+    teams: { team1: displayTeam1, team2: displayTeam2 },
     finalBlowsByRole: {
       Tank: { team1: roleData.Tank.team1, team2: roleData.Tank.team2 },
       Damage: { team1: roleData.Damage.team1, team2: roleData.Damage.team2 },

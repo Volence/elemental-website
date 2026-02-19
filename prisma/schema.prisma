@@ -24,6 +24,8 @@ model Scrim {
   // Links to Payload CMS team by ID (not a Prisma relation since Team lives in Payload)
   payloadTeamId Int?
   creatorEmail  String
+  // Optional override for opponent team name (used when lobby names are wrong)
+  opponentName  String?
   maps      ScrimMap[]
 
   @@map("scrim_scrims")
@@ -437,6 +439,8 @@ model ScrimPlayerStat {
   round_number                 Int
   player_team                  String
   player_name                  String
+  // Links to Payload CMS Person by ID (not a Prisma relation since Person lives in Payload)
+  personId                     Int?
   player_hero                  String
   eliminations                 Int
   final_blows                  Int
@@ -477,6 +481,7 @@ model ScrimPlayerStat {
   @@map("scrim_player_stats")
   @@index([scrimId])
   @@index([mapDataId])
+  @@index([personId])
 }
 
 model ScrimPointProgress {

@@ -11,6 +11,91 @@
 import { headers } from './headers'
 import type { ParserData } from './types'
 
+/** Valid Overwatch 2 map types from ScrimTime logs */
+const VALID_MAP_TYPES = new Set([
+  'Control', 'Escort', 'Hybrid', 'Push', 'Flashpoint', 'Clash',
+])
+
+/**
+ * Validate that a file's content looks like a ScrimTime log.
+ * Checks multiple signatures unique to dkeeh's workshop code output:
+ *  1. A meaningful percentage of lines have recognized event types
+ *  2. A match_start event exists with the correct column count
+ *  3. The map_type field is a real OW2 game mode
+ *  4. player_stat events exist (always present in valid logs)
+ *
+ * @returns null if valid, or a human-readable error string if invalid
+ */
+export function validateScrimLog(fileContent: string): string | null {
+  const rawLines = fileContent.split('\n').filter((l) => l.trim().length > 0)
+
+  if (rawLines.length < 5) {
+    return 'File is too short to be a ScrimTime log (fewer than 5 lines).'
+  }
+
+  // Split into CSV and shift off the timestamp column (column 0)
+  const lines = rawLines.map((l) => {
+    const cols = l.split(',')
+    cols.shift() // remove timestamp
+    return cols
+  })
+
+  // 1. Check that a meaningful percentage of lines have recognized event types
+  let recognizedCount = 0
+  for (const line of lines) {
+    if (headers[line[0]]) recognizedCount++
+  }
+  const recognizedPct = recognizedCount / lines.length
+  if (recognizedPct < 0.5) {
+    return (
+      `This doesn't appear to be a ScrimTime log file. ` +
+      `Only ${Math.round(recognizedPct * 100)}% of lines contain recognized event types ` +
+      `(expected: kill, player_stat, hero_spawn, match_start, etc.). ` +
+      `Make sure you're uploading the .txt file exported from the ScrimTime workshop code.`
+    )
+  }
+
+  // 2. Find match_start events
+  const matchStarts = lines.filter((l) => l[0] === 'match_start')
+  if (matchStarts.length === 0) {
+    return (
+      'No match_start event found. A valid ScrimTime log must contain at least one match_start line ' +
+      'with map name, map type, and team names.'
+    )
+  }
+
+  // 3. Validate match_start column count (should be 6: event_type, match_time, map_name, map_type, team1, team2)
+  for (const ms of matchStarts) {
+    if (ms.length < 6) {
+      return (
+        `match_start event has ${ms.length} columns (expected 6). ` +
+        `This file may be from an incompatible workshop code version.`
+      )
+    }
+  }
+
+  // 4. Validate map_type is a real OW2 game mode
+  const mapType = matchStarts[0][3]?.trim()
+  if (mapType && !VALID_MAP_TYPES.has(mapType)) {
+    return (
+      `Unrecognized map type "${mapType}" in match_start event. ` +
+      `Expected one of: ${Array.from(VALID_MAP_TYPES).join(', ')}. ` +
+      `This file may not be from the ScrimTime workshop code.`
+    )
+  }
+
+  // 5. Check for player_stat events (always present in valid logs)
+  const hasPlayerStats = lines.some((l) => l[0] === 'player_stat')
+  if (!hasPlayerStats) {
+    return (
+      'No player_stat events found. A complete ScrimTime log should contain player stat snapshots. ' +
+      'The match may have ended prematurely or the file is truncated.'
+    )
+  }
+
+  return null // Valid
+}
+
 /**
  * Parse a ScrimTime .txt log file into structured event data.
  *

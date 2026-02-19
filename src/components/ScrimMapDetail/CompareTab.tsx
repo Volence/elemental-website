@@ -140,8 +140,8 @@ function StatCard({
   return (
     <div
       style={{
-        background: 'rgba(0, 0, 0, 0.05)',
-        backdropFilter: 'blur(4px)',
+        background: 'rgba(255, 255, 255, 0.03)',
+        backdropFilter: 'blur(12px)',
         borderRadius: '10px',
         border: `1px solid ${BORDER_SUBTLE}`,
         padding: '18px 20px',
@@ -150,7 +150,7 @@ function StatCard({
         transition: 'background 0.15s',
       }}
       onMouseEnter={(e) => (e.currentTarget.style.background = `${accentColor}06`)}
-      onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(0, 0, 0, 0.05)')}
+      onMouseLeave={(e) => (e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)')}
     >
       {/* Left accent */}
       <div
@@ -378,8 +378,8 @@ function TeamSide({
       {/* Hero header */}
       <div
         style={{
-          background: 'rgba(0, 0, 0, 0.05)',
-          backdropFilter: 'blur(6px)',
+          background: 'rgba(255, 255, 255, 0.03)',
+          backdropFilter: 'blur(12px)',
           borderRadius: '10px',
           border: `1px solid ${teamColor}18`,
           padding: '16px 20px',

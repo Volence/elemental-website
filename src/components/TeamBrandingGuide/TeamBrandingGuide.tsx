@@ -43,7 +43,19 @@ const PETALS: { d: string; color: 'p' | 's' }[] = [
   { d: 'M 454.059 572.477 C 379.324 585.602 328.613 560.340 290.875 514.348 C 251.367 474.371 212.680 455.562 162.5 448.043 C 167.953 438.215 179.441 420.648 200.430 406.422 C 228 387.738 255.621 385.883 266.961 385.762 C 310.453 383.121 345.754 418.211 372.930 490.703 C 389.176 529.078 418.281 554.211 454.059 572.477 Z', color: 's' },
 ]
 
-function BrandedLogo({ primary, secondary, size = 34 }: { primary: string; secondary: string; size?: number }) {
+/** Mix a hex color with black at a given ratio (0–1, where 0.19 ≈ the same as hex alpha 30) */
+function mixWithBlack(hex: string, ratio: number): string {
+  const r = parseInt(hex.slice(1, 3), 16) || 0
+  const g = parseInt(hex.slice(3, 5), 16) || 0
+  const b = parseInt(hex.slice(5, 7), 16) || 0
+  const mr = Math.round(r * ratio)
+  const mg = Math.round(g * ratio)
+  const mb = Math.round(b * ratio)
+  return `#${mr.toString(16).padStart(2, '0')}${mg.toString(16).padStart(2, '0')}${mb.toString(16).padStart(2, '0')}`
+}
+
+function BrandedLogo({ primary, secondary, size = 34, opaque = false, mixRatio = 0.19 }: { primary: string; secondary: string; size?: number; opaque?: boolean; mixRatio?: number }) {
+  const filterId = `glow-${opaque ? 'o-' : ''}${primary}-${secondary}`
   // Center the logo: original paths are in ~(160,160)-(840,840) range, center ~500,500
   return (
     <svg
@@ -52,7 +64,7 @@ function BrandedLogo({ primary, secondary, size = 34 }: { primary: string; secon
       style={{ '--logo-size': `${size}px` } as React.CSSProperties}
     >
       <defs>
-        <filter id={`glow-${primary}-${secondary}`} x="-50%" y="-50%" width="200%" height="200%">
+        <filter id={filterId} x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="8" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
@@ -72,7 +84,7 @@ function BrandedLogo({ primary, secondary, size = 34 }: { primary: string; secon
             stroke={c}
             strokeWidth="6"
             strokeLinejoin="round"
-            filter={`url(#glow-${primary}-${secondary})`}
+            filter={`url(#${filterId})`}
             opacity="0.5"
           />
         )
@@ -80,11 +92,12 @@ function BrandedLogo({ primary, secondary, size = 34 }: { primary: string; secon
       {/* Crisp layer */}
       {PETALS.map((petal, i) => {
         const c = petal.color === 'p' ? primary : secondary
+        const fill = opaque ? mixWithBlack(c, mixRatio) : `${c}30`
         return (
           <path
             key={`c${i}`}
             d={petal.d}
-            fill={`${c}30`}
+            fill={fill}
             stroke={c}
             strokeWidth="2"
             strokeLinejoin="round"
@@ -98,9 +111,11 @@ function BrandedLogo({ primary, secondary, size = 34 }: { primary: string; secon
 function TeamCard({
   team,
   onSave,
+  mixRatio,
 }: {
   team: TeamData
   onSave: (id: number, updates: Record<string, string>) => Promise<void>
+  mixRatio: number
 }) {
   // Saved values (source of truth from server)
   const [savedPrimary, setSavedPrimary] = useState(team.brandingPrimary || team.themeColor || '')
@@ -258,9 +273,18 @@ function TeamCard({
         </div>
       </div>
 
-      {/* Large pinwheel preview */}
-      <div className="tc__pinwheel-preview">
-        <BrandedLogo primary={p} secondary={s} size={200} />
+      {/* Large pinwheel previews — transparent vs opaque */}
+      <div className="tc__pinwheel-row">
+        <div className="tc__pinwheel-preview">
+          <div className="tc__pinwheel-label">Transparent Fill</div>
+          <BrandedLogo primary={p} secondary={s} size={160} />
+          <div className="tc__pinwheel-desc">Alpha overlay · for dark backgrounds</div>
+        </div>
+        <div className="tc__pinwheel-preview tc__pinwheel-preview--opaque">
+          <div className="tc__pinwheel-label">Opaque Fill · {Math.round(mixRatio * 100)}%</div>
+          <BrandedLogo primary={p} secondary={s} size={160} opaque mixRatio={mixRatio} />
+          <div className="tc__pinwheel-desc">Color mixed with black · for any background</div>
+        </div>
       </div>
     </div>
   )
@@ -289,6 +313,7 @@ export default function TeamBrandingGuide() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [bgColor, setBgColor] = useState('#000000')
+  const [mixRatio, setMixRatio] = useState(0.8)
 
   useEffect(() => {
     setStepNav([{ label: 'Graphics' }, { label: 'Team Branding Guide' }])
@@ -368,6 +393,23 @@ export default function TeamBrandingGuide() {
               <button className="tbg__bg-reset" onClick={() => setBgColor('#000000')}>Reset</button>
             )}
           </div>
+          <div className="tbg__bg-picker">
+            <label>Opaque Fill Mix</label>
+            <input
+              type="range"
+              min="0.05"
+              max="1"
+              step="0.01"
+              value={mixRatio}
+              onChange={(e) => setMixRatio(parseFloat(e.target.value))}
+              className="tbg__slider"
+              title={`${Math.round(mixRatio * 100)}% color intensity`}
+            />
+            <span className="tbg__slider-value">{Math.round(mixRatio * 100)}%</span>
+            {mixRatio !== 0.8 && (
+              <button className="tbg__bg-reset" onClick={() => setMixRatio(0.8)}>Reset</button>
+            )}
+          </div>
         </header>
 
         {Object.entries(grouped).map(([region, list]) => (
@@ -375,7 +417,7 @@ export default function TeamBrandingGuide() {
             <h2 className="tbg__rg">{REGION_LABELS[region]}</h2>
             <div className="tbg__grid" style={{ '--tc-card-bg': bgColor } as React.CSSProperties}>
               {list.map((t) => (
-                <TeamCard key={t.id} team={t} onSave={handleSave} />
+                <TeamCard key={t.id} team={t} onSave={handleSave} mixRatio={mixRatio} />
               ))}
             </div>
           </section>

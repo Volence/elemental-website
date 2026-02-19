@@ -8,7 +8,7 @@
  */
 
 // ── Parsing ──────────────────────────────────────────────────────────
-export { parseScrimLog, toTitleCase } from './parser'
+export { parseScrimLog, validateScrimLog, toTitleCase } from './parser'
 
 // ── Storage ──────────────────────────────────────────────────────────
 export { createScrimFromParsedData } from './storage'

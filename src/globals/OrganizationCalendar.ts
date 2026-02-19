@@ -1,3 +1,4 @@
+import { UserRole, hideFromPlayers } from '../access/roles'
 import type { GlobalConfig } from 'payload'
 
 export const OrganizationCalendar: GlobalConfig = {
@@ -6,8 +7,7 @@ export const OrganizationCalendar: GlobalConfig = {
   admin: {
     description: '📅 View all scheduled tasks, matches, and social posts across departments',
     group: 'Organization',
-    // Temporarily NOT hidden - testing if hidden was blocking the route
-    // Will hide again once we confirm the global works
+    hidden: hideFromPlayers,
     hideAPIURL: true,
     components: {
       elements: {

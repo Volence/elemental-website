@@ -50,7 +50,7 @@ type CalculatedStat = {
 type MapStats = {
   mapName: string
   mapType: string
-  teams: { team1: string; team2: string }
+  teams: { team1: string; team2: string; payloadTeamId?: number | null }
   summary: {
     matchTime: number
     score: string
@@ -72,6 +72,7 @@ type MapStats = {
     team2FirstDeathPct: number
     team1UltKills: number
     team2UltKills: number
+    ajaxes: Array<{ time: number; team: string; player: string }>
   }
   calculatedStats: CalculatedStat[]
 }
@@ -106,8 +107,9 @@ const RED_DIM = 'rgba(239, 68, 68, 0.08)'
 const PURPLE = '#8b5cf6'
 const PURPLE_DIM = 'rgba(139, 92, 246, 0.08)'
 const AMBER = '#f59e0b'
-const BG_CARD = 'rgba(15, 15, 30, 0.7)'
-const BG_CARD_HOVER = 'rgba(20, 20, 40, 0.8)'
+const BG = '#0a0e1a'
+const BG_CARD = 'rgba(255, 255, 255, 0.03)'
+const BG_CARD_HOVER = 'rgba(255, 255, 255, 0.05)'
 const BORDER = 'rgba(255, 255, 255, 0.06)'
 const BORDER_ACCENT = 'rgba(6, 182, 212, 0.2)'
 const TEXT_PRIMARY = '#f0f0f5'
@@ -256,7 +258,7 @@ export default function ScrimMapDetailView() {
   const team2Won = s2 > s1
 
   return (
-    <div style={{ padding: '40px', maxWidth: '1600px', margin: '0 auto', fontFamily: "'Inter', -apple-system, sans-serif" }}>
+    <div style={{ padding: '40px', maxWidth: '1600px', margin: '0 auto', fontFamily: "'Inter', -apple-system, sans-serif", background: BG, minHeight: '100%' }}>
       {/* Header */}
       <div style={{ marginBottom: '32px' }}>
         <a href="/admin/scrims" style={{ color: TEXT_SECONDARY, fontSize: '12px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px', transition: 'color 0.15s' }}>
@@ -280,7 +282,22 @@ export default function ScrimMapDetailView() {
           </span>
         </div>
         <p style={{ color: TEXT_SECONDARY, fontSize: '14px', marginTop: '6px' }}>
-          <span style={{ color: team1Won ? GREEN : team2Won ? TEXT_SECONDARY : TEXT_PRIMARY, fontWeight: team1Won ? 600 : 400 }}>{data.teams.team1}</span>
+          {data.teams.payloadTeamId ? (
+            <a
+              href={`/admin/scrim-team?teamId=${data.teams.payloadTeamId}`}
+              style={{
+                color: team1Won ? GREEN : team2Won ? TEXT_SECONDARY : TEXT_PRIMARY,
+                fontWeight: team1Won ? 600 : 400,
+                textDecoration: 'none',
+                borderBottom: `1px solid ${CYAN}44`,
+                transition: 'border-color 0.15s, color 0.15s',
+              }}
+            >
+              {data.teams.team1}
+            </a>
+          ) : (
+            <span style={{ color: team1Won ? GREEN : team2Won ? TEXT_SECONDARY : TEXT_PRIMARY, fontWeight: team1Won ? 600 : 400 }}>{data.teams.team1}</span>
+          )}
           {' '}vs{' '}
           <span style={{ color: team2Won ? GREEN : team1Won ? TEXT_SECONDARY : TEXT_PRIMARY, fontWeight: team2Won ? 600 : 400 }}>{data.teams.team2}</span>
         </p>
@@ -460,6 +477,22 @@ export default function ScrimMapDetailView() {
             </div>
           </div>
         </div>
+
+        {/* Ajax card — only shown if any Ajaxes detected */}
+        {data.analysis.ajaxes.length > 0 && (
+          <div style={{ ...CARD_STYLE, borderTop: `2px solid ${AMBER}`, boxShadow: `0 0 20px rgba(0,0,0,0.3), 0 0 30px ${AMBER}08`, gridColumn: '1 / -1' }}>
+            <div style={LABEL_STYLE}>🎺 Ajaxes (Sound Barrier Cancelled)</div>
+            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: '4px' }}>
+              {data.analysis.ajaxes.map((ajax, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', borderRadius: '8px', background: `${AMBER}0a`, border: `1px solid ${AMBER}20` }}>
+                  <span style={{ fontSize: '14px', fontWeight: 700, color: AMBER, textShadow: `0 0 8px ${AMBER}44` }}>{ajax.player}</span>
+                  <span style={{ fontSize: '11px', color: TEXT_DIM }}>at {toTimestamp(ajax.time)}</span>
+                  <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '3px', background: ajax.team === data.teams.team1 ? GREEN_DIM : RED_DIM, color: ajax.team === data.teams.team1 ? GREEN : RED, fontWeight: 600 }}>{ajax.team}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Player Detail Card */}
