@@ -882,7 +882,7 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
                                       assignSlot(dayIndex, blockIndex, slotIndex, e.target.value || null)
                                     }
                                   >
-                                    <option value="">— Select —</option>
+                                    <option value="">- Select -</option>
                                     {filteredPlayers.map((player) => (
                                       <option key={player.id} value={player.id}>
                                         {player.displayName || player.username}
@@ -976,7 +976,7 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
                                 value={block.scrim?.host || ''}
                                 onChange={(e) => updateBlockScrim(dayIndex, blockIndex, 'host', e.target.value)}
                               >
-                                <option value="">— Select —</option>
+                                <option value="">- Select -</option>
                                 <option value="us">Us</option>
                                 <option value="them">Them</option>
                               </select>

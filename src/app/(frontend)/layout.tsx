@@ -45,8 +45,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               "alternateName": "ELMT",
               "url": "https://elmt.gg",
               "logo": "https://elmt.gg/logos/org.png",
-              "sport": "Overwatch 2",
-              "description": "Premier Overwatch 2 esports organization with competitive teams across Expert, Advanced, Master, and Open divisions.",
+              "sport": "Overwatch",
+              "description": "Premier Overwatch esports organization with competitive teams across Expert, Advanced, Master, and Open divisions.",
               "sameAs": [
                 "https://x.com/ELMT_GG",
                 "https://discord.gg/elmt",
@@ -78,10 +78,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 export const metadata: Metadata = {
   metadataBase: new URL(getServerSideURL()),
   title: {
-    default: 'Elemental - Overwatch 2 Esports Organization',
+    default: 'Elemental - Overwatch Esports Organization',
     template: '%s | Elemental Esports',
   },
-  description: 'Elemental (ELMT) - A premier Overwatch 2 esports organization dedicated to competitive excellence. Follow our teams, players, and journey in the competitive Overwatch 2 scene.',
+  description: 'Elemental (ELMT) - A premier Overwatch esports organization dedicated to competitive excellence. Follow our teams, players, and journey in the competitive Overwatch scene.',
   icons: {
     icon: '/logos/org.png',
     apple: '/logos/org.png',

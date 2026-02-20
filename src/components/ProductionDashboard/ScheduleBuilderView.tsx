@@ -218,7 +218,7 @@ export function ScheduleBuilderView() {
     }
 
     let output = '📺 **This Week\'s ELMT Broadcast Schedule**\n\n'
-    output += 'Here\'s everything being casted this week — come support our teams!\n\n'
+    output += 'Here\'s everything being casted this week, come support our teams!\n\n'
 
     selectedMatches.forEach((match, index) => {
       const pw = match.productionWorkflow!

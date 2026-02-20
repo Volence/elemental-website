@@ -23,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     title: 'Join Our Teams | Elemental Recruitment',
-    description: `${totalDocs} open position${totalDocs !== 1 ? 's' : ''} available. Join Elemental Esports as a player, coach, or staff member. Find your perfect role in our Overwatch 2 organization.`,
+    description: `${totalDocs} open position${totalDocs !== 1 ? 's' : ''} available. Join Elemental Esports as a player, coach, or staff member. Find your perfect role in our Overwatch organization.`,
     openGraph: {
       title: 'Join Our Teams | Elemental Recruitment',
       description: `${totalDocs} open position${totalDocs !== 1 ? 's' : ''} available. Join Elemental Esports as a player, coach, or staff member.`,

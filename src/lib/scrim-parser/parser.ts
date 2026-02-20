@@ -11,7 +11,7 @@
 import { headers } from './headers'
 import type { ParserData } from './types'
 
-/** Valid Overwatch 2 map types from ScrimTime logs */
+/** Valid Overwatch map types from ScrimTime logs */
 const VALID_MAP_TYPES = new Set([
   'Control', 'Escort', 'Hybrid', 'Push', 'Flashpoint', 'Clash',
 ])

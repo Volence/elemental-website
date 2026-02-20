@@ -17,11 +17,11 @@ import { ParallaxHero } from '@/components/ParallaxHero'
 export const dynamic = 'force-dynamic' // Always render dynamically to fetch fresh data
 
 export const metadata: Metadata = {
-  title: 'Elemental | ELMT - Overwatch 2 Organization',
-  description: 'Welcome to Elemental (ELMT), a premier Overwatch 2 organization competing at the highest levels.',
+  title: 'Elemental | ELMT - Overwatch Organization',
+  description: 'Welcome to Elemental (ELMT), a premier Overwatch organization competing at the highest levels.',
   openGraph: {
-    title: 'Elemental | ELMT - Overwatch 2 Organization',
-    description: 'Welcome to Elemental (ELMT), a premier Overwatch 2 organization competing at the highest levels.',
+    title: 'Elemental | ELMT - Overwatch Organization',
+    description: 'Welcome to Elemental (ELMT), a premier Overwatch organization competing at the highest levels.',
   },
 }
 
@@ -300,17 +300,17 @@ export default async function HomePage() {
           </div>
           <div className="prose prose-lg dark:prose-invert max-w-none">
             <p className="text-lg leading-relaxed mb-6 text-muted-foreground">
-              Welcome to <strong className="text-foreground">Elemental</strong> (ELMT), a premier Overwatch 2 organization 
+              Welcome to <strong className="text-foreground">Elemental</strong> (ELMT), a premier Overwatch organization 
               dedicated to competitive excellence. We bring together talented players and teams 
               under one banner, competing at the highest levels of the game.
             </p>
             <p className="text-lg leading-relaxed mb-6 text-muted-foreground">
               Our organization is built on a foundation of passion, skill, and teamwork. We 
               strive to create an environment where players can grow, compete, and achieve their 
-              goals in Overwatch 2.
+              goals in Overwatch.
             </p>
             <p className="text-lg leading-relaxed text-muted-foreground">
-              Join us as we continue to make our mark in the competitive Overwatch 2 scene.
+              Join us as we continue to make our mark in the competitive Overwatch scene.
             </p>
           </div>
         </div>

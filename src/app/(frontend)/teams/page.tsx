@@ -12,11 +12,11 @@ export async function generateMetadata(): Promise<Metadata> {
   const teamCount = allTeams.length
   
   return {
-    title: 'ELMT Teams - Overwatch 2 Esports | Elemental',
-    description: `Explore ${teamCount} ELMT Overwatch 2 esports teams competing in FACEIT Expert, Advanced, Master, and Open divisions across NA, EMEA, and SA regions.`,
+    title: 'ELMT Teams - Overwatch Esports | Elemental',
+    description: `Explore ${teamCount} ELMT Overwatch esports teams competing in FACEIT Expert, Advanced, Master, and Open divisions across NA, EMEA, and SA regions.`,
     openGraph: {
-      title: 'ELMT Teams - Overwatch 2 Esports | Elemental',
-      description: `Explore ${teamCount} ELMT Overwatch 2 esports teams competing in FACEIT Expert, Advanced, Master, and Open divisions across NA, EMEA, and SA regions.`,
+      title: 'ELMT Teams - Overwatch Esports | Elemental',
+      description: `Explore ${teamCount} ELMT Overwatch esports teams competing in FACEIT Expert, Advanced, Master, and Open divisions across NA, EMEA, and SA regions.`,
     },
   }
 }
@@ -91,7 +91,7 @@ export default async function TeamsPage() {
           </h1>
           <div className="w-32 h-1.5 bg-gradient-to-r from-cyan-400 via-pink-500 to-purple-500 mx-auto mb-6 shadow-[0_0_30px_rgba(236,72,153,0.5)] rounded-full" />
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed font-medium">
-            Elemental is home to <strong className="text-foreground font-bold">{totalTeams} competitive Overwatch 2 teams</strong>, each representing 
+            Elemental is home to <strong className="text-foreground font-bold">{totalTeams} competitive Overwatch teams</strong>, each representing 
             different elements and playstyles. Explore our roster and follow our journey.
           </p>
         </div>

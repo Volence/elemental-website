@@ -11,7 +11,7 @@ export const Maps: CollectionConfig = {
     group: 'Competitive',
     useAsTitle: 'name',
     defaultColumns: ['name', 'type'],
-    description: 'Overwatch 2 competitive maps',
+    description: 'Overwatch competitive maps',
     // Only show to scouting staff and staff-manager+
     hidden: ({ user }) => {
       if (!user) return true

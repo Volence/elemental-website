@@ -777,7 +777,7 @@ async function getCompareData(mapId: number) {
   })
 }
 
-// ── Hero → Role mapping (Overwatch 2) ──
+// ── Hero → Role mapping (Overwatch) ──
 // Keep in sync with src/lib/scrim-parser/heroes.ts
 const HERO_ROLES: Record<string, 'Tank' | 'Damage' | 'Support'> = {
   // Tanks

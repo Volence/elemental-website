@@ -302,7 +302,7 @@ export default function ScrimUploadView() {
       }
     } catch {
       setState('error')
-      setResult({ message: 'Network error — could not reach the server', error: 'Network error' } as UploadResult)
+      setResult({ message: 'Network error - could not reach the server', error: 'Network error' } as UploadResult)
     }
   }, [files, scrimName, teamId, playerMappings, opponentNameOverride, opponentTeam])
 
@@ -456,7 +456,7 @@ export default function ScrimUploadView() {
                 type="text"
                 value={scrimName}
                 onChange={(e) => setScrimName(e.target.value)}
-                placeholder="e.g. vs Team Neon — Week 3"
+                placeholder="e.g. vs Team Neon - Week 3"
                 style={{
                   width: '100%',
                   padding: '12px 16px',
@@ -886,7 +886,7 @@ export default function ScrimUploadView() {
                   marginBottom: '4px',
                 }}
               >
-                Player Mapping — {ourTeam}
+                Player Mapping: {ourTeam}
               </h3>
               <p style={{ color: TEXT_DIM, fontSize: '12px', marginBottom: '16px' }}>
                 Link in-game names to roster members. Auto-matched players are shown in green.

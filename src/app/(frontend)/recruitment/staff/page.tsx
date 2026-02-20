@@ -249,7 +249,7 @@ export default async function StaffRecruitmentPage() {
               <div className="mb-3 text-4xl">🤝</div>
               <h3 className="mb-2 font-semibold text-white">Collaborative Team</h3>
               <p className="text-sm text-gray-300">
-                Work with passionate individuals who love Overwatch 2
+                Work with passionate individuals who love Overwatch
               </p>
             </div>
             <div className="text-center">

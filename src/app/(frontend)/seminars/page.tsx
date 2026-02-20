@@ -5,10 +5,10 @@ import { YouTubeFacade } from '@/components/YouTubeFacade'
 
 export const metadata: Metadata = {
   title: 'Seminars | Elemental (ELMT)',
-  description: 'Watch our educational seminars and learn from Elemental\'s competitive Overwatch 2 insights.',
+  description: 'Watch our educational seminars and learn from Elemental\'s competitive Overwatch insights.',
   openGraph: {
     title: 'Seminars | Elemental (ELMT)',
-    description: 'Watch our educational seminars and learn from Elemental\'s competitive Overwatch 2 insights.',
+    description: 'Watch our educational seminars and learn from Elemental\'s competitive Overwatch insights.',
   },
 }
 
@@ -19,8 +19,8 @@ const YOUTUBE_VIDEO_ID = 'kqX--4KlMXI'
 const videoStructuredData = {
   '@context': 'https://schema.org',
   '@type': 'VideoObject',
-  name: 'Elemental Seminars - Overwatch 2 Coaching & Educational Content',
-  description: 'Educational seminars from various Overwatch 2 coaches and content creators on competitive gameplay, strategies, and insights.',
+  name: 'Elemental Seminars - Overwatch Coaching & Educational Content',
+  description: 'Educational seminars from various Overwatch coaches and content creators on competitive gameplay, strategies, and insights.',
   thumbnailUrl: `https://img.youtube.com/vi/${YOUTUBE_VIDEO_ID}/maxresdefault.jpg`,
   uploadDate: '2024-01-01T00:00:00Z', // Approximate upload date
   contentUrl: `https://www.youtube.com/watch?v=${YOUTUBE_VIDEO_ID}`,
@@ -55,7 +55,7 @@ export default function SeminarsPage() {
           </h1>
           <div className="w-24 h-1 bg-gradient-to-r from-cyan-400 via-pink-500 to-purple-500 mx-auto mb-6 shadow-[0_0_20px_rgba(236,72,153,0.4)]" />
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
-            Learn from various Overwatch 2 coaches and content creators on various topics.
+            Learn from various Overwatch coaches and content creators on various topics.
           </p>
         </div>
 

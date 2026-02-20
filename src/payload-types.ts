@@ -1296,7 +1296,7 @@ export interface User {
    */
   role?: ('admin' | 'staff-manager' | 'team-manager' | 'player' | 'user') | null;
   /**
-   * Link this user account to a Person record. Used for players to connect their login to their BattleTags and team roster membership.
+   * Link this user account to a Person record. Connects their login to BattleTags, scrim stats, and team roster membership.
    */
   linkedPerson?: (number | null) | Person;
   /**
@@ -1742,7 +1742,7 @@ export interface Hero {
   createdAt: string;
 }
 /**
- * Overwatch 2 competitive maps
+ * Overwatch competitive maps
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "maps".

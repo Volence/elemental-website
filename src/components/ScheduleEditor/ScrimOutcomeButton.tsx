@@ -121,7 +121,7 @@ export const ScrimOutcomeButton: React.FC<ScrimOutcomeButtonProps> = ({
                       })
                     }
                   >
-                    <option value="">— Select —</option>
+                    <option value="">- Select -</option>
                     <option value="easywin">✅ Easy Win</option>
                     <option value="closewin">🔥 Close Win</option>
                     <option value="neutral">😐 Neutral</option>
@@ -140,7 +140,7 @@ export const ScrimOutcomeButton: React.FC<ScrimOutcomeButtonProps> = ({
                       })
                     }
                   >
-                    <option value="">— Select —</option>
+                    <option value="">- Select -</option>
                     <option value="weak">🟢 Weak</option>
                     <option value="average">🟡 Average</option>
                     <option value="strong">🔴 Strong</option>
@@ -158,7 +158,7 @@ export const ScrimOutcomeButton: React.FC<ScrimOutcomeButtonProps> = ({
                       })
                     }
                   >
-                    <option value="">— Select —</option>
+                    <option value="">- Select -</option>
                     <option value="yes">👍 Yes</option>
                     <option value="maybe">🤔 Maybe</option>
                     <option value="no">👎 No</option>

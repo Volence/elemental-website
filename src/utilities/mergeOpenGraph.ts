@@ -3,17 +3,17 @@ import { getServerSideURL } from './getURL'
 
 const defaultOpenGraph: Metadata['openGraph'] = {
   type: 'website',
-  description: 'Elemental (ELMT) - A premier Overwatch 2 esports organization dedicated to competitive excellence. Follow our teams, players, and journey in the competitive Overwatch 2 scene.',
+  description: 'Elemental (ELMT) - A premier Overwatch esports organization dedicated to competitive excellence. Follow our teams, players, and journey in the competitive Overwatch scene.',
   images: [
     {
       url: `${getServerSideURL()}/logos/og-image.jpg`,
       width: 1200,
       height: 630,
-      alt: 'Elemental - Overwatch 2 Esports Organization',
+      alt: 'Elemental - Overwatch Esports Organization',
     },
   ],
   siteName: 'Elemental Esports',
-  title: 'Elemental - Overwatch 2 Esports Organization',
+  title: 'Elemental - Overwatch Esports Organization',
 }
 
 export const mergeOpenGraph = (og?: Metadata['openGraph']): Metadata['openGraph'] => {

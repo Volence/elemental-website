@@ -487,8 +487,8 @@ export default function ScrimHeroDetailView() {
     const rangeLbl = RANGE_OPTIONS.find(r => r.value === rangeFilter)?.label
     if (rangeFilter !== 'all' && rangeLbl) filterParts.push(rangeLbl)
     const subtitle = filterParts.length > 0
-      ? `Showing ${heroList.length} heroes — ${filterParts.join(' · ')}`
-      : `Aggregate hero performance across all scrims — ${heroList.length} heroes tracked`
+      ? `Showing ${heroList.length} heroes · ${filterParts.join(' · ')}`
+      : `Aggregate hero performance across all scrims · ${heroList.length} heroes tracked`
 
     return (
       <div style={{ padding: '40px', fontFamily: "'Inter', -apple-system, sans-serif", maxWidth: '1200px', margin: '0 auto' }}>
@@ -670,7 +670,7 @@ export default function ScrimHeroDetailView() {
             <div>
               <div style={{ ...LABEL_STYLE }}>🏆 Best Performance</div>
               <div style={{ fontSize: '14px', color: TEXT_PRIMARY, fontWeight: 600 }}>{bestGame.player} on {bestGame.mapName}</div>
-              <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '2px' }}>{bestGame.scrimName} — {formatDate(bestGame.scrimDate)}</div>
+              <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '2px' }}>{bestGame.scrimName} · {formatDate(bestGame.scrimDate)}</div>
             </div>
             <div style={{ display: 'flex', gap: '20px' }}>
               {[
@@ -735,7 +735,7 @@ export default function ScrimHeroDetailView() {
           <div style={{ ...CARD_STYLE, marginBottom: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div style={{ fontWeight: 700, fontSize: '15px', color: TEXT_PRIMARY }}>
-                📈 Per-Scrim Trend — {selectedStat.label}
+                📈 Per-Scrim Trend: {selectedStat.label}
               </div>
               <select
                 value={trendStat}

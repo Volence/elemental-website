@@ -58,11 +58,11 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
     const tierDesc = tierKeyword ? ` competing in FACEIT ${tierKeyword}` : ''
     
     return {
-      title: `ELMT ${team.name} - ${region} Overwatch 2 Team${tierSuffix} | Elemental`,
-      description: `ELMT ${team.name} is an Overwatch 2 esports team in ${region}${tierDesc}. View roster, staff, match history, and open recruitment positions.`,
+      title: `ELMT ${team.name} - ${region} Overwatch Team${tierSuffix} | Elemental`,
+      description: `ELMT ${team.name} is an Overwatch esports team in ${region}${tierDesc}. View roster, staff, match history, and open recruitment positions.`,
       openGraph: {
-        title: `ELMT ${team.name} - ${region} Overwatch 2 Team | Elemental`,
-        description: `ELMT ${team.name} is an Overwatch 2 esports team in ${region}${tierDesc}. View roster, staff, match history, and open recruitment positions.`,
+        title: `ELMT ${team.name} - ${region} Overwatch Team | Elemental`,
+        description: `ELMT ${team.name} is an Overwatch esports team in ${region}${tierDesc}. View roster, staff, match history, and open recruitment positions.`,
         images: team.logo ? [{ url: team.logo }] : undefined,
       },
     }
@@ -120,7 +120,7 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
     "@context": "https://schema.org",
     "@type": "SportsTeam",
     "name": `ELMT ${team.name}`,
-    "sport": "Overwatch 2",
+    "sport": "Overwatch",
     "url": `https://elmt.gg/teams/${slug}`,
     "logo": team.logo || "https://elmt.gg/logos/org.png",
     "memberOf": {
@@ -130,7 +130,7 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
       "url": "https://elmt.gg"
     },
     ...(team.region && { "location": { "@type": "Place", "name": team.region } }),
-    ...(team.rating && { "description": `Overwatch 2 esports team competing in FACEIT ${team.rating}` })
+    ...(team.rating && { "description": `Overwatch esports team competing in FACEIT ${team.rating}` })
   }
 
   return (

@@ -1,5 +1,5 @@
 /**
- * Overwatch 2 hero icon utilities.
+ * Overwatch hero icon utilities.
  *
  * Fetches hero portrait URLs from the OverFast API (which proxies Blizzard CDN).
  * Portrait URLs use unpredictable SHA256 hashes, so we cache the mapping.

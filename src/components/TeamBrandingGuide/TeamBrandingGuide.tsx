@@ -43,20 +43,59 @@ const PETALS: { d: string; color: 'p' | 's' }[] = [
   { d: 'M 454.059 572.477 C 379.324 585.602 328.613 560.340 290.875 514.348 C 251.367 474.371 212.680 455.562 162.5 448.043 C 167.953 438.215 179.441 420.648 200.430 406.422 C 228 387.738 255.621 385.883 266.961 385.762 C 310.453 383.121 345.754 418.211 372.930 490.703 C 389.176 529.078 418.281 554.211 454.059 572.477 Z', color: 's' },
 ]
 
-/** Mix a hex color with black at a given ratio (0–1, where 0.19 ≈ the same as hex alpha 30) */
-function mixWithBlack(hex: string, ratio: number): string {
-  const r = parseInt(hex.slice(1, 3), 16) || 0
-  const g = parseInt(hex.slice(3, 5), 16) || 0
-  const b = parseInt(hex.slice(5, 7), 16) || 0
-  const mr = Math.round(r * ratio)
-  const mg = Math.round(g * ratio)
-  const mb = Math.round(b * ratio)
-  return `#${mr.toString(16).padStart(2, '0')}${mg.toString(16).padStart(2, '0')}${mb.toString(16).padStart(2, '0')}`
+/* ── Solid enhancement toggles ── */
+interface SolidEnhancements {
+  gradient: boolean    // Gradient fill: bright → darker toward center
+  highlight: boolean   // Inner highlight: thin bright stroke on inner edge
+  shadow: boolean      // Colored drop shadow behind each petal
+  glossy: boolean      // Glossy overlay: white→transparent gradient on top half
+  twoTone: boolean     // Two-tone: primary fills with secondary inner shadow/edge
 }
 
-function BrandedLogo({ primary, secondary, size = 34, opaque = false, mixRatio = 0.19 }: { primary: string; secondary: string; size?: number; opaque?: boolean; mixRatio?: number }) {
-  const filterId = `glow-${opaque ? 'o-' : ''}${primary}-${secondary}`
-  // Center the logo: original paths are in ~(160,160)-(840,840) range, center ~500,500
+const DEFAULT_ENHANCEMENTS: SolidEnhancements = {
+  gradient: false,
+  highlight: false,
+  shadow: false,
+  glossy: false,
+  twoTone: false,
+}
+
+/** Parse hex → RGB */
+function hexToRgb(hex: string): [number, number, number] {
+  return [
+    parseInt(hex.slice(1, 3), 16) || 0,
+    parseInt(hex.slice(3, 5), 16) || 0,
+    parseInt(hex.slice(5, 7), 16) || 0,
+  ]
+}
+
+function rgbToHex(r: number, g: number, b: number): string {
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
+}
+
+/** Lighten a hex color toward white by a ratio (0–1) */
+function lighten(hex: string, amount: number): string {
+  const [r, g, b] = hexToRgb(hex)
+  return rgbToHex(
+    Math.min(255, Math.round(r + (255 - r) * amount)),
+    Math.min(255, Math.round(g + (255 - g) * amount)),
+    Math.min(255, Math.round(b + (255 - b) * amount)),
+  )
+}
+
+/** Darken a hex color toward black by a ratio (0–1) */
+function darken(hex: string, amount: number): string {
+  const [r, g, b] = hexToRgb(hex)
+  return rgbToHex(
+    Math.round(r * (1 - amount)),
+    Math.round(g * (1 - amount)),
+    Math.round(b * (1 - amount)),
+  )
+}
+
+/** Neon variant — the original beloved neon-on-black look, unchanged */
+function NeonLogo({ primary, secondary, size = 160 }: { primary: string; secondary: string; size?: number }) {
+  const filterId = `neon-${primary}-${secondary}-${size}`
   return (
     <svg
       className="tc__logo-svg"
@@ -89,15 +128,14 @@ function BrandedLogo({ primary, secondary, size = 34, opaque = false, mixRatio =
           />
         )
       })}
-      {/* Crisp layer */}
+      {/* Crisp layer — transparent fill */}
       {PETALS.map((petal, i) => {
         const c = petal.color === 'p' ? primary : secondary
-        const fill = opaque ? mixWithBlack(c, mixRatio) : `${c}30`
         return (
           <path
             key={`c${i}`}
             d={petal.d}
-            fill={fill}
+            fill={`${c}30`}
             stroke={c}
             strokeWidth="2"
             strokeLinejoin="round"
@@ -108,14 +146,121 @@ function BrandedLogo({ primary, secondary, size = 34, opaque = false, mixRatio =
   )
 }
 
+/** Solid variant — full color fill with toggleable enhancements */
+function SolidLogo({ primary, secondary, size = 160, enhancements }: { primary: string; secondary: string; size?: number; enhancements: SolidEnhancements }) {
+  const uid = `solid-${primary}-${secondary}-${size}`
+  const { gradient, highlight, shadow, glossy, twoTone } = enhancements
+
+  return (
+    <svg
+      className="tc__logo-svg"
+      viewBox="130 130 740 740"
+      style={{ '--logo-size': `${size}px` } as React.CSSProperties}
+    >
+      <defs>
+        {/* Gradient fills — bright at petal tip, darker toward center (500,500) */}
+        {gradient && PETALS.map((petal, i) => {
+          const c = petal.color === 'p' ? primary : secondary
+          // Calculate rough petal tip position from path (use first M command coords)
+          const match = petal.d.match(/^M\s+([\d.]+)\s+([\d.]+)/)
+          const tx = match ? parseFloat(match[1]) : 500
+          const ty = match ? parseFloat(match[2]) : 500
+          return (
+            <radialGradient key={`grad${i}`} id={`${uid}-grad-${i}`}
+              cx="500" cy="500" r="340"
+              fx={String(tx)} fy={String(ty)}
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop offset="0%" stopColor={lighten(c, 0.15)} />
+              <stop offset="100%" stopColor={darken(c, 0.35)} />
+            </radialGradient>
+          )
+        })}
+
+        {/* Drop shadow filter */}
+        {shadow && (
+          <filter id={`${uid}-shadow`} x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="14" result="blur" />
+            <feOffset dx="0" dy="4" result="shifted" />
+            <feFlood floodColor={primary} floodOpacity="0.7" result="color" />
+            <feComposite in="color" in2="shifted" operator="in" result="shadow" />
+            <feMerge>
+              <feMergeNode in="shadow" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        )}
+
+        {/* Glossy overlay — white gradient on upper portion of each petal */}
+        {glossy && (
+          <linearGradient id={`${uid}-gloss`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="white" stopOpacity="0.3" />
+            <stop offset="40%" stopColor="white" stopOpacity="0.08" />
+            <stop offset="100%" stopColor="white" stopOpacity="0" />
+          </linearGradient>
+        )}
+      </defs>
+
+      {/* Main petal fills */}
+      {PETALS.map((petal, i) => {
+        const c = petal.color === 'p' ? primary : secondary
+        const otherC = petal.color === 'p' ? secondary : primary
+        const fillColor = gradient ? `url(#${uid}-grad-${i})` : c
+        const strokeColor = twoTone ? darken(otherC, 0.2) : darken(c, 0.3)
+
+        return (
+          <g key={`petal${i}`}>
+            {/* Main shape */}
+            <path
+              d={petal.d}
+              fill={fillColor}
+              stroke={strokeColor}
+              strokeWidth={twoTone ? '3' : '2'}
+              strokeLinejoin="round"
+              filter={shadow ? `url(#${uid}-shadow)` : undefined}
+            />
+            {/* Inner highlight — slightly inset bright stroke */}
+            {highlight && (
+              <path
+                d={petal.d}
+                fill="none"
+                stroke={lighten(c, 0.5)}
+                strokeWidth="2.5"
+                strokeLinejoin="round"
+                opacity="0.7"
+                transform="translate(0, -1.5)"
+              />
+            )}
+            {/* Glossy overlay */}
+            {glossy && (
+              <path
+                d={petal.d}
+                fill={`url(#${uid}-gloss)`}
+                stroke="none"
+              />
+            )}
+          </g>
+        )
+      })}
+    </svg>
+  )
+}
+
+/** Small inline logo for the header bar — always uses neon style */
+function HeaderLogo({ primary, secondary }: { primary: string; secondary: string }) {
+  return <NeonLogo primary={primary} secondary={secondary} size={34} />
+}
+
 function TeamCard({
   team,
   onSave,
-  mixRatio,
+  bgColor,
+  enhancements,
 }: {
   team: TeamData
   onSave: (id: number, updates: Record<string, string>) => Promise<void>
-  mixRatio: number
+  bgColor: string
+  enhancements: SolidEnhancements
 }) {
   // Saved values (source of truth from server)
   const [savedPrimary, setSavedPrimary] = useState(team.brandingPrimary || team.themeColor || '')
@@ -273,17 +418,17 @@ function TeamCard({
         </div>
       </div>
 
-      {/* Large pinwheel previews — transparent vs opaque */}
+      {/* Large pinwheel previews — Neon vs Solid */}
       <div className="tc__pinwheel-row">
-        <div className="tc__pinwheel-preview">
-          <div className="tc__pinwheel-label">Transparent Fill</div>
-          <BrandedLogo primary={p} secondary={s} size={160} />
-          <div className="tc__pinwheel-desc">Alpha overlay · for dark backgrounds</div>
+        <div className="tc__pinwheel-preview" style={{ backgroundColor: '#000' }}>
+          <div className="tc__pinwheel-label">Neon · Dark BG</div>
+          <NeonLogo primary={p} secondary={s} size={160} />
+          <div className="tc__pinwheel-desc">Transparent fill + glow · hero usage</div>
         </div>
-        <div className="tc__pinwheel-preview tc__pinwheel-preview--opaque">
-          <div className="tc__pinwheel-label">Opaque Fill · {Math.round(mixRatio * 100)}%</div>
-          <BrandedLogo primary={p} secondary={s} size={160} opaque mixRatio={mixRatio} />
-          <div className="tc__pinwheel-desc">Color mixed with black · for any background</div>
+        <div className="tc__pinwheel-preview" style={{ backgroundColor: bgColor }}>
+          <div className="tc__pinwheel-label">Solid · Any BG</div>
+          <SolidLogo primary={p} secondary={s} size={160} enhancements={enhancements} />
+          <div className="tc__pinwheel-desc">Full color fill · FACEIT, flyers, etc.</div>
         </div>
       </div>
     </div>
@@ -313,7 +458,11 @@ export default function TeamBrandingGuide() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [bgColor, setBgColor] = useState('#000000')
-  const [mixRatio, setMixRatio] = useState(0.8)
+  const [enhancements, setEnhancements] = useState<SolidEnhancements>({ ...DEFAULT_ENHANCEMENTS })
+
+  const toggleEnhancement = useCallback((key: keyof SolidEnhancements) => {
+    setEnhancements(prev => ({ ...prev, [key]: !prev[key] }))
+  }, [])
 
   useEffect(() => {
     setStepNav([{ label: 'Graphics' }, { label: 'Team Branding Guide' }])
@@ -365,10 +514,10 @@ export default function TeamBrandingGuide() {
           <h1>Team Branding Guide</h1>
           <p className="tbg__subtitle">Clean Glow · 2-Color System</p>
           <div className="tbg__legend">
-            <span><strong>Primary</strong> — Neon glow, outlines, text stroke</span>
-            <span><strong>Secondary</strong> — Fills, shadows, dark accents</span>
+            <span><strong>Primary</strong> - Neon glow, outlines, text stroke</span>
+            <span><strong>Secondary</strong> - Fills, shadows, dark accents</span>
             <span>Preview backgrounds show each color at 20% opacity over black</span>
-            <span><strong>Neon effect</strong> — Each shape is rendered twice: a blurred copy behind (Gaussian blur filter) creates the glow, then a crisp copy is drawn on top</span>
+            <span><strong>Neon effect</strong> - Each shape is rendered twice: a blurred copy behind (Gaussian blur filter) creates the glow, then a crisp copy is drawn on top</span>
           </div>
           <div className="tbg__bg-picker">
             <label>Preview Background</label>
@@ -393,22 +542,15 @@ export default function TeamBrandingGuide() {
               <button className="tbg__bg-reset" onClick={() => setBgColor('#000000')}>Reset</button>
             )}
           </div>
-          <div className="tbg__bg-picker">
-            <label>Opaque Fill Mix</label>
-            <input
-              type="range"
-              min="0.05"
-              max="1"
-              step="0.01"
-              value={mixRatio}
-              onChange={(e) => setMixRatio(parseFloat(e.target.value))}
-              className="tbg__slider"
-              title={`${Math.round(mixRatio * 100)}% color intensity`}
-            />
-            <span className="tbg__slider-value">{Math.round(mixRatio * 100)}%</span>
-            {mixRatio !== 0.8 && (
-              <button className="tbg__bg-reset" onClick={() => setMixRatio(0.8)}>Reset</button>
-            )}
+          <div className="tbg__enhancers">
+            <label>Solid Fill Enhancements</label>
+            <div className="tbg__enhancers-row">
+              <button type="button" className={`tbg__enhancer-btn ${enhancements.gradient ? 'tbg__enhancer-btn--active' : ''}`} onClick={() => toggleEnhancement('gradient')} title="Radial gradient from bright at each petal tip to darker toward the center, adds 3D depth">🌈 Gradient Fill</button>
+              <button type="button" className={`tbg__enhancer-btn ${enhancements.highlight ? 'tbg__enhancer-btn--active' : ''}`} onClick={() => toggleEnhancement('highlight')} title="Thin bright stroke along the inner edge of each petal, like light catching a chrome surface">✨ Inner Highlight</button>
+              <button type="button" className={`tbg__enhancer-btn ${enhancements.shadow ? 'tbg__enhancer-btn--active' : ''}`} onClick={() => toggleEnhancement('shadow')} title="Soft colored drop shadow behind each petal in the primary color, lifts the logo off any background">💫 Drop Shadow</button>
+              <button type="button" className={`tbg__enhancer-btn ${enhancements.glossy ? 'tbg__enhancer-btn--active' : ''}`} onClick={() => toggleEnhancement('glossy')} title="White-to-transparent gradient overlay on the top half of each petal, polished glass look">🪞 Glossy Overlay</button>
+              <button type="button" className={`tbg__enhancer-btn ${enhancements.twoTone ? 'tbg__enhancer-btn--active' : ''}`} onClick={() => toggleEnhancement('twoTone')} title="Uses the opposite brand color for petal strokes, primary fills get secondary edges and vice versa">🎨 Two-Tone Edges</button>
+            </div>
           </div>
         </header>
 
@@ -417,7 +559,7 @@ export default function TeamBrandingGuide() {
             <h2 className="tbg__rg">{REGION_LABELS[region]}</h2>
             <div className="tbg__grid" style={{ '--tc-card-bg': bgColor } as React.CSSProperties}>
               {list.map((t) => (
-                <TeamCard key={t.id} team={t} onSave={handleSave} mixRatio={mixRatio} />
+                <TeamCard key={t.id} team={t} onSave={handleSave} bgColor={bgColor} enhancements={enhancements} />
               ))}
             </div>
           </section>

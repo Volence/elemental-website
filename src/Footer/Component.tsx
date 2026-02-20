@@ -42,7 +42,7 @@ export async function Footer() {
                 <Logo className="scale-110" />
               </Link>
               <p className="text-base text-muted-foreground max-w-xs leading-relaxed">
-                Elemental (ELMT) - A premier Overwatch 2 organization competing at the highest levels.
+                Elemental (ELMT) - A premier Overwatch organization competing at the highest levels.
               </p>
             </div>
             <div className="flex flex-col gap-4">
@@ -108,7 +108,7 @@ export async function Footer() {
               <Logo className="scale-110" />
             </Link>
             <p className="text-base text-muted-foreground max-w-xs leading-relaxed">
-              Elemental (ELMT) - A premier Overwatch 2 organization competing at the highest levels.
+              Elemental (ELMT) - A premier Overwatch organization competing at the highest levels.
             </p>
           </div>
 
@@ -186,7 +186,7 @@ export async function Footer() {
                 <Logo className="scale-110" />
               </Link>
               <p className="text-base text-muted-foreground max-w-xs leading-relaxed">
-                Elemental (ELMT) - A premier Overwatch 2 organization competing at the highest levels.
+                Elemental (ELMT) - A premier Overwatch organization competing at the highest levels.
               </p>
             </div>
             <div className="flex flex-col gap-4">
