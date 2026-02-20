@@ -147,7 +147,6 @@ export const InviteLinks: CollectionConfig = {
       hasMany: false,
       admin: {
         description: 'Optional: Pre-link this invite to a Person record (connects user to their BattleTags and scrim stats)',
-        condition: (data) => data.role === 'player' || data.role === 'team-manager',
       },
     },
     {

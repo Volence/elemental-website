@@ -135,14 +135,13 @@ export const Users: CollectionConfig = {
       relationTo: 'people',
       hasMany: false,
       admin: {
-        description: 'Link this user account to a Person record. Used for players to connect their login to their BattleTags and team roster membership.',
-        condition: (data) => data.role === UserRole.PLAYER || data.role === UserRole.TEAM_MANAGER || data.role === UserRole.ADMIN,
+        description: 'Link this user account to a Person record. Connects their login to BattleTags, scrim stats, and team roster membership.',
       },
       access: {
         read: ({ req: { user } }) => {
           if (!user) return false
           const typedUser = user as User
-          return typedUser.role === UserRole.ADMIN || typedUser.role === UserRole.STAFF_MANAGER || typedUser.role === UserRole.PLAYER
+          return typedUser.role === UserRole.ADMIN || typedUser.role === UserRole.STAFF_MANAGER || typedUser.role === UserRole.TEAM_MANAGER || typedUser.role === UserRole.PLAYER
         },
         update: ({ req }) => {
           const user = req.user as User | undefined
