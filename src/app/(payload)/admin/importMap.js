@@ -68,6 +68,7 @@ import { default as default_91b673ad90a59e578cd7d9f0fa7f0d19 } from '@/component
 import { default as default_d11a66a204e3df3a186a3bc326f6d7e4 } from '@/components/VotesDisplay'
 import { default as default_7c520a493bba693939ee544b7090b356 } from '@/components/ScheduleEditor'
 import { default as default_187be048b128856df5138905b5a2ba07 } from '@/components/PollScopeToggle'
+import { default as default_1ded291ba22d6f8dbac2d341f30f3143 } from '@/components/InviteLinkFields/RoleSelectField'
 import { default as default_af352f4805551eefd7ae0beaaee692c1 } from '@/components/InviteLinkFields/CopyLinkField'
 import { default as default_c88412ef156346181b651c19a855fdb0 } from '@/components/InviteLinkColumns/DepartmentsCell'
 import { default as default_83b754ffb26a9a06f67ecd0cafa4ac31 } from '@/components/InviteLinkColumns/StatusCell'
@@ -184,6 +185,7 @@ export const importMap = {
   "@/components/VotesDisplay#default": default_d11a66a204e3df3a186a3bc326f6d7e4,
   "@/components/ScheduleEditor#default": default_7c520a493bba693939ee544b7090b356,
   "@/components/PollScopeToggle#default": default_187be048b128856df5138905b5a2ba07,
+  "@/components/InviteLinkFields/RoleSelectField#default": default_1ded291ba22d6f8dbac2d341f30f3143,
   "@/components/InviteLinkFields/CopyLinkField#default": default_af352f4805551eefd7ae0beaaee692c1,
   "@/components/InviteLinkColumns/DepartmentsCell#default": default_c88412ef156346181b651c19a855fdb0,
   "@/components/InviteLinkColumns/StatusCell#default": default_83b754ffb26a9a06f67ecd0cafa4ac31,

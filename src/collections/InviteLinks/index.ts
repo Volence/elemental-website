@@ -3,6 +3,11 @@ import { v4 as uuidv4 } from 'uuid'
 import { adminOnly } from '../../access/roles'
 import type { User } from '@/payload-types'
 
+const adminOrStaffManager = ({ req: { user } }: { req: { user: any } }) => {
+  if (!user) return false
+  return user.role === 'admin' || user.role === 'staff-manager'
+}
+
 export const InviteLinks: CollectionConfig = {
   slug: 'invite-links',
   labels: {
@@ -11,13 +16,12 @@ export const InviteLinks: CollectionConfig = {
   },
   access: {
     admin: ({ req: { user } }) => {
-      // Only admins can access this collection
-      return !!user && (user as User).role === 'admin'
+      return !!user && (user.role === 'admin' || user.role === 'staff-manager')
     },
-    create: adminOnly,
-    read: adminOnly,
-    update: adminOnly,
-    delete: adminOnly,
+    create: adminOrStaffManager,
+    read: adminOrStaffManager,
+    update: adminOrStaffManager,
+    delete: adminOrStaffManager,
   },
   admin: {
     defaultColumns: ['token', 'role', 'assignedTeams', 'departmentsDisplay', 'expiresAt', 'status', 'usedAt'],
@@ -42,6 +46,9 @@ export const InviteLinks: CollectionConfig = {
       required: true,
       admin: {
         description: 'The role the new user will be assigned when they sign up',
+        components: {
+          Field: '@/components/InviteLinkFields/RoleSelectField',
+        },
       },
       options: [
         {
@@ -242,6 +249,14 @@ export const InviteLinks: CollectionConfig = {
         // Set createdBy to current user on creation
         if (operation === 'create' && data && req.user) {
           data.createdBy = req.user.id
+        }
+
+        // Enforce role restriction: staff-managers cannot create invites for admin or staff-manager
+        if (data?.role && req.user) {
+          const userRole = (req.user as User).role
+          if (userRole === 'staff-manager' && (data.role === 'admin' || data.role === 'staff-manager')) {
+            throw new Error('Staff Managers cannot create invite links for Admin or Staff Manager roles')
+          }
         }
 
         return data
