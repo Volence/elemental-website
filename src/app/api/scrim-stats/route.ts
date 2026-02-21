@@ -18,10 +18,11 @@ type DisplayNames = {
 
 async function resolveMapDisplayNames(mapId: number): Promise<DisplayNames> {
   // 1. Resolve Payload team names via scrim → payloadTeamId / payloadTeamId2 → teams
-  const teamRow = await prisma.$queryRaw<[{ raw_team1: string; raw_team2: string; payload_team: string | null; payload_team_id: number | null; payload_team2: string | null; payload_team_id2: number | null }]>`
+  const teamRow = await prisma.$queryRaw<[{ raw_team1: string; raw_team2: string; payload_team: string | null; payload_team_id: number | null; payload_team2: string | null; payload_team_id2: number | null; opponent_name: string | null }]>`
     SELECT ms.team_1_name as raw_team1, ms.team_2_name as raw_team2,
            t1.name as payload_team, s."payloadTeamId" as payload_team_id,
-           t2.name as payload_team2, s."payloadTeamId2" as payload_team_id2
+           t2.name as payload_team2, s."payloadTeamId2" as payload_team_id2,
+           s."opponentName" as opponent_name
     FROM scrim_match_starts ms
     JOIN scrim_map_data md ON md.id = ms."mapDataId"
     JOIN scrim_scrims s ON s.id = md."scrimId"
@@ -69,25 +70,42 @@ async function resolveMapDisplayNames(mapId: number): Promise<DisplayNames> {
       teamNameMap.set(rawTeam2, payloadTeam1Name)
     }
   } else if (teamRow?.[0]?.payload_team) {
-    // Single-team scrim: identify "our" team by finding which raw team has players with personId set
+    // Single-team scrim: identify "our" team via roster membership (not just personId IS NOT NULL,
+    // because opponent players can also have personId set if they exist in the people table)
     const payloadTeam = teamRow[0].payload_team
     const ourTeamRaw = await prisma.$queryRaw<[{ player_team: string }]>`
-      SELECT DISTINCT player_team
-      FROM scrim_player_stats
-      WHERE "mapDataId" = ${mapId} AND "personId" IS NOT NULL
+      SELECT DISTINCT ps.player_team
+      FROM scrim_player_stats ps
+      JOIN teams_roster tr ON tr.person_id = ps."personId" AND tr."_parent_id" = ${payloadTeamId}
+      WHERE ps."mapDataId" = ${mapId} AND ps."personId" IS NOT NULL
       LIMIT 1
     `
     if (ourTeamRaw?.[0]) {
       teamNameMap.set(ourTeamRaw[0].player_team, payloadTeam)
     } else {
-      // Fallback: team1 is typically "our" team per upload convention
-      if (teamRow[0].raw_team1) teamNameMap.set(teamRow[0].raw_team1, payloadTeam)
+      // Fallback: try any player with personId
+      const fallback = await prisma.$queryRaw<[{ player_team: string }]>`
+        SELECT DISTINCT player_team FROM scrim_player_stats
+        WHERE "mapDataId" = ${mapId} AND "personId" IS NOT NULL LIMIT 1
+      `
+      if (fallback?.[0]) {
+        teamNameMap.set(fallback[0].player_team, payloadTeam)
+      } else if (teamRow[0].raw_team1) {
+        teamNameMap.set(teamRow[0].raw_team1, payloadTeam)
+      }
     }
-    // Also resolve team2 name if available (single-team but team2 exists)
-    if (teamRow?.[0]?.payload_team2 && teamRow[0].raw_team2) {
-      const alreadyMappedRaw = [...teamNameMap.keys()][0]
-      const otherRaw = alreadyMappedRaw === teamRow[0].raw_team1 ? teamRow[0].raw_team2 : teamRow[0].raw_team1
-      if (otherRaw) teamNameMap.set(otherRaw, teamRow[0].payload_team2)
+
+    // Resolve the opponent's raw team name using opponentName or payloadTeamId2
+    const rawTeam1 = teamRow[0].raw_team1
+    const rawTeam2 = teamRow[0].raw_team2
+    const mappedRaw = [...teamNameMap.keys()][0]
+    const opponentRaw = mappedRaw === rawTeam1 ? rawTeam2 : rawTeam1
+    if (opponentRaw && !teamNameMap.has(opponentRaw)) {
+      if (teamRow[0]?.payload_team2) {
+        teamNameMap.set(opponentRaw, teamRow[0].payload_team2)
+      } else if (teamRow[0]?.opponent_name) {
+        teamNameMap.set(opponentRaw, teamRow[0].opponent_name)
+      }
     }
   }
 

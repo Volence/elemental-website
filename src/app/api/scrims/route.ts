@@ -90,6 +90,7 @@ export async function GET(req: NextRequest) {
   let mapInfoMap = new Map<number, MapInfo>()
   const estimatedMapIds = new Set<number>()
   let scoreOverrideMap = new Map<number, string>()
+  const ourTeamByMap = new Map<number, string>()
 
   if (allMapDataIds.length > 0) {
     const mapInfoRows = await prisma.$queryRaw<MapInfo[]>`
@@ -157,6 +158,24 @@ export async function GET(req: NextRequest) {
     for (const row of scoreOverrides) {
       scoreOverrideMap.set(row.id, row.score_override)
     }
+
+    // Build roster-based "our team" lookup per map
+    // For each mapDataId, find the raw team name that contains players from the scrim's primary team roster
+    const ourTeamRows = await prisma.$queryRaw<Array<{ mapDataId: number; player_team: string; payload_team_id: number }>>`
+      SELECT DISTINCT ps."mapDataId" as "mapDataId", ps.player_team, s."payloadTeamId" as payload_team_id
+      FROM scrim_player_stats ps
+      JOIN scrim_map_data md ON md.id = ps."mapDataId"
+      JOIN scrim_scrims s ON s.id = md."scrimId"
+      JOIN teams_roster tr ON tr.person_id = ps."personId" AND tr."_parent_id" = s."payloadTeamId"
+      WHERE ps."mapDataId" = ANY(${allMapDataIds}::int[])
+        AND ps."personId" IS NOT NULL
+        AND s."payloadTeamId" IS NOT NULL
+    `
+    for (const r of ourTeamRows) {
+      if (!ourTeamByMap.has(r.mapDataId)) {
+        ourTeamByMap.set(r.mapDataId, r.player_team)
+      }
+    }
   }
 
   return NextResponse.json({
@@ -186,10 +205,8 @@ export async function GET(req: NextRequest) {
           let result: 'win' | 'loss' | 'draw' | null = null
           let estimated = false
           if (info) {
-            const ourTeamRaw = teamName
-              ? (info.team1 === teamName || (s.payloadTeamId && teamNameMap.get(s.payloadTeamId))
-                ? info.team1 : info.team2)
-              : info.team1
+            // Use roster-based lookup to determine which raw team is "ours"
+            const ourTeamRaw = (mapDataId ? ourTeamByMap.get(mapDataId) : null) ?? info.team1
             opponent = ourTeamRaw === info.team1 ? info.team2 : info.team1
 
             // Prefer scrim-level opponent name override
