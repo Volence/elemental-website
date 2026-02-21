@@ -23,6 +23,8 @@ model Scrim {
   updatedAt DateTime  @updatedAt
   // Links to Payload CMS team by ID (not a Prisma relation since Team lives in Payload)
   payloadTeamId Int?
+  // Optional second team ID for internal scrims (when both sides are our teams)
+  payloadTeamId2 Int?
   creatorEmail  String
   // Optional override for opponent team name (used when lobby names are wrong)
   opponentName  String?
@@ -30,6 +32,7 @@ model Scrim {
 
   @@map("scrim_scrims")
   @@index([payloadTeamId])
+  @@index([payloadTeamId2])
 }
 
 model ScrimMap {
@@ -51,6 +54,7 @@ model ScrimMapData {
   scrimId   Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  score_override String?  // Manual score override like "3 - 1", takes precedence over parsed score
 
   map   ScrimMap @relation(fields: [mapId], references: [id], onDelete: Cascade)
   mapId Int

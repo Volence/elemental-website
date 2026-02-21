@@ -50,10 +50,12 @@ type CalculatedStat = {
 type MapStats = {
   mapName: string
   mapType: string
-  teams: { team1: string; team2: string; payloadTeamId?: number | null }
+  teams: { team1: string; team2: string; payloadTeamId?: number | null; payloadTeamId2?: number | null; isDualTeam?: boolean }
   summary: {
     matchTime: number
     score: string
+    scoreOverride: string | null
+    canEditScore: boolean
     team1Damage: number
     team2Damage: number
     team1Healing: number
@@ -187,6 +189,10 @@ export default function ScrimMapDetailView() {
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<TabId>('overview')
   const [mapId, setMapId] = useState<string>('')
+  const [editingScore, setEditingScore] = useState(false)
+  const [scoreInput1, setScoreInput1] = useState('')
+  const [scoreInput2, setScoreInput2] = useState('')
+  const [scoreSaving, setScoreSaving] = useState(false)
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -257,6 +263,13 @@ export default function ScrimMapDetailView() {
   const team1Won = s1 > s2
   const team2Won = s2 > s1
 
+  // Dynamic team colors: neutral Cyan/Amber for dual-team (internal) scrims
+  const isDual = data.teams.isDualTeam ?? false
+  const TEAM1_COLOR = isDual ? CYAN : GREEN
+  const TEAM1_DIM = isDual ? CYAN_DIM : GREEN_DIM
+  const TEAM2_COLOR = isDual ? AMBER : RED
+  const TEAM2_DIM = isDual ? 'rgba(245, 158, 11, 0.08)' : RED_DIM
+
   return (
     <div style={{ padding: '40px', maxWidth: '1600px', margin: '0 auto', fontFamily: "'Inter', -apple-system, sans-serif", background: BG, minHeight: '100%' }}>
       {/* Header */}
@@ -299,7 +312,22 @@ export default function ScrimMapDetailView() {
             <span style={{ color: team1Won ? GREEN : team2Won ? TEXT_SECONDARY : TEXT_PRIMARY, fontWeight: team1Won ? 600 : 400 }}>{data.teams.team1}</span>
           )}
           {' '}vs{' '}
-          <span style={{ color: team2Won ? GREEN : team1Won ? TEXT_SECONDARY : TEXT_PRIMARY, fontWeight: team2Won ? 600 : 400 }}>{data.teams.team2}</span>
+          {data.teams.payloadTeamId2 ? (
+            <a
+              href={`/admin/scrim-team?teamId=${data.teams.payloadTeamId2}`}
+              style={{
+                color: team2Won ? GREEN : team1Won ? TEXT_SECONDARY : TEXT_PRIMARY,
+                fontWeight: team2Won ? 600 : 400,
+                textDecoration: 'none',
+                borderBottom: `1px solid ${CYAN}44`,
+                transition: 'border-color 0.15s, color 0.15s',
+              }}
+            >
+              {data.teams.team2}
+            </a>
+          ) : (
+            <span style={{ color: team2Won ? GREEN : team1Won ? TEXT_SECONDARY : TEXT_PRIMARY, fontWeight: team2Won ? 600 : 400 }}>{data.teams.team2}</span>
+          )}
         </p>
       </div>
 
@@ -345,13 +373,145 @@ export default function ScrimMapDetailView() {
       {/* Summary Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: data.summary.distance ? 'repeat(5, 1fr)' : 'repeat(4, 1fr)', gap: '12px', marginBottom: '32px' }}>
         <SummaryCard label="Total Match Time" value={toTimestamp(data.summary.matchTime)} sub={`${(data.summary.matchTime / 60).toFixed(1)} minutes`} icon="⏱" />
-        <SummaryCard
-          label="Score"
-          value={data.summary.score}
-          sub={team1Won ? `Winner: ${data.teams.team1}` : team2Won ? `Winner: ${data.teams.team2}` : 'Draw'}
-          accentColor={CYAN}
-          icon="🏆"
-        />
+
+        {/* Score card with inline editing */}
+        <div style={{ ...CARD_STYLE, borderTop: `2px solid ${CYAN}`, boxShadow: `0 0 20px rgba(0,0,0,0.3), 0 0 30px ${CYAN}08` }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '14px' }}>🏆</span>
+              <span style={LABEL_STYLE}>
+                Score
+              </span>
+            </div>
+            {data.summary.canEditScore && !editingScore && (
+              <button
+                onClick={() => {
+                  const [s1, s2] = data.summary.score.split(' - ').map(Number)
+                  setScoreInput1(String(s1 ?? 0))
+                  setScoreInput2(String(s2 ?? 0))
+                  setEditingScore(true)
+                }}
+                title="Edit score"
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  fontSize: '12px', color: TEXT_DIM, padding: '2px 4px',
+                  borderRadius: '4px', transition: 'color 0.15s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.color = CYAN }}
+                onMouseLeave={e => { e.currentTarget.style.color = TEXT_DIM }}
+              >
+                ✏️
+              </button>
+            )}
+          </div>
+          {editingScore ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <input
+                  type="number"
+                  min="0"
+                  value={scoreInput1}
+                  onChange={e => setScoreInput1(e.target.value)}
+                  style={{
+                    width: '50px', padding: '6px 8px', borderRadius: '6px',
+                    border: `1px solid ${BORDER}`, background: 'rgba(255,255,255,0.05)',
+                    color: TEXT_PRIMARY, fontSize: '20px', fontWeight: 700,
+                    textAlign: 'center', fontFamily: 'inherit',
+                  }}
+                />
+                <span style={{ fontSize: '20px', fontWeight: 700, color: TEXT_DIM }}>–</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={scoreInput2}
+                  onChange={e => setScoreInput2(e.target.value)}
+                  style={{
+                    width: '50px', padding: '6px 8px', borderRadius: '6px',
+                    border: `1px solid ${BORDER}`, background: 'rgba(255,255,255,0.05)',
+                    color: TEXT_PRIMARY, fontSize: '20px', fontWeight: 700,
+                    textAlign: 'center', fontFamily: 'inherit',
+                  }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <button
+                  disabled={scoreSaving}
+                  onClick={async () => {
+                    setScoreSaving(true)
+                    try {
+                      const score = `${parseInt(scoreInput1) || 0} - ${parseInt(scoreInput2) || 0}`
+                      await fetch('/api/scrim-score-override', {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ mapDataId: parseInt(mapId), score }),
+                      })
+                      // Refresh data
+                      const r = await fetch(`/api/scrim-stats?mapId=${mapId}`)
+                      const d = await r.json()
+                      if (!d.error) setData(d)
+                      setEditingScore(false)
+                    } finally { setScoreSaving(false) }
+                  }}
+                  style={{
+                    padding: '4px 12px', borderRadius: '6px', border: 'none',
+                    background: CYAN, color: '#000', fontSize: '11px', fontWeight: 700,
+                    cursor: scoreSaving ? 'not-allowed' : 'pointer', opacity: scoreSaving ? 0.5 : 1,
+                  }}
+                >
+                  {scoreSaving ? 'Saving…' : 'Save'}
+                </button>
+                <button
+                  onClick={() => setEditingScore(false)}
+                  style={{
+                    padding: '4px 12px', borderRadius: '6px',
+                    border: `1px solid ${BORDER}`, background: 'transparent',
+                    color: TEXT_SECONDARY, fontSize: '11px', fontWeight: 600, cursor: 'pointer',
+                  }}
+                >
+                  Cancel
+                </button>
+                {data.summary.scoreOverride && (
+                  <button
+                    disabled={scoreSaving}
+                    onClick={async () => {
+                      setScoreSaving(true)
+                      try {
+                        await fetch('/api/scrim-score-override', {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ mapDataId: parseInt(mapId), score: null }),
+                        })
+                        const r = await fetch(`/api/scrim-stats?mapId=${mapId}`)
+                        const d = await r.json()
+                        if (!d.error) setData(d)
+                        setEditingScore(false)
+                      } finally { setScoreSaving(false) }
+                    }}
+                    style={{
+                      padding: '4px 12px', borderRadius: '6px',
+                      border: `1px solid ${RED}33`, background: 'transparent',
+                      color: RED, fontSize: '11px', fontWeight: 600,
+                      cursor: scoreSaving ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    Clear Override
+                  </button>
+                )}
+              </div>
+            </div>
+          ) : (
+            <>
+              <div style={VALUE_STYLE}>{data.summary.score}</div>
+              <div style={SUB_STYLE}>
+                {team1Won ? `Winner: ${data.teams.team1}` : team2Won ? `Winner: ${data.teams.team2}` : 'Draw'}
+                {data.summary.scoreOverride && (
+                  <span style={{ marginLeft: '8px', fontSize: '10px', color: AMBER, fontWeight: 600 }}>✓ manual</span>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+
         {data.summary.distance && (
           <SummaryCard
             label="Distance Pushed"
@@ -412,17 +572,17 @@ export default function ScrimMapDetailView() {
             </thead>
             <tbody>
               {/* Team 1 */}
-              <TeamHeader name={data.teams.team1} color={GREEN} bgColor={GREEN_DIM} won={team1Won} />
+              <TeamHeader name={data.teams.team1} color={TEAM1_COLOR} bgColor={TEAM1_DIM} won={team1Won} />
               {team1Players.map((p) => (
                 <StatRow key={p.name + p.hero} player={p} onClick={() => setSelectedPlayer(p.name)} selected={selectedPlayer === p.name} />
               ))}
-              <TeamTotalRow players={team1Players} color={GREEN} />
+              <TeamTotalRow players={team1Players} color={TEAM1_COLOR} />
               {/* Team 2 */}
-              <TeamHeader name={data.teams.team2} color={RED} bgColor={RED_DIM} won={team2Won} />
+              <TeamHeader name={data.teams.team2} color={TEAM2_COLOR} bgColor={TEAM2_DIM} won={team2Won} />
               {team2Players.map((p) => (
                 <StatRow key={p.name + p.hero} player={p} onClick={() => setSelectedPlayer(p.name)} selected={selectedPlayer === p.name} />
               ))}
-              <TeamTotalRow players={team2Players} color={RED} />
+              <TeamTotalRow players={team2Players} color={TEAM2_COLOR} />
             </tbody>
           </table>
         </div>
@@ -487,7 +647,7 @@ export default function ScrimMapDetailView() {
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', borderRadius: '8px', background: `${AMBER}0a`, border: `1px solid ${AMBER}20` }}>
                   <span style={{ fontSize: '14px', fontWeight: 700, color: AMBER, textShadow: `0 0 8px ${AMBER}44` }}>{ajax.player}</span>
                   <span style={{ fontSize: '11px', color: TEXT_DIM }}>at {toTimestamp(ajax.time)}</span>
-                  <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '3px', background: ajax.team === data.teams.team1 ? GREEN_DIM : RED_DIM, color: ajax.team === data.teams.team1 ? GREEN : RED, fontWeight: 600 }}>{ajax.team}</span>
+                  <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '3px', background: ajax.team === data.teams.team1 ? TEAM1_DIM : TEAM2_DIM, color: ajax.team === data.teams.team1 ? TEAM1_COLOR : TEAM2_COLOR, fontWeight: 600 }}>{ajax.team}</span>
                 </div>
               ))}
             </div>
@@ -680,8 +840,9 @@ function TeamHeader({ name, color, bgColor, won }: { name: string; color: string
 }
 
 function TeamTotalRow({ players, color }: { players: PlayerRow[]; color: string }) {
-  const borderColor = color === GREEN ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)'
-  const bgColor = color === GREEN ? 'rgba(34, 197, 94, 0.04)' : 'rgba(239, 68, 68, 0.04)'
+  // Derive dim colors dynamically from the passed-in team color
+  const borderColor = `${color}26`
+  const bgColor = `${color}0a`
   const cellStyle: React.CSSProperties = {
     padding: '10px 12px',
     textAlign: 'right',

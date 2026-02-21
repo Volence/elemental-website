@@ -13,6 +13,8 @@ export interface CreateScrimOptions {
   name: string
   date: Date
   payloadTeamId: number | null
+  /** Optional second team for internal scrims */
+  payloadTeamId2?: number | null
   creatorEmail: string
   /** Optional override for opponent team name */
   opponentName?: string | null
@@ -21,8 +23,10 @@ export interface CreateScrimOptions {
     parsedData: ParserData
     replayCode?: string
   }[]
-  /** Maps in-game player_name → Payload Person ID */
+  /** Maps in-game player_name → Payload Person ID (team 1) */
   playerMappings?: Record<string, number>
+  /** Maps in-game player_name → Payload Person ID (team 2, for internal scrims) */
+  playerMappings2?: Record<string, number>
 }
 
 /**
@@ -35,6 +39,7 @@ export async function createScrimFromParsedData(options: CreateScrimOptions) {
       name: options.name,
       date: options.date,
       payloadTeamId: options.payloadTeamId,
+      payloadTeamId2: options.payloadTeamId2 || null,
       creatorEmail: options.creatorEmail,
       opponentName: options.opponentName || null,
     },
@@ -49,6 +54,7 @@ export async function createScrimFromParsedData(options: CreateScrimOptions) {
         parsedData: mapUpload.parsedData,
         replayCode: mapUpload.replayCode,
         playerMappings: options.playerMappings,
+        playerMappings2: options.playerMappings2,
       })
       results.push(mapResult)
     } catch (error) {
@@ -69,6 +75,7 @@ interface CreateMapOptions {
   parsedData: ParserData
   replayCode?: string
   playerMappings?: Record<string, number>
+  playerMappings2?: Record<string, number>
 }
 
 /**
@@ -113,7 +120,7 @@ async function createMapFromParsedData(options: CreateMapOptions) {
     insertObjectivesUpdated(parsedData, scrimId, mapData.id),
     insertOffensiveAssists(parsedData, scrimId, mapData.id),
     insertPayloadProgress(parsedData, scrimId, mapData.id),
-    insertPlayerStats(parsedData, scrimId, mapData.id, options.playerMappings),
+    insertPlayerStats(parsedData, scrimId, mapData.id, options.playerMappings, options.playerMappings2),
     insertPointProgress(parsedData, scrimId, mapData.id),
     insertRemechCharged(parsedData, scrimId, mapData.id),
     insertRoundEnds(parsedData, scrimId, mapData.id),
@@ -353,8 +360,10 @@ async function insertPayloadProgress(data: ParserData, scrimId: number, mapDataI
   })
 }
 
-async function insertPlayerStats(data: ParserData, scrimId: number, mapDataId: number, playerMappings?: Record<string, number>) {
+async function insertPlayerStats(data: ParserData, scrimId: number, mapDataId: number, playerMappings?: Record<string, number>, playerMappings2?: Record<string, number>) {
   if (!data.player_stat?.length) return
+  // Merge both mapping dicts — team 1 and team 2 mappings
+  const allMappings = { ...playerMappings, ...playerMappings2 }
   await prisma.scrimPlayerStat.createMany({
     data: data.player_stat.map((row) => {
       const playerName = String(row[4])
@@ -364,7 +373,7 @@ async function insertPlayerStats(data: ParserData, scrimId: number, mapDataId: n
       round_number: Number(row[2]),
       player_team: String(row[3]),
       player_name: playerName,
-      personId: playerMappings?.[playerName] ?? null,
+      personId: allMappings?.[playerName] ?? null,
       player_hero: String(row[5]),
       eliminations: Number(row[6]),
       final_blows: Number(row[7]),

@@ -99,8 +99,8 @@ async function buildTeamMapping(): Promise<{
         t.name as team_name
       FROM scrim_player_stats ps
       JOIN scrim_scrims s ON s.id = ps."scrimId"
-      JOIN teams t ON s."payloadTeamId" = t.id
-      WHERE s."payloadTeamId" IS NOT NULL
+      JOIN teams t ON s."payloadTeamId" = t.id OR s."payloadTeamId2" = t.id
+      WHERE (s."payloadTeamId" IS NOT NULL OR s."payloadTeamId2" IS NOT NULL)
         AND ps.player_team IS NOT NULL
         AND ps.player_team != ''
     `
@@ -136,7 +136,7 @@ async function buildTeamMapping(): Promise<{
 async function getScrimIdsForTeams(teamIds: number[]): Promise<number[]> {
   if (teamIds.length === 0) return []
   const rows = await prisma.$queryRawUnsafe<Array<{ id: number }>>(
-    `SELECT id FROM scrim_scrims WHERE "payloadTeamId" IN (${teamIds.join(',')})`
+    `SELECT id FROM scrim_scrims WHERE "payloadTeamId" IN (${teamIds.join(',')}) OR "payloadTeamId2" IN (${teamIds.join(',')})`
   )
   return rows.map(r => r.id)
 }
@@ -154,7 +154,7 @@ export async function GET(req: NextRequest) {
     // This restricts data to only scrims linked to their assigned teams
     let scrimScopeClause = ''
     if (scope && !scope.isFullAccess && scope.assignedTeamIds.length > 0) {
-      scrimScopeClause = `AND ps."scrimId" IN (SELECT id FROM scrim_scrims WHERE "payloadTeamId" IN (${scope.assignedTeamIds.join(',')}))`
+      scrimScopeClause = `AND ps."scrimId" IN (SELECT id FROM scrim_scrims WHERE "payloadTeamId" IN (${scope.assignedTeamIds.join(',')}) OR "payloadTeamId2" IN (${scope.assignedTeamIds.join(',')}))`
     } else if (scope && !scope.isFullAccess) {
       // No assigned teams — return empty
       return NextResponse.json({ heroes: [], teams: [] })

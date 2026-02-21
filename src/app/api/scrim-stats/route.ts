@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { getUserScope } from '@/access/scrimScope'
 import { getFinalRoundStats } from '@/lib/scrim-parser/data-access'
 import { groupKillsIntoFights, round } from '@/lib/scrim-parser/utils'
 import { calculateStatsForMap } from '@/lib/scrim-parser/calculate-stats'
@@ -11,26 +12,65 @@ type DisplayNames = {
   teamName: (raw: string) => string           // maps raw team name to Payload team name
   playerName: (raw: string) => string         // maps raw player name to Person display name
   payloadTeamId: number | null                // Payload team ID for linking
+  payloadTeamId2: number | null               // Payload team2 ID for dual-team scrims
+  isDualTeam: boolean                         // Whether both teams are internal
 }
 
 async function resolveMapDisplayNames(mapId: number): Promise<DisplayNames> {
-  // 1. Resolve Payload team name via scrim → payloadTeamId → teams
-  const teamRow = await prisma.$queryRaw<[{ raw_team1: string; raw_team2: string; payload_team: string | null; payload_team_id: number | null }]>`
-    SELECT ms.team_1_name as raw_team1, ms.team_2_name as raw_team2, t.name as payload_team, s."payloadTeamId" as payload_team_id
+  // 1. Resolve Payload team names via scrim → payloadTeamId / payloadTeamId2 → teams
+  const teamRow = await prisma.$queryRaw<[{ raw_team1: string; raw_team2: string; payload_team: string | null; payload_team_id: number | null; payload_team2: string | null; payload_team_id2: number | null }]>`
+    SELECT ms.team_1_name as raw_team1, ms.team_2_name as raw_team2,
+           t1.name as payload_team, s."payloadTeamId" as payload_team_id,
+           t2.name as payload_team2, s."payloadTeamId2" as payload_team_id2
     FROM scrim_match_starts ms
     JOIN scrim_map_data md ON md.id = ms."mapDataId"
     JOIN scrim_scrims s ON s.id = md."scrimId"
-    LEFT JOIN teams t ON s."payloadTeamId" = t.id
+    LEFT JOIN teams t1 ON s."payloadTeamId" = t1.id
+    LEFT JOIN teams t2 ON s."payloadTeamId2" = t2.id
     WHERE ms."mapDataId" = ${mapId}
     LIMIT 1
   `
 
-  // Build team name map: for "our" team, use the Payload name; opponent keeps raw name
+  // Build team name map: maps raw team names from log → Payload team names
   const teamNameMap = new Map<string, string>()
   const payloadTeamId = teamRow?.[0]?.payload_team_id ?? null
-  if (teamRow?.[0]?.payload_team) {
+  const payloadTeamId2 = teamRow?.[0]?.payload_team_id2 ?? null
+  const isDualTeam = !!(payloadTeamId && payloadTeamId2)
+
+  if (isDualTeam && teamRow?.[0]?.payload_team && teamRow?.[0]?.payload_team2) {
+    // Dual-team scrim: correlate raw teams to Payload teams via player → person → team roster
+    // Find one player from each raw team and check which Payload team they belong to
+    const rawTeam1 = teamRow[0].raw_team1
+    const rawTeam2 = teamRow[0].raw_team2
+    const payloadTeam1Name = teamRow[0].payload_team
+    const payloadTeam2Name = teamRow[0].payload_team2
+
+    // Check if a player from raw_team1 belongs to payloadTeamId's roster
+    const team1Check = await prisma.$queryRaw<[{ found: boolean }]>`
+      SELECT EXISTS(
+        SELECT 1 FROM scrim_player_stats ps
+        JOIN people p ON ps."personId" = p.id
+        WHERE ps."mapDataId" = ${mapId}
+          AND ps.player_team = ${rawTeam1}
+          AND ps."personId" IS NOT NULL
+          AND p.id IN (
+            SELECT tr.person_id FROM teams_roster tr WHERE tr."_parent_id" = ${payloadTeamId}
+          )
+      ) as found
+    `
+
+    if (team1Check?.[0]?.found) {
+      // raw_team1 players belong to payloadTeamId → correct order
+      teamNameMap.set(rawTeam1, payloadTeam1Name)
+      teamNameMap.set(rawTeam2, payloadTeam2Name)
+    } else {
+      // raw_team1 players belong to payloadTeamId2 → swapped order
+      teamNameMap.set(rawTeam1, payloadTeam2Name)
+      teamNameMap.set(rawTeam2, payloadTeam1Name)
+    }
+  } else if (teamRow?.[0]?.payload_team) {
+    // Single-team scrim: identify "our" team by finding which raw team has players with personId set
     const payloadTeam = teamRow[0].payload_team
-    // Identify "our" team by finding which raw team has players with personId set
     const ourTeamRaw = await prisma.$queryRaw<[{ player_team: string }]>`
       SELECT DISTINCT player_team
       FROM scrim_player_stats
@@ -42,6 +82,12 @@ async function resolveMapDisplayNames(mapId: number): Promise<DisplayNames> {
     } else {
       // Fallback: team1 is typically "our" team per upload convention
       if (teamRow[0].raw_team1) teamNameMap.set(teamRow[0].raw_team1, payloadTeam)
+    }
+    // Also resolve team2 name if available (single-team but team2 exists)
+    if (teamRow?.[0]?.payload_team2 && teamRow[0].raw_team2) {
+      const alreadyMappedRaw = [...teamNameMap.keys()][0]
+      const otherRaw = alreadyMappedRaw === teamRow[0].raw_team1 ? teamRow[0].raw_team2 : teamRow[0].raw_team1
+      if (otherRaw) teamNameMap.set(otherRaw, teamRow[0].payload_team2)
     }
   }
 
@@ -61,6 +107,8 @@ async function resolveMapDisplayNames(mapId: number): Promise<DisplayNames> {
     teamName: (raw: string) => teamNameMap.get(raw) ?? raw,
     playerName: (raw: string) => playerNameMap.get(raw) ?? raw,
     payloadTeamId,
+    payloadTeamId2,
+    isDualTeam,
   }
 }
 
@@ -223,6 +271,12 @@ export async function GET(req: NextRequest) {
     actualMaxTime,
   )
 
+  // Fetch score override from map data (use raw SQL to avoid Prisma client cache issues)
+  const mapDataRow = await prisma.$queryRaw<[{ score_override: string | null; scrimId: number }]>`
+    SELECT score_override, "scrimId" FROM scrim_map_data WHERE id = ${mapId} LIMIT 1
+  `
+  const scoreOverride = mapDataRow?.[0]?.score_override ?? null
+
   // ── Score calculation ──
   let team1Score = 0
   let team2Score = 0
@@ -230,7 +284,12 @@ export async function GET(req: NextRequest) {
   const round1Progress = payloadProgress.find(p => p.round_number === 1)
   const round2Progress = payloadProgress.find(p => p.round_number === 2)
 
-  if (matchEnd) {
+  if (scoreOverride) {
+    // Use manual override
+    const [s1, s2] = scoreOverride.split(' - ').map(Number)
+    team1Score = s1 ?? 0
+    team2Score = s2 ?? 0
+  } else if (matchEnd) {
     team1Score = matchEnd.team_1_score ?? 0
     team2Score = matchEnd.team_2_score ?? 0
   } else if (matchStart.map_type === 'Escort' && payloadProgress.length > 0) {
@@ -246,6 +305,15 @@ export async function GET(req: NextRequest) {
     team1Score = lastRoundEnd?.team_1_score ?? 0
     team2Score = lastRoundEnd?.team_2_score ?? 0
   }
+
+  // Check if current user can edit scores
+  let canEditScore = false
+  try {
+    const scope = await getUserScope()
+    if (scope && ['admin', 'staff-manager', 'team-manager'].includes(scope.role)) {
+      canEditScore = true
+    }
+  } catch { /* not logged in or error — leave as false */ }
 
   // Distance data for objective-based maps (Escort, Hybrid, Push)
   const distanceData = payloadProgress.length > 0 ? {
@@ -264,10 +332,12 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     mapName: matchStart.map_name,
     mapType: matchStart.map_type,
-    teams: { team1: displayTeam1, team2: displayTeam2, payloadTeamId: dn.payloadTeamId },
+    teams: { team1: displayTeam1, team2: displayTeam2, payloadTeamId: dn.payloadTeamId, payloadTeamId2: dn.payloadTeamId2, isDualTeam: dn.isDualTeam },
     summary: {
       matchTime,
       score: `${team1Score} - ${team2Score}`,
+      scoreOverride,
+      canEditScore,
       team1Damage: round(team1Damage),
       team2Damage: round(team2Damage),
       team1Healing: round(team1Healing),
@@ -413,7 +483,7 @@ async function getKillfeedData(mapId: number) {
     : 0
 
   return NextResponse.json({
-    teams: { team1: displayTeam1, team2: displayTeam2 },
+    teams: { team1: displayTeam1, team2: displayTeam2, isDualTeam: dn.isDualTeam },
     matchTime,
     team1Kills,
     team2Kills,
@@ -722,7 +792,7 @@ async function getEventsData(mapId: number) {
   })
 
   return NextResponse.json({
-    teams: { team1: displayTeam1, team2: displayTeam2 },
+    teams: { team1: displayTeam1, team2: displayTeam2, isDualTeam: dn.isDualTeam },
     matchEvents,
     ultimates,
   })
@@ -771,7 +841,7 @@ async function getCompareData(mapId: number) {
   })
 
   return NextResponse.json({
-    teams: { team1: displayTeam1, team2: displayTeam2 },
+    teams: { team1: displayTeam1, team2: displayTeam2, isDualTeam: dn.isDualTeam },
     team1Players: playerStats.filter(p => p.player_team === team1).map(formatPlayer),
     team2Players: playerStats.filter(p => p.player_team === team2).map(formatPlayer),
   })
@@ -859,7 +929,7 @@ async function getChartsData(mapId: number) {
   })
 
   return NextResponse.json({
-    teams: { team1: displayTeam1, team2: displayTeam2 },
+    teams: { team1: displayTeam1, team2: displayTeam2, isDualTeam: dn.isDualTeam },
     finalBlowsByRole: {
       Tank: { team1: roleData.Tank.team1, team2: roleData.Tank.team2 },
       Damage: { team1: roleData.Damage.team1, team2: roleData.Damage.team2 },

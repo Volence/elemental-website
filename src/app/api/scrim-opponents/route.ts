@@ -19,7 +19,12 @@ export async function GET(req: NextRequest) {
   const overrides = await prisma.scrim.findMany({
     where: {
       opponentName: { not: null },
-      ...(scope.isFullAccess ? {} : { payloadTeamId: { in: scope.assignedTeamIds } }),
+      ...(scope.isFullAccess ? {} : {
+        OR: [
+          { payloadTeamId: { in: scope.assignedTeamIds } },
+          { payloadTeamId2: { in: scope.assignedTeamIds } },
+        ],
+      }),
     },
     select: { opponentName: true },
     distinct: ['opponentName'],
@@ -38,14 +43,14 @@ export async function GET(req: NextRequest) {
       JOIN scrim_map_data md ON md.id = ms."mapDataId"
       JOIN scrim_maps sm ON sm.id = md."mapId"
       JOIN scrim_scrims s ON s.id = sm."scrimId"
-      WHERE s."payloadTeamId" = ANY(${teamIdFilter}::int[])
+      WHERE s."payloadTeamId" = ANY(${teamIdFilter}::int[]) OR s."payloadTeamId2" = ANY(${teamIdFilter}::int[])
       UNION
       SELECT DISTINCT ms.team_1_name as name
       FROM scrim_match_starts ms
       JOIN scrim_map_data md ON md.id = ms."mapDataId"
       JOIN scrim_maps sm ON sm.id = md."mapId"
       JOIN scrim_scrims s ON s.id = sm."scrimId"
-      WHERE s."payloadTeamId" = ANY(${teamIdFilter}::int[])
+      WHERE s."payloadTeamId" = ANY(${teamIdFilter}::int[]) OR s."payloadTeamId2" = ANY(${teamIdFilter}::int[])
     `
   } else {
     rawNames = await prisma.$queryRaw<Array<{ name: string }>>`

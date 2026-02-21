@@ -1,6 +1,6 @@
 // Recruitment Widget Styles (Admin Dashboard)
 .recruitment-widget {
-  margin-bottom: $spacing-xl;
+  margin-bottom: $spacing-md;
   padding: $spacing-lg;
   background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(147, 51, 234, 0.05));
   border: 2px solid rgba(59, 130, 246, 0.3);
@@ -21,7 +21,7 @@
     display: flex;
     align-items: center;
     gap: $spacing-md;
-    margin-bottom: $spacing-lg;
+    margin-bottom: $spacing-md;
   }
 
   &__icon {
@@ -31,10 +31,10 @@
   }
 
   &__title {
-    font-size: 1.5rem;
+    font-size: 1.125rem;
     font-weight: 700;
     color: $admin-text-primary;
-    margin: 0;
+    margin: 0 !important;  // Override global h3 margin-top: 3rem
   }
 
   &__loading {
@@ -58,14 +58,14 @@
   }
 
   &__stat-value {
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: $admin-text-primary;
     margin-bottom: $spacing-xs;
 
     &--primary {
       color: $admin-accent-primary;
-      font-size: 2.5rem;
+      font-size: 1.75rem;
     }
   }
 

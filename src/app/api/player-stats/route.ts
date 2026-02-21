@@ -83,7 +83,7 @@ export async function GET(req: NextRequest) {
   // Build scrim scope SQL clause for non-full-access users
   let scrimScopeClause = ''
   if (scope && !scope.isFullAccess && scope.assignedTeamIds.length > 0) {
-    scrimScopeClause = `AND s."payloadTeamId" IN (${scope.assignedTeamIds.join(',')})`
+    scrimScopeClause = `AND (s."payloadTeamId" IN (${scope.assignedTeamIds.join(',')}) OR s."payloadTeamId2" IN (${scope.assignedTeamIds.join(',')}))`
   } else if (scope && !scope.isFullAccess) {
     // No assigned teams — return empty
     return NextResponse.json({ players: [] })
@@ -214,8 +214,8 @@ async function getPlayerList(range: string, scrimScopeClause: string = '') {
         t.name as team_name
       FROM scrim_player_stats ps
       JOIN scrim_scrims s ON s.id = ps."scrimId"
-      JOIN teams t ON s."payloadTeamId" = t.id
-      WHERE s."payloadTeamId" IS NOT NULL
+      JOIN teams t ON s."payloadTeamId" = t.id OR s."payloadTeamId2" = t.id
+      WHERE (s."payloadTeamId" IS NOT NULL OR s."payloadTeamId2" IS NOT NULL)
         AND ps.player_team IS NOT NULL
         AND ps.player_team != ''
     `
@@ -225,17 +225,108 @@ async function getPlayerList(range: string, scrimScopeClause: string = '') {
         rawTeamToPayload.set(row.raw_team, { teamId: row.team_id, teamName: row.team_name })
       }
     }
+
+    // Second pass: resolve unmapped raw team names via personId → team roster membership
+    // This handles generic Workshop names like "Team 1" / "Team 2"
+    const unmappedTeams = new Set<string>()
+    for (const p of players) {
+      if (!rawTeamToPayload.has(p.player_team) && p.player_team) {
+        unmappedTeams.add(p.player_team)
+      }
+    }
+    if (unmappedTeams.size > 0) {
+      // For each unmapped raw team, find players with personId and check which Payload team roster they belong to
+      const rosterResolution = await prisma.$queryRaw<Array<{ raw_team: string; team_id: number; team_name: string }>>`
+        SELECT DISTINCT ON (ps.player_team)
+          ps.player_team as raw_team,
+          t.id as team_id,
+          t.name as team_name
+        FROM scrim_player_stats ps
+        JOIN people p ON ps."personId" = p.id
+        JOIN teams_roster tr ON tr.person_id = p.id
+        JOIN teams t ON tr."_parent_id" = t.id
+        WHERE ps.player_team = ANY(${[...unmappedTeams]}::text[])
+          AND ps."personId" IS NOT NULL
+        ORDER BY ps.player_team, COUNT(*) OVER (PARTITION BY ps.player_team, t.id) DESC
+      `
+      for (const row of rosterResolution) {
+        if (!rawTeamToPayload.has(row.raw_team)) {
+          rawTeamToPayload.set(row.raw_team, { teamId: row.team_id, teamName: row.team_name })
+        }
+      }
+
+      // Third pass: process-of-elimination for dual-team scrims.
+      // If one raw team is resolved, the other must be the remaining Payload team.
+      const stillUnmapped = [...unmappedTeams].filter(t => !rawTeamToPayload.has(t))
+      if (stillUnmapped.length > 0) {
+        const dualTeamScrims = await prisma.$queryRaw<Array<{
+          raw_team1: string; raw_team2: string;
+          team_id1: number; team_name1: string;
+          team_id2: number; team_name2: string;
+        }>>`
+          SELECT DISTINCT ms.team_1_name as raw_team1, ms.team_2_name as raw_team2,
+                 s."payloadTeamId" as team_id1, t1.name as team_name1,
+                 s."payloadTeamId2" as team_id2, t2.name as team_name2
+          FROM scrim_match_starts ms
+          JOIN scrim_map_data md ON md.id = ms."mapDataId"
+          JOIN scrim_scrims s ON s.id = md."scrimId"
+          JOIN teams t1 ON s."payloadTeamId" = t1.id
+          JOIN teams t2 ON s."payloadTeamId2" = t2.id
+          WHERE s."payloadTeamId2" IS NOT NULL
+            AND (ms.team_1_name = ANY(${stillUnmapped}::text[])
+              OR ms.team_2_name = ANY(${stillUnmapped}::text[]))
+        `
+        for (const ds of dualTeamScrims) {
+          const team1Resolved = rawTeamToPayload.get(ds.raw_team1)
+          const team2Resolved = rawTeamToPayload.get(ds.raw_team2)
+          // If raw_team1 is resolved → raw_team2 must be the other Payload team
+          if (team1Resolved && !team2Resolved) {
+            const otherId = team1Resolved.teamId === ds.team_id1 ? ds.team_id2 : ds.team_id1
+            const otherName = team1Resolved.teamId === ds.team_id1 ? ds.team_name2 : ds.team_name1
+            rawTeamToPayload.set(ds.raw_team2, { teamId: otherId, teamName: otherName })
+          }
+          // If raw_team2 is resolved → raw_team1 must be the other Payload team
+          if (team2Resolved && !team1Resolved) {
+            const otherId = team2Resolved.teamId === ds.team_id1 ? ds.team_id2 : ds.team_id1
+            const otherName = team2Resolved.teamId === ds.team_id1 ? ds.team_name2 : ds.team_name1
+            rawTeamToPayload.set(ds.raw_team1, { teamId: otherId, teamName: otherName })
+          }
+          // If neither is resolved, try roster check for each
+          if (!team1Resolved && !team2Resolved) {
+            // Default: raw_team1 → payloadTeamId, raw_team2 → payloadTeamId2
+            rawTeamToPayload.set(ds.raw_team1, { teamId: ds.team_id1, teamName: ds.team_name1 })
+            rawTeamToPayload.set(ds.raw_team2, { teamId: ds.team_id2, teamName: ds.team_name2 })
+          }
+        }
+      }
+    }
   } catch { /* skip if query fails */ }
+
+  // Build person → roster team map for grouping.
+  // Only players actually on a team roster appear under that team's section.
+  const personToRosterTeam = new Map<number, { teamId: number; teamName: string }>()
+  try {
+    const rosterMembers = await prisma.$queryRaw<Array<{ person_id: number; team_id: number; team_name: string }>>`
+      SELECT tr.person_id, t.id as team_id, t.name as team_name
+      FROM teams_roster tr
+      JOIN teams t ON tr."_parent_id" = t.id
+    `
+    for (const row of rosterMembers) {
+      personToRosterTeam.set(row.person_id, { teamId: row.team_id, teamName: row.team_name })
+    }
+  } catch { /* skip */ }
 
   return NextResponse.json({
     players: players.map((p) => {
       const teamInfo = rawTeamToPayload.get(p.player_team)
+      // Use roster membership for grouping, not raw team name
+      const rosterTeam = p.person_id ? personToRosterTeam.get(p.person_id) : null
       return {
         name: p.display_name,
         personId: p.person_id,
         team: teamInfo?.teamName ?? p.player_team,
-        payloadTeamId: teamInfo?.teamId ?? null,
-        payloadTeamName: teamInfo?.teamName ?? null,
+        payloadTeamId: rosterTeam?.teamId ?? null,
+        payloadTeamName: rosterTeam?.teamName ?? null,
         mapsPlayed: Number(p.maps_played),
         eliminations: Number(p.total_elims),
         deaths: Number(p.total_deaths),
@@ -626,7 +717,7 @@ async function buildPlayerDetailResponse(
     FROM scrim_player_stats ps
     JOIN scrim_map_data md ON md.id = ps."mapDataId"
     JOIN scrim_scrims s ON s.id = md."scrimId"
-    LEFT JOIN teams t ON s."payloadTeamId" = t.id
+    LEFT JOIN teams t ON s."payloadTeamId" = t.id OR s."payloadTeamId2" = t.id
     WHERE ps.player_name = ANY(${aliases}::text[])
     ORDER BY ps."mapDataId" DESC, ps.match_time DESC
     LIMIT 1

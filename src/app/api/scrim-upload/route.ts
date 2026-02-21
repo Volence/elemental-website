@@ -10,6 +10,7 @@
  *   - name: string (scrim name)
  *   - date: string (ISO date string)
  *   - teamId: string (Payload team ID, optional)
+ *   - teamId2: string (second Payload team ID for internal scrims, optional)
  */
 
 import { NextResponse } from 'next/server'
@@ -53,7 +54,9 @@ export async function POST(request: Request) {
     }
 
     const playerMappingsStr = formData.get('playerMappings') as string | null
+    const playerMappings2Str = formData.get('playerMappings2') as string | null
     const opponentNameOverride = (formData.get('opponentName') as string | null)?.trim() || null
+    const teamId2Str = formData.get('teamId2') as string | null
     const playerMappings: Record<string, number> = {}
     if (playerMappingsStr) {
       try {
@@ -61,6 +64,19 @@ export async function POST(request: Request) {
         for (const [name, id] of Object.entries(parsed)) {
           if (id && !isNaN(Number(id))) {
             playerMappings[name] = Number(id)
+          }
+        }
+      } catch {
+        // Ignore invalid JSON — proceed without mappings
+      }
+    }
+    const playerMappings2: Record<string, number> = {}
+    if (playerMappings2Str) {
+      try {
+        const parsed = JSON.parse(playerMappings2Str)
+        for (const [name, id] of Object.entries(parsed)) {
+          if (id && !isNaN(Number(id))) {
+            playerMappings2[name] = Number(id)
           }
         }
       } catch {
@@ -119,10 +135,12 @@ export async function POST(request: Request) {
       name,
       date: dateStr ? new Date(dateStr) : new Date(),
       payloadTeamId: teamIdStr ? parseInt(teamIdStr, 10) : null,
+      payloadTeamId2: teamId2Str ? parseInt(teamId2Str, 10) : null,
       creatorEmail: user.email,
       opponentName: opponentNameOverride,
       maps: parsedMaps,
       playerMappings,
+      playerMappings2: Object.keys(playerMappings2).length > 0 ? playerMappings2 : undefined,
     })
 
     // Build a summary response

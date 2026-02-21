@@ -1452,16 +1452,9 @@ body:not([class*="template"]) {
   @include transparent-bg(0.03);
   border: 1px solid transparent; // Base border for wrapping
   
-  // Left accent bar
+  // Remove default left accent bar
   &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    border-radius: $radius-md 0 0 $radius-md;
-    opacity: 0.8;
+    display: none;
   }
   
   // Banner variants
@@ -1471,10 +1464,7 @@ body:not([class*="template"]) {
     color: rgba(255, 255, 255, 0.9);
     box-shadow: 0 0 16px rgba($admin-accent-success, 0.12);
     
-    &::before {
-      background: $admin-accent-success;
-      box-shadow: 0 0 8px rgba($admin-accent-success, 0.5);
-    }
+    border-left: 3px solid $admin-accent-success;
     
     h4, strong {
       color: $admin-accent-success;
@@ -1488,10 +1478,7 @@ body:not([class*="template"]) {
     color: rgba(255, 255, 255, 0.9);
     box-shadow: 0 0 16px rgba($admin-accent-warning, 0.12);
     
-    &::before {
-      background: $admin-accent-warning;
-      box-shadow: 0 0 8px rgba($admin-accent-warning, 0.5);
-    }
+    border-left: 3px solid $admin-accent-warning;
     
     h4, strong {
       color: $admin-accent-warning;
@@ -1505,10 +1492,7 @@ body:not([class*="template"]) {
     color: rgba(255, 255, 255, 0.9);
     box-shadow: 0 0 16px rgba($admin-accent-error, 0.12);
     
-    &::before {
-      background: $admin-accent-error;
-      box-shadow: 0 0 8px rgba($admin-accent-error, 0.5);
-    }
+    border-left: 3px solid $admin-accent-error;
     
     h4, strong {
       color: $admin-accent-error;
@@ -1522,10 +1506,7 @@ body:not([class*="template"]) {
     color: rgba(255, 255, 255, 0.9);
     box-shadow: 0 0 16px rgba($admin-accent-info, 0.12);
     
-    &::before {
-      background: $admin-accent-info;
-      box-shadow: 0 0 8px rgba($admin-accent-info, 0.5);
-    }
+    border-left: 3px solid $admin-accent-info;
     
     h4, strong {
       color: $admin-accent-info;
@@ -1538,6 +1519,7 @@ body:not([class*="template"]) {
     margin: 0;
     font-size: $font-size-lg;
     line-height: $line-height-tight;
+    padding-bottom: $spacing-sm; // Override gradient-underline's $spacing-md
   }
   
   // Simplify nested elements to avoid border overload

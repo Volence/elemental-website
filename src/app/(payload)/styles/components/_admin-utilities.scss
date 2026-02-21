@@ -441,11 +441,10 @@
 
 .gradient-border-container {
   position: relative;
-  margin-bottom: $spacing-lg;
-  // No visible border - just spacing container
-  
+  margin-bottom: $spacing-md;
+
   &__content {
-    padding: $spacing-lg;
+    padding: $spacing-sm $spacing-md;
     position: relative;
   }
 }

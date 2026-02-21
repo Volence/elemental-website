@@ -31,9 +31,14 @@ export async function GET(req: NextRequest) {
     `
     const teamName = teamRow?.[0]?.name ?? 'Unknown Team'
 
-    // ── 2. Get all scrims for this team ──
+    // ── 2. Get all scrims for this team (either as primary or secondary team) ──
     const scrims = await prisma.scrim.findMany({
-      where: { payloadTeamId: teamId },
+      where: {
+        OR: [
+          { payloadTeamId: teamId },
+          { payloadTeamId2: teamId },
+        ],
+      },
       orderBy: { date: 'desc' },
       include: {
         maps: {
@@ -118,10 +123,15 @@ export async function GET(req: NextRequest) {
     }
 
     // ── 5. Identify "our" team raw name per mapDataId ──
+    // Use roster membership to correctly identify our team, especially for dual-team scrims
+    // where both teams may have players with personId set.
     const ourTeamRows = await prisma.$queryRaw<Array<{ mapDataId: number; player_team: string }>>`
-      SELECT DISTINCT "mapDataId" as "mapDataId", player_team
-      FROM scrim_player_stats
-      WHERE "mapDataId" = ANY(${allMapDataIds}::int[]) AND "personId" IS NOT NULL
+      SELECT DISTINCT ps."mapDataId" as "mapDataId", ps.player_team
+      FROM scrim_player_stats ps
+      JOIN teams_roster tr ON tr.person_id = ps."personId"
+      WHERE ps."mapDataId" = ANY(${allMapDataIds}::int[])
+        AND ps."personId" IS NOT NULL
+        AND tr."_parent_id" = ${teamId}
     `
     const ourTeamByMap = new Map<number, string>()
     for (const r of ourTeamRows) {
@@ -294,6 +304,9 @@ export async function GET(req: NextRequest) {
           SELECT MAX(ps2.round_number)
           FROM scrim_player_stats ps2
           WHERE ps2."mapDataId" = ps."mapDataId"
+        )
+        AND ps."personId" IN (
+          SELECT tr.person_id FROM teams_roster tr WHERE tr."_parent_id" = ${teamId}
         )
     `
 

@@ -159,10 +159,10 @@ export default function ScrimPlayerListView() {
     window.location.href = url
   }
 
-  const renderTableHead = () => (
+  const renderTableHead = (showTeam = true) => (
     <thead>
       <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
-        {COLUMNS.map((col) => (
+        {COLUMNS.filter(col => showTeam || col.key !== 'team').map((col) => (
           <th
             key={col.key}
             onClick={() => handleSort(col.key)}
@@ -188,7 +188,7 @@ export default function ScrimPlayerListView() {
     </thead>
   )
 
-  const renderPlayerRow = (p: PlayerSummary) => (
+  const renderPlayerRow = (p: PlayerSummary, showTeam = true) => (
     <tr
       key={p.personId ? `pid-${p.personId}` : p.name}
       onClick={() => navigateToPlayer(p)}
@@ -201,7 +201,7 @@ export default function ScrimPlayerListView() {
       onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
     >
       <td style={{ padding: '12px 16px', fontWeight: 700, color: TEXT_PRIMARY }}>{p.name}</td>
-      <td style={{ padding: '12px 16px', color: TEXT_SECONDARY }}>{p.team}</td>
+      {showTeam && <td style={{ padding: '12px 16px', color: TEXT_SECONDARY }}>{p.team}</td>}
       <td style={{ padding: '12px 16px', color: TEXT_SECONDARY }}>{p.mostPlayedHero}</td>
       <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: CYAN, fontVariantNumeric: 'tabular-nums' }}>{p.mapsPlayed}</td>
       <td style={{ padding: '12px 16px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{p.eliminations}</td>
@@ -263,9 +263,9 @@ export default function ScrimPlayerListView() {
           </div>
           <div style={CARD_STYLE}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-              {renderTableHead()}
+              {renderTableHead(false)}
               <tbody>
-                {sortPlayers(section.players).map(renderPlayerRow)}
+                {sortPlayers(section.players).map(p => renderPlayerRow(p, false))}
               </tbody>
             </table>
           </div>
@@ -341,12 +341,12 @@ export default function ScrimPlayerListView() {
             <tbody>
               {filteredOthers.length === 0 ? (
                 <tr>
-                  <td colSpan={9} style={{ padding: '40px', textAlign: 'center', color: TEXT_SECONDARY }}>
+                  <td colSpan={COLUMNS.length} style={{ padding: '40px', textAlign: 'center', color: TEXT_SECONDARY }}>
                     {search ? `No players matching "${search}"` : 'No opponent data yet'}
                   </td>
                 </tr>
               ) : (
-                sortPlayers(filteredOthers).map(renderPlayerRow)
+                sortPlayers(filteredOthers).map(p => renderPlayerRow(p))
               )}
             </tbody>
           </table>

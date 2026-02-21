@@ -26,13 +26,19 @@ export async function GET(req: NextRequest) {
 
   // Team scoping: for non-full-access users, limit to their assigned teams
   if (scope && !scope.isFullAccess && scope.assignedTeamIds.length > 0) {
-    where.payloadTeamId = { in: scope.assignedTeamIds }
+    where.OR = [
+      { payloadTeamId: { in: scope.assignedTeamIds } },
+      { payloadTeamId2: { in: scope.assignedTeamIds } },
+    ]
   } else if (scope && !scope.isFullAccess) {
     // No assigned teams — return empty
     return NextResponse.json({ scrims: [], pagination: { page, limit, total: 0, totalPages: 0 } })
   } else if (teamId && !isNaN(teamId)) {
     // Admin/staff-manager explicit team filter
-    where.payloadTeamId = teamId
+    where.OR = [
+      { payloadTeamId: teamId },
+      { payloadTeamId2: teamId },
+    ]
   }
 
   const skip = (page - 1) * limit
@@ -59,8 +65,11 @@ export async function GET(req: NextRequest) {
     prisma.scrim.count({ where }),
   ])
 
-  // Resolve Payload team names for all scrims that have a payloadTeamId
-  const teamIds = [...new Set(scrims.map(s => s.payloadTeamId).filter(Boolean))] as number[]
+  // Resolve Payload team names for all scrims that have a payloadTeamId or payloadTeamId2
+  const teamIds = [...new Set([
+    ...scrims.map(s => s.payloadTeamId).filter(Boolean),
+    ...scrims.map(s => s.payloadTeamId2).filter(Boolean),
+  ])] as number[]
   const teamNameMap = new Map<number, string>()
   if (teamIds.length > 0) {
     const teams = await prisma.$queryRaw<Array<{ id: number; name: string }>>`
@@ -80,6 +89,7 @@ export async function GET(req: NextRequest) {
   }
   let mapInfoMap = new Map<number, MapInfo>()
   const estimatedMapIds = new Set<number>()
+  let scoreOverrideMap = new Map<number, string>()
 
   if (allMapDataIds.length > 0) {
     const mapInfoRows = await prisma.$queryRaw<MapInfo[]>`
@@ -137,11 +147,22 @@ export async function GET(req: NextRequest) {
         estimatedMapIds.add(r.mapDataId)
       }
     }
+
+    // Fetch score overrides
+    const scoreOverrides = await prisma.$queryRaw<{ id: number; score_override: string }[]>`
+      SELECT id, score_override FROM scrim_map_data
+      WHERE id = ANY(${allMapDataIds}::int[]) AND score_override IS NOT NULL
+    `
+    scoreOverrideMap = new Map<number, string>()
+    for (const row of scoreOverrides) {
+      scoreOverrideMap.set(row.id, row.score_override)
+    }
   }
 
   return NextResponse.json({
     scrims: scrims.map((s) => {
       const teamName = s.payloadTeamId ? teamNameMap.get(s.payloadTeamId) ?? null : null
+      const teamName2 = s.payloadTeamId2 ? teamNameMap.get(s.payloadTeamId2) ?? null : null
 
       return {
         id: s.id,
@@ -150,7 +171,9 @@ export async function GET(req: NextRequest) {
         createdAt: s.createdAt.toISOString(),
         creatorEmail: s.creatorEmail,
         teamName,
+        teamName2,
         payloadTeamId: s.payloadTeamId ?? null,
+        payloadTeamId2: s.payloadTeamId2 ?? null,
         opponentName: s.opponentName ?? null,
         mapCount: s._count.maps,
         maps: s.maps.map((m) => {
@@ -175,13 +198,22 @@ export async function GET(req: NextRequest) {
             }
 
             // Use match_end scores first, then round_end as fallback
-            const t1 = info.team1Score ?? info.re_team1Score
-            const t2 = info.team2Score ?? info.re_team2Score
+            let t1 = info.team1Score ?? info.re_team1Score
+            let t2 = info.team2Score ?? info.re_team2Score
+
+            // Prefer score_override if set
+            const override = mapDataId ? scoreOverrideMap.get(mapDataId) : null
+            if (override) {
+              const [o1, o2] = override.split(' - ').map(Number)
+              t1 = o1 ?? t1
+              t2 = o2 ?? t2
+            }
+
             // Mark estimated if score came from a fallback (round_end, payload progress)
             if (mapDataId && estimatedMapIds.has(mapDataId)) {
               estimated = true
-            } else if (info.team1Score == null && (t1 != null || t2 != null)) {
-              // round_end fallback
+            } else if (info.team1Score == null && (t1 != null || t2 != null) && !override) {
+              // round_end fallback (but not if we have an override)
               estimated = true
               if (mapDataId) estimatedMapIds.add(mapDataId)
             }

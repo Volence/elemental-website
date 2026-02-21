@@ -19,7 +19,9 @@ interface Scrim {
   createdAt: string
   creatorEmail: string
   teamName: string | null
+  teamName2: string | null
   payloadTeamId: number | null
+  payloadTeamId2: number | null
   opponentName: string | null
   mapCount: number
   maps: ScrimMap[]
@@ -391,12 +393,20 @@ export default function ScrimListView() {
           <>
             {/* Group scrims by team */}
             {(() => {
-              const teamGroups = new Map<string, Scrim[]>()
+              type ScrimEntry = { scrim: Scrim; viewingAsTeam2: boolean }
+              const teamGroups = new Map<string, ScrimEntry[]>()
               for (const s of scrims) {
                 const key = s.teamName ?? 'Other'
                 const group = teamGroups.get(key) ?? []
-                group.push(s)
+                group.push({ scrim: s, viewingAsTeam2: false })
                 teamGroups.set(key, group)
+                // Also group under team2 for dual-team (internal) scrims
+                if (s.teamName2 && s.teamName2 !== s.teamName) {
+                  const key2 = s.teamName2
+                  const group2 = teamGroups.get(key2) ?? []
+                  group2.push({ scrim: s, viewingAsTeam2: true })
+                  teamGroups.set(key2, group2)
+                }
               }
               // Render named teams first, "Other" last
               const sortedKeys = [...teamGroups.keys()].sort((a, b) => {
@@ -405,14 +415,19 @@ export default function ScrimListView() {
                 return a.localeCompare(b)
               })
               return sortedKeys.map((teamKey) => {
-                const teamScrims = teamGroups.get(teamKey)!
+                const teamEntries = teamGroups.get(teamKey)!
                 return (
                   <div key={teamKey} style={{ marginBottom: '28px' }}>
                     {/* Team section header */}
                     {(() => {
-                      const firstScrim = teamScrims[0]
-                      const teamHref = firstScrim?.payloadTeamId
-                        ? `/admin/scrim-team?teamId=${firstScrim.payloadTeamId}`
+                      const firstEntry = teamEntries[0]
+                      const firstScrim = firstEntry?.scrim
+                      // Resolve the correct team ID for the link (may be team2 for dual-team scrims)
+                      const teamIdForLink = firstEntry?.viewingAsTeam2 && firstScrim?.payloadTeamId2
+                        ? firstScrim.payloadTeamId2
+                        : firstScrim?.payloadTeamId ?? null
+                      const teamHref = teamIdForLink
+                        ? `/admin/scrim-team?teamId=${teamIdForLink}`
                         : null
                       return (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
@@ -454,22 +469,40 @@ export default function ScrimListView() {
                         color: teamKey !== 'Other' ? AMBER : TEXT_DIM,
                         border: `1px solid ${teamKey !== 'Other' ? `${AMBER}25` : BORDER}`,
                       }}>
-                        {teamScrims.length} scrim{teamScrims.length !== 1 ? 's' : ''}
+                        {teamEntries.length} scrim{teamEntries.length !== 1 ? 's' : ''}
                       </span>
                     </div>
                       )
                     })()}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      {teamScrims.map((scrim) => {
+                      {teamEntries.map(({ scrim, viewingAsTeam2 }) => {
                         const isExpanded = expandedId === scrim.id
                         const isHovered = hoveredId === scrim.id
 
-                        // Compute quick record for expanded card
+                        // For dual-team scrims viewed from team2's perspective, flip results
+                        const flipResult = (r: 'win' | 'loss' | 'draw' | null) => {
+                          if (!viewingAsTeam2 || !r) return r
+                          if (r === 'win') return 'loss' as const
+                          if (r === 'loss') return 'win' as const
+                          return r
+                        }
+                        const flipScore = (score: string | null) => {
+                          if (!viewingAsTeam2 || !score) return score
+                          const parts = score.split('-').map(s => s.trim())
+                          return parts.length === 2 ? `${parts[1]}-${parts[0]}` : score
+                        }
+                        // Opponent name from the other team's perspective
+                        const effectiveOpponent = viewingAsTeam2
+                          ? (scrim.teamName ?? scrim.maps[0]?.opponent ?? 'Unknown')
+                          : (scrim.opponentName ?? scrim.maps[0]?.opponent ?? 'Unknown')
+
+                        // Compute quick record for expanded card (with perspective flip)
                         const record = scrim.maps.reduce(
                           (acc, m) => {
-                            if (m.result === 'win') acc.wins++
-                            else if (m.result === 'loss') acc.losses++
-                            else if (m.result === 'draw') acc.draws++
+                            const result = flipResult(m.result)
+                            if (result === 'win') acc.wins++
+                            else if (result === 'loss') acc.losses++
+                            else if (result === 'draw') acc.draws++
                             return acc
                           },
                           { wins: 0, losses: 0, draws: 0 },
@@ -710,10 +743,10 @@ export default function ScrimListView() {
                             <>
                               <span style={{
                                 fontSize: '12px',
-                                color: scrim.opponentName ? CYAN : TEXT_DIM,
-                                fontWeight: scrim.opponentName ? 600 : 400,
+                                color: (viewingAsTeam2 || scrim.opponentName) ? CYAN : TEXT_DIM,
+                                fontWeight: (viewingAsTeam2 || scrim.opponentName) ? 600 : 400,
                               }}>
-                                {scrim.opponentName ?? scrim.maps[0]?.opponent ?? 'Unknown'}
+                                {effectiveOpponent}
                                 {scrim.opponentName && (
                                   <span style={{ fontSize: '10px', color: TEXT_DIM, fontWeight: 400, marginLeft: '6px' }}>✓ renamed</span>
                                 )}
@@ -777,7 +810,12 @@ export default function ScrimListView() {
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                             {scrim.maps.map((map) => {
                               const isMapHovered = hoveredMapId === map.id
-                              const resultInfo = map.result ? RESULT_COLORS[map.result] : null
+                              const effectiveResult = flipResult(map.result)
+                              const effectiveScore = flipScore(map.score)
+                              const effectiveMapOpponent = viewingAsTeam2
+                                ? (scrim.teamName ?? map.opponent)
+                                : map.opponent
+                              const resultInfo = effectiveResult ? RESULT_COLORS[effectiveResult] : null
 
                               return (
                                 <a
@@ -811,17 +849,17 @@ export default function ScrimListView() {
                                     </span>
 
                                     {/* Opponent */}
-                                    {map.opponent && (
+                                    {effectiveMapOpponent && (
                                       <span style={{
                                         fontSize: '12px',
                                         color: TEXT_DIM,
                                       }}>
-                                        vs {map.opponent}
+                                        vs {effectiveMapOpponent}
                                       </span>
                                     )}
 
                                     {/* Score + result badge */}
-                                    {map.score && resultInfo && (
+                                    {effectiveScore && resultInfo && (
                                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                                         title={map.estimated ? 'Estimated — match ended without a final score record (e.g. practice mode). Score derived from available round data.' : undefined}
                                       >
@@ -831,7 +869,7 @@ export default function ScrimListView() {
                                           color: map.estimated ? AMBER : TEXT_SECONDARY,
                                           fontVariantNumeric: 'tabular-nums',
                                         }}>
-                                          {map.estimated ? '~' : ''}{map.score}
+                                          {map.estimated ? '~' : ''}{effectiveScore}
                                         </span>
                                         <span style={{
                                           fontSize: '10px',
