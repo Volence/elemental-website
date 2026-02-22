@@ -7,9 +7,12 @@ import { TeamLogo } from '@/components/TeamLogo'
 import { getMatchStatus } from '@/utilities/getMatchStatus'
 import { LocalDateTime } from '@/components/LocalDateTime'
 import { getTierFromRating } from '@/utilities/tierColors'
+import type { Match } from '@/payload-types'
+
+type PopulatedMatch = Match & Record<string, any>
 
 interface PastMatchCardProps {
-  match: any // TODO: Type this properly with Match type
+  match: PopulatedMatch
 }
 
 export function PastMatchCard({ match }: PastMatchCardProps) {

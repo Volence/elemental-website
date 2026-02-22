@@ -624,7 +624,8 @@ export async function syncPostMatchScores(): Promise<SyncResult> {
       if (!match.faceitMatchId || !match.faceitRoomId) continue
 
       // Fetch match results from FaceIt
-      // TODO: Implement result fetching from FaceIt API
+      // NOTE: Result fetching from FaceIt API not yet implemented — 
+      // the exact match-details endpoint is not documented in our reference.
       // For now, we'll skip this as the exact endpoint isn't in our documentation
       
       updated++

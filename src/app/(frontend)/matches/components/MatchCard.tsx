@@ -22,9 +22,14 @@ import {
 import { getMatchStatus } from '@/utilities/getMatchStatus'
 import { LocalDateTime } from '@/components/LocalDateTime'
 import { getTierFromRating } from '@/utilities/tierColors'
+import type { Match } from '@/payload-types'
+
+// Extended match type: Match has populated relationship fields at runtime
+// that aren't captured in the generated types (producersObservers, casters, etc.)
+type PopulatedMatch = Match & Record<string, any>
 
 interface MatchCardProps {
-  match: any // TODO: Type this properly with Match type
+  match: PopulatedMatch
   showCountdown?: boolean
 }
 
@@ -667,38 +672,42 @@ export function MatchCard({ match, showCountdown = true }: MatchCardProps) {
         {/* Score Display (if completed) */}
         {displayStatus === 'completed' &&
           match.score?.elmtScore !== undefined &&
-          match.score?.opponentScore !== undefined && (
+          match.score?.opponentScore !== undefined && (() => {
+            const eScore = match.score!.elmtScore ?? 0
+            const oScore = match.score!.opponentScore ?? 0
+            return (
             <div className="mt-4 inline-flex items-center gap-4 px-4 py-2 rounded-lg bg-muted/30 border border-border">
               <span
                 className={`text-2xl font-bold ${
-                  match.score.elmtScore > match.score.opponentScore
+                  eScore > oScore
                     ? 'text-green-400/90'
-                    : match.score.elmtScore < match.score.opponentScore
+                    : eScore < oScore
                       ? 'text-red-400/90'
                       : 'text-foreground'
                 }`}
               >
-                {match.score.elmtScore}
+                {eScore}
               </span>
               <span className="text-muted-foreground font-medium">-</span>
               <span
                 className={`text-2xl font-bold ${
-                  match.score.opponentScore > match.score.elmtScore
+                  oScore > eScore
                     ? 'text-green-400/90'
-                    : match.score.opponentScore < match.score.elmtScore
+                    : oScore < eScore
                       ? 'text-red-400/90'
                       : 'text-foreground'
                 }`}
               >
-                {match.score.opponentScore}
+                {oScore}
               </span>
-              {match.score.elmtScore !== match.score.opponentScore && (
+              {eScore !== oScore && (
                 <span className="ml-2 text-xs font-semibold text-muted-foreground uppercase">
-                  {match.score.elmtScore > match.score.opponentScore ? 'W' : 'L'}
+                  {eScore > oScore ? 'W' : 'L'}
                 </span>
               )}
             </div>
-          )}
+            )
+          })()}
       </div>
       </div>
     </div>

@@ -45,7 +45,7 @@ export const People: CollectionConfig = {
     // defaultPopulate: {
     //   name: true,
     // },
-    // TODO: PersonRelationships component needs to be integrated properly
+    // NOTE: PersonRelationships component integrated as a sidebar UI field (see 'relationships' field below)
     // Currently disabled due to Payload 3 API changes
   },
   fields: [

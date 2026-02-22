@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { syncAllTeams } from '@/utilities/faceitSync'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
 
 /**
  * POST /api/faceit/sync
@@ -15,9 +17,15 @@ export async function POST(request: Request) {
     
     // Allow if cron secret matches (for automated jobs)
     if (cronSecret && cronSecret === process.env.CRON_SECRET) {
+      // Authenticated via cron secret
+    } else {
+      // Verify admin authentication via Payload
+      const payload = await getPayload({ config: configPromise })
+      const { user } = await payload.auth({ headers: request.headers as any })
+      if (!user || !['admin', 'staff-manager'].includes(user.role || '')) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
     }
-    // TODO: Add admin authentication check here
-    // For now, we'll allow the request (since we're testing locally)
     
     // Run sync
     const results = await syncAllTeams()
