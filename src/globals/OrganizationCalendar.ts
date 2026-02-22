@@ -1,4 +1,4 @@
-import { UserRole, hideFromPlayers } from '../access/roles'
+import { hideFromPlayers } from '../access/roles'
 import type { GlobalConfig } from 'payload'
 
 export const OrganizationCalendar: GlobalConfig = {

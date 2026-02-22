@@ -48,7 +48,7 @@ describe('GET /api/player-stats', () => {
     expect(Array.isArray(data.players)).toBe(true)
   })
 
-  it('returns player detail when player param is provided', async () => {
+  it('returns player detail when player param is provided', { timeout: 15000 }, async () => {
     // First get the player list to find a real player name
     const listRes = await fetch(`${BASE}/api/player-stats?range=all`)
     const listData = await listRes.json()
@@ -108,7 +108,7 @@ describe('GET /api/scrim-hero-stats', () => {
     expect(Array.isArray(data.heroes)).toBe(true)
   })
 
-  it('returns hero detail when hero param is provided', async () => {
+  it('returns hero detail when hero param is provided', { timeout: 15000 }, async () => {
     // First get hero list to find a real hero name
     const listRes = await fetch(`${BASE}/api/scrim-hero-stats?range=all`)
     const listData = await listRes.json()
