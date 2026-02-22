@@ -1,16 +1,19 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { requireAuth } from '@/access/requireAuth'
 
 /**
  * POST /api/backfill-person-ids
  * Backfills personId on scrim_player_stats rows that are missing it.
  * Matches player_name against gameAliases from People records.
  */
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
-    const payload = await getPayload({ config })
+    const auth = await requireAuth(request)
+    if (auth instanceof NextResponse) return auth
+    const { payload } = auth
 
     // Get all People records with gameAliases
     const { docs: people } = await payload.find({

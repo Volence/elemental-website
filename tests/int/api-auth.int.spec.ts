@@ -11,19 +11,10 @@ const BASE = 'http://localhost:3000'
 
 // ── Routes that should become protected (Tier 2) ──
 
-const ROUTES_TO_PROTECT = [
-  // Critical — destructive / admin-only
+// create-admin is special: self-guards (only works when no users exist)
+// No auth needed since it returns 400 when users already exist
+const SELF_GUARDED_ROUTES = [
   { method: 'POST', path: '/api/create-admin' },
-  { method: 'POST', path: '/api/init-globals' },
-
-  // Medium — data modification
-  { method: 'POST', path: '/api/backfill-person-ids' },
-
-  // Discord admin routes
-  { method: 'GET', path: '/api/discord/guilds' },
-
-  // Debug / data routes
-  { method: 'GET', path: '/api/data-consistency-check' },
 ]
 
 // Routes already returning 403 (have some form of auth)
@@ -35,32 +26,48 @@ const ALREADY_PROTECTED_ROUTES = [
   { method: 'GET', path: '/api/check-people-names' },
 ]
 
+// Routes newly protected with requireAuth (Tier 2)
+const NEWLY_PROTECTED_ROUTES = [
+  { method: 'GET', path: '/api/init-globals' },
+  { method: 'POST', path: '/api/backfill-person-ids' },
+  { method: 'GET', path: '/api/discord/guilds' },
+  { method: 'GET', path: '/api/data-consistency-check' },
+]
+
 // ── Routes that should stay public ──
 
 const PUBLIC_ROUTES = [
   { method: 'GET', path: '/api/health' },
 ]
 
-describe('Auth baseline — routes to protect', () => {
-  // PRE-CHANGE: These routes currently respond without auth.
-  // After Tier 2 changes, update these tests to expect 401.
-  for (const route of ROUTES_TO_PROTECT) {
-    it(`${route.method} ${route.path} — currently accessible (will be protected)`, async () => {
+describe('Auth — self-guarded routes', () => {
+  for (const route of SELF_GUARDED_ROUTES) {
+    it(`${route.method} ${route.path} — returns 400 (users already exist)`, async () => {
       const res = await fetch(`${BASE}${route.path}`, {
         method: route.method,
         headers: { 'Content-Type': 'application/json' },
-        // POST routes may need a body to avoid 400 — send empty object
-        ...(route.method === 'POST' ? { body: JSON.stringify({}) } : {}),
+        body: JSON.stringify({}),
       })
-      // We just confirm the route exists and doesn't 404.
-      // Some may return 400 (bad input) or 500, but NOT 401/403 (since no auth).
-      expect(res.status).not.toBe(401)
-      expect(res.status).not.toBe(403)
+      // Self-guards by checking if users exist
+      expect(res.status).toBe(400)
     })
   }
 })
 
-describe('Auth baseline — already protected routes', () => {
+describe('Auth — newly protected routes (Tier 2)', () => {
+  for (const route of NEWLY_PROTECTED_ROUTES) {
+    it(`${route.method} ${route.path} — returns 401 without auth`, async () => {
+      const res = await fetch(`${BASE}${route.path}`, {
+        method: route.method,
+        headers: { 'Content-Type': 'application/json' },
+        ...(route.method === 'POST' ? { body: JSON.stringify({}) } : {}),
+      })
+      expect(res.status).toBe(401)
+    })
+  }
+})
+
+describe('Auth — already protected routes', () => {
   for (const route of ALREADY_PROTECTED_ROUTES) {
     it(`${route.method} ${route.path} — already returns 401/403`, async () => {
       const res = await fetch(`${BASE}${route.path}`, {

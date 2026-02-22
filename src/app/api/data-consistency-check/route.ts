@@ -1,6 +1,7 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { requireAuth } from '@/access/requireAuth'
 
 interface DetailedIssue {
   type: 'error' | 'warning'
@@ -56,9 +57,11 @@ function levenshteinDistance(str1: string, str2: string): number {
   return matrix[str2.length][str1.length]
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const payload = await getPayload({ config: configPromise })
+    const auth = await requireAuth(request)
+    if (auth instanceof NextResponse) return auth
+    const { payload } = auth
     const issues: DetailedIssue[] = []
 
     // Fetch ignored duplicate pairs

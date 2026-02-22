@@ -1,10 +1,13 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { requireAuth } from '@/access/requireAuth'
 
 /**
  * Debug endpoint to see what guilds the bot is in
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const auth = await requireAuth(request)
+    if (auth instanceof NextResponse) return auth
     const { ensureDiscordClient } = await import('@/discord/bot')
     const client = await ensureDiscordClient()
     
