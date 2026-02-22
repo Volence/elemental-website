@@ -132,12 +132,14 @@ async function buildTeamMapping(): Promise<{
   return { teams, rawToDisplay, ourTeamRaws }
 }
 
-/** Get scrim IDs that belong to the given Payload team IDs */
+/** Get scrim IDs that belong to the given Payload team IDs (parameterized) */
 async function getScrimIdsForTeams(teamIds: number[]): Promise<number[]> {
   if (teamIds.length === 0) return []
-  const rows = await prisma.$queryRawUnsafe<Array<{ id: number }>>(
-    `SELECT id FROM scrim_scrims WHERE "payloadTeamId" IN (${teamIds.join(',')}) OR "payloadTeamId2" IN (${teamIds.join(',')})`
-  )
+  const rows = await prisma.$queryRaw<Array<{ id: number }>>`
+    SELECT id FROM scrim_scrims
+    WHERE "payloadTeamId" = ANY(${teamIds}::int[])
+       OR "payloadTeamId2" = ANY(${teamIds}::int[])
+  `
   return rows.map(r => r.id)
 }
 
@@ -150,21 +152,20 @@ export async function GET(req: NextRequest) {
     // Get user scope for data filtering
     const scope = await getUserScope()
 
-    // Build scrim scope clause for non-full-access users
-    // This restricts data to only scrims linked to their assigned teams
-    let scrimScopeClause = ''
+    // Pre-compute scoped scrim IDs (parameterized)
+    let scopedScrimIds: number[] | null = null
     if (scope && !scope.isFullAccess && scope.assignedTeamIds.length > 0) {
-      scrimScopeClause = `AND ps."scrimId" IN (SELECT id FROM scrim_scrims WHERE "payloadTeamId" IN (${scope.assignedTeamIds.join(',')}) OR "payloadTeamId2" IN (${scope.assignedTeamIds.join(',')}))`
+      scopedScrimIds = await getScrimIdsForTeams(scope.assignedTeamIds)
     } else if (scope && !scope.isFullAccess) {
       // No assigned teams — return empty
       return NextResponse.json({ heroes: [], teams: [] })
     }
 
     if (!hero) {
-      return getHeroList(range, team, scrimScopeClause, scope)
+      return getHeroList(range, team, scopedScrimIds, scope)
     }
 
-    return getHeroDetail(hero, range, team, scrimScopeClause, scope)
+    return getHeroDetail(hero, range, team, scopedScrimIds, scope)
   } catch (err) {
     console.error('[scrim-hero-stats] Error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -173,7 +174,7 @@ export async function GET(req: NextRequest) {
 
 // ── Hero List ────────────────────────────────────────────
 
-async function getHeroList(range: string, team: string, scrimScopeClause: string, scope: Awaited<ReturnType<typeof getUserScope>>) {
+async function getHeroList(range: string, team: string, scopedScrimIds: number[] | null, scope: Awaited<ReturnType<typeof getUserScope>>) {
   const { teams: allTeams } = await buildTeamMapping()
 
   // For scoped users, filter team list to only their own teams
@@ -181,52 +182,158 @@ async function getHeroList(range: string, team: string, scrimScopeClause: string
     ? allTeams.filter(t => t.isOurTeam && t.payloadTeamId !== null && scope.assignedTeamIds.includes(t.payloadTeamId))
     : allTeams
 
-  // Build SQL filters
-  const filters: string[] = ['ps.hero_time_played > 0']
+  // Pre-compute eligible mapDataIds based on range, team, and scope filters
+  // This replaces the dynamic SQL string composition with parameterized queries
+  let eligibleMapIds: number[] | null = null
 
-  // Team filter: resolve display name back to raw name(s)
+  // Step 1: Get map IDs filtered by range and scope
+  if (range === 'last7d') {
+    const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+    if (scopedScrimIds) {
+      const rows = await prisma.$queryRaw<Array<{ id: number }>>`
+        SELECT ps."mapDataId" as id
+        FROM scrim_player_stats ps
+        JOIN scrim_map_data md ON md.id = ps."mapDataId"
+        WHERE ps.hero_time_played > 0
+          AND md."createdAt" >= ${cutoff}
+          AND ps."scrimId" = ANY(${scopedScrimIds}::int[])
+        GROUP BY ps."mapDataId"
+      `
+      eligibleMapIds = rows.map(r => r.id)
+    } else {
+      const rows = await prisma.$queryRaw<Array<{ id: number }>>`
+        SELECT ps."mapDataId" as id
+        FROM scrim_player_stats ps
+        JOIN scrim_map_data md ON md.id = ps."mapDataId"
+        WHERE ps.hero_time_played > 0 AND md."createdAt" >= ${cutoff}
+        GROUP BY ps."mapDataId"
+      `
+      eligibleMapIds = rows.map(r => r.id)
+    }
+  } else if (range === 'last30d') {
+    const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+    if (scopedScrimIds) {
+      const rows = await prisma.$queryRaw<Array<{ id: number }>>`
+        SELECT ps."mapDataId" as id
+        FROM scrim_player_stats ps
+        JOIN scrim_map_data md ON md.id = ps."mapDataId"
+        WHERE ps.hero_time_played > 0
+          AND md."createdAt" >= ${cutoff}
+          AND ps."scrimId" = ANY(${scopedScrimIds}::int[])
+        GROUP BY ps."mapDataId"
+      `
+      eligibleMapIds = rows.map(r => r.id)
+    } else {
+      const rows = await prisma.$queryRaw<Array<{ id: number }>>`
+        SELECT ps."mapDataId" as id
+        FROM scrim_player_stats ps
+        JOIN scrim_map_data md ON md.id = ps."mapDataId"
+        WHERE ps.hero_time_played > 0 AND md."createdAt" >= ${cutoff}
+        GROUP BY ps."mapDataId"
+      `
+      eligibleMapIds = rows.map(r => r.id)
+    }
+  } else if (range === 'last10' || range === 'last20') {
+    const limit = range === 'last10' ? 10 : 20
+    if (scopedScrimIds) {
+      const scrimRows = await prisma.$queryRaw<Array<{ id: number }>>`
+        SELECT id FROM scrim_scrims
+        WHERE id = ANY(${scopedScrimIds}::int[])
+        ORDER BY date DESC LIMIT ${limit}
+      `
+      const limitedScrimIds = scrimRows.map(r => r.id)
+      const rows = await prisma.$queryRaw<Array<{ id: number }>>`
+        SELECT DISTINCT ps."mapDataId" as id
+        FROM scrim_player_stats ps
+        WHERE ps.hero_time_played > 0 AND ps."scrimId" = ANY(${limitedScrimIds}::int[])
+      `
+      eligibleMapIds = rows.map(r => r.id)
+    } else {
+      const scrimRows = await prisma.$queryRaw<Array<{ id: number }>>`
+        SELECT id FROM scrim_scrims ORDER BY date DESC LIMIT ${limit}
+      `
+      const limitedScrimIds = scrimRows.map(r => r.id)
+      const rows = await prisma.$queryRaw<Array<{ id: number }>>`
+        SELECT DISTINCT ps."mapDataId" as id
+        FROM scrim_player_stats ps
+        WHERE ps.hero_time_played > 0 AND ps."scrimId" = ANY(${limitedScrimIds}::int[])
+      `
+      eligibleMapIds = rows.map(r => r.id)
+    }
+  } else if (scopedScrimIds) {
+    // 'all' range but with scope
+    const rows = await prisma.$queryRaw<Array<{ id: number }>>`
+      SELECT DISTINCT ps."mapDataId" as id
+      FROM scrim_player_stats ps
+      WHERE ps.hero_time_played > 0 AND ps."scrimId" = ANY(${scopedScrimIds}::int[])
+    `
+    eligibleMapIds = rows.map(r => r.id)
+  }
+
+  // Step 2: Apply team filter to eligible map IDs
+  let teamFilteredMapIds = eligibleMapIds
   if (team && team !== 'all') {
-    const matchingRaws = teams
+    const matchingRawNames = teams
       .filter(t => t.displayName === team || t.rawName === team)
-      .map(t => `'${t.rawName.replace(/'/g, "''")}'`)
-    if (matchingRaws.length > 0) {
-      filters.push(`ps.player_team IN (${matchingRaws.join(', ')})`)
+      .map(t => t.rawName)
+    if (matchingRawNames.length > 0) {
+      if (teamFilteredMapIds) {
+        const rows = await prisma.$queryRaw<Array<{ id: number }>>`
+          SELECT DISTINCT ps."mapDataId" as id
+          FROM scrim_player_stats ps
+          WHERE ps.hero_time_played > 0
+            AND ps.player_team = ANY(${matchingRawNames}::text[])
+            AND ps."mapDataId" = ANY(${teamFilteredMapIds}::int[])
+        `
+        teamFilteredMapIds = rows.map(r => r.id)
+      } else {
+        const rows = await prisma.$queryRaw<Array<{ id: number }>>`
+          SELECT DISTINCT ps."mapDataId" as id
+          FROM scrim_player_stats ps
+          WHERE ps.hero_time_played > 0
+            AND ps.player_team = ANY(${matchingRawNames}::text[])
+        `
+        teamFilteredMapIds = rows.map(r => r.id)
+      }
     }
   }
 
-  // Range filter
-  if (range === 'last7d') {
-    filters.push(`md."createdAt" >= NOW() - INTERVAL '7 days'`)
-  } else if (range === 'last30d') {
-    filters.push(`md."createdAt" >= NOW() - INTERVAL '30 days'`)
+  // Step 3: Run the aggregation query (parameterized)
+  let rows: HeroListRow[]
+  if (teamFilteredMapIds) {
+    rows = await prisma.$queryRaw<HeroListRow[]>`
+      SELECT
+        ps.player_hero,
+        COUNT(DISTINCT ps."mapDataId") as total_maps,
+        SUM(ps.eliminations) as total_elims,
+        SUM(ps.deaths) as total_deaths,
+        SUM(ps.hero_damage_dealt) as total_damage,
+        SUM(ps.healing_dealt) as total_healing,
+        SUM(ps.final_blows) as total_fb,
+        SUM(ps.hero_time_played) as total_time
+      FROM scrim_player_stats ps
+      WHERE ps.hero_time_played > 0
+        AND ps."mapDataId" = ANY(${teamFilteredMapIds}::int[])
+      GROUP BY ps.player_hero
+      ORDER BY total_maps DESC, total_time DESC
+    `
+  } else {
+    rows = await prisma.$queryRaw<HeroListRow[]>`
+      SELECT
+        ps.player_hero,
+        COUNT(DISTINCT ps."mapDataId") as total_maps,
+        SUM(ps.eliminations) as total_elims,
+        SUM(ps.deaths) as total_deaths,
+        SUM(ps.hero_damage_dealt) as total_damage,
+        SUM(ps.healing_dealt) as total_healing,
+        SUM(ps.final_blows) as total_fb,
+        SUM(ps.hero_time_played) as total_time
+      FROM scrim_player_stats ps
+      WHERE ps.hero_time_played > 0
+      GROUP BY ps.player_hero
+      ORDER BY total_maps DESC, total_time DESC
+    `
   }
-  // For last10/last20 scrims, we'll need a subquery
-  let scrimLimitClause = ''
-  if (range === 'last10' || range === 'last20') {
-    const limit = range === 'last10' ? 10 : 20
-    scrimLimitClause = `AND ps."scrimId" IN (SELECT id FROM scrim_scrims ORDER BY date DESC LIMIT ${limit})`
-  }
-
-  const whereClause = filters.join(' AND ')
-
-  const rows = await prisma.$queryRawUnsafe<HeroListRow[]>(`
-    SELECT
-      ps.player_hero,
-      COUNT(DISTINCT ps."mapDataId") as total_maps,
-      SUM(ps.eliminations) as total_elims,
-      SUM(ps.deaths) as total_deaths,
-      SUM(ps.hero_damage_dealt) as total_damage,
-      SUM(ps.healing_dealt) as total_healing,
-      SUM(ps.final_blows) as total_fb,
-      SUM(ps.hero_time_played) as total_time
-    FROM scrim_player_stats ps
-    JOIN scrim_map_data md ON md.id = ps."mapDataId"
-    WHERE ${whereClause}
-    ${scrimLimitClause}
-    ${scrimScopeClause}
-    GROUP BY ps.player_hero
-    ORDER BY total_maps DESC, total_time DESC
-  `)
 
   const portraits = await loadHeroPortraits()
   const roleMap = heroRoleMapping as Record<string, string>
@@ -249,7 +356,7 @@ async function getHeroList(range: string, team: string, scrimScopeClause: string
 
 // ── Hero Detail ──────────────────────────────────────────
 
-async function getHeroDetail(hero: string, range: string, team: string, scrimScopeClause: string, scope: Awaited<ReturnType<typeof getUserScope>>) {
+async function getHeroDetail(hero: string, range: string, team: string, scopedScrimIds: number[] | null, scope: Awaited<ReturnType<typeof getUserScope>>) {
   // Resolve team filter
   let teamWhere: Record<string, unknown> = {}
   if (team && team !== 'all') {
@@ -264,9 +371,9 @@ async function getHeroDetail(hero: string, range: string, team: string, scrimSco
     }
   }
 
-  // Add scrim scope for non-full-access users
-  const scrimIdFilter = (scope && !scope.isFullAccess && scope.assignedTeamIds.length > 0)
-    ? { scrimId: { in: await getScrimIdsForTeams(scope.assignedTeamIds) } }
+  // Add scrim scope for non-full-access users (reuse pre-computed scrim IDs)
+  const scrimIdFilter = scopedScrimIds
+    ? { scrimId: { in: scopedScrimIds } }
     : {}
 
   const heroStats = await prisma.scrimPlayerStat.findMany({
