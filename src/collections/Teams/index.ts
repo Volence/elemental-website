@@ -692,13 +692,11 @@ export const Teams: CollectionConfig = {
 
         // NEW TEAM CREATED - Refresh all cards to maintain sort order
         if (operation === 'create') {
-          console.log(`[Teams Hook] Team created: ${doc.name}, triggering Discord refresh...`)
           if (typeof globalThis !== 'undefined') {
             setImmediate(async () => {
               try {
                 const { refreshAllTeamCards } = await import('../../discord/services/teamCards')
                 await refreshAllTeamCards()
-                console.log('[Teams Hook] Discord refresh completed for create')
               } catch (error) {
                 console.error('Failed to refresh Discord team cards:', error)
               }
@@ -749,13 +747,11 @@ export const Teams: CollectionConfig = {
       createAuditLogDeleteHook('teams'),
       // Refresh all Discord cards when team is deleted to maintain sort order
       async ({ doc }) => {
-        console.log(`[Teams Hook] Team deleted: ${doc.name}, triggering Discord refresh...`)
         if (typeof globalThis !== 'undefined') {
           setImmediate(async () => {
             try {
               const { refreshAllTeamCards } = await import('../../discord/services/teamCards')
               await refreshAllTeamCards()
-              console.log('[Teams Hook] Discord refresh completed for delete')
             } catch (error) {
               console.error('Failed to refresh Discord team cards after deletion:', error)
             }

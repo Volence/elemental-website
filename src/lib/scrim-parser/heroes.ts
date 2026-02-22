@@ -69,3 +69,8 @@ export const heroRoleMapping: Record<string, HeroRole> = {
   'Zarya': 'Tank',
   'Zenyatta': 'Support',
 }
+
+/** Get the role for a hero name, defaulting to 'Damage' for unknown heroes */
+export function getRoleForHero(hero: string): HeroRole {
+  return heroRoleMapping[hero] ?? 'Damage'
+}
