@@ -1,20 +1,10 @@
-import { getPayload, Payload } from 'payload'
-import config from '@/payload.config'
+import { describe, it, expect } from 'vitest'
 
-import { describe, it, beforeAll, expect } from 'vitest'
-
-let payload: Payload
+const BASE = 'http://localhost:3000'
 
 describe('API', () => {
-  beforeAll(async () => {
-    const payloadConfig = await config
-    payload = await getPayload({ config: payloadConfig })
-  })
-
-  it('fetches users', async () => {
-    const users = await payload.find({
-      collection: 'users',
-    })
-    expect(users).toBeDefined()
+  it('health check returns 200', async () => {
+    const res = await fetch(`${BASE}/api/health`)
+    expect(res.status).toBe(200)
   })
 })
