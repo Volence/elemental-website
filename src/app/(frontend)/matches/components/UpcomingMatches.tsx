@@ -2,9 +2,10 @@ import React from 'react'
 import { Calendar } from 'lucide-react'
 import Link from 'next/link'
 import { MatchCard } from './MatchCard'
+import type { Match } from '@/payload-types'
 
 interface UpcomingMatchesProps {
-  matches: any[] // TODO: Type this with Match[]
+  matches: Match[]
   searchQuery?: string
 }
 

@@ -21,12 +21,10 @@ export const GlobalCalendarEvents: CollectionConfig = {
     afterChange: [
       async ({ doc, operation }) => {
         // Update Discord calendar channel when events are created/updated
-        console.log(`[GlobalCalendarEvents] afterChange fired: operation=${operation}, title="${doc?.title}"`)
         try {
           const { updateCalendarChannel } = await import('@/discord/commands/calendar')
           // Small delay to ensure database changes are committed
           setTimeout(() => {
-            console.log('[GlobalCalendarEvents] setTimeout fired, calling updateCalendarChannel')
             updateCalendarChannel().catch((err) => {
               console.error('[GlobalCalendarEvents] updateCalendarChannel error:', err)
             })
@@ -40,11 +38,9 @@ export const GlobalCalendarEvents: CollectionConfig = {
     afterDelete: [
       async ({ doc }) => {
         // Update Discord calendar channel when events are deleted
-        console.log(`[GlobalCalendarEvents] afterDelete fired: title="${doc?.title}"`)
         try {
           const { updateCalendarChannel } = await import('@/discord/commands/calendar')
           setTimeout(() => {
-            console.log('[GlobalCalendarEvents] setTimeout fired (delete), calling updateCalendarChannel')
             updateCalendarChannel().catch((err) => {
               console.error('[GlobalCalendarEvents] updateCalendarChannel error (delete):', err)
             })

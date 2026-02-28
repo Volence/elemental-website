@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { syncTeamData } from '@/utilities/faceitSync'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
 
 /**
  * POST /api/faceit/sync/[teamId]
@@ -33,8 +35,12 @@ export async function POST(
       )
     }
     
-    // TODO: Check admin authentication
-    // For now, we'll allow the request (testing locally)
+    // Verify admin authentication via Payload
+    const payload = await getPayload({ config: configPromise })
+    const { user } = await payload.auth({ headers: request.headers as any })
+    if (!user || !['admin', 'staff-manager'].includes(user.role || '')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     
     
     const result = await syncTeamData(teamId, faceitTeamId, championshipId, leagueId, seasonId, stageId)

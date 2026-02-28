@@ -1,14 +1,17 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { requireAuth } from '@/access/requireAuth'
 
 /**
  * Initialize Globals that don't have database records yet
  * Run this once after deploying new Globals
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const payload = await getPayload({ config })
+    const auth = await requireAuth(request)
+    if (auth instanceof NextResponse) return auth
+    const { payload } = auth
 
     // Initialize Data Consistency Global
     try {

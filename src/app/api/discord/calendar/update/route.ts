@@ -24,8 +24,6 @@ export async function POST(request: Request) {
       }
     }
     
-    console.log('[Calendar API] Manual calendar update triggered')
-    
     const { updateCalendarChannel } = await import('@/discord/commands/calendar')
     await updateCalendarChannel()
     

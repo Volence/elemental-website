@@ -2,9 +2,10 @@ import React from 'react'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { PastMatchCard } from './PastMatchCard'
+import type { Match } from '@/payload-types'
 
 interface PastMatchesProps {
-  matches: any[] // TODO: Type this with Match[]
+  matches: Match[]
   totalDocs: number
   currentPage: number
   totalPages: number

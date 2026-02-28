@@ -255,8 +255,9 @@ export default function ScrimPlayerDetailView() {
 
   if (loading) {
     return (
-      <div style={{ padding: '60px', textAlign: 'center', color: TEXT_SECONDARY }}>
-        Loading player analytics…
+      <div style={{ padding: '80px 40px', textAlign: 'center', fontFamily: "'Inter', -apple-system, sans-serif" }}>
+        <div style={{ fontSize: '32px', marginBottom: '12px', animation: 'glowPulse 2s ease-in-out infinite' }}>⏳</div>
+        <div style={{ fontSize: '14px', color: TEXT_SECONDARY }}>Loading player analytics…</div>
       </div>
     )
   }

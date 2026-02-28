@@ -52,7 +52,7 @@ export async function postOrUpdateTeamCard(options: TeamCardOptions): Promise<st
     // Use fallbackMessageId if the DB value was cleared (e.g., readOnly field stripped during admin save)
     const existingMessageId = team.discordCardMessageId || options.fallbackMessageId || null
     if (!team.discordCardMessageId && options.fallbackMessageId) {
-      console.log(`[TeamCards] ⚠️ Using fallback message ID for ${team.name} (DB value was null, fallback: ${options.fallbackMessageId})`)
+      console.warn(`[TeamCards] Using fallback message ID for ${team.name} (DB value was null, fallback: ${options.fallbackMessageId})`)
     }
 
     if (existingMessageId && !forceRepost) {
@@ -101,27 +101,26 @@ export async function postOrUpdateTeamCard(options: TeamCardOptions): Promise<st
  * Refresh all team cards in order: Staff first, then teams by Division/SR
  */
 export async function refreshAllTeamCards(): Promise<void> {
-  console.log('[TeamCards] 🔄 Starting refreshAllTeamCards...')
   try {
     const client = await ensureDiscordClient()
     if (!client) {
-      console.log('[TeamCards] ⚠️ No Discord client available, skipping refresh')
+      console.warn('[TeamCards] No Discord client available, skipping refresh')
       return
     }
 
     const channelId = process.env.DISCORD_CARDS_CHANNEL
     if (!channelId) {
-      console.log('[TeamCards] ⚠️ DISCORD_CARDS_CHANNEL not set, skipping refresh')
+      console.warn('[TeamCards] DISCORD_CARDS_CHANNEL not set, skipping refresh')
       return
     }
 
     const channel = (await client.channels.fetch(channelId)) as TextChannel
     if (!channel || !channel.isTextBased()) {
-      console.log('[TeamCards] ⚠️ Could not fetch cards channel, skipping refresh')
+      console.warn('[TeamCards] Could not fetch cards channel, skipping refresh')
       return
     }
 
-    console.log('[TeamCards] ✓ Connected to Discord, refreshing cards...')
+
 
 
     // Get payload instance

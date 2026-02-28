@@ -6,9 +6,10 @@ import Link from 'next/link'
 import { MatchCard } from './MatchCard'
 import { getLocalDateKey, formatLocalDateLabel } from '@/components/LocalDateTime'
 import { getMatchStatus } from '@/utilities/getMatchStatus'
+import type { Match } from '@/payload-types'
 
 interface ClientUpcomingMatchesProps {
-  matches: any[] // TODO: Type this with Match[]
+  matches: Match[]
   searchQuery?: string
 }
 
@@ -21,7 +22,7 @@ export function ClientUpcomingMatches({ matches, searchQuery }: ClientUpcomingMa
   // Filter out completed matches - they should appear in Past Matches instead
   const activeMatches = matches.filter((match) => {
     if (!match.date) return false
-    const status = getMatchStatus(match.date, match.status || 'scheduled')
+    const status = getMatchStatus(match.date, (match.status || 'scheduled') as 'scheduled' | 'cancelled')
     // Only show upcoming and live matches, not completed ones
     return status === 'upcoming' || status === 'live'
   })

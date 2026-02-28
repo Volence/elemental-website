@@ -4,7 +4,7 @@ import { getUserScope } from '@/access/scrimScope'
 import { getFinalRoundStats } from '@/lib/scrim-parser/data-access'
 import { groupKillsIntoFights, round } from '@/lib/scrim-parser/utils'
 import { calculateStatsForMap } from '@/lib/scrim-parser/calculate-stats'
-import { heroRoleMapping } from '@/lib/scrim-parser/heroes'
+import { heroRoleMapping, getRoleForHero } from '@/lib/scrim-parser/heroes'
 
 // ── Display Name Resolution ──
 // Resolves raw log team names → Payload Team names and player names → Person names
@@ -865,31 +865,7 @@ async function getCompareData(mapId: number) {
   })
 }
 
-// ── Hero → Role mapping (Overwatch) ──
-// Keep in sync with src/lib/scrim-parser/heroes.ts
-const HERO_ROLES: Record<string, 'Tank' | 'Damage' | 'Support'> = {
-  // Tanks
-  'D.Va': 'Tank', 'Domina': 'Tank', 'Doomfist': 'Tank', 'Hazard': 'Tank',
-  'Junker Queen': 'Tank', 'Mauga': 'Tank', 'Orisa': 'Tank', 'Ramattra': 'Tank',
-  'Reinhardt': 'Tank', 'Roadhog': 'Tank', 'Sigma': 'Tank', 'Winston': 'Tank',
-  'Wrecking Ball': 'Tank', 'Zarya': 'Tank',
-  // Damage
-  'Anran': 'Damage', 'Ashe': 'Damage', 'Bastion': 'Damage', 'Cassidy': 'Damage',
-  'Echo': 'Damage', 'Emre': 'Damage', 'Freja': 'Damage', 'Genji': 'Damage',
-  'Hanzo': 'Damage', 'Junkrat': 'Damage', 'Mei': 'Damage', 'Pharah': 'Damage',
-  'Reaper': 'Damage', 'Sojourn': 'Damage', 'Soldier: 76': 'Damage', 'Sombra': 'Damage',
-  'Symmetra': 'Damage', 'Torbjörn': 'Damage', 'Tracer': 'Damage', 'Vendetta': 'Damage',
-  'Venture': 'Damage', 'Widowmaker': 'Damage',
-  // Support
-  'Ana': 'Support', 'Baptiste': 'Support', 'Brigitte': 'Support', 'Illari': 'Support',
-  'Jetpack Cat': 'Support', 'Juno': 'Support', 'Kiriko': 'Support', 'Lifeweaver': 'Support',
-  'Lúcio': 'Support', 'Mercy': 'Support', 'Mizuki': 'Support', 'Moira': 'Support',
-  'Wuyang': 'Support', 'Zenyatta': 'Support',
-}
 
-function getRoleForHero(hero: string): 'Tank' | 'Damage' | 'Support' {
-  return HERO_ROLES[hero] ?? 'Damage'
-}
 
 async function getChartsData(mapId: number) {
   const [matchStart, playerStats] = await Promise.all([

@@ -147,7 +147,7 @@ export async function POST(request: NextRequest) {
       }, { status: 404 })
     }
 
-    console.log(`[Finalize Season] Finalizing ${leagues.length} leagues matching "${nameFilter}"...`)
+
 
     const results = {
       leaguesFinalized: 0,
@@ -305,7 +305,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log(`[Finalize Season] Complete:`, results)
+
 
     return NextResponse.json({
       success: true,
