@@ -759,7 +759,7 @@ export interface Team {
    */
   defaultTimeSlot?: string | null;
   /**
-   * URL-friendly identifier (auto-generated from name)
+   * URL-friendly identifier (auto-generated from name). Admins can edit.
    */
   slug?: string | null;
   /**

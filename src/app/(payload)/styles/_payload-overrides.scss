@@ -607,23 +607,21 @@ label:has(input[type="radio"]) {
   box-shadow: 
     0 4px 16px rgba(0, 0, 0, 0.3),
     0 0 12px rgba($admin-accent-primary, 0.15);
-  
-  // Ensure popup content doesn't extend page when active
-  &.popup--active {
-    position: relative;
-    z-index: 99999;
-    
-    .popup__content {
-      position: fixed !important;
-      z-index: 99999 !important;
-      max-height: 80vh !important;
-      overflow-y: auto !important;
-    }
-  }
 }
 
+// Portal-rendered popup content (rendered as child of <body> by Payload)
+// CRITICAL: Do NOT override position/top/right/inset — Payload's JS sets these inline
 .popup__content {
-  position: relative;
+  @include transparent-bg(0.08);
+  border: 1px solid rgba($admin-accent-primary, 0.3);
+  border-radius: 8px;
+  backdrop-filter: blur(16px);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    0 0 12px rgba($admin-accent-primary, 0.15);
+  z-index: 99999 !important;
+  max-height: 80vh !important;
+  overflow-y: auto !important;
 }
 
 // Drawer content (side panels) - wider and consistent
@@ -803,17 +801,12 @@ table {
     }
   }
   
-  // Popup content - override Payload's JavaScript-set inline positioning
-  // Target specifically .doc-controls__popup which has inline `top: 1379px` etc.
+  // Popup content - visual styling only
+  // CRITICAL: Do NOT override position/top/right/left — Payload's JS positions portaled popups
   .popup__content,
   &.doc-controls__popup .popup__content,
   .popup__content.popup--v-bottom {
     display: none !important;
-    position: fixed !important;
-    top: 70px !important;  // Override inline style
-    right: 20px !important;
-    left: auto !important;  // Override inline style
-    bottom: auto !important;
     z-index: 99999 !important;
     min-width: 180px;
     padding: 0.5rem;
@@ -1664,19 +1657,20 @@ section[class*="fields"] {
 }
 
 // ============================================
-// DOC-CONTROLS POPUP FIX
-// Payload renders popups via Portal directly under <body>,
-// so parent selectors like .doc-controls__popup .popup__content don't work.
-// Target the popup content classes directly on body.
+// PORTAL POPUP STYLING
+// Payload renders popups via Portal directly under <body>.
+// CRITICAL: Do NOT override position/top/right/left/inset — Payload's JS
+// calculates these inline from the trigger button's bounding rect.
+// Only apply visual styling here.
 // ============================================
 body > .popup__content,
 body > .popup__content.popup--v-bottom,
 body > .popup__content.popup--size-large,
-.popup__content.popup--v-bottom.popup--size-large {
-  position: fixed !important;
-  top: 70px !important;
-  right: 20px !important;
-  left: auto !important;
+body > .popup__content.popup--size-medium {
+  // Reset stale inline styles from prior CSS !important rules
+  // Only reset position, right, bottom — Payload JS sets top and left
+  position: absolute !important;
+  right: auto !important;
   bottom: auto !important;
   z-index: 999999 !important;
   min-width: 180px !important;

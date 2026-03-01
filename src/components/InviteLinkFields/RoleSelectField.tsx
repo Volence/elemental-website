@@ -12,17 +12,27 @@ import type { SelectFieldClientProps } from 'payload'
 const RoleSelectField: React.FC<SelectFieldClientProps> = (props) => {
   const { user } = useAuth()
   const isStaffManager = user?.role === 'staff-manager'
+  const isTeamManager = user?.role === 'team-manager'
 
-  // Filter out admin and staff-manager options for non-admin users
-  const filteredField = isStaffManager
+  // Team managers can only create player invites
+  // Staff managers can create team-manager, player, and user invites
+  const filteredField = isTeamManager
     ? {
         ...props.field,
         options: (props.field.options || []).filter((opt: any) => {
           const value = typeof opt === 'string' ? opt : opt.value
-          return value !== 'admin' && value !== 'staff-manager'
+          return value === 'player'
         }),
       }
-    : props.field
+    : isStaffManager
+      ? {
+          ...props.field,
+          options: (props.field.options || []).filter((opt: any) => {
+            const value = typeof opt === 'string' ? opt : opt.value
+            return value !== 'admin' && value !== 'staff-manager'
+          }),
+        }
+      : props.field
 
   return <SelectField {...props} field={filteredField} />
 }

@@ -3,9 +3,9 @@ import { v4 as uuidv4 } from 'uuid'
 import { adminOnly } from '../../access/roles'
 import type { User } from '@/payload-types'
 
-const adminOrStaffManager = ({ req: { user } }: { req: { user: any } }) => {
+const canManageInvites = ({ req: { user } }: { req: { user: any } }) => {
   if (!user) return false
-  return user.role === 'admin' || user.role === 'staff-manager'
+  return user.role === 'admin' || user.role === 'staff-manager' || user.role === 'team-manager'
 }
 
 export const InviteLinks: CollectionConfig = {
@@ -16,12 +16,12 @@ export const InviteLinks: CollectionConfig = {
   },
   access: {
     admin: ({ req: { user } }) => {
-      return !!user && (user.role === 'admin' || user.role === 'staff-manager')
+      return !!user && (user.role === 'admin' || user.role === 'staff-manager' || user.role === 'team-manager')
     },
-    create: adminOrStaffManager,
-    read: adminOrStaffManager,
-    update: adminOrStaffManager,
-    delete: adminOrStaffManager,
+    create: canManageInvites,
+    read: canManageInvites,
+    update: canManageInvites,
+    delete: canManageInvites,
   },
   admin: {
     defaultColumns: ['token', 'role', 'assignedTeams', 'departmentsDisplay', 'expiresAt', 'status', 'usedAt'],
@@ -251,11 +251,29 @@ export const InviteLinks: CollectionConfig = {
           data.createdBy = req.user.id
         }
 
-        // Enforce role restriction: staff-managers cannot create invites for admin or staff-manager
+        // Enforce role restrictions based on creator's role
         if (data?.role && req.user) {
           const userRole = (req.user as User).role
           if (userRole === 'staff-manager' && (data.role === 'admin' || data.role === 'staff-manager')) {
             throw new Error('Staff Managers cannot create invite links for Admin or Staff Manager roles')
+          }
+          // Team managers can ONLY create player invites
+          if (userRole === 'team-manager' && data.role !== 'player') {
+            throw new Error('Team Managers can only create invite links for the Player role')
+          }
+          // Team managers: auto-scope assignedTeams to their own teams
+          if (userRole === 'team-manager' && operation === 'create') {
+            const creatorTeams = (req.user as User).assignedTeams
+            if (creatorTeams && Array.isArray(creatorTeams)) {
+              // Only allow teams the manager is assigned to
+              const managerTeamIds = creatorTeams.map((t: any) => typeof t === 'object' ? t.id : t)
+              if (data.assignedTeams && Array.isArray(data.assignedTeams)) {
+                data.assignedTeams = data.assignedTeams.filter((t: any) => {
+                  const id = typeof t === 'object' ? t.id : t
+                  return managerTeamIds.includes(id)
+                })
+              }
+            }
           }
         }
 

@@ -39,6 +39,20 @@ export async function postOrUpdateTeamCard(options: TeamCardOptions): Promise<st
       return null
     }
 
+    // Skip inactive teams — delete existing card if present
+    if (!team.active) {
+      const existingMessageId = team.discordCardMessageId || options.fallbackMessageId || null
+      if (existingMessageId) {
+        try {
+          const channel = (await client.channels.fetch(channelId)) as TextChannel
+          const message = await channel.messages.fetch(existingMessageId)
+          await message.delete()
+          await saveTeamMessageId(teamId, null as any, payload)
+        } catch (_) { /* message may already be deleted */ }
+      }
+      return null
+    }
+
     // Get the Discord channel
     const channel = (await client.channels.fetch(channelId)) as TextChannel
     if (!channel || !channel.isTextBased()) {
@@ -356,6 +370,9 @@ async function fetchAllTeamsSorted(payload: any): Promise<any[]> {
   try {
     const result = await payload.find({
       collection: 'teams',
+      where: {
+        active: { equals: true },
+      },
       limit: 1000,
       depth: 2,
     })

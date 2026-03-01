@@ -579,9 +579,8 @@ export const Teams: CollectionConfig = {
       name: 'slug',
       type: 'text',
       admin: {
-        description: 'URL-friendly identifier (auto-generated from name)',
+        description: 'URL-friendly identifier (auto-generated from name). Admins can edit.',
         position: 'sidebar',
-        readOnly: true,
       },
       hooks: {
         beforeValidate: [
