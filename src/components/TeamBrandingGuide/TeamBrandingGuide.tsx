@@ -4,6 +4,135 @@ import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { useStepNav } from '@payloadcms/ui'
 import './TeamBrandingGuide.scss'
 
+const EXPORT_SIZE = 1024
+
+/**
+ * Serialize an in-DOM SVG element to a standalone SVG string.
+ * Inlines computed styles so the exported file looks identical.
+ */
+function serializeSvg(svgEl: SVGSVGElement): string {
+  const clone = svgEl.cloneNode(true) as SVGSVGElement
+  // Set explicit width/height and xmlns for standalone rendering
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+  clone.setAttribute('width', String(EXPORT_SIZE))
+  clone.setAttribute('height', String(EXPORT_SIZE))
+  // Remove the CSS custom property style that only works in our page context
+  clone.style.removeProperty('--logo-size')
+  clone.style.width = `${EXPORT_SIZE}px`
+  clone.style.height = `${EXPORT_SIZE}px`
+  return new XMLSerializer().serializeToString(clone)
+}
+
+/** Download a string as a file */
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+
+/** Convert an SVG element to a raster data URL via Canvas */
+function svgToRaster(
+  svgEl: SVGSVGElement,
+  format: 'png' | 'jpeg',
+  bgColor?: string,
+): Promise<string> {
+  const svgString = serializeSvg(svgEl)
+  const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' })
+  const blobUrl = URL.createObjectURL(svgBlob)
+
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = EXPORT_SIZE
+      canvas.height = EXPORT_SIZE
+      const ctx = canvas.getContext('2d')!
+      if (bgColor) {
+        ctx.fillStyle = bgColor
+        ctx.fillRect(0, 0, EXPORT_SIZE, EXPORT_SIZE)
+      }
+      ctx.drawImage(img, 0, 0, EXPORT_SIZE, EXPORT_SIZE)
+      URL.revokeObjectURL(blobUrl)
+      resolve(canvas.toDataURL(`image/${format}`, format === 'jpeg' ? 0.95 : undefined))
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(blobUrl)
+      reject(new Error('SVG rasterization failed'))
+    }
+    img.src = blobUrl
+  })
+}
+
+/** Download buttons for a logo preview */
+function LogoDownloadButtons({
+  svgRef,
+  teamName,
+  variant,
+  bgColor,
+}: {
+  svgRef: React.RefObject<SVGSVGElement | null>
+  teamName: string
+  variant: 'neon' | 'solid'
+  bgColor: string
+}) {
+  const [busy, setBusy] = useState<string | null>(null)
+  const slug = teamName.toLowerCase().replace(/\s+/g, '-')
+
+  const handleDownload = async (format: 'svg' | 'png' | 'jpeg') => {
+    const svg = svgRef.current
+    if (!svg || busy) return
+    setBusy(format)
+    try {
+      const ext = format === 'jpeg' ? 'jpg' : format
+      const filename = `elmt-${slug}-${variant}.${ext}`
+
+      if (format === 'svg') {
+        const svgString = serializeSvg(svg)
+        downloadBlob(new Blob([svgString], { type: 'image/svg+xml' }), filename)
+      } else {
+        const bg = format === 'jpeg' ? bgColor : undefined
+        const dataUrl = await svgToRaster(svg, format, bg)
+        const a = document.createElement('a')
+        a.href = dataUrl
+        a.download = filename
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+      }
+    } catch (err) {
+      console.error(`[BrandingGuide] Download failed:`, err)
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const btnBase: React.CSSProperties = {
+    display: 'inline-flex', alignItems: 'center', gap: '3px',
+    padding: '3px 8px', fontSize: '10px', fontWeight: 600,
+    borderRadius: '4px', border: '1px solid rgba(255,255,255,0.15)',
+    cursor: 'pointer', transition: 'all 0.2s', lineHeight: 1,
+  }
+
+  return (
+    <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', marginTop: '4px' }}>
+      <button type="button" onClick={() => handleDownload('svg')} disabled={busy !== null}
+        style={{ ...btnBase, background: 'rgba(34,197,94,0.15)', color: '#86efac', opacity: busy && busy !== 'svg' ? 0.4 : 1 }}
+      >{busy === 'svg' ? '⏳' : '↓'} SVG</button>
+      <button type="button" onClick={() => handleDownload('png')} disabled={busy !== null}
+        style={{ ...btnBase, background: 'rgba(59,130,246,0.15)', color: '#93c5fd', opacity: busy && busy !== 'png' ? 0.4 : 1 }}
+      >{busy === 'png' ? '⏳' : '↓'} PNG</button>
+      <button type="button" onClick={() => handleDownload('jpeg')} disabled={busy !== null}
+        style={{ ...btnBase, background: 'rgba(234,179,8,0.15)', color: '#fcd34d', opacity: busy && busy !== 'jpeg' ? 0.4 : 1 }}
+      >{busy === 'jpeg' ? '⏳' : '↓'} JPG</button>
+    </div>
+  )
+}
+
 interface TeamData {
   id: number
   name: string
@@ -94,10 +223,11 @@ function darken(hex: string, amount: number): string {
 }
 
 /** Neon variant — the original beloved neon-on-black look, unchanged */
-function NeonLogo({ primary, secondary, size = 160 }: { primary: string; secondary: string; size?: number }) {
+function NeonLogo({ primary, secondary, size = 160, svgRef }: { primary: string; secondary: string; size?: number; svgRef?: React.Ref<SVGSVGElement> }) {
   const filterId = `neon-${primary}-${secondary}-${size}`
   return (
     <svg
+      ref={svgRef}
       className="tc__logo-svg"
       viewBox="130 130 740 740"
       style={{ '--logo-size': `${size}px` } as React.CSSProperties}
@@ -147,12 +277,13 @@ function NeonLogo({ primary, secondary, size = 160 }: { primary: string; seconda
 }
 
 /** Solid variant — full color fill with toggleable enhancements */
-function SolidLogo({ primary, secondary, size = 160, enhancements }: { primary: string; secondary: string; size?: number; enhancements: SolidEnhancements }) {
+function SolidLogo({ primary, secondary, size = 160, enhancements, svgRef }: { primary: string; secondary: string; size?: number; enhancements: SolidEnhancements; svgRef?: React.Ref<SVGSVGElement> }) {
   const uid = `solid-${primary}-${secondary}-${size}`
   const { gradient, highlight, shadow, glossy, twoTone } = enhancements
 
   return (
     <svg
+      ref={svgRef}
       className="tc__logo-svg"
       viewBox="130 130 740 740"
       style={{ '--logo-size': `${size}px` } as React.CSSProperties}
@@ -312,6 +443,9 @@ function TeamCard({
   const p = primary || '#555'
   const s = secondary || '#333'
 
+  const neonRef = useRef<SVGSVGElement>(null)
+  const solidRef = useRef<SVGSVGElement>(null)
+
   return (
     <div className="tc">
       {/* Header bar — name + save/reset */}
@@ -422,16 +556,284 @@ function TeamCard({
       <div className="tc__pinwheel-row">
         <div className="tc__pinwheel-preview" style={{ backgroundColor: '#000' }}>
           <div className="tc__pinwheel-label">Neon · Dark BG</div>
-          <NeonLogo primary={p} secondary={s} size={160} />
+          <NeonLogo primary={p} secondary={s} size={160} svgRef={neonRef} />
           <div className="tc__pinwheel-desc">Transparent fill + glow · hero usage</div>
+          <LogoDownloadButtons svgRef={neonRef} teamName={team.name} variant="neon" bgColor="#000000" />
         </div>
         <div className="tc__pinwheel-preview" style={{ backgroundColor: bgColor }}>
           <div className="tc__pinwheel-label">Solid · Any BG</div>
-          <SolidLogo primary={p} secondary={s} size={160} enhancements={enhancements} />
+          <SolidLogo primary={p} secondary={s} size={160} enhancements={enhancements} svgRef={solidRef} />
           <div className="tc__pinwheel-desc">Full color fill · FACEIT, flyers, etc.</div>
+          <LogoDownloadButtons svgRef={solidRef} teamName={team.name} variant="solid" bgColor={bgColor} />
         </div>
       </div>
     </div>
+  )
+}
+
+/* ═══════════════════════════════════════════════
+   Org Logo Mixer — 4-color / 8-color playground
+   ═══════════════════════════════════════════════ */
+
+const ORIGINAL_COLORS = ['#E53935', '#E53935', '#29B6F6', '#29B6F6', '#43A047', '#43A047', '#FB8C00', '#FB8C00']
+const GROUP_LABELS_4 = ['Top', 'Right', 'Bottom', 'Left']
+const GROUP_LABELS_8 = ['Petal 1', 'Petal 2', 'Petal 3', 'Petal 4', 'Petal 5', 'Petal 6', 'Petal 7', 'Petal 8']
+const GROUP_ICONS_4 = ['🔴', '🔵', '🟢', '🟠']
+
+/** Neon logo with per-petal colors */
+function NeonLogoMulti({ colors, size = 220, svgRef }: { colors: string[]; size?: number; svgRef?: React.Ref<SVGSVGElement> }) {
+  const filterId = `neon-org-${size}`
+  return (
+    <svg ref={svgRef} className="tc__logo-svg" viewBox="130 130 740 740" style={{ '--logo-size': `${size}px` } as React.CSSProperties}>
+      <defs>
+        <filter id={filterId} x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="8" result="blur" />
+          <feMerge><feMergeNode in="blur" /><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+      </defs>
+      {PETALS.map((petal, i) => (
+        <path key={`g${i}`} d={petal.d} fill="none" stroke={colors[i]} strokeWidth="6" strokeLinejoin="round" filter={`url(#${filterId})`} opacity="0.5" />
+      ))}
+      {PETALS.map((petal, i) => (
+        <path key={`c${i}`} d={petal.d} fill={`${colors[i]}30`} stroke={colors[i]} strokeWidth="2" strokeLinejoin="round" />
+      ))}
+    </svg>
+  )
+}
+
+/** Solid logo with per-petal colors */
+function SolidLogoMulti({ colors, size = 220, enhancements, svgRef }: { colors: string[]; size?: number; enhancements: SolidEnhancements; svgRef?: React.Ref<SVGSVGElement> }) {
+  const uid = `solid-org-${size}`
+  const { gradient, highlight, shadow, glossy, twoTone } = enhancements
+
+  return (
+    <svg ref={svgRef} className="tc__logo-svg" viewBox="130 130 740 740" style={{ '--logo-size': `${size}px` } as React.CSSProperties}>
+      <defs>
+        {gradient && PETALS.map((petal, i) => {
+          const match = petal.d.match(/^M\s+([\d.]+)\s+([\d.]+)/)
+          const tx = match ? parseFloat(match[1]) : 500
+          const ty = match ? parseFloat(match[2]) : 500
+          return (
+            <radialGradient key={`grad${i}`} id={`${uid}-grad-${i}`} cx="500" cy="500" r="340" fx={String(tx)} fy={String(ty)} gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor={lighten(colors[i], 0.15)} />
+              <stop offset="100%" stopColor={darken(colors[i], 0.35)} />
+            </radialGradient>
+          )
+        })}
+        {shadow && (
+          <filter id={`${uid}-shadow`} x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="14" result="blur" />
+            <feOffset dx="0" dy="4" result="shifted" />
+            <feFlood floodColor={colors[0]} floodOpacity="0.7" result="color" />
+            <feComposite in="color" in2="shifted" operator="in" result="shadow" />
+            <feMerge><feMergeNode in="shadow" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+        )}
+        {glossy && (
+          <linearGradient id={`${uid}-gloss`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="white" stopOpacity="0.3" />
+            <stop offset="40%" stopColor="white" stopOpacity="0.08" />
+            <stop offset="100%" stopColor="white" stopOpacity="0" />
+          </linearGradient>
+        )}
+      </defs>
+      {PETALS.map((petal, i) => {
+        const c = colors[i]
+        const oppositeIdx = i % 2 === 0 ? Math.min(i + 1, 7) : Math.max(i - 1, 0)
+        const strokeColor = twoTone ? darken(colors[oppositeIdx], 0.2) : darken(c, 0.3)
+        return (
+          <g key={`petal${i}`}>
+            <path d={petal.d} fill={gradient ? `url(#${uid}-grad-${i})` : c} stroke={strokeColor} strokeWidth={twoTone ? '3' : '2'} strokeLinejoin="round" filter={shadow ? `url(#${uid}-shadow)` : undefined} />
+            {highlight && <path d={petal.d} fill="none" stroke={lighten(c, 0.5)} strokeWidth="2.5" strokeLinejoin="round" opacity="0.7" transform="translate(0, -1.5)" />}
+            {glossy && <path d={petal.d} fill={`url(#${uid}-gloss)`} stroke="none" />}
+          </g>
+        )
+      })}
+    </svg>
+  )
+}
+
+function OrgLogoMixer({ teams, enhancements, bgColor }: { teams: TeamData[]; enhancements: SolidEnhancements; bgColor: string }) {
+  const [is8Color, setIs8Color] = useState(false)
+  const [colors, setColors] = useState<string[]>([...ORIGINAL_COLORS])
+  const neonRef = useRef<SVGSVGElement>(null)
+  const solidRef = useRef<SVGSVGElement>(null)
+
+  // Build team palette — all unique branding colors
+  const teamPalette = teams
+    .flatMap(t => [
+      t.brandingPrimary ? { color: t.brandingPrimary, team: t.name, type: 'P' } : null,
+      t.brandingSecondary ? { color: t.brandingSecondary, team: t.name, type: 'S' } : null,
+    ])
+    .filter((x): x is { color: string; team: string; type: string } => x !== null)
+
+  const setSlot = useCallback((idx: number, color: string) => {
+    setColors(prev => {
+      const next = [...prev]
+      if (is8Color) {
+        next[idx] = color
+      } else {
+        const base = idx * 2
+        next[base] = color
+        next[base + 1] = color
+      }
+      return next
+    })
+  }, [is8Color])
+
+  const handlePresetOriginal = () => setColors([...ORIGINAL_COLORS])
+
+  const handlePresetRandom = () => {
+    if (teamPalette.length === 0) return
+    const pick = () => teamPalette[Math.floor(Math.random() * teamPalette.length)].color
+    if (is8Color) {
+      setColors(Array.from({ length: 8 }, pick))
+    } else {
+      const c = Array.from({ length: 4 }, pick)
+      setColors([c[0], c[0], c[1], c[1], c[2], c[2], c[3], c[3]])
+    }
+  }
+
+  const handleTeamFill = (team: TeamData) => {
+    const p = team.brandingPrimary || '#555'
+    const s = team.brandingSecondary || '#333'
+    setColors([p, p, s, s, p, p, s, s])
+  }
+
+  const slotCount = is8Color ? 8 : 4
+  const slotColors = is8Color ? colors : [colors[0], colors[2], colors[4], colors[6]]
+  const slotLabels = is8Color ? GROUP_LABELS_8 : GROUP_LABELS_4
+
+  return (
+    <section className="tbg__section">
+      <h2 className="tbg__rg">Org Logo Mixer</h2>
+      <div style={{
+        background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: '12px', padding: '24px',
+      }}>
+        {/* Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', marginBottom: '16px' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#94a3b8', cursor: 'pointer' }}>
+            <input type="checkbox" checked={is8Color} onChange={(e) => setIs8Color(e.target.checked)}
+              style={{ accentColor: '#8b5cf6', width: '16px', height: '16px' }} />
+            <span style={{ fontWeight: 600 }}>8-Color Mode</span>
+            <span style={{ fontSize: '11px', opacity: 0.6 }}>(individual petals)</span>
+          </label>
+          <div style={{ display: 'flex', gap: '6px' }}>
+            <button type="button" onClick={handlePresetOriginal} style={{
+              padding: '4px 10px', fontSize: '11px', fontWeight: 600, borderRadius: '6px',
+              border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)',
+              color: '#cbd5e1', cursor: 'pointer',
+            }}>🔄 Original</button>
+            <button type="button" onClick={handlePresetRandom} style={{
+              padding: '4px 10px', fontSize: '11px', fontWeight: 600, borderRadius: '6px',
+              border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(139,92,246,0.1)',
+              color: '#c4b5fd', cursor: 'pointer',
+            }}>🎲 Random</button>
+          </div>
+        </div>
+
+        {/* Team quick-fill */}
+        <div style={{ marginBottom: '16px' }}>
+          <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '6px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Quick Fill · Team Colors
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+            {teams.filter(t => t.brandingPrimary).map(t => (
+              <button key={t.id} type="button" onClick={() => handleTeamFill(t)} title={`Fill with ${t.name} colors`}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '4px',
+                  padding: '3px 8px', fontSize: '10px', fontWeight: 600, borderRadius: '4px',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  background: `linear-gradient(135deg, ${t.brandingPrimary}22, ${t.brandingSecondary || t.brandingPrimary}22)`,
+                  color: t.brandingPrimary || '#ccc', cursor: 'pointer',
+                }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: t.brandingPrimary || '#555', flexShrink: 0 }} />
+                {t.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Color slots */}
+        <div style={{
+          display: 'grid', gridTemplateColumns: is8Color ? 'repeat(4, 1fr)' : 'repeat(4, 1fr)',
+          gap: '8px', marginTop: '12px',
+        }}>
+          {Array.from({ length: slotCount }).map((_, i) => (
+            <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <div style={{ fontSize: '10px', color: '#64748b', fontWeight: 600 }}>
+                {!is8Color && GROUP_ICONS_4[i]} {slotLabels[i]}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <div style={{
+                  width: '28px', height: '28px', borderRadius: '6px', border: '2px solid rgba(255,255,255,0.2)',
+                  backgroundColor: slotColors[i], cursor: 'pointer', position: 'relative', overflow: 'hidden',
+                  boxShadow: `0 0 8px ${slotColors[i]}44`,
+                }}>
+                  <input type="color" value={slotColors[i]} onChange={(e) => setSlot(i, e.target.value)}
+                    style={{ position: 'absolute', inset: '-4px', width: 'calc(100% + 8px)', height: 'calc(100% + 8px)', opacity: 0, cursor: 'pointer' }} />
+                </div>
+                <input type="text" value={slotColors[i]} onChange={(e) => setSlot(i, e.target.value)}
+                  className="tc__hex" spellCheck={false} maxLength={7} style={{ width: '72px', fontSize: '11px' }} />
+              </div>
+              {/* Team palette swatches — grouped by team */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 72px)', gap: '3px', marginTop: '4px' }}>
+                {teams.filter(t => t.brandingPrimary).map(t => (
+                  <div key={t.id} style={{
+                    display: 'flex', alignItems: 'center', gap: '2px', width: '72px',
+                    padding: '2px 3px', borderRadius: '4px',
+                    background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)',
+                  }}>
+                    {t.brandingPrimary && (
+                      <button type="button" onClick={() => setSlot(i, t.brandingPrimary!)}
+                        title={`${t.name} Primary: ${t.brandingPrimary}`}
+                        style={{
+                          width: '12px', height: '12px', borderRadius: '2px', border: '1px solid rgba(255,255,255,0.25)',
+                          backgroundColor: t.brandingPrimary, cursor: 'pointer', padding: 0, flexShrink: 0,
+                          transition: 'transform 0.15s',
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.3)' }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)' }}
+                      />
+                    )}
+                    {t.brandingSecondary && (
+                      <button type="button" onClick={() => setSlot(i, t.brandingSecondary!)}
+                        title={`${t.name} Secondary: ${t.brandingSecondary}`}
+                        style={{
+                          width: '12px', height: '12px', borderRadius: '2px', border: '1px solid rgba(255,255,255,0.25)',
+                          backgroundColor: t.brandingSecondary, cursor: 'pointer', padding: 0, flexShrink: 0,
+                          transition: 'transform 0.15s',
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.3)' }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)' }}
+                      />
+                    )}
+                    <span style={{ fontSize: '8px', color: '#64748b', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {t.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Preview row */}
+        <div style={{ display: 'flex', gap: '16px', marginTop: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div className="tc__pinwheel-preview" style={{ backgroundColor: '#000', minWidth: '240px', flex: '0 1 280px' }}>
+            <div className="tc__pinwheel-label">Neon · Dark BG</div>
+            <NeonLogoMulti colors={colors} size={220} svgRef={neonRef} />
+            <LogoDownloadButtons svgRef={neonRef} teamName="elmt-org" variant="neon" bgColor="#000000" />
+          </div>
+          <div className="tc__pinwheel-preview" style={{ backgroundColor: bgColor, minWidth: '240px', flex: '0 1 280px' }}>
+            <div className="tc__pinwheel-label">Solid · Any BG</div>
+            <SolidLogoMulti colors={colors} size={220} enhancements={enhancements} svgRef={solidRef} />
+            <LogoDownloadButtons svgRef={solidRef} teamName="elmt-org" variant="solid" bgColor={bgColor} />
+          </div>
+        </div>
+      </div>
+    </section>
   )
 }
 
@@ -565,6 +967,8 @@ export default function TeamBrandingGuide() {
           </section>
         ))}
 
+        {/* ═══ Org Logo Mixer ═══ */}
+        <OrgLogoMixer teams={teams} enhancements={enhancements} bgColor={bgColor} />
         {/* Quick color reference */}
         <section className="tbg__section">
           <h2 className="tbg__rg">Quick Color Reference</h2>
