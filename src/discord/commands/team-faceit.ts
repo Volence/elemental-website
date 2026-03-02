@@ -54,7 +54,7 @@ export async function handleTeamFaceit(interaction: ChatInputCommandInteraction)
 
     const embed = new EmbedBuilder()
       .setTitle(`Faceit Stats • ${team.name}`)
-      .setColor(team.themeColor ? parseInt(team.themeColor.replace('#', ''), 16) : 0xe67e22)
+      .setColor(team.brandingPrimary ? parseInt(team.brandingPrimary.replace('#', ''), 16) : 0xe67e22)
 
     // Add team logo
     if (team.logo) {

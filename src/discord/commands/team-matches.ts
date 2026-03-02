@@ -46,7 +46,7 @@ export async function handleTeamMatches(interaction: ChatInputCommandInteraction
 
     const embed = new EmbedBuilder()
       .setTitle(`Upcoming Matches • ${team.name}`)
-      .setColor(team.themeColor ? parseInt(team.themeColor.replace('#', ''), 16) : 0x3498db)
+      .setColor(team.brandingPrimary ? parseInt(team.brandingPrimary.replace('#', ''), 16) : 0x3498db)
 
     // Add team logo
     if (team.logo) {

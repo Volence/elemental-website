@@ -46,7 +46,7 @@ export async function handleTeamHistory(interaction: ChatInputCommandInteraction
 
     const embed = new EmbedBuilder()
       .setTitle(`Match History • ${team.name}`)
-      .setColor(team.themeColor ? parseInt(team.themeColor.replace('#', ''), 16) : 0x2ecc71)
+      .setColor(team.brandingPrimary ? parseInt(team.brandingPrimary.replace('#', ''), 16) : 0x2ecc71)
 
     // Add team logo
     if (team.logo) {

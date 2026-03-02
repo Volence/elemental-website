@@ -17,6 +17,8 @@ interface TeamStaffSectionProps {
   coaches?: StaffMember[]
   captains?: StaffMember[]
   coCaptain?: string | null
+  brandingPrimary?: string
+  brandingSecondary?: string
 }
 
 export function TeamStaffSection({
@@ -24,6 +26,8 @@ export function TeamStaffSection({
   coaches,
   captains,
   coCaptain,
+  brandingPrimary,
+  brandingSecondary,
 }: TeamStaffSectionProps) {
   const hasAnyStaff =
     (managers && managers.length > 0) ||
@@ -56,7 +60,14 @@ export function TeamStaffSection({
           <Shield className="w-6 h-6 text-primary" />
           Staff
         </h2>
-        <div className="w-20 h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 rounded-full"></div>
+        <div 
+          className="w-20 h-1 rounded-full"
+          style={{
+            background: brandingPrimary && brandingSecondary 
+              ? `linear-gradient(to right, ${brandingPrimary}, ${brandingSecondary})`
+              : 'linear-gradient(to right, #a855f7, #ec4899, #06b6d4)'
+          }}
+        ></div>
       </div>
       <div className="space-y-6">
         {managers && managers.length > 0 && (

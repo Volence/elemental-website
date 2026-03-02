@@ -63,6 +63,8 @@ export interface Team {
   region?: string
   rating?: string
   themeColor?: string
+  brandingPrimary?: string
+  brandingSecondary?: string
   bio?: string
   achievements?: string[]
   manager?: TeamStaff[]
@@ -149,7 +151,11 @@ function transformPayloadTeam(payloadTeam: PayloadTeam): Team | null {
       logo: getLogoUrl(payloadTeam.logo),
       region: payloadTeam.region || undefined,
       rating: payloadTeam.rating || undefined,
-      themeColor: payloadTeam.themeColor || undefined,
+      // Branding colors: primary (glow) and secondary (fill)
+      brandingPrimary: payloadTeam.brandingPrimary || undefined,
+      brandingSecondary: payloadTeam.brandingSecondary || undefined,
+      // Backward compat: themeColor falls back to brandingPrimary, then legacy DB column
+      themeColor: payloadTeam.brandingPrimary || (payloadTeam as any).themeColor || undefined,
       bio: payloadTeam.bio || undefined,
       achievements: payloadTeam.achievements?.map((a) => a.achievement).filter((a): a is string => Boolean(a)) || [],
       manager: payloadTeam.manager?.map((m: TeamManager) => {

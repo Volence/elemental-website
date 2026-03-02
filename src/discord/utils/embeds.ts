@@ -25,7 +25,7 @@ function getTeamLogoUrl(logo: unknown): string | null {
 export async function buildEnhancedTeamEmbed(team: any, payload: Payload): Promise<EmbedBuilder> {
   const embed = new EmbedBuilder()
     .setTitle(team.name)
-    .setColor(team.themeColor ? parseInt(team.themeColor.replace('#', ''), 16) : getRegionColor(team.region))
+    .setColor((team.brandingPrimary || team.themeColor) ? parseInt((team.brandingPrimary || team.themeColor).replace('#', ''), 16) : getRegionColor(team.region))
 
   // Add URL to team's website page
   if (team.slug) {
@@ -255,8 +255,9 @@ export async function buildTeamEmbed(team: any): Promise<EmbedBuilder> {
     })
   }
 
-  // Color based on region or default
-  const color = getRegionColor(team.region)
+  // Color based on branding primary, then region, then default
+  const teamColor = team.brandingPrimary || team.themeColor
+  const color = teamColor ? parseInt(teamColor.replace('#', ''), 16) : getRegionColor(team.region)
   embed.setColor(color)
 
   // Footer with last updated

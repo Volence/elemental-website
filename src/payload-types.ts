@@ -606,10 +606,6 @@ export interface Team {
    */
   rating?: string | null;
   /**
-   * Custom theme color for the team page hero background. Pick a color that complements the logo. Leave empty to auto-detect based on team name.
-   */
-  themeColor?: string | null;
-  /**
    * Primary branding color (bright neon outline/glow). Used in the Clean Glow logo system.
    */
   brandingPrimary?: string | null;
@@ -3066,7 +3062,6 @@ export interface TeamsSelect<T extends boolean = true> {
   logoFilename?: T;
   region?: T;
   rating?: T;
-  themeColor?: T;
   brandingPrimary?: T;
   brandingSecondary?: T;
   bio?: T;

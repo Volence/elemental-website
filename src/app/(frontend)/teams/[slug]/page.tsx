@@ -107,8 +107,9 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
     limit: 10,
   })
 
-  // Check if team has custom theme color
-  const hasCustomColor = team.themeColor && team.themeColor.startsWith('#')
+  // Check if team has custom branding color (prefer brandingPrimary over legacy themeColor)
+  const heroColor = team.brandingPrimary || team.themeColor
+  const hasCustomColor = heroColor && heroColor.startsWith('#')
 
   // Get gradient class for hero section
   const gradientClass = !hasCustomColor
@@ -157,6 +158,8 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
         bio={team.bio}
         achievements={team.achievements}
         themeColor={team.themeColor}
+        brandingPrimary={team.brandingPrimary}
+        brandingSecondary={team.brandingSecondary}
         gradientClass={gradientClass}
       />
 
@@ -170,6 +173,7 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
             subsCount={subsCount}
             achievementsCount={team.achievements?.length || 0}
             showSeasonHistory={team.faceitEnabled}
+            brandingPrimary={team.brandingPrimary}
           />
 
           {/* Main Content */}
@@ -188,13 +192,24 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
               coaches={team.coaches}
               captains={team.captain}
               coCaptain={team.coCaptain}
+              brandingPrimary={team.brandingPrimary}
+              brandingSecondary={team.brandingSecondary}
             />
 
             {/* Roster */}
-            <TeamRosterSection roster={team.roster} getRoleColor={getRoleColor} />
+            <TeamRosterSection
+              roster={team.roster}
+              getRoleColor={getRoleColor}
+              brandingPrimary={team.brandingPrimary}
+              brandingSecondary={team.brandingSecondary}
+            />
 
             {/* Subs - Only show if there are subs */}
-            <TeamSubstitutesSection subs={team.subs} />
+            <TeamSubstitutesSection
+              subs={team.subs}
+              brandingPrimary={team.brandingPrimary}
+              brandingSecondary={team.brandingSecondary}
+            />
 
             {/* Season History - Only show if team has FaceIt enabled */}
             {team.faceitEnabled && (

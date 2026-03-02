@@ -10,6 +10,7 @@ interface TeamStatsSidebarProps {
   subsCount: number
   achievementsCount: number
   showSeasonHistory?: boolean
+  brandingPrimary?: string
 }
 
 export function TeamStatsSidebar({
@@ -19,12 +20,19 @@ export function TeamStatsSidebar({
   subsCount,
   achievementsCount,
   showSeasonHistory,
+  brandingPrimary,
 }: TeamStatsSidebarProps) {
   const tierColors = rating ? getTierFromRating(rating) : null
 
   return (
     <aside className="space-y-6">
-      <div className="p-6 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-xl sticky top-24">
+      <div 
+        className="p-6 rounded-xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-xl sticky top-24 overflow-hidden"
+        style={brandingPrimary ? {
+          borderTopColor: `${brandingPrimary}60`,
+          boxShadow: `0 -2px 20px -5px ${brandingPrimary}30, 0 20px 25px -5px rgba(0,0,0,0.1)`
+        } : undefined}
+      >
         <div className="flex items-center gap-4 mb-6">
           <div className="p-2 rounded-lg bg-primary/10">
             <Users className="w-5 h-5 text-primary" />

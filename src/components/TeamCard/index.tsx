@@ -25,6 +25,9 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, size = 'medium', showH
 
   // Get tier colors based on team rating
   const tierColors = getTierFromRating(team.rating)
+  
+  // Use branding primary for hover glow if available, otherwise tier color
+  const glowColor = team.brandingPrimary || tierColors.borderColor
 
   return (
     <div className="relative group h-full overflow-visible">
@@ -39,7 +42,7 @@ export const TeamCard: React.FC<TeamCardProps> = ({ team, size = 'medium', showH
             boxShadow: `inset 4px 0 12px -8px ${tierColors.borderColor}, 0 10px 15px -3px rgba(0, 0, 0, 0.1)`
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.boxShadow = `inset 4px 0 12px -8px ${tierColors.borderColor}, 0 20px 25px -5px ${tierColors.borderColor}40, 0 10px 10px -5px ${tierColors.borderColor}30`
+            e.currentTarget.style.boxShadow = `inset 4px 0 12px -8px ${tierColors.borderColor}, 0 20px 25px -5px ${glowColor}40, 0 10px 10px -5px ${glowColor}30`
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.boxShadow = `inset 4px 0 12px -8px ${tierColors.borderColor}, 0 10px 15px -3px rgba(0, 0, 0, 0.1)`

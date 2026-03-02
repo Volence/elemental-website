@@ -19,7 +19,6 @@ import { default as default_a57c6a823b3afaaec2d5debdf135e084 } from '@/component
 import { default as default_00c104303d223c5ad174a97bdf6b198b } from '@/components/PersonRelationshipsSidebar'
 import { default as default_890f375c2e64cfbf8289c4ab4ee8f2a1 } from '@/components/PeopleListColumns/StaffPositionsCell'
 import { default as default_04cdbc390d38c074fb71cb7d83ceaa88 } from '@/components/PeopleListColumns/TeamsCell'
-import { default as default_765c32446158099d5cf3659ccd46167a } from '@/collections/Teams/ColorPickerField'
 import { default as default_de3249083376ab0290efd4284159f820 } from '@/collections/Teams/BrandingColorField'
 import { default as default_befd121dc2c708f29d17ef6cf6b47565 } from '@/components/TeamTabCounts/StaffCount'
 import { default as default_f6633e5ce5f4aebde4e8dd97802e545a } from '@/components/TeamTabCounts/RosterCount'
@@ -136,7 +135,6 @@ export const importMap = {
   "@/components/PersonRelationshipsSidebar#default": default_00c104303d223c5ad174a97bdf6b198b,
   "@/components/PeopleListColumns/StaffPositionsCell#default": default_890f375c2e64cfbf8289c4ab4ee8f2a1,
   "@/components/PeopleListColumns/TeamsCell#default": default_04cdbc390d38c074fb71cb7d83ceaa88,
-  "@/collections/Teams/ColorPickerField#default": default_765c32446158099d5cf3659ccd46167a,
   "@/collections/Teams/BrandingColorField#default": default_de3249083376ab0290efd4284159f820,
   "@/components/TeamTabCounts/StaffCount#default": default_befd121dc2c708f29d17ef6cf6b47565,
   "@/components/TeamTabCounts/RosterCount#default": default_f6633e5ce5f4aebde4e8dd97802e545a,

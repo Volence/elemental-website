@@ -11,6 +11,8 @@ interface TeamHeroProps {
   bio?: string
   achievements?: string[]
   themeColor?: string
+  brandingPrimary?: string
+  brandingSecondary?: string
   gradientClass: string
 }
 
@@ -22,9 +24,13 @@ export function TeamHero({
   bio,
   achievements,
   themeColor,
+  brandingPrimary,
+  brandingSecondary,
   gradientClass,
 }: TeamHeroProps) {
-  const hasCustomColor = themeColor && themeColor.startsWith('#')
+  // Use brandingPrimary first, fall back to legacy themeColor
+  const heroColor = brandingPrimary || themeColor
+  const hasCustomColor = heroColor && heroColor.startsWith('#')
   const tierColors = rating ? getTierFromRating(rating) : null
 
   return (
@@ -33,7 +39,7 @@ export function TeamHero({
       style={
         hasCustomColor
           ? {
-              backgroundImage: `linear-gradient(to bottom, ${themeColor}33, ${themeColor}0d)`,
+              backgroundImage: `linear-gradient(to bottom, ${heroColor}33, ${heroColor}0d)`,
             }
           : undefined
       }
@@ -45,8 +51,16 @@ export function TeamHero({
 
       <div className="container max-w-7xl py-16 relative">
         <div className="flex flex-col md:flex-row items-center md:items-center gap-8 md:gap-12">
-          {/* Large Logo */}
-          <div className="relative w-48 h-48 md:w-56 md:h-56 flex-shrink-0 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm ring-2 ring-white/20 shadow-2xl p-6 hover:scale-105 transition-transform duration-300">
+          {/* Large Logo - branding secondary for ring glow */}
+          <div 
+            className="relative w-48 h-48 md:w-56 md:h-56 flex-shrink-0 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm ring-2 shadow-2xl p-6 hover:scale-105 transition-all duration-300"
+            style={{
+              '--tw-ring-color': brandingSecondary ? `${brandingSecondary}60` : 'rgba(255,255,255,0.2)',
+              boxShadow: brandingPrimary 
+                ? `0 0 40px ${brandingPrimary}20, 0 25px 50px -12px rgba(0,0,0,0.5)` 
+                : '0 25px 50px -12px rgba(0,0,0,0.5)',
+            } as React.CSSProperties}
+          >
             <TeamLogo
               src={logo}
               alt={`${name} Logo`}

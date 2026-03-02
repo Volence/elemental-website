@@ -13,9 +13,11 @@ interface Substitute {
 
 interface TeamSubstitutesSectionProps {
   subs?: Substitute[]
+  brandingPrimary?: string
+  brandingSecondary?: string
 }
 
-export function TeamSubstitutesSection({ subs }: TeamSubstitutesSectionProps) {
+export function TeamSubstitutesSection({ subs, brandingPrimary, brandingSecondary }: TeamSubstitutesSectionProps) {
   if (!subs || subs.length === 0) {
     return null
   }
@@ -27,7 +29,14 @@ export function TeamSubstitutesSection({ subs }: TeamSubstitutesSectionProps) {
           <Lock className="w-6 h-6 text-orange-500" />
           Substitutes
         </h2>
-        <div className="w-20 h-1 bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 rounded-full"></div>
+        <div 
+          className="w-20 h-1 rounded-full"
+          style={{
+            background: brandingPrimary && brandingSecondary 
+              ? `linear-gradient(to right, ${brandingPrimary}, ${brandingSecondary})`
+              : 'linear-gradient(to right, #f97316, #f59e0b, #eab308)'
+          }}
+        ></div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {subs.map((sub, i) => (

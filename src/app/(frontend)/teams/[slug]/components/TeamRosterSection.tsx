@@ -16,9 +16,11 @@ interface Player {
 interface TeamRosterSectionProps {
   roster?: Player[]
   getRoleColor: (role: string) => string
+  brandingPrimary?: string
+  brandingSecondary?: string
 }
 
-export function TeamRosterSection({ roster, getRoleColor }: TeamRosterSectionProps) {
+export function TeamRosterSection({ roster, getRoleColor, brandingPrimary, brandingSecondary }: TeamRosterSectionProps) {
   if (!roster || roster.length === 0) {
     return (
       <div className="p-10 rounded-xl border-2 border-dashed border-border bg-gradient-to-br from-card to-card/50 text-center">
@@ -45,7 +47,14 @@ export function TeamRosterSection({ roster, getRoleColor }: TeamRosterSectionPro
           Roster
           <span className="text-sm font-normal text-muted-foreground">({roster.length})</span>
         </h2>
-        <div className="w-20 h-1 bg-gradient-to-r from-blue-500 via-cyan-500 to-green-500 rounded-full"></div>
+        <div 
+          className="w-20 h-1 rounded-full"
+          style={{
+            background: brandingPrimary && brandingSecondary 
+              ? `linear-gradient(to right, ${brandingPrimary}, ${brandingSecondary})`
+              : 'linear-gradient(to right, #3b82f6, #06b6d4, #22c55e)'
+          }}
+        ></div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {roster.map((player, i) => (
