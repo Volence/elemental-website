@@ -4,7 +4,30 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import type { AccessArgs } from 'payload'
 import type { User } from '@/payload-types'
-import { UserRole, hideFromPlayers } from '../access/roles'
+import { UserRole } from '../access/roles'
+
+/**
+ * Hide graphics collection from users who have no business seeing it.
+ * Show it to: admins, staff-managers, team-managers, and anyone with isGraphicsStaff department flag.
+ * Hide from: plain users and players WITHOUT graphics department access.
+ */
+const hideGraphicsFromNonStaff = ({ user }: { user: any }): boolean => {
+  if (!user) return false
+  const role = user.role as string
+  
+  // Always show for privileged roles
+  if (role === UserRole.ADMIN || role === UserRole.STAFF_MANAGER || role === UserRole.TEAM_MANAGER) {
+    return false
+  }
+  
+  // Show for users with graphics department flag
+  if (user.departments?.isGraphicsStaff === true) {
+    return false
+  }
+  
+  // Hide from everyone else (players, plain users without graphics access)
+  return true
+}
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -42,7 +65,7 @@ export const GraphicsAssets: CollectionConfig = {
   admin: {
     description: '📁 Graphics department file library. Drag & drop files, create folders to organize.',
     group: 'Graphics',
-    hidden: hideFromPlayers,
+    hidden: hideGraphicsFromNonStaff,
     useAsTitle: 'filename',
     components: {
       views: {
