@@ -20,11 +20,15 @@ const FaceitUrlHelper: React.FC = () => {
   /**
    * Attempt to auto-fetch the Championship ID from FACEIT via our server-side proxy.
    */
-  const lookupChampionshipId = async (stageId: string) => {
+  const lookupChampionshipId = async (seasonId: string, stageId?: string, conferenceId?: string) => {
     setChampionshipStatus('🔍 Looking up Championship ID...')
 
     try {
-      const response = await fetch(`/api/faceit/lookup-championship?stageId=${stageId}`)
+      const params = new URLSearchParams({ seasonId })
+      if (stageId) params.set('stageId', stageId)
+      if (conferenceId) params.set('conferenceId', conferenceId)
+
+      const response = await fetch(`/api/faceit/lookup-championship?${params}`)
       const data = await response.json()
 
       if (response.ok && data.championshipId && dispatchFields) {
@@ -33,7 +37,8 @@ const FaceitUrlHelper: React.FC = () => {
           path: 'championshipId',
           value: data.championshipId,
         })
-        setChampionshipStatus('✅ Championship ID found and filled in automatically!')
+        const details = [data.regionName, data.divisionName, data.conferenceName].filter(Boolean).join(' → ')
+        setChampionshipStatus(`✅ Championship ID found and filled in! (${details || 'auto-detected'})`)
         return true
       }
     } catch (err) {
@@ -46,8 +51,9 @@ const FaceitUrlHelper: React.FC = () => {
       const fallback = '⚠️ Could not auto-detect Championship ID. To find it manually:\n' +
         '1. Open the FACEIT standings page in your browser\n' +
         '2. Open DevTools → Network tab (F12)\n' +
-        '3. Filter requests by "championships"\n' +
-        '4. Look for the UUID in the API call URL and paste it into the Championship ID field below'
+        '3. Look for a request to "seasons/tree" in the API calls\n' +
+        '4. In the response JSON, find "championship_id" under your stage/conference\n' +
+        '5. Copy the UUID and paste it into the Championship ID field below'
       return prev ? `${prev}\n\n${fallback}` : fallback
     })
     return false
@@ -65,18 +71,10 @@ const FaceitUrlHelper: React.FC = () => {
 
     const parsed = parseFaceitUrl(url)
     let foundAny = false
+    let extractedSeasonId: string | null = null
     let extractedStageId: string | null = null
+    let extractedConferenceId: string | null = null
     let alreadyHasChampionship = false
-
-    // Set team ID if found and valid
-    if (parsed.teamId && isValidFaceitId(parsed.teamId) && dispatchFields) {
-      dispatchFields({
-        type: 'UPDATE',
-        path: 'faceitTeamId',
-        value: parsed.teamId,
-      })
-      foundAny = true
-    }
 
     // Set championship ID if found directly in the URL
     if (parsed.championshipId && isValidFaceitId(parsed.championshipId) && dispatchFields) {
@@ -107,6 +105,7 @@ const FaceitUrlHelper: React.FC = () => {
         value: parsed.seasonId,
       })
       foundAny = true
+      extractedSeasonId = parsed.seasonId
     }
 
     // Set stage ID if found and valid
@@ -120,13 +119,18 @@ const FaceitUrlHelper: React.FC = () => {
       extractedStageId = parsed.stageId
     }
 
+    // Track conference ID for championship lookup (not a form field, just used for API lookup)
+    if (parsed.conferenceId && isValidFaceitId(parsed.conferenceId)) {
+      extractedConferenceId = parsed.conferenceId
+    }
+
     if (foundAny) {
       setSuccess('✅ IDs extracted and filled in! Check the form below.')
       setUrl('')
 
-      // If we got a Stage ID but no Championship ID from the URL, try to auto-fetch it
-      if (extractedStageId && !alreadyHasChampionship) {
-        await lookupChampionshipId(extractedStageId)
+      // If we got a Season ID but no Championship ID from the URL, try to auto-fetch it
+      if (extractedSeasonId && !alreadyHasChampionship) {
+        await lookupChampionshipId(extractedSeasonId, extractedStageId || undefined, extractedConferenceId || undefined)
       }
     } else {
       setError('❌ Could not extract any valid IDs from this URL. Please check the URL format.')

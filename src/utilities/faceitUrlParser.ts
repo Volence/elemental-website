@@ -88,8 +88,18 @@ export function parseFaceitUrl(url: string): {
   stageId: string | null
   leagueId: string | null
   seasonId: string | null
+  conferenceId: string | null
 } {
   const { leagueId, seasonId } = extractLeagueAndSeasonFromUrl(url)
+  
+  // Extract conference ID from query parameter (?conference=...)
+  let conferenceId: string | null = null
+  try {
+    const urlObj = new URL(url)
+    conferenceId = urlObj.searchParams.get('conference') || null
+  } catch (e) {
+    // Not a valid URL
+  }
   
   return {
     teamId: extractTeamIdFromUrl(url),
@@ -97,6 +107,7 @@ export function parseFaceitUrl(url: string): {
     stageId: extractStageIdFromUrl(url),
     leagueId,
     seasonId,
+    conferenceId,
   }
 }
 

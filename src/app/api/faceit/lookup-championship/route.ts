@@ -1,32 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 /**
- * GET /api/faceit/lookup-championship?stageId=...
+ * GET /api/faceit/lookup-championship?stageId=...&seasonId=...&conferenceId=...
  * 
- * Looks up the FACEIT Championship ID using the Stage ID.
- * Uses the unauthenticated internal FACEIT API (same as faceitSync.ts).
+ * Looks up the FACEIT Championship ID using the Season Tree API.
+ * The championship_id lives on each conference within the stage→conference hierarchy.
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const stageId = searchParams.get('stageId')
+  const seasonId = searchParams.get('seasonId')
+  const conferenceId = searchParams.get('conferenceId')
 
-  if (!stageId) {
+  if (!seasonId) {
     return NextResponse.json(
-      { error: 'stageId is required' },
+      { error: 'seasonId is required' },
       { status: 400 }
     )
   }
 
   try {
-    // The FACEIT team-leagues API returns stage details including the championship ID
-    // This is unauthenticated — same API used by faceitSync.ts
+    // The seasons/tree API returns the full league hierarchy including championship_id on each conference
     const response = await fetch(
-      `https://www.faceit.com/api/team-leagues/v2/seasons?entityType=stage&entityId=${stageId}`,
+      `https://www.faceit.com/api/team-leagues/v2/seasons/tree?entityType=season&entityId=${seasonId}`,
       { next: { revalidate: 0 } }
     )
 
     if (!response.ok) {
-      console.error(`[Championship Lookup] FACEIT API returned ${response.status} for stage ${stageId}`)
+      console.error(`[Championship Lookup] FACEIT API returned ${response.status} for season ${seasonId}`)
       return NextResponse.json(
         { error: `FACEIT API returned ${response.status}` },
         { status: 502 }
@@ -34,56 +35,59 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json()
-    
-    // The response payload contains championship info
-    // Try multiple paths to find the championship ID
-    const championshipId = 
-      data?.payload?.championshipId ||
-      data?.payload?.championship_id ||
-      data?.payload?.id ||
-      null
+    const payload = data?.payload
 
-    if (championshipId) {
-      return NextResponse.json({ championshipId })
+    if (!payload?.regions) {
+      return NextResponse.json(
+        { error: 'Unexpected API response structure', championshipId: null },
+        { status: 404 }
+      )
     }
 
-    // If the direct lookup didn't work, try the standings endpoint
-    // which may have championship context in match data
-    const standingsResponse = await fetch(
-      `https://www.faceit.com/api/team-leagues/v2/standings?entityType=stage&entityId=${stageId}&offset=0&limit=1`
-    )
+    // Walk the tree: regions → divisions → stages → conferences
+    // Find the matching conference (by stageId + conferenceId) to extract championship_id
+    for (const region of payload.regions) {
+      for (const division of region.divisions || []) {
+        for (const stage of division.stages || []) {
+          // If stageId is provided, only look in the matching stage
+          if (stageId && stage.id !== stageId) continue
 
-    if (standingsResponse.ok) {
-      const standingsData = await standingsResponse.json()
-      const standings = standingsData?.payload?.standings || []
-      
-      if (standings.length > 0) {
-        // If we can find a team in the standings, try to get their matches
-        // which contain the championship ID
-        const teamId = standings[0]?.premade_team_id
-        if (teamId) {
-          const matchesResponse = await fetch(
-            `https://www.faceit.com/api/team-leagues/v2/teams/${teamId}/stages/${stageId}`
-          )
-          
-          if (matchesResponse.ok) {
-            const matchesData = await matchesResponse.json()
-            const foundChampionshipId = 
-              matchesData?.payload?.championshipId ||
-              matchesData?.payload?.championship_id ||
-              null
-            
-            if (foundChampionshipId) {
-              return NextResponse.json({ championshipId: foundChampionshipId })
+          for (const conference of stage.conferences || []) {
+            // If conferenceId is provided, match it; otherwise take the first conference
+            if (conferenceId && conference.id !== conferenceId) continue
+
+            if (conference.championship_id) {
+              return NextResponse.json({
+                championshipId: conference.championship_id,
+                conferenceName: conference.name,
+                stageName: stage.name,
+                divisionName: division.name,
+                regionName: region.name,
+              })
+            }
+          }
+
+          // If we matched the stage but no conference had a championship_id
+          if (stageId && stage.id === stageId) {
+            // Try the first conference as fallback
+            const firstConference = stage.conferences?.[0]
+            if (firstConference?.championship_id) {
+              return NextResponse.json({
+                championshipId: firstConference.championship_id,
+                conferenceName: firstConference.name,
+                stageName: stage.name,
+                divisionName: division.name,
+                regionName: region.name,
+              })
             }
           }
         }
       }
     }
 
-    // Championship ID not found through any method
+    // Championship ID not found
     return NextResponse.json(
-      { error: 'Championship ID not found for this stage', championshipId: null },
+      { error: 'Championship ID not found in season tree. Try checking the Network tab in DevTools for API calls containing "championship" in the response.', championshipId: null },
       { status: 404 }
     )
 
