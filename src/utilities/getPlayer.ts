@@ -45,8 +45,9 @@ export interface PlayerInfo {
 
 /**
  * Get player information by name
+ * @param personSlug - Optional slug from People collection. When provided, matches team entries by slug (not name) to correctly distinguish players with the same display name.
  */
-export async function getPlayerByName(name: string): Promise<PlayerInfo | null> {
+export async function getPlayerByName(name: string, personSlug?: string): Promise<PlayerInfo | null> {
   // Skip database operations during build
   if (process.env.NEXT_BUILD_SKIP_DB) {
     return null
@@ -56,7 +57,7 @@ export async function getPlayerByName(name: string): Promise<PlayerInfo | null> 
     const allTeams = await getAllTeams()
     const payload = await getPayload({ config: configPromise })
   
-  const slug = formatSlug(name)
+  const slug = personSlug || formatSlug(name)
   const teams: PlayerTeamInfo[] = []
   const staffRoles: PlayerInfo['staffRoles'] = {
     organization: [],
@@ -91,12 +92,17 @@ export async function getPlayerByName(name: string): Promise<PlayerInfo | null> 
     }
   }
 
-  // Helper to check if a team entry matches the name
-  // Note: allTeams is already transformed, so entries have 'name' property directly
-  const matchesTeamEntryName = (entry: any, searchName: string): boolean => {
-    // Transformed team data has 'name' property directly (from extractPersonData)
+  // Helper to check if a team entry matches the player
+  // When personSlug is provided, match by slug (unique) to avoid merging different players with the same name
+  // Note: allTeams is already transformed, entries have 'name' and 'slug' properties (from extractPersonData)
+  const matchesTeamEntry = (entry: any): boolean => {
+    // Prefer slug matching when personSlug is provided (handles duplicate names)
+    if (personSlug && entry.slug && typeof entry.slug === 'string') {
+      return entry.slug === personSlug
+    }
+    // Fallback to name matching (backward compatibility)
     if (entry.name && typeof entry.name === 'string') {
-      return entry.name.toLowerCase() === searchName.toLowerCase()
+      return entry.name.toLowerCase() === name.toLowerCase()
     }
     return false
   }
@@ -104,7 +110,7 @@ export async function getPlayerByName(name: string): Promise<PlayerInfo | null> 
   // Check all teams for this player
   allTeams.forEach((team) => {
     // Check roster
-    const rosterPlayer = team.roster?.find((p) => matchesTeamEntryName(p, name))
+    const rosterPlayer = team.roster?.find((p) => matchesTeamEntry(p))
     if (rosterPlayer) {
       const teamEntry = getOrCreateTeam(team.slug, team.name, team.logo)
       teamEntry.role = rosterPlayer.role
@@ -113,7 +119,7 @@ export async function getPlayerByName(name: string): Promise<PlayerInfo | null> 
     }
     
     // Check subs
-    const subPlayer = team.subs?.find((s) => matchesTeamEntryName(s, name))
+    const subPlayer = team.subs?.find((s) => matchesTeamEntry(s))
     if (subPlayer) {
       const teamEntry = getOrCreateTeam(team.slug, team.name, team.logo)
       addPosition(teamEntry, 'sub')
@@ -121,7 +127,7 @@ export async function getPlayerByName(name: string): Promise<PlayerInfo | null> 
     }
     
     // Check captain
-    const captain = team.captain?.find((c) => matchesTeamEntryName(c, name))
+    const captain = team.captain?.find((c) => matchesTeamEntry(c))
     if (captain) {
       const teamEntry = getOrCreateTeam(team.slug, team.name, team.logo)
       addPosition(teamEntry, 'captain')
@@ -137,7 +143,7 @@ export async function getPlayerByName(name: string): Promise<PlayerInfo | null> 
     }
     
     // Check manager
-    const manager = team.manager?.find((m) => matchesTeamEntryName(m, name))
+    const manager = team.manager?.find((m) => matchesTeamEntry(m))
     if (manager) {
       const teamEntry = getOrCreateTeam(team.slug, team.name, team.logo)
       addPosition(teamEntry, 'manager')
@@ -145,7 +151,7 @@ export async function getPlayerByName(name: string): Promise<PlayerInfo | null> 
     }
     
     // Check coaches
-    const coach = team.coaches?.find((c) => matchesTeamEntryName(c, name))
+    const coach = team.coaches?.find((c) => matchesTeamEntry(c))
     if (coach) {
       const teamEntry = getOrCreateTeam(team.slug, team.name, team.logo)
       addPosition(teamEntry, 'coach')

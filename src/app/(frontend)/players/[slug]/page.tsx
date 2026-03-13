@@ -89,7 +89,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
       }
     }
     
-    const player = await getPlayerByName(playerName)
+    const player = await getPlayerByName(playerName, slug)
     
     if (!player) {
       return {
@@ -158,7 +158,7 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
     redirect('/teams')
   }
   
-  const player = await getPlayerByName(playerName)
+  const player = await getPlayerByName(playerName, slug)
   
   if (!player) {
     redirect('/teams')
