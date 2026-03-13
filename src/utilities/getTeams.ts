@@ -1,8 +1,9 @@
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { sortTeams } from './sortTeams'
-import { isPopulatedPerson, getPersonNameFromRelationship, getSocialLinksFromPerson, getPhotoUrlFromPerson } from './personHelpers'
+import { isPopulatedPerson, getPersonNameFromRelationship, getPersonSlugFromRelationship, getSocialLinksFromPerson, getPhotoUrlFromPerson } from './personHelpers'
 import { getLogoUrl } from './getLogoUrl'
+import { formatPlayerSlug } from './getPlayer'
 import type { Team as PayloadTeam } from '@/payload-types'
 
 // Type aliases for Payload team entry types
@@ -29,6 +30,7 @@ export interface SocialLinks {
 
 export interface TeamPlayer {
   name: string
+  slug: string
   role: 'tank' | 'dps' | 'support'
   photoUrl?: string | null
   twitter?: string
@@ -39,6 +41,7 @@ export interface TeamPlayer {
 
 export interface TeamStaff {
   name: string
+  slug: string
   photoUrl?: string | null
   twitter?: string
   twitch?: string
@@ -48,6 +51,7 @@ export interface TeamStaff {
 
 export interface TeamSub {
   name: string
+  slug: string
   photoUrl?: string | null
   twitter?: string
   twitch?: string
@@ -80,14 +84,16 @@ export interface Team {
 /**
  * Helper to extract name, photo, and social links from a person entry (uses People relationship)
  */
-function extractPersonData(entry: TeamEntry): { name: string; photoUrl?: string | null; socialLinks: { twitter?: string; twitch?: string; youtube?: string; instagram?: string } } {
+function extractPersonData(entry: TeamEntry): { name: string; slug: string; photoUrl?: string | null; socialLinks: { twitter?: string; twitch?: string; youtube?: string; instagram?: string } } {
   // Person relationship is required - extract from populated person object
   const personName = getPersonNameFromRelationship(entry.person)
+  const personSlug = getPersonSlugFromRelationship(entry.person)
   
   if (personName) {
     // Person is populated, use it - social links and photo are only in the person relationship
     return {
       name: personName,
+      slug: personSlug || formatPlayerSlug(personName),
       photoUrl: getPhotoUrlFromPerson(entry.person),
       socialLinks: getSocialLinksFromPerson(entry.person),
     }
@@ -123,6 +129,7 @@ function extractPersonData(entry: TeamEntry): { name: string; photoUrl?: string 
   // This will be filtered out later
   return {
     name: '',
+    slug: '',
     photoUrl: null,
     socialLinks: {},
   }
@@ -162,6 +169,7 @@ function transformPayloadTeam(payloadTeam: PayloadTeam): Team | null {
         const data = extractPersonData(m)
         return {
           name: data.name,
+          slug: data.slug,
           photoUrl: data.photoUrl,
           ...data.socialLinks,
         } as TeamStaff
@@ -170,6 +178,7 @@ function transformPayloadTeam(payloadTeam: PayloadTeam): Team | null {
         const data = extractPersonData(c)
         return {
           name: data.name,
+          slug: data.slug,
           photoUrl: data.photoUrl,
           ...data.socialLinks,
         } as TeamStaff
@@ -178,6 +187,7 @@ function transformPayloadTeam(payloadTeam: PayloadTeam): Team | null {
         const data = extractPersonData(c)
         return {
           name: data.name,
+          slug: data.slug,
           photoUrl: data.photoUrl,
           ...data.socialLinks,
         } as TeamStaff
@@ -200,6 +210,7 @@ function transformPayloadTeam(payloadTeam: PayloadTeam): Team | null {
         const data = extractPersonData(p)
         return {
           name: data.name,
+          slug: data.slug,
           role: p.role,
           photoUrl: data.photoUrl,
           ...data.socialLinks,
@@ -209,6 +220,7 @@ function transformPayloadTeam(payloadTeam: PayloadTeam): Team | null {
         const data = extractPersonData(s)
         return {
           name: data.name,
+          slug: data.slug,
           photoUrl: data.photoUrl,
           ...data.socialLinks,
         } as TeamSub

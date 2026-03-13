@@ -3,10 +3,10 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Lock } from 'lucide-react'
 import { SocialLinks } from '@/components/SocialLinks'
-import { formatPlayerSlug } from '@/utilities/getPlayer'
 
 interface SubstituteCardProps {
   name: string
+  slug: string
   photoUrl?: string | null
   twitter?: string
   twitch?: string
@@ -16,6 +16,7 @@ interface SubstituteCardProps {
 
 export function SubstituteCard({
   name,
+  slug,
   photoUrl,
   twitter,
   twitch,
@@ -48,7 +49,7 @@ export function SubstituteCard({
       {/* Player info */}
       <div className="flex-1 min-w-0">
         <Link 
-          href={`/players/${formatPlayerSlug(name)}`}
+          href={`/players/${slug}`}
           className="font-bold text-base group-hover:text-orange-500 transition-colors truncate hover:underline block"
         >
           {name}

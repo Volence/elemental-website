@@ -24,6 +24,7 @@ export const metadata: Metadata = {
 
 interface StaffMember {
   name: string
+  slug: string
   photoUrl?: string | null
   twitter?: string
   twitch?: string
@@ -41,6 +42,7 @@ function deduplicateStaff(staff: StaffMember[]): StaffMember[] {
       // Merge social links and photo, preferring non-empty values
       map.set(member.name, {
         name: member.name,
+        slug: member.slug || existing.slug,
         photoUrl: member.photoUrl || existing.photoUrl,
         twitter: member.twitter || existing.twitter,
         twitch: member.twitch || existing.twitch,

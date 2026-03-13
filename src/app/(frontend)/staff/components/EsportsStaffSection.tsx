@@ -4,6 +4,7 @@ import { StaffMemberCard } from './StaffMemberCard'
 
 interface StaffMember {
   name: string
+  slug: string
   photoUrl?: string | null
   twitter?: string
   twitch?: string
@@ -77,6 +78,7 @@ export function EsportsStaffSection({
                   <StaffMemberCard
                     key={i}
                     name={manager.name}
+                    slug={manager.slug}
                     photoUrl={manager.photoUrl}
                     socialLinks={manager}
                     avatarColors={managerColors}
@@ -96,6 +98,7 @@ export function EsportsStaffSection({
                   <StaffMemberCard
                     key={i}
                     name={coach.name}
+                    slug={coach.slug}
                     photoUrl={coach.photoUrl}
                     socialLinks={coach}
                     avatarColors={coachColors}
@@ -115,6 +118,7 @@ export function EsportsStaffSection({
                   <StaffMemberCard
                     key={i}
                     name={captain.name}
+                    slug={captain.slug}
                     photoUrl={captain.photoUrl}
                     socialLinks={captain}
                     avatarColors={captainColors}

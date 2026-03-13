@@ -2,10 +2,10 @@ import React from 'react'
 import Link from 'next/link'
 import NextImage from 'next/image'
 import { SocialLinks } from '@/components/SocialLinks'
-import { formatPlayerSlug } from '@/utilities/getPlayer'
 
 interface StaffMemberCardProps {
   name: string
+  slug: string
   photoUrl?: string | null
   socialLinks: {
     twitter?: string
@@ -23,6 +23,7 @@ interface StaffMemberCardProps {
 
 export function StaffMemberCard({
   name,
+  slug,
   photoUrl,
   socialLinks,
   avatarColors,
@@ -53,7 +54,7 @@ export function StaffMemberCard({
       </div>
       <div className="flex-1 min-w-0">
         <Link
-          href={`/players/${formatPlayerSlug(name)}`}
+          href={`/players/${slug}`}
           className="block text-sm font-bold group-hover:text-primary transition-colors truncate mb-1"
         >
           {name}

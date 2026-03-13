@@ -38,14 +38,14 @@ export function getLogoUrl(
   if (typeof logo === 'object' && logo !== null) {
     const logoObj = logo as { url?: string | null; filename?: string | null }
     
-    // Prefer filename to construct static path (graphics-assets are served from public/graphics-assets)
-    // This is preferred over the API URL because static paths don't require authentication
+    // Prefer the API url - this always works for both newly uploaded and existing files
+    // The url is provided by Payload when the relationship is populated
+    if (logoObj.url) return logoObj.url
+    
+    // Fallback to filename-based static path (for pre-synced files in public/graphics-assets)
     if (logoObj.filename) {
       return `/graphics-assets/${logoObj.filename}`
     }
-    
-    // Fallback to API url if no filename (shouldn't happen, but just in case)
-    if (logoObj.url) return logoObj.url
     
     // Object but no filename/url - try cached logoFilename
     if (logoFilename) return `/graphics-assets/${logoFilename}`

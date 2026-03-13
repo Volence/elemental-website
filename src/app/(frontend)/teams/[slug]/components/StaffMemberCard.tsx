@@ -2,10 +2,10 @@ import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { SocialLinks } from '@/components/SocialLinks'
-import { formatPlayerSlug } from '@/utilities/getPlayer'
 
 interface StaffMemberCardProps {
   name: string
+  slug: string
   photoUrl?: string | null
   twitter?: string
   twitch?: string
@@ -16,6 +16,7 @@ interface StaffMemberCardProps {
 
 export function StaffMemberCard({
   name,
+  slug,
   photoUrl,
   twitter,
   twitch,
@@ -60,7 +61,7 @@ export function StaffMemberCard({
         )}
       </div>
       <Link 
-        href={`/players/${formatPlayerSlug(name)}`}
+        href={`/players/${slug}`}
         className="flex-1 font-bold group-hover:text-primary transition-colors hover:underline"
       >
         {name}

@@ -7,17 +7,56 @@ import { parseFaceitUrl, isValidFaceitId } from '@/utilities/faceitUrlParser'
 /**
  * FaceIt URL Helper Component
  * 
- * Makes it easy to fill in FaceIt season data by pasting URLs instead of manually entering IDs
+ * Makes it easy to fill in FaceIt season data by pasting URLs instead of manually entering IDs.
+ * Auto-fetches the Championship ID from the FACEIT API after extracting other IDs.
  */
 const FaceitUrlHelper: React.FC = () => {
   const [url, setUrl] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [championshipStatus, setChampionshipStatus] = useState('')
   const { dispatchFields } = useForm()
 
-  const handleParse = () => {
+  /**
+   * Attempt to auto-fetch the Championship ID from FACEIT via our server-side proxy.
+   */
+  const lookupChampionshipId = async (stageId: string) => {
+    setChampionshipStatus('🔍 Looking up Championship ID...')
+
+    try {
+      const response = await fetch(`/api/faceit/lookup-championship?stageId=${stageId}`)
+      const data = await response.json()
+
+      if (response.ok && data.championshipId && dispatchFields) {
+        dispatchFields({
+          type: 'UPDATE',
+          path: 'championshipId',
+          value: data.championshipId,
+        })
+        setChampionshipStatus('✅ Championship ID found and filled in automatically!')
+        return true
+      }
+    } catch (err) {
+      console.error('[FaceitUrlHelper] Championship lookup failed:', err)
+    }
+
+    // Lookup failed — show fallback instructions
+    setChampionshipStatus('')
+    setError(prev => {
+      const fallback = '⚠️ Could not auto-detect Championship ID. To find it manually:\n' +
+        '1. Open the FACEIT standings page in your browser\n' +
+        '2. Open DevTools → Network tab (F12)\n' +
+        '3. Filter requests by "championships"\n' +
+        '4. Look for the UUID in the API call URL and paste it into the Championship ID field below'
+      return prev ? `${prev}\n\n${fallback}` : fallback
+    })
+    return false
+  }
+
+  const handleParse = async () => {
     setError('')
     setSuccess('')
+    setChampionshipStatus('')
 
     if (!url.trim()) {
       setError('Please enter a FaceIt URL')
@@ -26,6 +65,8 @@ const FaceitUrlHelper: React.FC = () => {
 
     const parsed = parseFaceitUrl(url)
     let foundAny = false
+    let extractedStageId: string | null = null
+    let alreadyHasChampionship = false
 
     // Set team ID if found and valid
     if (parsed.teamId && isValidFaceitId(parsed.teamId) && dispatchFields) {
@@ -37,7 +78,7 @@ const FaceitUrlHelper: React.FC = () => {
       foundAny = true
     }
 
-    // Set championship ID if found and valid
+    // Set championship ID if found directly in the URL
     if (parsed.championshipId && isValidFaceitId(parsed.championshipId) && dispatchFields) {
       dispatchFields({
         type: 'UPDATE',
@@ -45,6 +86,7 @@ const FaceitUrlHelper: React.FC = () => {
         value: parsed.championshipId,
       })
       foundAny = true
+      alreadyHasChampionship = true
     }
 
     // Set league ID if found and valid
@@ -75,11 +117,17 @@ const FaceitUrlHelper: React.FC = () => {
         value: parsed.stageId,
       })
       foundAny = true
+      extractedStageId = parsed.stageId
     }
 
     if (foundAny) {
       setSuccess('✅ IDs extracted and filled in! Check the form below.')
       setUrl('')
+
+      // If we got a Stage ID but no Championship ID from the URL, try to auto-fetch it
+      if (extractedStageId && !alreadyHasChampionship) {
+        await lookupChampionshipId(extractedStageId)
+      }
     } else {
       setError('❌ Could not extract any valid IDs from this URL. Please check the URL format.')
     }
@@ -112,8 +160,14 @@ const FaceitUrlHelper: React.FC = () => {
         </button>
       </div>
 
+      {championshipStatus && (
+        <div className="faceit-url-helper__message faceit-url-helper__message--info">
+          {championshipStatus}
+        </div>
+      )}
+
       {error && (
-        <div className="faceit-url-helper__message faceit-url-helper__message--error">
+        <div className="faceit-url-helper__message faceit-url-helper__message--error" style={{ whiteSpace: 'pre-line' }}>
           {error}
         </div>
       )}
@@ -135,6 +189,7 @@ const FaceitUrlHelper: React.FC = () => {
         </ul>
         <p className="faceit-url-helper__formats-tip">
           💡 Tip: The standings URL is best! It contains league, season, and stage IDs all in one.
+          The Championship ID will be auto-detected when possible.
         </p>
       </details>
     </div>

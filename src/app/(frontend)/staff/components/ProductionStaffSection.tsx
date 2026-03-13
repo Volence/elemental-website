@@ -1,7 +1,8 @@
 import React from 'react'
 import { Users, Mic, Eye, Video } from 'lucide-react'
 import { StaffMemberCard } from './StaffMemberCard'
-import { getSocialLinksFromPerson, getPhotoUrlFromPerson } from '@/utilities/personHelpers'
+import { getSocialLinksFromPerson, getPhotoUrlFromPerson, getPersonSlugFromRelationship } from '@/utilities/personHelpers'
+import { formatPlayerSlug } from '@/utilities/getPlayer'
 
 interface ProductionStaffSectionProps {
   groupedProduction: Record<string, any[]>
@@ -102,6 +103,7 @@ export function ProductionStaffSection({
                     <StaffMemberCard
                       key={member.id}
                       name={name}
+                      slug={getPersonSlugFromRelationship(member.person) || formatPlayerSlug(name)}
                       photoUrl={photoUrl}
                       socialLinks={socialLinks}
                       avatarColors={avatarColors}

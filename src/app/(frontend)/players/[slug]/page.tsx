@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import type { Media } from '@/payload-types'
 import React from 'react'
 import { redirect } from 'next/navigation'
+import { getPayload } from 'payload'
+import config from '@payload-config'
 import { getPlayerByName, getAllPlayerNames } from '@/utilities/getPlayer'
 import { SocialLinks } from '@/components/SocialLinks'
 import { Shield, Crown, Share2, Users, Mic, Eye, Video } from 'lucide-react'
@@ -61,10 +63,25 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
 
   try {
     const { slug } = await paramsPromise
-    const playerNames = await getAllPlayerNames()
     
-    // Find the player name that matches this slug
-    const playerName = playerNames.find((name) => formatPlayerSlug(name) === slug)
+    // Try to find person directly by slug in People collection (most reliable)
+    const payload = await getPayload({ config })
+    const personBySlug = await payload.find({
+      collection: 'people',
+      where: { slug: { equals: slug } },
+      limit: 1,
+      depth: 0,
+    })
+    
+    let playerName: string | undefined
+    
+    if (personBySlug.docs.length > 0) {
+      playerName = personBySlug.docs[0].name
+    } else {
+      // Fallback: match by generated slug from name (backward compatibility)
+      const playerNames = await getAllPlayerNames()
+      playerName = playerNames.find((name) => formatPlayerSlug(name) === slug)
+    }
     
     if (!playerName) {
       return {
@@ -117,10 +134,25 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
 
 export default async function PlayerPage({ params: paramsPromise }: Args) {
   const { slug } = await paramsPromise
-  const playerNames = await getAllPlayerNames()
   
-  // Find the player name that matches this slug
-  const playerName = playerNames.find((name) => formatPlayerSlug(name) === slug)
+  // Try to find person directly by slug in People collection (most reliable)
+  const payload = await getPayload({ config })
+  const personBySlug = await payload.find({
+    collection: 'people',
+    where: { slug: { equals: slug } },
+    limit: 1,
+    depth: 0,
+  })
+  
+  let playerName: string | undefined
+  
+  if (personBySlug.docs.length > 0) {
+    playerName = personBySlug.docs[0].name
+  } else {
+    // Fallback: match by generated slug from name (backward compatibility)
+    const playerNames = await getAllPlayerNames()
+    playerName = playerNames.find((name) => formatPlayerSlug(name) === slug)
+  }
   
   if (!playerName) {
     redirect('/teams')

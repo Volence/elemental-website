@@ -5,6 +5,7 @@ import { PlayerCard } from './PlayerCard'
 
 interface Player {
   name: string
+  slug: string
   role: string
   photoUrl?: string | null
   twitter?: string

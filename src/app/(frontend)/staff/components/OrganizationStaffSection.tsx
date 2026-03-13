@@ -5,8 +5,10 @@ import {
   isPopulatedPerson,
   getSocialLinksFromPerson,
   getPhotoUrlFromPerson,
+  getPersonSlugFromRelationship,
 } from '@/utilities/personHelpers'
 import { getOrgRoleIcon } from '@/utilities/roleIcons'
+import { formatPlayerSlug } from '@/utilities/getPlayer'
 
 interface OrganizationStaffSectionProps {
   groupedOrgStaff: Record<string, any[]>
@@ -155,6 +157,7 @@ export function OrganizationStaffSection({
                   <StaffMemberCard
                     key={member.id}
                     name={name}
+                    slug={getPersonSlugFromRelationship(member.person) || formatPlayerSlug(name)}
                     photoUrl={photoUrl}
                     socialLinks={socialLinks}
                     avatarColors={avatarColors}

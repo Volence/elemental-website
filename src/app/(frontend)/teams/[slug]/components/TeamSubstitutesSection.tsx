@@ -4,6 +4,7 @@ import { SubstituteCard } from './SubstituteCard'
 
 interface Substitute {
   name: string
+  slug: string
   photoUrl?: string | null
   twitter?: string
   twitch?: string

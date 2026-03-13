@@ -2,12 +2,12 @@ import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { SocialLinks } from '@/components/SocialLinks'
-import { formatPlayerSlug } from '@/utilities/getPlayer'
 import { getGameRoleIcon } from '@/utilities/roleIcons'
 import { getRoleColors } from '@/utilities/tierColors'
 
 interface PlayerCardProps {
   name: string
+  slug: string
   role: string
   photoUrl?: string | null
   twitter?: string
@@ -19,6 +19,7 @@ interface PlayerCardProps {
 
 export function PlayerCard({
   name,
+  slug,
   role,
   photoUrl,
   twitter,
@@ -60,7 +61,7 @@ export function PlayerCard({
       {/* Player info */}
       <div className="flex-1 min-w-0">
         <Link 
-          href={`/players/${formatPlayerSlug(name)}`}
+          href={`/players/${slug}`}
           className="font-bold text-lg group-hover:text-primary transition-colors truncate hover:underline block"
         >
           {name}
