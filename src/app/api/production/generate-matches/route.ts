@@ -33,14 +33,18 @@ export async function POST(req: NextRequest) {
         
         // 3. Find matching schedule rule
         const scheduleRules = tournament.scheduleRules || []
-        const teamRating = (team.rating || '').toLowerCase() // e.g., "faceit masters"
-        
-        // Determine team's actual division
+        // Determine team's actual division from their FaceIt League (authoritative source)
         let teamDivision = 'Open' // Default
-        if (teamRating.includes('masters')) teamDivision = 'Masters'
-        else if (teamRating.includes('expert')) teamDivision = 'Expert'
-        else if (teamRating.includes('advanced')) teamDivision = 'Advanced'
-        // If not Masters/Expert/Advanced, it's Open (even if rating is empty or "Unknown")
+        const faceitLeague = team.currentFaceitLeague as any
+        if (faceitLeague && typeof faceitLeague === 'object' && faceitLeague.division) {
+          teamDivision = faceitLeague.division
+        } else {
+          // Fallback: parse from rating string (e.g., "faceit masters")
+          const teamRating = (team.rating || '').toLowerCase()
+          if (teamRating.includes('masters')) teamDivision = 'Masters'
+          else if (teamRating.includes('expert')) teamDivision = 'Expert'
+          else if (teamRating.includes('advanced')) teamDivision = 'Advanced'
+        }
         
         const rule = scheduleRules.find((r: any) => {
           const regionMatch = r.region === team.region || r.region === 'all'
