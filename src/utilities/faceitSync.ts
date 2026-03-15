@@ -364,7 +364,12 @@ export async function syncTeamData(
           collection: 'matches',
           where: {
             and: [
-              { team: { equals: teamId } },
+              {
+                or: [
+                  { team: { equals: teamId } },
+                  { team1Internal: { equals: teamId } },
+                ],
+              },
               { faceitMatchId: { equals: faceitMatch.origin.id } },
             ],
           },
@@ -380,10 +385,15 @@ export async function syncTeamData(
             collection: 'matches',
             where: {
               and: [
-                { team: { equals: teamId } },
+                {
+                  or: [
+                    { team: { equals: teamId } },
+                    { team1Internal: { equals: teamId } },
+                  ],
+                },
                 { date: { greater_than_equal: oneHourBefore.toISOString() } },
                 { date: { less_than_equal: oneHourAfter.toISOString() } },
-                { faceitMatchId: { exists: false } }, // Only match old records without ID
+                { faceitMatchId: { exists: false } },
               ],
             },
             limit: 1,

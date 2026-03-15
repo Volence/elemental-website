@@ -30,14 +30,21 @@ export async function handleTeamMatches(interaction: ChatInputCommandInteraction
 
     const team = teamResult.docs[0]
 
-    // Fetch upcoming matches
+    // Fetch upcoming matches (check both legacy 'team' and new 'team1Internal' fields)
     const now = new Date()
     const matches = await payload.find({
       collection: 'matches',
       where: {
-        team: { equals: team.id },
-        date: { greater_than_equal: now.toISOString() },
-        status: { equals: 'scheduled' },
+        and: [
+          {
+            or: [
+              { team: { equals: team.id } },
+              { team1Internal: { equals: team.id } },
+            ],
+          },
+          { date: { greater_than_equal: now.toISOString() } },
+          { status: { equals: 'scheduled' } },
+        ],
       },
       limit: 10,
       sort: 'date',
