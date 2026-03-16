@@ -95,12 +95,27 @@ export async function handleMatchesToday(interaction: ChatInputCommandInteractio
           team2Name = match.team2External
         }
 
-        // Status indicator
+        // Status indicator + score for completed matches
         const isComplete = match.status === 'complete'
-        const statusIcon = isComplete ? '✅' : '⏳'
+        let statusIcon = isComplete ? '✅' : '⏳'
+        
+        // Add score for completed matches
+        let scoreStr = ''
+        if (isComplete && match.score) {
+          const eScore = (match.score as any).elmtScore
+          const oScore = (match.score as any).opponentScore
+          if (eScore != null && oScore != null) {
+            const isLegacy = (eScore === 1 && oScore === 0) || (eScore === 0 && oScore === 1)
+            if (isLegacy) {
+              scoreStr = eScore > oScore ? ' **W**' : ' **L**'
+            } else {
+              scoreStr = ` **(${eScore}-${oScore})**`
+            }
+          }
+        }
 
         // Build match line
-        let line = `${statusIcon} **${team1Name}** vs **${team2Name}** • ${timeStr}`
+        let line = `${statusIcon} **${team1Name}** vs **${team2Name}**${scoreStr} • ${timeStr}`
 
         // Add lobby link
         if (match.faceitLobby && !isComplete) {
