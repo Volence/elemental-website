@@ -9,12 +9,18 @@ export async function handleMatchesToday(interaction: ChatInputCommandInteractio
 
     const payload = await getPayload({ config: configPromise })
 
-    // Get start and end of today in UTC
+    // Use a match-day window that covers both EU and NA timezones
+    // EU matches are typically 19:00-21:00 UTC, NA matches 01:00-02:00 UTC (next day)
+    // Window: 08:00 UTC today → 08:00 UTC tomorrow (= 3AM ET → 3AM ET)
     const now = new Date()
     const startOfDay = new Date(now)
-    startOfDay.setHours(0, 0, 0, 0)
-    const endOfDay = new Date(now)
-    endOfDay.setHours(23, 59, 59, 999)
+    startOfDay.setUTCHours(8, 0, 0, 0)
+    // If it's before 8 AM UTC, shift window back by one day
+    if (now.getUTCHours() < 8) {
+      startOfDay.setUTCDate(startOfDay.getUTCDate() - 1)
+    }
+    const endOfDay = new Date(startOfDay)
+    endOfDay.setUTCDate(endOfDay.getUTCDate() + 1)
 
     // Fetch all matches scheduled for today
     const matches = await payload.find({
