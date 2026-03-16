@@ -236,12 +236,16 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
                       <div className="flex items-center gap-3">
                         {!isBye && match.result === 'win' && (
                           <span className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-md text-sm font-semibold text-green-300">
-                            ✓ WIN
+                            ✓ WIN{match.elmtScore != null && match.opponentScore != null && 
+                              !(match.elmtScore === 1 && match.opponentScore === 0) && 
+                              ` ${match.elmtScore}-${match.opponentScore}`}
                           </span>
                         )}
                         {!isBye && match.result === 'loss' && (
                           <span className="px-3 py-1 bg-red-500/20 border border-red-500/30 rounded-md text-sm font-semibold text-red-300">
-                            ✗ LOSS
+                            ✗ LOSS{match.elmtScore != null && match.opponentScore != null && 
+                              !(match.elmtScore === 0 && match.opponentScore === 1) && 
+                              ` ${match.elmtScore}-${match.opponentScore}`}
                           </span>
                         )}
                         {match.roomLink && !isBye && (

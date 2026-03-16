@@ -143,6 +143,33 @@ async function fetchMatches(teamId: string, championshipId: string): Promise<Fac
 }
 
 /**
+ * Fetch detailed match data from FaceIt Data API v4 (requires API key)
+ * Returns the actual map score (e.g., 3-2) for finished matches
+ */
+async function fetchMatchDetails(matchId: string): Promise<{ faction1Score: number; faction2Score: number } | null> {
+  if (!FACEIT_API_KEY) return null
+
+  try {
+    const response = await fetch(`${DATA_API_BASE}/matches/${matchId}`, {
+      headers: { 'Authorization': `Bearer ${FACEIT_API_KEY}` },
+    })
+
+    if (!response.ok) return null
+
+    const data = await response.json()
+    const score = data.results?.score
+    if (!score) return null
+
+    return {
+      faction1Score: score.faction1 ?? 0,
+      faction2Score: score.faction2 ?? 0,
+    }
+  } catch {
+    return null
+  }
+}
+
+/**
  * Resolve opponent team names (requires API key)
  */
 async function resolveOpponentNames(opponentIds: string[]): Promise<Map<string, string>> {
@@ -434,11 +461,26 @@ export async function syncTeamData(
           faceitSeasonId: seasonRecord?.id,
         }
 
-        // Add score for finished matches (FaceIt only provides win/loss, not map scores)
+        // Add score for finished matches - fetch actual map scores from Data API
         if (isFinished) {
-          matchData.score = {
-            elmtScore: didWin ? 1 : 0,
-            opponentScore: didWin ? 0 : 1,
+          const ourFaction = faceitMatch.factions.find(f => f.id === faceitTeamId)
+          const theirFaction = faceitMatch.factions.find(f => f.id !== faceitTeamId)
+          const details = await fetchMatchDetails(faceitMatch.origin.id)
+
+          if (details && ourFaction && theirFaction) {
+            // Map faction numbers to scores (faction1 = number 1, faction2 = number 2)
+            const ourScore = ourFaction.number === 1 ? details.faction1Score : details.faction2Score
+            const theirScore = ourFaction.number === 1 ? details.faction2Score : details.faction1Score
+            matchData.score = {
+              elmtScore: ourScore,
+              opponentScore: theirScore,
+            }
+          } else {
+            // Fallback to simple win/loss if API call fails
+            matchData.score = {
+              elmtScore: didWin ? 1 : 0,
+              opponentScore: didWin ? 0 : 1,
+            }
           }
         }
 

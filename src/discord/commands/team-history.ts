@@ -117,12 +117,13 @@ export async function handleTeamHistory(interaction: ChatInputCommandInteraction
 
         if (hasValidScores && teamScore !== null && opponentScore !== null) {
           const won = teamScore > opponentScore
+          const isRealScore = !(teamScore === 1 && opponentScore === 0) && !(teamScore === 0 && opponentScore === 1)
           if (won) {
             wins++
-            result = '✅ **Won**'
+            result = isRealScore ? `✅ **Won** (${teamScore}-${opponentScore})` : '✅ **Won**'
           } else {
             losses++
-            result = '❌ **Lost**'
+            result = isRealScore ? `❌ **Lost** (${teamScore}-${opponentScore})` : '❌ **Lost**'
           }
           matchLine = `${result} vs ${opponentName} • ${dateStr}`
         } else {

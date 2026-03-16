@@ -225,38 +225,40 @@ export function PastMatchCard({ match }: PastMatchCardProps) {
       </div>
 
       {/* Score Display */}
-      {match.score?.elmtScore != null && match.score?.opponentScore != null && (
-        <div className="mb-3 inline-flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-muted/30 border border-border">
-          <span
-            className={`text-xl font-bold ${
-              match.score.elmtScore! > match.score.opponentScore!
-                ? 'text-green-400/90'
-                : match.score.elmtScore! < match.score.opponentScore!
-                  ? 'text-red-400/90'
-                  : 'text-foreground'
-            }`}
-          >
-            {match.score.elmtScore}
-          </span>
-          <span className="text-muted-foreground font-medium">-</span>
-          <span
-            className={`text-xl font-bold ${
-              match.score.opponentScore! > match.score.elmtScore!
-                ? 'text-green-400/90'
-                : match.score.opponentScore! < match.score.elmtScore!
-                  ? 'text-red-400/90'
-                  : 'text-foreground'
-            }`}
-          >
-            {match.score.opponentScore}
-          </span>
-          {match.score.elmtScore! !== match.score.opponentScore! && (
-            <span className="ml-1 text-xs font-semibold text-muted-foreground uppercase">
-              {match.score.elmtScore! > match.score.opponentScore! ? 'W' : 'L'}
+      {match.score?.elmtScore != null && match.score?.opponentScore != null && (() => {
+        const eScore = match.score.elmtScore!
+        const oScore = match.score.opponentScore!
+        const isLegacyScore = (eScore === 1 && oScore === 0) || (eScore === 0 && oScore === 1)
+        
+        if (isLegacyScore) {
+          // Old season data (1-0/0-1): just show W or L badge
+          return (
+            <div className="mb-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/30 border border-border">
+              <span className={`text-sm font-bold uppercase ${eScore > oScore ? 'text-green-400/90' : 'text-red-400/90'}`}>
+                {eScore > oScore ? '✓ WIN' : '✗ LOSS'}
+              </span>
+            </div>
+          )
+        }
+        
+        // Real map scores: show numeric display
+        return (
+          <div className="mb-3 inline-flex items-center gap-2.5 px-3 py-1.5 rounded-lg bg-muted/30 border border-border">
+            <span className={`text-xl font-bold ${eScore > oScore ? 'text-green-400/90' : eScore < oScore ? 'text-red-400/90' : 'text-foreground'}`}>
+              {eScore}
             </span>
-          )}
-        </div>
-      )}
+            <span className="text-muted-foreground font-medium">-</span>
+            <span className={`text-xl font-bold ${oScore > eScore ? 'text-green-400/90' : oScore < eScore ? 'text-red-400/90' : 'text-foreground'}`}>
+              {oScore}
+            </span>
+            {eScore !== oScore && (
+              <span className="ml-1 text-xs font-semibold text-muted-foreground uppercase">
+                {eScore > oScore ? 'W' : 'L'}
+              </span>
+            )}
+          </div>
+        )
+      })()}
 
       {/* Match Info - Condensed for past matches */}
       <div className="space-y-2 text-sm">

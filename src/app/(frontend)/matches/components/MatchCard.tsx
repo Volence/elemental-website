@@ -675,6 +675,19 @@ export function MatchCard({ match, showCountdown = true }: MatchCardProps) {
           match.score?.opponentScore !== undefined && (() => {
             const eScore = match.score!.elmtScore ?? 0
             const oScore = match.score!.opponentScore ?? 0
+            const isLegacyScore = (eScore === 1 && oScore === 0) || (eScore === 0 && oScore === 1)
+            
+            if (isLegacyScore) {
+              // Old season data (1-0/0-1): just show W or L badge
+              return (
+                <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-muted/30 border border-border">
+                  <span className={`text-lg font-bold uppercase ${eScore > oScore ? 'text-green-400/90' : 'text-red-400/90'}`}>
+                    {eScore > oScore ? '✓ WIN' : '✗ LOSS'}
+                  </span>
+                </div>
+              )
+            }
+            
             return (
             <div className="mt-4 inline-flex items-center gap-4 px-4 py-2 rounded-lg bg-muted/30 border border-border">
               <span
