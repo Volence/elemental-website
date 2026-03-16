@@ -42,6 +42,12 @@ export function buildCommands() {
               .setDescription('Name of the team')
               .setRequired(true)
               .setAutocomplete(true),
+          )
+          .addStringOption((option) =>
+            option
+              .setName('season')
+              .setDescription('Season to show (default: current season, use "all" for all seasons)')
+              .setRequired(false),
           ),
       )
       .addSubcommand((subcommand) =>
@@ -120,6 +126,11 @@ export function buildCommands() {
             { name: 'Community Events', value: 'community' },
           ),
       ),
+
+    // Matches today command
+    new SlashCommandBuilder()
+      .setName('matches')
+      .setDescription('View today\'s scheduled matches across all teams'),
   ].map((command) => command.toJSON())
 }
 

@@ -5,6 +5,7 @@ import configPromise from '@payload-config'
 
 export async function handleTeamHistory(interaction: ChatInputCommandInteraction): Promise<void> {
   const teamSlug = interaction.options.getString('team-name', true)
+  const seasonFilter = interaction.options.getString('season') // Optional season filter
 
   try {
     await interaction.deferReply()
@@ -19,6 +20,7 @@ export async function handleTeamHistory(interaction: ChatInputCommandInteraction
         },
       },
       limit: 1,
+      depth: 1, // Populate currentFaceitLeague for season name
     })
 
     if (!teamResult.docs.length) {
@@ -30,19 +32,50 @@ export async function handleTeamHistory(interaction: ChatInputCommandInteraction
 
     const team = teamResult.docs[0]
 
-    // Fetch past matches
+    // Determine the season to show
+    let targetSeason: string | null = null
+    if (seasonFilter === 'all') {
+      // Show all seasons - no filter
+      targetSeason = null
+    } else if (seasonFilter) {
+      // User specified a season
+      targetSeason = seasonFilter
+    } else {
+      // Default: current season from team's FaceIt league
+      const league = team.currentFaceitLeague as any
+      if (league?.name) {
+        targetSeason = league.name
+      }
+    }
+
+    // Build query for past matches
     const now = new Date()
+    const whereConditions: any[] = [
+      {
+        or: [
+          { team: { equals: team.id } },
+          { team1Internal: { equals: team.id } },
+        ],
+      },
+      { date: { less_than: now.toISOString() } },
+      { status: { equals: 'complete' } },
+    ]
+
+    // Add season filter if specified
+    if (targetSeason) {
+      whereConditions.push({ season: { equals: targetSeason } })
+    }
+
     const matches = await payload.find({
       collection: 'matches',
-      where: {
-        team: { equals: team.id },
-        date: { less_than: now.toISOString() },
-        status: { equals: 'complete' },
-      },
-      limit: 10,
+      where: { and: whereConditions },
+      limit: 15,
       sort: '-date', // Most recent first
       depth: 1,
     })
+
+    // Determine display title
+    const seasonLabel = targetSeason || 'All Seasons'
 
     const embed = new EmbedBuilder()
       .setTitle(`Match History • ${team.name}`)
@@ -58,7 +91,7 @@ export async function handleTeamHistory(interaction: ChatInputCommandInteraction
     }
 
     if (!matches.docs.length) {
-      embed.setDescription('No match history available.')
+      embed.setDescription(`**Season:** ${seasonLabel}\n\nNo match history available.`)
     } else {
       // Calculate W/L record
       let wins = 0
@@ -78,35 +111,30 @@ export async function handleTeamHistory(interaction: ChatInputCommandInteraction
         const opponentScore = match.score?.opponentScore
         const hasValidScores = teamScore !== undefined && opponentScore !== undefined
 
-        // Determine win/loss - if no scores, check match title or assume from context
-        // For now, we'll look at the score if available, otherwise mark as "Played"
+        // Determine win/loss
         let result = ''
         let matchLine = ''
 
         if (hasValidScores && teamScore !== null && opponentScore !== null) {
-          // Valid scores recorded
           const won = teamScore > opponentScore
           if (won) {
             wins++
-            result = '**Won**'
+            result = '✅ **Won**'
           } else {
             losses++
-            result = '**Lost**'
+            result = '❌ **Lost**'
           }
           matchLine = `${result} vs ${opponentName} • ${dateStr}`
         } else {
-          // No valid scores - need to determine win/loss from match title or other field
-          // Check if there's any indicator in the title
           const titleLower = (match.title || '').toLowerCase()
           if (titleLower.includes('(w)') || titleLower.includes('win')) {
             wins++
-            result = '**Won**'
+            result = '✅ **Won**'
           } else if (titleLower.includes('(l)') || titleLower.includes('loss')) {
             losses++
-            result = '**Lost**'
+            result = '❌ **Lost**'
           } else {
-            // Can't determine - mark as played
-            result = 'Played'
+            result = '⬜ Played'
           }
           matchLine = `${result} vs ${opponentName} • ${dateStr}`
         }
@@ -126,10 +154,46 @@ export async function handleTeamHistory(interaction: ChatInputCommandInteraction
         matchLines.push(matchLine)
       }
 
-      // Add W/L record at top
-      embed.setDescription(
-        `**Record:** ${wins}W - ${losses}L\n\n${matchLines.join('\n\n')}`,
-      )
+      // Build description
+      const header = `**Season:** ${seasonLabel}\n**Record:** ${wins}W - ${losses}L`
+      
+      // Add hint about season options
+      let footer = ''
+      if (targetSeason) {
+        footer = '\n\n_Use `/team history` with season "all" to see all seasons_'
+      }
+      
+      embed.setDescription(`${header}\n\n${matchLines.join('\n\n')}${footer}`)
+    }
+
+    // Also fetch available seasons for this team to list in footer
+    const seasonQuery = await payload.find({
+      collection: 'matches',
+      where: {
+        and: [
+          {
+            or: [
+              { team: { equals: team.id } },
+              { team1Internal: { equals: team.id } },
+            ],
+          },
+          { status: { equals: 'complete' } },
+          { season: { exists: true } },
+        ],
+      },
+      limit: 500,
+      depth: 0,
+    })
+
+    // Get unique seasons
+    const allSeasons = [...new Set(
+      seasonQuery.docs
+        .map(m => m.season)
+        .filter((s): s is string => !!s && s.trim() !== '')
+    )]
+    
+    if (allSeasons.length > 1) {
+      embed.setFooter({ text: `Available seasons: ${allSeasons.join(', ')}` })
     }
 
     await interaction.editReply({ embeds: [embed] })
@@ -150,7 +214,6 @@ export async function handleTeamHistory(interaction: ChatInputCommandInteraction
 
 function getAbsoluteUrl(url: string): string {
   if (url.startsWith('http')) return url
-  // TEMPORARY: Hardcoded for testing Discord logo display
   const baseUrl = 'https://elmt.gg'
   return `${baseUrl}${url}`
 }
