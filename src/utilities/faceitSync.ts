@@ -430,12 +430,19 @@ export async function syncTeamData(
         const isFinished = faceitMatch.status === 'finished'
         const didWin = isFinished && faceitMatch.winner === faceitTeamId
 
-        // Get division from season record (more reliable than team.rating)
-        const division = seasonRecord?.division || 'Advanced'
+        // Get division from season record, fallback to team.rating
+        let division = seasonRecord?.division || 'Advanced'
         
         if (!seasonRecord) {
-          console.warn(`[FaceIt Sync] No season record found for team ${teamId}, using fallback division: ${division}`)
-        } else {
+          // Derive division from team.rating (e.g., 'FACEIT Masters' -> 'Masters')
+          if (team.rating) {
+            const ratingStr = String(team.rating)
+            if (ratingStr.includes('Masters')) division = 'Masters'
+            else if (ratingStr.includes('Expert')) division = 'Expert'
+            else if (ratingStr.includes('Open')) division = 'Open'
+            else if (ratingStr.includes('Advanced')) division = 'Advanced'
+          }
+          console.warn(`[FaceIt Sync] No season record found for team ${teamId}, using derived division: ${division}`)
         }
         
         const matchData: any = {
