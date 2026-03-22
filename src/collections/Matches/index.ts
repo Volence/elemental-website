@@ -64,9 +64,60 @@ export const Matches: CollectionConfig = {
       },
     ],
     beforeValidate: [
-      async ({ data, operation, req }) => {
+      async ({ data, operation, req, originalDoc }) => {
         // Guard against undefined data
         if (!data) return data
+        
+        // ─── Sync opponent ↔ team2External fields ───
+        // These two fields must stay in sync to prevent stale data showing up
+        // in Discord commands, social media, etc.
+        if (operation === 'update' && originalDoc) {
+          const incomingOpponent = data.opponent
+          const incomingExternal = (data as any).team2External
+          const prevOpponent = originalDoc.opponent
+          const prevExternal = (originalDoc as any).team2External
+          
+          // Detect which field changed and sync the other
+          const opponentChanged = incomingOpponent !== undefined && incomingOpponent !== prevOpponent
+          const externalChanged = incomingExternal !== undefined && incomingExternal !== prevExternal
+          
+          if (opponentChanged && !externalChanged) {
+            // opponent field was edited → sync to team2External
+            ;(data as any).team2External = incomingOpponent
+            if (!(data as any).team2Type) (data as any).team2Type = 'external'
+          } else if (externalChanged && !opponentChanged) {
+            // team2External was edited → sync to opponent
+            data.opponent = incomingExternal
+          } else if (opponentChanged && externalChanged) {
+            // Both changed (e.g. bulk update) — team2External takes priority
+            data.opponent = incomingExternal
+          }
+          
+          // If opponent name changed, force title regeneration
+          if (opponentChanged || externalChanged) {
+            const currentTitle = data.title || originalDoc.title || ''
+            if (typeof currentTitle === 'string' && currentTitle.includes(' vs ') && prevExternal) {
+              // Only regenerate if the old opponent name is in the title
+              if (currentTitle.includes(prevExternal) || currentTitle.includes(prevOpponent || '')) {
+                data.title = '' // Clear to trigger regeneration below
+              }
+            }
+          }
+          
+          // Sync FACEIT lobby URL if faceitMatchId exists and lobby is stale/missing
+          if ((opponentChanged || externalChanged) && originalDoc.faceitMatchId && !data.faceitLobby) {
+            data.faceitLobby = `https://www.faceit.com/en/ow2/room/${originalDoc.faceitMatchId}`
+          }
+        } else if (operation === 'create') {
+          // On create, ensure both fields match
+          const opponent = data.opponent
+          const external = (data as any).team2External
+          if (opponent && !external && (data as any).team2Type === 'external') {
+            ;(data as any).team2External = opponent
+          } else if (external && !opponent) {
+            data.opponent = external
+          }
+        }
         
         // Auto-generate title if:
         // 1. Title is empty/not provided

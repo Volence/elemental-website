@@ -506,11 +506,11 @@ export async function syncTeamData(
             faceitRoomId: matchData.faceitRoomId,
             faceitSeasonId: matchData.faceitSeasonId,
             syncedFromFaceit: true,
-            // Update new team fields (but preserve if already set manually)
+            // Update team fields - always sync from FACEIT to prevent stale data
             team1Type: existing.team1Type || 'internal',
             team1Internal: existing.team1Internal || teamId,
-            team2Type: existing.team2Type || 'external',
-            team2External: existing.team2External || matchData.opponent,
+            team2Type: 'external',
+            team2External: matchData.opponent, // Always update to current FACEIT opponent
           }
           
           // Add score if match is finished
