@@ -83,6 +83,10 @@ export function formatRegion(region: string | undefined | null): string {
     EU: 'EMEA', // Legacy support
     EMEA: 'EMEA',
     SA: 'South America',
+    OCE: 'Oceania',
+    SEA: 'Southeast Asia',
+    APAC: 'Asia-Pacific',
+    China: 'China',
     Other: 'Other',
   }
   

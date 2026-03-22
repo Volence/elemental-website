@@ -54,7 +54,7 @@ interface CalendarEvent {
   title: string
   eventType: 'faceit' | 'owcs' | 'community' | 'internal'
   internalEventType?: 'seminar' | 'pugs' | 'internal-tournament' | 'other' | null
-  region?: 'NA' | 'EU' | 'EMEA' | 'SA' | 'global' | null
+  region?: 'NA' | 'EU' | 'EMEA' | 'SA' | 'OCE' | 'SEA' | 'APAC' | 'China' | 'global' | null
   dateStart: string
   dateEnd?: string | null
   links?: Array<{ label: string | null; url: string | null; id?: string | null }> | null

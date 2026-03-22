@@ -12,8 +12,16 @@ function getRegionPriority(region?: string): number {
       return 2
     case 'SA':
       return 3
+    case 'OCE':
+      return 4
+    case 'SEA':
+      return 5
+    case 'APAC':
+      return 6
+    case 'China':
+      return 7
     default:
-      return 4 // Teams without region go last
+      return 8 // Teams without region go last
   }
 }
 

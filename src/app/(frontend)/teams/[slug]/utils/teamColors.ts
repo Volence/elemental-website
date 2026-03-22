@@ -28,6 +28,14 @@ export function getRegionColor(region?: string): string {
       return 'from-[hsl(var(--accent-green))]/20 to-[hsl(var(--accent-green))]/5'
     case 'SA':
       return 'from-[hsl(var(--accent-gold))]/20 to-[hsl(var(--accent-gold))]/5'
+    case 'OCE':
+      return 'from-teal-400/20 to-teal-500/5'
+    case 'SEA':
+      return 'from-emerald-400/20 to-emerald-500/5'
+    case 'APAC':
+      return 'from-purple-400/20 to-purple-500/5'
+    case 'China':
+      return 'from-red-400/20 to-red-500/5'
     default:
       return 'from-primary/20 to-primary/5'
   }

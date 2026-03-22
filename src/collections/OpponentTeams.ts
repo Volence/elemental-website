@@ -115,10 +115,14 @@ export const OpponentTeams: CollectionConfig = {
       name: 'region',
       type: 'select',
       options: [
-        { label: 'NA', value: 'na' },
-        { label: 'EU', value: 'eu' },
-        { label: 'SA', value: 'sa' },
-        { label: 'APAC', value: 'apac' },
+        { label: 'NA', value: 'NA' },
+        { label: 'EU', value: 'EU' },
+        { label: 'EMEA', value: 'EMEA' },
+        { label: 'SA', value: 'SA' },
+        { label: 'OCE', value: 'OCE' },
+        { label: 'SEA', value: 'SEA' },
+        { label: 'APAC', value: 'APAC' },
+        { label: 'China', value: 'China' },
       ],
     },
     {

@@ -146,11 +146,15 @@ interface TeamData {
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
-const REGION_ORDER = ['NA', 'EMEA', 'SA', 'Other']
+const REGION_ORDER = ['NA', 'EMEA', 'SA', 'OCE', 'SEA', 'APAC', 'China', 'Other']
 const REGION_LABELS: Record<string, string> = {
   NA: 'North America',
   EMEA: 'EMEA',
   SA: 'South America',
+  OCE: 'Oceania',
+  SEA: 'Southeast Asia',
+  APAC: 'Asia-Pacific',
+  China: 'China',
   Other: 'Unassigned',
 }
 

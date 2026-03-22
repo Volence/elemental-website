@@ -15,7 +15,7 @@ interface BulkTournamentCreatorProps {
 }
 
 export function BulkTournamentCreator({ onClose, onSuccess }: BulkTournamentCreatorProps) {
-  const [region, setRegion] = useState<'NA' | 'EMEA' | 'SA'>('NA')
+  const [region, setRegion] = useState<'NA' | 'EMEA' | 'SA' | 'OCE' | 'SEA' | 'APAC' | 'China'>('NA')
   const [division, setDivision] = useState<'Masters' | 'Expert' | 'Advanced' | 'Open'>('Advanced')
   const [defaultTime, setDefaultTime] = useState('21:00')
   const [season, setSeason] = useState('')
@@ -33,6 +33,10 @@ export function BulkTournamentCreator({ onClose, onSuccess }: BulkTournamentCrea
     switch (region) {
       case 'EMEA': return 'CET'
       case 'SA': return 'BRT'
+      case 'OCE': return 'AEST'
+      case 'SEA': return 'SGT'
+      case 'APAC': return 'JST'
+      case 'China': return 'CST'
       default: return 'EST'
     }
   }
@@ -182,6 +186,10 @@ export function BulkTournamentCreator({ onClose, onSuccess }: BulkTournamentCrea
               <option value="NA">North America</option>
               <option value="EMEA">EMEA (Europe)</option>
               <option value="SA">South America</option>
+              <option value="OCE">Oceania</option>
+              <option value="SEA">Southeast Asia</option>
+              <option value="APAC">Asia-Pacific</option>
+              <option value="China">China</option>
             </select>
           </div>
 

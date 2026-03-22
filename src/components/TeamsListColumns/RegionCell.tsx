@@ -11,6 +11,10 @@ const RegionCell: React.FC<{ rowData: any }> = ({ rowData }) => {
     EU: 'EMEA', // Legacy support
     EMEA: 'EMEA',
     SA: 'South America',
+    OCE: 'Oceania',
+    SEA: 'Southeast Asia',
+    APAC: 'Asia-Pacific',
+    China: 'China',
     Other: 'Other',
   }
 

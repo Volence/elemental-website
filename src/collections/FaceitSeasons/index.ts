@@ -148,6 +148,10 @@ export const FaceitSeasons: CollectionConfig = {
             { label: 'North America', value: 'NA' },
             { label: 'EMEA', value: 'EMEA' },
             { label: 'South America', value: 'SA' },
+            { label: 'Oceania', value: 'OCE' },
+            { label: 'Southeast Asia', value: 'SEA' },
+            { label: 'Asia-Pacific', value: 'APAC' },
+            { label: 'China', value: 'China' },
           ],
           admin: {
             description: '✨ Auto-filled from league template on save',

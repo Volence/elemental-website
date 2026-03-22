@@ -7,6 +7,7 @@ import * as migration_20260114_021700_add_scouting_wiki_phase1 from "./20260114_
 import * as migration_20260127_153700_add_flexible_team_fields from "./20260127_153700_add_flexible_team_fields";
 import * as migration_20260207_235400_add_team_branding_colors from "./20260207_235400_add_team_branding_colors";
 import * as migration_20260302_073000_migrate_themecolor_to_branding from "./20260302_073000_migrate_themecolor_to_branding";
+import * as migration_20260322_add_new_regions from "./20260322_add_new_regions";
 
 export const migrations = [
   {
@@ -53,5 +54,10 @@ export const migrations = [
     up: migration_20260302_073000_migrate_themecolor_to_branding.up,
     down: migration_20260302_073000_migrate_themecolor_to_branding.down,
     name: "20260302_073000_migrate_themecolor_to_branding",
+  },
+  {
+    up: migration_20260322_add_new_regions.up,
+    down: migration_20260322_add_new_regions.down,
+    name: "20260322_add_new_regions",
   },
 ];

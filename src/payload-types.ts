@@ -600,7 +600,7 @@ export interface Team {
   /**
    * Geographic region where the team competes
    */
-  region?: ('NA' | 'EMEA' | 'SA' | 'Other') | null;
+  region?: ('NA' | 'EMEA' | 'SA' | 'OCE' | 'SEA' | 'APAC' | 'China' | 'Other') | null;
   /**
    * Team skill rating or tier (e.g., "4.5K", "FACEIT Masters", "FACEIT Expert", "FACEIT Advanced", "3.5K")
    */
@@ -851,7 +851,7 @@ export interface FaceitLeague {
    */
   seasonNumber: number;
   division: 'Masters' | 'Expert' | 'Advanced' | 'Open';
-  region: 'NA' | 'EMEA' | 'SA';
+  region: 'NA' | 'EMEA' | 'SA' | 'OCE' | 'SEA' | 'APAC' | 'China';
   /**
    * Conference name (e.g., "Central") - optional
    */
@@ -930,7 +930,7 @@ export interface FaceitSeason {
   /**
    * ✨ Auto-filled from league template on save
    */
-  region: 'NA' | 'EMEA' | 'SA';
+  region: 'NA' | 'EMEA' | 'SA' | 'OCE' | 'SEA' | 'APAC' | 'China';
   /**
    * ✨ Auto-filled from league template on save (e.g., "Central")
    */
@@ -1027,7 +1027,7 @@ export interface TournamentTemplate {
    */
   scheduleRules?:
     | {
-        region: 'NA' | 'EMEA' | 'SA' | 'all';
+        region: 'NA' | 'EMEA' | 'SA' | 'OCE' | 'SEA' | 'APAC' | 'China' | 'all';
         division: 'Masters' | 'Expert' | 'Advanced' | 'Open' | 'all';
         /**
          * Number of matches to auto-create per week
@@ -1073,7 +1073,7 @@ export interface GlobalCalendarEvent {
   /**
    * Which region this event applies to
    */
-  region?: ('NA' | 'EU' | 'EMEA' | 'SA' | 'global') | null;
+  region?: ('NA' | 'EU' | 'EMEA' | 'SA' | 'OCE' | 'SEA' | 'APAC' | 'China' | 'global') | null;
   /**
    * Start date/time
    */
@@ -1394,7 +1394,7 @@ export interface Match {
    * Match date and time
    */
   date: string;
-  region: 'NA' | 'EMEA' | 'SA';
+  region: 'NA' | 'EMEA' | 'SA' | 'OCE' | 'SEA' | 'APAC' | 'China';
   league: 'Masters' | 'Expert' | 'Advanced' | 'Open';
   /**
    * Season identifier (e.g., "S7 Regular Season")
@@ -1786,7 +1786,7 @@ export interface OpponentTeam {
    */
   rank?: string | null;
   status?: ('active' | 'inactive' | 'archived' | 'disbanded') | null;
-  region?: ('na' | 'eu' | 'sa' | 'apac') | null;
+  region?: ('NA' | 'EU' | 'EMEA' | 'SA' | 'OCE' | 'SEA' | 'APAC' | 'China') | null;
   /**
    * Team manager for scheduling scrims
    */

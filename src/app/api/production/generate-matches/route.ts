@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
               team: team.id,
               opponent: '',
               date: matchDate.toISOString(),
-              region: (team.region === 'NA' || team.region === 'EMEA' || team.region === 'SA') ? team.region : 'NA',
+              region: (team.region === 'NA' || team.region === 'EMEA' || team.region === 'SA' || team.region === 'OCE' || team.region === 'SEA' || team.region === 'APAC' || team.region === 'China') ? team.region : 'NA',
               league: (division === 'Masters' || division === 'Expert' || division === 'Advanced' || division === 'Open') ? division : 'Open',
               faceitLobby: '',
               season: tournament.name || '',

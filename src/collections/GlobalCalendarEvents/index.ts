@@ -115,6 +115,10 @@ export const GlobalCalendarEvents: CollectionConfig = {
         { label: '🌍 EU', value: 'EU' },
         { label: '🌍 EMEA', value: 'EMEA' },
         { label: '🌎 SA', value: 'SA' },
+        { label: '🌏 OCE', value: 'OCE' },
+        { label: '🌏 SEA', value: 'SEA' },
+        { label: '🌏 APAC', value: 'APAC' },
+        { label: '🇨🇳 China', value: 'China' },
         { label: '🌐 Global', value: 'global' },
       ],
       admin: {

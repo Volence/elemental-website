@@ -146,6 +146,10 @@ export const Teams: CollectionConfig = {
                 { label: 'North America', value: 'NA' },
                 { label: 'EMEA', value: 'EMEA' },
                 { label: 'South America', value: 'SA' },
+                { label: 'Oceania', value: 'OCE' },
+                { label: 'Southeast Asia', value: 'SEA' },
+                { label: 'Asia-Pacific', value: 'APAC' },
+                { label: 'China', value: 'China' },
                 { label: 'Other', value: 'Other' },
               ],
               validate: (value: string | null | undefined) => {

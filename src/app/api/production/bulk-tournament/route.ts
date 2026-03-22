@@ -9,10 +9,10 @@ interface TournamentSlot {
 }
 
 interface BulkTournamentRequest {
-  region: 'NA' | 'EMEA' | 'SA'
+  region: 'NA' | 'EMEA' | 'SA' | 'OCE' | 'SEA' | 'APAC' | 'China'
   division: 'Masters' | 'Expert' | 'Advanced' | 'Open' // 'Other' requires migration
   defaultTime: string // HH:MM format
-  defaultTimezone: 'CET' | 'EST' | 'BRT' // CET for EU, EST for NA, BRT for SA
+  defaultTimezone: 'CET' | 'EST' | 'BRT' | 'AEST' | 'SGT' | 'JST' | 'CST'
   season?: string // Optional season identifier
   baseTitle?: string // Base title for all slots (e.g., "S7 Playoffs NA Advanced")
   slots: TournamentSlot[]
@@ -57,6 +57,18 @@ export async function POST(req: NextRequest) {
       } else if (defaultTimezone === 'BRT') {
         // BRT is UTC-3
         slotDate.setUTCHours(hours + 3, minutes, 0, 0)
+      } else if (defaultTimezone === 'AEST') {
+        // AEST is UTC+10
+        slotDate.setUTCHours(hours - 10, minutes, 0, 0)
+      } else if (defaultTimezone === 'SGT') {
+        // SGT is UTC+8
+        slotDate.setUTCHours(hours - 8, minutes, 0, 0)
+      } else if (defaultTimezone === 'JST') {
+        // JST is UTC+9
+        slotDate.setUTCHours(hours - 9, minutes, 0, 0)
+      } else if (defaultTimezone === 'CST') {
+        // CST (China Standard Time) is UTC+8
+        slotDate.setUTCHours(hours - 8, minutes, 0, 0)
       }
 
       // Build the title: baseTitle + slot title, or just baseTitle, or slot title, or empty

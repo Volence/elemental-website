@@ -382,6 +382,10 @@ async function fetchAllTeamsSorted(payload: any): Promise<any[]> {
       'NA': 1,
       'EMEA': 2,
       'SA': 3,
+      'OCE': 4,
+      'SEA': 5,
+      'APAC': 6,
+      'China': 7,
     }
 
     // Define division order (Masters > Expert > Advanced > Open)

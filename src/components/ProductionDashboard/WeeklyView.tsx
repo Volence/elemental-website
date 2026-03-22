@@ -422,6 +422,10 @@ export function WeeklyView() {
             <option value="NA">North America</option>
             <option value="EMEA">EMEA</option>
             <option value="SA">South America</option>
+            <option value="OCE">Oceania</option>
+            <option value="SEA">Southeast Asia</option>
+            <option value="APAC">Asia-Pacific</option>
+            <option value="China">China</option>
           </select>
         </label>
         <label>

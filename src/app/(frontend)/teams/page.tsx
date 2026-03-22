@@ -13,10 +13,10 @@ export async function generateMetadata(): Promise<Metadata> {
   
   return {
     title: 'ELMT Teams - Overwatch Esports | Elemental',
-    description: `Explore ${teamCount} ELMT Overwatch esports teams competing in FACEIT Expert, Advanced, Master, and Open divisions across NA, EMEA, and SA regions.`,
+    description: `Explore ${teamCount} ELMT Overwatch esports teams competing in FACEIT Expert, Advanced, Master, and Open divisions across NA, EMEA, SA, OCE, SEA, APAC, and China regions.`,
     openGraph: {
       title: 'ELMT Teams - Overwatch Esports | Elemental',
-      description: `Explore ${teamCount} ELMT Overwatch esports teams competing in FACEIT Expert, Advanced, Master, and Open divisions across NA, EMEA, and SA regions.`,
+      description: `Explore ${teamCount} ELMT Overwatch esports teams competing in FACEIT Expert, Advanced, Master, and Open divisions across NA, EMEA, SA, OCE, SEA, APAC, and China regions.`,
     },
   }
 }
@@ -28,6 +28,10 @@ function groupTeamsByRegion(teams: Awaited<ReturnType<typeof getAllTeams>>) {
     NA: [],
     EMEA: [],
     SA: [],
+    OCE: [],
+    SEA: [],
+    APAC: [],
+    China: [],
     Other: [],
   }
 
@@ -53,12 +57,16 @@ export default async function TeamsPage() {
   const allTeams = await getAllTeams()
   const teamsByRegion = groupTeamsByRegion(allTeams)
 
-  const regionOrder = ['NA', 'EMEA', 'SA', 'Other'] as const
+  const regionOrder = ['NA', 'EMEA', 'SA', 'OCE', 'SEA', 'APAC', 'China', 'Other'] as const
   const regionLabels: Record<string, string> = {
     NA: 'North America',
     EMEA: 'EMEA',
     EU: 'EMEA', // Legacy support - display as EMEA
     SA: 'South America',
+    OCE: 'Oceania',
+    SEA: 'Southeast Asia',
+    APAC: 'Asia-Pacific',
+    China: 'China',
     Other: 'Other',
   }
 
@@ -67,6 +75,10 @@ export default async function TeamsPage() {
     EMEA: 'bg-[hsl(var(--accent-green))]',
     EU: 'bg-[hsl(var(--accent-green))]', // Legacy support
     SA: 'bg-[hsl(var(--accent-gold))]',
+    OCE: 'bg-[hsl(180,60%,50%)]',
+    SEA: 'bg-[hsl(160,60%,45%)]',
+    APAC: 'bg-[hsl(280,60%,55%)]',
+    China: 'bg-[hsl(0,70%,55%)]',
     Other: 'bg-primary',
   }
 
@@ -75,6 +87,10 @@ export default async function TeamsPage() {
     EMEA: 'shadow-[0_0_20px_rgba(34,197,94,0.3)]',
     EU: 'shadow-[0_0_20px_rgba(34,197,94,0.3)]', // Legacy support
     SA: 'shadow-[0_0_20px_rgba(251,191,36,0.3)]',
+    OCE: 'shadow-[0_0_20px_rgba(45,212,191,0.3)]',
+    SEA: 'shadow-[0_0_20px_rgba(52,211,153,0.3)]',
+    APAC: 'shadow-[0_0_20px_rgba(168,85,247,0.3)]',
+    China: 'shadow-[0_0_20px_rgba(239,68,68,0.3)]',
     Other: '',
   }
 
