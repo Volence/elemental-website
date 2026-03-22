@@ -155,12 +155,14 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
   }
   
   if (!playerName) {
+    console.error('[PlayerPage] No playerName found for slug:', slug, 'personBySlug count:', personBySlug.docs.length)
     redirect('/teams')
   }
   
   const player = await getPlayerByName(playerName, slug)
   
   if (!player) {
+    console.error('[PlayerPage] getPlayerByName returned null for:', playerName, 'slug:', slug)
     redirect('/teams')
   }
 

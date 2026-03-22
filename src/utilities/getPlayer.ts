@@ -367,6 +367,7 @@ export async function getPlayerByName(name: string, personSlug?: string): Promis
     }
   } catch (_error) {
     // During build, database may not be available
+    console.error('[getPlayerByName] Error fetching player:', name, _error)
     return null
   }
 }
