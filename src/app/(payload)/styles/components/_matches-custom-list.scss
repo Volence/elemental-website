@@ -208,56 +208,46 @@
     }
   }
   
-  // Match Cards - Clean Glow
+  // Match Cards - Clean flat rows
   &__grid {
     display: grid;
-    gap: $gap-md;
+    gap: 0;
   }
   
   &__card {
-    @include transparent-bg(0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: $radius-md;
     display: grid;
     grid-template-columns: 2fr 1.5fr 1fr 0.5fr;
     gap: $gap-lg;
-    padding: $padding-lg;
+    padding: 0.875rem $padding-lg;
     text-decoration: none;
     color: $admin-text-primary;
     transition: all $transition-fast;
     align-items: center;
-    box-shadow: $shadow-sm;
     position: relative;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: transparent;
+    border-radius: 0;
     
-    // Left accent bar
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 3px;
-      background: $admin-accent-primary;
-      border-radius: $radius-md 0 0 $radius-md;
-      opacity: 0.5;
-      transition: opacity $transition-fast;
+    &:first-child {
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
     }
     
     &:hover {
-      @include transparent-bg(0.05);
-      border-color: rgba($admin-accent-primary, 0.3);
-      transform: translateX(4px);
-      box-shadow: 0 0 20px rgba($admin-accent-primary, 0.15);
-      
-      &::before {
-        opacity: 1;
-      }
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom-color: rgba($admin-accent-primary, 0.2);
     }
     
-    // Remove all borders from children
+    // Kill all inherited borders/backgrounds from children
     > * {
       border: none !important;
       background: transparent !important;
+      box-shadow: none !important;
+    }
+    
+    // Kill any pseudo-elements from inherited styles
+    > *::before,
+    > *::after {
+      display: none !important;
     }
     
     @media (max-width: 1024px) {
@@ -270,15 +260,10 @@
     }
     
     &--completed {
-      opacity: 0.6;
-      
-      &::before {
-        background: $admin-text-secondary;
-      }
+      opacity: 0.5;
       
       &:hover {
-        opacity: 1;
-        transform: translateY(-2px) translateX(4px);
+        opacity: 0.85;
       }
     }
     
@@ -294,7 +279,12 @@
         font-size: $font-size-base;
         color: $admin-text-primary;
         
-        // Remove any pseudo-elements from title too
+        // Kill any inherited boxing
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        
         &::before,
         &::after {
           display: none !important;
@@ -335,7 +325,7 @@
       }
       
       .broadcast-badge {
-        @include glow-badge(#9333ea); // Purple for broadcast
+        @include glow-badge(#9333ea);
         padding: 4px 10px;
         font-size: $font-size-xs;
         font-weight: $font-weight-semibold;
@@ -350,8 +340,6 @@
       text-align: right;
       color: $admin-text-secondary;
       font-size: $font-size-lg;
-      border: none;
-      background: transparent;
       transition: color $transition-fast;
     }
     

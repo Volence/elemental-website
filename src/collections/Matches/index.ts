@@ -695,6 +695,26 @@ export const Matches: CollectionConfig = {
                   },
                 },
                 {
+                  name: 'dateChanged',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  admin: {
+                    description: 'Set automatically when FACEIT sync detects a date change. Signups are cleared when this happens.',
+                    readOnly: true,
+                  },
+                },
+                {
+                  name: 'previousDate',
+                  type: 'date',
+                  admin: {
+                    readOnly: true,
+                    description: 'The original date before the match was rescheduled',
+                    date: {
+                      pickerAppearance: 'dayAndTime',
+                    },
+                  },
+                },
+                {
                   name: 'productionNotes',
                   type: 'richText',
                   admin: {

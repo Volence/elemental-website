@@ -512,6 +512,71 @@ export async function syncTeamData(
             team2Type: 'external',
             team2External: matchData.opponent, // Always update to current FACEIT opponent
           }
+
+          // ─── Date-change detection: clear signups if match moved ───
+          const existingDate = existing.date ? new Date(existing.date).getTime() : 0
+          const newDate = matchData.date ? new Date(matchData.date).getTime() : 0
+          const dateChangedByMoreThan1Min = Math.abs(existingDate - newDate) > 60 * 1000
+
+          if (dateChangedByMoreThan1Min && existingDate > 0 && newDate > 0) {
+            const pw = (existing as any).productionWorkflow || {}
+
+            // Collect affected staff IDs before clearing
+            const affectedStaffIds = new Set<number>()
+            ;(pw.observerSignups || []).forEach((u: any) => {
+              const id = typeof u === 'number' ? u : u?.id
+              if (id) affectedStaffIds.add(id)
+            })
+            ;(pw.producerSignups || []).forEach((u: any) => {
+              const id = typeof u === 'number' ? u : u?.id
+              if (id) affectedStaffIds.add(id)
+            })
+            ;(pw.casterSignups || []).forEach((c: any) => {
+              const id = typeof c.user === 'number' ? c.user : c.user?.id
+              if (id) affectedStaffIds.add(id)
+            })
+            if (pw.assignedObserver) {
+              const id = typeof pw.assignedObserver === 'number' ? pw.assignedObserver : pw.assignedObserver?.id
+              if (id) affectedStaffIds.add(id)
+            }
+            if (pw.assignedProducer) {
+              const id = typeof pw.assignedProducer === 'number' ? pw.assignedProducer : pw.assignedProducer?.id
+              if (id) affectedStaffIds.add(id)
+            }
+            ;(pw.assignedCasters || []).forEach((c: any) => {
+              const id = typeof c.user === 'number' ? c.user : c.user?.id
+              if (id) affectedStaffIds.add(id)
+            })
+
+            // Clear all production signups and assignments
+            updateData.productionWorkflow = {
+              ...pw,
+              observerSignups: [],
+              producerSignups: [],
+              casterSignups: [],
+              assignedObserver: null,
+              assignedProducer: null,
+              assignedCasters: [],
+              coverageStatus: 'none',
+              dateChanged: true,
+              previousDate: existing.date,
+            }
+
+            // Send Discord notification (fire-and-forget)
+            if (affectedStaffIds.size > 0) {
+              import('../discord/services/matchRescheduleNotifier').then(({ notifyMatchRescheduled }) => {
+                notifyMatchRescheduled({
+                  matchId: existing.id,
+                  matchTitle: existing.title || matchData.opponent || 'Unknown Match',
+                  oldDate: existing.date,
+                  newDate: matchData.date,
+                  affectedStaffIds: Array.from(affectedStaffIds),
+                }).catch(err => console.error('[faceitSync] Reschedule notification error:', err))
+              }).catch(err => console.error('[faceitSync] Failed to import notifier:', err))
+            }
+
+            console.log(`[faceitSync] Match ${existing.id} rescheduled: ${existing.date} → ${matchData.date}. Cleared ${affectedStaffIds.size} staff signups.`)
+          }
           
           // Add score if match is finished
           if (matchData.score) {

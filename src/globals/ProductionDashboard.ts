@@ -35,6 +35,18 @@ export const ProductionDashboard: GlobalConfig = {
         },
       },
     },
+    {
+      name: 'productionNotificationsChannelId',
+      type: 'text',
+      label: 'Discord Notification Channel ID',
+      admin: {
+        position: 'sidebar',
+        description: 'Discord channel ID for match reschedule notifications. Right-click a channel in Discord → Copy Channel ID.',
+        condition: (data, siblingData, { user }) => {
+          return (user as any)?.role === 'admin'
+        },
+      },
+    },
   ],
   access: {
     read: isProductionStaff,

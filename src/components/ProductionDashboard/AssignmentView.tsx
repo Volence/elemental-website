@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Button, toast } from '@payloadcms/ui'
+import { toast } from '@payloadcms/ui'
 
 interface User {
   id: number
@@ -19,10 +19,18 @@ interface Match {
   title: string
   matchType: string
   team: any
+  team1Type?: 'internal' | 'external'
+  team1Internal?: any
+  team1External?: string
+  team2Type?: 'internal' | 'external'
+  team2Internal?: any
+  team2External?: string
+  isTournamentSlot?: boolean
   opponent: string
   date: string
   region: string
   league: string
+  faceitLobby?: string
   productionWorkflow?: {
     priority: string
     coverageStatus: string
@@ -32,26 +40,230 @@ interface Match {
     assignedObserver?: User | number | null
     assignedProducer?: User | number | null
     assignedCasters?: CasterSignup[]
+    dateChanged?: boolean
+    previousDate?: string
   }
 }
+
+interface MatchGroup {
+  dateTime: string
+  matches: Match[]
+  formattedDate: string
+}
+
+// ─── Utility functions ───
+
+const getUserId = (user: User | number | null | undefined): number | null => {
+  if (!user) return null
+  return typeof user === 'number' ? user : user.id
+}
+
+const getUserName = (user: User | number | null | undefined): string => {
+  if (!user) return 'Not assigned'
+  if (typeof user === 'number') return `User #${user}`
+  return user.name || user.email || 'Unknown'
+}
+
+const getCoverageIcon = (status?: string) => {
+  switch (status) {
+    case 'full': return '✅'
+    case 'partial': return '⚠️'
+    default: return '❌'
+  }
+}
+
+const getCoverageClass = (status?: string) => {
+  switch (status) {
+    case 'full': return 'coverage-badge--full'
+    case 'partial': return 'coverage-badge--partial'
+    default: return 'coverage-badge--none'
+  }
+}
+
+// ─── Role Assignment Block ───
+
+function RoleAssignmentBlock({ matchId, roleName, roleKey, maxSlots, signups, assigned, onAssign, onUnassign }: {
+  matchId: number
+  roleName: string
+  roleKey: 'observer' | 'producer' | 'caster'
+  maxSlots: number
+  signups: (User | number)[] | CasterSignup[]
+  assigned: (User | number | null) | CasterSignup[]
+  onAssign: (matchId: number, role: 'observer' | 'producer' | 'caster', userId: number, style?: string) => void
+  onUnassign: (matchId: number, role: 'observer' | 'producer' | 'caster', idx?: number) => void
+}) {
+  const isCaster = roleKey === 'caster'
+  const assignedList: { user: User | number | null; style?: string }[] = isCaster
+    ? (assigned as CasterSignup[] || []).map(c => ({ user: c.user, style: c.style }))
+    : assigned ? [{ user: assigned as User | number }] : []
+  const slotsFilled = assignedList.length
+  const slotsAvailable = maxSlots - slotsFilled
+
+  return (
+    <div className="assignment-role">
+      <div className="assignment-role__header">
+        <h4>{roleName}</h4>
+        <span className={`assignment-role__slots ${slotsFilled >= maxSlots ? 'assignment-role__slots--full' : ''}`}>
+          {slotsFilled}/{maxSlots}
+        </span>
+      </div>
+      <div className="assignment-role__content">
+        <div className="assignment-role__signups">
+          <span className="assignment-role__label">Available:</span>
+          {signups.length === 0 ? (
+            <span className="assignment-empty">No signups</span>
+          ) : (
+            <div className="assignment-signup-list">
+              {signups.map((signup, idx) => {
+                const user = isCaster ? (signup as CasterSignup).user : signup
+                const userId = getUserId(user as User | number)
+                const name = getUserName(user as User | number)
+                const style = isCaster ? (signup as CasterSignup).style : undefined
+                const isAlreadyAssigned = assignedList.some(a => getUserId(a.user) === userId)
+
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => userId && onAssign(matchId, roleKey, userId, style)}
+                    className={`assignment-signup-btn ${isAlreadyAssigned ? 'assignment-signup-btn--assigned' : ''}`}
+                    disabled={slotsAvailable <= 0 || isAlreadyAssigned}
+                    title={isAlreadyAssigned ? 'Already assigned' : slotsAvailable <= 0 ? 'All slots filled' : `Assign ${name}`}
+                  >
+                    {name}
+                    {style && <span className="assignment-signup-btn__style">{style}</span>}
+                    {isAlreadyAssigned && <span className="assignment-signup-btn__check">✓</span>}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </div>
+        <div className="assignment-role__assigned">
+          <span className="assignment-role__label">Assigned:</span>
+          {assignedList.length === 0 ? (
+            <span className="assignment-empty">None</span>
+          ) : (
+            <div className="assignment-assigned-list">
+              {assignedList.map((item, idx) => (
+                <div key={idx} className="assignment-assigned-item">
+                  <span className="assignment-assigned-item__name">
+                    {getUserName(item.user)}
+                    {item.style && <span className="assignment-assigned-item__style">{item.style}</span>}
+                  </span>
+                  <button
+                    onClick={() => onUnassign(matchId, roleKey, isCaster ? idx : undefined)}
+                    className="assignment-unassign-btn"
+                    title="Unassign"
+                  >✕</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Match Assignment Card ───
+
+function MatchAssignmentCard({ match, onAssign, onUnassign }: {
+  match: Match
+  onAssign: (matchId: number, role: 'observer' | 'producer' | 'caster', userId: number, style?: string) => void
+  onUnassign: (matchId: number, role: 'observer' | 'producer' | 'caster', idx?: number) => void
+}) {
+  const pw = match.productionWorkflow || {} as NonNullable<Match['productionWorkflow']>
+  const hasReschedule = pw.dateChanged
+  const totalSignups = (pw.observerSignups?.length || 0) + (pw.producerSignups?.length || 0) + (pw.casterSignups?.length || 0)
+  const isFullyCovered = pw.coverageStatus === 'full'
+  const [expanded, setExpanded] = useState(totalSignups > 0 && !isFullyCovered)
+
+  return (
+    <div className={`assignment-match ${hasReschedule ? 'assignment-match--rescheduled' : ''}`}>
+      <div className="assignment-match__header" onClick={() => setExpanded(!expanded)} style={{ cursor: 'pointer' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1 }}>
+          <span className="assignment-time-slot__icon">{expanded ? '▼' : '▶'}</span>
+          <div className="assignment-match__info">
+            <h3>{match.title}</h3>
+            <div className="assignment-match__meta">
+              {match.region && <span className="assignment-match__region">{match.region}</span>}
+              <span className={`coverage-badge ${getCoverageClass(pw.coverageStatus)}`}>
+                {getCoverageIcon(pw.coverageStatus)} {pw.coverageStatus || 'none'}
+              </span>
+              {totalSignups > 0 && (
+                <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
+                  {totalSignups} signup{totalSignups !== 1 ? 's' : ''}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+        <a href={`/admin/collections/matches/${match.id}`} target="_blank" rel="noopener noreferrer" className="assignment-match__link"
+          onClick={e => e.stopPropagation()}>
+          Edit →
+        </a>
+      </div>
+
+      {hasReschedule && pw.previousDate && (
+        <div className="assignment-match__reschedule-warning">
+          ⚠️ Rescheduled from {new Date(pw.previousDate).toLocaleDateString('en-US', {
+            weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+          })} — signups were reset
+        </div>
+      )}
+
+      {expanded && (
+        <div className="assignment-roles">
+          <RoleAssignmentBlock
+            matchId={match.id}
+            roleName="Observer"
+            roleKey="observer"
+            maxSlots={1}
+            signups={pw.observerSignups || []}
+            assigned={pw.assignedObserver ?? null}
+            onAssign={onAssign}
+            onUnassign={onUnassign}
+          />
+          <RoleAssignmentBlock
+            matchId={match.id}
+            roleName="Producer"
+            roleKey="producer"
+            maxSlots={1}
+            signups={pw.producerSignups || []}
+            assigned={pw.assignedProducer ?? null}
+            onAssign={onAssign}
+            onUnassign={onUnassign}
+          />
+          <RoleAssignmentBlock
+            matchId={match.id}
+            roleName="Casters"
+            roleKey="caster"
+            maxSlots={2}
+            signups={pw.casterSignups || []}
+            assigned={pw.assignedCasters || []}
+            onAssign={onAssign}
+            onUnassign={onUnassign}
+          />
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Main AssignmentView ───
 
 export function AssignmentView() {
   const [matches, setMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
 
-  useEffect(() => {
-    fetchMatches()
-  }, [])
+  useEffect(() => { fetchMatches() }, [])
 
   const fetchMatches = async () => {
     try {
       setLoading(true)
       const today = new Date()
       today.setHours(0, 0, 0, 0)
-
       const query = `/api/matches?where[date][greater_than_equal]=${today.toISOString()}&where[productionWorkflow.isArchived][not_equals]=true&where[status][not_equals]=complete&sort=date&limit=100&depth=2`
-
       const response = await fetch(query)
       const data = await response.json()
       setMatches(data.docs || [])
@@ -67,31 +279,17 @@ export function AssignmentView() {
     try {
       const match = matches.find(m => m.id === matchId)
       if (!match) return
-
       const pw = match.productionWorkflow || {} as NonNullable<Match['productionWorkflow']>
       let updateData: any = {}
 
       if (role === 'observer') {
-        updateData.productionWorkflow = {
-          ...pw,
-          assignedObserver: userId,
-          // Keep user in observer signups (allows unassignment without losing signup)
-        }
+        updateData.productionWorkflow = { ...pw, assignedObserver: userId }
       } else if (role === 'producer') {
-        updateData.productionWorkflow = {
-          ...pw,
-          assignedProducer: userId,
-          // Keep user in producer signups (allows unassignment without losing signup)
-        }
+        updateData.productionWorkflow = { ...pw, assignedProducer: userId }
       } else if (role === 'caster') {
-        const existingCasters = pw.assignedCasters || []
         updateData.productionWorkflow = {
           ...pw,
-          assignedCasters: [
-            ...existingCasters,
-            { user: userId, style: casterStyle || 'both' }
-          ],
-          // Keep user in caster signups (allows unassignment without losing signup)
+          assignedCasters: [...(pw.assignedCasters || []), { user: userId, style: casterStyle || 'both' }],
         }
       }
 
@@ -102,13 +300,10 @@ export function AssignmentView() {
       })
 
       if (response.ok) {
-        // Refetch the specific match with full user data (depth=2)
         const matchResponse = await fetch(`/api/matches/${matchId}?depth=2`)
         const matchData = await matchResponse.json()
-        
-        // Update local state with the refetched match
         setMatches(matches.map(m => m.id === matchId ? matchData : m))
-        toast.success('Staff assigned successfully!')
+        toast.success('Staff assigned!')
       } else {
         toast.error('Failed to assign staff')
       }
@@ -122,25 +317,17 @@ export function AssignmentView() {
     try {
       const match = matches.find(m => m.id === matchId)
       if (!match) return
-
       const pw = match.productionWorkflow || {} as NonNullable<Match['productionWorkflow']>
       let updateData: any = {}
 
       if (role === 'observer') {
-        updateData.productionWorkflow = {
-          ...pw,
-          assignedObserver: null
-        }
+        updateData.productionWorkflow = { ...pw, assignedObserver: null }
       } else if (role === 'producer') {
-        updateData.productionWorkflow = {
-          ...pw,
-          assignedProducer: null
-        }
+        updateData.productionWorkflow = { ...pw, assignedProducer: null }
       } else if (role === 'caster' && casterIndex !== undefined) {
-        const existingCasters = pw.assignedCasters || []
         updateData.productionWorkflow = {
           ...pw,
-          assignedCasters: existingCasters.filter((_: CasterSignup, idx: number) => idx !== casterIndex)
+          assignedCasters: (pw.assignedCasters || []).filter((_: CasterSignup, idx: number) => idx !== casterIndex),
         }
       }
 
@@ -151,15 +338,12 @@ export function AssignmentView() {
       })
 
       if (response.ok) {
-        // Refetch the specific match with full user data (depth=2)
         const matchResponse = await fetch(`/api/matches/${matchId}?depth=2`)
         const matchData = await matchResponse.json()
-        
-        // Update local state with the refetched match
         setMatches(matches.map(m => m.id === matchId ? matchData : m))
-        toast.success('Staff unassigned successfully!')
+        toast.success('Staff unassigned!')
       } else {
-        toast.error('Failed to unassign staff')
+        toast.error('Failed to unassign')
       }
     } catch (error) {
       console.error('Error unassigning staff:', error)
@@ -167,41 +351,79 @@ export function AssignmentView() {
     }
   }
 
-  const getUserName = (user: User | number | null | undefined): string => {
-    if (!user) return 'Not assigned'
-    if (typeof user === 'number') return `User #${user}`
-    return user.name || user.email || 'Unknown'
-  }
-
-  const getCoverageClass = (status?: string) => {
-    switch (status) {
-      case 'full': return 'coverage-badge--full'
-      case 'partial': return 'coverage-badge--partial'
-      default: return 'coverage-badge--none'
-    }
-  }
-
-  const getCoverageIcon = (status?: string) => {
-    switch (status) {
-      case 'full': return '✅'
-      case 'partial': return '⚠️'
-      default: return '❌'
-    }
-  }
-
-  const toggleGroup = (dateTime: string) => {
-    const newExpanded = new Set(expandedGroups)
-    if (newExpanded.has(dateTime)) {
-      newExpanded.delete(dateTime)
-    } else {
-      newExpanded.add(dateTime)
-    }
-    setExpandedGroups(newExpanded)
-  }
-
   if (loading) {
     return <div className="production-dashboard__loading">Loading matches...</div>
   }
+
+  // Group matches by time
+  const matchGroupsMap = new Map<string, Match[]>()
+  matches.forEach(match => {
+    const dt = new Date(match.date).toISOString()
+    if (!matchGroupsMap.has(dt)) matchGroupsMap.set(dt, [])
+    matchGroupsMap.get(dt)!.push(match)
+  })
+
+  const matchGroups: MatchGroup[] = Array.from(matchGroupsMap.entries())
+    .map(([dateTime, matches]) => ({
+      dateTime,
+      matches,
+      formattedDate: new Date(dateTime).toLocaleDateString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric',
+        hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
+      }),
+    }))
+    .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime())
+
+  // Helper: get slot-level assignment counts (since only 1 stream per time slot)
+  const getSlotAssignments = (g: MatchGroup) => {
+    let observers = 0, producers = 0, casters = 0
+    const countedObservers = new Set<number>()
+    const countedProducers = new Set<number>()
+    const countedCasters = new Set<number>()
+
+    g.matches.forEach(m => {
+      const pw = m.productionWorkflow
+      if (!pw) return
+      if (pw.assignedObserver) {
+        const id = getUserId(pw.assignedObserver)
+        if (id && !countedObservers.has(id)) { countedObservers.add(id); observers++ }
+      }
+      if (pw.assignedProducer) {
+        const id = getUserId(pw.assignedProducer)
+        if (id && !countedProducers.has(id)) { countedProducers.add(id); producers++ }
+      }
+      pw.assignedCasters?.forEach(c => {
+        const id = getUserId(c.user)
+        if (id && !countedCasters.has(id)) { countedCasters.add(id); casters++ }
+      })
+    })
+    return { observers, producers, casters }
+  }
+
+  const isSlotFullyBooked = (g: MatchGroup) => {
+    const a = getSlotAssignments(g)
+    return a.observers >= 1 && a.producers >= 1 && a.casters >= 2
+  }
+
+  const isSlotPartiallyAssigned = (g: MatchGroup) => {
+    const a = getSlotAssignments(g)
+    const hasAny = a.observers > 0 || a.producers > 0 || a.casters > 0
+    return hasAny && !isSlotFullyBooked(g)
+  }
+
+  const groupHasSignup = (g: MatchGroup) =>
+    g.matches.some(m => {
+      const pw = m.productionWorkflow
+      if (!pw) return false
+      return (pw.observerSignups?.length || 0) + (pw.producerSignups?.length || 0) + (pw.casterSignups?.length || 0) > 0
+    })
+
+  // Split into 4 sections based on slot-level status
+  const fullyBooked = matchGroups.filter(g => isSlotFullyBooked(g))
+  const partiallyAssigned = matchGroups.filter(g => isSlotPartiallyAssigned(g))
+  const hasSignups = matchGroups.filter(g => !isSlotFullyBooked(g) && !isSlotPartiallyAssigned(g) && groupHasSignup(g))
+  const noSignups = matchGroups.filter(g => !isSlotFullyBooked(g) && !isSlotPartiallyAssigned(g) && !groupHasSignup(g))
+
 
   return (
     <div className="production-dashboard__assignment">
@@ -209,307 +431,160 @@ export function AssignmentView() {
         <div>
           <h2>Staff Assignment</h2>
           <p className="production-dashboard__subtitle">
-            Click on a signup button to assign that person to the match. Coverage updates automatically.
+            Click a name under "Available" to assign them. Click ✕ to unassign. Coverage updates automatically.
           </p>
           <div className="production-dashboard__timezone-notice">
-            🌍 <strong>Timezone Info:</strong> All times are automatically shown in your local timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone})
-          </div>
-          <div className="production-dashboard__instructions">
-            <strong>How it works:</strong>
-            <ol>
-              <li>Find a match that has signups</li>
-              <li>Click a name under "Signups" to assign them</li>
-              <li>Click the ✕ button under "Assigned" to unassign</li>
-              <li>Coverage badge updates when all roles are filled</li>
-            </ol>
+            🌍 <strong>Timezone Info:</strong> All times shown in your local timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone})
           </div>
         </div>
       </div>
 
       {matches.length === 0 ? (
-        <p className="production-dashboard__empty">No upcoming matches found.</p>
-      ) : (() => {
-        // Group matches by date/time (time slot)
-        const matchGroups = new Map<string, Match[]>()
-        matches.forEach(match => {
-          const dateTime = new Date(match.date).toISOString()
-          if (!matchGroups.has(dateTime)) {
-            matchGroups.set(dateTime, [])
-          }
-          matchGroups.get(dateTime)!.push(match)
-        })
-
-        return (
-          <div className="assignment-time-slots">
-            {Array.from(matchGroups.entries()).map(([dateTime, groupMatches]) => {
-              const isExpanded = expandedGroups.has(dateTime)
-              
-              // Calculate aggregate stats for the group - count UNIQUE users, not total signups
-              const uniqueSignupUsers = new Set<number>()
-              const uniqueAssignedUsers = new Set<number>()
-
-              groupMatches.forEach(m => {
-                const pw = m.productionWorkflow
-                if (!pw) return
-                
-                // Count unique signups
-                pw.observerSignups?.forEach((u: any) => {
-                  const userId = typeof u === 'number' ? u : u?.id
-                  if (userId) uniqueSignupUsers.add(userId)
-                })
-                pw.producerSignups?.forEach((u: any) => {
-                  const userId = typeof u === 'number' ? u : u?.id
-                  if (userId) uniqueSignupUsers.add(userId)
-                })
-                pw.casterSignups?.forEach((c: any) => {
-                  const userId = typeof c.user === 'number' ? c.user : c.user?.id
-                  if (userId) uniqueSignupUsers.add(userId)
-                })
-                
-                // Count unique assignments
-                if (pw.assignedObserver) {
-                  const userId = typeof pw.assignedObserver === 'number' ? pw.assignedObserver : (pw.assignedObserver as any)?.id
-                  if (userId) uniqueAssignedUsers.add(userId)
-                }
-                if (pw.assignedProducer) {
-                  const userId = typeof pw.assignedProducer === 'number' ? pw.assignedProducer : (pw.assignedProducer as any)?.id
-                  if (userId) uniqueAssignedUsers.add(userId)
-                }
-                pw.assignedCasters?.forEach((c: any) => {
-                  const userId = typeof c.user === 'number' ? c.user : c.user?.id
-                  if (userId) uniqueAssignedUsers.add(userId)
-                })
-              })
-              
-              const totalSignups = uniqueSignupUsers.size
-              const totalAssigned = uniqueAssignedUsers.size
-
-              const allFullCoverage = groupMatches.every(m => m.productionWorkflow?.coverageStatus === 'full')
-              const someFullCoverage = groupMatches.some(m => m.productionWorkflow?.coverageStatus === 'full')
-
-              const formattedDate = new Date(dateTime).toLocaleDateString('en-US', {
-                weekday: 'short',
-                month: 'short',
-                day: 'numeric',
-                hour: 'numeric',
-                minute: '2-digit',
-                timeZoneName: 'short',
-              })
-
-              return (
-                <div key={dateTime} className={`assignment-time-slot ${allFullCoverage ? 'assignment-time-slot--complete' : ''}`}>
-                  <div className="assignment-time-slot__header">
-                    <button
-                      className="assignment-time-slot__toggle"
-                      onClick={() => toggleGroup(dateTime)}
-                    >
-                      <span className="assignment-time-slot__icon">{isExpanded ? '▼' : '▶'}</span>
-                      <div className="assignment-time-slot__info">
-                        <h3 className="assignment-time-slot__datetime">{formattedDate}</h3>
-                        <p className="assignment-time-slot__count">{groupMatches.length} match{groupMatches.length > 1 ? 'es' : ''}</p>
-                      </div>
-                    </button>
-                    
-                    <div className="assignment-time-slot__stats">
-                      <span className="assignment-time-slot__stat">
-                        👥 {totalSignups} signup{totalSignups !== 1 ? 's' : ''}
-                      </span>
-                      <span className="assignment-time-slot__stat">
-                        ✓ {totalAssigned} assigned
-                      </span>
-                      {allFullCoverage && (
-                        <span className="assignment-time-slot__badge assignment-time-slot__badge--complete">
-                          ✅ Full Coverage
-                        </span>
-                      )}
-                      {!allFullCoverage && someFullCoverage && (
-                        <span className="assignment-time-slot__badge assignment-time-slot__badge--partial">
-                          ⚠️ Partial
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {isExpanded && (
-                    <div className="assignment-time-slot__matches">
-                      {groupMatches.map((match) => {
-            const pw = match.productionWorkflow || {} as NonNullable<Match['productionWorkflow']>
-            const observerSignups = pw.observerSignups || []
-            const producerSignups = pw.producerSignups || []
-            const casterSignups = pw.casterSignups || []
-            const assignedObserver = pw.assignedObserver
-            const assignedProducer = pw.assignedProducer
-            const assignedCasters = pw.assignedCasters || []
-
-            return (
-              <div key={match.id} className="assignment-match">
-                <div className="assignment-match__header">
-                  <div className="assignment-match__info">
-                    <h3>{match.title}</h3>
-                    <div className="assignment-match__meta">
-                      <span>{new Date(match.date).toLocaleString()}</span>
-                      <span className={`coverage-badge ${getCoverageClass(pw.coverageStatus)}`}>
-                        {getCoverageIcon(pw.coverageStatus)} {pw.coverageStatus}
-                      </span>
-                    </div>
-                  </div>
-                  <a href={`/admin/collections/matches/${match.id}`} target="_blank" rel="noopener noreferrer" className="assignment-match__link">
-                    Full Edit →
-                  </a>
-                </div>
-
-                <div className="assignment-roles">
-                  {/* Observer */}
-                  <div className="assignment-role">
-                    <h4>Observer (1)</h4>
-                    <div className="assignment-role__content">
-                      <div className="assignment-role__signups">
-                        <strong>Signups ({observerSignups.length}):</strong>
-                        {observerSignups.length === 0 ? (
-                          <p className="assignment-empty">No signups</p>
-                        ) : (
-                          <div className="assignment-signup-list">
-                            {observerSignups.map((user: User | number, idx: number) => (
-                              <button
-                                key={idx}
-                                onClick={() => assignStaff(match.id, 'observer', typeof user === 'number' ? user : user.id)}
-                                className="assignment-signup-btn"
-                                disabled={!!assignedObserver}
-                              >
-                                {getUserName(user as User)}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <div className="assignment-role__assigned">
-                        <strong>Assigned:</strong>
-                        {assignedObserver ? (
-                          <div className="assignment-assigned-item">
-                            <span>{getUserName(assignedObserver as User)}</span>
-                            <button
-                              onClick={() => unassignStaff(match.id, 'observer')}
-                              className="assignment-unassign-btn"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ) : (
-                          <p className="assignment-empty">None</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Producer */}
-                  <div className="assignment-role">
-                    <h4>Producer (1)</h4>
-                    <div className="assignment-role__content">
-                      <div className="assignment-role__signups">
-                        <strong>Signups ({producerSignups.length}):</strong>
-                        {producerSignups.length === 0 ? (
-                          <p className="assignment-empty">No signups</p>
-                        ) : (
-                          <div className="assignment-signup-list">
-                            {producerSignups.map((user: User | number, idx: number) => (
-                              <button
-                                key={idx}
-                                onClick={() => assignStaff(match.id, 'producer', typeof user === 'number' ? user : user.id)}
-                                className="assignment-signup-btn"
-                                disabled={!!assignedProducer}
-                              >
-                                {getUserName(user as User)}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <div className="assignment-role__assigned">
-                        <strong>Assigned:</strong>
-                        {assignedProducer ? (
-                          <div className="assignment-assigned-item">
-                            <span>{getUserName(assignedProducer as User)}</span>
-                            <button
-                              onClick={() => unassignStaff(match.id, 'producer')}
-                              className="assignment-unassign-btn"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ) : (
-                          <p className="assignment-empty">None</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Casters */}
-                  <div className="assignment-role">
-                    <h4>Casters (2 max)</h4>
-                    <div className="assignment-role__content">
-                      <div className="assignment-role__signups">
-                        <strong>Signups ({casterSignups.length}):</strong>
-                        {casterSignups.length === 0 ? (
-                          <p className="assignment-empty">No signups</p>
-                        ) : (
-                          <div className="assignment-signup-list">
-                            {casterSignups.map((signup: CasterSignup, idx: number) => {
-                              const user = typeof signup.user === 'number' ? null : signup.user
-                              const userId = typeof signup.user === 'number' ? signup.user : signup.user?.id
-                              return (
-                                <button
-                                  key={idx}
-                                  onClick={() => assignStaff(match.id, 'caster', userId, signup.style)}
-                                  className="assignment-signup-btn"
-                                  disabled={assignedCasters.length >= 2}
-                                  title={signup.style ? `Style: ${signup.style}` : undefined}
-                                >
-                                  {getUserName(user as User)} {signup.style && `(${signup.style})`}
-                                </button>
-                              )
-                            })}
-                          </div>
-                        )}
-                      </div>
-                      <div className="assignment-role__assigned">
-                        <strong>Assigned ({assignedCasters.length}/2):</strong>
-                        {assignedCasters.length === 0 ? (
-                          <p className="assignment-empty">None</p>
-                        ) : (
-                          <div className="assignment-assigned-list">
-                            {assignedCasters.map((caster: CasterSignup, idx: number) => {
-                              const user = typeof caster.user === 'number' ? null : caster.user
-                              return (
-                                <div key={idx} className="assignment-assigned-item">
-                                  <span>
-                                    {getUserName(user as User)} {caster.style && `(${caster.style})`}
-                                  </span>
-                                  <button
-                                    onClick={() => unassignStaff(match.id, 'caster', idx)}
-                                    className="assignment-unassign-btn"
-                                  >
-                                    ✕
-                                  </button>
-                                </div>
-                              )
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+        <div className="production-dashboard__empty">No upcoming matches found.</div>
+      ) : (
+        <>
+          {/* Section 1: Fully Booked */}
+          {fullyBooked.length > 0 && (
+            <div className="staff-signups-section staff-signups-section--assignments">
+              <h3>✅ Fully Booked ({fullyBooked.length} time slot{fullyBooked.length > 1 ? 's' : ''})</h3>
+              <div className="assignment-time-slots">
+                {fullyBooked.map(group => (
+                  <FullyCoveredGroup key={group.dateTime} group={group} onAssign={assignStaff} onUnassign={unassignStaff} />
+                ))}
               </div>
-                      )
-                    })}
-                  </div>
-                )}
+            </div>
+          )}
+
+          {/* Section 2: Partially Assigned */}
+          {partiallyAssigned.length > 0 && (
+            <div className="staff-signups-section staff-signups-section--assignments">
+              <h3>⚠️ Partially Assigned ({partiallyAssigned.length} time slot{partiallyAssigned.length > 1 ? 's' : ''})</h3>
+              <div className="assignment-time-slots">
+                {partiallyAssigned.map(group => (
+                  <NeedsAssignmentGroup key={group.dateTime} group={group} onAssign={assignStaff} onUnassign={unassignStaff} />
+                ))}
               </div>
-              )
-            })}
+            </div>
+          )}
+
+          {/* Section 3: Has Signups — ready to assign */}
+          {hasSignups.length > 0 && (
+            <div className="staff-signups-section">
+              <h3>📋 Has Signups — Ready to Assign ({hasSignups.length} time slot{hasSignups.length > 1 ? 's' : ''})</h3>
+              <div className="assignment-time-slots">
+                {hasSignups.map(group => (
+                  <NeedsAssignmentGroup key={group.dateTime} group={group} onAssign={assignStaff} onUnassign={unassignStaff} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Section 4: No Signups yet */}
+          {noSignups.length > 0 && (
+            <div className="staff-signups-section staff-signups-section--urgent">
+              <h3>❌ No Signups Yet ({noSignups.length} time slot{noSignups.length > 1 ? 's' : ''})</h3>
+              <div className="assignment-time-slots">
+                {noSignups.map(group => (
+                  <NeedsAssignmentGroup key={group.dateTime} group={group} onAssign={assignStaff} onUnassign={unassignStaff} />
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
+// ─── Collapsible group for needs assignment slots ───
+
+function NeedsAssignmentGroup({ group, onAssign, onUnassign }: {
+  group: MatchGroup
+  onAssign: (matchId: number, role: 'observer' | 'producer' | 'caster', userId: number, style?: string) => void
+  onUnassign: (matchId: number, role: 'observer' | 'producer' | 'caster', idx?: number) => void
+}) {
+  const [expanded, setExpanded] = useState(false)
+
+  const totalSignups = new Set<number>()
+  const totalAssigned = new Set<number>()
+  group.matches.forEach(m => {
+    const pw = m.productionWorkflow
+    if (!pw) return
+    pw.observerSignups?.forEach((u: any) => { const id = getUserId(u); if (id) totalSignups.add(id) })
+    pw.producerSignups?.forEach((u: any) => { const id = getUserId(u); if (id) totalSignups.add(id) })
+    pw.casterSignups?.forEach((c: any) => { const id = getUserId(c.user); if (id) totalSignups.add(id) })
+    if (pw.assignedObserver) { const id = getUserId(pw.assignedObserver); if (id) totalAssigned.add(id) }
+    if (pw.assignedProducer) { const id = getUserId(pw.assignedProducer); if (id) totalAssigned.add(id) }
+    pw.assignedCasters?.forEach((c: any) => { const id = getUserId(c.user); if (id) totalAssigned.add(id) })
+  })
+
+  return (
+    <div className="assignment-time-slot">
+      <div className="assignment-time-slot__header">
+        <button className="assignment-time-slot__toggle" onClick={() => setExpanded(!expanded)}>
+          <span className="assignment-time-slot__icon">{expanded ? '▼' : '▶'}</span>
+          <div className="assignment-time-slot__info">
+            <h3 className="assignment-time-slot__datetime">{group.formattedDate}</h3>
+            <p className="assignment-time-slot__count">
+              {group.matches.length} match{group.matches.length > 1 ? 'es' : ''}
+              {' · '}{totalSignups.size} signup{totalSignups.size !== 1 ? 's' : ''}
+              {' · '}{totalAssigned.size} assigned
+            </p>
           </div>
-        )
-      })()}
+        </button>
+      </div>
+      {expanded && (
+        <div className="assignment-time-slot__matches">
+          {group.matches.map(match => (
+            <MatchAssignmentCard key={match.id} match={match} onAssign={onAssign} onUnassign={onUnassign} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Collapsed group for fully covered slots ───
+
+function FullyCoveredGroup({ group, onAssign, onUnassign }: {
+  group: MatchGroup
+  onAssign: (matchId: number, role: 'observer' | 'producer' | 'caster', userId: number, style?: string) => void
+  onUnassign: (matchId: number, role: 'observer' | 'producer' | 'caster', idx?: number) => void
+}) {
+  const [expanded, setExpanded] = useState(false)
+
+  // Summarize assigned staff
+  const assignedNames = new Set<string>()
+  group.matches.forEach(m => {
+    const pw = m.productionWorkflow
+    if (!pw) return
+    if (pw.assignedObserver) assignedNames.add(getUserName(pw.assignedObserver))
+    if (pw.assignedProducer) assignedNames.add(getUserName(pw.assignedProducer))
+    pw.assignedCasters?.forEach(c => assignedNames.add(getUserName(c.user)))
+  })
+
+  return (
+    <div className="assignment-time-slot assignment-time-slot--complete">
+      <div className="assignment-time-slot__header">
+        <button className="assignment-time-slot__toggle" onClick={() => setExpanded(!expanded)}>
+          <span className="assignment-time-slot__icon">{expanded ? '▼' : '▶'}</span>
+          <div className="assignment-time-slot__info">
+            <h3 className="assignment-time-slot__datetime">{group.formattedDate}</h3>
+            <p className="assignment-time-slot__count">
+              {group.matches.length} match{group.matches.length > 1 ? 'es' : ''}
+              {assignedNames.size > 0 && ` · Staff: ${Array.from(assignedNames).join(', ')}`}
+            </p>
+          </div>
+        </button>
+        <span className="assignment-time-slot__badge assignment-time-slot__badge--complete">✅ Full Coverage</span>
+      </div>
+      {expanded && (
+        <div className="assignment-time-slot__matches">
+          {group.matches.map(match => (
+            <MatchAssignmentCard key={match.id} match={match} onAssign={onAssign} onUnassign={onUnassign} />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

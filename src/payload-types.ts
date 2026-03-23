@@ -1500,6 +1500,14 @@ export interface Match {
      */
     includeInSchedule?: boolean | null;
     /**
+     * Set automatically when FACEIT sync detects a date change. Signups are cleared when this happens.
+     */
+    dateChanged?: boolean | null;
+    /**
+     * The original date before the match was rescheduled
+     */
+    previousDate?: string | null;
+    /**
      * Internal production notes
      */
     productionNotes?: {
@@ -3398,6 +3406,8 @@ export interface MatchesSelect<T extends boolean = true> {
             };
         coverageStatus?: T;
         includeInSchedule?: T;
+        dateChanged?: T;
+        previousDate?: T;
         productionNotes?: T;
       };
   isTournamentSlot?: T;
@@ -4108,6 +4118,10 @@ export interface Footer {
  */
 export interface ProductionDashboard {
   id: number;
+  /**
+   * Discord channel ID for match reschedule notifications. Right-click a channel in Discord → Copy Channel ID.
+   */
+  productionNotificationsChannelId?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -4421,6 +4435,7 @@ export interface FooterSelect<T extends boolean = true> {
  * via the `definition` "production-dashboard_select".
  */
 export interface ProductionDashboardSelect<T extends boolean = true> {
+  productionNotificationsChannelId?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
