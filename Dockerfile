@@ -54,6 +54,27 @@ ENV NEXT_PUBLIC_GA_MEASUREMENT_ID=G-LS4RTBQY5T
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npm run build
 
+# Strip stale 308 redirects from routes-manifest.json
+# During next build without a DB, dynamic pages may generate redirect/notFound entries
+# that get permanently baked into the manifest, causing pages to always 308 even at runtime
+RUN node -e " \
+  const fs = require('fs'); \
+  const paths = ['.next/routes-manifest.json', '.next/standalone/.next/routes-manifest.json']; \
+  for (const p of paths) { \
+    if (!fs.existsSync(p)) continue; \
+    const manifest = JSON.parse(fs.readFileSync(p, 'utf8')); \
+    const before = (manifest.redirects || []).length; \
+    manifest.redirects = (manifest.redirects || []).filter(r => { \
+      if (r.statusCode !== 308) return true; \
+      if (r.source.startsWith('/players/') || r.source.startsWith('/teams/')) return false; \
+      return true; \
+    }); \
+    fs.writeFileSync(p, JSON.stringify(manifest)); \
+    const removed = before - manifest.redirects.length; \
+    if (removed > 0) console.log('Stripped ' + removed + ' stale 308 redirects from ' + p); \
+  } \
+"
+
 # Verify standalone output was created (required for production deployment)
 RUN if [ ! -d .next/standalone ]; then \
   echo "ERROR: .next/standalone directory not found. Build may have failed or database was not available."; \
