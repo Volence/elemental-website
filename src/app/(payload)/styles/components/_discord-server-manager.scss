@@ -2845,3 +2845,543 @@
 }
 
 
+// =============================================
+// Integration Tabs (Twitter Repost & Twitch Live Roster)
+// =============================================
+
+.integration-tab {
+  .tab-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: $spacing-xl;
+    gap: $spacing-lg;
+
+    .tab-header-text {
+      h3 {
+        font-size: $font-size-xl;
+        font-weight: $font-weight-semibold;
+        color: $admin-text-primary;
+        margin: 0 0 $spacing-xs 0;
+      }
+
+      p {
+        color: $admin-text-secondary;
+        font-size: $font-size-sm;
+        margin: 0;
+      }
+    }
+
+    .check-now-button {
+      @include glow-button($admin-accent-info);
+      padding: $spacing-sm $spacing-lg;
+      font-size: $font-size-sm;
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+      white-space: nowrap;
+      flex-shrink: 0;
+
+      .spinning {
+        animation: spin 1s linear infinite;
+      }
+    }
+  }
+
+  // Alerts
+  .tab-alert {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-md $spacing-lg;
+    border-radius: $radius-sm;
+    margin-bottom: $spacing-lg;
+    font-size: $font-size-sm;
+
+    &-error {
+      background: rgba($admin-accent-error, 0.1);
+      border: 1px solid rgba($admin-accent-error, 0.3);
+      color: $admin-accent-error;
+    }
+
+    &-success {
+      background: rgba($admin-accent-success, 0.1);
+      border: 1px solid rgba($admin-accent-success, 0.3);
+      color: $admin-accent-success;
+    }
+
+    button {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      font-size: $font-size-lg;
+      padding: 0;
+      line-height: 1;
+    }
+  }
+
+  // Add Form
+  .add-form {
+    @include glow-card($admin-accent-primary);
+    padding: $spacing-lg;
+    margin-bottom: $spacing-xl;
+
+    .add-form-inputs {
+      display: flex;
+      gap: $spacing-md;
+      align-items: stretch;
+
+      @media (max-width: 768px) {
+        flex-direction: column;
+      }
+
+      .input-with-prefix {
+        display: flex;
+        align-items: center;
+        flex: 1;
+        background: rgba($admin-bg-base, 0.8);
+        border: 1px solid rgba($admin-accent-primary, 0.3);
+        border-radius: $radius-sm;
+        overflow: hidden;
+
+        &:focus-within {
+          border-color: $admin-accent-primary;
+          box-shadow: 0 0 0 2px rgba($admin-accent-primary, 0.1);
+        }
+
+        .input-prefix {
+          padding: $spacing-md;
+          color: $admin-text-secondary;
+          font-weight: $font-weight-semibold;
+          background: rgba($admin-accent-primary, 0.05);
+          border-right: 1px solid rgba($admin-accent-primary, 0.2);
+        }
+
+        .text-input {
+          border: none;
+          background: transparent;
+          flex: 1;
+
+          &:focus {
+            box-shadow: none;
+          }
+        }
+      }
+
+      .text-input {
+        flex: 1;
+        padding: $spacing-md;
+        background: rgba($admin-bg-base, 0.8);
+        border: 1px solid rgba($admin-accent-primary, 0.3);
+        border-radius: $radius-sm;
+        color: $admin-text-primary;
+        font-size: $font-size-base;
+
+        &::placeholder {
+          color: rgba($admin-text-secondary, 0.6);
+        }
+
+        &:focus {
+          outline: none;
+          border-color: $admin-accent-primary;
+          box-shadow: 0 0 0 2px rgba($admin-accent-primary, 0.1);
+        }
+      }
+
+      .streamer-input {
+        flex: 2;
+      }
+
+      .add-button {
+        @include glow-button($admin-accent-success);
+        padding: $spacing-md $spacing-xl;
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
+        white-space: nowrap;
+        flex-shrink: 0;
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+
+  // Loading & Empty States
+  .tab-loading {
+    text-align: center;
+    padding: $spacing-3xl;
+    color: $admin-text-secondary;
+    font-size: $font-size-base;
+  }
+
+  .tab-empty {
+    text-align: center;
+    padding: $spacing-3xl;
+    @include glow-card($admin-accent-primary);
+
+    p {
+      color: $admin-text-primary;
+      font-size: $font-size-base;
+      margin: 0;
+    }
+
+    .tab-empty-hint {
+      color: $admin-text-secondary;
+      font-size: $font-size-sm;
+      margin-top: $spacing-sm;
+    }
+  }
+
+  // Accounts list (Twitter)
+  .accounts-list {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+  }
+
+  .account-card {
+    @include glow-card($admin-accent-primary);
+    padding: $spacing-lg;
+    display: flex;
+    align-items: center;
+    gap: $spacing-lg;
+    transition: all 0.2s ease;
+
+    &.inactive {
+      opacity: 0.5;
+      border-color: rgba($admin-accent-primary, 0.1);
+    }
+
+    &:hover {
+      transform: translateX(4px);
+    }
+
+    .account-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      overflow: hidden;
+      flex-shrink: 0;
+      border: 2px solid rgba($admin-accent-primary, 0.3);
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    .account-info {
+      flex: 1;
+      min-width: 0;
+
+      .account-name {
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
+        flex-wrap: wrap;
+
+        strong {
+          color: $admin-text-primary;
+          font-size: $font-size-base;
+        }
+
+        .account-handle {
+          color: $admin-text-secondary;
+          font-size: $font-size-sm;
+        }
+      }
+
+      .account-meta {
+        color: $admin-text-secondary;
+        font-size: $font-size-xs;
+        margin-top: $spacing-xs;
+      }
+    }
+
+    .account-actions {
+      display: flex;
+      gap: $spacing-sm;
+      flex-shrink: 0;
+    }
+  }
+
+  // Toggle / Delete buttons
+  .toggle-button,
+  .delete-button {
+    padding: $spacing-sm;
+    border: none;
+    border-radius: $radius-sm;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+
+  .toggle-button {
+    &.active {
+      background: rgba($admin-accent-success, 0.2);
+      color: $admin-accent-success;
+
+      &:hover {
+        background: rgba($admin-accent-success, 0.3);
+      }
+    }
+
+    &.inactive {
+      background: rgba($admin-text-secondary, 0.2);
+      color: $admin-text-secondary;
+
+      &:hover {
+        background: rgba($admin-accent-warning, 0.2);
+        color: $admin-accent-warning;
+      }
+    }
+  }
+
+  .delete-button {
+    background: rgba($admin-accent-error, 0.15);
+    color: $admin-accent-error;
+
+    &:hover {
+      background: rgba($admin-accent-error, 0.3);
+      transform: scale(1.1);
+    }
+  }
+
+  // Streamers section (Twitch)
+  .streamers-section {
+    margin-bottom: $spacing-xl;
+
+    .section-title {
+      font-size: $font-size-base;
+      font-weight: $font-weight-semibold;
+      color: $admin-text-primary;
+      margin: 0 0 $spacing-md 0;
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+
+      &.live-title {
+        color: #ef4444;
+      }
+
+      &.offline-title {
+        color: $admin-text-secondary;
+      }
+    }
+  }
+
+  .streamers-list {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+  }
+
+  .streamer-card {
+    @include glow-card($admin-accent-primary);
+    padding: $spacing-lg;
+    display: flex;
+    align-items: flex-start;
+    gap: $spacing-lg;
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: translateX(4px);
+    }
+
+    &.live {
+      border-color: rgba(#9146FF, 0.4);
+      background: rgba(#9146FF, 0.03);
+    }
+
+    &.offline {
+      opacity: 0.7;
+    }
+
+    &.disabled {
+      opacity: 0.4;
+    }
+
+    .streamer-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      overflow: hidden;
+      flex-shrink: 0;
+      position: relative;
+      border: 2px solid rgba($admin-accent-primary, 0.3);
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .avatar-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba($admin-accent-primary, 0.1);
+        font-size: 1.5rem;
+      }
+
+      .live-indicator {
+        position: absolute;
+        bottom: 2px;
+        right: 2px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #ef4444;
+        border: 2px solid $admin-bg-elevated;
+        animation: livePulse 2s ease-in-out infinite;
+      }
+    }
+
+    .streamer-info {
+      flex: 1;
+      min-width: 0;
+
+      .streamer-name {
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
+        flex-wrap: wrap;
+
+        a {
+          color: $admin-text-primary;
+          font-size: $font-size-base;
+          font-weight: $font-weight-semibold;
+          text-decoration: none;
+
+          &:hover {
+            color: #9146FF;
+          }
+        }
+
+        .disabled-badge {
+          @include glow-badge($admin-text-secondary);
+          padding: 1px $spacing-sm;
+          font-size: $font-size-xs;
+        }
+      }
+
+      .streamer-meta {
+        display: flex;
+        align-items: center;
+        gap: $spacing-md;
+        margin-top: 2px;
+        font-size: $font-size-xs;
+        color: $admin-text-secondary;
+
+        .streamer-bio {
+          font-style: italic;
+        }
+
+        .streamer-person {
+          opacity: 0.8;
+        }
+      }
+
+      .streamer-stream-info {
+        display: flex;
+        align-items: center;
+        gap: $spacing-lg;
+        margin-top: $spacing-xs;
+        font-size: $font-size-sm;
+        color: $admin-text-secondary;
+
+        .stream-game {
+          color: #9146FF;
+          font-weight: $font-weight-medium;
+        }
+      }
+
+      .streamer-title {
+        color: $admin-text-secondary;
+        font-size: $font-size-sm;
+        margin-top: $spacing-xs;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+
+  // Live dot animation
+  .live-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ef4444;
+    display: inline-block;
+    animation: livePulse 2s ease-in-out infinite;
+  }
+
+  // Footer note
+  .tab-footer-note {
+    margin-top: $spacing-xl;
+    padding-top: $spacing-lg;
+    border-top: 1px solid rgba($admin-accent-primary, 0.1);
+
+    p {
+      color: $admin-text-secondary;
+      font-size: $font-size-xs;
+      margin: 0;
+      font-style: italic;
+    }
+  }
+
+  // Category groups (Twitch)
+  .category-groups {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xl;
+  }
+
+  .category-group-title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $admin-text-primary;
+    margin: 0 0 $spacing-md 0;
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding-bottom: $spacing-sm;
+    border-bottom: 1px solid rgba($admin-accent-primary, 0.2);
+
+    .category-count {
+      font-size: $font-size-xs;
+      font-weight: $font-weight-normal;
+      color: $admin-text-secondary;
+      margin-left: auto;
+    }
+  }
+
+  .category-select {
+    flex: 0 0 auto !important;
+    min-width: 180px;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238b8b8b' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px !important;
+    cursor: pointer;
+  }
+}
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}

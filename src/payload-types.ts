@@ -94,6 +94,7 @@ export interface Config {
     'discord-polls': DiscordPoll;
     'discord-category-templates': DiscordCategoryTemplate;
     'watched-threads': WatchedThread;
+    'twitch-streamers': TwitchStreamer;
     'audit-logs': AuditLog;
     'error-logs': ErrorLog;
     'cron-job-runs': CronJobRun;
@@ -143,6 +144,7 @@ export interface Config {
     'discord-polls': DiscordPollsSelect<false> | DiscordPollsSelect<true>;
     'discord-category-templates': DiscordCategoryTemplatesSelect<false> | DiscordCategoryTemplatesSelect<true>;
     'watched-threads': WatchedThreadsSelect<false> | WatchedThreadsSelect<true>;
+    'twitch-streamers': TwitchStreamersSelect<false> | TwitchStreamersSelect<true>;
     'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
     'error-logs': ErrorLogsSelect<false> | ErrorLogsSelect<true>;
     'cron-job-runs': CronJobRunsSelect<false> | CronJobRunsSelect<true>;
@@ -2316,6 +2318,52 @@ export interface WatchedThread {
   createdAt: string;
 }
 /**
+ * Twitch streamers to track for the live roster.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "twitch-streamers".
+ */
+export interface TwitchStreamer {
+  id: number;
+  /**
+   * Twitch login username (or paste a twitch.tv URL)
+   */
+  twitchUsername: string;
+  /**
+   * Auto-fetched Twitch user ID
+   */
+  twitchUserId?: string | null;
+  /**
+   * Customize the name shown in Discord. Auto-filled from Twitch, overridden by linked Person name.
+   */
+  displayName?: string | null;
+  profileImageUrl?: string | null;
+  /**
+   * Which roster channel this streamer appears in
+   */
+  category: 'content-creator' | 'player';
+  /**
+   * Short tagline shown in the Discord embed (e.g. "Flex DPS for Elemental Blue")
+   */
+  bio?: string | null;
+  /**
+   * Optional — link to a Person record to auto-pull team name in the embed
+   */
+  person?: (number | null) | Person;
+  /**
+   * Enable or disable tracking
+   */
+  active?: boolean | null;
+  isLive?: boolean | null;
+  currentStreamTitle?: string | null;
+  currentGame?: string | null;
+  viewerCount?: number | null;
+  thumbnailUrl?: string | null;
+  streamStartedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * 🔍 System-generated log of user actions for security monitoring.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2834,6 +2882,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'watched-threads';
         value: number | WatchedThread;
+      } | null)
+    | ({
+        relationTo: 'twitch-streamers';
+        value: number | TwitchStreamer;
       } | null)
     | ({
         relationTo: 'audit-logs';
@@ -3729,6 +3781,28 @@ export interface WatchedThreadsSelect<T extends boolean = true> {
   addedByDiscordId?: T;
   lastKeptAliveAt?: T;
   keepAliveCount?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "twitch-streamers_select".
+ */
+export interface TwitchStreamersSelect<T extends boolean = true> {
+  twitchUsername?: T;
+  twitchUserId?: T;
+  displayName?: T;
+  profileImageUrl?: T;
+  category?: T;
+  bio?: T;
+  person?: T;
+  active?: T;
+  isLive?: T;
+  currentStreamTitle?: T;
+  currentGame?: T;
+  viewerCount?: T;
+  thumbnailUrl?: T;
+  streamStartedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

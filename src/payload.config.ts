@@ -48,6 +48,7 @@ import { ActiveSessionsViewer } from './globals/ActiveSessionsViewer'
 import { ErrorHarvesterState } from './globals/ErrorHarvesterState'
 import { DiscordServerManager } from './globals/DiscordServerManager'
 import { DiscordCategoryTemplates } from './collections/DiscordCategoryTemplates'
+import { TwitchStreamers } from './collections/TwitchStreamers'
 import { Tasks } from './collections/Tasks'
 import { GraphicsAssets } from './collections/GraphicsAssets'
 import { GraphicsDashboard } from './globals/GraphicsDashboard'
@@ -221,6 +222,7 @@ const config = buildConfig({
     DiscordPolls,
     DiscordCategoryTemplates,
     WatchedThreads,
+    TwitchStreamers,
     
     // MONITORING: Security & Health
     AuditLogs,
@@ -297,6 +299,7 @@ const config = buildConfig({
         const { setupInteractionHandlers } = await import('./discord/handlers/interactions')
         // Thread Keep-Alive: Automatically keeps watched threads active using autoArchiveDuration toggling
         const { startThreadKeepAlive } = await import('./discord/services/threadKeepAlive')
+        const { startTwitchLiveRoster } = await import('./discord/services/twitchLiveRoster')
 
         const client = await ensureDiscordClient()
         
@@ -304,6 +307,7 @@ const config = buildConfig({
           await registerCommands()
           setupInteractionHandlers()
           startThreadKeepAlive()  // Re-enabled - uses Thread-Watcher approach
+          startTwitchLiveRoster() // Twitch live roster
         }
       } catch (error) {
         console.error('❌ Failed to initialize Discord bot:', error)

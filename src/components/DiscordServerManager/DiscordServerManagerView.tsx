@@ -8,6 +8,7 @@ import { CreateChannelModal } from './CreateChannelModal'
 import { CategoryItem } from './CategoryItem'
 import TeamCardsTab from './TeamCardsTab'
 import AnnouncementsTab from './AnnouncementsTab'
+import TwitchLiveTab from './TwitchLiveTab'
 import { Edit, Trash2 } from 'lucide-react'
 
 interface DiscordChannel {
@@ -94,7 +95,7 @@ const DiscordServerManagerView = () => {
   const [templates, setTemplates] = useState<Template[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'structure' | 'stats' | 'health' | 'templates' | 'team-cards' | 'announcements'>('structure')
+  const [activeTab, setActiveTab] = useState<'structure' | 'stats' | 'health' | 'templates' | 'team-cards' | 'announcements' | 'twitch-live'>('structure')
   
   // Template form state
   const [selectedCategoryId, setSelectedCategoryId] = useState('')
@@ -804,6 +805,12 @@ const DiscordServerManagerView = () => {
         >
           📢 Announcements
         </button>
+        <button
+          className={`tab ${activeTab === 'twitch-live' ? 'active' : ''}`}
+          onClick={() => setActiveTab('twitch-live')}
+        >
+          🔴 Live Roster
+        </button>
       </div>
 
       <div className="tab-content">
@@ -1191,6 +1198,10 @@ const DiscordServerManagerView = () => {
             onSuccess={(title, message) => setAlertModal({ isOpen: true, title, message, type: 'success' })}
             onError={(title, message) => setAlertModal({ isOpen: true, title, message, type: 'error' })}
           />
+        )}
+
+        {activeTab === 'twitch-live' && (
+          <TwitchLiveTab />
         )}
         </>
         )}
