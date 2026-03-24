@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import type { Media } from '@/payload-types'
 import React from 'react'
-import { redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { getPlayerByName, getAllPlayerNames } from '@/utilities/getPlayer'
@@ -155,15 +155,13 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
   }
   
   if (!playerName) {
-    console.error('[PlayerPage] No playerName found for slug:', slug, 'personBySlug count:', personBySlug.docs.length)
-    redirect('/teams')
+    notFound()
   }
   
   const player = await getPlayerByName(playerName, slug)
   
   if (!player) {
-    console.error('[PlayerPage] getPlayerByName returned null for:', playerName, 'slug:', slug)
-    redirect('/teams')
+    notFound()
   }
 
   // Get player initials for avatar
