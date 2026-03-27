@@ -77,6 +77,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
 export const metadata: Metadata = {
   metadataBase: new URL(getServerSideURL()),
+  alternates: {
+    canonical: './',
+  },
   title: {
     default: 'Elemental - Overwatch Esports Organization',
     template: '%s | Elemental Esports',
