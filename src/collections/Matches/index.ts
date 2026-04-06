@@ -27,12 +27,8 @@ export const Matches: CollectionConfig = {
     defaultColumns: ['titleCell', 'date', 'team', 'status', 'updatedAt'],
     description: 'Manage competitive matches for Elemental teams. Include match details, scores, streams, and VODs.',
     group: 'Data',
-    // Hide from sidebar for regular production staff - they use Production Dashboard instead
-    hidden: ({ user }) => {
-      if (!user) return true
-      // Show to admins and staff managers only
-      return user.role !== 'admin' && user.role !== 'staff-manager'
-    },
+    // Hidden from sidebar — accessed via Production Dashboard 'Matches' tab
+    hidden: true,
     components: {
       views: {
         list: {

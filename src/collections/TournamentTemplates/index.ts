@@ -13,11 +13,7 @@ export const TournamentTemplates: CollectionConfig = {
     description: 'Define recurring match schedules for manually-scheduled tournaments. NOTE: NOT needed for FaceIt tournaments - those use FaceIt Leagues instead.',
     group: 'Data',
     defaultColumns: ['name', 'isActive', 'assignedTeams', 'updatedAt'],
-    hidden: ({ user }) => {
-      if (!user) return true
-      // Only admins and staff managers can see tournament templates
-      return user.role !== 'admin' && user.role !== 'staff-manager'
-    },
+    hidden: true, // Accessed via Production Dashboard 'Templates' tab
   },
   access: {
     create: ({ req: { user } }) => {

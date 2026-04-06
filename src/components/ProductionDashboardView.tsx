@@ -2,13 +2,15 @@
 
 import React, { useState } from 'react'
 import { useAuth } from '@payloadcms/ui'
-import { Calendar, PlusSquare, Users, ClipboardList, Building, BarChart3 } from 'lucide-react'
+import { Calendar, PlusSquare, Users, ClipboardList, Building, BarChart3, Swords, FileText } from 'lucide-react'
 import { WeeklyView } from './ProductionDashboard/WeeklyView'
 import { StaffSignupsView } from './ProductionDashboard/StaffSignupsView'
 import { AssignmentView } from './ProductionDashboard/AssignmentView'
 import { ScheduleBuilderView } from './ProductionDashboard/ScheduleBuilderView'
 import { SummaryView } from './ProductionDashboard/SummaryView'
 import { BulkTournamentCreator } from './ProductionDashboard/BulkTournamentCreator'
+import { MatchesListTab } from './ProductionDashboard/MatchesListTab'
+import { TemplatesListTab } from './ProductionDashboard/TemplatesListTab'
 
 export default function ProductionDashboardView() {
   const { user } = useAuth()
@@ -75,6 +77,23 @@ export default function ProductionDashboardView() {
               <BarChart3 size={14} />
               <span>Summary</span>
             </button>
+
+            {/* Data tabs — embedded collection views */}
+            <span className="production-dashboard__tab-divider" />
+            <button 
+              className={`production-dashboard__tab ${activeTab === 'matches' ? 'production-dashboard__tab--active' : ''}`}
+              onClick={() => setActiveTab('matches')}
+            >
+              <Swords size={14} />
+              <span>Matches</span>
+            </button>
+            <button 
+              className={`production-dashboard__tab ${activeTab === 'templates' ? 'production-dashboard__tab--active' : ''}`}
+              onClick={() => setActiveTab('templates')}
+            >
+              <FileText size={14} />
+              <span>Templates</span>
+            </button>
           </>
         )}
       </nav>
@@ -86,6 +105,8 @@ export default function ProductionDashboardView() {
         {activeTab === 'assignment' && isProductionManager && <AssignmentView />}
         {activeTab === 'schedule' && isProductionManager && <ScheduleBuilderView />}
         {activeTab === 'summary' && isProductionManager && <SummaryView />}
+        {activeTab === 'matches' && isProductionManager && <MatchesListTab />}
+        {activeTab === 'templates' && isProductionManager && <TemplatesListTab />}
       </div>
     </div>
   )
