@@ -72,7 +72,6 @@ export interface Config {
     teams: Team;
     'faceit-leagues': FaceitLeague;
     'global-calendar-events': GlobalCalendarEvent;
-    production: Production;
     'organization-staff': OrganizationStaff;
     heroes: Hero;
     maps: Map;
@@ -83,15 +82,16 @@ export interface Config {
     'tournament-templates': TournamentTemplate;
     'faceit-seasons': FaceitSeason;
     'social-posts': SocialPost;
+    production: Production;
+    'recruitment-listings': RecruitmentListing;
+    'recruitment-applications': RecruitmentApplication;
+    'discord-polls': DiscordPoll;
     'graphics-anchor': GraphicsAnchor;
     'branding-guide-anchor': BrandingGuideAnchor;
     'graphics-assets': GraphicsAsset;
     'video-anchor': VideoAnchor;
     'events-anchor': EventsAnchor;
-    'recruitment-listings': RecruitmentListing;
-    'recruitment-applications': RecruitmentApplication;
     tasks: Task;
-    'discord-polls': DiscordPoll;
     'discord-category-templates': DiscordCategoryTemplate;
     'watched-threads': WatchedThread;
     'twitch-streamers': TwitchStreamer;
@@ -122,7 +122,6 @@ export interface Config {
     teams: TeamsSelect<false> | TeamsSelect<true>;
     'faceit-leagues': FaceitLeaguesSelect<false> | FaceitLeaguesSelect<true>;
     'global-calendar-events': GlobalCalendarEventsSelect<false> | GlobalCalendarEventsSelect<true>;
-    production: ProductionSelect<false> | ProductionSelect<true>;
     'organization-staff': OrganizationStaffSelect<false> | OrganizationStaffSelect<true>;
     heroes: HeroesSelect<false> | HeroesSelect<true>;
     maps: MapsSelect<false> | MapsSelect<true>;
@@ -133,15 +132,16 @@ export interface Config {
     'tournament-templates': TournamentTemplatesSelect<false> | TournamentTemplatesSelect<true>;
     'faceit-seasons': FaceitSeasonsSelect<false> | FaceitSeasonsSelect<true>;
     'social-posts': SocialPostsSelect<false> | SocialPostsSelect<true>;
+    production: ProductionSelect<false> | ProductionSelect<true>;
+    'recruitment-listings': RecruitmentListingsSelect<false> | RecruitmentListingsSelect<true>;
+    'recruitment-applications': RecruitmentApplicationsSelect<false> | RecruitmentApplicationsSelect<true>;
+    'discord-polls': DiscordPollsSelect<false> | DiscordPollsSelect<true>;
     'graphics-anchor': GraphicsAnchorSelect<false> | GraphicsAnchorSelect<true>;
     'branding-guide-anchor': BrandingGuideAnchorSelect<false> | BrandingGuideAnchorSelect<true>;
     'graphics-assets': GraphicsAssetsSelect<false> | GraphicsAssetsSelect<true>;
     'video-anchor': VideoAnchorSelect<false> | VideoAnchorSelect<true>;
     'events-anchor': EventsAnchorSelect<false> | EventsAnchorSelect<true>;
-    'recruitment-listings': RecruitmentListingsSelect<false> | RecruitmentListingsSelect<true>;
-    'recruitment-applications': RecruitmentApplicationsSelect<false> | RecruitmentApplicationsSelect<true>;
     tasks: TasksSelect<false> | TasksSelect<true>;
-    'discord-polls': DiscordPollsSelect<false> | DiscordPollsSelect<true>;
     'discord-category-templates': DiscordCategoryTemplatesSelect<false> | DiscordCategoryTemplatesSelect<true>;
     'watched-threads': WatchedThreadsSelect<false> | WatchedThreadsSelect<true>;
     'twitch-streamers': TwitchStreamersSelect<false> | TwitchStreamersSelect<true>;
@@ -169,15 +169,16 @@ export interface Config {
     header: Header;
     footer: Footer;
     'production-dashboard': ProductionDashboard;
-    'social-media-config': SocialMediaConfig;
     'social-media-settings': SocialMediaSetting;
+    'competitive-hub': CompetitiveHub;
+    'discord-server-manager': DiscordServerManager;
+    'social-media-config': SocialMediaConfig;
     'organization-calendar': OrganizationCalendar;
     'graphics-dashboard': GraphicsDashboard;
     'video-editing-dashboard': VideoEditingDashboard;
     'events-dashboard': EventsDashboard;
     'opponent-wiki': OpponentWiki;
     'scouting-dashboard': ScoutingDashboard;
-    'discord-server-manager': DiscordServerManager;
     'system-health': SystemHealth;
     'audit-log-viewer': AuditLogViewer;
     'cron-monitor': CronMonitor;
@@ -191,15 +192,16 @@ export interface Config {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'production-dashboard': ProductionDashboardSelect<false> | ProductionDashboardSelect<true>;
-    'social-media-config': SocialMediaConfigSelect<false> | SocialMediaConfigSelect<true>;
     'social-media-settings': SocialMediaSettingsSelect<false> | SocialMediaSettingsSelect<true>;
+    'competitive-hub': CompetitiveHubSelect<false> | CompetitiveHubSelect<true>;
+    'discord-server-manager': DiscordServerManagerSelect<false> | DiscordServerManagerSelect<true>;
+    'social-media-config': SocialMediaConfigSelect<false> | SocialMediaConfigSelect<true>;
     'organization-calendar': OrganizationCalendarSelect<false> | OrganizationCalendarSelect<true>;
     'graphics-dashboard': GraphicsDashboardSelect<false> | GraphicsDashboardSelect<true>;
     'video-editing-dashboard': VideoEditingDashboardSelect<false> | VideoEditingDashboardSelect<true>;
     'events-dashboard': EventsDashboardSelect<false> | EventsDashboardSelect<true>;
     'opponent-wiki': OpponentWikiSelect<false> | OpponentWikiSelect<true>;
     'scouting-dashboard': ScoutingDashboardSelect<false> | ScoutingDashboardSelect<true>;
-    'discord-server-manager': DiscordServerManagerSelect<false> | DiscordServerManagerSelect<true>;
     'system-health': SystemHealthSelect<false> | SystemHealthSelect<true>;
     'audit-log-viewer': AuditLogViewerSelect<false> | AuditLogViewerSelect<true>;
     'cron-monitor': CronMonitorSelect<false> | CronMonitorSelect<true>;
@@ -1675,30 +1677,6 @@ export interface RecruitmentListing {
   createdAt: string;
 }
 /**
- * Manage production staff (casters, observers, producers) who work on match broadcasts.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "production".
- */
-export interface Production {
-  id: number;
-  /**
-   * Link to a person in the People collection. Social links are managed in the People collection.
-   */
-  person: number | Person;
-  displayName?: string | null;
-  /**
-   * Auto-populated from the linked person's slug. This field is automatically set when you select a person.
-   */
-  slug?: string | null;
-  /**
-   * Production role. Select the combination that best describes their role(s).
-   */
-  type: 'caster' | 'observer' | 'producer' | 'observer-producer' | 'observer-producer-caster';
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * Manage organization staff members (owners, HR, moderators, managers, etc.). Staff can have multiple roles.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2147,6 +2125,65 @@ export interface DiscordPoll {
   createdAt: string;
 }
 /**
+ * Manage production staff (casters, observers, producers) who work on match broadcasts.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "production".
+ */
+export interface Production {
+  id: number;
+  /**
+   * Link to a person in the People collection. Social links are managed in the People collection.
+   */
+  person: number | Person;
+  displayName?: string | null;
+  /**
+   * Auto-populated from the linked person's slug. This field is automatically set when you select a person.
+   */
+  slug?: string | null;
+  /**
+   * Production role. Select the combination that best describes their role(s).
+   */
+  type: 'caster' | 'observer' | 'producer' | 'observer-producer' | 'observer-producer-caster';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Review and manage recruitment applications.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recruitment-applications".
+ */
+export interface RecruitmentApplication {
+  id: number;
+  /**
+   * Which listing this application is for
+   */
+  listing: number | RecruitmentListing;
+  /**
+   * Applicant's Discord username
+   */
+  discordHandle: string;
+  /**
+   * Applicant's introduction and why they want to join
+   */
+  aboutMe: string;
+  /**
+   * Current status of this application
+   */
+  status: 'new' | 'reviewing' | 'contacted' | 'tryout' | 'accepted' | 'rejected';
+  /**
+   * Internal notes visible only to managers and admins (not shown to applicant)
+   */
+  internalNotes?: string | null;
+  /**
+   * Archive old applications to hide them from active list
+   */
+  archived?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Graphics department dashboard
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2191,41 +2228,6 @@ export interface VideoAnchor {
 export interface EventsAnchor {
   id: number;
   placeholder?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Review and manage recruitment applications.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "recruitment-applications".
- */
-export interface RecruitmentApplication {
-  id: number;
-  /**
-   * Which listing this application is for
-   */
-  listing: number | RecruitmentListing;
-  /**
-   * Applicant's Discord username
-   */
-  discordHandle: string;
-  /**
-   * Applicant's introduction and why they want to join
-   */
-  aboutMe: string;
-  /**
-   * Current status of this application
-   */
-  status: 'new' | 'reviewing' | 'contacted' | 'tryout' | 'accepted' | 'rejected';
-  /**
-   * Internal notes visible only to managers and admins (not shown to applicant)
-   */
-  internalNotes?: string | null;
-  /**
-   * Archive old applications to hide them from active list
-   */
-  archived?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2798,10 +2800,6 @@ export interface PayloadLockedDocument {
         value: number | FaceitLeague;
       } | null)
     | ({
-        relationTo: 'production';
-        value: number | Production;
-      } | null)
-    | ({
         relationTo: 'organization-staff';
         value: number | OrganizationStaff;
       } | null)
@@ -2842,6 +2840,22 @@ export interface PayloadLockedDocument {
         value: number | SocialPost;
       } | null)
     | ({
+        relationTo: 'production';
+        value: number | Production;
+      } | null)
+    | ({
+        relationTo: 'recruitment-listings';
+        value: number | RecruitmentListing;
+      } | null)
+    | ({
+        relationTo: 'recruitment-applications';
+        value: number | RecruitmentApplication;
+      } | null)
+    | ({
+        relationTo: 'discord-polls';
+        value: number | DiscordPoll;
+      } | null)
+    | ({
         relationTo: 'graphics-anchor';
         value: number | GraphicsAnchor;
       } | null)
@@ -2862,20 +2876,8 @@ export interface PayloadLockedDocument {
         value: number | EventsAnchor;
       } | null)
     | ({
-        relationTo: 'recruitment-listings';
-        value: number | RecruitmentListing;
-      } | null)
-    | ({
-        relationTo: 'recruitment-applications';
-        value: number | RecruitmentApplication;
-      } | null)
-    | ({
         relationTo: 'tasks';
         value: number | Task;
-      } | null)
-    | ({
-        relationTo: 'discord-polls';
-        value: number | DiscordPoll;
       } | null)
     | ({
         relationTo: 'discord-category-templates';
@@ -3234,18 +3236,6 @@ export interface GlobalCalendarEventsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "production_select".
- */
-export interface ProductionSelect<T extends boolean = true> {
-  person?: T;
-  displayName?: T;
-  slug?: T;
-  type?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "organization-staff_select".
  */
 export interface OrganizationStaffSelect<T extends boolean = true> {
@@ -3570,6 +3560,89 @@ export interface SocialPostsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "production_select".
+ */
+export interface ProductionSelect<T extends boolean = true> {
+  person?: T;
+  displayName?: T;
+  slug?: T;
+  type?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recruitment-listings_select".
+ */
+export interface RecruitmentListingsSelect<T extends boolean = true> {
+  category?: T;
+  team?: T;
+  role?: T;
+  requirements?: T;
+  status?: T;
+  filledBy?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recruitment-applications_select".
+ */
+export interface RecruitmentApplicationsSelect<T extends boolean = true> {
+  listing?: T;
+  discordHandle?: T;
+  aboutMe?: T;
+  status?: T;
+  internalNotes?: T;
+  archived?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discord-polls_select".
+ */
+export interface DiscordPollsSelect<T extends boolean = true> {
+  votes?: T;
+  schedule?: T;
+  team?: T;
+  status?: T;
+  timeSlot?: T;
+  dateRangeDisplay?: T;
+  publishedToCalendar?: T;
+  calendarMessageId?: T;
+  createdBy?: T;
+  createdVia?: T;
+  pollName?: T;
+  messageId?: T;
+  channelId?: T;
+  threadId?: T;
+  dateRange?:
+    | T
+    | {
+        start?: T;
+        end?: T;
+      };
+  opponentTeam?: T;
+  ourRating?: T;
+  opponentRating?: T;
+  worthScrimAgain?: T;
+  mapsPlayed?:
+    | T
+    | {
+        map?: T;
+        result?: T;
+        score?: T;
+        mapNotes?: T;
+        id?: T;
+      };
+  scrimNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "graphics-anchor_select".
  */
 export interface GraphicsAnchorSelect<T extends boolean = true> {
@@ -3638,35 +3711,6 @@ export interface EventsAnchorSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "recruitment-listings_select".
- */
-export interface RecruitmentListingsSelect<T extends boolean = true> {
-  category?: T;
-  team?: T;
-  role?: T;
-  requirements?: T;
-  status?: T;
-  filledBy?: T;
-  createdBy?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "recruitment-applications_select".
- */
-export interface RecruitmentApplicationsSelect<T extends boolean = true> {
-  listing?: T;
-  discordHandle?: T;
-  aboutMe?: T;
-  status?: T;
-  internalNotes?: T;
-  archived?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "tasks_select".
  */
 export interface TasksSelect<T extends boolean = true> {
@@ -3710,48 +3754,6 @@ export interface TasksSelect<T extends boolean = true> {
   archived?: T;
   archivedAt?: T;
   completedAt?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "discord-polls_select".
- */
-export interface DiscordPollsSelect<T extends boolean = true> {
-  votes?: T;
-  schedule?: T;
-  team?: T;
-  status?: T;
-  timeSlot?: T;
-  dateRangeDisplay?: T;
-  publishedToCalendar?: T;
-  calendarMessageId?: T;
-  createdBy?: T;
-  createdVia?: T;
-  pollName?: T;
-  messageId?: T;
-  channelId?: T;
-  threadId?: T;
-  dateRange?:
-    | T
-    | {
-        start?: T;
-        end?: T;
-      };
-  opponentTeam?: T;
-  ourRating?: T;
-  opponentRating?: T;
-  worthScrimAgain?: T;
-  mapsPlayed?:
-    | T
-    | {
-        map?: T;
-        result?: T;
-        score?: T;
-        mapNotes?: T;
-        id?: T;
-      };
-  scrimNotes?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -4198,6 +4200,39 @@ export interface ProductionDashboard {
   createdAt?: string | null;
 }
 /**
+ * Manage social media posts, content calendar, and posting schedule
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "social-media-settings".
+ */
+export interface SocialMediaSetting {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Opponent intelligence and scouting — wiki profiles, research boards, and competitive analysis.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "competitive-hub".
+ */
+export interface CompetitiveHub {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Manage Discord server structure, channels, categories, roles, and members.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discord-server-manager".
+ */
+export interface DiscordServerManager {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * Configure templates, goals, and content guidelines for social media posts
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4282,17 +4317,6 @@ export interface SocialMediaConfig {
   createdAt?: string | null;
 }
 /**
- * Manage social media posts, content calendar, and posting schedule
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "social-media-settings".
- */
-export interface SocialMediaSetting {
-  id: number;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
  * View all scheduled tasks, matches, and social posts across departments
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4354,17 +4378,6 @@ export interface OpponentWiki {
  * via the `definition` "scouting-dashboard".
  */
 export interface ScoutingDashboard {
-  id: number;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
- * Manage Discord server structure, channels, categories, roles, and members.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "discord-server-manager".
- */
-export interface DiscordServerManager {
   id: number;
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -4524,6 +4537,33 @@ export interface ProductionDashboardSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "social-media-settings_select".
+ */
+export interface SocialMediaSettingsSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "competitive-hub_select".
+ */
+export interface CompetitiveHubSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discord-server-manager_select".
+ */
+export interface DiscordServerManagerSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "social-media-config_select".
  */
 export interface SocialMediaConfigSelect<T extends boolean = true> {
@@ -4546,15 +4586,6 @@ export interface SocialMediaConfigSelect<T extends boolean = true> {
         originalContent?: T;
       };
   contentGuidelines?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "social-media-settings_select".
- */
-export interface SocialMediaSettingsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -4609,15 +4640,6 @@ export interface OpponentWikiSelect<T extends boolean = true> {
  * via the `definition` "scouting-dashboard_select".
  */
 export interface ScoutingDashboardSelect<T extends boolean = true> {
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "discord-server-manager_select".
- */
-export interface DiscordServerManagerSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

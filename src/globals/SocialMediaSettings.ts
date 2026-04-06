@@ -6,7 +6,7 @@ export const SocialMediaSettings: GlobalConfig = {
   label: 'Social Media Dashboard',
   admin: {
     description: 'Manage social media posts, content calendar, and posting schedule',
-    group: 'Social Media',
+    group: 'Departments',
     hidden: ({ user }) => {
       if (!user) return true
       const u = user as any

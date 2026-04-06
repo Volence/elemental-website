@@ -26,7 +26,7 @@ export const Matches: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['titleCell', 'date', 'team', 'status', 'updatedAt'],
     description: 'Manage competitive matches for Elemental teams. Include match details, scores, streams, and VODs.',
-    group: 'Production',
+    group: 'Data',
     // Hide from sidebar for regular production staff - they use Production Dashboard instead
     hidden: ({ user }) => {
       if (!user) return true

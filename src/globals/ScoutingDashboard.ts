@@ -7,12 +7,7 @@ export const ScoutingDashboard: GlobalConfig = {
   admin: {
     description: 'Manage enemy team research, player profiles, and match analysis',
     group: 'Recruiting',
-    hidden: ({ user }) => {
-      if (!user) return true
-      const u = user as any
-      if (user.role === 'admin' || user.role === 'staff-manager') return false
-      return !u.departments?.isScoutingStaff
-    },
+    hidden: true, // Accessed via Competitive Hub tab
     hideAPIURL: true,
     components: {
       views: {

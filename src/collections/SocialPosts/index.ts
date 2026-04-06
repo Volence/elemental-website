@@ -47,7 +47,7 @@ export const SocialPosts: CollectionConfig = {
     defaultColumns: ['title', 'postType', 'platform', 'scheduledDate', 'status', 'assignedTo'],
     useAsTitle: 'title',
     description: 'Manage social media posts and content calendar.',
-    group: 'Social Media',
+    group: 'Data',
     hidden: ({ user }) => {
       if (!user) return true
       const typedUser = user as any

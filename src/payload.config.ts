@@ -57,6 +57,7 @@ import { VideoEditingDashboard } from './globals/VideoEditingDashboard'
 import { EventsDashboard } from './globals/EventsDashboard'
 import { ScoutingDashboard } from './globals/ScoutingDashboard'
 import { OpponentWiki } from './globals/OpponentWiki'
+import { CompetitiveHub } from './globals/CompetitiveHub'
 import { OrganizationCalendar } from './globals/OrganizationCalendar'
 import { GlobalCalendarEvents } from './collections/GlobalCalendarEvents'
 
@@ -180,58 +181,46 @@ const config = buildConfig({
     // Hidden collections
     Pages,
     
-    // PEOPLE: Core entities
+    // ── ORGANIZATION: People & teams ──
     People,
     Teams,
     FaceitLeagues,
-    
-    // ORGANIZATION: Calendar & Staff
     GlobalCalendarEvents,
-    Production,
     OrganizationStaff,
     
-    // COMPETITIVE: Team intelligence (right after Organization)
+    // ── DATA: Shared data collections ──
     Heroes,
     Maps,
     OpponentTeams,
     ScoutReports,
     ScrimOutcomes,
-    
-    // PRODUCTION: Department - Matches & broadcasts
     Matches,
     TournamentTemplates,
-    FaceitSeasons, // Hidden, auto-managed
-    
-    // SOCIAL MEDIA: Department - Content & calendar
+    FaceitSeasons,
     SocialPosts,
-    
-    // DEPARTMENT WORKBOARDS: Show Kanban boards for each department
-    GraphicsAnchor, // Graphics group
-    BrandingGuideAnchor, // Graphics group - team color branding guide
-    GraphicsAssets, // Graphics asset library with folder support
-    VideoAnchor, // Video group
-    EventsAnchor, // Events group
-    
-    // RECRUITING: Growth
+    Production,          // Production staff roster
     RecruitmentListings,
     RecruitmentApplications,
-    
-    // WORKBOARD: Universal task management (hidden, accessed via dashboards)
-    Tasks,
-    
-    // DISCORD: Bot integration
     DiscordPolls,
+    
+    // ── DEPARTMENT WORKBOARDS (anchors to workboard dashboards) ──
+    GraphicsAnchor,
+    BrandingGuideAnchor,
+    GraphicsAssets,
+    VideoAnchor,
+    EventsAnchor,
+    
+    // ── HIDDEN: Internal/bot-managed ──
+    Tasks,               // Accessed via workboard dashboards
     DiscordCategoryTemplates,
     WatchedThreads,
     TwitchStreamers,
     
-    // MONITORING: Security & Health
+    // ── SYSTEM: Admin & monitoring ──
     AuditLogs,
     ErrorLogs,
     CronJobRuns,
     ActiveSessions,
-    
-    // SYSTEM: Administration
     Users,
     IgnoredDuplicates,
     InviteLinks,
@@ -241,32 +230,37 @@ const config = buildConfig({
   globals: [
     Header, 
     Footer, 
-    ProductionDashboard, // Production group
-    SocialMediaConfig, // Social Media group - Settings first
-    SocialMediaSettings, // Social Media group - Dashboard second
     
-    // Department dashboards
-    OrganizationCalendar, // Departments group - cross-department calendar
-    GraphicsDashboard, // Graphics group
-    VideoEditingDashboard, // Video group
-    EventsDashboard, // Events group
+    // ── DEPARTMENTS: Multi-tab hub dashboards ──
+    ProductionDashboard,    // Departments group
+    SocialMediaSettings,    // Departments group — Social Media Dashboard
+    CompetitiveHub,         // Departments group — Opponent Wiki + Scouting
+    DiscordServerManager,   // Departments group
     
-    // Competitive/Recruiting dashboards
-    OpponentWiki, // Competitive group - opponent intel profiles
-    ScoutingDashboard, // Recruiting group
+    // Social Media Config (settings page, accessed standalone)
+    SocialMediaConfig,      // Social Media group
+    
+    // ── ORGANIZATION ──
+    OrganizationCalendar,   // Organization group
+    
+    // ── DEPARTMENT WORKBOARDS (hidden, accessed via anchor links) ──
+    GraphicsDashboard,
+    VideoEditingDashboard,
+    EventsDashboard,
+    
+    // ── Hidden: Accessed via Competitive Hub tabs ──
+    OpponentWiki,           // Hidden — tab in Competitive Hub
+    ScoutingDashboard,      // Hidden — tab in Competitive Hub
 
-    // Discord management
-    DiscordServerManager, // Discord group
-    
-    // System & Monitoring (admin only)
-    SystemHealth, // Unified monitoring hub
+    // ── SYSTEM & MONITORING (admin only) ──
+    SystemHealth,           // Unified monitoring hub
     AuditLogViewer,
     CronMonitor,
     ErrorDashboard,
     ActiveSessionsViewer,
     DatabaseHealth,
     DataConsistency,
-    ErrorHarvesterState, // Internal state tracking (hidden)
+    ErrorHarvesterState,    // Internal state tracking (hidden)
   ],
   plugins: [
     ...plugins,

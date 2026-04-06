@@ -1,0 +1,28 @@
+// ═══════════════════════════════════════════════════════
+// Competitive Hub — Unified competitive intelligence
+// ═══════════════════════════════════════════════════════
+
+@import '../variables';
+@import '../mixins';
+
+.competitive-hub {
+  padding: 0 1rem 2rem;
+
+  // ── Tab Bar ──
+  &__tabs {
+    @include dashboard-tabs($admin-accent-warning);
+  }
+
+  &__tab {
+    @include dashboard-tab($admin-accent-warning);
+
+    &--active {
+      @include dashboard-tab-active($admin-accent-warning);
+    }
+  }
+
+  // ── Content ──
+  &__content {
+    min-height: 400px;
+  }
+}

@@ -1,24 +1,24 @@
 import type { GlobalConfig } from 'payload'
-import { isProductionStaff } from '../access/roles'
+import { isScoutingStaff } from '../access/roles'
 
-export const ProductionDashboard: GlobalConfig = {
-  slug: 'production-dashboard',
-  label: 'Production Dashboard',
+export const CompetitiveHub: GlobalConfig = {
+  slug: 'competitive-hub',
+  label: 'Competitive Hub',
   admin: {
-    description: 'Manage weekly match coverage, staff assignments, and broadcast schedule',
+    description: 'Opponent intelligence and scouting — wiki profiles, research boards, and competitive analysis.',
     group: 'Departments',
     hidden: ({ user }) => {
       if (!user) return true
       const u = user as any
       if (user.role === 'admin' || user.role === 'staff-manager') return false
-      return !u.departments?.isProductionStaff
+      return !u.departments?.isScoutingStaff
     },
     hideAPIURL: true,
     components: {
       views: {
         edit: {
           root: {
-            Component: '@/components/ProductionDashboardView#default',
+            Component: '@/components/CompetitiveHub#default',
           },
         },
       },
@@ -26,6 +26,6 @@ export const ProductionDashboard: GlobalConfig = {
   },
   fields: [],
   access: {
-    read: isProductionStaff,
+    read: isScoutingStaff,
   },
 }

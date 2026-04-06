@@ -80,7 +80,7 @@ export const DiscordPolls: CollectionConfig = {
     useAsTitle: 'pollName',
     defaultColumns: ['pollName', 'team', 'status', 'createdBy', 'createdAt'],
     description: 'Create and manage team schedules - from polls or manually. Supports multi-block days, ringers, and Discord posting.',
-    group: 'Competitive',
+    group: 'Data',
     components: {
       beforeList: ['@/components/PollScopeToggle#default'],
     },

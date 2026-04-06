@@ -91,7 +91,7 @@ export const RecruitmentApplications: CollectionConfig = {
     useAsTitle: 'discordHandle',
     defaultColumns: ['position', 'discordHandle', 'status', 'createdAt', 'actions'],
     description: 'Review and manage recruitment applications.',
-    group: 'Recruiting',
+    group: 'Data',
     hidden: ({ user }) => {
       if (!user) return true
       // Hide from regular users - only show to managers and admins
