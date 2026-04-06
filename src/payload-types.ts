@@ -4211,7 +4211,7 @@ export interface SocialMediaSetting {
   createdAt?: string | null;
 }
 /**
- * Opponent intelligence and scouting — wiki profiles, research boards, and competitive analysis.
+ * Opponent intelligence, scouting, recruitment, and competitive analysis.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "competitive-hub".

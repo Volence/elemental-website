@@ -48,12 +48,7 @@ export const SocialPosts: CollectionConfig = {
     useAsTitle: 'title',
     description: 'Manage social media posts and content calendar.',
     group: 'Data',
-    hidden: ({ user }) => {
-      if (!user) return true
-      const typedUser = user as any
-      if (typedUser.role === 'admin' || typedUser.role === 'staff-manager') return false
-      return typedUser.departments?.isSocialMediaStaff !== true
-    },
+    hidden: true, // Accessed via Social Media Dashboard 'Posts' tab
     listSearchableFields: ['title', 'content', 'postType', 'platform'],
     components: {
       beforeListTable: ['@/components/SocialPostColumns/QuickFilters#default'],

@@ -9,6 +9,7 @@ import { CategoryItem } from './CategoryItem'
 import TeamCardsTab from './TeamCardsTab'
 import AnnouncementsTab from './AnnouncementsTab'
 import TwitchLiveTab from './TwitchLiveTab'
+import WatchedThreadsTab from './WatchedThreadsTab'
 import { AlertTriangle, BarChart3, Bot, CheckCircle, Circle, Drama, Edit, FileText, Folder, Heart, Info, LayoutList, Lightbulb, Megaphone, MessageCircle, MessageSquare, Save, Spade, Trash2, User, Volume2 } from 'lucide-react'
 
 interface DiscordChannel {
@@ -95,7 +96,7 @@ const DiscordServerManagerView = () => {
   const [templates, setTemplates] = useState<Template[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'structure' | 'stats' | 'health' | 'templates' | 'team-cards' | 'announcements' | 'twitch-live'>('structure')
+  const [activeTab, setActiveTab] = useState<'structure' | 'stats' | 'health' | 'templates' | 'team-cards' | 'announcements' | 'twitch-live' | 'watched-threads'>('structure')
   
   // Template form state
   const [selectedCategoryId, setSelectedCategoryId] = useState('')
@@ -818,6 +819,13 @@ const DiscordServerManagerView = () => {
           <Circle size={12} />
           <span>Live Roster</span>
         </button>
+        <button
+          className={`discord-server-manager__tab ${activeTab === 'watched-threads' ? 'discord-server-manager__tab--active' : ''}`}
+          onClick={() => setActiveTab('watched-threads')}
+        >
+          <MessageSquare size={14} />
+          <span>Threads</span>
+        </button>
       </div>
 
       <div className="tab-content">
@@ -1209,6 +1217,10 @@ const DiscordServerManagerView = () => {
 
         {activeTab === 'twitch-live' && (
           <TwitchLiveTab />
+        )}
+
+        {activeTab === 'watched-threads' && (
+          <WatchedThreadsTab />
         )}
         </>
         )}

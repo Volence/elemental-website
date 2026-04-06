@@ -11,7 +11,7 @@ export const DiscordServerManager: GlobalConfig = {
   },
   admin: {
     description: 'Manage Discord server structure, channels, categories, roles, and members.',
-    group: 'Departments',
+    group: 'Data',
     hidden: ({ user }) => {
       // Hide from sidebar if not admin
       return (user as any)?.role !== 'admin'

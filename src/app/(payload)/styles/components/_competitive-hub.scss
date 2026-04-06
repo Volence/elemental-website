@@ -11,6 +11,7 @@
   // ── Tab Bar ──
   &__tabs {
     @include dashboard-tabs($admin-accent-warning);
+    flex-wrap: wrap;
   }
 
   &__tab {
@@ -19,6 +20,14 @@
     &--active {
       @include dashboard-tab-active($admin-accent-warning);
     }
+  }
+
+  &__tab-divider {
+    width: 1px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.12);
+    margin: 0 0.25rem;
+    align-self: center;
   }
 
   // ── Content ──

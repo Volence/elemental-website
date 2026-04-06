@@ -34,6 +34,7 @@ export const WatchedThreads: CollectionConfig = {
     defaultColumns: ['threadName', 'channelName', 'status', 'lastKeptAliveAt', 'createdAt'],
     description: 'Forum threads that are automatically kept active',
     group: 'Data',
+    hidden: true, // Accessed via Discord Server Manager 'Watched Threads' tab
   },
   fields: [
     {

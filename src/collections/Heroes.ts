@@ -11,14 +11,7 @@ export const Heroes: CollectionConfig = {
     group: 'Data',
     useAsTitle: 'name',
     defaultColumns: ['name', 'role', 'active'],
-    // Only show to scouting staff and staff-manager+
-    hidden: ({ user }) => {
-      if (!user) return true
-      const u = user as any
-      if (u.role === UserRole.ADMIN || u.role === UserRole.STAFF_MANAGER) return false
-      if (u.departments?.isScoutingStaff) return false
-      return true
-    },
+    hidden: true, // Accessed via Competitive Hub 'Heroes' tab
   },
   access: {
     // Only scouting staff and staff-manager+ can read

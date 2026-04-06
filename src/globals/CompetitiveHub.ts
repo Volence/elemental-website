@@ -3,9 +3,9 @@ import { isScoutingStaff } from '../access/roles'
 
 export const CompetitiveHub: GlobalConfig = {
   slug: 'competitive-hub',
-  label: 'Competitive Hub',
+  label: 'Scouting & Recruitment',
   admin: {
-    description: 'Opponent intelligence and scouting — wiki profiles, research boards, and competitive analysis.',
+    description: 'Opponent intelligence, scouting, recruitment, and competitive analysis.',
     group: 'Departments',
     hidden: ({ user }) => {
       if (!user) return true

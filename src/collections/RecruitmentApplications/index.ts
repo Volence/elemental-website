@@ -92,13 +92,7 @@ export const RecruitmentApplications: CollectionConfig = {
     defaultColumns: ['position', 'discordHandle', 'status', 'createdAt', 'actions'],
     description: 'Review and manage recruitment applications.',
     group: 'Data',
-    hidden: ({ user }) => {
-      if (!user) return true
-      // Hide from regular users - only show to managers and admins
-      return user.role !== 'admin' && 
-             user.role !== 'staff-manager' && 
-             user.role !== 'team-manager'
-    },
+    hidden: true, // Accessed via Competitive Hub 'Applications' tab
   },
   fields: [
     {

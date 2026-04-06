@@ -12,14 +12,7 @@ export const OpponentTeams: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'rank', 'status', 'region'],
     description: 'External teams for scouting and scrim tracking',
-    // Only show to scouting staff and staff-manager+
-    hidden: ({ user }) => {
-      if (!user) return true
-      const u = user as any
-      if (u.role === UserRole.ADMIN || u.role === UserRole.STAFF_MANAGER) return false
-      if (u.departments?.isScoutingStaff) return false
-      return true
-    },
+    hidden: true, // Accessed via Competitive Hub 'Opponent Teams' tab
   },
   access: {
     // Only scouting staff and staff-manager+ can read

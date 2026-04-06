@@ -1,10 +1,11 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Calendar, LayoutList, Target, FileText } from 'lucide-react'
+import { Calendar, LayoutList, Target, FileText, MessageSquare, Settings } from 'lucide-react'
 import { CalendarView } from './SocialMediaDashboard/CalendarView'
 import { WeeklyGoals } from './SocialMediaDashboard/WeeklyGoals'
 import { TemplatesView } from './SocialMediaDashboard/TemplatesView'
+import { SocialPostsTab } from './SocialMediaDashboard/SocialPostsTab'
 import { KanbanBoard } from './WorkboardKanban'
 
 export default function SocialMediaDashboard() {
@@ -40,6 +41,22 @@ export default function SocialMediaDashboard() {
         >
           <FileText size={14} /> Templates
         </button>
+
+        <span className="social-media-dashboard__tab-divider" />
+
+        <button 
+          className={`social-media-dashboard__tab ${activeTab === 'posts' ? 'social-media-dashboard__tab--active' : ''}`}
+          onClick={() => setActiveTab('posts')}
+        >
+          <MessageSquare size={14} /> Posts
+        </button>
+
+        <button 
+          className={`social-media-dashboard__tab ${activeTab === 'settings' ? 'social-media-dashboard__tab--active' : ''}`}
+          onClick={() => setActiveTab('settings')}
+        >
+          <Settings size={14} /> Settings
+        </button>
       </nav>
       
       <div className="social-media-dashboard__content">
@@ -47,6 +64,17 @@ export default function SocialMediaDashboard() {
         {activeTab === 'workboard' && <KanbanBoard department="social-media" title="Social Media Workboard" />}
         {activeTab === 'goals' && <WeeklyGoals />}
         {activeTab === 'templates' && <TemplatesView />}
+        {activeTab === 'posts' && <SocialPostsTab />}
+        {activeTab === 'settings' && (
+          <div className="collection-list-tab" style={{ textAlign: 'center', padding: '2rem' }}>
+            <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '1rem' }}>
+              Configure templates, goals, and content guidelines for the social media department.
+            </p>
+            <a href="/admin/globals/social-media-config" className="collection-list-tab__btn collection-list-tab__btn--primary">
+              <Settings size={14} /> <span>Open Social Media Settings</span>
+            </a>
+          </div>
+        )}
       </div>
     </div>
   )

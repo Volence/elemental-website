@@ -12,14 +12,7 @@ export const Maps: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'type'],
     description: 'Overwatch competitive maps',
-    // Only show to scouting staff and staff-manager+
-    hidden: ({ user }) => {
-      if (!user) return true
-      const u = user as any
-      if (u.role === UserRole.ADMIN || u.role === UserRole.STAFF_MANAGER) return false
-      if (u.departments?.isScoutingStaff) return false
-      return true
-    },
+    hidden: true, // Accessed via Competitive Hub 'Maps' tab
   },
   access: {
     // Scouting staff, team managers, and staff-manager+ can read

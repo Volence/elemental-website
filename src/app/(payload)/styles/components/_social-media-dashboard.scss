@@ -20,6 +20,14 @@
         @include dashboard-tab-active($admin-accent-primary);
       }
     }
+
+    &__tab-divider {
+      width: 1px;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.12);
+      margin: 0 0.25rem;
+      align-self: center;
+    }
     
     &__content {
       min-height: 400px;

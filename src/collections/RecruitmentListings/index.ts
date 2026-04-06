@@ -77,13 +77,7 @@ export const RecruitmentListings: CollectionConfig = {
     defaultColumns: ['teamDisplay', 'roleDisplay', 'status', 'createdAt', 'actions'],
     description: 'Manage open player positions and recruitment listings.',
     group: 'Data',
-    hidden: ({ user }) => {
-      if (!user) return true
-      // Hide from regular users - only show to managers and admins
-      return user.role !== 'admin' && 
-             user.role !== 'staff-manager' && 
-             user.role !== 'team-manager'
-    },
+    hidden: true, // Accessed via Competitive Hub 'Listings' tab
     listSearchableFields: ['requirements'],
     pagination: {
       defaultLimit: 25,
