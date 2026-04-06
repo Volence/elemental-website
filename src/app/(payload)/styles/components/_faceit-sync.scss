@@ -52,6 +52,28 @@
     margin-top: $spacing-md;
     font-size: $font-size-xs;
     color: $admin-text-muted;
+
+    ul {
+      margin-left: 1.5rem;
+      margin-top: 0.5rem;
+    }
+
+    p + p {
+      margin-top: 0.5rem;
+    }
+  }
+
+  &__inline-icon {
+    display: inline;
+    vertical-align: text-bottom;
+    margin-right: 4px;
+  }
+
+  &__last-synced {
+    margin-top: 0.75rem;
+    font-size: 0.8125rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
   }
 }
 
@@ -65,9 +87,83 @@
   }
 }
 
+// ============================================
+// FACEIT BULK SYNC COMPONENT
+// ============================================
 
+.faceit-bulk {
+  // ── Action Row ──
+  &__actions {
+    margin-bottom: 1rem;
 
+    &--no-results {
+      margin-bottom: 0;
+    }
+  }
 
+  &__progress {
+    font-style: italic;
+  }
+
+  // ── Results Header ──
+  &__results-header {
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+
+  &__results-icon {
+    font-size: 1.25rem;
+  }
+
+  // ── Stats Grid ──
+  &__stats {
+    margin-bottom: 1rem;
+
+    &--no-details {
+      margin-bottom: 0;
+    }
+  }
+
+  &__value--error {
+    color: #f87171;
+  }
+
+  // ── Details Section ──
+  &__details {
+    margin-top: 1rem;
+  }
+
+  &__details-summary {
+    cursor: pointer;
+    display: inline-block;
+    padding: 0.5rem 1rem;
+  }
+
+  &__details-list {
+    margin-top: 0.75rem;
+  }
+
+  &__detail-card {
+    padding: 0.75rem;
+  }
+
+  &__team-name {
+    font-weight: 500;
+  }
+
+  &__error-text {
+    color: #f87171;
+  }
+
+  &__error-card {
+    margin-top: 1rem;
+    color: #f87171;
+  }
+
+  &__note {
+    margin-top: 0.75rem;
+  }
+}
 
 
 

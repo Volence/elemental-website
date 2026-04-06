@@ -15,7 +15,7 @@ export const DuplicatePeopleList: React.FC<DuplicatePeopleListProps> = ({ duplic
 
   return (
     <div>
-      <h4 className="mb-2 font-semibold">🔄 Potential Duplicate People ({duplicates.length})</h4>
+      <h4 className="mb-2 font-semibold">Potential Duplicate People ({duplicates.length})</h4>
       <p className="text-sm mb-3 opacity-80">
         These People entries have very similar names and may be duplicates. Review and consider
         merging them.
@@ -24,37 +24,34 @@ export const DuplicatePeopleList: React.FC<DuplicatePeopleListProps> = ({ duplic
         {duplicates.map((dup, idx) => (
           <div
             key={idx}
-            className="notification-item notification-item--warning"
-            style={{ flexDirection: 'column' as const, alignItems: 'flex-start' }}
+            className="notification-item notification-item--warning dc-check__issue-item"
           >
-            <div style={{ width: '100%' }}>
-              <div style={{ marginBottom: '0.5rem' }}>
+            <div className="dc-check__full-width">
+              <div className="dc-check__pair-row">
                 <strong>{dup.person1.name}</strong>
-                <span style={{ marginLeft: '0.5rem', opacity: 0.7, fontSize: '0.875rem' }}>({dup.person1.slug})</span>
+                <span className="dc-check__slug">({dup.person1.slug})</span>
                 <a
                   href={`/admin/collections/people/${dup.person1.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="notification-btn notification-btn--view"
-                  style={{ marginLeft: '0.5rem' }}
+                  className="notification-btn notification-btn--view dc-check__view-link"
                 >
                   View
                 </a>
               </div>
-              <div style={{ marginBottom: '0.5rem' }}>
+              <div className="dc-check__pair-row">
                 <strong>{dup.person2.name}</strong>
-                <span style={{ marginLeft: '0.5rem', opacity: 0.7, fontSize: '0.875rem' }}>({dup.person2.slug})</span>
+                <span className="dc-check__slug">({dup.person2.slug})</span>
                 <a
                   href={`/admin/collections/people/${dup.person2.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="notification-btn notification-btn--view"
-                  style={{ marginLeft: '0.5rem' }}
+                  className="notification-btn notification-btn--view dc-check__view-link"
                 >
                   View
                 </a>
               </div>
-              <div style={{ fontSize: '0.875rem', opacity: 0.7 }}>
+              <div className="dc-check__similarity">
                 Similarity: {Math.round(dup.similarity * 100)}%
               </div>
             </div>
@@ -64,4 +61,3 @@ export const DuplicatePeopleList: React.FC<DuplicatePeopleListProps> = ({ duplic
     </div>
   )
 }
-

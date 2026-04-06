@@ -4,35 +4,24 @@ export const DataConsistency: GlobalConfig = {
   slug: 'data-consistency',
   label: 'Data Consistency',
   admin: {
-    description: '📊 Check and fix data consistency issues across collections.',
+    description: 'Check and fix data consistency issues across collections.',
     group: 'System',
-    // Hide the default UI elements
+    hidden: true, // Accessible via System Health hub
     hideAPIURL: true,
-    // Hide the save button gutter
     components: {
-      elements: {
-        SaveButton: '@/components/EmptyComponent#default',
-        SaveDraftButton: '@/components/EmptyComponent#default',
-        PublishButton: '@/components/EmptyComponent#default',
-      },
-    },
-  },
-  fields: [
-    {
-      name: 'content',
-      type: 'ui',
-      admin: {
-        components: {
-          Field: '@/components/DataConsistencyView#default',
+      views: {
+        edit: {
+          root: {
+            Component: '@/components/DataConsistencyView#default',
+          },
         },
       },
     },
-  ],
+  },
   access: {
     read: ({ req }) => {
-      // Only admins can access
       return req.user?.role === 'admin'
     },
   },
+  fields: [],
 }
-

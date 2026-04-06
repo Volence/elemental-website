@@ -5,31 +5,22 @@ export const ErrorDashboard: GlobalConfig = {
   slug: 'error-dashboard',
   label: 'Error Dashboard',
   admin: {
-    description: '⚠️ Monitor and track application errors for debugging.',
+    description: 'Monitor and track application errors for debugging.',
     group: 'System',
+    hidden: true, // Accessible via System Health hub
     hideAPIURL: true,
     components: {
-      elements: {
-        SaveButton: '@/components/EmptyComponent#default',
-        SaveDraftButton: '@/components/EmptyComponent#default',
-        PublishButton: '@/components/EmptyComponent#default',
+      views: {
+        edit: {
+          root: {
+            Component: '@/components/ErrorDashboardView#default',
+          },
+        },
       },
     },
   },
   access: {
     read: isAdmin,
   },
-  fields: [
-    {
-      name: 'content',
-      type: 'ui',
-      admin: {
-        components: {
-          Field: '@/components/ErrorDashboardView#default',
-        },
-      },
-    },
-  ],
+  fields: [],
 }
-
-

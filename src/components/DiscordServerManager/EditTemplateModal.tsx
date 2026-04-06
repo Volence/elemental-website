@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Modal } from './Modal'
-import { Plus, Trash2, GripVertical, ArrowUp, ArrowDown, Edit2, Hash, Volume2, MessageSquare } from 'lucide-react'
+import { ArrowDown, ArrowUp, Edit2, GripVertical, Hash, MessageSquare, Plus, Trash2, Volume2 } from 'lucide-react'
 
 const COMMON_CATEGORY_PERMS = [
   'ViewChannel', 'SendMessages', 'ReadMessageHistory', 'Connect', 'Speak',
@@ -108,7 +108,7 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
     switch (type) {
       case 0: return <Hash size={14} />
       case 2: return <Volume2 size={14} />
-      case 15: return <span className="channel-icon-emoji">💬</span>
+      case 15: return <span className="channel-icon-emoji"><MessageSquare size={14} /></span>
       default: return <Hash size={14} />
     }
   }
@@ -456,7 +456,7 @@ export const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
                     onClick={() => handleAddChannel(15)}
                     type="button"
                   >
-                    <span className="channel-icon-emoji">💬</span> Forum Channel
+                    <span className="channel-icon-emoji"><MessageSquare size={14} /></span> Forum Channel
                   </button>
                 </div>
               )}

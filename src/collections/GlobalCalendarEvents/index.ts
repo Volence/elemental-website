@@ -55,7 +55,7 @@ export const GlobalCalendarEvents: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'eventType', 'region', 'dateStart', 'dateEnd', 'publishToDiscord'],
-    description: '📅 Global calendar events for competitive dates, tournaments, and community events',
+    description: 'Global calendar events for competitive dates, tournaments, and community events',
     group: 'Organization',
     hidden: hideFromPlayers,
     listSearchableFields: ['title', 'description'],

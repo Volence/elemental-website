@@ -32,7 +32,7 @@ export const WatchedThreads: CollectionConfig = {
   admin: {
     useAsTitle: 'threadName',
     defaultColumns: ['threadName', 'channelName', 'status', 'lastKeptAliveAt', 'createdAt'],
-    description: '📌 Forum threads that are automatically kept active',
+    description: 'Forum threads that are automatically kept active',
     group: 'Discord',
   },
   fields: [

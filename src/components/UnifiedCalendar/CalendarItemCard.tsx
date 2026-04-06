@@ -4,6 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import type { CalendarItem } from './types'
 import { getDepartmentColor } from './types'
+import { ClipboardList, Pin, Smartphone, Swords } from 'lucide-react'
 
 interface CalendarItemCardProps {
   item: CalendarItem
@@ -13,12 +14,12 @@ interface CalendarItemCardProps {
 export function CalendarItemCard({ item, compact = false }: CalendarItemCardProps) {
   const color = getDepartmentColor(item.department)
   
-  const getTypeIcon = () => {
+  const getTypeIcon = (): React.ReactNode => {
     switch (item.type) {
-      case 'task': return '📋'
-      case 'match': return '⚔️'
-      case 'social-post': return '📱'
-      default: return '📌'
+      case 'task': return <ClipboardList size={14} />
+      case 'match': return <Swords size={14} />
+      case 'social-post': return <Smartphone size={12} />
+      default: return <Pin size={14} />
     }
   }
 

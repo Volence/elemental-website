@@ -65,7 +65,7 @@ export const DeleteMatchButton: React.FC = () => {
         disabled={isDeleting}
         buttonStyle="error"
       >
-        {isDeleting ? 'Deleting...' : '🗑️ Delete This Match'}
+        {isDeleting ? 'Deleting...' : 'Delete This Match'}
       </Button>
       <p style={{ 
         marginTop: '0.5rem', 

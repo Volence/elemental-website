@@ -292,15 +292,15 @@
   border: 1px solid $admin-border-normal;
   border-radius: $radius-lg;
   padding: $spacing-lg;
-  transition: box-shadow $transition-normal ease;
-  
+  transition: border-color $transition-normal ease;
+
   &:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: rgba(6, 182, 212, 0.15);
   }
-  
+
   &--resolved {
-    opacity: 0.7;
-    border-color: rgba(34, 197, 94, 0.3);
+    opacity: 0.65;
+    border-color: rgba(34, 197, 94, 0.2);
   }
 }
 
@@ -391,15 +391,7 @@
   }
 }
 
-.monitoring-error-message {
-  font-size: 1rem;
-  font-weight: 500;
-  color: $admin-text-primary;
-  padding: $spacing-md;
-  background: $admin-bg-elevated;
-  border-radius: $radius-sm;
-  border-left: 3px solid $admin-accent-error;
-}
+// Error message styling is defined below (single definition)
 
 .monitoring-stack-trace {
   max-height: 400px;
@@ -427,15 +419,16 @@
 }
 
 .monitoring-error-message {
-  padding: $spacing-md;
-  background: rgba(239, 68, 68, 0.08);
-  border-radius: $radius-sm;
-  border-left: 4px solid $admin-accent-error;
+  font-size: 0.95rem;
+  font-weight: 500;
   color: $admin-text-primary;
-  font-size: 0.9rem;
+  padding: $spacing-sm $spacing-md;
+  border-left: 3px solid $admin-accent-error;
+  background: transparent;
+  border-radius: 0;
   line-height: 1.5;
   word-break: break-word;
-  margin-bottom: $spacing-md;
+  margin-bottom: $spacing-sm;
 }
 
 .monitoring-error-group-summary {
@@ -445,20 +438,19 @@
 }
 
 .monitoring-group-toggle {
-  background: $admin-bg-elevated;
-  border: 1px solid $admin-border-normal;
-  border-radius: $radius-md;
-  padding: $spacing-sm $spacing-md;
-  color: $admin-text-primary;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: $spacing-sm 0;
+  color: $admin-text-secondary;
   font-size: 0.875rem;
   cursor: pointer;
   width: 100%;
   text-align: left;
-  transition: $transition-all-normal;
-  
+  transition: color $transition-normal ease;
+
   &:hover {
-    background: $admin-bg-hover;
-    border-color: $admin-accent-primary;
+    color: $admin-accent-primary;
   }
 }
 
@@ -592,7 +584,6 @@
   gap: $spacing-sm;
   margin-top: $spacing-md;
   padding-top: $spacing-md;
-  border-top: 1px solid $admin-border-normal;
 }
 
 .monitoring-action-btn {

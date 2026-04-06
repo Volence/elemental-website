@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { Loader2, AlertCircle, ArrowLeft } from 'lucide-react'
 import RangeFilter, { type RangeValue } from '@/components/RangeFilter'
 
 // ── Types ──
@@ -78,12 +79,7 @@ const PURPLE = '#a855f7'
 const BLUE = '#3b82f6'
 const PINK = '#ec4899'
 
-const cardStyle: React.CSSProperties = {
-  background: BG_CARD, border: `1px solid ${BORDER}`, borderRadius: '12px', padding: '20px',
-}
-const glowCardStyle: React.CSSProperties = {
-  ...cardStyle, boxShadow: `0 0 20px ${BORDER_GLOW}`,
-}
+
 const RESULT_COLORS: Record<string, { bg: string; text: string; label: string }> = {
   win: { bg: `${GREEN}18`, text: GREEN, label: 'W' },
   loss: { bg: `${RED}18`, text: RED, label: 'L' },
@@ -121,19 +117,19 @@ export default function ScrimTeamDetailView() {
       .finally(() => setLoading(false))
   }, [range])
 
-  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px', color: TEXT_SECONDARY }}>Loading team stats…</div>
-  if (error) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px', color: RED }}>{error}</div>
+  if (loading) return <div className="scrim-players__loading"><div className="scrim-players__loading-icon"><Loader2 size={32} /></div><div className="scrim-players__loading-text">Loading team stats…</div></div>
+  if (error) return <div className="scrim-players__error"><p><AlertCircle size={16} style={{ verticalAlign: 'middle', marginRight: '6px' }} />{error}</p></div>
   if (!data) return null
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto', fontFamily: "'Inter', -apple-system, sans-serif" }}>
+    <div className="scrim-detail__content" style={{ maxWidth: '1200px' }}>
       {/* Header */}
-      <div style={{ marginBottom: '24px' }}>
+      <div className="scrim-detail__header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <a href="/admin/scrims" style={{ color: TEXT_DIM, textDecoration: 'none', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>← Back to Scrims</a>
-            <h1 style={{ color: TEXT_PRIMARY, fontSize: '28px', fontWeight: 700, margin: '8px 0 0', letterSpacing: '-0.5px' }}>{data.teamName}</h1>
-            <p style={{ color: TEXT_SECONDARY, fontSize: '14px', margin: '4px 0 0' }}>
+            <a href="/admin/scrims" className="scrim-detail__back-link"><ArrowLeft size={12} /> Back to Scrims</a>
+            <h1 className="scrim-detail__player-name" style={{ fontSize: '28px' }}>{data.teamName}</h1>
+            <p className="scrim-detail__player-meta">
               {data.totalScrims} scrim{data.totalScrims !== 1 ? 's' : ''} · {data.totalMaps} map{data.totalMaps !== 1 ? 's' : ''}
             </p>
           </div>
@@ -142,13 +138,9 @@ export default function ScrimTeamDetailView() {
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: '4px', marginBottom: '24px', borderBottom: `1px solid ${BORDER}`, paddingBottom: '0', overflowX: 'auto' }}>
+      <div className="scrim-detail__tabs">
         {TABS.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)} style={{
-            padding: '10px 16px', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
-            background: 'transparent', border: 'none', borderBottom: tab === t.id ? `2px solid ${CYAN}` : '2px solid transparent',
-            color: tab === t.id ? CYAN : TEXT_SECONDARY, transition: 'all 0.2s', whiteSpace: 'nowrap',
-          }}>{t.label}</button>
+          <button key={t.id} onClick={() => setTab(t.id)} className={`scrim-detail__tab ${tab === t.id ? 'scrim-detail__tab--active' : ''}`}>{t.label}</button>
         ))}
       </div>
 
@@ -171,9 +163,9 @@ function OverviewTab({ data }: { data: TeamData }) {
   const { record, winRate, avgMatchTime, recentScrims, strengths, teamfights, rolePerformance } = data
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div className="scrim-detail__section-stack">
       {/* KPI Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px' }}>
+      <div className="scrim-detail__auto-grid--narrow">
         <SummaryCard label="Record" value={`${record.wins}-${record.losses}-${record.draws}`} sub="W-L-D" color={CYAN} />
         <SummaryCard label="Win Rate" value={`${winRate}%`} sub={`${record.wins + record.losses + record.draws} maps`} color={winRate >= 50 ? GREEN : RED} />
         <SummaryCard label="Fight Win %" value={`${teamfights.fightWinRate}%`} sub={`${teamfights.totalFights} fights`} color={teamfights.fightWinRate >= 50 ? GREEN : RED} />
@@ -184,26 +176,26 @@ function OverviewTab({ data }: { data: TeamData }) {
       {/* Role Balance Radar + Strengths side by side */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
         {/* Role Balance Radar */}
-        <div style={glowCardStyle}>
-          <h3 style={{ color: TEXT_PRIMARY, fontSize: '15px', fontWeight: 600, marginTop: 0, marginBottom: '16px' }}>Role Balance</h3>
+        <div className="scrim-detail__card">
+          <h3 className="scrim-detail__card-title">Role Balance</h3>
           <RoleRadar rolePerformance={rolePerformance} />
         </div>
 
         {/* Strengths & Weaknesses */}
-        <div style={glowCardStyle}>
-          <h3 style={{ color: TEXT_PRIMARY, fontSize: '15px', fontWeight: 600, marginTop: 0, marginBottom: '16px' }}>Strengths & Weaknesses</h3>
+        <div className="scrim-detail__card">
+          <h3 className="scrim-detail__card-title">Strengths & Weaknesses</h3>
           {strengths.best && (
             <div style={{ padding: '12px', background: `${GREEN}10`, borderRadius: '8px', marginBottom: '10px', border: `1px solid ${GREEN}22` }}>
               <div style={{ color: GREEN, fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Best Map</div>
-              <div style={{ color: TEXT_PRIMARY, fontSize: '16px', fontWeight: 700 }}>{strengths.best.mapName}</div>
-              <div style={{ color: TEXT_SECONDARY, fontSize: '12px' }}>{strengths.best.winRate}% win rate · {strengths.best.played} played · {strengths.best.mapType}</div>
+              <div className="scrim-detail__heading-lg">{strengths.best.mapName}</div>
+              <div className="scrim-detail__text-secondary">{strengths.best.winRate}% win rate · {strengths.best.played} played · {strengths.best.mapType}</div>
             </div>
           )}
           {strengths.worst && (
             <div style={{ padding: '12px', background: `${RED}10`, borderRadius: '8px', border: `1px solid ${RED}22` }}>
               <div style={{ color: RED, fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Worst Map</div>
-              <div style={{ color: TEXT_PRIMARY, fontSize: '16px', fontWeight: 700 }}>{strengths.worst.mapName}</div>
-              <div style={{ color: TEXT_SECONDARY, fontSize: '12px' }}>{strengths.worst.winRate}% win rate · {strengths.worst.played} played · {strengths.worst.mapType}</div>
+              <div className="scrim-detail__heading-lg">{strengths.worst.mapName}</div>
+              <div className="scrim-detail__text-secondary">{strengths.worst.winRate}% win rate · {strengths.worst.played} played · {strengths.worst.mapType}</div>
             </div>
           )}
           {!strengths.best && !strengths.worst && (
@@ -212,15 +204,15 @@ function OverviewTab({ data }: { data: TeamData }) {
           {/* First Death Recovery */}
           <div style={{ marginTop: '12px', padding: '12px', background: `${AMBER}08`, borderRadius: '8px', border: `1px solid ${AMBER}18` }}>
             <div style={{ color: AMBER, fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>First Death Recovery</div>
-            <div style={{ color: TEXT_PRIMARY, fontSize: '16px', fontWeight: 700 }}>{teamfights.firstDeathWinRate}%</div>
-            <div style={{ color: TEXT_SECONDARY, fontSize: '12px' }}>Win rate after suffering first death ({teamfights.firstDeathTotal} fights)</div>
+            <div className="scrim-detail__heading-lg">{teamfights.firstDeathWinRate}%</div>
+            <div className="scrim-detail__text-secondary">Win rate after suffering first death ({teamfights.firstDeathTotal} fights)</div>
           </div>
         </div>
       </div>
 
       {/* Recent Scrims */}
-      <div style={cardStyle}>
-        <h3 style={{ color: TEXT_PRIMARY, fontSize: '15px', fontWeight: 600, marginTop: 0, marginBottom: '12px' }}>Recent Scrims</h3>
+      <div className="scrim-detail__card">
+        <h3 className="scrim-detail__card-title">Recent Scrims</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {recentScrims.map(s => {
             const firstMapId = s.maps[0]?.mapDataId
@@ -379,34 +371,34 @@ function MapsTab({ data }: { data: TeamData }) {
   const matrixLookup = new Map(data.playerMapMatrix.map(pm => [`${pm.personId}__${pm.mapName}`, pm]))
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div className="scrim-detail__section-stack">
       {/* Map table */}
-      <div style={{ ...cardStyle, overflowX: 'auto' }}>
-        <h3 style={{ color: TEXT_PRIMARY, fontSize: '15px', fontWeight: 600, marginTop: 0, marginBottom: '12px' }}>Map Performance</h3>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+      <div className="scrim-detail__card scrim-detail__scroll-x">
+        <h3 className="scrim-detail__card-title">Map Performance</h3>
+        <table className="scrim-detail__map-table">
           <thead>
             <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
               {['mapName', 'played', 'winRate'].map(k => (
-                <th key={k} onClick={() => handleSort(k as typeof sortKey)} style={{ padding: '8px 12px', textAlign: k === 'mapName' ? 'left' : 'center', color: TEXT_SECONDARY, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', fontSize: '12px' }}>
+                <th key={k} onClick={() => handleSort(k as typeof sortKey)} className={`scrim-detail__map-th ${k !== 'mapName' ? 'scrim-detail__map-th--right' : ''}`} style={{ cursor: 'pointer' }}>
                   {k === 'mapName' ? 'Map' : k === 'played' ? 'Played' : 'Win %'}{arrow(k)}
                 </th>
               ))}
-              <th style={{ padding: '8px 12px', textAlign: 'center', color: TEXT_SECONDARY, fontWeight: 600, fontSize: '12px' }}>Record</th>
-              <th style={{ padding: '8px 12px', textAlign: 'center', color: TEXT_SECONDARY, fontWeight: 600, fontSize: '12px' }}>Type</th>
-              <th style={{ padding: '8px 12px', textAlign: 'center', color: TEXT_SECONDARY, fontWeight: 600, fontSize: '12px' }}>Avg Time</th>
+              <th className="scrim-detail__map-th scrim-detail__map-th--right">Record</th>
+              <th className="scrim-detail__map-th scrim-detail__map-th--right">Type</th>
+              <th className="scrim-detail__map-th scrim-detail__map-th--right">Avg Time</th>
             </tr>
           </thead>
           <tbody>
             {sorted.map(m => (
-              <tr key={m.mapName} style={{ borderBottom: `1px solid ${BORDER}44` }}>
-                <td style={{ padding: '10px 12px', color: TEXT_PRIMARY, fontWeight: 600 }}>{m.mapName}</td>
-                <td style={{ padding: '10px 12px', textAlign: 'center', color: TEXT_SECONDARY }}>{m.played}</td>
-                <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+              <tr key={m.mapName} className="scrim-detail__map-row">
+                <td className="scrim-detail__map-td scrim-detail__map-td--map">{m.mapName}</td>
+                <td className="scrim-detail__map-td scrim-detail__map-td--stat">{m.played}</td>
+                <td className="scrim-detail__map-td scrim-detail__map-td--stat">
                   <span style={{ color: m.winRate >= 50 ? GREEN : m.winRate > 0 ? RED : TEXT_DIM, fontWeight: 600 }}>{m.winRate}%</span>
                 </td>
-                <td style={{ padding: '10px 12px', textAlign: 'center', color: TEXT_SECONDARY }}>{m.wins}-{m.losses}-{m.draws}</td>
-                <td style={{ padding: '10px 12px', textAlign: 'center', color: TEXT_DIM, fontSize: '12px' }}>{m.mapType}</td>
-                <td style={{ padding: '10px 12px', textAlign: 'center', color: TEXT_DIM }}>{m.avgTime ? formatTime(m.avgTime) : '—'}</td>
+                <td className="scrim-detail__map-td scrim-detail__map-td--stat">{m.wins}-{m.losses}-{m.draws}</td>
+                <td className="scrim-detail__map-td scrim-detail__map-td--stat scrim-detail__map-td--date">{m.mapType}</td>
+                <td className="scrim-detail__map-td scrim-detail__map-td--stat">{m.avgTime ? formatTime(m.avgTime) : '—'}</td>
               </tr>
             ))}
           </tbody>
@@ -415,8 +407,8 @@ function MapsTab({ data }: { data: TeamData }) {
 
       {/* Player × Map Matrix */}
       {players.length > 0 && mapNames.length > 0 && (
-        <div style={{ ...cardStyle, overflowX: 'auto' }}>
-          <h3 style={{ color: TEXT_PRIMARY, fontSize: '15px', fontWeight: 600, marginTop: 0, marginBottom: '12px' }}>Player × Map Win Rate</h3>
+        <div className="scrim-detail__card scrim-detail__scroll-x">
+          <h3 className="scrim-detail__card-title">Player × Map Win Rate</h3>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
             <thead>
               <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
@@ -451,12 +443,12 @@ function MapsTab({ data }: { data: TeamData }) {
 // ════════════════════════════════════════════════════════════════
 function RosterTab({ data }: { data: TeamData }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div className="scrim-detail__section-stack">
       {/* Role Performance Cards */}
       {data.rolePerformance.length > 0 && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
           {data.rolePerformance.map(r => (
-            <div key={r.role} style={{ ...glowCardStyle, borderLeft: `3px solid ${ROLE_COLORS[r.role] ?? CYAN}` }}>
+            <div key={r.role} className="scrim-detail__card" style={{ borderLeft: `3px solid ${ROLE_COLORS[r.role] ?? CYAN}` }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
                 <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: ROLE_COLORS[r.role] ?? CYAN }} />
                 <span style={{ color: TEXT_PRIMARY, fontSize: '15px', fontWeight: 700 }}>{r.role}</span>
@@ -478,9 +470,8 @@ function RosterTab({ data }: { data: TeamData }) {
       {/* Player Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
         {data.roster.map(p => (
-          <a key={p.personId} href={`/admin/scrim-player-detail?personId=${p.personId}`} style={{ ...cardStyle, textDecoration: 'none', transition: 'border-color 0.2s, background 0.2s', cursor: 'pointer' }}
-            onMouseOver={e => { e.currentTarget.style.borderColor = `${CYAN}44`; e.currentTarget.style.background = BG_CARD_HOVER }}
-            onMouseOut={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.background = BG_CARD }}>
+          <a key={p.personId} href={`/admin/scrim-player-detail?personId=${p.personId}`} className="scrim-detail__card scrim-detail__card--hoverable" style={{ textDecoration: 'none' }}>
+
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <span style={{ color: TEXT_PRIMARY, fontSize: '15px', fontWeight: 700 }}>{p.name}</span>
               <span style={{ color: TEXT_DIM, fontSize: '11px' }}>{p.mapsPlayed} maps</span>
@@ -525,30 +516,30 @@ function OpponentsTab({ data }: { data: TeamData }) {
   })
 
   return (
-    <div style={cardStyle}>
-      <h3 style={{ color: TEXT_PRIMARY, fontSize: '15px', fontWeight: 600, marginTop: 0, marginBottom: '12px' }}>Opponent History</h3>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+    <div className="scrim-detail__card">
+      <h3 className="scrim-detail__card-title">Opponent History</h3>
+      <table className="scrim-detail__map-table">
         <thead>
           <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
             {['name', 'totalMaps', 'winRate'].map(k => (
-              <th key={k} onClick={() => handleSort(k as typeof sortKey)} style={{ padding: '8px 12px', textAlign: k === 'name' ? 'left' : 'center', color: TEXT_SECONDARY, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', fontSize: '12px' }}>
+              <th key={k} onClick={() => handleSort(k as typeof sortKey)} className={`scrim-detail__map-th ${k !== 'name' ? 'scrim-detail__map-th--right' : ''}`} style={{ cursor: 'pointer' }}>
                 {k === 'name' ? 'Opponent' : k === 'totalMaps' ? 'Maps' : 'Win %'}{arrow(k)}
               </th>
             ))}
-            <th style={{ padding: '8px 12px', textAlign: 'center', color: TEXT_SECONDARY, fontWeight: 600, fontSize: '12px' }}>Record</th>
-            <th style={{ padding: '8px 12px', textAlign: 'center', color: TEXT_SECONDARY, fontWeight: 600, fontSize: '12px' }}>Last Played</th>
+              <th className="scrim-detail__map-th scrim-detail__map-th--right">Record</th>
+              <th className="scrim-detail__map-th scrim-detail__map-th--right">Last Played</th>
           </tr>
         </thead>
         <tbody>
           {sorted.map(o => (
-            <tr key={o.name} style={{ borderBottom: `1px solid ${BORDER}44` }}>
-              <td style={{ padding: '10px 12px', color: TEXT_PRIMARY, fontWeight: 600 }}>{o.name}</td>
-              <td style={{ padding: '10px 12px', textAlign: 'center', color: TEXT_SECONDARY }}>{o.totalMaps}</td>
-              <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+            <tr key={o.name} className="scrim-detail__map-row">
+              <td className="scrim-detail__map-td scrim-detail__map-td--map">{o.name}</td>
+              <td className="scrim-detail__map-td scrim-detail__map-td--stat">{o.totalMaps}</td>
+              <td className="scrim-detail__map-td scrim-detail__map-td--stat">
                 <span style={{ color: o.winRate >= 50 ? GREEN : RED, fontWeight: 600 }}>{o.winRate}%</span>
               </td>
-              <td style={{ padding: '10px 12px', textAlign: 'center', color: TEXT_SECONDARY }}>{o.wins}-{o.losses}-{o.draws}</td>
-              <td style={{ padding: '10px 12px', textAlign: 'center', color: TEXT_DIM, fontSize: '12px' }}>{o.lastPlayed ? formatDate(o.lastPlayed) : '—'}</td>
+              <td className="scrim-detail__map-td scrim-detail__map-td--stat">{o.wins}-{o.losses}-{o.draws}</td>
+              <td className="scrim-detail__map-td scrim-detail__map-td--stat scrim-detail__map-td--date">{o.lastPlayed ? formatDate(o.lastPlayed) : '—'}</td>
             </tr>
           ))}
         </tbody>
@@ -564,24 +555,24 @@ function TrendsTab({ data }: { data: TeamData }) {
   const { trends } = data
   const [formCount, setFormCount] = useState(10)
 
-  return <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+  return <div className="scrim-detail__section-stack">
     {/* Win Rate Over Time Chart */}
-    <div style={glowCardStyle}>
-      <h3 style={{ color: TEXT_PRIMARY, fontSize: '15px', fontWeight: 600, marginTop: 0, marginBottom: '16px' }}>Win Rate Over Time</h3>
+    <div className="scrim-detail__card">
+      <h3 className="scrim-detail__card-title">Win Rate Over Time</h3>
       <WinRateChart data={trends.weeklyWinRates} />
     </div>
 
     {/* Streaks */}
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
+    <div className="scrim-detail__auto-grid">
       <SummaryCard label="Current Streak" value={trends.streaks.current > 0 ? `${trends.streaks.current} ${trends.streaks.currentType === 'win' ? 'W' : 'L'}` : '—'} sub={trends.streaks.currentType === 'win' ? 'winning' : trends.streaks.currentType === 'loss' ? 'losing' : ''} color={trends.streaks.currentType === 'win' ? GREEN : trends.streaks.currentType === 'loss' ? RED : TEXT_DIM} />
       <SummaryCard label="Longest Win Streak" value={String(trends.streaks.longestWin)} sub="consecutive wins" color={GREEN} />
       <SummaryCard label="Longest Loss Streak" value={String(trends.streaks.longestLoss)} sub="consecutive losses" color={RED} />
     </div>
 
     {/* Recent Form */}
-    <div style={cardStyle}>
+    <div className="scrim-detail__card">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-        <h3 style={{ color: TEXT_PRIMARY, fontSize: '15px', fontWeight: 600, margin: 0 }}>Recent Form</h3>
+        <h3 className="scrim-detail__card-title" style={{ margin: 0 }}>Recent Form</h3>
         <div style={{ display: 'flex', gap: '4px' }}>
           {[5, 10, 20].map(n => (
             <button key={n} onClick={() => setFormCount(n)} style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 600, background: formCount === n ? `${CYAN}22` : 'transparent', color: formCount === n ? CYAN : TEXT_DIM, border: `1px solid ${formCount === n ? CYAN + '44' : BORDER}`, borderRadius: '6px', cursor: 'pointer' }}>Last {n}</button>
@@ -602,7 +593,7 @@ function TrendsTab({ data }: { data: TeamData }) {
         const l = slice.filter(f => f.result === 'loss').length
         const d = slice.filter(f => f.result === 'draw').length
         const wr = slice.length > 0 ? Math.round((w / slice.length) * 100) : 0
-        return <div style={{ color: TEXT_SECONDARY, fontSize: '12px' }}>Last {slice.length}: {w}W {l}L {d}D — {wr}% win rate</div>
+        return <div className="scrim-detail__text-secondary">Last {slice.length}: {w}W {l}L {d}D — {wr}% win rate</div>
       })()}
     </div>
   </div>
@@ -661,9 +652,9 @@ function WinRateChart({ data }: { data: WeeklyWinRate[] }) {
 function HeroesTab({ data }: { data: TeamData }) {
   const { heroes } = data
 
-  return <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+  return <div className="scrim-detail__section-stack">
     {/* Overview cards */}
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
+    <div className="scrim-detail__auto-grid">
       <SummaryCard label="Unique Heroes" value={String(heroes.totalUnique)} sub={`of ${heroes.roleBreakdown.Tank + heroes.roleBreakdown.Damage + heroes.roleBreakdown.Support} roles used`} color={CYAN} />
       <SummaryCard label="Diversity Score" value={`${heroes.diversityScore}%`} sub="hero pool coverage" color={heroes.diversityScore >= 40 ? GREEN : AMBER} />
       <SummaryCard label="Tank Heroes" value={String(heroes.roleBreakdown.Tank)} sub="unique tanks used" color={BLUE} />
@@ -678,7 +669,7 @@ function HeroesTab({ data }: { data: TeamData }) {
       const maxTime = Math.max(...roleHeroes.map(h => h.totalTime), 1)
 
       return (
-        <div key={role} style={{ ...cardStyle, borderLeft: `3px solid ${ROLE_COLORS[role]}` }}>
+         <div key={role} className="scrim-detail__card" style={{ borderLeft: `3px solid ${ROLE_COLORS[role]}` }}>
           <h3 style={{ color: ROLE_COLORS[role], fontSize: '14px', fontWeight: 700, marginTop: 0, marginBottom: '12px' }}>{role} Heroes</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {roleHeroes.map(h => (
@@ -714,9 +705,9 @@ function TeamfightsTab({ data }: { data: TeamData }) {
     wasteRate: r.ultsEarned > 0 ? Math.round(((r.ultsEarned - r.ultsUsed) / r.ultsEarned) * 100) : 0,
   }))
 
-  return <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+  return <div className="scrim-detail__section-stack">
     {/* Fight Stats KPIs */}
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px' }}>
+    <div className="scrim-detail__auto-grid--narrow">
       <SummaryCard label="Total Fights" value={String(teamfights.totalFights)} sub="team fights analyzed" color={CYAN} />
       <SummaryCard label="Fight Win Rate" value={`${teamfights.fightWinRate}%`} sub={`${teamfights.fightsWon} won`} color={teamfights.fightWinRate >= 50 ? GREEN : RED} />
       <SummaryCard label="First Pick Win %" value={`${teamfights.firstPickWinRate}%`} sub={`${teamfights.firstPickTotal} first picks`} color={teamfights.firstPickWinRate >= 50 ? GREEN : AMBER} />
@@ -725,8 +716,8 @@ function TeamfightsTab({ data }: { data: TeamData }) {
     </div>
 
     {/* Win Probability Insights */}
-    <div style={glowCardStyle}>
-      <h3 style={{ color: TEXT_PRIMARY, fontSize: '15px', fontWeight: 600, marginTop: 0, marginBottom: '16px' }}>Win Probability Insights</h3>
+    <div className="scrim-detail__card">
+      <h3 className="scrim-detail__card-title">Win Probability Insights</h3>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <InsightBar label="When we get first pick" value={teamfights.firstPickWinRate} total={teamfights.firstPickTotal} color={GREEN} />
         <InsightBar label="When we suffer first death" value={teamfights.firstDeathWinRate} total={teamfights.firstDeathTotal} color={RED} />
@@ -735,8 +726,8 @@ function TeamfightsTab({ data }: { data: TeamData }) {
     </div>
 
     {/* Ultimate Economy */}
-    <div style={cardStyle}>
-      <h3 style={{ color: TEXT_PRIMARY, fontSize: '15px', fontWeight: 600, marginTop: 0, marginBottom: '16px' }}>Ultimate Economy</h3>
+    <div className="scrim-detail__card">
+      <h3 className="scrim-detail__card-title">Ultimate Economy</h3>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px' }}>
         {ultData.map(u => (
           <div key={u.role} style={{ padding: '14px', background: BG_BASE, borderRadius: '8px', borderLeft: `3px solid ${ROLE_COLORS[u.role] ?? CYAN}` }}>
@@ -759,7 +750,7 @@ function InsightBar({ label, value, total, color }: { label: string; value: numb
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-        <span style={{ color: TEXT_SECONDARY, fontSize: '12px' }}>{label}</span>
+        <span className="scrim-detail__text-secondary">{label}</span>
         <span style={{ color, fontSize: '13px', fontWeight: 700 }}>{value}% <span style={{ color: TEXT_DIM, fontWeight: 400, fontSize: '11px' }}>({total})</span></span>
       </div>
       <div style={{ height: '8px', background: `${BORDER}66`, borderRadius: '4px', overflow: 'hidden' }}>
@@ -775,10 +766,10 @@ function InsightBar({ label, value, total, color }: { label: string; value: numb
 
 function SummaryCard({ label, value, sub, color }: { label: string; value: string; sub: string; color: string }) {
   return (
-    <div style={{ ...cardStyle, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-      <span style={{ color: TEXT_DIM, fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</span>
-      <span style={{ color, fontSize: '24px', fontWeight: 700, lineHeight: 1.1 }}>{value}</span>
-      <span style={{ color: TEXT_DIM, fontSize: '11px' }}>{sub}</span>
+    <div className="scrim-detail__summary-card">
+      <span className="scrim-detail__label">{label}</span>
+      <span className="scrim-detail__summary-value" style={{ color }}>{value}</span>
+      <span className="scrim-detail__summary-sub">{sub}</span>
     </div>
   )
 }

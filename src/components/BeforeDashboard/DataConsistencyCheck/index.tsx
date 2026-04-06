@@ -92,24 +92,14 @@ const DataConsistencyCheck: React.FC = () => {
             {hasIssues && (
               <button
                 onClick={() => setShowDetails(!showDetails)}
-                className="notification-btn notification-btn--primary"
-                style={{ marginBottom: '1rem' }}
+                className="notification-btn notification-btn--primary dc-check__details-toggle"
               >
                 {showDetails ? 'Hide Details' : 'Show Details'}
               </button>
             )}
 
             {showDetails && hasIssues && (
-              <div style={{ 
-                marginTop: '1.5rem', 
-                maxHeight: '500px', 
-                overflowY: 'auto' as const,
-                padding: '1.5rem',
-                borderRadius: '8px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                background: 'rgba(0, 0, 0, 0.03)',
-                backdropFilter: 'blur(8px)'
-              }}>
+              <div className="dc-check__details-panel">
                 <OrphanedPeopleList 
                   people={report.orphanedPeople} 
                   onPersonDeleted={runCheck}
@@ -121,7 +111,7 @@ const DataConsistencyCheck: React.FC = () => {
 
             {report && !hasIssues && (
               <div className="alert alert--success">
-                ✅ <strong>All good!</strong> All People are linked to either a team or a staff position. 
+                All good! <strong>All People are linked to either a team or a staff position.</strong> 
                 No teams with missing relationships or duplicate entries found.
               </div>
             )}

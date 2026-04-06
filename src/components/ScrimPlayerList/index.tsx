@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
+import { Loader2, AlertCircle, X } from 'lucide-react'
 import RangeFilter, { type RangeValue } from '@/components/RangeFilter'
 
 type PlayerSummary = {
@@ -21,24 +22,6 @@ type PlayerSummary = {
 
 type SortKey = 'name' | 'team' | 'mostPlayedHero' | 'mapsPlayed' | 'eliminations' | 'deaths' | 'finalBlows' | 'damage' | 'healing'
 type SortDir = 'asc' | 'desc'
-
-// ── Design tokens (Clean Glow) ──
-const CYAN = '#06b6d4'
-const GREEN = '#22c55e'
-const RED = '#ef4444'
-const AMBER = '#f59e0b'
-const BG = '#0a0e1a'
-const BG_CARD = 'rgba(255, 255, 255, 0.03)'
-const BORDER = 'rgba(255, 255, 255, 0.06)'
-const TEXT_PRIMARY = '#f0f0f5'
-const TEXT_SECONDARY = '#71717a'
-
-const CARD_STYLE: React.CSSProperties = {
-  background: BG_CARD,
-  border: `1px solid ${BORDER}`,
-  borderRadius: '12px',
-  overflow: 'hidden',
-}
 
 function formatNumber(n: number): string {
   return n.toLocaleString(undefined, { maximumFractionDigits: 0 })
@@ -139,17 +122,19 @@ export default function ScrimPlayerListView() {
 
   if (loading) {
     return (
-      <div style={{ padding: '80px 40px', textAlign: 'center', fontFamily: "'Inter', -apple-system, sans-serif" }}>
-        <div style={{ fontSize: '32px', marginBottom: '12px', animation: 'glowPulse 2s ease-in-out infinite' }}>⏳</div>
-        <div style={{ fontSize: '14px', color: TEXT_SECONDARY }}>Loading player stats…</div>
-        <style>{`@keyframes glowPulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }`}</style>
+      <div className="scrim-players__loading">
+        <div className="scrim-players__loading-icon">
+          <Loader2 size={32} />
+        </div>
+        <div className="scrim-players__loading-text">Loading player stats…</div>
       </div>
     )
   }
   if (error) {
     return (
-      <div style={{ padding: '60px', textAlign: 'center' }}>
-        <p style={{ color: RED }}>❌ {error}</p>
+      <div className="scrim-players__error">
+        <AlertCircle size={16} style={{ verticalAlign: 'middle', marginRight: '6px' }} />
+        {error}
       </div>
     )
   }
@@ -163,24 +148,12 @@ export default function ScrimPlayerListView() {
 
   const renderTableHead = (showTeam = true) => (
     <thead>
-      <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
+      <tr>
         {COLUMNS.filter(col => showTeam || col.key !== 'team').map((col) => (
           <th
             key={col.key}
             onClick={() => handleSort(col.key)}
-            style={{
-              padding: '14px 16px',
-              textAlign: col.align,
-              cursor: 'pointer',
-              fontWeight: sortKey === col.key ? 700 : 500,
-              color: sortKey === col.key ? CYAN : TEXT_SECONDARY,
-              fontSize: '10px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-              whiteSpace: 'nowrap',
-              userSelect: 'none',
-              transition: 'color 0.15s',
-            }}
+            className={`scrim-players__th ${sortKey === col.key ? 'scrim-players__th--sorted' : ''} ${col.align === 'right' ? 'scrim-players__th--right' : ''}`}
           >
             {col.label}
             {sortKey === col.key && (sortDir === 'asc' ? ' ↑' : ' ↓')}
@@ -194,41 +167,33 @@ export default function ScrimPlayerListView() {
     <tr
       key={p.personId ? `pid-${p.personId}` : p.name}
       onClick={() => navigateToPlayer(p)}
-      style={{
-        cursor: 'pointer',
-        borderBottom: `1px solid ${BORDER}`,
-        transition: 'background 0.15s',
-      }}
-      onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.03)')}
-      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+      className="scrim-players__row"
     >
-      <td style={{ padding: '12px 16px', fontWeight: 700, color: TEXT_PRIMARY }}>{p.name}</td>
-      {showTeam && <td style={{ padding: '12px 16px', color: TEXT_SECONDARY }}>{p.team}</td>}
-      <td style={{ padding: '12px 16px', color: TEXT_SECONDARY }}>{p.mostPlayedHero}</td>
-      <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 600, color: CYAN, fontVariantNumeric: 'tabular-nums' }}>{p.mapsPlayed}</td>
-      <td style={{ padding: '12px 16px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{p.eliminations}</td>
-      <td style={{ padding: '12px 16px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{p.deaths}</td>
-      <td style={{ padding: '12px 16px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{p.finalBlows}</td>
-      <td style={{ padding: '12px 16px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{formatNumber(p.damage)}</td>
-      <td style={{ padding: '12px 16px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{formatNumber(p.healing)}</td>
+      <td className="scrim-players__td scrim-players__td--name">{p.name}</td>
+      {showTeam && <td className="scrim-players__td scrim-players__td--secondary">{p.team}</td>}
+      <td className="scrim-players__td scrim-players__td--secondary">{p.mostPlayedHero}</td>
+      <td className="scrim-players__td scrim-players__td--maps">{p.mapsPlayed}</td>
+      <td className="scrim-players__td scrim-players__td--stat">{p.eliminations}</td>
+      <td className="scrim-players__td scrim-players__td--stat">{p.deaths}</td>
+      <td className="scrim-players__td scrim-players__td--stat">{p.finalBlows}</td>
+      <td className="scrim-players__td scrim-players__td--stat">{formatNumber(p.damage)}</td>
+      <td className="scrim-players__td scrim-players__td--stat">{formatNumber(p.healing)}</td>
     </tr>
   )
 
   return (
-    <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto', fontFamily: "'Inter', -apple-system, sans-serif", background: BG, minHeight: '100%' }}>
+    <div className="scrim-players">
       {/* Header */}
-      <div style={{ marginBottom: '32px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div className="scrim-players__header">
+        <div className="scrim-players__header-row">
           <div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '16px' }}>
-              <h1 style={{ fontSize: '32px', fontWeight: 800, margin: 0, color: TEXT_PRIMARY, letterSpacing: '-0.5px' }}>
-                Player Stats
-              </h1>
-              <span style={{ fontSize: '13px', color: TEXT_SECONDARY }}>
+            <div className="scrim-players__title-row">
+              <h1 className="scrim-players__title">Player Stats</h1>
+              <span className="scrim-players__count">
                 {players.length} player{players.length !== 1 ? 's' : ''}
               </span>
             </div>
-            <p style={{ color: TEXT_SECONDARY, fontSize: '14px', marginTop: '6px' }}>
+            <p className="scrim-players__subtitle">
               Aggregated career stats across all scrims
             </p>
           </div>
@@ -238,33 +203,22 @@ export default function ScrimPlayerListView() {
 
       {/* Team Sections */}
       {teamSections.map((section) => (
-        <div key={section.teamId} style={{ marginBottom: '32px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>
+        <div key={section.teamId} className="scrim-players__team-section">
+          <div className="scrim-players__team-header">
+            <h2 className="scrim-players__team-name">
               <a
                 href={`/admin/scrim-team?teamId=${section.teamId}`}
-                style={{ color: TEXT_PRIMARY, textDecoration: 'none', transition: 'color 0.15s' }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = CYAN)}
-                onMouseLeave={(e) => (e.currentTarget.style.color = TEXT_PRIMARY)}
+                className="scrim-players__team-link"
               >
                 {section.name}
               </a>
             </h2>
-            <span style={{
-              display: 'inline-block',
-              padding: '2px 10px',
-              borderRadius: '999px',
-              fontSize: '11px',
-              fontWeight: 600,
-              background: 'rgba(6, 182, 212, 0.15)',
-              color: CYAN,
-              border: '1px solid rgba(6, 182, 212, 0.25)',
-            }}>
+            <span className="scrim-players__badge scrim-players__badge--cyan">
               {section.players.length} player{section.players.length !== 1 ? 's' : ''}
             </span>
           </div>
-          <div style={CARD_STYLE}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+          <div className="scrim-players__table-card">
+            <table className="scrim-players__table">
               {renderTableHead(false)}
               <tbody>
                 {sortPlayers(section.players).map(p => renderPlayerRow(p, false))}
@@ -275,75 +229,41 @@ export default function ScrimPlayerListView() {
       ))}
 
       {/* Other Players (Opponents) */}
-      <div style={{ marginBottom: '32px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px', flexWrap: 'wrap' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: TEXT_PRIMARY }}>
+      <div className="scrim-players__team-section">
+        <div className="scrim-players__team-header">
+          <h2 className="scrim-players__team-name" style={{ color: 'var(--admin-text-primary, #f0f0f5)' }}>
             Other Players
           </h2>
-          <span style={{
-            display: 'inline-block',
-            padding: '2px 10px',
-            borderRadius: '999px',
-            fontSize: '11px',
-            fontWeight: 600,
-            background: 'rgba(113, 113, 122, 0.15)',
-            color: TEXT_SECONDARY,
-            border: '1px solid rgba(113, 113, 122, 0.25)',
-          }}>
+          <span className="scrim-players__badge scrim-players__badge--muted">
             {filteredOthers.length} of {otherPlayers.length} player{otherPlayers.length !== 1 ? 's' : ''}
           </span>
           {/* Search bar */}
-          <div style={{ marginLeft: 'auto', position: 'relative' }}>
+          <div className="scrim-players__search-wrap">
             <input
               type="text"
               placeholder="Search players, teams, heroes…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{
-                padding: '8px 14px',
-                paddingRight: search ? '32px' : '14px',
-                borderRadius: '8px',
-                border: `1px solid ${BORDER}`,
-                background: 'rgba(255, 255, 255, 0.04)',
-                color: TEXT_PRIMARY,
-                fontSize: '13px',
-                outline: 'none',
-                width: '240px',
-                transition: 'border-color 0.15s',
-              }}
-              onFocus={(e) => (e.target.style.borderColor = 'rgba(6, 182, 212, 0.4)')}
-              onBlur={(e) => (e.target.style.borderColor = BORDER)}
+              className={`scrim-players__search-input ${search ? 'scrim-players__search-input--has-value' : ''}`}
             />
             {search && (
               <button
                 onClick={() => setSearch('')}
-                style={{
-                  position: 'absolute',
-                  right: '8px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 'none',
-                  color: TEXT_SECONDARY,
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  padding: '2px',
-                  lineHeight: 1,
-                }}
+                className="scrim-players__search-clear"
               >
-                ✕
+                <X size={14} />
               </button>
             )}
           </div>
         </div>
 
-        <div style={CARD_STYLE}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+        <div className="scrim-players__table-card">
+          <table className="scrim-players__table">
             {renderTableHead()}
             <tbody>
               {filteredOthers.length === 0 ? (
                 <tr>
-                  <td colSpan={COLUMNS.length} style={{ padding: '40px', textAlign: 'center', color: TEXT_SECONDARY }}>
+                  <td colSpan={COLUMNS.length} className="scrim-players__empty">
                     {search ? `No players matching "${search}"` : 'No opponent data yet'}
                   </td>
                 </tr>

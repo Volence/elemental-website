@@ -5,6 +5,7 @@ import { useDashboardStats } from '@/utilities/adminHooks'
 import { useAdminUser } from '@/utilities/adminAuth'
 import { UserRole } from '@/access/roles'
 import { GradientBorder } from '../GradientBorder'
+import { Users, User, Gamepad2, CalendarDays, Building2, Clapperboard } from 'lucide-react'
 
 /**
  * Component that displays quick statistics on the dashboard
@@ -37,7 +38,7 @@ const QuickStats: React.FC = () => {
       label: 'Teams',
       value: stats.teams,
       link: '/admin/collections/teams',
-      icon: '👥',
+      icon: <Users size={18} />,
       description: 'View all teams',
       variant: 'teams',
     },
@@ -45,7 +46,7 @@ const QuickStats: React.FC = () => {
       label: 'People',
       value: stats.people,
       link: '/admin/collections/people',
-      icon: '👤',
+      icon: <User size={18} />,
       description: 'View all people',
       variant: 'people',
     },
@@ -53,7 +54,7 @@ const QuickStats: React.FC = () => {
       label: 'All Matches',
       value: stats.matches,
       link: '/admin/collections/matches',
-      icon: '🎮',
+      icon: <Gamepad2 size={18} />,
       description: 'View all matches',
       variant: 'matches',
     },
@@ -61,7 +62,7 @@ const QuickStats: React.FC = () => {
       label: 'Upcoming',
       value: stats.upcomingMatches,
       link: '/admin/collections/matches?sort=date',
-      icon: '📅',
+      icon: <CalendarDays size={18} />,
       description: 'View upcoming matches',
       variant: 'upcoming',
     },
@@ -76,7 +77,7 @@ const QuickStats: React.FC = () => {
         label: 'Org Staff',
         value: stats.orgStaff,
         link: '/admin/collections/organization-staff',
-        icon: '🏢',
+        icon: <Building2 size={18} />,
         description: 'View organization staff',
         variant: 'org-staff',
       },
@@ -84,7 +85,7 @@ const QuickStats: React.FC = () => {
         label: 'Production',
         value: stats.production,
         link: '/admin/collections/production',
-        icon: '🎬',
+        icon: <Clapperboard size={18} />,
         description: 'View production staff',
         variant: 'production',
       }

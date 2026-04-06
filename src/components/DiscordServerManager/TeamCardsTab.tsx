@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { formatLocalDateTime } from '@/utilities/formatDateTime'
+import { AlertTriangle, CheckCircle, FileEdit, RefreshCw, Spade, XCircle } from 'lucide-react'
 
 interface TeamCardInfo {
   id: number
@@ -88,7 +89,7 @@ export default function TeamCardsTab({ onAlert }: TeamCardsTabProps) {
   }
 
   const handleFullRefresh = async () => {
-    if (!confirm('⚠️ Full Refresh will DELETE ALL cards and repost them in order.\n\nThis rebuilds the entire card list from scratch.\n\nContinue?')) {
+    if (!confirm('⚠ Full Refresh will DELETE ALL cards and repost them in order.\n\nThis rebuilds the entire card list from scratch.\n\nContinue?')) {
       return
     }
     
@@ -161,7 +162,7 @@ export default function TeamCardsTab({ onAlert }: TeamCardsTabProps) {
   return (
     <div className="team-cards-tab">
       <div className="team-cards-header">
-        <h3>🎴 Team Cards</h3>
+        <h3><Spade size={14} /> Team Cards</h3>
         <p className="description">
           Manage team embeds in the Discord cards channel. Cards are automatically updated when team data changes.
         </p>
@@ -174,7 +175,7 @@ export default function TeamCardsTab({ onAlert }: TeamCardsTabProps) {
           disabled={refreshing !== null}
           className="action-btn action-btn--soft"
         >
-          {refreshing === 'soft' ? '🔃 Updating...' : '🔃 Soft Refresh'}
+          <RefreshCw size={12} className={refreshing === 'soft' ? 'spinning' : ''} /> {refreshing === 'soft' ? 'Updating...' : 'Soft Refresh'}
         </button>
         
         <button
@@ -182,7 +183,7 @@ export default function TeamCardsTab({ onAlert }: TeamCardsTabProps) {
           disabled={refreshing !== null}
           className="action-btn action-btn--full"
         >
-          {refreshing === 'full' ? '🔄 Refreshing...' : '🔄 Full Refresh'}
+          <RefreshCw size={12} className={refreshing === 'full' ? 'spinning' : ''} /> {refreshing === 'full' ? 'Refreshing...' : 'Full Refresh'}
         </button>
         
         <div className="action-info">
@@ -194,7 +195,7 @@ export default function TeamCardsTab({ onAlert }: TeamCardsTabProps) {
       {/* Result Message */}
       {lastResult && (
         <div className={`result-message ${lastResult.success ? 'result-message--success' : 'result-message--error'}`}>
-          <strong>{lastResult.success ? '✅' : '❌'} {lastResult.message}</strong>
+          <strong>{lastResult.success ? <CheckCircle size={12} /> : <XCircle size={12} />} {lastResult.message}</strong>
           {lastResult.stats && (
             <p>
               Total: {lastResult.stats.total} | 
@@ -263,9 +264,9 @@ export default function TeamCardsTab({ onAlert }: TeamCardsTabProps) {
                 <td>{team.division || '—'}</td>
                 <td>
                   {team.discordCardMessageId ? (
-                    <span className="status-badge status-badge--success">✅ Posted</span>
+                    <span className="status-badge status-badge--success"><CheckCircle size={12} /> Posted</span>
                   ) : (
-                    <span className="status-badge status-badge--warning">⚠️ No Card</span>
+                    <span className="status-badge status-badge--warning"><AlertTriangle size={12} /> No Card</span>
                   )}
                 </td>
                 <td>
@@ -288,7 +289,7 @@ export default function TeamCardsTab({ onAlert }: TeamCardsTabProps) {
 
       {/* Slash Commands Section */}
       <div className="commands-section">
-        <h4>📝 Bot Commands</h4>
+        <h4><FileEdit size={14} /> Bot Commands</h4>
         <div className="commands-list">
           <div className="command-item">
             <code>/schedulepoll</code>

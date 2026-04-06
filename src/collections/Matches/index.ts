@@ -25,7 +25,7 @@ export const Matches: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['titleCell', 'date', 'team', 'status', 'updatedAt'],
-    description: '⚔️ Manage competitive matches for Elemental teams. Include match details, scores, streams, and VODs.',
+    description: 'Manage competitive matches for Elemental teams. Include match details, scores, streams, and VODs.',
     group: 'Production',
     // Hide from sidebar for regular production staff - they use Production Dashboard instead
     hidden: ({ user }) => {
@@ -342,7 +342,7 @@ export const Matches: CollectionConfig = {
               relationTo: 'teams',
               required: false,
               admin: {
-                description: '⚠️ LEGACY: Use Team 1 fields above instead. Kept for backwards compatibility.',
+                description: 'LEGACY: Use Team 1 fields above instead. Kept for backwards compatibility.',
                 condition: () => false, // Hide from UI, only used by existing data/API
               },
             },
@@ -351,7 +351,7 @@ export const Matches: CollectionConfig = {
               type: 'text',
               required: false,
               admin: {
-                description: '⚠️ LEGACY: Use Team 2 fields above instead. Kept for backwards compatibility.',
+                description: 'LEGACY: Use Team 2 fields above instead. Kept for backwards compatibility.',
                 condition: () => false, // Hide from UI, only used by existing data/API
               },
             },
@@ -542,7 +542,7 @@ export const Matches: CollectionConfig = {
         },
         {
           label: 'Production Workflow',
-          description: '📺 Staff availability, assignments, and broadcast schedule (used in Production Dashboard)',
+          description: 'Staff availability, assignments, and broadcast schedule (used in Production Dashboard)',
           fields: [
             {
               name: 'productionWorkflow',

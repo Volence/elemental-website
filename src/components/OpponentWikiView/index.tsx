@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { AlertTriangle, Ban, BookOpen, CheckCircle, Circle, ClipboardList, FileText, Flame, Frown, Gamepad2, HelpCircle, Lightbulb, MessageSquare, Minus, Skull, Target, ThumbsDown, ThumbsUp } from 'lucide-react'
 
 interface OpponentTeam {
   id: number
@@ -193,12 +194,12 @@ function OpponentWikiContent() {
           <div className="opponent-wiki__contacts">
             {team.managerContact && (
               <div className="opponent-wiki__contact">
-                💬 {team.managerContact}
+                <MessageSquare size={14} /> {team.managerContact}
               </div>
             )}
             {team.battleNet && (
               <div className="opponent-wiki__contact">
-                🎮 {team.battleNet}
+                <Gamepad2 size={14} /> {team.battleNet}
               </div>
             )}
           </div>
@@ -498,7 +499,7 @@ function IntelTab({ report, teamId }: { report?: ScoutReport; teamId: number }) 
                         {game.mapResult.toUpperCase()}
                       </span>
                     )}
-                    {game.replayCode && <span className="opponent-wiki__replay-code">🎮 {game.replayCode}</span>}
+                    {game.replayCode && <span className="opponent-wiki__replay-code"><Gamepad2 size={14} /> {game.replayCode}</span>}
                   </div>
 
                   {/* Bans */}
@@ -509,7 +510,7 @@ function IntelTab({ report, teamId }: { report?: ScoutReport; teamId: number }) 
                         const heroName = typeof ban.hero === 'object' ? ban.hero?.name : 'Unknown'
                         return (
                           <span key={bidx} className="opponent-wiki__ban-chip">
-                            {ban.direction === 'theyban' ? '🚫' : '🎯'} {heroName}
+                            {ban.direction === 'theyban' ? <Ban size={14} /> : <Target size={14} />} {heroName}
                           </span>
                         )
                       })}
@@ -551,19 +552,19 @@ function IntelTab({ report, teamId }: { report?: ScoutReport; teamId: number }) 
         <div className="opponent-wiki__notes-section">
           {report.overallNotes && (
             <div className="opponent-wiki__note-block">
-              <h4>📋 Overall Notes</h4>
+              <h4><ClipboardList size={14} /> Overall Notes</h4>
               <div className="opponent-wiki__rich-text" dangerouslySetInnerHTML={{ __html: renderRichText(report.overallNotes) }} />
             </div>
           )}
           {report.weaknesses && (
             <div className="opponent-wiki__note-block opponent-wiki__note-block--weakness">
-              <h4>⚠️ Weaknesses</h4>
+              <h4><AlertTriangle size={12} /> Weaknesses</h4>
               <div className="opponent-wiki__rich-text" dangerouslySetInnerHTML={{ __html: renderRichText(report.weaknesses) }} />
             </div>
           )}
           {report.recommendations && (
             <div className="opponent-wiki__note-block opponent-wiki__note-block--recommendation">
-              <h4>💡 Recommendations</h4>
+              <h4><Lightbulb size={14} /> Recommendations</h4>
               <div className="opponent-wiki__rich-text" dangerouslySetInnerHTML={{ __html: renderRichText(report.recommendations) }} />
             </div>
           )}
@@ -593,18 +594,18 @@ function renderRichText(content: any): string {
 }
 
 function ScrimHistoryTab({ scrims }: { scrims: ScrimOutcome[] }) {
-  const ratingEmoji: Record<string, string> = {
-    easywin: '✅',
-    closewin: '🔥',
-    neutral: '😐',
-    closeloss: '😓',
-    gotrolled: '💀',
+  const ratingIcons: Record<string, React.ReactNode> = {
+    easywin: <CheckCircle size={12} color="#22c55e" />,
+    closewin: <Flame size={12} color="#f97316" />,
+    neutral: <Minus size={12} color="#94a3b8" />,
+    closeloss: <Frown size={12} color="#f59e0b" />,
+    gotrolled: <Skull size={12} color="#ef4444" />,
   }
 
-  const worthEmoji: Record<string, string> = {
-    yes: '👍',
-    maybe: '🤔',
-    no: '👎',
+  const worthIcons: Record<string, React.ReactNode> = {
+    yes: <ThumbsUp size={12} color="#22c55e" />,
+    maybe: <HelpCircle size={12} color="#f59e0b" />,
+    no: <ThumbsDown size={12} color="#ef4444" />,
   }
 
   if (scrims.length === 0) {
@@ -625,10 +626,10 @@ function ScrimHistoryTab({ scrims }: { scrims: ScrimOutcome[] }) {
                 {new Date(scrim.scrimDate).toLocaleDateString()}
               </span>
               <span className="opponent-wiki__scrim-rating">
-                {ratingEmoji[scrim.rating] || '❓'} {scrim.rating}
+                {ratingIcons[scrim.rating] || <HelpCircle size={12} />} {scrim.rating}
               </span>
               <span className="opponent-wiki__scrim-worth">
-                {worthEmoji[scrim.worthScrimAgain] || '❓'} Scrim again?
+                {worthIcons[scrim.worthScrimAgain] || <HelpCircle size={12} />} Scrim again?
               </span>
             </div>
             {scrim.mapsPlayed && scrim.mapsPlayed.length > 0 && (
@@ -752,16 +753,16 @@ function aggregateBans(reports: ScoutReport[]): Map<string, BanAggregate> {
   return banMap
 }
 
-function getComfortLabel(comfort?: string): string {
-  const labels: Record<string, string> = {
-    dominate: '🟢 Dominate',
-    exceed: '🟢 Exceed',
-    neutral: '🟡 Neutral',
-    struggle: '🔴 Struggle',
-    gotrolled: '🔴 Got Rolled',
-    notplayed: '⬛ Not Played',
+function getComfortLabel(comfort?: string): { icon: React.ReactNode; label: string } {
+  const labels: Record<string, { icon: React.ReactNode; label: string }> = {
+    dominate: { icon: <Circle size={10} fill="#22c55e" stroke="#22c55e" />, label: 'Dominate' },
+    exceed: { icon: <Circle size={10} fill="#22c55e" stroke="#22c55e" />, label: 'Exceed' },
+    neutral: { icon: <Circle size={10} fill="#eab308" stroke="#eab308" />, label: 'Neutral' },
+    struggle: { icon: <Circle size={10} fill="#f97316" stroke="#f97316" />, label: 'Struggle' },
+    gotrolled: { icon: <Circle size={10} fill="#ef4444" stroke="#ef4444" />, label: 'Got Rolled' },
+    notplayed: { icon: <Circle size={10} fill="#334155" stroke="#334155" />, label: 'Not Played' },
   }
-  return labels[comfort || ''] || comfort || 'Unknown'
+  return labels[comfort || ''] || { icon: <Circle size={10} />, label: comfort || 'Unknown' }
 }
 
 // ============================================
@@ -835,7 +836,7 @@ function TeamsWithReportsView() {
   return (
     <div className="opponent-wiki" data-section="scouting">
       <div className="opponent-wiki__header">
-        <h1>📖 Opponent Wiki</h1>
+        <h1><BookOpen size={20} /> Opponent Wiki</h1>
         <p>Teams with intelligence profiles</p>
       </div>
       
@@ -861,7 +862,7 @@ function TeamsWithReportsView() {
                 {team.rank && <span className="badge">{team.rank}</span>}
                 {team.region && <span className="badge">{team.region.toUpperCase()}</span>}
                 <span className="opponent-wiki__report-count">
-                  📄 {team.reportCount} report{team.reportCount !== 1 ? 's' : ''}
+                  <FileText size={14} /> {team.reportCount} report{team.reportCount !== 1 ? 's' : ''}
                 </span>
               </div>
               {team.latestReportDate && (

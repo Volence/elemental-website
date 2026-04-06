@@ -8,6 +8,7 @@ import AssignedTeamsDashboard from './AssignedTeamsDashboard'
 import RecruitmentWidget from './RecruitmentWidget'
 import { useAuth } from '@payloadcms/ui'
 import type { User } from '@/payload-types'
+import { Shield, BarChart3, Gamepad2, Zap } from 'lucide-react'
 
 /**
  * Player-focused dashboard cards for "My Stats" and "My Team"
@@ -24,7 +25,7 @@ const PlayerDashboard: React.FC<{ user: User }> = ({ user }) => {
     const teamId = typeof team === 'object' ? team.id : team
     const teamName = typeof team === 'object' && team.name ? team.name : `Team ${teamId}`
     return {
-      icon: '🛡️',
+      icon: <Shield size={24} />,
       label: teamName,
       description: `View ${teamName} analytics`,
       href: `/admin/scrim-team?teamId=${teamId}`,
@@ -36,7 +37,7 @@ const PlayerDashboard: React.FC<{ user: User }> = ({ user }) => {
 
   const cards = [
     linkedPersonId && {
-      icon: '📊',
+      icon: <BarChart3 size={24} />,
       label: 'My Stats',
       description: 'View your personal performance analytics',
       href: `/admin/scrim-player-detail?personId=${linkedPersonId}`,
@@ -46,7 +47,7 @@ const PlayerDashboard: React.FC<{ user: User }> = ({ user }) => {
     },
     ...teamCards,
     {
-      icon: '🎮',
+      icon: <Gamepad2 size={24} />,
       label: 'All Scrims',
       description: 'Browse scrim history and map details',
       href: '/admin/scrims',
@@ -55,7 +56,7 @@ const PlayerDashboard: React.FC<{ user: User }> = ({ user }) => {
       accentColor: '#a855f7',
     },
     {
-      icon: '🦸',
+      icon: <Zap size={24} />,
       label: 'Hero Stats',
       description: 'Explore hero pick rates and performance',
       href: '/admin/scrim-heroes',
@@ -63,62 +64,40 @@ const PlayerDashboard: React.FC<{ user: User }> = ({ user }) => {
       borderColor: 'rgba(245, 158, 11, 0.3)',
       accentColor: '#f59e0b',
     },
-  ].filter(Boolean) as { icon: string; label: string; description: string; href: string; gradient: string; borderColor: string; accentColor: string }[]
+  ].filter(Boolean) as { icon: React.ReactNode; label: string; description: string; href: string; gradient: string; borderColor: string; accentColor: string }[]
 
   return (
-    <div>
-      <div style={{
-        marginBottom: '24px',
-        padding: '20px 24px',
-        background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.08) 0%, rgba(132, 204, 22, 0.06) 100%)',
-        border: '1px solid rgba(6, 182, 212, 0.2)',
-        borderRadius: '12px',
-      }}>
-        <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 700, color: '#f0f0f5', letterSpacing: '-0.3px' }}>
-          Welcome back, {user.name || 'Player'} 👋
+    <div className="player-dashboard">
+      <div className="player-dashboard__welcome">
+        <h2 className="player-dashboard__welcome-title">
+          Welcome back, {user.name || 'Player'}
         </h2>
-        <p style={{ margin: '6px 0 0', fontSize: '14px', color: '#71717a' }}>
+        <p className="player-dashboard__welcome-subtitle">
           Quick access to your stats and team analytics
         </p>
       </div>
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-        gap: '16px',
-        marginBottom: '24px',
-      }}>
+      <div className="player-dashboard__cards">
         {cards.map((card) => (
           <a
             key={card.label}
             href={card.href}
+            className="player-dashboard__card"
             style={{
-              display: 'block',
-              padding: '20px',
               background: card.gradient,
               border: `1px solid ${card.borderColor}`,
-              borderRadius: '12px',
-              textDecoration: 'none',
-              transition: 'transform 0.15s, box-shadow 0.15s',
-              cursor: 'pointer',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)'
               e.currentTarget.style.boxShadow = `0 4px 20px ${card.borderColor}`
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)'
               e.currentTarget.style.boxShadow = 'none'
             }}
           >
-            <div style={{ fontSize: '28px', marginBottom: '10px' }}>{card.icon}</div>
-            <div style={{ fontSize: '16px', fontWeight: 700, color: '#f0f0f5', marginBottom: '4px' }}>
-              {card.label}
-            </div>
-            <div style={{ fontSize: '12px', color: '#71717a' }}>
-              {card.description}
-            </div>
-            <div style={{ fontSize: '11px', color: card.accentColor, marginTop: '12px', fontWeight: 600 }}>
+            <div className="player-dashboard__card-icon" style={{ color: card.accentColor }}>{card.icon}</div>
+            <div className="player-dashboard__card-label">{card.label}</div>
+            <div className="player-dashboard__card-description">{card.description}</div>
+            <div className="player-dashboard__card-arrow" style={{ color: card.accentColor }}>
               View →
             </div>
           </a>
@@ -164,7 +143,7 @@ const BeforeDashboard: React.FC = () => {
       <AssignedTeamsDashboard />
       <QuickStats />
       <RecruitmentWidget />
-      <p style={{ fontSize: '13px', color: '#71717a', marginTop: '16px' }}>
+      <p className="dashboard-help-note">
         <em>Need help? Check the field descriptions in each collection for detailed guidance.</em>
       </p>
     </div>

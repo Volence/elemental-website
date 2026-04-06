@@ -10,7 +10,7 @@ export const AuditLogs: CollectionConfig = {
   admin: {
     useAsTitle: 'action',
     defaultColumns: ['action', 'user', 'collection', 'documentTitle', 'createdAt'],
-    description: '🔍 System-generated log of user actions for security monitoring.',
+    description: 'System-generated log of user actions for security monitoring.',
     group: 'System',
     hidden: () => true, // Hidden from sidebar (use Monitoring globals instead)
   },

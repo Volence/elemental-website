@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { useAuth } from '@payloadcms/ui'
+import { Calendar, PlusSquare, Users, ClipboardList, Building, BarChart3 } from 'lucide-react'
 import { WeeklyView } from './ProductionDashboard/WeeklyView'
 import { StaffSignupsView } from './ProductionDashboard/StaffSignupsView'
 import { AssignmentView } from './ProductionDashboard/AssignmentView'
@@ -28,13 +29,15 @@ export default function ProductionDashboardView() {
               className={`production-dashboard__tab ${activeTab === 'weekly' ? 'production-dashboard__tab--active' : ''}`}
               onClick={() => setActiveTab('weekly')}
             >
-              Weekly View
+              <Calendar size={14} />
+              <span>Weekly View</span>
             </button>
             <button 
               className={`production-dashboard__tab ${activeTab === 'bulk' ? 'production-dashboard__tab--active' : ''}`}
               onClick={() => setActiveTab('bulk')}
             >
-              Bulk Create
+              <PlusSquare size={14} />
+              <span>Bulk Create</span>
             </button>
           </>
         )}
@@ -44,7 +47,8 @@ export default function ProductionDashboardView() {
           className={`production-dashboard__tab ${activeTab === 'signups' ? 'production-dashboard__tab--active' : ''}`}
           onClick={() => setActiveTab('signups')}
         >
-          Staff Signups
+          <Users size={14} />
+          <span>Staff Signups</span>
         </button>
         
         {/* Only show management tabs to production managers */}
@@ -54,19 +58,22 @@ export default function ProductionDashboardView() {
               className={`production-dashboard__tab ${activeTab === 'assignment' ? 'production-dashboard__tab--active' : ''}`}
               onClick={() => setActiveTab('assignment')}
             >
-              Assignment
+              <ClipboardList size={14} />
+              <span>Assignment</span>
             </button>
             <button 
               className={`production-dashboard__tab ${activeTab === 'schedule' ? 'production-dashboard__tab--active' : ''}`}
               onClick={() => setActiveTab('schedule')}
             >
-              Schedule Builder
+              <Building size={14} />
+              <span>Schedule Builder</span>
             </button>
             <button 
               className={`production-dashboard__tab ${activeTab === 'summary' ? 'production-dashboard__tab--active' : ''}`}
               onClick={() => setActiveTab('summary')}
             >
-              Summary
+              <BarChart3 size={14} />
+              <span>Summary</span>
             </button>
           </>
         )}

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@payloadcms/ui'
+import { BarChart3, FileEdit, PartyPopper, Settings, Sparkles, Target, TrendingUp } from 'lucide-react'
 
 interface GoalsData {
   totalPostsPerWeek: number
@@ -141,7 +142,7 @@ export function WeeklyGoals() {
       </div>
 
       <div className="weekly-goals__overall">
-        <h3>📊 Overall Progress</h3>
+        <h3><BarChart3 size={14} /> Overall Progress</h3>
         <div className="goal-card goal-card--large">
           <div className="goal-card__stats">
             <div className="goal-stat">
@@ -163,11 +164,11 @@ export function WeeklyGoals() {
           <div className="goal-card__message">
             {totalNeed > 0 ? (
               <span className="need-message">
-                📝 Need {totalNeed} more post{totalNeed !== 1 ? 's' : ''} this week
+                <FileEdit size={14} /> Need {totalNeed} more post{totalNeed !== 1 ? 's' : ''} this week
               </span>
             ) : (
               <span className="complete-message">
-                🎉 Weekly goal achieved!
+                <PartyPopper size={14} /> Weekly goal achieved!
               </span>
             )}
           </div>
@@ -175,7 +176,7 @@ export function WeeklyGoals() {
       </div>
 
       <div className="weekly-goals__breakdown">
-        <h3>🎯 By Post Type</h3>
+        <h3><Target size={14} /> By Post Type</h3>
         <div className="goal-cards-grid">
           {goalItems.map(item => {
             const need = item.target - item.current
@@ -195,7 +196,7 @@ export function WeeklyGoals() {
                 </div>
                 {need > 0 && (
                   <div className="goal-card__action">
-                    <span className="need-count">📝 Need {need} more</span>
+                    <span className="need-count"><FileEdit size={14} /> Need {need} more</span>
                     <Link 
                       href={`/admin/collections/social-posts/create`}
                       className="btn btn--small"
@@ -216,7 +217,7 @@ export function WeeklyGoals() {
       </div>
 
       <div className="weekly-goals__other-stats">
-        <h3>📈 Other Posts This Week</h3>
+        <h3><TrendingUp size={14} /> Other Posts This Week</h3>
         <div className="stat-row">
           <span>Repost/Share:</span>
           <strong>{stats['Repost/Share']}</strong>
@@ -232,14 +233,14 @@ export function WeeklyGoals() {
           href="/admin/collections/social-posts/create"
           className="btn"
         >
-          ✨ Create New Post
+          <Sparkles size={14} /> Create New Post
         </Link>
         {isManager && (
           <Link 
             href="/admin/globals/social-media-config"
             className="btn btn--secondary"
           >
-            ⚙️ Edit Goals
+            <Settings size={12} /> Edit Goals
           </Link>
         )}
       </div>

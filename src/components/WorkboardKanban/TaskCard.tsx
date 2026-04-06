@@ -2,6 +2,7 @@
 
 import React from 'react'
 import type { Task } from '@/payload-types'
+import { Calendar, Paperclip, Send } from 'lucide-react'
 
 interface TaskCardProps {
   task: Task
@@ -57,7 +58,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
       {/* Request Badge */}
       {isRequest && requestedByDept && (
         <div className="task-item__request-badge">
-          📨 Request from {DEPT_NAMES[requestedByDept] || requestedByDept}
+          <Send size={12} /> Request from {DEPT_NAMES[requestedByDept] || requestedByDept}
         </div>
       )}
       
@@ -75,13 +76,13 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
           <div className="task-item__meta">
             {dueDate && (
               <span className={`task-item__date ${isOverdue ? 'task-item__date--overdue' : ''}`}>
-                📅 {formatDate(dueDate)}
+                <Calendar size={14} /> {formatDate(dueDate)}
               </span>
             )}
             
             {attachments.length > 0 && (
               <span className="task-item__attachments" title={`${attachments.length} attachment(s)`}>
-                📎 {attachments.length}
+                <Paperclip size={12} /> {attachments.length}
               </span>
             )}
           </div>

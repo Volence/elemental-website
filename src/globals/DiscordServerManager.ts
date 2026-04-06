@@ -16,25 +16,17 @@ export const DiscordServerManager: GlobalConfig = {
       // Hide from sidebar if not admin
       return (user as any)?.role !== 'admin'
     },
-    hideAPIURL: true, // No API needed for this UI-only global
+    hideAPIURL: true,
     components: {
-      elements: {
-        SaveButton: '@/components/EmptyComponent', // Hide save button (UI-only, no data to save)
-        SaveDraftButton: '@/components/EmptyComponent',
-        PublishButton: '@/components/EmptyComponent',
-      },
-    },
-  },
-  versions: false, // No versioning needed for UI-only global
-  fields: [
-    {
-      name: 'ui',
-      type: 'ui',
-      admin: {
-        components: {
-          Field: '@/components/DiscordServerManager/DiscordServerManagerView',
+      views: {
+        edit: {
+          root: {
+            Component: '@/components/DiscordServerManager/DiscordServerManagerView',
+          },
         },
       },
     },
-  ],
+  },
+  versions: false,
+  fields: [],
 }

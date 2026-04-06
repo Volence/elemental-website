@@ -39,7 +39,7 @@ export const Users: CollectionConfig = {
   admin: {
     defaultColumns: ['name', 'email', 'role', 'assignedTeams'],
     useAsTitle: 'name',
-    description: '👤 Manage admin users who can access the CMS. Assign roles to control what each user can edit.',
+    description: 'Manage admin users who can access the CMS. Assign roles to control what each user can edit.',
     group: 'System',
     hidden: ({ user }) => {
       // Hide from non-admin users

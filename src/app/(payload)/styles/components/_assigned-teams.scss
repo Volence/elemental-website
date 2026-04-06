@@ -2,6 +2,15 @@
  * Assigned Teams Dashboard & Banner Styles
  * ============================================ */
 
+/* Dashboard wrapper */
+.assigned-teams-dashboard {
+  padding: 0.875rem 1rem;
+  background: linear-gradient(135deg, rgba($admin-accent-info, 0.05) 0%, rgba(132, 204, 22, 0.05) 100%);
+  border: 2px solid rgba($admin-accent-info, 0.3);
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
 /* Dashboard header styles (separate from banner) */
 .assigned-teams-dashboard__header {
   display: inline-flex;

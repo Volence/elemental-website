@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { ChevronDown, ChevronRight } from 'lucide-react'
 import { useConfig } from '@payloadcms/ui'
 import { formatLocalDateTime } from '@/utilities/formatDateTime'
 
@@ -333,7 +334,7 @@ export default function ErrorDashboardView() {
       ) : groupedErrors.length === 0 ? (
         <div className="monitoring-empty">
           {resolvedFilter === 'unresolved' 
-            ? '✅ No unresolved errors found!' 
+            ? 'No unresolved errors found!' 
             : 'No error logs found'}
         </div>
       ) : (
@@ -392,7 +393,7 @@ export default function ErrorDashboardView() {
                         onClick={() => toggleGroupExpanded(groupKey)}
                         className="monitoring-group-toggle"
                       >
-                        {isExpanded ? '▼' : '▶'} {group.count} occurrences ({group.occurrences.filter(e => !e.resolved).length} unresolved)
+                        {isExpanded ? <ChevronDown size={12} className="scrim-detail__inline-icon" /> : <ChevronRight size={12} className="scrim-detail__inline-icon" />} {group.count} occurrences ({group.occurrences.filter(e => !e.resolved).length} unresolved)
                       </button>
 
                       {isExpanded && (

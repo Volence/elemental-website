@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { BookOpen, CheckSquare, Download, FileText, Folder, FolderOpen, Image, Palette, Pencil, Trash2, Upload, X } from 'lucide-react'
 
 interface FolderItem {
   id: number | string
@@ -624,13 +625,13 @@ export function FileBrowserView() {
   }
 
   // Get icon for non-image files
-  const getFileIcon = (mimeType?: string): string => {
-    if (!mimeType) return '📄'
-    if (mimeType.includes('pdf')) return '📕'
-    if (mimeType.includes('photoshop') || mimeType.includes('psd')) return '🎨'
-    if (mimeType.includes('illustrator') || mimeType.includes('postscript')) return '✏️'
-    if (mimeType.includes('svg')) return '🖼️'
-    return '📄'
+  const getFileIcon = (mimeType?: string): React.ReactNode => {
+    if (!mimeType) return <FileText size={14} />
+    if (mimeType.includes('pdf')) return <BookOpen size={14} />
+    if (mimeType.includes('photoshop') || mimeType.includes('psd')) return <Palette size={14} />
+    if (mimeType.includes('illustrator') || mimeType.includes('postscript')) return <Pencil size={12} />
+    if (mimeType.includes('svg')) return <Image size={14} />
+    return <FileText size={14} />
   }
 
   if (loading) {
@@ -683,7 +684,7 @@ export function FileBrowserView() {
                 onClick={() => navigateToFolder(crumb.id)}
                 disabled={index === breadcrumbs.length - 1}
               >
-                {index === 0 && <span className="file-browser__breadcrumb-icon">📁</span>}
+                {index === 0 && <span className="file-browser__breadcrumb-icon"><Folder size={14} /></span>}
                 {crumb.name}
               </button>
             </React.Fragment>
@@ -695,13 +696,13 @@ export function FileBrowserView() {
             className="file-browser__btn file-browser__btn--primary"
             onClick={() => fileInputRef.current?.click()}
           >
-            📤 Upload
+            <Upload size={12} /> Upload
           </button>
           <button 
             className="file-browser__btn file-browser__btn--secondary"
             onClick={() => setShowNewFolderModal(true)}
           >
-            📁 New Folder
+            <Folder size={14} /> New Folder
           </button>
         </div>
       </div>
@@ -710,11 +711,11 @@ export function FileBrowserView() {
       {hasSelection && (
         <div className="file-browser__toolbar">
           <span className="file-browser__toolbar-count">{selectedItems.size} selected</span>
-          <button onClick={downloadSelected} className="file-browser__toolbar-btn">📥 Download</button>
-          <button onClick={async () => { await fetchAllFolders(); setShowMoveModal(true) }} className="file-browser__toolbar-btn">📂 Move</button>
-          <button onClick={deleteSelected} className="file-browser__toolbar-btn file-browser__toolbar-btn--danger">🗑️ Delete</button>
-          <button onClick={selectAll} className="file-browser__toolbar-btn">☑️ Select All</button>
-          <button onClick={clearSelection} className="file-browser__toolbar-btn">✖️ Clear</button>
+          <button onClick={downloadSelected} className="file-browser__toolbar-btn"><Download size={12} /> Download</button>
+          <button onClick={async () => { await fetchAllFolders(); setShowMoveModal(true) }} className="file-browser__toolbar-btn"><FolderOpen size={14} /> Move</button>
+          <button onClick={deleteSelected} className="file-browser__toolbar-btn file-browser__toolbar-btn--danger"><Trash2 size={14} /> Delete</button>
+          <button onClick={selectAll} className="file-browser__toolbar-btn"><CheckSquare size={12} /> Select All</button>
+          <button onClick={clearSelection} className="file-browser__toolbar-btn"><X size={12} /> Clear</button>
         </div>
       )}
 
@@ -735,7 +736,7 @@ export function FileBrowserView() {
       {isDragging && (
         <div className="file-browser__drop-overlay">
           <div className="file-browser__drop-message">
-            <span className="file-browser__drop-icon">📥</span>
+            <span className="file-browser__drop-icon"><Download size={12} /></span>
             Drop files here to upload
           </div>
         </div>
@@ -765,7 +766,7 @@ export function FileBrowserView() {
             onContextMenu={(e) => handleContextMenu(e, 'folder', folder.id, folder.name)}
             draggable={false}
           >
-            <div className="file-browser__item-icon">📁</div>
+            <div className="file-browser__item-icon"><Folder size={14} /></div>
             <div className="file-browser__item-name">{folder.name}</div>
           </div>
         ))}
@@ -807,7 +808,7 @@ export function FileBrowserView() {
         {/* Empty state */}
         {folders.length === 0 && files.length === 0 && (
           <div className="file-browser__empty">
-            <div className="file-browser__empty-icon">📂</div>
+            <div className="file-browser__empty-icon"><FolderOpen size={14} /></div>
             <div className="file-browser__empty-text">This folder is empty</div>
             <div className="file-browser__empty-hint">
               Drag and drop files here, or click "Upload" to add assets
@@ -824,31 +825,31 @@ export function FileBrowserView() {
         >
           {contextMenu.type === 'folder' && (
             <>
-              <button onClick={() => handleContextAction('open')}>📂 Open</button>
-              <button onClick={() => handleContextAction('move')}>📁 Move to...</button>
-              <button onClick={() => handleContextAction('delete')} className="danger">🗑️ Delete</button>
+              <button onClick={() => handleContextAction('open')}><FolderOpen size={14} /> Open</button>
+              <button onClick={() => handleContextAction('move')}><Folder size={14} /> Move to...</button>
+              <button onClick={() => handleContextAction('delete')} className="danger"><Trash2 size={14} /> Delete</button>
             </>
           )}
           {contextMenu.type === 'file' && (
             <>
-              <button onClick={() => handleContextAction('open')}>📄 Open</button>
-              <button onClick={() => handleContextAction('download')}>📥 Download</button>
-              <button onClick={() => handleContextAction('move')}>📁 Move to...</button>
-              <button onClick={() => handleContextAction('delete')} className="danger">🗑️ Delete</button>
+              <button onClick={() => handleContextAction('open')}><FileText size={14} /> Open</button>
+              <button onClick={() => handleContextAction('download')}><Download size={12} /> Download</button>
+              <button onClick={() => handleContextAction('move')}><Folder size={14} /> Move to...</button>
+              <button onClick={() => handleContextAction('delete')} className="danger"><Trash2 size={14} /> Delete</button>
             </>
           )}
           {contextMenu.type === 'background' && (
             <>
               {selectedItems.size > 0 && (
                 <>
-                  <button onClick={() => { downloadSelected(); setContextMenu(prev => ({ ...prev, visible: false })) }}>📥 Download Selected ({selectedItems.size})</button>
-                  <button onClick={async () => { await fetchAllFolders(); setShowMoveModal(true); setContextMenu(prev => ({ ...prev, visible: false })) }}>📁 Move Selected</button>
-                  <button onClick={() => { deleteSelected(); setContextMenu(prev => ({ ...prev, visible: false })) }} className="danger">🗑️ Delete Selected</button>
+                  <button onClick={() => { downloadSelected(); setContextMenu(prev => ({ ...prev, visible: false })) }}><Download size={12} /> Download Selected ({selectedItems.size})</button>
+                  <button onClick={async () => { await fetchAllFolders(); setShowMoveModal(true); setContextMenu(prev => ({ ...prev, visible: false })) }}><Folder size={14} /> Move Selected</button>
+                  <button onClick={() => { deleteSelected(); setContextMenu(prev => ({ ...prev, visible: false })) }} className="danger"><Trash2 size={14} /> Delete Selected</button>
                   <hr className="file-browser__context-divider" />
                 </>
               )}
-              <button onClick={() => handleContextAction('upload')}>📤 Upload Files</button>
-              <button onClick={() => handleContextAction('new-folder')}>📁 New Folder</button>
+              <button onClick={() => handleContextAction('upload')}><Upload size={12} /> Upload Files</button>
+              <button onClick={() => handleContextAction('new-folder')}><Folder size={14} /> New Folder</button>
             </>
           )}
         </div>
@@ -887,7 +888,7 @@ export function FileBrowserView() {
                 className="file-browser__folder-option"
                 onClick={() => moveSelectedToFolder(null)}
               >
-                📁 Root (no folder)
+                <Folder size={14} /> Root (no folder)
               </button>
               {availableFolders.map((folder) => (
                 <button
@@ -895,7 +896,7 @@ export function FileBrowserView() {
                   className="file-browser__folder-option"
                   onClick={() => moveSelectedToFolder(String(folder.id))}
                 >
-                  📁 {folder.name}
+                  <Folder size={14} /> {folder.name}
                 </button>
               ))}
             </div>

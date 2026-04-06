@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { Calendar, LayoutList, Target, FileText } from 'lucide-react'
 import { CalendarView } from './SocialMediaDashboard/CalendarView'
 import { WeeklyGoals } from './SocialMediaDashboard/WeeklyGoals'
 import { TemplatesView } from './SocialMediaDashboard/TemplatesView'
@@ -16,28 +17,28 @@ export default function SocialMediaDashboard() {
           className={`social-media-dashboard__tab ${activeTab === 'calendar' ? 'social-media-dashboard__tab--active' : ''}`}
           onClick={() => setActiveTab('calendar')}
         >
-          📅 Calendar
+          <Calendar size={14} /> Calendar
         </button>
         
         <button 
           className={`social-media-dashboard__tab ${activeTab === 'workboard' ? 'social-media-dashboard__tab--active' : ''}`}
           onClick={() => setActiveTab('workboard')}
         >
-          📋 Workboard
+          <LayoutList size={14} /> Workboard
         </button>
         
         <button 
           className={`social-media-dashboard__tab ${activeTab === 'goals' ? 'social-media-dashboard__tab--active' : ''}`}
           onClick={() => setActiveTab('goals')}
         >
-          🎯 Weekly Goals
+          <Target size={14} /> Weekly Goals
         </button>
         
         <button 
           className={`social-media-dashboard__tab ${activeTab === 'templates' ? 'social-media-dashboard__tab--active' : ''}`}
           onClick={() => setActiveTab('templates')}
         >
-          📄 Templates
+          <FileText size={14} /> Templates
         </button>
       </nav>
       
@@ -50,4 +51,3 @@ export default function SocialMediaDashboard() {
     </div>
   )
 }
-

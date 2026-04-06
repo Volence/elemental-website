@@ -10,7 +10,7 @@ export const TournamentTemplates: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'name',
-    description: '🏆 Define recurring match schedules for manually-scheduled tournaments. ⚠️ NOT needed for FaceIt tournaments - those use FaceIt Leagues instead.',
+    description: 'Define recurring match schedules for manually-scheduled tournaments. NOTE: NOT needed for FaceIt tournaments - those use FaceIt Leagues instead.',
     group: 'Production',
     defaultColumns: ['name', 'isActive', 'assignedTeams', 'updatedAt'],
     hidden: ({ user }) => {

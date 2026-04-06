@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button, toast, useDocumentInfo } from '@payloadcms/ui'
+import { Globe, Trash2 } from 'lucide-react'
 
 /**
  * Consolidated match actions component
@@ -73,7 +74,7 @@ const MatchActions: React.FC = () => {
           rel="noopener noreferrer"
           className="match-actions__link"
         >
-          <span>🌐</span>
+          <span><Globe size={14} /></span>
           <span>View on Live Site</span>
           <span className="match-actions__arrow">→</span>
         </a>
@@ -84,7 +85,7 @@ const MatchActions: React.FC = () => {
         disabled={isDeleting}
         className="match-actions__delete"
       >
-        {isDeleting ? 'Deleting...' : '🗑️ Delete Match'}
+        {isDeleting ? 'Deleting...' : <><Trash2 size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} /> Delete Match</>}
       </button>
     </div>
   )

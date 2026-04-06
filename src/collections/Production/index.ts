@@ -41,7 +41,7 @@ export const Production: CollectionConfig = {
   admin: {
     useAsTitle: 'displayName',
     defaultColumns: ['displayName', 'type', 'updatedAt'],
-    description: '🎙️ Manage production staff (casters, observers, producers) who work on match broadcasts.',
+    description: 'Manage production staff (casters, observers, producers) who work on match broadcasts.',
     group: 'Organization',
     hidden: ({ user }) => {
       if (!user) return true

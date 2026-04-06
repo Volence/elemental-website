@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { toast } from '@payloadcms/ui'
+import { Calendar, X } from 'lucide-react'
 
 interface TournamentSlot {
   date: string // YYYY-MM-DD
@@ -173,7 +174,7 @@ export function BulkTournamentCreator({ onClose, onSuccess }: BulkTournamentCrea
   return (
     <div className="bulk-tournament-creator">
       <div className="bulk-tournament-creator__header">
-        <h3>📅 Bulk Tournament Creator</h3>
+        <h3><Calendar size={14} /> Bulk Tournament Creator</h3>
         <p>Create multiple tournament match slots for staff signups</p>
       </div>
 
@@ -247,7 +248,7 @@ export function BulkTournamentCreator({ onClose, onSuccess }: BulkTournamentCrea
             className="bulk-tournament-creator__add-btn"
             onClick={() => setShowDatePicker(!showDatePicker)}
           >
-            {showDatePicker ? '✕ Close' : '+ Add Dates'}
+            {showDatePicker ? <><X size={12} /> Close</> : '+ Add Dates'}
           </button>
         </div>
 
@@ -330,7 +331,7 @@ export function BulkTournamentCreator({ onClose, onSuccess }: BulkTournamentCrea
                   onClick={() => handleRemoveSlot(slot.date)}
                   title="Remove"
                 >
-                  ✕
+                  <X size={12} />
                 </button>
               </div>
             ))}

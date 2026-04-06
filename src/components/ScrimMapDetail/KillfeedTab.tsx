@@ -11,22 +11,7 @@ const TEXT_PRIMARY = '#e2e8f0'
 const TEXT_SECONDARY = '#94a3b8'
 const TEXT_DIM = '#64748b'
 
-// Clean glow: ultra-transparent backgrounds with glowing borders
-const CARD_STYLE: React.CSSProperties = {
-  background: 'rgba(255, 255, 255, 0.03)',
-  backdropFilter: 'blur(12px)',
-  borderRadius: '12px',
-  padding: '20px 24px',
-  border: `1px solid rgba(255, 255, 255, 0.06)`,
-}
 
-const LABEL_STYLE: React.CSSProperties = {
-  fontSize: '10px',
-  fontWeight: 600,
-  textTransform: 'uppercase',
-  letterSpacing: '1.2px',
-  color: TEXT_SECONDARY,
-}
 
 // ── Hero Icon with Team-Colored Glow Border ──
 function HeroIcon({ hero, teamColor }: { hero: string; teamColor: string }) {
@@ -136,8 +121,8 @@ function StatCard({
 }) {
   return (
     <div
+      className="scrim-detail__card"
       style={{
-        ...CARD_STYLE,
         position: 'relative',
         paddingLeft: '28px',
         overflow: 'hidden',
@@ -156,7 +141,7 @@ function StatCard({
           borderRadius: '12px 0 0 12px',
         }}
       />
-      <div style={LABEL_STYLE}>{label}</div>
+      <div className="scrim-detail__label">{label}</div>
       {children}
     </div>
   )

@@ -9,7 +9,7 @@ import { CategoryItem } from './CategoryItem'
 import TeamCardsTab from './TeamCardsTab'
 import AnnouncementsTab from './AnnouncementsTab'
 import TwitchLiveTab from './TwitchLiveTab'
-import { Edit, Trash2 } from 'lucide-react'
+import { AlertTriangle, BarChart3, Bot, CheckCircle, Circle, Drama, Edit, FileText, Folder, Heart, Info, LayoutList, Lightbulb, Megaphone, MessageCircle, MessageSquare, Save, Spade, Trash2, User, Volume2 } from 'lucide-react'
 
 interface DiscordChannel {
   id: string
@@ -762,54 +762,61 @@ const DiscordServerManagerView = () => {
         </div>
       </div>
 
-      <div className="tabs">
+      <div className="discord-server-manager__tabs">
         <button
-          className={`tab ${activeTab === 'structure' ? 'active' : ''}`}
+          className={`discord-server-manager__tab ${activeTab === 'structure' ? 'discord-server-manager__tab--active' : ''}`}
           onClick={() => setActiveTab('structure')}
           disabled={loading}
         >
-          Server Structure
+          <LayoutList size={14} />
+          <span>Structure</span>
         </button>
         <button
-          className={`tab ${activeTab === 'stats' ? 'active' : ''}`}
+          className={`discord-server-manager__tab ${activeTab === 'stats' ? 'discord-server-manager__tab--active' : ''}`}
           onClick={() => setActiveTab('stats')}
           disabled={loading}
         >
-          Statistics
+          <BarChart3 size={14} />
+          <span>Statistics</span>
         </button>
         <button
-          className={`tab ${activeTab === 'health' ? 'active' : ''}`}
+          className={`discord-server-manager__tab ${activeTab === 'health' ? 'discord-server-manager__tab--active' : ''}`}
           onClick={() => setActiveTab('health')}
           disabled={loading}
         >
-          Health Check
+          <Heart size={14} />
+          <span>Health Check</span>
         </button>
         <button
-          className={`tab ${activeTab === 'templates' ? 'active' : ''}`}
+          className={`discord-server-manager__tab ${activeTab === 'templates' ? 'discord-server-manager__tab--active' : ''}`}
           onClick={() => setActiveTab('templates')}
           disabled={loading}
         >
-          Templates
+          <Folder size={14} />
+          <span>Templates</span>
         </button>
         <button
-          className={`tab ${activeTab === 'team-cards' ? 'active' : ''}`}
+          className={`discord-server-manager__tab ${activeTab === 'team-cards' ? 'discord-server-manager__tab--active' : ''}`}
           onClick={() => setActiveTab('team-cards')}
           disabled={loading}
         >
-          🎴 Team Cards
+          <Spade size={14} />
+          <span>Team Cards</span>
         </button>
         <button
-          className={`tab ${activeTab === 'announcements' ? 'active' : ''}`}
+          className={`discord-server-manager__tab ${activeTab === 'announcements' ? 'discord-server-manager__tab--active' : ''}`}
           onClick={() => setActiveTab('announcements')}
           disabled={loading}
         >
-          📢 Announcements
+          <Megaphone size={14} />
+          <span>Announcements</span>
         </button>
         <button
-          className={`tab ${activeTab === 'twitch-live' ? 'active' : ''}`}
+          className={`discord-server-manager__tab ${activeTab === 'twitch-live' ? 'discord-server-manager__tab--active' : ''}`}
           onClick={() => setActiveTab('twitch-live')}
         >
-          🔴 Live Roster
+          <Circle size={12} />
+          <span>Live Roster</span>
         </button>
       </div>
 
@@ -871,7 +878,7 @@ const DiscordServerManagerView = () => {
                     <div key={channel.id} className="channel-item">
                       <div className="channel-content">
                         <span className="channel-icon">
-                          {channel.type === 0 ? '#' : channel.type === 2 ? '🔊' : '📄'}
+                          {channel.type === 0 ? '#' : channel.type === 2 ? <Volume2 size={14} /> : <FileText size={14} />}
                         </span>
                         <span className="channel-name">{channel.name}</span>
                       </div>
@@ -911,27 +918,27 @@ const DiscordServerManagerView = () => {
                     <span className="stat-value">{stats.channels.text}</span>
                   </div>
                   <div className="stat-item">
-                    <span className="stat-label">🔊 Voice:</span>
+                    <span className="stat-label"><Volume2 size={14} /> Voice:</span>
                     <span className="stat-value">{stats.channels.voice}</span>
                   </div>
                   <div className="stat-item">
-                    <span className="stat-label">💬 Forum:</span>
+                    <span className="stat-label"><MessageSquare size={14} /> Forum:</span>
                     <span className="stat-value">{stats.channels.forum}</span>
                   </div>
                   <div className="stat-item">
-                    <span className="stat-label">🎭 Stage:</span>
+                    <span className="stat-label"><Drama size={14} /> Stage:</span>
                     <span className="stat-value">{stats.channels.stage}</span>
                   </div>
                   <div className="stat-item">
-                    <span className="stat-label">🧵 Threads:</span>
+                    <span className="stat-label"><MessageCircle size={14} /> Threads:</span>
                     <span className="stat-value">{stats.channels.threads}</span>
                   </div>
                   <div className="stat-item">
-                    <span className="stat-label">📢 Announcements:</span>
+                    <span className="stat-label"><Megaphone size={14} /> Announcements:</span>
                     <span className="stat-value">{stats.channels.announcement}</span>
                   </div>
                   <div className="stat-item">
-                    <span className="stat-label">📁 Categories:</span>
+                    <span className="stat-label"><Folder size={14} /> Categories:</span>
                     <span className="stat-value">{stats.channels.categories}</span>
                   </div>
                 </div>
@@ -942,15 +949,15 @@ const DiscordServerManagerView = () => {
                 <div className="stat-main">{stats.members.total}</div>
                 <div className="stat-breakdown">
                   <div className="stat-item">
-                    <span className="stat-label">👤 Humans:</span>
+                    <span className="stat-label"><User size={14} /> Humans:</span>
                     <span className="stat-value">{stats.members.humans}</span>
                   </div>
                   <div className="stat-item">
-                    <span className="stat-label">🤖 Bots:</span>
+                    <span className="stat-label"><Bot size={14} /> Bots:</span>
                     <span className="stat-value">{stats.members.bots}</span>
                   </div>
                   <div className="stat-item">
-                    <span className="stat-label">🟢 Online:</span>
+                    <span className="stat-label"><Circle size={12} /> Online:</span>
                     <span className="stat-value">{stats.members.online}</span>
                   </div>
                 </div>
@@ -991,7 +998,7 @@ const DiscordServerManagerView = () => {
             <div className="templates-grid">
               {/* Save Template Section */}
               <div className="template-section">
-                <h4>💾 Save New Template</h4>
+                <h4><Save size={12} /> Save New Template</h4>
                 <p>Select a category from your server to save as a template:</p>
                 
                 <div className="form-field">
@@ -1041,13 +1048,13 @@ const DiscordServerManagerView = () => {
                 </button>
 
                 <p className="help-text">
-                  💡 Templates save the category structure, channel names, types, and permissions
+                  <Lightbulb size={14} /> Templates save the category structure, channel names, types, and permissions
                 </p>
               </div>
 
               {/* Apply Template Section */}
               <div className="template-section">
-                <h4>📁 Saved Templates ({templates.length})</h4>
+                <h4><Folder size={14} /> Saved Templates ({templates.length})</h4>
                 
                 {templates.length === 0 ? (
                   <p>No templates saved yet. Save a category to get started!</p>
@@ -1160,7 +1167,7 @@ const DiscordServerManagerView = () => {
               <h4>Issues & Recommendations</h4>
               {health.issues.length === 0 ? (
                 <div className="no-issues">
-                  <p>✅ No issues found! Your server is in great shape.</p>
+                  <p><CheckCircle size={12} /> No issues found! Your server is in great shape.</p>
                 </div>
               ) : (
                 <div className="issues-list">
@@ -1168,14 +1175,14 @@ const DiscordServerManagerView = () => {
                     <div key={idx} className={`issue-card ${issue.type}`}>
                       <div className="issue-header">
                         <span className={`issue-badge ${issue.type}`}>
-                          {issue.type === 'error' ? '🔴' : issue.type === 'warning' ? '⚠️' : 'ℹ️'}
+                          {issue.type === 'error' ? <Circle size={12} /> : issue.type === 'warning' ? <AlertTriangle size={12} /> : <Info size={14} />}
                           {issue.category}
                         </span>
                       </div>
                       <div className="issue-content">
                         <p className="issue-message">{issue.message}</p>
                         {issue.suggestion && (
-                          <p className="issue-suggestion">💡 {issue.suggestion}</p>
+                          <p className="issue-suggestion"><Lightbulb size={14} /> {issue.suggestion}</p>
                         )}
                       </div>
                     </div>

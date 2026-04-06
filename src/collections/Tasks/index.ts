@@ -137,7 +137,7 @@ export const Tasks: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'department', 'status', 'priority', 'assignedTo', 'dueDate'],
-    description: '📋 Universal task management for all departments.',
+    description: 'Universal task management for all departments.',
     group: 'Workboard',
     // Hidden from sidebar - accessed via department dashboards
     hidden: () => true,

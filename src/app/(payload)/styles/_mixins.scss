@@ -192,44 +192,47 @@
   background: rgba(0, 0, 0, $alpha);
 }
 
-// Glowing Border - The star of the show
-@mixin glow-border($color: $admin-accent-primary, $alpha: 0.5, $hover-alpha: 0.8) {
+// Glowing Border - Refined: subtle idle, vivid on hover
+@mixin glow-border($color: $admin-accent-primary, $alpha: 0.3, $hover-alpha: 0.6) {
   border: 1px solid rgba($color, $alpha);
-  box-shadow: 0 0 12px rgba($color, 0.15);
-  transition: all 0.2s ease;
+  box-shadow: 0 0 8px rgba($color, 0.06);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
   
   &:hover {
     border-color: rgba($color, $hover-alpha);
-    box-shadow: 0 0 20px rgba($color, 0.3);
+    box-shadow: 0 0 16px rgba($color, 0.15);
   }
 }
 
-// Clean Glow Card - Transparent with glowing border
-@mixin glow-card($color: $admin-accent-primary) {
-  @include transparent-bg(0.05);
+// Clean Glow Card - Transparent with refined glowing border
+@mixin glow-card($color: $admin-accent-primary, $interactive: true) {
+  @include transparent-bg(0.04);
   @include glow-border($color);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   backdrop-filter: blur(8px);
-  transition: all 0.2s ease;
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
   
-  &:hover {
-    background: rgba($color, 0.05);
-    transform: translateY(-2px);
+  @if $interactive {
+    &:hover {
+      background: rgba($color, 0.04);
+      transform: translateY(-1px);
+    }
   }
 }
 
-// Clean Glow Badge/Pill - Transparent with glowing border
+// Clean Glow Badge/Pill - Transparent with colored border, no bounce
 @mixin glow-badge($color: $admin-accent-primary) {
   @include transparent-bg(0.03);
-  @include glow-border($color, 0.5, 0.9);
-  border-radius: 8px;
+  border: 1px solid rgba($color, 0.3);
+  box-shadow: 0 0 6px rgba($color, 0.06);
+  border-radius: $radius-md;
   color: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(4px);
-  transition: all 0.2s ease;
+  transition: background 0.15s ease, border-color 0.15s ease;
   
   &:hover {
-    background: rgba($color, 0.1);
-    transform: translateY(-1px);
+    background: rgba($color, 0.08);
+    border-color: rgba($color, 0.5);
   }
 }
 
@@ -259,28 +262,99 @@
 
 // Clean Glow Button - Transparent with colored glow
 @mixin glow-button($color: $admin-accent-primary) {
-  @include transparent-bg(0.08);
-  @include glow-border($color);
-  border-radius: 8px;
+  @include transparent-bg(0.06);
+  border: 1px solid rgba($color, 0.3);
+  box-shadow: 0 0 6px rgba($color, 0.06);
+  border-radius: $radius-md;
   color: white;
   backdrop-filter: blur(4px);
-  transition: all 0.2s ease;
-  cursor: pointer; // ← Added
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
   
   &:hover {
-    background: rgba($color, 0.15);
+    background: rgba($color, 0.12);
+    border-color: rgba($color, 0.5);
+    box-shadow: 0 0 16px rgba($color, 0.15);
     transform: translateY(-1px);
   }
   
   &:active {
     transform: translateY(0);
-    background: rgba($color, 0.2);
+    background: rgba($color, 0.18);
   }
   
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
     transform: none;
+  }
+}
+
+// ============================================
+// MODERN MIXINS (2026 refresh)
+// ============================================
+
+// Modern Card — elevation-based depth, glow only on interaction
+@mixin modern-card($interactive: false) {
+  background: $admin-bg-card;
+  border: 1px solid $admin-border-default;
+  border-radius: $radius-lg;
+  box-shadow: $elevation-1;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  
+  @if $interactive {
+    cursor: pointer;
+    &:hover {
+      background: $admin-bg-hover;
+      border-color: rgba($admin-accent-info, 0.2);
+      box-shadow: $elevation-2, 0 0 20px rgba($admin-accent-info, 0.06);
+      transform: translateY(-1px);
+    }
+  }
+}
+
+// Modern Input — clean focus ring, no glow at rest
+@mixin modern-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: $admin-bg-surface;
+  border: 1px solid $admin-border-default;
+  border-radius: $radius-md;
+  color: $admin-text-primary;
+  font-size: $font-size-sm;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  
+  &::placeholder {
+    color: $admin-text-muted;
+  }
+  
+  &:hover {
+    border-color: $admin-border-strong;
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: rgba($admin-accent-info, 0.4);
+    box-shadow: $glow-accent;
+  }
+}
+
+// Section Header — standardized page title with gradient underline
+@mixin section-header($color: $admin-accent-info) {
+  font-size: $font-size-2xl;
+  font-weight: $font-weight-bold;
+  color: $color;
+  letter-spacing: $letter-spacing-tight;
+  margin: 0;
+  
+  &::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, $color, transparent);
+    border-radius: 2px;
+    margin-top: 8px;
   }
 }
 
@@ -481,4 +555,56 @@
 @mixin glow-button-success { @include glow-button($admin-accent-success); }
 @mixin glow-button-warning { @include glow-button($admin-accent-warning); }
 @mixin glow-button-error { @include glow-button($admin-accent-error); }
+
+// ============================================
+// DASHBOARD TAB BAR — Unified Pattern
+// ============================================
+// Shared tab styling for multi-view dashboards.
+// Based on the System Health Hub's clean underline design.
+// Usage: @include dashboard-tabs($admin-accent-primary);
+
+@mixin dashboard-tabs($color: $admin-accent-info) {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid rgba($color, 0.15);
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar { display: none; }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@mixin dashboard-tab($color: $admin-accent-info) {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1rem;
+  border: none;
+  background: transparent;
+  color: $admin-text-muted;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  border-radius: 6px 6px 0 0;
+
+  &:hover {
+    color: $admin-text-secondary;
+    background: rgba($color, 0.04);
+  }
+}
+
+@mixin dashboard-tab-active($color: $admin-accent-info) {
+  color: $color;
+  border-bottom-color: $color;
+  background: rgba($color, 0.06);
+
+  svg {
+    filter: drop-shadow(0 0 4px rgba($color, 0.5));
+  }
+}
 

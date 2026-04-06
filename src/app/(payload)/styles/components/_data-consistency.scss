@@ -492,3 +492,80 @@
     }
   }
 }
+
+// ============================================
+// Dashboard Widget Check Components
+// ============================================
+.dc-check {
+  // Issue item card — vertical layout
+  &__issue-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  // Row with name + slug + view link
+  &__issue-row {
+    margin-bottom: 0.75rem;
+  }
+
+  // Slug label after a name
+  &__slug {
+    margin-left: 0.5rem;
+    opacity: 0.7;
+    font-size: 0.875rem;
+  }
+
+  // View link after a name
+  &__view-link {
+    margin-left: 0.5rem;
+  }
+
+  // List of issues
+  &__issues-list {
+    margin: 0;
+    padding-left: 1.5rem;
+    font-size: 0.875rem;
+
+    li {
+      margin-bottom: 0.25rem;
+    }
+  }
+
+  // Duplicate pair row
+  &__pair-row {
+    margin-bottom: 0.5rem;
+  }
+
+  // Full width container
+  &__full-width {
+    width: 100%;
+  }
+
+  // Similarity label
+  &__similarity {
+    font-size: 0.875rem;
+    opacity: 0.7;
+  }
+
+  // Run check button spacer
+  &__run-btn {
+    margin-left: 1rem;
+  }
+
+  // Toggle button bottom spacing
+  &__details-toggle {
+    margin-bottom: 1rem;
+  }
+
+  // Details panel — scrollable container for issue lists
+  &__details-panel {
+    margin-top: 1.5rem;
+    max-height: 500px;
+    overflow-y: auto;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.03);
+    backdrop-filter: blur(8px);
+  }
+}

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '@payloadcms/ui'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { Calendar, ClipboardList, Clock, FileEdit, User } from 'lucide-react'
 
 export default function QuickFilters() {
   const { user } = useAuth()
@@ -67,14 +68,14 @@ export default function QuickFilters() {
         href="/admin/collections/social-posts"
         className={`quick-filter-btn ${isAllActive ? 'quick-filter-btn--active' : ''}`}
       >
-        📋 All Posts
+        <ClipboardList size={14} /> All Posts
       </Link>
       
       <Link
         href={buildMyPostsUrl()}
         className={`quick-filter-btn ${isMyPostsActive ? 'quick-filter-btn--active' : ''}`}
       >
-        👤 My Posts
+        <User size={14} /> My Posts
       </Link>
       
       {isAdmin && (
@@ -82,7 +83,7 @@ export default function QuickFilters() {
           href={buildPendingApprovalUrl()}
           className={`quick-filter-btn ${isPendingActive ? 'quick-filter-btn--active' : ''}`}
         >
-          ⏳ Pending Approval
+          <Clock size={14} /> Pending Approval
         </Link>
       )}
       
@@ -91,14 +92,14 @@ export default function QuickFilters() {
         onClick={handleThisWeekClick}
         className={`quick-filter-btn ${isThisWeekActive ? 'quick-filter-btn--active' : ''}`}
       >
-        📅 This Week
+        <Calendar size={14} /> This Week
       </a>
       
       <Link
         href={buildDraftsUrl()}
         className={`quick-filter-btn ${isDraftsActive ? 'quick-filter-btn--active' : ''}`}
       >
-        📝 Drafts
+        <FileEdit size={14} /> Drafts
       </Link>
     </div>
   )

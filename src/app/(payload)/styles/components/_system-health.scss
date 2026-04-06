@@ -1,0 +1,117 @@
+// ═══════════════════════════════════════════════════════
+// System Health Hub — Unified Monitoring Dashboard
+// ═══════════════════════════════════════════════════════
+// Inherits variables and mixins from admin.scss parent
+
+.system-health {
+  padding: 0 1rem 2rem;
+
+  // ── Header ──
+  &__header {
+    margin-bottom: 1.5rem;
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+
+    h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: $admin-text-primary;
+      margin: 0;
+    }
+
+    svg {
+      color: $admin-accent-info;
+      filter: drop-shadow(0 0 4px rgba($admin-accent-info, 0.4));
+    }
+  }
+
+  &__subtitle {
+    font-size: 0.85rem;
+    color: $admin-text-muted;
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  // ── Tab Bar ──
+  &__tabs {
+    @include dashboard-tabs($admin-accent-info);
+  }
+
+  &__tab {
+    @include dashboard-tab($admin-accent-info);
+
+    &--active {
+      @include dashboard-tab-active($admin-accent-info);
+    }
+  }
+
+  &__tab-icon {
+    display: flex;
+    align-items: center;
+
+    svg {
+      transition: filter 0.2s ease;
+    }
+  }
+
+  &__tab-label {
+    @media (max-width: 768px) {
+      display: none;
+    }
+  }
+
+  // ── Content Area ──
+  &__content {
+    min-height: 400px;
+
+    // When monitoring views are inside the hub, hide their redundant headers
+    // and reset container padding (the hub provides its own structure)
+    .monitoring-container {
+      padding: 0;
+    }
+
+    .monitoring-header {
+      display: none;
+    }
+
+    .monitoring-dashboard,
+    .data-consistency {
+      padding: 0;
+      margin: 0;
+    }
+
+    // Also hide DataConsistency's own header
+    .data-consistency-header {
+      display: none;
+    }
+  }
+
+  // ── Loading State ──
+  &__loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 3rem 1rem;
+    color: $admin-text-muted;
+    font-size: 0.9rem;
+
+    svg {
+      color: $admin-accent-info;
+    }
+  }
+}
+
+// Spinning animation for loading icon
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}

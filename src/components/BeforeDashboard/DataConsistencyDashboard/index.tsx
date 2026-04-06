@@ -112,7 +112,7 @@ const DataConsistencyDashboard: React.FC = () => {
       <div className="data-consistency-dashboard__issues-list">
         {issues.map((issue, i) => (
           <div key={i} className="data-consistency-dashboard__issue-item">
-            {issue.type === 'error' ? '❌' : '⚠️'} {issue.category}:{' '}
+            {issue.type === 'error' ? '•' : '•'} {issue.category}:{' '}
             <strong>{issue.items.length}</strong> affected
           </div>
         ))}
@@ -123,7 +123,7 @@ const DataConsistencyDashboard: React.FC = () => {
           href="/admin/data-consistency"
           className="data-consistency-dashboard__link"
         >
-          📊 View Detailed Report & Fix Issues
+          View Detailed Report & Fix Issues
         </a>
       )}
     </div>

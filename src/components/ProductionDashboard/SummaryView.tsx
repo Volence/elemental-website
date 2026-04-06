@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { AlertTriangle, BarChart3, Calendar, Users, XCircle } from 'lucide-react'
 
 interface User {
   id: number
@@ -165,7 +166,7 @@ export function SummaryView() {
       <div className="summary-grid">
         {/* Coverage Overview */}
         <div className="summary-card">
-          <h3>📊 Coverage Overview</h3>
+          <h3><BarChart3 size={14} /> Coverage Overview</h3>
           <div className="summary-stats">
             <div className="summary-stat summary-stat--success">
               <div className="summary-stat__value">{coverageStats.full}</div>
@@ -199,7 +200,7 @@ export function SummaryView() {
 
         {/* Schedule Status */}
         <div className="summary-card">
-          <h3>📅 Broadcast Schedule</h3>
+          <h3><Calendar size={14} /> Broadcast Schedule</h3>
           <div className="summary-stats">
             <div className="summary-stat summary-stat--success">
               <div className="summary-stat__value">{scheduleStats.included}</div>
@@ -219,7 +220,7 @@ export function SummaryView() {
 
         {/* Staff Workload */}
         <div className="summary-card summary-card--wide">
-          <h3>👥 Staff Workload</h3>
+          <h3><Users size={14} /> Staff Workload</h3>
           {staffWorkload.length === 0 ? (
             <p className="summary-empty">No staff assigned yet. Use the Assignment tab to assign staff to matches.</p>
           ) : (
@@ -257,7 +258,7 @@ export function SummaryView() {
         {/* Matches Needing Attention - Only show if there are matches needing attention */}
         {needingAttention.length > 0 && (
           <div className="summary-card summary-card--wide">
-            <h3>⚠️ Matches Needing Attention ({needingAttention.length})</h3>
+            <h3><AlertTriangle size={12} /> Matches Needing Attention ({needingAttention.length})</h3>
             <div className="summary-match-list">
               {needingAttention.slice(0, 10).map((match) => (
                 <div key={match.id} className="summary-match">
@@ -274,7 +275,7 @@ export function SummaryView() {
                     </span>
                   </div>
                   <span className={`coverage-badge coverage-badge--${match.productionWorkflow?.coverageStatus || 'none'}`}>
-                    {match.productionWorkflow?.coverageStatus === 'partial' ? '⚠️ Partial' : '❌ None'}
+                    {match.productionWorkflow?.coverageStatus === 'partial' ? <><AlertTriangle size={12} /> Partial</> : <><XCircle size={12} /> None</>}
                   </span>
                 </div>
               ))}

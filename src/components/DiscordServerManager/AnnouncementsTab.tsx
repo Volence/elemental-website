@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Send, Eye, Palette, Image, MessageSquare, Hash, Volume2, Bell, Plus, Trash2 } from 'lucide-react'
+import { Bell, Bot, Eye, Hash, Image, Megaphone, MessageSquare, Palette, Plus, Send, Trash2, Volume2 } from 'lucide-react'
 
 interface DiscordChannel {
   id: string
@@ -265,7 +265,7 @@ export default function AnnouncementsTab({ structure, onSuccess, onError }: Anno
   return (
     <div className="announcements-tab">
       <div className="announcements-tab__header">
-        <h3>📢 Post Announcement</h3>
+        <h3><Megaphone size={14} /> Post Announcement</h3>
         <p>Send a message to any text channel in the Discord server</p>
       </div>
 
@@ -490,7 +490,7 @@ export default function AnnouncementsTab({ structure, onSuccess, onError }: Anno
               <div className="announcements-tab__discord-message">
                 {/* Bot avatar/name */}
                 <div className="announcements-tab__message-header">
-                  <div className="announcements-tab__bot-avatar">🤖</div>
+                  <div className="announcements-tab__bot-avatar"><Bot size={14} /></div>
                   <span className="announcements-tab__bot-name">ELMT Bot</span>
                   <span className="announcements-tab__message-time">Today at {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>

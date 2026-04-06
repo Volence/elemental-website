@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { toast } from '@payloadcms/ui'
+import { AlertTriangle, BarChart3, Check, RefreshCw, X } from 'lucide-react'
 import type { TimeBlockOutcome } from './types'
 
 interface ScrimOutcomeButtonProps {
@@ -94,7 +95,7 @@ export const ScrimOutcomeButton: React.FC<ScrimOutcomeButtonProps> = ({
         className={`schedule-editor__outcome-btn ${hasOutcome ? 'schedule-editor__outcome-btn--filled' : ''}`}
         onClick={() => setShowModal(true)}
       >
-        {hasOutcome ? '📊 View Outcome' : '📊 Set Outcome'}
+        {hasOutcome ? <><BarChart3 size={12} /> View Outcome</> : <><BarChart3 size={12} /> Set Outcome</>}
       </button>
 
       {showModal && (
@@ -104,7 +105,7 @@ export const ScrimOutcomeButton: React.FC<ScrimOutcomeButtonProps> = ({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="schedule-editor__modal-header">
-              <span className="schedule-editor__modal-icon">📊</span>
+              <span className="schedule-editor__modal-icon"><BarChart3 size={16} /></span>
               <h3>Scrim Outcome{opponentName ? ` vs ${opponentName}` : ''}</h3>
             </div>
             <div className="schedule-editor__modal-body schedule-editor__outcome-form">
@@ -122,11 +123,11 @@ export const ScrimOutcomeButton: React.FC<ScrimOutcomeButtonProps> = ({
                     }
                   >
                     <option value="">- Select -</option>
-                    <option value="easywin">✅ Easy Win</option>
-                    <option value="closewin">🔥 Close Win</option>
-                    <option value="neutral">😐 Neutral</option>
-                    <option value="closeloss">😓 Close Loss</option>
-                    <option value="gotrolled">💀 Got Rolled</option>
+                    <option value="easywin">Easy Win</option>
+                    <option value="closewin">Close Win</option>
+                    <option value="neutral">Neutral</option>
+                    <option value="closeloss">Close Loss</option>
+                    <option value="gotrolled">Got Rolled</option>
                   </select>
                 </div>
                 <div className="schedule-editor__outcome-field">
@@ -141,10 +142,10 @@ export const ScrimOutcomeButton: React.FC<ScrimOutcomeButtonProps> = ({
                     }
                   >
                     <option value="">- Select -</option>
-                    <option value="weak">🟢 Weak</option>
-                    <option value="average">🟡 Average</option>
-                    <option value="strong">🔴 Strong</option>
-                    <option value="verystrong">💀 Very Strong</option>
+                    <option value="weak">Weak</option>
+                    <option value="average">Average</option>
+                    <option value="strong">Strong</option>
+                    <option value="verystrong">Very Strong</option>
                   </select>
                 </div>
                 <div className="schedule-editor__outcome-field">
@@ -159,9 +160,9 @@ export const ScrimOutcomeButton: React.FC<ScrimOutcomeButtonProps> = ({
                     }
                   >
                     <option value="">- Select -</option>
-                    <option value="yes">👍 Yes</option>
-                    <option value="maybe">🤔 Maybe</option>
-                    <option value="no">👎 No</option>
+                    <option value="yes">Yes</option>
+                    <option value="maybe">Maybe</option>
+                    <option value="no">No</option>
                   </select>
                 </div>
               </div>
@@ -181,15 +182,15 @@ export const ScrimOutcomeButton: React.FC<ScrimOutcomeButtonProps> = ({
                           className={`schedule-editor__outcome-map-item schedule-editor__outcome-map-item--${m.result} ${isInvalidMap ? 'schedule-editor__outcome-map-item--invalid' : ''}`}
                         >
                           <span>
-                            {isInvalidMap ? '⚠️ ' : ''}
+                            {isInvalidMap ? <><AlertTriangle size={12} /> </> : ''}
                             {m.mapName}
                           </span>
                           <span className="schedule-editor__outcome-map-result">
-                            {m.result === 'win' ? '✅ W' : m.result === 'loss' ? '❌ L' : '🔄 D'}
+                            {m.result === 'win' ? <><Check size={12} /> W</> : m.result === 'loss' ? <><X size={12} /> L</> : <><RefreshCw size={12} /> D</>}
                             {m.score && ` (${m.score})`}
                           </span>
                           <button type="button" onClick={() => removeMap(i)}>
-                            ×
+                            <X size={10} />
                           </button>
                         </div>
                       )
@@ -213,24 +214,24 @@ export const ScrimOutcomeButton: React.FC<ScrimOutcomeButtonProps> = ({
                       newMap.mapName &&
                       availableMaps.filter((m) => m.name.toLowerCase().includes(newMap.mapName.toLowerCase()))
                         .length > 0 && (
-                        <div className="schedule-editor__map-dropdown">
-                          {availableMaps
-                            .filter((m) => m.name.toLowerCase().includes(newMap.mapName.toLowerCase()))
-                            .slice(0, 8)
-                            .map((map) => (
-                              <button
-                                key={map.id}
-                                type="button"
-                                onClick={() => {
-                                  setNewMap({ ...newMap, mapName: map.name })
-                                  setShowMapDropdown(false)
-                                }}
-                              >
-                                {map.name}
-                              </button>
-                            ))}
-                        </div>
-                      )}
+                      <div className="schedule-editor__map-dropdown">
+                        {availableMaps
+                          .filter((m) => m.name.toLowerCase().includes(newMap.mapName.toLowerCase()))
+                          .slice(0, 8)
+                          .map((map) => (
+                            <button
+                              key={map.id}
+                              type="button"
+                              onClick={() => {
+                                setNewMap({ ...newMap, mapName: map.name })
+                                setShowMapDropdown(false)
+                              }}
+                            >
+                              {map.name}
+                            </button>
+                          ))}
+                      </div>
+                    )}
                   </div>
                   <select
                     value={newMap.result}
@@ -279,7 +280,7 @@ export const ScrimOutcomeButton: React.FC<ScrimOutcomeButtonProps> = ({
                 disabled={cannotSave}
                 title={cannotSave ? 'Fix invalid map names first' : 'Save outcome'}
               >
-                {cannotSave ? '⚠️ Fix Invalid Maps' : 'Save Outcome'}
+                {cannotSave ? <><AlertTriangle size={12} /> Fix Invalid Maps</> : 'Save Outcome'}
               </button>
             </div>
           </div>

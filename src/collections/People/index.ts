@@ -30,7 +30,7 @@ export const People: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'staffPositions', 'teams', 'updatedAt'],
-    description: '👥 Centralized collection for all people (players, staff, casters, etc.). This is the single source of truth for person profiles.',
+    description: 'Centralized collection for all people (players, staff, casters, etc.). This is the single source of truth for person profiles.',
     group: 'Organization',
     listSearchableFields: ['name', 'slug'],
     hidden: ({ user }) => {

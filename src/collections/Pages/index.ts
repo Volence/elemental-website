@@ -32,7 +32,7 @@ export const Pages: CollectionConfig<'pages'> = {
     update: authenticated,
   },
   admin: {
-    description: '📄 Create and edit website pages with rich content, blocks, and SEO settings.',
+    description: 'Create and edit website pages with rich content, blocks, and SEO settings.',
     group: 'Content',
     defaultColumns: ['title', 'slug', 'updatedAt'],
     hidden: true,

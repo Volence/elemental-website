@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react'
 import { Button, useFormFields, useDocumentInfo } from '@payloadcms/ui'
 import { useFaceitSync } from '@/hooks/useFaceitSync'
+import { CheckCircle, Loader2 } from 'lucide-react'
 
 export default function FaceitSyncButton({ value, ...props }: any) {
   // Get document ID from the document context (more reliable for saved documents)
@@ -51,13 +52,13 @@ export default function FaceitSyncButton({ value, ...props }: any) {
     <div className="faceit-sync-button">
       {leagueId && !leagueData && (
         <div className="faceit-sync-button__status faceit-sync-button__status--loading">
-          ⏳ Loading league configuration...
+          <Loader2 size={14} className="animate-spin faceit-sync-button__inline-icon" /> Loading league configuration...
         </div>
       )}
       
       {leagueData && !message && (
         <div className="faceit-sync-button__status faceit-sync-button__status--ready">
-          ✓ Ready to sync: {leagueData.name}
+          <CheckCircle size={14} className="faceit-sync-button__inline-icon" /> Ready to sync: {leagueData.name}
         </div>
       )}
       
@@ -72,16 +73,11 @@ export default function FaceitSyncButton({ value, ...props }: any) {
         disabled={syncing || !leagueData}
         buttonStyle="primary"
       >
-        {syncing ? 'Syncing...' : '🔄 Sync from FaceIt Now'}
+        {syncing ? 'Syncing...' : 'Sync from FaceIt Now'}
       </Button>
       
       {lastSynced && !syncing && !message && (
-        <div style={{ 
-          marginTop: '0.75rem', 
-          fontSize: '0.8125rem', 
-          color: 'rgba(255, 255, 255, 0.5)',
-          fontStyle: 'italic'
-        }}>
+        <div className="faceit-sync-button__last-synced">
           Last synced: {new Date(lastSynced).toLocaleString('en-US', {
             month: 'short',
             day: 'numeric',
@@ -101,13 +97,13 @@ export default function FaceitSyncButton({ value, ...props }: any) {
       
       <div className="faceit-sync-button__description">
         <p>This will:</p>
-        <ul style={{ marginLeft: '1.5rem', marginTop: '0.5rem' }}>
+        <ul>
           <li>Fetch current standings from FaceIt for the selected league</li>
           <li>Update or create match records with correct dates/times</li>
           <li>Pull opponent names and FaceIt lobby room links</li>
           <li>Update season data (rank, W-L record, points)</li>
         </ul>
-        <p style={{ marginTop: '0.5rem' }}>
+        <p>
           <strong>Note:</strong> Make sure you've selected a FaceIt League above and saved the team first.
         </p>
       </div>

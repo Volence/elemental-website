@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { AlertTriangle, CheckCircle } from 'lucide-react'
 
 /**
  * Notifications banner for FaceIt Leagues list page
@@ -54,7 +55,7 @@ const FaceitLeaguesNotifications: React.FC = () => {
     // No warnings - show success message
     return (
       <div className="faceit-notifications__badge faceit-notifications__badge--success">
-        <span className="faceit-notifications__icon">✅</span>
+        <span className="faceit-notifications__icon"><CheckCircle size={12} /></span>
         <span>All Clear! No teams are using inactive leagues. Everything is up to date.</span>
       </div>
     )
@@ -68,7 +69,7 @@ const FaceitLeaguesNotifications: React.FC = () => {
           key={warning.league.id}
           className="faceit-notifications__banner faceit-notifications__banner--warning"
         >
-          <span className="faceit-notifications__icon">⚠️</span>
+          <span className="faceit-notifications__icon"><AlertTriangle size={12} /></span>
           <div className="faceit-notifications__content">
             <div className="faceit-notifications__title">
               {warning.teamCount} {warning.teamCount === 1 ? 'team is' : 'teams are'} still using inactive league: "{warning.league.name}"

@@ -5,6 +5,7 @@ import { useConfig } from '@payloadcms/ui'
 import { toast } from '@payloadcms/ui'
 import { ConfirmModal } from './ConfirmModal'
 import type { Task, User, Media } from '@/payload-types'
+import { Calendar, Download, Paperclip, Save, Send, Trash2, Upload, X } from 'lucide-react'
 
 interface TaskModalProps {
   task: Task | null
@@ -393,7 +394,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       <div className="workboard-modal" onClick={(e) => e.stopPropagation()}>
         <div className="workboard-modal__header">
           <div className="workboard-modal__header-title">
-            <h2>{task ? 'Edit Task' : isRequest ? '📨 New Request' : 'New Task'}</h2>
+            <h2>{task ? 'Edit Task' : isRequest ? <><Send size={12} /> New Request</> : 'New Task'}</h2>
             {isRequest && requestedByDepartment && (
               <span className="workboard-modal__request-badge">
                 Request from {DEPT_NAMES[requestedByDepartment] || requestedByDepartment}
@@ -401,7 +402,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
             )}
           </div>
           <button className="workboard-modal__close" onClick={onClose}>
-            ✕
+            <X size={16} />
           </button>
         </div>
         
@@ -476,7 +477,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                   checked={formData.addToGlobalCalendar}
                   onChange={(e) => setFormData({ ...formData, addToGlobalCalendar: e.target.checked })}
                 />
-                <span>📅 Show on Public Calendar</span>
+                <span><Calendar size={14} /> Show on Public Calendar</span>
               </label>
               <small>When enabled, this event will appear on the public calendar and Discord</small>
             </div>
@@ -523,7 +524,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                             <img src={thumbUrl} alt={getAttachmentFilename(att)} />
                           </a>
                         ) : (
-                          <span className="workboard-modal__attachment-icon">📎</span>
+                          <span className="workboard-modal__attachment-icon"><Paperclip size={12} /></span>
                         )}
                         
                         {/* File info section */}
@@ -540,7 +541,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                                 className="workboard-modal__attachment-download"
                                 title="Download file"
                               >
-                                💾 Save
+                                <Save size={12} /> Save
                               </a>
                             )}
                           </div>
@@ -562,7 +563,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                           onClick={() => handleRemoveAttachment(idx)}
                           title="Remove attachment"
                         >
-                          ✕
+                          <X size={12} />
                         </button>
                       </div>
                     )
@@ -601,7 +602,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                   onClick={handleDeleteClick}
                   title="Delete this task permanently"
                 >
-                  🗑️ Delete
+                  <Trash2 size={14} /> Delete
                 </button>
                 <button
                   type="button"
@@ -610,7 +611,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                   onClick={handleArchive}
                   title={task.archived ? 'Unarchive this task' : 'Archive this task'}
                 >
-                  {task.archived ? '📤 Unarchive' : '📥 Archive'}
+                  {task.archived ? <><Upload size={12} /> Unarchive</> : <><Download size={12} /> Archive</>}
                 </button>
               </div>
             )}

@@ -178,6 +178,7 @@ export interface Config {
     'opponent-wiki': OpponentWiki;
     'scouting-dashboard': ScoutingDashboard;
     'discord-server-manager': DiscordServerManager;
+    'system-health': SystemHealth;
     'audit-log-viewer': AuditLogViewer;
     'cron-monitor': CronMonitor;
     'error-dashboard': ErrorDashboard;
@@ -199,6 +200,7 @@ export interface Config {
     'opponent-wiki': OpponentWikiSelect<false> | OpponentWikiSelect<true>;
     'scouting-dashboard': ScoutingDashboardSelect<false> | ScoutingDashboardSelect<true>;
     'discord-server-manager': DiscordServerManagerSelect<false> | DiscordServerManagerSelect<true>;
+    'system-health': SystemHealthSelect<false> | SystemHealthSelect<true>;
     'audit-log-viewer': AuditLogViewerSelect<false> | AuditLogViewerSelect<true>;
     'cron-monitor': CronMonitorSelect<false> | CronMonitorSelect<true>;
     'error-dashboard': ErrorDashboardSelect<false> | ErrorDashboardSelect<true>;
@@ -241,7 +243,7 @@ export interface UserAuthOperations {
   };
 }
 /**
- * 📄 Create and edit website pages with rich content, blocks, and SEO settings.
+ * Create and edit website pages with rich content, blocks, and SEO settings.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pages".
@@ -307,7 +309,7 @@ export interface Page {
   _status?: ('draft' | 'published') | null;
 }
 /**
- * 🖼️ Upload and manage images, videos, and other media files used across the website.
+ * Upload and manage images, videos, and other media files used across the website.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
@@ -499,7 +501,7 @@ export interface MediaBlock {
   blockType: 'mediaBlock';
 }
 /**
- * 👥 Centralized collection for all people (players, staff, casters, etc.). This is the single source of truth for person profiles.
+ * Centralized collection for all people (players, staff, casters, etc.). This is the single source of truth for person profiles.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "people".
@@ -583,7 +585,7 @@ export interface Person {
   createdAt: string;
 }
 /**
- * 🏆 Manage all Elemental teams, including rosters, staff, and achievements.
+ * Manage all Elemental teams, including rosters, staff, and achievements.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "teams".
@@ -704,7 +706,7 @@ export interface Team {
       }[]
     | null;
   /**
-   * 🏆 Enable FaceIt competitive tracking for this team
+   * Enable FaceIt competitive tracking for this team
    */
   faceitEnabled?: boolean | null;
   /**
@@ -712,7 +714,7 @@ export interface Team {
    */
   faceitTeamId?: string | null;
   /**
-   * 🎯 Current league/season this team is competing in - Selecting this auto-creates the season entry
+   * Current league/season this team is competing in - Selecting this auto-creates the season entry
    */
   currentFaceitLeague?: (number | null) | FaceitLeague;
   /**
@@ -720,7 +722,7 @@ export interface Team {
    */
   faceitShowCompetitiveSection?: boolean | null;
   /**
-   * 📊 Current active season data (auto-populated)
+   * Current active season data (auto-populated)
    */
   currentFaceitSeason?: (number | null) | FaceitSeason;
   /**
@@ -776,7 +778,7 @@ export interface Team {
   createdAt: string;
 }
 /**
- * 📁 Graphics department file library. Drag & drop files, create folders to organize.
+ * Graphics department file library. Drag & drop files, create folders to organize.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "graphics-assets".
@@ -833,7 +835,7 @@ export interface FolderInterface {
   createdAt: string;
 }
 /**
- * ⚙️ FaceIt league templates - Admin-only. Teams select from these when enabling FaceIt.
+ * FaceIt league templates - Admin-only. Teams select from these when enabling FaceIt.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "faceit-leagues".
@@ -882,7 +884,7 @@ export interface FaceitLeague {
   createdAt: string;
 }
 /**
- * 🏆 Team FaceIt seasons - Can be used to edit archived match data for finalized seasons
+ * Team FaceIt seasons - Can be used to edit archived match data for finalized seasons
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "faceit-seasons".
@@ -894,7 +896,7 @@ export interface FaceitSeason {
    */
   team: number | Team;
   /**
-   * ⭐ RECOMMENDED: Select a league template to auto-fill championship/stage/league IDs
+   * RECOMMENDED: Select a league template to auto-fill championship/stage/league IDs
    */
   faceitLeague?: (number | null) | FaceitLeague;
   /**
@@ -918,7 +920,7 @@ export interface FaceitSeason {
    */
   stageId?: string | null;
   /**
-   * ✨ Auto-filled from league template on save (editable before save)
+   * Auto-filled from league template on save (editable before save)
    */
   seasonName: string;
   /**
@@ -926,15 +928,15 @@ export interface FaceitSeason {
    */
   isActive?: boolean | null;
   /**
-   * ✨ Auto-filled from league template on save
+   * Auto-filled from league template on save
    */
   division: 'Masters' | 'Expert' | 'Advanced' | 'Open';
   /**
-   * ✨ Auto-filled from league template on save
+   * Auto-filled from league template on save
    */
   region: 'NA' | 'EMEA' | 'SA' | 'OCE' | 'SEA' | 'APAC' | 'China';
   /**
-   * ✨ Auto-filled from league template on save (e.g., "Central")
+   * Auto-filled from league template on save (e.g., "Central")
    */
   conference?: string | null;
   /**
@@ -1005,7 +1007,7 @@ export interface FaceitSeason {
   createdAt: string;
 }
 /**
- * 🏆 Define recurring match schedules for manually-scheduled tournaments. ⚠️ NOT needed for FaceIt tournaments - those use FaceIt Leagues instead.
+ * Define recurring match schedules for manually-scheduled tournaments. NOTE: NOT needed for FaceIt tournaments - those use FaceIt Leagues instead.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "tournament-templates".
@@ -1056,7 +1058,7 @@ export interface TournamentTemplate {
   createdAt: string;
 }
 /**
- * 📅 Global calendar events for competitive dates, tournaments, and community events
+ * Global calendar events for competitive dates, tournaments, and community events
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "global-calendar-events".
@@ -1110,7 +1112,7 @@ export interface GlobalCalendarEvent {
   createdAt: string;
 }
 /**
- * 📋 Universal task management for all departments.
+ * Universal task management for all departments.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "tasks".
@@ -1273,7 +1275,7 @@ export interface Task {
   createdAt: string;
 }
 /**
- * 👤 Manage admin users who can access the CMS. Assign roles to control what each user can edit.
+ * Manage admin users who can access the CMS. Assign roles to control what each user can edit.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
@@ -1349,7 +1351,7 @@ export interface User {
   password?: string | null;
 }
 /**
- * ⚔️ Manage competitive matches for Elemental teams. Include match details, scores, streams, and VODs.
+ * Manage competitive matches for Elemental teams. Include match details, scores, streams, and VODs.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "matches".
@@ -1385,11 +1387,11 @@ export interface Match {
    */
   team2External?: string | null;
   /**
-   * ⚠️ LEGACY: Use Team 1 fields above instead. Kept for backwards compatibility.
+   * LEGACY: Use Team 1 fields above instead. Kept for backwards compatibility.
    */
   team?: (number | null) | Team;
   /**
-   * ⚠️ LEGACY: Use Team 2 fields above instead. Kept for backwards compatibility.
+   * LEGACY: Use Team 2 fields above instead. Kept for backwards compatibility.
    */
   opponent?: string | null;
   /**
@@ -1545,7 +1547,7 @@ export interface Match {
   createdAt: string;
 }
 /**
- * 📱 Manage social media posts and content calendar.
+ * Manage social media posts and content calendar.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "social-posts".
@@ -1619,7 +1621,7 @@ export interface SocialPost {
   createdAt: string;
 }
 /**
- * 📋 Manage open player positions and recruitment listings.
+ * Manage open player positions and recruitment listings.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "recruitment-listings".
@@ -1673,7 +1675,7 @@ export interface RecruitmentListing {
   createdAt: string;
 }
 /**
- * 🎙️ Manage production staff (casters, observers, producers) who work on match broadcasts.
+ * Manage production staff (casters, observers, producers) who work on match broadcasts.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "production".
@@ -1697,7 +1699,7 @@ export interface Production {
   createdAt: string;
 }
 /**
- * 👔 Manage organization staff members (owners, HR, moderators, managers, etc.). Staff can have multiple roles.
+ * Manage organization staff members (owners, HR, moderators, managers, etc.). Staff can have multiple roles.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "organization-staff".
@@ -2044,7 +2046,7 @@ export interface ScrimOutcome {
   createdAt: string;
 }
 /**
- * 📅 Create and manage team schedules - from polls or manually. Supports multi-block days, ringers, and Discord posting.
+ * Create and manage team schedules - from polls or manually. Supports multi-block days, ringers, and Discord posting.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "discord-polls".
@@ -2145,7 +2147,7 @@ export interface DiscordPoll {
   createdAt: string;
 }
 /**
- * 🎨 Graphics department dashboard
+ * Graphics department dashboard
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "graphics-anchor".
@@ -2157,7 +2159,7 @@ export interface GraphicsAnchor {
   createdAt: string;
 }
 /**
- * 🎨 Visual branding color guide for all teams
+ * Visual branding color guide for all teams
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "branding-guide-anchor".
@@ -2169,7 +2171,7 @@ export interface BrandingGuideAnchor {
   createdAt: string;
 }
 /**
- * 🎥 Video department dashboard
+ * Video department dashboard
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "video-anchor".
@@ -2181,7 +2183,7 @@ export interface VideoAnchor {
   createdAt: string;
 }
 /**
- * 🎉 Events department dashboard
+ * Events department dashboard
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "events-anchor".
@@ -2193,7 +2195,7 @@ export interface EventsAnchor {
   createdAt: string;
 }
 /**
- * 📝 Review and manage recruitment applications.
+ * Review and manage recruitment applications.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "recruitment-applications".
@@ -2267,7 +2269,7 @@ export interface DiscordCategoryTemplate {
   createdAt: string;
 }
 /**
- * 📌 Forum threads that are automatically kept active
+ * Forum threads that are automatically kept active
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "watched-threads".
@@ -2364,7 +2366,7 @@ export interface TwitchStreamer {
   createdAt: string;
 }
 /**
- * 🔍 System-generated log of user actions for security monitoring.
+ * System-generated log of user actions for security monitoring.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "audit-logs".
@@ -2411,7 +2413,7 @@ export interface AuditLog {
   createdAt: string;
 }
 /**
- * ⚠️ System-generated log of errors for debugging and monitoring.
+ * System-generated log of errors for debugging and monitoring.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "error-logs".
@@ -2458,7 +2460,7 @@ export interface ErrorLog {
   createdAt: string;
 }
 /**
- * ⏰ System-generated log of scheduled job executions.
+ * System-generated log of scheduled job executions.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "cron-job-runs".
@@ -2505,7 +2507,7 @@ export interface CronJobRun {
   createdAt: string;
 }
 /**
- * 👥 Track active admin panel sessions for security monitoring.
+ * Track active admin panel sessions for security monitoring.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "active-sessions".
@@ -2567,7 +2569,7 @@ export interface IgnoredDuplicate {
   createdAt: string;
 }
 /**
- * 🔗 Generate invite links for new users with pre-configured permissions.
+ * Generate invite links for new users with pre-configured permissions.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "invite-links".
@@ -4185,22 +4187,18 @@ export interface Footer {
   createdAt?: string | null;
 }
 /**
- * 📺 Manage weekly match coverage, staff assignments, and broadcast schedule
+ * Manage weekly match coverage, staff assignments, and broadcast schedule
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "production-dashboard".
  */
 export interface ProductionDashboard {
   id: number;
-  /**
-   * Discord channel ID for match reschedule notifications. Right-click a channel in Discord → Copy Channel ID.
-   */
-  productionNotificationsChannelId?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
 /**
- * ⚙️ Configure templates, goals, and content guidelines for social media posts
+ * Configure templates, goals, and content guidelines for social media posts
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "social-media-config".
@@ -4284,7 +4282,7 @@ export interface SocialMediaConfig {
   createdAt?: string | null;
 }
 /**
- * 📱 Manage social media posts, content calendar, and posting schedule
+ * Manage social media posts, content calendar, and posting schedule
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "social-media-settings".
@@ -4295,7 +4293,7 @@ export interface SocialMediaSetting {
   createdAt?: string | null;
 }
 /**
- * 📅 View all scheduled tasks, matches, and social posts across departments
+ * View all scheduled tasks, matches, and social posts across departments
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "organization-calendar".
@@ -4306,7 +4304,7 @@ export interface OrganizationCalendar {
   createdAt?: string | null;
 }
 /**
- * 🎨 Manage graphics requests, projects, and asset library
+ * Manage graphics requests, projects, and asset library
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "graphics-dashboard".
@@ -4317,7 +4315,7 @@ export interface GraphicsDashboard {
   createdAt?: string | null;
 }
 /**
- * 🎬 Manage video projects, clips of the week, and edits
+ * Manage video projects, clips of the week, and edits
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "video-editing-dashboard".
@@ -4328,7 +4326,7 @@ export interface VideoEditingDashboard {
   createdAt?: string | null;
 }
 /**
- * 🎉 Manage movie nights, game nights, PUGs, seminars, and tournaments
+ * Manage movie nights, game nights, PUGs, seminars, and tournaments
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "events-dashboard".
@@ -4339,7 +4337,7 @@ export interface EventsDashboard {
   createdAt?: string | null;
 }
 /**
- * 📖 Comprehensive intel profiles for opponent teams
+ * Comprehensive intel profiles for opponent teams
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "opponent-wiki".
@@ -4350,7 +4348,7 @@ export interface OpponentWiki {
   createdAt?: string | null;
 }
 /**
- * 🔍 Manage enemy team research, player profiles, and match analysis
+ * Manage enemy team research, player profiles, and match analysis
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "scouting-dashboard".
@@ -4372,7 +4370,18 @@ export interface DiscordServerManager {
   createdAt?: string | null;
 }
 /**
- * 🔍 View user action logs for security monitoring.
+ * Unified monitoring dashboard — errors, cron jobs, audit logs, sessions, and database health.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "system-health".
+ */
+export interface SystemHealth {
+  id: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * View user action logs for security monitoring.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "audit-log-viewer".
@@ -4383,7 +4392,7 @@ export interface AuditLogViewer {
   createdAt?: string | null;
 }
 /**
- * ⏰ Monitor scheduled job executions and performance.
+ * Monitor scheduled job executions and performance.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "cron-monitor".
@@ -4394,7 +4403,7 @@ export interface CronMonitor {
   createdAt?: string | null;
 }
 /**
- * ⚠️ Monitor and track application errors for debugging.
+ * Monitor and track application errors for debugging.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "error-dashboard".
@@ -4405,7 +4414,7 @@ export interface ErrorDashboard {
   createdAt?: string | null;
 }
 /**
- * 👥 Monitor currently logged-in admin panel users
+ * Monitor currently logged-in admin panel users.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "active-sessions-viewer".
@@ -4416,7 +4425,7 @@ export interface ActiveSessionsViewer {
   createdAt?: string | null;
 }
 /**
- * 📊 System overview and health monitoring.
+ * System overview and health monitoring.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "database-health".
@@ -4427,7 +4436,7 @@ export interface DatabaseHealth {
   createdAt?: string | null;
 }
 /**
- * 📊 Check and fix data consistency issues across collections.
+ * Check and fix data consistency issues across collections.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "data-consistency".
@@ -4509,7 +4518,6 @@ export interface FooterSelect<T extends boolean = true> {
  * via the `definition` "production-dashboard_select".
  */
 export interface ProductionDashboardSelect<T extends boolean = true> {
-  productionNotificationsChannelId?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -4610,6 +4618,15 @@ export interface ScoutingDashboardSelect<T extends boolean = true> {
  * via the `definition` "discord-server-manager_select".
  */
 export interface DiscordServerManagerSelect<T extends boolean = true> {
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "system-health_select".
+ */
+export interface SystemHealthSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

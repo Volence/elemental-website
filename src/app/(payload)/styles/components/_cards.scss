@@ -6,16 +6,13 @@
 @import '../mixins';
 
 // ============================================
-// GENERIC CARDS
+// GENERIC CARDS — explicit targets only, NO wildcards
 // ============================================
 
 .card,
-[class*="card"]:not([class*="stat-card"]):not([class*="dashboard-stats"]):not([class*="assigned-teams"]),
 .collection-list__item,
 .doc-drawer,
-.collapsible,
-[class*="drawer"],
-[class*="panel"] {
+.collapsible {
   @include card-base;
   @include card-hover;
 }
@@ -27,21 +24,20 @@
 .dashboard__card,
 .dashboard .card {
   @include card-base;
-  @include gradient-border($gradient: $admin-gradient-primary, $width: 3px);
-  padding: $padding-xl;                                            // 2rem (standardized)
-  margin-bottom: $spacing-2xl;                                     // 3rem
-  border-radius: $radius-lg;                                       // 8px
+  @include gradient-border($gradient: $admin-gradient-primary, $width: 2px);
+  padding: $padding-xl;
+  margin-bottom: $spacing-2xl;
+  border-radius: $radius-lg;
   overflow: hidden;
-  transition: $transition-all-normal;                              // all 0.2s ease-out
+  transition: $transition-all-normal;
   
   &:hover {
-    transform: scale(1.02) translateY(-2px);
-    box-shadow: $shadow-xl, 0 0 30px rgba(6, 182, 212, 0.3);      // Use standardized shadow
-    border-color: rgba(6, 182, 212, 0.2);
+    transform: translateY(-2px);
+    box-shadow: $elevation-2, 0 0 20px rgba(6, 182, 212, 0.12);
     
     &::before {
       opacity: 1;
-      box-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
+      box-shadow: 0 0 16px rgba(6, 182, 212, 0.3);
     }
   }
 }
@@ -51,55 +47,40 @@
 // Example: Dashboard at /admin - Teams, People, Matches cards
 // ============================================
 
-.stat-card,
-[class*="stat-card"],
-[class*="critical"][class*="card"],
-[class*="error"][class*="card"],
-[class*="warning"][class*="card"],
-[class*="success"][class*="card"],
-[class*="auto-fix"][class*="card"] {
+.stat-card {
   @include card-base;
-  padding: $padding-lg;                                            // 1.5rem (standardized)
-  margin-bottom: $spacing-lg;                                      // 1.5rem
-  border: $border-medium solid transparent;                        // 2px
-  border-radius: $radius-lg;                                       // 8px
-  transition: $transition-all-normal;                              // all 0.2s ease-out
+  padding: $padding-lg;
+  margin-bottom: $spacing-lg;
+  border: $border-medium solid transparent;
+  border-radius: $radius-lg;
+  transition: $transition-all-normal;
   position: relative;
   overflow: visible;
   
-  // Clean Glow hover effect - lift and glow
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 
-      0 8px 24px rgba(0, 0, 0, 0.3),
-      0 0 20px rgba($admin-accent-primary, 0.2);
+    transform: translateY(-2px);
+    box-shadow: $elevation-2;
   }
 }
 
 // Success variant
-.stat-card--success,
-[class*="success"][class*="card"],
-[class*="auto-fix"][class*="card"] {
+.stat-card--success {
   @include stat-card('success');
 }
 
 // Warning variant
-.stat-card--warning,
-[class*="warning"][class*="card"] {
+.stat-card--warning {
   @include stat-card('warning');
 }
 
 // Error/Critical variant
 .stat-card--error,
-.stat-card--critical,
-[class*="error"][class*="card"],
-[class*="critical"][class*="card"] {
+.stat-card--critical {
   @include stat-card('error');
 }
 
 // Info variant
-.stat-card--info,
-[class*="info"][class*="card"] {
+.stat-card--info {
   @include stat-card('info');
 }
 
@@ -107,33 +88,29 @@
 // INFO BOXES & BANNERS
 // ============================================
 
-// Only target Payload UI banners, not custom components like .assigned-teams-banner
+// Only target Payload UI banners — explicit selectors, no wildcards
 .banner:not([class*="assigned-teams"]):not([class*="team-manager"]),
 .notification,
-[class*="notification"],
 .message,
-[class*="message"],
-.info-box:not([class*="assigned-teams"]):not([class*="team-manager"]),
-[class*="info-box"]:not([class*="assigned-teams"]):not([class*="team-manager"]) {
+.info-box:not([class*="assigned-teams"]):not([class*="team-manager"]) {
   @include gradient-border($gradient: $admin-gradient-primary);
-  margin: $spacing-2xl $spacing-xl;                                // 3rem 2rem
-  padding: $padding-lg $padding-xl;                                // 1.5rem 2rem (standardized)
-  border-radius: $radius-lg;                                       // 8px
+  margin: $spacing-2xl $spacing-xl;
+  padding: $padding-lg $padding-xl;
+  border-radius: $radius-lg;
   max-width: calc(100% - #{$spacing-3xl});
-  transition: $transition-all-normal;                              // all 0.2s ease-out
+  transition: $transition-all-normal;
 }
 
 // Info box variant
-.info-box:not([class*="assigned-teams"]):not([class*="team-manager"]),
-[class*="info-box"]:not([class*="assigned-teams"]):not([class*="team-manager"]),
-[class*="info"][class*="box"]:not([class*="assigned-teams"]):not([class*="team-manager"]) {
+.info-box:not([class*="assigned-teams"]):not([class*="team-manager"]) {
   @include gradient-border($gradient: $admin-gradient-info);
   background: rgba(6, 182, 212, 0.05);
 }
 
-// Warning variant
-[class*="warning"],
-[class*="alert"] {
+// Warning variant — explicit targets only
+.banner--warning,
+.notification--warning,
+.message--warning {
   @include gradient-border($gradient: $admin-gradient-warning);
   background: rgba(245, 158, 11, 0.05);
 }
@@ -163,12 +140,11 @@
 // COLLECTION LIST ITEMS
 // ============================================
 
-.collection-list__item,
-[class*="list-item"] {
-  padding: $padding-lg;                                            // 1.5rem (standardized)
-  margin: $spacing-md 0;                                           // 1rem 0
-  border-radius: $radius-lg;                                       // 8px
-  transition: $transition-all-normal;                              // all 0.2s ease-out
+.collection-list__item {
+  padding: $padding-lg;
+  margin: $spacing-md 0;
+  border-radius: $radius-lg;
+  transition: $transition-all-normal;
 }
 
 // ============================================
@@ -176,18 +152,16 @@
 // ============================================
 
 table tbody tr,
-.table__tr,
-[class*="table"] tbody tr {
+.table__tr {
   background: transparent;
-  transition: background-color $transition-fast, box-shadow $transition-normal;
+  transition: background-color $transition-fast;
   
   &:nth-child(even) {
     background: rgba(255, 255, 255, 0.015);
   }
   
   &:hover {
-    background: rgba($admin-accent-primary, 0.12);
-    box-shadow: $shadow-md, 0 0 20px rgba($admin-accent-primary, 0.15);  // Use standardized shadow
+    background: rgba($admin-accent-primary, 0.06);
   }
 }
 

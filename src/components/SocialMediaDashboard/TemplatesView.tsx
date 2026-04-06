@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '@payloadcms/ui'
 import Link from 'next/link'
 import { TemplateModal } from './TemplateModal'
+import { FileEdit, FileText, Lightbulb, Settings, Sparkles } from 'lucide-react'
 
 interface PostTemplate {
   name: string
@@ -65,7 +66,7 @@ export function TemplatesView() {
       </div>
 
       <div className="templates-view__instructions">
-        <h3>📄 How to Use Templates</h3>
+        <h3><FileText size={14} /> How to Use Templates</h3>
         <ol>
           <li><strong>Click "Use Template"</strong> on any template below</li>
           <li><strong>Fill in the placeholders</strong> - The modal auto-detects ALL placeholders (<code>{'{{team_1}}'}</code>, <code>{'{{url}}'}</code>, etc.)</li>
@@ -74,7 +75,7 @@ export function TemplatesView() {
           <li><strong>Add media and schedule</strong> - Upload images/videos and set your post time</li>
         </ol>
         <p>
-          💡 <strong>Tip:</strong> Templates support ANY <code>{'{{placeholder}}'}</code> format - they're automatically detected! You can also click "Copy to Clipboard" in the modal if you just need the text.
+          <Lightbulb size={14} /> <strong>Tip:</strong> Templates support ANY <code>{'{{placeholder}}'}</code> format - they're automatically detected! You can also click "Copy to Clipboard" in the modal if you just need the text.
         </p>
         {isManager && (
           <div className="templates-view__manage">
@@ -82,7 +83,7 @@ export function TemplatesView() {
               href="/admin/globals/social-media-config"
               className="btn btn--secondary"
             >
-              ⚙️ Manage Templates
+              <Settings size={12} /> Manage Templates
             </Link>
           </div>
         )}
@@ -90,7 +91,7 @@ export function TemplatesView() {
 
       {templates.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state__icon">📝</div>
+          <div className="empty-state__icon"><FileEdit size={14} /></div>
           <h3 className="empty-state__title">No Templates Yet</h3>
           <p className="empty-state__description">
             {isManager 
@@ -131,7 +132,7 @@ export function TemplatesView() {
                 </div>
                 {template.suggestedMedia && (
                   <div className="template-media-suggestion">
-                    <strong>💡 Suggested Media:</strong> {template.suggestedMedia}
+                    <strong><Lightbulb size={14} /> Suggested Media:</strong> {template.suggestedMedia}
                   </div>
                 )}
                 {(() => {
@@ -148,7 +149,7 @@ export function TemplatesView() {
                     if (placeholderArray.length > 0) {
                       return (
                         <div className="template-card__placeholders">
-                          <h4>📝 Fields to fill ({placeholderArray.length}):</h4>
+                          <h4><FileEdit size={14} /> Fields to fill ({placeholderArray.length}):</h4>
                           <div className="template-card__placeholders-list">
                             {placeholderArray.map((placeholder) => (
                               <code key={placeholder}>
@@ -174,7 +175,7 @@ export function TemplatesView() {
                     setModalTemplate(template)
                   }}
                 >
-                  ✨ Use Template
+                  <Sparkles size={14} /> Use Template
                 </button>
               </div>
             </div>

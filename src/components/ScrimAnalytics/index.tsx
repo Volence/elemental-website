@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import { BarChart3, Users, Map, TrendingUp, TrendingDown, Minus, Check, X, HelpCircle, ChevronDown, ChevronRight } from 'lucide-react'
 import RangeFilter, { type RangeValue } from '@/components/RangeFilter'
 import './ScrimAnalytics.scss'
 
@@ -49,25 +50,25 @@ interface ScrimAnalyticsProps {
   teamName?: string
 }
 
-const ratingLabels: Record<string, { label: string; emoji: string }> = {
-  easywin: { label: 'Easy Win', emoji: '😎' },
-  closewin: { label: 'Close Win', emoji: '😅' },
-  neutral: { label: 'Neutral', emoji: '😐' },
-  closeloss: { label: 'Close Loss', emoji: '😤' },
-  gotrolled: { label: 'Got Rolled', emoji: '💀' },
+const ratingLabels: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
+  easywin: { label: 'Easy Win', color: '#22c55e', icon: <TrendingUp size={12} /> },
+  closewin: { label: 'Close Win', color: '#84cc16', icon: <TrendingUp size={12} /> },
+  neutral: { label: 'Neutral', color: '#f59e0b', icon: <Minus size={12} /> },
+  closeloss: { label: 'Close Loss', color: '#f97316', icon: <TrendingDown size={12} /> },
+  gotrolled: { label: 'Got Rolled', color: '#ef4444', icon: <TrendingDown size={12} /> },
 }
 
-const strengthLabels: Record<string, { label: string; emoji: string }> = {
-  weak: { label: 'Weak', emoji: '🟢' },
-  average: { label: 'Average', emoji: '🟡' },
-  strong: { label: 'Strong', emoji: '🟠' },
-  verystrong: { label: 'Very Strong', emoji: '🔴' },
+const strengthLabels: Record<string, { label: string; color: string }> = {
+  weak: { label: 'Weak', color: '#22c55e' },
+  average: { label: 'Average', color: '#f59e0b' },
+  strong: { label: 'Strong', color: '#f97316' },
+  verystrong: { label: 'Very Strong', color: '#ef4444' },
 }
 
-const worthLabels: Record<string, { label: string; emoji: string; color: string }> = {
-  yes: { label: 'Yes', emoji: '✅', color: '#22c55e' },
-  maybe: { label: 'Maybe', emoji: '🤔', color: '#f59e0b' },
-  no: { label: 'No', emoji: '❌', color: '#ef4444' },
+const worthLabels: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
+  yes: { label: 'Yes', color: '#22c55e', icon: <Check size={10} /> },
+  maybe: { label: 'Maybe', color: '#f59e0b', icon: <HelpCircle size={10} /> },
+  no: { label: 'No', color: '#ef4444', icon: <X size={10} /> },
 }
 
 export const ScrimAnalytics: React.FC<ScrimAnalyticsProps> = ({ teamId, teamName }) => {
@@ -114,9 +115,9 @@ export const ScrimAnalytics: React.FC<ScrimAnalyticsProps> = ({ teamId, teamName
 
   return (
     <div className="scrim-analytics">
-      <div className="scrim-analytics__header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div className="scrim-analytics__header">
         <div>
-          <h2>📊 Scrim Analytics {teamName && `- ${teamName}`}</h2>
+          <h2><BarChart3 size={20} className="scrim-analytics__inline-icon--lg" />Scrim Analytics {teamName && `- ${teamName}`}</h2>
           <div className="scrim-analytics__summary">
             <span className="scrim-analytics__stat">
               <strong>{data.totalScrims}</strong> total scrims
@@ -134,13 +135,13 @@ export const ScrimAnalytics: React.FC<ScrimAnalyticsProps> = ({ teamId, teamName
           className={`scrim-analytics__tab ${activeTab === 'opponents' ? 'scrim-analytics__tab--active' : ''}`}
           onClick={() => setActiveTab('opponents')}
         >
-          👥 Opponent Lookup
+          <Users size={14} className="scrim-analytics__inline-icon" /> Opponent Lookup
         </button>
         <button
           className={`scrim-analytics__tab ${activeTab === 'maps' ? 'scrim-analytics__tab--active' : ''}`}
           onClick={() => setActiveTab('maps')}
         >
-          🗺️ Map Performance
+          <Map size={14} className="scrim-analytics__inline-icon" /> Map Performance
         </button>
       </div>
 
@@ -177,10 +178,10 @@ export const ScrimAnalytics: React.FC<ScrimAnalyticsProps> = ({ teamId, teamName
                           className="scrim-analytics__worth-badge"
                           style={{ backgroundColor: worth.color }}
                         >
-                          {worth.emoji} {worth.label}
+                          {worth.icon} {worth.label}
                         </span>
                       )}
-                      <span className="scrim-analytics__expand-icon">{isExpanded ? '▼' : '▶'}</span>
+                      <span className="scrim-analytics__expand-icon">{isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}</span>
                     </div>
 
                     {isExpanded && (
@@ -190,12 +191,12 @@ export const ScrimAnalytics: React.FC<ScrimAnalyticsProps> = ({ teamId, teamName
                           <div className="scrim-analytics__ratings">
                             {opp.latestOurRating && ratingLabels[opp.latestOurRating] && (
                               <span className="scrim-analytics__rating">
-                                Our Performance: {ratingLabels[opp.latestOurRating].emoji} {ratingLabels[opp.latestOurRating].label}
+                                Our Performance: <span className="scrim-analytics__rating-indicator" style={{ color: ratingLabels[opp.latestOurRating].color }}>{ratingLabels[opp.latestOurRating].icon}</span> {ratingLabels[opp.latestOurRating].label}
                               </span>
                             )}
                             {opp.latestOpponentRating && strengthLabels[opp.latestOpponentRating] && (
                               <span className="scrim-analytics__rating">
-                                Their Strength: {strengthLabels[opp.latestOpponentRating].emoji} {strengthLabels[opp.latestOpponentRating].label}
+                                Their Strength: <span className="scrim-analytics__strength-dot" style={{ backgroundColor: strengthLabels[opp.latestOpponentRating].color }} /> {strengthLabels[opp.latestOpponentRating].label}
                               </span>
                             )}
                           </div>
@@ -231,10 +232,10 @@ export const ScrimAnalytics: React.FC<ScrimAnalyticsProps> = ({ teamId, teamName
                                 <span className="scrim-analytics__timeline-date">{scrim.date}</span>
                                 <div className="scrim-analytics__timeline-content">
                                   {scrim.ourRating && ratingLabels[scrim.ourRating] && (
-                                    <span>{ratingLabels[scrim.ourRating].emoji} {ratingLabels[scrim.ourRating].label}</span>
+                                    <span><span className="scrim-analytics__rating-indicator" style={{ color: ratingLabels[scrim.ourRating].color }}>{ratingLabels[scrim.ourRating].icon}</span> {ratingLabels[scrim.ourRating].label}</span>
                                   )}
                                   {scrim.worthScrimAgain && worthLabels[scrim.worthScrimAgain] && (
-                                    <span>→ Worth it? {worthLabels[scrim.worthScrimAgain].emoji}</span>
+                                    <span>→ Worth it? <span className="scrim-analytics__rating-indicator" style={{ color: worthLabels[scrim.worthScrimAgain].color }}>{worthLabels[scrim.worthScrimAgain].icon}</span></span>
                                   )}
                                   {scrim.scrimNotes && (
                                     <p className="scrim-analytics__timeline-notes">{scrim.scrimNotes}</p>

@@ -27,7 +27,7 @@ export const Media: CollectionConfig = {
     update: authenticated,
   },
   admin: {
-    description: '🖼️ Upload and manage images, videos, and other media files used across the website.',
+    description: 'Upload and manage images, videos, and other media files used across the website.',
     group: 'System',
     hidden: ({ user }) => {
       if (!user) return true

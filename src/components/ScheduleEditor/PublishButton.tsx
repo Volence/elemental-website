@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDocumentInfo, useFormModified, toast } from '@payloadcms/ui'
+import { Upload, AlertTriangle, Save } from 'lucide-react'
 import { publishScheduleAction } from '@/actions/publish-schedule'
 
 /**
@@ -45,20 +46,20 @@ export const PublishButton: React.FC = () => {
         onClick={() => setShowModal(true)}
         disabled={isPublishing}
       >
-        {isPublishing ? '📤 Publishing...' : '📤 Publish to Discord'}
+        {isPublishing ? <><Upload size={12} /> Publishing...</> : <><Upload size={12} /> Publish to Discord</>}
       </button>
 
       {showModal && (
         <div className="schedule-editor__modal-overlay" onClick={() => setShowModal(false)}>
           <div className="schedule-editor__modal" onClick={(e) => e.stopPropagation()}>
             <div className="schedule-editor__modal-header">
-              <span className="schedule-editor__modal-icon">📤</span>
+              <span className="schedule-editor__modal-icon"><Upload size={16} /></span>
               <h3>Publish Schedule</h3>
             </div>
             <div className="schedule-editor__modal-body">
               {isModified ? (
                 <p className="schedule-editor__modal-warning">
-                  ⚠️ <strong>Unsaved changes!</strong> Please save the document first before publishing. 
+                  <AlertTriangle size={14} /> <strong>Unsaved changes!</strong> Please save the document first before publishing. 
                   The publish action uses saved data from the database.
                 </p>
               ) : (
@@ -80,7 +81,7 @@ export const PublishButton: React.FC = () => {
                 disabled={isModified}
                 title={isModified ? 'Save your changes first' : 'Publish to Discord'}
               >
-                {isModified ? '💾 Save First' : 'Publish to Discord'}
+                {isModified ? <><Save size={12} /> Save First</> : 'Publish to Discord'}
               </button>
             </div>
           </div>

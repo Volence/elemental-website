@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { toast } from '@payloadcms/ui'
+import { AlertTriangle, CheckCircle, ClipboardList, Globe, XCircle, ChevronDown, ChevronRight, X } from 'lucide-react'
 
 interface User {
   id: number
@@ -64,11 +65,11 @@ const getUserName = (user: User | number | null | undefined): string => {
   return user.name || user.email || 'Unknown'
 }
 
-const getCoverageIcon = (status?: string) => {
+const getCoverageIcon = (status?: string): React.ReactNode => {
   switch (status) {
-    case 'full': return '✅'
-    case 'partial': return '⚠️'
-    default: return '❌'
+    case 'full': return <CheckCircle size={12} />
+    case 'partial': return <AlertTriangle size={12} />
+    default: return <XCircle size={12} />
   }
 }
 
@@ -154,7 +155,7 @@ function RoleAssignmentBlock({ matchId, roleName, roleKey, maxSlots, signups, as
                     onClick={() => onUnassign(matchId, roleKey, isCaster ? idx : undefined)}
                     className="assignment-unassign-btn"
                     title="Unassign"
-                  >✕</button>
+                  ><X size={10} /></button>
                 </div>
               ))}
             </div>
@@ -180,9 +181,9 @@ function MatchAssignmentCard({ match, onAssign, onUnassign }: {
 
   return (
     <div className={`assignment-match ${hasReschedule ? 'assignment-match--rescheduled' : ''}`}>
-      <div className="assignment-match__header" onClick={() => setExpanded(!expanded)} style={{ cursor: 'pointer' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1 }}>
-          <span className="assignment-time-slot__icon">{expanded ? '▼' : '▶'}</span>
+      <div className="assignment-match__header" onClick={() => setExpanded(!expanded)}>
+        <div className="assignment-match__header-left">
+          <span className="assignment-time-slot__icon">{expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}</span>
           <div className="assignment-match__info">
             <h3>{match.title}</h3>
             <div className="assignment-match__meta">
@@ -191,7 +192,7 @@ function MatchAssignmentCard({ match, onAssign, onUnassign }: {
                 {getCoverageIcon(pw.coverageStatus)} {pw.coverageStatus || 'none'}
               </span>
               {totalSignups > 0 && (
-                <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
+                <span className="assignment-match__signup-count">
                   {totalSignups} signup{totalSignups !== 1 ? 's' : ''}
                 </span>
               )}
@@ -206,7 +207,7 @@ function MatchAssignmentCard({ match, onAssign, onUnassign }: {
 
       {hasReschedule && pw.previousDate && (
         <div className="assignment-match__reschedule-warning">
-          ⚠️ Rescheduled from {new Date(pw.previousDate).toLocaleDateString('en-US', {
+          <AlertTriangle size={12} /> Rescheduled from {new Date(pw.previousDate).toLocaleDateString('en-US', {
             weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
           })} — signups were reset
         </div>
@@ -431,10 +432,10 @@ export function AssignmentView() {
         <div>
           <h2>Staff Assignment</h2>
           <p className="production-dashboard__subtitle">
-            Click a name under "Available" to assign them. Click ✕ to unassign. Coverage updates automatically.
+            Click a name under "Available" to assign them. Click the X to unassign. Coverage updates automatically.
           </p>
           <div className="production-dashboard__timezone-notice">
-            🌍 <strong>Timezone Info:</strong> All times shown in your local timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone})
+            <Globe size={14} /> <strong>Timezone Info:</strong> All times shown in your local timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone})
           </div>
         </div>
       </div>
@@ -446,7 +447,7 @@ export function AssignmentView() {
           {/* Section 1: Fully Booked */}
           {fullyBooked.length > 0 && (
             <div className="staff-signups-section staff-signups-section--assignments">
-              <h3>✅ Fully Booked ({fullyBooked.length} time slot{fullyBooked.length > 1 ? 's' : ''})</h3>
+              <h3><CheckCircle size={12} /> Fully Booked ({fullyBooked.length} time slot{fullyBooked.length > 1 ? 's' : ''})</h3>
               <div className="assignment-time-slots">
                 {fullyBooked.map(group => (
                   <FullyCoveredGroup key={group.dateTime} group={group} onAssign={assignStaff} onUnassign={unassignStaff} />
@@ -458,7 +459,7 @@ export function AssignmentView() {
           {/* Section 2: Partially Assigned */}
           {partiallyAssigned.length > 0 && (
             <div className="staff-signups-section staff-signups-section--assignments">
-              <h3>⚠️ Partially Assigned ({partiallyAssigned.length} time slot{partiallyAssigned.length > 1 ? 's' : ''})</h3>
+              <h3><AlertTriangle size={12} /> Partially Assigned ({partiallyAssigned.length} time slot{partiallyAssigned.length > 1 ? 's' : ''})</h3>
               <div className="assignment-time-slots">
                 {partiallyAssigned.map(group => (
                   <NeedsAssignmentGroup key={group.dateTime} group={group} onAssign={assignStaff} onUnassign={unassignStaff} />
@@ -470,7 +471,7 @@ export function AssignmentView() {
           {/* Section 3: Has Signups — ready to assign */}
           {hasSignups.length > 0 && (
             <div className="staff-signups-section">
-              <h3>📋 Has Signups — Ready to Assign ({hasSignups.length} time slot{hasSignups.length > 1 ? 's' : ''})</h3>
+              <h3><ClipboardList size={14} /> Has Signups — Ready to Assign ({hasSignups.length} time slot{hasSignups.length > 1 ? 's' : ''})</h3>
               <div className="assignment-time-slots">
                 {hasSignups.map(group => (
                   <NeedsAssignmentGroup key={group.dateTime} group={group} onAssign={assignStaff} onUnassign={unassignStaff} />
@@ -482,7 +483,7 @@ export function AssignmentView() {
           {/* Section 4: No Signups yet */}
           {noSignups.length > 0 && (
             <div className="staff-signups-section staff-signups-section--urgent">
-              <h3>❌ No Signups Yet ({noSignups.length} time slot{noSignups.length > 1 ? 's' : ''})</h3>
+              <h3><XCircle size={12} /> No Signups Yet ({noSignups.length} time slot{noSignups.length > 1 ? 's' : ''})</h3>
               <div className="assignment-time-slots">
                 {noSignups.map(group => (
                   <NeedsAssignmentGroup key={group.dateTime} group={group} onAssign={assignStaff} onUnassign={unassignStaff} />
@@ -522,7 +523,7 @@ function NeedsAssignmentGroup({ group, onAssign, onUnassign }: {
     <div className="assignment-time-slot">
       <div className="assignment-time-slot__header">
         <button className="assignment-time-slot__toggle" onClick={() => setExpanded(!expanded)}>
-          <span className="assignment-time-slot__icon">{expanded ? '▼' : '▶'}</span>
+          <span className="assignment-time-slot__icon">{expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}</span>
           <div className="assignment-time-slot__info">
             <h3 className="assignment-time-slot__datetime">{group.formattedDate}</h3>
             <p className="assignment-time-slot__count">
@@ -567,7 +568,7 @@ function FullyCoveredGroup({ group, onAssign, onUnassign }: {
     <div className="assignment-time-slot assignment-time-slot--complete">
       <div className="assignment-time-slot__header">
         <button className="assignment-time-slot__toggle" onClick={() => setExpanded(!expanded)}>
-          <span className="assignment-time-slot__icon">{expanded ? '▼' : '▶'}</span>
+          <span className="assignment-time-slot__icon">{expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}</span>
           <div className="assignment-time-slot__info">
             <h3 className="assignment-time-slot__datetime">{group.formattedDate}</h3>
             <p className="assignment-time-slot__count">
@@ -576,7 +577,7 @@ function FullyCoveredGroup({ group, onAssign, onUnassign }: {
             </p>
           </div>
         </button>
-        <span className="assignment-time-slot__badge assignment-time-slot__badge--complete">✅ Full Coverage</span>
+        <span className="assignment-time-slot__badge assignment-time-slot__badge--complete"><CheckCircle size={12} /> Full Coverage</span>
       </div>
       {expanded && (
         <div className="assignment-time-slot__matches">

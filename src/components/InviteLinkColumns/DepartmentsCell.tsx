@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { Clapperboard, Mic, Palette, PartyPopper, Search, Smartphone } from 'lucide-react'
 
 interface DepartmentsCellProps {
   rowData?: {
@@ -22,30 +23,30 @@ export default function DepartmentsCell({ rowData }: DepartmentsCellProps) {
     return <span style={{ color: 'var(--theme-elevation-500)', fontSize: '0.85rem' }}>None</span>
   }
 
-  const departmentBadges: Array<{ name: string; emoji: string; color: string }> = []
+  const departmentBadges: Array<{ name: string; icon: React.ReactNode; color: string }> = []
 
   if (departments.isProductionStaff) {
-    departmentBadges.push({ name: 'Production', emoji: '🎙️', color: 'info' })
+    departmentBadges.push({ name: 'Production', icon: <Mic size={12} />, color: 'info' })
   }
 
   if (departments.isSocialMediaStaff) {
-    departmentBadges.push({ name: 'Social Media', emoji: '📱', color: 'success' })
+    departmentBadges.push({ name: 'Social Media', icon: <Smartphone size={12} />, color: 'success' })
   }
 
   if (departments.isGraphicsStaff) {
-    departmentBadges.push({ name: 'Graphics', emoji: '🎨', color: 'warning' })
+    departmentBadges.push({ name: 'Graphics', icon: <Palette size={12} />, color: 'warning' })
   }
 
   if (departments.isVideoStaff) {
-    departmentBadges.push({ name: 'Video', emoji: '🎬', color: 'error' })
+    departmentBadges.push({ name: 'Video', icon: <Clapperboard size={12} />, color: 'error' })
   }
 
   if (departments.isEventsStaff) {
-    departmentBadges.push({ name: 'Events', emoji: '🎉', color: 'success' })
+    departmentBadges.push({ name: 'Events', icon: <PartyPopper size={12} />, color: 'success' })
   }
 
   if (departments.isScoutingStaff) {
-    departmentBadges.push({ name: 'Scouting', emoji: '🔍', color: 'info' })
+    departmentBadges.push({ name: 'Scouting', icon: <Search size={12} />, color: 'info' })
   }
 
   if (departmentBadges.length === 0) {
@@ -58,6 +59,9 @@ export default function DepartmentsCell({ rowData }: DepartmentsCellProps) {
         <span
           key={badge.name}
           style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px',
             padding: '0.25rem 0.6rem',
             borderRadius: '6px',
             fontSize: '0.75rem',
@@ -67,7 +71,7 @@ export default function DepartmentsCell({ rowData }: DepartmentsCellProps) {
             border: `1px solid rgba(var(--theme-${badge.color}-rgb), 0.3)`,
           }}
         >
-          {badge.emoji} {badge.name}
+          {badge.icon} {badge.name}
         </span>
       ))}
     </div>

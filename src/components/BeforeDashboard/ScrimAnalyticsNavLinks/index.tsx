@@ -4,6 +4,7 @@ import React from 'react'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@payloadcms/ui'
 import Link from 'next/link'
+import { BarChart3, Shield, ChevronRight } from 'lucide-react'
 import type { User } from '@/payload-types'
 
 /**
@@ -44,7 +45,7 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
   const canUpload = ['admin', 'staff-manager', 'team-manager'].includes(role)
 
   // Build personalized links (My Stats only)
-  const personalLinks: { href: string; label: string; match: (p: string) => boolean; icon: string }[] = []
+  const personalLinks: { href: string; label: string; match: (p: string) => boolean; icon: React.ReactNode }[] = []
 
   // "My Stats" — only for player/team-manager roles with a linkedPerson
   const linkedPersonId = typeof user.linkedPerson === 'object' && user.linkedPerson !== null
@@ -56,12 +57,12 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
       href: myStatsHref,
       label: 'My Stats',
       match: (p: string) => p === myStatsHref,
-      icon: '📊',
+      icon: <BarChart3 size={12} />,
     })
   }
 
   // Build team links separately
-  const teamLinks: { href: string; label: string; match: (p: string) => boolean; icon: string }[] = []
+  const teamLinks: { href: string; label: string; match: (p: string) => boolean; icon: React.ReactNode }[] = []
 
   if (isFullAccess && allTeams) {
     for (const team of allTeams) {
@@ -70,7 +71,7 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
         href: teamHref,
         label: team.name,
         match: (p: string) => p.startsWith('/admin/scrim-team') && p.includes(`teamId=${team.id}`),
-        icon: '🛡️',
+        icon: <Shield size={12} />,
       })
     }
   } else if (!isFullAccess) {
@@ -84,7 +85,7 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
           href: teamHref,
           label: teamName,
           match: (p: string) => p.startsWith('/admin/scrim-team') && p.includes(`teamId=${teamId}`),
-          icon: '🛡️',
+          icon: <Shield size={12} />,
         })
       }
     }
@@ -132,7 +133,6 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
         className="nav-group__toggle nav-group__toggle--open"
         type="button"
         tabIndex={-1}
-        style={{ cursor: 'default' }}
       >
         <div className="nav-group__label">Scrim Analytics</div>
         <div className="nav-group__indicator" />
@@ -145,12 +145,11 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
             <Link
               key={link.href}
               href={link.href}
-              className={`nav__link${isActive ? ' active' : ''}`}
+              className={`nav__link scrim-nav__icon-link${isActive ? ' active' : ''}`}
               id={`nav-${link.label.toLowerCase().replace(/\s/g, '-')}`}
-              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
-              <span style={{ fontSize: '12px', lineHeight: 1 }}>{link.icon}</span>
-              <span className="nav__link-label" style={{ fontWeight: 600 }}>{link.label}</span>
+              <span className="scrim-nav__icon">{link.icon}</span>
+              <span className="nav__link-label scrim-nav__link-label">{link.label}</span>
             </Link>
           )
         })}
@@ -162,28 +161,9 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setTeamsOpen(!teamsOpen)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  width: '100%',
-                  padding: '6px 16px',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  color: 'rgba(255,255,255,0.5)',
-                  fontFamily: 'inherit',
-                  transition: 'color 0.15s',
-                }}
+                className="scrim-nav__teams-toggle"
               >
-                <span style={{
-                  fontSize: '10px',
-                  transition: 'transform 0.2s',
-                  transform: showTeams ? 'rotate(90deg)' : 'rotate(0deg)',
-                  display: 'inline-block',
-                }}>▶</span>
+                <span className={`scrim-nav__teams-arrow${showTeams ? ' scrim-nav__teams-arrow--open' : ''}`}><ChevronRight size={10} /></span>
                 Teams ({teamLinks.length})
               </button>
             ) : null}
@@ -193,12 +173,11 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`nav__link${isActive ? ' active' : ''}`}
+                  className={`nav__link scrim-nav__icon-link${isActive ? ' active' : ''}`}
                   id={`nav-${link.label.toLowerCase().replace(/\s/g, '-')}`}
-                  style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                 >
-                  <span style={{ fontSize: '12px', lineHeight: 1 }}>{link.icon}</span>
-                  <span className="nav__link-label" style={{ fontWeight: 600 }}>{link.label}</span>
+                  <span className="scrim-nav__icon">{link.icon}</span>
+                  <span className="nav__link-label scrim-nav__link-label">{link.label}</span>
                 </Link>
               )
             })}
@@ -207,7 +186,7 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
 
         {/* Divider between personal/team links and standard links */}
         {(hasPersonalLinks || hasTeamLinks) && (
-          <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '4px 12px' }} />
+          <div className="scrim-nav__divider" />
         )}
 
         {/* Standard nav links */}
@@ -230,4 +209,3 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
 }
 
 export default ScrimAnalyticsNavLinks
-

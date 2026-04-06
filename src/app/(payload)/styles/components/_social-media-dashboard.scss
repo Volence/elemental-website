@@ -10,35 +10,14 @@
     min-height: 600px;
     
     &__tabs {
-      display: flex;
-      gap: $spacing-md;
-      margin-bottom: $spacing-xl;
-      flex-wrap: wrap;
+      @include dashboard-tabs($admin-accent-primary);
     }
     
     &__tab {
-      padding: $spacing-md $spacing-lg;
-      @include transparent-bg(0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      color: var(--theme-elevation-500);
-      cursor: pointer;
-      font-size: 0.95rem;
-      font-weight: 500;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      
-      &:hover {
-        color: var(--theme-text);
-        @include transparent-bg(0.08);
-        border-color: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.4);
-        box-shadow: 0 0 16px rgba(var(--admin-accent-rgb, 59, 130, 246), 0.2);
-      }
+      @include dashboard-tab($admin-accent-primary);
       
       &--active {
-        color: var(--theme-text);
-        @include glow-border($admin-accent-primary, 0.5, 1);
-        @include transparent-bg(0.1);
-        font-weight: 600;
+        @include dashboard-tab-active($admin-accent-primary);
       }
     }
     

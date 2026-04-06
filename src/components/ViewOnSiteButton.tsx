@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { useDocumentInfo } from '@payloadcms/ui'
+import { Globe } from 'lucide-react'
 
 /**
  * Button component that links to the live frontend page for a document
@@ -52,7 +53,7 @@ const ViewOnSiteButton: React.FC<{ basePath: string }> = ({ basePath }) => {
         rel="noopener noreferrer"
         className="view-on-site__link"
       >
-        <span className="view-on-site__icon">🌐</span>
+        <span className="view-on-site__icon"><Globe size={14} /></span>
         <span>View on Live Site</span>
         <span>→</span>
       </a>

@@ -387,37 +387,19 @@
   padding: 0;
   
   // ============================================
-  // NAVIGATION TABS
+  // NAVIGATION TABS — Unified underline pattern
   // ============================================
   
   &__tabs {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 2rem;
-    @include glow-card($admin-accent-info);
-    padding: 0.75rem;
+    @include dashboard-tabs($admin-accent-info);
+    padding: 0 2rem;
   }
   
   &__tab {
-    @include glow-button($admin-accent-info);
-    padding: 0.85rem 1.5rem;
-    font-size: 0.95rem;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.7);
-    cursor: pointer;
-    
-    &:hover:not(&--active) {
-      color: rgba(255, 255, 255, 0.9);
-      transform: translateY(-1px);
-    }
+    @include dashboard-tab($admin-accent-info);
     
     &--active {
-      @include glow-accent-bar($admin-accent-info, 3px, 60%);
-      background: rgba($admin-accent-info, 0.2);
-      border-color: rgba($admin-accent-info, 0.7);
-      color: white;
-      font-weight: 600;
-      box-shadow: 0 0 15px rgba($admin-accent-info, 0.3);
+      @include dashboard-tab-active($admin-accent-info);
     }
   }
   
@@ -439,6 +421,10 @@
       margin: 0;
       color: rgba($admin-accent-info, 0.95);
     }
+  }
+
+  &__header-content {
+    flex: 1;
   }
   
   // ============================================
@@ -581,7 +567,6 @@
       
       &:hover {
         background: rgba($admin-accent-info, 0.05);
-        box-shadow: inset 0 0 0 1px rgba($admin-accent-info, 0.2);
       }
       
       td {
@@ -1571,6 +1556,19 @@
     justify-content: space-between;
     align-items: flex-start;
     margin-bottom: 0.75rem; // Reduced from 1rem
+    cursor: pointer;
+  }
+
+  &__header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+  }
+
+  &__signup-count {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
   }
 
   &__info {
@@ -2986,19 +2984,42 @@
 
 .production-dashboard__instructions {
   margin-top: 0.75rem;
-  padding: 0.75rem 1rem;
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 6px;
   font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.7);
 
-  strong {
-    color: rgba(255, 255, 255, 0.9);
+  summary {
+    cursor: pointer;
+    padding: 0.5rem 0.75rem;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: color 0.15s ease;
+    list-style: none;
+    user-select: none;
+
+    &::before {
+      content: '›';
+      display: inline-block;
+      margin-right: 0.25rem;
+      transition: transform 0.15s ease;
+    }
+
+    &:hover {
+      color: rgba(255, 255, 255, 0.9);
+    }
+  }
+
+  &[open] summary::before {
+    transform: rotate(90deg);
   }
 
   ol {
     margin: 0.5rem 0 0 1.25rem;
-    padding: 0;
+    padding: 0.5rem 0.75rem;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 0 0 6px 6px;
 
     li {
       margin-bottom: 0.25rem;

@@ -14,7 +14,7 @@ export const BrandingGuideAnchor: CollectionConfig = {
   },
   admin: {
     group: 'Graphics',
-    description: '🎨 Visual branding color guide for all teams',
+    description: 'Visual branding color guide for all teams',
     hidden: ({ user }) => {
       if (!user) return true
       const u = user as any

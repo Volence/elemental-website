@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Button, toast } from '@payloadcms/ui'
+import { AlertTriangle, CheckCircle, Clapperboard, ClipboardList, Eye, Gamepad2, Globe, Link, Lock, Megaphone, Mic, Target, Video } from 'lucide-react'
 
 interface User {
   id: number
@@ -109,7 +110,7 @@ export function ScheduleBuilderView() {
         const hasTeam2 = match.team2Internal || match.team2External || match.opponent
         
         if (!hasTeam1 || !hasTeam2) {
-          toast.error('⚠️ This slot is missing team info. Please fill in both teams before adding to schedule.')
+          toast.error('This slot is missing team info. Please fill in both teams before adding to schedule.')
           return
         }
       }
@@ -124,7 +125,7 @@ export function ScheduleBuilderView() {
       // When adding a tournament slot to schedule, convert it to a real match
       if (!currentValue && match.isTournamentSlot) {
         updateData.isTournamentSlot = false
-        toast.info('🎯 Converting tournament slot to confirmed match')
+        toast.info('Converting tournament slot to confirmed match')
       }
 
       await fetch(`/api/matches/${matchId}`, {
@@ -243,7 +244,7 @@ export function ScheduleBuilderView() {
       // League should be the season/league name, not the tier
       const leagueIsTier = validTiers.some((d: string) => match.league?.toLowerCase() === d.toLowerCase())
       const league = match.league && !leagueIsTier ? match.league : 'Faceit Season 7'
-      output += `🌍 ${region} / ${division} • ${league}\n`
+      output += `🌐 ${region} / ${division} • ${league}\n`
       
       // Discord timestamp (automatically localized)
       output += `🕐 <t:${unixTimestamp}:F>\n`
@@ -257,7 +258,7 @@ export function ScheduleBuilderView() {
       
       // Producer
       const producer = pw.assignedProducer ? getUserName(pw.assignedProducer as User) : 'TBD'
-      output += `🎥 Producer: ${producer}\n`
+      output += `📹 Producer: ${producer}\n`
       
       // Casters
       const casters = pw.assignedCasters?.map(c => getUserName(c.user as User)).join(' & ') || 'TBD'
@@ -327,7 +328,7 @@ export function ScheduleBuilderView() {
           <div className="schedule-builder__matches">
             <h3>Available Matches</h3>
             <p className="schedule-builder__instruction">
-              ✅ Check matches to include in this week's broadcast schedule
+              <CheckCircle size={12} /> Check matches to include in this week's broadcast schedule
             </p>
 
             <div className="schedule-builder__match-list">
@@ -352,14 +353,14 @@ export function ScheduleBuilderView() {
                         <div className="schedule-builder__match-header">
                           <strong>{match.title}</strong>
                           <span className={`coverage-badge coverage-badge--${pw.coverageStatus}`}>
-                            {isFull ? '✅ Full' : '⚠️ Partial'}
+                            {isFull ? <><CheckCircle size={12} /> Full</> : <><AlertTriangle size={12} /> Partial</>}
                           </span>
                         </div>
                         <div className="schedule-builder__match-meta">
                           <span>{new Date(match.date).toLocaleString()}</span>
                           <span>
-                            {pw.assignedObserver && pw.assignedProducer ? '👁️🎬' : ''}{' '}
-                            {pw.assignedCasters?.length ? `🎙️×${pw.assignedCasters.length}` : ''}
+                            {pw.assignedObserver && pw.assignedProducer ? <><Eye size={14} /><Clapperboard size={14} /></> : ''}{' '}
+                            {pw.assignedCasters?.length ? <><Mic size={14} />×{pw.assignedCasters.length}</> : ''}
                           </span>
                         </div>
                       </div>
@@ -375,12 +376,12 @@ export function ScheduleBuilderView() {
 
             <div className="schedule-builder__preview-section">
               <div className="schedule-builder__preview-header">
-                <h4>🔒 Internal (Staff Channel)</h4>
+                <h4><Lock size={14} /> Internal (Staff Channel)</h4>
                 <Button
                   onClick={() => copyToClipboard(generateDiscordInternal(), 'internal')}
                   disabled={selectedCount === 0}
                 >
-                  {copiedInternal ? '✓ Copied!' : '📋 Copy'}
+                  {copiedInternal ? '✓ Copied!' : <><ClipboardList size={14} /> Copy</>}
                 </Button>
               </div>
               <pre className="schedule-builder__preview">{generateDiscordInternal()}</pre>
@@ -388,12 +389,12 @@ export function ScheduleBuilderView() {
 
             <div className="schedule-builder__preview-section">
               <div className="schedule-builder__preview-header">
-                <h4>📢 Public (Announcements)</h4>
+                <h4><Megaphone size={14} /> Public (Announcements)</h4>
                 <Button
                   onClick={() => copyToClipboard(generateDiscordPublic(), 'public')}
                   disabled={selectedCount === 0}
                 >
-                  {copiedPublic ? '✓ Copied!' : '📋 Copy'}
+                  {copiedPublic ? '✓ Copied!' : <><ClipboardList size={14} /> Copy</>}
                 </Button>
               </div>
               <pre className="schedule-builder__preview">{generateDiscordPublic()}</pre>

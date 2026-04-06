@@ -21,13 +21,7 @@ const AssignedTeamsDashboard: React.FC = () => {
   if (assignedTeams.length === 0) return null
   
   return (
-    <div style={{ 
-      padding: '0.875rem 1rem',
-      background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.05) 0%, rgba(132, 204, 22, 0.05) 100%)',
-      border: '2px solid rgba(6, 182, 212, 0.3)',
-      borderRadius: '8px',
-      marginBottom: '1.5rem'
-    }}>
+    <div className="assigned-teams-dashboard">
       <div className="assigned-teams-dashboard__header">
         <svg
           width="16"

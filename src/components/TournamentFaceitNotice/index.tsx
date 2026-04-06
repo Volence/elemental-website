@@ -1,4 +1,5 @@
 import React from 'react'
+import { Info } from 'lucide-react'
 
 /**
  * Notice component explaining that Tournament Templates are NOT used for FaceIt
@@ -7,7 +8,7 @@ export const TournamentFaceitNotice: React.FC = () => {
   return (
     <div className="tournament-faceit-notice">
       <h3 className="tournament-faceit-notice__title">
-        ℹ️ FaceIt Tournaments
+        <Info size={14} /> FaceIt Tournaments
       </h3>
       <p className="tournament-faceit-notice__content">
         <strong>Tournament Templates are NOT used for FaceIt leagues.</strong><br/>

@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { useStepNav } from '@payloadcms/ui'
 import './TeamBrandingGuide.scss'
+import { Blend, Circle, Download, GlassWater, Loader2, Palette, RefreshCw, Shuffle, Sparkles, Sun, X } from 'lucide-react'
 
 const EXPORT_SIZE = 1024
 
@@ -122,13 +123,13 @@ function LogoDownloadButtons({
     <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', marginTop: '4px' }}>
       <button type="button" onClick={() => handleDownload('svg')} disabled={busy !== null}
         style={{ ...btnBase, background: 'rgba(34,197,94,0.15)', color: '#86efac', opacity: busy && busy !== 'svg' ? 0.4 : 1 }}
-      >{busy === 'svg' ? '⏳' : '↓'} SVG</button>
+      >{busy === 'svg' ? <Loader2 size={10} /> : <Download size={10} />} SVG</button>
       <button type="button" onClick={() => handleDownload('png')} disabled={busy !== null}
         style={{ ...btnBase, background: 'rgba(59,130,246,0.15)', color: '#93c5fd', opacity: busy && busy !== 'png' ? 0.4 : 1 }}
-      >{busy === 'png' ? '⏳' : '↓'} PNG</button>
+      >{busy === 'png' ? <Loader2 size={10} /> : <Download size={10} />} PNG</button>
       <button type="button" onClick={() => handleDownload('jpeg')} disabled={busy !== null}
         style={{ ...btnBase, background: 'rgba(234,179,8,0.15)', color: '#fcd34d', opacity: busy && busy !== 'jpeg' ? 0.4 : 1 }}
-      >{busy === 'jpeg' ? '⏳' : '↓'} JPG</button>
+      >{busy === 'jpeg' ? <Loader2 size={10} /> : <Download size={10} />} JPG</button>
     </div>
   )
 }
@@ -467,7 +468,7 @@ function TeamCard({
         {isDirty && (
           <div className="tc__actions">
             <button type="button" className="tc__btn tc__btn--save" onClick={handleSave} title="Save changes">Save</button>
-            <button type="button" className="tc__btn tc__btn--reset" onClick={handleReset} title="Discard changes">✕</button>
+            <button type="button" className="tc__btn tc__btn--reset" onClick={handleReset} title="Discard changes"><X size={14} /></button>
           </div>
         )}
         {!isDirty && saveStatus !== 'idle' && (
@@ -582,7 +583,12 @@ function TeamCard({
 const ORIGINAL_COLORS = ['#E53935', '#E53935', '#29B6F6', '#29B6F6', '#43A047', '#43A047', '#FB8C00', '#FB8C00']
 const GROUP_LABELS_4 = ['Top', 'Right', 'Bottom', 'Left']
 const GROUP_LABELS_8 = ['Petal 1', 'Petal 2', 'Petal 3', 'Petal 4', 'Petal 5', 'Petal 6', 'Petal 7', 'Petal 8']
-const GROUP_ICONS_4 = ['🔴', '🔵', '🟢', '🟠']
+const GROUP_ICONS_4: React.ReactNode[] = [
+  <Circle key="r" size={12} fill="#E53935" stroke="#E53935" />,
+  <Circle key="b" size={12} fill="#29B6F6" stroke="#29B6F6" />,
+  <Circle key="g" size={12} fill="#43A047" stroke="#43A047" />,
+  <Circle key="o" size={12} fill="#FB8C00" stroke="#FB8C00" />,
+]
 
 /** Neon logo with per-petal colors */
 function NeonLogoMulti({ colors, size = 220, svgRef }: { colors: string[]; size?: number; svgRef?: React.Ref<SVGSVGElement> }) {
@@ -728,12 +734,12 @@ function OrgLogoMixer({ teams, enhancements, bgColor }: { teams: TeamData[]; enh
               padding: '4px 10px', fontSize: '11px', fontWeight: 600, borderRadius: '6px',
               border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)',
               color: '#cbd5e1', cursor: 'pointer',
-            }}>🔄 Original</button>
+            }}><RefreshCw size={12} /> Original</button>
             <button type="button" onClick={handlePresetRandom} style={{
               padding: '4px 10px', fontSize: '11px', fontWeight: 600, borderRadius: '6px',
               border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(139,92,246,0.1)',
               color: '#c4b5fd', cursor: 'pointer',
-            }}>🎲 Random</button>
+            }}><Shuffle size={12} /> Random</button>
           </div>
         </div>
 
@@ -951,11 +957,11 @@ export default function TeamBrandingGuide() {
           <div className="tbg__enhancers">
             <label>Solid Fill Enhancements</label>
             <div className="tbg__enhancers-row">
-              <button type="button" className={`tbg__enhancer-btn ${enhancements.gradient ? 'tbg__enhancer-btn--active' : ''}`} onClick={() => toggleEnhancement('gradient')} title="Radial gradient from bright at each petal tip to darker toward the center, adds 3D depth">🌈 Gradient Fill</button>
-              <button type="button" className={`tbg__enhancer-btn ${enhancements.highlight ? 'tbg__enhancer-btn--active' : ''}`} onClick={() => toggleEnhancement('highlight')} title="Thin bright stroke along the inner edge of each petal, like light catching a chrome surface">✨ Inner Highlight</button>
-              <button type="button" className={`tbg__enhancer-btn ${enhancements.shadow ? 'tbg__enhancer-btn--active' : ''}`} onClick={() => toggleEnhancement('shadow')} title="Soft colored drop shadow behind each petal in the primary color, lifts the logo off any background">💫 Drop Shadow</button>
-              <button type="button" className={`tbg__enhancer-btn ${enhancements.glossy ? 'tbg__enhancer-btn--active' : ''}`} onClick={() => toggleEnhancement('glossy')} title="White-to-transparent gradient overlay on the top half of each petal, polished glass look">🪞 Glossy Overlay</button>
-              <button type="button" className={`tbg__enhancer-btn ${enhancements.twoTone ? 'tbg__enhancer-btn--active' : ''}`} onClick={() => toggleEnhancement('twoTone')} title="Uses the opposite brand color for petal strokes, primary fills get secondary edges and vice versa">🎨 Two-Tone Edges</button>
+              <button type="button" className={`tbg__enhancer-btn ${enhancements.gradient ? 'tbg__enhancer-btn--active' : ''}`} onClick={() => toggleEnhancement('gradient')} title="Radial gradient from bright at each petal tip to darker toward the center, adds 3D depth"><Blend size={14} /> Gradient Fill</button>
+              <button type="button" className={`tbg__enhancer-btn ${enhancements.highlight ? 'tbg__enhancer-btn--active' : ''}`} onClick={() => toggleEnhancement('highlight')} title="Thin bright stroke along the inner edge of each petal, like light catching a chrome surface"><Sparkles size={14} /> Inner Highlight</button>
+              <button type="button" className={`tbg__enhancer-btn ${enhancements.shadow ? 'tbg__enhancer-btn--active' : ''}`} onClick={() => toggleEnhancement('shadow')} title="Soft colored drop shadow behind each petal in the primary color, lifts the logo off any background"><Sun size={14} /> Drop Shadow</button>
+              <button type="button" className={`tbg__enhancer-btn ${enhancements.glossy ? 'tbg__enhancer-btn--active' : ''}`} onClick={() => toggleEnhancement('glossy')} title="White-to-transparent gradient overlay on the top half of each petal, polished glass look"><GlassWater size={14} /> Glossy Overlay</button>
+              <button type="button" className={`tbg__enhancer-btn ${enhancements.twoTone ? 'tbg__enhancer-btn--active' : ''}`} onClick={() => toggleEnhancement('twoTone')} title="Uses the opposite brand color for petal strokes, primary fills get secondary edges and vice versa"><Palette size={14} /> Two-Tone Edges</button>
             </div>
           </div>
         </header>

@@ -9,6 +9,7 @@ import { DepartmentFilterBar } from './DepartmentFilterBar'
 import { CalendarItemCard } from './CalendarItemCard'
 import type { User } from '@/payload-types'
 import './UnifiedCalendar.scss'
+import { Calendar, FileEdit, Globe, Link, ChevronLeft, ChevronRight, X } from 'lucide-react'
 
 const STORAGE_KEY = 'unifiedCalendar_enabledDepartments'
 
@@ -295,11 +296,11 @@ export default function UnifiedCalendarView() {
               title={`${item.title}\n${item.date.toLocaleDateString()} - ${item.dateEnd?.toLocaleDateString()}`}
             >
               <span className="unified-calendar__spanning-label">
-                {pos.startsBeforeView && <span className="unified-calendar__spanning-arrow">◀</span>}
+                {pos.startsBeforeView && <span className="unified-calendar__spanning-arrow"><ChevronLeft size={10} /></span>}
                 <span className="unified-calendar__spanning-title">{item.title}</span>
               </span>
               <span className="unified-calendar__spanning-line" />
-              {pos.endsAfterView && <span className="unified-calendar__spanning-arrow">▶</span>}
+              {pos.endsAfterView && <span className="unified-calendar__spanning-arrow"><ChevronRight size={10} /></span>}
             </button>
           )
         })}
@@ -324,7 +325,7 @@ export default function UnifiedCalendarView() {
             className="unified-calendar__modal-close"
             onClick={() => setSelectedEvent(null)}
           >
-            ✕
+            <X size={16} />
           </button>
           <div className="unified-calendar__modal-header" style={{ borderColor: color }}>
             <h3>{selectedEvent.title}</h3>
@@ -334,24 +335,24 @@ export default function UnifiedCalendarView() {
           </div>
           <div className="unified-calendar__modal-body">
             <div className="unified-calendar__modal-row">
-              <span className="unified-calendar__modal-label">📅 Date</span>
+              <span className="unified-calendar__modal-label"><Calendar size={14} /> Date</span>
               <span>{dateRange}</span>
             </div>
             {typeof selectedEvent.meta?.region === 'string' && (
               <div className="unified-calendar__modal-row">
-                <span className="unified-calendar__modal-label">🌍 Region</span>
+                <span className="unified-calendar__modal-label"><Globe size={14} /> Region</span>
                 <span>{selectedEvent.meta.region}</span>
               </div>
             )}
             {typeof selectedEvent.meta?.description === 'string' && selectedEvent.meta.description && (
               <div className="unified-calendar__modal-description">
-                <span className="unified-calendar__modal-label">📝 Details</span>
+                <span className="unified-calendar__modal-label"><FileEdit size={14} /> Details</span>
                 <p>{selectedEvent.meta.description}</p>
               </div>
             )}
             {Array.isArray(selectedEvent.meta?.links) && selectedEvent.meta.links.length > 0 && (
               <div className="unified-calendar__modal-links">
-                <span className="unified-calendar__modal-label">🔗 Links</span>
+                <span className="unified-calendar__modal-label"><Link size={12} /> Links</span>
                 <div className="unified-calendar__modal-link-buttons">
                   {(selectedEvent.meta.links as Array<{ label?: string; url?: string }>).map((link, idx) => (
                     link.url && (
@@ -514,11 +515,11 @@ export default function UnifiedCalendarView() {
                 title={`${item.title}\n${item.date.toLocaleDateString()} - ${item.dateEnd?.toLocaleDateString()}`}
               >
                 <span className="unified-calendar__month-bar-label">
-                  {pos.startsBeforeView && <span className="unified-calendar__spanning-arrow">◀</span>}
+                  {pos.startsBeforeView && <span className="unified-calendar__spanning-arrow"><ChevronLeft size={10} /></span>}
                   <span className="unified-calendar__spanning-title">{item.title}</span>
                 </span>
                 <span className="unified-calendar__month-bar-line" />
-                {pos.endsAfterView && <span className="unified-calendar__spanning-arrow">▶</span>}
+                {pos.endsAfterView && <span className="unified-calendar__spanning-arrow"><ChevronRight size={10} /></span>}
               </button>
             )
           })}
@@ -595,7 +596,7 @@ export default function UnifiedCalendarView() {
   return (
     <div className="unified-calendar">
       <div className="unified-calendar__header">
-        <h1>📅 Organization Calendar</h1>
+        <h1><Calendar size={14} /> Organization Calendar</h1>
         <p className="unified-calendar__subtitle">
           View all scheduled tasks, matches, and social posts across departments
         </p>

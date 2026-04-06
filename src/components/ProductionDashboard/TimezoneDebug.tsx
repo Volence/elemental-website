@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { Globe, Lightbulb } from 'lucide-react'
 
 interface TimezoneDebugProps {
   date: Date | string
@@ -27,7 +28,7 @@ export function TimezoneDebug({ date }: TimezoneDebugProps) {
   return (
     <div className="timezone-debug">
       <div className="timezone-debug__header">
-        <h4>🌍 Timezone Debug</h4>
+        <h4><Globe size={14} /> Timezone Debug</h4>
         <p>Same match time shown in multiple timezones:</p>
       </div>
       
@@ -58,7 +59,7 @@ export function TimezoneDebug({ date }: TimezoneDebugProps) {
       </div>
 
       <div className="timezone-debug__note">
-        💡 <strong>Tip:</strong> Use Chrome DevTools → Sensors to override your timezone and test the UI
+        <Lightbulb size={14} /> <strong>Tip:</strong> Use Chrome DevTools → Sensors to override your timezone and test the UI
       </div>
     </div>
   )

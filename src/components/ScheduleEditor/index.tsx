@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useField, useFormFields, useDocumentInfo, toast } from '@payloadcms/ui'
+import { Calendar, CalendarPlus, BarChart3, Trash2, Plus, Lightbulb, X } from 'lucide-react'
 import { ScrimAnalytics } from '@/components/ScrimAnalytics'
 
 // Extracted sub-components
@@ -541,7 +542,7 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
     return (
       <div className="schedule-editor schedule-editor--setup">
         <div className="schedule-editor__setup-header">
-          <span className="schedule-editor__setup-icon">🗓️</span>
+          <span className="schedule-editor__setup-icon"><Calendar size={24} /></span>
           <h3>Create Your Schedule</h3>
           <p>Add scrim days to build your team's schedule. You can add days individually or generate a full week.</p>
         </div>
@@ -549,7 +550,7 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
         <div className="schedule-editor__setup-options">
           {/* Quick setup - generate week */}
           <div className="schedule-editor__setup-card">
-            <h4>📅 Generate Week</h4>
+            <h4><Calendar size={14} /> Generate Week</h4>
             <p>Create a full week of scrim days starting from:</p>
             <div className="schedule-editor__setup-row">
               <select 
@@ -600,7 +601,7 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
           
           {/* Manual - add single day */}
           <div className="schedule-editor__setup-card">
-            <h4>➕ Add Single Day</h4>
+            <h4><CalendarPlus size={14} /> Add Single Day</h4>
             <p>Add individual scrim days one at a time:</p>
             <div className="schedule-editor__setup-row">
               <input
@@ -630,7 +631,7 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
         </div>
         
         <div className="schedule-editor__setup-hint">
-          💡 <strong>Tip:</strong> Make sure to select a <strong>Team</strong> and set the <strong>Time Slot</strong> in the sidebar before saving.
+          <Lightbulb size={14} /> <strong>Tip:</strong> Make sure to select a <strong>Team</strong> and set the <strong>Time Slot</strong> in the sidebar before saving.
         </div>
       </div>
     )
@@ -639,7 +640,7 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
   return (
     <div className="schedule-editor">
       <div className="schedule-editor__header">
-        <span className="schedule-editor__header-icon">📅</span>
+        <span className="schedule-editor__header-icon"><Calendar size={18} /></span>
         <span className="schedule-editor__header-title">Schedule Builder</span>
         <span className="schedule-editor__header-hint">
           {schedule.days.length > 0 
@@ -652,7 +653,7 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
             className="schedule-editor__analytics-btn"
             onClick={() => setShowAnalytics(true)}
           >
-            📊 Scrim Analytics
+            <BarChart3 size={12} /> Scrim Analytics
           </button>
         )}
       </div>
@@ -662,13 +663,13 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
         <div className="schedule-editor__modal-overlay" onClick={() => setShowAnalytics(false)}>
           <div className="schedule-editor__analytics-modal" onClick={(e) => e.stopPropagation()}>
             <div className="schedule-editor__analytics-modal-header">
-              <h3>📊 Scrim Analytics</h3>
+              <h3><BarChart3 size={12} /> Scrim Analytics</h3>
               <button
                 type="button"
                 className="schedule-editor__analytics-close"
                 onClick={() => setShowAnalytics(false)}
               >
-                ×
+                <X size={14} />
               </button>
             </div>
             <div className="schedule-editor__analytics-modal-body">
@@ -783,7 +784,7 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
                     onClick={() => removeDay(dayIndex)}
                     title="Remove this day"
                   >
-                    🗑️
+                    <Trash2 size={14} />
                   </button>
                 )}
               </div>
@@ -810,7 +811,7 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
                               onClick={() => removeBlock(dayIndex, blockIndex)}
                               title="Remove this time block"
                             >
-                              ✕
+                              <X size={12} />
                             </button>
                           )}
                         </div>
@@ -898,7 +899,7 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
                                     onClick={() => removeSlot(dayIndex, blockIndex, slotIndex)}
                                     title="Remove slot"
                                   >
-                                    ×
+                                    <X size={10} />
                                   </button>
                                 )}
                               </div>
@@ -1060,7 +1061,7 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
                     className="schedule-editor__add-block-btn"
                     onClick={() => addBlock(dayIndex)}
                   >
-                    ➕ Add Time Block
+                    <Plus size={12} /> Add Time Block
                   </button>
                 </div>
               )}

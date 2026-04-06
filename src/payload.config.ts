@@ -46,6 +46,7 @@ import { ErrorDashboard } from './globals/ErrorDashboard'
 import { DatabaseHealth } from './globals/DatabaseHealth'
 import { ActiveSessionsViewer } from './globals/ActiveSessionsViewer'
 import { ErrorHarvesterState } from './globals/ErrorHarvesterState'
+import { SystemHealth } from './globals/SystemHealth'
 import { DiscordServerManager } from './globals/DiscordServerManager'
 import { DiscordCategoryTemplates } from './collections/DiscordCategoryTemplates'
 import { TwitchStreamers } from './collections/TwitchStreamers'
@@ -258,6 +259,7 @@ const config = buildConfig({
     DiscordServerManager, // Discord group
     
     // System & Monitoring (admin only)
+    SystemHealth, // Unified monitoring hub
     AuditLogViewer,
     CronMonitor,
     ErrorDashboard,

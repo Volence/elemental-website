@@ -17,7 +17,7 @@ export const TeamsWithIssuesList: React.FC<TeamsWithIssuesListProps> = ({ teams 
   return (
     <div className="mb-6">
       <h4 className="mb-2 font-semibold">
-        ⚠️ Teams with Missing Person Relationships ({teams.length})
+        Teams with Missing Person Relationships ({teams.length})
       </h4>
       <p className="text-sm mb-3 opacity-80">
         These teams have entries with names but no Person relationship. Consider linking them to
@@ -27,25 +27,23 @@ export const TeamsWithIssuesList: React.FC<TeamsWithIssuesListProps> = ({ teams 
         {teams.map((team) => (
           <div
             key={team.teamId}
-            className="notification-item notification-item--warning"
-            style={{ flexDirection: 'column' as const, alignItems: 'flex-start' }}
+            className="notification-item notification-item--warning dc-check__issue-item"
           >
-            <div style={{ marginBottom: '0.75rem' }}>
+            <div className="dc-check__issue-row">
               <strong>{team.teamName}</strong>
-              <span style={{ marginLeft: '0.5rem', opacity: 0.7, fontSize: '0.875rem' }}>({team.teamSlug})</span>
+              <span className="dc-check__slug">({team.teamSlug})</span>
               <a
                 href={`/admin/collections/teams/${team.teamId}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="notification-btn notification-btn--view"
-                style={{ marginLeft: '0.5rem' }}
+                className="notification-btn notification-btn--view dc-check__view-link"
               >
                 View
               </a>
             </div>
-            <ul style={{ margin: 0, paddingLeft: '1.5rem', fontSize: '0.875rem' }}>
+            <ul className="dc-check__issues-list">
               {team.issues.map((issue, idx) => (
-                <li key={idx} style={{ marginBottom: '0.25rem' }}>{issue}</li>
+                <li key={idx}>{issue}</li>
               ))}
             </ul>
           </div>
@@ -54,4 +52,3 @@ export const TeamsWithIssuesList: React.FC<TeamsWithIssuesListProps> = ({ teams 
     </div>
   )
 }
-

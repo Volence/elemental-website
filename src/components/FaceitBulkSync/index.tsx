@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { Button } from '@payloadcms/ui'
+import { CheckCircle, RefreshCw, XCircle } from 'lucide-react'
 
 /**
  * Bulk sync button for FaceIt Leagues page
@@ -61,17 +62,17 @@ const FaceitBulkSync: React.FC = () => {
 
   return (
     <div className="admin-spacing--section">
-      <div className="admin-flex" style={{ marginBottom: results ? '1rem' : '0' }}>
+      <div className={`admin-flex faceit-bulk__actions${results ? '' : ' faceit-bulk__actions--no-results'}`}>
         <Button
           onClick={handleSync}
           disabled={syncing}
           buttonStyle="primary"
         >
-          {syncing ? 'Syncing...' : '🔄 Sync All Active Leagues'}
+          {syncing ? 'Syncing...' : <><RefreshCw size={12} /> Sync All Active Leagues</>}
         </Button>
         
         {progress && (
-          <span className="admin-text--small admin-text--muted" style={{ fontStyle: 'italic' }}>
+          <span className="admin-text--small admin-text--muted faceit-bulk__progress">
             {progress}
           </span>
         )}
@@ -80,9 +81,9 @@ const FaceitBulkSync: React.FC = () => {
       {/* Results Summary */}
       {results && (
         <div className={results.success ? 'admin-card--success' : 'admin-card--error'}>
-          <div className="admin-flex" style={{ fontWeight: 600, marginBottom: '0.75rem' }}>
-            <span style={{ fontSize: '1.25rem' }}>
-              {results.success ? '✅' : '❌'}
+          <div className="admin-flex faceit-bulk__results-header">
+            <span className="faceit-bulk__results-icon">
+              {results.success ? <CheckCircle size={12} /> : <XCircle size={12} />}
             </span>
             <span>
               {results.success ? 'Sync Complete' : 'Sync Failed'}
@@ -90,7 +91,7 @@ const FaceitBulkSync: React.FC = () => {
           </div>
 
           {results.summary && (
-            <div className="admin-grid" style={{ marginBottom: results.results?.length ? '1rem' : '0' }}>
+            <div className={`admin-grid faceit-bulk__stats${results.results?.length ? '' : ' faceit-bulk__stats--no-details'}`}>
               <div className="admin-stat-card">
                 <div className="admin-stat-card__label">
                   Teams Synced
@@ -123,7 +124,7 @@ const FaceitBulkSync: React.FC = () => {
                   <div className="admin-stat-card__label">
                     Failed
                   </div>
-                  <div className="admin-stat-card__value" style={{ color: 'rgb(248, 113, 113)' }}>
+                  <div className="admin-stat-card__value faceit-bulk__value--error">
                     {results.summary.failed}
                   </div>
                 </div>
@@ -133,25 +134,20 @@ const FaceitBulkSync: React.FC = () => {
 
           {/* Detailed Results */}
           {results.results && results.results.length > 0 && (
-            <details style={{ marginTop: '1rem' }}>
-              <summary className="admin-button--info admin-text--small" style={{ 
-                cursor: 'pointer',
-                display: 'inline-block',
-                padding: '0.5rem 1rem',
-              }}>
+            <details className="faceit-bulk__details">
+              <summary className="admin-button--info admin-text--small faceit-bulk__details-summary">
                 View Details ({results.results.length} teams)
               </summary>
-              <div className="admin-flex--column" style={{ marginTop: '0.75rem' }}>
+              <div className="admin-flex--column faceit-bulk__details-list">
                 {results.results.map((result: any, index: number) => (
                   <div
                     key={index}
-                    className={result.success ? 'admin-card--compact' : 'admin-card--error'}
-                    style={{ padding: '0.75rem' }}
+                    className={`${result.success ? 'admin-card--compact' : 'admin-card--error'} faceit-bulk__detail-card`}
                   >
                     <div className="admin-flex--between admin-text--small">
                       <div className="admin-flex">
                         <span>{result.success ? '✓' : '✗'}</span>
-                        <span style={{ fontWeight: 500 }}>{result.teamName}</span>
+                        <span className="faceit-bulk__team-name">{result.teamName}</span>
                       </div>
                       <div className="admin-text--muted">
                         {result.success ? (
@@ -162,7 +158,7 @@ const FaceitBulkSync: React.FC = () => {
                             {result.matchesCreated === 0 && result.matchesUpdated === 0 && 'No changes'}
                           </span>
                         ) : (
-                          <span style={{ color: 'rgb(248, 113, 113)' }}>
+                          <span className="faceit-bulk__error-text">
                             {result.error || 'Failed'}
                           </span>
                         )}
@@ -175,17 +171,14 @@ const FaceitBulkSync: React.FC = () => {
           )}
 
           {results.error && (
-            <div className="admin-card--compact admin-text--small" style={{
-              marginTop: '1rem',
-              color: 'rgb(248, 113, 113)',
-            }}>
+            <div className="admin-card--compact admin-text--small faceit-bulk__error-card">
               <strong>Error:</strong> {results.error}
             </div>
           )}
         </div>
       )}
 
-      <div className="admin-text--small admin-text--muted" style={{ marginTop: '0.75rem' }}>
+      <div className="admin-text--small admin-text--muted faceit-bulk__note">
         <strong>Note:</strong> This syncs all teams in active leagues. Teams are synced one at a time with a 1-second delay to avoid API rate limits.
       </div>
     </div>
@@ -193,6 +186,3 @@ const FaceitBulkSync: React.FC = () => {
 }
 
 export default FaceitBulkSync
-
-
-

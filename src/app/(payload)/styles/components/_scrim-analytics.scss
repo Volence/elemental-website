@@ -1,0 +1,3216 @@
+// ============================================
+// SCRIM ANALYTICS — Shared styles for all Scrim views
+// Replaces 800+ inline style={{}} declarations
+// ============================================
+
+@import '../variables';
+@import '../mixins';
+
+// ============================================
+// LAYOUT
+// ============================================
+
+.scrim-page {
+  min-height: 100%;
+  padding: $spacing-xl 40px;
+  color: $admin-text-primary;
+
+  &__container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: $spacing-xl;
+  }
+
+  &__title {
+    @include section-header($admin-accent-info);
+  }
+
+  &__subtitle {
+    color: $admin-text-muted;
+    font-size: $font-size-xs;
+    margin-top: 8px;
+  }
+
+  // Wide variant for data-heavy views
+  &--wide .scrim-page__container {
+    max-width: 1200px;
+  }
+}
+
+// ============================================
+// UPLOAD BUTTON (primary CTA)
+// ============================================
+
+.scrim-upload-btn {
+  padding: 10px 20px;
+  border-radius: $radius-md;
+  background: linear-gradient(135deg, $admin-accent-info, rgba($admin-accent-info, 0.8));
+  color: white;
+  text-decoration: none;
+  font-weight: $font-weight-bold;
+  font-size: $font-size-xs;
+  box-shadow: 0 0 16px rgba($admin-accent-info, 0.15), $elevation-1;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  &:hover {
+    box-shadow: 0 0 24px rgba($admin-accent-info, 0.25), $elevation-2;
+    transform: translateY(-1px);
+  }
+}
+
+// ============================================
+// NAV LINKS (All Players, etc.)
+// ============================================
+
+.scrim-nav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: $spacing-md;
+
+  &__link {
+    @include glow-button($admin-accent-info);
+    padding: 8px 16px;
+    text-decoration: none;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+// ============================================
+// SEARCH BAR
+// ============================================
+
+.scrim-search {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  align-items: center;
+
+  &__input-wrapper {
+    flex: 1;
+    position: relative;
+  }
+
+  &__input {
+    @include modern-input;
+    padding-left: 36px;
+    font-size: $font-size-sm;
+  }
+
+  &__icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $admin-text-muted;
+    font-size: 14px;
+    pointer-events: none;
+  }
+
+  &__clear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: $admin-text-muted;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px;
+
+    &:hover {
+      color: $admin-text-primary;
+    }
+  }
+
+  &__team-filter {
+    @include modern-input;
+    width: auto;
+    min-width: 140px;
+    cursor: pointer;
+  }
+}
+
+// ============================================
+// PAGINATION
+// ============================================
+
+.scrim-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: $spacing-xl;
+  padding-top: $spacing-lg;
+  border-top: 1px solid $admin-border-subtle;
+
+  &__btn {
+    @include glow-button($admin-accent-info);
+    padding: 8px 16px;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+
+    &:disabled {
+      opacity: 0.3;
+    }
+  }
+
+  &__info {
+    color: $admin-text-muted;
+    font-size: $font-size-xs;
+  }
+}
+
+// ============================================
+// TEAM GROUPS
+// ============================================
+
+.scrim-team-group {
+  margin-bottom: 28px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  &__arrow {
+    color: $admin-text-muted;
+    font-size: 12px;
+    user-select: none;
+    cursor: pointer;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: $admin-text-primary;
+    }
+  }
+
+  &__name {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    color: $admin-text-primary;
+    cursor: pointer;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: $admin-accent-info;
+    }
+  }
+
+  &__count {
+    @include glow-badge($admin-accent-success);
+    padding: 2px 10px;
+    font-size: 11px;
+    font-weight: $font-weight-bold;
+    border-radius: $radius-full;
+    color: $admin-accent-success;
+  }
+
+  &__scrims {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+// ============================================
+// SCRIM CARDS (individual scrim rows)
+// ============================================
+
+.scrim-card {
+  @include modern-card($interactive: false);
+  overflow: hidden;
+
+  &--expanded {
+    border-color: rgba($admin-accent-info, 0.2);
+  }
+
+  &__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: $admin-bg-hover;
+    }
+  }
+
+  &__expand-icon {
+    color: $admin-accent-info;
+    font-size: 10px;
+    width: 16px;
+    transition: transform 0.2s ease;
+
+    &--open {
+      transform: rotate(90deg);
+    }
+  }
+
+  &__info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    font-weight: $font-weight-semibold;
+    font-size: 14px;
+    color: $admin-text-primary;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: $admin-text-muted;
+  }
+
+  &__maps-count {
+    color: $admin-accent-info;
+    cursor: pointer;
+    font-weight: $font-weight-medium;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__team-badge {
+    padding: 2px 10px;
+    border-radius: $radius-full;
+    font-size: 11px;
+    font-weight: $font-weight-bold;
+    background: rgba($admin-accent-info, 0.1);
+    border: 1px solid rgba($admin-accent-info, 0.25);
+    color: $admin-accent-info;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__creator {
+    font-size: 11px;
+    color: $admin-text-muted;
+    background: $admin-bg-surface;
+    padding: 3px 10px;
+    border-radius: $radius-full;
+    border: 1px solid $admin-border-subtle;
+  }
+
+  &__delete-btn {
+    background: none;
+    border: 1px solid transparent;
+    border-radius: $radius-md;
+    cursor: pointer;
+    color: $admin-text-muted;
+    padding: 6px 8px;
+    transition: all 0.15s ease;
+    font-size: 14px;
+
+    &:hover {
+      background: rgba($admin-accent-error, 0.1);
+      border-color: rgba($admin-accent-error, 0.3);
+      color: $admin-accent-error;
+    }
+  }
+}
+
+// ============================================
+// EXPANDED MAP DETAILS
+// ============================================
+
+.scrim-expanded {
+  padding: 12px 20px 16px;
+  border-top: 1px solid $admin-border-subtle;
+
+  &__maps {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+}
+
+.scrim-map-row {
+  @include modern-card($interactive: true);
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  text-decoration: none;
+  color: inherit;
+
+  &__info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+  }
+
+  &__score-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &__number {
+    color: $admin-text-muted;
+    font-size: 11px;
+    font-weight: $font-weight-semibold;
+    min-width: 24px;
+    text-align: center;
+    padding: 2px 6px;
+    border-radius: $radius-sm;
+    background: $admin-bg-surface;
+    border: 1px solid $admin-border-subtle;
+  }
+
+  &__name {
+    flex: 1;
+    font-weight: $font-weight-medium;
+    color: $admin-text-primary;
+  }
+
+  &__opponent {
+    color: $admin-text-secondary;
+    font-size: 12px;
+  }
+
+  &__score {
+    font-weight: $font-weight-bold;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    min-width: 50px;
+    text-align: center;
+  }
+
+  &__result {
+    padding: 2px 10px;
+    border-radius: $radius-full;
+    font-size: 11px;
+    font-weight: $font-weight-bold;
+    letter-spacing: 0.5px;
+
+    &--win {
+      background: rgba($admin-accent-success, 0.1);
+      color: $admin-accent-success;
+      border: 1px solid rgba($admin-accent-success, 0.25);
+    }
+    &--loss {
+      background: rgba($admin-accent-error, 0.1);
+      color: $admin-accent-error;
+      border: 1px solid rgba($admin-accent-error, 0.25);
+    }
+    &--draw {
+      background: rgba($admin-accent-warning, 0.1);
+      color: $admin-accent-warning;
+      border: 1px solid rgba($admin-accent-warning, 0.25);
+    }
+  }
+
+  &__view-link {
+    color: $admin-accent-info;
+    font-size: 11px;
+    text-decoration: none;
+    font-weight: $font-weight-semibold;
+    opacity: 0.7;
+    transition: opacity 0.15s;
+
+    &:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+  }
+}
+
+// ============================================
+// EMPTY & LOADING STATES
+// ============================================
+
+.scrim-empty {
+  text-align: center;
+  padding: 80px 0;
+  color: $admin-text-muted;
+
+  &__icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+  }
+
+  &__title {
+    font-weight: $font-weight-semibold;
+    color: $admin-text-secondary;
+    font-size: 15px;
+    margin-bottom: 6px;
+  }
+
+  &__hint {
+    font-size: 13px;
+  }
+}
+
+.scrim-loading {
+  text-align: center;
+  padding: 80px 0;
+  color: $admin-text-muted;
+}
+
+// ============================================
+// OPPONENT RENAME INLINE FORM
+// ============================================
+
+.scrim-opponent-edit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+
+  &__input {
+    @include modern-input;
+    width: 180px;
+    padding: 4px 10px;
+    font-size: 12px;
+  }
+
+  &__suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: $admin-bg-elevated;
+    border: 1px solid $admin-border-default;
+    border-radius: $radius-md;
+    max-height: 150px;
+    overflow-y: auto;
+    z-index: $z-dropdown;
+    box-shadow: $elevation-2;
+  }
+
+  &__suggestion {
+    padding: 6px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    color: $admin-text-secondary;
+    transition: background 0.1s;
+
+    &:hover {
+      background: $admin-bg-hover;
+      color: $admin-text-primary;
+    }
+  }
+
+  &__save-btn {
+    @include glow-button($admin-accent-success);
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: $font-weight-semibold;
+  }
+
+  &__cancel-btn {
+    background: none;
+    border: none;
+    color: $admin-text-muted;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px;
+
+    &:hover {
+      color: $admin-text-primary;
+    }
+  }
+}
+
+// ============================================
+// DELETE CONFIRM MODAL (inline)
+// ============================================
+
+.scrim-delete-confirm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: $admin-accent-error;
+
+  &__btn {
+    @include glow-button($admin-accent-error);
+    padding: 4px 14px;
+    font-size: 11px;
+    font-weight: $font-weight-bold;
+  }
+
+  &__cancel {
+    @include glow-button($admin-accent-info);
+    padding: 4px 14px;
+    font-size: 11px;
+  }
+}
+
+// ============================================
+// DATA TABLES (Players, Heroes, Maps)
+// ============================================
+
+.scrim-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: $font-size-sm;
+
+  &__wrapper {
+    @include modern-card;
+    overflow-x: auto;
+    padding: 0;
+  }
+
+  thead {
+    th {
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: $font-weight-semibold;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: $letter-spacing-wider;
+      color: $admin-text-muted;
+      border-bottom: 1px solid $admin-border-default;
+      background: $admin-bg-surface;
+      white-space: nowrap;
+
+      &:first-child {
+        border-radius: $radius-lg 0 0 0;
+      }
+      &:last-child {
+        border-radius: 0 $radius-lg 0 0;
+      }
+
+      // Sortable columns
+      &[data-sortable] {
+        cursor: pointer;
+        user-select: none;
+        transition: color 0.15s ease;
+
+        &:hover {
+          color: $admin-accent-info;
+        }
+      }
+
+      &[data-sorted] {
+        color: $admin-accent-info;
+      }
+    }
+  }
+
+  tbody {
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid $admin-border-subtle;
+      color: $admin-text-primary;
+      vertical-align: middle;
+    }
+
+    tr {
+      transition: background 0.1s ease;
+
+      &:hover {
+        background: $admin-bg-hover;
+      }
+
+      &:last-child td {
+        border-bottom: none;
+      }
+    }
+  }
+}
+
+// ============================================
+// FILTER PILLS (Hero role filters, time ranges)
+// ============================================
+
+.scrim-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: $spacing-lg;
+  align-items: center;
+}
+
+.scrim-filter-pill {
+  @include glow-button($admin-accent-info);
+  padding: 6px 16px;
+  font-size: 12px;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-full;
+
+  &--active {
+    background: rgba($admin-accent-info, 0.15);
+    border-color: rgba($admin-accent-info, 0.5);
+    color: $admin-accent-info;
+  }
+
+  // Role-specific colors
+  &--tank {
+    @include glow-button($admin-accent-info);
+    &.scrim-filter-pill--active {
+      background: rgba($admin-accent-info, 0.15);
+      border-color: rgba($admin-accent-info, 0.5);
+      color: $admin-accent-info;
+    }
+  }
+
+  &--damage {
+    @include glow-button($admin-accent-error);
+    &.scrim-filter-pill--active {
+      background: rgba($admin-accent-error, 0.15);
+      border-color: rgba($admin-accent-error, 0.5);
+      color: $admin-accent-error;
+    }
+  }
+
+  &--support {
+    @include glow-button($admin-accent-success);
+    &.scrim-filter-pill--active {
+      background: rgba($admin-accent-success, 0.15);
+      border-color: rgba($admin-accent-success, 0.5);
+      color: $admin-accent-success;
+    }
+  }
+}
+
+// ============================================
+// ROLE BADGES
+// ============================================
+
+.scrim-role-badge {
+  padding: 2px 10px;
+  border-radius: $radius-full;
+  font-size: 11px;
+  font-weight: $font-weight-bold;
+  display: inline-flex;
+  align-items: center;
+
+  &--tank {
+    background: rgba($admin-accent-info, 0.1);
+    color: $admin-accent-info;
+    border: 1px solid rgba($admin-accent-info, 0.25);
+  }
+
+  &--damage {
+    background: rgba($admin-accent-error, 0.1);
+    color: $admin-accent-error;
+    border: 1px solid rgba($admin-accent-error, 0.25);
+  }
+
+  &--support {
+    background: rgba($admin-accent-success, 0.1);
+    color: $admin-accent-success;
+    border: 1px solid rgba($admin-accent-success, 0.25);
+  }
+}
+
+// ============================================
+// HERO ROW (with portrait)
+// ============================================
+
+.scrim-hero-row {
+  &__name {
+    color: $admin-accent-info;
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__portrait {
+    width: 32px;
+    height: 32px;
+    border-radius: $radius-full;
+    object-fit: cover;
+    border: 1px solid $admin-border-default;
+  }
+}
+
+// ============================================
+// STAT HIGHLIGHTS (per/10, averages)
+// ============================================
+
+.scrim-stat {
+  font-variant-numeric: tabular-nums;
+
+  &--highlight {
+    color: $admin-accent-info;
+    font-weight: $font-weight-bold;
+  }
+
+  &--muted {
+    color: $admin-text-muted;
+  }
+}
+
+// ============================================
+// BACK NAVIGATION
+// ============================================
+
+.scrim-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: $admin-text-muted;
+  text-decoration: none;
+  font-size: $font-size-xs;
+  margin-bottom: $spacing-lg;
+  transition: color 0.15s;
+
+  &:hover {
+    color: $admin-text-primary;
+  }
+}
+
+// ============================================
+// UPLOAD PAGE SPECIFIC
+// ============================================
+
+.scrim-upload {
+  &__dropzone {
+    @include modern-card;
+    padding: 48px;
+    text-align: center;
+    border: 2px dashed $admin-border-default;
+    border-radius: $radius-lg;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+
+    &:hover,
+    &--active {
+      border-color: rgba($admin-accent-info, 0.4);
+      background: rgba($admin-accent-info, 0.03);
+    }
+
+    &__icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+
+    &__text {
+      font-weight: $font-weight-semibold;
+      color: $admin-text-secondary;
+      margin-bottom: 6px;
+    }
+
+    &__hint {
+      font-size: 12px;
+      color: $admin-text-muted;
+    }
+  }
+
+  &__step-indicator {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: $spacing-xl;
+    font-size: $font-size-sm;
+  }
+
+  &__step {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: $admin-text-muted;
+    font-weight: $font-weight-medium;
+
+    &--active {
+      color: $admin-accent-info;
+    }
+
+    &--complete {
+      color: $admin-accent-success;
+    }
+
+    &__number {
+      width: 24px;
+      height: 24px;
+      border-radius: $radius-full;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: $font-weight-bold;
+      border: 1px solid $admin-border-default;
+      background: $admin-bg-surface;
+    }
+
+    &--active &__number {
+      border-color: rgba($admin-accent-info, 0.5);
+      background: rgba($admin-accent-info, 0.1);
+      color: $admin-accent-info;
+    }
+  }
+
+  &__step-arrow {
+    color: $admin-text-muted;
+    font-size: 12px;
+  }
+
+  &__file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: $spacing-md;
+  }
+
+  &__file-item {
+    @include modern-card;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+
+    &__name {
+      font-weight: $font-weight-medium;
+      color: $admin-text-primary;
+    }
+
+    &__remove {
+      background: none;
+      border: none;
+      color: $admin-text-muted;
+      cursor: pointer;
+      font-size: 16px;
+      padding: 2px 6px;
+
+      &:hover {
+        color: $admin-accent-error;
+      }
+    }
+  }
+
+  &__submit-btn {
+    @include glow-button($admin-accent-info);
+    width: 100%;
+    padding: 14px;
+    font-size: 14px;
+    font-weight: $font-weight-bold;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: $spacing-md;
+
+    &:disabled {
+      opacity: 0.4;
+    }
+  }
+
+  &__form-group {
+    margin-bottom: $spacing-lg;
+
+    &__label {
+      display: block;
+      font-weight: $font-weight-bold;
+      font-size: $font-size-sm;
+      color: $admin-text-primary;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: $letter-spacing-wide;
+    }
+
+    &__hint {
+      font-size: 12px;
+      color: $admin-text-muted;
+      margin-top: 4px;
+    }
+
+    input,
+    select {
+      @include modern-input;
+    }
+  }
+}
+
+// ============================================
+// DELETE MODAL
+// ============================================
+
+.scrim-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: scrimFadeIn 0.15s ease-out;
+}
+
+.scrim-modal {
+  background: $admin-bg-elevated;
+  border: 1px solid $admin-border-default;
+  border-radius: $radius-xl;
+  padding: 28px 32px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: $elevation-3;
+  animation: scrimSlideUp 0.2s ease-out;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  &__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: $radius-md;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+
+    &--danger {
+      background: rgba($admin-accent-error, 0.1);
+      border: 1px solid rgba($admin-accent-error, 0.2);
+    }
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: $font-weight-bold;
+    color: $admin-text-primary;
+  }
+
+  &__subtitle {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: $admin-text-secondary;
+  }
+
+  &__body {
+    margin: 0 0 24px;
+    font-size: 13px;
+    color: $admin-text-secondary;
+    line-height: 1.5;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  &__btn {
+    padding: 9px 20px;
+    border-radius: $radius-md;
+    font-size: 13px;
+    font-weight: $font-weight-semibold;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+
+    &--cancel {
+      border: 1px solid $admin-border-default;
+      background: $admin-bg-surface;
+      color: $admin-text-secondary;
+
+      &:hover {
+        background: $admin-bg-hover;
+      }
+    }
+
+    &--danger {
+      border: 1px solid rgba($admin-accent-error, 0.3);
+      background: rgba($admin-accent-error, 0.1);
+      color: $admin-accent-error;
+      font-weight: $font-weight-bold;
+
+      &:hover {
+        background: rgba($admin-accent-error, 0.18);
+        border-color: rgba($admin-accent-error, 0.5);
+      }
+    }
+  }
+}
+
+// ============================================
+// ERROR TOAST
+// ============================================
+
+.scrim-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9998;
+  padding: 12px 20px;
+  border-radius: $radius-md;
+  font-size: 13px;
+  font-weight: $font-weight-semibold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: scrimSlideUp 0.2s ease-out;
+
+  &--error {
+    background: rgba($admin-accent-error, 0.08);
+    border: 1px solid rgba($admin-accent-error, 0.2);
+    color: $admin-accent-error;
+    box-shadow: $elevation-2;
+  }
+}
+
+// ============================================
+// DOT SEPARATOR
+// ============================================
+
+.scrim-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: $admin-text-muted;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+// ============================================
+// EXPANDED SECTION EXTRAS
+// ============================================
+
+.scrim-expanded-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid $admin-border-subtle;
+
+  &__label {
+    font-size: 12px;
+    color: $admin-text-muted;
+    flex-shrink: 0;
+  }
+
+  &__value {
+    font-size: 12px;
+    font-weight: $font-weight-semibold;
+
+    &--highlighted {
+      color: $admin-accent-info;
+    }
+  }
+}
+
+.scrim-record {
+  display: flex;
+  gap: 12px;
+
+  &__win {
+    font-size: 12px;
+    color: $admin-accent-success;
+    font-weight: $font-weight-semibold;
+  }
+
+  &__loss {
+    font-size: 12px;
+    color: $admin-accent-error;
+    font-weight: $font-weight-semibold;
+  }
+
+  &__draw {
+    font-size: 12px;
+    color: $admin-accent-warning;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+// Estimated badge
+.scrim-est-badge {
+  font-size: 9px;
+  font-weight: $font-weight-bold;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba($admin-accent-warning, 0.08);
+  color: $admin-accent-warning;
+  border: 1px solid rgba($admin-accent-warning, 0.15);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+// ============================================
+// ANIMATIONS
+// ============================================
+
+@keyframes scrimFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scrimSlideUp {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+// ============================================
+// SCRIM UPLOAD VIEW
+// ============================================
+
+.scrim-upload {
+  min-height: 100%;
+  padding: 40px;
+  color: $admin-text-primary;
+
+  &__container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  // ── Header ──
+  &__back-link {
+    color: $admin-text-muted;
+    text-decoration: none;
+    font-size: 13px;
+    transition: color 0.2s;
+
+    &:hover {
+      color: $admin-text-secondary;
+    }
+  }
+
+  &__title {
+    @include section-header;
+    margin: 8px 0 0;
+  }
+
+  &__accent-bar {
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, $admin-accent-info, transparent);
+    border-radius: 2px;
+    margin-top: 8px;
+  }
+
+  // ── Step Indicator ──
+  &__steps {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    font-size: 13px;
+  }
+
+  &__step {
+    font-weight: 600;
+
+    &--active {
+      color: $admin-accent-info;
+    }
+
+    &--completed {
+      color: $admin-accent-success;
+    }
+
+    &--inactive {
+      color: $admin-text-muted;
+      font-weight: 400;
+    }
+  }
+
+  &__step-arrow {
+    color: $admin-text-muted;
+  }
+
+  // ── Description ──
+  &__description {
+    color: $admin-text-secondary;
+    margin-top: -16px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  // ── Code badge (inline monospace) ──
+  &__code {
+    background: rgba($admin-accent-info, 0.1);
+    border: 1px solid rgba($admin-accent-info, 0.2);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 12px;
+    color: $admin-accent-info;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  // ── Form Section Cards ──
+  &__section {
+    @include modern-card;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+  }
+
+  // ── Form Field Groups ──
+  &__field {
+    margin-bottom: 24px;
+  }
+
+  // ── Labels ──
+  &__label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: $font-weight-semibold;
+    font-size: 13px;
+    color: $admin-text-secondary;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &__label-optional {
+    color: $admin-text-muted;
+    font-weight: 400;
+    text-transform: none;
+  }
+
+  &__required {
+    color: $admin-accent-error;
+    font-weight: 400;
+  }
+
+  // ── Text Inputs ──
+  &__input {
+    @include modern-input;
+  }
+
+  // ── Hint Text ──
+  &__hint {
+    margin: 6px 0 0;
+    font-size: 11px;
+    color: $admin-text-muted;
+  }
+
+  &__hint-em {
+    color: $admin-text-secondary;
+  }
+
+  // ── Custom Dropdown Trigger ──
+  &__dropdown-trigger {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid $admin-border-default;
+    border-radius: $radius-lg;
+    background: $admin-bg-card;
+    color: $admin-text-primary;
+    font-size: 14px;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &:hover {
+      border-color: $admin-border-strong;
+    }
+
+    &--empty {
+      color: $admin-text-muted;
+    }
+
+    &--error {
+      border-color: rgba($admin-accent-error, 0.3);
+    }
+  }
+
+  &__dropdown-chevron {
+    flex-shrink: 0;
+    transition: transform 0.2s;
+    color: rgba(255, 255, 255, 0.4);
+
+    &--open {
+      transform: rotate(180deg);
+    }
+  }
+
+  // ── Dropdown Menu ──
+  &__dropdown-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 99;
+  }
+
+  &__dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 4px;
+    background: #141824;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: $radius-lg;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    max-height: 240px;
+    overflow-y: auto;
+    padding: 4px;
+  }
+
+  &__dropdown-item {
+    width: 100%;
+    padding: 10px 14px;
+    background: transparent;
+    color: $admin-text-primary;
+    border: none;
+    border-radius: $radius-sm;
+    font-size: 14px;
+    cursor: pointer;
+    text-align: left;
+    display: block;
+    transition: background 0.15s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    &--selected {
+      background: rgba($admin-accent-info, 0.12);
+      color: $admin-accent-info;
+
+      &:hover {
+        background: rgba($admin-accent-info, 0.18);
+      }
+    }
+  }
+
+  // ── Drop Zone ──
+  &__dropzone {
+    border: 2px dashed rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 56px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    background: $admin-bg-card;
+    margin-bottom: 24px;
+    backdrop-filter: blur(12px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    &--active {
+      border-color: $admin-accent-success;
+      background: rgba($admin-accent-success, 0.05);
+      box-shadow: 0 0 24px rgba($admin-accent-success, 0.07);
+    }
+  }
+
+  &__dropzone-icon {
+    margin-bottom: 12px;
+    opacity: 0.7;
+    display: flex;
+    justify-content: center;
+  }
+
+  &__dropzone-text {
+    font-weight: $font-weight-semibold;
+    font-size: 15px;
+    color: $admin-text-primary;
+    transition: color 0.2s;
+
+    &--active {
+      color: $admin-accent-success;
+    }
+  }
+
+  &__dropzone-hint {
+    color: $admin-text-muted;
+    font-size: 12px;
+    margin-top: 8px;
+  }
+
+  // ── File List ──
+  &__file-list {
+    margin-bottom: 24px;
+  }
+
+  &__file-list-header {
+    font-size: 13px;
+    font-weight: $font-weight-semibold;
+    margin-bottom: 10px;
+    color: $admin-text-secondary;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &__file-items {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  &__file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: $admin-bg-card;
+    border: 1px solid $admin-border-default;
+    border-radius: $radius-md;
+    font-size: 13px;
+  }
+
+  &__file-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: $admin-text-secondary;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  &__file-remove {
+    background: none;
+    border: none;
+    color: $admin-accent-error;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px 6px;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  // ── Action Buttons (Preview / Upload) ──
+  // Note: Payload's `button[class*="btn"]` sets width:auto + inline-flex,
+  // so we need higher specificity to override
+  &__submit-btn {
+    display: block !important;
+    width: 100% !important;
+    box-sizing: border-box;
+    padding: 14px;
+    border-radius: $radius-lg;
+    border: none;
+    color: #fff;
+    font-weight: $font-weight-bold;
+    font-size: 14px;
+    transition: all 0.25s;
+    cursor: pointer;
+    text-align: center;
+
+    &--preview {
+      background: linear-gradient(135deg, $admin-accent-info, rgba($admin-accent-info, 0.8));
+      box-shadow: 0 0 20px rgba($admin-accent-info, 0.2), 0 4px 12px rgba(0, 0, 0, 0.3);
+
+      &:hover {
+        box-shadow: 0 0 30px rgba($admin-accent-info, 0.3), 0 6px 16px rgba(0, 0, 0, 0.4);
+        transform: translateY(-1px);
+      }
+    }
+
+    &--upload {
+      background: linear-gradient(135deg, $admin-accent-success, rgba($admin-accent-success, 0.8));
+      box-shadow: 0 0 20px rgba($admin-accent-success, 0.2), 0 4px 12px rgba(0, 0, 0, 0.3);
+
+      &:hover {
+        box-shadow: 0 0 30px rgba($admin-accent-success, 0.3), 0 6px 16px rgba(0, 0, 0, 0.4);
+        transform: translateY(-1px);
+      }
+    }
+
+    &:disabled {
+      background: rgba(255, 255, 255, 0.05);
+      opacity: 0.4;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    &--loading {
+      background: rgba(255, 255, 255, 0.08);
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+  }
+
+  // ── Player Mapping Row ──
+  &__mapping-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid $admin-border-default;
+    border-radius: $radius-md;
+    gap: 12px;
+  }
+
+  &__mapping-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: $admin-text-primary;
+    min-width: 120px;
+  }
+
+  &__mapping-arrow {
+    color: $admin-text-muted;
+  }
+
+  &__mapping-dropdown-wrap {
+    flex: 1;
+    position: relative;
+  }
+
+  // ── Person Dropdown Trigger ──
+  &__person-trigger {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid $admin-border-default;
+    border-radius: $radius-sm;
+    background: transparent;
+    color: $admin-text-muted;
+    font-size: 13px;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: border-color 0.2s;
+
+    &--mapped {
+      border-color: rgba($admin-accent-success, 0.26);
+      background: rgba($admin-accent-success, 0.06);
+      color: $admin-accent-success;
+    }
+  }
+
+  // ── Dropdown Item (shared across mapping + team dropdowns) ──
+  &__menu-search {
+    padding: 4px 4px 6px;
+
+    input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid $admin-border-default;
+      border-radius: $radius-sm;
+      background: rgba(255, 255, 255, 0.04);
+      color: $admin-text-primary;
+      font-size: 12px;
+      outline: none;
+      box-sizing: border-box;
+    }
+  }
+
+  &__menu-item {
+    width: 100%;
+    padding: 8px 12px;
+    background: transparent;
+    color: $admin-text-primary;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background 0.15s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    &--selected {
+      background: rgba($admin-accent-info, 0.12);
+      color: $admin-accent-info;
+
+      &:hover {
+        background: rgba($admin-accent-info, 0.18);
+      }
+    }
+
+    &--skip {
+      color: $admin-text-muted;
+      font-style: italic;
+    }
+
+    &--active {
+      background: rgba(255, 255, 255, 0.06);
+    }
+  }
+
+  &__menu-item-aliases {
+    font-size: 11px;
+    color: $admin-text-muted;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  &__menu-divider {
+    padding: 4px 12px;
+    font-size: 11px;
+    color: $admin-text-muted;
+    font-weight: $font-weight-semibold;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-top: 4px;
+  }
+
+  // ── Section Header (used in step 2 cards) ──
+  &__section-title {
+    font-size: 13px;
+    font-weight: $font-weight-semibold;
+    color: $admin-text-secondary;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+
+  &__section-subtitle {
+    color: $admin-text-muted;
+    font-size: 12px;
+    margin-bottom: 16px;
+  }
+
+  // ── Map Preview Row ──
+  &__map-preview {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+  }
+
+  &__map-name {
+    color: $admin-accent-info;
+    font-weight: $font-weight-semibold;
+  }
+
+  &__map-type {
+    color: $admin-text-muted;
+  }
+
+  &__map-teams {
+    color: $admin-text-secondary;
+  }
+
+  // ── Team Selector (Which team is yours?) ──
+  &__team-choice {
+    display: flex;
+    gap: 8px;
+  }
+
+  &__team-choice-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: $radius-md;
+    border: 1px solid $admin-border-default;
+    background: transparent;
+    color: $admin-text-secondary;
+    font-weight: 400;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      border-color: rgba($admin-accent-info, 0.3);
+    }
+
+    &--selected {
+      border-color: $admin-accent-info;
+      background: rgba($admin-accent-info, 0.07);
+      color: $admin-accent-info;
+      font-weight: $font-weight-semibold;
+    }
+  }
+
+  // ── Mapping Summary ──
+  &__mapping-summary {
+    margin-top: 12px;
+    font-size: 12px;
+    color: $admin-text-muted;
+  }
+
+  &__mapping-complete {
+    color: $admin-accent-success;
+    margin-left: 8px;
+  }
+
+  // ── Dual Team Checkbox ──
+  &__checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    color: $admin-text-secondary;
+  }
+
+  // ── Opponent Info ──
+  &__opponent-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  &__opponent-label {
+    font-size: 12px;
+    color: $admin-text-muted;
+    flex-shrink: 0;
+  }
+
+  &__opponent-input-wrap {
+    position: relative;
+    flex: 1;
+  }
+
+  &__opponent-input {
+    width: 100%;
+    padding: 7px 12px;
+    border-radius: $radius-md;
+    border: 1px solid rgba($admin-accent-info, 0.2);
+    background: rgba($admin-accent-info, 0.05);
+    color: $admin-text-primary;
+    font-size: 13px;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.15s;
+
+    &:focus {
+      border-color: rgba($admin-accent-info, 0.5);
+      box-shadow: 0 0 12px rgba($admin-accent-info, 0.1);
+    }
+  }
+
+  &__opponent-badge {
+    font-size: 10px;
+    color: $admin-accent-info;
+    flex-shrink: 0;
+    font-weight: $font-weight-semibold;
+  }
+
+  &__opponent-players {
+    font-size: 12px;
+  }
+
+  // ── Suggestion dropdown (opponent) ──
+  &__suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 4px;
+    background: #111827;
+    border: 1px solid $admin-border-default;
+    border-radius: $radius-md;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 100;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
+
+  &__suggestion-item {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    background: transparent;
+    color: $admin-text-secondary;
+    font-size: 12px;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.1s, color 0.1s;
+
+    &:hover {
+      background: rgba($admin-accent-info, 0.07);
+      color: $admin-text-primary;
+    }
+  }
+
+  // ── Result Card ──
+  &__result {
+    margin-top: 24px;
+    padding: 20px;
+    border-radius: 12px;
+    backdrop-filter: blur(12px);
+
+    &--success {
+      background: rgba($admin-accent-success, 0.06);
+      border: 1px solid rgba($admin-accent-success, 0.2);
+    }
+
+    &--error {
+      background: rgba($admin-accent-error, 0.06);
+      border: 1px solid rgba($admin-accent-error, 0.2);
+    }
+  }
+
+  &__result-message {
+    font-weight: $font-weight-bold;
+    font-size: 14px;
+
+    &--success {
+      color: $admin-accent-success;
+    }
+
+    &--error {
+      color: $admin-accent-error;
+    }
+  }
+
+  &__result-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 16px;
+    color: $admin-accent-info;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: $font-weight-semibold;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  // ── Misc helpers ──
+  &__column {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  // ── Header wrapper ──
+  &__header-wrap {
+    margin-bottom: 32px;
+  }
+
+  &__back-row {
+    margin-bottom: 8px;
+  }
+
+  // ── Inline icon (icon within text) ──
+  &__inline-icon {
+    vertical-align: middle;
+    margin-right: 4px;
+  }
+
+  &__inline-icon--sm {
+    vertical-align: middle;
+    margin-right: 2px;
+  }
+
+  // ── Spinner icon for loading button ──
+  &__spinner {
+    display: inline;
+    margin-right: 6px;
+    animation: spin 1s linear infinite;
+  }
+
+  &__btn-icon {
+    display: inline;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  // ── Step 2 back button ──
+  &__step-back {
+    margin-bottom: 16px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  // ── Relative container ──
+  &__relative {
+    position: relative;
+  }
+
+  // ── Hidden input ──
+  &__hidden-input {
+    display: none;
+  }
+
+  // ── Dual team section ──
+  &__dual-section {
+    margin-top: 16px;
+  }
+
+  &__dual-field {
+    margin-bottom: 12px;
+  }
+
+  &__dual-label {
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  // ── Checkbox ──
+  &__checkbox {
+    width: 16px;
+    height: 16px;
+    accent-color: $admin-accent-info;
+    cursor: pointer;
+  }
+
+  // ── Compact dropdown overrides ──
+  &__dropdown-trigger--compact {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  &__dropdown-item--compact {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  &__dropdown-menu--short {
+    max-height: 200px;
+  }
+
+  // ── Mapping subtitle ──
+  &__section-title--sm {
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+
+  // ── Summary margin ──
+  &__mapping-summary--tight {
+    margin-top: 8px;
+  }
+
+  // ── Empty hint ──
+  &__hint--italic {
+    font-style: italic;
+    font-size: 13px;
+  }
+}
+
+// ============================================
+// SCRIM PLAYER LIST VIEW
+// ============================================
+
+.scrim-players {
+  padding: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100%;
+
+  // ── Header ──
+  &__header {
+    margin-bottom: 32px;
+  }
+
+  &__header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  &__title-row {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+
+  &__title {
+    font-size: 32px;
+    font-weight: 800;
+    margin: 0;
+    color: $admin-text-primary;
+    letter-spacing: -0.5px;
+  }
+
+  &__count {
+    font-size: 13px;
+    color: $admin-text-secondary;
+  }
+
+  &__subtitle {
+    color: $admin-text-secondary;
+    font-size: 14px;
+    margin-top: 6px;
+  }
+
+  // ── Team Section ──
+  &__team-section {
+    margin-bottom: 32px;
+  }
+
+  &__team-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  &__team-name {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  &__team-link {
+    color: $admin-text-primary;
+    text-decoration: none;
+    transition: color 0.15s;
+
+    &:hover {
+      color: $admin-accent-info;
+    }
+  }
+
+  &__badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: $font-weight-semibold;
+
+    &--cyan {
+      background: rgba($admin-accent-info, 0.15);
+      color: $admin-accent-info;
+      border: 1px solid rgba($admin-accent-info, 0.25);
+    }
+
+    &--muted {
+      background: rgba($admin-text-secondary, 0.15);
+      color: $admin-text-secondary;
+      border: 1px solid rgba($admin-text-secondary, 0.25);
+    }
+  }
+
+  // ── Table Card ──
+  &__table-card {
+    @include modern-card;
+    overflow: hidden;
+  }
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  // ── Table Header ──
+  &__th {
+    padding: 14px 16px;
+    cursor: pointer;
+    font-weight: 500;
+    color: $admin-text-secondary;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    user-select: none;
+    transition: color 0.15s;
+    border-bottom: 1px solid $admin-border-default;
+
+    &:hover {
+      color: $admin-text-primary;
+    }
+
+    &--sorted {
+      font-weight: 700;
+      color: $admin-accent-info;
+    }
+
+    &--right {
+      text-align: right;
+    }
+  }
+
+  // ── Table Rows ──
+  &__row {
+    cursor: pointer;
+    border-bottom: 1px solid $admin-border-default;
+    transition: background 0.15s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  &__td {
+    padding: 12px 16px;
+    color: $admin-text-primary;
+
+    &--name {
+      font-weight: $font-weight-bold;
+    }
+
+    &--secondary {
+      color: $admin-text-secondary;
+    }
+
+    &--stat {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    &--maps {
+      text-align: right;
+      font-weight: $font-weight-semibold;
+      color: $admin-accent-info;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  &__empty {
+    padding: 40px;
+    text-align: center;
+    color: $admin-text-secondary;
+  }
+
+  // ── Search Bar ──
+  &__search-wrap {
+    margin-left: auto;
+    position: relative;
+  }
+
+  &__search-input {
+    padding: 8px 14px;
+    border-radius: $radius-md;
+    border: 1px solid $admin-border-default;
+    background: rgba(255, 255, 255, 0.04);
+    color: $admin-text-primary;
+    font-size: 13px;
+    outline: none;
+    width: 240px;
+    transition: border-color 0.15s;
+
+    &:focus {
+      border-color: rgba($admin-accent-info, 0.4);
+      box-shadow: 0 0 12px rgba($admin-accent-info, 0.08);
+    }
+
+    &--has-value {
+      padding-right: 32px;
+    }
+  }
+
+  &__search-clear {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: $admin-text-secondary;
+    cursor: pointer;
+    padding: 2px;
+    line-height: 1;
+    transition: color 0.15s;
+
+    &:hover {
+      color: $admin-text-primary;
+    }
+  }
+
+  // ── Loading / Error ──
+  &__loading {
+    padding: 80px 40px;
+    text-align: center;
+  }
+
+  &__loading-icon {
+    margin-bottom: 12px;
+    animation: glowPulse 2s ease-in-out infinite;
+    color: $admin-accent-info;
+  }
+
+  &__loading-text {
+    font-size: 14px;
+    color: $admin-text-secondary;
+  }
+
+  &__error {
+    padding: 60px;
+    text-align: center;
+    color: $admin-accent-error;
+  }
+}
+
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+// ============================================
+// SCRIM PLAYER DETAIL VIEW
+// ============================================
+
+.scrim-detail {
+  position: relative;
+  min-height: 100%;
+  overflow: hidden;
+
+  &__bg {
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba($admin-accent-info, 0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(#8b5cf6, 0.05) 0%, transparent 50%),
+      radial-gradient(ellipse 40% 60% at 10% 50%, rgba($admin-accent-info, 0.03) 0%, transparent 50%),
+      linear-gradient(180deg, #0a0e1a 0%, #0d1117 40%, #0a0e1a 100%);
+  }
+
+  // ── Ambient decorations ──
+  &__orb {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: glowPulse 8s ease-in-out infinite;
+  }
+
+  &__edge-glow {
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba($admin-accent-info, 0.13), transparent);
+    pointer-events: none;
+  }
+
+  &__vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.3) 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  // ── Content wrapper ──
+  &__content {
+    position: relative;
+    z-index: 1;
+    padding: 40px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  // ── Header ──
+  &__header {
+    margin-bottom: 32px;
+  }
+
+  &__back-link {
+    color: $admin-text-secondary;
+    font-size: 12px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.2s;
+
+    &:hover {
+      color: $admin-text-primary;
+    }
+  }
+
+  &__header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-top: 12px;
+  }
+
+  &__player-name {
+    font-size: 32px;
+    font-weight: 800;
+    margin: 0;
+    color: $admin-text-primary;
+    letter-spacing: -0.5px;
+    text-shadow: 0 0 40px rgba($admin-accent-info, 0.2);
+  }
+
+  &__player-meta {
+    color: $admin-text-secondary;
+    font-size: 14px;
+    margin-top: 6px;
+  }
+
+  &__team-link {
+    color: $admin-accent-info;
+    text-decoration: none;
+    font-weight: $font-weight-semibold;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 0.8;
+      text-decoration: underline;
+    }
+  }
+
+  &__accent-bar {
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, $admin-accent-info, transparent);
+    border-radius: 2px;
+    margin-top: 8px;
+  }
+
+  // ── Tab Bar ──
+  &__tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 28px;
+    border-bottom: 1px solid $admin-border-default;
+  }
+
+  &__tab {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 10px 24px;
+    font-size: 13px;
+    font-weight: 500;
+    color: $admin-text-secondary;
+    border-bottom: 2px solid transparent;
+    text-transform: capitalize;
+    letter-spacing: 0.3px;
+    transition: all 0.2s;
+    margin-bottom: -1px;
+
+    &:hover {
+      color: $admin-text-primary;
+    }
+
+    &--active {
+      font-weight: 700;
+      color: $admin-accent-info;
+      border-bottom-color: $admin-accent-info;
+      text-shadow: 0 0 12px rgba($admin-accent-info, 0.27);
+    }
+  }
+
+  // ── Stat Cards Grid ──
+  &__stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+
+  // ── Generic Card ──
+  &__card {
+    @include modern-card;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 20px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+    &--hoverable {
+      cursor: pointer;
+      transition: border-color 0.2s ease, background 0.2s ease;
+      display: block;
+
+      &:hover {
+        border-color: rgba($admin-accent-info, 0.27);
+        background: rgba(255, 255, 255, 0.05);
+      }
+    }
+  }
+
+  &__card-title {
+    color: $admin-text-primary;
+    font-size: 15px;
+    font-weight: $font-weight-semibold;
+    margin-top: 0;
+    margin-bottom: 16px;
+  }
+
+  &__card-header {
+    font-weight: 700;
+    font-size: 15px;
+    color: $admin-text-primary;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__card-header-glow {
+    text-shadow: 0 0 20px rgba($admin-accent-info, 0.13);
+  }
+
+  &__card-header-sub {
+    font-size: 11px;
+    color: $admin-text-muted;
+    font-weight: 400;
+  }
+
+  // ── Section Label (uppercase) ──
+  &__label {
+    font-size: 11px;
+    color: $admin-text-secondary;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    font-weight: $font-weight-semibold;
+    margin-bottom: 8px;
+  }
+
+  // ── Map History Table (reusable) ──
+  &__map-table-card {
+    @include modern-card;
+    padding: 0;
+    overflow: hidden;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  &__map-table-header {
+    padding: 16px 20px 10px;
+    font-weight: 700;
+    font-size: 15px;
+    color: $admin-text-primary;
+    border-bottom: 1px solid $admin-border-default;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &__map-table-sub {
+    font-weight: 400;
+    font-size: 12px;
+    color: $admin-text-muted;
+  }
+
+  &__map-table-scroll {
+    overflow-x: auto;
+  }
+
+  &__map-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    min-width: 1100px;
+  }
+
+  &__map-th {
+    padding: 10px 12px;
+    cursor: pointer;
+    font-weight: 500;
+    color: $admin-text-secondary;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    user-select: none;
+    transition: color 0.2s;
+
+    &:hover {
+      color: $admin-text-primary;
+    }
+
+    &--sorted {
+      font-weight: 700;
+      color: $admin-accent-info;
+      text-shadow: 0 0 8px rgba($admin-accent-info, 0.27);
+    }
+
+    &--right {
+      text-align: right;
+    }
+  }
+
+  &__map-row {
+    cursor: pointer;
+    border-bottom: 1px solid $admin-border-default;
+    transition: background 0.2s, box-shadow 0.2s;
+
+    &:hover {
+      background: rgba($admin-accent-info, 0.04);
+      box-shadow: inset 3px 0 0 rgba($admin-accent-info, 0.27);
+    }
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  &__map-td {
+    padding: 10px 12px;
+    color: $admin-text-primary;
+
+    &--map {
+      font-weight: $font-weight-semibold;
+      color: $admin-accent-info;
+      white-space: nowrap;
+      text-shadow: 0 0 8px rgba($admin-accent-info, 0.13);
+    }
+
+    &--type {
+      font-size: 10px;
+      color: $admin-text-muted;
+      margin-left: 6px;
+      font-weight: 400;
+    }
+
+    &--secondary {
+      color: $admin-text-secondary;
+    }
+
+    &--date {
+      color: $admin-text-muted;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    &--stat {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  // ── Hero Pill Selector ──
+  &__hero-pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+
+  &__hero-pill {
+    border-radius: $radius-md;
+    padding: 6px 14px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid $admin-border-default;
+    background: $admin-bg-card;
+    color: $admin-text-secondary;
+    font-weight: 500;
+
+    &--active {
+      font-weight: 700;
+    }
+
+    img {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+    }
+  }
+
+  // ── Progress Bar (reusable) ──
+  &__progress-track {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  &__progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+
+  &__progress-wide {
+    height: 8px;
+    border-radius: 4px;
+  }
+
+  // ── Winrate / Matchup Row ──
+  &__bar-row {
+    margin-bottom: 8px;
+  }
+
+  &__bar-label-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3px;
+  }
+
+  &__bar-name {
+    font-size: 12px;
+    color: $admin-text-primary;
+    font-weight: 500;
+  }
+
+  &__bar-detail {
+    color: $admin-text-muted;
+    font-weight: 400;
+  }
+
+  // ── Matchup Row ──
+  &__matchup-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  &__matchup-rank {
+    font-size: 11px;
+    color: $admin-text-muted;
+    width: 16px;
+    text-align: right;
+  }
+
+  &__matchup-name {
+    font-size: 12px;
+    color: $admin-text-primary;
+    font-weight: 500;
+    min-width: 100px;
+  }
+
+  &__matchup-bar {
+    flex: 1;
+  }
+
+  &__matchup-count {
+    font-size: 12px;
+    font-weight: $font-weight-bold;
+    min-width: 30px;
+    text-align: right;
+  }
+
+  // ── Grid Helpers ──
+  &__grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  &__grid-2-wide {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  // ── Sub-section label ──
+  &__sub-label {
+    font-size: 11px;
+    color: $admin-text-muted;
+    margin-bottom: 10px;
+    font-weight: $font-weight-semibold;
+    letter-spacing: 0.5px;
+  }
+
+  // ── Map Selector (Charts tab) ──
+  &__map-selector {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  &__map-pill {
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    cursor: pointer;
+    border: 1px solid $admin-border-default;
+    background: transparent;
+    color: $admin-text-secondary;
+    transition: all 0.2s;
+
+    &--active {
+      background: rgba($admin-accent-info, 0.12);
+      color: $admin-accent-info;
+      border-color: rgba($admin-accent-info, 0.4);
+    }
+  }
+
+  // ── Analytics Card ──
+  &__analytics-card {
+    @include modern-card;
+    backdrop-filter: blur(16px);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  &__analytics-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+  }
+
+  &__analytics-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__analytics-icon {
+    font-size: 20px;
+  }
+
+  &__analytics-title {
+    font-size: 11px;
+    color: $admin-text-secondary;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: $font-weight-semibold;
+  }
+
+  &__analytics-value {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__analytics-desc {
+    font-size: 11px;
+    color: $admin-text-muted;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  // ── Summary Card (Overview) ──
+  &__summary-card {
+    @include modern-card;
+    backdrop-filter: blur(16px);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  &__summary-glow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+  }
+
+  &__summary-label {
+    font-size: 11px;
+    color: $admin-text-secondary;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: $font-weight-semibold;
+    margin-bottom: 8px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  &__summary-icon {
+    font-size: 16px;
+  }
+
+  &__summary-value {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__summary-sub {
+    font-size: 12px;
+    color: $admin-text-muted;
+    margin-top: 4px;
+  }
+
+  // ── Donut Chart Legend ──
+  &__legend {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  &__legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &__legend-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
+
+  &__legend-label {
+    color: $admin-text-primary;
+    font-size: 13px;
+    font-weight: $font-weight-semibold;
+    min-width: 70px;
+  }
+
+  &__legend-value {
+    color: $admin-text-secondary;
+    font-size: 12px;
+  }
+
+  // ── Empty state ──
+  &__empty {
+    padding: 24px;
+    text-align: center;
+    color: $admin-text-muted;
+  }
+
+  // ── Trend Stat Selector ──
+  &__trend-selector {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  &__trend-pill {
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    cursor: pointer;
+    border: 1px solid $admin-border-default;
+    background: transparent;
+    color: $admin-text-secondary;
+    transition: all 0.2s;
+
+    &--active {
+      background: rgba($admin-accent-info, 0.12);
+      color: $admin-accent-info;
+      border-color: rgba($admin-accent-info, 0.4);
+    }
+  }
+
+  // ── Hero Detail Section ──
+  &__hero-section {
+    margin-bottom: 10px;
+    border-radius: 14px;
+    overflow: hidden;
+    transition: all 0.3s;
+  }
+
+  &__hero-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+  }
+
+  &__hero-name-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &__hero-portrait {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  &__hero-name {
+    font-weight: $font-weight-bold;
+    font-size: 14px;
+    color: $admin-text-primary;
+  }
+
+  &__hero-maps-badge {
+    font-size: 11px;
+    font-weight: 400;
+    color: $admin-text-muted;
+    margin-left: 6px;
+  }
+
+  &__hero-stats-row {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+
+  &__hero-stat {
+    font-size: 12px;
+    color: $admin-text-secondary;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+
+  &__hero-stat-value {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__hero-stat-label {
+    font-size: 10px;
+    color: $admin-text-muted;
+  }
+
+  &__hero-chevron {
+    color: $admin-text-muted;
+    transition: transform 0.3s;
+    flex-shrink: 0;
+
+    &--open {
+      transform: rotate(180deg);
+    }
+  }
+
+  // ── Hero Expanded Body ──
+  &__hero-body {
+    padding: 0 20px 20px;
+    animation: fadeSlideIn 0.3s ease;
+  }
+
+  &__hero-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+  }
+
+  &__hero-stat-box {
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid $admin-border-default;
+    border-radius: $radius-md;
+  }
+
+  &__hero-stat-box-label {
+    font-size: 10px;
+    color: $admin-text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  &__hero-stat-box-value {
+    font-size: 18px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  // ── Chart Card ──
+  &__chart-card {
+    @include modern-card;
+    backdrop-filter: blur(16px);
+    padding: 20px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  &__chart-header {
+    font-weight: 700;
+    font-size: 14px;
+    color: $admin-text-primary;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &__chart-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
+
+  &__chart-count {
+    font-size: 11px;
+    color: $admin-text-muted;
+    font-weight: 400;
+    margin-left: auto;
+  }
+
+  // ══════════════════════════════════════════════
+  // Reusable Detail Page Utilities
+  // ══════════════════════════════════════════════
+
+  // ── Icon alignment for inline Lucide icons ──
+  &__inline-icon {
+    vertical-align: text-bottom;
+    margin-right: 4px;
+  }
+
+  &__inline-icon--wide {
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+
+  // ── Card spacing variants ──
+  &__card--mt {
+    margin-top: 20px;
+  }
+
+  &__card--mt-lg {
+    margin-top: 24px;
+  }
+
+  &__card--mt-xl {
+    margin-top: 28px;
+  }
+
+  &__card--mb {
+    margin-bottom: 20px;
+  }
+
+  // ── Section layouts ──
+  &__section-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  &__section-stack--tight {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__auto-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+  }
+
+  &__auto-grid--narrow {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  &__two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  &__scroll-x {
+    overflow-x: auto;
+  }
+
+  // ── Text style helpers ──
+  &__text-dim {
+    color: $admin-text-muted;
+  }
+
+  &__text-secondary {
+    color: $admin-text-secondary;
+    font-size: 12px;
+  }
+
+  &__text-dim-sm {
+    color: $admin-text-muted;
+    font-size: 11px;
+  }
+
+  &__text-dim-xs {
+    color: $admin-text-muted;
+    font-size: 13px;
+  }
+
+  &__heading-lg {
+    color: $admin-text-primary;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  &__heading-md {
+    color: $admin-text-primary;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  // ── Stat display ──
+  &__stat-value {
+    font-size: 14px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__stat-value--lg {
+    font-size: 13px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  // ── Stat winrate coloring (use with data attribute) ──
+  &__winrate--positive {
+    color: $admin-accent-success;
+    font-weight: 600;
+  }
+
+  &__winrate--negative {
+    color: $admin-accent-error;
+    font-weight: 600;
+  }
+
+  // ── Flex helpers for detail pages ──
+  &__flex-center {
+    display: flex;
+    gap: 32px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  // ── Progress bar ──
+  &__progress-fill {
+    height: 100%;
+    border-radius: inherit;
+    transition: width 0.4s ease;
+  }
+
+  // ── Legend items ──
+  &__legend-swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    display: inline-block;
+  }
+
+  // ── Clickable cursor ──
+  &__clickable {
+    cursor: pointer;
+  }
+}

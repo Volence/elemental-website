@@ -13,7 +13,7 @@ export const VideoAnchor: CollectionConfig = {
   },
   admin: {
     group: 'Video',
-    description: '🎥 Video department dashboard',
+    description: 'Video department dashboard',
     hidden: ({ user }) => {
       if (!user) return true
       const u = user as any

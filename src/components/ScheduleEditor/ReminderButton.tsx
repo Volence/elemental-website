@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { useDocumentInfo, useFormModified, toast } from '@payloadcms/ui'
+import { Megaphone, AlertTriangle } from 'lucide-react'
 import { postScrimReminderAction } from '@/actions/post-scrim-reminder'
 
 interface ReminderButtonProps {
@@ -57,7 +58,7 @@ export const ReminderButton: React.FC<ReminderButtonProps> = ({
         disabled
         title="Set an opponent first"
       >
-        📣 Set opponent to post reminder
+        <Megaphone size={12} /> Set opponent to post reminder
       </button>
     )
   }
@@ -70,20 +71,20 @@ export const ReminderButton: React.FC<ReminderButtonProps> = ({
         onClick={() => setShowModal(true)}
         disabled={isPosting}
       >
-        {isPosting ? '📣 Posting...' : reminderPosted ? '✓ Reminder Posted' : '📣 Post Reminder'}
+        {isPosting ? <><Megaphone size={12} /> Posting...</> : reminderPosted ? '✓ Reminder Posted' : <><Megaphone size={12} /> Post Reminder</>}
       </button>
 
       {showModal && (
         <div className="schedule-editor__modal-overlay" onClick={() => setShowModal(false)}>
           <div className="schedule-editor__modal schedule-editor__modal--reminder" onClick={(e) => e.stopPropagation()}>
             <div className="schedule-editor__modal-header">
-              <span className="schedule-editor__modal-icon">📣</span>
+              <span className="schedule-editor__modal-icon"><Megaphone size={16} /></span>
               <h3>Post Scrim Reminder</h3>
             </div>
             <div className="schedule-editor__modal-body">
               {isModified && (
                 <p className="schedule-editor__modal-warning">
-                  ⚠️ You have unsaved changes. Save first to ensure the latest info is posted.
+                  <AlertTriangle size={14} /> You have unsaved changes. Save first to ensure the latest info is posted.
                 </p>
               )}
               <p>Post a reminder for <strong>{dayDate}</strong> to the <strong>Schedule thread</strong>?</p>

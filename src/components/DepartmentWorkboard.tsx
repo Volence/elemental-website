@@ -4,6 +4,7 @@ import React, { useEffect } from 'react'
 import { useStepNav } from '@payloadcms/ui'
 import { KanbanBoard } from './WorkboardKanban'
 import './DepartmentWorkboard.scss'
+import { Palette, PartyPopper, Video } from 'lucide-react'
 
 /**
  * Department-specific dashboard views that display the Kanban board
@@ -42,7 +43,7 @@ function DashboardWrapper({
 export function GraphicsWorkboard() {
   return (
     <DashboardWrapper title="Graphics Dashboard" groupLabel="Graphics">
-      <KanbanBoard department="graphics" title="🎨 Graphics Dashboard" />
+      <KanbanBoard department="graphics" title="<Palette size={14} /> Graphics Dashboard" />
     </DashboardWrapper>
   )
 }
@@ -50,7 +51,7 @@ export function GraphicsWorkboard() {
 export function VideoWorkboard() {
   return (
     <DashboardWrapper title="Video Dashboard" groupLabel="Video">
-      <KanbanBoard department="video" title="🎥 Video Dashboard" />
+      <KanbanBoard department="video" title="<Video size={14} /> Video Dashboard" />
     </DashboardWrapper>
   )
 }
@@ -58,7 +59,7 @@ export function VideoWorkboard() {
 export function EventsWorkboard() {
   return (
     <DashboardWrapper title="Events Dashboard" groupLabel="Events">
-      <KanbanBoard department="events" title="🎉 Events Dashboard" />
+      <KanbanBoard department="events" title="<PartyPopper size={14} /> Events Dashboard" />
     </DashboardWrapper>
   )
 }

@@ -1,10 +1,11 @@
 'use client'
 
 import React from 'react'
+import { Package } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 interface EmptyStateProps {
-  emoji?: string
+  icon?: React.ReactNode
   title: string
   description: string
   actionText?: string
@@ -15,7 +16,7 @@ interface EmptyStateProps {
  * Generic empty state component for collections
  */
 const EmptyState: React.FC<EmptyStateProps> = ({ 
-  emoji = '📦',
+  icon = <Package size={32} />,
   title,
   description,
   actionText,
@@ -26,7 +27,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({
   return (
     <div className="empty-state">
       <div className="empty-state__icon">
-        {emoji}
+        {icon}
       </div>
       <h3 className="empty-state__title">
         {title}

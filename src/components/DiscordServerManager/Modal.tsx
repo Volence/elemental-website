@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { AlertTriangle, CheckCircle, Info, XCircle, X } from 'lucide-react'
 
 interface ModalProps {
   isOpen: boolean
@@ -29,7 +30,7 @@ export const Modal: React.FC<ModalProps> = ({
       >
         <div className="modal-header">
           <h3>{title}</h3>
-          <button className="modal-close" onClick={onClose}>×</button>
+          <button className="modal-close" onClick={onClose}><X size={14} /></button>
         </div>
         <div className="modal-body">
           {children}
@@ -110,11 +111,11 @@ export const AlertModal: React.FC<AlertModalProps> = ({
   message,
   type = 'info'
 }) => {
-  const icons = {
-    success: '✅',
-    error: '❌',
-    info: 'ℹ️',
-    warning: '⚠️'
+  const icons: Record<string, React.ReactNode> = {
+    success: <CheckCircle size={12} />,
+    error: <XCircle size={12} />,
+    info: <Info size={14} />,
+    warning: <AlertTriangle size={12} />
   }
 
   return (

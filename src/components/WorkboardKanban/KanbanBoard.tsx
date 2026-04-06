@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useConfig } from '@payloadcms/ui'
 import { toast } from '@payloadcms/ui'
+import { ClipboardList, RefreshCw, Eye, CheckCircle, Send, ArrowUpRight, ChevronDown, ChevronRight } from 'lucide-react'
 import { KanbanColumn } from './KanbanColumn'
 import { TaskModal } from './TaskModal'
 import type { Task } from '@/payload-types'
@@ -220,10 +221,10 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ department, title }) =
       <div className="workboard__header">
         <div className="workboard__title-section">
           <div className="workboard__stats">
-            <span className="workboard__stat">📋 {counts.backlog} backlog</span>
-            <span className="workboard__stat">🔄 {counts['in-progress']} in progress</span>
-            <span className="workboard__stat">👀 {counts.review} in review</span>
-            <span className="workboard__stat">✅ {counts.complete} complete</span>
+            <span className="workboard__stat"><ClipboardList size={12} /> {counts.backlog} backlog</span>
+            <span className="workboard__stat"><RefreshCw size={12} /> {counts['in-progress']} in progress</span>
+            <span className="workboard__stat"><Eye size={12} /> {counts.review} in review</span>
+            <span className="workboard__stat"><CheckCircle size={12} /> {counts.complete} complete</span>
           </div>
         </div>
         
@@ -234,9 +235,9 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ department, title }) =
             onChange={(e) => setFilter({ ...filter, priority: e.target.value })}
           >
             <option value="all">All Priorities</option>
-            <option value="urgent">🔴 Urgent Only</option>
-            <option value="high">🟠 High+</option>
-            <option value="medium">🟡 Medium+</option>
+            <option value="urgent">Urgent Only</option>
+            <option value="high">High+</option>
+            <option value="medium">Medium+</option>
           </select>
           
           <label className="workboard__toggle">
@@ -258,13 +259,13 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ department, title }) =
           </label>
           
           <button onClick={fetchTasks} className="workboard__btn workboard__btn--refresh">
-            🔄 Refresh
+            <RefreshCw size={12} /> Refresh
           </button>
           
           {canRequestFrom.length > 0 && (
             <div className="workboard__request-dropdown">
               <button type="button" className="workboard__btn workboard__btn--request">
-                📨 Request From...
+                <Send size={12} /> Request From...
               </button>
               <div className="workboard__request-menu">
                 {canRequestFrom.map((targetDept) => (
@@ -295,7 +296,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ department, title }) =
             className="workboard__outgoing-toggle"
             onClick={() => setShowOutgoing(!showOutgoing)}
           >
-            {showOutgoing ? '▼' : '▶'} 📤 Outgoing Requests ({outgoingRequests.length})
+            {showOutgoing ? <ChevronDown size={12} /> : <ChevronRight size={12} />} <ArrowUpRight size={12} /> Outgoing Requests ({outgoingRequests.length})
           </button>
         </div>
       )}
@@ -317,10 +318,10 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ department, title }) =
               </div>
               <div className="workboard__outgoing-status">
                 <span className={`workboard__status-badge workboard__status-badge--${req.status}`}>
-                  {req.status === 'backlog' && '📋 Backlog'}
-                  {req.status === 'in-progress' && '🔄 In Progress'}
-                  {req.status === 'review' && '👀 Review'}
-                  {req.status === 'complete' && '✅ Complete'}
+                  {req.status === 'backlog' && <><ClipboardList size={10} /> Backlog</>}
+                  {req.status === 'in-progress' && <><RefreshCw size={10} /> In Progress</>}
+                  {req.status === 'review' && <><Eye size={10} /> Review</>}
+                  {req.status === 'complete' && <><CheckCircle size={10} /> Complete</>}
                 </span>
               </div>
             </div>

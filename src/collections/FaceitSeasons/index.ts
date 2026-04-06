@@ -18,7 +18,7 @@ export const FaceitSeasons: CollectionConfig = {
   admin: {
     useAsTitle: 'seasonName',
     defaultColumns: ['team', 'faceitLeague', 'seasonName', 'isActive', 'lastSynced'],
-    description: '🏆 Team FaceIt seasons - Can be used to edit archived match data for finalized seasons',
+    description: 'Team FaceIt seasons - Can be used to edit archived match data for finalized seasons',
     group: 'Competitive',
     hidden: hideFromPlayers,
   },
@@ -53,7 +53,7 @@ export const FaceitSeasons: CollectionConfig = {
       relationTo: 'faceit-leagues',
       hasMany: false,
       admin: {
-        description: '⭐ RECOMMENDED: Select a league template to auto-fill championship/stage/league IDs',
+        description: 'RECOMMENDED: Select a league template to auto-fill championship/stage/league IDs',
       },
     },
     
@@ -110,7 +110,7 @@ export const FaceitSeasons: CollectionConfig = {
           type: 'text',
           required: true,
           admin: {
-            description: '✨ Auto-filled from league template on save (editable before save)',
+            description: 'Auto-filled from league template on save (editable before save)',
           },
         },
         {
@@ -137,7 +137,7 @@ export const FaceitSeasons: CollectionConfig = {
             { label: 'Open', value: 'Open' },
           ],
           admin: {
-            description: '✨ Auto-filled from league template on save',
+            description: 'Auto-filled from league template on save',
           },
         },
         {
@@ -154,7 +154,7 @@ export const FaceitSeasons: CollectionConfig = {
             { label: 'China', value: 'China' },
           ],
           admin: {
-            description: '✨ Auto-filled from league template on save',
+            description: 'Auto-filled from league template on save',
           },
         },
       ],
@@ -163,7 +163,7 @@ export const FaceitSeasons: CollectionConfig = {
       name: 'conference',
       type: 'text',
       admin: {
-        description: '✨ Auto-filled from league template on save (e.g., "Central")',
+        description: 'Auto-filled from league template on save (e.g., "Central")',
       },
     },
     

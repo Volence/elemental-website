@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { ClipboardList, FileEdit, Lightbulb, Sparkles, X } from 'lucide-react'
 
 interface TemplateModalProps {
   template: {
@@ -86,7 +87,7 @@ export function TemplateModal({ template, onClose }: TemplateModalProps) {
           <div className="template-modal__header">
             <div>
               <h2>
-                📝 Use Template: {template.name}
+                <FileEdit size={14} /> Use Template: {template.name}
               </h2>
               <p>
                 Fill in the placeholders below to customize your post
@@ -96,7 +97,7 @@ export function TemplateModal({ template, onClose }: TemplateModalProps) {
               onClick={onClose}
               className="template-modal__close-btn"
             >
-              ×
+              <X size={14} />
             </button>
           </div>
 
@@ -154,7 +155,7 @@ export function TemplateModal({ template, onClose }: TemplateModalProps) {
 
             {template.suggestedMedia && (
               <div className="template-modal__media-suggestion">
-                <strong>💡 Suggested Media:</strong>{' '}
+                <strong><Lightbulb size={14} /> Suggested Media:</strong>{' '}
                 <span>
                   {template.suggestedMedia}
                 </span>
@@ -168,13 +169,13 @@ export function TemplateModal({ template, onClose }: TemplateModalProps) {
               onClick={handleCopyToClipboard}
               className="template-modal__btn template-modal__btn--secondary"
             >
-              📋 Copy to Clipboard
+              <ClipboardList size={14} /> Copy to Clipboard
             </button>
             <button
               onClick={handleUseTemplate}
               className="template-modal__btn template-modal__btn--primary"
             >
-              ✨ Create Post
+              <Sparkles size={14} /> Create Post
             </button>
           </div>
         </div>

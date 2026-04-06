@@ -3,6 +3,7 @@
 import React from 'react'
 import { TaskCard } from './TaskCard'
 import type { Task } from '@/payload-types'
+import { CheckCircle, ClipboardList, Eye, RefreshCw } from 'lucide-react'
 
 interface KanbanColumnProps {
   title: string
@@ -12,11 +13,11 @@ interface KanbanColumnProps {
   onDrop: (taskId: number, newStatus: string) => void
 }
 
-const statusIcons: Record<string, string> = {
-  backlog: '📋',
-  'in-progress': '🔄',
-  review: '👀',
-  complete: '✅',
+const statusIcons: Record<string, React.ReactNode> = {
+  backlog: <ClipboardList size={14} />,
+  'in-progress': <RefreshCw size={12} />,
+  review: <Eye size={12} />,
+  complete: <CheckCircle size={12} />,
 }
 
 export const KanbanColumn: React.FC<KanbanColumnProps> = ({

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useField, useFormFields } from '@payloadcms/ui'
 import { toast } from '@payloadcms/ui'
+import { ClipboardList, Target, Search, CheckSquare, XSquare } from 'lucide-react'
 
 interface Team {
   id: number
@@ -115,7 +116,7 @@ const BulkTeamSelector: React.FC<any> = ({ path }) => {
   return (
     <div className="bulk-team-selector">
       <div className="bulk-team-selector__header">
-        <h4 className="bulk-team-selector__title">📋 Bulk Team Selection</h4>
+        <h4 className="bulk-team-selector__title"><ClipboardList size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> Bulk Team Selection</h4>
         <p className="bulk-team-selector__subtitle">
           Select multiple teams at once to assign to this tournament
         </p>
@@ -127,7 +128,7 @@ const BulkTeamSelector: React.FC<any> = ({ path }) => {
             borderRadius: '4px',
             border: '1px solid var(--theme-elevation-400)'
           }}>
-            <strong>🎯 Smart Filtering Active:</strong>{' '}
+            <strong><Target size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }} /> Smart Filtering Active:</strong>{' '}
             {faceitLeague?.value ? (
               <span>Only showing teams in the selected FaceIt league</span>
             ) : (
@@ -138,13 +139,16 @@ const BulkTeamSelector: React.FC<any> = ({ path }) => {
       </div>
 
       <div className="bulk-team-selector__filters">
-        <input
-          type="text"
-          placeholder="🔍 Search teams..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="bulk-team-selector__search"
-        />
+        <div className="bulk-team-selector__search-wrapper">
+          <Search size={14} className="bulk-team-selector__search-icon" />
+          <input
+            type="text"
+            placeholder="Search teams..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="bulk-team-selector__search"
+          />
+        </div>
 
         <select
           value={regionFilter}
@@ -180,7 +184,7 @@ const BulkTeamSelector: React.FC<any> = ({ path }) => {
           onClick={allFilteredSelected ? handleDeselectAll : handleSelectAll}
           className="bulk-team-selector__action-btn"
         >
-          {allFilteredSelected ? '❌ Deselect All' : '✅ Select All Filtered'}
+          {allFilteredSelected ? <><XSquare size={14} /> Deselect All</> : <><CheckSquare size={14} /> Select All Filtered</>}
         </button>
         <span className="bulk-team-selector__count">
           {selectedIds.length} team{selectedIds.length !== 1 ? 's' : ''} selected
@@ -234,4 +238,3 @@ const BulkTeamSelector: React.FC<any> = ({ path }) => {
 }
 
 export default BulkTeamSelector
-

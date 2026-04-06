@@ -59,7 +59,7 @@ const DataConsistencyNavLink: React.FC = () => {
         className="data-consistency-nav-link__link"
       >
         <div className="data-consistency-nav-link__content">
-          <span className="data-consistency-nav-link__icon">📊</span>
+          <span className="data-consistency-nav-link__icon">⬤</span>
           <span>Data Consistency</span>
         </div>
         {!loading && issueCount > 0 && (

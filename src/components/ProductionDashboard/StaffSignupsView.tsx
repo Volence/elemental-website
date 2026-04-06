@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useAuth } from '@payloadcms/ui'
 import { toast } from '@payloadcms/ui'
+import { AlertTriangle, Calendar, CheckCircle, Circle, Clapperboard, Clock, Eye, Gamepad2, Globe, Lightbulb, Lock, Mic, Target, X } from 'lucide-react'
 
 interface User {
   id: number
@@ -282,11 +283,11 @@ function SignupModal({ matchGroup, currentUserId, onClose, onSignup }: {
       <div className="signup-modal" onClick={e => e.stopPropagation()}>
         <div className="signup-modal__header">
           <h3>Sign Up for Time Slot</h3>
-          <button className="signup-modal__close" onClick={onClose} aria-label="Close modal">✕</button>
+          <button className="signup-modal__close" onClick={onClose} aria-label="Close modal"><X size={16} /></button>
         </div>
         <div className="signup-modal__body">
           <div className="signup-modal__match-info">
-            <h4>📅 {matchGroup.formattedDate}</h4>
+            <h4><Calendar size={14} /> {matchGroup.formattedDate}</h4>
             <p className="signup-modal__match-count">
               {matchGroup.matches.length} match{matchGroup.matches.length > 1 ? 'es' : ''} at this time
             </p>
@@ -296,21 +297,21 @@ function SignupModal({ matchGroup, currentUserId, onClose, onSignup }: {
               ))}
             </div>
             <p className="signup-modal__note">
-              💡 You'll be marked as available for all matches at this time. Staff managers will assign you to specific matches later.
+              <Lightbulb size={14} /> You'll be marked as available for all matches at this time. Staff managers will assign you to specific matches later.
             </p>
           </div>
           <div className="signup-modal__roles">
             <label className="signup-checkbox">
               <input type="checkbox" checked={roles.observer} onChange={e => setRoles({ ...roles, observer: e.target.checked })} />
-              <span>👁️ I can observe</span>
+              <span><Eye size={14} /> I can observe</span>
             </label>
             <label className="signup-checkbox">
               <input type="checkbox" checked={roles.producer} onChange={e => setRoles({ ...roles, producer: e.target.checked })} />
-              <span>🎬 I can produce</span>
+              <span><Clapperboard size={14} /> I can produce</span>
             </label>
             <label className="signup-checkbox">
               <input type="checkbox" checked={roles.caster} onChange={e => setRoles({ ...roles, caster: e.target.checked })} />
-              <span>🎙️ I can cast</span>
+              <span><Mic size={14} /> I can cast</span>
             </label>
             {roles.caster && (
               <div className="signup-caster-style">
@@ -366,9 +367,9 @@ function TimeSlotCard({ group, currentUserId, isSignedUp, isAssigned, onOpenSign
         </div>
 
         <div className="time-slot-group__stats">
-          <span className="time-slot-group__stat">👁️ <SignupTooltip names={roleCounts.observerNames} count={roleCounts.observers} role="Observer" /></span>
-          <span className="time-slot-group__stat">🎬 <SignupTooltip names={roleCounts.producerNames} count={roleCounts.producers} role="Producer" /></span>
-          <span className="time-slot-group__stat">🎙️ <SignupTooltip names={roleCounts.casterNames} count={roleCounts.casters} role="Caster" /></span>
+          <span className="time-slot-group__stat"><Eye size={14} /> <SignupTooltip names={roleCounts.observerNames} count={roleCounts.observers} role="Observer" /></span>
+          <span className="time-slot-group__stat"><Clapperboard size={14} /> <SignupTooltip names={roleCounts.producerNames} count={roleCounts.producers} role="Producer" /></span>
+          <span className="time-slot-group__stat"><Mic size={14} /> <SignupTooltip names={roleCounts.casterNames} count={roleCounts.casters} role="Caster" /></span>
         </div>
 
         <button
@@ -377,12 +378,12 @@ function TimeSlotCard({ group, currentUserId, isSignedUp, isAssigned, onOpenSign
         >
           {isSignedUp ? '✓ Signed Up' : 'Sign Up'}
         </button>
-        {isAssigned && <span className="assigned-badge">✅ Assigned</span>}
+        {isAssigned && <span className="assigned-badge"><CheckCircle size={12} /> Assigned</span>}
       </div>
 
       {hasReschedule && rescheduleFromDate && (
         <div className="time-slot-group__reschedule-warning">
-          ⚠️ Rescheduled from {rescheduleFromDate} — signups were reset
+          <AlertTriangle size={12} /> Rescheduled from {rescheduleFromDate} — signups were reset
         </div>
       )}
     </div>
@@ -435,7 +436,7 @@ function PendingSignupCard({ dateTime, groupMatches, currentUserId, onRemoveSign
             <span key={idx} className="pending-signup-row__role-pill">
               {role}
               {isAnyAssigned ? (
-                <span className="pending-signup-row__locked" title="Assigned — cannot remove">🔒</span>
+                <span className="pending-signup-row__locked" title="Assigned — cannot remove"><Lock size={14} /></span>
               ) : (
                 <button
                   className="pending-signup-row__remove"
@@ -444,13 +445,13 @@ function PendingSignupCard({ dateTime, groupMatches, currentUserId, onRemoveSign
                     await Promise.all(matchIds.map(id => onRemoveSignup(id, roleKey)))
                   }}
                   title="Remove signup"
-                >✕</button>
+                ><X size={10} /></button>
               )}
             </span>
           )
         })}
       </div>
-      <span className="pending-signup-row__badge">⏳ Pending</span>
+      <span className="pending-signup-row__badge"><Clock size={12} /> Pending</span>
       <div className="pending-signup-row__matches" title={matchTitles}>
         {matchTitles}
       </div>
@@ -622,13 +623,13 @@ export function StaffSignupsView() {
           Sign up for upcoming matches and track your assignments
         </p>
         <div className="production-dashboard__timezone-notice">
-          🌍 <strong>Timezone Info:</strong> All times are automatically shown in your local timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone})
+          <Globe size={14} /> <strong>Timezone Info:</strong> All times are automatically shown in your local timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone})
         </div>
       </div>
 
       {/* Section 1: Staff Signed Up — some coverage but may still need more */}
       <div className="staff-signups-section">
-        <h3>✅ Staff Signed Up{hasStaffGroups.length > 0 ? ` (${hasStaffGroups.length})` : ''}</h3>
+        <h3><CheckCircle size={12} /> Staff Signed Up{hasStaffGroups.length > 0 ? ` (${hasStaffGroups.length})` : ''}</h3>
         <p className="production-dashboard__subtitle">
           Some staff have signed up, but more may still be needed. Don't hesitate to sign up even if others already have!
         </p>
@@ -659,7 +660,7 @@ export function StaffSignupsView() {
       {/* Section 2: Needs Staff (0 signups) */}
       {needsStaffGroups.length > 0 && (
         <div className="staff-signups-section staff-signups-section--urgent">
-          <h3>🔴 Needs Staff — No Signups Yet</h3>
+          <h3><Circle size={12} /> Needs Staff — No Signups Yet</h3>
           <div className="time-slot-groups">
             {needsStaffGroups.map(group => (
               <TimeSlotCard
@@ -677,7 +678,7 @@ export function StaffSignupsView() {
 
       {/* Section 3: My Assignments */}
       <div className="staff-signups-section staff-signups-section--assignments">
-        <h3>✅ My Assignments (Confirmed)</h3>
+        <h3><CheckCircle size={12} /> My Assignments (Confirmed)</h3>
         {myAssignments.length === 0 ? (
           <div className="production-dashboard__empty">
             <p>You haven't been assigned to any matches yet.</p>
@@ -692,7 +693,7 @@ export function StaffSignupsView() {
                     <div>
                       <h4>
                         {match.title}
-                        {match.isTournamentSlot && <span className="time-slot-match__slot-badge">🎯 Slot</span>}
+                        {match.isTournamentSlot && <span className="time-slot-match__slot-badge"><Target size={14} /> Slot</span>}
                       </h4>
                       <p className="my-signup-card__date">
                         {new Date(match.date).toLocaleDateString('en-US', {
@@ -706,13 +707,13 @@ export function StaffSignupsView() {
                       {match.faceitLobby && (
                         <p className="my-signup-card__lobby">
                           <a href={match.faceitLobby} target="_blank" rel="noopener noreferrer" className="my-signup-card__lobby-link">
-                            🎮 Join Lobby →
+                            <Gamepad2 size={14} /> Join Lobby →
                           </a>
                         </p>
                       )}
                     </div>
                     <div className="my-signup-card__status">
-                      <span className="status-badge status-badge--assigned">✅ Confirmed</span>
+                      <span className="status-badge status-badge--assigned"><CheckCircle size={12} /> Confirmed</span>
                     </div>
                   </div>
                   <div className="my-signup-card__roles">
@@ -721,7 +722,7 @@ export function StaffSignupsView() {
                       {assignedRoles.map((role, idx) => (
                         <div key={idx} className="my-signup-role my-signup-role--assigned">
                           <span>{role}</span>
-                          <span className="my-signup-role__locked" title="Cannot remove - you've been assigned">🔒</span>
+                          <span className="my-signup-role__locked" title="Cannot remove - you've been assigned"><Lock size={14} /></span>
                         </div>
                       ))}
                     </div>
@@ -735,7 +736,7 @@ export function StaffSignupsView() {
 
       {/* Section 4: My Pending Signups */}
       <div className="staff-signups-section">
-        <h3>⏳ My Signups (Pending Confirmation)</h3>
+        <h3><Clock size={12} /> My Signups (Pending Confirmation)</h3>
         {pendingSignupGroups.size === 0 ? (
           <div className="production-dashboard__empty">
             <p>No pending signups. All your signups have been confirmed!</p>

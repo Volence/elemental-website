@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { Loader2, AlertCircle, ArrowLeft, Pencil, X, Info, ChevronDown, Trophy, Ruler, Flame, Heart, Music, Clock } from 'lucide-react'
 import KillfeedTab from './KillfeedTab'
 import ChartsTab from './ChartsTab'
 import EventsTab from './EventsTab'
@@ -99,7 +100,7 @@ const COLUMN_DEFS: { key: SortKey; label: string; align: 'left' | 'right' }[] = 
   { key: 'healing', label: 'Healing Dealt', align: 'right' },
 ]
 
-// ── Design tokens (Clean Glow) ──
+// ── Dynamic color tokens (kept for runtime-computed styles) ──
 const CYAN = '#06b6d4'
 const CYAN_DIM = 'rgba(6, 182, 212, 0.12)'
 const GREEN = '#22c55e'
@@ -109,34 +110,13 @@ const RED_DIM = 'rgba(239, 68, 68, 0.08)'
 const PURPLE = '#8b5cf6'
 const PURPLE_DIM = 'rgba(139, 92, 246, 0.08)'
 const AMBER = '#f59e0b'
-const BG = '#0a0e1a'
-const BG_CARD = 'rgba(255, 255, 255, 0.03)'
-const BG_CARD_HOVER = 'rgba(255, 255, 255, 0.05)'
 const BORDER = 'rgba(255, 255, 255, 0.06)'
 const BORDER_ACCENT = 'rgba(6, 182, 212, 0.2)'
 const TEXT_PRIMARY = '#f0f0f5'
 const TEXT_SECONDARY = '#71717a'
 const TEXT_DIM = '#52525b'
 
-const CARD_STYLE: React.CSSProperties = {
-  background: BG_CARD,
-  backdropFilter: 'blur(12px)',
-  WebkitBackdropFilter: 'blur(12px)',
-  border: `1px solid ${BORDER}`,
-  borderRadius: '12px',
-  padding: '20px',
-  transition: 'border-color 0.2s, box-shadow 0.2s',
-  boxShadow: '0 0 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.03)',
-}
 
-const LABEL_STYLE: React.CSSProperties = {
-  fontSize: '11px',
-  color: TEXT_SECONDARY,
-  textTransform: 'uppercase' as const,
-  letterSpacing: '1px',
-  fontWeight: 600,
-  marginBottom: '8px',
-}
 
 const VALUE_STYLE: React.CSSProperties = {
   fontSize: '26px',
@@ -151,6 +131,8 @@ const SUB_STYLE: React.CSSProperties = {
   color: TEXT_DIM,
   marginTop: '6px',
 }
+
+const BG = '#0a0e1a'
 
 function toTimestamp(seconds: number): string {
   const m = Math.floor(seconds / 60)
@@ -219,17 +201,18 @@ export default function ScrimMapDetailView() {
 
   if (loading) {
     return (
-      <div style={{ padding: '60px', textAlign: 'center', color: TEXT_SECONDARY }}>
-        <div style={{ fontSize: '14px' }}>Loading map analytics…</div>
+      <div className="scrim-players__loading">
+        <div className="scrim-players__loading-icon"><Loader2 size={32} /></div>
+        <div className="scrim-players__loading-text">Loading map analytics…</div>
       </div>
     )
   }
   if (error || !data) {
     return (
-      <div style={{ padding: '60px', textAlign: 'center' }}>
-        <p style={{ color: RED, marginBottom: '12px' }}>❌ {error || 'Unknown error'}</p>
-        <a href="/admin/scrims" style={{ color: TEXT_SECONDARY, fontSize: '13px' }}>
-          ← Back to scrims
+      <div className="scrim-players__error">
+        <p><AlertCircle size={16} style={{ verticalAlign: 'middle', marginRight: '6px' }} />{error || 'Unknown error'}</p>
+        <a href="/admin/scrims" className="scrim-detail__back-link">
+          <ArrowLeft size={12} /> Back to scrims
         </a>
       </div>
     )
@@ -271,30 +254,21 @@ export default function ScrimMapDetailView() {
   const TEAM2_DIM = isDual ? 'rgba(245, 158, 11, 0.08)' : RED_DIM
 
   return (
-    <div style={{ padding: '40px', maxWidth: '1600px', margin: '0 auto', fontFamily: "'Inter', -apple-system, sans-serif", background: BG, minHeight: '100%' }}>
+    <div className="scrim-detail__content" style={{ background: BG, minHeight: '100%' }}>
       {/* Header */}
-      <div style={{ marginBottom: '32px' }}>
-        <a href="/admin/scrims" style={{ color: TEXT_SECONDARY, fontSize: '12px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px', transition: 'color 0.15s' }}>
-          ← Back to scrims
+      <div className="scrim-detail__header">
+        <a href="/admin/scrims" className="scrim-detail__back-link">
+          <ArrowLeft size={12} /> Back to scrims
         </a>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: '16px', marginTop: '12px' }}>
-          <h1 style={{ fontSize: '32px', fontWeight: 800, margin: 0, color: TEXT_PRIMARY, letterSpacing: '-0.5px' }}>
+          <h1 className="scrim-detail__player-name">
             {data.mapName}
           </h1>
-          <span style={{
-            fontSize: '11px',
-            fontWeight: 600,
-            textTransform: 'uppercase',
-            letterSpacing: '1px',
-            padding: '3px 10px',
-            borderRadius: '4px',
-            background: CYAN_DIM,
-            color: CYAN,
-          }}>
+          <span className="scrim-upload__map-type-badge">
             {data.mapType}
           </span>
         </div>
-        <p style={{ color: TEXT_SECONDARY, fontSize: '14px', marginTop: '6px' }}>
+        <p className="scrim-detail__player-meta">
           {data.teams.payloadTeamId ? (
             <a
               href={`/admin/scrim-team?teamId=${data.teams.payloadTeamId}`}
@@ -303,7 +277,6 @@ export default function ScrimMapDetailView() {
                 fontWeight: team1Won ? 600 : 400,
                 textDecoration: 'none',
                 borderBottom: `1px solid ${CYAN}44`,
-                transition: 'border-color 0.15s, color 0.15s',
               }}
             >
               {data.teams.team1}
@@ -320,7 +293,6 @@ export default function ScrimMapDetailView() {
                 fontWeight: team2Won ? 600 : 400,
                 textDecoration: 'none',
                 borderBottom: `1px solid ${CYAN}44`,
-                transition: 'border-color 0.15s, color 0.15s',
               }}
             >
               {data.teams.team2}
@@ -332,24 +304,12 @@ export default function ScrimMapDetailView() {
       </div>
 
       {/* Tab Navigation */}
-      <div style={{ display: 'flex', gap: '0', marginBottom: '28px', borderBottom: `1px solid ${BORDER}` }}>
+      <div className="scrim-detail__tabs">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            style={{
-              padding: '10px 18px',
-              fontSize: '13px',
-              fontWeight: activeTab === tab.id ? 600 : 400,
-              color: activeTab === tab.id ? CYAN : TEXT_SECONDARY,
-              background: 'transparent',
-              border: 'none',
-              borderBottom: activeTab === tab.id ? `2px solid ${CYAN}` : '2px solid transparent',
-              cursor: 'pointer',
-              transition: 'all 0.15s',
-              fontFamily: 'inherit',
-              marginBottom: '-1px',
-            }}
+            className={`scrim-detail__tab ${activeTab === tab.id ? 'scrim-detail__tab--active' : ''}`}
           >
             {tab.label}
           </button>
@@ -371,15 +331,15 @@ export default function ScrimMapDetailView() {
       {/* Tab: Overview (existing content) */}
       {activeTab === 'overview' && <>
       {/* Summary Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: data.summary.distance ? 'repeat(5, 1fr)' : 'repeat(4, 1fr)', gap: '12px', marginBottom: '32px' }}>
-        <SummaryCard label="Total Match Time" value={toTimestamp(data.summary.matchTime)} sub={`${(data.summary.matchTime / 60).toFixed(1)} minutes`} icon="⏱" />
+      <div className="scrim-detail__stat-grid" style={{ gridTemplateColumns: data.summary.distance ? 'repeat(5, 1fr)' : 'repeat(4, 1fr)' }}>
+        <SummaryCard label="Total Match Time" value={toTimestamp(data.summary.matchTime)} sub={`${(data.summary.matchTime / 60).toFixed(1)} minutes`} icon={<Clock size={16} />} />
 
         {/* Score card with inline editing */}
-        <div style={{ ...CARD_STYLE, borderTop: `2px solid ${CYAN}`, boxShadow: `0 0 20px rgba(0,0,0,0.3), 0 0 30px ${CYAN}08` }}>
+        <div className="scrim-detail__summary-card" style={{ borderTop: `2px solid ${CYAN}` }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '14px' }}>🏆</span>
-              <span style={LABEL_STYLE}>
+              <span style={{ fontSize: '14px' }}><Trophy size={14} /></span>
+              <span className="scrim-detail__label">
                 Score
               </span>
             </div>
@@ -392,15 +352,9 @@ export default function ScrimMapDetailView() {
                   setEditingScore(true)
                 }}
                 title="Edit score"
-                style={{
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  fontSize: '12px', color: TEXT_DIM, padding: '2px 4px',
-                  borderRadius: '4px', transition: 'color 0.15s',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.color = CYAN }}
-                onMouseLeave={e => { e.currentTarget.style.color = TEXT_DIM }}
+                className="scrim-list__action-btn"
               >
-                ✏️
+                <Pencil size={12} />
               </button>
             )}
           </div>
@@ -518,7 +472,7 @@ export default function ScrimMapDetailView() {
             value={`${data.summary.distance.round1.meters}m - ${data.summary.distance.round2.meters !== null ? `${data.summary.distance.round2.meters}m` : '?'}`}
             sub={`${data.summary.distance.round1.team} · ${data.summary.distance.round2.team}`}
             accentColor={AMBER}
-            icon="📏"
+            icon={<Ruler size={16} />}
           />
         )}
         <SummaryCard
@@ -526,43 +480,31 @@ export default function ScrimMapDetailView() {
           value={`${formatNumber(data.summary.team1Damage)} - ${formatNumber(data.summary.team2Damage)}`}
           sub={`${data.summary.team1Damage > data.summary.team2Damage ? data.teams.team1 : data.teams.team2} dealt more hero damage this map.`}
           accentColor={RED}
-          icon="💥"
+          icon={<Flame size={16} />}
         />
         <SummaryCard
           label="Team Healing Dealt"
           value={`${formatNumber(data.summary.team1Healing)} - ${formatNumber(data.summary.team2Healing)}`}
           sub={`${data.summary.team1Healing > data.summary.team2Healing ? data.teams.team1 : data.teams.team2} healed more this map.`}
           accentColor={GREEN}
-          icon="💚"
+          icon={<Heart size={16} />}
         />
       </div>
 
       {/* Stat Table */}
-      <div style={{ ...CARD_STYLE, padding: 0, overflow: 'hidden', marginBottom: '28px' }}>
-        <div style={{ padding: '16px 20px 10px', fontWeight: 700, fontSize: '15px', color: TEXT_PRIMARY, borderBottom: `1px solid ${BORDER}` }}>
+      <div className="scrim-detail__map-table-card" style={{ marginBottom: '28px' }}>
+        <div className="scrim-detail__map-table-header">
           Player Stats
         </div>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', minWidth: '1100px' }}>
+        <div className="scrim-detail__map-table-scroll">
+          <table className="scrim-detail__map-table" style={{ fontSize: '13px' }}>
             <thead>
-              <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
+              <tr>
                 {COLUMN_DEFS.map((col) => (
                   <th
                     key={col.key}
                     onClick={() => handleSort(col.key)}
-                    style={{
-                      padding: '10px 12px',
-                      textAlign: col.align,
-                      cursor: 'pointer',
-                      fontWeight: sortKey === col.key ? 700 : 500,
-                      color: sortKey === col.key ? CYAN : TEXT_SECONDARY,
-                      fontSize: '10px',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                      whiteSpace: 'nowrap',
-                      userSelect: 'none',
-                      transition: 'color 0.15s',
-                    }}
+                    className={`scrim-detail__map-th ${sortKey === col.key ? 'scrim-detail__map-th--sorted' : ''} ${col.align === 'right' ? 'scrim-detail__map-th--right' : ''}`}
                   >
                     {col.label}
                     {sortKey === col.key && (sortDir === 'asc' ? ' ↑' : ' ↓')}
@@ -590,13 +532,13 @@ export default function ScrimMapDetailView() {
 
       {/* Fight Analysis */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '28px' }}>
-        <div style={{ ...CARD_STYLE, borderTop: `2px solid ${CYAN}`, boxShadow: `0 0 20px rgba(0,0,0,0.3), 0 0 30px ${CYAN}08` }}>
-          <div style={LABEL_STYLE}>Total Fights</div>
+        <div className="scrim-detail__summary-card" style={{ borderTop: `2px solid ${CYAN}` }}>
+          <div className="scrim-detail__label">Total Fights</div>
           <div style={{ ...VALUE_STYLE, fontSize: '32px', color: CYAN, textShadow: `0 0 20px ${CYAN}44` }}>{data.analysis.totalFights}</div>
           <div style={SUB_STYLE}>teamfights identified</div>
         </div>
-        <div style={{ ...CARD_STYLE, borderTop: `2px solid ${RED}`, boxShadow: `0 0 20px rgba(0,0,0,0.3), 0 0 30px ${RED}08` }}>
-          <div style={LABEL_STYLE}>First Deaths</div>
+        <div className="scrim-detail__summary-card" style={{ borderTop: `2px solid ${RED}` }}>
+          <div className="scrim-detail__label">First Deaths</div>
           <div style={{ display: 'flex', gap: '24px', marginTop: '4px' }}>
             <div>
               <div style={{ fontSize: '22px', fontWeight: 700, color: data.analysis.team1FirstDeathPct > 50 ? RED : GREEN, textShadow: `0 0 12px ${data.analysis.team1FirstDeathPct > 50 ? RED : GREEN}44` }}>
@@ -616,8 +558,8 @@ export default function ScrimMapDetailView() {
             </div>
           </div>
         </div>
-        <div style={{ ...CARD_STYLE, borderTop: `2px solid ${PURPLE}`, boxShadow: `0 0 20px rgba(0,0,0,0.3), 0 0 30px ${PURPLE}08` }}>
-          <div style={LABEL_STYLE}>Ultimate Kills</div>
+        <div className="scrim-detail__summary-card" style={{ borderTop: `2px solid ${PURPLE}` }}>
+          <div className="scrim-detail__label">Ultimate Kills</div>
           <div style={{ display: 'flex', gap: '24px', marginTop: '4px' }}>
             <div>
               <div style={{ fontSize: '22px', fontWeight: 700, color: PURPLE, textShadow: `0 0 12px ${PURPLE}44` }}>
@@ -640,8 +582,8 @@ export default function ScrimMapDetailView() {
 
         {/* Ajax card — only shown if any Ajaxes detected */}
         {data.analysis.ajaxes.length > 0 && (
-          <div style={{ ...CARD_STYLE, borderTop: `2px solid ${AMBER}`, boxShadow: `0 0 20px rgba(0,0,0,0.3), 0 0 30px ${AMBER}08`, gridColumn: '1 / -1' }}>
-            <div style={LABEL_STYLE}>🎺 Ajaxes (Sound Barrier Cancelled)</div>
+          <div className="scrim-detail__card" style={{ borderTop: `2px solid ${AMBER}`, gridColumn: '1 / -1' }}>
+            <div className="scrim-detail__label"><Music size={14} className="scrim-detail__inline-icon" /> Ajaxes (Sound Barrier Cancelled)</div>
             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginTop: '4px' }}>
               {data.analysis.ajaxes.map((ajax, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', borderRadius: '8px', background: `${AMBER}0a`, border: `1px solid ${AMBER}20` }}>
@@ -657,7 +599,7 @@ export default function ScrimMapDetailView() {
 
       {/* Player Detail Card */}
       {selectedCalcStat && (
-        <div style={{ ...CARD_STYLE, marginBottom: '28px', borderColor: BORDER_ACCENT }}>
+        <div className="scrim-detail__card" style={{ marginBottom: '28px', borderColor: BORDER_ACCENT }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <div>
               <div style={{ fontWeight: 800, fontSize: '20px', color: TEXT_PRIMARY }}>{selectedCalcStat.playerName}</div>
@@ -667,29 +609,20 @@ export default function ScrimMapDetailView() {
             </div>
             <button
               onClick={() => setSelectedPlayer(null)}
-              style={{
-                background: 'rgba(255,255,255,0.06)',
-                border: 'none',
-                borderRadius: '6px',
-                color: TEXT_SECONDARY,
-                cursor: 'pointer',
-                fontSize: '14px',
-                padding: '6px 10px',
-                transition: 'all 0.15s',
-              }}
+              className="scrim-list__action-btn"
             >
-              ✕
+              <X size={14} />
             </button>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '16px' }}>
+          <div className="scrim-detail__stat-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
             <StatMini label="First Pick %" value={`${selectedCalcStat.firstPickPercentage}%`} sub={`${selectedCalcStat.firstPickCount} picks`} color={GREEN} />
             <StatMini label="First Death %" value={`${selectedCalcStat.firstDeathPercentage}%`} sub={`${selectedCalcStat.firstDeathCount} deaths`} color={RED} />
             <StatMini label="Fleta Deadlift" value={`${selectedCalcStat.fletaDeadliftPercentage}%`} color={CYAN} />
             <StatMini label="Fight Reversal" value={`${selectedCalcStat.fightReversalPercentage}%`} color={PURPLE} />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '16px' }}>
+          <div className="scrim-detail__stat-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
             <StatMini label="Avg Ult Charge" value={`${selectedCalcStat.averageUltChargeTime}s`} />
             <StatMini label="Avg Ult Hold" value={`${selectedCalcStat.averageTimeToUseUlt}s`} />
             <StatMini label="Kills per Ult" value={`${selectedCalcStat.killsPerUltimate}`} />
@@ -698,7 +631,7 @@ export default function ScrimMapDetailView() {
 
           {selectedCalcStat.ajaxCount > 0 && (
             <div style={{ fontSize: '13px', padding: '10px 14px', background: RED_DIM, borderRadius: '8px', marginBottom: '16px', border: `1px solid rgba(239, 68, 68, 0.15)` }}>
-              🎺 <strong>{selectedCalcStat.ajaxCount}</strong> Ajax{selectedCalcStat.ajaxCount !== 1 ? 'es' : ''} (died during Lúcio ult)
+              <Music size={12} style={{ verticalAlign: 'text-bottom', marginRight: '2px' }} /> <strong>{selectedCalcStat.ajaxCount}</strong> Ajax{selectedCalcStat.ajaxCount !== 1 ? 'es' : ''} (died during Lúcio ult)
             </div>
           )}
 
@@ -734,7 +667,7 @@ export default function ScrimMapDetailView() {
 
       {/* All Player Calculated Stats */}
       {!selectedPlayer && data.calculatedStats.length > 0 && (
-        <div style={CARD_STYLE}>
+        <div className="scrim-detail__card">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
             <div style={{ fontWeight: 700, fontSize: '15px', color: TEXT_PRIMARY }}>
               Advanced Stats
@@ -744,20 +677,12 @@ export default function ScrimMapDetailView() {
             </div>
             <ColumnKeyToggle />
           </div>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+          <div className="scrim-detail__map-table-scroll">
+            <table className="scrim-detail__map-table">
               <thead>
-                <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
+                <tr>
                   {['Player', 'Hero', 'FP%', 'FD%', 'Fleta%', 'Ult Charge', 'Ult Hold', 'K/Ult', 'Drought'].map((h) => (
-                    <th key={h} style={{
-                      padding: '10px 12px',
-                      textAlign: h === 'Player' || h === 'Hero' ? 'left' : 'right',
-                      fontWeight: 600,
-                      color: TEXT_SECONDARY,
-                      textTransform: 'uppercase',
-                      fontSize: '10px',
-                      letterSpacing: '0.5px',
-                    }}>
+                    <th key={h} className={`scrim-detail__map-th ${h !== 'Player' && h !== 'Hero' ? 'scrim-detail__map-th--right' : ''}`}>
                       {h}
                     </th>
                   ))}
@@ -768,17 +693,17 @@ export default function ScrimMapDetailView() {
                   <tr
                     key={s.playerName}
                     onClick={() => setSelectedPlayer(s.playerName)}
-                    style={{ cursor: 'pointer', borderBottom: `1px solid ${BORDER}`, transition: 'background 0.15s' }}
+                    className="scrim-detail__map-row"
                   >
-                    <td style={{ padding: '10px 12px', fontWeight: 600, color: TEXT_PRIMARY }}>{s.playerName}</td>
-                    <td style={{ padding: '10px 12px', color: TEXT_SECONDARY }}>{s.hero}</td>
-                    <td style={{ padding: '10px 12px', textAlign: 'right', color: s.firstPickPercentage > 20 ? GREEN : TEXT_PRIMARY }}>{s.firstPickPercentage}%</td>
-                    <td style={{ padding: '10px 12px', textAlign: 'right', color: s.firstDeathPercentage > 20 ? RED : TEXT_PRIMARY }}>{s.firstDeathPercentage}%</td>
-                    <td style={{ padding: '10px 12px', textAlign: 'right' }}>{s.fletaDeadliftPercentage}%</td>
-                    <td style={{ padding: '10px 12px', textAlign: 'right' }}>{s.averageUltChargeTime}s</td>
-                    <td style={{ padding: '10px 12px', textAlign: 'right' }}>{s.averageTimeToUseUlt}s</td>
-                    <td style={{ padding: '10px 12px', textAlign: 'right' }}>{s.killsPerUltimate}</td>
-                    <td style={{ padding: '10px 12px', textAlign: 'right' }}>{s.droughtTime}s</td>
+                    <td className="scrim-detail__map-td scrim-detail__map-td--map">{s.playerName}</td>
+                    <td className="scrim-detail__map-td scrim-detail__map-td--secondary">{s.hero}</td>
+                    <td className="scrim-detail__map-td scrim-detail__map-td--stat" style={{ color: s.firstPickPercentage > 20 ? GREEN : TEXT_PRIMARY }}>{s.firstPickPercentage}%</td>
+                    <td className="scrim-detail__map-td scrim-detail__map-td--stat" style={{ color: s.firstDeathPercentage > 20 ? RED : TEXT_PRIMARY }}>{s.firstDeathPercentage}%</td>
+                    <td className="scrim-detail__map-td scrim-detail__map-td--stat">{s.fletaDeadliftPercentage}%</td>
+                    <td className="scrim-detail__map-td scrim-detail__map-td--stat">{s.averageUltChargeTime}s</td>
+                    <td className="scrim-detail__map-td scrim-detail__map-td--stat">{s.averageTimeToUseUlt}s</td>
+                    <td className="scrim-detail__map-td scrim-detail__map-td--stat">{s.killsPerUltimate}</td>
+                    <td className="scrim-detail__map-td scrim-detail__map-td--stat">{s.droughtTime}s</td>
                   </tr>
                 ))}
               </tbody>
@@ -793,29 +718,17 @@ export default function ScrimMapDetailView() {
 
 // ── Sub-components ──
 
-function SummaryCard({ label, value, sub, accentColor, icon }: { label: string; value: string; sub: string; accentColor?: string; icon?: string }) {
+function SummaryCard({ label, value, sub, accentColor, icon }: { label: string; value: string; sub: string; accentColor?: string; icon?: React.ReactNode }) {
   const ac = accentColor ?? CYAN
   return (
-    <div style={{
-      ...CARD_STYLE,
-      borderTop: `2px solid ${ac}`,
-      position: 'relative',
-      overflow: 'hidden',
-      boxShadow: `0 0 20px rgba(0,0,0,0.3), 0 0 30px ${ac}08`,
-    }}>
-      {/* Subtle radial glow in background */}
-      <div style={{
-        position: 'absolute', top: '-20px', right: '-20px',
-        width: '120px', height: '120px',
-        background: `radial-gradient(circle, ${ac}0a 0%, transparent 70%)`,
-        pointerEvents: 'none',
-      }} />
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative' }}>
-        <div style={LABEL_STYLE}>{label}</div>
-        {icon && <span style={{ fontSize: '16px', opacity: 0.5 }}>{icon}</span>}
+    <div className="scrim-detail__summary-card" style={{ borderTop: `2px solid ${ac}` }}>
+      <div className="scrim-detail__summary-glow" style={{ background: `radial-gradient(circle at 80% 0%, ${ac}0a 0%, transparent 70%)` }} />
+      <div className="scrim-detail__summary-label">
+        {icon && <span className="scrim-detail__summary-icon">{icon}</span>}
+        {label}
       </div>
-      <div style={{ ...VALUE_STYLE, color: ac, marginTop: '4px', fontSize: '22px', textShadow: `0 0 16px ${ac}44`, position: 'relative' }}>{value}</div>
-      <div style={{ ...SUB_STYLE, lineHeight: 1.4, position: 'relative' }}>{sub}</div>
+      <div className="scrim-detail__summary-value" style={{ color: ac, textShadow: `0 0 16px ${ac}44` }}>{value}</div>
+      <div className="scrim-detail__summary-sub">{sub}</div>
     </div>
   )
 }
@@ -922,23 +835,11 @@ function ColumnKeyToggle() {
     <div style={{ position: 'relative' }}>
       <button
         onClick={() => setOpen(!open)}
-        style={{
-          background: open ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)',
-          border: `1px solid ${BORDER}`,
-          borderRadius: '6px',
-          padding: '5px 12px',
-          fontSize: '11px',
-          color: TEXT_SECONDARY,
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px',
-          transition: 'all 0.15s',
-          fontWeight: 500,
-        }}
+        className="scrim-list__action-btn"
+        style={{ gap: '4px', display: 'flex', alignItems: 'center', padding: '5px 12px', fontSize: '11px' }}
         title="Show column definitions"
       >
-        ℹ️ Key
+        <Info size={12} /> Key
       </button>
       {open && (
         <div style={{

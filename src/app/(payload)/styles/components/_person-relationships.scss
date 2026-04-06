@@ -1,33 +1,29 @@
-/* ============================================
- * Person Relationships Component
- * Shows on People edit page
- * ============================================ */
+// ═══════════════════════════════════════════════════════
+// Person Relationships Sidebar
+// ═══════════════════════════════════════════════════════
+// Sidebar widget showing a person's team memberships and staff positions
+// Inherits variables from admin.scss parent
 
 .person-relationships {
-  margin-top: 1.5rem;
-  padding: 1rem;
-  background-color: var(--theme-elevation-50);
-  border: 1px solid var(--theme-elevation-200);
-  border-radius: 6px;
-
-  &__header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-  }
-
-  &__icon {
-    flex-shrink: 0;
-  }
-
+  // ── Section Title ──
   &__title {
-    color: var(--theme-text);
-    font-size: 0.95rem;
+    margin: 0 0 0.75rem 0;
+    font-size: 0.875rem;
     font-weight: 600;
-    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: linear-gradient(90deg, $admin-accent-info 0%, #84cc16 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
+  &__title--empty {
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
+  }
+
+  // ── Category Section ──
   &__section {
     margin-bottom: 0.75rem;
 
@@ -36,63 +32,73 @@
     }
   }
 
-  &__section-title {
-    font-size: 0.875rem;
+  // ── Category Label ──
+  &__label {
+    margin: 0 0 0.25rem 0;
+    font-size: 0.75rem;
     font-weight: 600;
-    color: var(--theme-text-700);
-    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    opacity: 0.6;
+    letter-spacing: 0.5px;
+
+    &--teams { color: $admin-accent-info; }
+    &--org { color: rgb(245, 158, 11); }
+    &--prod { color: rgb(99, 102, 241); }
   }
 
-  &__list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+  &__label-icon {
+    display: inline;
+    vertical-align: middle;
+    margin-right: 3px;
   }
 
-  &__item {
-    padding-left: 1rem;
-  }
-
-  &__link {
-    color: var(--theme-success-600);
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.875rem;
-    transition: text-decoration 0.15s ease;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-
-  &__roles {
-    margin-left: 0.5rem;
-    font-size: 0.8rem;
-    color: var(--theme-text-500);
-  }
-
-  &__staff-list {
-    padding-left: 1rem;
-    font-size: 0.875rem;
-    color: var(--theme-text-600);
-  }
-
-  &__staff-item {
+  // ── Team Card ──
+  &__team-card {
+    padding: 0.5rem;
+    background: linear-gradient(135deg, rgba($admin-accent-info, 0.1) 0%, rgba(132, 204, 22, 0.1) 100%);
+    border: 1px solid rgba($admin-accent-info, 0.3);
+    border-radius: 6px;
     margin-bottom: 0.25rem;
+    transition: all 0.2s ease;
 
-    &:last-child {
-      margin-bottom: 0;
+    &:hover {
+      border-color: rgba($admin-accent-info, 0.5);
     }
   }
 
-  &__staff-link {
-    color: var(--theme-success-600);
+  &__team-link {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: $admin-accent-info;
     text-decoration: none;
-    transition: text-decoration 0.15s ease;
+    display: block;
+    transition: color 0.2s ease;
 
     &:hover {
-      text-decoration: underline;
+      color: #84cc16;
     }
+  }
+
+  &__team-role {
+    margin: 0.125rem 0 0 0;
+    font-size: 0.75rem;
+    color: #84cc16;
+    font-weight: 500;
+  }
+
+  // ── Staff Position Card ──
+  &__staff-card {
+    padding: 0.5rem;
+    margin-bottom: 0.25rem;
+    display: block;
+  }
+
+  &__staff-name {
+    margin: 0;
+    font-weight: 600;
+
+    &--org { color: rgb(245, 158, 11); }
+    &--prod { color: rgb(99, 102, 241); }
   }
 }
-

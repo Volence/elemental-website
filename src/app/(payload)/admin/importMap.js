@@ -75,7 +75,6 @@ import { FolderTypeField as FolderTypeField_3817bf644402e67bfe6577f60ef982de } f
 import { RowLabel as RowLabel_ec255a65fa6fa8d1faeb09cf35284224 } from '@/Header/RowLabel'
 import { RowLabel as RowLabel_1f6ff6ff633e3695d348f4f3c58f1466 } from '@/Footer/RowLabel'
 import { default as default_c68ab0b1bbf77fcff4337c949e1b628c } from '@/components/ProductionDashboardView'
-import { default as default_b41852718c887b613f07fa372f5e410c } from '@/components/EmptyComponent'
 import { default as default_f76c92028911e3d433af128d3a307d36 } from '@/components/SocialMediaConfig/TemplateInstructions'
 import { default as default_8e4d4e3438d12585a6d66d71f450349a } from '@/components/SocialMediaConfig/TemplateRowLabel'
 import { default as default_9696e71ab6d0b177b492c0a63e1b5e83 } from '@/components/SocialMediaDashboard'
@@ -86,6 +85,7 @@ import { default as default_0fd855c5040c9c75d8034c9571c63b28 } from '@/component
 import { default as default_ba04f04a79d2b32fad9572c3ee72f7be } from '@/components/OpponentWikiView'
 import { default as default_8853ab073b7fdbf17139706839ad1c69 } from '@/components/ScoutingDashboardView'
 import { default as default_3da8454779e867d95ca2718c7ead313d } from '@/components/DiscordServerManager/DiscordServerManagerView'
+import { default as default_df2d7a8ae71fbbd075f0b55cfbf50c1a } from '@/components/SystemHealthHub'
 import { default as default_03160af9efa1fa5b8f41c67277172bb7 } from '@/components/AuditLogView'
 import { default as default_70c06c9f0db61e2d5f2e0b3cb36d3c0f } from '@/components/CronMonitorView'
 import { default as default_0416c944e1064e133af284ca7cddd7cf } from '@/components/ErrorDashboardView'
@@ -191,7 +191,6 @@ export const importMap = {
   "@/Header/RowLabel#RowLabel": RowLabel_ec255a65fa6fa8d1faeb09cf35284224,
   "@/Footer/RowLabel#RowLabel": RowLabel_1f6ff6ff633e3695d348f4f3c58f1466,
   "@/components/ProductionDashboardView#default": default_c68ab0b1bbf77fcff4337c949e1b628c,
-  "@/components/EmptyComponent#default": default_b41852718c887b613f07fa372f5e410c,
   "@/components/SocialMediaConfig/TemplateInstructions#default": default_f76c92028911e3d433af128d3a307d36,
   "@/components/SocialMediaConfig/TemplateRowLabel#default": default_8e4d4e3438d12585a6d66d71f450349a,
   "@/components/SocialMediaDashboard#default": default_9696e71ab6d0b177b492c0a63e1b5e83,
@@ -202,6 +201,7 @@ export const importMap = {
   "@/components/OpponentWikiView#default": default_ba04f04a79d2b32fad9572c3ee72f7be,
   "@/components/ScoutingDashboardView#default": default_8853ab073b7fdbf17139706839ad1c69,
   "@/components/DiscordServerManager/DiscordServerManagerView#default": default_3da8454779e867d95ca2718c7ead313d,
+  "@/components/SystemHealthHub#default": default_df2d7a8ae71fbbd075f0b55cfbf50c1a,
   "@/components/AuditLogView#default": default_03160af9efa1fa5b8f41c67277172bb7,
   "@/components/CronMonitorView#default": default_70c06c9f0db61e2d5f2e0b3cb36d3c0f,
   "@/components/ErrorDashboardView#default": default_0416c944e1064e133af284ca7cddd7cf,

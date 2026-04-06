@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { CheckCircle2, XCircle, AlertTriangle } from 'lucide-react'
 
 interface IssueItem {
   id: number
@@ -123,7 +124,7 @@ export function IssueCard({ type, category, message, items, autoFixable, onRefre
       <div className="issue-card issue-card--success">
         <div className="issue-card__header">
           <h3 className="issue-card__title">
-            ✅ {category}
+            <CheckCircle2 size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px', color: 'rgb(34, 197, 94)' }} /> {category}
           </h3>
           <p className="issue-card__message">
             {isOrphanedPeople && 'All orphaned people have been resolved!'}
@@ -139,7 +140,7 @@ export function IssueCard({ type, category, message, items, autoFixable, onRefre
       <div className="issue-card__header">
         <div className="issue-card__header-content">
           <h3 className={`issue-card__title issue-card__title--${type}`}>
-            {type === 'error' ? '❌' : '⚠️'} {category}
+            {type === 'error' ? <XCircle size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} /> : <AlertTriangle size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px' }} />} {category}
           </h3>
           {autoFixable && <span className="issue-card__badge issue-card__badge--fixable">Auto-Fixable</span>}
         </div>

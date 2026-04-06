@@ -50,7 +50,7 @@ export default function ContentWithTemplate(props: any) {
             
             // Show a notification to the user
             const notification = document.createElement('div')
-            notification.textContent = '✨ Template applied! Your post has been pre-filled.'
+            notification.textContent = 'Template applied! Your post has been pre-filled.'
             notification.style.cssText = `
               position: fixed;
               top: 20px;

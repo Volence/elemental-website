@@ -68,7 +68,7 @@ export const Teams: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['logoPreview', 'nameCell', 'regionCell', 'ratingCell', 'status', 'updatedAtCell'],
-    description: '🏆 Manage all Elemental teams, including rosters, staff, and achievements.',
+    description: 'Manage all Elemental teams, including rosters, staff, and achievements.',
     group: 'Organization',
     hidden: ({ user }) => {
       if (!user) return true
@@ -412,7 +412,7 @@ export const Teams: CollectionConfig = {
               type: 'checkbox',
               defaultValue: false,
               admin: {
-                description: '🏆 Enable FaceIt competitive tracking for this team',
+                description: 'Enable FaceIt competitive tracking for this team',
               },
             },
             {
@@ -442,7 +442,7 @@ export const Teams: CollectionConfig = {
                 isActive: { equals: true },
               }),
               admin: {
-                description: '🎯 Current league/season this team is competing in - Selecting this auto-creates the season entry',
+                description: 'Current league/season this team is competing in - Selecting this auto-creates the season entry',
                 condition: (data) => data.faceitEnabled === true,
               },
             },
@@ -461,7 +461,7 @@ export const Teams: CollectionConfig = {
               relationTo: 'faceit-seasons',
               hasMany: false,
               admin: {
-                description: '📊 Current active season data (auto-populated)',
+                description: 'Current active season data (auto-populated)',
                 readOnly: true,
                 hidden: true, // Hidden from UI, only used internally for data linking
               },

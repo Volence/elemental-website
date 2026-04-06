@@ -5,7 +5,7 @@ export const SocialMediaConfig: GlobalConfig = {
   slug: 'social-media-config',
   label: 'Social Media Settings',
   admin: {
-    description: '⚙️ Configure templates, goals, and content guidelines for social media posts',
+    description: 'Configure templates, goals, and content guidelines for social media posts',
     group: 'Social Media',
     hidden: ({ user }) => {
       if (!user) return true

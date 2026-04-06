@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { useForm } from '@payloadcms/ui'
 import { parseFaceitUrl, isValidFaceitId } from '@/utilities/faceitUrlParser'
+import { AlertTriangle, CheckCircle, ClipboardList, Lightbulb, Link, Search, XCircle } from 'lucide-react'
 
 /**
  * FaceIt URL Helper Component
@@ -12,16 +13,16 @@ import { parseFaceitUrl, isValidFaceitId } from '@/utilities/faceitUrlParser'
  */
 const FaceitUrlHelper: React.FC = () => {
   const [url, setUrl] = useState('')
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
-  const [championshipStatus, setChampionshipStatus] = useState('')
+  const [error, setError] = useState<React.ReactNode>('')
+  const [success, setSuccess] = useState<React.ReactNode>('')
+  const [championshipStatus, setChampionshipStatus] = useState<React.ReactNode>('')
   const { dispatchFields } = useForm()
 
   /**
    * Attempt to auto-fetch the Championship ID from FACEIT via our server-side proxy.
    */
   const lookupChampionshipId = async (seasonId: string, stageId?: string, conferenceId?: string) => {
-    setChampionshipStatus('🔍 Looking up Championship ID...')
+    setChampionshipStatus(<><Search size={12} /> Looking up Championship ID...</>)
 
     try {
       const params = new URLSearchParams({ seasonId })
@@ -38,7 +39,7 @@ const FaceitUrlHelper: React.FC = () => {
           value: data.championshipId,
         })
         const details = [data.regionName, data.divisionName, data.conferenceName].filter(Boolean).join(' → ')
-        setChampionshipStatus(`✅ Championship ID found and filled in! (${details || 'auto-detected'})`)
+        setChampionshipStatus(<><CheckCircle size={12} /> Championship ID found and filled in! ({details || 'auto-detected'})</>)
         return true
       }
     } catch (err) {
@@ -48,13 +49,15 @@ const FaceitUrlHelper: React.FC = () => {
     // Lookup failed — show fallback instructions
     setChampionshipStatus('')
     setError(prev => {
-      const fallback = '⚠️ Could not auto-detect Championship ID. To find it manually:\n' +
-        '1. Open the FACEIT standings page in your browser\n' +
-        '2. Open DevTools → Network tab (F12)\n' +
-        '3. Look for a request to "seasons/tree" in the API calls\n' +
-        '4. In the response JSON, find "championship_id" under your stage/conference\n' +
-        '5. Copy the UUID and paste it into the Championship ID field below'
-      return prev ? `${prev}\n\n${fallback}` : fallback
+      const fallback = (<>
+        <AlertTriangle size={12} /> Could not auto-detect Championship ID. To find it manually:
+        {"\n"}1. Open the FACEIT standings page in your browser
+        {"\n"}2. Open DevTools → Network tab (F12)
+        {"\n"}3. Look for a request to "seasons/tree" in the API calls
+        {"\n"}4. In the response JSON, find "championship_id" under your stage/conference
+        {"\n"}5. Copy the UUID and paste it into the Championship ID field below
+      </>)
+      return prev ? <>{prev}<br /><br />{fallback}</> : fallback
     })
     return false
   }
@@ -125,7 +128,7 @@ const FaceitUrlHelper: React.FC = () => {
     }
 
     if (foundAny) {
-      setSuccess('✅ IDs extracted and filled in! Check the form below.')
+      setSuccess(<><CheckCircle size={12} /> IDs extracted and filled in! Check the form below.</>)
       setUrl('')
 
       // If we got a Season ID but no Championship ID from the URL, try to auto-fetch it
@@ -133,14 +136,14 @@ const FaceitUrlHelper: React.FC = () => {
         await lookupChampionshipId(extractedSeasonId, extractedStageId || undefined, extractedConferenceId || undefined)
       }
     } else {
-      setError('❌ Could not extract any valid IDs from this URL. Please check the URL format.')
+      setError(<><XCircle size={12} /> Could not extract any valid IDs from this URL. Please check the URL format.</>)
     }
   }
 
   return (
     <div className="faceit-url-helper">
       <h3 className="faceit-url-helper__title">
-        🔗 Quick Fill from FaceIt URL
+        <Link size={12} /> Quick Fill from FaceIt URL
       </h3>
       <p className="faceit-url-helper__description">
         Paste any FaceIt URL (league, championship, standings, or team page) to automatically extract available IDs.
@@ -184,7 +187,7 @@ const FaceitUrlHelper: React.FC = () => {
 
       <details className="faceit-url-helper__formats">
         <summary>
-          📋 Supported URL formats
+          <ClipboardList size={14} /> Supported URL formats
         </summary>
         <ul>
           <li><strong>League Standings:</strong> /league/[NAME]/[LEAGUE-ID]/[SEASON-ID]/standings?stage=...</li>
@@ -192,7 +195,7 @@ const FaceitUrlHelper: React.FC = () => {
           <li><strong>Team page:</strong> https://www.faceit.com/en/teams/[ID]</li>
         </ul>
         <p className="faceit-url-helper__formats-tip">
-          💡 Tip: The standings URL is best! It contains league, season, and stage IDs all in one.
+          <Lightbulb size={14} /> Tip: The standings URL is best! It contains league, season, and stage IDs all in one.
           The Championship ID will be auto-detected when possible.
         </p>
       </details>
@@ -209,8 +212,8 @@ export default FaceitUrlHelper
  */
 export const TeamUrlHelper: React.FC = () => {
   const [url, setUrl] = useState('')
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+  const [error, setError] = useState<React.ReactNode>('')
+  const [success, setSuccess] = useState<React.ReactNode>('')
   const { dispatchFields } = useForm()
 
   const handleParse = () => {
@@ -231,17 +234,17 @@ export const TeamUrlHelper: React.FC = () => {
         path: 'faceitTeamId',
         value: parsed.teamId,
       })
-      setSuccess('✅ Team ID extracted and filled in!')
+      setSuccess(<><CheckCircle size={12} /> Team ID extracted and filled in!</>)
       setUrl('')
     } else {
-      setError('❌ Could not extract team ID from this URL. Please use the team\'s FaceIt profile URL.')
+      setError(<><XCircle size={12} /> Could not extract team ID from this URL. Please use the team's FaceIt profile URL.</>)
     }
   }
 
   return (
     <div className="faceit-url-helper">
       <h3 className="faceit-url-helper__title">
-        🔗 Quick Fill Team ID from URL
+        <Link size={12} /> Quick Fill Team ID from URL
       </h3>
       <p className="faceit-url-helper__description">
         Paste the team's FaceIt profile URL to automatically extract the Team ID.
@@ -278,7 +281,7 @@ export const TeamUrlHelper: React.FC = () => {
       )}
 
       <p className="faceit-url-helper__example">
-        💡 Example: <code>https://www.faceit.com/en/teams/bc03efbc-725a-42f2-8acb-c8ee9783c8ae</code>
+        <Lightbulb size={14} /> Example: <code>https://www.faceit.com/en/teams/bc03efbc-725a-42f2-8acb-c8ee9783c8ae</code>
       </p>
     </div>
   )

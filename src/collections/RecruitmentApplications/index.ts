@@ -90,7 +90,7 @@ export const RecruitmentApplications: CollectionConfig = {
   admin: {
     useAsTitle: 'discordHandle',
     defaultColumns: ['position', 'discordHandle', 'status', 'createdAt', 'actions'],
-    description: '📝 Review and manage recruitment applications.',
+    description: 'Review and manage recruitment applications.',
     group: 'Recruiting',
     hidden: ({ user }) => {
       if (!user) return true

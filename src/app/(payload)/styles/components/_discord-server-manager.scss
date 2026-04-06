@@ -218,40 +218,21 @@
     }
   }
 
-  // Tabs
-  .tabs {
-    display: flex;
-    gap: $spacing-md;
-    border-bottom: 2px solid rgba($admin-accent-primary, 0.2);
-    margin-bottom: $spacing-2xl;
+  // Tabs — Unified underline pattern
+  &__tabs {
+    @include dashboard-tabs($admin-accent-primary);
+  }
 
-    .tab {
-      @include transparent-bg(0.02);
-      padding: $spacing-md $spacing-xl;
-      border: none;
-      border-bottom: 2px solid transparent;
-      color: $admin-text-secondary;
-      font-size: $font-size-base;
-      font-weight: $font-weight-semibold;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      margin-bottom: -2px;
+  &__tab {
+    @include dashboard-tab($admin-accent-primary);
 
-      &:hover:not(:disabled) {
-        color: $admin-text-primary;
-        background: rgba($admin-accent-primary, 0.05);
-      }
+    &--active {
+      @include dashboard-tab-active($admin-accent-primary);
+    }
 
-      &.active {
-        color: $admin-accent-primary;
-        border-bottom-color: $admin-accent-primary;
-        background: rgba($admin-accent-primary, 0.08);
-      }
-
-      &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
   }
 
@@ -3024,6 +3005,10 @@
     padding: $spacing-3xl;
     @include glow-card($admin-accent-primary);
 
+    &--compact {
+      padding: $spacing-lg;
+    }
+
     p {
       color: $admin-text-primary;
       font-size: $font-size-base;
@@ -3035,6 +3020,18 @@
       font-size: $font-size-sm;
       margin-top: $spacing-sm;
     }
+  }
+
+  .add-form-inputs--extra {
+    margin-top: $spacing-sm;
+  }
+
+  .bio-input {
+    flex: 1;
+  }
+
+  .person-select {
+    min-width: 200px;
   }
 
   // Accounts list (Twitter)

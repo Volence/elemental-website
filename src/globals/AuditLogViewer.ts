@@ -5,31 +5,22 @@ export const AuditLogViewer: GlobalConfig = {
   slug: 'audit-log-viewer',
   label: 'Audit Log',
   admin: {
-    description: '🔍 View user action logs for security monitoring.',
+    description: 'View user action logs for security monitoring.',
     group: 'System',
+    hidden: true, // Accessible via System Health hub
     hideAPIURL: true,
     components: {
-      elements: {
-        SaveButton: '@/components/EmptyComponent#default',
-        SaveDraftButton: '@/components/EmptyComponent#default',
-        PublishButton: '@/components/EmptyComponent#default',
+      views: {
+        edit: {
+          root: {
+            Component: '@/components/AuditLogView#default',
+          },
+        },
       },
     },
   },
   access: {
     read: isAdmin,
   },
-  fields: [
-    {
-      name: 'content',
-      type: 'ui',
-      admin: {
-        components: {
-          Field: '@/components/AuditLogView#default',
-        },
-      },
-    },
-  ],
+  fields: [],
 }
-
-

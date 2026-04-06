@@ -26,7 +26,7 @@ export const FaceitLeagues: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'division', 'region', 'seasonNumber', 'isActive'],
-    description: '⚙️ FaceIt league templates - Admin-only. Teams select from these when enabling FaceIt.',
+    description: 'FaceIt league templates - Admin-only. Teams select from these when enabling FaceIt.',
     group: 'Organization',
     hidden: ({ user }) => {
       if (!user) return true

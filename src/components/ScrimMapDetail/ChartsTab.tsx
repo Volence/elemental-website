@@ -12,13 +12,7 @@ const BG_CARD = 'rgba(255, 255, 255, 0.03)'
 const BORDER = 'rgba(255, 255, 255, 0.06)'
 const GREEN = '#22c55e'
 
-const CARD_STYLE: React.CSSProperties = {
-  background: BG_CARD,
-  borderRadius: '12px',
-  padding: '20px 24px',
-  border: `1px solid ${BORDER}`,
-  backdropFilter: 'blur(12px)',
-}
+
 
 type KillEntry = {
   time: number
@@ -128,7 +122,7 @@ export default function ChartsTab({ mapId }: { mapId: string }) {
   return (
     <div>
       {/* ── Kills By Fight Line Chart ── */}
-      <div style={CARD_STYLE}>
+      <div className="scrim-detail__card">
         <div style={{ fontWeight: 700, fontSize: '15px', color: TEXT_PRIMARY, marginBottom: '4px' }}>
           Kills By Fight
           <span style={{ fontWeight: 400, fontSize: '12px', color: TEXT_DIM, marginLeft: '8px' }}>ⓘ</span>
@@ -193,7 +187,7 @@ export default function ChartsTab({ mapId }: { mapId: string }) {
         const draws = data.fights.filter(f => f.winner !== team1 && f.winner !== team2).length
 
         return (
-          <div style={{ ...CARD_STYLE, marginTop: '20px' }}>
+          <div className="scrim-detail__card" style={{ marginTop: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
               <div style={{ fontWeight: 700, fontSize: '15px', color: TEXT_PRIMARY }}>
                 Fight Momentum
@@ -300,7 +294,7 @@ function FinalBlowsByRoleChart({ data }: { data: ChartsAPIData }) {
   const yTicks = Array.from({ length: yTickCount + 1 }, (_, i) => Math.round((maxFB / yTickCount) * i))
 
   return (
-    <div style={CARD_STYLE}>
+    <div className="scrim-detail__card">
       <div style={{ fontWeight: 700, fontSize: '15px', color: TEXT_PRIMARY, marginBottom: '4px' }}>
         Final Blows By Role
         <span style={{ fontWeight: 400, fontSize: '12px', color: TEXT_DIM, marginLeft: '8px' }}>ⓘ</span>
@@ -419,7 +413,7 @@ function CumulativeDamageChart({ data }: { data: ChartsAPIData }) {
   const yTicks = Array.from({ length: yTickCount + 1 }, (_, i) => Math.round((maxDmg / yTickCount) * i))
 
   return (
-    <div style={CARD_STYLE}>
+    <div className="scrim-detail__card">
       <div style={{ fontWeight: 700, fontSize: '15px', color: TEXT_PRIMARY, marginBottom: '4px' }}>
         Cumulative Hero Damage By Round
         <span style={{ fontWeight: 400, fontSize: '12px', color: TEXT_DIM, marginLeft: '8px' }}>ⓘ</span>

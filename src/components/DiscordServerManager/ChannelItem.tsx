@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Hash, Volume2, MessageSquare, Copy, Edit2, Save, X, Trash2, Copy as CopyIcon, GripVertical } from 'lucide-react'
+import { ClipboardList, Copy, Copy as CopyIcon, Edit2, GripVertical, Hash, MessageSquare, Save, Trash2, Volume2, X } from 'lucide-react'
 
 interface Channel {
   id: string
@@ -58,7 +58,7 @@ export const ChannelItem: React.FC<ChannelItemProps> = ({
 
   const getChannelIcon = () => {
     if (channel.type === 2) return <Volume2 size={14} className="channel-type-icon" />
-    if (channel.type === 15) return <span className="channel-type-icon channel-type-emoji">📋</span>
+    if (channel.type === 15) return <span className="channel-type-icon channel-type-emoji"><ClipboardList size={14} /></span>
     return <Hash size={14} className="channel-type-icon" />
   }
 

@@ -239,15 +239,15 @@
     
     // Kill all inherited borders/backgrounds from children
     > * {
-      border: none !important;
-      background: transparent !important;
-      box-shadow: none !important;
+      border: none;
+      background: transparent;
+      box-shadow: none;
     }
     
     // Kill any pseudo-elements from inherited styles
     > *::before,
     > *::after {
-      display: none !important;
+      display: none;
     }
     
     @media (max-width: 1024px) {
@@ -271,7 +271,7 @@
       // Remove any pseudo-elements
       &::before,
       &::after {
-        display: none !important;
+        display: none;
       }
       
       &-title {
@@ -280,14 +280,14 @@
         color: $admin-text-primary;
         
         // Kill any inherited boxing
-        border: none !important;
-        background: transparent !important;
-        box-shadow: none !important;
-        padding: 0 !important;
+        border: none;
+        background: transparent;
+        box-shadow: none;
+        padding: 0;
         
         &::before,
         &::after {
-          display: none !important;
+          display: none;
         }
       }
     }

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useFormFields } from '@payloadcms/ui'
+import { AlertTriangle } from 'lucide-react'
 
 interface FileData {
   url?: string
@@ -108,7 +109,7 @@ const TeamLogoPreview: React.FC = () => {
                 if (parent) {
                   parent.innerHTML = `
                     <div class="team-logo-preview__error">
-                      ⚠️ Logo failed to load
+                      <AlertTriangle size={12} /> Logo failed to load
                     </div>
                   `
                 }

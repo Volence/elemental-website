@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { getHeroIconUrl, loadHeroPortraits } from '@/lib/scrim-parser/heroIcons'
+import { Zap, Play, Square, Circle, Sparkles, Plus, X, Minus } from 'lucide-react'
 
 // ── Clean Glow Design Tokens ──
 const CYAN = '#06b6d4'
@@ -66,19 +67,19 @@ function HeroIcon({ hero, teamColor, size = 26 }: { hero: string; teamColor: str
 
 // ── Styled Event Type Icons ──
 function EventIcon({ type }: { type: string }) {
-  const iconMap: Record<string, { symbol: string; color: string }> = {
-    match_start: { symbol: '▸', color: GREEN },
-    round_start: { symbol: '▸', color: AMBER },
-    round_end: { symbol: '■', color: RED },
-    objective_captured: { symbol: '⬤', color: CYAN },
-    point_captured: { symbol: '⬤', color: CYAN },
-    point_control: { symbol: '◉', color: CYAN },
-    multikill: { symbol: '✦', color: PURPLE },
-    ultimate_kill: { symbol: '⚡', color: AMBER },
-    mercy_rez: { symbol: '✚', color: GREEN },
-    ajax: { symbol: '✕', color: AMBER },
+  const iconMap: Record<string, { symbol: React.ReactNode; color: string }> = {
+    match_start: { symbol: <Play size={12} />, color: GREEN },
+    round_start: { symbol: <Play size={12} />, color: AMBER },
+    round_end: { symbol: <Square size={12} />, color: RED },
+    objective_captured: { symbol: <Circle size={12} />, color: CYAN },
+    point_captured: { symbol: <Circle size={12} />, color: CYAN },
+    point_control: { symbol: <Circle size={12} />, color: CYAN },
+    multikill: { symbol: <Sparkles size={12} />, color: PURPLE },
+    ultimate_kill: { symbol: <Zap size={14} />, color: AMBER },
+    mercy_rez: { symbol: <Plus size={12} />, color: GREEN },
+    ajax: { symbol: <X size={12} />, color: AMBER },
   }
-  const icon = iconMap[type] || { symbol: '•', color: TEXT_DIM }
+  const icon = iconMap[type] || { symbol: <Minus size={10} />, color: TEXT_DIM }
 
   return (
     <div
@@ -384,7 +385,7 @@ export default function EventsTab({ mapId }: { mapId: string }) {
                           flexShrink: 0,
                         }}
                       >
-                        ⚡
+                        <Zap size={14} />
                       </div>
 
                       {/* Hero portrait */}

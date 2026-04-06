@@ -216,6 +216,83 @@ button.drawer__close,
   background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+  // Fix invisible title text (Payload defaults to black on our dark theme)
+  h1, h2, h3, h4,
+  .doc-header__title,
+  .doc-header__title-text,
+  .doc-header__title span,
+  [class*="doc-header"] {
+    color: $admin-text-primary !important;
+  }
+
+  // "Creating new" subtitle text
+  .doc-header__title .doc-header__title-text {
+    color: $admin-text-secondary !important;
+  }
+}
+
+// Upload zone polish — reduce nested border clutter
+.doc-drawer .file-field__upload,
+.doc-drawer .dropzone {
+  border: 1px dashed rgba($admin-accent-primary, 0.3) !important;
+  border-radius: 8px;
+  background: rgba($admin-accent-primary, 0.03);
+  transition: all 0.2s ease;
+
+  &:hover,
+  &.dropzone--active {
+    border-color: rgba($admin-accent-primary, 0.6) !important;
+    background: rgba($admin-accent-primary, 0.06);
+    box-shadow: 0 0 16px rgba($admin-accent-primary, 0.1);
+  }
+}
+
+// "Creating new File" bar inside the drawer
+.doc-drawer .doc-controls {
+  background: rgba(0, 0, 0, 0.4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+  * {
+    color: $admin-text-primary;
+  }
+}
+
+// Folder selection popup — Clean Glow styling
+.move-doc-to-folder,
+.folder-browser,
+[class*="folder-select"],
+[class*="selectFolder"] {
+  .popup__content,
+  .popup {
+    background: $admin-bg-elevated !important;
+    border: 1px solid rgba($admin-accent-primary, 0.3) !important;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4),
+               0 0 0 1px rgba($admin-accent-primary, 0.1);
+    backdrop-filter: blur(12px);
+  }
+
+  button,
+  .folder-option,
+  .list-selection__list-item {
+    color: $admin-text-primary !important;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    margin: 0.25rem 0;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba($admin-accent-primary, 0.1) !important;
+      border-color: rgba($admin-accent-primary, 0.3);
+    }
+  }
+
+  h4, h5, label, span {
+    color: $admin-text-primary !important;
+  }
 }
 
 .doc-drawer__document-fields {
@@ -302,6 +379,9 @@ button.drawer__close,
 .popup {
   @include glow-card($admin-accent-info);
   z-index: 100;
+
+  // Ensure all popup text is visible on dark backgrounds
+  color: $admin-text-primary;
 }
 
 .popup__scroll {
@@ -318,6 +398,7 @@ button.drawer__close,
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
+  color: $admin-text-primary;
   
   &:hover {
     background: rgba($admin-accent-info, 0.1);

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { useField, useFormFields, Button, toast } from '@payloadcms/ui'
+import { AlertTriangle, ClipboardList } from 'lucide-react'
 
 interface RosterMember {
   person?: number | { id: number }
@@ -88,7 +89,7 @@ export default function PopulateRosterButton({ value, ...props }: any) {
         buttonStyle="secondary"
         size="small"
       >
-        {loading ? 'Populating...' : '📋 Populate from Current Roster'}
+        {loading ? 'Populating...' : <><ClipboardList size={14} /> Populate from Current Roster</>}
       </Button>
       {/* Use ternary to avoid rendering falsy values */}
       {hasExistingRoster ? (
@@ -97,7 +98,7 @@ export default function PopulateRosterButton({ value, ...props }: any) {
           fontSize: '0.8rem', 
           color: 'rgba(255,255,255,0.5)' 
         }}>
-          ⚠️ This will replace existing snapshot
+          <AlertTriangle size={12} /> This will replace existing snapshot
         </span>
       ) : null}
       {!opponentTeamValue ? (

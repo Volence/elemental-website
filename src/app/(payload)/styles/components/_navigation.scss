@@ -60,6 +60,9 @@ nav > *,
   text-decoration: none;
   transition: all $transition-fast;
   cursor: pointer;
+  // Reserve border space in default state to prevent layout shift on hover
+  border: 1px solid transparent;
+  border-left: 3px solid transparent;
   
   // Icon styling
   svg {
@@ -495,6 +498,37 @@ html body aside nav > div:nth-child(12) .nav__link {
     
     .nav__link-label {
       color: $tier-advanced !important;
+    }
+  }
+}
+
+// ============================================
+// CATCH-ALL: Any nav group beyond nth-child(12)
+// ============================================
+// Uses the default accent (cyan) so future sections are never unstyled.
+
+@for $i from 13 through 20 {
+  html body aside nav > div:nth-child(#{$i}) .nav__link {
+    &:hover,
+    &:hover:not(:has(.nav__link-indicator)) {
+      background: transparent !important;
+      color: $admin-accent-primary !important;
+      box-shadow: 0 0 20px rgba($admin-accent-primary, 0.6) !important;
+      border: 1px solid rgba($admin-accent-primary, 0.4) !important;
+      border-left: 3px solid $admin-accent-primary !important;
+    }
+
+    &:has(.nav__link-indicator) {
+      background: transparent !important;
+
+      .nav__link-indicator {
+        background: $admin-accent-primary !important;
+        box-shadow: 0 0 16px rgba($admin-accent-primary, 0.8) !important;
+      }
+
+      .nav__link-label {
+        color: $admin-accent-primary !important;
+      }
     }
   }
 }

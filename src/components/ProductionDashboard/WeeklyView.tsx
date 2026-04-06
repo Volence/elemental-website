@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Button, toast } from '@payloadcms/ui'
+import { AlertTriangle, CheckCircle, Circle, Globe, Link, Plus, RefreshCw, Target, XCircle } from 'lucide-react'
 
 interface Team {
   id: number
@@ -36,7 +37,7 @@ interface Match {
 }
 
 // Helper to get team name from new or legacy fields
-const getTeam1Name = (match: Match): string => {
+const getTeam1Name = (match: Match): React.ReactNode => {
   // First try new flexible fields
   if (match.team1Type === 'internal' && match.team1Internal) {
     return match.team1Internal.name || 'ELMT Team'
@@ -50,7 +51,7 @@ const getTeam1Name = (match: Match): string => {
   }
   // Tournament slot without team assigned
   if (match.isTournamentSlot) {
-    return '🎯 Tournament Slot'
+    return <><Target size={14} /> Tournament Slot</>
   }
   return 'TBD'
 }
@@ -343,18 +344,18 @@ export function WeeklyView() {
 
   const getCoverageIcon = (status?: string) => {
     switch (status) {
-      case 'full': return '✅'
-      case 'partial': return '⚠️'
-      default: return '❌'
+      case 'full': return <CheckCircle size={14} style={{ color: '#22c55e' }} />
+      case 'partial': return <AlertTriangle size={14} style={{ color: '#f59e0b' }} />
+      default: return <XCircle size={14} style={{ color: '#ef4444' }} />
     }
   }
 
   const getPriorityLabel = (priority?: string) => {
     switch (priority) {
-      case 'urgent': return '🔴 Urgent'
-      case 'high': return '⬆ High'
-      case 'medium': return '↗ Medium'
-      case 'low': return '→ Low'
+      case 'urgent': return <span style={{ color: '#ef4444', fontWeight: 600 }}>Urgent</span>
+      case 'high': return <span style={{ color: '#f97316', fontWeight: 600 }}>High</span>
+      case 'medium': return <span style={{ color: '#f59e0b' }}>Medium</span>
+      case 'low': return <span style={{ color: 'rgba(255,255,255,0.5)' }}>Low</span>
       default: return '-'
     }
   }
@@ -378,34 +379,34 @@ export function WeeklyView() {
   return (
     <div className="production-dashboard__weekly">
       <div className="production-dashboard__header">
-        <div style={{ flex: 1 }}>
+        <div className="production-dashboard__header-content">
           <h2>Weekly View</h2>
           <p className="production-dashboard__subtitle">
             View and edit all matches for this week
           </p>
           <div className="production-dashboard__timezone-notice">
-            🌍 <strong>Timezone Info:</strong> All times are automatically shown in your local timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone})
+            <Globe size={14} /> <strong>Timezone:</strong> {Intl.DateTimeFormat().resolvedOptions().timeZone}
           </div>
-          <div className="production-dashboard__instructions">
-            <strong>Quick Start:</strong>
+          <details className="production-dashboard__instructions">
+            <summary>Quick Start Guide</summary>
             <ol>
-              <li>If you just bulk-assigned teams, click "Sync Tournament Teams" first</li>
-              <li>Click "Generate This Week's Matches" to auto-create matches from tournament templates</li>
+              <li>If you just bulk-assigned teams, click &quot;Sync Tournament Teams&quot; first</li>
+              <li>Click &quot;Generate This Week&apos;s Matches&quot; to auto-create matches from tournament templates</li>
               <li>Edit opponent names and lobby codes directly in the table</li>
               <li>Set priority levels for matches</li>
-              <li>Click "Edit" to open the full match page for staff signups</li>
+              <li>Click &quot;Edit&quot; to open the full match page for staff signups</li>
             </ol>
-          </div>
+          </details>
         </div>
         <div className="production-dashboard__actions">
           <Button onClick={addManualMatch}>
-            ➕ Add Match
+            <Plus size={12} /> Add Match
           </Button>
           <Button onClick={syncTournamentTeams} disabled={generating}>
-            {generating ? 'Syncing...' : '🔗 Sync Tournament Teams'}
+            {generating ? 'Syncing...' : <><Link size={12} /> Sync Tournament Teams</>}
           </Button>
           <Button onClick={generateWeeklyMatches} disabled={generating}>
-            {generating ? 'Generating...' : '🔄 Generate This Week\'s Matches'}
+            {generating ? 'Generating...' : <><RefreshCw size={12} /> Generate This Week's Matches</>}
           </Button>
         </div>
       </div>

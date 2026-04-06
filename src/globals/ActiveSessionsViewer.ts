@@ -5,31 +5,22 @@ export const ActiveSessionsViewer: GlobalConfig = {
   slug: 'active-sessions-viewer',
   label: 'Active Sessions',
   admin: {
-    description: '👥 Monitor currently logged-in admin panel users',
+    description: 'Monitor currently logged-in admin panel users.',
     group: 'System',
+    hidden: true, // Accessible via System Health hub
     hideAPIURL: true,
     components: {
-      elements: {
-        SaveButton: '@/components/EmptyComponent#default',
-        SaveDraftButton: '@/components/EmptyComponent#default',
-        PublishButton: '@/components/EmptyComponent#default',
+      views: {
+        edit: {
+          root: {
+            Component: '@/components/ActiveSessionsView#default',
+          },
+        },
       },
     },
   },
   access: {
     read: isAdmin,
   },
-  fields: [
-    {
-      name: 'content',
-      type: 'ui',
-      admin: {
-        components: {
-          Field: '@/components/ActiveSessionsView#default',
-        },
-      },
-    },
-  ],
+  fields: [],
 }
-
-

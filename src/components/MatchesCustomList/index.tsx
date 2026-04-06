@@ -169,7 +169,7 @@ export default function MatchesCustomList() {
 
       {/* Search and Filter Controls */}
       <div className="matches-custom-list__filters">
-        <h3>🔍 Search & Filter</h3>
+        <h3>Search & Filter</h3>
         
         <div className="matches-custom-list__filters-grid">
           <div className="matches-custom-list__filters-field">
@@ -247,7 +247,7 @@ export default function MatchesCustomList() {
         <div className="matches-custom-list__section">
           <div className="matches-custom-list__section-header">
             <h2>
-              📅 Upcoming Matches
+              Upcoming Matches
               <span className="badge">{upcomingTotal}</span>
             </h2>
             <Link href={`${adminRoute}/collections/matches/create`} className="create-button">
@@ -277,7 +277,7 @@ export default function MatchesCustomList() {
                     <span className="status-badge status-badge--scheduled">Scheduled</span>
                     {isBroadcasted(match) && (
                       <span className="broadcast-badge">
-                        📺 {match.vod ? 'VOD' : 'STREAMED'}
+                        {match.vod ? 'VOD' : 'STREAMED'}
                       </span>
                     )}
                   </div>
@@ -294,7 +294,7 @@ export default function MatchesCustomList() {
         <div className="matches-custom-list__section">
           <div className="matches-custom-list__section-header">
             <h2>
-              📦 Completed & Cancelled
+              Completed & Cancelled
               <span className="badge">{completedTotal}</span>
             </h2>
           </div>
@@ -324,7 +324,7 @@ export default function MatchesCustomList() {
                       </span>
                       {isBroadcasted(match) && (
                         <span className="broadcast-badge">
-                          📺 {match.vod ? 'VOD' : 'STREAMED'}
+                          {match.vod ? 'VOD' : 'STREAMED'}
                         </span>
                       )}
                     </div>

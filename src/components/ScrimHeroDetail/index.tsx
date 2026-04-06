@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState, useMemo } from 'react'
+import { Loader2, AlertCircle, ArrowLeft, Trophy, Crown, TrendingUp, Swords, Crosshair, ChevronUp, ChevronDown } from 'lucide-react'
 
 // ── Types ──
 
@@ -90,25 +91,6 @@ const TEXT_DIM = '#52525b'
 const BAR_COLORS = [CYAN, PURPLE, GREEN, AMBER, RED, '#ec4899', '#6366f1']
 
 const ROLE_COLORS: Record<string, string> = { Tank: CYAN, Damage: RED, Support: GREEN }
-
-const CARD_STYLE: React.CSSProperties = {
-  background: BG_CARD,
-  backdropFilter: 'blur(16px)',
-  WebkitBackdropFilter: 'blur(16px)',
-  border: `1px solid ${BORDER}`,
-  borderRadius: '14px',
-  padding: '20px',
-  boxShadow: '0 4px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.04)',
-}
-
-const LABEL_STYLE: React.CSSProperties = {
-  fontSize: '11px',
-  color: TEXT_SECONDARY,
-  textTransform: 'uppercase' as const,
-  letterSpacing: '1.2px',
-  fontWeight: 600,
-  marginBottom: '8px',
-}
 
 const RANGE_OPTIONS = [
   { value: 'all', label: 'All Time' },
@@ -279,7 +261,7 @@ export default function ScrimHeroDetailView() {
           }}
         >
           {activeLabel}
-          <span style={{ fontSize: '8px', opacity: 0.6 }}>{teamDropdownOpen ? '▴' : '▾'}</span>
+          <span style={{ display: 'inline-flex', opacity: 0.6 }}>{teamDropdownOpen ? <ChevronUp size={10} /> : <ChevronDown size={10} />}</span>
         </button>
 
         {teamDropdownOpen && (
@@ -415,22 +397,17 @@ export default function ScrimHeroDetailView() {
   // ── Loading / Error states ──
   if (loading) {
     return (
-      <div style={{ padding: '60px 40px', fontFamily: "'Inter', -apple-system, sans-serif" }}>
-        <div style={{ textAlign: 'center', color: TEXT_DIM }}>
-          <div style={{ fontSize: '32px', marginBottom: '12px', animation: 'glowPulse 2s ease-in-out infinite' }}>⏳</div>
-          <div style={{ fontSize: '14px' }}>Loading hero stats...</div>
-        </div>
+      <div className="scrim-players__loading">
+        <div className="scrim-players__loading-icon"><Loader2 size={32} /></div>
+        <div className="scrim-players__loading-text">Loading hero stats...</div>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div style={{ padding: '60px 40px', fontFamily: "'Inter', -apple-system, sans-serif" }}>
-        <div style={{ ...CARD_STYLE, textAlign: 'center', padding: '40px' }}>
-          <div style={{ fontSize: '24px', marginBottom: '10px' }}>⚠️</div>
-          <div style={{ color: RED, fontSize: '14px' }}>{error}</div>
-        </div>
+      <div className="scrim-players__error">
+        <p><AlertCircle size={16} style={{ verticalAlign: 'middle', marginRight: '6px' }} />{error}</p>
       </div>
     )
   }
@@ -477,7 +454,7 @@ export default function ScrimHeroDetailView() {
           userSelect: 'none', whiteSpace: 'nowrap',
         }}
       >
-        {label} {sortKey === field ? (sortDir === 'desc' ? '▾' : '▴') : ''}
+        {label} {sortKey === field ? (sortDir === 'desc' ? <ChevronDown size={10} style={{ display: 'inline', verticalAlign: 'middle' }} /> : <ChevronUp size={10} style={{ display: 'inline', verticalAlign: 'middle' }} />) : ''}
       </th>
     )
 
@@ -491,13 +468,13 @@ export default function ScrimHeroDetailView() {
       : `Aggregate hero performance across all scrims · ${heroList.length} heroes tracked`
 
     return (
-      <div style={{ padding: '40px', fontFamily: "'Inter', -apple-system, sans-serif", maxWidth: '1200px', margin: '0 auto' }}>
+      <div className="scrim-detail__content" style={{ maxWidth: '1200px' }}>
         {/* Header */}
-        <div style={{ marginBottom: '28px' }}>
-          <h1 style={{ fontSize: '28px', fontWeight: 800, color: TEXT_PRIMARY, margin: 0, letterSpacing: '-0.5px', textShadow: `0 0 40px ${CYAN}15` }}>
+        <div className="scrim-detail__header">
+          <h1 className="scrim-detail__player-name" style={{ fontSize: '28px' }}>
             Hero Stats
           </h1>
-          <p style={{ color: TEXT_DIM, fontSize: '13px', marginTop: '6px' }}>
+          <p className="scrim-detail__player-meta" style={{ marginTop: '6px' }}>
             {subtitle}
           </p>
         </div>
@@ -534,13 +511,13 @@ export default function ScrimHeroDetailView() {
         </div>
 
         {/* Hero Table */}
-        <div style={{ ...CARD_STYLE, padding: 0, overflow: 'hidden' }}>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', minWidth: '800px' }}>
+        <div className="scrim-detail__map-table-card">
+          <div className="scrim-detail__map-table-scroll">
+            <table className="scrim-detail__map-table">
               <thead>
-                <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
-                  <th style={{ padding: '12px', textAlign: 'left', fontWeight: 500, color: TEXT_SECONDARY, fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Hero</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 500, color: TEXT_SECONDARY, fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Role</th>
+                <tr>
+                  <th className="scrim-detail__map-th">Hero</th>
+                  <th className="scrim-detail__map-th">Role</th>
                   <SortHeader label="Maps" field="mapsPlayed" />
                   <SortHeader label="Elims" field="totalElims" />
                   <SortHeader label="Deaths" field="totalDeaths" />
@@ -555,26 +532,24 @@ export default function ScrimHeroDetailView() {
                   <tr
                     key={h.hero}
                     onClick={() => navigateToHero(h.hero)}
-                    style={{ borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.2s' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(6, 182, 212, 0.04)' }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                    className="scrim-detail__map-row"
                   >
-                    <td style={{ padding: '10px 12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <td className="scrim-detail__map-td" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       {h.portrait && <img src={h.portrait} alt={h.hero} style={{ width: 28, height: 28, borderRadius: '50%', border: `2px solid ${ROLE_COLORS[h.role] ?? CYAN}33` }} />}
-                      <span style={{ fontWeight: 600, color: CYAN, textShadow: `0 0 8px ${CYAN}22` }}>{h.hero}</span>
+                      <span className="scrim-detail__map-td--map" style={{ padding: 0 }}>{h.hero}</span>
                     </td>
-                    <td style={{ padding: '10px 12px' }}>
+                    <td className="scrim-detail__map-td">
                       <span style={{ fontSize: '10px', fontWeight: 600, color: ROLE_COLORS[h.role] ?? TEXT_DIM, padding: '2px 8px', borderRadius: '4px', background: `${ROLE_COLORS[h.role] ?? TEXT_DIM}15` }}>
                         {h.role}
                       </span>
                     </td>
-                    <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600 }}>{h.mapsPlayed}</td>
-                    <td style={{ padding: '10px 12px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{formatNumber(h.totalElims)}</td>
-                    <td style={{ padding: '10px 12px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{formatNumber(h.totalDeaths)}</td>
-                    <td style={{ padding: '10px 12px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{formatNumber(h.totalDamage)}</td>
-                    <td style={{ padding: '10px 12px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{formatNumber(h.totalHealing)}</td>
-                    <td style={{ padding: '10px 12px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{formatNumber(h.totalFB)}</td>
-                    <td style={{ padding: '10px 12px', textAlign: 'right', color: TEXT_DIM }}>{formatTime(h.totalTime)}</td>
+                    <td className="scrim-detail__map-td scrim-detail__map-td--stat" style={{ fontWeight: 600 }}>{h.mapsPlayed}</td>
+                    <td className="scrim-detail__map-td scrim-detail__map-td--stat">{formatNumber(h.totalElims)}</td>
+                    <td className="scrim-detail__map-td scrim-detail__map-td--stat">{formatNumber(h.totalDeaths)}</td>
+                    <td className="scrim-detail__map-td scrim-detail__map-td--stat">{formatNumber(h.totalDamage)}</td>
+                    <td className="scrim-detail__map-td scrim-detail__map-td--stat">{formatNumber(h.totalHealing)}</td>
+                    <td className="scrim-detail__map-td scrim-detail__map-td--stat">{formatNumber(h.totalFB)}</td>
+                    <td className="scrim-detail__map-td scrim-detail__map-td--stat" style={{ color: TEXT_DIM }}>{formatTime(h.totalTime)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -608,18 +583,15 @@ export default function ScrimHeroDetailView() {
     if (rangeFilter !== 'all' && rangeLbl) badges.push({ label: rangeLbl, color: AMBER })
 
     return (
-      <div style={{ padding: '40px', fontFamily: "'Inter', -apple-system, sans-serif", maxWidth: '1200px', margin: '0 auto' }}>
+      <div className="scrim-detail__content" style={{ maxWidth: '1200px' }}>
         {/* Back Link + Header */}
-        <div style={{ marginBottom: '28px' }}>
+        <div className="scrim-detail__header">
           <button
             onClick={navigateBack}
-            style={{
-              background: 'none', border: 'none', color: TEXT_SECONDARY, fontSize: '12px',
-              cursor: 'pointer', padding: 0, marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '4px',
-              fontFamily: "'Inter', -apple-system, sans-serif",
-            }}
+            className="scrim-detail__back-link"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: '12px' }}
           >
-            ← Back to Heroes
+            <ArrowLeft size={12} /> Back to Heroes
           </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {hero.portrait && <img src={hero.portrait} alt={hero.name} style={{ width: 56, height: 56, borderRadius: '50%', border: `3px solid ${ROLE_COLORS[hero.role] ?? CYAN}44` }} />}
@@ -656,8 +628,8 @@ export default function ScrimHeroDetailView() {
             { label: 'Damage /10', value: formatNumber(career.damagePer10), total: career.damage, color: CYAN },
             { label: 'Healing /10', value: formatNumber(career.healingPer10), total: career.healing, color: PURPLE },
           ].map(s => (
-            <div key={s.label} style={{ ...CARD_STYLE, borderTop: `2px solid ${s.color}`, textAlign: 'center' }}>
-              <div style={{ ...LABEL_STYLE }}>{s.label}</div>
+            <div key={s.label} className="scrim-detail__summary-card" style={{ borderTop: `2px solid ${s.color}`, textAlign: 'center' }}>
+              <div className="scrim-detail__label">{s.label}</div>
               <div style={{ fontSize: '22px', fontWeight: 800, color: s.color, textShadow: `0 0 16px ${s.color}33` }}>{s.value}</div>
               <div style={{ fontSize: '10px', color: TEXT_DIM, marginTop: '4px' }}>{formatNumber(s.total)} total</div>
             </div>
@@ -666,9 +638,9 @@ export default function ScrimHeroDetailView() {
 
         {/* Best Game Highlight */}
         {bestGame && (
-          <div style={{ ...CARD_STYLE, marginBottom: '24px', borderLeft: `3px solid ${AMBER}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="scrim-detail__card" style={{ marginBottom: '24px', borderLeft: `3px solid ${AMBER}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <div style={{ ...LABEL_STYLE }}>🏆 Best Performance</div>
+              <div className="scrim-detail__label"><Trophy size={14} className="scrim-detail__inline-icon" /> Best Performance</div>
               <div style={{ fontSize: '14px', color: TEXT_PRIMARY, fontWeight: 600 }}>{bestGame.player} on {bestGame.mapName}</div>
               <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '2px' }}>{bestGame.scrimName} · {formatDate(bestGame.scrimDate)}</div>
             </div>
@@ -690,16 +662,16 @@ export default function ScrimHeroDetailView() {
 
         {/* Top Players Table */}
         {topPlayers.length > 0 && (
-          <div style={{ ...CARD_STYLE, padding: 0, overflow: 'hidden', marginBottom: '24px' }}>
-            <div style={{ padding: '16px 20px 10px', fontWeight: 700, fontSize: '15px', color: TEXT_PRIMARY, borderBottom: `1px solid ${BORDER}` }}>
-              👥 Top Players on {hero.name}
+          <div className="scrim-detail__map-table-card" style={{ marginBottom: '24px' }}>
+            <div className="scrim-detail__map-table-header">
+              Top Players on {hero.name}
             </div>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+            <div className="scrim-detail__map-table-scroll">
+              <table className="scrim-detail__map-table">
                 <thead>
-                  <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
+                  <tr>
                     {['Player', 'Maps', 'Time', 'Elims /10', 'FB /10', 'Deaths /10', 'Damage /10', 'Healing /10'].map(label => (
-                      <th key={label} style={{ padding: '10px 12px', textAlign: label === 'Player' ? 'left' : 'right', fontWeight: 500, color: TEXT_SECONDARY, fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</th>
+                      <th key={label} className={`scrim-detail__map-th ${label !== 'Player' ? 'scrim-detail__map-th--right' : ''}`}>{label}</th>
                     ))}
                   </tr>
                 </thead>
@@ -707,21 +679,19 @@ export default function ScrimHeroDetailView() {
                   {topPlayers.map((p, idx) => (
                     <tr
                       key={p.name}
-                      style={{ borderBottom: `1px solid ${BORDER}`, cursor: 'pointer', transition: 'background 0.2s' }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(6, 182, 212, 0.04)' }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                      className="scrim-detail__map-row"
                       onClick={() => window.location.href = `/admin/scrim-player-detail?player=${encodeURIComponent(p.name)}`}
                     >
-                      <td style={{ padding: '10px 12px', fontWeight: 600, color: idx === 0 ? AMBER : CYAN }}>
-                        {idx === 0 ? '👑 ' : ''}{p.name}
+                      <td className="scrim-detail__map-td" style={{ fontWeight: 600, color: idx === 0 ? AMBER : CYAN }}>
+                        {idx === 0 ? <><Crown size={12} style={{ verticalAlign: 'text-bottom', marginRight: '2px' }} /> </> : ''}{p.name}
                       </td>
-                      <td style={{ padding: '10px 12px', textAlign: 'right' }}>{p.mapsPlayed}</td>
-                      <td style={{ padding: '10px 12px', textAlign: 'right', color: TEXT_DIM }}>{formatTime(p.totalTime)}</td>
-                      <td style={{ padding: '10px 12px', textAlign: 'right' }}>{p.elimsPer10}</td>
-                      <td style={{ padding: '10px 12px', textAlign: 'right' }}>{p.fbPer10}</td>
-                      <td style={{ padding: '10px 12px', textAlign: 'right' }}>{p.deathsPer10}</td>
-                      <td style={{ padding: '10px 12px', textAlign: 'right' }}>{formatNumber(p.damagePer10)}</td>
-                      <td style={{ padding: '10px 12px', textAlign: 'right' }}>{formatNumber(p.healingPer10)}</td>
+                      <td className="scrim-detail__map-td scrim-detail__map-td--stat">{p.mapsPlayed}</td>
+                      <td className="scrim-detail__map-td scrim-detail__map-td--stat" style={{ color: TEXT_DIM }}>{formatTime(p.totalTime)}</td>
+                      <td className="scrim-detail__map-td scrim-detail__map-td--stat">{p.elimsPer10}</td>
+                      <td className="scrim-detail__map-td scrim-detail__map-td--stat">{p.fbPer10}</td>
+                      <td className="scrim-detail__map-td scrim-detail__map-td--stat">{p.deathsPer10}</td>
+                      <td className="scrim-detail__map-td scrim-detail__map-td--stat">{formatNumber(p.damagePer10)}</td>
+                      <td className="scrim-detail__map-td scrim-detail__map-td--stat">{formatNumber(p.healingPer10)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -732,16 +702,16 @@ export default function ScrimHeroDetailView() {
 
         {/* Trend Chart */}
         {trendData.length > 1 && (
-          <div style={{ ...CARD_STYLE, marginBottom: '24px' }}>
+          <div className="scrim-detail__card" style={{ marginBottom: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div style={{ fontWeight: 700, fontSize: '15px', color: TEXT_PRIMARY }}>
-                📈 Per-Scrim Trend: {selectedStat.label}
+                <TrendingUp size={14} className="scrim-detail__inline-icon" /> Per-Scrim Trend: {selectedStat.label}
               </div>
               <select
                 value={trendStat}
                 onChange={e => setTrendStat(e.target.value)}
                 style={{
-                  background: BG_CARD, border: `1px solid ${BORDER}`, borderRadius: '8px',
+                  background: 'rgba(255,255,255,0.03)', border: `1px solid ${BORDER}`, borderRadius: '8px',
                   padding: '6px 12px', color: TEXT_PRIMARY, fontSize: '12px',
                   cursor: 'pointer', fontFamily: "'Inter', -apple-system, sans-serif",
                 }}
@@ -797,8 +767,8 @@ export default function ScrimHeroDetailView() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '24px' }}>
           {/* Hero Matchups */}
           {(heroMatchups.killedMost.length > 0 || heroMatchups.diedToMost.length > 0) && (
-            <div style={{ ...CARD_STYLE }}>
-              <div style={{ ...LABEL_STYLE, marginBottom: '16px' }}>⚔️ Hero Matchups</div>
+            <div className="scrim-detail__card">
+              <div className="scrim-detail__label"><Swords size={14} className="scrim-detail__inline-icon" /> Hero Matchups</div>
               {/* Killed Most */}
               {heroMatchups.killedMost.length > 0 && (
                 <div style={{ marginBottom: '16px' }}>
@@ -842,8 +812,8 @@ export default function ScrimHeroDetailView() {
 
           {/* Final Blows By Method */}
           {finalBlowsByMethod.length > 0 && (
-            <div style={{ ...CARD_STYLE }}>
-              <div style={{ ...LABEL_STYLE, marginBottom: '16px' }}>🎯 Final Blows By Method</div>
+            <div className="scrim-detail__card">
+              <div className="scrim-detail__label"><Crosshair size={14} className="scrim-detail__inline-icon" /> Final Blows By Method</div>
               {(() => {
                 const maxCount = finalBlowsByMethod[0]?.count ?? 1
                 const total = finalBlowsByMethod.reduce((a, m) => a + m.count, 0)

@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useAuth } from '@payloadcms/ui'
+import { User, Users, ChevronDown } from 'lucide-react'
 
 import './index.scss'
 
@@ -100,13 +101,13 @@ export const PollScopeToggle: React.FC = () => {
           type="button"
         >
           <span className="poll-scope-toggle__icon">
-            {scope === 'my-teams' ? '👤' : '👥'}
+            {scope === 'my-teams' ? <User size={14} /> : <Users size={14} />}
           </span>
           <span className="poll-scope-toggle__label">
             {scope === 'my-teams' ? 'My Teams' : 'All Teams'}
           </span>
           <span className={`poll-scope-toggle__arrow ${isOpen ? 'poll-scope-toggle__arrow--open' : ''}`}>
-            ▼
+            <ChevronDown size={12} />
           </span>
         </button>
         
@@ -117,7 +118,7 @@ export const PollScopeToggle: React.FC = () => {
               onClick={() => handleScopeChange('my-teams')}
               type="button"
             >
-              <span className="poll-scope-toggle__option-icon">👤</span>
+              <span className="poll-scope-toggle__option-icon"><User size={14} /></span>
               <span>My Teams</span>
               <span className="poll-scope-toggle__option-desc">Only polls for your assigned teams</span>
             </button>
@@ -126,7 +127,7 @@ export const PollScopeToggle: React.FC = () => {
               onClick={() => handleScopeChange('all-teams')}
               type="button"
             >
-              <span className="poll-scope-toggle__option-icon">👥</span>
+              <span className="poll-scope-toggle__option-icon"><Users size={14} /></span>
               <span>All Teams</span>
               <span className="poll-scope-toggle__option-desc">View polls from all teams</span>
             </button>

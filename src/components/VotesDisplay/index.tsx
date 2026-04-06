@@ -4,6 +4,7 @@ import React from 'react'
 import { useField, useFormFields } from '@payloadcms/ui'
 
 import './index.scss'
+import { BarChart3, Vote } from 'lucide-react'
 
 // Role order for display
 const roleOrder = ['Tank', 'Hitscan', 'Flex DPS', 'Main Support', 'Flex Support']
@@ -31,7 +32,7 @@ export const VotesDisplay: React.FC<{ path: string }> = ({ path }) => {
     return (
       <div className="votes-display votes-display--empty">
         <div className="votes-display__empty-message">
-          <span className="votes-display__empty-icon">📊</span>
+          <span className="votes-display__empty-icon"><BarChart3 size={14} /></span>
           <p>No votes synced yet.</p>
           <p className="votes-display__empty-hint">
             Click <strong>"View Results"</strong> on the poll in Discord to sync votes.
@@ -48,7 +49,7 @@ export const VotesDisplay: React.FC<{ path: string }> = ({ path }) => {
     return (
       <div className="votes-display votes-display--empty">
         <div className="votes-display__empty-message">
-          <span className="votes-display__empty-icon">🗳️</span>
+          <span className="votes-display__empty-icon"><Vote size={14} /></span>
           <p>No votes cast yet.</p>
         </div>
       </div>
@@ -58,7 +59,7 @@ export const VotesDisplay: React.FC<{ path: string }> = ({ path }) => {
   return (
     <div className="votes-display">
       <div className="votes-display__header">
-        <span className="votes-display__header-icon">📊</span>
+        <span className="votes-display__header-icon"><BarChart3 size={14} /></span>
         <span className="votes-display__header-title">Availability Overview</span>
         <span className="votes-display__header-count">
           {daysWithVotes.length} day{daysWithVotes.length !== 1 ? 's' : ''} with availability

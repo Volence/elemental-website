@@ -41,7 +41,7 @@ export const OrganizationStaff: CollectionConfig = {
   admin: {
     useAsTitle: 'displayName',
     defaultColumns: ['displayName', 'roles', 'updatedAt'],
-    description: '👔 Manage organization staff members (owners, HR, moderators, managers, etc.). Staff can have multiple roles.',
+    description: 'Manage organization staff members (owners, HR, moderators, managers, etc.). Staff can have multiple roles.',
     group: 'Organization',
     hidden: ({ user }) => {
       if (!user) return true

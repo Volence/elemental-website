@@ -56,9 +56,9 @@ export const OrphanedPeopleList: React.FC<OrphanedPeopleListProps> = ({
 
   if (visiblePeople.length === 0) {
     return (
-      <div className="alert alert--success" style={{ marginBottom: '1.5rem' }}>
+      <div className="alert alert--success dc-check__details-toggle">
         <p>
-          ✅ All orphaned people have been resolved!
+          All orphaned people have been resolved!
         </p>
       </div>
     )
@@ -66,7 +66,7 @@ export const OrphanedPeopleList: React.FC<OrphanedPeopleListProps> = ({
 
   return (
     <div className="mb-6">
-      <h4 className="mb-2 font-semibold">🚨 Orphaned People ({visiblePeople.length})</h4>
+      <h4 className="mb-2 font-semibold">Orphaned People ({visiblePeople.length})</h4>
       <p className="text-sm mb-3 opacity-80">
         These People entries are not linked to any team (in any role) AND not assigned to any staff position 
         (organization or production). They may be unused entries or need to be linked.
@@ -79,7 +79,7 @@ export const OrphanedPeopleList: React.FC<OrphanedPeopleListProps> = ({
           >
             <div className="notification-item__content">
               <strong>{person.name}</strong>
-              <span style={{ marginLeft: '0.5rem', opacity: 0.7, fontSize: '0.875rem' }}>({person.slug})</span>
+              <span className="dc-check__slug">({person.slug})</span>
             </div>
             <div className="notification-item__actions">
               <a

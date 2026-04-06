@@ -1,20 +1,21 @@
 'use client'
 
 import React from 'react'
+import { FileEdit, Lightbulb } from 'lucide-react'
 
 export default function TemplateInstructions() {
   return (
     <div className="template-instructions">
       <h3 className="template-instructions__title">
-        📝 How to Create Templates
+        <FileEdit size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} /> How to Create Templates
       </h3>
       <ol className="template-instructions__list">
         <li>
-          <strong>Click "Add Post Template"</strong> below to create a new template
+          <strong>Click &quot;Add Post Template&quot;</strong> below to create a new template
         </li>
         <li>
-          <strong>Give it a descriptive name</strong> (e.g., "Match Day Announcement", "Weekly
-          Stream Promo")
+          <strong>Give it a descriptive name</strong> (e.g., &quot;Match Day Announcement&quot;, &quot;Weekly
+          Stream Promo&quot;)
         </li>
         <li>
           <strong>Select the post type</strong> to categorize it (helps with goal tracking)
@@ -43,10 +44,9 @@ export default function TemplateInstructions() {
         </li>
       </ol>
       <p className="template-instructions__tip">
-        💡 <strong>Tip:</strong> Templates help maintain consistent messaging and save time for
+        <Lightbulb size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }} /> <strong>Tip:</strong> Templates help maintain consistent messaging and save time for
         your social media team.
       </p>
     </div>
   )
 }
-

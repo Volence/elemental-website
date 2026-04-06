@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { Modal } from './Modal'
+import { MessageSquare, Volume2 } from 'lucide-react'
 
 interface CreateChannelModalProps {
   isOpen: boolean
@@ -116,7 +117,7 @@ export const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
                 disabled={isCreating}
               />
               <span className="channel-type-label">
-                <span className="channel-type-icon">🔊</span>
+                <span className="channel-type-icon"><Volume2 size={14} /></span>
                 <span>Voice Channel</span>
               </span>
             </label>
@@ -130,7 +131,7 @@ export const CreateChannelModal: React.FC<CreateChannelModalProps> = ({
                 disabled={isCreating}
               />
               <span className="channel-type-label">
-                <span className="channel-type-icon">💬</span>
+                <span className="channel-type-icon"><MessageSquare size={14} /></span>
                 <span>Forum Channel</span>
               </span>
             </label>

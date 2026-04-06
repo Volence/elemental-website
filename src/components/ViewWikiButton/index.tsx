@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { BookOpen } from 'lucide-react'
 import { useDocumentInfo, Button } from '@payloadcms/ui'
 
 /**
@@ -25,7 +26,7 @@ export default function ViewWikiButton() {
         onClick={handleClick}
         size="medium"
       >
-        📖 View in Wiki
+        <BookOpen size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }} /> View in Wiki
       </Button>
     </div>
   )

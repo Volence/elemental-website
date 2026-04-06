@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { Trash2, RefreshCw, Plus, Power, PowerOff } from 'lucide-react'
+import { CheckCircle, Circle, Clock, Eye, Gamepad2, Lightbulb, Monitor, Plus, Power, PowerOff, RefreshCw, Shield, Timer, Trash2, Video, X, XCircle } from 'lucide-react'
 
 interface TwitchStreamer {
   id: string | number
@@ -189,7 +189,7 @@ const TwitchLiveTab: React.FC = () => {
           {streamer.profileImageUrl ? (
             <img src={streamer.profileImageUrl} alt={streamer.displayName || streamer.twitchUsername} />
           ) : (
-            <div className="avatar-placeholder">📺</div>
+            <div className="avatar-placeholder"><Monitor size={14} /></div>
           )}
           {isLive && <span className="live-indicator" />}
         </div>
@@ -207,16 +207,16 @@ const TwitchLiveTab: React.FC = () => {
           {(streamer.bio || personName) && (
             <div className="streamer-meta">
               {streamer.bio && <span className="streamer-bio">{streamer.bio}</span>}
-              {personName && <span className="streamer-person">🛡️ {personName}</span>}
+              {personName && <span className="streamer-person"><Shield size={12} /> {personName}</span>}
             </div>
           )}
           {isLive && (
             <>
               <div className="streamer-stream-info">
-                <span className="stream-game">🎮 {streamer.currentGame || 'Unknown'}</span>
-                <span className="stream-viewers">👁 {(streamer.viewerCount || 0).toLocaleString()}</span>
+                <span className="stream-game"><Gamepad2 size={14} /> {streamer.currentGame || 'Unknown'}</span>
+                <span className="stream-viewers"><Eye size={14} /> {(streamer.viewerCount || 0).toLocaleString()}</span>
                 {streamer.streamStartedAt && (
-                  <span className="stream-duration">⏱ {formatDuration(streamer.streamStartedAt)}</span>
+                  <span className="stream-duration"><Timer size={14} /> {formatDuration(streamer.streamStartedAt)}</span>
                 )}
               </div>
               {streamer.currentStreamTitle && (
@@ -247,14 +247,14 @@ const TwitchLiveTab: React.FC = () => {
     )
   }
 
-  const renderCategorySection = (title: string, emoji: string, categoryStreamers: TwitchStreamer[]) => {
+  const renderCategorySection = (title: string, icon: React.ReactNode, categoryStreamers: TwitchStreamer[]) => {
     const live = categoryStreamers.filter(s => s.isLive && s.active)
     const offline = categoryStreamers.filter(s => !s.isLive || !s.active)
 
     return (
       <div className="streamers-category-group">
         <h4 className="category-group-title">
-          {emoji} {title}
+          {icon} {title}
           <span className="category-count">{categoryStreamers.length} tracked{live.length > 0 ? ` • ${live.length} live` : ''}</span>
         </h4>
 
@@ -282,7 +282,7 @@ const TwitchLiveTab: React.FC = () => {
         )}
 
         {categoryStreamers.length === 0 && (
-          <div className="tab-empty" style={{ padding: '1rem' }}>
+          <div className="tab-empty tab-empty--compact">
             <p className="tab-empty-hint">No streamers in this category yet.</p>
           </div>
         )}
@@ -294,7 +294,7 @@ const TwitchLiveTab: React.FC = () => {
     <div className="integration-tab twitch-tab">
       <div className="tab-header">
         <div className="tab-header-text">
-          <h3>🔴 Twitch Live Roster</h3>
+          <h3><Circle size={12} /> Twitch Live Roster</h3>
           <p>Track streamers across two channels — one for content creators, one for players.</p>
         </div>
         <button
@@ -309,14 +309,14 @@ const TwitchLiveTab: React.FC = () => {
 
       {error && (
         <div className="tab-alert tab-alert-error">
-          <span>❌</span> {error}
-          <button onClick={() => setError(null)}>×</button>
+          <span><XCircle size={12} /></span> {error}
+          <button onClick={() => setError(null)}><X size={10} /></button>
         </div>
       )}
 
       {successMessage && (
         <div className="tab-alert tab-alert-success">
-          <span>✅</span> {successMessage}
+          <span><CheckCircle size={12} /></span> {successMessage}
         </div>
       )}
 
@@ -336,24 +336,22 @@ const TwitchLiveTab: React.FC = () => {
             onChange={(e) => setNewCategory(e.target.value as 'content-creator' | 'player')}
             className="text-input category-select"
           >
-            <option value="content-creator">🎥 Content Creator</option>
-            <option value="player">🎮 Player</option>
+            <option value="content-creator"><Video size={14} /> Content Creator</option>
+            <option value="player"><Gamepad2 size={14} /> Player</option>
           </select>
         </div>
-        <div className="add-form-inputs" style={{ marginTop: '0.5rem' }}>
+        <div className="add-form-inputs add-form-inputs--extra">
           <input
             type="text"
             value={newBio}
             onChange={(e) => setNewBio(e.target.value)}
             placeholder="Bio tagline (optional) — e.g. Flex DPS, Variety streamer"
-            className="text-input"
-            style={{ flex: 1 }}
+            className="text-input bio-input"
           />
           <select
             value={newPerson}
             onChange={(e) => setNewPerson(e.target.value)}
-            className="text-input category-select"
-            style={{ minWidth: '200px' }}
+            className="text-input category-select person-select"
           >
             <option value="">No linked person</option>
             {people.map(p => (
@@ -380,13 +378,13 @@ const TwitchLiveTab: React.FC = () => {
         </div>
       ) : (
         <div className="category-groups">
-          {renderCategorySection('Content Creators', '🎥', creators)}
-          {renderCategorySection('Players', '🎮', players)}
+          {renderCategorySection('Content Creators', <Video size={14} />, creators)}
+          {renderCategorySection('Players', <Gamepad2 size={14} />, players)}
         </div>
       )}
 
       <div className="tab-footer-note">
-        <p>💡 Polls Twitch every 3 minutes. Each live streamer gets their own embed card in Discord.</p>
+        <p><Lightbulb size={14} /> Polls Twitch every 3 minutes. Each live streamer gets their own embed card in Discord.</p>
       </div>
     </div>
   )

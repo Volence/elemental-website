@@ -26,7 +26,7 @@ export const InviteLinks: CollectionConfig = {
   admin: {
     defaultColumns: ['token', 'role', 'assignedTeams', 'departmentsDisplay', 'expiresAt', 'status', 'usedAt'],
     useAsTitle: 'token',
-    description: '🔗 Generate invite links for new users with pre-configured permissions.',
+    description: 'Generate invite links for new users with pre-configured permissions.',
     group: 'System',
   },
   fields: [
