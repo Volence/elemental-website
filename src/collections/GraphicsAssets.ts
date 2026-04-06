@@ -64,7 +64,7 @@ export const GraphicsAssets: CollectionConfig = {
   folders: true, // Enable hierarchical folder organization
   admin: {
     description: 'Graphics department file library. Drag & drop files, create folders to organize.',
-    group: 'Graphics',
+    group: 'Departments',
     hidden: hideGraphicsFromNonStaff,
     useAsTitle: 'filename',
     components: {

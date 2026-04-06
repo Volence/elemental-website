@@ -36,7 +36,7 @@ export const TwitchStreamers: CollectionConfig = {
     ],
   },
   admin: {
-    group: 'Discord',
+    group: 'Data',
     useAsTitle: 'twitchUsername',
     description: 'Twitch streamers to track for the live roster.',
     defaultColumns: ['twitchUsername', 'displayName', 'category', 'isLive', 'currentGame', 'active'],

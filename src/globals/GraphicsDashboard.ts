@@ -6,7 +6,7 @@ export const GraphicsDashboard: GlobalConfig = {
   label: 'Graphics Dashboard',
   admin: {
     description: 'Manage graphics requests, projects, and asset library',
-    group: 'Graphics',
+    group: 'Departments',
     hidden: true, // Hidden - use Graphics Workboard instead
     hideAPIURL: true,
     components: {

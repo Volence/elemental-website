@@ -12,7 +12,7 @@ export const GraphicsAnchor: CollectionConfig = {
     plural: 'Graphics Dashboard',
   },
   admin: {
-    group: 'Graphics',
+    group: 'Departments',
     description: 'Graphics department dashboard',
     hidden: ({ user }) => {
       if (!user) return true

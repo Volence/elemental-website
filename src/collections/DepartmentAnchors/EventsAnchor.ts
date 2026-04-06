@@ -12,7 +12,7 @@ export const EventsAnchor: CollectionConfig = {
     plural: 'Events Dashboard',
   },
   admin: {
-    group: 'Events',
+    group: 'Departments',
     description: 'Events department dashboard',
     hidden: ({ user }) => {
       if (!user) return true

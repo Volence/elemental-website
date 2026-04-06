@@ -6,7 +6,7 @@ export const EventsDashboard: GlobalConfig = {
   label: 'Events Dashboard',
   admin: {
     description: 'Manage movie nights, game nights, PUGs, seminars, and tournaments',
-    group: 'Events',
+    group: 'Departments',
     hidden: true, // Hidden - use Events Workboard instead
     hideAPIURL: true,
     components: {

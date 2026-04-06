@@ -6,7 +6,7 @@ export const SocialMediaConfig: GlobalConfig = {
   label: 'Social Media Settings',
   admin: {
     description: 'Configure templates, goals, and content guidelines for social media posts',
-    group: 'Social Media',
+    group: 'Departments',
     hidden: ({ user }) => {
       if (!user) return true
       // Only show to admins and staff managers

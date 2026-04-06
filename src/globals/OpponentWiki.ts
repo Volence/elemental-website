@@ -6,7 +6,7 @@ export const OpponentWiki: GlobalConfig = {
   label: 'Opponent Wiki',
   admin: {
     description: 'Comprehensive intel profiles for opponent teams',
-    group: 'Competitive',
+    group: 'Departments',
     hidden: true, // Accessed via Competitive Hub tab
     hideAPIURL: true,
     components: {

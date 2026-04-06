@@ -6,7 +6,7 @@ export const ScoutingDashboard: GlobalConfig = {
   label: 'Scouting Dashboard',
   admin: {
     description: 'Manage enemy team research, player profiles, and match analysis',
-    group: 'Recruiting',
+    group: 'Departments',
     hidden: true, // Accessed via Competitive Hub tab
     hideAPIURL: true,
     components: {

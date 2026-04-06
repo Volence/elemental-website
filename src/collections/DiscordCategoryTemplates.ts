@@ -9,7 +9,7 @@ export const DiscordCategoryTemplates: CollectionConfig = {
   },
   admin: {
     description: 'Saved Discord category templates for quick server setup',
-    group: 'Discord',
+    group: 'Data',
     useAsTitle: 'name',
     defaultColumns: ['name', 'description', 'channelCount', 'updatedAt'],
     hidden: true, // Not needed in sidebar

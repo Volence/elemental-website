@@ -6,7 +6,7 @@ export const VideoEditingDashboard: GlobalConfig = {
   label: 'Video Editing Dashboard',
   admin: {
     description: 'Manage video projects, clips of the week, and edits',
-    group: 'Video',
+    group: 'Departments',
     hidden: true, // Hidden - use Video Workboard instead
     hideAPIURL: true,
     components: {
