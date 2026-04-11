@@ -37,11 +37,11 @@ export default function CalendarPreviewWidget() {
 
   useEffect(() => {
     const now = new Date()
-    const threeDaysLater = new Date(now)
-    threeDaysLater.setDate(now.getDate() + 7) // Fetch a week ahead to guarantee 3 days of events
+    const thirtyDaysLater = new Date(now)
+    thirtyDaysLater.setDate(now.getDate() + 30)
     const params = new URLSearchParams({
       'where[dateStart][greater_than]': now.toISOString(),
-      'where[dateStart][less_than]': threeDaysLater.toISOString(),
+      'where[dateStart][less_than]': thirtyDaysLater.toISOString(),
       sort: 'dateStart',
       limit: '15',
     })
