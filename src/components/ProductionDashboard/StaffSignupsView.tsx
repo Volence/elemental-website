@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useAuth } from '@payloadcms/ui'
 import { toast } from '@payloadcms/ui'
-import { AlertTriangle, Calendar, CheckCircle, Circle, Clapperboard, Clock, Eye, Gamepad2, Globe, Lightbulb, Lock, Mic, Target, X } from 'lucide-react'
+import { AlertTriangle, Calendar, CheckCircle, Clapperboard, Clock, Eye, Globe, Lightbulb, Lock, Mic, Target, X } from 'lucide-react'
 
 interface User {
   id: number
@@ -66,165 +66,24 @@ const getUserName = (user: User | number | null | undefined): string => {
   return user.name || user.email || 'Unknown'
 }
 
-const getGroupSignupCount = (group: MatchGroup): number => {
-  const uniqueUsers = new Set<number>()
-  group.matches.forEach(m => {
-    m.productionWorkflow?.observerSignups?.forEach(u => {
-      const id = getUserId(u)
-      if (id) uniqueUsers.add(id)
-    })
-    m.productionWorkflow?.producerSignups?.forEach(u => {
-      const id = getUserId(u)
-      if (id) uniqueUsers.add(id)
-    })
-    m.productionWorkflow?.casterSignups?.forEach(c => {
-      const id = getUserId(c.user)
-      if (id) uniqueUsers.add(id)
-    })
-  })
-  return uniqueUsers.size
-}
-
 const getGroupRoleCounts = (group: MatchGroup) => {
   const observers = new Set<number>()
   const producers = new Set<number>()
   const casters = new Set<number>()
-  const observerNames: string[] = []
-  const producerNames: string[] = []
-  const casterNames: string[] = []
 
   group.matches.forEach(m => {
     m.productionWorkflow?.observerSignups?.forEach(u => {
-      const id = getUserId(u)
-      if (id) {
-        observers.add(id)
-        const name = getUserName(u)
-        if (!observerNames.includes(name)) observerNames.push(name)
-      }
+      const id = getUserId(u); if (id) observers.add(id)
     })
     m.productionWorkflow?.producerSignups?.forEach(u => {
-      const id = getUserId(u)
-      if (id) {
-        producers.add(id)
-        const name = getUserName(u)
-        if (!producerNames.includes(name)) producerNames.push(name)
-      }
+      const id = getUserId(u); if (id) producers.add(id)
     })
     m.productionWorkflow?.casterSignups?.forEach(c => {
-      const id = getUserId(c.user)
-      if (id) {
-        casters.add(id)
-        const name = getUserName(c.user)
-        const style = c.style ? ` (${c.style})` : ''
-        const fullName = `${name}${style}`
-        if (!casterNames.includes(fullName)) casterNames.push(fullName)
-      }
+      const id = getUserId(c.user); if (id) casters.add(id)
     })
   })
 
-  return {
-    observers: observers.size,
-    producers: producers.size,
-    casters: casters.size,
-    observerNames,
-    producerNames,
-    casterNames,
-  }
-}
-
-const groupHasReschedule = (group: MatchGroup): boolean => {
-  return group.matches.some(m => m.productionWorkflow?.dateChanged)
-}
-
-const getRescheduleInfo = (group: MatchGroup): string | null => {
-  const rescheduled = group.matches.find(m => m.productionWorkflow?.dateChanged)
-  if (!rescheduled?.productionWorkflow?.previousDate) return null
-  return new Date(rescheduled.productionWorkflow.previousDate).toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  })
-}
-
-// ─── Signup Tooltip Component ───
-
-function SignupTooltip({ names, count, role }: { names: string[]; count: number; role: string }) {
-  const [showTooltip, setShowTooltip] = useState(false)
-  const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({})
-  const [mounted, setMounted] = useState(false)
-  const tooltipRef = useRef<HTMLDivElement>(null)
-  const wrapperRef = useRef<HTMLDivElement>(null)
-  const calculatedRef = useRef(false)
-
-  useEffect(() => { setMounted(true) }, [])
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (tooltipRef.current && !tooltipRef.current.contains(event.target as Node)) {
-        setShowTooltip(false)
-        calculatedRef.current = false
-      }
-    }
-    if (showTooltip) document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [showTooltip])
-
-  const updatePosition = () => {
-    if (!wrapperRef.current || calculatedRef.current) return
-    calculatedRef.current = true
-    const rect = wrapperRef.current.getBoundingClientRect()
-    const viewportWidth = window.innerWidth
-    const tooltipWidth = 250
-    let left = rect.left + rect.width / 2
-    let transform = 'translateX(-50%)'
-    if (left + tooltipWidth / 2 > viewportWidth - 20) {
-      left = rect.right - 10
-      transform = 'translateX(-100%)'
-    } else if (left - tooltipWidth / 2 < 20) {
-      left = rect.left + 10
-      transform = 'translateX(0)'
-    }
-    setTooltipStyle({
-      position: 'fixed',
-      top: `${rect.bottom + 8}px`,
-      left: `${left}px`,
-      transform,
-      zIndex: 10000,
-    })
-  }
-
-  if (count === 0) return <span className="signup-count-number">0</span>
-
-  const tooltipContent = showTooltip && mounted ? createPortal(
-    <div ref={tooltipRef} className="signup-tooltip" style={tooltipStyle}
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => { setShowTooltip(false); calculatedRef.current = false }}
-    >
-      <div className="signup-tooltip__header">{role} Signups</div>
-      <ul className="signup-tooltip__list">
-        {names.map((name, idx) => <li key={idx}>{name}</li>)}
-      </ul>
-    </div>,
-    document.body
-  ) : null
-
-  return (
-    <>
-      <div className="signup-count-wrapper" ref={wrapperRef}
-        onMouseEnter={() => { calculatedRef.current = false; setShowTooltip(true); setTimeout(updatePosition, 0) }}
-        onMouseLeave={() => { setShowTooltip(false); calculatedRef.current = false }}
-        onClick={() => {
-          if (!showTooltip) { calculatedRef.current = false; setShowTooltip(true); setTimeout(updatePosition, 0) }
-          else { setShowTooltip(false); calculatedRef.current = false }
-        }}
-      >
-        <span className="signup-count-number has-signups">{count}</span>
-      </div>
-      {tooltipContent}
-    </>
-  )
+  return { observers: observers.size, producers: producers.size, casters: casters.size }
 }
 
 // ─── Signup Modal Component ───
@@ -338,127 +197,6 @@ function SignupModal({ matchGroup, currentUserId, onClose, onSignup }: {
   )
 }
 
-// ─── Time Slot Card (used in Available section) ───
-
-function TimeSlotCard({ group, currentUserId, isSignedUp, isAssigned, onOpenSignup }: {
-  group: MatchGroup
-  currentUserId: number | null
-  isSignedUp: boolean
-  isAssigned: boolean
-  onOpenSignup: (group: MatchGroup) => void
-}) {
-  const roleCounts = getGroupRoleCounts(group)
-  const hasReschedule = groupHasReschedule(group)
-  const rescheduleFromDate = getRescheduleInfo(group)
-
-  return (
-    <div className={`time-slot-group ${isSignedUp ? 'time-slot-group--signed-up' : ''} ${hasReschedule ? 'time-slot-group--rescheduled' : ''}`}>
-      <div className="time-slot-group__header">
-        <div className="time-slot-group__info">
-          <h4 className="time-slot-group__datetime">{group.formattedDate}</h4>
-          <div className="time-slot-group__match-preview">
-            {group.matches.map(m => (
-              <span key={m.id} className="time-slot-group__match-tag">
-                {m.title}
-                {m.region && <span className="time-slot-group__region-badge">{m.region}</span>}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <div className="time-slot-group__stats">
-          <span className="time-slot-group__stat"><Eye size={14} /> <SignupTooltip names={roleCounts.observerNames} count={roleCounts.observers} role="Observer" /></span>
-          <span className="time-slot-group__stat"><Clapperboard size={14} /> <SignupTooltip names={roleCounts.producerNames} count={roleCounts.producers} role="Producer" /></span>
-          <span className="time-slot-group__stat"><Mic size={14} /> <SignupTooltip names={roleCounts.casterNames} count={roleCounts.casters} role="Caster" /></span>
-        </div>
-
-        <button
-          className={`staff-signup-btn ${isSignedUp ? 'staff-signup-btn--active' : ''}`}
-          onClick={() => onOpenSignup(group)}
-        >
-          {isSignedUp ? '✓ Signed Up' : 'Sign Up'}
-        </button>
-        {isAssigned && <span className="assigned-badge"><CheckCircle size={12} /> Assigned</span>}
-      </div>
-
-      {hasReschedule && rescheduleFromDate && (
-        <div className="time-slot-group__reschedule-warning">
-          <AlertTriangle size={12} /> Rescheduled from {rescheduleFromDate} — signups were reset
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ─── Pending Signup Card ───
-
-function PendingSignupCard({ dateTime, groupMatches, currentUserId, onRemoveSignup, isRoleAssigned, getMySignupRoles }: {
-  dateTime: string
-  groupMatches: Match[]
-  currentUserId: number | null
-  onRemoveSignup: (matchId: number, role: 'observer' | 'producer' | 'caster') => Promise<void>
-  isRoleAssigned: (match: Match, userId: number | null, role: 'observer' | 'producer' | 'caster') => boolean
-  getMySignupRoles: (match: Match, userId: number | null) => string[]
-}) {
-  const allRoles = new Set<string>()
-  const roleToMatches = new Map<string, number[]>()
-
-  groupMatches.forEach(match => {
-    const roles = getMySignupRoles(match, currentUserId)
-    roles.forEach(role => {
-      allRoles.add(role)
-      const roleKey = role.toLowerCase().split(' ')[0]
-      if (!roleToMatches.has(roleKey)) roleToMatches.set(roleKey, [])
-      roleToMatches.get(roleKey)!.push(match.id)
-    })
-  })
-
-  const formattedDate = new Date(dateTime).toLocaleDateString('en-US', {
-    weekday: 'short', month: 'short', day: 'numeric',
-    hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
-  })
-
-  const matchTitles = groupMatches.map(m => m.title).join(', ')
-
-  return (
-    <div className="pending-signup-row">
-      <div className="pending-signup-row__left">
-        <h4 className="pending-signup-row__date">{formattedDate}</h4>
-        <span className="pending-signup-row__match-count">
-          {groupMatches.length} match{groupMatches.length > 1 ? 'es' : ''}
-        </span>
-      </div>
-      <div className="pending-signup-row__roles">
-        {Array.from(allRoles).map((role, idx) => {
-          const roleKey = role.toLowerCase().split(' ')[0] as 'observer' | 'producer' | 'caster'
-          const isAnyAssigned = groupMatches.some(m => isRoleAssigned(m, currentUserId, roleKey))
-          return (
-            <span key={idx} className="pending-signup-row__role-pill">
-              {role}
-              {isAnyAssigned ? (
-                <span className="pending-signup-row__locked" title="Assigned — cannot remove"><Lock size={14} /></span>
-              ) : (
-                <button
-                  className="pending-signup-row__remove"
-                  onClick={async () => {
-                    const matchIds = roleToMatches.get(roleKey) || []
-                    await Promise.all(matchIds.map(id => onRemoveSignup(id, roleKey)))
-                  }}
-                  title="Remove signup"
-                ><X size={10} /></button>
-              )}
-            </span>
-          )
-        })}
-      </div>
-      <span className="pending-signup-row__badge"><Clock size={12} /> Pending</span>
-      <div className="pending-signup-row__matches" title={matchTitles}>
-        {matchTitles}
-      </div>
-    </div>
-  )
-}
-
 // ─── Main StaffSignupsView ───
 
 export function StaffSignupsView() {
@@ -545,15 +283,15 @@ export function StaffSignupsView() {
     return false
   }
 
-  const getMySignupRoles = (match: Match, userId: number | null): string[] => {
+  const getMySignupRoles = (match: Match, userId: number | null): { role: string; key: 'observer' | 'producer' | 'caster' }[] => {
     if (!userId) return []
     const pw = match.productionWorkflow
     if (!pw) return []
-    const roles: string[] = []
-    if (pw.observerSignups?.some(u => getUserId(u) === userId)) roles.push('Observer')
-    if (pw.producerSignups?.some(u => getUserId(u) === userId)) roles.push('Producer')
+    const roles: { role: string; key: 'observer' | 'producer' | 'caster' }[] = []
+    if (pw.observerSignups?.some(u => getUserId(u) === userId)) roles.push({ role: 'Observer', key: 'observer' })
+    if (pw.producerSignups?.some(u => getUserId(u) === userId)) roles.push({ role: 'Producer', key: 'producer' })
     const caster = pw.casterSignups?.find(c => getUserId(c.user) === userId)
-    if (caster) roles.push(caster.style ? `Caster (${caster.style})` : 'Caster')
+    if (caster) roles.push({ role: caster.style ? `Caster (${caster.style})` : 'Caster', key: 'caster' })
     return roles
   }
 
@@ -591,24 +329,21 @@ export function StaffSignupsView() {
 
   const matchGroups = groupMatchesByTime(matches)
 
-  // Split into priority sections
-  const needsStaffGroups = matchGroups.filter(g => getGroupSignupCount(g) === 0)
-  const hasStaffGroups = matchGroups.filter(g => getGroupSignupCount(g) > 0)
-
   // My signups and assignments
-  const mySignups = matches.filter(m => isUserSignedUp(m, currentUserId))
   const myAssignments = matches.filter(m => isUserAssigned(m, currentUserId) && m.productionWorkflow?.includeInSchedule === true)
   const assignedTimeSlots = new Set(myAssignments.map(m => new Date(m.date).toISOString()))
-  const myPendingSignups = mySignups.filter(m => {
-    return !isUserAssigned(m, currentUserId) && !assignedTimeSlots.has(new Date(m.date).toISOString())
-  })
+  const myPendingSignups = matches.filter(m =>
+    isUserSignedUp(m, currentUserId) &&
+    !isUserAssigned(m, currentUserId) &&
+    !assignedTimeSlots.has(new Date(m.date).toISOString())
+  )
 
   // Group pending signups by time
-  const pendingSignupGroups = new Map<string, Match[]>()
+  const pendingGroupMap = new Map<string, Match[]>()
   myPendingSignups.forEach(match => {
     const dt = new Date(match.date).toISOString()
-    if (!pendingSignupGroups.has(dt)) pendingSignupGroups.set(dt, [])
-    pendingSignupGroups.get(dt)!.push(match)
+    if (!pendingGroupMap.has(dt)) pendingGroupMap.set(dt, [])
+    pendingGroupMap.get(dt)!.push(match)
   })
 
   if (loading) {
@@ -616,144 +351,194 @@ export function StaffSignupsView() {
   }
 
   return (
-    <div className="production-dashboard__staff-signups">
-      <div className="production-dashboard__header">
+    <div className="staff-signups-v2">
+      {/* Header */}
+      <div className="staff-signups-v2__header">
         <h2>Staff Signups</h2>
-        <p className="production-dashboard__subtitle">
-          Sign up for upcoming matches and track your assignments
-        </p>
-        <div className="production-dashboard__timezone-notice">
-          <Globe size={14} /> <strong>Timezone Info:</strong> All times are automatically shown in your local timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone})
+        <p>Sign up for upcoming matches and track your assignments</p>
+        <div className="staff-signups-v2__tz">
+          <Globe size={12} /> Times shown in {Intl.DateTimeFormat().resolvedOptions().timeZone}
         </div>
       </div>
 
-      {/* Section 1: Staff Signed Up — some coverage but may still need more */}
-      <div className="staff-signups-section">
-        <h3><CheckCircle size={12} /> Staff Signed Up{hasStaffGroups.length > 0 ? ` (${hasStaffGroups.length})` : ''}</h3>
-        <p className="production-dashboard__subtitle">
-          Some staff have signed up, but more may still be needed. Don't hesitate to sign up even if others already have!
-        </p>
-        {hasStaffGroups.length === 0 && needsStaffGroups.length === 0 ? (
-          <div className="production-dashboard__empty">
-            <p>No upcoming time slots available for signup.</p>
-          </div>
-        ) : hasStaffGroups.length === 0 ? (
-          <div className="production-dashboard__empty">
-            <p>No time slots have signups yet. Be the first!</p>
-          </div>
-        ) : (
-          <div className="time-slot-groups">
-            {hasStaffGroups.map(group => (
-              <TimeSlotCard
-                key={group.dateTime}
-                group={group}
-                currentUserId={currentUserId}
-                isSignedUp={group.matches.some(m => isUserSignedUp(m, currentUserId))}
-                isAssigned={group.matches.some(m => isUserAssigned(m, currentUserId))}
-                onOpenSignup={g => { setSelectedMatchGroup(g); setShowModal(true) }}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Section 2: Needs Staff (0 signups) */}
-      {needsStaffGroups.length > 0 && (
-        <div className="staff-signups-section staff-signups-section--urgent">
-          <h3><Circle size={12} /> Needs Staff — No Signups Yet</h3>
-          <div className="time-slot-groups">
-            {needsStaffGroups.map(group => (
-              <TimeSlotCard
-                key={group.dateTime}
-                group={group}
-                currentUserId={currentUserId}
-                isSignedUp={group.matches.some(m => isUserSignedUp(m, currentUserId))}
-                isAssigned={group.matches.some(m => isUserAssigned(m, currentUserId))}
-                onOpenSignup={g => { setSelectedMatchGroup(g); setShowModal(true) }}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Section 3: My Assignments */}
-      <div className="staff-signups-section staff-signups-section--assignments">
-        <h3><CheckCircle size={12} /> My Assignments (Confirmed)</h3>
-        {myAssignments.length === 0 ? (
-          <div className="production-dashboard__empty">
-            <p>You haven't been assigned to any matches yet.</p>
-          </div>
-        ) : (
-          <div className="my-signups-list">
+      {/* ── My Assignments (compact pills) ── */}
+      {myAssignments.length > 0 && (
+        <div className="staff-signups-v2__section">
+          <h3 className="staff-signups-v2__section-title staff-signups-v2__section-title--confirmed">
+            <CheckCircle size={14} /> My Assignments ({myAssignments.length})
+          </h3>
+          <div className="staff-signups-v2__assignments">
             {myAssignments.map(match => {
               const assignedRoles = getMyAssignedRoles(match, currentUserId)
               return (
-                <div key={match.id} className={`my-signup-card my-signup-card--assigned ${match.isTournamentSlot ? 'my-signup-card--tournament-slot' : ''}`}>
-                  <div className="my-signup-card__header">
-                    <div>
-                      <h4>
-                        {match.title}
-                        {match.isTournamentSlot && <span className="time-slot-match__slot-badge"><Target size={14} /> Slot</span>}
-                      </h4>
-                      <p className="my-signup-card__date">
-                        {new Date(match.date).toLocaleDateString('en-US', {
-                          weekday: 'short', month: 'short', day: 'numeric',
-                          hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
-                        })}
-                      </p>
-                      {match.opponent && (
-                        <p className="my-signup-card__opponent"><strong>Opponent:</strong> {match.opponent}</p>
-                      )}
-                      {match.faceitLobby && (
-                        <p className="my-signup-card__lobby">
-                          <a href={match.faceitLobby} target="_blank" rel="noopener noreferrer" className="my-signup-card__lobby-link">
-                            <Gamepad2 size={14} /> Join Lobby →
-                          </a>
-                        </p>
-                      )}
-                    </div>
-                    <div className="my-signup-card__status">
-                      <span className="status-badge status-badge--assigned"><CheckCircle size={12} /> Confirmed</span>
-                    </div>
-                  </div>
-                  <div className="my-signup-card__roles">
-                    <strong>Assigned as:</strong>
-                    <div className="my-signup-card__role-list">
-                      {assignedRoles.map((role, idx) => (
-                        <div key={idx} className="my-signup-role my-signup-role--assigned">
-                          <span>{role}</span>
-                          <span className="my-signup-role__locked" title="Cannot remove - you've been assigned"><Lock size={14} /></span>
-                        </div>
-                      ))}
-                    </div>
+                <div key={match.id} className="staff-signups-v2__assignment-row">
+                  <span className="staff-signups-v2__assignment-date">
+                    {new Date(match.date).toLocaleDateString('en-US', {
+                      weekday: 'short', month: 'short', day: 'numeric',
+                      hour: 'numeric', minute: '2-digit',
+                    })}
+                  </span>
+                  <span className="staff-signups-v2__assignment-title">{match.title}</span>
+                  <div className="staff-signups-v2__assignment-roles">
+                    {assignedRoles.map((role, idx) => (
+                      <span key={idx} className="staff-signups-v2__role-pill staff-signups-v2__role-pill--confirmed">
+                        <Lock size={10} /> {role}
+                      </span>
+                    ))}
                   </div>
                 </div>
               )
             })}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* Section 4: My Pending Signups */}
-      <div className="staff-signups-section">
-        <h3><Clock size={12} /> My Signups (Pending Confirmation)</h3>
-        {pendingSignupGroups.size === 0 ? (
-          <div className="production-dashboard__empty">
-            <p>No pending signups. All your signups have been confirmed!</p>
+      {/* ── My Pending Signups (compact pills with remove) ── */}
+      {pendingGroupMap.size > 0 && (
+        <div className="staff-signups-v2__section">
+          <h3 className="staff-signups-v2__section-title staff-signups-v2__section-title--pending">
+            <Clock size={14} /> Pending Signups ({myPendingSignups.length})
+          </h3>
+          <div className="staff-signups-v2__pending">
+            {Array.from(pendingGroupMap.entries()).map(([dateTime, groupMatches]) => {
+              const allRoles = new Map<string, { key: 'observer' | 'producer' | 'caster'; matchIds: number[] }>()
+              groupMatches.forEach(match => {
+                const roles = getMySignupRoles(match, currentUserId)
+                roles.forEach(r => {
+                  if (!allRoles.has(r.role)) allRoles.set(r.role, { key: r.key, matchIds: [] })
+                  allRoles.get(r.role)!.matchIds.push(match.id)
+                })
+              })
+
+              return (
+                <div key={dateTime} className="staff-signups-v2__pending-row">
+                  <span className="staff-signups-v2__pending-date">
+                    {new Date(dateTime).toLocaleDateString('en-US', {
+                      weekday: 'short', month: 'short', day: 'numeric',
+                      hour: 'numeric', minute: '2-digit',
+                    })}
+                  </span>
+                  <span className="staff-signups-v2__pending-matches">
+                    {groupMatches.length} match{groupMatches.length > 1 ? 'es' : ''}
+                  </span>
+                  <div className="staff-signups-v2__pending-roles">
+                    {Array.from(allRoles.entries()).map(([roleName, { key, matchIds }]) => {
+                      const isLocked = groupMatches.some(m => isRoleAssigned(m, currentUserId, key))
+                      return (
+                        <span key={roleName} className={`staff-signups-v2__role-pill staff-signups-v2__role-pill--pending staff-signups-v2__role-pill--${key}`}>
+                          {roleName}
+                          {isLocked ? (
+                            <Lock size={10} className="staff-signups-v2__role-lock" />
+                          ) : (
+                            <button
+                              className="staff-signups-v2__role-remove"
+                              onClick={async () => {
+                                await Promise.all(matchIds.map(id => handleRemoveSignup(id, key)))
+                              }}
+                              title="Remove signup"
+                            >
+                              <X size={10} />
+                            </button>
+                          )}
+                        </span>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })}
           </div>
+        </div>
+      )}
+
+      {/* ── Available Time Slots (compact table) ── */}
+      <div className="staff-signups-v2__section">
+        <h3 className="staff-signups-v2__section-title">
+          Available Time Slots ({matchGroups.length})
+        </h3>
+        {matchGroups.length === 0 ? (
+          <div className="staff-signups-v2__empty">No upcoming time slots available for signup.</div>
         ) : (
-          <div className="my-signups-list">
-            {Array.from(pendingSignupGroups.entries()).map(([dateTime, groupMatches]) => (
-              <PendingSignupCard
-                key={dateTime}
-                dateTime={dateTime}
-                groupMatches={groupMatches}
-                currentUserId={currentUserId}
-                onRemoveSignup={handleRemoveSignup}
-                isRoleAssigned={isRoleAssigned}
-                getMySignupRoles={getMySignupRoles}
-              />
-            ))}
+          <div className="collection-list-tab__table-wrap">
+            <table className="collection-list-tab__table">
+              <thead>
+                <tr>
+                  <th>Date & Time</th>
+                  <th>Matches</th>
+                  <th style={{ textAlign: 'center' }}><Eye size={12} /> Obs</th>
+                  <th style={{ textAlign: 'center' }}><Clapperboard size={12} /> Prod</th>
+                  <th style={{ textAlign: 'center' }}><Mic size={12} /> Cast</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {matchGroups.map(group => {
+                  const counts = getGroupRoleCounts(group)
+                  const userSignedUp = group.matches.some(m => isUserSignedUp(m, currentUserId))
+                  const userAssigned = group.matches.some(m => isUserAssigned(m, currentUserId))
+                  const hasReschedule = group.matches.some(m => m.productionWorkflow?.dateChanged)
+                  const totalSignups = counts.observers + counts.producers + counts.casters
+
+                  return (
+                    <tr key={group.dateTime} className={`collection-list-tab__row ${hasReschedule ? 'collection-list-tab__row--warning' : ''}`}>
+                      <td className="staff-signups-v2__td-date">
+                        {group.formattedDate}
+                        {hasReschedule && (
+                          <span className="staff-signups-v2__reschedule-icon" title="Rescheduled — signups were reset">
+                            <AlertTriangle size={12} />
+                          </span>
+                        )}
+                      </td>
+                      <td>
+                        <div className="staff-signups-v2__match-tags">
+                          {group.matches.map(m => (
+                            <span key={m.id} className="staff-signups-v2__match-tag">
+                              {m.title}
+                              {m.isTournamentSlot && <Target size={10} className="staff-signups-v2__slot-icon" />}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="staff-signups-v2__td-count">
+                        <span className={counts.observers > 0 ? 'staff-signups-v2__count--has' : 'staff-signups-v2__count--none'}>
+                          {counts.observers}
+                        </span>
+                      </td>
+                      <td className="staff-signups-v2__td-count">
+                        <span className={counts.producers > 0 ? 'staff-signups-v2__count--has' : 'staff-signups-v2__count--none'}>
+                          {counts.producers}
+                        </span>
+                      </td>
+                      <td className="staff-signups-v2__td-count">
+                        <span className={counts.casters > 0 ? 'staff-signups-v2__count--has' : 'staff-signups-v2__count--none'}>
+                          {counts.casters}
+                        </span>
+                      </td>
+                      <td>
+                        {userAssigned ? (
+                          <span className="collection-list-tab__badge collection-list-tab__badge--complete">Assigned</span>
+                        ) : userSignedUp ? (
+                          <span className="collection-list-tab__badge collection-list-tab__badge--scheduled">Signed Up</span>
+                        ) : totalSignups === 0 ? (
+                          <span className="collection-list-tab__badge collection-list-tab__badge--cancelled">Needs Staff</span>
+                        ) : (
+                          <span className="collection-list-tab__badge">Open</span>
+                        )}
+                      </td>
+                      <td>
+                        <button
+                          className={`staff-signups-v2__action-btn ${userSignedUp ? 'staff-signups-v2__action-btn--active' : ''}`}
+                          onClick={() => { setSelectedMatchGroup(group); setShowModal(true) }}
+                        >
+                          {userSignedUp ? '✓ Edit' : 'Sign Up'}
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

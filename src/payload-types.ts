@@ -86,6 +86,7 @@ export interface Config {
     'recruitment-listings': RecruitmentListing;
     'recruitment-applications': RecruitmentApplication;
     'discord-polls': DiscordPoll;
+    'availability-calendars': AvailabilityCalendar;
     'graphics-anchor': GraphicsAnchor;
     'branding-guide-anchor': BrandingGuideAnchor;
     'graphics-assets': GraphicsAsset;
@@ -136,6 +137,7 @@ export interface Config {
     'recruitment-listings': RecruitmentListingsSelect<false> | RecruitmentListingsSelect<true>;
     'recruitment-applications': RecruitmentApplicationsSelect<false> | RecruitmentApplicationsSelect<true>;
     'discord-polls': DiscordPollsSelect<false> | DiscordPollsSelect<true>;
+    'availability-calendars': AvailabilityCalendarsSelect<false> | AvailabilityCalendarsSelect<true>;
     'graphics-anchor': GraphicsAnchorSelect<false> | GraphicsAnchorSelect<true>;
     'branding-guide-anchor': BrandingGuideAnchorSelect<false> | BrandingGuideAnchorSelect<true>;
     'graphics-assets': GraphicsAssetsSelect<false> | GraphicsAssetsSelect<true>;
@@ -519,6 +521,10 @@ export interface Person {
    */
   slug?: string | null;
   /**
+   * Discord User ID (17-19 digits). Used for schedule availability and auto-fill matching. Auto-set when the linked User connects via Discord OAuth. Can also be set manually here.
+   */
+  discordId?: string | null;
+  /**
    * Optional biography or description
    */
   bio?: string | null;
@@ -579,6 +585,10 @@ export interface Person {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Show this person in the Live Streamers section when streaming. Requires a Twitch URL in Social Links.
+   */
+  showInLiveStreamers?: boolean | null;
   /**
    * Internal notes about this person (not displayed publicly)
    */
@@ -757,9 +767,55 @@ export interface Team {
     scrimCodesThreadId?: string | null;
   };
   /**
-   * Default time slot for schedules (e.g., "8-10 EST")
+   * Timezone for availability calendars and schedule display
    */
-  defaultTimeSlot?: string | null;
+  scheduleTimezone?:
+    | (
+        | 'America/New_York'
+        | 'America/Chicago'
+        | 'America/Denver'
+        | 'America/Los_Angeles'
+        | 'America/Halifax'
+        | 'America/Sao_Paulo'
+        | 'America/Argentina/Buenos_Aires'
+        | 'America/Santiago'
+        | 'Europe/London'
+        | 'Europe/Berlin'
+        | 'Europe/Helsinki'
+        | 'Europe/Moscow'
+        | 'Europe/Lisbon'
+        | 'Africa/Johannesburg'
+        | 'Africa/Nairobi'
+        | 'Asia/Dubai'
+        | 'Asia/Kolkata'
+        | 'Asia/Singapore'
+        | 'Asia/Tokyo'
+        | 'Asia/Seoul'
+        | 'Asia/Shanghai'
+        | 'Asia/Hong_Kong'
+        | 'Australia/Perth'
+        | 'Australia/Adelaide'
+        | 'Australia/Sydney'
+        | 'Pacific/Auckland'
+      )
+    | null;
+  /**
+   * Time blocks for availability calendars. Default: 3 blocks covering 6 PM to midnight in the team's timezone.
+   */
+  scheduleBlocks?:
+    | {
+        label: string;
+        /**
+         * 24h format
+         */
+        startTime: string;
+        /**
+         * 24h format
+         */
+        endTime: string;
+        id?: string | null;
+      }[]
+    | null;
   /**
    * URL-friendly identifier (auto-generated from name). Admins can edit.
    */
@@ -1290,7 +1346,7 @@ export interface User {
    */
   avatar?: (number | null) | Media;
   /**
-   * Your Discord User ID (18-19 digits). Link your Discord account to track polls you create via /schedulepoll. Right-click your profile in Discord → Copy User ID (requires Developer Mode enabled in Discord settings).
+   * Discord User ID — used for "Login with Discord". Set via the Link Discord button below, or manually by admins. Also auto-sets the linked Person's Discord ID for calendar matching.
    */
   discordId?: string | null;
   /**
@@ -1333,6 +1389,10 @@ export interface User {
      * Grants access to Scouting Dashboard (enemy team intel, research)
      */
     isScoutingStaff?: boolean | null;
+    /**
+     * Content creator — streams appear in Creator Live channel instead of Player Live
+     */
+    isContentCreator?: boolean | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -2024,7 +2084,7 @@ export interface ScrimOutcome {
   createdAt: string;
 }
 /**
- * Create and manage team schedules - from polls or manually. Supports multi-block days, ringers, and Discord posting.
+ * Create and manage team schedules - from polls, calendars, or manually. Supports multi-block days, ringers, and Discord posting.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "discord-polls".
@@ -2053,6 +2113,10 @@ export interface DiscordPoll {
    * Team this schedule belongs to
    */
   team: number | Team;
+  /**
+   * How availability data is collected
+   */
+  scheduleType?: ('poll' | 'calendar' | 'manual') | null;
   status?: ('active' | 'closed' | 'scheduled') | null;
   /**
    * e.g., "8-10 EST"
@@ -2078,6 +2142,16 @@ export interface DiscordPoll {
    * How this schedule was created
    */
   createdVia?: ('discord-command' | 'admin-panel') | null;
+  dataSource?: ('poll' | 'calendar' | 'manual') | null;
+  availabilityCalendar?: (number | null) | AvailabilityCalendar;
+  /**
+   * Number of players who have responded
+   */
+  responseCount?: number | null;
+  /**
+   * Public link for players to fill in availability
+   */
+  shareLink?: string | null;
   /**
    * Name for this schedule (e.g., "Week of Jan 20")
    */
@@ -2089,6 +2163,27 @@ export interface DiscordPoll {
     start?: string | null;
     end?: string | null;
   };
+  responses?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  timeSlots?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  timezone?: string | null;
+  discordChannelId?: string | null;
+  discordMessageId?: string | null;
   /**
    * Who did you scrim against?
    */
@@ -2121,6 +2216,79 @@ export interface DiscordPoll {
    * Post-scrim thoughts, areas to improve, etc.
    */
   scrimNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Legacy — new calendars are created in the unified Schedules collection.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "availability-calendars".
+ */
+export interface AvailabilityCalendar {
+  id: number;
+  /**
+   * Auto-generated from team + date range (e.g., "Week of Apr 14")
+   */
+  title: string;
+  /**
+   * Team this calendar belongs to
+   */
+  team: number | Team;
+  status?: ('open' | 'closed') | null;
+  /**
+   * Number of players who have responded
+   */
+  responseCount?: number | null;
+  /**
+   * Flagged when a player changes availability after the linked schedule was built
+   */
+  availabilityChangedAfterSchedule?: boolean | null;
+  /**
+   * Calendar date range
+   */
+  dateRangeDisplay?: string | null;
+  /**
+   * Public link for players to fill in availability
+   */
+  shareLink?: string | null;
+  /**
+   * Created by
+   */
+  createdBy?: (number | null) | User;
+  /**
+   * How this calendar was created
+   */
+  createdVia?: ('discord-command' | 'admin-panel') | null;
+  /**
+   * Schedule built from this calendar's data
+   */
+  linkedSchedule?: (number | null) | DiscordPoll;
+  dateRange?: {
+    start?: string | null;
+    end?: string | null;
+  };
+  timeSlots?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  timezone?: string | null;
+  responses?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  discordMessageId?: string | null;
+  discordChannelId?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2618,6 +2786,10 @@ export interface InviteLink {
      * Grants access to the Scouting Dashboard (team research, player profiles)
      */
     isScoutingStaff?: boolean | null;
+    /**
+     * Content creator — streams appear in Creator Live channel instead of Player Live
+     */
+    isContentCreator?: boolean | null;
   };
   /**
    * Optional: Pre-link this invite to a Person record (connects user to their BattleTags and scrim stats)
@@ -2856,6 +3028,10 @@ export interface PayloadLockedDocument {
         value: number | DiscordPoll;
       } | null)
     | ({
+        relationTo: 'availability-calendars';
+        value: number | AvailabilityCalendar;
+      } | null)
+    | ({
         relationTo: 'graphics-anchor';
         value: number | GraphicsAnchor;
       } | null)
@@ -3088,6 +3264,7 @@ export interface MediaBlockSelect<T extends boolean = true> {
 export interface PeopleSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
+  discordId?: T;
   bio?: T;
   photo?: T;
   socialLinks?:
@@ -3112,6 +3289,7 @@ export interface PeopleSelect<T extends boolean = true> {
         alias?: T;
         id?: T;
       };
+  showInLiveStreamers?: T;
   notes?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -3183,7 +3361,15 @@ export interface TeamsSelect<T extends boolean = true> {
         scheduleThreadId?: T;
         scrimCodesThreadId?: T;
       };
-  defaultTimeSlot?: T;
+  scheduleTimezone?: T;
+  scheduleBlocks?:
+    | T
+    | {
+        label?: T;
+        startTime?: T;
+        endTime?: T;
+        id?: T;
+      };
   slug?: T;
   activeTournaments?: T;
   competitiveRating?: T;
@@ -3607,6 +3793,7 @@ export interface DiscordPollsSelect<T extends boolean = true> {
   votes?: T;
   schedule?: T;
   team?: T;
+  scheduleType?: T;
   status?: T;
   timeSlot?: T;
   dateRangeDisplay?: T;
@@ -3614,6 +3801,10 @@ export interface DiscordPollsSelect<T extends boolean = true> {
   calendarMessageId?: T;
   createdBy?: T;
   createdVia?: T;
+  dataSource?: T;
+  availabilityCalendar?: T;
+  responseCount?: T;
+  shareLink?: T;
   pollName?: T;
   messageId?: T;
   channelId?: T;
@@ -3624,6 +3815,11 @@ export interface DiscordPollsSelect<T extends boolean = true> {
         start?: T;
         end?: T;
       };
+  responses?: T;
+  timeSlots?: T;
+  timezone?: T;
+  discordChannelId?: T;
+  discordMessageId?: T;
   opponentTeam?: T;
   ourRating?: T;
   opponentRating?: T;
@@ -3638,6 +3834,35 @@ export interface DiscordPollsSelect<T extends boolean = true> {
         id?: T;
       };
   scrimNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "availability-calendars_select".
+ */
+export interface AvailabilityCalendarsSelect<T extends boolean = true> {
+  title?: T;
+  team?: T;
+  status?: T;
+  responseCount?: T;
+  availabilityChangedAfterSchedule?: T;
+  dateRangeDisplay?: T;
+  shareLink?: T;
+  createdBy?: T;
+  createdVia?: T;
+  linkedSchedule?: T;
+  dateRange?:
+    | T
+    | {
+        start?: T;
+        end?: T;
+      };
+  timeSlots?: T;
+  timezone?: T;
+  responses?: T;
+  discordMessageId?: T;
+  discordChannelId?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3891,6 +4116,7 @@ export interface UsersSelect<T extends boolean = true> {
         isVideoStaff?: T;
         isEventsStaff?: T;
         isScoutingStaff?: T;
+        isContentCreator?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -3938,6 +4164,7 @@ export interface InviteLinksSelect<T extends boolean = true> {
         isVideoStaff?: T;
         isEventsStaff?: T;
         isScoutingStaff?: T;
+        isContentCreator?: T;
       };
   linkedPerson?: T;
   email?: T;

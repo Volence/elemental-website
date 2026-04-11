@@ -20,6 +20,7 @@ const AuditLogView = lazy(() => import('@/components/AuditLogView'))
 const ActiveSessionsView = lazy(() => import('@/components/ActiveSessionsView'))
 const DatabaseHealthView = lazy(() => import('@/components/DatabaseHealthView'))
 const DataConsistencyView = lazy(() => import('@/components/DataConsistencyView'))
+const IgnoredDuplicatesView = lazy(() => import('./IgnoredDuplicatesView'))
 
 interface Tab {
   id: string
@@ -35,6 +36,7 @@ const TABS: Tab[] = [
   { id: 'sessions', label: 'Sessions', icon: <Users size={16} />, description: 'Active user sessions' },
   { id: 'database', label: 'Database', icon: <Database size={16} />, description: 'Collection health & stats' },
   { id: 'consistency', label: 'Data Integrity', icon: <FileSearch size={16} />, description: 'Check & fix data issues' },
+  { id: 'duplicates', label: 'Ignored Dups', icon: <Users size={16} />, description: 'View ignored merge pairs' },
 ]
 
 function TabLoadingSpinner() {
@@ -64,6 +66,7 @@ export default function SystemHealthHub() {
       case 'sessions': return <ActiveSessionsView />
       case 'database': return <DatabaseHealthView />
       case 'consistency': return <DataConsistencyView />
+      case 'duplicates': return <IgnoredDuplicatesView />
       default: return null
     }
   }

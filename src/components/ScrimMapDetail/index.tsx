@@ -6,6 +6,7 @@ import KillfeedTab from './KillfeedTab'
 import ChartsTab from './ChartsTab'
 import EventsTab from './EventsTab'
 import CompareTab from './CompareTab'
+import ScrimAnalyticsTabs from '@/components/ScrimAnalyticsTabs'
 
 type PlayerRow = {
   name: string
@@ -201,20 +202,26 @@ export default function ScrimMapDetailView() {
 
   if (loading) {
     return (
+      <>
+      <ScrimAnalyticsTabs activeTab="scrims" />
       <div className="scrim-players__loading">
         <div className="scrim-players__loading-icon"><Loader2 size={32} /></div>
         <div className="scrim-players__loading-text">Loading map analytics…</div>
       </div>
+      </>
     )
   }
   if (error || !data) {
     return (
+      <>
+      <ScrimAnalyticsTabs activeTab="scrims" />
       <div className="scrim-players__error">
         <p><AlertCircle size={16} style={{ verticalAlign: 'middle', marginRight: '6px' }} />{error || 'Unknown error'}</p>
         <a href="/admin/scrims" className="scrim-detail__back-link">
           <ArrowLeft size={12} /> Back to scrims
         </a>
       </div>
+      </>
     )
   }
 
@@ -254,6 +261,8 @@ export default function ScrimMapDetailView() {
   const TEAM2_DIM = isDual ? 'rgba(245, 158, 11, 0.08)' : RED_DIM
 
   return (
+    <>
+    <ScrimAnalyticsTabs activeTab="scrims" />
     <div className="scrim-detail__content" style={{ background: BG, minHeight: '100%' }}>
       {/* Header */}
       <div className="scrim-detail__header">
@@ -713,6 +722,7 @@ export default function ScrimMapDetailView() {
       )}
       </>}
     </div>
+    </>
   )
 }
 

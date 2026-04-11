@@ -3,7 +3,7 @@ import prisma from '@/lib/prisma'
 import { getUserScope } from '@/access/scrimScope'
 import { getFinalRoundStats } from '@/lib/scrim-parser/data-access'
 import { groupKillsIntoFights, round } from '@/lib/scrim-parser/utils'
-import { calculateStatsForMap } from '@/lib/scrim-parser/calculate-stats'
+import { batchCalculateStatsForMap } from '@/lib/scrim-parser/batch-stats'
 import { heroRoleMapping, getRoleForHero } from '@/lib/scrim-parser/heroes'
 
 // ── Display Name Resolution ──
@@ -230,7 +230,7 @@ export async function GET(req: NextRequest) {
       where: { mapDataId: mapId, event_ability: 'Ultimate' },
       select: { attacker_team: true },
     }),
-    calculateStatsForMap(mapId),
+    batchCalculateStatsForMap(mapId),
     // Ajax detection: fetch Lúcio ult starts/ends and all kills
     prisma.scrimUltimateStart.findMany({
       where: { mapDataId: mapId, player_hero: { in: ['Lúcio', 'Lucio'] } },

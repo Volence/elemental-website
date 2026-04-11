@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Loader2, AlertCircle, ArrowLeft, ChevronDown, Swords, Heart, Crosshair, Zap, Clock, Skull, Trophy, MapPin, TrendingUp, Flame } from 'lucide-react'
 import RangeFilter, { type RangeValue } from '@/components/RangeFilter'
+import ScrimAnalyticsTabs from '@/components/ScrimAnalyticsTabs'
 
 // ── Types ──
 
@@ -214,22 +215,28 @@ export default function ScrimPlayerDetailView() {
 
   if (loading) {
     return (
+      <>
+      <ScrimAnalyticsTabs activeTab="players" />
       <div className="scrim-players__loading">
         <div className="scrim-players__loading-icon">
           <Loader2 size={32} />
         </div>
         <div className="scrim-players__loading-text">Loading player analytics…</div>
       </div>
+      </>
     )
   }
   if (error || !data) {
     return (
+      <>
+      <ScrimAnalyticsTabs activeTab="players" />
       <div className="scrim-players__error">
         <p><AlertCircle size={16} style={{ verticalAlign: 'middle', marginRight: '6px' }} />{error || 'Unknown error'}</p>
         <a href="/admin/scrim-players" className="scrim-detail__back-link">
           <ArrowLeft size={12} /> Back to players
         </a>
       </div>
+      </>
     )
   }
 
@@ -255,6 +262,8 @@ export default function ScrimPlayerDetailView() {
     : data.career.eliminations.toString()
 
   return (
+    <>
+    <ScrimAnalyticsTabs activeTab="players" />
     <div className="scrim-detail scrim-detail__bg">
       {/* Ambient floating glow orbs */}
       <div className="scrim-detail__orb" style={{ top: '10%', right: '5%', width: '400px', height: '400px', background: `radial-gradient(circle, ${CYAN}06 0%, transparent 70%)` }} />
@@ -417,6 +426,7 @@ export default function ScrimPlayerDetailView() {
 
       </div>
     </div>
+    </>
   )
 
   function renderAnalyticsTab() {

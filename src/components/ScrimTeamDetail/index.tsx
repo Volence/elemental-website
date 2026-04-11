@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { Loader2, AlertCircle, ArrowLeft } from 'lucide-react'
 import RangeFilter, { type RangeValue } from '@/components/RangeFilter'
+import ScrimAnalyticsTabs from '@/components/ScrimAnalyticsTabs'
 
 // ── Types ──
 interface TopHero { hero: string; time: number }
@@ -117,11 +118,13 @@ export default function ScrimTeamDetailView() {
       .finally(() => setLoading(false))
   }, [range])
 
-  if (loading) return <div className="scrim-players__loading"><div className="scrim-players__loading-icon"><Loader2 size={32} /></div><div className="scrim-players__loading-text">Loading team stats…</div></div>
-  if (error) return <div className="scrim-players__error"><p><AlertCircle size={16} style={{ verticalAlign: 'middle', marginRight: '6px' }} />{error}</p></div>
+  if (loading) return <><ScrimAnalyticsTabs activeTab="scrims" /><div className="scrim-players__loading"><div className="scrim-players__loading-icon"><Loader2 size={32} /></div><div className="scrim-players__loading-text">Loading team stats…</div></div></>
+  if (error) return <><ScrimAnalyticsTabs activeTab="scrims" /><div className="scrim-players__error"><p><AlertCircle size={16} style={{ verticalAlign: 'middle', marginRight: '6px' }} />{error}</p></div></>
   if (!data) return null
 
   return (
+    <>
+    <ScrimAnalyticsTabs activeTab="scrims" />
     <div className="scrim-detail__content" style={{ maxWidth: '1200px' }}>
       {/* Header */}
       <div className="scrim-detail__header">
@@ -153,6 +156,7 @@ export default function ScrimTeamDetailView() {
       {tab === 'heroes' && <HeroesTab data={data} />}
       {tab === 'teamfights' && <TeamfightsTab data={data} />}
     </div>
+    </>
   )
 }
 

@@ -91,7 +91,7 @@ function createScrimEmbed(
   for (const slot of block.slots) {
     let playerName = '—'
     if (slot.isRinger && slot.ringerName) {
-      playerName = `${slot.ringerName} (ringer)`
+      playerName = `${slot.ringerName}*`
     } else if (slot.playerId) {
       playerName = playerMap.get(slot.playerId) || '?'
     }

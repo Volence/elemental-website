@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react'
 import { Loader2, AlertCircle, ArrowLeft, Trophy, Crown, TrendingUp, Swords, Crosshair, ChevronUp, ChevronDown } from 'lucide-react'
+import ScrimAnalyticsTabs from '@/components/ScrimAnalyticsTabs'
 
 // ── Types ──
 
@@ -397,29 +398,35 @@ export default function ScrimHeroDetailView() {
   // ── Loading / Error states ──
   if (loading) {
     return (
+      <>
+      <ScrimAnalyticsTabs activeTab="heroes" />
       <div className="scrim-players__loading">
         <div className="scrim-players__loading-icon"><Loader2 size={32} /></div>
         <div className="scrim-players__loading-text">Loading hero stats...</div>
       </div>
+      </>
     )
   }
 
   if (error) {
     return (
+      <>
+      <ScrimAnalyticsTabs activeTab="heroes" />
       <div className="scrim-players__error">
         <p><AlertCircle size={16} style={{ verticalAlign: 'middle', marginRight: '6px' }} />{error}</p>
       </div>
+      </>
     )
   }
 
   // ── Hero Detail View ──
   if (selectedHero && heroDetail) {
-    return renderHeroDetail()
+    return <><ScrimAnalyticsTabs activeTab="heroes" />{renderHeroDetail()}</>
   }
 
   // ── Hero List View ──
   if (heroList) {
-    return renderHeroList()
+    return <><ScrimAnalyticsTabs activeTab="heroes" />{renderHeroList()}</>
   }
 
   return null

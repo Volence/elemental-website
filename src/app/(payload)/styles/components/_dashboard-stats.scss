@@ -299,3 +299,396 @@
   }
 }
 
+/* ============================================
+ * Enhanced Dashboard Layout
+ * ============================================ */
+
+.dashboard-enhanced {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+
+  &__welcome {
+    margin-bottom: 0.25rem;
+  }
+
+  &__greeting {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.95);
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  &__subtitle {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.45);
+    margin: 0.25rem 0 0 0;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+
+    @media (max-width: 900px) {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+/* ============================================
+ * Quick Actions Bar
+ * ============================================ */
+
+.dashboard-quick-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+
+  &__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    backdrop-filter: blur(8px);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--action-color, rgba(255, 255, 255, 0.2));
+      box-shadow: 0 0 16px color-mix(in srgb, var(--action-color, #06b6d4) 30%, transparent);
+      color: var(--action-color, #fff);
+      transform: translateY(-1px);
+    }
+  }
+
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    color: var(--action-color, rgba(255, 255, 255, 0.6));
+    transition: color 0.25s ease;
+  }
+}
+
+/* ============================================
+ * Shared Dashboard Widget
+ * ============================================ */
+
+.dashboard-widget {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.125rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  &__header-icon {
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  &__title {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 1rem 0 0.75rem 0 !important;
+    padding-bottom: 0.75rem !important;
+    flex: 1;
+  }
+
+  &__count {
+    background: rgba(6, 182, 212, 0.15);
+    color: #06b6d4;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    min-width: 1.25rem;
+    text-align: center;
+  }
+
+  &__view-all {
+    font-size: 0.75rem;
+    color: rgba(6, 182, 212, 0.6);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: #06b6d4;
+    }
+  }
+
+  &__overdue {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.12);
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+  }
+
+  &__body {
+    padding: 0;
+  }
+
+  &__loading,
+  &__empty {
+    padding: 1.5rem;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 0.8125rem;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Shared row styling */
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.625rem 1.125rem;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.2s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+  }
+
+  &__row-date {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    min-width: 5.5rem;
+    flex-shrink: 0;
+  }
+
+  &__row-day {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+
+    &--today {
+      color: #22c55e;
+      font-weight: 700;
+    }
+
+    &--tomorrow {
+      color: #f59e0b;
+      font-weight: 700;
+    }
+  }
+
+  &__row-time {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.6875rem;
+    color: rgba(255, 255, 255, 0.35);
+  }
+
+  &__row-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+    flex: 1;
+  }
+
+  &__row-title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__row-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  /* League badge */
+  &__league-badge {
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border: 1px solid;
+    padding: 0 0.375rem;
+    border-radius: 4px;
+    line-height: 1.5;
+  }
+
+  &__region {
+    font-size: 0.6875rem;
+    color: rgba(255, 255, 255, 0.35);
+  }
+
+  /* Scrim record */
+  &__record {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.6);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  &__result-dots {
+    display: inline-flex;
+    gap: 0.25rem;
+  }
+
+  &__result-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.125rem;
+    height: 1.125rem;
+    border-radius: 4px;
+    font-size: 0.5625rem;
+    font-weight: 800;
+    letter-spacing: 0;
+  }
+}
+
+/* ============================================
+ * Calendar Preview
+ * ============================================ */
+
+.dashboard-calendar {
+  padding: 0.5rem 0;
+
+  &__day {
+    padding: 0.375rem 1.125rem;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      margin-bottom: 0.25rem;
+      padding-bottom: 0.625rem;
+    }
+  }
+
+  &__day-label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 0.375rem;
+  }
+
+  &__events {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  &__event {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+  }
+
+  &__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &__event-time {
+    font-size: 0.6875rem;
+    color: rgba(255, 255, 255, 0.4);
+    min-width: 4rem;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  &__event-title {
+    font-size: 0.8125rem;
+    color: rgba(255, 255, 255, 0.7);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* ============================================
+ * Task Summary Pills
+ * ============================================ */
+
+.dashboard-task-pills {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  padding: 1rem 1.125rem;
+
+  @media (max-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.dashboard-task-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.75rem 0.5rem;
+  background: color-mix(in srgb, var(--pill-color, #64748b) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pill-color, #64748b) 15%, transparent);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--pill-color, #64748b) 35%, transparent);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--pill-color, #64748b) 15%, transparent);
+  }
+
+  &__count {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--pill-color, #64748b);
+    line-height: 1;
+  }
+
+  &__label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.45);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+}

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { round } from '@/lib/scrim-parser/utils'
-import { calculateStats } from '@/lib/scrim-parser/calculate-stats'
+import { batchCalculateStats } from '@/lib/scrim-parser/batch-stats'
 import { loadHeroPortraits, heroNameToSlug } from '@/lib/scrim-parser/heroIcons'
 import { heroRoleMapping } from '@/lib/scrim-parser/heroes'
 import { getUserScope, type UserScope } from '@/access/scrimScope'
@@ -92,23 +92,62 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ players: [] })
   }
 
+  // For non-full-access users, restrict to teammates only (competitive integrity)
+  let allowedPersonIds: Set<number> | null = null
+  if (scope && !scope.isFullAccess && scope.assignedTeamIds.length > 0) {
+    const rosterRows = await prisma.$queryRaw<Array<{ person_id: number }>>`
+      SELECT DISTINCT tr.person_id
+      FROM teams_roster tr
+      WHERE tr."_parent_id" = ANY(${scope.assignedTeamIds}::int[])
+    `
+    allowedPersonIds = new Set(rosterRows.map(r => r.person_id))
+  }
+
   if (personIdStr) {
     const personId = parseInt(personIdStr)
     if (!isNaN(personId)) {
+      // Block non-teammates for players
+      if (allowedPersonIds && !allowedPersonIds.has(personId)) {
+        return NextResponse.json({ error: 'Access denied — you can only view stats for your teammates' }, { status: 403 })
+      }
       return getPlayerDetailByPerson(personId, range, scopedScrimIds)
     }
   }
 
   if (playerName) {
+    // First, try to resolve this name to a personId via the People collection
+    // This handles when display name (e.g. "bion") differs from raw scrim name (e.g. "Elliena")
+    const personLookup = await prisma.$queryRaw<Array<{ id: number }>>`
+      SELECT id FROM people WHERE name = ${playerName} LIMIT 1
+    `
+    if (personLookup?.[0]?.id) {
+      const personId = personLookup[0].id
+      // Teammate check
+      if (allowedPersonIds && !allowedPersonIds.has(personId)) {
+        return NextResponse.json({ error: 'Access denied — you can only view stats for your teammates' }, { status: 403 })
+      }
+      return getPlayerDetailByPerson(personId, range, scopedScrimIds)
+    }
+
+    // Fallback: try raw player_name match (for unlinked players)
+    if (allowedPersonIds) {
+      const personCheck = await prisma.$queryRaw<Array<{ personId: number | null }>>`
+        SELECT DISTINCT "personId" FROM scrim_player_stats WHERE player_name = ${playerName} AND "personId" IS NOT NULL LIMIT 1
+      `
+      const pid = personCheck?.[0]?.personId
+      if (pid && !allowedPersonIds.has(pid)) {
+        return NextResponse.json({ error: 'Access denied — you can only view stats for your teammates' }, { status: 403 })
+      }
+    }
     return getPlayerDetail(playerName, range, scopedScrimIds)
   }
 
-  return getPlayerList(range, scopedScrimIds)
+  return getPlayerList(range, scopedScrimIds, allowedPersonIds)
 }
 
 // ── Player List ─────────────────────────────────────────
 
-async function getPlayerList(range: string, scopedScrimIds: number[] | null = null) {
+async function getPlayerList(range: string, scopedScrimIds: number[] | null = null, allowedPersonIds: Set<number> | null = null) {
   // Pre-compute eligible mapDataIds based on the range filter
   let mapFilter: number[] | null = null
   if (range === 'last20' || range === 'last50') {
@@ -389,8 +428,19 @@ async function getPlayerList(range: string, scopedScrimIds: number[] | null = nu
     }
   } catch { /* skip */ }
 
+  // Filter to teammates only for non-full-access users
+  let filteredPlayers = players
+  if (allowedPersonIds) {
+    filteredPlayers = players.filter(p => {
+      // Keep players who are on the user's team roster
+      if (p.person_id && allowedPersonIds.has(p.person_id)) return true
+      // Exclude unlinked/opponent players
+      return false
+    })
+  }
+
   return NextResponse.json({
-    players: players.map((p) => {
+    players: filteredPlayers.map((p) => {
       const teamInfo = rawTeamToPayload.get(p.player_team)
       // Use roster membership for grouping, not raw team name
       const rosterTeam = p.person_id ? personToRosterTeam.get(p.person_id) : null
@@ -553,37 +603,32 @@ async function buildPlayerDetailResponse(
   range: string,
   personId?: number,
 ) {
-  // Get map info (map name, type, scrim name, date) for each map
+  // Get map info (map name, type, scrim name, date) for all maps in one batch query
   const allMapDataIds = [...new Set(playerMaps.map((m) => m.mapDataId))]
 
-  const mapInfoResults = await Promise.all(
-    allMapDataIds.map(async (mdId) => {
-      const info = await prisma.$queryRaw<MapInfoRow[]>`
-        SELECT
-          md.id as "mapDataId",
-          ms.map_name,
-          ms.map_type,
-          s.name as scrim_name,
-          s.date as scrim_date
-        FROM scrim_map_data md
-        JOIN scrim_maps sm ON md."mapId" = sm.id
-        JOIN scrim_scrims s ON sm."scrimId" = s.id
-        JOIN scrim_match_starts ms ON ms."mapDataId" = md.id
-        WHERE md.id = ${mdId}
-        LIMIT 1
-      `
-      return info[0] ?? null
-    })
-  )
+  const mapInfoResults = await prisma.$queryRaw<MapInfoRow[]>`
+    SELECT DISTINCT ON (md.id)
+      md.id as "mapDataId",
+      ms.map_name,
+      ms.map_type,
+      s.name as scrim_name,
+      s.date as scrim_date
+    FROM scrim_map_data md
+    JOIN scrim_maps sm ON md."mapId" = sm.id
+    JOIN scrim_scrims s ON sm."scrimId" = s.id
+    JOIN scrim_match_starts ms ON ms."mapDataId" = md.id
+    WHERE md.id = ANY(${allMapDataIds}::int[])
+    ORDER BY md.id
+  `
 
   const mapInfoMap = new Map(
-    mapInfoResults.filter(Boolean).map((info) => [
-      info!.mapDataId,
+    mapInfoResults.map((info) => [
+      info.mapDataId,
       {
-        mapName: info!.map_name,
-        mapType: info!.map_type,
-        scrimName: info!.scrim_name,
-        scrimDate: info!.scrim_date,
+        mapName: info.map_name,
+        mapType: info.map_type,
+        scrimName: info.scrim_name,
+        scrimDate: info.scrim_date,
       },
     ])
   )
@@ -613,20 +658,8 @@ async function buildPlayerDetailResponse(
   playerMaps = playerMaps.filter(m => filteredMapIds.has(m.mapDataId))
   const mapDataIds = [...filteredMapIds]
 
-  // Calculate advanced stats for each map — use any alias that matches
-  const advancedStats = await Promise.all(
-    mapDataIds.map(async (mdId) => {
-      // Find which alias was used on this map
-      const aliasOnMap = playerMaps.find(m => m.mapDataId === mdId)?.player_name ?? aliases[0]
-      try {
-        const stats = await calculateStats(mdId, aliasOnMap)
-        return { mapDataId: mdId, stats }
-      } catch {
-        return { mapDataId: mdId, stats: null }
-      }
-    })
-  )
-  const advancedStatsMap = new Map(advancedStats.map((a) => [a.mapDataId, a.stats]))
+  // Calculate advanced stats for all maps in batch (4 bulk queries instead of ~10×N)
+  const advancedStatsMap = await batchCalculateStats(mapDataIds, aliases)
 
   // Build per-map, per-hero rows
   const maps = playerMaps.map((row) => {

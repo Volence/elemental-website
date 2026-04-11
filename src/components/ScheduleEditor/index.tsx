@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useField, useFormFields, useDocumentInfo, toast } from '@payloadcms/ui'
-import { Calendar, CalendarPlus, BarChart3, Trash2, Plus, Lightbulb, X } from 'lucide-react'
+import { Calendar, CalendarPlus, BarChart3, Trash2, Plus, Lightbulb, X, ChevronDown, ChevronRight } from 'lucide-react'
 import { ScrimAnalytics } from '@/components/ScrimAnalytics'
 
 // Extracted sub-components
@@ -11,6 +11,7 @@ import { ReminderButton } from './ReminderButton'
 import { PublishButton } from './PublishButton'
 import { ScrimOutcomeButton } from './ScrimOutcomeButton'
 import type { TimeBlock, TimeBlockOutcome, PlayerSlot, DaySchedule, ScheduleData, VoteData, LegacyScrim } from './types'
+import { normalizeCalendarToVoteData } from './normalizeCalendarData'
 
 import './index.scss'
 
@@ -31,15 +32,24 @@ const getAvailablePlayers = (votes: VoteData[] | null, targetDate: string) => {
 
 export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
   const { value, setValue } = useField<ScheduleData | null>({ path })
+  const { id, collectionSlug } = useDocumentInfo()
   
-  // Get votes, timeSlot, and team from form
+  // Get votes, timeSlot, team, and schedule type from form
   const votesField = useFormFields(([fields]) => fields['votes'])
   const timeSlotField = useFormFields(([fields]) => fields['timeSlot'])
   const teamField = useFormFields(([fields]) => fields['team'])
+  const scheduleTypeField = useFormFields(([fields]) => fields['scheduleType'])
   
-  const votes = votesField?.value as VoteData[] | null
+  const pollVotes = votesField?.value as VoteData[] | null
   const timeSlot = (timeSlotField?.value as string) || '8-10 EST'
   const team = teamField?.value as any
+  const scheduleType = (scheduleTypeField?.value as string) || 'poll'
+
+  // Calendar-sourced votes (normalized from calendar responses on SAME document)
+  const [calendarVotes, setCalendarVotes] = useState<VoteData[] | null>(null)
+  
+  // Use the appropriate vote data based on schedule type
+  const votes = scheduleType === 'calendar' ? calendarVotes : pollVotes
 
   // Determine roles based on team preset
   const [roles, setRoles] = useState<string[]>(rolePresets['ow2-specific'])
@@ -50,6 +60,12 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
   // Team members for "use all team members" option
   const [teamMembers, setTeamMembers] = useState<Array<{id: string, username: string, displayName: string}>>([])
   
+  // Team roster with role mappings for auto-fill
+  const [teamRosterRoles, setTeamRosterRoles] = useState<Map<string, string>>(new Map())
+  
+  // Discord ID → Person ID mapping for matching calendar voters to roster members
+  const [discordToPersonId, setDiscordToPersonId] = useState<Map<string, string>>(new Map())
+  
   // All people for ringer autocomplete
   const [allPeople, setAllPeople] = useState<Array<{id: number, name: string}>>([])
   
@@ -58,6 +74,47 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
   
   // Analytics modal state
   const [showAnalytics, setShowAnalytics] = useState(false)
+  
+  // Track which day cards are expanded (collapsed by default)
+  const [expandedDays, setExpandedDays] = useState<Set<number>>(new Set())
+  
+  // Track which time blocks are expanded within each day (collapsed by default)
+  // Keys are "dayIndex-blockIndex" strings
+  const [expandedBlocks, setExpandedBlocks] = useState<Set<string>>(new Set())
+  
+  // For calendar-type schedules, fetch responses from the same document's API
+  useEffect(() => {
+    if (scheduleType !== 'calendar' || !id) {
+      setCalendarVotes(null)
+      return
+    }
+
+    const fetchCalendarData = async () => {
+      try {
+        const slug = collectionSlug || 'discord-polls'
+        const res = await fetch(`/api/${slug}/${id}?depth=0`)
+        if (!res.ok) return
+        const doc = await res.json()
+        
+        const responses = doc.responses || []
+        const start = doc.dateRange?.start
+        const end = doc.dateRange?.end
+        
+        if (!start || !end || responses.length === 0) {
+          setCalendarVotes([])
+          return
+        }
+        
+        const normalized = normalizeCalendarToVoteData(responses, start, end, doc.timeSlots)
+        setCalendarVotes(normalized)
+      } catch (error) {
+        console.error('Failed to fetch calendar data:', error)
+        setCalendarVotes(null)
+      }
+    }
+
+    fetchCalendarData()
+  }, [scheduleType, id, collectionSlug])
   
   // Fetch opponent teams and people on mount
   useEffect(() => {
@@ -132,6 +189,26 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
           )
           
           setTeamMembers(uniqueMembers)
+          
+          // Build role mapping for auto-fill (person ID → role category)
+          const roleMap = new Map<string, string>()
+          for (const entry of roster) {
+            const p = entry.person
+            if (p && typeof p === 'object') {
+              roleMap.set(String(p.id), entry.role || '')
+            }
+          }
+          setTeamRosterRoles(roleMap)
+          
+          // Build discordId → personId mapping for matching calendar voters
+          const discordMap = new Map<string, string>()
+          for (const entry of [...roster, ...subs]) {
+            const p = entry.person
+            if (p && typeof p === 'object' && p.discordId) {
+              discordMap.set(String(p.discordId), String(p.id))
+            }
+          }
+          setDiscordToPersonId(discordMap)
           
           // Set roles from team's rolePreset (at root level, not in discordThreads)
           // Teams collection uses 'specific' but our preset map uses 'ow2-specific'
@@ -219,14 +296,26 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
       }
     }
     if (votes && votes.length > 0) {
-      // Create from poll votes
+      // Create from vote/calendar data
       return {
-        days: votes.map((v) => ({
-          date: v.date,
-          enabled: v.voterCount > 0,
-          useAllMembers: false,
-          blocks: [createDefaultBlock(timeSlot || '8-10 EST')],
-        })),
+        days: votes.map((v) => {
+          // Calendar-type: create a block per time slot
+          if (v.timeSlots && v.timeSlots.length > 0) {
+            return {
+              date: v.date,
+              enabled: false, // Default unchecked — user enables days they want
+              useAllMembers: false,
+              blocks: v.timeSlots.map((slot) => createDefaultBlock(slot.time)),
+            }
+          }
+          // Poll-type: single block
+          return {
+            date: v.date,
+            enabled: false, // Default unchecked
+            useAllMembers: false,
+            blocks: [createDefaultBlock(timeSlot || '8-10 EST')],
+          }
+        }),
         lastUpdated: new Date().toISOString(),
       }
     }
@@ -235,6 +324,17 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
   }, [value, votes, timeSlot, createDefaultBlock, migrateToBlocks])
 
   const [schedule, setSchedule] = useState<ScheduleData>(createInitialSchedule)
+
+  // Re-create the schedule when calendar votes arrive asynchronously 
+  // (calendar data fetches after initial render, so schedule starts empty)
+  useEffect(() => {
+    if (!votes || votes.length === 0) return
+    setSchedule(current => {
+      // Only re-create if schedule is currently empty (no days)
+      if (current.days.length > 0) return current
+      return createInitialSchedule()
+    })
+  }, [votes, createInitialSchedule])
 
   // Update existing block slots when team's role preset changes
   // Only migrate blocks that have FEWER slots than the preset (upgrading old data)
@@ -316,6 +416,46 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
       return { ...currentSchedule, days: migratedDays }
     })
   }, [rolesKey]) // Depend on roles content, not reference
+
+  // When calendar votes arrive with per-slot data, upgrade single-block days to multi-block  
+  useEffect(() => {
+    if (!votes || scheduleType !== 'calendar') return
+    
+    setSchedule(currentSchedule => {
+      if (currentSchedule.days.length === 0) return currentSchedule
+      
+      // Check if any day needs block upgrading
+      let needsUpgrade = false
+      for (const day of currentSchedule.days) {
+        const voteData = votes.find(v => v.date === day.date)
+        if (voteData?.timeSlots && voteData.timeSlots.length > 1 && day.blocks.length === 1) {
+          needsUpgrade = true
+          break
+        }
+      }
+      
+      if (!needsUpgrade) return currentSchedule
+      
+      const upgradedDays = currentSchedule.days.map(day => {
+        const voteData = votes.find(v => v.date === day.date)
+        if (!voteData?.timeSlots || voteData.timeSlots.length <= 1 || day.blocks.length > 1) {
+          return day
+        }
+        
+        // Upgrade: create one block per time slot, preserving data from the first block
+        const existingBlock = day.blocks[0]
+        return {
+          ...day,
+          blocks: voteData.timeSlots.map(slot => ({
+            ...createDefaultBlock(slot.time),
+            slots: existingBlock.slots.map(s => ({ ...s, playerId: null })), // Fresh slots per block
+          })),
+        }
+      })
+      
+      return { ...currentSchedule, days: upgradedDays }
+    })
+  }, [votes, scheduleType, createDefaultBlock])
 
   // Sync schedule changes to field
   const updateSchedule = useCallback(
@@ -471,7 +611,8 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
     const willBeEnabled = !day.enabled
     
     // When enabling a day, update block times to use the current timeSlot field value
-    if (willBeEnabled && timeSlot) {
+    // (but only for non-calendar schedules — calendar blocks already have correct times)
+    if (willBeEnabled && timeSlot && scheduleType !== 'calendar') {
       newDays[dayIndex] = {
         ...day,
         enabled: true,
@@ -487,6 +628,35 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
       }
     }
     updateSchedule({ ...schedule, days: newDays })
+    
+    // Auto-expand when enabling, auto-collapse when disabling
+    setExpandedDays(prev => {
+      const next = new Set(prev)
+      if (willBeEnabled) {
+        next.add(dayIndex)
+      } else {
+        next.delete(dayIndex)
+      }
+      return next
+    })
+    
+    // Auto-expand first block when enabling a day
+    if (willBeEnabled && newDays[dayIndex].blocks.length > 0) {
+      setExpandedBlocks(prev => {
+        const next = new Set(prev)
+        next.add(`${dayIndex}-0`)
+        return next
+      })
+    } else if (!willBeEnabled) {
+      // Collapse all blocks when disabling
+      setExpandedBlocks(prev => {
+        const next = new Set(prev)
+        for (let i = 0; i < newDays[dayIndex].blocks.length; i++) {
+          next.delete(`${dayIndex}-${i}`)
+        }
+        return next
+      })
+    }
   }
 
   // Toggle "use all members" for a day
@@ -503,6 +673,256 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
   const removeDay = (dayIndex: number) => {
     const newDays = schedule.days.filter((_, i) => i !== dayIndex)
     updateSchedule({ ...schedule, days: newDays })
+  }
+
+  // ──── Workflow Automation ────
+
+  // Map a team roster role to matching schedule slot roles
+  const roleMatchesSlot = (rosterRole: string, slotRole: string): boolean => {
+    const normalized = rosterRole.toLowerCase()
+    const slot = slotRole.toLowerCase()
+    if (normalized === 'tank' && slot === 'tank') return true
+    if (normalized === 'dps' && (slot.includes('dps') || slot.includes('hitscan') || slot.includes('flex dps'))) return true
+    if (normalized === 'support' && (slot.includes('support'))) return true
+    // Generic fallback
+    if (normalized === slot) return true
+    return false
+  }
+
+  // Auto-fill a single block using available players + team roster roles
+  const autoFillBlock = (dayIndex: number, blockIndex: number) => {
+    const day = schedule.days[dayIndex]
+    if (!day) return
+
+    const block = day.blocks[blockIndex]
+    if (!block) return
+
+    // Get vote data for this day to find per-slot availability
+    const voteData = votes?.find(v => v.date === day.date)
+    
+    // Get available player IDs for this specific time slot
+    const slotVoters = voteData?.timeSlots?.find(ts => ts.time === block.time)?.voters
+    const dayVoters = voteData?.voters || []
+    const availableForSlot = slotVoters || dayVoters
+
+    // Build player pool with role info
+    // When "All members" is on, treat everyone as available (that's the whole point)
+    const useAll = day.useAllMembers
+    const playerPool: Array<{ id: string; name: string; rosterRole: string; isAvailable: boolean }> = []
+    
+    for (const member of teamMembers) {
+      const rosterRole = teamRosterRoles.get(member.id) || ''
+      // Check availability: match by person ID, discord→person mapping, or username
+      const isAvailable = useAll || availableForSlot.some(v => {
+        if (v.id === member.id) return true
+        // Calendar voters use discordId; check if it maps to this person
+        const mappedPersonId = discordToPersonId.get(v.id)
+        if (mappedPersonId === member.id) return true
+        // Fallback: username match
+        if (v.username === member.username) return true
+        return false
+      })
+      playerPool.push({
+        id: member.id,
+        name: member.username,
+        rosterRole,
+        isAvailable,
+      })
+    }
+
+    // Sort: available players first, then by roster role match
+    const newSlots = [...block.slots]
+    const assigned = new Set<string>()
+
+    // First pass: assign available players to matching roles
+    for (let i = 0; i < newSlots.length; i++) {
+      if (newSlots[i].playerId) {
+        assigned.add(newSlots[i].playerId!)
+        continue // Already assigned, skip
+      }
+      
+      const slot = newSlots[i]
+      // Find best match: available + matching role
+      const match = playerPool.find(p => 
+        !assigned.has(p.id) && 
+        p.isAvailable && 
+        roleMatchesSlot(p.rosterRole, slot.role)
+      )
+      if (match) {
+        newSlots[i] = { ...slot, playerId: match.id }
+        assigned.add(match.id)
+      }
+    }
+
+    // Second pass: fill remaining empty slots with any available player
+    for (let i = 0; i < newSlots.length; i++) {
+      if (newSlots[i].playerId) continue
+      const slot = newSlots[i]
+      const fallback = playerPool.find(p => !assigned.has(p.id) && p.isAvailable)
+      if (fallback) {
+        newSlots[i] = { ...slot, playerId: fallback.id }
+        assigned.add(fallback.id)
+      }
+    }
+
+    // Update schedule
+    const newDays = [...schedule.days]
+    const newBlocks = [...newDays[dayIndex].blocks]
+    newBlocks[blockIndex] = { ...newBlocks[blockIndex], slots: newSlots }
+    newDays[dayIndex] = { ...newDays[dayIndex], blocks: newBlocks }
+    updateSchedule({ ...schedule, days: newDays })
+  }
+
+  // Auto-fill ALL enabled blocks across all days
+  const autoFillAll = () => {
+    let newDays = [...schedule.days]
+    
+    for (let dayIndex = 0; dayIndex < newDays.length; dayIndex++) {
+      const day = newDays[dayIndex]
+      if (!day.enabled) continue
+
+      const voteData = votes?.find(v => v.date === day.date)
+      
+      for (let blockIndex = 0; blockIndex < day.blocks.length; blockIndex++) {
+        const block = day.blocks[blockIndex]
+        const slotVoters = voteData?.timeSlots?.find(ts => ts.time === block.time)?.voters
+        const dayVoters = voteData?.voters || []
+        const availableForSlot = slotVoters || dayVoters
+
+        const playerPool: Array<{ id: string; name: string; rosterRole: string; isAvailable: boolean }> = []
+        const useAll = day.useAllMembers
+        for (const member of teamMembers) {
+          const rosterRole = teamRosterRoles.get(member.id) || ''
+          const isAvailable = useAll || availableForSlot.some(v => {
+            if (v.id === member.id) return true
+            const mappedPersonId = discordToPersonId.get(v.id)
+            if (mappedPersonId === member.id) return true
+            if (v.username === member.username) return true
+            return false
+          })
+          playerPool.push({ id: member.id, name: member.username, rosterRole, isAvailable })
+        }
+
+        const newSlots = [...block.slots]
+        const assigned = new Set<string>()
+
+        // Preserve existing assignments
+        for (const s of newSlots) {
+          if (s.playerId) assigned.add(s.playerId)
+        }
+
+        // Fill empty slots: role-matched + available first
+        for (let i = 0; i < newSlots.length; i++) {
+          if (newSlots[i].playerId) continue
+          const slot = newSlots[i]
+          const match = playerPool.find(p => !assigned.has(p.id) && p.isAvailable && roleMatchesSlot(p.rosterRole, slot.role))
+          if (match) {
+            newSlots[i] = { ...slot, playerId: match.id }
+            assigned.add(match.id)
+          }
+        }
+        for (let i = 0; i < newSlots.length; i++) {
+          if (newSlots[i].playerId) continue
+          const slot = newSlots[i]
+          const fallback = playerPool.find(p => !assigned.has(p.id) && p.isAvailable)
+          if (fallback) {
+            newSlots[i] = { ...slot, playerId: fallback.id }
+            assigned.add(fallback.id)
+          }
+        }
+
+        const newBlocks = [...newDays[dayIndex].blocks]
+        newBlocks[blockIndex] = { ...newBlocks[blockIndex], slots: newSlots }
+        newDays[dayIndex] = { ...newDays[dayIndex], blocks: newBlocks }
+      }
+    }
+    updateSchedule({ ...schedule, days: newDays })
+    toast.success('Auto-filled all enabled days')
+  }
+
+  // Get top N days with best availability
+  const getSuggestedDays = (): number[] => {
+    if (!votes || votes.length === 0) return []
+    return schedule.days
+      .map((day, index) => ({
+        index,
+        count: votes.find(v => v.date === day.date)?.voterCount || 0,
+      }))
+      .filter(d => d.count > 0)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5) // Top 5 days
+      .map(d => d.index)
+  }
+
+  // Enable only the suggested days
+  const enableSuggestedDays = () => {
+    const suggested = getSuggestedDays()
+    if (suggested.length === 0) return
+    
+    const newDays = schedule.days.map((day, i) => ({
+      ...day,
+      enabled: suggested.includes(i),
+    }))
+    updateSchedule({ ...schedule, days: newDays })
+    
+    // Auto-expand suggested days and their best block (highest availability)
+    setExpandedDays(new Set(suggested))
+    const bestBlocks = new Set<string>()
+    for (const dayIdx of suggested) {
+      const day = schedule.days[dayIdx]
+      if (!day || day.blocks.length === 0) continue
+      
+      // Find block with highest availability
+      let bestBlockIdx = 0
+      let bestCount = -1
+      const voteData = votes?.find(v => v.date === day.date)
+      if (voteData?.timeSlots) {
+        for (let bi = 0; bi < day.blocks.length; bi++) {
+          const slotVoters = voteData.timeSlots.find(ts => ts.time === day.blocks[bi].time)
+          const count = slotVoters?.voters.length || 0
+          if (count > bestCount) {
+            bestCount = count
+            bestBlockIdx = bi
+          }
+        }
+      }
+      bestBlocks.add(`${dayIdx}-${bestBlockIdx}`)
+    }
+    setExpandedBlocks(bestBlocks)
+  }
+
+  // Enable all days
+  const enableAllDays = () => {
+    const newDays = schedule.days.map(day => ({ ...day, enabled: true }))
+    updateSchedule({ ...schedule, days: newDays })
+    setExpandedDays(new Set(schedule.days.map((_, i) => i)))
+  }
+
+  // Clear all (disable all days)
+  const clearAllDays = () => {
+    const newDays = schedule.days.map(day => ({ ...day, enabled: false }))
+    updateSchedule({ ...schedule, days: newDays })
+    setExpandedDays(new Set())
+    setExpandedBlocks(new Set())
+  }
+
+  // Get availability status for a specific player in a specific time slot
+  const getPlayerSlotAvailability = (dayDate: string, blockTime: string, playerId: string): 'available' | 'maybe' | null => {
+    if (!votes || scheduleType !== 'calendar') return null
+    const voteData = votes.find(v => v.date === dayDate)
+    if (!voteData?.timeSlots) return null
+    const slot = voteData.timeSlots.find(ts => ts.time === blockTime)
+    if (!slot) return null
+    // Match by direct ID or discord→person mapping
+    const matchesPlayer = (v: { id: string; username: string }) => {
+      if (v.id === playerId) return true
+      if (discordToPersonId.get(v.id) === playerId) return true
+      return false
+    }
+    if (slot.voters.some(matchesPlayer)) return 'available'
+    // Check maybe status from day-level voters
+    const isDayVoter = voteData.voters.some(matchesPlayer)
+    return isDayVoter ? 'maybe' : null
   }
 
   // Mark a block as having reminder posted
@@ -568,6 +988,11 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
                     const day = startDate.getDay()
                     const delta = day === 0 ? 1 : (8 - day)
                     startDate.setDate(startDate.getDate() + delta)
+                  } else if (startMode === 'thisweek') {
+                    // Go back to this Monday
+                    const day = startDate.getDay()
+                    const delta = day === 0 ? -6 : 1 - day
+                    startDate.setDate(startDate.getDate() + delta)
                   }
                   
                   // Generate 7 days
@@ -595,6 +1020,7 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
                 <option value="">Select start...</option>
                 <option value="tomorrow">Tomorrow</option>
                 <option value="monday">Next Monday</option>
+                <option value="thisweek">This Week (from Monday)</option>
               </select>
             </div>
           </div>
@@ -736,6 +1162,40 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
         />
       </div>
 
+      {/* Smart Suggestions Toolbar */}
+      {schedule.days.length > 0 && votes && votes.length > 0 && (
+        <div className="schedule-editor__toolbar">
+          <div className="schedule-editor__toolbar-suggestion">
+            <Lightbulb size={13} />
+            <span>
+              {(() => {
+                const suggested = getSuggestedDays()
+                if (suggested.length === 0) return 'No availability data yet'
+                const dayNames = suggested.map(i => schedule.days[i]?.date.split(' ')[0]).filter(Boolean)
+                const bestCount = Math.max(...suggested.map(i => votes?.find(v => v.date === schedule.days[i]?.date)?.voterCount || 0))
+                return `Best days: ${dayNames.join(', ')} (${bestCount} available)`
+              })()}
+            </span>
+          </div>
+          <div className="schedule-editor__toolbar-actions">
+            <button type="button" className="schedule-editor__toolbar-btn schedule-editor__toolbar-btn--suggest" onClick={enableSuggestedDays}>
+              <Lightbulb size={12} /> Enable Best
+            </button>
+            <button type="button" className="schedule-editor__toolbar-btn" onClick={enableAllDays}>
+              Enable All
+            </button>
+            <button type="button" className="schedule-editor__toolbar-btn" onClick={clearAllDays}>
+              Clear All
+            </button>
+            {teamMembers.length > 0 && (
+              <button type="button" className="schedule-editor__toolbar-btn schedule-editor__toolbar-btn--autofill" onClick={autoFillAll}>
+                ⚡ Auto-Fill All
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="schedule-editor__days">
         {schedule.days.map((day, dayIndex) => {
           // Use team members if "use all members" is checked, otherwise use voters
@@ -746,34 +1206,61 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
             arr.findIndex(p => p.id === player.id) === index
           )
           const voteData = votes?.find((v) => v.date === day.date)
+          const isExpanded = expandedDays.has(dayIndex)
+          
+          // Parse day name and date for modern header
+          const dateParts = day.date.split(' ')
+          const dayName = dateParts[0] || day.date
+          const dateRest = dateParts.slice(1).join(' ')
 
           return (
             <div
               key={day.date}
-              className={`schedule-editor__day-card ${!day.enabled ? 'schedule-editor__day-card--disabled' : ''}`}
+              className={`schedule-editor__day-card ${!day.enabled ? 'schedule-editor__day-card--disabled' : ''} ${isExpanded ? 'schedule-editor__day-card--expanded' : ''}`}
             >
               <div className="schedule-editor__day-header">
-                <label className="schedule-editor__day-toggle">
+                <label className="schedule-editor__day-toggle" onClick={(e) => e.stopPropagation()}>
                   <input
                     type="checkbox"
                     checked={day.enabled}
                     onChange={() => toggleDay(dayIndex)}
                   />
-                  <span className="schedule-editor__day-title">{day.date}</span>
                 </label>
+                <button
+                  type="button"
+                  className="schedule-editor__day-expand"
+                  onClick={() => setExpandedDays(prev => {
+                    const next = new Set(prev)
+                    if (next.has(dayIndex)) next.delete(dayIndex)
+                    else next.add(dayIndex)
+                    return next
+                  })}
+                >
+                  {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                  <div className="schedule-editor__day-name-group">
+                    <span className="schedule-editor__day-title">{dayName}</span>
+                    {dateRest && <span className="schedule-editor__day-date">{dateRest}</span>}
+                  </div>
+                </button>
                 {voteData && (
                   <span className="schedule-editor__day-voters">
                     {voteData.voterCount} available
                   </span>
                 )}
-                {day.enabled && (
+                {/* Collapsed summary: show block count */}
+                {!isExpanded && day.enabled && day.blocks.length > 0 && (
+                  <span className="schedule-editor__day-summary">
+                    {day.blocks.length} block{day.blocks.length !== 1 ? 's' : ''}
+                  </span>
+                )}
+                {day.enabled && isExpanded && (
                   <label className="schedule-editor__use-all-toggle">
                     <input
                       type="checkbox"
                       checked={day.useAllMembers || false}
                       onChange={() => toggleUseAllMembers(dayIndex)}
                     />
-                    <span>Use all team members</span>
+                    <span>All members</span>
                   </label>
                 )}
                 {/* Remove day button - only for manually created days (no poll data) */}
@@ -789,14 +1276,29 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
                 )}
               </div>
 
-              {day.enabled && (
+              {day.enabled && isExpanded && (
                 <div className="schedule-editor__day-content">
                   {day.blocks.map((block, blockIndex) => {
                     const assignedIds = getAssignedPlayerIds(dayIndex, blockIndex)
+                    const blockKey = `${dayIndex}-${blockIndex}`
+                    const isBlockExpanded = expandedBlocks.has(blockKey)
+                    const filledCount = block.slots.filter(s => s.playerId || s.isRinger).length
                     
                     return (
-                      <div key={block.id} className="schedule-editor__block">
+                      <div key={block.id} className={`schedule-editor__block ${isBlockExpanded ? 'schedule-editor__block--expanded' : ''}`}>
                         <div className="schedule-editor__block-header">
+                          <button
+                            type="button"
+                            className="schedule-editor__block-toggle"
+                            onClick={() => setExpandedBlocks(prev => {
+                              const next = new Set(prev)
+                              if (next.has(blockKey)) next.delete(blockKey)
+                              else next.add(blockKey)
+                              return next
+                            })}
+                          >
+                            {isBlockExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                          </button>
                           <input
                             type="text"
                             className="schedule-editor__block-time"
@@ -804,6 +1306,26 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
                             onChange={(e) => updateBlockTime(dayIndex, blockIndex, e.target.value)}
                             placeholder="8-10 EST"
                           />
+                          {!isBlockExpanded && (
+                            <span className="schedule-editor__block-summary">
+                              {filledCount > 0 ? `${filledCount}/${block.slots.length} filled` : `${block.slots.length} slots`}
+                              {(() => {
+                                const slotVoters = voteData?.timeSlots?.find(ts => ts.time === block.time)
+                                if (slotVoters) return ` · ${slotVoters.voters.length} avail`
+                                return ''
+                              })()}
+                            </span>
+                          )}
+                          {!isBlockExpanded && teamMembers.length > 0 && (
+                            <button
+                              type="button"
+                              className="schedule-editor__block-autofill"
+                              onClick={(e) => { e.stopPropagation(); autoFillBlock(dayIndex, blockIndex) }}
+                              title="Auto-fill this block with available players"
+                            >
+                              ⚡
+                            </button>
+                          )}
                           {day.blocks.length > 1 && (
                             <button
                               type="button"
@@ -816,6 +1338,8 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
                           )}
                         </div>
 
+                        {isBlockExpanded && (
+                        <>
                         <div className="schedule-editor__roles">
                           {block.slots.map((slot, slotIndex) => {
                             const filteredPlayers = availablePlayers.filter(
@@ -823,7 +1347,7 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
                             )
 
                             return (
-                              <div key={slotIndex} className={`schedule-editor__role-row ${slot.isRinger ? 'schedule-editor__role-row--ringer' : ''}`}>
+                              <div key={slotIndex} className={`schedule-editor__role-row ${slot.isRinger ? 'schedule-editor__role-row--ringer' : ''}`} data-role={slot.role.toLowerCase()}>
                                 <input
                                   type="text"
                                   className="schedule-editor__role-input"
@@ -833,7 +1357,7 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
                                 />
                                 
                                 {/* Ringer checkbox */}
-                                <label className="schedule-editor__ringer-toggle" title="Mark as ringer (external player)">
+                                <label className="schedule-editor__ringer-toggle" title="Mark as external player">
                                   <input
                                     type="checkbox"
                                     checked={slot.isRinger || false}
@@ -884,11 +1408,15 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
                                     }
                                   >
                                     <option value="">- Select -</option>
-                                    {filteredPlayers.map((player) => (
-                                      <option key={player.id} value={player.id}>
-                                        {player.displayName || player.username}
-                                      </option>
-                                    ))}
+                                    {filteredPlayers.map((player) => {
+                                      const avail = getPlayerSlotAvailability(day.date, block.time, player.id)
+                                      const prefix = avail === 'available' ? '✓ ' : avail === 'maybe' ? '? ' : ''
+                                      return (
+                                        <option key={player.id} value={player.id}>
+                                          {prefix}{player.displayName || player.username}
+                                        </option>
+                                      )
+                                    })}
                                   </select>
                                 )}
                                 
@@ -906,13 +1434,24 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
                             )
                           })}
 
-                          <button
-                            type="button"
-                            className="schedule-editor__add-btn"
-                            onClick={() => addExtraPlayer(dayIndex, blockIndex)}
-                          >
-                            + Add Player
-                          </button>
+                          <div className="schedule-editor__block-actions">
+                            <button
+                              type="button"
+                              className="schedule-editor__add-btn"
+                              onClick={() => addExtraPlayer(dayIndex, blockIndex)}
+                            >
+                              + Add Player
+                            </button>
+                            {teamMembers.length > 0 && (
+                              <button
+                                type="button"
+                                className="schedule-editor__autofill-btn"
+                                onClick={() => autoFillBlock(dayIndex, blockIndex)}
+                              >
+                                ⚡ Auto-Fill
+                              </button>
+                            )}
+                          </div>
                         </div>
 
                         <div className="schedule-editor__scrim">
@@ -1052,6 +1591,8 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
                             </div>
                           </div>
                         </div>
+                        </>
+                        )}
                       </div>
                     )
                   })}

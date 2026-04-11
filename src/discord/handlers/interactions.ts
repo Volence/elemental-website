@@ -8,6 +8,7 @@ import { handleSchedulePoll } from '../commands/schedulepoll'
 import { handleThreadKeepAlive } from '../commands/tka'
 import { handleCalendar } from '../commands/calendar'
 import { handleMatchesToday } from '../commands/matches-today'
+import { handleAvailability } from '../commands/availability'
 import { handleTeamAutocomplete } from '../utils/autocomplete'
 import {
   handlePollClose,
@@ -93,6 +94,8 @@ async function handleChatCommand(interaction: ChatInputCommandInteraction): Prom
     await handleCalendar(interaction)
   } else if (commandName === 'matches') {
     await handleMatchesToday(interaction)
+  } else if (commandName === 'availability') {
+    await handleAvailability(interaction)
   }
 }
 

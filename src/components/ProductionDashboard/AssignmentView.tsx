@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { toast } from '@payloadcms/ui'
-import { AlertTriangle, CheckCircle, ClipboardList, Globe, XCircle, ChevronDown, ChevronRight, X } from 'lucide-react'
+import { AlertTriangle, CheckCircle, Globe, XCircle, ChevronDown, ChevronRight, X, Eye, Clapperboard, Mic, Users } from 'lucide-react'
 
 interface User {
   id: number
@@ -60,33 +60,18 @@ const getUserId = (user: User | number | null | undefined): number | null => {
 }
 
 const getUserName = (user: User | number | null | undefined): string => {
-  if (!user) return 'Not assigned'
+  if (!user) return '—'
   if (typeof user === 'number') return `User #${user}`
   return user.name || user.email || 'Unknown'
 }
 
-const getCoverageIcon = (status?: string): React.ReactNode => {
-  switch (status) {
-    case 'full': return <CheckCircle size={12} />
-    case 'partial': return <AlertTriangle size={12} />
-    default: return <XCircle size={12} />
-  }
-}
+// ─── Compact Role Row ───
 
-const getCoverageClass = (status?: string) => {
-  switch (status) {
-    case 'full': return 'coverage-badge--full'
-    case 'partial': return 'coverage-badge--partial'
-    default: return 'coverage-badge--none'
-  }
-}
-
-// ─── Role Assignment Block ───
-
-function RoleAssignmentBlock({ matchId, roleName, roleKey, maxSlots, signups, assigned, onAssign, onUnassign }: {
+function RoleRow({ matchId, roleName, roleKey, roleIcon, maxSlots, signups, assigned, onAssign, onUnassign }: {
   matchId: number
   roleName: string
   roleKey: 'observer' | 'producer' | 'caster'
+  roleIcon: React.ReactNode
   maxSlots: number
   signups: (User | number)[] | CasterSignup[]
   assigned: (User | number | null) | CasterSignup[]
@@ -101,150 +86,162 @@ function RoleAssignmentBlock({ matchId, roleName, roleKey, maxSlots, signups, as
   const slotsAvailable = maxSlots - slotsFilled
 
   return (
-    <div className="assignment-role">
-      <div className="assignment-role__header">
-        <h4>{roleName}</h4>
-        <span className={`assignment-role__slots ${slotsFilled >= maxSlots ? 'assignment-role__slots--full' : ''}`}>
+    <div className="assignment-v2__role-row">
+      <div className="assignment-v2__role-label">
+        {roleIcon}
+        <span>{roleName}</span>
+        <span className={`assignment-v2__slot-count ${slotsFilled >= maxSlots ? 'assignment-v2__slot-count--full' : ''}`}>
           {slotsFilled}/{maxSlots}
         </span>
       </div>
-      <div className="assignment-role__content">
-        <div className="assignment-role__signups">
-          <span className="assignment-role__label">Available:</span>
-          {signups.length === 0 ? (
-            <span className="assignment-empty">No signups</span>
-          ) : (
-            <div className="assignment-signup-list">
-              {signups.map((signup, idx) => {
-                const user = isCaster ? (signup as CasterSignup).user : signup
-                const userId = getUserId(user as User | number)
-                const name = getUserName(user as User | number)
-                const style = isCaster ? (signup as CasterSignup).style : undefined
-                const isAlreadyAssigned = assignedList.some(a => getUserId(a.user) === userId)
 
-                return (
-                  <button
-                    key={idx}
-                    onClick={() => userId && onAssign(matchId, roleKey, userId, style)}
-                    className={`assignment-signup-btn ${isAlreadyAssigned ? 'assignment-signup-btn--assigned' : ''}`}
-                    disabled={slotsAvailable <= 0 || isAlreadyAssigned}
-                    title={isAlreadyAssigned ? 'Already assigned' : slotsAvailable <= 0 ? 'All slots filled' : `Assign ${name}`}
-                  >
-                    {name}
-                    {style && <span className="assignment-signup-btn__style">{style}</span>}
-                    {isAlreadyAssigned && <span className="assignment-signup-btn__check">✓</span>}
-                  </button>
-                )
-              })}
-            </div>
-          )}
-        </div>
-        <div className="assignment-role__assigned">
-          <span className="assignment-role__label">Assigned:</span>
-          {assignedList.length === 0 ? (
-            <span className="assignment-empty">None</span>
-          ) : (
-            <div className="assignment-assigned-list">
-              {assignedList.map((item, idx) => (
-                <div key={idx} className="assignment-assigned-item">
-                  <span className="assignment-assigned-item__name">
-                    {getUserName(item.user)}
-                    {item.style && <span className="assignment-assigned-item__style">{item.style}</span>}
-                  </span>
-                  <button
-                    onClick={() => onUnassign(matchId, roleKey, isCaster ? idx : undefined)}
-                    className="assignment-unassign-btn"
-                    title="Unassign"
-                  ><X size={10} /></button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+      <div className="assignment-v2__role-people">
+        {/* Assigned */}
+        {assignedList.map((item, idx) => (
+          <span key={`a-${idx}`} className="assignment-v2__person-pill assignment-v2__person-pill--assigned">
+            <CheckCircle size={10} />
+            {getUserName(item.user)}
+            {item.style && <em>({item.style})</em>}
+            <button
+              onClick={() => onUnassign(matchId, roleKey, isCaster ? idx : undefined)}
+              className="assignment-v2__person-remove"
+              title="Unassign"
+            ><X size={10} /></button>
+          </span>
+        ))}
+
+        {/* Available (not yet assigned) */}
+        {signups.map((signup, idx) => {
+          const user = isCaster ? (signup as CasterSignup).user : signup
+          const userId = getUserId(user as User | number)
+          const name = getUserName(user as User | number)
+          const style = isCaster ? (signup as CasterSignup).style : undefined
+          const isAlreadyAssigned = assignedList.some(a => getUserId(a.user) === userId)
+          if (isAlreadyAssigned) return null
+
+          return (
+            <button
+              key={`s-${idx}`}
+              onClick={() => userId && onAssign(matchId, roleKey, userId, style)}
+              className="assignment-v2__person-pill assignment-v2__person-pill--available"
+              disabled={slotsAvailable <= 0}
+              title={slotsAvailable <= 0 ? 'All slots filled' : `Assign ${name}`}
+            >
+              {name}
+              {style && <em>({style})</em>}
+            </button>
+          )
+        })}
+
+        {signups.length === 0 && assignedList.length === 0 && (
+          <span className="assignment-v2__no-signups">No signups</span>
+        )}
       </div>
     </div>
   )
 }
 
-// ─── Match Assignment Card ───
+// ─── Match Card (compact) ───
 
-function MatchAssignmentCard({ match, onAssign, onUnassign }: {
+function MatchCard({ match, onAssign, onUnassign }: {
   match: Match
   onAssign: (matchId: number, role: 'observer' | 'producer' | 'caster', userId: number, style?: string) => void
   onUnassign: (matchId: number, role: 'observer' | 'producer' | 'caster', idx?: number) => void
 }) {
   const pw = match.productionWorkflow || {} as NonNullable<Match['productionWorkflow']>
-  const hasReschedule = pw.dateChanged
   const totalSignups = (pw.observerSignups?.length || 0) + (pw.producerSignups?.length || 0) + (pw.casterSignups?.length || 0)
   const isFullyCovered = pw.coverageStatus === 'full'
-  const [expanded, setExpanded] = useState(totalSignups > 0 && !isFullyCovered)
 
   return (
-    <div className={`assignment-match ${hasReschedule ? 'assignment-match--rescheduled' : ''}`}>
-      <div className="assignment-match__header" onClick={() => setExpanded(!expanded)}>
-        <div className="assignment-match__header-left">
-          <span className="assignment-time-slot__icon">{expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}</span>
-          <div className="assignment-match__info">
-            <h3>{match.title}</h3>
-            <div className="assignment-match__meta">
-              {match.region && <span className="assignment-match__region">{match.region}</span>}
-              <span className={`coverage-badge ${getCoverageClass(pw.coverageStatus)}`}>
-                {getCoverageIcon(pw.coverageStatus)} {pw.coverageStatus || 'none'}
-              </span>
-              {totalSignups > 0 && (
-                <span className="assignment-match__signup-count">
-                  {totalSignups} signup{totalSignups !== 1 ? 's' : ''}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-        <a href={`/admin/collections/matches/${match.id}`} target="_blank" rel="noopener noreferrer" className="assignment-match__link"
-          onClick={e => e.stopPropagation()}>
+    <div className={`assignment-v2__match ${isFullyCovered ? 'assignment-v2__match--covered' : ''}`}>
+      <div className="assignment-v2__match-header">
+        <span className="assignment-v2__match-title">{match.title}</span>
+        {match.region && <span className="assignment-v2__match-region">{match.region}</span>}
+        <span className={`assignment-v2__coverage assignment-v2__coverage--${pw.coverageStatus || 'none'}`}>
+          {pw.coverageStatus === 'full' ? <CheckCircle size={10} /> : pw.coverageStatus === 'partial' ? <AlertTriangle size={10} /> : <XCircle size={10} />}
+          {pw.coverageStatus || 'none'}
+        </span>
+        {totalSignups > 0 && (
+          <span className={`assignment-v2__signup-count assignment-v2__signup-count--${totalSignups >= 4 ? 'full' : 'partial'}`}>
+            <Users size={10} /> {totalSignups}
+          </span>
+        )}
+        <a href={`/admin/collections/matches/${match.id}`} target="_blank" rel="noopener noreferrer" className="assignment-v2__edit-link">
           Edit →
         </a>
       </div>
 
-      {hasReschedule && pw.previousDate && (
-        <div className="assignment-match__reschedule-warning">
-          <AlertTriangle size={12} /> Rescheduled from {new Date(pw.previousDate).toLocaleDateString('en-US', {
-            weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
-          })} — signups were reset
-        </div>
-      )}
+      <div className="assignment-v2__roles">
+        <RoleRow
+          matchId={match.id} roleName="Observer" roleKey="observer" roleIcon={<Eye size={12} />}
+          maxSlots={1} signups={pw.observerSignups || []} assigned={pw.assignedObserver ?? null}
+          onAssign={onAssign} onUnassign={onUnassign}
+        />
+        <RoleRow
+          matchId={match.id} roleName="Producer" roleKey="producer" roleIcon={<Clapperboard size={12} />}
+          maxSlots={1} signups={pw.producerSignups || []} assigned={pw.assignedProducer ?? null}
+          onAssign={onAssign} onUnassign={onUnassign}
+        />
+        <RoleRow
+          matchId={match.id} roleName="Casters" roleKey="caster" roleIcon={<Mic size={12} />}
+          maxSlots={2} signups={pw.casterSignups || []} assigned={pw.assignedCasters || []}
+          onAssign={onAssign} onUnassign={onUnassign}
+        />
+      </div>
+    </div>
+  )
+}
 
+// ─── Time Slot Group ───
+
+function TimeSlotGroup({ group, defaultOpen, onAssign, onUnassign }: {
+  group: MatchGroup
+  defaultOpen: boolean
+  onAssign: (matchId: number, role: 'observer' | 'producer' | 'caster', userId: number, style?: string) => void
+  onUnassign: (matchId: number, role: 'observer' | 'producer' | 'caster', idx?: number) => void
+}) {
+  const [expanded, setExpanded] = useState(defaultOpen)
+
+  const totalSignups = new Set<number>()
+  const totalAssigned = new Set<number>()
+  group.matches.forEach(m => {
+    const pw = m.productionWorkflow
+    if (!pw) return
+    pw.observerSignups?.forEach((u: any) => { const id = getUserId(u); if (id) totalSignups.add(id) })
+    pw.producerSignups?.forEach((u: any) => { const id = getUserId(u); if (id) totalSignups.add(id) })
+    pw.casterSignups?.forEach((c: any) => { const id = getUserId(c.user); if (id) totalSignups.add(id) })
+    if (pw.assignedObserver) { const id = getUserId(pw.assignedObserver); if (id) totalAssigned.add(id) }
+    if (pw.assignedProducer) { const id = getUserId(pw.assignedProducer); if (id) totalAssigned.add(id) }
+    pw.assignedCasters?.forEach((c: any) => { const id = getUserId(c.user); if (id) totalAssigned.add(id) })
+  })
+
+  const hasReschedule = group.matches.some(m => m.productionWorkflow?.dateChanged)
+  const hasSignups = totalSignups.size > 0
+
+  return (
+    <div className={`assignment-v2__slot ${hasReschedule ? 'assignment-v2__slot--rescheduled' : ''} ${hasSignups && totalAssigned.size === 0 ? 'assignment-v2__slot--has-signups' : ''}`}>
+      <button className="assignment-v2__slot-toggle" onClick={() => setExpanded(!expanded)}>
+        <span className="assignment-v2__slot-chevron">{expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}</span>
+        <div className="assignment-v2__slot-info">
+          <strong>{group.formattedDate}</strong>
+          <span className="assignment-v2__slot-meta">
+            {group.matches.length} match{group.matches.length > 1 ? 'es' : ''}
+            {' · '}{totalSignups.size} signup{totalSignups.size !== 1 ? 's' : ''}
+            {' · '}{totalAssigned.size} assigned
+          </span>
+        </div>
+        {hasSignups && totalAssigned.size === 0 && (
+          <span className={`assignment-v2__slot-signup-indicator assignment-v2__slot-signup-indicator--${totalSignups.size >= 4 ? 'full' : 'partial'}`}>
+            <Users size={10} /> {totalSignups.size} ready
+          </span>
+        )}
+        {hasReschedule && <AlertTriangle size={12} className="assignment-v2__slot-reschedule" />}
+      </button>
       {expanded && (
-        <div className="assignment-roles">
-          <RoleAssignmentBlock
-            matchId={match.id}
-            roleName="Observer"
-            roleKey="observer"
-            maxSlots={1}
-            signups={pw.observerSignups || []}
-            assigned={pw.assignedObserver ?? null}
-            onAssign={onAssign}
-            onUnassign={onUnassign}
-          />
-          <RoleAssignmentBlock
-            matchId={match.id}
-            roleName="Producer"
-            roleKey="producer"
-            maxSlots={1}
-            signups={pw.producerSignups || []}
-            assigned={pw.assignedProducer ?? null}
-            onAssign={onAssign}
-            onUnassign={onUnassign}
-          />
-          <RoleAssignmentBlock
-            matchId={match.id}
-            roleName="Casters"
-            roleKey="caster"
-            maxSlots={2}
-            signups={pw.casterSignups || []}
-            assigned={pw.assignedCasters || []}
-            onAssign={onAssign}
-            onUnassign={onUnassign}
-          />
+        <div className="assignment-v2__slot-matches">
+          {group.matches.map(match => (
+            <MatchCard key={match.id} match={match} onAssign={onAssign} onUnassign={onUnassign} />
+          ))}
         </div>
       )}
     </div>
@@ -375,41 +372,17 @@ export function AssignmentView() {
     }))
     .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime())
 
-  // Helper: get slot-level assignment counts (since only 1 stream per time slot)
-  const getSlotAssignments = (g: MatchGroup) => {
-    let observers = 0, producers = 0, casters = 0
-    const countedObservers = new Set<number>()
-    const countedProducers = new Set<number>()
-    const countedCasters = new Set<number>()
-
+  // Categorize
+  const isSlotFullyBooked = (g: MatchGroup) => {
+    const counted = { obs: new Set<number>(), prod: new Set<number>(), cast: new Set<number>() }
     g.matches.forEach(m => {
       const pw = m.productionWorkflow
       if (!pw) return
-      if (pw.assignedObserver) {
-        const id = getUserId(pw.assignedObserver)
-        if (id && !countedObservers.has(id)) { countedObservers.add(id); observers++ }
-      }
-      if (pw.assignedProducer) {
-        const id = getUserId(pw.assignedProducer)
-        if (id && !countedProducers.has(id)) { countedProducers.add(id); producers++ }
-      }
-      pw.assignedCasters?.forEach(c => {
-        const id = getUserId(c.user)
-        if (id && !countedCasters.has(id)) { countedCasters.add(id); casters++ }
-      })
+      if (pw.assignedObserver) { const id = getUserId(pw.assignedObserver); if (id) counted.obs.add(id) }
+      if (pw.assignedProducer) { const id = getUserId(pw.assignedProducer); if (id) counted.prod.add(id) }
+      pw.assignedCasters?.forEach(c => { const id = getUserId(c.user); if (id) counted.cast.add(id) })
     })
-    return { observers, producers, casters }
-  }
-
-  const isSlotFullyBooked = (g: MatchGroup) => {
-    const a = getSlotAssignments(g)
-    return a.observers >= 1 && a.producers >= 1 && a.casters >= 2
-  }
-
-  const isSlotPartiallyAssigned = (g: MatchGroup) => {
-    const a = getSlotAssignments(g)
-    const hasAny = a.observers > 0 || a.producers > 0 || a.casters > 0
-    return hasAny && !isSlotFullyBooked(g)
+    return counted.obs.size >= 1 && counted.prod.size >= 1 && counted.cast.size >= 2
   }
 
   const groupHasSignup = (g: MatchGroup) =>
@@ -419,172 +392,59 @@ export function AssignmentView() {
       return (pw.observerSignups?.length || 0) + (pw.producerSignups?.length || 0) + (pw.casterSignups?.length || 0) > 0
     })
 
-  // Split into 4 sections based on slot-level status
   const fullyBooked = matchGroups.filter(g => isSlotFullyBooked(g))
-  const partiallyAssigned = matchGroups.filter(g => isSlotPartiallyAssigned(g))
-  const hasSignups = matchGroups.filter(g => !isSlotFullyBooked(g) && !isSlotPartiallyAssigned(g) && groupHasSignup(g))
-  const noSignups = matchGroups.filter(g => !isSlotFullyBooked(g) && !isSlotPartiallyAssigned(g) && !groupHasSignup(g))
-
+  const needsWork = matchGroups.filter(g => !isSlotFullyBooked(g))
 
   return (
-    <div className="production-dashboard__assignment">
-      <div className="production-dashboard__header">
-        <div>
-          <h2>Staff Assignment</h2>
-          <p className="production-dashboard__subtitle">
-            Click a name under "Available" to assign them. Click the X to unassign. Coverage updates automatically.
-          </p>
-          <div className="production-dashboard__timezone-notice">
-            <Globe size={14} /> <strong>Timezone Info:</strong> All times shown in your local timezone ({Intl.DateTimeFormat().resolvedOptions().timeZone})
-          </div>
+    <div className="assignment-v2">
+      <div className="assignment-v2__header">
+        <h2>Staff Assignment</h2>
+        <p>Click a name to assign them. Click ✕ to unassign. Coverage updates automatically.</p>
+        <div className="assignment-v2__tz">
+          <Globe size={12} /> Times shown in {Intl.DateTimeFormat().resolvedOptions().timeZone}
         </div>
       </div>
 
       {matches.length === 0 ? (
-        <div className="production-dashboard__empty">No upcoming matches found.</div>
+        <div className="staff-signups-v2__empty">No upcoming matches found.</div>
       ) : (
         <>
-          {/* Section 1: Fully Booked */}
+          {/* Needs work */}
+          {needsWork.length > 0 && (
+            <div className="assignment-v2__section">
+              <h3 className="assignment-v2__section-title">
+                <AlertTriangle size={14} /> Needs Assignment ({needsWork.length} time slot{needsWork.length > 1 ? 's' : ''})
+              </h3>
+              {needsWork.map(group => (
+                <TimeSlotGroup
+                  key={group.dateTime}
+                  group={group}
+                  defaultOpen={groupHasSignup(group)}
+                  onAssign={assignStaff}
+                  onUnassign={unassignStaff}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Fully Booked */}
           {fullyBooked.length > 0 && (
-            <div className="staff-signups-section staff-signups-section--assignments">
-              <h3><CheckCircle size={12} /> Fully Booked ({fullyBooked.length} time slot{fullyBooked.length > 1 ? 's' : ''})</h3>
-              <div className="assignment-time-slots">
-                {fullyBooked.map(group => (
-                  <FullyCoveredGroup key={group.dateTime} group={group} onAssign={assignStaff} onUnassign={unassignStaff} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Section 2: Partially Assigned */}
-          {partiallyAssigned.length > 0 && (
-            <div className="staff-signups-section staff-signups-section--assignments">
-              <h3><AlertTriangle size={12} /> Partially Assigned ({partiallyAssigned.length} time slot{partiallyAssigned.length > 1 ? 's' : ''})</h3>
-              <div className="assignment-time-slots">
-                {partiallyAssigned.map(group => (
-                  <NeedsAssignmentGroup key={group.dateTime} group={group} onAssign={assignStaff} onUnassign={unassignStaff} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Section 3: Has Signups — ready to assign */}
-          {hasSignups.length > 0 && (
-            <div className="staff-signups-section">
-              <h3><ClipboardList size={14} /> Has Signups — Ready to Assign ({hasSignups.length} time slot{hasSignups.length > 1 ? 's' : ''})</h3>
-              <div className="assignment-time-slots">
-                {hasSignups.map(group => (
-                  <NeedsAssignmentGroup key={group.dateTime} group={group} onAssign={assignStaff} onUnassign={unassignStaff} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Section 4: No Signups yet */}
-          {noSignups.length > 0 && (
-            <div className="staff-signups-section staff-signups-section--urgent">
-              <h3><XCircle size={12} /> No Signups Yet ({noSignups.length} time slot{noSignups.length > 1 ? 's' : ''})</h3>
-              <div className="assignment-time-slots">
-                {noSignups.map(group => (
-                  <NeedsAssignmentGroup key={group.dateTime} group={group} onAssign={assignStaff} onUnassign={unassignStaff} />
-                ))}
-              </div>
+            <div className="assignment-v2__section">
+              <h3 className="assignment-v2__section-title assignment-v2__section-title--complete">
+                <CheckCircle size={14} /> Fully Booked ({fullyBooked.length})
+              </h3>
+              {fullyBooked.map(group => (
+                <TimeSlotGroup
+                  key={group.dateTime}
+                  group={group}
+                  defaultOpen={false}
+                  onAssign={assignStaff}
+                  onUnassign={unassignStaff}
+                />
+              ))}
             </div>
           )}
         </>
-      )}
-    </div>
-  )
-}
-
-// ─── Collapsible group for needs assignment slots ───
-
-function NeedsAssignmentGroup({ group, onAssign, onUnassign }: {
-  group: MatchGroup
-  onAssign: (matchId: number, role: 'observer' | 'producer' | 'caster', userId: number, style?: string) => void
-  onUnassign: (matchId: number, role: 'observer' | 'producer' | 'caster', idx?: number) => void
-}) {
-  const [expanded, setExpanded] = useState(false)
-
-  const totalSignups = new Set<number>()
-  const totalAssigned = new Set<number>()
-  group.matches.forEach(m => {
-    const pw = m.productionWorkflow
-    if (!pw) return
-    pw.observerSignups?.forEach((u: any) => { const id = getUserId(u); if (id) totalSignups.add(id) })
-    pw.producerSignups?.forEach((u: any) => { const id = getUserId(u); if (id) totalSignups.add(id) })
-    pw.casterSignups?.forEach((c: any) => { const id = getUserId(c.user); if (id) totalSignups.add(id) })
-    if (pw.assignedObserver) { const id = getUserId(pw.assignedObserver); if (id) totalAssigned.add(id) }
-    if (pw.assignedProducer) { const id = getUserId(pw.assignedProducer); if (id) totalAssigned.add(id) }
-    pw.assignedCasters?.forEach((c: any) => { const id = getUserId(c.user); if (id) totalAssigned.add(id) })
-  })
-
-  return (
-    <div className="assignment-time-slot">
-      <div className="assignment-time-slot__header">
-        <button className="assignment-time-slot__toggle" onClick={() => setExpanded(!expanded)}>
-          <span className="assignment-time-slot__icon">{expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}</span>
-          <div className="assignment-time-slot__info">
-            <h3 className="assignment-time-slot__datetime">{group.formattedDate}</h3>
-            <p className="assignment-time-slot__count">
-              {group.matches.length} match{group.matches.length > 1 ? 'es' : ''}
-              {' · '}{totalSignups.size} signup{totalSignups.size !== 1 ? 's' : ''}
-              {' · '}{totalAssigned.size} assigned
-            </p>
-          </div>
-        </button>
-      </div>
-      {expanded && (
-        <div className="assignment-time-slot__matches">
-          {group.matches.map(match => (
-            <MatchAssignmentCard key={match.id} match={match} onAssign={onAssign} onUnassign={onUnassign} />
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ─── Collapsed group for fully covered slots ───
-
-function FullyCoveredGroup({ group, onAssign, onUnassign }: {
-  group: MatchGroup
-  onAssign: (matchId: number, role: 'observer' | 'producer' | 'caster', userId: number, style?: string) => void
-  onUnassign: (matchId: number, role: 'observer' | 'producer' | 'caster', idx?: number) => void
-}) {
-  const [expanded, setExpanded] = useState(false)
-
-  // Summarize assigned staff
-  const assignedNames = new Set<string>()
-  group.matches.forEach(m => {
-    const pw = m.productionWorkflow
-    if (!pw) return
-    if (pw.assignedObserver) assignedNames.add(getUserName(pw.assignedObserver))
-    if (pw.assignedProducer) assignedNames.add(getUserName(pw.assignedProducer))
-    pw.assignedCasters?.forEach(c => assignedNames.add(getUserName(c.user)))
-  })
-
-  return (
-    <div className="assignment-time-slot assignment-time-slot--complete">
-      <div className="assignment-time-slot__header">
-        <button className="assignment-time-slot__toggle" onClick={() => setExpanded(!expanded)}>
-          <span className="assignment-time-slot__icon">{expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}</span>
-          <div className="assignment-time-slot__info">
-            <h3 className="assignment-time-slot__datetime">{group.formattedDate}</h3>
-            <p className="assignment-time-slot__count">
-              {group.matches.length} match{group.matches.length > 1 ? 'es' : ''}
-              {assignedNames.size > 0 && ` · Staff: ${Array.from(assignedNames).join(', ')}`}
-            </p>
-          </div>
-        </button>
-        <span className="assignment-time-slot__badge assignment-time-slot__badge--complete"><CheckCircle size={12} /> Full Coverage</span>
-      </div>
-      {expanded && (
-        <div className="assignment-time-slot__matches">
-          {group.matches.map(match => (
-            <MatchAssignmentCard key={match.id} match={match} onAssign={onAssign} onUnassign={onUnassign} />
-          ))}
-        </div>
       )}
     </div>
   )

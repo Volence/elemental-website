@@ -82,6 +82,7 @@ export function buildCommands() {
           .addChoices(
             { name: 'Tomorrow', value: 'tomorrow' },
             { name: 'Next Monday', value: 'monday' },
+            { name: 'This Week (from Monday)', value: 'thisweek' },
           ),
       )
       .addStringOption((option) =>
@@ -131,6 +132,29 @@ export function buildCommands() {
     new SlashCommandBuilder()
       .setName('matches')
       .setDescription('View today\'s scheduled matches across all teams'),
+
+    // Availability calendar command
+    new SlashCommandBuilder()
+      .setName('availability')
+      .setDescription('Create an availability calendar for your team')
+      .addStringOption((option) =>
+        option
+          .setName('name')
+          .setDescription('Calendar name (e.g., "Week 5 Scrims")')
+          .setRequired(true)
+          .setMaxLength(300),
+      )
+      .addStringOption((option) =>
+        option
+          .setName('start')
+          .setDescription('When does the calendar week start?')
+          .setRequired(true)
+          .addChoices(
+            { name: 'Tomorrow', value: 'tomorrow' },
+            { name: 'Next Monday', value: 'monday' },
+            { name: 'This Week (from Monday)', value: 'thisweek' },
+          ),
+      ),
   ].map((command) => command.toJSON())
 }
 

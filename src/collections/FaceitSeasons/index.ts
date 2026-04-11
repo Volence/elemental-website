@@ -20,7 +20,8 @@ export const FaceitSeasons: CollectionConfig = {
     defaultColumns: ['team', 'faceitLeague', 'seasonName', 'isActive', 'lastSynced'],
     description: 'Team FaceIt seasons - Can be used to edit archived match data for finalized seasons',
     group: 'Data',
-    hidden: hideFromPlayers,
+    // Hidden from sidebar — managed via FaceIt Leagues admin interface
+    hidden: true,
   },
   fields: [
     // URL Helper (makes it easy to fill in IDs)

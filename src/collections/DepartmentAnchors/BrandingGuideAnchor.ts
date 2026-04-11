@@ -15,11 +15,8 @@ export const BrandingGuideAnchor: CollectionConfig = {
   admin: {
     group: 'Departments',
     description: 'Visual branding color guide for all teams',
-    hidden: ({ user }) => {
-      if (!user) return true
-      const u = user as any
-      return !(u.departments?.isGraphicsStaff || user.role === 'admin' || user.role === 'staff-manager')
-    },
+    // Hidden from sidebar — now a tab in Graphics Dashboard
+    hidden: true,
     components: {
       views: {
         list: {

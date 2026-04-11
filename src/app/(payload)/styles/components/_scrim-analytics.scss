@@ -2342,6 +2342,7 @@
     align-items: center;
     gap: 4px;
     transition: color 0.2s;
+    margin-bottom: 4px;
 
     &:hover {
       color: $admin-text-primary;
@@ -2356,9 +2357,11 @@
   }
 
   &__player-name {
-    font-size: 32px;
+    font-size: 28px;
     font-weight: 800;
-    margin: 0;
+    margin: 4px 0 0 0 !important;
+    padding: 0 !important;
+    display: block !important;
     color: $admin-text-primary;
     letter-spacing: -0.5px;
     text-shadow: 0 0 40px rgba($admin-accent-info, 0.2);
@@ -2367,7 +2370,7 @@
   &__player-meta {
     color: $admin-text-secondary;
     font-size: 14px;
-    margin-top: 6px;
+    margin: 6px 0 0 0;
   }
 
   &__team-link {
@@ -2488,6 +2491,7 @@
     letter-spacing: 1.2px;
     font-weight: $font-weight-semibold;
     margin-bottom: 8px;
+    display: block;
   }
 
   // ── Map History Table (reusable) ──
@@ -2816,6 +2820,8 @@
     padding: 20px;
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 
   &__summary-glow {
@@ -2847,12 +2853,14 @@
     font-weight: 800;
     letter-spacing: -0.5px;
     font-variant-numeric: tabular-nums;
+    display: block;
   }
 
   &__summary-sub {
     font-size: 12px;
     color: $admin-text-muted;
     margin-top: 4px;
+    display: block;
   }
 
   // ── Donut Chart Legend ──
@@ -3214,3 +3222,36 @@
     cursor: pointer;
   }
 }
+
+// ============================================
+// SCRIM ANALYTICS DASHBOARD — Unified Tab Container
+// ============================================
+
+.scrim-analytics-dashboard {
+  padding: 0;
+
+  &__tabs {
+    @include dashboard-tabs($admin-accent-info);
+    padding: 0 2rem;
+  }
+
+  &__tab {
+    @include dashboard-tab($admin-accent-info);
+
+    &--active {
+      @include dashboard-tab-active($admin-accent-info);
+    }
+  }
+
+  &__tab-icon {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  &__tab-label {
+    font-size: 0.82rem;
+  }
+}
+
+// Note: Breadcrumbs (.step-nav) are globally hidden in _navigation.scss
+// for consistency across all admin views.

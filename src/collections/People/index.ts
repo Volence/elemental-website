@@ -1,10 +1,40 @@
 import type { CollectionConfig } from 'payload'
+import type { User } from '@/payload-types'
 
 import { authenticated } from '../../access/authenticated'
 import { anyone } from '../../access/anyone'
+import { UserRole } from '../../access/roles'
 import { slugField } from 'payload'
 import { autoCloseRecruitment } from './hooks/autoCloseRecruitment'
 import { createAuditLogHook, createAuditLogDeleteHook } from '../../utilities/auditLogger'
+
+// Helper: check if user is admin/manager
+const isAdminOrManager = (user: any): boolean => {
+  if (!user) return false
+  return user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER || user.role === UserRole.TEAM_MANAGER
+}
+
+// Helper: check if current user owns this Person record (via linkedPerson)
+const isOwner = (user: any, docId: any): boolean => {
+  if (!user || !docId) return false
+  const linkedPerson = user.linkedPerson
+  if (!linkedPerson) return false
+  const personId = typeof linkedPerson === 'object' ? linkedPerson.id : linkedPerson
+  return String(personId) === String(docId)
+}
+
+// Field-level access: admin/manager OR the person themselves
+const ownerOrManager = ({ req, doc }: any) => {
+  if (!req.user) return false
+  if (isAdminOrManager(req.user)) return true
+  return isOwner(req.user, doc?.id)
+}
+
+// Field-level access: admin/manager only (locked fields)
+const managerOnly = ({ req }: any) => {
+  if (!req.user) return false
+  return isAdminOrManager(req.user)
+}
 
 const formatSlug = (value: string): string => {
   return value
@@ -33,12 +63,23 @@ export const People: CollectionConfig = {
     description: 'Centralized collection for all people (players, staff, casters, etc.). This is the single source of truth for person profiles.',
     group: 'Organization',
     listSearchableFields: ['name', 'slug'],
+    baseListFilter: () => {
+      // IMPORTANT: In Payload 3, baseListFilter always receives user=null during SSR
+      // (even for authenticated admin sessions). Do NOT filter by user here.
+      // Security is handled by: collection read access (anyone) + admin.hidden (role-gated sidebar).
+      return {}
+    },
     hidden: ({ user }) => {
       if (!user) return true
-      // Hide from regular users - only show to managers and admins
-      return user.role !== 'admin' && 
-             user.role !== 'staff-manager' && 
-             user.role !== 'team-manager'
+      // Managers and admins always see it
+      if (['admin', 'staff-manager', 'team-manager'].includes(user.role as string)) return false
+      // Players with a linkedPerson can access (to edit their own profile)
+      if (user.role === 'player' && user.linkedPerson) return false
+      // Hide from everyone else
+      return true
+    },
+    components: {
+      beforeList: ['@/components/PeopleListRedirect#default'],
     },
     // CRITICAL: Don't use defaultPopulate for relationship queries
     // This can cause select clauses that filter out results
@@ -67,6 +108,9 @@ export const People: CollectionConfig = {
       name: 'name',
       type: 'text',
       required: true,
+      access: {
+        update: managerOnly,
+      },
       admin: {
         description: 'Full display name. This name will be used across all teams and staff positions. Tip: Use the exact name format you want displayed (e.g., "Malevolence" not "malevolence").',
       },
@@ -74,12 +118,34 @@ export const People: CollectionConfig = {
     {
       name: 'slug',
       type: 'text',
-      required: false, // Not required - will be auto-generated
+      required: false,
       unique: true,
       index: true,
+      access: {
+        update: managerOnly,
+      },
       admin: {
         position: 'sidebar',
         description: 'Auto-generated from name. You can customize it if needed.',
+      },
+    },
+    {
+      name: 'discordId',
+      type: 'text',
+      index: true,
+      access: {
+        update: managerOnly,
+      },
+      admin: {
+        position: 'sidebar',
+        description: 'Discord User ID (17-19 digits). Used for schedule availability and auto-fill matching. Auto-set when the linked User connects via Discord OAuth. Can also be set manually here.',
+      },
+      validate: (value: any) => {
+        if (!value) return true // Optional
+        if (!/^\d{17,19}$/.test(value)) {
+          return 'Discord ID must be 17-19 digits'
+        }
+        return true
       },
     },
     {
@@ -95,6 +161,9 @@ export const People: CollectionConfig = {
     {
       name: 'bio',
       type: 'textarea',
+      access: {
+        update: ownerOrManager,
+      },
       admin: {
         description: 'Optional biography or description',
       },
@@ -103,6 +172,9 @@ export const People: CollectionConfig = {
       name: 'photo',
       type: 'upload',
       relationTo: 'media',
+      access: {
+        update: ownerOrManager,
+      },
       admin: {
         description: 'Profile photo (optional)',
       },
@@ -110,6 +182,9 @@ export const People: CollectionConfig = {
     {
       name: 'socialLinks',
       type: 'group',
+      access: {
+        update: ownerOrManager,
+      },
       admin: {
         description: 'Social media links. These will be displayed on player pages. Tip: Use full URLs (e.g., https://twitter.com/username) for best results.',
       },
@@ -180,6 +255,9 @@ export const People: CollectionConfig = {
       name: 'gameAliases',
       type: 'array',
       label: 'Game Aliases',
+      access: {
+        update: managerOnly,
+      },
       admin: {
         description: 'In-game names this person uses. Matched against scrim log player names for automatic stat attribution. Internal only.',
       },
@@ -193,6 +271,18 @@ export const People: CollectionConfig = {
           },
         },
       ],
+    },
+    {
+      name: 'showInLiveStreamers',
+      type: 'checkbox',
+      defaultValue: false,
+      access: {
+        update: managerOnly,
+      },
+      admin: {
+        position: 'sidebar',
+        description: 'Show this person in the Live Streamers section when streaming. Requires a Twitch URL in Social Links.',
+      },
     },
     {
       name: 'notes',

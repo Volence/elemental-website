@@ -1,9 +1,13 @@
 'use client'
 
-import { Banner } from '@payloadcms/ui/elements/Banner'
 import React from 'react'
 
 import QuickStats from './QuickStats'
+import QuickActionsWidget from './QuickActionsWidget'
+import UpcomingMatchesWidget from './UpcomingMatchesWidget'
+import RecentScrimsWidget from './RecentScrimsWidget'
+import CalendarPreviewWidget from './CalendarPreviewWidget'
+import TaskSummaryWidget from './TaskSummaryWidget'
 import AssignedTeamsDashboard from './AssignedTeamsDashboard'
 import RecruitmentWidget from './RecruitmentWidget'
 import { useAuth } from '@payloadcms/ui'
@@ -130,24 +134,50 @@ const BeforeDashboard: React.FC = () => {
 
   const isPlayer = user?.role === 'player'
 
-  // Player-focused dashboard
-  if (isPlayer && user) {
-    return <PlayerDashboard user={user} />
-  }
-
   return (
     <div ref={wrapperRef}>
-      <Banner type="success">
-        <h4>Welcome to Elemental CMS!</h4>
-      </Banner>
-      <AssignedTeamsDashboard />
-      <QuickStats />
-      <RecruitmentWidget />
-      <p className="dashboard-help-note">
-        <em>Need help? Check the field descriptions in each collection for detailed guidance.</em>
-      </p>
+      {isPlayer && user ? (
+        <PlayerDashboard user={user} />
+      ) : (
+        <div className="dashboard-enhanced">
+          {/* Welcome */}
+          <div className="dashboard-enhanced__welcome">
+            <h2 className="dashboard-enhanced__greeting">
+              Welcome back{user?.name ? `, ${user.name}` : ''}
+            </h2>
+            <p className="dashboard-enhanced__subtitle">
+              Here's what's happening across Elemental
+            </p>
+          </div>
+
+          {/* Quick Actions - top */}
+          <QuickActionsWidget />
+
+          {/* Assigned Teams */}
+          <AssignedTeamsDashboard />
+
+          {/* Quick Stats Row */}
+          <QuickStats />
+
+          {/* Two-column grid: Upcoming Matches + Calendar Preview */}
+          <div className="dashboard-enhanced__grid">
+            <UpcomingMatchesWidget />
+            <CalendarPreviewWidget />
+          </div>
+
+          {/* Recent Scrims - full width */}
+          <RecentScrimsWidget />
+
+          {/* Task Summary */}
+          <TaskSummaryWidget />
+
+          {/* Recruitment */}
+          <RecruitmentWidget />
+        </div>
+      )}
     </div>
   )
 }
 
 export default BeforeDashboard
+

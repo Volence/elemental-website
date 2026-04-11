@@ -12,6 +12,7 @@ import {
   AlertCircle,
   FolderOpen,
 } from 'lucide-react'
+import ScrimAnalyticsTabs from '@/components/ScrimAnalyticsTabs'
 
 type UploadState = 'idle' | 'uploading' | 'success' | 'error'
 
@@ -465,6 +466,8 @@ export default function ScrimUploadView() {
   // ─────── RENDER ───────
 
   return (
+    <>
+    <ScrimAnalyticsTabs activeTab="upload" />
     <div className="scrim-upload">
       <div className="scrim-upload__container">
         {/* Header */}
@@ -899,5 +902,6 @@ export default function ScrimUploadView() {
         )}
       </div>
     </div>
+    </>
   )
 }

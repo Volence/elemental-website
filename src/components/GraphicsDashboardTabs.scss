@@ -1,0 +1,16 @@
+@import '../app/(payload)/styles/variables';
+@import '../app/(payload)/styles/mixins';
+
+.graphics-dashboard-tabs {
+  @include dashboard-tabs($admin-accent-primary);
+  margin-bottom: 2rem;
+  margin-top: 1rem;
+
+  &__tab {
+    @include dashboard-tab($admin-accent-primary);
+
+    &--active {
+      @include dashboard-tab-active($admin-accent-primary);
+    }
+  }
+}

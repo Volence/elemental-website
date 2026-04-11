@@ -384,30 +384,35 @@ export function WeeklyView() {
           <p className="production-dashboard__subtitle">
             View and edit all matches for this week
           </p>
-          <div className="production-dashboard__timezone-notice">
-            <Globe size={14} /> <strong>Timezone:</strong> {Intl.DateTimeFormat().resolvedOptions().timeZone}
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', margin: '1rem 0' }}>
+            <div className="production-dashboard__timezone-notice" style={{ margin: 0 }}>
+              <Globe size={14} /> <strong>Timezone:</strong> {Intl.DateTimeFormat().resolvedOptions().timeZone}
+            </div>
+            
+            <div className="production-dashboard__actions" style={{ margin: 0 }}>
+              <Button onClick={addManualMatch}>
+                <Plus size={12} /> Add Match
+              </Button>
+              <Button onClick={syncTournamentTeams} disabled={generating}>
+                {generating ? 'Syncing...' : <><Link size={12} /> Sync</>}
+              </Button>
+              <Button onClick={generateWeeklyMatches} disabled={generating}>
+                {generating ? 'Generating...' : <><RefreshCw size={12} /> Generate This Week</>}
+              </Button>
+            </div>
           </div>
+
           <details className="production-dashboard__instructions">
             <summary>Quick Start Guide</summary>
             <ol>
               <li>If you just bulk-assigned teams, click &quot;Sync Tournament Teams&quot; first</li>
-              <li>Click &quot;Generate This Week&apos;s Matches&quot; to auto-create matches from tournament templates</li>
+              <li>Click &quot;Generate This Week's Matches&quot; to auto-create matches from tournament templates</li>
               <li>Edit opponent names and lobby codes directly in the table</li>
               <li>Set priority levels for matches</li>
               <li>Click &quot;Edit&quot; to open the full match page for staff signups</li>
             </ol>
           </details>
-        </div>
-        <div className="production-dashboard__actions">
-          <Button onClick={addManualMatch}>
-            <Plus size={12} /> Add Match
-          </Button>
-          <Button onClick={syncTournamentTeams} disabled={generating}>
-            {generating ? 'Syncing...' : <><Link size={12} /> Sync Tournament Teams</>}
-          </Button>
-          <Button onClick={generateWeeklyMatches} disabled={generating}>
-            {generating ? 'Generating...' : <><RefreshCw size={12} /> Generate This Week's Matches</>}
-          </Button>
         </div>
       </div>
 

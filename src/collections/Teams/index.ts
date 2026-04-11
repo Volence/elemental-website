@@ -83,6 +83,7 @@ export const Teams: CollectionConfig = {
         '@/components/BeforeDashboard/TeamManagerInfo#default',
         '@/components/BeforeDashboard/ReadOnlyStyles#default',
         '@/components/TeamsListColumns/CellAlignmentStyles#default',
+        '@/components/TeamEditor/ListRedirect#default',
       ],
     },
   },
@@ -549,11 +550,94 @@ export const Teams: CollectionConfig = {
               ],
             },
             {
-              name: 'defaultTimeSlot',
-              type: 'text',
+              name: 'scheduleTimezone',
+              type: 'select',
               admin: {
-                description: 'Default time slot for schedules (e.g., "8-10 EST")',
+                description: 'Timezone for availability calendars and schedule display',
               },
+              options: [
+                // North America
+                { label: 'EST (America/New_York)', value: 'America/New_York' },
+                { label: 'CST (America/Chicago)', value: 'America/Chicago' },
+                { label: 'MST (America/Denver)', value: 'America/Denver' },
+                { label: 'PST (America/Los_Angeles)', value: 'America/Los_Angeles' },
+                { label: 'AST (America/Halifax)', value: 'America/Halifax' },
+                // South America
+                { label: 'BRT (America/Sao_Paulo)', value: 'America/Sao_Paulo' },
+                { label: 'ART (America/Argentina/Buenos_Aires)', value: 'America/Argentina/Buenos_Aires' },
+                { label: 'CLT (America/Santiago)', value: 'America/Santiago' },
+                // Europe
+                { label: 'GMT (Europe/London)', value: 'Europe/London' },
+                { label: 'CET (Europe/Berlin)', value: 'Europe/Berlin' },
+                { label: 'EET (Europe/Helsinki)', value: 'Europe/Helsinki' },
+                { label: 'MSK (Europe/Moscow)', value: 'Europe/Moscow' },
+                { label: 'WET (Europe/Lisbon)', value: 'Europe/Lisbon' },
+                // Middle East / Africa
+                { label: 'SAST (Africa/Johannesburg)', value: 'Africa/Johannesburg' },
+                { label: 'EAT (Africa/Nairobi)', value: 'Africa/Nairobi' },
+                { label: 'GST (Asia/Dubai)', value: 'Asia/Dubai' },
+                // Asia
+                { label: 'IST (Asia/Kolkata)', value: 'Asia/Kolkata' },
+                { label: 'SGT (Asia/Singapore)', value: 'Asia/Singapore' },
+                { label: 'JST (Asia/Tokyo)', value: 'Asia/Tokyo' },
+                { label: 'KST (Asia/Seoul)', value: 'Asia/Seoul' },
+                { label: 'CST (Asia/Shanghai)', value: 'Asia/Shanghai' },
+                { label: 'HKT (Asia/Hong_Kong)', value: 'Asia/Hong_Kong' },
+                // Oceania
+                { label: 'AWST (Australia/Perth)', value: 'Australia/Perth' },
+                { label: 'ACST (Australia/Adelaide)', value: 'Australia/Adelaide' },
+                { label: 'AEST (Australia/Sydney)', value: 'Australia/Sydney' },
+                { label: 'NZST (Pacific/Auckland)', value: 'Pacific/Auckland' },
+              ],
+            },
+            {
+              name: 'scheduleBlocks',
+              type: 'array',
+              label: 'Availability Time Blocks',
+              admin: {
+                description: 'Time blocks for availability calendars. Default: 3 blocks covering 6 PM to midnight in the team\'s timezone.',
+              },
+              defaultValue: [
+                { label: '6-8 PM', startTime: '18:00', endTime: '20:00' },
+                { label: '8-10 PM', startTime: '20:00', endTime: '22:00' },
+                { label: '10-12 AM', startTime: '22:00', endTime: '00:00' },
+              ],
+              fields: [
+                {
+                  type: 'row',
+                  fields: [
+                    {
+                      name: 'label',
+                      type: 'text',
+                      required: true,
+                      admin: {
+                        width: '40%',
+                        placeholder: 'e.g., 6-8 PM',
+                      },
+                    },
+                    {
+                      name: 'startTime',
+                      type: 'text',
+                      required: true,
+                      admin: {
+                        width: '30%',
+                        placeholder: '18:00',
+                        description: '24h format',
+                      },
+                    },
+                    {
+                      name: 'endTime',
+                      type: 'text',
+                      required: true,
+                      admin: {
+                        width: '30%',
+                        placeholder: '20:00',
+                        description: '24h format',
+                      },
+                    },
+                  ],
+                },
+              ],
             },
           ],
         },

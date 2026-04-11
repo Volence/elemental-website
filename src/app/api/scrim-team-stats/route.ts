@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { groupKillsIntoFights } from '@/lib/scrim-parser/utils'
+// groupKillsIntoFights replaced with inline batch query for performance
 import { heroRoleMapping } from '@/lib/scrim-parser/heroes'
+import { getUserScope } from '@/access/scrimScope'
 
 /**
  * GET /api/scrim-team-stats?teamId=N&range=last20|last50|last30d|all
@@ -19,6 +20,14 @@ export async function GET(req: NextRequest) {
   const teamId = parseInt(teamIdStr)
   if (isNaN(teamId)) {
     return NextResponse.json({ error: 'teamId must be a number' }, { status: 400 })
+  }
+
+  // Scope check: non-full-access users can only view their assigned teams
+  const scope = await getUserScope()
+  if (scope && !scope.isFullAccess) {
+    if (!scope.assignedTeamIds.includes(teamId)) {
+      return NextResponse.json({ error: 'Access denied — you can only view your own team stats' }, { status: 403 })
+    }
   }
 
   // ── Range filter ──
@@ -579,7 +588,26 @@ export async function GET(req: NextRequest) {
     let firstDeathTotal = 0
     let totalFightDuration = 0
 
-    // Process fights for each mapDataId
+    // Batch-load all kills for all filtered maps in one query
+    const allKills = await prisma.$queryRaw<Array<{
+      mapDataId: number; match_time: number; attacker_team: string; attacker_name: string;
+      victim_team: string; victim_name: string; event_ability: string;
+    }>>`
+      SELECT "mapDataId", match_time, attacker_team, attacker_name,
+             victim_team, victim_name, event_ability
+      FROM scrim_kills
+      WHERE "mapDataId" = ANY(${filteredMapDataIds}::int[])
+      ORDER BY "mapDataId", match_time
+    `
+
+    // Group kills by map, then into fights per map
+    const killsByMap = new Map<number, typeof allKills>()
+    for (const k of allKills) {
+      if (!killsByMap.has(k.mapDataId)) killsByMap.set(k.mapDataId, [])
+      killsByMap.get(k.mapDataId)!.push(k)
+    }
+
+    // Process fights for each mapDataId using pre-loaded data
     for (const mapDataId of filteredMapDataIds) {
       const ourTeam = ourTeamByMap.get(mapDataId)
       if (!ourTeam) continue
@@ -587,43 +615,54 @@ export async function GET(req: NextRequest) {
       const mr = mapResults.find(r => r.mapDataId === mapDataId)
       if (!mr) continue
 
-      try {
-        const fights = await groupKillsIntoFights(mapDataId)
-        for (const fight of fights) {
-          if (fight.kills.length < 2) continue // Skip trivial fights
-          totalFights++
-          totalFightDuration += fight.end - fight.start
+      const mapKills = killsByMap.get(mapDataId) ?? []
 
-          // Determine fight winner: team with more kills
-          let ourKills = 0
-          let theirKills = 0
-          for (const k of fight.kills) {
-            if (k.event_ability === 'Resurrect') continue
-            if (k.attacker_team === ourTeam) ourKills++
-            else theirKills++
+      // Group kills into fights (15s gap = new fight)
+      type Kill = typeof mapKills[number]
+      const fights: Kill[][] = []
+      let currentFight: Kill[] = []
+      for (const kill of mapKills) {
+        if (kill.event_ability === 'Resurrect') continue
+        if (currentFight.length === 0 || kill.match_time - currentFight[currentFight.length - 1].match_time <= 15) {
+          currentFight.push(kill)
+        } else {
+          if (currentFight.length > 0) fights.push(currentFight)
+          currentFight = [kill]
+        }
+      }
+      if (currentFight.length > 0) fights.push(currentFight)
+
+      for (const fight of fights) {
+        if (fight.length < 2) continue // Skip trivial fights
+        totalFights++
+        totalFightDuration += fight[fight.length - 1].match_time - fight[0].match_time
+
+        // Determine fight winner: team with more kills
+        let ourKills = 0
+        let theirKills = 0
+        for (const k of fight) {
+          if (k.attacker_team === ourTeam) ourKills++
+          else theirKills++
+        }
+        const weWon = ourKills > theirKills
+
+        if (weWon) fightsWon++
+
+        // First pick analysis
+        const firstKill = fight[0]
+        if (firstKill) {
+          const weGotFirstPick = firstKill.attacker_team === ourTeam
+          const weGotFirstDeath = firstKill.victim_team === ourTeam
+
+          if (weGotFirstPick) {
+            firstPickTotal++
+            if (weWon) firstPickWins++
           }
-          const weWon = ourKills > theirKills
-
-          if (weWon) fightsWon++
-
-          // First pick analysis
-          const firstKill = fight.kills.find(k => k.event_ability !== 'Resurrect')
-          if (firstKill) {
-            const weGotFirstPick = firstKill.attacker_team === ourTeam
-            const weGotFirstDeath = firstKill.victim_team === ourTeam
-
-            if (weGotFirstPick) {
-              firstPickTotal++
-              if (weWon) firstPickWins++
-            }
-            if (weGotFirstDeath) {
-              firstDeathTotal++
-              if (weWon) firstDeathWins++
-            }
+          if (weGotFirstDeath) {
+            firstDeathTotal++
+            if (weWon) firstDeathWins++
           }
         }
-      } catch {
-        // Skip maps where fight grouping fails
       }
     }
 

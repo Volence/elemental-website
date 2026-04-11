@@ -1,0 +1,309 @@
+@import '../../app/(payload)/styles/variables';
+@import '../../app/(payload)/styles/mixins';
+
+.invite-links-list {
+  padding: 0;
+
+  &__loading, &__empty {
+    padding: 2rem;
+    color: $admin-text-muted;
+    font-size: 0.875rem;
+    text-align: center;
+  }
+
+  // ─── Header (matches Payload's .collection-list__header) ───
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  &__header-left {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+  }
+
+  // Match Payload's h1 collection title
+  &__title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: $admin-accent-info;
+    margin: 0;
+    letter-spacing: -0.02em;
+    @include gradient-underline($admin-gradient-primary, auto, 200px, 3px, true);
+  }
+
+  &__create-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: $admin-bg-card;
+    border: 1px solid $admin-border-default;
+    border-radius: $radius-md;
+    color: $admin-text-primary;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: $admin-bg-hover;
+      border-color: $admin-border-strong;
+    }
+  }
+
+  &__description {
+    color: $admin-text-muted;
+    font-size: 0.8rem;
+    margin: 0 0 1.25rem 0;
+  }
+
+  // ─── Controls (matches Payload's search bar row) ───
+  &__controls {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    align-items: center;
+  }
+
+  &__search-wrap {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__search {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    background: $admin-bg-surface;
+    border: 1px solid $admin-border-default;
+    border-radius: $radius-md;
+    color: $admin-text-primary;
+    font-size: 0.85rem;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+    &::placeholder {
+      color: $admin-text-muted;
+    }
+
+    &:focus,
+    &:active {
+      outline: none;
+      border-color: rgba($admin-accent-info, 0.4);
+      box-shadow: $glow-accent;
+    }
+  }
+
+
+  // ─── Custom Dropdown (replaces native select for dark theme) ───
+  &__dropdown {
+    position: relative;
+    min-width: 140px;
+  }
+
+  &__dropdown-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    background: $admin-bg-card;
+    border: 1px solid $admin-border-default;
+    border-radius: $radius-md;
+    color: $admin-text-primary;
+    font-size: 0.8rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: border-color 0.15s ease;
+
+    &:hover {
+      border-color: $admin-border-strong;
+    }
+  }
+
+  &__dropdown-arrow {
+    font-size: 0.7rem;
+    opacity: 0.5;
+  }
+
+  &__dropdown-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    min-width: 100%;
+    background: $admin-bg-card;
+    border: 1px solid $admin-border-default;
+    border-radius: $radius-md;
+    padding: 0.25rem;
+    z-index: 100;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+
+  &__dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    background: none;
+    border: none;
+    border-radius: 4px;
+    color: $admin-text-secondary;
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-align: left;
+    white-space: nowrap;
+    transition: background 0.1s ease;
+
+    &:hover {
+      background: rgba($admin-accent-info, 0.08);
+      color: $admin-text-primary;
+    }
+
+    &--active {
+      background: rgba($admin-accent-info, 0.12);
+      color: $admin-accent-info;
+    }
+  }
+
+  // ─── Table (matches Payload's .collection-list table) ───
+  &__table-wrap {
+    overflow-x: auto;
+    @include custom-scrollbar;
+  }
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+
+    th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      color: $admin-text-muted;
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid $admin-border-subtle;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: $admin-text-secondary;
+      vertical-align: middle;
+    }
+
+    tbody tr {
+      transition: background 0.1s ease;
+
+      &:hover td {
+        background: rgba($admin-accent-info, 0.03);
+      }
+    }
+  }
+
+  &__token-link {
+    color: $admin-accent-info;
+    text-decoration: none;
+    font-family: monospace;
+    font-size: 0.85rem;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__role {
+    text-transform: capitalize;
+  }
+
+  &__muted {
+    color: $admin-text-muted;
+  }
+
+  &__dept-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  &__dept-tag {
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    background: rgba($admin-accent-primary, 0.12);
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    color: $admin-text-secondary;
+    white-space: nowrap;
+  }
+
+  &__status {
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: capitalize;
+
+    &--active {
+      background: rgba($admin-accent-success, 0.15);
+      border: 1px solid rgba($admin-accent-success, 0.3);
+      color: $admin-accent-success;
+    }
+
+    &--used {
+      background: rgba($admin-accent-info, 0.15);
+      border: 1px solid rgba($admin-accent-info, 0.3);
+      color: $admin-accent-info;
+    }
+
+    &--expired {
+      background: rgba($admin-text-muted, 0.1);
+      border: 1px solid rgba($admin-text-muted, 0.2);
+      color: $admin-text-muted;
+    }
+
+    &--revoked {
+      background: rgba($admin-accent-error, 0.15);
+      border: 1px solid rgba($admin-accent-error, 0.3);
+      color: $admin-accent-error;
+    }
+  }
+
+  &__user-cell {
+    white-space: nowrap;
+  }
+
+  &__user-link {
+    color: $admin-accent-info;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__date {
+    font-size: 0.8rem;
+    color: $admin-text-muted;
+    white-space: nowrap;
+  }
+
+  &__copy-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0.25rem;
+    opacity: 0.5;
+    transition: opacity 0.15s;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}

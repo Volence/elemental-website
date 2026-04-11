@@ -51,6 +51,11 @@ export interface VoteData {
     displayName: string
   }>
   roleBreakdown?: Record<string, number> | null
+  /** Per-slot availability from calendar responses (not present for poll-based) */
+  timeSlots?: Array<{
+    time: string
+    voters: Array<{ id: string; username: string; displayName: string }>
+  }>
 }
 
 export interface DaySchedule {

@@ -120,6 +120,7 @@ export async function POST(request: Request): Promise<Response> {
           isVideoStaff: invite.departments?.isVideoStaff || false,
           isEventsStaff: invite.departments?.isEventsStaff || false,
           isScoutingStaff: invite.departments?.isScoutingStaff || false,
+          isContentCreator: (invite.departments as any)?.isContentCreator || false,
         },
       },
     })

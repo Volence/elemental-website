@@ -8,8 +8,22 @@ export async function register() {
     // Set up global error handlers for unhandled errors
     setupGlobalErrorHandlers()
 
-    // Discord bot initialization moved to avoid build-time bundling issues
-    // Bot will initialize on first API request instead
+    // Auto-trigger Payload initialization in dev mode
+    // Without this, the Discord bot won't start until someone visits a page
+    if (process.env.NODE_ENV === 'development') {
+      setTimeout(async () => {
+        try {
+          const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+          console.log('[Instrumentation] Triggering Payload init via self-ping...')
+          await fetch(`${serverUrl}/api/users/me`, {
+            headers: { 'Content-Type': 'application/json' },
+          }).catch(() => {})
+          console.log('[Instrumentation] Payload init triggered')
+        } catch {
+          // Silent fail — Payload will init on next real request
+        }
+      }, 3000) // Wait 3s for Next.js to be ready
+    }
   }
 }
 

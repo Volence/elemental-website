@@ -19,6 +19,7 @@ import { default as default_a57c6a823b3afaaec2d5debdf135e084 } from '@/component
 import { default as default_00c104303d223c5ad174a97bdf6b198b } from '@/components/PersonRelationshipsSidebar'
 import { default as default_890f375c2e64cfbf8289c4ab4ee8f2a1 } from '@/components/PeopleListColumns/StaffPositionsCell'
 import { default as default_04cdbc390d38c074fb71cb7d83ceaa88 } from '@/components/PeopleListColumns/TeamsCell'
+import { default as default_0bef48e2ba46070d0450e759ffa990b3 } from '@/components/PeopleListRedirect'
 import { default as default_de3249083376ab0290efd4284159f820 } from '@/collections/Teams/BrandingColorField'
 import { default as default_befd121dc2c708f29d17ef6cf6b47565 } from '@/components/TeamTabCounts/StaffCount'
 import { default as default_f6633e5ce5f4aebde4e8dd97802e545a } from '@/components/TeamTabCounts/RosterCount'
@@ -35,8 +36,11 @@ import { default as default_6fd0f10ba03248579d8362f751a831ec } from '@/component
 import { default as default_3be39f37c57c85dcea766fdec96c9113 } from '@/components/BeforeDashboard/TeamManagerInfo'
 import { default as default_18c292333f7a71cfdec38694246f96bb } from '@/components/BeforeDashboard/ReadOnlyStyles'
 import { default as default_1c78329ca40bdaea08398ce17076186a } from '@/components/TeamsListColumns/CellAlignmentStyles'
+import { default as default_968fcc658dcccb13544175e4426589cc } from '@/components/TeamEditor/ListRedirect'
 import { default as default_d3aadc8f7d1aa70ce78ff0cfa164a82b } from '@/components/FaceitUrlHelper'
 import { default as default_e937f5e9aab757c7fd786055646bb001 } from '@/components/FaceitLeaguesHeader'
+import { default as default_767d1573376a915d5269211110132c41 } from '@/components/CalendarEventEditor/ListRedirect'
+import { default as default_74d7ce4a5764079f398d62cb46e87ed7 } from '@/components/StaffListRedirect'
 import { default as default_d9817958d5724d91ec10855d6e9a32a2 } from '@/components/ViewWikiButton'
 import { default as default_dc2c323b20f6177c2131d5b0800696bc } from '@/components/PopulateRosterButton'
 import { default as default_c23ccc3f844b47249d0225373601d9d0 } from '@/components/MatchActions'
@@ -57,20 +61,27 @@ import { default as default_1f089b8c2a27470c9bbc5822da887828 } from '@/component
 import { default as default_4b32192632526300c4dfce3ec06124cb } from '@/components/RecruitmentListColumns/ListingCell'
 import { default as default_46b3ed67e65478b5cdaa83f2b09fc358 } from '@/components/RecruitmentApplicationColumns/PositionCell'
 import { default as default_91b673ad90a59e578cd7d9f0fa7f0d19 } from '@/components/RecruitmentApplicationColumns/ActionsCell'
+import { default as default_238f119f0194480b8f4a52e1860c95e2 } from '@/components/ScheduleHeatmapView'
 import { default as default_d11a66a204e3df3a186a3bc326f6d7e4 } from '@/components/VotesDisplay'
 import { default as default_7c520a493bba693939ee544b7090b356 } from '@/components/ScheduleEditor'
 import { default as default_187be048b128856df5138905b5a2ba07 } from '@/components/PollScopeToggle'
-import { GraphicsWorkboard as GraphicsWorkboard_f4dd7e7806bf98c1c8970f346133cd5f } from '@/components/DepartmentWorkboard'
+import { default as default_0a8046206052a3b56c63d934ab686c00 } from '@/components/AvailabilityHeatmapView'
+import { default as default_c768ad956bb88923e7aa7b8670a7f64a } from '@/components/GraphicsDashboardTabs'
 import { default as default_8a2500a4e3906ab75bb39c8e12630e9a } from '@/components/TeamBrandingGuide'
 import { FolderTableCell as FolderTableCell_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 import { FolderField as FolderField_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 import { default as default_84d1cf001f7124d9b07380704ce8cd26 } from '@/components/FileBrowser/FileBrowserView'
 import { VideoWorkboard as VideoWorkboard_f4dd7e7806bf98c1c8970f346133cd5f } from '@/components/DepartmentWorkboard'
 import { EventsWorkboard as EventsWorkboard_f4dd7e7806bf98c1c8970f346133cd5f } from '@/components/DepartmentWorkboard'
+import { default as default_e8f7b16e4c51b9728b46c9a499df8586 } from '@/components/LinkDiscordButton'
+import { default as default_cf748e6d55bb950ba87b511e73ae3991 } from '@/components/UsersListRedirect'
+import { default as default_b4076e69b2a92013d616b7a49f1ff6ce } from '@/components/UserManagementTabs'
 import { default as default_1ded291ba22d6f8dbac2d341f30f3143 } from '@/components/InviteLinkFields/RoleSelectField'
 import { default as default_af352f4805551eefd7ae0beaaee692c1 } from '@/components/InviteLinkFields/CopyLinkField'
 import { default as default_c88412ef156346181b651c19a855fdb0 } from '@/components/InviteLinkColumns/DepartmentsCell'
 import { default as default_83b754ffb26a9a06f67ecd0cafa4ac31 } from '@/components/InviteLinkColumns/StatusCell'
+import { default as default_d058b284e2b00dd29e97a53109152108 } from '@/components/InviteEditor/ListRedirect'
+import { default as default_bce59de6346bf033e20674529a62668c } from '@/components/InviteEditor/EditRedirect'
 import { FolderTypeField as FolderTypeField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
 import { RowLabel as RowLabel_ec255a65fa6fa8d1faeb09cf35284224 } from '@/Header/RowLabel'
 import { RowLabel as RowLabel_1f6ff6ff633e3695d348f4f3c58f1466 } from '@/Footer/RowLabel'
@@ -102,6 +113,7 @@ import { default as default_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/component
 import { default as default_cb688d169ef5bf1426eea8968f0b9a29 } from '@/components/BeforeDashboard/DashboardNavLink'
 import { default as default_564fb21592d27251bcff7c5e897d4dbc } from '@/components/BeforeDashboard/CalendarNavLink'
 import { default as default_ab6e10b6b3865462fbf89efa35889b3d } from '@/components/BeforeDashboard/ScrimAnalyticsNavLinks'
+import { default as default_e99c5e0ebd6260b49d63c1e6ece7ec9d } from '@/components/BeforeDashboard/MyProfileNavLink'
 import { default as default_75e49641b1d841f24cd53ee63100b3ae } from '@/components/BeforeDashboard/SidebarScrollPreserver'
 import { default as default_aeef0123fea1af819397817664b7330c } from '@/components/AdminProviders'
 import { default as default_1afe941534b3971b0de8f4fbeca9a6d3 } from '@/components/UnifiedCalendar'
@@ -112,6 +124,16 @@ import { default as default_efcd8c569eb014794fe2ff123537efbf } from '@/component
 import { default as default_b71ffd6e4c02fc236b7c4ff5b8c745c1 } from '@/components/ScrimPlayerDetail/Route'
 import { default as default_ddd2842e99d7eefc935ddf1f43a96c52 } from '@/components/ScrimTeamDetail/Route'
 import { default as default_fcc5c38e7b961a7b6570d53be1c36a5a } from '@/components/ScrimHeroDetail/Route'
+import { default as default_98b6712c58ca2e7b5e536cb59bfe5bea } from '@/components/ScrimAnalyticsDashboard.route'
+import { default as default_c0e212a6fc0613f2da7f153f1882a461 } from '@/components/MyProfile/Route'
+import { default as default_80cc054fdf7fed9b9d2ce8c632d827c8 } from '@/components/EditPerson/Route'
+import { default as default_2b59f5602e11928e4ba9ab4b4faab23a } from '@/components/UserManagement/ListRoute'
+import { default as default_2bd04aa544deac47292ec60664483beb } from '@/components/UserManagement/EditRoute'
+import { default as default_f66a68d26cd90abc625019a0b46b5772 } from '@/components/StaffDirectory/ListRoute'
+import { default as default_98e73b390f55261a691b577a74429de2 } from '@/components/StaffDirectory/EditRoute'
+import { default as default_b0e989da30c56b386c2f4c651df2df39 } from '@/components/CalendarEventEditor/EditRoute'
+import { default as default_34a33320fd53659dd9841f20569ef2d8 } from '@/components/InviteEditor/EditRoute'
+import { default as default_02977a9d4ed0ed77a8d36ceed61c4d84 } from '@/components/TeamEditor/EditRoute'
 import { CollectionCards as CollectionCards_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 
 export const importMap = {
@@ -136,6 +158,7 @@ export const importMap = {
   "@/components/PersonRelationshipsSidebar#default": default_00c104303d223c5ad174a97bdf6b198b,
   "@/components/PeopleListColumns/StaffPositionsCell#default": default_890f375c2e64cfbf8289c4ab4ee8f2a1,
   "@/components/PeopleListColumns/TeamsCell#default": default_04cdbc390d38c074fb71cb7d83ceaa88,
+  "@/components/PeopleListRedirect#default": default_0bef48e2ba46070d0450e759ffa990b3,
   "@/collections/Teams/BrandingColorField#default": default_de3249083376ab0290efd4284159f820,
   "@/components/TeamTabCounts/StaffCount#default": default_befd121dc2c708f29d17ef6cf6b47565,
   "@/components/TeamTabCounts/RosterCount#default": default_f6633e5ce5f4aebde4e8dd97802e545a,
@@ -152,8 +175,11 @@ export const importMap = {
   "@/components/BeforeDashboard/TeamManagerInfo#default": default_3be39f37c57c85dcea766fdec96c9113,
   "@/components/BeforeDashboard/ReadOnlyStyles#default": default_18c292333f7a71cfdec38694246f96bb,
   "@/components/TeamsListColumns/CellAlignmentStyles#default": default_1c78329ca40bdaea08398ce17076186a,
+  "@/components/TeamEditor/ListRedirect#default": default_968fcc658dcccb13544175e4426589cc,
   "@/components/FaceitUrlHelper#default": default_d3aadc8f7d1aa70ce78ff0cfa164a82b,
   "@/components/FaceitLeaguesHeader#default": default_e937f5e9aab757c7fd786055646bb001,
+  "@/components/CalendarEventEditor/ListRedirect#default": default_767d1573376a915d5269211110132c41,
+  "@/components/StaffListRedirect#default": default_74d7ce4a5764079f398d62cb46e87ed7,
   "@/components/ViewWikiButton#default": default_d9817958d5724d91ec10855d6e9a32a2,
   "@/components/PopulateRosterButton#default": default_dc2c323b20f6177c2131d5b0800696bc,
   "@/components/MatchActions#default": default_c23ccc3f844b47249d0225373601d9d0,
@@ -174,20 +200,27 @@ export const importMap = {
   "@/components/RecruitmentListColumns/ListingCell#default": default_4b32192632526300c4dfce3ec06124cb,
   "@/components/RecruitmentApplicationColumns/PositionCell#default": default_46b3ed67e65478b5cdaa83f2b09fc358,
   "@/components/RecruitmentApplicationColumns/ActionsCell#default": default_91b673ad90a59e578cd7d9f0fa7f0d19,
+  "@/components/ScheduleHeatmapView#default": default_238f119f0194480b8f4a52e1860c95e2,
   "@/components/VotesDisplay#default": default_d11a66a204e3df3a186a3bc326f6d7e4,
   "@/components/ScheduleEditor#default": default_7c520a493bba693939ee544b7090b356,
   "@/components/PollScopeToggle#default": default_187be048b128856df5138905b5a2ba07,
-  "@/components/DepartmentWorkboard#GraphicsWorkboard": GraphicsWorkboard_f4dd7e7806bf98c1c8970f346133cd5f,
+  "@/components/AvailabilityHeatmapView#default": default_0a8046206052a3b56c63d934ab686c00,
+  "@/components/GraphicsDashboardTabs#default": default_c768ad956bb88923e7aa7b8670a7f64a,
   "@/components/TeamBrandingGuide#default": default_8a2500a4e3906ab75bb39c8e12630e9a,
   "@payloadcms/ui/rsc#FolderTableCell": FolderTableCell_ab83ff7e88da8d3530831f296ec4756a,
   "@payloadcms/ui/rsc#FolderField": FolderField_ab83ff7e88da8d3530831f296ec4756a,
   "@/components/FileBrowser/FileBrowserView#default": default_84d1cf001f7124d9b07380704ce8cd26,
   "@/components/DepartmentWorkboard#VideoWorkboard": VideoWorkboard_f4dd7e7806bf98c1c8970f346133cd5f,
   "@/components/DepartmentWorkboard#EventsWorkboard": EventsWorkboard_f4dd7e7806bf98c1c8970f346133cd5f,
+  "@/components/LinkDiscordButton#default": default_e8f7b16e4c51b9728b46c9a499df8586,
+  "@/components/UsersListRedirect#default": default_cf748e6d55bb950ba87b511e73ae3991,
+  "@/components/UserManagementTabs#default": default_b4076e69b2a92013d616b7a49f1ff6ce,
   "@/components/InviteLinkFields/RoleSelectField#default": default_1ded291ba22d6f8dbac2d341f30f3143,
   "@/components/InviteLinkFields/CopyLinkField#default": default_af352f4805551eefd7ae0beaaee692c1,
   "@/components/InviteLinkColumns/DepartmentsCell#default": default_c88412ef156346181b651c19a855fdb0,
   "@/components/InviteLinkColumns/StatusCell#default": default_83b754ffb26a9a06f67ecd0cafa4ac31,
+  "@/components/InviteEditor/ListRedirect#default": default_d058b284e2b00dd29e97a53109152108,
+  "@/components/InviteEditor/EditRedirect#default": default_bce59de6346bf033e20674529a62668c,
   "@payloadcms/ui#FolderTypeField": FolderTypeField_3817bf644402e67bfe6577f60ef982de,
   "@/Header/RowLabel#RowLabel": RowLabel_ec255a65fa6fa8d1faeb09cf35284224,
   "@/Footer/RowLabel#RowLabel": RowLabel_1f6ff6ff633e3695d348f4f3c58f1466,
@@ -219,6 +252,7 @@ export const importMap = {
   "@/components/BeforeDashboard/DashboardNavLink#default": default_cb688d169ef5bf1426eea8968f0b9a29,
   "@/components/BeforeDashboard/CalendarNavLink#default": default_564fb21592d27251bcff7c5e897d4dbc,
   "@/components/BeforeDashboard/ScrimAnalyticsNavLinks#default": default_ab6e10b6b3865462fbf89efa35889b3d,
+  "@/components/BeforeDashboard/MyProfileNavLink#default": default_e99c5e0ebd6260b49d63c1e6ece7ec9d,
   "@/components/BeforeDashboard/SidebarScrollPreserver#default": default_75e49641b1d841f24cd53ee63100b3ae,
   "@/components/AdminProviders#default": default_aeef0123fea1af819397817664b7330c,
   "@/components/UnifiedCalendar#default": default_1afe941534b3971b0de8f4fbeca9a6d3,
@@ -229,5 +263,15 @@ export const importMap = {
   "@/components/ScrimPlayerDetail/Route#default": default_b71ffd6e4c02fc236b7c4ff5b8c745c1,
   "@/components/ScrimTeamDetail/Route#default": default_ddd2842e99d7eefc935ddf1f43a96c52,
   "@/components/ScrimHeroDetail/Route#default": default_fcc5c38e7b961a7b6570d53be1c36a5a,
+  "@/components/ScrimAnalyticsDashboard.route#default": default_98b6712c58ca2e7b5e536cb59bfe5bea,
+  "@/components/MyProfile/Route#default": default_c0e212a6fc0613f2da7f153f1882a461,
+  "@/components/EditPerson/Route#default": default_80cc054fdf7fed9b9d2ce8c632d827c8,
+  "@/components/UserManagement/ListRoute#default": default_2b59f5602e11928e4ba9ab4b4faab23a,
+  "@/components/UserManagement/EditRoute#default": default_2bd04aa544deac47292ec60664483beb,
+  "@/components/StaffDirectory/ListRoute#default": default_f66a68d26cd90abc625019a0b46b5772,
+  "@/components/StaffDirectory/EditRoute#default": default_98e73b390f55261a691b577a74429de2,
+  "@/components/CalendarEventEditor/EditRoute#default": default_b0e989da30c56b386c2f4c651df2df39,
+  "@/components/InviteEditor/EditRoute#default": default_34a33320fd53659dd9841f20569ef2d8,
+  "@/components/TeamEditor/EditRoute#default": default_02977a9d4ed0ed77a8d36ceed61c4d84,
   "@payloadcms/ui/rsc#CollectionCards": CollectionCards_ab83ff7e88da8d3530831f296ec4756a
 }

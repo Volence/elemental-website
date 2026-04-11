@@ -46,6 +46,12 @@ export const Users: CollectionConfig = {
       if (!user) return true
       return 'role' in user && user.role !== UserRole.ADMIN
     },
+    components: {
+      beforeList: [
+        '@/components/UsersListRedirect#default',
+        '@/components/UserManagementTabs#default',
+      ],
+    },
   },
   auth: true,
   fields: [
@@ -73,16 +79,31 @@ export const Users: CollectionConfig = {
       name: 'discordId',
       type: 'text',
       admin: {
-        description: 'Your Discord User ID (18-19 digits). Link your Discord account to track polls you create via /schedulepoll. Right-click your profile in Discord → Copy User ID (requires Developer Mode enabled in Discord settings).',
+        description: 'Discord User ID — used for \"Login with Discord\". Set via the Link Discord button below, or manually by admins. Also auto-sets the linked Person\'s Discord ID for calendar matching.',
+        readOnly: true, // Non-admins can't manually edit; they use OAuth to link
       },
-      // Users can set their own Discord ID
+      access: {
+        // Only admins can directly edit discordId (everyone else uses OAuth flow)
+        update: ({ req }) => {
+          const user = req.user as User | undefined
+          return user?.role === UserRole.ADMIN
+        },
+      },
       validate: (value: any) => {
-        if (!value) return true // Optional field
-        // Validate Discord snowflake format (18-19 digit number)
+        if (!value) return true
         if (!/^\d{17,19}$/.test(value)) {
-          return 'Discord ID must be 17-19 digits. Enable Developer Mode in Discord and right-click your profile → Copy User ID'
+          return 'Discord ID must be 17-19 digits'
         }
         return true
+      },
+    },
+    {
+      name: 'linkDiscord',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '@/components/LinkDiscordButton',
+        },
       },
     },
     {
@@ -243,6 +264,15 @@ export const Users: CollectionConfig = {
           defaultValue: false,
           admin: {
             description: 'Grants access to Scouting Dashboard (enemy team intel, research)',
+          },
+        },
+        {
+          name: 'isContentCreator',
+          type: 'checkbox',
+          label: 'Content Creator',
+          defaultValue: false,
+          admin: {
+            description: 'Content creator — streams appear in Creator Live channel instead of Player Live',
           },
         },
       ],

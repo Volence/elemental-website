@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { Loader2, AlertCircle, X } from 'lucide-react'
 import RangeFilter, { type RangeValue } from '@/components/RangeFilter'
+import ScrimAnalyticsTabs from '@/components/ScrimAnalyticsTabs'
 
 type PlayerSummary = {
   name: string
@@ -182,6 +183,8 @@ export default function ScrimPlayerListView() {
   )
 
   return (
+    <>
+    <ScrimAnalyticsTabs activeTab="players" />
     <div className="scrim-players">
       {/* Header */}
       <div className="scrim-players__header">
@@ -275,5 +278,6 @@ export default function ScrimPlayerListView() {
         </div>
       </div>
     </div>
+    </>
   )
 }

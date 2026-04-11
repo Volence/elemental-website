@@ -27,6 +27,7 @@ import { ErrorLogs } from './collections/ErrorLogs'
 import { CronJobRuns } from './collections/CronJobRuns'
 import { ActiveSessions } from './collections/ActiveSessions'
 import { DiscordPolls } from './collections/DiscordPolls'
+import { AvailabilityCalendars } from './collections/AvailabilityCalendars'
 
 import { WatchedThreads } from './collections/WatchedThreads'
 import { Heroes } from './collections/Heroes'
@@ -113,6 +114,7 @@ const config = buildConfig({
         '@/components/BeforeDashboard/DashboardNavLink',
         '@/components/BeforeDashboard/CalendarNavLink#default',
         '@/components/BeforeDashboard/ScrimAnalyticsNavLinks#default',
+        '@/components/BeforeDashboard/MyProfileNavLink#default',
         '@/components/BeforeDashboard/SidebarScrollPreserver#default',
       ],
       // No custom afterNavLinks - Payload provides its own logout button
@@ -156,6 +158,46 @@ const config = buildConfig({
         scrimHeroDetail: {
           Component: '@/components/ScrimHeroDetail/Route#default',
           path: '/scrim-heroes',
+        },
+        scrimDashboard: {
+          Component: '@/components/ScrimAnalyticsDashboard.route#default',
+          path: '/scrim-dashboard',
+        },
+        myProfile: {
+          Component: '@/components/MyProfile/Route#default',
+          path: '/my-profile',
+        },
+        editPerson: {
+          Component: '@/components/EditPerson/Route#default',
+          path: '/edit-person',
+        },
+        manageUsers: {
+          Component: '@/components/UserManagement/ListRoute#default',
+          path: '/manage-users',
+        },
+        editUser: {
+          Component: '@/components/UserManagement/EditRoute#default',
+          path: '/edit-user',
+        },
+        staffDirectory: {
+          Component: '@/components/StaffDirectory/ListRoute#default',
+          path: '/staff-directory',
+        },
+        editStaff: {
+          Component: '@/components/StaffDirectory/EditRoute#default',
+          path: '/edit-staff',
+        },
+        editEvent: {
+          Component: '@/components/CalendarEventEditor/EditRoute#default',
+          path: '/edit-event',
+        },
+        editInvite: {
+          Component: '@/components/InviteEditor/EditRoute#default',
+          path: '/edit-invite',
+        },
+        editTeam: {
+          Component: '@/components/TeamEditor/EditRoute#default',
+          path: '/edit-team',
         },
       },
     },
@@ -202,6 +244,7 @@ const config = buildConfig({
     RecruitmentListings,
     RecruitmentApplications,
     DiscordPolls,
+    AvailabilityCalendars,
     
     // ── DEPARTMENT WORKBOARDS (anchors to workboard dashboards) ──
     GraphicsAnchor,
@@ -290,6 +333,7 @@ const config = buildConfig({
     // Initialize Discord bot on server startup
     if (process.env.DISCORD_BOT_TOKEN) {
       try {
+        console.log('[Discord] Initializing bot...')
         const { ensureDiscordClient } = await import('./discord/bot')
         const { registerCommands } = await import('./discord/commands/register')
         const { setupInteractionHandlers } = await import('./discord/handlers/interactions')
@@ -304,11 +348,13 @@ const config = buildConfig({
           setupInteractionHandlers()
           startThreadKeepAlive()  // Re-enabled - uses Thread-Watcher approach
           startTwitchLiveRoster() // Twitch live roster
+          console.log('[Discord] ✅ Bot fully initialized')
+        } else {
+          console.error('[Discord] ❌ Client was null — check env vars')
         }
       } catch (error) {
-        console.error('❌ Failed to initialize Discord bot:', error)
+        console.error('[Discord] ❌ Failed to initialize bot:', error)
       }
-    } else {
     }
   },
 })

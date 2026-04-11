@@ -48,6 +48,9 @@ export const Production: CollectionConfig = {
       // Only admins and staff managers can see staff collections
       return user.role !== 'admin' && user.role !== 'staff-manager'
     },
+    components: {
+      beforeList: ['@/components/StaffListRedirect#default'],
+    },
   },
   fields: [
     {

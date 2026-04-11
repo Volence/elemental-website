@@ -1123,7 +1123,7 @@
 .list-controls__columns .pill-selector,
 .list-controls__columns .column-selector,
 #list-controls-columns .pill-selector {
-  background: rgba(0, 0, 0, 0.95) !important;
+  background: #1a2332 !important;
   border: 1px solid rgba($admin-accent-info, 0.3) !important;
   border-radius: 8px !important;
   padding: 1rem !important;
@@ -1132,7 +1132,7 @@
 
 .list-controls__where .where-builder,
 #list-controls-where .where-builder {
-  background: rgba(0, 0, 0, 0.95) !important;
+  background: #1a2332 !important;
   border: 1px solid rgba($admin-accent-info, 0.3) !important;
   border-radius: 8px !important;
   padding: 1rem !important;
@@ -1245,7 +1245,7 @@ button.dropdown-indicator.dropdown-indicator,
 
 // Column container - ONLY when it has content (not collapsed)
 #list-controls-columns:not(.rah-static--height-zero):not([style*="height: 0"]):not([style*="height:0"]) {
-  background: rgba(0, 0, 0, 0.95) !important;
+  background: #1a2332 !important;
   border: 1px solid rgba($admin-accent-info, 0.3) !important;
   border-radius: 8px !important;
   padding: 1rem !important;
@@ -1387,7 +1387,7 @@ button.dropdown-indicator.dropdown-indicator,
 
 // Filter container - ONLY style when visible
 #list-controls-where:not(.rah-static--height-zero):not([style*="height: 0"]):not([style*="height:0"]) {
-  background: rgba(0, 0, 0, 0.95) !important;
+  background: #1a2332 !important;
   border: 1px solid rgba($admin-accent-info, 0.3) !important;
   border-radius: 8px !important;
   padding: 1rem !important;
@@ -1463,7 +1463,7 @@ button.dropdown-indicator.dropdown-indicator,
   // Field/Operator/Value selects - wider for text visibility
   select,
   .rs__control {
-    background: rgba(0, 0, 0, 0.3) !important;
+    background: #1e2838 !important;  // Visible dark navy (not black)
     border: 1px solid rgba($admin-accent-info, 0.3) !important;
     border-radius: 6px !important;
     color: rgba(255, 255, 255, 0.9) !important;
@@ -1516,7 +1516,7 @@ button.dropdown-indicator.dropdown-indicator,
   
   // Text input for value
   input:not([type="checkbox"]):not([type="radio"]) {
-    background: rgba(0, 0, 0, 0.3) !important;
+    background: #1e2838 !important;  // Visible dark navy (not black)
     border: 1px solid rgba($admin-accent-info, 0.3) !important;
     border-radius: 6px !important;
     color: rgba(255, 255, 255, 0.9) !important;

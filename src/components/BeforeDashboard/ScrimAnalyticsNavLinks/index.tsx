@@ -4,15 +4,12 @@ import React from 'react'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@payloadcms/ui'
 import Link from 'next/link'
-import { BarChart3, Shield, ChevronRight } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import type { User } from '@/payload-types'
 
 /**
  * Scrim Analytics navigation links for the admin sidebar.
- * Role-aware: shows different links based on the user's role.
- * - Admin / Staff Manager: Full access (Scrims, Upload, Players, Heroes)
- * - Team Manager: Scrims, Upload, Players, Heroes (scoped to their teams via API)
- * - Player: My Stats, My Team, Scrims, Players, Heroes (no Upload)
+ * Streamlined: single "Dashboard" link + Teams dropdown + My Stats (for players).
  */
 const ScrimAnalyticsNavLinks: React.FC = () => {
   const pathname = usePathname()
@@ -41,11 +38,8 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
   const scrimViewerRoles = ['admin', 'staff-manager', 'team-manager', 'player']
   if (!scrimViewerRoles.includes(role)) return null
 
-  // Roles that can upload scrims
-  const canUpload = ['admin', 'staff-manager', 'team-manager'].includes(role)
-
   // Build personalized links (My Stats only)
-  const personalLinks: { href: string; label: string; match: (p: string) => boolean; icon: React.ReactNode }[] = []
+  const personalLinks: { href: string; label: string; match: (p: string) => boolean }[] = []
 
   // "My Stats" — only for player/team-manager roles with a linkedPerson
   const linkedPersonId = typeof user.linkedPerson === 'object' && user.linkedPerson !== null
@@ -57,12 +51,11 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
       href: myStatsHref,
       label: 'My Stats',
       match: (p: string) => p === myStatsHref,
-      icon: <BarChart3 size={12} />,
     })
   }
 
   // Build team links separately
-  const teamLinks: { href: string; label: string; match: (p: string) => boolean; icon: React.ReactNode }[] = []
+  const teamLinks: { href: string; label: string; match: (p: string) => boolean }[] = []
 
   if (isFullAccess && allTeams) {
     for (const team of allTeams) {
@@ -71,7 +64,6 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
         href: teamHref,
         label: team.name,
         match: (p: string) => p.startsWith('/admin/scrim-team') && p.includes(`teamId=${team.id}`),
-        icon: <Shield size={12} />,
       })
     }
   } else if (!isFullAccess) {
@@ -85,7 +77,6 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
           href: teamHref,
           label: teamName,
           match: (p: string) => p.startsWith('/admin/scrim-team') && p.includes(`teamId=${teamId}`),
-          icon: <Shield size={12} />,
         })
       }
     }
@@ -96,34 +87,17 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
   const isCollapsible = teamLinks.length > 1
   const showTeams = !isCollapsible || teamsOpen || hasActiveTeam
 
-  const links = [
-    {
-      href: '/admin/scrims',
-      label: 'Scrims',
-      match: (p: string) => p === '/admin/scrims' || p.startsWith('/admin/scrim-map'),
-      show: true,
-    },
-    {
-      href: '/admin/scrim-upload',
-      label: 'Upload',
-      match: (p: string) => p === '/admin/scrim-upload',
-      show: canUpload,
-    },
-    {
-      href: '/admin/scrim-players',
-      label: 'Players',
-      match: (p: string) => p === '/admin/scrim-players' || p.startsWith('/admin/scrim-player-detail'),
-      show: true,
-    },
-    {
-      href: '/admin/scrim-heroes',
-      label: 'Heroes',
-      match: (p: string) => p === '/admin/scrim-heroes' || p.startsWith('/admin/scrim-heroes?'),
-      show: true,
-    },
-  ]
+  // Dashboard link — active when on any scrim-related page
+  const isDashboardActive = pathname ? (
+    pathname === '/admin/scrim-dashboard' ||
+    pathname === '/admin/scrims' ||
+    pathname === '/admin/scrim-upload' ||
+    pathname === '/admin/scrim-players' ||
+    pathname === '/admin/scrim-heroes' ||
+    pathname.startsWith('/admin/scrim-map') ||
+    pathname.startsWith('/admin/scrim-player-detail')
+  ) : false
 
-  const visibleLinks = links.filter(l => l.show)
   const hasPersonalLinks = personalLinks.length > 0
   const hasTeamLinks = teamLinks.length > 0
 
@@ -138,6 +112,15 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
         <div className="nav-group__indicator" />
       </button>
       <div className="nav-group__content">
+        {/* Dashboard — single entry for all scrim analytics */}
+        <Link
+          href="/admin/scrim-dashboard"
+          className={`nav__link${isDashboardActive ? ' active' : ''}`}
+          id="nav-scrim-dashboard"
+        >
+          <span className="nav__link-label">Dashboard</span>
+        </Link>
+
         {/* Personal quick links (My Stats) */}
         {hasPersonalLinks && personalLinks.map((link) => {
           const isActive = pathname ? link.match(pathname) : false
@@ -145,11 +128,10 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
             <Link
               key={link.href}
               href={link.href}
-              className={`nav__link scrim-nav__icon-link${isActive ? ' active' : ''}`}
+              className={`nav__link${isActive ? ' active' : ''}`}
               id={`nav-${link.label.toLowerCase().replace(/\s/g, '-')}`}
             >
-              <span className="scrim-nav__icon">{link.icon}</span>
-              <span className="nav__link-label scrim-nav__link-label">{link.label}</span>
+              <span className="nav__link-label">{link.label}</span>
             </Link>
           )
         })}
@@ -173,36 +155,15 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`nav__link scrim-nav__icon-link${isActive ? ' active' : ''}`}
+                  className={`nav__link${isActive ? ' active' : ''}`}
                   id={`nav-${link.label.toLowerCase().replace(/\s/g, '-')}`}
                 >
-                  <span className="scrim-nav__icon">{link.icon}</span>
-                  <span className="nav__link-label scrim-nav__link-label">{link.label}</span>
+                  <span className="nav__link-label">{link.label}</span>
                 </Link>
               )
             })}
           </>
         )}
-
-        {/* Divider between personal/team links and standard links */}
-        {(hasPersonalLinks || hasTeamLinks) && (
-          <div className="scrim-nav__divider" />
-        )}
-
-        {/* Standard nav links */}
-        {visibleLinks.map((link) => {
-          const isActive = pathname ? link.match(pathname) : false
-          return (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`nav__link${isActive ? ' active' : ''}`}
-              id={`nav-${link.label.toLowerCase()}`}
-            >
-              <span className="nav__link-label">{link.label}</span>
-            </Link>
-          )
-        })}
       </div>
     </div>
   )

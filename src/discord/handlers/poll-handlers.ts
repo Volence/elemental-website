@@ -1097,7 +1097,7 @@ async function checkPollForVoteChanges(messageId: string): Promise<void> {
   if (!client) return
 
   const notification = pollNotifications.get(messageId)
-  if (!notification || notification.enabledUsers.size === 0) {
+  if (!notification) {
     return
   }
 
@@ -1171,6 +1171,18 @@ async function checkPollForVoteChanges(messageId: string): Promise<void> {
     }
 
     if (changes.length > 0) {
+      // Sync updated votes to the database (keeps admin panel up to date)
+      const answerDetailsForSync = await Promise.all(
+        answers.map(async (answer) => {
+          const voters = await fetchAllPollAnswerVoters(answer)
+          const roleBuckets = guild ? await bucketVotersByRole(guild, voters, memberRoleCache) : null
+          return { answer, voters, roleBuckets }
+        }),
+      )
+      syncVotesToDatabase(messageId, answerDetailsForSync).catch((err) => {
+        console.error('Auto-sync to database failed:', err)
+      })
+
       // Build notification message
       const changeLines = changes.map((change) => {
         const sign = change.diff > 0 ? '+' : ''

@@ -15,9 +15,6 @@ export const InviteLinks: CollectionConfig = {
     plural: 'Invite Links',
   },
   access: {
-    admin: ({ req: { user } }) => {
-      return !!user && (user.role === 'admin' || user.role === 'staff-manager' || user.role === 'team-manager')
-    },
     create: canManageInvites,
     read: canManageInvites,
     update: canManageInvites,
@@ -28,6 +25,16 @@ export const InviteLinks: CollectionConfig = {
     useAsTitle: 'token',
     description: 'Generate invite links for new users with pre-configured permissions.',
     group: 'System',
+    components: {
+      beforeList: ['@/components/InviteEditor/ListRedirect#default'],
+      views: {
+        edit: {
+          default: {
+            Component: '@/components/InviteEditor/EditRedirect#default',
+          },
+        },
+      },
+    },
   },
   fields: [
     {
@@ -143,6 +150,15 @@ export const InviteLinks: CollectionConfig = {
           defaultValue: false,
           admin: {
             description: 'Grants access to the Scouting Dashboard (team research, player profiles)',
+          },
+        },
+        {
+          name: 'isContentCreator',
+          type: 'checkbox',
+          label: 'Content Creator',
+          defaultValue: false,
+          admin: {
+            description: 'Content creator — streams appear in Creator Live channel instead of Player Live',
           },
         },
       ],

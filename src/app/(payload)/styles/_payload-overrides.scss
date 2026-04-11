@@ -192,65 +192,7 @@ textarea::placeholder {
 // ============================================
 
 // Apply Clean Glow dark background to search bars
-.search-bar {
-  @include transparent-bg(0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: $radius-md;
-  padding: $spacing-xs;
-  
-  .search-filter__input {
-    @include transparent-bg(0.03);
-    border: 1px solid rgba($admin-accent-primary, 0.3);
-    color: $admin-text-primary;
-    
-    &::placeholder {
-      color: $admin-text-secondary;
-    }
-    
-    &:focus {
-      border-color: rgba($admin-accent-primary, 0.5);
-      box-shadow: 0 0 0 3px rgba($admin-accent-primary, 0.1);
-    }
-  }
-}
-
-// ============================================
-// SEARCH BAR FIX - Magnifying Glass Overlap
-// ============================================
-
-// Fix search input padding to prevent icon overlap
-input[type="search"],
-input[placeholder*="Search"],
-input[placeholder*="search"] {
-  padding-left: 2.5rem !important; // Enough space for icon
-}
-
-// Search container - ensure input has proper padding
-.search-filter,
-.list-controls__search,
-[class*="search"] {
-  input {
-    padding-left: 2.5rem !important;
-  }
-}
-
-// ============================================
-// VIBRANT BUTTON OUTLINES
-// ============================================
-
-// Make Columns & Filters buttons have vibrant outlines
-.list-controls button,
-button[class*="column"],
-button[class*="filter"],
-button[class*="Column"],
-button[class*="Filter"] {
-  border-color: rgba($admin-accent-primary, 0.8) !important;
-  
-  &:hover {
-    border-color: $admin-accent-primary !important;
-    box-shadow: 0 0 15px rgba($admin-accent-primary, 0.4) !important;
-  }
-}
+// Search bar + List Controls styling → _search-enhancements.scss
 
 // ============================================
 // BUTTONS - Clean Glow as Default
@@ -437,13 +379,50 @@ label:has(input[type="radio"]) {
   }
 }
 
-// Payload Checkbox container - remove white background and fix alignment
-.checkbox-input,
-.checkbox-input__input,
-[class*="checkbox-input"] {
+// Payload Checkbox container - remove white background but keep structure
+.checkbox-input {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
+}
+
+// The checkbox icon wrapper — this IS the visual checkbox
+.checkbox-input__input {
+  background: rgba(0, 0, 0, 0.15) !important;
+  border: 2px solid rgba($admin-accent-success, 0.4) !important;
+  border-radius: 4px !important;
+  box-shadow: 0 0 6px rgba($admin-accent-success, 0.08) !important;
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  min-height: 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  svg, .check {
+    color: transparent;
+  }
+}
+
+// Checked state
+.field-type.checkbox input:checked ~ .checkbox-input__input,
+.checkbox-input:has(input:checked) .checkbox-input__input {
+  background: rgba($admin-accent-success, 0.2) !important;
+  border-color: rgba($admin-accent-success, 0.8) !important;
+  box-shadow: 0 0 12px rgba($admin-accent-success, 0.25) !important;
+
+  svg, .check {
+    color: $admin-accent-success !important;
+  }
+}
+
+// Hover on unchecked
+.checkbox-input:not(:has(input:checked)):hover .checkbox-input__input {
+  border-color: rgba($admin-accent-success, 0.6) !important;
+  box-shadow: 0 0 10px rgba($admin-accent-success, 0.15) !important;
 }
 
 // Fix standalone checkbox field alignment (e.g. "Active" toggle)
@@ -689,30 +668,71 @@ label:has(input[type="radio"]) {
 table {
   width: 100%;
   min-width: max-content; // Prevent table from shrinking below content width
+  border-collapse: collapse;
+  font-size: 0.84rem;
   
-  thead {
-    @include transparent-bg(0.05);
-    border-bottom: 2px solid rgba($admin-accent-primary, 0.3);
+  thead,
+  .table__thead {
+    @include transparent-bg(0.04);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     
-    th {
-      color: rgba(255, 255, 255, 0.85);
+    th,
+    .table__th {
+      color: rgba(255, 255, 255, 0.55);
       font-weight: 600;
-      padding: 1rem;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.55rem 0.75rem;
+      white-space: nowrap;
+
+      // Sort buttons inherit compact styling
+      button {
+        font-size: inherit;
+        text-transform: inherit;
+        letter-spacing: inherit;
+        font-weight: inherit;
+        color: inherit;
+      }
     }
   }
   
-  tbody {
-    tr {
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      transition: all 0.2s ease;
+  tbody,
+  .table__tbody {
+    tr,
+    .table__tr {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      transition: background 0.15s ease;
       
       &:hover {
-        @include transparent-bg(0.03);
+        background: rgba(255, 255, 255, 0.025);
       }
     }
     
-    td {
-      padding: 0.875rem 1rem;
+    td,
+    .table__td {
+      padding: 0.5rem 0.75rem;
+      color: rgba(255, 255, 255, 0.75);
+    }
+  }
+}
+
+// Payload-specific collection list table refinements
+.collection-list {
+  .table {
+    border-collapse: collapse;
+
+    // First column links (the title/name column)
+    td:first-child a,
+    .table__td:first-child a {
+      color: $admin-accent-primary;
+      text-decoration: none;
+      font-weight: 500;
+      
+      &:hover {
+        text-decoration: underline;
+        color: lighten($admin-accent-primary, 10%);
+      }
     }
   }
 }
@@ -721,50 +741,7 @@ table {
 // LIST CONTROLS (Filters, Search, etc.)
 // ============================================
 
-.list-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  
-  button {
-    @include glow-button($admin-accent-info);
-    padding: 0.625rem 1rem;
-    font-size: 0.875rem;
-  }
-  
-  .list-controls__toggle-columns {
-    @include glow-button($admin-accent-info); // Cyan
-    padding: 0.875rem 1.5rem;
-    min-height: 48px;
-    font-size: 1rem;
-    font-weight: 600;
-  }
-  
-  .list-controls__toggle-filters,
-  .list-controls__toggle-where {
-    @include glow-button($admin-accent-success); // Green
-    padding: 0.875rem 1.5rem;
-    min-height: 48px;
-    font-size: 1rem;
-    font-weight: 600;
-  }
-  
-  // Checkbox alignment in list controls (Show Archived, etc.)
-  label:has(input[type="checkbox"]) {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    min-height: 44px; // Match button height
-    padding: 0.625rem 1rem;
-    margin: 0;
-    line-height: 1;
-    
-    input[type="checkbox"] {
-      margin: 0;
-      flex-shrink: 0;
-    }
-  }
-}
+// List controls (search + buttons) → _search-enhancements.scss
 
 // Navigation styling is in _navigation.scss
 

@@ -56,6 +56,16 @@ function calculateStartDate(mode: string): Date {
     return nextMonday
   }
 
+  if (mode === 'thisweek') {
+    // Start from this Monday — even if it's already past
+    const thisMonday = new Date(today.getTime())
+    const day = thisMonday.getDay()
+    // Go back to Monday: Sunday(0) → -6, Mon(1) → 0, Tue(2) → -1, etc.
+    const delta = day === 0 ? -6 : 1 - day
+    thisMonday.setDate(thisMonday.getDate() + delta)
+    return thisMonday
+  }
+
   throw new Error(`Unsupported start mode: ${mode}`)
 }
 

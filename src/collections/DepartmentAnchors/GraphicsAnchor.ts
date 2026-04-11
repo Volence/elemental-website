@@ -23,7 +23,7 @@ export const GraphicsAnchor: CollectionConfig = {
     components: {
       views: {
         list: {
-          Component: '@/components/DepartmentWorkboard#GraphicsWorkboard',
+          Component: '@/components/GraphicsDashboardTabs#default',
         },
       },
     },

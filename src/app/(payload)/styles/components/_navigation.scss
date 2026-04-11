@@ -140,48 +140,16 @@ nav > .nav-group:first-child .nav-group__toggle {
 }
 
 // ============================================
-// BREADCRUMBS
+// BREADCRUMBS — GLOBALLY HIDDEN
 // ============================================
+// Payload's native .step-nav breadcrumbs are hidden globally for
+// visual consistency. Most custom dashboard views (Discord Server
+// Manager, Graphics Dashboard, Production Dashboard, Social Media,
+// Scouting & Recruitment, Scrim Analytics, Files) never showed them,
+// so we hide them everywhere rather than having an inconsistent mix.
 
 .step-nav {
-  display: flex;
-  align-items: center;
-  gap: $spacing-sm;
-  padding: $spacing-xs 0;
-  margin: 0;
-  
-  a,
-  span {
-    display: inline-flex;
-    align-items: center;
-    padding: 0;
-    margin: 0;
-    border: none;
-    border-radius: 0;
-    background: transparent;
-    width: auto;
-    gap: $spacing-xs;
-  }
-  
-  // Hide broken SVG that JS removes
-  svg {
-    display: none;
-  }
-  
-  // Add home icon with CSS (can't be removed by JS)
-  a[href="/admin"]::before {
-    content: "🏠";
-    font-size: 1rem;
-    line-height: 1;
-    display: inline-block;
-    margin-right: $spacing-xs;
-  }
-  
-  // Breadcrumb separators
-  > span:not([class*="home"]):not([class*="last"]) {
-    display: inline-block;
-    opacity: 0.5;
-  }
+  display: none !important;
 }
 
 // ============================================
@@ -532,4 +500,16 @@ html body aside nav > div:nth-child(12) .nav__link {
     }
   }
 }
+
+// ============================================
+// HIDDEN LINKS
+// ============================================
+// Payload renders nav links with id="nav-{slug}" — target those directly
+// Note: hidden: true can't be used because it blocks individual document routes too.
+// CSS hide works because the inline tab view means we never navigate to the list page.
+#nav-ignored-duplicates,
+#nav-invite-links {
+  display: none !important;
+}
+
 

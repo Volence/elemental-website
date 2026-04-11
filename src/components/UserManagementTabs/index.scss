@@ -1,0 +1,29 @@
+@import '../../app/(payload)/styles/variables';
+@import '../../app/(payload)/styles/mixins';
+
+.user-management-tabs {
+  @include dashboard-tabs($admin-accent-primary);
+  margin-bottom: 2rem;
+  margin-top: 1rem;
+
+  &__link {
+    @include dashboard-tab($admin-accent-primary);
+    text-decoration: none;
+    border: none;
+    outline: none;
+
+    &--active {
+      @include dashboard-tab-active($admin-accent-primary);
+    }
+  }
+}
+
+// When the invite-links tab is active, hide the Payload default Users list below
+.user-management-tabs-container--show-invites ~ .collection-list,
+.user-management-tabs-container--show-invites ~ .list-controls,
+.user-management-tabs-container--show-invites ~ .table-columns,
+.user-management-tabs-container--show-invites ~ .list-header,
+.user-management-tabs-container--show-invites ~ [class*="list"],
+.user-management-tabs-container--show-invites ~ .collection-list__wrap {
+  display: none !important;
+}

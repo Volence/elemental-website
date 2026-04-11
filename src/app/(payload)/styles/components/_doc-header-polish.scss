@@ -1,0 +1,239 @@
+// ============================================
+// DOCUMENT HEADER POLISH
+// ============================================
+//
+// Targets the header area on all document edit pages:
+// - Breadcrumbs (already fine)
+// - Title row + API tab button
+// - Last Modified / Created timestamps
+// - Save button + 3-dot menu
+// - Collection description
+//
+// These are global overrides — affects every collection's edit page.
+//
+
+@import '../variables';
+@import '../mixins';
+
+// ============================================
+// OVERALL HEADER AREA — Tighter vertical spacing
+// ============================================
+
+// The main document header wrapper
+.doc-header {
+  margin-bottom: 0 !important;
+  padding-bottom: 0.5rem !important;
+  gap: 0.25rem !important;
+}
+
+// ============================================
+// TITLE ROW — The editable h1 + API tab
+// ============================================
+
+// Title input — less harsh underline, subtler placeholder
+.doc-header__title {
+  h1 {
+    font-size: 1.75rem !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+    
+    // The editable text input
+    &::after {
+      // Reduce the gradient underline to be more subtle
+      height: 2px !important;
+      opacity: 0.6;
+    }
+  }
+}
+
+// The inline text input for editing the title  
+.doc-header__title-text,
+#field-title,
+input[name="title"],
+input[name="pollName"] {
+  // Keep border-bottom but make it subtler on non-focus
+  &:not(:focus) {
+    border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+  }
+  
+  &:focus {
+    border-bottom-color: rgba($admin-accent-primary, 0.5) !important;
+    box-shadow: 0 1px 0 0 rgba($admin-accent-primary, 0.3) !important;
+  }
+}
+
+// ============================================
+// API TAB — Tone down significantly
+// ============================================
+
+// The API link/button in the doc header tabs
+.doc-tabs__tabs .doc-tab:not(.doc-tab--active),
+.doc-tabs .doc-tab[href*="api"] {
+  // Make it a small ghost pill
+  font-size: 0.7rem !important;
+  padding: 0.2rem 0.6rem !important;
+  min-height: unset !important;
+  height: auto !important;
+  opacity: 0.4;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 4px !important;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 600;
+  background: transparent !important;
+  box-shadow: none !important;
+  transition: opacity 0.2s ease, border-color 0.2s ease;
+  
+  &:hover {
+    opacity: 0.7;
+    border-color: rgba(255, 255, 255, 0.25) !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    box-shadow: none !important;
+  }
+  
+  // Kill the glow button styling that's inherited
+  &::before,
+  &::after {
+    display: none !important;
+  }
+}
+
+// ============================================
+// DOC-CONTROLS — Timestamps + Save + Menu
+// ============================================
+
+// The controls wrapper (contains timestamps on left, save/menu on right)
+.doc-controls {
+  padding: 0.35rem 0 !important;
+  margin-bottom: 0.25rem !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+// Timestamps wrapper — make more compact
+.doc-controls__wrapper {
+  gap: 0.75rem !important;
+}
+
+// "Last Modified" and "Created" labels
+p.doc-controls__label {
+  font-size: 0.75rem !important;
+  color: rgba(255, 255, 255, 0.3) !important;
+  margin: 0 !important;
+  font-weight: 500;
+}
+
+// Timestamp values  
+p.doc-controls__value {
+  font-size: 0.75rem !important;
+  color: rgba(255, 255, 255, 0.55) !important;
+  margin: 0 !important;
+  font-weight: 600;
+}
+
+// Meta list items — tighter spacing
+ul.doc-controls__meta {
+  margin: 0 !important;
+  padding: 0 !important;
+  gap: 0.5rem;
+
+  li {
+    gap: 0.25rem !important;
+    margin: 0 !important;
+  }
+}
+
+// The content area holding timestamps
+div.doc-controls__content {
+  gap: 1.5rem !important;
+}
+
+// ============================================
+// SAVE BUTTON — Keep prominent but refined
+// ============================================
+
+.doc-controls__content-wrap {
+  gap: 0.5rem !important;
+}
+
+// Save button — let it be the hero
+.doc-controls button[type="submit"],
+.form-submit button[type="submit"] {
+  padding: 0.5rem 1.25rem !important;
+  font-size: 0.85rem !important;
+  min-height: 34px !important;
+  border-radius: 6px !important;
+}
+
+// 3-dot menu — smaller and subtler
+.doc-controls .popup-button,
+.doc-controls button.popup-button {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  max-width: 32px !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: none !important;
+  
+  &:hover {
+    border-color: rgba($admin-accent-primary, 0.4) !important;
+    box-shadow: 0 0 8px rgba($admin-accent-primary, 0.15) !important;
+  }
+}
+
+// ============================================
+// DESCRIPTION TEXT — Subtler, tighter
+// ============================================
+
+// The collection description below the header
+.doc-header + .custom-view-description,
+.doc-header ~ [class*="description"],
+.collection-edit__description,
+.doc-header__after-header {
+  font-size: 0.8rem !important;
+  color: rgba(255, 255, 255, 0.35) !important;
+  margin-top: 0 !important;
+  margin-bottom: 0.5rem !important;
+  padding: 0 !important;
+  line-height: 1.4;
+}
+
+// Admin description at the top-right of edit pages
+.render-default > .custom-view-description:first-child,
+[class*="collection-edit"] > p:first-of-type {
+  font-size: 0.8rem !important;
+  color: rgba(255, 255, 255, 0.35) !important;
+  margin-bottom: 0.75rem !important;
+}
+
+// ============================================
+// BREADCRUMBS — Already fine, minor tweaks
+// ============================================
+
+// Just reduce the bottom gap to tighten up
+nav[class*="step-nav"],
+.step-nav {
+  margin-bottom: 0.25rem !important;
+  padding-bottom: 0 !important;
+}
+
+// ============================================
+// SIDEBAR HEADER — Match the compact feel
+// ============================================
+
+// The sidebar section on edit pages
+.doc-fields__sidebar {
+  padding-top: 0.5rem;
+
+  // Sidebar field labels
+  .field-type > label,
+  .field-type > .field-label {
+    font-size: 0.8rem;
+  }
+
+  // Sidebar description text
+  .field-description {
+    font-size: 0.75rem !important;
+    color: rgba(255, 255, 255, 0.35) !important;
+    margin-top: 0.25rem !important;
+  }
+}

@@ -225,9 +225,18 @@ tbody td {
   
   // Remove internal spacing
   .list-header__content,
-  .list-header__title-and-actions,
   .list-header__title,
   .list-header__actions {
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  // Title + Create New button alignment — use baseline so the button
+  // aligns with the heading text, not the center of the heading + underline
+  .list-header__title-and-actions {
+    display: flex !important;
+    align-items: baseline !important;
+    gap: 1rem;
     margin-bottom: 0;
     padding-bottom: 0;
   }

@@ -1,0 +1,231 @@
+// ============================================
+// AVAILABILITY HEATMAP (Admin Panel)
+// ============================================
+.availability-heatmap {
+  padding: 0.75rem 0;
+
+  &--empty {
+    padding: 1.5rem;
+  }
+
+  &__empty-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(255, 255, 255, 0.4);
+    text-align: center;
+    
+    p { margin: 0; }
+    svg { opacity: 0.5; }
+  }
+
+  &__empty-hint {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.3);
+  }
+
+  &__changed-flag {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(251, 191, 36, 0.1);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 6px;
+    color: #fbbf24;
+    font-size: 0.8rem;
+    margin-bottom: 0.75rem;
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  &__header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.85rem;
+
+    svg { color: var(--admin-accent-primary, #00e5ff); }
+  }
+
+  &__status {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  // Grid
+  &__grid-wrapper {
+    overflow-x: auto;
+    margin-bottom: 0.75rem;
+  }
+
+  &__grid {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 2px;
+    table-layout: fixed;
+
+    th, td {
+      text-align: center;
+      vertical-align: middle;
+    }
+  }
+
+  &__corner {
+    width: 80px;
+    background: transparent;
+    border: none !important;
+  }
+
+  // Day headers — proper table layout, no flex
+  &__day-header {
+    text-align: center;
+    padding: 0.5rem 0.25rem;
+    vertical-align: bottom;
+  }
+
+  &__day-name {
+    display: block;
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  &__day-date {
+    display: block;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.35);
+  }
+
+  &__slot-label {
+    text-align: right !important;
+    padding-right: 0.75rem !important;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 500;
+    white-space: nowrap;
+    width: 80px;
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  // Cell states — fixed height for all rows
+  &__cell {
+    position: relative;
+    cursor: help;
+    min-width: 50px;
+    height: 48px;
+    transition: background 0.15s ease;
+    border-radius: 4px;
+
+    &--empty {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    &--low {
+      background: rgba(34, 197, 94, 0.15);
+    }
+
+    &--medium {
+      background: rgba(34, 197, 94, 0.35);
+    }
+
+    &--high {
+      background: rgba(34, 197, 94, 0.55);
+    }
+
+    // Mixed cells with maybes get an amber tint
+    &--has-maybe {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.3) 50%, rgba(251, 191, 36, 0.3) 50%) !important;
+    }
+
+    // Pure maybe cells (all responses are maybe)
+    &--all-maybe {
+      background: rgba(251, 191, 36, 0.25) !important;
+    }
+
+    &:hover {
+      outline: 2px solid rgba(255, 255, 255, 0.3);
+      outline-offset: -2px;
+    }
+  }
+
+  &__cell-count {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #fff;
+    display: block;
+    line-height: 1.2;
+  }
+
+  &__cell-maybe {
+    display: block;
+    font-size: 0.7rem;
+    color: #fbbf24;
+    font-weight: 600;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 3px;
+    padding: 0 3px;
+    margin: 2px auto 0;
+    width: fit-content;
+  }
+
+  // Legend
+  &__legend {
+    display: flex;
+    gap: 1rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  &__legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  &__legend-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: inline-block;
+  }
+
+  // Player notes
+  &__notes {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+
+    h4 {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.5);
+      margin: 0 0 0.5rem 0;
+      font-weight: 600;
+    }
+  }
+
+  &__note {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.4);
+    padding: 0.25rem 0;
+
+    strong {
+      color: rgba(255, 255, 255, 0.6);
+    }
+  }
+}

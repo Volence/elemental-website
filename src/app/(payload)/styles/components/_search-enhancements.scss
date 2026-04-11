@@ -1,239 +1,618 @@
-/* ============================================
- * Search Bar Enhancements
- * Make search more prominent and user-friendly
- * Using proper specificity instead of !important
- * ============================================ */
+// ============================================
+// SEARCH BAR & LIST CONTROLS — Compact Modern Styling
+// ============================================
+//
+// Payload's SearchBar structure (from node_modules/@payloadcms/ui):
+//
+//   .list-controls              ← flex column, stacks search + drawers
+//     .search-bar               ← CSS GRID: auto 1fr [auto]
+//       .icon--search           ← grid col 1, magnifying glass
+//       .search-filter          ← grid col 1-3, spans under icon
+//         input.search-filter__input
+//       .search-bar__actions    ← grid col 3, contains Columns/Filters pills
+//         button.pill.list-controls__toggle-columns
+//         button.pill.list-controls__toggle-where
+//     .list-controls__columns   ← drawer: column pill-selector
+//     .list-controls__where     ← drawer: where-builder (filters)
+//
+// The fix must target `.search-bar` (the grid) and `.search-bar__actions`
+// to make the buttons compact but fully readable.
+// ============================================
 
-// Search input styling - use attribute selectors for higher specificity
-.search-filter-container,
-.list-controls__wrap {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  
-  .search-bar {
+@import '../variables';
+@import '../mixins';
+
+// ── Search Bar Container (Grid) ──
+// Remove the card-like appearance and make it compact
+// Override Payload's CSS Grid on .search-bar with Flexbox.
+// Payload's grid approach has the search-filter spanning columns 1-3 via grid-column,
+// which fights with our overrides since Payload's chunk CSS loads after our layout CSS.
+// Flexbox avoids all grid-column conflicts.
+
+.search-bar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  min-height: 0 !important;
+  background-color: transparent !important;
+  border-radius: 6px !important;
+  width: 100% !important;
+
+  // Search filter takes available space, but yields to actions
+  .search-filter {
+    flex: 1 1 0% !important;   // 0% flex-basis so it doesn't claim 100% first
+    min-width: 200px !important;
+    // Reset grid positioning
+    grid-column: unset !important;
+    grid-row: unset !important;
     position: relative;
   }
-  
-  // Target search inputs with combined selectors (higher specificity than single class)
+
+  // Actions area (Columns + Filters buttons) never shrinks
+  .search-bar__actions {
+    flex: 0 0 auto !important;  // Don't grow, don't shrink, natural width
+    grid-column: unset !important;
+    white-space: nowrap;
+  }
+
+  // Search icon overlays the input using absolute positioning
+  .icon--search {
+    position: absolute !important;
+    left: 0.5rem !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: auto !important;
+    z-index: 1;
+    pointer-events: none;
+    // Reset grid positioning
+    grid-column: unset !important;
+    grid-row: unset !important;
+    
+    svg {
+      width: 14px !important;
+      height: 14px !important;
+      color: rgba(255, 255, 255, 0.4);
+    }
+  }
+}
+
+.search-filter {
+  position: relative;
+
+  input,
   input.search-filter__input,
   input[type="search"],
   input[placeholder*="Search"] {
-    position: relative;
-    padding: 0.875rem 1rem 0.875rem 2.75rem; // Reduced from 3.5rem to prevent icon overlap
-    font-size: 15px;
-    border: 2px solid var(--theme-elevation-300);
-    border-radius: 8px;
-    background-color: var(--theme-elevation-100);
-    color: var(--theme-text);
+    padding: 0.45rem 0.75rem 0.45rem 2rem !important;
+    font-size: 0.825rem !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 6px !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    box-shadow: none !important;
     transition: all 0.2s ease;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    min-height: 0 !important;
+    height: auto !important;
 
     &:focus {
-      border-color: transparent;
-      background-color: var(--theme-elevation-50);
-      box-shadow: 
-        0 0 0 2px rgba(236, 72, 153, 0.3),
-        0 0 20px rgba(236, 72, 153, 0.1),
-        0 4px 12px rgba(0, 0, 0, 0.1);
-      outline: none;
+      border-color: rgba($admin-accent-info, 0.4) !important;
+      background: rgba(255, 255, 255, 0.06) !important;
+      box-shadow: 0 0 0 2px rgba($admin-accent-info, 0.1) !important;
+      outline: none !important;
     }
 
     &::placeholder {
-      color: var(--theme-text-500);
-      font-weight: 400;
+      color: rgba(255, 255, 255, 0.35) !important;
+      font-size: 0.825rem !important;
     }
-  }
-
-  input:focus + .search-icon {
-    color: #ec4899;
-  }
-
-  .search-shortcut {
-    position: absolute;
-    right: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    padding: 0.25rem 0.5rem;
-    background-color: var(--theme-elevation-200);
-    border: 1px solid var(--theme-elevation-300);
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--theme-text-500);
-    pointer-events: none;
   }
 }
 
-/* Filter buttons - use descendant combinator for specificity */
-.list-controls__buttons {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
 
-  button {
-    padding: 0.875rem 1.25rem;
-    min-height: 44px;
-    min-width: 44px;
-    border: 2px solid var(--theme-elevation-300);
-    border-radius: 8px;
-    background-color: var(--theme-elevation-100);
-    color: var(--theme-text);
-    font-weight: 600;
-    font-size: 0.9375rem;
-    letter-spacing: 0.025em;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    white-space: nowrap;
+// ── Search Bar Actions (Columns + Filters buttons) ──
+// These are the pills INSIDE the search-bar grid
 
+.search-bar__actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+  padding: 0.3rem 0.4rem !important;
+  width: auto !important;
+  flex: 0 0 auto !important;
+  
+  // All pill buttons inside actions — MUST NOT BE COMPRESSED
+  .pill,
+  .pill.pill--size-small,
+  .pill.pill--style-light {
+    // Override Payload's CSS custom properties that drive the padding calc
+    --pill-padding-block-start: 0.3rem !important;
+    --pill-padding-block-end: 0.3rem !important;
+    --pill-padding-inline-start: 0.65rem !important;
+    --pill-padding-inline-end: 0.65rem !important;
+    --pill-icon-size: 13px !important;
+    
+    flex: 0 0 auto !important;         // Never shrink, never grow, natural width
+    min-width: max-content !important;  // CRITICAL: pill must be at least as wide as its content
+    width: auto !important;
+    padding: 0.3rem 0.65rem !important;
+    min-height: 0 !important;
+    height: auto !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    border-radius: 5px !important;
+    gap: 0.3rem !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+
+    // Labels must show fully
+    .pill__label {
+      font-size: 0.78rem !important;
+      font-weight: 600 !important;
+      line-height: 1.3 !important;
+      overflow: visible !important;
+      text-overflow: unset !important;
+      max-width: none !important;
+      width: auto !important;
+      white-space: nowrap !important;
+    }
+
+    // Icons
+    .pill__icon,
     svg {
-      width: 18px;
-      height: 18px;
-    }
-
-    &:hover {
-      border-color: rgba(236, 72, 153, 0.3);
-      background: linear-gradient(135deg, rgba(236, 72, 153, 0.05), rgba(168, 85, 247, 0.05));
-      transform: translateY(-1px);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    &[data-active="true"],
-    &.active {
-      background: linear-gradient(135deg, #ec4899, #a855f7);
-      border-color: transparent;
-      color: white;
-
-      &:hover {
-        transform: translateY(-1px) scale(1.02);
-      }
-    }
-  }
-  
-  // Columns button - Cyan theme
-  button.list-controls__toggle-columns,
-  button[class*="toggle-columns"] {
-    &:hover {
-      border-color: rgba(6, 182, 212, 0.3);
-      background: linear-gradient(135deg, rgba(6, 182, 212, 0.05), rgba(8, 145, 178, 0.05));
-      box-shadow: 0 0 15px rgba(6, 182, 212, 0.15);
-    }
-
-    &[data-active="true"],
-    &.active {
-      background: linear-gradient(135deg, #06b6d4, #0891b2);
-      border-color: rgba(6, 182, 212, 0.5);
-      box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
-    }
-  }
-  
-  // Filters button - Green theme
-  button.list-controls__toggle-where,
-  button.list-controls__toggle-filters,
-  button[class*="toggle-where"],
-  button[class*="toggle-filters"] {
-    &:hover {
-      border-color: rgba(132, 204, 22, 0.3);
-      background: linear-gradient(135deg, rgba(132, 204, 22, 0.05), rgba(101, 163, 13, 0.05));
-      box-shadow: 0 0 15px rgba(132, 204, 22, 0.15);
-    }
-
-    &[data-active="true"],
-    &.active {
-      background: linear-gradient(135deg, #84cc16, #65a30d);
-      border-color: rgba(132, 204, 22, 0.5);
-      box-shadow: 0 0 20px rgba(132, 204, 22, 0.3);
+      width: 13px !important;
+      height: 13px !important;
+      flex-shrink: 0;
     }
   }
 }
 
-/* List controls alignment */
-.list-controls,
-.list-controls__wrap {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  
-  // Checkbox/radio alignment
-  label:has(input[type="checkbox"]),
-  label:has(input[type="radio"]) {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-    margin: 0;
-    padding: 0.5rem 0.75rem;
-    line-height: 1;
-    gap: 0.5rem;
+// Columns button — Cyan accent
+.list-controls__toggle-columns {
+  @include glow-button($admin-accent-info);
+  border: 1px solid rgba($admin-accent-info, 0.35) !important;
+
+  * { border: none !important; }
+
+  &:hover {
+    border-color: rgba($admin-accent-info, 0.6) !important;
+    box-shadow: 0 0 10px rgba($admin-accent-info, 0.2) !important;
   }
 }
 
-/* Pill button overrides - use .pill.pill for double-class specificity */
-.list-controls button.pill.pill {
-  padding: 0.875rem 1.5rem;
-  min-height: 48px;
-  min-width: fit-content;
-  max-width: none;
-  width: auto;
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: 0.025em;
-  text-transform: none;
-  border-radius: 8px;
+// Filters button — Green accent
+.list-controls__toggle-where,
+.list-controls__toggle-filters {
+  @include glow-button($admin-accent-success);
+  border: 1px solid rgba($admin-accent-success, 0.35) !important;
+
+  * { border: none !important; }
+
+  &:hover {
+    border-color: rgba($admin-accent-success, 0.6) !important;
+    box-shadow: 0 0 10px rgba($admin-accent-success, 0.2) !important;
+  }
+}
+
+
+// ============================================
+// LIST CONTROLS — Checkbox alignment
+// ============================================
+
+.list-controls label:has(input[type="checkbox"]),
+.list-controls__wrap label:has(input[type="checkbox"]) {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.625rem;
-  white-space: nowrap;
-  line-height: 1.5;
-  overflow: visible;
-  flex-shrink: 0;
-  
+  gap: 0.4rem;
+  min-height: 0;
+  padding: 0.4rem 0.6rem;
+  margin: 0;
+  line-height: 1;
+  font-size: 0.8rem;
+}
+
+
+// ============================================
+// COLUMN SELECTOR — Readable Pill Grid
+// ============================================
+
+.list-controls__columns {
+  padding: 1rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 8px !important;
+  background: rgba($admin-bg-base, 0.98) !important;
+  margin-top: 0.5rem;
+
+  .pill-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0;
+  }
+}
+
+// Column pills — readable tokens with better click targets
+.pill-selector__pill,
+.pill-selector__pill.btn,
+.pill-selector .btn--icon-style-with-border {
+  padding: 0.4rem 0.75rem !important;
+  min-height: 0 !important;
+  min-width: 0 !important;
+  font-size: 0.78rem !important;
+  font-weight: 500 !important;
+  border-radius: 5px !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: rgba(255, 255, 255, 0.65) !important;
+  cursor: pointer;
+  overflow: visible !important;
+  max-width: none !important;
+  width: auto !important;
+  transition: all 0.15s ease;
+  box-shadow: none !important;
+  gap: 0.3rem !important;
+
+  // Selected/active columns
+  &--selected,
+  &.pill-selector__pill--selected {
+    background: rgba($admin-accent-info, 0.12) !important;
+    border-color: rgba($admin-accent-info, 0.35) !important;
+    color: rgba($admin-accent-info, 0.95) !important;
+    font-weight: 600 !important;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  // Inner label
   .pill__label,
   span {
-    font-size: 1rem;
-    font-weight: 600;
-    letter-spacing: 0.025em;
-    line-height: 1.5;
-    white-space: nowrap;
-    overflow: visible;
+    font-size: 0.78rem !important;
+    font-weight: inherit !important;
+    line-height: 1.3 !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    max-width: none !important;
+    width: auto !important;
+    white-space: nowrap !important;
   }
-  
-  .pill__icon,
-  svg {
-    width: 20px;
-    height: 20px;
+
+  // Drag handle / icons  
+  svg,
+  .pill__icon {
+    width: 12px !important;
+    height: 12px !important;
     flex-shrink: 0;
   }
 }
 
-// Specific button styling with proper specificity
-.list-controls button.list-controls__toggle-columns,
-.list-controls button.list-controls__toggle-filters,
-.list-controls button.list-controls__toggle-where {
-  border: 1px solid rgba(6, 182, 212, 0.5);
-  box-shadow: 0 0 12px rgba(6, 182, 212, 0.15);
-  
-  * {
-    border: none;
+
+// ============================================
+// WHERE BUILDER (Filter Panel) — Modern Design
+// ============================================
+
+.list-controls__where,
+#list-controls-where {
+  padding: 1rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 8px !important;
+  background: rgba($admin-bg-base, 0.98) !important;
+  margin-top: 0.5rem;
+}
+
+.where-builder {
+  font-size: 0.825rem;
+  background: transparent !important;
+
+  // "Filter [Collection] where" label
+  & > label,
+  &__label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.5rem;
+    display: block;
   }
-  
-  &:hover {
-    border-color: rgba(6, 182, 212, 0.8);
-    box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+
+  // "No filters set" empty state
+  &__no-filters,
+  &__no-conditions {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.35);
+    font-style: italic;
+    padding: 0.5rem 0;
+  }
+
+  // Add Filter / Add first filter button
+  &__add-first-filter,
+  &__add-or,
+  button.where-builder__add-first-filter,
+  button.where-builder__add-or {
+    padding: 0.4rem 0.85rem !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    border-radius: 6px !important;
+    min-height: 0 !important;
+    min-width: 0 !important;
+    gap: 0.35rem !important;
+    background: rgba($admin-accent-success, 0.1) !important;
+    border: 1px solid rgba($admin-accent-success, 0.3) !important;
+    color: rgba($admin-accent-success, 0.9) !important;
+
+    &:hover {
+      background: rgba($admin-accent-success, 0.18) !important;
+      border-color: rgba($admin-accent-success, 0.5) !important;
+    }
+  }
+
+  // Condition rows
+  .condition {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding: 0.5rem 0;
+
+    // ── React Select dropdowns inside conditions ──
+    // These are the "Basic Info > Name" and "equals" selectors
+    &__field,
+    &__operator {
+      .rs__control {
+        min-height: 32px !important;
+        height: auto !important;
+        font-size: 0.8rem !important;
+        padding: 0 !important;
+        background: rgba(255, 255, 255, 0.08) !important;  // Visible dark surface
+        border: 1px solid rgba($admin-accent-info, 0.3) !important;
+        border-radius: 6px !important;
+        box-shadow: 0 0 6px rgba($admin-accent-info, 0.06) !important;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.1) !important;
+          border-color: rgba($admin-accent-info, 0.45) !important;
+          box-shadow: 0 0 8px rgba($admin-accent-info, 0.1) !important;
+        }
+
+        &--is-focused {
+          background: rgba($admin-accent-info, 0.08) !important;
+          border-color: rgba($admin-accent-info, 0.6) !important;
+          box-shadow: 0 0 0 2px rgba($admin-accent-info, 0.12) !important;
+        }
+
+        .rs__value-container {
+          padding: 0.2rem 0.6rem !important;
+        }
+
+        .rs__single-value {
+          color: rgba(255, 255, 255, 0.9) !important;
+          font-size: 0.8rem !important;
+        }
+
+        .rs__indicator {
+          padding: 0 6px !important;
+          color: rgba(255, 255, 255, 0.45) !important;
+
+          svg {
+            width: 14px !important;
+            height: 14px !important;
+          }
+        }
+      }
+
+      // Dropdown menu — must be visibly different from the panel background
+      .rs__menu {
+        background: #1e2433 !important;  // Solid dark surface (not transparent)
+        border: 1px solid rgba($admin-accent-info, 0.2) !important;
+        border-radius: 6px !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6),
+                    0 0 12px rgba($admin-accent-info, 0.06) !important;
+        overflow: hidden;
+
+        .rs__menu-list {
+          padding: 4px !important;
+        }
+
+        .rs__option {
+          font-size: 0.8rem !important;
+          padding: 0.45rem 0.7rem !important;
+          color: rgba(255, 255, 255, 0.7) !important;
+          background: transparent !important;
+          border-radius: 4px !important;
+          margin: 1px 0 !important;
+
+          &--is-focused {
+            background: rgba($admin-accent-info, 0.12) !important;
+            color: rgba(255, 255, 255, 0.95) !important;
+          }
+
+          &--is-selected {
+            background: rgba($admin-accent-info, 0.2) !important;
+            color: $admin-accent-info !important;
+            font-weight: 600 !important;
+          }
+        }
+      }
+    }
+
+    // Value input — matches the select control styling
+    &__value input,
+    .condition-value-text {
+      padding: 0.4rem 0.65rem !important;
+      font-size: 0.8rem !important;
+      min-height: 32px !important;
+      border-radius: 6px !important;
+      background: rgba(255, 255, 255, 0.08) !important;
+      border: 1px solid rgba($admin-accent-info, 0.3) !important;
+      color: rgba(255, 255, 255, 0.9) !important;
+      box-sizing: border-box;
+
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.35) !important;
+      }
+
+      &:focus {
+        background: rgba(255, 255, 255, 0.1) !important;
+        border-color: rgba($admin-accent-info, 0.6) !important;
+        box-shadow: 0 0 0 2px rgba($admin-accent-info, 0.12) !important;
+      }
+    }
+
+    // ── Action buttons (Remove / Add condition) ──
+    // Changed from circles to small rounded buttons
+    &__actions {
+      display: flex !important;
+      gap: 0.35rem !important;
+    }
+
+    &__actions-remove,
+    &__actions-add,
+    &__actions-remove.btn--round,
+    &__actions-add.btn--round,
+    .btn.btn--round.condition__actions-remove,
+    .btn.btn--round.condition__actions-add {
+      min-width: 26px !important;
+      min-height: 26px !important;
+      height: 26px !important;
+      width: 26px !important;
+      padding: 0 !important;
+      border-radius: 6px !important;          // Rounded rect, NOT circle
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      svg {
+        width: 12px !important;
+        height: 12px !important;
+      }
+    }
+
+    &__actions-remove {
+      background: rgba($admin-accent-error, 0.08) !important;
+      border: 1px solid rgba($admin-accent-error, 0.2) !important;
+      color: rgba($admin-accent-error, 0.65) !important;
+
+      &:hover {
+        background: rgba($admin-accent-error, 0.18) !important;
+        border-color: rgba($admin-accent-error, 0.4) !important;
+        color: $admin-accent-error !important;
+      }
+    }
+
+    &__actions-add {
+      background: rgba($admin-accent-success, 0.08) !important;
+      border: 1px solid rgba($admin-accent-success, 0.2) !important;
+      color: rgba($admin-accent-success, 0.65) !important;
+
+      &:hover {
+        background: rgba($admin-accent-success, 0.18) !important;
+        border-color: rgba($admin-accent-success, 0.4) !important;
+        color: $admin-accent-success !important;
+      }
+    }
+  }
+
+  // "Or" separator
+  &__or-separator {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.25rem 0;
   }
 }
 
-// Filters button - green theme
-.list-controls button.list-controls__toggle-filters,
-.list-controls button.list-controls__toggle-where {
-  border-color: rgba(132, 204, 22, 0.5);
-  box-shadow: 0 0 12px rgba(132, 204, 22, 0.15);
-  
-  &:hover {
-    border-color: rgba(132, 204, 22, 0.8);
-    box-shadow: 0 0 20px rgba(132, 204, 22, 0.3);
-  }
+// React Select dropdown indicator in filters — fix color bleed from button overrides
+.where-builder .condition button.dropdown-indicator,
+.where-builder .condition .dropdown-indicator,
+.where-builder button.dropdown-indicator,
+.where-builder .rs__indicator {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  min-width: auto !important;
+  min-height: auto !important;
+  padding: 0 4px !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+// Kill oversized styling that bleeds from global button overrides
+.where-builder button,
+.pill-selector button {
+  min-height: 0 !important;
+}
+
+// Override Payload's btn--round on filter condition action buttons
+// btn--round class forces border-radius: 50%, must be overridden with high specificity
+.where-builder .condition .btn.btn--round,
+.where-builder .btn.btn--round.condition__actions-remove,
+.where-builder .btn.btn--round.condition__actions-add,
+.condition .btn.btn--round.condition__actions-remove,
+.condition .btn.btn--round.condition__actions-add {
+  border-radius: 6px !important;
+  width: 26px !important;
+  height: 26px !important;
+  min-width: 26px !important;
+  min-height: 26px !important;
+}
+
+// ============================================
+// FILTER CONDITION OVERRIDES — High Specificity
+// ============================================
+// These MUST be at the bottom to beat global .rs__control and .rs__menu
+// rules in _forms.scss, _payload-overrides.scss AND _social-media-dashboard.scss.
+// The filter panel bg is rgba(0,0,0,0.95) ≈ rgb(12,12,12) — controls must be
+// visibly lighter than that.
+
+// Force visible background on filter condition select controls
+// #243040 = rgb(36,48,64) — clearly lighter than the panel's near-black bg
+.where-builder .condition .rs__control,
+.list-controls__where .condition .rs__control,
+.where-builder .condition__field .rs__control,
+.where-builder .condition__operator .rs__control,
+.list-controls__where .condition__field .rs__control,
+.list-controls__where .condition__operator .rs__control {
+  background: #243040 !important;
+  border: 1px solid rgba($admin-accent-info, 0.4) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 0 8px rgba($admin-accent-info, 0.08) !important;
+}
+
+.where-builder .condition .rs__control:hover,
+.list-controls__where .condition .rs__control:hover {
+  background: #2a3848 !important;
+  border-color: rgba($admin-accent-info, 0.55) !important;
+  box-shadow: 0 0 12px rgba($admin-accent-info, 0.15) !important;
+}
+
+// Force visible background on filter dropdown menus
+.where-builder .rs__menu,
+.where-builder .condition .rs__menu,
+.where-builder .condition__field .rs__menu,
+.where-builder .condition__operator .rs__menu,
+.list-controls__where .rs__menu,
+.list-controls__where .condition .rs__menu {
+  background: #243040 !important;
+  border: 1px solid rgba($admin-accent-info, 0.3) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6),
+              0 0 12px rgba($admin-accent-info, 0.08) !important;
+}
+
+// Force visible background on filter value input
+.where-builder .condition input,
+.where-builder .condition__value input,
+.list-controls__where .condition input,
+.list-controls__where .condition__value input {
+  background: #243040 !important;
+  border: 1px solid rgba($admin-accent-info, 0.4) !important;
 }

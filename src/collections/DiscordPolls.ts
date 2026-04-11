@@ -78,8 +78,8 @@ export const DiscordPolls: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'pollName',
-    defaultColumns: ['pollName', 'team', 'status', 'createdBy', 'createdAt'],
-    description: 'Create and manage team schedules - from polls or manually. Supports multi-block days, ringers, and Discord posting.',
+    defaultColumns: ['pollName', 'team', 'scheduleType', 'status', 'createdAt'],
+    description: 'Create and manage team schedules - from polls, calendars, or manually. Supports multi-block days, ringers, and Discord posting.',
     group: 'Data',
     components: {
       beforeList: ['@/components/PollScopeToggle#default'],
@@ -87,11 +87,30 @@ export const DiscordPolls: CollectionConfig = {
   },
   fields: [
     // ============================================
-    // MAIN CONTENT AREA - Votes & Schedule Editor
+    // MAIN CONTENT AREA - Heatmap, Votes & Schedule Editor
     // ============================================
     {
       type: 'collapsible',
-      label: 'Availability Overview',
+      label: 'Availability Heatmap',
+      admin: {
+        initCollapsed: false,
+        description: 'Visual overview of who is available',
+      },
+      fields: [
+        {
+          name: 'heatmapDisplay',
+          type: 'ui',
+          admin: {
+            components: {
+              Field: '@/components/ScheduleHeatmapView#default',
+            },
+          },
+        },
+      ],
+    },
+    {
+      type: 'collapsible',
+      label: 'Player Availability',
       admin: {
         initCollapsed: true,
       },
@@ -144,6 +163,21 @@ export const DiscordPolls: CollectionConfig = {
           return { id: { in: teamIds } }
         }
         return false
+      },
+    },
+    {
+      name: 'scheduleType',
+      label: 'Type',
+      type: 'select',
+      defaultValue: 'poll',
+      options: [
+        { label: 'Discord Poll', value: 'poll' },
+        { label: 'Availability Calendar', value: 'calendar' },
+        { label: 'Manual', value: 'manual' },
+      ],
+      admin: {
+        position: 'sidebar',
+        description: 'How availability data is collected',
       },
     },
     {
@@ -237,6 +271,63 @@ export const DiscordPolls: CollectionConfig = {
         description: 'How this schedule was created',
       },
     },
+    {
+      name: 'dataSource',
+      type: 'select',
+      defaultValue: 'poll',
+      options: [
+        { label: 'Discord Poll', value: 'poll' },
+        { label: 'Availability Calendar', value: 'calendar' },
+        { label: 'Manual', value: 'manual' },
+      ],
+      admin: {
+        position: 'sidebar',
+        hidden: true, // Legacy — replaced by scheduleType
+      },
+    },
+    {
+      name: 'availabilityCalendar',
+      type: 'relationship',
+      relationTo: 'availability-calendars',
+      admin: {
+        position: 'sidebar',
+        hidden: true, // Legacy — calendar data now lives on this document
+      },
+    },
+    // Calendar-specific sidebar fields
+    {
+      name: 'responseCount',
+      type: 'number',
+      defaultValue: 0,
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Number of players who have responded',
+        condition: (data: any) => data?.scheduleType === 'calendar',
+      },
+    },
+    {
+      name: 'shareLink',
+      label: 'Share Link',
+      type: 'text',
+      virtual: true,
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Public link for players to fill in availability',
+        condition: (data: any) => data?.scheduleType === 'calendar',
+      },
+      hooks: {
+        afterRead: [
+          ({ data }) => {
+            if (data?.id && data?.scheduleType === 'calendar') {
+              return `/availability/${data.id}`
+            }
+            return ''
+          },
+        ],
+      },
+    },
     
     // ============================================
     // SCHEDULE NAME (visible for manual creation)
@@ -301,6 +392,32 @@ export const DiscordPolls: CollectionConfig = {
           type: 'date',
         },
       ],
+    },
+    // Calendar-specific hidden data fields
+    {
+      name: 'responses',
+      type: 'json',
+      admin: { hidden: true },
+    },
+    {
+      name: 'timeSlots',
+      type: 'json',
+      admin: { hidden: true },
+    },
+    {
+      name: 'timezone',
+      type: 'text',
+      admin: { hidden: true },
+    },
+    {
+      name: 'discordChannelId',
+      type: 'text',
+      admin: { hidden: true },
+    },
+    {
+      name: 'discordMessageId',
+      type: 'text',
+      admin: { hidden: true },
     },
     
     // ============================================

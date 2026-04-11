@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { Search, Trash2, ChevronRight, Edit3, Users, X, BarChart3 } from 'lucide-react'
+import ScrimAnalyticsTabs from '@/components/ScrimAnalyticsTabs'
 
 interface ScrimMap {
   id: number
@@ -205,6 +206,8 @@ export default function ScrimListView() {
   }
 
   return (
+    <>
+    <ScrimAnalyticsTabs activeTab="scrims" />
     <div className="scrim-page">
       <div className="scrim-page__container">
         {/* Header */}
@@ -588,5 +591,6 @@ export default function ScrimListView() {
         </div>
       )}
     </div>
+    </>
   )
 }
