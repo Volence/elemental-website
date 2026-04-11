@@ -910,7 +910,7 @@ export default function TeamBrandingGuide() {
 
   const grouped = REGION_ORDER.reduce<Record<string, TeamData[]>>((acc, r) => {
     const list = teams.filter((t) =>
-      r === 'Other' ? !t.region || !['NA', 'EMEA', 'SA'].includes(t.region) : t.region === r,
+      r === 'Other' ? !t.region || !REGION_ORDER.filter(x => x !== 'Other').includes(t.region) : t.region === r,
     )
     if (list.length) acc[r] = list
     return acc
