@@ -17,12 +17,14 @@ export async function GET(request: NextRequest) {
   const state = searchParams.get('state') // Contains the calendar ID to redirect back to
   const error = searchParams.get('error')
 
+  const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'https://elmt.gg'
+
   if (error) {
-    return NextResponse.redirect(new URL(`/availability/error?reason=${error}`, request.url))
+    return NextResponse.redirect(new URL(`/availability/error?reason=${error}`, serverUrl))
   }
 
   if (!code) {
-    return NextResponse.redirect(new URL('/availability/error?reason=no_code', request.url))
+    return NextResponse.redirect(new URL('/availability/error?reason=no_code', serverUrl))
   }
 
   const clientId = process.env.DISCORD_CLIENT_ID
@@ -31,7 +33,7 @@ export async function GET(request: NextRequest) {
 
   if (!clientId || !clientSecret) {
     console.error('[Availability OAuth] Missing DISCORD_CLIENT_ID or DISCORD_CLIENT_SECRET')
-    return NextResponse.redirect(new URL('/availability/error?reason=config_error', request.url))
+    return NextResponse.redirect(new URL('/availability/error?reason=config_error', serverUrl))
   }
 
   try {
@@ -51,7 +53,7 @@ export async function GET(request: NextRequest) {
     if (!tokenResponse.ok) {
       const err = await tokenResponse.text()
       console.error('[Availability OAuth] Token exchange failed:', err)
-      return NextResponse.redirect(new URL('/availability/error?reason=token_failed', request.url))
+      return NextResponse.redirect(new URL('/availability/error?reason=token_failed', serverUrl))
     }
 
     const tokenData = await tokenResponse.json()
@@ -64,7 +66,7 @@ export async function GET(request: NextRequest) {
 
     if (!userResponse.ok) {
       console.error('[Availability OAuth] User fetch failed')
-      return NextResponse.redirect(new URL('/availability/error?reason=user_failed', request.url))
+      return NextResponse.redirect(new URL('/availability/error?reason=user_failed', serverUrl))
     }
 
     const userData = await userResponse.json()
@@ -82,7 +84,7 @@ export async function GET(request: NextRequest) {
     // Set the identity in a secure cookie
     const calendarId = state || ''
     const redirectPath = calendarId ? `/availability/${calendarId}` : '/availability/error?reason=no_calendar'
-    const response = NextResponse.redirect(new URL(redirectPath, request.url))
+    const response = NextResponse.redirect(new URL(redirectPath, serverUrl))
 
     response.cookies.set('discord_identity', JSON.stringify(identity), {
       httpOnly: true,
@@ -95,7 +97,7 @@ export async function GET(request: NextRequest) {
     return response
   } catch (err) {
     console.error('[Availability OAuth] Unexpected error:', err)
-    return NextResponse.redirect(new URL('/availability/error?reason=unknown', request.url))
+    return NextResponse.redirect(new URL('/availability/error?reason=unknown', serverUrl))
   }
 }
 
