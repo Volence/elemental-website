@@ -53,7 +53,9 @@ export const Users: CollectionConfig = {
       ],
     },
   },
-  auth: true,
+  auth: {
+    tokenExpiration: 28800, // 8 hours
+  },
   fields: [
     {
       name: 'name',

@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import {
   Users, Search, Shield, ShieldCheck, Crown, Gamepad2, User as UserIcon,
   Save, Check, AlertCircle, Loader2, ArrowLeft, Plus, Link2, Trash2,
-  Monitor, ChevronRight,
+  Monitor, ChevronRight, KeyRound,
 } from 'lucide-react'
 import { EDITOR_CSS, styles as editorStyles } from '@/components/PersonEditor'
 
@@ -213,6 +213,9 @@ export function UserEditorView() {
   const [discordId, setDiscordId] = useState('')
   const [linkedPerson, setLinkedPerson] = useState<number | null>(null)
   const [assignedTeams, setAssignedTeams] = useState<number[]>([])
+  const [newPassword, setNewPassword] = useState('')
+  const [passwordStatus, setPasswordStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [passwordError, setPasswordError] = useState('')
   const [departments, setDepartments] = useState<Record<string, boolean>>({})
 
   const fetchData = useCallback(async () => {
@@ -298,6 +301,34 @@ export function UserEditorView() {
 
   const toggleDept = (key: string) => {
     setDepartments(prev => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  const handleResetPassword = async () => {
+    if (!userId || !newPassword) return
+    if (newPassword.length < 4) {
+      setPasswordError('Password must be at least 4 characters')
+      setPasswordStatus('error')
+      return
+    }
+    setPasswordStatus('saving')
+    setPasswordError('')
+    try {
+      const res = await fetch(`/api/users/${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: newPassword }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.errors?.[0]?.message ?? 'Failed to reset password')
+      }
+      setPasswordStatus('saved')
+      setNewPassword('')
+      setTimeout(() => setPasswordStatus('idle'), 2500)
+    } catch (err: any) {
+      setPasswordStatus('error')
+      setPasswordError(err.message ?? 'Failed to reset password')
+    }
   }
 
   if (loading) {
@@ -432,6 +463,33 @@ export function UserEditorView() {
                   <Link2 size={11} /> Edit {linkedPersonName}'s profile
                 </a>
               )}
+            </div>
+
+            {/* Password Reset */}
+            <div style={editorStyles.editableField}>
+              <label style={editorStyles.fieldLabel}><KeyRound size={12} style={{ verticalAlign: 'middle', marginRight: 4 }} />Reset Password</label>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input
+                  className="profile-input"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Enter new password..."
+                  style={{ flex: 1 }}
+                />
+                <button
+                  className="profile-save-btn"
+                  onClick={handleResetPassword}
+                  disabled={!newPassword || passwordStatus === 'saving'}
+                  style={{ padding: '8px 16px', fontSize: 13, flexShrink: 0, opacity: !newPassword ? 0.4 : 1 }}
+                >
+                  {passwordStatus === 'saving' ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
+                    : passwordStatus === 'saved' ? <><Check size={14} /> Done</>
+                    : 'Reset'}
+                </button>
+              </div>
+              {passwordStatus === 'error' && passwordError && <p style={{ color: '#f87171', fontSize: 12, marginTop: 4 }}>{passwordError}</p>}
+              {passwordStatus === 'saved' && <p style={{ color: '#34d399', fontSize: 12, marginTop: 4 }}>Password updated successfully</p>}
             </div>
           </div>
 
