@@ -3249,6 +3249,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.25rem;
+    max-width: 500px;  // Prevent matches column from pushing other columns off-screen
   }
 
   &__match-tag {
@@ -3261,6 +3262,23 @@
     font-size: 0.75rem;
     color: rgba(255, 255, 255, 0.7);
     white-space: nowrap;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // Force table to respect column widths
+  .collection-list-tab__table {
+    table-layout: fixed;
+    width: 100%;
+
+    th:nth-child(1) { width: 140px; }   // Date & Time
+    th:nth-child(2) { width: auto; }     // Matches (takes remaining space)
+    th:nth-child(3) { width: 60px; }     // Obs
+    th:nth-child(4) { width: 60px; }     // Prod
+    th:nth-child(5) { width: 60px; }     // Cast
+    th:nth-child(6) { width: 90px; }     // Status
+    th:nth-child(7) { width: 80px; }     // Sign Up button
   }
 
   &__slot-icon { color: $admin-accent-warning; }
