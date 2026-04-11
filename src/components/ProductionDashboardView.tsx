@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { useAuth } from '@payloadcms/ui'
-import { Calendar, PlusSquare, Users, ClipboardList, Building, BarChart3, Swords, FileText, Tv } from 'lucide-react'
+import { Calendar, PlusSquare, Users, ClipboardList, Building, BarChart3, Swords, FileText, Tv, Settings } from 'lucide-react'
 import { WeeklyView } from './ProductionDashboard/WeeklyView'
 import { StaffSignupsView } from './ProductionDashboard/StaffSignupsView'
 import { AssignmentView } from './ProductionDashboard/AssignmentView'
@@ -12,12 +12,14 @@ import { BulkTournamentCreator } from './ProductionDashboard/BulkTournamentCreat
 import { MatchesListTab } from './ProductionDashboard/MatchesListTab'
 import { TemplatesListTab } from './ProductionDashboard/TemplatesListTab'
 import { StreamTrackerView } from './ProductionDashboard/StreamTrackerView'
+import { SettingsView } from './ProductionDashboard/SettingsView'
 
 export default function ProductionDashboardView() {
   const { user } = useAuth()
   
   // Check if user is a production manager (admin or staff-manager)
   const isProductionManager = user?.role === 'admin' || user?.role === 'staff-manager'
+  const isAdmin = user?.role === 'admin'
   
   // Default tab: 'signups' for regular staff, 'weekly' for managers
   const [activeTab, setActiveTab] = useState(isProductionManager ? 'weekly' : 'signups')
@@ -104,6 +106,18 @@ export default function ProductionDashboardView() {
             </button>
           </>
         )}
+        {isAdmin && (
+          <>
+            <span className="production-dashboard__tab-divider" />
+            <button 
+              className={`production-dashboard__tab ${activeTab === 'settings' ? 'production-dashboard__tab--active' : ''}`}
+              onClick={() => setActiveTab('settings')}
+            >
+              <Settings size={14} />
+              <span>Settings</span>
+            </button>
+          </>
+        )}
       </nav>
       
       <div className="production-dashboard__content">
@@ -116,6 +130,7 @@ export default function ProductionDashboardView() {
         {activeTab === 'streams' && isProductionManager && <StreamTrackerView />}
         {activeTab === 'matches' && isProductionManager && <MatchesListTab />}
         {activeTab === 'templates' && isProductionManager && <TemplatesListTab />}
+        {activeTab === 'settings' && isAdmin && <SettingsView />}
       </div>
     </div>
   )

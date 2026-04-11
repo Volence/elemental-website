@@ -4423,6 +4423,22 @@ export interface Footer {
  */
 export interface ProductionDashboard {
   id: number;
+  /**
+   * Discord channels that receive notifications when matches are rescheduled. Add channel IDs from any Discord server the bot is in.
+   */
+  rescheduleNotificationChannels?:
+    | {
+        /**
+         * Right-click a channel in Discord → Copy Channel ID
+         */
+        channelId: string;
+        /**
+         * A friendly name to identify this channel
+         */
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -4758,6 +4774,13 @@ export interface FooterSelect<T extends boolean = true> {
  * via the `definition` "production-dashboard_select".
  */
 export interface ProductionDashboardSelect<T extends boolean = true> {
+  rescheduleNotificationChannels?:
+    | T
+    | {
+        channelId?: T;
+        label?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

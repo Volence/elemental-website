@@ -13,7 +13,7 @@ interface RescheduleInfo {
 
 /**
  * Send a Discord notification when a match is rescheduled.
- * Fetches the configured channel from the Production Dashboard global.
+ * Sends to all channels configured in the Production Dashboard global.
  */
 export async function notifyMatchRescheduled(info: RescheduleInfo): Promise<void> {
   try {
@@ -23,16 +23,32 @@ export async function notifyMatchRescheduled(info: RescheduleInfo): Promise<void
       return
     }
 
-    // Fetch the configured channel ID from the Production Dashboard global
+    // Fetch configured channels from the Production Dashboard global
     const payload = await getPayload({ config: configPromise })
     const dashboardConfig = await payload.findGlobal({
       slug: 'production-dashboard',
       depth: 0,
     })
 
-    const channelId = (dashboardConfig as any)?.productionNotificationsChannelId
-    if (!channelId) {
-      console.warn('[matchRescheduleNotifier] No production notifications channel configured')
+    const config = dashboardConfig as any
+
+    // Collect all channel IDs to notify
+    const channelIds: string[] = []
+
+    // New array-based config
+    if (config?.rescheduleNotificationChannels?.length > 0) {
+      for (const ch of config.rescheduleNotificationChannels) {
+        if (ch.channelId) channelIds.push(ch.channelId)
+      }
+    }
+
+    // Fallback: legacy single channel ID column
+    if (channelIds.length === 0 && config?.productionNotificationsChannelId) {
+      channelIds.push(config.productionNotificationsChannelId)
+    }
+
+    if (channelIds.length === 0) {
+      console.warn('[matchRescheduleNotifier] No notification channels configured')
       return
     }
 
@@ -98,15 +114,23 @@ export async function notifyMatchRescheduled(info: RescheduleInfo): Promise<void
       inline: false,
     })
 
-    // Send to channel
-    const channel = await client.channels.fetch(channelId) as TextChannel | null
-    if (!channel || !('send' in channel)) {
-      console.warn(`[matchRescheduleNotifier] Channel ${channelId} not found or not a text channel`)
-      return
+    // Send to all configured channels
+    let sentCount = 0
+    for (const channelId of channelIds) {
+      try {
+        const channel = await client.channels.fetch(channelId) as TextChannel | null
+        if (!channel || !('send' in channel)) {
+          console.warn(`[matchRescheduleNotifier] Channel ${channelId} not found or not a text channel`)
+          continue
+        }
+        await channel.send({ embeds: [embed] })
+        sentCount++
+      } catch (err) {
+        console.error(`[matchRescheduleNotifier] Failed to send to channel ${channelId}:`, err)
+      }
     }
 
-    await channel.send({ embeds: [embed] })
-    console.log(`[matchRescheduleNotifier] Sent reschedule notification for match ${info.matchId}`)
+    console.log(`[matchRescheduleNotifier] Sent reschedule notification for match ${info.matchId} to ${sentCount}/${channelIds.length} channels`)
   } catch (error) {
     console.error('[matchRescheduleNotifier] Error sending notification:', error)
   }

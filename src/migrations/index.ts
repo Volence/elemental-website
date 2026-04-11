@@ -9,6 +9,7 @@ import * as migration_20260207_235400_add_team_branding_colors from "./20260207_
 import * as migration_20260302_073000_migrate_themecolor_to_branding from "./20260302_073000_migrate_themecolor_to_branding";
 import * as migration_20260322_add_new_regions from "./20260322_add_new_regions";
 import * as migration_20260323_add_reschedule_detection from "./20260323_add_reschedule_detection";
+import * as migration_20260411_add_reschedule_channels from "./20260411_add_reschedule_channels";
 
 export const migrations = [
   {
@@ -65,5 +66,10 @@ export const migrations = [
     up: migration_20260323_add_reschedule_detection.up,
     down: migration_20260323_add_reschedule_detection.down,
     name: "20260323_add_reschedule_detection",
+  },
+  {
+    up: migration_20260411_add_reschedule_channels.up,
+    down: migration_20260411_add_reschedule_channels.down,
+    name: "20260411_add_reschedule_channels",
   },
 ];
