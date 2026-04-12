@@ -832,6 +832,26 @@ export interface Team {
    * Discord message ID for team card (auto-managed)
    */
   discordCardMessageId?: string | null;
+  /**
+   * Discord "Team X" role ID (auto-managed by provisioning)
+   */
+  discordTeamRoleId?: string | null;
+  /**
+   * Discord "X Access" role ID (auto-managed by provisioning)
+   */
+  discordAccessRoleId?: string | null;
+  /**
+   * Discord channel category ID (auto-managed by provisioning)
+   */
+  discordCategoryId?: string | null;
+  /**
+   * Whether Discord roles and channels have been provisioned
+   */
+  discordProvisioned?: boolean | null;
+  /**
+   * Emoji used in category name decoration
+   */
+  discordEmoji?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3374,6 +3394,11 @@ export interface TeamsSelect<T extends boolean = true> {
   activeTournaments?: T;
   competitiveRating?: T;
   discordCardMessageId?: T;
+  discordTeamRoleId?: T;
+  discordAccessRoleId?: T;
+  discordCategoryId?: T;
+  discordProvisioned?: T;
+  discordEmoji?: T;
   updatedAt?: T;
   createdAt?: T;
 }

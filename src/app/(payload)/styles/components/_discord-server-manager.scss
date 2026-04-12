@@ -3382,3 +3382,552 @@
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
 }
+
+// ============================================
+// PROVISION TEAM TAB
+// ============================================
+
+.provision-team-tab {
+  .provision-header {
+    margin-bottom: $spacing-xl;
+
+    h3 {
+      font-size: $font-size-xl;
+      font-weight: $font-weight-semibold;
+      color: $admin-text-primary;
+      margin: 0 0 $spacing-sm 0;
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+    }
+
+    .description {
+      color: $admin-text-secondary;
+      font-size: $font-size-base;
+      margin: 0;
+    }
+  }
+
+  // Reuse the stats-grid from team-cards-tab
+  .stats-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: $spacing-lg;
+    margin-bottom: $spacing-xl;
+
+    .stat-card {
+      padding: $spacing-xl;
+      text-align: center;
+      background: rgba($admin-accent-primary, 0.03);
+      border: 1px solid rgba($admin-accent-primary, 0.15);
+      border-radius: $radius-md;
+
+      .stat-value {
+        font-size: 2.5rem;
+        font-weight: $font-weight-bold;
+        color: $admin-accent-primary;
+        margin-bottom: $spacing-xs;
+
+        &::before, &::after { display: none !important; }
+        &--success { color: $admin-accent-success; }
+        &--warning { color: $admin-accent-warning; }
+      }
+
+      .stat-label {
+        font-size: $font-size-sm;
+        color: $admin-text-secondary;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+    }
+  }
+
+  .provision-form {
+    @include glow-card($admin-accent-primary);
+    padding: $spacing-2xl;
+    border-radius: $radius-md;
+    margin-bottom: $spacing-xl;
+    margin-top: $spacing-lg;
+
+    &__row {
+      display: flex;
+      gap: $spacing-lg;
+      margin-bottom: $spacing-lg;
+
+      @media (max-width: 768px) {
+        flex-direction: column;
+      }
+    }
+
+    &__field {
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-sm;
+
+      &--team {
+        flex: 1;
+      }
+
+      &--emoji {
+        width: 120px;
+        flex-shrink: 0;
+      }
+
+      label {
+        font-size: $font-size-sm;
+        font-weight: $font-weight-semibold;
+        color: $admin-text-secondary;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      select, input {
+        padding: $spacing-md;
+        background: rgba($admin-bg-base, 0.5);
+        border: 1px solid rgba($admin-accent-primary, 0.3);
+        border-radius: $radius-sm;
+        color: $admin-text-primary;
+        font-size: $font-size-base;
+        transition: all 0.2s ease;
+
+        &:focus {
+          outline: none;
+          border-color: $admin-accent-primary;
+          box-shadow: 0 0 0 2px rgba($admin-accent-primary, 0.1);
+        }
+
+        option {
+          background: $admin-bg-elevated;
+          color: $admin-text-primary;
+        }
+
+        optgroup {
+          font-weight: 700;
+          color: $admin-accent-primary;
+        }
+      }
+
+      input[type="text"] {
+        text-align: center;
+        font-size: 1.5rem;
+      }
+    }
+  }
+
+  .provision-preview {
+    padding: $spacing-lg;
+    background: rgba($admin-bg-base, 0.5);
+    border: 1px solid rgba($admin-accent-primary, 0.2);
+    border-radius: $radius-sm;
+
+    &__category {
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+      padding: $spacing-sm $spacing-md;
+      background: rgba($admin-accent-primary, 0.1);
+      border-radius: $radius-sm;
+      margin-bottom: $spacing-md;
+      font-weight: $font-weight-semibold;
+      color: $admin-text-primary;
+      font-size: $font-size-sm;
+    }
+
+    &__channels {
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-xs;
+      margin-bottom: $spacing-lg;
+      padding-left: $spacing-lg;
+    }
+
+    &__channel {
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+      padding: $spacing-xs $spacing-md;
+      color: $admin-text-secondary;
+      font-size: $font-size-sm;
+      font-family: 'Courier New', monospace;
+
+      svg {
+        color: $admin-accent-primary;
+        flex-shrink: 0;
+      }
+    }
+
+    &__colors {
+      padding: $spacing-lg;
+      background: rgba($admin-accent-primary, 0.05);
+      border: 1px solid rgba($admin-accent-primary, 0.15);
+      border-radius: $radius-sm;
+      margin-bottom: $spacing-lg;
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-md;
+
+      > svg {
+        color: $admin-accent-primary;
+      }
+    }
+
+    &__color-row {
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-sm;
+    }
+
+    &__color-item {
+      display: flex;
+      align-items: center;
+      gap: $spacing-md;
+      font-size: $font-size-sm;
+      color: $admin-text-primary;
+    }
+
+    &__color-swatch {
+      width: 24px;
+      height: 24px;
+      border-radius: $radius-xs;
+      border: 1px solid rgba(white, 0.2);
+      flex-shrink: 0;
+    }
+
+    &__color-code {
+      font-family: monospace;
+      font-size: $font-size-xs;
+      padding: $spacing-xs $spacing-sm;
+      background: rgba($admin-accent-primary, 0.1);
+      border: 1px solid rgba($admin-accent-primary, 0.2);
+      border-radius: $radius-xs;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+
+      &:hover {
+        background: rgba($admin-accent-primary, 0.2);
+        border-color: $admin-accent-primary;
+      }
+
+      .copied-badge {
+        color: $admin-accent-success;
+        margin-left: $spacing-xs;
+        font-weight: $font-weight-bold;
+      }
+    }
+
+    &__gradient-hint {
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+      flex-wrap: wrap;
+      font-size: $font-size-xs;
+      color: $admin-text-secondary;
+      padding-top: $spacing-sm;
+      border-top: 1px solid rgba($admin-accent-primary, 0.1);
+
+      code {
+        font-family: monospace;
+        padding: 2px 6px;
+        background: rgba($admin-accent-primary, 0.1);
+        border: 1px solid rgba($admin-accent-primary, 0.2);
+        border-radius: $radius-xs;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+
+        &:hover {
+          background: rgba($admin-accent-primary, 0.2);
+        }
+
+        .copied-badge {
+          color: $admin-accent-success;
+          margin-left: 4px;
+        }
+      }
+    }
+
+    &__warning {
+      display: flex;
+      align-items: center;
+      gap: $spacing-md;
+      padding: $spacing-md;
+      background: rgba($admin-accent-warning, 0.1);
+      border: 1px solid rgba($admin-accent-warning, 0.3);
+      border-radius: $radius-sm;
+      color: $admin-accent-warning;
+      font-size: $font-size-sm;
+      margin-bottom: $spacing-lg;
+    }
+  }
+
+  .provision-button {
+    @include glow-button($admin-accent-primary);
+    width: 100%;
+    padding: $spacing-md $spacing-xl;
+    font-weight: $font-weight-semibold;
+    font-size: $font-size-base;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-sm;
+    margin-top: $spacing-md;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .spinning {
+      animation: spin 1s linear infinite;
+    }
+  }
+
+  .provision-confirm-content {
+    p {
+      color: $admin-text-primary;
+      font-size: $font-size-base;
+      margin: 0 0 $spacing-md 0;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-sm;
+
+      li {
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
+        padding: $spacing-sm $spacing-md;
+        background: rgba($admin-accent-primary, 0.05);
+        border: 1px solid rgba($admin-accent-primary, 0.15);
+        border-radius: $radius-sm;
+        font-size: $font-size-sm;
+        color: $admin-text-primary;
+
+        &::before {
+          content: '•';
+          color: $admin-accent-primary;
+          font-weight: bold;
+          font-size: 1.2em;
+        }
+      }
+    }
+  }
+
+  .provision-result {
+    @include glow-card($admin-accent-success);
+    padding: $spacing-xl;
+    border-radius: $radius-md;
+    margin-bottom: $spacing-xl;
+
+    &--error {
+      border-color: rgba($admin-accent-error, 0.3);
+      background: rgba($admin-accent-error, 0.05);
+      color: $admin-accent-error;
+      display: flex;
+      align-items: center;
+      gap: $spacing-md;
+      font-size: $font-size-sm;
+    }
+
+    &__header {
+      display: flex;
+      align-items: center;
+      gap: $spacing-md;
+      margin-bottom: $spacing-xl;
+
+      svg {
+        color: $admin-accent-success;
+      }
+
+      h4 {
+        font-size: $font-size-lg;
+        font-weight: $font-weight-semibold;
+        color: $admin-accent-success;
+        margin: 0;
+      }
+    }
+
+    &__section {
+      margin-bottom: $spacing-lg;
+
+      h5 {
+        font-size: $font-size-sm;
+        font-weight: $font-weight-semibold;
+        color: $admin-text-secondary;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 0 0 $spacing-sm 0;
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
+      }
+
+      &--colors {
+        padding: $spacing-lg;
+        background: rgba($admin-accent-primary, 0.05);
+        border: 1px solid rgba($admin-accent-primary, 0.15);
+        border-radius: $radius-sm;
+      }
+    }
+
+    &__item {
+      display: flex;
+      align-items: center;
+      gap: $spacing-md;
+      padding: $spacing-sm 0;
+      font-size: $font-size-sm;
+      color: $admin-text-primary;
+
+      svg {
+        color: $admin-accent-primary;
+        flex-shrink: 0;
+      }
+    }
+
+    &__color-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 1px solid rgba(white, 0.2);
+      flex-shrink: 0;
+    }
+
+    &__id {
+      font-family: monospace;
+      font-size: $font-size-xs;
+      padding: 2px 6px;
+      background: rgba($admin-accent-primary, 0.1);
+      border-radius: $radius-xs;
+      color: $admin-text-secondary;
+    }
+
+    &__hint {
+      font-size: $font-size-xs;
+      color: $admin-text-secondary;
+      font-style: italic;
+      margin: $spacing-sm 0;
+    }
+
+    &__color-info {
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-sm;
+    }
+
+    &__color-row {
+      display: flex;
+      align-items: center;
+      gap: $spacing-md;
+      font-size: $font-size-sm;
+      color: $admin-text-primary;
+
+      code {
+        font-family: monospace;
+        padding: 2px 8px;
+        background: rgba($admin-accent-primary, 0.1);
+        border: 1px solid rgba($admin-accent-primary, 0.2);
+        border-radius: $radius-xs;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: rgba($admin-accent-primary, 0.2);
+        }
+
+        .copied-badge {
+          color: $admin-accent-success;
+          margin-left: 4px;
+        }
+      }
+    }
+
+    &__color-swatch {
+      width: 20px;
+      height: 20px;
+      border-radius: $radius-xs;
+      border: 1px solid rgba(white, 0.2);
+      flex-shrink: 0;
+    }
+  }
+
+  .provisioned-teams {
+    margin-top: $spacing-xl;
+
+    h4 {
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      color: $admin-text-primary;
+      margin: 0 0 $spacing-lg 0;
+    }
+
+    .copyable-id {
+      font-family: monospace;
+      font-size: $font-size-xs;
+      padding: 2px 6px;
+      background: rgba($admin-accent-primary, 0.05);
+      border-radius: $radius-xs;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+
+      &:hover {
+        background: rgba($admin-accent-primary, 0.15);
+      }
+
+      .copied-badge {
+        color: $admin-accent-success;
+        margin-left: 4px;
+        font-weight: $font-weight-bold;
+      }
+    }
+  }
+
+  // Reuse teams-table-container styles
+  .teams-table-container {
+    @include glow-card($admin-accent-primary);
+    overflow-x: auto;
+    border-radius: $radius-md;
+
+    .teams-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: $font-size-sm;
+
+      thead {
+        background: rgba($admin-accent-primary, 0.08);
+        border-bottom: 1px solid rgba($admin-accent-primary, 0.2);
+
+        th {
+          padding: $spacing-md $spacing-lg;
+          text-align: left;
+          font-weight: $font-weight-semibold;
+          color: $admin-text-secondary;
+          text-transform: uppercase;
+          font-size: $font-size-xs;
+          letter-spacing: 0.5px;
+        }
+      }
+
+      tbody {
+        tr {
+          border-bottom: 1px solid rgba($admin-accent-primary, 0.1);
+          transition: background-color 0.2s ease;
+
+          &:last-child { border-bottom: none; }
+          &:hover { background: rgba($admin-accent-primary, 0.05); }
+        }
+
+        td {
+          padding: $spacing-md $spacing-lg;
+          color: $admin-text-primary;
+        }
+      }
+    }
+  }
+}

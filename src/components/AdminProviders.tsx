@@ -59,11 +59,15 @@ export default function AdminProviders({ children }: { children: React.ReactNode
       if (!link) return
       const href = link.getAttribute('href') ?? ''
 
-      // Account avatar → custom user editor
+      // Account avatar → custom user editor (admins) or my-profile (everyone else)
       if (href === '/admin/account') {
         e.preventDefault()
         e.stopPropagation()
-        window.location.href = `/admin/edit-user?id=${user.id}`
+        if (user.role === 'admin') {
+          window.location.href = `/admin/edit-user?id=${user.id}`
+        } else {
+          window.location.href = '/admin/my-profile'
+        }
         return
       }
 

@@ -703,6 +703,52 @@ export const Teams: CollectionConfig = {
         readOnly: true,
       },
     },
+    // Discord provisioning fields — managed by Discord Server Manager provision endpoint
+    {
+      name: 'discordTeamRoleId',
+      type: 'text',
+      admin: {
+        description: 'Discord "Team X" role ID (auto-managed by provisioning)',
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'discordAccessRoleId',
+      type: 'text',
+      admin: {
+        description: 'Discord "X Access" role ID (auto-managed by provisioning)',
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'discordCategoryId',
+      type: 'text',
+      admin: {
+        description: 'Discord channel category ID (auto-managed by provisioning)',
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'discordProvisioned',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Whether Discord roles and channels have been provisioned',
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'discordEmoji',
+      type: 'text',
+      admin: {
+        description: 'Emoji used in category name decoration',
+        position: 'sidebar',
+      },
+    },
     // UI fields for list view columns with custom cells for vertical centering
     {
       name: 'logoPreview',

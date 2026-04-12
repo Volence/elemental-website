@@ -194,7 +194,11 @@ export const AvailabilityHeatmapView: React.FC<{ path: string }> = () => {
           <span>{responses.length} response{responses.length !== 1 ? 's' : ''}</span>
         </div>
         <div className="availability-heatmap__status">
-          {data?.status === 'open' ? '🟢 Open' : '🔴 Closed'}
+          {data?.status === 'open' || data?.status === 'active'
+            ? '🟢 Open'
+            : data?.status === 'scheduled'
+              ? '📋 Scheduled'
+              : '🔴 Closed'}
         </div>
       </div>
 

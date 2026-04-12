@@ -34,7 +34,11 @@ const UsersListRedirect: React.FC = () => {
       if (accountLink && user?.id) {
         e.preventDefault()
         e.stopPropagation()
-        window.location.href = `/admin/edit-user?id=${user.id}`
+        if ((user as any).role === 'admin') {
+          window.location.href = `/admin/edit-user?id=${user.id}`
+        } else {
+          window.location.href = '/admin/my-profile'
+        }
       }
     }
 
