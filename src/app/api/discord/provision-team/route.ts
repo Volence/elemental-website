@@ -269,7 +269,7 @@ export async function POST(req: NextRequest) {
       // Create the channel inheriting category perms
       const channel = await guild.channels.create({
         name: channelName,
-        type: def.type,
+        type: def.type as ChannelType.GuildText,
         parent: category.id,
         reason: `Provisioned via ELMT Admin for team: ${teamName}`,
       })
