@@ -325,6 +325,22 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
 
   const [schedule, setSchedule] = useState<ScheduleData>(createInitialSchedule)
 
+  // Sync saved value from database → local state whenever the document loads/reloads.
+  // Without this, useState only runs once and may miss the DB value if it
+  // arrives after first render (Payload form hydration timing).
+  useEffect(() => {
+    if (!value || !value.days || value.days.length === 0) return
+    setSchedule(current => {
+      // If local state already has data AND matches what's in the DB, skip
+      if (current.days.length > 0 && current.lastUpdated === value.lastUpdated) return current
+      // Load saved data from the database (with block format migration)
+      return {
+        ...value,
+        days: value.days.map(migrateToBlocks),
+      }
+    })
+  }, [value, migrateToBlocks])
+
   // Re-create the schedule when calendar votes arrive asynchronously 
   // (calendar data fetches after initial render, so schedule starts empty)
   useEffect(() => {
