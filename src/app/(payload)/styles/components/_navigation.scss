@@ -508,7 +508,8 @@ html body aside nav > div:nth-child(12) .nav__link {
 // Note: hidden: true can't be used because it blocks individual document routes too.
 // CSS hide works because the inline tab view means we never navigate to the list page.
 #nav-ignored-duplicates,
-#nav-invite-links {
+#nav-invite-links,
+#nav-recruitment-applications {
   display: none !important;
 }
 
