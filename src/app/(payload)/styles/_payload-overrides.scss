@@ -1684,3 +1684,13 @@ body > .popup__content.popup--size-medium {
   backdrop-filter: blur(12px) !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 16px rgba($admin-accent-primary, 0.2) !important;
 }
+
+// ============================================
+// ROSTER ARRAY — HIDE BROKEN MOVE BUTTONS
+// ============================================
+// Payload 3.73 has a bug where native array row moveUp/moveDown only
+// swaps select field values but NOT relationship fields. The custom
+// RosterReorder component provides working reorder. Hide native buttons.
+.roster-array-field .array-field__row-header .popup {
+  display: none !important;
+}

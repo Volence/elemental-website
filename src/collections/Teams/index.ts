@@ -343,10 +343,20 @@ export const Teams: CollectionConfig = {
               },
             },
             {
+              name: 'rosterReorder',
+              type: 'ui',
+              admin: {
+                components: {
+                  Field: '@/components/RosterField#default',
+                },
+              },
+            },
+            {
               name: 'roster',
               type: 'array',
               admin: {
                 description: 'Active roster players. Use the Person field to link to the People collection (recommended). Each player must have a role (Tank, DPS, or Support). Tip: Click "Create Person" to add someone new without leaving this page.',
+                className: 'roster-array-field', // Used to hide native broken move buttons via CSS
               },
               fields: [
                 {
