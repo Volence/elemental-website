@@ -92,7 +92,6 @@ export const RecruitmentApplications: CollectionConfig = {
     defaultColumns: ['position', 'discordHandle', 'status', 'createdAt', 'actions'],
     description: 'Review and manage recruitment applications.',
     group: 'Data',
-    hidden: true, // Accessed via Competitive Hub 'Applications' tab
   },
   fields: [
     {
