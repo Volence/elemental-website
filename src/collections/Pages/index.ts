@@ -35,7 +35,6 @@ export const Pages: CollectionConfig<'pages'> = {
     description: 'Create and edit website pages with rich content, blocks, and SEO settings.',
     group: 'Content',
     defaultColumns: ['title', 'slug', 'updatedAt'],
-    hidden: true,
     livePreview: {
       url: ({ data, req }) =>
         generatePreviewPath({

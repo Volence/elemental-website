@@ -65,7 +65,6 @@ export const AvailabilityCalendars: CollectionConfig = {
     defaultColumns: ['title', 'team', 'status', 'responseCount', 'createdAt'],
     description: 'Legacy — new calendars are created in the unified Schedules collection.',
     group: 'Data',
-    hidden: true, // Hidden from nav — replaced by unified Schedules (discord-polls)
   },
   hooks: {
     beforeChange: [

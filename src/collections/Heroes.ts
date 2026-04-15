@@ -11,7 +11,6 @@ export const Heroes: CollectionConfig = {
     group: 'Data',
     useAsTitle: 'name',
     defaultColumns: ['name', 'role', 'active'],
-    hidden: true, // Accessed via Competitive Hub 'Heroes' tab
   },
   access: {
     // Only scouting staff and staff-manager+ can read

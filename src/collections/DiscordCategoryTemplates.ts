@@ -12,7 +12,6 @@ export const DiscordCategoryTemplates: CollectionConfig = {
     group: 'Data',
     useAsTitle: 'name',
     defaultColumns: ['name', 'description', 'channelCount', 'updatedAt'],
-    hidden: true, // Not needed in sidebar
   },
   access: {
     create: ({ req: { user } }) => (user as User)?.role === 'admin',

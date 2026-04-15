@@ -48,7 +48,6 @@ export const SocialPosts: CollectionConfig = {
     useAsTitle: 'title',
     description: 'Manage social media posts and content calendar.',
     group: 'Data',
-    hidden: true, // Accessed via Social Media Dashboard 'Posts' tab
     listSearchableFields: ['title', 'content', 'postType', 'platform'],
     components: {
       beforeListTable: ['@/components/SocialPostColumns/QuickFilters#default'],

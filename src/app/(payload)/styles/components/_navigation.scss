@@ -504,13 +504,28 @@ html body aside nav > div:nth-child(12) .nav__link {
 // ============================================
 // HIDDEN LINKS
 // ============================================
-// Payload renders nav links with id="nav-{slug}" — target those directly
-// Note: hidden: true can't be used because it blocks individual document routes too.
-// CSS hide works because the inline tab view means we never navigate to the list page.
+// Payload renders nav links with id="nav-{slug}" — target those directly.
+// IMPORTANT: Never use Payload's `admin.hidden: true` on collections —
+// it blocks edit page routes entirely, causing "Nothing found" errors.
+// CSS hide keeps routes accessible while hiding from sidebar navigation.
 #nav-ignored-duplicates,
 #nav-invite-links,
 #nav-recruitment-applications,
-#nav-recruitment-listings {
+#nav-recruitment-listings,
+#nav-social-posts,
+#nav-watched-threads,
+#nav-scout-reports,
+#nav-twitch-streamers,
+#nav-maps,
+#nav-pages,
+#nav-scrim-outcomes,
+#nav-availability-calendars,
+#nav-opponent-teams,
+#nav-heroes,
+#nav-tournament-templates,
+#nav-faceit-seasons,
+#nav-discord-category-templates,
+#nav-matches {
   display: none !important;
 }
 

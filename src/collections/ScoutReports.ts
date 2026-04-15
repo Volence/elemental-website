@@ -12,7 +12,6 @@ export const ScoutReports: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'opponentTeam', 'status', 'patchVersion', 'updatedAt'],
     description: 'Patch-based intelligence on opponent teams',
-    hidden: true, // Accessed via Competitive Hub 'Scout Reports' tab
   },
   access: {
     // Only scouting staff and staff-manager+ can read

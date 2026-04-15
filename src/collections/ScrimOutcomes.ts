@@ -12,7 +12,6 @@ export const ScrimOutcomes: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'yourTeam', 'opponentTeam', 'rating', 'scrimDate'],
     description: 'Post-scrim feedback and ratings per team',
-    hidden: true, // Deprecated - outcomes now tracked in Schedules
   },
   access: {
     read: ({ req }) => {

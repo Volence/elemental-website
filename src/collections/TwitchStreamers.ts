@@ -40,7 +40,6 @@ export const TwitchStreamers: CollectionConfig = {
     useAsTitle: 'twitchUsername',
     description: 'Twitch streamers to track for the live roster.',
     defaultColumns: ['twitchUsername', 'displayName', 'category', 'isLive', 'currentGame', 'active'],
-    hidden: true, // Managed via Discord Server Manager 'Twitch Live' tab
   },
   access: {
     read: ({ req: { user } }) => ['admin', 'staff-manager', 'team-manager'].includes((user as any)?.role),
