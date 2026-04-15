@@ -274,6 +274,54 @@ export type UltimateStartRow = [
   ultimate_id: number,
 ]
 
+export type PlayerPositionRow = [
+  event_type: 'player_position',
+  match_time: number,
+  player_team: PlayerTeam,
+  player_name: string,
+  player_hero: HeroName,
+  pos_x: number,
+  pos_y: number,
+  pos_z: number,
+  ult_charge: number,
+  is_alive: number,       // 0 or 1 (or True/False from workshop)
+  facing_x: number,       // facing direction X component
+  facing_z: number,       // facing direction Z component
+  health: number,         // 0.0-1.0 normalized
+  in_spawn: number,       // 0 or 1 (boolean from workshop)
+  on_ground: number,      // 0 or 1 (boolean from workshop)
+  // New per-tick stat fields (optional — absent in old log data)
+  hero_damage_dealt?: number,  // cumulative hero damage dealt
+  healing_dealt?: number,      // cumulative healing dealt
+  damage_taken?: number,       // cumulative damage taken
+  damage_blocked?: number,     // cumulative damage blocked
+  eliminations_cum?: number,   // cumulative eliminations
+  is_using_ult?: number,       // 0 or 1 (boolean from workshop)
+  is_alive_actual?: number,    // 0 or 1 — real Is Alive() value
+]
+
+export type KillPositionRow = [
+  event_type: 'kill_position',
+  match_time: number,
+  attacker_x: number,
+  attacker_y: number,
+  attacker_z: number,
+  victim_x: number,
+  victim_y: number,
+  victim_z: number,
+]
+
+export type ObjectivePositionRow = [
+  event_type: 'objective_position',
+  match_time: number,
+  payload_x: number,
+  payload_y: number,
+  payload_z: number,
+  objective_x: number,
+  objective_y: number,
+  objective_z: number,
+]
+
 /** Structured container for all parsed event data from a single map log. */
 export type ParserData = {
   defensive_assist: DefensiveAssistRow[]
@@ -299,4 +347,7 @@ export type ParserData = {
   ultimate_charged: UltimateChargedRow[]
   ultimate_end: UltimateEndRow[]
   ultimate_start: UltimateStartRow[]
+  player_position?: PlayerPositionRow[]
+  kill_position?: KillPositionRow[]
+  objective_position?: ObjectivePositionRow[]
 }

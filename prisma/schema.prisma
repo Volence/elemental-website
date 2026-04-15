@@ -84,6 +84,7 @@ model ScrimMapData {
   ultimateEnds       ScrimUltimateEnd[]
   ultimateStarts     ScrimUltimateStart[]
   calculatedStats    ScrimCalculatedStat[]
+  playerPositions    ScrimPlayerPosition[]
 
   @@map("scrim_map_data")
   @@index([scrimId])
@@ -118,6 +119,7 @@ enum ScrimEventType {
   ultimate_charged
   ultimate_end
   ultimate_start
+  player_position
 
   @@map("scrim_event_type")
 }
@@ -306,6 +308,13 @@ model ScrimKill {
   event_damage     Int
   is_critical_hit  String
   is_environmental String
+  // Position data (nullable for backward compatibility with logs without position tracking)
+  attacker_x       Float?
+  attacker_y       Float?
+  attacker_z       Float?
+  victim_x         Float?
+  victim_y         Float?
+  victim_z         Float?
   mapData          ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
   mapDataId        Int?
 
@@ -629,4 +638,44 @@ model ScrimUltimateStart {
   @@map("scrim_ultimate_starts")
   @@index([scrimId])
   @@index([mapDataId])
+}
+
+// ============================================================================
+// Position Tracking (Replay Viewer)
+// ============================================================================
+
+model ScrimPlayerPosition {
+  id          Int            @id @default(autoincrement())
+  scrimId     Int
+  event_type  ScrimEventType @default(player_position)
+  match_time  Float
+  player_team String
+  player_name String
+  player_hero String
+  pos_x       Float
+  pos_y       Float          // height in OW (used for high ground detection)
+  pos_z       Float
+  ult_charge  Int            @default(0)   // 0-100
+  is_alive    Boolean        @default(true)
+  facing_x    Float?         // X component of facing direction (for vision cones)
+  facing_z    Float?         // Z component of facing direction
+  health      Float?         // 0.0-1.0 normalized health
+  in_spawn    Boolean?       // true if in spawn room (stagger detection)
+  on_ground   Boolean?       // false if airborne (Pharah, Echo, etc.)
+  // === Per-tick stat fields (cumulative, nullable for backward compat with old data) ===
+  hero_damage_dealt Float?   // Cumulative hero damage dealt up to this tick
+  healing_dealt     Float?   // Cumulative healing dealt up to this tick
+  damage_taken      Float?   // Cumulative damage taken up to this tick
+  damage_blocked    Float?   // Cumulative damage blocked up to this tick
+  eliminations_cum  Int?     // Cumulative eliminations up to this tick
+  is_using_ult      Boolean? // True while player has active ultimate
+  is_alive_actual   Boolean? // Real Is Alive() value (replaces hardcoded is_alive)
+  mapData     ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId   Int?
+
+  @@map("scrim_player_positions")
+  @@index([scrimId])
+  @@index([mapDataId])
+  @@index([mapDataId, match_time])
+  @@index([mapDataId, player_name])
 }

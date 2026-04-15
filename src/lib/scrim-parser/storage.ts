@@ -129,6 +129,8 @@ async function createMapFromParsedData(options: CreateMapOptions) {
     insertUltimateCharged(parsedData, scrimId, mapData.id),
     insertUltimateEnds(parsedData, scrimId, mapData.id),
     insertUltimateStarts(parsedData, scrimId, mapData.id),
+    insertPlayerPositions(parsedData, scrimId, mapData.id),
+    insertObjectivePositions(parsedData, scrimId, mapData.id),
   ])
 
   return { scrimMap, mapData }
@@ -234,23 +236,147 @@ async function insertHeroSwaps(data: ParserData, scrimId: number, mapDataId: num
 
 async function insertKills(data: ParserData, scrimId: number, mapDataId: number) {
   if (!data.kill?.length) return
+  // Check if kill rows have inline position data (columns 12-17: attacker x,y,z + victim x,y,z)
+  // These extra columns come from the enhanced ScrimTime fork and aren't part of the base KillRow type
+  const hasInlinePositions = data.kill[0] && data.kill[0].length > 12
+
+  // Build a lookup of kill_position events by timestamp for matching
+  // kill_position events are separate log lines output alongside kill events at the same timestamp
+  const killPosMap = new Map<string, { ax: number; ay: number; az: number; vx: number; vy: number; vz: number }>()
+  if (data.kill_position?.length) {
+    for (const kp of data.kill_position) {
+      // Key by match_time rounded to 2 decimal places for reliable matching
+      const key = Number(kp[1]).toFixed(2)
+      killPosMap.set(key, {
+        ax: Number(kp[2]),
+        ay: Number(kp[3]),
+        az: Number(kp[4]),
+        vx: Number(kp[5]),
+        vy: Number(kp[6]),
+        vz: Number(kp[7]),
+      })
+    }
+  }
+
   await prisma.scrimKill.createMany({
-    data: data.kill.map((row) => ({
-      scrimId,
-      match_time: Number(row[1]),
-      attacker_team: String(row[2]),
-      attacker_name: String(row[3]),
-      attacker_hero: String(row[4]),
-      victim_team: String(row[5]),
-      victim_name: String(row[6]),
-      victim_hero: String(row[7]),
-      event_ability: String(row[8]),
-      event_damage: Number(row[9]),
-      is_critical_hit: String(row[10]),
-      is_environmental: String(row[11]),
-      mapDataId,
-    })),
+    data: data.kill.map((row) => {
+      // Cast to allow access to extended position columns beyond the base tuple type
+      const r = row as (string | number | null)[]
+      const matchTimeKey = Number(r[1]).toFixed(2)
+      const killPos = killPosMap.get(matchTimeKey)
+
+      return {
+        scrimId,
+        match_time: Number(r[1]),
+        attacker_team: String(r[2]),
+        attacker_name: String(r[3]),
+        attacker_hero: String(r[4]),
+        victim_team: String(r[5]),
+        victim_name: String(r[6]),
+        victim_hero: String(r[7]),
+        event_ability: String(r[8]),
+        event_damage: Number(r[9]),
+        is_critical_hit: String(r[10]),
+        is_environmental: String(r[11]),
+        // Position data — prefer inline columns, fall back to kill_position companion event
+        ...(hasInlinePositions && r[12] != null ? {
+          attacker_x: Number(r[12]),
+          attacker_y: Number(r[13]),
+          attacker_z: Number(r[14]),
+          victim_x: Number(r[15]),
+          victim_y: Number(r[16]),
+          victim_z: Number(r[17]),
+        } : killPos ? {
+          attacker_x: killPos.ax,
+          attacker_y: killPos.ay,
+          attacker_z: killPos.az,
+          victim_x: killPos.vx,
+          victim_y: killPos.vy,
+          victim_z: killPos.vz,
+        } : {}),
+        mapDataId,
+      }
+    }),
   })
+}
+
+async function insertPlayerPositions(data: ParserData, scrimId: number, mapDataId: number) {
+  if (!data.player_position?.length) return
+  // Position data can be large (~14k rows per map) — batch insert in chunks of 5000
+  const BATCH_SIZE = 5000
+  const allData = data.player_position.map((row) => ({
+    scrimId,
+    match_time: Number(row[1]),
+    player_team: String(row[2]),
+    player_name: String(row[3]),
+    player_hero: String(row[4]),
+    pos_x: Number(row[5]),
+    pos_y: Number(row[6]),
+    pos_z: Number(row[7]),
+    ult_charge: Number(row[8]) || 0,
+    is_alive: String(row[9]).toLowerCase() === 'true' || String(row[9]) === '1' || Number(row[9]) === 1,
+    facing_x: row[10] != null ? Number(row[10]) : null,
+    facing_z: row[11] != null ? Number(row[11]) : null,
+    health: row[12] != null ? Number(row[12]) : null,
+    in_spawn: row[13] != null ? (String(row[13]).toLowerCase() === 'true' || String(row[13]) === '1') : null,
+    on_ground: row[14] != null ? (String(row[14]).toLowerCase() === 'true' || String(row[14]) === '1') : null,
+    // New per-tick stat fields (indices 15-21) — nullable for backward compat with old log format
+    hero_damage_dealt: row[15] != null && String(row[15]).trim() !== '' ? Number(row[15]) : null,
+    healing_dealt: row[16] != null && String(row[16]).trim() !== '' ? Number(row[16]) : null,
+    damage_taken: row[17] != null && String(row[17]).trim() !== '' ? Number(row[17]) : null,
+    damage_blocked: row[18] != null && String(row[18]).trim() !== '' ? Number(row[18]) : null,
+    eliminations_cum: row[19] != null && String(row[19]).trim() !== '' ? Math.round(Number(row[19])) : null,
+    is_using_ult: row[20] != null && String(row[20]).trim() !== '' ? (String(row[20]).toLowerCase() === 'true' || String(row[20]) === '1') : null,
+    is_alive_actual: row[21] != null && String(row[21]).trim() !== '' ? (String(row[21]).toLowerCase() === 'true' || String(row[21]) === '1') : null,
+    mapDataId,
+  }))
+
+  for (let i = 0; i < allData.length; i += BATCH_SIZE) {
+    await prisma.scrimPlayerPosition.createMany({
+      data: allData.slice(i, i + BATCH_SIZE),
+    })
+  }
+}
+
+async function insertObjectivePositions(data: ParserData, scrimId: number, mapDataId: number) {
+  if (!data.objective_position?.length) return
+  // Store objective positions as player positions with reserved names.
+  // This avoids a schema migration — the API filters them separately.
+  const BATCH_SIZE = 5000
+  const allData: Array<{
+    scrimId: number; match_time: number; player_team: string; player_name: string;
+    player_hero: string; pos_x: number; pos_y: number; pos_z: number;
+    ult_charge: number; is_alive: boolean; mapDataId: number;
+  }> = []
+
+  for (const row of data.objective_position) {
+    const matchTime = Number(row[1])
+    const payloadX = Number(row[2]), payloadY = Number(row[3]), payloadZ = Number(row[4])
+    const objX = Number(row[5]), objY = Number(row[6]), objZ = Number(row[7])
+
+    // Store payload position (for Escort/Hybrid)
+    if (!isNaN(payloadX) && payloadX !== 0) {
+      allData.push({
+        scrimId, match_time: matchTime, player_team: '__OBJ__', player_name: '__PAYLOAD__',
+        player_hero: 'Payload', pos_x: payloadX, pos_y: payloadY, pos_z: payloadZ,
+        ult_charge: 0, is_alive: true, mapDataId,
+      })
+    }
+    // Store objective marker position (for Push/Control/Clash)
+    if (!isNaN(objX) && objX !== 0 && (objX !== payloadX || objZ !== payloadZ)) {
+      allData.push({
+        scrimId, match_time: matchTime, player_team: '__OBJ__', player_name: '__OBJECTIVE__',
+        player_hero: 'Objective', pos_x: objX, pos_y: objY, pos_z: objZ,
+        ult_charge: 0, is_alive: true, mapDataId,
+      })
+    }
+  }
+
+  for (let i = 0; i < allData.length; i += BATCH_SIZE) {
+    await prisma.scrimPlayerPosition.createMany({
+      data: allData.slice(i, i + BATCH_SIZE),
+    })
+  }
 }
 
 async function insertMatchEnds(data: ParserData, scrimId: number, mapDataId: number) {

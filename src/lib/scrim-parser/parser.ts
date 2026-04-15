@@ -210,6 +210,7 @@ const teamNameFields: Record<string, number[]> = {
   ultimate_start: [2],
   round_end: [3],
   round_start: [3],
+  player_position: [2],
 }
 
 function isTeamNameField(eventType: string, index: number): boolean {

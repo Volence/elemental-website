@@ -106,4 +106,17 @@ export const headers: Record<string, string[]> = {
     'event_type', 'Match Time', 'Player Team', 'Player Name',
     'Player Hero', 'Hero Duplicated', 'Ultimate ID',
   ],
+  player_position: [
+    'event_type', 'Match Time', 'Player Team', 'Player Name',
+    'Player Hero', 'Pos X', 'Pos Y', 'Pos Z', 'Ult Charge', 'Is Alive',
+    'Facing X', 'Facing Z', 'Health', 'In Spawn', 'On Ground',
+  ],
+  kill_position: [
+    'event_type', 'Match Time', 'Attacker X', 'Attacker Y', 'Attacker Z',
+    'Victim X', 'Victim Y', 'Victim Z',
+  ],
+  objective_position: [
+    'event_type', 'Match Time', 'Payload X', 'Payload Y', 'Payload Z',
+    'Objective X', 'Objective Y', 'Objective Z',
+  ],
 }

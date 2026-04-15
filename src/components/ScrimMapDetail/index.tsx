@@ -6,6 +6,7 @@ import KillfeedTab from './KillfeedTab'
 import ChartsTab from './ChartsTab'
 import EventsTab from './EventsTab'
 import CompareTab from './CompareTab'
+import ReplayTab from './ReplayTab'
 import ScrimAnalyticsTabs from '@/components/ScrimAnalyticsTabs'
 
 type PlayerRow = {
@@ -153,7 +154,7 @@ function sumStat(players: PlayerRow[], key: keyof PlayerRow): number {
  * Admin view — map-level scrim analytics dashboard.
  * Accessible at /admin/scrim-map?mapId=N.
  */
-type TabId = 'overview' | 'killfeed' | 'charts' | 'events' | 'compare'
+type TabId = 'overview' | 'killfeed' | 'charts' | 'events' | 'compare' | 'replay'
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'overview', label: 'Overview' },
@@ -161,6 +162,7 @@ const TABS: { id: TabId; label: string }[] = [
   { id: 'charts', label: 'Charts' },
   { id: 'events', label: 'Events' },
   { id: 'compare', label: 'Compare' },
+  { id: 'replay', label: 'Replay' },
 ]
 
 export default function ScrimMapDetailView() {
@@ -336,6 +338,9 @@ export default function ScrimMapDetailView() {
 
       {/* Tab: Compare */}
       {activeTab === 'compare' && mapId && <CompareTab mapId={mapId} />}
+
+      {/* Tab: Replay */}
+      {activeTab === 'replay' && mapId && <ReplayTab mapId={mapId} />}
 
       {/* Tab: Overview (existing content) */}
       {activeTab === 'overview' && <>
