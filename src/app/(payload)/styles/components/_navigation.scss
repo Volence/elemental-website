@@ -509,7 +509,8 @@ html body aside nav > div:nth-child(12) .nav__link {
 // CSS hide works because the inline tab view means we never navigate to the list page.
 #nav-ignored-duplicates,
 #nav-invite-links,
-#nav-recruitment-applications {
+#nav-recruitment-applications,
+#nav-recruitment-listings {
   display: none !important;
 }
 

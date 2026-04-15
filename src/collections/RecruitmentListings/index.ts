@@ -77,7 +77,6 @@ export const RecruitmentListings: CollectionConfig = {
     defaultColumns: ['teamDisplay', 'roleDisplay', 'status', 'createdAt', 'actions'],
     description: 'Manage open player positions and recruitment listings.',
     group: 'Data',
-    hidden: true, // Accessed via Competitive Hub 'Listings' tab
     listSearchableFields: ['requirements'],
     pagination: {
       defaultLimit: 25,
