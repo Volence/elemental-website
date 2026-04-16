@@ -62,7 +62,14 @@ export function SettingsView() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          rescheduleNotificationChannels: validChannels.map(({ id, ...rest }) => rest) 
+          rescheduleNotificationChannels: validChannels.map((ch, idx) => ({
+            ...ch,
+            // Bypass Payload 3 Postgres ID mismatch bug: if no ID exists, Payload tries to 
+            // construct a MongoDB ObjectID string, which crashes the Postgres insert.
+            // By supplying a temporary negative integer ID, we bypass the auto-generator
+            // and satisfy the integer constraint safely without sequence collisions.
+            id: ch.id ? parseInt(String(ch.id), 10) : -(Math.floor(Math.random() * 1000000) + idx)
+          }))
         }),
       })
       if (!res.ok) {
