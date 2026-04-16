@@ -61,7 +61,9 @@ export function SettingsView() {
       const res = await fetch('/api/globals/production-dashboard', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rescheduleNotificationChannels: validChannels }),
+        body: JSON.stringify({ 
+          rescheduleNotificationChannels: validChannels.map(({ id, ...rest }) => rest) 
+        }),
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
