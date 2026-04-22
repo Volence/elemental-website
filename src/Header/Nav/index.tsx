@@ -33,9 +33,9 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
 
   // Static navigation links
   const staticNavLinks = [
-    { label: 'Live', href: '/live' },
     { label: 'Teams', href: '/teams' },
     { label: 'Matches', href: '/matches' },
+    { label: 'Live', href: '/live' },
     { label: 'Seminars', href: '/seminars' },
     { label: 'Calendar', href: '/calendar' },
     { label: 'Staff', href: '/staff' },
