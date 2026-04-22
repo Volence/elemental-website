@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { useAuth } from '@payloadcms/ui'
 import {
   Users, Search, Shield, ShieldCheck, Crown, Gamepad2, User as UserIcon,
   Save, Check, AlertCircle, Loader2, ArrowLeft, Plus, Link2, Trash2,
@@ -198,6 +199,9 @@ export function UsersListView() {
 export function UserEditorView() {
   const searchParams = useSearchParams()
   const userId = searchParams.get('id')
+  const { user: currentUser } = useAuth() as { user: any }
+  const isAdmin = currentUser?.role === 'admin'
+  const isSelf = currentUser?.id && String(currentUser.id) === String(userId)
 
   const [user, setUser] = useState<UserData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -357,7 +361,7 @@ export function UserEditorView() {
 
   const roleConf = getRoleConfig(role)
   const showDepts = role !== 'admin' && role !== 'player'
-  const linkedPersonName = allPeople.find(p => p.id === linkedPerson)?.name
+  const linkedPersonName = user?.linkedPerson && typeof user.linkedPerson === 'object' ? user.linkedPerson.name : allPeople.find(p => p.id === linkedPerson)?.name
 
   return (
     <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 20px 60px' }}>
@@ -371,9 +375,11 @@ export function UserEditorView() {
         .dept-toggle { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
         .person-select { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #e2e8f0; padding: 10px 14px; font-size: 14px; width: 100%; outline: none; font-family: inherit; appearance: none; cursor: pointer; }
         .person-select option { background: #1e293b; color: #e2e8f0; }
+        .person-link-card { display: flex; align-items: center; gap: 14px; padding: 16px; background: rgba(99, 102, 241, 0.06); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 10px; text-decoration: none; color: inherit; transition: all 0.15s; cursor: pointer; }
+        .person-link-card:hover { background: rgba(99, 102, 241, 0.1); border-color: rgba(99, 102, 241, 0.35); transform: translateY(-1px); }
       `}</style>
 
-      <a href="/admin/collections/users" className="back-link"><ArrowLeft size={14} /> Back to Users</a>
+      {isAdmin && <a href="/admin/collections/users" className="back-link"><ArrowLeft size={14} /> Back to Users</a>}
 
       {/* Header */}
       <div style={editorStyles.header}>
@@ -397,44 +403,76 @@ export function UserEditorView() {
         </div>
       </div>
 
+      {/* Edit Person Profile link — shown when user has a linked person */}
+      {linkedPerson && linkedPersonName && (
+        <a href={isSelf ? '/admin/my-profile' : `/admin/edit-person?id=${linkedPerson}`} className="person-link-card" style={{ marginBottom: 20 }}>
+          <div style={{ width: 42, height: 42, borderRadius: '50%', background: 'rgba(99, 102, 241, 0.15)', border: '2px solid rgba(99, 102, 241, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <UserIcon size={20} color="#818cf8" />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, color: '#e2e8f0', fontSize: 14 }}>Edit {linkedPersonName}'s Profile</div>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: '2px 0 0' }}>Edit bio, social links, game aliases, and photo</p>
+          </div>
+          <ChevronRight size={16} style={{ opacity: 0.3, flexShrink: 0 }} />
+        </a>
+      )}
+
       <div style={editorStyles.grid}>
         {/* Left */}
         <div style={editorStyles.leftColumn}>
           {/* Role */}
           <div className="profile-card" style={editorStyles.card}>
             <h3 style={editorStyles.cardTitle}><Shield size={16} /> Role</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {ROLES.map(r => (
-                <div
-                  key={r.value}
-                  className={`role-option ${role === r.value ? 'selected' : ''}`}
-                  style={{ color: r.color }}
-                  onClick={() => setRole(r.value)}
-                >
-                  <r.icon size={18} />
-                  <span style={{ fontWeight: role === r.value ? 600 : 400 }}>{r.label}</span>
-                </div>
-              ))}
-            </div>
+            {isAdmin ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {ROLES.map(r => (
+                  <div
+                    key={r.value}
+                    className={`role-option ${role === r.value ? 'selected' : ''}`}
+                    style={{ color: r.color }}
+                    onClick={() => setRole(r.value)}
+                  >
+                    <r.icon size={18} />
+                    <span style={{ fontWeight: role === r.value ? 600 : 400 }}>{r.label}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, border: `2px solid ${roleConf.border}`, background: roleConf.bg }}>
+                <roleConf.icon size={18} color={roleConf.color} />
+                <span style={{ fontWeight: 600, color: roleConf.color }}>{roleConf.label}</span>
+              </div>
+            )}
           </div>
 
           {/* Assigned Teams */}
-          <div className="profile-card" style={editorStyles.card}>
-            <h3 style={editorStyles.cardTitle}><Gamepad2 size={16} /> Assigned Teams</h3>
-            <p style={editorStyles.fieldHint}>Click to toggle. Determines scrim data access for players/managers.</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
-              {allTeams.map(t => (
-                <button
-                  key={t.id}
-                  className={`team-chip ${assignedTeams.includes(t.id) ? 'selected' : ''}`}
-                  onClick={() => toggleTeam(t.id)}
-                >
-                  {assignedTeams.includes(t.id) && <Check size={12} />}
-                  {t.name}
-                </button>
-              ))}
+          {isAdmin ? (
+            <div className="profile-card" style={editorStyles.card}>
+              <h3 style={editorStyles.cardTitle}><Gamepad2 size={16} /> Assigned Teams</h3>
+              <p style={editorStyles.fieldHint}>Click to toggle. Determines scrim data access for players/managers.</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
+                {allTeams.map(t => (
+                  <button
+                    key={t.id}
+                    className={`team-chip ${assignedTeams.includes(t.id) ? 'selected' : ''}`}
+                    onClick={() => toggleTeam(t.id)}
+                  >
+                    {assignedTeams.includes(t.id) && <Check size={12} />}
+                    {t.name}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          ) : assignedTeams.length > 0 && (
+            <div className="profile-card" style={editorStyles.card}>
+              <h3 style={editorStyles.cardTitle}><Gamepad2 size={16} /> Assigned Teams</h3>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {allTeams.filter(t => assignedTeams.includes(t.id)).map(t => (
+                  <span key={t.id} className="team-chip selected">{t.name}</span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right */}
@@ -446,24 +484,28 @@ export function UserEditorView() {
               <label style={editorStyles.fieldLabel}>Email</label>
               <input className="profile-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="user@example.com" />
             </div>
-            <div style={editorStyles.editableField}>
-              <label style={editorStyles.fieldLabel}>Discord ID</label>
-              <input className="profile-input" value={discordId} onChange={(e) => setDiscordId(e.target.value)} placeholder="17-19 digit Discord User ID" />
-            </div>
-            <div style={editorStyles.editableField}>
-              <label style={editorStyles.fieldLabel}>Linked Person</label>
-              <select className="person-select" value={linkedPerson ?? ''} onChange={(e) => setLinkedPerson(e.target.value ? Number(e.target.value) : null)}>
-                <option value="">— None —</option>
-                {allPeople.map(p => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
-              {linkedPersonName && (
-                <a href={`/admin/edit-person?id=${linkedPerson}`} style={{ fontSize: 12, color: '#818cf8', marginTop: 4, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                  <Link2 size={11} /> Edit {linkedPersonName}'s profile
-                </a>
-              )}
-            </div>
+            {isAdmin && (
+              <div style={editorStyles.editableField}>
+                <label style={editorStyles.fieldLabel}>Discord ID</label>
+                <input className="profile-input" value={discordId} onChange={(e) => setDiscordId(e.target.value)} placeholder="17-19 digit Discord User ID" />
+              </div>
+            )}
+            {isAdmin ? (
+              <div style={editorStyles.editableField}>
+                <label style={editorStyles.fieldLabel}>Linked Person</label>
+                <select className="person-select" value={linkedPerson ?? ''} onChange={(e) => setLinkedPerson(e.target.value ? Number(e.target.value) : null)}>
+                  <option value="">— None —</option>
+                  {allPeople.map(p => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
+            ) : linkedPersonName && (
+              <div style={editorStyles.readonlyField}>
+                <span style={editorStyles.readonlyLabel}>Linked Person</span>
+                <span style={editorStyles.readonlyValue}>{linkedPersonName}</span>
+              </div>
+            )}
 
             {/* Password Reset */}
             <div style={editorStyles.editableField}>
@@ -494,7 +536,7 @@ export function UserEditorView() {
           </div>
 
           {/* Departments */}
-          {showDepts && (
+          {showDepts && isAdmin && (
             <div className="profile-card" style={editorStyles.card}>
               <h3 style={editorStyles.cardTitle}><Monitor size={16} /> Department Access</h3>
               {DEPARTMENTS.map(d => (
@@ -507,6 +549,19 @@ export function UserEditorView() {
                   />
                 </div>
               ))}
+            </div>
+          )}
+          {showDepts && !isAdmin && (
+            <div className="profile-card" style={editorStyles.card}>
+              <h3 style={editorStyles.cardTitle}><Monitor size={16} /> Department Access</h3>
+              {DEPARTMENTS.filter(d => departments[d.key]).map(d => (
+                <div key={d.key} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, fontSize: 13, background: 'rgba(52, 211, 153, 0.08)', border: '1px solid rgba(52, 211, 153, 0.3)', color: '#34d399', marginRight: 6, marginBottom: 6 }}>
+                  {d.label}
+                </div>
+              ))}
+              {DEPARTMENTS.filter(d => departments[d.key]).length === 0 && (
+                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)' }}>No department access assigned</p>
+              )}
             </div>
           )}
         </div>

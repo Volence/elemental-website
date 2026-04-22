@@ -162,9 +162,8 @@ export const Users: CollectionConfig = {
       },
       access: {
         read: ({ req: { user } }) => {
-          if (!user) return false
-          const typedUser = user as User
-          return typedUser.role === UserRole.ADMIN || typedUser.role === UserRole.STAFF_MANAGER || typedUser.role === UserRole.TEAM_MANAGER || typedUser.role === UserRole.PLAYER
+          // All authenticated users can read linkedPerson (needed for user editor person link)
+          return Boolean(user)
         },
         update: ({ req }) => {
           const user = req.user as User | undefined

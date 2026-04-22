@@ -34,6 +34,10 @@ export const Pages: CollectionConfig<'pages'> = {
   admin: {
     description: 'Create and edit website pages with rich content, blocks, and SEO settings.',
     group: 'Content',
+    hidden: ({ user }) => {
+      if (!user) return true
+      return 'role' in user && user.role !== 'admin'
+    },
     defaultColumns: ['title', 'slug', 'updatedAt'],
     livePreview: {
       url: ({ data, req }) =>

@@ -300,7 +300,7 @@ export function InviteEditorView() {
   }
 
   const copyLink = () => {
-    const link = `${window.location.origin}/register?invite=${token}`
+    const link = `${window.location.origin}/invite/${token}`
     navigator.clipboard.writeText(link).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
@@ -379,7 +379,7 @@ export function InviteEditorView() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
             <LinkIcon size={16} style={{ color: '#34d399', flexShrink: 0 }} />
             <span style={{ fontFamily: "'SF Mono','Fira Code',monospace", fontSize: 13, color: 'rgba(255,255,255,0.6)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {window.location.origin}/register?invite={token}
+              {window.location.origin}/invite/{token}
             </span>
           </div>
           <button className="profile-save-btn" style={{ padding: '6px 14px', fontSize: 12, flexShrink: 0 }} onClick={copyLink}>
