@@ -42,7 +42,7 @@ export const TwitchStreamers: CollectionConfig = {
     defaultColumns: ['twitchUsername', 'displayName', 'category', 'isLive', 'currentGame', 'active'],
   },
   access: {
-    read: ({ req: { user } }) => ['admin', 'staff-manager', 'team-manager'].includes((user as any)?.role),
+    read: () => true, // Public — powers the /live page
     create: ({ req: { user } }) => ['admin', 'staff-manager', 'team-manager'].includes((user as any)?.role),
     update: ({ req: { user } }) => ['admin', 'staff-manager', 'team-manager'].includes((user as any)?.role),
     delete: ({ req: { user } }) => ['admin', 'staff-manager', 'team-manager'].includes((user as any)?.role),
