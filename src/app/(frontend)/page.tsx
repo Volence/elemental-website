@@ -8,7 +8,7 @@ import { getAllTeams } from '@/utilities/getTeams'
 import { TeamLogo } from '@/components/TeamLogo'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
-import { Calendar, TrendingUp, UserPlus } from 'lucide-react'
+import { Calendar, Radio, TrendingUp, UserPlus } from 'lucide-react'
 import { getTierFromRating } from '@/utilities/tierColors'
 import { LocalDateTime } from '@/components/LocalDateTime'
 import { ParticleBackground } from '@/components/ParticleBackground'
@@ -40,6 +40,7 @@ export default async function HomePage() {
   let randomTeams: any[] = []
   let upcomingMatches: any[] = []
   let openPositionsCount = 0
+  let liveStreamers: any[] = []
   
   try {
     // Get 6 random teams to display
@@ -98,6 +99,25 @@ export default async function HomePage() {
     console.error('Error loading recruitment positions for homepage:', error)
   }
 
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const streamersResult = await payload.find({
+      collection: 'twitch-streamers' as any,
+      where: {
+        and: [
+          { active: { equals: true } },
+          { isLive: { equals: true } },
+        ],
+      },
+      limit: 6,
+      depth: 1,
+      sort: '-viewerCount',
+    })
+    liveStreamers = streamersResult.docs ?? []
+  } catch (error) {
+    console.error('Error loading live streamers for homepage:', error)
+  }
+
   return (
     <>
       {/* Hero Section with Banner */}
@@ -118,6 +138,80 @@ export default async function HomePage() {
           </p>
         </div>
       </ParallaxHero>
+
+      {/* Live Now Section — only shows when someone is streaming */}
+      {liveStreamers.length > 0 && (
+        <section className="py-16 bg-gradient-to-br from-purple-500/5 via-red-500/5 to-purple-500/5 animate-fade-in">
+          <div className="container max-w-5xl">
+            <div className="text-center mb-10">
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-red-500/15 mb-5">
+                <Radio className="w-7 h-7 text-red-400" />
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">Live Now</h2>
+              <div className="w-24 h-1 bg-gradient-to-r from-purple-500 via-red-500 to-purple-500 mx-auto mb-6 shadow-[0_0_20px_rgba(168,85,247,0.4)]" />
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                {liveStreamers.length === 1
+                  ? 'One of our streamers is live right now — tune in!'
+                  : `${liveStreamers.length} of our streamers are live right now — tune in!`}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+              {liveStreamers.map((streamer: any) => {
+                const personName = streamer.person && typeof streamer.person === 'object' ? streamer.person.name : null
+                const displayName = personName || streamer.displayName || streamer.twitchUsername
+                const viewers = streamer.viewerCount || 0
+                const game = streamer.currentGame || 'Streaming'
+
+                return (
+                  <a
+                    key={streamer.id}
+                    href={`https://twitch.tv/${streamer.twitchUsername}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-4 p-4 rounded-xl border-2 border-purple-500/20 bg-gradient-to-br from-card to-card/50 hover:border-purple-500/40 hover:shadow-lg hover:shadow-purple-500/10 hover:scale-[1.01] transition-all"
+                  >
+                    {/* Profile image */}
+                    <div className="relative flex-shrink-0">
+                      {streamer.profileImageUrl ? (
+                        <img
+                          src={streamer.profileImageUrl}
+                          alt={displayName}
+                          className="w-12 h-12 rounded-full ring-2 ring-purple-500/30"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-purple-500/10 ring-2 ring-purple-500/20" />
+                      )}
+                      {/* Live dot */}
+                      <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-red-500 border-2 border-card" />
+                      </span>
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold text-foreground truncate">{displayName}</div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mt-0.5 flex-wrap">
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 text-xs font-medium">
+                          {game}
+                        </span>
+                        <span className="text-xs">👁 {viewers.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </a>
+                )
+              })}
+            </div>
+
+            <div className="text-center">
+              <Button asChild size="lg" variant="glow" className="text-lg px-8">
+                <Link href="/live">View All Channels</Link>
+              </Button>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Upcoming Matches Section */}
       {upcomingMatches.length > 0 && (
