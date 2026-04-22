@@ -5,7 +5,16 @@ import type { User } from '@/payload-types'
 
 const canManageInvites = ({ req: { user } }: { req: { user: any } }) => {
   if (!user) return false
-  return user.role === 'admin' || user.role === 'staff-manager' || user.role === 'team-manager'
+  if (user.role === 'admin' || user.role === 'staff-manager' || user.role === 'team-manager') return true
+  
+  // Department leads (users with department flags) can also manage invites
+  if (user.departments) {
+    const deps = user.departments
+    return deps.isProductionStaff || deps.isSocialMediaStaff || deps.isGraphicsStaff || 
+           deps.isVideoStaff || deps.isEventsStaff || deps.isScoutingStaff
+  }
+  
+  return false
 }
 
 export const InviteLinks: CollectionConfig = {
@@ -276,6 +285,10 @@ export const InviteLinks: CollectionConfig = {
           // Team managers can ONLY create player invites
           if (userRole === 'team-manager' && data.role !== 'player') {
             throw new Error('Team Managers can only create invite links for the Player role')
+          }
+          // Department leads (user role) can ONLY create user invites
+          if (userRole === 'user' && data.role !== 'user') {
+            throw new Error('Department Leads can only create invite links for the User role')
           }
           // Team managers: auto-scope assignedTeams to their own teams
           if (userRole === 'team-manager' && operation === 'create') {
