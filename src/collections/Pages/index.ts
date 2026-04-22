@@ -33,7 +33,6 @@ export const Pages: CollectionConfig<'pages'> = {
   },
   admin: {
     description: 'Create and edit website pages with rich content, blocks, and SEO settings.',
-    hidden: true,
     defaultColumns: ['title', 'slug', 'updatedAt'],
     livePreview: {
       url: ({ data, req }) =>
