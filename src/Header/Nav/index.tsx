@@ -33,6 +33,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
 
   // Static navigation links
   const staticNavLinks = [
+    { label: 'Live', href: '/live' },
     { label: 'Teams', href: '/teams' },
     { label: 'Matches', href: '/matches' },
     { label: 'Seminars', href: '/seminars' },
