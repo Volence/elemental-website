@@ -14,32 +14,36 @@ export async function GET(request: NextRequest, { params }: Params) {
   const lobbyId = parseInt(id, 10)
   if (isNaN(lobbyId)) return NextResponse.json({ error: 'Invalid lobby ID' }, { status: 400 })
 
-  const lobby = await prisma.pugLobby.findUnique({
-    where: { id: lobbyId },
-    include: { players: true, draftState: true, banState: true, mapVote: true },
-  })
-
-  if (!lobby) return NextResponse.json({ error: 'Lobby not found' }, { status: 404 })
-
-  let selectedMap: { id: number; name: string } | null = null
-  if (lobby.mapVote?.selectedMapId) {
-    const map = await payload.findByID({
-      collection: 'maps',
-      id: lobby.mapVote.selectedMapId,
-      overrideAccess: true,
+  try {
+    const lobby = await prisma.pugLobby.findUnique({
+      where: { id: lobbyId },
+      include: { players: true, draftState: true, banState: true, mapVote: true },
     })
-    selectedMap = { id: (map as any).id, name: (map as any).name }
-  }
 
-  let mapCandidates: Array<{ id: number; name: string }> = []
-  if (lobby.status === 'MAP_VOTE' && lobby.mapVote?.candidates) {
-    mapCandidates = await Promise.all(
-      lobby.mapVote.candidates.map(async (mapId) => {
-        const map = await payload.findByID({ collection: 'maps', id: mapId, overrideAccess: true })
-        return { id: (map as any).id, name: (map as any).name }
-      }),
-    )
-  }
+    if (!lobby) return NextResponse.json({ error: 'Lobby not found' }, { status: 404 })
 
-  return NextResponse.json({ lobby, selectedMap, mapCandidates })
+    let selectedMap: { id: number; name: string } | null = null
+    if (lobby.mapVote?.selectedMapId) {
+      const map = await payload.findByID({
+        collection: 'maps',
+        id: lobby.mapVote.selectedMapId,
+        overrideAccess: true,
+      })
+      selectedMap = { id: (map as any).id, name: (map as any).name }
+    }
+
+    let mapCandidates: Array<{ id: number; name: string }> = []
+    if (lobby.status === 'MAP_VOTE' && lobby.mapVote?.candidates) {
+      mapCandidates = await Promise.all(
+        lobby.mapVote.candidates.map(async (mapId) => {
+          const map = await payload.findByID({ collection: 'maps', id: mapId, overrideAccess: true })
+          return { id: (map as any).id, name: (map as any).name }
+        }),
+      )
+    }
+
+    return NextResponse.json({ lobby, selectedMap, mapCandidates })
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 })
+  }
 }

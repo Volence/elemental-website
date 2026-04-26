@@ -16,35 +16,39 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const existing = await payload.find({
-    collection: 'pug-players',
-    where: { user: { equals: user.id } },
-    overrideAccess: true,
-  })
-
-  if (existing.docs.length > 0) {
-    const player = existing.docs[0] as any
-    if (player.tiers?.includes('open')) {
-      return NextResponse.json({ error: 'Already registered for open tier' }, { status: 409 })
-    }
-    await payload.update({
+  try {
+    const existing = await payload.find({
       collection: 'pug-players',
-      id: player.id,
-      data: { tiers: [...(player.tiers ?? []), 'open'] },
+      where: { user: { equals: user.id } },
       overrideAccess: true,
     })
+
+    if (existing.docs.length > 0) {
+      const player = existing.docs[0] as any
+      if (player.tiers?.includes('open')) {
+        return NextResponse.json({ error: 'Already registered for open tier' }, { status: 409 })
+      }
+      await payload.update({
+        collection: 'pug-players',
+        id: player.id,
+        data: { tiers: [...(player.tiers ?? []), 'open'] },
+        overrideAccess: true,
+      })
+      return NextResponse.json({ success: true, playerId: player.id })
+    }
+
+    const player = await payload.create({
+      collection: 'pug-players',
+      data: {
+        user: user.id,
+        tiers: ['open'],
+        registeredDate: new Date().toISOString(),
+      },
+      overrideAccess: true,
+    })
+
     return NextResponse.json({ success: true, playerId: player.id })
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 })
   }
-
-  const player = await payload.create({
-    collection: 'pug-players',
-    data: {
-      user: user.id,
-      tiers: ['open'],
-      registeredDate: new Date().toISOString(),
-    },
-    overrideAccess: true,
-  })
-
-  return NextResponse.json({ success: true, playerId: player.id })
 }

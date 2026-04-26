@@ -38,44 +38,48 @@ export async function POST(request: NextRequest) {
 
   const approvedRoles = invite.pugInvite?.approvedRoles ?? []
 
-  const existing = await payload.find({
-    collection: 'pug-players',
-    where: { user: { equals: user.id } },
-    overrideAccess: true,
-  })
+  try {
+    const existing = await payload.find({
+      collection: 'pug-players',
+      where: { user: { equals: user.id } },
+      overrideAccess: true,
+    })
 
-  let playerId: number
-  if (existing.docs.length > 0) {
-    const existingPlayer = existing.docs[0] as any
-    const updatedTiers = Array.from(new Set([...(existingPlayer.tiers ?? []), 'invite']))
+    let playerId: number
+    if (existing.docs.length > 0) {
+      const existingPlayer = existing.docs[0] as any
+      const updatedTiers = Array.from(new Set([...(existingPlayer.tiers ?? []), 'invite']))
+      await payload.update({
+        collection: 'pug-players',
+        id: existingPlayer.id,
+        data: { tiers: updatedTiers, approvedRoles, invitedBy: invite.createdBy?.id ?? invite.createdBy },
+        overrideAccess: true,
+      })
+      playerId = existingPlayer.id
+    } else {
+      const player = await payload.create({
+        collection: 'pug-players',
+        data: {
+          user: user.id,
+          tiers: ['invite'],
+          approvedRoles,
+          registeredDate: new Date().toISOString(),
+          invitedBy: invite.createdBy?.id ?? invite.createdBy,
+        },
+        overrideAccess: true,
+      })
+      playerId = (player as any).id
+    }
+
     await payload.update({
-      collection: 'pug-players',
-      id: existingPlayer.id,
-      data: { tiers: updatedTiers, approvedRoles, invitedBy: invite.createdBy?.id ?? invite.createdBy },
+      collection: 'invite-links',
+      id: invite.id,
+      data: { usedBy: user.id },
       overrideAccess: true,
     })
-    playerId = existingPlayer.id
-  } else {
-    const player = await payload.create({
-      collection: 'pug-players',
-      data: {
-        user: user.id,
-        tiers: ['invite'],
-        approvedRoles,
-        registeredDate: new Date().toISOString(),
-        invitedBy: invite.createdBy?.id ?? invite.createdBy,
-      },
-      overrideAccess: true,
-    })
-    playerId = (player as any).id
+
+    return NextResponse.json({ success: true, playerId })
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 })
   }
-
-  await payload.update({
-    collection: 'invite-links',
-    id: invite.id,
-    data: { usedBy: user.id },
-    overrideAccess: true,
-  })
-
-  return NextResponse.json({ success: true, playerId })
 }
