@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { findValidAssignment } from '../../src/pug/roleAssignment'
+import { selectCaptains } from '../../src/pug/captainSelection'
+import type { AssignedPlayer } from '../../src/pug/types'
 
 const p = (userId: number, roles: string[]) => ({
   userId,
@@ -67,5 +69,25 @@ describe('findValidAssignment', () => {
     const assignedIds = result!.map((a) => a.userId)
     expect(assignedIds).not.toContain(11)
     expect(assignedIds).not.toContain(12)
+  })
+})
+
+describe('selectCaptains', () => {
+  it('picks the two players from the role with the highest combined MMR', () => {
+    const players: AssignedPlayer[] = [
+      { userId: 1, assignedRole: 'tank', team: null, isCaptain: false, rating: 2000 },
+      { userId: 2, assignedRole: 'tank', team: null, isCaptain: false, rating: 1800 },
+      { userId: 3, assignedRole: 'flex-dps', team: null, isCaptain: false, rating: 1600 },
+      { userId: 4, assignedRole: 'flex-dps', team: null, isCaptain: false, rating: 1500 },
+      { userId: 5, assignedRole: 'hitscan-dps', team: null, isCaptain: false, rating: 1400 },
+      { userId: 6, assignedRole: 'hitscan-dps', team: null, isCaptain: false, rating: 1300 },
+      { userId: 7, assignedRole: 'flex-support', team: null, isCaptain: false, rating: 1200 },
+      { userId: 8, assignedRole: 'flex-support', team: null, isCaptain: false, rating: 1100 },
+      { userId: 9, assignedRole: 'main-support', team: null, isCaptain: false, rating: 1000 },
+      { userId: 10, assignedRole: 'main-support', team: null, isCaptain: false, rating: 900 },
+    ]
+    const { captain1Id, captain2Id, captainRole } = selectCaptains(players)
+    expect(captainRole).toBe('tank')
+    expect(new Set([captain1Id, captain2Id])).toEqual(new Set([1, 2]))
   })
 })
