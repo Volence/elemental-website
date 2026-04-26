@@ -27,7 +27,7 @@ export default async function PugProfilePage({
 
   if (!pugPlayer) {
     return (
-      <main className="container mx-auto p-8 min-h-screen">
+      <main className="container mx-auto p-8">
         <p className="text-gray-500">Player not found.</p>
       </main>
     )
@@ -46,7 +46,7 @@ export default async function PugProfilePage({
   })
 
   return (
-    <main className="container mx-auto px-4 py-8 min-h-screen">
+    <main className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-1">{displayName}</h1>
       <p className="text-sm text-gray-500 mb-6">
         Registered: {pugPlayer.tiers?.join(', ')} tier

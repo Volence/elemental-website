@@ -5,7 +5,7 @@ export const metadata: Metadata = { title: 'Register for PUGs | Elemental' }
 
 export default async function PugRegisterPage() {
   return (
-    <main className="container mx-auto px-4 py-8 max-w-md min-h-screen">
+    <main className="container mx-auto px-4 py-8 max-w-md">
       <h1 className="text-2xl font-bold mb-4">Register for Open-Tier PUGs</h1>
       <p className="text-gray-600 mb-6">
         Open tier is available to all registered users with a linked Discord account. You can play

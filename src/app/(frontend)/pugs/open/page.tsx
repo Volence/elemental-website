@@ -27,7 +27,7 @@ export default async function PugOpenPage() {
   const season = activeSeason.docs[0] as any
 
   return (
-    <main className="container mx-auto px-4 py-8 min-h-screen">
+    <main className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">Open Tier PUGs</h1>

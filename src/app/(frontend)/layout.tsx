@@ -57,7 +57,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           }}
         />
       </head>
-      <body>
+      <body className="flex flex-col min-h-screen">
         <Providers>
           <AdminBar
             adminBarProps={{
@@ -66,7 +66,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           />
 
           <Header />
-          {children}
+          <div className="flex-1">{children}</div>
           <Footer />
         </Providers>
         <GoogleAnalytics />
