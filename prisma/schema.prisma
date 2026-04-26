@@ -725,13 +725,13 @@ model PugLobby {
   scheduledWindowStart DateTime?
   scheduledWindowEnd   DateTime?
   timeoutAt            DateTime?
-  readyAt              DateTime?      @map("ready_at")
-  reportingAt          DateTime?      @map("reporting_at")
+  readyAt              DateTime?
+  reportingAt          DateTime?
   createdByUserId      Int?
   discordFeedMessageId String?
-  voiceChannel1Id      String?        @map("voice_channel1_id")
-  voiceChannel2Id      String?        @map("voice_channel2_id")
-  pendingResult        Json?          @map("pending_result")
+  voiceChannel1Id      String?
+  voiceChannel2Id      String?
+  pendingResult        Json?
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
   players              PugLobbyPlayer[]

@@ -64,8 +64,8 @@ See `prisma/migrations/add_pug_lobby_timestamps.sql`:
 
 ```sql
 ALTER TABLE pug_lobbies
-  ADD COLUMN IF NOT EXISTS ready_at TIMESTAMPTZ,
-  ADD COLUMN IF NOT EXISTS reporting_at TIMESTAMPTZ;
+  ADD COLUMN IF NOT EXISTS "readyAt" TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS "reportingAt" TIMESTAMPTZ;
 ```
 
 ---
@@ -90,13 +90,13 @@ CREATE TABLE IF NOT EXISTS pug_lobbies (
   "scheduledWindowStart" timestamp(3),
   "scheduledWindowEnd"  timestamp(3),
   "timeoutAt"           timestamp(3),
-  ready_at              timestamptz,
-  reporting_at          timestamptz,
+  "readyAt"             timestamptz,
+  "reportingAt"         timestamptz,
   "createdByUserId"     integer,
   "discordFeedMessageId" text,
-  voice_channel1_id     text,
-  voice_channel2_id     text,
-  pending_result        jsonb,
+  "voiceChannel1Id"     text,
+  "voiceChannel2Id"     text,
+  "pendingResult"       jsonb,
   "createdAt"           timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updatedAt"           timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -155,7 +155,7 @@ CREATE TABLE IF NOT EXISTS pug_map_votes (
 );
 ```
 
-> **Note**: These tables are separate from the Payload tables above. Prisma manages them independently. The mixed camelCase/snake_case in `pug_lobbies` is intentional — the original columns were created by `prisma db push` (camelCase), and later columns were added manually (snake_case with `@map` in the schema).
+> **Note**: These tables are separate from the Payload tables above. Prisma manages them independently. All column names are camelCase to match the Prisma schema field names directly.
 
 ---
 
