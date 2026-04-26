@@ -61,7 +61,7 @@ export async function applyEscalatingBan(
     const { sendDm } = await import('@/discord/services/pugNotifications')
     await sendDm(
       discordId,
-      `⚠️ **PUG Cooldown Ban**\nYou have been banned from PUGs until ${bannedUntil.toISOString()}.\nReason: ${reason}`,
+      `⚠️ **PUG Cooldown Ban**\nYou have been banned from PUGs until <t:${Math.floor(bannedUntil.getTime() / 1000)}:F>.\nReason: ${reason}`,
     ).catch(console.error)
   }
 }

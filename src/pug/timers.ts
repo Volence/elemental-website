@@ -44,11 +44,16 @@ export async function recoverTimers(): Promise<void> {
   const now = Date.now()
 
   for (const lobby of activeLobbies) {
-    if (lobby.status === 'DRAFTING' && lobby.draftState?.pickDeadline) {
-      const delay = new Date(lobby.draftState.pickDeadline).getTime() - now
-      if (delay > 0) {
-        registerTimer(timerKey(lobby.id, 'draft'), delay, () => finalizeDraftPick(lobby.id))
+    if (lobby.status === 'DRAFTING') {
+      if (lobby.draftState?.pickDeadline) {
+        const delay = new Date(lobby.draftState.pickDeadline).getTime() - now
+        if (delay > 0) {
+          registerTimer(timerKey(lobby.id, 'draft'), delay, () => finalizeDraftPick(lobby.id))
+        } else {
+          await finalizeDraftPick(lobby.id).catch(console.error)
+        }
       } else {
+        // No active pick deadline: last pick was processed but MAP_VOTE transition didn't complete before restart
         await finalizeDraftPick(lobby.id).catch(console.error)
       }
     }

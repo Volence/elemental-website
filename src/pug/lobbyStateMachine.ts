@@ -137,7 +137,7 @@ async function checkAndAdvanceToReady(lobbyId: number): Promise<void> {
   const queued: QueuedPlayer[] = players.map((p) => ({
     userId: p.userId,
     queuedRoles: p.queuedRoles as PugRole[],
-    rating: 1500,
+    rating: 1500, // actual ratings fetched in advanceToDrafting; 1500 only needed for role feasibility check
   }))
 
   const assignment = findValidAssignment(queued)
