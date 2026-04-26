@@ -455,6 +455,28 @@ async function advanceToInProgress(lobbyId: number): Promise<void> {
   const { updateLobbyFeed } = await import('@/discord/services/pugFeed')
   await updateLobbyFeed(lobbyId).catch(console.error)
 
+  if (team1ChannelId || team2ChannelId) {
+    const { sendDm } = await import('@/discord/services/pugNotifications')
+    const guildId = process.env.DISCORD_GUILD_ID ?? ''
+    const lobbyUrl = `https://elemental.gg/pugs/lobby/${lobbyId}`
+    const channelUrl = (id: string) => `https://discord.com/channels/${guildId}/${id}`
+
+    const notifyTeam = async (teamNum: 1 | 2, channelId: string | null) => {
+      const voiceLine = channelId ? `\nVoice channel: ${channelUrl(channelId)}` : ''
+      const msg = `Your PUG #${lobby.lobbyNumber} match is starting! You're on Team ${teamNum}.${voiceLine}\nLobby: ${lobbyUrl}`
+      const teamPlayers = players.filter((p) => p.team === teamNum)
+      for (const p of teamPlayers) {
+        const discordId = discordIdByUserId.get(p.userId)
+        if (discordId) await sendDm(discordId, msg).catch(console.error)
+      }
+    }
+
+    await Promise.all([
+      notifyTeam(1, team1ChannelId),
+      notifyTeam(2, team2ChannelId),
+    ]).catch(console.error)
+  }
+
   registerTimer(timerKey(lobbyId, 'voice_cleanup'), VOICE_CLEANUP_TIMEOUT_MS, async () => {
     const updatedLobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId } })
     if (updatedLobby?.voiceChannel1Id || updatedLobby?.voiceChannel2Id) {
@@ -638,8 +660,23 @@ export async function completeMatch(lobbyId: number, result: MatchResult): Promi
   await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'COMPLETED' } })
   cancelTimer(timerKey(lobbyId, 'voice_cleanup'))
 
-  const { updateLobbyFeed } = await import('@/discord/services/pugFeed')
+  const { updateLobbyFeed, postMatchResult } = await import('@/discord/services/pugFeed')
   await updateLobbyFeed(lobbyId).catch(console.error)
+
+  if (result !== 'cancelled') {
+    const payloadInst = await getPayload({ config: configPromise })
+    const allUserIds = lobby.players.map((p) => p.userId)
+    const usersResult = allUserIds.length > 0
+      ? await payloadInst.find({ collection: 'users', where: { id: { in: allUserIds } }, overrideAccess: true, limit: 20 })
+      : { docs: [] }
+    const nameMap = new Map((usersResult.docs as any[]).map((u) => [u.id, u.name || u.email]))
+    const playersWithNames = lobby.players.map((p) => ({
+      userId: p.userId,
+      team: p.team,
+      name: nameMap.get(p.userId) ?? `Player #${p.userId}`,
+    }))
+    await postMatchResult(lobby.tier as 'open' | 'invite', lobby.lobbyNumber, lobbyId, result, playersWithNames).catch(console.error)
+  }
 
   // Clean up voice channels if still active
   const completedLobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId } })

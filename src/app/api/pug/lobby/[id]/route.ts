@@ -72,6 +72,7 @@ export async function GET(request: NextRequest, { params }: Params) {
 
     const u = user as any
     const isPugAdmin = u.departments?.isPugAdmin === true || u.role === 'admin'
+    const guildId = process.env.DISCORD_GUILD_ID ?? null
 
     return NextResponse.json({
       lobby: { ...lobby, players: enrichedPlayers },
@@ -80,6 +81,7 @@ export async function GET(request: NextRequest, { params }: Params) {
       heroes,
       currentUserId: user.id,
       isPugAdmin,
+      guildId,
     })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
