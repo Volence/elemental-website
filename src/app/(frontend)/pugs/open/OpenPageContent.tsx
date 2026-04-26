@@ -14,6 +14,7 @@ type Lobby = {
 type Props = {
   currentUser: { id: number; name?: string | null; email?: string } | null
   isRegistered: boolean
+  isPugAdmin: boolean
   seasonId: number | null
   seasonName: string | null
 }
@@ -36,7 +37,7 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
   REPORTING: { label: 'Reporting', color: 'bg-pink-500/20 text-pink-400 border border-pink-500/30' },
 }
 
-export default function OpenPageContent({ currentUser, isRegistered, seasonId, seasonName }: Props) {
+export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin, seasonId, seasonName }: Props) {
   const router = useRouter()
   const [lobbies, setLobbies] = useState<Lobby[]>([])
   const [loadingLobbies, setLoadingLobbies] = useState(true)
@@ -158,9 +159,21 @@ export default function OpenPageContent({ currentUser, isRegistered, seasonId, s
         </div>
       )}
 
-      {currentUser && isRegistered && !seasonId && (
+      {!seasonId && (
         <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-4 py-3 mb-6 text-sm text-yellow-400">
           No active Open Tier season right now.
+          {isPugAdmin && (
+            <span>
+              {' '}
+              <a
+                href="/admin/collections/pug-seasons/create"
+                className="underline hover:text-yellow-200"
+              >
+                Create a season
+              </a>{' '}
+              to enable lobbies.
+            </span>
+          )}
         </div>
       )}
 
