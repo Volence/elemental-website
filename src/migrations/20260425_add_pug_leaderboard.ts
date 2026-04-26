@@ -30,7 +30,7 @@ export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
     DO $$ BEGIN
       ALTER TABLE "pug_leaderboard"
         ADD CONSTRAINT "pug_leaderboard_player_id_fk"
-        FOREIGN KEY ("player_id") REFERENCES "pug_players"("id") ON DELETE SET NULL ON UPDATE NO ACTION;
+        FOREIGN KEY ("player_id") REFERENCES "pug_players"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
     EXCEPTION
       WHEN duplicate_object THEN null;
     END $$;
@@ -38,7 +38,7 @@ export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
     DO $$ BEGIN
       ALTER TABLE "pug_leaderboard"
         ADD CONSTRAINT "pug_leaderboard_season_id_fk"
-        FOREIGN KEY ("season_id") REFERENCES "pug_seasons"("id") ON DELETE SET NULL ON UPDATE NO ACTION;
+        FOREIGN KEY ("season_id") REFERENCES "pug_seasons"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
     EXCEPTION
       WHEN duplicate_object THEN null;
     END $$;
@@ -47,11 +47,13 @@ export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
     CREATE INDEX IF NOT EXISTS "pug_leaderboard_player_idx" ON "pug_leaderboard" ("player_id");
     CREATE INDEX IF NOT EXISTS "pug_leaderboard_season_idx" ON "pug_leaderboard" ("season_id");
     CREATE INDEX IF NOT EXISTS "pug_leaderboard_created_at_idx" ON "pug_leaderboard" ("created_at");
+    CREATE UNIQUE INDEX IF NOT EXISTS "pug_leaderboard_player_season_tier_unique" ON "pug_leaderboard" ("player_id", "season_id", "tier");
   `)
 }
 
 export async function down({ payload, req }: MigrateDownArgs): Promise<void> {
   await payload.db.drizzle.execute(sql`
+    DROP INDEX IF EXISTS "pug_leaderboard_player_season_tier_unique";
     DROP TABLE IF EXISTS "pug_leaderboard";
     DROP TYPE IF EXISTS "public"."enum_pug_leaderboard_tier";
   `)

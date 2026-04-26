@@ -57,7 +57,7 @@ export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
     DO $$ BEGIN
       ALTER TABLE "pug_players"
         ADD CONSTRAINT "pug_players_user_id_users_id_fk"
-        FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE NO ACTION;
+        FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
     EXCEPTION
       WHEN duplicate_object THEN null;
     END $$;
