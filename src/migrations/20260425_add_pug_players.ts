@@ -29,18 +29,18 @@ export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
       "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
     );
 
-    -- Create tiers junction table (hasMany select)
+    -- Create tiers junction table (hasMany select — uses parent_id/order without underscore prefix)
     CREATE TABLE IF NOT EXISTS "pug_players_tiers" (
-      "_order" integer NOT NULL,
-      "_parent_id" integer NOT NULL,
+      "order" integer NOT NULL,
+      "parent_id" integer NOT NULL,
       "id" varchar PRIMARY KEY NOT NULL,
       "value" "enum_pug_players_tiers"
     );
 
-    -- Create approved_roles junction table (hasMany select)
+    -- Create approved_roles junction table (hasMany select — uses parent_id/order without underscore prefix)
     CREATE TABLE IF NOT EXISTS "pug_players_approved_roles" (
-      "_order" integer NOT NULL,
-      "_parent_id" integer NOT NULL,
+      "order" integer NOT NULL,
+      "parent_id" integer NOT NULL,
       "id" varchar PRIMARY KEY NOT NULL,
       "value" "enum_pug_players_approved_roles"
     );
@@ -75,7 +75,7 @@ export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
     DO $$ BEGIN
       ALTER TABLE "pug_players_tiers"
         ADD CONSTRAINT "pug_players_tiers_parent_id_fk"
-        FOREIGN KEY ("_parent_id") REFERENCES "pug_players"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+        FOREIGN KEY ("parent_id") REFERENCES "pug_players"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
     EXCEPTION
       WHEN duplicate_object THEN null;
     END $$;
@@ -84,7 +84,7 @@ export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
     DO $$ BEGIN
       ALTER TABLE "pug_players_approved_roles"
         ADD CONSTRAINT "pug_players_approved_roles_parent_id_fk"
-        FOREIGN KEY ("_parent_id") REFERENCES "pug_players"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+        FOREIGN KEY ("parent_id") REFERENCES "pug_players"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
     EXCEPTION
       WHEN duplicate_object THEN null;
     END $$;
@@ -93,10 +93,10 @@ export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
     CREATE INDEX IF NOT EXISTS "pug_players_user_idx" ON "pug_players" ("user_id");
     CREATE INDEX IF NOT EXISTS "pug_players_invited_by_idx" ON "pug_players" ("invited_by_id");
     CREATE INDEX IF NOT EXISTS "pug_players_created_at_idx" ON "pug_players" ("created_at");
-    CREATE INDEX IF NOT EXISTS "pug_players_tiers_order_idx" ON "pug_players_tiers" ("_order");
-    CREATE INDEX IF NOT EXISTS "pug_players_tiers_parent_id_idx" ON "pug_players_tiers" ("_parent_id");
-    CREATE INDEX IF NOT EXISTS "pug_players_approved_roles_order_idx" ON "pug_players_approved_roles" ("_order");
-    CREATE INDEX IF NOT EXISTS "pug_players_approved_roles_parent_id_idx" ON "pug_players_approved_roles" ("_parent_id");
+    CREATE INDEX IF NOT EXISTS "pug_players_tiers_order_idx" ON "pug_players_tiers" ("order");
+    CREATE INDEX IF NOT EXISTS "pug_players_tiers_parent_id_idx" ON "pug_players_tiers" ("parent_id");
+    CREATE INDEX IF NOT EXISTS "pug_players_approved_roles_order_idx" ON "pug_players_approved_roles" ("order");
+    CREATE INDEX IF NOT EXISTS "pug_players_approved_roles_parent_id_idx" ON "pug_players_approved_roles" ("parent_id");
   `)
 }
 
