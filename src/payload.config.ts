@@ -371,7 +371,7 @@ const config = buildConfig({
       await recoverTimers()
       payload.logger.info('[PUG] Timer recovery complete')
     } catch (err) {
-      payload.logger.error('[PUG] Timer recovery failed:', err)
+      payload.logger.error({ err }, '[PUG] Timer recovery failed')
     }
   },
 })
