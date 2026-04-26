@@ -9,6 +9,11 @@ import { handleThreadKeepAlive } from '../commands/tka'
 import { handleCalendar } from '../commands/calendar'
 import { handleMatchesToday } from '../commands/matches-today'
 import { handleAvailability } from '../commands/availability'
+import { handlePugQueue } from '../commands/pug/queue'
+import { handlePugLeave } from '../commands/pug/leave'
+import { handlePugStatus } from '../commands/pug/status'
+import { handlePugLeaderboard } from '../commands/pug/leaderboard'
+import { handlePugReport } from '../commands/pug/report'
 import { handleTeamAutocomplete } from '../utils/autocomplete'
 import {
   handlePollClose,
@@ -96,6 +101,27 @@ async function handleChatCommand(interaction: ChatInputCommandInteraction): Prom
     await handleMatchesToday(interaction)
   } else if (commandName === 'availability') {
     await handleAvailability(interaction)
+  } else if (commandName === 'pug') {
+    const subcommand = interaction.options.getSubcommand()
+    switch (subcommand) {
+      case 'queue':
+        await handlePugQueue(interaction)
+        break
+      case 'leave':
+        await handlePugLeave(interaction)
+        break
+      case 'status':
+        await handlePugStatus(interaction)
+        break
+      case 'leaderboard':
+        await handlePugLeaderboard(interaction)
+        break
+      case 'report':
+        await handlePugReport(interaction)
+        break
+      default:
+        await interaction.reply({ content: '❌ Unknown /pug subcommand', ephemeral: true })
+    }
   }
 }
 
