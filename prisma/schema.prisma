@@ -743,8 +743,8 @@ model PugLobbyPlayer {
   id           Int       @id @default(autoincrement())
   lobbyId      Int
   userId       Int
-  queuedRoles  String[]
-  assignedRole String?
+  queuedRoles  PugRole[]
+  assignedRole PugRole?
   team         Int?
   isCaptain    Boolean   @default(false)
   joinedAt     DateTime  @default(now())
@@ -761,12 +761,13 @@ model PugDraftState {
   lobbyId         Int       @unique
   captain1Id      Int
   captain2Id      Int
-  captainRole     String
+  captainRole     PugRole
   currentPickTeam Int       @default(1)
   pickNumber      Int       @default(0)
   pickDeadline    DateTime?
   picks           Json      @default("[]")
   lobby           PugLobby  @relation(fields: [lobbyId], references: [id], onDelete: Cascade)
+  updatedAt       DateTime  @updatedAt
 
   @@map("pug_draft_states")
 }
@@ -779,6 +780,7 @@ model PugBanState {
   banDeadline    DateTime?
   bans           Json      @default("[]")
   lobby          PugLobby  @relation(fields: [lobbyId], references: [id], onDelete: Cascade)
+  updatedAt      DateTime  @updatedAt
 
   @@map("pug_ban_states")
 }
@@ -791,6 +793,7 @@ model PugMapVote {
   voteDeadline  DateTime
   selectedMapId Int?
   lobby         PugLobby  @relation(fields: [lobbyId], references: [id], onDelete: Cascade)
+  updatedAt     DateTime  @updatedAt
 
   @@map("pug_map_votes")
 }
