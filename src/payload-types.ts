@@ -2820,6 +2820,19 @@ export interface InviteLink {
     isContentCreator?: boolean | null;
   };
   /**
+   * If this invite is for PUG invite-tier access, configure the player's approved roles here.
+   */
+  pugInvite?: {
+    /**
+     * Check this box if the invite grants PUG invite-tier access.
+     */
+    isForPug?: boolean | null;
+    /**
+     * Roles this player is approved for in invite-tier PUGs.
+     */
+    approvedRoles?: ('tank' | 'flex-dps' | 'hitscan-dps' | 'flex-support' | 'main-support')[] | null;
+  };
+  /**
    * Optional: Pre-link this invite to a Person record (connects user to their BattleTags and scrim stats)
    */
   linkedPerson?: (number | null) | Person;
@@ -4200,6 +4213,12 @@ export interface InviteLinksSelect<T extends boolean = true> {
         isEventsStaff?: T;
         isScoutingStaff?: T;
         isContentCreator?: T;
+      };
+  pugInvite?:
+    | T
+    | {
+        isForPug?: T;
+        approvedRoles?: T;
       };
   linkedPerson?: T;
   email?: T;
