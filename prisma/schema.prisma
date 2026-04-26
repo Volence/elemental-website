@@ -725,6 +725,8 @@ model PugLobby {
   scheduledWindowStart DateTime?
   scheduledWindowEnd   DateTime?
   timeoutAt            DateTime?
+  readyAt              DateTime?
+  reportingAt          DateTime?
   createdByUserId      Int?
   discordFeedMessageId String?
   voiceChannel1Id    String?

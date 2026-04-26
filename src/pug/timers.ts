@@ -81,7 +81,8 @@ export async function recoverTimers(): Promise<void> {
     }
 
     if (lobby.status === 'READY') {
-      const readyDelay = lobby.updatedAt.getTime() + READY_COUNTDOWN_MS - now
+      const baseline = lobby.readyAt ?? lobby.updatedAt
+      const readyDelay = baseline.getTime() + READY_COUNTDOWN_MS - now
       if (readyDelay > 0) {
         registerTimer(timerKey(lobby.id, 'ready'), readyDelay, () => advanceToDrafting(lobby.id))
       } else {
@@ -90,7 +91,8 @@ export async function recoverTimers(): Promise<void> {
     }
 
     if (lobby.status === 'REPORTING') {
-      const confirmDelay = lobby.updatedAt.getTime() + RESULT_CONFIRM_TIMEOUT_MS - now
+      const baseline = lobby.reportingAt ?? lobby.updatedAt
+      const confirmDelay = baseline.getTime() + RESULT_CONFIRM_TIMEOUT_MS - now
       if (confirmDelay > 0) {
         registerTimer(timerKey(lobby.id, 'confirm'), confirmDelay, () => autoConfirmResult(lobby.id))
       } else {

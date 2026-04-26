@@ -126,6 +126,10 @@ export async function leaveLobby(lobbyId: number, userId: number): Promise<void>
     await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'OPEN' } })
     cancelTimer(timerKey(lobbyId, 'ready'))
   }
+
+  import('@/discord/services/pugFeed').then(({ updateLobbyFeed }) => {
+    updateLobbyFeed(lobbyId).catch(console.error)
+  })
 }
 
 async function checkAndAdvanceToReady(lobbyId: number): Promise<void> {
@@ -139,7 +143,7 @@ async function checkAndAdvanceToReady(lobbyId: number): Promise<void> {
   const assignment = findValidAssignment(queued)
   if (!assignment) return
 
-  await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'READY' } })
+  await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'READY', readyAt: new Date() } })
   registerTimer(timerKey(lobbyId, 'ready'), READY_COUNTDOWN_MS, () => advanceToDrafting(lobbyId))
 }
 
@@ -234,6 +238,11 @@ export async function makeDraftPick(
   const draft = await prisma.pugDraftState.findUniqueOrThrow({ where: { lobbyId } })
   const currentCaptainId = draft.currentPickTeam === 1 ? draft.captain1Id : draft.captain2Id
   if (captainUserId !== currentCaptainId) throw new Error('Not your turn to pick')
+
+  const pickedPlayer = await prisma.pugLobbyPlayer.findFirst({
+    where: { lobbyId, userId: pickedUserId, team: null, isCaptain: false },
+  })
+  if (!pickedPlayer) throw new Error('Picked player is not available in this lobby')
 
   cancelTimer(timerKey(lobbyId, 'draft'))
 
@@ -344,6 +353,9 @@ export async function makeBan(
   captainUserId: number,
   heroId: number,
 ): Promise<void> {
+  const lobby = await prisma.pugLobby.findUniqueOrThrow({ where: { id: lobbyId } })
+  if (lobby.status !== 'BANNING') throw new Error('Lobby is not in ban phase')
+
   const draft = await prisma.pugDraftState.findUniqueOrThrow({ where: { lobbyId } })
   const banState = await prisma.pugBanState.findUniqueOrThrow({ where: { lobbyId } })
 
@@ -463,13 +475,20 @@ export async function reportResult(
   const lobby = await prisma.pugLobby.findUniqueOrThrow({ where: { id: lobbyId } })
   if (lobby.status !== 'IN_PROGRESS') throw new Error('Match is not in progress')
 
-  await prisma.pugLobby.update({
-    where: { id: lobbyId },
+  const captain = await prisma.pugLobbyPlayer.findFirst({
+    where: { lobbyId, userId: captainUserId, isCaptain: true },
+  })
+  if (!captain) throw new Error('Only captains can report results')
+
+  const updated = await prisma.pugLobby.updateMany({
+    where: { id: lobbyId, status: 'IN_PROGRESS' },
     data: {
       status: 'REPORTING',
+      reportingAt: new Date(),
       pendingResult: { result, reportedBy: captainUserId },
     },
   })
+  if (updated.count === 0) throw new Error('Match is not in progress or was already reported')
 
   registerTimer(timerKey(lobbyId, 'confirm'), RESULT_CONFIRM_TIMEOUT_MS, () =>
     autoConfirmResult(lobbyId),
@@ -479,6 +498,11 @@ export async function reportResult(
 export async function confirmResult(lobbyId: number, captainUserId: number): Promise<void> {
   const lobby = await prisma.pugLobby.findUniqueOrThrow({ where: { id: lobbyId } })
   if (lobby.status !== 'REPORTING') throw new Error('No pending result')
+
+  const captain = await prisma.pugLobbyPlayer.findFirst({
+    where: { lobbyId, userId: captainUserId, isCaptain: true },
+  })
+  if (!captain) throw new Error('Only captains can confirm results')
 
   const pending = (lobby.pendingResult ?? {}) as { result: MatchResult; reportedBy: number }
   if (pending.reportedBy === captainUserId) {
@@ -490,8 +514,21 @@ export async function confirmResult(lobbyId: number, captainUserId: number): Pro
 }
 
 export async function disputeResult(lobbyId: number, captainUserId: number): Promise<void> {
+  const lobby = await prisma.pugLobby.findUniqueOrThrow({ where: { id: lobbyId } })
+  if (lobby.status !== 'REPORTING') throw new Error('No pending result to dispute')
+  const captain = await prisma.pugLobbyPlayer.findFirst({
+    where: { lobbyId, userId: captainUserId, isCaptain: true },
+  })
+  if (!captain) throw new Error('Only captains can dispute results')
+  const pending = (lobby.pendingResult ?? {}) as { result: string; reportedBy: number }
+  if (pending.reportedBy === captainUserId) {
+    throw new Error('The reporting captain cannot dispute their own result — only the opposing captain can dispute')
+  }
   cancelTimer(timerKey(lobbyId, 'confirm'))
   await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'DISPUTED' } })
+  import('@/discord/services/pugFeed').then(({ updateLobbyFeed }) => {
+    updateLobbyFeed(lobbyId).catch(console.error)
+  })
 }
 
 export async function autoConfirmResult(lobbyId: number): Promise<void> {
