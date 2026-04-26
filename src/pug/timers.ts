@@ -78,5 +78,25 @@ export async function recoverTimers(): Promise<void> {
         await cancelExpiredLobby(lobby.id).catch(console.error)
       }
     }
+
+    if (lobby.status === 'READY') {
+      const READY_COUNTDOWN_MS = 30_000
+      const readyDelay = lobby.updatedAt.getTime() + READY_COUNTDOWN_MS - now
+      if (readyDelay > 0) {
+        registerTimer(timerKey(lobby.id, 'ready'), readyDelay, () => advanceToDrafting(lobby.id))
+      } else {
+        await advanceToDrafting(lobby.id).catch(console.error)
+      }
+    }
+
+    if (lobby.status === 'REPORTING') {
+      const RESULT_CONFIRM_TIMEOUT_MS = 600_000
+      const confirmDelay = lobby.updatedAt.getTime() + RESULT_CONFIRM_TIMEOUT_MS - now
+      if (confirmDelay > 0) {
+        registerTimer(timerKey(lobby.id, 'confirm'), confirmDelay, () => autoConfirmResult(lobby.id))
+      } else {
+        await autoConfirmResult(lobby.id).catch(console.error)
+      }
+    }
   }
 }
