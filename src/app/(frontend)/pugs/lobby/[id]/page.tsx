@@ -85,7 +85,7 @@ export default function LobbyPage() {
               </li>
             ))}
           </ul>
-          <QueueForm lobbyId={id} onQueue={() => fetchState()} onLeave={leaveQueue} />
+          <QueueForm lobbyId={id} onQueue={() => fetchState()} onLeave={leaveQueue} apiAction={apiAction} />
         </div>
       )}
 
@@ -193,7 +193,17 @@ export default function LobbyPage() {
   )
 }
 
-function QueueForm({ lobbyId, onQueue, onLeave }: { lobbyId: string; onQueue: () => void; onLeave: () => void }) {
+function QueueForm({
+  lobbyId,
+  onQueue,
+  onLeave,
+  apiAction,
+}: {
+  lobbyId: string
+  onQueue: () => void
+  onLeave: () => void
+  apiAction: (path: string, body: object) => Promise<void>
+}) {
   const [selectedRoles, setSelectedRoles] = useState<string[]>([])
   const roles = ['tank', 'flex-dps', 'hitscan-dps', 'flex-support', 'main-support']
 
@@ -204,11 +214,7 @@ function QueueForm({ lobbyId, onQueue, onLeave }: { lobbyId: string; onQueue: ()
   }
 
   async function handleQueue() {
-    await fetch(`/api/pug/lobby/${lobbyId}/queue`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ roles: selectedRoles }),
-    })
+    await apiAction('/queue', { roles: selectedRoles })
     onQueue()
   }
 
