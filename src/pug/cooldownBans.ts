@@ -49,4 +49,19 @@ export async function applyEscalatingBan(
     },
     overrideAccess: true,
   })
+
+  const banPlayer = await payload.findByID({
+    collection: 'pug-players',
+    id: payloadPlayerId,
+    depth: 1,
+    overrideAccess: true,
+  })
+  const discordId = (banPlayer as any).user?.discordId
+  if (discordId) {
+    const { sendDm } = await import('@/discord/services/pugNotifications')
+    await sendDm(
+      discordId,
+      `⚠️ **PUG Cooldown Ban**\nYou have been banned from PUGs until ${bannedUntil.toISOString()}.\nReason: ${reason}`,
+    ).catch(console.error)
+  }
 }

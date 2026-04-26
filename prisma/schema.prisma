@@ -727,6 +727,8 @@ model PugLobby {
   timeoutAt            DateTime?
   createdByUserId      Int?
   discordFeedMessageId String?
+  voiceChannel1Id    String?
+  voiceChannel2Id    String?
   pendingResult        Json?
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt

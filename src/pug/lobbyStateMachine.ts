@@ -20,15 +20,30 @@ import {
   INVITE_TIER_LATE_CANCEL_MS,
 } from './constants'
 
+async function getDiscordIdsForLobby(lobbyId: number, payloadInstance: any): Promise<string[]> {
+  const players = await prisma.pugLobbyPlayer.findMany({ where: { lobbyId } })
+  const ids: string[] = []
+  for (const p of players) {
+    const user = await payloadInstance.findByID({ collection: 'users', id: p.userId, overrideAccess: true })
+    const discordId = (user as any).discordId
+    if (discordId) ids.push(discordId)
+  }
+  return ids
+}
+
 export async function createOpenLobby(createdByUserId: number, payloadSeasonId: number) {
   const lastLobby = await prisma.pugLobby.findFirst({
     where: { tier: 'open' },
     orderBy: { lobbyNumber: 'desc' },
   })
   const lobbyNumber = (lastLobby?.lobbyNumber ?? 0) + 1
-  return prisma.pugLobby.create({
+  const lobby = await prisma.pugLobby.create({
     data: { lobbyNumber, tier: 'open', status: 'OPEN', createdByUserId, payloadSeasonId },
   })
+  import('@/discord/services/pugFeed').then(({ updateLobbyFeed }) => {
+    updateLobbyFeed(lobby.id).catch(console.error)
+  })
+  return lobby
 }
 
 export async function createInviteLobby(
@@ -58,6 +73,9 @@ export async function createInviteLobby(
   registerTimer(timerKey(lobby.id, 'timeout'), INVITE_TIER_LATE_CANCEL_MS, () =>
     cancelExpiredLobby(lobby.id),
   )
+  import('@/discord/services/pugFeed').then(({ updateLobbyFeed }) => {
+    updateLobbyFeed(lobby.id).catch(console.error)
+  })
   return lobby
 }
 
@@ -72,6 +90,9 @@ export async function joinLobby(lobbyId: number, userId: number, roles: string[]
   })
 
   await checkAndAdvanceToReady(lobbyId)
+  import('@/discord/services/pugFeed').then(({ updateLobbyFeed }) => {
+    updateLobbyFeed(lobbyId).catch(console.error)
+  })
 }
 
 export async function leaveLobby(lobbyId: number, userId: number): Promise<void> {
@@ -190,6 +211,14 @@ export async function advanceToDrafting(lobbyId: number): Promise<void> {
   })
 
   await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'DRAFTING' } })
+  const discordIds = await getDiscordIdsForLobby(lobbyId, payload)
+  const { postFeedNotification, updateLobbyFeed } = await import('@/discord/services/pugFeed')
+  const { formatUserPings } = await import('@/discord/services/pugNotifications')
+  await postFeedNotification(
+    lobby.tier as 'open' | 'invite',
+    `🎮 **PUG #${lobby.lobbyNumber}** draft is starting! Head to: https://elemental.gg/pugs/lobby/${lobbyId}\n${formatUserPings(discordIds)}`,
+  )
+  await updateLobbyFeed(lobbyId)
   registerTimer(timerKey(lobbyId, 'draft'), DRAFT_PICK_TIMEOUT_MS, () => finalizeDraftPick(lobbyId))
 }
 
@@ -372,6 +401,50 @@ export async function finalizeBan(lobbyId: number): Promise<void> {
 
 async function advanceToInProgress(lobbyId: number): Promise<void> {
   await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'IN_PROGRESS' } })
+
+  const players = await prisma.pugLobbyPlayer.findMany({ where: { lobbyId } })
+  const lobby = await prisma.pugLobby.findUniqueOrThrow({ where: { id: lobbyId } })
+  const payloadInst = await getPayload({ config: configPromise })
+
+  const getDiscordId = async (userId: number): Promise<string> => {
+    const u = await payloadInst.findByID({ collection: 'users', id: userId, overrideAccess: true })
+    return (u as any).discordId ?? ''
+  }
+
+  const team1Ids = (await Promise.all(
+    players.filter((p) => p.team === 1).map((p) => getDiscordId(p.userId)),
+  )).filter(Boolean)
+  const team2Ids = (await Promise.all(
+    players.filter((p) => p.team === 2).map((p) => getDiscordId(p.userId)),
+  )).filter(Boolean)
+
+  const { createMatchVoiceChannels } = await import('@/discord/services/pugVoice')
+  const { team1ChannelId, team2ChannelId } = await createMatchVoiceChannels(
+    lobby.lobbyNumber,
+    team1Ids,
+    team2Ids,
+  )
+
+  if (team1ChannelId || team2ChannelId) {
+    await prisma.pugLobby.update({
+      where: { id: lobbyId },
+      data: { voiceChannel1Id: team1ChannelId || null, voiceChannel2Id: team2ChannelId || null },
+    })
+  }
+
+  const { updateLobbyFeed } = await import('@/discord/services/pugFeed')
+  await updateLobbyFeed(lobbyId).catch(console.error)
+
+  registerTimer(timerKey(lobbyId, 'voice_cleanup'), VOICE_CLEANUP_TIMEOUT_MS, async () => {
+    const updatedLobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId } })
+    if (updatedLobby?.voiceChannel1Id || updatedLobby?.voiceChannel2Id) {
+      const { deleteMatchVoiceChannels } = await import('@/discord/services/pugVoice')
+      await deleteMatchVoiceChannels(
+        updatedLobby.voiceChannel1Id ?? '',
+        updatedLobby.voiceChannel2Id ?? '',
+      ).catch(console.error)
+    }
+  })
 }
 
 export async function reportResult(
@@ -519,6 +592,19 @@ export async function completeMatch(lobbyId: number, result: MatchResult): Promi
 
   await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'COMPLETED' } })
   cancelTimer(timerKey(lobbyId, 'voice_cleanup'))
+
+  const { updateLobbyFeed } = await import('@/discord/services/pugFeed')
+  await updateLobbyFeed(lobbyId).catch(console.error)
+
+  // Clean up voice channels if still active
+  const completedLobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId } })
+  if (completedLobby?.voiceChannel1Id || completedLobby?.voiceChannel2Id) {
+    const { deleteMatchVoiceChannels } = await import('@/discord/services/pugVoice')
+    await deleteMatchVoiceChannels(
+      completedLobby.voiceChannel1Id ?? '',
+      completedLobby.voiceChannel2Id ?? '',
+    ).catch(console.error)
+  }
 }
 
 export async function cancelLobby(lobbyId: number, reason?: string): Promise<void> {
@@ -526,6 +612,18 @@ export async function cancelLobby(lobbyId: number, reason?: string): Promise<voi
   ;['ready', 'draft', 'mapvote', 'ban', 'confirm', 'timeout', 'voice_cleanup'].forEach((phase) =>
     cancelTimer(timerKey(lobbyId, phase)),
   )
+
+  const { updateLobbyFeed } = await import('@/discord/services/pugFeed')
+  await updateLobbyFeed(lobbyId).catch(console.error)
+
+  const cancelledLobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId } })
+  if (cancelledLobby?.voiceChannel1Id || cancelledLobby?.voiceChannel2Id) {
+    const { deleteMatchVoiceChannels } = await import('@/discord/services/pugVoice')
+    await deleteMatchVoiceChannels(
+      cancelledLobby.voiceChannel1Id ?? '',
+      cancelledLobby.voiceChannel2Id ?? '',
+    ).catch(console.error)
+  }
 }
 
 export async function cancelExpiredLobby(lobbyId: number): Promise<void> {
