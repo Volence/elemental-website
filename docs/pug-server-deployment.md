@@ -103,6 +103,6 @@ Re-register slash commands after deploying so `/pug` (with all 5 subcommands) ap
 | Env vars | ⬜ Not set (Discord channels need real IDs) |
 | Payload migrations (all 6) | ✅ Applied |
 | SQL patch 3a (locked_docs_rels columns) | ✅ Applied |
-| SQL patch 3b (ready_at / reporting_at) | ⬜ Pending |
+| SQL patch 3b (ready_at / reporting_at) | ✅ Applied (via `npx prisma db push`) |
 | Prisma tables | ✅ Exist |
 | /pug slash commands registered | ⬜ Pending server restart |
