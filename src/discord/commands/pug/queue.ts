@@ -12,10 +12,10 @@ import { joinLobby, createOpenLobby, getActiveBan } from '@/pug'
 
 const OPEN_ROLES = [
   { label: 'Tank', value: 'tank' },
-  { label: 'Flex DPS', value: 'flex-dps' },
-  { label: 'Hitscan DPS', value: 'hitscan-dps' },
-  { label: 'Flex Support', value: 'flex-support' },
-  { label: 'Main Support', value: 'main-support' },
+  { label: 'Flex DPS', value: 'flex_dps' },
+  { label: 'Hitscan DPS', value: 'hitscan_dps' },
+  { label: 'Flex Support', value: 'flex_support' },
+  { label: 'Main Support', value: 'main_support' },
 ]
 
 export async function handlePugQueue(interaction: ChatInputCommandInteraction): Promise<void> {
@@ -78,6 +78,7 @@ export async function handlePugQueue(interaction: ChatInputCommandInteraction): 
     collector = response.createMessageComponentCollector({
       componentType: ComponentType.StringSelect,
       time: 30_000,
+      max: 1,
     })
   } catch {
     await interaction.editReply('❌ Failed to create role selector.')

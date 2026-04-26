@@ -81,7 +81,7 @@ export default function LobbyPage() {
           <ul className="space-y-1 mb-4">
             {lobby.players.map((p: any) => (
               <li key={p.userId} className="text-sm">
-                User #{p.userId} — {p.queuedRoles.join(', ')}
+                User #{p.userId} — {p.queuedRoles.map((r: string) => r.replace(/_/g, '-')).join(', ')}
               </li>
             ))}
           </ul>
@@ -205,7 +205,7 @@ function QueueForm({
   apiAction: (path: string, body: object) => Promise<void>
 }) {
   const [selectedRoles, setSelectedRoles] = useState<string[]>([])
-  const roles = ['tank', 'flex-dps', 'hitscan-dps', 'flex-support', 'main-support']
+  const roles = ['tank', 'flex_dps', 'hitscan_dps', 'flex_support', 'main_support']
 
   function toggle(role: string) {
     setSelectedRoles((prev) =>
@@ -232,7 +232,7 @@ function QueueForm({
                 : 'border-gray-300 hover:bg-gray-50'
             }`}
           >
-            {role}
+            {role.replace(/_/g, '-')}
           </button>
         ))}
       </div>

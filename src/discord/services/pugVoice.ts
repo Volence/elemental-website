@@ -41,10 +41,23 @@ export async function createMatchVoiceChannels(
     return channel.id
   }
 
-  const team1ChannelId = await createChannel(`PUG #${lobbyNumber} - Team 1`, team1UserIds)
-  const team2ChannelId = await createChannel(`PUG #${lobbyNumber} - Team 2`, team2UserIds)
-
-  return { team1ChannelId, team2ChannelId }
+  let team1ChannelId = ''
+  try {
+    team1ChannelId = await createChannel(`PUG #${lobbyNumber} - Team 1`, team1UserIds)
+    const team2ChannelId = await createChannel(`PUG #${lobbyNumber} - Team 2`, team2UserIds)
+    return { team1ChannelId, team2ChannelId }
+  } catch (err) {
+    if (team1ChannelId) {
+      try {
+        const ch = await client.channels.fetch(team1ChannelId)
+        if (ch && 'delete' in ch) await (ch as VoiceChannel).delete()
+      } catch {
+        // already gone
+      }
+    }
+    console.error('[PUG Voice] Failed to create match channels:', err)
+    return { team1ChannelId: '', team2ChannelId: '' }
+  }
 }
 
 export async function deleteMatchVoiceChannels(

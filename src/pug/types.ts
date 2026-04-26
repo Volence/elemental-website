@@ -1,4 +1,4 @@
-export type PugRole = 'tank' | 'flex-dps' | 'hitscan-dps' | 'flex-support' | 'main-support'
+export type PugRole = 'tank' | 'flex_dps' | 'hitscan_dps' | 'flex_support' | 'main_support'
 export type PugTier = 'open' | 'invite'
 export type PugLobbyStatus =
   | 'OPEN'

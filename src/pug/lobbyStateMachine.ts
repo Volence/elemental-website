@@ -9,7 +9,7 @@ import { applyBan, getNextBanTeam } from './banPhase'
 import { calculateRatingUpdates } from './mmr'
 import { applyEscalatingBan } from './cooldownBans'
 import { registerTimer, cancelTimer, timerKey } from './timers'
-import type { QueuedPlayer, PlayerRating, MatchResult } from './types'
+import type { QueuedPlayer, PlayerRating, MatchResult, PugRole } from './types'
 import {
   READY_COUNTDOWN_MS,
   DRAFT_PICK_TIMEOUT_MS,
@@ -22,13 +22,15 @@ import {
 
 async function getDiscordIdsForLobby(lobbyId: number, payloadInstance: any): Promise<string[]> {
   const players = await prisma.pugLobbyPlayer.findMany({ where: { lobbyId } })
-  const ids: string[] = []
-  for (const p of players) {
-    const user = await payloadInstance.findByID({ collection: 'users', id: p.userId, overrideAccess: true })
-    const discordId = (user as any).discordId
-    if (discordId) ids.push(discordId)
-  }
-  return ids
+  const userIds = players.map((p) => p.userId)
+  if (userIds.length === 0) return []
+  const users = await payloadInstance.find({
+    collection: 'users',
+    where: { id: { in: userIds } },
+    overrideAccess: true,
+    limit: userIds.length,
+  })
+  return (users.docs as any[]).map((u: any) => u.discordId).filter(Boolean)
 }
 
 export async function createOpenLobby(createdByUserId: number, payloadSeasonId: number) {
@@ -130,7 +132,7 @@ async function checkAndAdvanceToReady(lobbyId: number): Promise<void> {
   const players = await prisma.pugLobbyPlayer.findMany({ where: { lobbyId } })
   const queued: QueuedPlayer[] = players.map((p) => ({
     userId: p.userId,
-    queuedRoles: p.queuedRoles as any,
+    queuedRoles: p.queuedRoles as PugRole[],
     rating: 1500,
   }))
 
@@ -148,28 +150,28 @@ export async function advanceToDrafting(lobbyId: number): Promise<void> {
   const lobbyPlayers = await prisma.pugLobbyPlayer.findMany({ where: { lobbyId } })
   const payload = await getPayload({ config: configPromise })
 
-  const queued: QueuedPlayer[] = await Promise.all(
-    lobbyPlayers.map(async (p) => {
-      const lb = await payload.find({
-        collection: 'pug-leaderboard',
-        where: {
-          and: [
-            { tier: { equals: lobby.tier } },
-            { season: { equals: lobby.payloadSeasonId } },
-          ],
-        },
-        overrideAccess: true,
-      })
-      const entry = (lb.docs as any[]).find((d: any) =>
-        typeof d.player === 'object' ? d.player.user === p.userId : false,
-      )
-      return {
-        userId: p.userId,
-        queuedRoles: p.queuedRoles as any,
-        rating: entry?.rating ?? 1500,
-      }
-    }),
-  )
+  const lb = await payload.find({
+    collection: 'pug-leaderboard',
+    where: {
+      and: [
+        { tier: { equals: lobby.tier } },
+        { season: { equals: lobby.payloadSeasonId } },
+      ],
+    },
+    overrideAccess: true,
+    limit: 100,
+  })
+
+  const queued: QueuedPlayer[] = lobbyPlayers.map((p) => {
+    const entry = (lb.docs as any[]).find(
+      (d: any) => typeof d.player === 'object' ? d.player.user === p.userId : false,
+    )
+    return {
+      userId: p.userId,
+      queuedRoles: p.queuedRoles as PugRole[],
+      rating: entry?.rating ?? 1500,
+    }
+  })
 
   const assignment = findValidAssignment(queued)
   if (!assignment) {
@@ -180,7 +182,7 @@ export async function advanceToDrafting(lobbyId: number): Promise<void> {
   for (const a of assignment) {
     await prisma.pugLobbyPlayer.update({
       where: { lobbyId_userId: { lobbyId, userId: a.userId } },
-      data: { assignedRole: a.assignedRole as any },
+      data: { assignedRole: a.assignedRole },
     })
   }
 
@@ -202,7 +204,7 @@ export async function advanceToDrafting(lobbyId: number): Promise<void> {
       lobbyId,
       captain1Id,
       captain2Id,
-      captainRole: captainRole as any,
+      captainRole: captainRole,
       currentPickTeam: DRAFT_PICK_ORDER[0],
       pickNumber: 0,
       pickDeadline,
@@ -211,14 +213,16 @@ export async function advanceToDrafting(lobbyId: number): Promise<void> {
   })
 
   await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'DRAFTING' } })
-  const discordIds = await getDiscordIdsForLobby(lobbyId, payload)
-  const { postFeedNotification, updateLobbyFeed } = await import('@/discord/services/pugFeed')
-  const { formatUserPings } = await import('@/discord/services/pugNotifications')
-  await postFeedNotification(
-    lobby.tier as 'open' | 'invite',
-    `🎮 **PUG #${lobby.lobbyNumber}** draft is starting! Head to: https://elemental.gg/pugs/lobby/${lobbyId}\n${formatUserPings(discordIds)}`,
-  )
-  await updateLobbyFeed(lobbyId)
+  // Fire-and-forget: notify players and update feed (don't block timer registration)
+  getDiscordIdsForLobby(lobbyId, payload).then(async (discordIds) => {
+    const { postFeedNotification, updateLobbyFeed } = await import('@/discord/services/pugFeed')
+    const { formatUserPings } = await import('@/discord/services/pugNotifications')
+    await postFeedNotification(
+      lobby.tier as 'open' | 'invite',
+      `🎮 **PUG #${lobby.lobbyNumber}** draft is starting! Head to: https://elemental.gg/pugs/lobby/${lobbyId}\n${formatUserPings(discordIds)}`,
+    )
+    await updateLobbyFeed(lobbyId)
+  }).catch(console.error)
   registerTimer(timerKey(lobbyId, 'draft'), DRAFT_PICK_TIMEOUT_MS, () => finalizeDraftPick(lobbyId))
 }
 
@@ -604,6 +608,10 @@ export async function completeMatch(lobbyId: number, result: MatchResult): Promi
       completedLobby.voiceChannel1Id ?? '',
       completedLobby.voiceChannel2Id ?? '',
     ).catch(console.error)
+    await prisma.pugLobby.update({
+      where: { id: lobbyId },
+      data: { voiceChannel1Id: null, voiceChannel2Id: null },
+    }).catch(console.error)
   }
 }
 
@@ -623,6 +631,10 @@ export async function cancelLobby(lobbyId: number, reason?: string): Promise<voi
       cancelledLobby.voiceChannel1Id ?? '',
       cancelledLobby.voiceChannel2Id ?? '',
     ).catch(console.error)
+    await prisma.pugLobby.update({
+      where: { id: lobbyId },
+      data: { voiceChannel1Id: null, voiceChannel2Id: null },
+    }).catch(console.error)
   }
 }
 

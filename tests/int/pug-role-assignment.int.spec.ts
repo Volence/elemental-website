@@ -23,10 +23,10 @@ describe('findValidAssignment', () => {
   it('finds valid assignment for 10 players each with one role', () => {
     const players = [
       p(1, ['tank']), p(2, ['tank']),
-      p(3, ['flex-dps']), p(4, ['flex-dps']),
-      p(5, ['hitscan-dps']), p(6, ['hitscan-dps']),
-      p(7, ['flex-support']), p(8, ['flex-support']),
-      p(9, ['main-support']), p(10, ['main-support']),
+      p(3, ['flex_dps']), p(4, ['flex_dps']),
+      p(5, ['hitscan_dps']), p(6, ['hitscan_dps']),
+      p(7, ['flex_support']), p(8, ['flex_support']),
+      p(9, ['main_support']), p(10, ['main_support']),
     ]
     const result = findValidAssignment(players)
     expect(result).not.toBeNull()
@@ -36,19 +36,19 @@ describe('findValidAssignment', () => {
     const roleCounts: Record<string, number> = {}
     result!.forEach((a) => { roleCounts[a.assignedRole] = (roleCounts[a.assignedRole] ?? 0) + 1 })
     expect(roleCounts['tank']).toBe(2)
-    expect(roleCounts['flex-dps']).toBe(2)
-    expect(roleCounts['hitscan-dps']).toBe(2)
-    expect(roleCounts['flex-support']).toBe(2)
-    expect(roleCounts['main-support']).toBe(2)
+    expect(roleCounts['flex_dps']).toBe(2)
+    expect(roleCounts['hitscan_dps']).toBe(2)
+    expect(roleCounts['flex_support']).toBe(2)
+    expect(roleCounts['main_support']).toBe(2)
   })
 
   it('handles players with multiple roles', () => {
     const players = [
       p(1, ['tank']), p(2, ['tank']),
-      p(3, ['flex-dps', 'hitscan-dps']), p(4, ['flex-dps', 'hitscan-dps']),
-      p(5, ['flex-dps', 'hitscan-dps']), p(6, ['flex-dps', 'hitscan-dps']),
-      p(7, ['flex-support', 'main-support']), p(8, ['flex-support', 'main-support']),
-      p(9, ['flex-support', 'main-support']), p(10, ['flex-support', 'main-support']),
+      p(3, ['flex_dps', 'hitscan_dps']), p(4, ['flex_dps', 'hitscan_dps']),
+      p(5, ['flex_dps', 'hitscan_dps']), p(6, ['flex_dps', 'hitscan_dps']),
+      p(7, ['flex_support', 'main_support']), p(8, ['flex_support', 'main_support']),
+      p(9, ['flex_support', 'main_support']), p(10, ['flex_support', 'main_support']),
     ]
     const result = findValidAssignment(players)
     expect(result).not.toBeNull()
@@ -58,11 +58,11 @@ describe('findValidAssignment', () => {
   it('prefers earlier-joined players when multiple valid assignments exist', () => {
     const players = [
       p(1, ['tank']), p(2, ['tank']),
-      p(3, ['flex-dps']), p(4, ['flex-dps']),
-      p(5, ['hitscan-dps']), p(6, ['hitscan-dps']),
-      p(7, ['flex-support']), p(8, ['flex-support']),
-      p(9, ['main-support']), p(10, ['main-support']),
-      p(11, ['tank']), p(12, ['flex-dps']),
+      p(3, ['flex_dps']), p(4, ['flex_dps']),
+      p(5, ['hitscan_dps']), p(6, ['hitscan_dps']),
+      p(7, ['flex_support']), p(8, ['flex_support']),
+      p(9, ['main_support']), p(10, ['main_support']),
+      p(11, ['tank']), p(12, ['flex_dps']),
     ]
     const result = findValidAssignment(players)
     expect(result).not.toBeNull()
@@ -77,14 +77,14 @@ describe('selectCaptains', () => {
     const players: AssignedPlayer[] = [
       { userId: 1, assignedRole: 'tank', team: null, isCaptain: false, rating: 2000 },
       { userId: 2, assignedRole: 'tank', team: null, isCaptain: false, rating: 1800 },
-      { userId: 3, assignedRole: 'flex-dps', team: null, isCaptain: false, rating: 1600 },
-      { userId: 4, assignedRole: 'flex-dps', team: null, isCaptain: false, rating: 1500 },
-      { userId: 5, assignedRole: 'hitscan-dps', team: null, isCaptain: false, rating: 1400 },
-      { userId: 6, assignedRole: 'hitscan-dps', team: null, isCaptain: false, rating: 1300 },
-      { userId: 7, assignedRole: 'flex-support', team: null, isCaptain: false, rating: 1200 },
-      { userId: 8, assignedRole: 'flex-support', team: null, isCaptain: false, rating: 1100 },
-      { userId: 9, assignedRole: 'main-support', team: null, isCaptain: false, rating: 1000 },
-      { userId: 10, assignedRole: 'main-support', team: null, isCaptain: false, rating: 900 },
+      { userId: 3, assignedRole: 'flex_dps', team: null, isCaptain: false, rating: 1600 },
+      { userId: 4, assignedRole: 'flex_dps', team: null, isCaptain: false, rating: 1500 },
+      { userId: 5, assignedRole: 'hitscan_dps', team: null, isCaptain: false, rating: 1400 },
+      { userId: 6, assignedRole: 'hitscan_dps', team: null, isCaptain: false, rating: 1300 },
+      { userId: 7, assignedRole: 'flex_support', team: null, isCaptain: false, rating: 1200 },
+      { userId: 8, assignedRole: 'flex_support', team: null, isCaptain: false, rating: 1100 },
+      { userId: 9, assignedRole: 'main_support', team: null, isCaptain: false, rating: 1000 },
+      { userId: 10, assignedRole: 'main_support', team: null, isCaptain: false, rating: 900 },
     ]
     const { captain1Id, captain2Id, captainRole } = selectCaptains(players)
     expect(captainRole).toBe('tank')

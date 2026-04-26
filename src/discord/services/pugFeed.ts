@@ -52,7 +52,7 @@ function buildLobbyEmbed(lobby: {
     )
 
   if (lobby.status === 'OPEN') {
-    const roles = ['tank', 'flex-dps', 'hitscan-dps', 'flex-support', 'main-support']
+    const roles = ['tank', 'flex_dps', 'hitscan_dps', 'flex_support', 'main_support']
     const filled: Record<string, number> = {}
     for (const role of roles) filled[role] = 0
     for (const p of lobby.players) {
@@ -60,7 +60,9 @@ function buildLobbyEmbed(lobby: {
         if (filled[role] !== undefined) filled[role]++
       }
     }
-    const rolesDisplay = roles.map((r) => `${filled[r]}/2 ${r}`).join('\n')
+    const rolesDisplay = roles
+      .map((r) => `${filled[r]}/2 ${r.replace(/_/g, '-')}`)
+      .join('\n')
     embed.addFields({ name: 'Role Slots', value: rolesDisplay || 'None filled' })
     embed.setDescription(`Join at: https://elemental.gg/pugs/lobby/${lobby.id}`)
   }
@@ -94,7 +96,7 @@ export async function updateLobbyFeed(lobbyId: number): Promise<void> {
     return
   }
 
-  const embed = buildLobbyEmbed(lobby as any)
+  const embed = buildLobbyEmbed(lobby as Parameters<typeof buildLobbyEmbed>[0])
 
   if (lobby.discordFeedMessageId) {
     try {

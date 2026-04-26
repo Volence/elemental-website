@@ -24,15 +24,15 @@ describe('getNextPickTeam', () => {
 describe('applyPick', () => {
   it('assigns the picked player to the correct team', () => {
     const players: AssignedPlayer[] = [
-      { userId: 3, assignedRole: 'flex-dps', team: null, isCaptain: false, rating: 1500 },
-      { userId: 4, assignedRole: 'flex-dps', team: null, isCaptain: false, rating: 1400 },
+      { userId: 3, assignedRole: 'flex_dps', team: null, isCaptain: false, rating: 1500 },
+      { userId: 4, assignedRole: 'flex_dps', team: null, isCaptain: false, rating: 1400 },
     ]
     const updated = applyPick(players, [], 3, 1, 0)
     expect(updated.find((p) => p.userId === 3)?.team).toBe(1)
   })
   it('throws if playerUserId is not in the undrafted pool', () => {
     const players: AssignedPlayer[] = [
-      { userId: 3, assignedRole: 'flex-dps', team: null, isCaptain: false, rating: 1500 },
+      { userId: 3, assignedRole: 'flex_dps', team: null, isCaptain: false, rating: 1500 },
     ]
     expect(() => applyPick(players, [], 99, 1, 0)).toThrow()
   })
@@ -41,8 +41,8 @@ describe('applyPick', () => {
 describe('getAutoPick', () => {
   it('returns the undrafted player with the highest rating', () => {
     const players: AssignedPlayer[] = [
-      { userId: 3, assignedRole: 'flex-dps', team: null, isCaptain: false, rating: 1600 },
-      { userId: 4, assignedRole: 'flex-dps', team: null, isCaptain: false, rating: 1400 },
+      { userId: 3, assignedRole: 'flex_dps', team: null, isCaptain: false, rating: 1600 },
+      { userId: 4, assignedRole: 'flex_dps', team: null, isCaptain: false, rating: 1400 },
     ]
     expect(getAutoPick(players)).toBe(3)
   })

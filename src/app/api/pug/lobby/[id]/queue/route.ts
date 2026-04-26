@@ -44,8 +44,8 @@ export async function POST(request: NextRequest, { params }: Params) {
     if (!pugPlayer.tiers?.includes('invite')) {
       return NextResponse.json({ error: 'Not registered for invite tier' }, { status: 403 })
     }
-    const approvedRoles = pugPlayer.approvedRoles ?? []
-    const invalidRoles = roles.filter((r: string) => !approvedRoles.includes(r))
+    const approvedRolesNormalized = (pugPlayer.approvedRoles ?? []).map((r: string) => r.replace(/-/g, '_'))
+    const invalidRoles = roles.filter((r: string) => !approvedRolesNormalized.includes(r))
     if (invalidRoles.length > 0) {
       return NextResponse.json(
         { error: `Not approved for roles: ${invalidRoles.join(', ')}` },

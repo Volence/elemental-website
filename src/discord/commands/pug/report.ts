@@ -38,6 +38,11 @@ export async function handlePugReport(interaction: ChatInputCommandInteraction):
     return
   }
 
+  if (lobbyPlayer.team === null) {
+    await interaction.editReply('❌ Your team assignment is missing. Contact an admin.')
+    return
+  }
+
   let result: 'team1' | 'team2' | 'draw'
   if (resultArg === 'draw') {
     result = 'draw'

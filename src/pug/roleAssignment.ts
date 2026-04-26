@@ -1,13 +1,13 @@
 import type { QueuedPlayer, AssignedPlayer, PugRole } from './types'
 
-const ROLES: PugRole[] = ['tank', 'flex-dps', 'hitscan-dps', 'flex-support', 'main-support']
+const ROLES: PugRole[] = ['tank', 'flex_dps', 'hitscan_dps', 'flex_support', 'main_support']
 const SLOTS_PER_ROLE = 2
 
 export function findValidAssignment(players: QueuedPlayer[]): AssignedPlayer[] | null {
   if (players.length < 10) return null
 
   const slotsFilled: Record<PugRole, number> = {
-    'tank': 0, 'flex-dps': 0, 'hitscan-dps': 0, 'flex-support': 0, 'main-support': 0,
+    'tank': 0, 'flex_dps': 0, 'hitscan_dps': 0, 'flex_support': 0, 'main_support': 0,
   }
 
   const assigned: AssignedPlayer[] = []
