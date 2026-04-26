@@ -290,14 +290,14 @@ export type PlayerPositionRow = [
   health: number,         // 0.0-1.0 normalized
   in_spawn: number,       // 0 or 1 (boolean from workshop)
   on_ground: number,      // 0 or 1 (boolean from workshop)
-  // New per-tick stat fields (optional — absent in old log data)
+  // New per-tick stat fields (optional - absent in old log data)
   hero_damage_dealt?: number,  // cumulative hero damage dealt
   healing_dealt?: number,      // cumulative healing dealt
   damage_taken?: number,       // cumulative damage taken
   damage_blocked?: number,     // cumulative damage blocked
   eliminations_cum?: number,   // cumulative eliminations
   is_using_ult?: number,       // 0 or 1 (boolean from workshop)
-  is_alive_actual?: number,    // 0 or 1 — real Is Alive() value
+  is_alive_actual?: number,    // 0 or 1 - real Is Alive() value
 ]
 
 export type KillPositionRow = [

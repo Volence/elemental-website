@@ -280,7 +280,7 @@ export function StreamTrackerView() {
                                 month: 'short',
                                 day: 'numeric',
                               })
-                            : '—'}
+                            : '-'}
                         </div>
 
                         <div className="stream-tracker__days-ago">

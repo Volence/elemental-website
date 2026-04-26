@@ -88,7 +88,7 @@ export default function ProductionDashboardView() {
               <span>Stream Tracker</span>
             </button>
 
-            {/* Data tabs — embedded collection views */}
+            {/* Data tabs - embedded collection views */}
             <span className="production-dashboard__tab-divider" />
             <button 
               className={`production-dashboard__tab ${activeTab === 'matches' ? 'production-dashboard__tab--active' : ''}`}

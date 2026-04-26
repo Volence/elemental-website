@@ -167,8 +167,44 @@ export const InviteLinks: CollectionConfig = {
           label: 'Content Creator',
           defaultValue: false,
           admin: {
-            description: 'Content creator — streams appear in Creator Live channel instead of Player Live',
+            description: 'Content creator - streams appear in Creator Live channel instead of Player Live',
           },
+        },
+      ],
+    },
+    {
+      name: 'pugInvite',
+      type: 'group',
+      label: 'PUG Invite Settings',
+      admin: {
+        description: 'If this invite is for PUG invite-tier access, configure the player\'s approved roles here.',
+      },
+      fields: [
+        {
+          name: 'isForPug',
+          type: 'checkbox',
+          label: 'PUG Invite',
+          defaultValue: false,
+          admin: {
+            description: 'Check this box if the invite grants PUG invite-tier access.',
+          },
+        },
+        {
+          name: 'approvedRoles',
+          type: 'select',
+          label: 'Approved PUG Roles',
+          hasMany: true,
+          admin: {
+            description: 'Roles this player is approved for in invite-tier PUGs.',
+            condition: (data) => data?.pugInvite?.isForPug === true,
+          },
+          options: [
+            { label: 'Tank', value: 'tank' },
+            { label: 'Flex DPS', value: 'flex-dps' },
+            { label: 'Hitscan DPS', value: 'hitscan-dps' },
+            { label: 'Flex Support', value: 'flex-support' },
+            { label: 'Main Support', value: 'main-support' },
+          ],
         },
       ],
     },

@@ -159,7 +159,7 @@ const REGION_LABELS: Record<string, string> = {
   Other: 'Unassigned',
 }
 
-// ELMT pinwheel — exact 8 petal paths extracted from org.ai
+// ELMT pinwheel - exact 8 petal paths extracted from org.ai
 // Color mapping: RED group + GREEN group → PRIMARY, BLUE group + ORANGE group → SECONDARY
 // Pattern: p,p,s,s,p,p,s,s going clockwise (pairs)
 const PETALS: { d: string; color: 'p' | 's' }[] = [
@@ -227,7 +227,7 @@ function darken(hex: string, amount: number): string {
   )
 }
 
-/** Neon variant — the original beloved neon-on-black look, unchanged */
+/** Neon variant - the original beloved neon-on-black look, unchanged */
 function NeonLogo({ primary, secondary, size = 160, svgRef }: { primary: string; secondary: string; size?: number; svgRef?: React.Ref<SVGSVGElement> }) {
   const filterId = `neon-${primary}-${secondary}-${size}`
   return (
@@ -263,7 +263,7 @@ function NeonLogo({ primary, secondary, size = 160, svgRef }: { primary: string;
           />
         )
       })}
-      {/* Crisp layer — transparent fill */}
+      {/* Crisp layer - transparent fill */}
       {PETALS.map((petal, i) => {
         const c = petal.color === 'p' ? primary : secondary
         return (
@@ -281,7 +281,7 @@ function NeonLogo({ primary, secondary, size = 160, svgRef }: { primary: string;
   )
 }
 
-/** Solid variant — full color fill with toggleable enhancements */
+/** Solid variant - full color fill with toggleable enhancements */
 function SolidLogo({ primary, secondary, size = 160, enhancements, svgRef }: { primary: string; secondary: string; size?: number; enhancements: SolidEnhancements; svgRef?: React.Ref<SVGSVGElement> }) {
   const uid = `solid-${primary}-${secondary}-${size}`
   const { gradient, highlight, shadow, glossy, twoTone } = enhancements
@@ -294,7 +294,7 @@ function SolidLogo({ primary, secondary, size = 160, enhancements, svgRef }: { p
       style={{ '--logo-size': `${size}px` } as React.CSSProperties}
     >
       <defs>
-        {/* Gradient fills — bright at petal tip, darker toward center (500,500) */}
+        {/* Gradient fills - bright at petal tip, darker toward center (500,500) */}
         {gradient && PETALS.map((petal, i) => {
           const c = petal.color === 'p' ? primary : secondary
           // Calculate rough petal tip position from path (use first M command coords)
@@ -327,7 +327,7 @@ function SolidLogo({ primary, secondary, size = 160, enhancements, svgRef }: { p
           </filter>
         )}
 
-        {/* Glossy overlay — white gradient on upper portion of each petal */}
+        {/* Glossy overlay - white gradient on upper portion of each petal */}
         {glossy && (
           <linearGradient id={`${uid}-gloss`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="white" stopOpacity="0.3" />
@@ -355,7 +355,7 @@ function SolidLogo({ primary, secondary, size = 160, enhancements, svgRef }: { p
               strokeLinejoin="round"
               filter={shadow ? `url(#${uid}-shadow)` : undefined}
             />
-            {/* Inner highlight — slightly inset bright stroke */}
+            {/* Inner highlight - slightly inset bright stroke */}
             {highlight && (
               <path
                 d={petal.d}
@@ -382,7 +382,7 @@ function SolidLogo({ primary, secondary, size = 160, enhancements, svgRef }: { p
   )
 }
 
-/** Small inline logo for the header bar — always uses neon style */
+/** Small inline logo for the header bar - always uses neon style */
 function HeaderLogo({ primary, secondary }: { primary: string; secondary: string }) {
   return <NeonLogo primary={primary} secondary={secondary} size={34} />
 }
@@ -453,7 +453,7 @@ function TeamCard({
 
   return (
     <div className="tc">
-      {/* Header bar — name + save/reset */}
+      {/* Header bar - name + save/reset */}
       <div
         className="tc__glow"
         style={{
@@ -529,7 +529,7 @@ function TeamCard({
             type="text"
             value={primary}
             onChange={(e) => setPrimary(e.target.value)}
-            placeholder="#—"
+            placeholder="#-"
             className="tc__hex"
             spellCheck={false}
             maxLength={7}
@@ -549,7 +549,7 @@ function TeamCard({
             type="text"
             value={secondary}
             onChange={(e) => setSecondary(e.target.value)}
-            placeholder="#—"
+            placeholder="#-"
             className="tc__hex"
             spellCheck={false}
             maxLength={7}
@@ -557,7 +557,7 @@ function TeamCard({
         </div>
       </div>
 
-      {/* Large pinwheel previews — Neon vs Solid */}
+      {/* Large pinwheel previews - Neon vs Solid */}
       <div className="tc__pinwheel-row">
         <div className="tc__pinwheel-preview" style={{ backgroundColor: '#000' }}>
           <div className="tc__pinwheel-label">Neon · Dark BG</div>
@@ -577,7 +577,7 @@ function TeamCard({
 }
 
 /* ═══════════════════════════════════════════════
-   Org Logo Mixer — 4-color / 8-color playground
+   Org Logo Mixer - 4-color / 8-color playground
    ═══════════════════════════════════════════════ */
 
 const ORIGINAL_COLORS = ['#E53935', '#E53935', '#29B6F6', '#29B6F6', '#43A047', '#43A047', '#FB8C00', '#FB8C00']
@@ -669,7 +669,7 @@ function OrgLogoMixer({ teams, enhancements, bgColor }: { teams: TeamData[]; enh
   const neonRef = useRef<SVGSVGElement>(null)
   const solidRef = useRef<SVGSVGElement>(null)
 
-  // Build team palette — all unique branding colors
+  // Build team palette - all unique branding colors
   const teamPalette = teams
     .flatMap(t => [
       t.brandingPrimary ? { color: t.brandingPrimary, team: t.name, type: 'P' } : null,
@@ -787,7 +787,7 @@ function OrgLogoMixer({ teams, enhancements, bgColor }: { teams: TeamData[]; enh
                 <input type="text" value={slotColors[i]} onChange={(e) => setSlot(i, e.target.value)}
                   className="tc__hex" spellCheck={false} maxLength={7} style={{ width: '72px', fontSize: '11px' }} />
               </div>
-              {/* Team palette swatches — grouped by team */}
+              {/* Team palette swatches - grouped by team */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 72px)', gap: '3px', marginTop: '4px' }}>
                 {teams.filter(t => t.brandingPrimary).map(t => (
                   <div key={t.id} style={{
@@ -998,14 +998,14 @@ export default function TeamBrandingGuide() {
                     {t.brandingPrimary ? (
                       <CopyHex color={t.brandingPrimary} />
                     ) : (
-                      <span className="tbg__ref-cell"><code>—</code></span>
+                      <span className="tbg__ref-cell"><code>-</code></span>
                     )}
                   </td>
                   <td>
                     {t.brandingSecondary ? (
                       <CopyHex color={t.brandingSecondary} />
                     ) : (
-                      <span className="tbg__ref-cell"><code>—</code></span>
+                      <span className="tbg__ref-cell"><code>-</code></span>
                     )}
                   </td>
                 </tr>

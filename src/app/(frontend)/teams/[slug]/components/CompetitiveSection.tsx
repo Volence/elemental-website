@@ -178,7 +178,7 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
                     <div className="flex-1">
                       <div className="text-sm text-slate-400">{formatDate(match.date)}</div>
                       <div className={`font-semibold mt-1 ${isBye ? 'text-slate-500' : 'text-white'}`}>
-                        {isBye ? '— BYE Week —' : `vs ${match.opponent}`}
+                        {isBye ? '- BYE Week -' : `vs ${match.opponent}`}
                       </div>
                     </div>
                     {match.roomLink && !isBye && (
@@ -230,7 +230,7 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
                           <div className="text-sm text-slate-400">{formatDate(match.date)}</div>
                         )}
                         <div className={`font-semibold ${isBye ? 'text-slate-500' : match.date ? 'mt-1' : ''} ${isBye ? 'text-slate-500' : 'text-white'}`}>
-                          {isBye ? '— BYE Week —' : `vs ${match.opponent}`}
+                          {isBye ? '- BYE Week -' : `vs ${match.opponent}`}
                         </div>
                       </div>
                       <div className="flex items-center gap-3">

@@ -353,7 +353,7 @@ export function StaffEditorView() {
           <div className="profile-card" style={editorStyles.card}>
             <h3 style={editorStyles.cardTitle}><UserIcon size={16} /> Person</h3>
             <select className="person-select" value={personId ?? ''} onChange={(e) => setPersonId(e.target.value ? Number(e.target.value) : null)}>
-              <option value="">— Select a person —</option>
+              <option value="">- Select a person -</option>
               {allPeople.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
             {personId && (
@@ -408,7 +408,7 @@ export function StaffEditorView() {
             <p style={editorStyles.fieldHint}>
               {collection === 'organization-staff'
                 ? 'Organization staff handle administrative and creative roles across Elemental.'
-                : 'Production staff work on match broadcasts — casting, observing, and producing.'}
+                : 'Production staff work on match broadcasts - casting, observing, and producing.'}
             </p>
             {personId && (
               <div style={{ marginTop: 12 }}>

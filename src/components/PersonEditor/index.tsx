@@ -367,7 +367,7 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
             )}
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 6 }}>
               {teams.map((t, i) => (
-                <span key={i} className="team-tag"><Shield size={12} />{t.name} — {t.role}</span>
+                <span key={i} className="team-tag"><Shield size={12} />{t.name} - {t.role}</span>
               ))}
             </div>
           </div>

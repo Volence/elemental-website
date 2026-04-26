@@ -129,7 +129,7 @@ export async function getStreams(userLogins: string[]): Promise<any[]> {
 
   const clientId = process.env.TWITCH_CLIENT_ID!
 
-  // Twitch API allows up to 100 user_login params per request — batch if needed
+  // Twitch API allows up to 100 user_login params per request - batch if needed
   const BATCH_SIZE = 100
   const allStreams: any[] = []
 

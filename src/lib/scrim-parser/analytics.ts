@@ -1,6 +1,6 @@
 /**
  * Scrim analytics functions.
- * Ported from parsertime's analytics.ts — all self-contained queries
+ * Ported from parsertime's analytics.ts - all self-contained queries
  * against our scrim_* tables (no external data dependencies).
  *
  * Functions:
@@ -48,7 +48,7 @@ export async function getAverageUltChargeTime(
     const currentEnd = ultimateEnds[i]
     const timeToNext = nextCharged.match_time - currentEnd.match_time
 
-    // Skip negative durations (ult charged before previous was used — round boundary)
+    // Skip negative durations (ult charged before previous was used - round boundary)
     if (timeToNext < 0) continue
     chargeTimes.push(timeToNext)
   }
@@ -251,7 +251,7 @@ export async function calculateDroughtTime(
 // ── Ajaxes ───────────────────────────────────────────────────────────
 
 /**
- * Count of "Ajaxes" — Lúcio dying during Sound Barrier.
+ * Count of "Ajaxes" - Lúcio dying during Sound Barrier.
  * Detected when a kill on Lúcio and an ult_end share the same match_time.
  */
 export async function getAjaxes(

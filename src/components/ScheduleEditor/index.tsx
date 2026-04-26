@@ -303,7 +303,7 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
           if (v.timeSlots && v.timeSlots.length > 0) {
             return {
               date: v.date,
-              enabled: false, // Default unchecked — user enables days they want
+              enabled: false, // Default unchecked - user enables days they want
               useAllMembers: false,
               blocks: v.timeSlots.map((slot) => createDefaultBlock(slot.time)),
             }
@@ -627,7 +627,7 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
     const willBeEnabled = !day.enabled
     
     // When enabling a day, update block times to use the current timeSlot field value
-    // (but only for non-calendar schedules — calendar blocks already have correct times)
+    // (but only for non-calendar schedules - calendar blocks already have correct times)
     if (willBeEnabled && timeSlot && scheduleType !== 'calendar') {
       newDays[dayIndex] = {
         ...day,

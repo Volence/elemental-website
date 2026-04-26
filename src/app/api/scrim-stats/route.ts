@@ -206,7 +206,7 @@ export async function GET(req: NextRequest) {
       where: { mapDataId: mapId },
       orderBy: { round_number: 'desc' },
     }),
-    // All round_starts — used for per-round attacking team names
+    // All round_starts - used for per-round attacking team names
     prisma.scrimRoundStart.findMany({
       where: { mapDataId: mapId },
       orderBy: { round_number: 'asc' },
@@ -216,7 +216,7 @@ export async function GET(req: NextRequest) {
     prisma.$queryRaw<[{ max_time: number | null }]>`
       SELECT MAX(match_time) as max_time FROM scrim_kills WHERE "mapDataId" = ${mapId}
     `,
-    // Payload progress per round — for Escort distance-based scoring
+    // Payload progress per round - for Escort distance-based scoring
     prisma.$queryRaw<Array<{ round_number: number; capturing_team: string; max_progress: number }>>`
       SELECT round_number, capturing_team, MAX(payload_capture_progress) as max_progress
       FROM scrim_payload_progress
@@ -331,7 +331,7 @@ export async function GET(req: NextRequest) {
     if (scope && ['admin', 'staff-manager', 'team-manager'].includes(scope.role)) {
       canEditScore = true
     }
-  } catch { /* not logged in or error — leave as false */ }
+  } catch { /* not logged in or error - leave as false */ }
 
   // Distance data for objective-based maps (Escort, Hybrid, Push)
   const distanceData = payloadProgress.length > 0 ? {
@@ -722,7 +722,7 @@ async function getEventsData(mapId: number) {
     )
     let isAjax = false
     if (!ue) {
-      // No ult end — check if Lúcio died near ult start
+      // No ult end - check if Lúcio died near ult start
       isAjax = kills.some(k =>
         k.victim_name === us.player_name &&
         (k.victim_hero === 'Lúcio' || k.victim_hero === 'Lucio') &&
@@ -730,7 +730,7 @@ async function getEventsData(mapId: number) {
         k.match_time <= us.match_time + 3
       )
     } else if (ue.match_time - us.match_time < 1) {
-      // Ult end very close to start — likely cancelled
+      // Ult end very close to start - likely cancelled
       isAjax = kills.some(k =>
         k.victim_name === us.player_name &&
         (k.victim_hero === 'Lúcio' || k.victim_hero === 'Lucio') &&

@@ -17,7 +17,7 @@ export const TeamCell: React.FC<TeamCellProps> = ({ rowData }) => {
       try {
         // Show dash for org-wide positions (no team)
         if (rowData?.category === 'org-staff' || !rowData?.team) {
-          setTeamName('—')
+          setTeamName('-')
           return
         }
 

@@ -72,12 +72,12 @@ export function MatchesListTab() {
       if (match.team1Internal && typeof match.team1Internal === 'object') return match.team1Internal.name
       if (match.team1External) return match.team1External
       if (match.team && typeof match.team === 'object') return match.team.name
-      return '—'
+      return '-'
     }
     if (match.team2Internal && typeof match.team2Internal === 'object') return match.team2Internal.name
     if (match.team2External) return match.team2External
     if (match.opponent) return match.opponent
-    return '—'
+    return '-'
   }
 
   const getStatusBadgeClass = (status?: string) => {
@@ -91,7 +91,7 @@ export function MatchesListTab() {
   }
 
   const formatDate = (dateStr?: string) => {
-    if (!dateStr) return '—'
+    if (!dateStr) return '-'
     return new Date(dateStr).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -179,7 +179,7 @@ export function MatchesListTab() {
                   <td>{formatDate(match.date)}</td>
                   <td>{getTeamName(match, 'team1')}</td>
                   <td>{getTeamName(match, 'team2')}</td>
-                  <td>{match.region || '—'}</td>
+                  <td>{match.region || '-'}</td>
                   <td>
                     <span className={`collection-list-tab__badge ${getStatusBadgeClass(match.status)}`}>
                       {match.status || 'unknown'}

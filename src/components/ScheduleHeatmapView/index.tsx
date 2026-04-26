@@ -24,7 +24,7 @@ export const ScheduleHeatmapView: React.FC<{ path: string }> = ({ path }) => {
       <div className="availability-heatmap availability-heatmap--empty">
         <div className="availability-heatmap__empty-message">
           <BarChart3 size={16} />
-          <p>Manual schedule — no availability data collected.</p>
+          <p>Manual schedule - no availability data collected.</p>
           <p className="availability-heatmap__empty-hint">
             Assign roles directly in the Schedule Builder below.
           </p>

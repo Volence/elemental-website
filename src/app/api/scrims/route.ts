@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
       { payloadTeamId2: { in: scope.assignedTeamIds } },
     ]
   } else if (scope && !scope.isFullAccess) {
-    // No assigned teams — return empty
+    // No assigned teams - return empty
     return NextResponse.json({ scrims: [], pagination: { page, limit, total: 0, totalPages: 0 } })
   } else if (teamId && !isNaN(teamId)) {
     // Admin/staff-manager explicit team filter

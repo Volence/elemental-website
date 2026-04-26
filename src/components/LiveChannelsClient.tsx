@@ -75,7 +75,7 @@ export default function LiveChannelsClient({
       setStreamers(data.docs ?? [])
       setLastUpdated(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
     } catch {
-      // Silently fail — keep showing stale data
+      // Silently fail - keep showing stale data
     }
   }, [])
 
@@ -152,7 +152,7 @@ export default function LiveChannelsClient({
         </div>
       )}
 
-      {/* Empty state — no one live */}
+      {/* Empty state - no one live */}
       {liveStreamers.length === 0 && (
         <div className="text-center py-16 mb-12">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-muted/30 mb-6">
@@ -160,7 +160,7 @@ export default function LiveChannelsClient({
           </div>
           <h3 className="text-xl font-semibold text-muted-foreground mb-2">No one is live right now</h3>
           <p className="text-muted-foreground/60 max-w-md mx-auto">
-            Check back later — our streamers go live throughout the day. 
+            Check back later - our streamers go live throughout the day. 
             You can also follow them on Twitch to get notifications!
           </p>
         </div>

@@ -151,6 +151,15 @@ export const isScrimViewer = ({ req: { user } }: AccessArgs<User>): boolean => {
 }
 
 /**
+ * Check if user has PUG admin access
+ */
+export const isPugAdmin = ({ req: { user } }: AccessArgs<User>): boolean => {
+  if (!user) return false
+  const u = user as User
+  return u.departments?.isPugAdmin === true || u.role === UserRole.ADMIN
+}
+
+/**
  * Helper for admin.hidden - hides collections from player/user roles in sidebar.
  * Use as: admin: { hidden: hideFromPlayers }
  * This only affects sidebar visibility, not API access.

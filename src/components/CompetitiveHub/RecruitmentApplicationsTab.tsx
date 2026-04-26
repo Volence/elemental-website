@@ -67,10 +67,10 @@ export function RecruitmentApplicationsTab() {
             : apps.map((app) => (
               <tr key={app.id} className="collection-list-tab__row">
                 <td className="collection-list-tab__title"><a href={`/admin/collections/recruitment-applications/${app.id}`}>{app.applicantName || `App #${app.id}`}</a></td>
-                <td>{typeof app.listing === 'object' ? app.listing?.title : '—'}</td>
-                <td>{app.discordUsername || '—'}</td>
+                <td>{typeof app.listing === 'object' ? app.listing?.title : '-'}</td>
+                <td>{app.discordUsername || '-'}</td>
                 <td><span className={`collection-list-tab__badge ${getStatusClass(app.status)}`}>{app.status || 'pending'}</span></td>
-                <td>{app.createdAt ? new Date(app.createdAt).toLocaleDateString() : '—'}</td>
+                <td>{app.createdAt ? new Date(app.createdAt).toLocaleDateString() : '-'}</td>
                 <td><a href={`/admin/collections/recruitment-applications/${app.id}`} className="collection-list-tab__edit-link">Edit</a></td>
               </tr>
             ))}

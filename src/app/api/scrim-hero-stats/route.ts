@@ -8,8 +8,8 @@ import { getUserScope } from '@/access/scrimScope'
 // ────────────────────────────────────────────────────────────────────────
 // GET /api/scrim-hero-stats
 //   → Hero list with aggregate stats
-//   ?team=TeamName  — filter by team
-//   ?range=all|last7d|last30d|last10|last20  — time/scrim range
+//   ?team=TeamName  - filter by team
+//   ?range=all|last7d|last30d|last10|last20  - time/scrim range
 //
 // GET /api/scrim-hero-stats?hero=Ana
 //   → Detailed stats for a single hero
@@ -157,7 +157,7 @@ export async function GET(req: NextRequest) {
     if (scope && !scope.isFullAccess && scope.assignedTeamIds.length > 0) {
       scopedScrimIds = await getScrimIdsForTeams(scope.assignedTeamIds)
     } else if (scope && !scope.isFullAccess) {
-      // No assigned teams — return empty
+      // No assigned teams - return empty
       return NextResponse.json({ heroes: [], teams: [] })
     }
 

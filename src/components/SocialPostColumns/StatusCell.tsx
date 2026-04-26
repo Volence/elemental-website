@@ -12,7 +12,7 @@ export default function StatusCell({ rowData }: StatusCellProps) {
   const status = rowData?.status
 
   if (!status) {
-    return <span style={{ color: 'var(--theme-elevation-500)', fontSize: '0.85rem' }}>—</span>
+    return <span style={{ color: 'var(--theme-elevation-500)', fontSize: '0.85rem' }}>-</span>
   }
 
   const getStatusClass = (status: string) => {

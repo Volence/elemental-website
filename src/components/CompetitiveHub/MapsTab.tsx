@@ -50,7 +50,7 @@ export function MapsTab() {
             : maps.map((m) => (
               <tr key={m.id} className="collection-list-tab__row">
                 <td className="collection-list-tab__title"><a href={`/admin/collections/maps/${m.id}`}>{m.name || `Map #${m.id}`}</a></td>
-                <td>{m.type || '—'}</td>
+                <td>{m.type || '-'}</td>
                 <td><a href={`/admin/collections/maps/${m.id}`} className="collection-list-tab__edit-link">Edit</a></td>
               </tr>
             ))}

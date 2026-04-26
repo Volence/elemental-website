@@ -151,7 +151,7 @@ function sumStat(players: PlayerRow[], key: keyof PlayerRow): number {
 }
 
 /**
- * Admin view — map-level scrim analytics dashboard.
+ * Admin view - map-level scrim analytics dashboard.
  * Accessible at /admin/scrim-map?mapId=N.
  */
 type TabId = 'overview' | 'killfeed' | 'charts' | 'events' | 'compare' | 'replay'
@@ -594,7 +594,7 @@ export default function ScrimMapDetailView() {
           </div>
         </div>
 
-        {/* Ajax card — only shown if any Ajaxes detected */}
+        {/* Ajax card - only shown if any Ajaxes detected */}
         {data.analysis.ajaxes.length > 0 && (
           <div className="scrim-detail__card" style={{ borderTop: `2px solid ${AMBER}`, gridColumn: '1 / -1' }}>
             <div className="scrim-detail__label"><Music size={14} className="scrim-detail__inline-icon" /> Ajaxes (Sound Barrier Cancelled)</div>
@@ -838,9 +838,9 @@ function StatRow({ player, onClick, selected }: { player: PlayerRow; onClick: ()
 function ColumnKeyToggle() {
   const [open, setOpen] = React.useState(false)
   const entries = [
-    ['FP%', 'First Pick — % of fights where this player got the opening kill'],
-    ['FD%', 'First Death — % of fights where this player died first'],
-    ['Fleta%', 'Fleta Deadlift — player\'s final blows as a % relative to teammates'],
+    ['FP%', 'First Pick - % of fights where this player got the opening kill'],
+    ['FD%', 'First Death - % of fights where this player died first'],
+    ['Fleta%', 'Fleta Deadlift - player\'s final blows as a % relative to teammates'],
     ['Ult Charge', 'Average seconds to fully charge ultimate'],
     ['Ult Hold', 'Average seconds between charging and using ultimate'],
     ['K/Ult', 'Average kills generated per ultimate used'],

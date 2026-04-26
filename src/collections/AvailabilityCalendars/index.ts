@@ -63,7 +63,7 @@ export const AvailabilityCalendars: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'team', 'status', 'responseCount', 'createdAt'],
-    description: 'Legacy — new calendars are created in the unified Schedules collection.',
+    description: 'Legacy - new calendars are created in the unified Schedules collection.',
     group: 'Data',
   },
   hooks: {

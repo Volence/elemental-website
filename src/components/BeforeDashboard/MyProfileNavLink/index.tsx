@@ -34,7 +34,7 @@ const MyProfileNavLink: React.FC = () => {
 
   return (
     <>
-      {/* Hide the redundant Organization nav group — players use Edit Profile instead */}
+      {/* Hide the redundant Organization nav group - players use Edit Profile instead */}
       <style>{`.nav-group.Organization { display: none !important; }`}</style>
       <div className="nav-group" id="nav-group-My-Profile">
         <button

@@ -59,10 +59,10 @@ export function ScoutReportsTab() {
             : reports.map((r) => (
               <tr key={r.id} className="collection-list-tab__row">
                 <td className="collection-list-tab__title"><a href={`/admin/collections/scout-reports/${r.id}`}>{r.title || `Report #${r.id}`}</a></td>
-                <td>{typeof r.opponentTeam === 'object' ? r.opponentTeam?.name : '—'}</td>
-                <td>{typeof r.author === 'object' ? r.author?.name : '—'}</td>
+                <td>{typeof r.opponentTeam === 'object' ? r.opponentTeam?.name : '-'}</td>
+                <td>{typeof r.author === 'object' ? r.author?.name : '-'}</td>
                 <td><span className={`collection-list-tab__badge`}>{r.status || 'draft'}</span></td>
-                <td>{r.updatedAt ? new Date(r.updatedAt).toLocaleDateString() : '—'}</td>
+                <td>{r.updatedAt ? new Date(r.updatedAt).toLocaleDateString() : '-'}</td>
                 <td><a href={`/admin/collections/scout-reports/${r.id}`} className="collection-list-tab__edit-link">Edit</a></td>
               </tr>
             ))}

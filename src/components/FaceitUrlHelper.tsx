@@ -46,7 +46,7 @@ const FaceitUrlHelper: React.FC = () => {
       console.error('[FaceitUrlHelper] Championship lookup failed:', err)
     }
 
-    // Lookup failed — show fallback instructions
+    // Lookup failed - show fallback instructions
     setChampionshipStatus('')
     setError(prev => {
       const fallback = (<>

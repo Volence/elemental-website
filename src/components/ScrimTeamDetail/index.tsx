@@ -174,7 +174,7 @@ function OverviewTab({ data }: { data: TeamData }) {
         <SummaryCard label="Win Rate" value={`${winRate}%`} sub={`${record.wins + record.losses + record.draws} maps`} color={winRate >= 50 ? GREEN : RED} />
         <SummaryCard label="Fight Win %" value={`${teamfights.fightWinRate}%`} sub={`${teamfights.totalFights} fights`} color={teamfights.fightWinRate >= 50 ? GREEN : RED} />
         <SummaryCard label="First Pick Win %" value={`${teamfights.firstPickWinRate}%`} sub={`${teamfights.firstPickTotal} first picks`} color={teamfights.firstPickWinRate >= 50 ? GREEN : AMBER} />
-        <SummaryCard label="Avg Match" value={avgMatchTime ? formatTime(avgMatchTime) : '—'} sub="per map" color={CYAN} />
+        <SummaryCard label="Avg Match" value={avgMatchTime ? formatTime(avgMatchTime) : '-'} sub="per map" color={CYAN} />
       </div>
 
       {/* Role Balance Radar + Strengths side by side */}
@@ -308,7 +308,7 @@ function RoleRadar({ rolePerformance }: { rolePerformance: RolePerf[] }) {
         return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke={gridColor} strokeWidth="1" opacity="0.4" />
       })}
 
-      {/* Role polygons — only render roles that have data */}
+      {/* Role polygons - only render roles that have data */}
       {roles.map(role => {
         const values = getValues(role)
         if (!values) return null
@@ -328,14 +328,14 @@ function RoleRadar({ rolePerformance }: { rolePerformance: RolePerf[] }) {
         })
       })}
 
-      {/* Axis labels — positioned with per-axis anchoring */}
+      {/* Axis labels - positioned with per-axis anchoring */}
       {axes.map((label, i) => {
         const p = getPoint(i, 1.22)
         const { textAnchor, dy } = labelProps(i)
         return <text key={i} x={p.x} y={p.y + dy} textAnchor={textAnchor} dominantBaseline="middle" fill={TEXT_PRIMARY} fontSize="11" fontWeight="600">{label}</text>
       })}
 
-      {/* Legend — well below the chart */}
+      {/* Legend - well below the chart */}
       {roles.map((role, i) => {
         const hasData = getValues(role) !== null
         return (
@@ -402,7 +402,7 @@ function MapsTab({ data }: { data: TeamData }) {
                 </td>
                 <td className="scrim-detail__map-td scrim-detail__map-td--stat">{m.wins}-{m.losses}-{m.draws}</td>
                 <td className="scrim-detail__map-td scrim-detail__map-td--stat scrim-detail__map-td--date">{m.mapType}</td>
-                <td className="scrim-detail__map-td scrim-detail__map-td--stat">{m.avgTime ? formatTime(m.avgTime) : '—'}</td>
+                <td className="scrim-detail__map-td scrim-detail__map-td--stat">{m.avgTime ? formatTime(m.avgTime) : '-'}</td>
               </tr>
             ))}
           </tbody>
@@ -426,7 +426,7 @@ function MapsTab({ data }: { data: TeamData }) {
                   <td style={{ padding: '6px 10px', color: TEXT_PRIMARY, fontWeight: 600, whiteSpace: 'nowrap', position: 'sticky', left: 0, background: BG_CARD, fontSize: '12px' }}>{pname}</td>
                   {mapNames.map(mn => {
                     const entry = matrixLookup.get(`${pid}__${mn}`)
-                    if (!entry || entry.totalMaps === 0) return <td key={mn} style={{ padding: '6px 8px', textAlign: 'center', color: TEXT_DIM }}>—</td>
+                    if (!entry || entry.totalMaps === 0) return <td key={mn} style={{ padding: '6px 8px', textAlign: 'center', color: TEXT_DIM }}>-</td>
                     const wr = entry.winRate
                     const bg = wr >= 60 ? `${GREEN}18` : wr >= 40 ? `${AMBER}12` : `${RED}18`
                     const fg = wr >= 60 ? GREEN : wr >= 40 ? AMBER : RED
@@ -543,7 +543,7 @@ function OpponentsTab({ data }: { data: TeamData }) {
                 <span style={{ color: o.winRate >= 50 ? GREEN : RED, fontWeight: 600 }}>{o.winRate}%</span>
               </td>
               <td className="scrim-detail__map-td scrim-detail__map-td--stat">{o.wins}-{o.losses}-{o.draws}</td>
-              <td className="scrim-detail__map-td scrim-detail__map-td--stat scrim-detail__map-td--date">{o.lastPlayed ? formatDate(o.lastPlayed) : '—'}</td>
+              <td className="scrim-detail__map-td scrim-detail__map-td--stat scrim-detail__map-td--date">{o.lastPlayed ? formatDate(o.lastPlayed) : '-'}</td>
             </tr>
           ))}
         </tbody>
@@ -568,7 +568,7 @@ function TrendsTab({ data }: { data: TeamData }) {
 
     {/* Streaks */}
     <div className="scrim-detail__auto-grid">
-      <SummaryCard label="Current Streak" value={trends.streaks.current > 0 ? `${trends.streaks.current} ${trends.streaks.currentType === 'win' ? 'W' : 'L'}` : '—'} sub={trends.streaks.currentType === 'win' ? 'winning' : trends.streaks.currentType === 'loss' ? 'losing' : ''} color={trends.streaks.currentType === 'win' ? GREEN : trends.streaks.currentType === 'loss' ? RED : TEXT_DIM} />
+      <SummaryCard label="Current Streak" value={trends.streaks.current > 0 ? `${trends.streaks.current} ${trends.streaks.currentType === 'win' ? 'W' : 'L'}` : '-'} sub={trends.streaks.currentType === 'win' ? 'winning' : trends.streaks.currentType === 'loss' ? 'losing' : ''} color={trends.streaks.currentType === 'win' ? GREEN : trends.streaks.currentType === 'loss' ? RED : TEXT_DIM} />
       <SummaryCard label="Longest Win Streak" value={String(trends.streaks.longestWin)} sub="consecutive wins" color={GREEN} />
       <SummaryCard label="Longest Loss Streak" value={String(trends.streaks.longestLoss)} sub="consecutive losses" color={RED} />
     </div>
@@ -597,7 +597,7 @@ function TrendsTab({ data }: { data: TeamData }) {
         const l = slice.filter(f => f.result === 'loss').length
         const d = slice.filter(f => f.result === 'draw').length
         const wr = slice.length > 0 ? Math.round((w / slice.length) * 100) : 0
-        return <div className="scrim-detail__text-secondary">Last {slice.length}: {w}W {l}L {d}D — {wr}% win rate</div>
+        return <div className="scrim-detail__text-secondary">Last {slice.length}: {w}W {l}L {d}D - {wr}% win rate</div>
       })()}
     </div>
   </div>

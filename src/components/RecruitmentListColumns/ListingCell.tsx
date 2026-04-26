@@ -14,12 +14,12 @@ const roleLabels: Record<string, string> = {
 }
 
 export const ListingCell: React.FC<ListingCellProps> = ({ rowData }) => {
-  if (!rowData?.listing) return <span className="list-cell-empty">—</span>
+  if (!rowData?.listing) return <span className="list-cell-empty">-</span>
 
   const listing =
     typeof rowData.listing === 'object' ? (rowData.listing as RecruitmentListing) : null
 
-  if (!listing) return <span className="list-cell-empty">—</span>
+  if (!listing) return <span className="list-cell-empty">-</span>
 
   const team = listing.team as Team | undefined
   const role = listing.role ? roleLabels[listing.role] || listing.role : 'Unknown'

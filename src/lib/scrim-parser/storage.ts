@@ -2,7 +2,7 @@
  * Storage layer for scrim event data.
  * Takes parsed ParserData and bulk-inserts all events into the database via Prisma.
  *
- * Ported from parsertime (MIT license) — adapted to use our scrim-prefixed schema.
+ * Ported from parsertime (MIT license) - adapted to use our scrim-prefixed schema.
  */
 
 import prisma from '@/lib/prisma'
@@ -278,7 +278,7 @@ async function insertKills(data: ParserData, scrimId: number, mapDataId: number)
         event_damage: Number(r[9]),
         is_critical_hit: String(r[10]),
         is_environmental: String(r[11]),
-        // Position data — prefer inline columns, fall back to kill_position companion event
+        // Position data - prefer inline columns, fall back to kill_position companion event
         ...(hasInlinePositions && r[12] != null ? {
           attacker_x: Number(r[12]),
           attacker_y: Number(r[13]),
@@ -302,7 +302,7 @@ async function insertKills(data: ParserData, scrimId: number, mapDataId: number)
 
 async function insertPlayerPositions(data: ParserData, scrimId: number, mapDataId: number) {
   if (!data.player_position?.length) return
-  // Position data can be large (~14k rows per map) — batch insert in chunks of 5000
+  // Position data can be large (~14k rows per map) - batch insert in chunks of 5000
   const BATCH_SIZE = 5000
   const allData = data.player_position.map((row) => ({
     scrimId,
@@ -320,7 +320,7 @@ async function insertPlayerPositions(data: ParserData, scrimId: number, mapDataI
     health: row[12] != null ? Number(row[12]) : null,
     in_spawn: row[13] != null ? (String(row[13]).toLowerCase() === 'true' || String(row[13]) === '1') : null,
     on_ground: row[14] != null ? (String(row[14]).toLowerCase() === 'true' || String(row[14]) === '1') : null,
-    // New per-tick stat fields (indices 15-21) — nullable for backward compat with old log format
+    // New per-tick stat fields (indices 15-21) - nullable for backward compat with old log format
     hero_damage_dealt: row[15] != null && String(row[15]).trim() !== '' ? Number(row[15]) : null,
     healing_dealt: row[16] != null && String(row[16]).trim() !== '' ? Number(row[16]) : null,
     damage_taken: row[17] != null && String(row[17]).trim() !== '' ? Number(row[17]) : null,
@@ -341,7 +341,7 @@ async function insertPlayerPositions(data: ParserData, scrimId: number, mapDataI
 async function insertObjectivePositions(data: ParserData, scrimId: number, mapDataId: number) {
   if (!data.objective_position?.length) return
   // Store objective positions as player positions with reserved names.
-  // This avoids a schema migration — the API filters them separately.
+  // This avoids a schema migration - the API filters them separately.
   const BATCH_SIZE = 5000
   const allData: Array<{
     scrimId: number; match_time: number; player_team: string; player_name: string;
@@ -488,7 +488,7 @@ async function insertPayloadProgress(data: ParserData, scrimId: number, mapDataI
 
 async function insertPlayerStats(data: ParserData, scrimId: number, mapDataId: number, playerMappings?: Record<string, number>, playerMappings2?: Record<string, number>) {
   if (!data.player_stat?.length) return
-  // Merge both mapping dicts — team 1 and team 2 mappings
+  // Merge both mapping dicts - team 1 and team 2 mappings
   const allMappings = { ...playerMappings, ...playerMappings2 }
   await prisma.scrimPlayerStat.createMany({
     data: data.player_stat.map((row) => {

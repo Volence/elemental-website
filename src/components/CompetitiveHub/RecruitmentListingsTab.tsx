@@ -60,10 +60,10 @@ export function RecruitmentListingsTab() {
             : listings.map((item) => (
               <tr key={item.id} className="collection-list-tab__row">
                 <td className="collection-list-tab__title"><a href={`/admin/collections/recruitment-listings/${item.id}`}>{item.title || `Listing #${item.id}`}</a></td>
-                <td>{typeof item.team === 'object' ? item.team?.name : '—'}</td>
-                <td>{item.role || '—'}</td>
+                <td>{typeof item.team === 'object' ? item.team?.name : '-'}</td>
+                <td>{item.role || '-'}</td>
                 <td><span className={`collection-list-tab__badge collection-list-tab__badge--${item.status || 'draft'}`}>{item.status || 'draft'}</span></td>
-                <td>{item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : '—'}</td>
+                <td>{item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : '-'}</td>
                 <td><a href={`/admin/collections/recruitment-listings/${item.id}`} className="collection-list-tab__edit-link">Edit</a></td>
               </tr>
             ))}

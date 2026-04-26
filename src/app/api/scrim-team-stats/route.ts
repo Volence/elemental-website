@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
   const scope = await getUserScope()
   if (scope && !scope.isFullAccess) {
     if (!scope.assignedTeamIds.includes(teamId)) {
-      return NextResponse.json({ error: 'Access denied — you can only view your own team stats' }, { status: 403 })
+      return NextResponse.json({ error: 'Access denied - you can only view your own team stats' }, { status: 403 })
     }
   }
 

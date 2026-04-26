@@ -14,7 +14,7 @@ const roleLabels: Record<string, string> = {
 }
 
 export const RoleCell: React.FC<RoleCellProps> = ({ rowData }) => {
-  if (!rowData?.role) return <span className="list-cell-empty">—</span>
+  if (!rowData?.role) return <span className="list-cell-empty">-</span>
 
   const label = roleLabels[rowData.role] || rowData.role
 

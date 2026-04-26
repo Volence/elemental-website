@@ -15,6 +15,7 @@ interface DiscordUser {
 interface OAuthState {
   inviteToken: string
   linkToExisting: boolean
+  pugSignup: boolean
   returnUrl: string
   nonce: string
 }
@@ -150,18 +151,37 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       })
 
       if (existingWithDiscord.docs.length > 0) {
-        console.warn(`[Discord OAuth] Discord ID ${discordUser.id} already linked to user ${existingWithDiscord.docs[0].id}`)
-        return NextResponse.redirect(
-          new URL('/admin/login?error=discord_already_linked', serverUrl),
-        )
+        const conflictUser = existingWithDiscord.docs[0] as any
+        if (conflictUser.email?.endsWith('@elmt.placeholder')) {
+          // Auto-created placeholder account - safe to transfer Discord ID to the real account
+          await payload.db.updateOne({
+            id: conflictUser.id,
+            collection: 'users',
+            data: { discordId: null },
+            req: { payload } as any,
+            returning: false,
+          })
+          console.log(`[Discord OAuth] Transferred Discord ID from placeholder account ${conflictUser.id} to ${currentUser.id}`)
+        } else {
+          // Discord ID is on a real account - can't transfer automatically
+          console.warn(`[Discord OAuth] Discord ID ${discordUser.id} already linked to real account ${conflictUser.id}`)
+          const errorUrl = new URL(
+            state.returnUrl || `/admin/collections/users/${currentUser.id}`,
+            serverUrl,
+          )
+          errorUrl.searchParams.set('error', 'discord_already_linked')
+          return NextResponse.redirect(errorUrl)
+        }
       }
 
-      // Update user with Discord ID
-      await payload.update({
-        collection: 'users',
+      // Update user with Discord ID - use db.updateOne to bypass field-level access controls
+      // (payload.update with overrideAccess doesn't reliably bypass field-level update access in Payload 3)
+      await payload.db.updateOne({
         id: currentUser.id,
+        collection: 'users',
         data: { discordId: discordUser.id },
-        overrideAccess: true,
+        req: { payload } as any,
+        returning: false,
       })
       console.log(`[Discord OAuth] Successfully linked Discord ${discordUser.id} to user ${currentUser.id}`)
 
@@ -182,6 +202,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         }
       }
 
+      // If also a PUG signup request, register for open tier now that Discord is linked
+      if (state.pugSignup) {
+        await ensureOpenPugRegistration(payload, currentUser.id)
+        console.log(`[Discord OAuth] Registered user ${currentUser.id} for open PUGs`)
+      }
+
       const returnUrl = state.returnUrl || `/admin/collections/users/${currentUser.id}`
       return NextResponse.redirect(
         new URL(returnUrl, serverUrl),
@@ -194,7 +220,49 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
   }
 
-  // ─── Flow 2: Invite signup with Discord ───
+  // ─── Flow 2: PUG self-service signup ───
+  if (state.pugSignup) {
+    try {
+      // If they already have an account, just log them in
+      const existingUser = await payload.find({
+        collection: 'users',
+        where: { discordId: { equals: discordUser.id } },
+        limit: 1,
+        overrideAccess: true,
+      })
+
+      if (existingUser.docs.length > 0) {
+        // Existing user - log in and ensure they're registered for open PUGs
+        const user = existingUser.docs[0]
+        await ensureOpenPugRegistration(payload, user.id)
+        return await loginAndRedirect(payload, user, cookieStore, serverUrl, state.returnUrl || '/pugs')
+      }
+
+      // New user - create a minimal player account (no team, no linked person)
+      const randomPassword = `discord_${Math.random().toString(36).substring(2)}${Date.now()}`
+      const newUser = await payload.create({
+        collection: 'users',
+        data: {
+          name: discordUser.global_name || discordUser.username,
+          email: `discord_${discordUser.id}@elmt.placeholder`,
+          password: randomPassword,
+          role: 'player',
+          discordId: discordUser.id,
+        },
+        overrideAccess: true,
+      })
+
+      await ensureOpenPugRegistration(payload, newUser.id)
+      return await loginAndRedirect(payload, newUser, cookieStore, serverUrl, state.returnUrl || '/pugs')
+    } catch (error: any) {
+      console.error('[Discord OAuth] PUG self-signup failed:', error)
+      return NextResponse.redirect(
+        new URL(`/pugs/register?error=${encodeURIComponent(error.message || 'signup_failed')}`, serverUrl),
+      )
+    }
+  }
+
+  // ─── Flow 3: Invite signup with Discord ───
   if (state.inviteToken) {
     try {
       // Fetch and validate invite
@@ -229,7 +297,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       })
 
       if (existingUser.docs.length > 0) {
-        // Already has an account — just log them in
+        // Already has an account - just log them in
         return await loginAndRedirect(payload, existingUser.docs[0], cookieStore, serverUrl, state.returnUrl)
       }
 
@@ -292,11 +360,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           })
           teamIds = teams.docs.map((t) => t.id)
         } catch (e) {
-          // Teams query may not support nested filtering — non-critical
+          // Teams query may not support nested filtering - non-critical
         }
       }
 
-      // Create user — Discord users get a random password (they'll always use OAuth)
+      // Create user - Discord users get a random password (they'll always use OAuth)
       const randomPassword = `discord_${Math.random().toString(36).substring(2)}${Date.now()}`
       const newUser = await payload.create({
         collection: 'users',
@@ -341,7 +409,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
   }
 
-  // ─── Flow 1: Regular login via Discord ───
+  // ─── Flow 4: Regular login via Discord ───
   try {
     console.log(`[Discord OAuth] Login flow: looking up user with discordId=${discordUser.id}`)
     const existingUser = await payload.find({
@@ -443,4 +511,36 @@ async function loginAndRedirect(
   })
 
   return response
+}
+
+async function ensureOpenPugRegistration(payload: any, userId: number): Promise<void> {
+  const existing = await payload.find({
+    collection: 'pug-players',
+    where: { user: { equals: userId } },
+    overrideAccess: true,
+    limit: 1,
+  })
+
+  if (existing.docs.length > 0) {
+    const player = existing.docs[0] as any
+    if (!player.tiers?.includes('open')) {
+      await payload.update({
+        collection: 'pug-players',
+        id: player.id,
+        data: { tiers: [...(player.tiers ?? []), 'open'] },
+        overrideAccess: true,
+      })
+    }
+    return
+  }
+
+  await payload.create({
+    collection: 'pug-players',
+    data: {
+      user: userId,
+      tiers: ['open'],
+      registeredDate: new Date().toISOString(),
+    },
+    overrideAccess: true,
+  })
 }

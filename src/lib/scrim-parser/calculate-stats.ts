@@ -12,7 +12,7 @@
  *  - Ajax count (Lúcio ult deaths)
  *  - Fight reversal percentage
  *
- * Note: MVP score is stubbed — it requires a global stat distribution
+ * Note: MVP score is stubbed - it requires a global stat distribution
  * dataset that we haven't built yet. X-Factor is available separately
  * via analytics.ts.
  */

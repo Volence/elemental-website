@@ -34,7 +34,7 @@ export const PositionCell: React.FC<PositionCellProps> = ({ rowData }) => {
     const loadPosition = async () => {
       try {
         if (!rowData?.listing) {
-          setPosition('—')
+          setPosition('-')
           return
         }
 

@@ -49,7 +49,7 @@ export function TemplatesListTab() {
   }, [fetchTemplates])
 
   const getTeamNames = (teams?: Array<{ name: string } | number>): string => {
-    if (!teams || teams.length === 0) return '—'
+    if (!teams || teams.length === 0) return '-'
     return teams
       .map((t) => (typeof t === 'object' ? t.name : `#${t}`))
       .join(', ')
@@ -61,7 +61,7 @@ export function TemplatesListTab() {
   }
 
   const formatDate = (dateStr?: string) => {
-    if (!dateStr) return '—'
+    if (!dateStr) return '-'
     return new Date(dateStr).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',

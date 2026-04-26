@@ -29,7 +29,7 @@ const INTERNAL_TYPE_COLORS: Record<string, string> = {
 }
 
 /**
- * Calendar preview — compact timeline of next 3 days of events.
+ * Calendar preview - compact timeline of next 3 days of events.
  */
 export default function CalendarPreviewWidget() {
   const [events, setEvents] = useState<CalendarEvent[]>([])

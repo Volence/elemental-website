@@ -1,7 +1,7 @@
 /**
  * POST /api/scrim-preview
  *
- * Accepts the same files as scrim-upload, but ONLY parses them —
+ * Accepts the same files as scrim-upload, but ONLY parses them -
  * does NOT store anything. Returns map summaries and unique player
  * names grouped by team, used for the player mapping step.
  */

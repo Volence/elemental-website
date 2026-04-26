@@ -35,7 +35,7 @@ export const AvailabilityHeatmapView: React.FC<{ path: string }> = () => {
   const [data, setData] = useState<CalendarData | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Detect which collection we're in — works for both availability-calendars and discord-polls
+  // Detect which collection we're in - works for both availability-calendars and discord-polls
   const apiSlug = collectionSlug || 'availability-calendars'
 
   // Fetch the full document data via API (hidden fields aren't in useFormFields)
@@ -184,7 +184,7 @@ export const AvailabilityHeatmapView: React.FC<{ path: string }> = () => {
       {data?.availabilityChangedAfterSchedule && (
         <div className="availability-heatmap__changed-flag">
           <AlertTriangle size={14} />
-          <span>Availability was updated after the schedule was built — review changes</span>
+          <span>Availability was updated after the schedule was built - review changes</span>
         </div>
       )}
 

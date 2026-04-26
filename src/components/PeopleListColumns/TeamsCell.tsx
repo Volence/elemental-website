@@ -92,7 +92,7 @@ const TeamsCell: React.FC<{ rowData: any }> = ({ rowData }) => {
   }
 
   if (teams.length === 0) {
-    return <span className="list-cell-empty">—</span>
+    return <span className="list-cell-empty">-</span>
   }
 
   return (

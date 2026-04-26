@@ -81,7 +81,7 @@ export const Users: CollectionConfig = {
       name: 'discordId',
       type: 'text',
       admin: {
-        description: 'Discord User ID — used for \"Login with Discord\". Set via the Link Discord button below, or manually by admins. Also auto-sets the linked Person\'s Discord ID for calendar matching.',
+        description: 'Discord User ID - used for \"Login with Discord\". Set via the Link Discord button below, or manually by admins. Also auto-sets the linked Person\'s Discord ID for calendar matching.',
         readOnly: true, // Non-admins can't manually edit; they use OAuth to link
       },
       access: {
@@ -273,7 +273,16 @@ export const Users: CollectionConfig = {
           label: 'Content Creator',
           defaultValue: false,
           admin: {
-            description: 'Content creator — streams appear in Creator Live channel instead of Player Live',
+            description: 'Content creator - streams appear in Creator Live channel instead of Player Live',
+          },
+        },
+        {
+          name: 'isPugAdmin',
+          type: 'checkbox',
+          label: 'PUG Administrator',
+          defaultValue: false,
+          admin: {
+            description: 'Grants access to PUG management (create seasons, manage invite-tier players, resolve disputes)',
           },
         },
       ],

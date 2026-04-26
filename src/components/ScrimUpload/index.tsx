@@ -525,7 +525,7 @@ export default function ScrimUploadView() {
               </p>
             </div>
 
-            {/* Team Selection — Custom dropdown */}
+            {/* Team Selection - Custom dropdown */}
             <div className="scrim-upload__field scrim-upload__relative">
               <label className="scrim-upload__label">
                 Team <span className="scrim-upload__required">*</span>
@@ -815,7 +815,7 @@ export default function ScrimUploadView() {
               )}
             </div>
 
-            {/* Opponent team info — editable with autocomplete (hidden when dual-team with team selected) */}
+            {/* Opponent team info - editable with autocomplete (hidden when dual-team with team selected) */}
             {!dualTeam && opponentTeamName && preview.players[opponentTeamName] && (
               <div className="scrim-upload__section">
                 <div className="scrim-upload__opponent-row">

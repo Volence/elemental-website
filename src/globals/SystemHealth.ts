@@ -5,7 +5,7 @@ export const SystemHealth: GlobalConfig = {
   slug: 'system-health',
   label: 'System Health',
   admin: {
-    description: 'Unified monitoring dashboard — errors, cron jobs, audit logs, sessions, and database health.',
+    description: 'Unified monitoring dashboard - errors, cron jobs, audit logs, sessions, and database health.',
     group: 'System',
     hideAPIURL: true,
     components: {

@@ -5,16 +5,18 @@ import { cookies } from 'next/headers'
 
 /**
  * Discord OAuth initiation endpoint.
- * 
+ *
  * Query params:
  *   - invite: Optional invite token (for new user signup via invite link)
  *   - link: If "true", links Discord to the currently logged-in user
+ *   - pugSignup: If "true", self-service PUG signup (creates player account, no invite needed)
  *   - returnUrl: Where to redirect after auth (default: /admin)
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const { searchParams } = new URL(request.url)
   const inviteToken = searchParams.get('invite') || ''
   const linkToExisting = searchParams.get('link') === 'true'
+  const pugSignup = searchParams.get('pugSignup') === 'true'
   const returnUrl = searchParams.get('returnUrl') || '/admin'
 
   const clientId = process.env.DISCORD_CLIENT_ID
@@ -43,8 +45,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     JSON.stringify({
       inviteToken,
       linkToExisting,
+      pugSignup,
       returnUrl,
-      // CSRF nonce
       nonce: Math.random().toString(36).substring(2, 15),
     }),
   ).toString('base64url')

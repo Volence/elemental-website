@@ -485,7 +485,7 @@ export function StaffSignupsView() {
                       <td className="staff-signups-v2__td-date">
                         {group.formattedDate}
                         {hasReschedule && (
-                          <span className="staff-signups-v2__reschedule-icon" title="Rescheduled — signups were reset">
+                          <span className="staff-signups-v2__reschedule-icon" title="Rescheduled - signups were reset">
                             <AlertTriangle size={12} />
                           </span>
                         )}

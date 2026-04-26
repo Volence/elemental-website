@@ -679,3 +679,126 @@ model ScrimPlayerPosition {
   @@index([mapDataId, match_time])
   @@index([mapDataId, player_name])
 }
+
+// ============================================================================
+// PUG (Pick-Up Game) System
+// ============================================================================
+
+enum PugTier {
+  open
+  invite
+
+  @@map("pug_tier")
+}
+
+enum PugLobbyStatus {
+  OPEN
+  READY
+  DRAFTING
+  MAP_VOTE
+  BANNING
+  IN_PROGRESS
+  REPORTING
+  COMPLETED
+  CANCELLED
+  DISPUTED
+
+  @@map("pug_lobby_status")
+}
+
+enum PugRole {
+  tank
+  flex_dps
+  hitscan_dps
+  flex_support
+  main_support
+
+  @@map("pug_role")
+}
+
+model PugLobby {
+  id                   Int            @id @default(autoincrement())
+  lobbyNumber          Int
+  tier                 PugTier
+  status               PugLobbyStatus @default(OPEN)
+  payloadSeasonId      Int?
+  scheduledWindowStart DateTime?
+  scheduledWindowEnd   DateTime?
+  timeoutAt            DateTime?
+  readyAt              DateTime?
+  reportingAt          DateTime?
+  createdByUserId      Int?
+  discordFeedMessageId String?
+  voiceChannel1Id      String?
+  voiceChannel2Id      String?
+  pendingResult        Json?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  players              PugLobbyPlayer[]
+  draftState           PugDraftState?
+  banState             PugBanState?
+  mapVote              PugMapVote?
+
+  @@map("pug_lobbies")
+  @@index([tier, status])
+  @@index([payloadSeasonId])
+}
+
+model PugLobbyPlayer {
+  id           Int       @id @default(autoincrement())
+  lobbyId      Int
+  userId       Int
+  queuedRoles  PugRole[]
+  assignedRole PugRole?
+  team         Int?
+  isCaptain    Boolean   @default(false)
+  joinedAt     DateTime  @default(now())
+  lobby        PugLobby  @relation(fields: [lobbyId], references: [id], onDelete: Cascade)
+
+  @@unique([lobbyId, userId])
+  @@map("pug_lobby_players")
+  @@index([lobbyId])
+  @@index([userId])
+}
+
+model PugDraftState {
+  id              Int       @id @default(autoincrement())
+  lobbyId         Int       @unique
+  captain1Id      Int
+  captain2Id      Int
+  captainRole     PugRole
+  currentPickTeam Int       @default(1)
+  pickNumber      Int       @default(0)
+  pickDeadline    DateTime?
+  picks           Json      @default("[]")
+  lobby           PugLobby  @relation(fields: [lobbyId], references: [id], onDelete: Cascade)
+  updatedAt       DateTime  @updatedAt
+
+  @@map("pug_draft_states")
+}
+
+model PugBanState {
+  id             Int       @id @default(autoincrement())
+  lobbyId        Int       @unique
+  currentBanTeam Int       @default(2)
+  banNumber      Int       @default(1)
+  banDeadline    DateTime?
+  bans           Json      @default("[]")
+  lobby          PugLobby  @relation(fields: [lobbyId], references: [id], onDelete: Cascade)
+  updatedAt      DateTime  @updatedAt
+
+  @@map("pug_ban_states")
+}
+
+model PugMapVote {
+  id            Int       @id @default(autoincrement())
+  lobbyId       Int       @unique
+  candidates    Int[]
+  votes         Json      @default("{}")
+  voteDeadline  DateTime
+  selectedMapId Int?
+  lobby         PugLobby  @relation(fields: [lobbyId], references: [id], onDelete: Cascade)
+  updatedAt     DateTime  @updatedAt
+
+  @@map("pug_map_votes")
+}

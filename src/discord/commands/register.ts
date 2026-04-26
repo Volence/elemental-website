@@ -155,6 +155,51 @@ export function buildCommands() {
             { name: 'This Week (from Monday)', value: 'thisweek' },
           ),
       ),
+
+    // PUG (Pick-Up Game) commands
+    new SlashCommandBuilder()
+      .setName('pug')
+      .setDescription('PUG (Pick-Up Game) commands')
+      .addSubcommand((sub) =>
+        sub.setName('queue').setDescription('Queue for an open-tier PUG lobby'),
+      )
+      .addSubcommand((sub) =>
+        sub.setName('leave').setDescription('Leave your current PUG lobby'),
+      )
+      .addSubcommand((sub) =>
+        sub.setName('status').setDescription('Show your current PUG queue or match status'),
+      )
+      .addSubcommand((sub) =>
+        sub
+          .setName('leaderboard')
+          .setDescription('Show the PUG leaderboard (top 10)')
+          .addStringOption((opt) =>
+            opt
+              .setName('tier')
+              .setDescription('Which tier to show (default: open)')
+              .setRequired(false)
+              .addChoices(
+                { name: 'Open', value: 'open' },
+                { name: 'Invite', value: 'invite' },
+              ),
+          ),
+      )
+      .addSubcommand((sub) =>
+        sub
+          .setName('report')
+          .setDescription('Report your match result (captains only)')
+          .addStringOption((opt) =>
+            opt
+              .setName('result')
+              .setDescription('Did your team win, lose, or draw?')
+              .setRequired(true)
+              .addChoices(
+                { name: 'Win', value: 'win' },
+                { name: 'Loss', value: 'loss' },
+                { name: 'Draw', value: 'draw' },
+              ),
+          ),
+      ),
   ].map((command) => command.toJSON())
 }
 

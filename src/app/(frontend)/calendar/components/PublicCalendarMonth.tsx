@@ -450,7 +450,7 @@ export function PublicCalendarMonth({ events }: PublicCalendarMonthProps) {
                       year: 'numeric'
                     })}
                     {selectedEvent.dateEnd && new Date(selectedEvent.dateEnd).getTime() !== new Date(selectedEvent.dateStart).getTime() && (
-                      <> — {new Date(selectedEvent.dateEnd).toLocaleDateString('en-US', { 
+                      <> - {new Date(selectedEvent.dateEnd).toLocaleDateString('en-US', { 
                         weekday: 'short', 
                         month: 'short', 
                         day: 'numeric',

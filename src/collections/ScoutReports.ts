@@ -345,7 +345,7 @@ export const ScoutReports: CollectionConfig = {
       name: 'overallNotes',
       type: 'richText',
       admin: {
-        description: 'Trends noticed across all maps — playstyle, tendencies, patterns',
+        description: 'Trends noticed across all maps - playstyle, tendencies, patterns',
       },
     },
     {

@@ -35,6 +35,10 @@ import { OpponentTeams } from './collections/OpponentTeams'
 import { ScoutReports } from './collections/ScoutReports'
 import { ScrimOutcomes } from './collections/ScrimOutcomes'
 import { Maps } from './collections/Maps'
+import { PugSeasons } from './collections/PugSeasons'
+import { PugPlayers } from './collections/PugPlayers'
+import { PugMatches } from './collections/PugMatches'
+import { PugLeaderboard } from './collections/PugLeaderboard'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { DataConsistency } from './globals/DataConsistency'
@@ -239,6 +243,10 @@ const config = buildConfig({
     Matches,
     TournamentTemplates,
     FaceitSeasons,
+    PugSeasons,
+    PugPlayers,
+    PugMatches,
+    PugLeaderboard,
     SocialPosts,
     Production,          // Production staff roster
     RecruitmentListings,
@@ -276,8 +284,8 @@ const config = buildConfig({
     
     // ── DEPARTMENTS: Multi-tab hub dashboards ──
     ProductionDashboard,    // Departments group
-    SocialMediaSettings,    // Departments group — Social Media Dashboard
-    CompetitiveHub,         // Departments group — Opponent Wiki + Scouting
+    SocialMediaSettings,    // Departments group - Social Media Dashboard
+    CompetitiveHub,         // Departments group - Opponent Wiki + Scouting
     DiscordServerManager,   // Departments group
     
     // Social Media Config (settings page, accessed standalone)
@@ -292,8 +300,8 @@ const config = buildConfig({
     EventsDashboard,
     
     // ── Hidden: Accessed via Competitive Hub tabs ──
-    OpponentWiki,           // Hidden — tab in Competitive Hub
-    ScoutingDashboard,      // Hidden — tab in Competitive Hub
+    OpponentWiki,           // Hidden - tab in Competitive Hub
+    ScoutingDashboard,      // Hidden - tab in Competitive Hub
 
     // ── SYSTEM & MONITORING (admin only) ──
     SystemHealth,           // Unified monitoring hub
@@ -350,11 +358,20 @@ const config = buildConfig({
           startTwitchLiveRoster() // Twitch live roster
           console.log('[Discord] ✅ Bot fully initialized')
         } else {
-          console.error('[Discord] ❌ Client was null — check env vars')
+          console.error('[Discord] ❌ Client was null - check env vars')
         }
       } catch (error) {
         console.error('[Discord] ❌ Failed to initialize bot:', error)
       }
+    }
+
+    // Recover PUG timers after server restart
+    try {
+      const { recoverTimers } = await import('./pug')
+      await recoverTimers()
+      payload.logger.info('[PUG] Timer recovery complete')
+    } catch (err) {
+      payload.logger.error({ err }, '[PUG] Timer recovery failed')
     }
   },
 })

@@ -180,7 +180,7 @@ function PersonSearch({ value, onChange, placeholder, onRequestCreate }: { value
     return () => clearTimeout(t)
   }, [search, doSearch])
 
-  // When a value is set, show just the name (no ✕ — parent handles removal)
+  // When a value is set, show just the name (no ✕ - parent handles removal)
   if (value && displayName) {
     return <span style={{ fontSize: 13, color: '#e2e8f0' }}>{displayName}</span>
   }
@@ -401,7 +401,7 @@ export default function TeamEditor() {
   const addAchievement = () => setAchievements(p => [...p, { achievement: '' }])
   const addBlock = () => setScheduleBlocks(p => [...p, { label: '', startTime: '', endTime: '' }])
 
-  // Reorder helper — swap item at index with adjacent
+  // Reorder helper - swap item at index with adjacent
   const move = <T,>(setter: React.Dispatch<React.SetStateAction<T[]>>, from: number, to: number) => {
     setter(prev => {
       if (to < 0 || to >= prev.length) return prev

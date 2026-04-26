@@ -5,7 +5,7 @@ import { useAllFormFields } from '@payloadcms/ui'
 import { ArrowUp, ArrowDown } from 'lucide-react'
 
 /**
- * Roster reorder controls — fixes Payload 3's array reorder bug.
+ * Roster reorder controls - fixes Payload 3's array reorder bug.
  *
  * Payload 3.73 has a bug where native array moveUp/moveDown only swaps
  * select field values but NOT relationship field values. This component
@@ -43,7 +43,7 @@ const RosterReorder: React.FC = () => {
       }
     }
 
-    // Check the initialValue too — relationship field value might be just the ID
+    // Check the initialValue too - relationship field value might be just the ID
     // but we can check if it was populated initially
     if (name.startsWith('#') && personField?.initialValue) {
       const init = personField.initialValue as any
@@ -53,7 +53,7 @@ const RosterReorder: React.FC = () => {
     }
 
     const role = (roleField?.value as string) || ''
-    const roleLabel = role === 'tank' ? 'Tank' : role === 'dps' ? 'DPS' : role === 'support' ? 'Support' : '—'
+    const roleLabel = role === 'tank' ? 'Tank' : role === 'dps' ? 'DPS' : role === 'support' ? 'Support' : '-'
 
     return { name, role, roleLabel }
   }, [fields])

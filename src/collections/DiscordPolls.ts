@@ -282,7 +282,7 @@ export const DiscordPolls: CollectionConfig = {
       ],
       admin: {
         position: 'sidebar',
-        hidden: true, // Legacy — replaced by scheduleType
+        hidden: true, // Legacy - replaced by scheduleType
       },
     },
     {
@@ -291,7 +291,7 @@ export const DiscordPolls: CollectionConfig = {
       relationTo: 'availability-calendars',
       admin: {
         position: 'sidebar',
-        hidden: true, // Legacy — calendar data now lives on this document
+        hidden: true, // Legacy - calendar data now lives on this document
       },
     },
     // Calendar-specific sidebar fields

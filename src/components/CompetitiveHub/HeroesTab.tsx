@@ -51,7 +51,7 @@ export function HeroesTab() {
             : heroes.map((h) => (
               <tr key={h.id} className="collection-list-tab__row">
                 <td className="collection-list-tab__title"><a href={`/admin/collections/heroes/${h.id}`}>{h.name || `Hero #${h.id}`}</a></td>
-                <td>{h.role || '—'}</td>
+                <td>{h.role || '-'}</td>
                 <td>{h.active !== false ? <CheckCircle2 size={16} className="collection-list-tab__icon--active" /> : <XCircle size={16} className="collection-list-tab__icon--inactive" />}</td>
                 <td><a href={`/admin/collections/heroes/${h.id}`} className="collection-list-tab__edit-link">Edit</a></td>
               </tr>

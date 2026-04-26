@@ -13,7 +13,7 @@ export default function ContentPreviewCell({ rowData }: ContentPreviewCellProps)
   const content = rowData?.content
 
   if (!content) {
-    return <span style={{ color: 'var(--theme-elevation-500)', fontSize: '0.85rem' }}>—</span>
+    return <span style={{ color: 'var(--theme-elevation-500)', fontSize: '0.85rem' }}>-</span>
   }
 
   const previewLength = 60

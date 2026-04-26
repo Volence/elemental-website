@@ -713,7 +713,7 @@ export const Teams: CollectionConfig = {
         readOnly: true,
       },
     },
-    // Discord provisioning fields — managed by Discord Server Manager provision endpoint
+    // Discord provisioning fields - managed by Discord Server Manager provision endpoint
     {
       name: 'discordTeamRoleId',
       type: 'text',

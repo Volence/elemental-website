@@ -260,8 +260,8 @@ export default function TeamCardsTab({ onAlert }: TeamCardsTabProps) {
                     <strong>{team.name}</strong>
                   </div>
                 </td>
-                <td>{team.region || '—'}</td>
-                <td>{team.division || '—'}</td>
+                <td>{team.region || '-'}</td>
+                <td>{team.division || '-'}</td>
                 <td>
                   {team.discordCardMessageId ? (
                     <span className="status-badge status-badge--success"><CheckCircle size={12} /> Posted</span>
@@ -275,7 +275,7 @@ export default function TeamCardsTab({ onAlert }: TeamCardsTabProps) {
                       {team.discordCardMessageId.slice(0, 8)}...
                     </code>
                   ) : (
-                    <span className="no-id">—</span>
+                    <span className="no-id">-</span>
                   )}
                 </td>
                 <td className="time-cell">

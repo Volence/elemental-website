@@ -10,6 +10,13 @@ import * as migration_20260302_073000_migrate_themecolor_to_branding from "./202
 import * as migration_20260322_add_new_regions from "./20260322_add_new_regions";
 import * as migration_20260323_add_reschedule_detection from "./20260323_add_reschedule_detection";
 import * as migration_20260411_add_reschedule_channels from "./20260411_add_reschedule_channels";
+import * as migration_20260425_add_pug_seasons from "./20260425_add_pug_seasons";
+import * as migration_20260425_add_pug_players from "./20260425_add_pug_players";
+import * as migration_20260425_add_pug_matches from "./20260425_add_pug_matches";
+import * as migration_20260425_add_pug_leaderboard from "./20260425_add_pug_leaderboard";
+import * as migration_20260426_move_pug_offense_count from "./20260426_move_pug_offense_count";
+import * as migration_20260426_add_pug_admin_to_users from "./20260426_add_pug_admin_to_users";
+import * as migration_20260426_fix_pug_players_join_table_ids from "./20260426_fix_pug_players_join_table_ids";
 
 export const migrations = [
   {
@@ -71,5 +78,40 @@ export const migrations = [
     up: migration_20260411_add_reschedule_channels.up,
     down: migration_20260411_add_reschedule_channels.down,
     name: "20260411_add_reschedule_channels",
+  },
+  {
+    up: migration_20260425_add_pug_seasons.up,
+    down: migration_20260425_add_pug_seasons.down,
+    name: "20260425_add_pug_seasons",
+  },
+  {
+    up: migration_20260425_add_pug_players.up,
+    down: migration_20260425_add_pug_players.down,
+    name: "20260425_add_pug_players",
+  },
+  {
+    up: migration_20260425_add_pug_matches.up,
+    down: migration_20260425_add_pug_matches.down,
+    name: "20260425_add_pug_matches",
+  },
+  {
+    up: migration_20260425_add_pug_leaderboard.up,
+    down: migration_20260425_add_pug_leaderboard.down,
+    name: "20260425_add_pug_leaderboard",
+  },
+  {
+    up: migration_20260426_move_pug_offense_count.up,
+    down: migration_20260426_move_pug_offense_count.down,
+    name: "20260426_move_pug_offense_count",
+  },
+  {
+    up: migration_20260426_add_pug_admin_to_users.up,
+    down: migration_20260426_add_pug_admin_to_users.down,
+    name: "20260426_add_pug_admin_to_users",
+  },
+  {
+    up: migration_20260426_fix_pug_players_join_table_ids.up,
+    down: migration_20260426_fix_pug_players_join_table_ids.down,
+    name: "20260426_fix_pug_players_join_table_ids",
   },
 ];
