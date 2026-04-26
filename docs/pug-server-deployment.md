@@ -72,16 +72,90 @@ ALTER TABLE pug_lobbies
 
 ## 4. Prisma Tables
 
-The following Prisma-managed tables must exist. They are created by Prisma schema push — run `npx prisma db push` (or apply via psql if that's not possible):
+The following Prisma-managed tables must exist. **Do NOT run `npx prisma db push` if Payload tables already exist** — it will try to drop them. Apply via psql instead:
 
-- `pug_lobbies`
-- `pug_lobby_players`
-- `pug_draft_states`
-- `pug_map_votes`
-- `pug_ban_states`
-- `pug_cooldown_bans`
+```sql
+-- Enums
+DO $$ BEGIN CREATE TYPE pug_tier AS ENUM ('open', 'invite'); EXCEPTION WHEN duplicate_object THEN null; END $$;
+DO $$ BEGIN CREATE TYPE pug_lobby_status AS ENUM ('OPEN','READY','DRAFTING','MAP_VOTE','BANNING','IN_PROGRESS','REPORTING','COMPLETED','CANCELLED','DISPUTED'); EXCEPTION WHEN duplicate_object THEN null; END $$;
+DO $$ BEGIN CREATE TYPE pug_role AS ENUM ('tank','flex_dps','hitscan_dps','flex_support','main_support'); EXCEPTION WHEN duplicate_object THEN null; END $$;
 
-> **Note**: These tables are separate from the Payload tables above. Prisma manages them independently.
+-- pug_lobbies (note: manually-added columns use snake_case to match Prisma @map annotations)
+CREATE TABLE IF NOT EXISTS pug_lobbies (
+  id                    serial PRIMARY KEY,
+  "lobbyNumber"         integer NOT NULL,
+  tier                  pug_tier NOT NULL,
+  status                pug_lobby_status NOT NULL DEFAULT 'OPEN',
+  "payloadSeasonId"     integer,
+  "scheduledWindowStart" timestamp(3),
+  "scheduledWindowEnd"  timestamp(3),
+  "timeoutAt"           timestamp(3),
+  ready_at              timestamptz,
+  reporting_at          timestamptz,
+  "createdByUserId"     integer,
+  "discordFeedMessageId" text,
+  voice_channel1_id     text,
+  voice_channel2_id     text,
+  pending_result        jsonb,
+  "createdAt"           timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt"           timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS pug_lobbies_tier_status_idx ON pug_lobbies (tier, status);
+CREATE INDEX IF NOT EXISTS "pug_lobbies_payloadSeasonId_idx" ON pug_lobbies ("payloadSeasonId");
+
+-- pug_lobby_players
+CREATE TABLE IF NOT EXISTS pug_lobby_players (
+  id            serial PRIMARY KEY,
+  "lobbyId"     integer NOT NULL REFERENCES pug_lobbies(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  "userId"      integer NOT NULL,
+  "queuedRoles" pug_role[] DEFAULT '{}',
+  "assignedRole" pug_role,
+  team          integer,
+  "isCaptain"   boolean NOT NULL DEFAULT false,
+  "joinedAt"    timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE ("lobbyId", "userId")
+);
+CREATE INDEX IF NOT EXISTS "pug_lobby_players_lobbyId_idx" ON pug_lobby_players ("lobbyId");
+CREATE INDEX IF NOT EXISTS "pug_lobby_players_userId_idx" ON pug_lobby_players ("userId");
+
+-- pug_draft_states
+CREATE TABLE IF NOT EXISTS pug_draft_states (
+  id               serial PRIMARY KEY,
+  "lobbyId"        integer NOT NULL UNIQUE REFERENCES pug_lobbies(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  "captain1Id"     integer NOT NULL,
+  "captain2Id"     integer NOT NULL,
+  "captainRole"    pug_role NOT NULL,
+  "currentPickTeam" integer NOT NULL DEFAULT 1,
+  "pickNumber"     integer NOT NULL DEFAULT 0,
+  "pickDeadline"   timestamp(3),
+  picks            jsonb NOT NULL DEFAULT '[]',
+  "updatedAt"      timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- pug_ban_states
+CREATE TABLE IF NOT EXISTS pug_ban_states (
+  id               serial PRIMARY KEY,
+  "lobbyId"        integer NOT NULL UNIQUE REFERENCES pug_lobbies(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  "currentBanTeam" integer NOT NULL DEFAULT 2,
+  "banNumber"      integer NOT NULL DEFAULT 1,
+  "banDeadline"    timestamp(3),
+  bans             jsonb NOT NULL DEFAULT '[]',
+  "updatedAt"      timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- pug_map_votes
+CREATE TABLE IF NOT EXISTS pug_map_votes (
+  id              serial PRIMARY KEY,
+  "lobbyId"       integer NOT NULL UNIQUE REFERENCES pug_lobbies(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  candidates      integer[] DEFAULT '{}',
+  votes           jsonb NOT NULL DEFAULT '{}',
+  "voteDeadline"  timestamp(3) NOT NULL,
+  "selectedMapId" integer,
+  "updatedAt"     timestamp(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+> **Note**: These tables are separate from the Payload tables above. Prisma manages them independently. The mixed camelCase/snake_case in `pug_lobbies` is intentional — the original columns were created by `prisma db push` (camelCase), and later columns were added manually (snake_case with `@map` in the schema).
 
 ---
 
