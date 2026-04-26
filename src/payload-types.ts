@@ -81,6 +81,10 @@ export interface Config {
     matches: Match;
     'tournament-templates': TournamentTemplate;
     'faceit-seasons': FaceitSeason;
+    'pug-seasons': PugSeason;
+    'pug-players': PugPlayer;
+    'pug-matches': PugMatch;
+    'pug-leaderboard': PugLeaderboard;
     'social-posts': SocialPost;
     production: Production;
     'recruitment-listings': RecruitmentListing;
@@ -132,6 +136,10 @@ export interface Config {
     matches: MatchesSelect<false> | MatchesSelect<true>;
     'tournament-templates': TournamentTemplatesSelect<false> | TournamentTemplatesSelect<true>;
     'faceit-seasons': FaceitSeasonsSelect<false> | FaceitSeasonsSelect<true>;
+    'pug-seasons': PugSeasonsSelect<false> | PugSeasonsSelect<true>;
+    'pug-players': PugPlayersSelect<false> | PugPlayersSelect<true>;
+    'pug-matches': PugMatchesSelect<false> | PugMatchesSelect<true>;
+    'pug-leaderboard': PugLeaderboardSelect<false> | PugLeaderboardSelect<true>;
     'social-posts': SocialPostsSelect<false> | SocialPostsSelect<true>;
     production: ProductionSelect<false> | ProductionSelect<true>;
     'recruitment-listings': RecruitmentListingsSelect<false> | RecruitmentListingsSelect<true>;
@@ -2321,6 +2329,184 @@ export interface AvailabilityCalendar {
   createdAt: string;
 }
 /**
+ * PUG seasons. Each tier (open/invite) has its own season with independent leaderboards.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pug-seasons".
+ */
+export interface PugSeason {
+  id: number;
+  name: string;
+  tier: 'open' | 'invite';
+  startDate?: string | null;
+  endDate?: string | null;
+  /**
+   * Only one active season per tier should exist at a time.
+   */
+  active?: boolean | null;
+  /**
+   * Prize pool description (invite tier only, e.g., "$100 gift card for 1st place")
+   */
+  prizePool?: string | null;
+  /**
+   * Time windows when queuing is available (invite tier only). Outside these windows, the queue is closed.
+   */
+  timeWindows?:
+    | {
+        dayOfWeek: '1' | '2' | '3' | '4' | '5' | '6' | '0';
+        startTime: string;
+        endTime: string;
+        timezone?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Players registered for PUGs. A player can be registered for both tiers simultaneously.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pug-players".
+ */
+export interface PugPlayer {
+  id: number;
+  /**
+   * The website user account for this PUG player.
+   */
+  user: number | User;
+  /**
+   * Which PUG tiers this player is registered for.
+   */
+  tiers: ('open' | 'invite')[];
+  /**
+   * Roles approved for invite-tier queuing. Open-tier players can queue for any role regardless of this field.
+   */
+  approvedRoles?: ('tank' | 'flex-dps' | 'hitscan-dps' | 'flex-support' | 'main-support')[] | null;
+  /**
+   * Auto-set on registration.
+   */
+  registeredDate?: string | null;
+  /**
+   * The admin who invited this player to the invite tier.
+   */
+  invitedBy?: (number | null) | User;
+  /**
+   * Current active cooldown ban, if any.
+   */
+  activeBan?: {
+    /**
+     * Ban expires at this time. Leave empty if not banned.
+     */
+    bannedUntil?: string | null;
+    /**
+     * Reason for the ban (leaving during draft, repeated queues without joining, etc.).
+     */
+    reason?: string | null;
+    /**
+     * Total offense count for escalation purposes. Never decrements.
+     */
+    offenseCount?: number | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Completed PUG matches. Created by the engine when a lobby reaches COMPLETED state.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pug-matches".
+ */
+export interface PugMatch {
+  id: number;
+  /**
+   * Display ID (e.g., "PUG #42").
+   */
+  lobbyNumber: number;
+  tier: 'open' | 'invite';
+  result?: ('team1' | 'team2' | 'draw' | 'cancelled') | null;
+  date?: string | null;
+  /**
+   * Season this match belongs to.
+   */
+  season?: (number | null) | PugSeason;
+  /**
+   * ID of the corresponding PugLobby record in Prisma (for cross-reference).
+   */
+  prismaLobbyId?: number | null;
+  team1Players?:
+    | {
+        player: number | PugPlayer;
+        assignedRole: 'tank' | 'flex-dps' | 'hitscan-dps' | 'flex-support' | 'main-support';
+        isCaptain?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  team2Players?:
+    | {
+        player: number | PugPlayer;
+        assignedRole: 'tank' | 'flex-dps' | 'hitscan-dps' | 'flex-support' | 'main-support';
+        isCaptain?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  heroBans?:
+    | {
+        hero: number | Hero;
+        /**
+         * 1 or 2
+         */
+        team: number;
+        banOrder: number;
+        id?: string | null;
+      }[]
+    | null;
+  mapPlayed?: (number | null) | Map;
+  reportedBy?: (number | null) | User;
+  confirmedBy?: (number | null) | User;
+  disputed?: boolean | null;
+  disputeResolution?: {
+    resolvedBy?: (number | null) | User;
+    resolution?: string | null;
+    notes?: string | null;
+  };
+  /**
+   * Ordered array of {playerId, team, pickNumber} for historical record.
+   */
+  draftOrder?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Per-player Glicko-2 rating and stats per season per tier. Created by the engine when a player first plays in a season; updated after each completed match.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pug-leaderboard".
+ */
+export interface PugLeaderboard {
+  id: number;
+  player: number | PugPlayer;
+  season: number | PugSeason;
+  tier: 'open' | 'invite';
+  rating?: number | null;
+  ratingDeviation?: number | null;
+  volatility?: number | null;
+  wins?: number | null;
+  losses?: number | null;
+  draws?: number | null;
+  gamesPlayed?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Manage production staff (casters, observers, producers) who work on match broadcasts.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3049,6 +3235,22 @@ export interface PayloadLockedDocument {
         value: number | FaceitSeason;
       } | null)
     | ({
+        relationTo: 'pug-seasons';
+        value: number | PugSeason;
+      } | null)
+    | ({
+        relationTo: 'pug-players';
+        value: number | PugPlayer;
+      } | null)
+    | ({
+        relationTo: 'pug-matches';
+        value: number | PugMatch;
+      } | null)
+    | ({
+        relationTo: 'pug-leaderboard';
+        value: number | PugLeaderboard;
+      } | null)
+    | ({
         relationTo: 'social-posts';
         value: number | SocialPost;
       } | null)
@@ -3762,6 +3964,117 @@ export interface FaceitSeasonsSelect<T extends boolean = true> {
         id?: T;
       };
   hideHistoricalData?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pug-seasons_select".
+ */
+export interface PugSeasonsSelect<T extends boolean = true> {
+  name?: T;
+  tier?: T;
+  startDate?: T;
+  endDate?: T;
+  active?: T;
+  prizePool?: T;
+  timeWindows?:
+    | T
+    | {
+        dayOfWeek?: T;
+        startTime?: T;
+        endTime?: T;
+        timezone?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pug-players_select".
+ */
+export interface PugPlayersSelect<T extends boolean = true> {
+  user?: T;
+  tiers?: T;
+  approvedRoles?: T;
+  registeredDate?: T;
+  invitedBy?: T;
+  activeBan?:
+    | T
+    | {
+        bannedUntil?: T;
+        reason?: T;
+        offenseCount?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pug-matches_select".
+ */
+export interface PugMatchesSelect<T extends boolean = true> {
+  lobbyNumber?: T;
+  tier?: T;
+  result?: T;
+  date?: T;
+  season?: T;
+  prismaLobbyId?: T;
+  team1Players?:
+    | T
+    | {
+        player?: T;
+        assignedRole?: T;
+        isCaptain?: T;
+        id?: T;
+      };
+  team2Players?:
+    | T
+    | {
+        player?: T;
+        assignedRole?: T;
+        isCaptain?: T;
+        id?: T;
+      };
+  heroBans?:
+    | T
+    | {
+        hero?: T;
+        team?: T;
+        banOrder?: T;
+        id?: T;
+      };
+  mapPlayed?: T;
+  reportedBy?: T;
+  confirmedBy?: T;
+  disputed?: T;
+  disputeResolution?:
+    | T
+    | {
+        resolvedBy?: T;
+        resolution?: T;
+        notes?: T;
+      };
+  draftOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "pug-leaderboard_select".
+ */
+export interface PugLeaderboardSelect<T extends boolean = true> {
+  player?: T;
+  season?: T;
+  tier?: T;
+  rating?: T;
+  ratingDeviation?: T;
+  volatility?: T;
+  wins?: T;
+  losses?: T;
+  draws?: T;
+  gamesPlayed?: T;
   updatedAt?: T;
   createdAt?: T;
 }
