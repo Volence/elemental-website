@@ -36,6 +36,7 @@ import { ScoutReports } from './collections/ScoutReports'
 import { ScrimOutcomes } from './collections/ScrimOutcomes'
 import { Maps } from './collections/Maps'
 import { PugSeasons } from './collections/PugSeasons'
+import { PugPlayers } from './collections/PugPlayers'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { DataConsistency } from './globals/DataConsistency'
@@ -241,6 +242,7 @@ const config = buildConfig({
     TournamentTemplates,
     FaceitSeasons,
     PugSeasons,
+    PugPlayers,
     SocialPosts,
     Production,          // Production staff roster
     RecruitmentListings,

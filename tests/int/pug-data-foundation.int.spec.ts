@@ -90,4 +90,9 @@ describe('PUG Payload API routes', () => {
     // Payload 3.x returns 403 for access-denied (unauthenticated read on authenticated-only collection)
     expect([401, 403]).toContain(res.status)
   })
+
+  it('GET /api/pug-players returns 401 without auth', async () => {
+    const res = await fetch('http://localhost:3000/api/pug-players')
+    expect([401, 403]).toContain(res.status)
+  })
 })
