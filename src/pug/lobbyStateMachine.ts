@@ -10,14 +10,15 @@ import { calculateRatingUpdates } from './mmr'
 import { applyEscalatingBan } from './cooldownBans'
 import { registerTimer, cancelTimer, timerKey } from './timers'
 import type { QueuedPlayer, PlayerRating, MatchResult } from './types'
-
-const READY_COUNTDOWN_MS = 30_000
-const DRAFT_PICK_TIMEOUT_MS = 60_000
-const MAP_VOTE_TIMEOUT_MS = 120_000
-const BAN_TIMEOUT_MS = 60_000
-const RESULT_CONFIRM_TIMEOUT_MS = 600_000
-const VOICE_CLEANUP_TIMEOUT_MS = 7_200_000
-const INVITE_TIER_LATE_CANCEL_MS = 900_000
+import {
+  READY_COUNTDOWN_MS,
+  DRAFT_PICK_TIMEOUT_MS,
+  MAP_VOTE_TIMEOUT_MS,
+  BAN_TIMEOUT_MS,
+  RESULT_CONFIRM_TIMEOUT_MS,
+  VOICE_CLEANUP_TIMEOUT_MS,
+  INVITE_TIER_LATE_CANCEL_MS,
+} from './constants'
 
 export async function createOpenLobby(createdByUserId: number, payloadSeasonId: number) {
   const lastLobby = await prisma.pugLobby.findFirst({
@@ -352,6 +353,7 @@ export async function finalizeBan(lobbyId: number): Promise<void> {
     return
   }
 
+  // Team forfeited their ban — advance without recording; bans array stays shorter than banNumber
   const newDeadline = new Date(Date.now() + BAN_TIMEOUT_MS)
   await prisma.pugBanState.update({
     where: { lobbyId },
@@ -380,7 +382,7 @@ export async function reportResult(
     where: { id: lobbyId },
     data: {
       status: 'REPORTING',
-      discordFeedMessageId: JSON.stringify({ result, reportedBy: captainUserId }),
+      pendingResult: { result, reportedBy: captainUserId },
     },
   })
 
@@ -394,7 +396,7 @@ export async function confirmResult(lobbyId: number, captainUserId: number): Pro
   if (lobby.status !== 'REPORTING') throw new Error('No pending result')
   cancelTimer(timerKey(lobbyId, 'confirm'))
 
-  const pending = JSON.parse(lobby.discordFeedMessageId ?? '{}')
+  const pending = (lobby.pendingResult ?? {}) as { result: MatchResult }
   await completeMatch(lobbyId, pending.result)
 }
 
@@ -406,7 +408,7 @@ export async function disputeResult(lobbyId: number, captainUserId: number): Pro
 export async function autoConfirmResult(lobbyId: number): Promise<void> {
   const lobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId } })
   if (!lobby || lobby.status !== 'REPORTING') return
-  const pending = JSON.parse(lobby.discordFeedMessageId ?? '{}')
+  const pending = (lobby.pendingResult ?? {}) as { result: MatchResult }
   await completeMatch(lobbyId, pending.result)
 }
 

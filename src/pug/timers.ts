@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma'
+import { READY_COUNTDOWN_MS, RESULT_CONFIRM_TIMEOUT_MS } from './constants'
 
 type TimerCallback = () => Promise<void>
 
@@ -80,7 +81,6 @@ export async function recoverTimers(): Promise<void> {
     }
 
     if (lobby.status === 'READY') {
-      const READY_COUNTDOWN_MS = 30_000
       const readyDelay = lobby.updatedAt.getTime() + READY_COUNTDOWN_MS - now
       if (readyDelay > 0) {
         registerTimer(timerKey(lobby.id, 'ready'), readyDelay, () => advanceToDrafting(lobby.id))
@@ -90,7 +90,6 @@ export async function recoverTimers(): Promise<void> {
     }
 
     if (lobby.status === 'REPORTING') {
-      const RESULT_CONFIRM_TIMEOUT_MS = 600_000
       const confirmDelay = lobby.updatedAt.getTime() + RESULT_CONFIRM_TIMEOUT_MS - now
       if (confirmDelay > 0) {
         registerTimer(timerKey(lobby.id, 'confirm'), confirmDelay, () => autoConfirmResult(lobby.id))
