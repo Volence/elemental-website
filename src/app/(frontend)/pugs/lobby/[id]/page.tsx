@@ -63,7 +63,7 @@ export default function LobbyPage() {
   const { lobby, selectedMap, mapCandidates } = data
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-2xl">
+    <main className="container mx-auto px-4 py-8 max-w-2xl min-h-screen">
       <h1 className="text-2xl font-bold mb-2">PUG #{lobby.lobbyNumber}</h1>
       <p className="text-sm text-gray-500 mb-6">
         {lobby.tier === 'invite' ? 'Invite Tier' : 'Open Tier'} · {lobby.status}

@@ -36,7 +36,7 @@ export default async function PugsPage() {
   const inviteSeason = inviteSeasons.docs[0] as any
 
   return (
-    <main className="container mx-auto px-4 py-8">
+    <main className="container mx-auto px-4 py-8 min-h-screen">
       <h1 className="text-3xl font-bold mb-2">PUGs</h1>
       <p className="text-gray-600 mb-8">
         Pick-Up Games — 5v5 Overwatch with draft, map voting, hero bans, and MMR tracking.

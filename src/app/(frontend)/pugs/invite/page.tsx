@@ -44,7 +44,7 @@ export default async function PugInvitePage() {
   const queueActive = season ? isWithinWindow(season.timeWindows ?? []) : false
 
   return (
-    <main className="container mx-auto px-4 py-8">
+    <main className="container mx-auto px-4 py-8 min-h-screen">
       <h1 className="text-2xl font-bold mb-2">Invite Tier PUGs</h1>
 
       {!season ? (
