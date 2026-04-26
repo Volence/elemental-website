@@ -86,13 +86,16 @@ export const PugPlayers: CollectionConfig = {
           type: 'text',
           admin: { description: 'Reason for the ban (leaving during draft, repeated queues without joining, etc.).' },
         },
-        {
-          name: 'offenseCount',
-          type: 'number',
-          defaultValue: 0,
-          admin: { description: 'Total offense count for escalation purposes. Never decrements.' },
-        },
       ],
+    },
+    {
+      name: 'banOffenseCount',
+      type: 'number',
+      defaultValue: 0,
+      admin: {
+        readOnly: true,
+        description: 'Cumulative ban offense count. Escalates ban duration. Never resets — survives ban expiry.',
+      },
     },
   ],
   timestamps: true,

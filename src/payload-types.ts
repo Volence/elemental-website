@@ -2403,11 +2403,11 @@ export interface PugPlayer {
      * Reason for the ban (leaving during draft, repeated queues without joining, etc.).
      */
     reason?: string | null;
-    /**
-     * Total offense count for escalation purposes. Never decrements.
-     */
-    offenseCount?: number | null;
   };
+  /**
+   * Cumulative ban offense count. Escalates ban duration. Never resets — survives ban expiry.
+   */
+  banOffenseCount?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -4005,8 +4005,8 @@ export interface PugPlayersSelect<T extends boolean = true> {
     | {
         bannedUntil?: T;
         reason?: T;
-        offenseCount?: T;
       };
+  banOffenseCount?: T;
   updatedAt?: T;
   createdAt?: T;
 }

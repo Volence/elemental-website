@@ -31,7 +31,7 @@ export async function applyEscalatingBan(
     overrideAccess: true,
   })
 
-  const newOffenseCount = (player.activeBan?.offenseCount ?? 0) + 1
+  const newOffenseCount = ((player.banOffenseCount as number | null | undefined) ?? 0) + 1
   const durationHours =
     BAN_DURATIONS_HOURS[Math.min(newOffenseCount - 1, BAN_DURATIONS_HOURS.length - 1)]
 
@@ -41,10 +41,10 @@ export async function applyEscalatingBan(
     collection: 'pug-players',
     id: payloadPlayerId,
     data: {
+      banOffenseCount: newOffenseCount,
       activeBan: {
         bannedUntil: bannedUntil.toISOString(),
         reason,
-        offenseCount: newOffenseCount,
       },
     },
     overrideAccess: true,
