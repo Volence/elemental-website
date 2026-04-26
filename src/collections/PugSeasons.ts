@@ -13,9 +13,9 @@ export const PugSeasons: CollectionConfig = {
   },
   access: {
     read: authenticated,
-    create: ({ req }) => isPugAdmin({ req } as any),
-    update: ({ req }) => isPugAdmin({ req } as any),
-    delete: ({ req }) => isPugAdmin({ req } as any),
+    create: isPugAdmin,
+    update: isPugAdmin,
+    delete: isPugAdmin,
   },
   fields: [
     {
