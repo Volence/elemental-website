@@ -23,6 +23,7 @@ import { default as default_0bef48e2ba46070d0450e759ffa990b3 } from '@/component
 import { default as default_de3249083376ab0290efd4284159f820 } from '@/collections/Teams/BrandingColorField'
 import { default as default_befd121dc2c708f29d17ef6cf6b47565 } from '@/components/TeamTabCounts/StaffCount'
 import { default as default_f6633e5ce5f4aebde4e8dd97802e545a } from '@/components/TeamTabCounts/RosterCount'
+import { default as default_06c883a0cd79fe076bd4e061efd74ab6 } from '@/components/RosterField'
 import { TeamUrlHelper as TeamUrlHelper_d3aadc8f7d1aa70ce78ff0cfa164a82b } from '@/components/FaceitUrlHelper'
 import { default as default_6d9e1ded9f80f1d962812e7bd12ae28d } from '@/components/FaceitSyncButton'
 import { default as default_6bf23cb42f8cd662b9483def3bfe5de8 } from '@/components/TeamLogoPreview'
@@ -162,6 +163,7 @@ export const importMap = {
   "@/collections/Teams/BrandingColorField#default": default_de3249083376ab0290efd4284159f820,
   "@/components/TeamTabCounts/StaffCount#default": default_befd121dc2c708f29d17ef6cf6b47565,
   "@/components/TeamTabCounts/RosterCount#default": default_f6633e5ce5f4aebde4e8dd97802e545a,
+  "@/components/RosterField#default": default_06c883a0cd79fe076bd4e061efd74ab6,
   "@/components/FaceitUrlHelper#TeamUrlHelper": TeamUrlHelper_d3aadc8f7d1aa70ce78ff0cfa164a82b,
   "@/components/FaceitSyncButton#default": default_6d9e1ded9f80f1d962812e7bd12ae28d,
   "@/components/TeamLogoPreview#default": default_6bf23cb42f8cd662b9483def3bfe5de8,

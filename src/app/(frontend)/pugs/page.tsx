@@ -3,12 +3,23 @@ import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { cookies } from 'next/headers'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'PUGs | Elemental' }
 
 export default async function PugsPage() {
   const payload = await getPayload({ config: configPromise })
+
+  const cookieStore = await cookies()
+  const token = cookieStore.get('payload-token')?.value
+  let currentUser: any = null
+  if (token) {
+    try {
+      const { user } = await payload.auth({ headers: new Headers({ Authorization: `JWT ${token}` }) })
+      currentUser = user
+    } catch {}
+  }
 
   const openSeasons = await payload.find({
     collection: 'pug-seasons',
@@ -38,9 +49,25 @@ export default async function PugsPage() {
   return (
     <main className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-2">PUGs</h1>
-      <p className="text-gray-600 mb-8">
+      <p className="text-gray-600 mb-3">
         Pick-Up Games — 5v5 Overwatch with draft, map voting, hero bans, and MMR tracking.
       </p>
+
+      {currentUser ? (
+        <p className="text-sm text-gray-400 mb-8">
+          Signed in as{' '}
+          <Link href="/pugs/register" className="text-white hover:underline font-medium">
+            {currentUser.name || currentUser.email}
+          </Link>
+        </p>
+      ) : (
+        <p className="text-sm text-gray-500 mb-8">
+          <Link href="/pugs/register" className="text-blue-400 hover:underline">
+            Sign in with Discord
+          </Link>{' '}
+          to register for Open Tier
+        </p>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="border rounded-lg p-6">

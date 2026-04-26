@@ -42,7 +42,41 @@ export async function GET(request: NextRequest, { params }: Params) {
       )
     }
 
-    return NextResponse.json({ lobby, selectedMap, mapCandidates })
+    // Enrich players with names
+    const userIds = lobby.players.map((p) => p.userId)
+    const users = await payload.find({
+      collection: 'users',
+      where: { id: { in: userIds } },
+      limit: 20,
+      overrideAccess: true,
+    })
+    const nameMap: Record<number, string> = {}
+    for (const u of users.docs as any[]) nameMap[u.id] = u.name || u.email
+
+    const enrichedPlayers = lobby.players.map((p) => ({
+      ...p,
+      name: nameMap[p.userId] ?? `Player #${p.userId}`,
+    }))
+
+    // Fetch heroes for ban phase
+    let heroes: Array<{ id: number; name: string; role: string }> = []
+    if (lobby.status === 'BANNING') {
+      const heroResult = await payload.find({
+        collection: 'heroes',
+        where: { active: { equals: true } },
+        limit: 100,
+        overrideAccess: true,
+      })
+      heroes = (heroResult.docs as any[]).map((h) => ({ id: h.id, name: h.name, role: h.role }))
+    }
+
+    return NextResponse.json({
+      lobby: { ...lobby, players: enrichedPlayers },
+      selectedMap,
+      mapCandidates,
+      heroes,
+      currentUserId: user.id,
+    })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }

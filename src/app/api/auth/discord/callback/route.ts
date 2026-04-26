@@ -151,18 +151,37 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       })
 
       if (existingWithDiscord.docs.length > 0) {
-        console.warn(`[Discord OAuth] Discord ID ${discordUser.id} already linked to user ${existingWithDiscord.docs[0].id}`)
-        return NextResponse.redirect(
-          new URL('/admin/login?error=discord_already_linked', serverUrl),
-        )
+        const conflictUser = existingWithDiscord.docs[0] as any
+        if (conflictUser.email?.endsWith('@elmt.placeholder')) {
+          // Auto-created placeholder account — safe to transfer Discord ID to the real account
+          await payload.db.updateOne({
+            id: conflictUser.id,
+            collection: 'users',
+            data: { discordId: null },
+            req: { payload } as any,
+            returning: false,
+          })
+          console.log(`[Discord OAuth] Transferred Discord ID from placeholder account ${conflictUser.id} to ${currentUser.id}`)
+        } else {
+          // Discord ID is on a real account — can't transfer automatically
+          console.warn(`[Discord OAuth] Discord ID ${discordUser.id} already linked to real account ${conflictUser.id}`)
+          const errorUrl = new URL(
+            state.returnUrl || `/admin/collections/users/${currentUser.id}`,
+            serverUrl,
+          )
+          errorUrl.searchParams.set('error', 'discord_already_linked')
+          return NextResponse.redirect(errorUrl)
+        }
       }
 
-      // Update user with Discord ID
-      await payload.update({
-        collection: 'users',
+      // Update user with Discord ID — use db.updateOne to bypass field-level access controls
+      // (payload.update with overrideAccess doesn't reliably bypass field-level update access in Payload 3)
+      await payload.db.updateOne({
         id: currentUser.id,
+        collection: 'users',
         data: { discordId: discordUser.id },
-        overrideAccess: true,
+        req: { payload } as any,
+        returning: false,
       })
       console.log(`[Discord OAuth] Successfully linked Discord ${discordUser.id} to user ${currentUser.id}`)
 
@@ -181,6 +200,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         } catch (e) {
           console.warn('[Discord OAuth] Could not update person discordId:', e)
         }
+      }
+
+      // If also a PUG signup request, register for open tier now that Discord is linked
+      if (state.pugSignup) {
+        await ensureOpenPugRegistration(payload, currentUser.id)
+        console.log(`[Discord OAuth] Registered user ${currentUser.id} for open PUGs`)
       }
 
       const returnUrl = state.returnUrl || `/admin/collections/users/${currentUser.id}`
