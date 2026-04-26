@@ -83,3 +83,11 @@ describe('PUG Prisma models', () => {
     expect(mapVote.candidates).toEqual([1, 2, 3])
   })
 })
+
+describe('PUG Payload API routes', () => {
+  it('GET /api/pug-seasons returns 401 without auth', async () => {
+    const res = await fetch('http://localhost:3000/api/pug-seasons')
+    // Payload 3.x returns 403 for access-denied (unauthenticated read on authenticated-only collection)
+    expect([401, 403]).toContain(res.status)
+  })
+})
