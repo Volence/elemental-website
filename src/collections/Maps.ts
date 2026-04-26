@@ -83,5 +83,14 @@ export const Maps: CollectionConfig = {
         },
       ],
     },
+    {
+      name: 'pugEligible',
+      type: 'checkbox',
+      label: 'PUG Eligible',
+      defaultValue: true,
+      admin: {
+        description: 'Include this map in the PUG map pool. Applies to both tiers unless configured otherwise per season.',
+      },
+    },
   ],
 }

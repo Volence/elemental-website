@@ -1830,6 +1830,10 @@ export interface Map {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Include this map in the PUG map pool. Applies to both tiers unless configured otherwise per season.
+   */
+  pugEligible?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3485,6 +3489,7 @@ export interface MapsSelect<T extends boolean = true> {
         name?: T;
         id?: T;
       };
+  pugEligible?: T;
   updatedAt?: T;
   createdAt?: T;
 }
