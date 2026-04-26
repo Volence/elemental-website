@@ -38,6 +38,7 @@ import { Maps } from './collections/Maps'
 import { PugSeasons } from './collections/PugSeasons'
 import { PugPlayers } from './collections/PugPlayers'
 import { PugMatches } from './collections/PugMatches'
+import { PugLeaderboard } from './collections/PugLeaderboard'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { DataConsistency } from './globals/DataConsistency'
@@ -245,6 +246,7 @@ const config = buildConfig({
     PugSeasons,
     PugPlayers,
     PugMatches,
+    PugLeaderboard,
     SocialPosts,
     Production,          // Production staff roster
     RecruitmentListings,

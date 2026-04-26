@@ -100,4 +100,9 @@ describe('PUG Payload API routes', () => {
     const res = await fetch('http://localhost:3000/api/pug-matches')
     expect([401, 403]).toContain(res.status)
   })
+
+  it('GET /api/pug-leaderboard returns 401 without auth', async () => {
+    const res = await fetch('http://localhost:3000/api/pug-leaderboard')
+    expect([401, 403]).toContain(res.status)
+  })
 })

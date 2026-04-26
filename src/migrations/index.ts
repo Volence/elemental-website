@@ -13,6 +13,7 @@ import * as migration_20260411_add_reschedule_channels from "./20260411_add_resc
 import * as migration_20260425_add_pug_seasons from "./20260425_add_pug_seasons";
 import * as migration_20260425_add_pug_players from "./20260425_add_pug_players";
 import * as migration_20260425_add_pug_matches from "./20260425_add_pug_matches";
+import * as migration_20260425_add_pug_leaderboard from "./20260425_add_pug_leaderboard";
 
 export const migrations = [
   {
@@ -89,5 +90,10 @@ export const migrations = [
     up: migration_20260425_add_pug_matches.up,
     down: migration_20260425_add_pug_matches.down,
     name: "20260425_add_pug_matches",
+  },
+  {
+    up: migration_20260425_add_pug_leaderboard.up,
+    down: migration_20260425_add_pug_leaderboard.down,
+    name: "20260425_add_pug_leaderboard",
   },
 ];
