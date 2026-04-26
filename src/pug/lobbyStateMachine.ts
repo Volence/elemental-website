@@ -271,6 +271,10 @@ async function advanceToMapVote(lobbyId: number): Promise<void> {
 }
 
 export async function castMapVote(lobbyId: number, userId: number, mapId: number): Promise<void> {
+  const lobby = await prisma.pugLobby.findUniqueOrThrow({ where: { id: lobbyId } })
+  if (lobby.status !== 'MAP_VOTE') throw new Error('Lobby is not in map vote phase')
+  const player = await prisma.pugLobbyPlayer.findUnique({ where: { lobbyId_userId: { lobbyId, userId } } })
+  if (!player) throw new Error('User is not a player in this lobby')
   const mapVote = await prisma.pugMapVote.findUniqueOrThrow({ where: { lobbyId } })
   if (!mapVote.candidates.includes(mapId)) throw new Error('Map not in candidates')
   const votes = mapVote.votes as Record<string, number>
@@ -394,9 +398,13 @@ export async function reportResult(
 export async function confirmResult(lobbyId: number, captainUserId: number): Promise<void> {
   const lobby = await prisma.pugLobby.findUniqueOrThrow({ where: { id: lobbyId } })
   if (lobby.status !== 'REPORTING') throw new Error('No pending result')
-  cancelTimer(timerKey(lobbyId, 'confirm'))
 
-  const pending = (lobby.pendingResult ?? {}) as { result: MatchResult }
+  const pending = (lobby.pendingResult ?? {}) as { result: MatchResult; reportedBy: number }
+  if (pending.reportedBy === captainUserId) {
+    throw new Error('The reporting captain cannot confirm their own result — the opposing captain must confirm')
+  }
+
+  cancelTimer(timerKey(lobbyId, 'confirm'))
   await completeMatch(lobbyId, pending.result)
 }
 
