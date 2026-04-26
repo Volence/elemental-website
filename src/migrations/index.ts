@@ -15,6 +15,7 @@ import * as migration_20260425_add_pug_players from "./20260425_add_pug_players"
 import * as migration_20260425_add_pug_matches from "./20260425_add_pug_matches";
 import * as migration_20260425_add_pug_leaderboard from "./20260425_add_pug_leaderboard";
 import * as migration_20260426_move_pug_offense_count from "./20260426_move_pug_offense_count";
+import * as migration_20260426_add_pug_admin_to_users from "./20260426_add_pug_admin_to_users";
 
 export const migrations = [
   {
@@ -101,5 +102,10 @@ export const migrations = [
     up: migration_20260426_move_pug_offense_count.up,
     down: migration_20260426_move_pug_offense_count.down,
     name: "20260426_move_pug_offense_count",
+  },
+  {
+    up: migration_20260426_add_pug_admin_to_users.up,
+    down: migration_20260426_add_pug_admin_to_users.down,
+    name: "20260426_add_pug_admin_to_users",
   },
 ];
