@@ -364,6 +364,15 @@ const config = buildConfig({
         console.error('[Discord] ❌ Failed to initialize bot:', error)
       }
     }
+
+    // Recover PUG timers after server restart
+    try {
+      const { recoverTimers } = await import('./pug')
+      await recoverTimers()
+      payload.logger.info('[PUG] Timer recovery complete')
+    } catch (err) {
+      payload.logger.error('[PUG] Timer recovery failed:', err)
+    }
   },
 })
 
