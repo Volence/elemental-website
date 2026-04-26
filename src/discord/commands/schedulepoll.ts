@@ -57,7 +57,7 @@ function calculateStartDate(mode: string): Date {
   }
 
   if (mode === 'thisweek') {
-    // Start from this Monday — even if it's already past
+    // Start from this Monday - even if it's already past
     const thisMonday = new Date(today.getTime())
     const day = thisMonday.getDay()
     // Go back to Monday: Sunday(0) → -6, Mon(1) → 0, Tue(2) → -1, etc.

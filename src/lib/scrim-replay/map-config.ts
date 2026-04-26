@@ -271,7 +271,7 @@ export const MAP_CONFIGS: Record<string, MapConfig> = {
   'Antarctic Peninsula': {
     type: 'Control',
     primary: null,
-    // No calibration data available yet — sub-map images pending
+    // No calibration data available yet - sub-map images pending
     subMaps: [],
   },
   'Busan': {

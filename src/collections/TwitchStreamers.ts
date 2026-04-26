@@ -42,7 +42,7 @@ export const TwitchStreamers: CollectionConfig = {
     defaultColumns: ['twitchUsername', 'displayName', 'category', 'isLive', 'currentGame', 'active'],
   },
   access: {
-    read: () => true, // Public — powers the /live page
+    read: () => true, // Public - powers the /live page
     create: ({ req: { user } }) => ['admin', 'staff-manager', 'team-manager'].includes((user as any)?.role),
     update: ({ req: { user } }) => ['admin', 'staff-manager', 'team-manager'].includes((user as any)?.role),
     delete: ({ req: { user } }) => ['admin', 'staff-manager', 'team-manager'].includes((user as any)?.role),
@@ -106,7 +106,7 @@ export const TwitchStreamers: CollectionConfig = {
       type: 'relationship',
       relationTo: 'people',
       admin: {
-        description: 'Optional — link to a Person record to auto-pull team name in the embed',
+        description: 'Optional - link to a Person record to auto-pull team name in the embed',
       },
     },
     {

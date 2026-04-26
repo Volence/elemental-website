@@ -722,7 +722,7 @@ export default function ReplayTab({ mapId }: { mapId: string }) {
       )
       ctx.globalAlpha = 1
 
-      // Very subtle vignette — just softens the edges
+      // Very subtle vignette - just softens the edges
       const vignette = ctx.createRadialGradient(w / 2, h / 2, w * 0.3, w / 2, h / 2, w * 0.75)
       vignette.addColorStop(0, 'rgba(0, 0, 0, 0)')
       vignette.addColorStop(1, 'rgba(0, 0, 0, 0.15)')
@@ -959,7 +959,7 @@ export default function ReplayTab({ mapId }: { mapId: string }) {
       }
       for (const [name, st] of ultState) {
         if (currentTime >= st.startTime && currentTime < st.endTime) {
-          // Skip Ana — her ult effect is shown on the nano target instead
+          // Skip Ana - her ult effect is shown on the nano target instead
           if (st.hero !== 'Ana') {
             activeUltPlayers.add(name)
           }
@@ -967,7 +967,7 @@ export default function ReplayTab({ mapId }: { mapId: string }) {
       }
     }
 
-    // Also check per-tick isUlting field (new data format — more reliable)
+    // Also check per-tick isUlting field (new data format - more reliable)
     for (const p of realPlayers) {
       if (p.isUlting && p.hero !== 'Ana') {
         activeUltPlayers.add(p.name)
@@ -1019,7 +1019,7 @@ export default function ReplayTab({ mapId }: { mapId: string }) {
         ctx.restore()
       }
 
-      // Glow ring for ult-ready (skip Ana if she just used Nano — she won't have 100% anyway)
+      // Glow ring for ult-ready (skip Ana if she just used Nano - she won't have 100% anyway)
       if (p.ultCharge >= 100 && p.alive && !isNanod) {
         ctx.beginPath()
         ctx.arc(p.px, p.py, radius + 5, 0, Math.PI * 2)
@@ -1139,7 +1139,7 @@ export default function ReplayTab({ mapId }: { mapId: string }) {
         ctx.fillRect(barX, barY, barW * p.health, barH)
       }
 
-      // Player name label — always show abbreviated, full on hover/select
+      // Player name label - always show abbreviated, full on hover/select
       const isHighlighted = isHovered || isSelected
       if (p.alive) {
         ctx.font = isHighlighted ? 'bold 11px Inter, system-ui, sans-serif' : '9px Inter, system-ui, sans-serif'
@@ -1478,7 +1478,7 @@ export default function ReplayTab({ mapId }: { mapId: string }) {
           {/* Calibration overlay */}
           {calibrateMode && data && (
             <div style={{ background: 'rgba(0,0,0,0.85)', color: '#fff', padding: '12px 16px', fontFamily: 'monospace', fontSize: '11px', borderRadius: 8, marginTop: 8, maxHeight: 300, overflowY: 'auto' }}>
-              <div style={{ marginBottom: 8, color: '#f59e0b', fontWeight: 'bold' }}>🎯 CALIBRATION MODE — Click map to add reference points</div>
+              <div style={{ marginBottom: 8, color: '#f59e0b', fontWeight: 'bold' }}>🎯 CALIBRATION MODE - Click map to add reference points</div>
               <div style={{ marginBottom: 8, color: '#94a3b8' }}>Player world coords at t={formatTime(currentTime)}:</div>
               {data.timeline.length > 0 && (() => {
                 const frameIdx = data.timeline.findIndex(f => f.t >= currentTime)
@@ -1572,7 +1572,7 @@ export default function ReplayTab({ mapId }: { mapId: string }) {
             </div>
           </div>
 
-          {/* Player Focus Card — stats computed up to current time */}
+          {/* Player Focus Card - stats computed up to current time */}
           {selectedPlayer && (() => {
             const currentHero = ultEconomy.team1.find(p => p.name === selectedPlayer)
               ?? ultEconomy.team2.find(p => p.name === selectedPlayer)
@@ -1630,7 +1630,7 @@ export default function ReplayTab({ mapId }: { mapId: string }) {
                     </div>
                   )}
                 </div>
-                {/* Damage/Healing stats — live from per-tick data, or static from player_stat events */}
+                {/* Damage/Healing stats - live from per-tick data, or static from player_stat events */}
                 {(() => {
                   const fmt = (n: number | null | undefined) => {
                     if (n == null || isNaN(n)) return '–'
@@ -1754,7 +1754,7 @@ export default function ReplayTab({ mapId }: { mapId: string }) {
             {currentFight && timelineFilters.fights && (
               <div className="replay__fight-header">
                 <Swords size={11} />
-                Fight {currentFight.id} — {currentFight.team1Kills} vs {currentFight.team2Kills}
+                Fight {currentFight.id} - {currentFight.team1Kills} vs {currentFight.team2Kills}
               </div>
             )}
             {nearbyEvents.map((event, i) => {

@@ -163,7 +163,7 @@ function formatPct(n: number): string {
 }
 
 /**
- * Admin view — individual player analytics dashboard.
+ * Admin view - individual player analytics dashboard.
  * Accessible at /admin/scrim-player?player=Name.
  */
 export default function ScrimPlayerDetailView() {
@@ -323,7 +323,7 @@ export default function ScrimPlayerDetailView() {
         <SummaryCard label="Avg First Pick" value={`${data.career.avgFirstPickPct}%`} sub={`${data.career.avgFirstDeathPct}% avg first death`} accentColor={PURPLE} icon={<Crosshair size={16} />} />
       </div>
 
-      {/* Hero Pool — Playtime Distribution */}
+      {/* Hero Pool - Playtime Distribution */}
       <div className="scrim-detail__card scrim-detail__card--mb">
         <div className="scrim-detail__card-header">
           <span className="scrim-detail__card-header-glow">Hero Pool</span>
@@ -513,7 +513,7 @@ export default function ScrimPlayerDetailView() {
           </div>
         </div>
 
-        {/* Role Time Split — Donut Chart */}
+        {/* Role Time Split - Donut Chart */}
         {data.roleTimeSplit && Object.values(data.roleTimeSplit).some(v => v > 0) && (
           <div className="scrim-detail__card scrim-detail__card--mt-lg">
             <div className="scrim-detail__label"><Clock size={14} className="scrim-detail__inline-icon" /> Role Time Split</div>
@@ -618,7 +618,7 @@ export default function ScrimPlayerDetailView() {
           </div>
         )}
 
-        {/* Hero Matchups — Killed Most / Died To Most */}
+        {/* Hero Matchups - Killed Most / Died To Most */}
         {(data.heroMatchups.killedMost.length > 0 || data.heroMatchups.diedToMost.length > 0) && (
           <div className="scrim-detail__card scrim-detail__card--mt-lg">
             <div className="scrim-detail__label"><Swords size={14} className="scrim-detail__inline-icon" /> Hero Matchups</div>
@@ -844,7 +844,7 @@ export default function ScrimPlayerDetailView() {
             <div style={{ marginTop: '28px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                 <div style={{ fontWeight: 700, fontSize: '15px', color: TEXT_PRIMARY, textShadow: `0 0 20px ${selectedStat.color}22` }}>
-                  <TrendingUp size={14} className="scrim-detail__inline-icon" /> Per-Scrim Trend — {selectedStat.label}
+                  <TrendingUp size={14} className="scrim-detail__inline-icon" /> Per-Scrim Trend - {selectedStat.label}
                 </div>
                 <select
                   value={trendStat}
@@ -879,7 +879,7 @@ export default function ScrimPlayerDetailView() {
 
 // ── Sub-components ──
 
-/** Animated collapse wrapper — uses max-height transition */
+/** Animated collapse wrapper - uses max-height transition */
 function AnimatedCollapse({ isOpen, children }: { isOpen: boolean; children: React.ReactNode }) {
   const contentRef = useRef<HTMLDivElement>(null)
   const [maxHeight, setMaxHeight] = useState<string>(isOpen ? 'none' : '0px')
@@ -978,7 +978,7 @@ function HeroAvatar({ portrait, heroName, size = 52, color }: { portrait: string
   )
 }
 
-/** Top-level hero detail section — expanded view with full stat breakdown */
+/** Top-level hero detail section - expanded view with full stat breakdown */
 function HeroDetailSection({ hero: h, color, isExpanded, onToggle }: {
   hero: HeroPoolEntry; color: string; isExpanded: boolean; onToggle: () => void
 }) {
@@ -987,7 +987,7 @@ function HeroDetailSection({ hero: h, color, isExpanded, onToggle }: {
 
   return (
     <div className="scrim-detail__hero-section" style={{ borderLeft: `3px solid ${color}`, boxShadow: isExpanded ? `0 0 30px ${color}11` : undefined }}>
-      {/* Header — always visible */}
+      {/* Header - always visible */}
       <div
         onClick={onToggle}
         style={{
@@ -1073,14 +1073,14 @@ function HeroDetailSection({ hero: h, color, isExpanded, onToggle }: {
             </div>
           </div>
 
-          {/* Categorized stat groups — 3-column grid */}
+          {/* Categorized stat groups - 3-column grid */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px' }}>
             <StatGroupCard title="Combat" color={RED} stats={[
               { label: 'Eliminations', value: String(h.totalElims), sub: `${formatDecimal(h.elimsPer10)} /10` },
               { label: 'Final Blows', value: String(h.totalFB), sub: `${formatDecimal(h.fbPer10)} /10` },
               { label: 'Solo Kills', value: String(h.soloKills), sub: `${formatDecimal(h.soloKillsPer10)} /10` },
               { label: 'Deaths', value: String(h.totalDeaths), sub: `${formatDecimal(h.deathsPer10)} /10` },
-              { label: 'Objective Kills', value: String(h.objectiveKills), sub: timeMins > 0 ? `${formatDecimal(h.objectiveKills / timeMins * 10)} /10` : '—' },
+              { label: 'Objective Kills', value: String(h.objectiveKills), sub: timeMins > 0 ? `${formatDecimal(h.objectiveKills / timeMins * 10)} /10` : '-' },
               { label: 'Env. Kills', value: String(h.environmentalKills) },
               { label: 'Env. Deaths', value: String(h.environmentalDeaths) },
               { label: 'Multikills', value: String(h.multikills) },
@@ -1090,17 +1090,17 @@ function HeroDetailSection({ hero: h, color, isExpanded, onToggle }: {
             <StatGroupCard title="Damage & Survivability" color={AMBER} stats={[
               { label: 'All Damage', value: formatNumber(h.allDamageDealt), sub: `${formatNumber(h.damagePer10)} /10` },
               { label: 'Hero Damage', value: formatNumber(h.totalDamage) },
-              { label: 'Barrier Damage', value: formatNumber(h.barrierDamageDealt), sub: timeMins > 0 ? `${formatNumber(Math.round(h.barrierDamageDealt / timeMins * 10))} /10` : '—' },
-              { label: 'Damage Taken', value: formatNumber(h.damageTaken), sub: timeMins > 0 ? `${formatNumber(Math.round(h.damageTaken / timeMins * 10))} /10` : '—' },
-              { label: 'Damage Blocked', value: formatNumber(h.damageBlocked), sub: timeMins > 0 ? `${formatNumber(Math.round(h.damageBlocked / timeMins * 10))} /10` : '—' },
+              { label: 'Barrier Damage', value: formatNumber(h.barrierDamageDealt), sub: timeMins > 0 ? `${formatNumber(Math.round(h.barrierDamageDealt / timeMins * 10))} /10` : '-' },
+              { label: 'Damage Taken', value: formatNumber(h.damageTaken), sub: timeMins > 0 ? `${formatNumber(Math.round(h.damageTaken / timeMins * 10))} /10` : '-' },
+              { label: 'Damage Blocked', value: formatNumber(h.damageBlocked), sub: timeMins > 0 ? `${formatNumber(Math.round(h.damageBlocked / timeMins * 10))} /10` : '-' },
             ]} />
 
             <StatGroupCard title="Healing & Support" color={GREEN} stats={[
               { label: 'Healing Dealt', value: formatNumber(h.totalHealing), sub: `${formatNumber(h.healingPer10)} /10` },
-              { label: 'Healing Received', value: formatNumber(h.healingReceived), sub: timeMins > 0 ? `${formatNumber(Math.round(h.healingReceived / timeMins * 10))} /10` : '—' },
-              { label: 'Self Healing', value: formatNumber(h.selfHealing), sub: timeMins > 0 ? `${formatNumber(Math.round(h.selfHealing / timeMins * 10))} /10` : '—' },
-              { label: 'Def. Assists', value: String(h.defensiveAssists), sub: timeMins > 0 ? `${formatDecimal(h.defensiveAssists / timeMins * 10)} /10` : '—' },
-              { label: 'Off. Assists', value: String(h.offensiveAssists), sub: timeMins > 0 ? `${formatDecimal(h.offensiveAssists / timeMins * 10)} /10` : '—' },
+              { label: 'Healing Received', value: formatNumber(h.healingReceived), sub: timeMins > 0 ? `${formatNumber(Math.round(h.healingReceived / timeMins * 10))} /10` : '-' },
+              { label: 'Self Healing', value: formatNumber(h.selfHealing), sub: timeMins > 0 ? `${formatNumber(Math.round(h.selfHealing / timeMins * 10))} /10` : '-' },
+              { label: 'Def. Assists', value: String(h.defensiveAssists), sub: timeMins > 0 ? `${formatDecimal(h.defensiveAssists / timeMins * 10)} /10` : '-' },
+              { label: 'Off. Assists', value: String(h.offensiveAssists), sub: timeMins > 0 ? `${formatDecimal(h.offensiveAssists / timeMins * 10)} /10` : '-' },
             ]} />
 
             <StatGroupCard title="Ultimates" color={PURPLE} stats={[
@@ -1114,14 +1114,14 @@ function HeroDetailSection({ hero: h, color, isExpanded, onToggle }: {
             <StatGroupCard title="Accuracy" color={CYAN} stats={[
               { label: 'Weapon Accuracy', value: formatPct(h.weaponAccuracy) },
               { label: 'Crit Accuracy', value: formatPct(h.criticalHitAccuracy) },
-              { label: 'Critical Hits', value: String(h.criticalHits), sub: timeMins > 0 ? `${formatDecimal(h.criticalHits / timeMins * 10)} /10` : '—' },
+              { label: 'Critical Hits', value: String(h.criticalHits), sub: timeMins > 0 ? `${formatDecimal(h.criticalHits / timeMins * 10)} /10` : '-' },
               ...(h.scopedAccuracy > 0 ? [{ label: 'Scoped Accuracy', value: formatPct(h.scopedAccuracy) }] : []),
             ]} />
 
             <StatGroupCard title="Performance" color={GREEN} stats={[
               { label: 'Fleta Deadlift', value: `${h.avgFletaPct}%`, sub: 'Earns 50%+ of team final blows' },
               { label: 'First Pick', value: `${h.avgFirstPickPct}%`, sub: `Across ${h.mapsPlayed} map${h.mapsPlayed !== 1 ? 's' : ''}` },
-              { label: 'First Death', value: `${h.avgFirstDeathPct}%`, sub: h.avgFirstDeathPct > 20 ? 'High — watch positioning' : 'Healthy' },
+              { label: 'First Death', value: `${h.avgFirstDeathPct}%`, sub: h.avgFirstDeathPct > 20 ? 'High - watch positioning' : 'Healthy' },
             ]} />
 
             <StatGroupCard title="Per 10 Min Overview" color={TEXT_SECONDARY} stats={[
@@ -1149,7 +1149,7 @@ function kd_color(kd: string): string {
 
 type StatGroupItem = { label: string; value: string; sub?: string }
 
-/** Categorized stat group card — compact label-value pairs in a glassmorphic container */
+/** Categorized stat group card - compact label-value pairs in a glassmorphic container */
 function StatGroupCard({ title, color, stats }: { title: string; color: string; stats: StatGroupItem[] }) {
   return (
     <div style={{
@@ -1297,7 +1297,7 @@ function HeroPlaytimeChart({ heroPool, expandedHero, onHeroClick }: { heroPool: 
   )
 }
 
-/** Analytics stat card — icon, large value, small descriptive text */
+/** Analytics stat card - icon, large value, small descriptive text */
 function AnalyticsCard({ title, value, icon, desc, color }: { title: string; value: string; icon: React.ReactNode; desc: string; color: string }) {
   return (
     <div className="scrim-detail__analytics-card" style={{ borderColor: `${color}22` }}>
@@ -1314,7 +1314,7 @@ function AnalyticsCard({ title, value, icon, desc, color }: { title: string; val
   )
 }
 
-/** Inline SVG line + area chart — zero-dependency, Clean Glow styled */
+/** Inline SVG line + area chart - zero-dependency, Clean Glow styled */
 type TooltipInfo = {
   scrimName: string
   date: string
@@ -1490,7 +1490,7 @@ function InlineSvgChart({ title, color, data, formatter, tooltipData }: {
                   <rect x={p.x - 50} y={p.y - 44} width={100} height={24} rx={6}
                     fill="rgba(10, 14, 26, 0.95)" stroke={`${color}66`} strokeWidth={1.5} />
                   <text x={p.x} y={p.y - 28} fill={TEXT_PRIMARY} fontSize={12} textAnchor="middle" fontWeight={700} fontFamily="'Inter', sans-serif">
-                    {fmt(p.value)} — {p.label}
+                    {fmt(p.value)} - {p.label}
                   </text>
                 </g>
               )

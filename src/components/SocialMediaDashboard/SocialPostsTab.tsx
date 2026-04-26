@@ -82,11 +82,11 @@ export function SocialPostsTab() {
             : posts.map((p) => (
               <tr key={p.id} className="collection-list-tab__row">
                 <td className="collection-list-tab__title"><a href={`/admin/collections/social-posts/${p.id}`}>{p.title || `Post #${p.id}`}</a></td>
-                <td>{p.postType || '—'}</td>
-                <td>{p.platform || '—'}</td>
-                <td>{p.scheduledDate ? new Date(p.scheduledDate).toLocaleDateString() : '—'}</td>
+                <td>{p.postType || '-'}</td>
+                <td>{p.platform || '-'}</td>
+                <td>{p.scheduledDate ? new Date(p.scheduledDate).toLocaleDateString() : '-'}</td>
                 <td><span className={`collection-list-tab__badge ${getStatusClass(p.status)}`}>{p.status || 'Draft'}</span></td>
-                <td>{typeof p.assignedTo === 'object' ? (p.assignedTo?.name || p.assignedTo?.email || '—') : '—'}</td>
+                <td>{typeof p.assignedTo === 'object' ? (p.assignedTo?.name || p.assignedTo?.email || '-') : '-'}</td>
                 <td><a href={`/admin/collections/social-posts/${p.id}`} className="collection-list-tab__edit-link">Edit</a></td>
               </tr>
             ))}

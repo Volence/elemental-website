@@ -61,7 +61,7 @@ export default async function PugsPage() {
     <main className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-2">PUGs</h1>
       <p className="text-gray-600 mb-4">
-        Pick-Up Games — 5v5 Overwatch with draft, map voting, hero bans, and MMR tracking.
+        Pick-Up Games - 5v5 Overwatch with draft, map voting, hero bans, and MMR tracking.
       </p>
 
       {!currentUser && (
@@ -69,7 +69,7 @@ export default async function PugsPage() {
           <a href="/api/auth/discord?pugSignup=true&returnUrl=/pugs" className="text-blue-400 hover:underline">
             Sign up with Discord
           </a>{' '}
-          to register for Open Tier — free and open to everyone.
+          to register for Open Tier - free and open to everyone.
         </p>
       )}
 

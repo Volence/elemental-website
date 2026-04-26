@@ -102,8 +102,8 @@ export default function LobbyPage() {
   const isCaptain = me?.isCaptain ?? false
 
   const statusLabel: Record<string, string> = {
-    OPEN: 'Open — Filling Queue',
-    READY: 'Ready — Starting Soon',
+    OPEN: 'Open - Filling Queue',
+    READY: 'Ready - Starting Soon',
     DRAFTING: 'Drafting',
     MAP_VOTE: 'Map Vote',
     BANNING: 'Hero Bans',
@@ -136,7 +136,7 @@ export default function LobbyPage() {
         <div className="space-y-4">
           <div className="border border-gray-800 rounded-lg p-4">
             <h2 className="font-semibold mb-3 text-sm text-gray-400 uppercase tracking-wide">
-              Queue — {players.length}/10 players
+              Queue - {players.length}/10 players
             </h2>
             {players.length === 0 ? (
               <p className="text-gray-600 text-sm">No one queued yet. Be the first!</p>
@@ -208,7 +208,7 @@ export default function LobbyPage() {
       {lobby.status === 'MAP_VOTE' && (
         <div>
           <h2 className="font-semibold mb-4">Vote for a Map</h2>
-          {!inLobby && <p className="text-gray-500 text-sm mb-4">Spectating — only players can vote.</p>}
+          {!inLobby && <p className="text-gray-500 text-sm mb-4">Spectating - only players can vote.</p>}
           <div className="grid grid-cols-3 gap-3">
             {mapCandidates.map((m) => {
               const myVote = lobby.mapVote?.votes?.[String(currentUserId)]
@@ -289,7 +289,7 @@ export default function LobbyPage() {
                   <strong className="text-white">
                     {pending.result === 'team1' ? 'Team 1 Won' : pending.result === 'team2' ? 'Team 2 Won' : 'Draw'}
                   </strong>
-                  {' '}— auto-confirms in 10 minutes.
+                  {' '}- auto-confirms in 10 minutes.
                 </p>
                 {isCaptain && me?.team !== players.find((p) => p.userId === pending.reportedBy)?.team && (
                   <div className="flex gap-3">
@@ -408,7 +408,7 @@ function DraftUI({
       <div className="flex items-center justify-between">
         <h2 className="font-semibold">Draft</h2>
         <span className="text-sm text-gray-400">
-          Pick {draftState.pickNumber + 1}/8 — Team {draftState.currentPickTeam} choosing
+          Pick {draftState.pickNumber + 1}/8 - Team {draftState.currentPickTeam} choosing
         </span>
       </div>
 
@@ -507,7 +507,7 @@ function BanUI({
       <div className="flex items-center justify-between">
         <h2 className="font-semibold">Hero Bans</h2>
         <span className="text-sm text-gray-400">
-          Ban {banState.banNumber}/4 — Team {banState.currentBanTeam} banning
+          Ban {banState.banNumber}/4 - Team {banState.currentBanTeam} banning
         </span>
       </div>
 

@@ -170,7 +170,7 @@ export function InviteListView() {
               <a key={inv.id} href={`/admin/edit-invite?id=${inv.id}`} className="inv-row">
                 <span style={{ width: 80, fontWeight: 500, color: role.color, fontSize: 12 }}>{role.label}</span>
                 <span className="inv-token" style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{inv.token.slice(0, 12)}…</span>
-                <span style={{ width: 160, fontSize: 12, color: 'rgba(255,255,255,0.5)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{inv.email || '—'}</span>
+                <span style={{ width: 160, fontSize: 12, color: 'rgba(255,255,255,0.5)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{inv.email || '-'}</span>
                 <span style={{ width: 50, textAlign: 'center' }}>
                   <span className="inv-status" style={{ background: `${status.color}15`, color: status.color }}>{status.label}</span>
                 </span>

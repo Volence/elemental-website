@@ -20,7 +20,7 @@ export async function register() {
           }).catch(() => {})
           console.log('[Instrumentation] Payload init triggered')
         } catch {
-          // Silent fail — Payload will init on next real request
+          // Silent fail - Payload will init on next real request
         }
       }, 3000) // Wait 3s for Next.js to be ready
     }

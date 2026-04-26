@@ -89,7 +89,7 @@ function createScrimEmbed(
   // Our roster (simple list)
   description += '**Roster**\n'
   for (const slot of block.slots) {
-    let playerName = '—'
+    let playerName = '-'
     if (slot.isRinger && slot.ringerName) {
       playerName = `${slot.ringerName}*`
     } else if (slot.playerId) {

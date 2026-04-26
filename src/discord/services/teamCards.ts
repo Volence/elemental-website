@@ -39,7 +39,7 @@ export async function postOrUpdateTeamCard(options: TeamCardOptions): Promise<st
       return null
     }
 
-    // Skip inactive teams — delete existing card if present
+    // Skip inactive teams - delete existing card if present
     if (!team.active) {
       const existingMessageId = team.discordCardMessageId || options.fallbackMessageId || null
       if (existingMessageId) {

@@ -123,7 +123,7 @@ export default function AdminProviders({ children }: { children: React.ReactNode
   }, [pathname])
   
   // Note: Popup positioning is handled by Payload's built-in JS.
-  // Do NOT override popup positions — Payload calculates them from trigger button coordinates.
+  // Do NOT override popup positions - Payload calculates them from trigger button coordinates.
   
   return <>{children}</>
 }

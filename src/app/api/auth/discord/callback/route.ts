@@ -153,7 +153,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       if (existingWithDiscord.docs.length > 0) {
         const conflictUser = existingWithDiscord.docs[0] as any
         if (conflictUser.email?.endsWith('@elmt.placeholder')) {
-          // Auto-created placeholder account — safe to transfer Discord ID to the real account
+          // Auto-created placeholder account - safe to transfer Discord ID to the real account
           await payload.db.updateOne({
             id: conflictUser.id,
             collection: 'users',
@@ -163,7 +163,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           })
           console.log(`[Discord OAuth] Transferred Discord ID from placeholder account ${conflictUser.id} to ${currentUser.id}`)
         } else {
-          // Discord ID is on a real account — can't transfer automatically
+          // Discord ID is on a real account - can't transfer automatically
           console.warn(`[Discord OAuth] Discord ID ${discordUser.id} already linked to real account ${conflictUser.id}`)
           const errorUrl = new URL(
             state.returnUrl || `/admin/collections/users/${currentUser.id}`,
@@ -174,7 +174,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         }
       }
 
-      // Update user with Discord ID — use db.updateOne to bypass field-level access controls
+      // Update user with Discord ID - use db.updateOne to bypass field-level access controls
       // (payload.update with overrideAccess doesn't reliably bypass field-level update access in Payload 3)
       await payload.db.updateOne({
         id: currentUser.id,
@@ -232,13 +232,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       })
 
       if (existingUser.docs.length > 0) {
-        // Existing user — log in and ensure they're registered for open PUGs
+        // Existing user - log in and ensure they're registered for open PUGs
         const user = existingUser.docs[0]
         await ensureOpenPugRegistration(payload, user.id)
         return await loginAndRedirect(payload, user, cookieStore, serverUrl, state.returnUrl || '/pugs')
       }
 
-      // New user — create a minimal player account (no team, no linked person)
+      // New user - create a minimal player account (no team, no linked person)
       const randomPassword = `discord_${Math.random().toString(36).substring(2)}${Date.now()}`
       const newUser = await payload.create({
         collection: 'users',
@@ -297,7 +297,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       })
 
       if (existingUser.docs.length > 0) {
-        // Already has an account — just log them in
+        // Already has an account - just log them in
         return await loginAndRedirect(payload, existingUser.docs[0], cookieStore, serverUrl, state.returnUrl)
       }
 
@@ -360,11 +360,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           })
           teamIds = teams.docs.map((t) => t.id)
         } catch (e) {
-          // Teams query may not support nested filtering — non-critical
+          // Teams query may not support nested filtering - non-critical
         }
       }
 
-      // Create user — Discord users get a random password (they'll always use OAuth)
+      // Create user - Discord users get a random password (they'll always use OAuth)
       const randomPassword = `discord_${Math.random().toString(36).substring(2)}${Date.now()}`
       const newUser = await payload.create({
         collection: 'users',

@@ -116,7 +116,7 @@ export async function GET(req: NextRequest) {
       orderBy: { match_time: 'asc' },
       select: { match_time: true, round_number: true },
     }),
-    // Player stats — query separately since we need scrimId from mapData
+    // Player stats - query separately since we need scrimId from mapData
     // (mapDataId on player_stats is nullable and may not be set)
   ])
 
@@ -125,7 +125,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Get scrimId to find player_stats for this scrim
-  // (mapDataId is not stored on player_stat rows — they only have scrimId)
+  // (mapDataId is not stored on player_stat rows - they only have scrimId)
   const mapData = await prisma.scrimMapData.findUnique({
     where: { id: mapId },
     select: { scrimId: true },
@@ -284,7 +284,7 @@ export async function GET(req: NextRequest) {
               alive: false, ultCharge: prev.ult_charge, health: 0, inSpawn: null,
             }))
           } else if (gap > DEATH_GAP_THRESHOLD) {
-            // Large gap but not dead — timing jitter, use prev as-is
+            // Large gap but not dead - timing jitter, use prev as-is
             players.push(toSnapshot(prev))
           } else {
             // Normal interpolation between close snapshots

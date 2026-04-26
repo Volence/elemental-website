@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
   if (scope && !scope.isFullAccess && scope.assignedTeamIds.length > 0) {
     scopedScrimIds = await getScopedScrimIds(scope.assignedTeamIds)
   } else if (scope && !scope.isFullAccess) {
-    // No assigned teams — return empty
+    // No assigned teams - return empty
     return NextResponse.json({ players: [] })
   }
 
@@ -108,7 +108,7 @@ export async function GET(req: NextRequest) {
     if (!isNaN(personId)) {
       // Block non-teammates for players
       if (allowedPersonIds && !allowedPersonIds.has(personId)) {
-        return NextResponse.json({ error: 'Access denied — you can only view stats for your teammates' }, { status: 403 })
+        return NextResponse.json({ error: 'Access denied - you can only view stats for your teammates' }, { status: 403 })
       }
       return getPlayerDetailByPerson(personId, range, scopedScrimIds)
     }
@@ -124,7 +124,7 @@ export async function GET(req: NextRequest) {
       const personId = personLookup[0].id
       // Teammate check
       if (allowedPersonIds && !allowedPersonIds.has(personId)) {
-        return NextResponse.json({ error: 'Access denied — you can only view stats for your teammates' }, { status: 403 })
+        return NextResponse.json({ error: 'Access denied - you can only view stats for your teammates' }, { status: 403 })
       }
       return getPlayerDetailByPerson(personId, range, scopedScrimIds)
     }
@@ -136,7 +136,7 @@ export async function GET(req: NextRequest) {
       `
       const pid = personCheck?.[0]?.personId
       if (pid && !allowedPersonIds.has(pid)) {
-        return NextResponse.json({ error: 'Access denied — you can only view stats for your teammates' }, { status: 403 })
+        return NextResponse.json({ error: 'Access denied - you can only view stats for your teammates' }, { status: 403 })
       }
     }
     return getPlayerDetail(playerName, range, scopedScrimIds)
@@ -196,7 +196,7 @@ async function getPlayerList(range: string, scopedScrimIds: number[] | null = nu
     }
     mapFilter = recentMaps.map(r => r.id)
   } else if (scopedScrimIds) {
-    // 'all' range but with scope — need to get maps for scoped scrims only
+    // 'all' range but with scope - need to get maps for scoped scrims only
     const scopedMaps = await prisma.$queryRaw<Array<{ id: number }>>`
       SELECT md.id
       FROM scrim_map_data md
@@ -463,7 +463,7 @@ async function getPlayerList(range: string, scopedScrimIds: number[] | null = nu
   })
 }
 
-// ── Player Detail (by personId — merges all aliases) ────
+// ── Player Detail (by personId - merges all aliases) ────
 
 async function getPlayerDetailByPerson(personId: number, range: string, _scopedScrimIds: number[] | null = null) {
   // Look up Person display name
@@ -539,7 +539,7 @@ async function getPlayerDetailByPerson(personId: number, range: string, _scopedS
   return buildPlayerDetailResponse(personName, playerMaps, aliases, range, personId)
 }
 
-// ── Player Detail (by raw name — no merge) ──────────────
+// ── Player Detail (by raw name - no merge) ──────────────
 
 async function getPlayerDetail(playerName: string, range: string, _scopedScrimIds: number[] | null = null) {
   const playerMaps = await prisma.$queryRaw<PlayerMapRow[]>`
@@ -816,7 +816,7 @@ async function buildPlayerDetailResponse(
   const avgFPPct = maps.length > 0 ? round(maps.reduce((a, m) => a + m.firstPickPct, 0) / maps.length) : 0
   const avgFDPct = maps.length > 0 ? round(maps.reduce((a, m) => a + m.firstDeathPct, 0) / maps.length) : 0
 
-  // Get team from most recent map — resolve raw player_team to Payload team name
+  // Get team from most recent map - resolve raw player_team to Payload team name
   // via scrim → payloadTeamId → teams
   const recentTeamRow = await prisma.$queryRaw<[{ team_name: string; payload_team: string | null; payload_team_id: number | null }]>`
     SELECT ps.player_team as team_name, t.name as payload_team, t.id as payload_team_id

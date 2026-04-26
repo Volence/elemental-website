@@ -284,8 +284,8 @@ const config = buildConfig({
     
     // ── DEPARTMENTS: Multi-tab hub dashboards ──
     ProductionDashboard,    // Departments group
-    SocialMediaSettings,    // Departments group — Social Media Dashboard
-    CompetitiveHub,         // Departments group — Opponent Wiki + Scouting
+    SocialMediaSettings,    // Departments group - Social Media Dashboard
+    CompetitiveHub,         // Departments group - Opponent Wiki + Scouting
     DiscordServerManager,   // Departments group
     
     // Social Media Config (settings page, accessed standalone)
@@ -300,8 +300,8 @@ const config = buildConfig({
     EventsDashboard,
     
     // ── Hidden: Accessed via Competitive Hub tabs ──
-    OpponentWiki,           // Hidden — tab in Competitive Hub
-    ScoutingDashboard,      // Hidden — tab in Competitive Hub
+    OpponentWiki,           // Hidden - tab in Competitive Hub
+    ScoutingDashboard,      // Hidden - tab in Competitive Hub
 
     // ── SYSTEM & MONITORING (admin only) ──
     SystemHealth,           // Unified monitoring hub
@@ -358,7 +358,7 @@ const config = buildConfig({
           startTwitchLiveRoster() // Twitch live roster
           console.log('[Discord] ✅ Bot fully initialized')
         } else {
-          console.error('[Discord] ❌ Client was null — check env vars')
+          console.error('[Discord] ❌ Client was null - check env vars')
         }
       } catch (error) {
         console.error('[Discord] ❌ Failed to initialize bot:', error)

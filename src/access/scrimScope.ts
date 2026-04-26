@@ -1,6 +1,6 @@
 /**
  * Auth helpers for API routes to read the current user's role and team scope.
- * Used for data scoping — players and team managers only see their teams' data.
+ * Used for data scoping - players and team managers only see their teams' data.
  */
 import { getPayload } from 'payload'
 import config from '@payload-config'
@@ -13,7 +13,7 @@ export type UserScope = {
   userId: number
   assignedTeamIds: number[]
   linkedPersonId: number | null
-  isFullAccess: boolean // admin or staff-manager — no scoping
+  isFullAccess: boolean // admin or staff-manager - no scoping
 }
 
 /**

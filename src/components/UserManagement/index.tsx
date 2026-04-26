@@ -403,7 +403,7 @@ export function UserEditorView() {
         </div>
       </div>
 
-      {/* Edit Person Profile link — shown when user has a linked person */}
+      {/* Edit Person Profile link - shown when user has a linked person */}
       {linkedPerson && linkedPersonName && (
         <a href={isSelf ? '/admin/my-profile' : `/admin/edit-person?id=${linkedPerson}`} className="person-link-card" style={{ marginBottom: 20 }}>
           <div style={{ width: 42, height: 42, borderRadius: '50%', background: 'rgba(99, 102, 241, 0.15)', border: '2px solid rgba(99, 102, 241, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -490,7 +490,7 @@ export function UserEditorView() {
                 <input className="profile-input" value={discordId} onChange={(e) => setDiscordId(e.target.value)} placeholder="17-19 digit Discord User ID" />
               </div>
             )}
-            {/* Discord connect — shown to any user viewing their own profile */}
+            {/* Discord connect - shown to any user viewing their own profile */}
             {isSelf && (
               <div style={editorStyles.editableField}>
                 {discordId ? (
@@ -515,7 +515,7 @@ export function UserEditorView() {
               <div style={editorStyles.editableField}>
                 <label style={editorStyles.fieldLabel}>Linked Person</label>
                 <select className="person-select" value={linkedPerson ?? ''} onChange={(e) => setLinkedPerson(e.target.value ? Number(e.target.value) : null)}>
-                  <option value="">— None —</option>
+                  <option value="">- None -</option>
                   {allPeople.map(p => (
                     <option key={p.id} value={p.id}>{p.name}</option>
                   ))}

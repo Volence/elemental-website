@@ -94,7 +94,7 @@ export const PugPlayers: CollectionConfig = {
       defaultValue: 0,
       admin: {
         readOnly: true,
-        description: 'Cumulative ban offense count. Escalates ban duration. Never resets — survives ban expiry.',
+        description: 'Cumulative ban offense count. Escalates ban duration. Never resets - survives ban expiry.',
       },
     },
   ],

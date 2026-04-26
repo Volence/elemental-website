@@ -1374,7 +1374,7 @@ export interface User {
    */
   avatar?: (number | null) | Media;
   /**
-   * Discord User ID — used for "Login with Discord". Set via the Link Discord button below, or manually by admins. Also auto-sets the linked Person's Discord ID for calendar matching.
+   * Discord User ID - used for "Login with Discord". Set via the Link Discord button below, or manually by admins. Also auto-sets the linked Person's Discord ID for calendar matching.
    */
   discordId?: string | null;
   /**
@@ -1418,7 +1418,7 @@ export interface User {
      */
     isScoutingStaff?: boolean | null;
     /**
-     * Content creator — streams appear in Creator Live channel instead of Player Live
+     * Content creator - streams appear in Creator Live channel instead of Player Live
      */
     isContentCreator?: boolean | null;
     /**
@@ -2017,7 +2017,7 @@ export interface ScoutReport {
       }[]
     | null;
   /**
-   * Trends noticed across all maps — playstyle, tendencies, patterns
+   * Trends noticed across all maps - playstyle, tendencies, patterns
    */
   overallNotes?: {
     root: {
@@ -2256,7 +2256,7 @@ export interface DiscordPoll {
   createdAt: string;
 }
 /**
- * Legacy — new calendars are created in the unified Schedules collection.
+ * Legacy - new calendars are created in the unified Schedules collection.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "availability-calendars".
@@ -2405,7 +2405,7 @@ export interface PugPlayer {
     reason?: string | null;
   };
   /**
-   * Cumulative ban offense count. Escalates ban duration. Never resets — survives ban expiry.
+   * Cumulative ban offense count. Escalates ban duration. Never resets - survives ban expiry.
    */
   banOffenseCount?: number | null;
   updatedAt: string;
@@ -2733,7 +2733,7 @@ export interface TwitchStreamer {
    */
   bio?: string | null;
   /**
-   * Optional — link to a Person record to auto-pull team name in the embed
+   * Optional - link to a Person record to auto-pull team name in the embed
    */
   person?: (number | null) | Person;
   /**
@@ -3001,7 +3001,7 @@ export interface InviteLink {
      */
     isScoutingStaff?: boolean | null;
     /**
-     * Content creator — streams appear in Creator Live channel instead of Player Live
+     * Content creator - streams appear in Creator Live channel instead of Player Live
      */
     isContentCreator?: boolean | null;
   };
@@ -4993,7 +4993,7 @@ export interface ScoutingDashboard {
   createdAt?: string | null;
 }
 /**
- * Unified monitoring dashboard — errors, cron jobs, audit logs, sessions, and database health.
+ * Unified monitoring dashboard - errors, cron jobs, audit logs, sessions, and database health.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "system-health".

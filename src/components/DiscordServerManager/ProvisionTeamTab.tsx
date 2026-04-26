@@ -500,7 +500,7 @@ export default function ProvisionTeamTab({ onAlert }: ProvisionTeamTabProps) {
                     <td>
                       <strong>{team.name}</strong>
                     </td>
-                    <td>{team.discordEmoji || '—'}</td>
+                    <td>{team.discordEmoji || '-'}</td>
                     <td>
                       {team.discordTeamRoleId ? (
                         <code
@@ -512,7 +512,7 @@ export default function ProvisionTeamTab({ onAlert }: ProvisionTeamTabProps) {
                           {copiedField === `team-${team.id}` && <span className="copied-badge">✓</span>}
                         </code>
                       ) : (
-                        '—'
+                        '-'
                       )}
                     </td>
                     <td>
@@ -526,7 +526,7 @@ export default function ProvisionTeamTab({ onAlert }: ProvisionTeamTabProps) {
                           {copiedField === `access-${team.id}` && <span className="copied-badge">✓</span>}
                         </code>
                       ) : (
-                        '—'
+                        '-'
                       )}
                     </td>
                     <td>
@@ -540,7 +540,7 @@ export default function ProvisionTeamTab({ onAlert }: ProvisionTeamTabProps) {
                           {copiedField === `cat-${team.id}` && <span className="copied-badge">✓</span>}
                         </code>
                       ) : (
-                        '—'
+                        '-'
                       )}
                     </td>
                   </tr>

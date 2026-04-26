@@ -139,7 +139,7 @@ export default async function HomePage() {
         </div>
       </ParallaxHero>
 
-      {/* Live Now Section — only shows when someone is streaming */}
+      {/* Live Now Section - only shows when someone is streaming */}
       {liveStreamers.length > 0 && (
         <section className="py-16 bg-gradient-to-br from-purple-500/5 via-red-500/5 to-purple-500/5 animate-fade-in">
           <div className="container max-w-5xl">
@@ -151,8 +151,8 @@ export default async function HomePage() {
               <div className="w-24 h-1 bg-gradient-to-r from-purple-500 via-red-500 to-purple-500 mx-auto mb-6 shadow-[0_0_20px_rgba(168,85,247,0.4)]" />
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                 {liveStreamers.length === 1
-                  ? 'One of our streamers is live right now — tune in!'
-                  : `${liveStreamers.length} of our streamers are live right now — tune in!`}
+                  ? 'One of our streamers is live right now - tune in!'
+                  : `${liveStreamers.length} of our streamers are live right now - tune in!`}
               </p>
             </div>
 

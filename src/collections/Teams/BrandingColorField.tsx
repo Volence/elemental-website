@@ -22,7 +22,7 @@ const BrandingColorField: React.FC<BrandingColorFieldProps> = ({ path, label, de
         </div>
       )}
       <div className="branding-color-field__row">
-        {/* Color swatch — native picker hidden inside */}
+        {/* Color swatch - native picker hidden inside */}
         <div
           className="branding-color-field__swatch"
           style={{

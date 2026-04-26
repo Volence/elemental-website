@@ -3,7 +3,7 @@
  * These query the scrim_player_stats table for final-round aggregated stats,
  * which are needed by the stat calculator and analytics.
  *
- * Ported from parsertime's scrim-dto.tsx — stripped of React cache() wrapper
+ * Ported from parsertime's scrim-dto.tsx - stripped of React cache() wrapper
  * and next-intl dependencies.
  */
 

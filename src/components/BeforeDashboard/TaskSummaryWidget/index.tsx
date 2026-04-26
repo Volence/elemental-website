@@ -6,7 +6,7 @@ import { ClipboardList, AlertTriangle } from 'lucide-react'
 import type { User } from '@/payload-types'
 
 /**
- * Task Summary widget — aggregate counts of active tasks by status.
+ * Task Summary widget - aggregate counts of active tasks by status.
  */
 export default function TaskSummaryWidget() {
   const { user } = useAuth<User>()

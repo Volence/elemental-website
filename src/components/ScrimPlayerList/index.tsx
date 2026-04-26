@@ -41,7 +41,7 @@ const COLUMNS: { key: SortKey; label: string; align: 'left' | 'right' }[] = [
 ]
 
 /**
- * Admin view — player directory with career stats, grouped by team.
+ * Admin view - player directory with career stats, grouped by team.
  * Payload-linked teams get their own section at the top.
  * Opponent players (no payloadTeamId) appear below, searchable.
  */

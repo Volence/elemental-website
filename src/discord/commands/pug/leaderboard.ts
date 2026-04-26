@@ -39,11 +39,11 @@ export async function handlePugLeaderboard(interaction: ChatInputCommandInteract
     const name = typeof entry.player?.user === 'object'
       ? entry.player.user.name
       : `Player #${entry.player?.id}`
-    return `**${index + 1}.** ${name} — ${entry.rating} (${entry.wins}W/${entry.losses}L)`
+    return `**${index + 1}.** ${name} - ${entry.rating} (${entry.wins}W/${entry.losses}L)`
   })
 
   const embed = new EmbedBuilder()
-    .setTitle(`PUG Leaderboard — ${tier === 'invite' ? 'Invite' : 'Open'} Tier`)
+    .setTitle(`PUG Leaderboard - ${tier === 'invite' ? 'Invite' : 'Open'} Tier`)
     .setDescription(lines.length > 0 ? lines.join('\n') : 'No players yet.')
     .setFooter({ text: season.name })
 

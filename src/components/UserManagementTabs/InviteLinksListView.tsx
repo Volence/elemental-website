@@ -122,7 +122,7 @@ export default function InviteLinksListView() {
   })
 
   const formatDate = (dateStr?: string) => {
-    if (!dateStr) return '—'
+    if (!dateStr) return '-'
     return new Date(dateStr).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -156,7 +156,7 @@ export default function InviteLinksListView() {
   }
 
   const getUserName = (userRef: any): string => {
-    if (!userRef) return '—'
+    if (!userRef) return '-'
     if (typeof userRef === 'number') return `#${userRef}`
     return userRef.name || userRef.email || `#${userRef.id}`
   }
@@ -252,7 +252,7 @@ export default function InviteLinksListView() {
                           ))}
                         </div>
                       ) : (
-                        <span className="invite-links-list__muted">—</span>
+                        <span className="invite-links-list__muted">-</span>
                       )}
                     </td>
                     <td>

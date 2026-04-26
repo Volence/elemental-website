@@ -41,7 +41,7 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
   // Build personalized links (My Stats only)
   const personalLinks: { href: string; label: string; match: (p: string) => boolean }[] = []
 
-  // "My Stats" — only for player/team-manager roles with a linkedPerson
+  // "My Stats" - only for player/team-manager roles with a linkedPerson
   const linkedPersonId = typeof user.linkedPerson === 'object' && user.linkedPerson !== null
     ? user.linkedPerson.id
     : user.linkedPerson
@@ -87,7 +87,7 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
   const isCollapsible = teamLinks.length > 1
   const showTeams = !isCollapsible || teamsOpen || hasActiveTeam
 
-  // Dashboard link — active when on any scrim-related page
+  // Dashboard link - active when on any scrim-related page
   const isDashboardActive = pathname ? (
     pathname === '/admin/scrim-dashboard' ||
     pathname === '/admin/scrims' ||
@@ -112,7 +112,7 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
         <div className="nav-group__indicator" />
       </button>
       <div className="nav-group__content">
-        {/* Dashboard — single entry for all scrim analytics */}
+        {/* Dashboard - single entry for all scrim analytics */}
         <Link
           href="/admin/scrim-dashboard"
           className={`nav__link${isDashboardActive ? ' active' : ''}`}
@@ -136,7 +136,7 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
           )
         })}
 
-        {/* Team links — collapsible when > 1 */}
+        {/* Team links - collapsible when > 1 */}
         {hasTeamLinks && (
           <>
             {isCollapsible ? (

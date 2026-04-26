@@ -30,7 +30,7 @@ export const seed = async ({
   // as well as the collections and globals
   // this is because while `yarn seed` drops the database
   // the custom `/api/seed` endpoint does not
-  payload.logger.info(`— Clearing collections and globals...`)
+  payload.logger.info(`- Clearing collections and globals...`)
 
   // clear the database
   await Promise.all(
@@ -58,7 +58,7 @@ export const seed = async ({
       .map((collection) => payload.db.deleteVersions({ collection, req, where: {} })),
   )
 
-  payload.logger.info(`— Seeding demo author and user...`)
+  payload.logger.info(`- Seeding demo author and user...`)
 
   await payload.delete({
     collection: 'users',
@@ -70,7 +70,7 @@ export const seed = async ({
     },
   })
 
-  payload.logger.info(`— Seeding media...`)
+  payload.logger.info(`- Seeding media...`)
 
   const [image1Buffer, image2Buffer, image3Buffer, hero1Buffer] = await Promise.all([
     fetchFileByURL(
@@ -119,7 +119,7 @@ export const seed = async ({
     }),
   ])
 
-  payload.logger.info(`— Seeding pages...`)
+  payload.logger.info(`- Seeding pages...`)
 
   await payload.create({
     collection: 'pages',
@@ -127,7 +127,7 @@ export const seed = async ({
     data: home({ heroImage: imageHomeDoc, metaImage: image2Doc }),
   })
 
-  payload.logger.info(`— Seeding globals...`)
+  payload.logger.info(`- Seeding globals...`)
 
   await Promise.all([
     payload.updateGlobal({

@@ -387,7 +387,7 @@ export async function handlePollResults(interaction: ButtonInteraction): Promise
       const bar = '█'.repeat(barLength) + '░'.repeat(20 - barLength)
 
       // Truncate voter mentions if too long
-      let voterMentions = voters.length ? voters.map((user) => `<@${user.id}>`).join(', ') : '—'
+      let voterMentions = voters.length ? voters.map((user) => `<@${user.id}>`).join(', ') : '-'
 
       if (voterMentions.length > 500) {
         const mentions = voters.map((user) => `<@${user.id}>`)
@@ -413,7 +413,7 @@ export async function handlePollResults(interaction: ButtonInteraction): Promise
       if (roleMappings.size > 0 && roleBuckets && roleBuckets.size) {
         const roleLines = Array.from(roleBuckets.entries())
           .map(([label, mentions]) => {
-            let roleMentions = mentions.length ? mentions.join(', ') : '—'
+            let roleMentions = mentions.length ? mentions.join(', ') : '-'
             if (roleMentions.length > 200) {
               const truncated = mentions.slice(0, 3).join(', ')
               roleMentions = `${truncated}... and ${mentions.length - 3} more`

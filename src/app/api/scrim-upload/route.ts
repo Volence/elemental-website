@@ -28,7 +28,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check role — admin, staff-manager, and team-manager can upload
+    // Check role - admin, staff-manager, and team-manager can upload
     const userRole = (user as { role?: string }).role
     const canUpload = userRole === 'admin' || userRole === 'staff-manager' || userRole === 'team-manager'
     if (!canUpload) {
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
           }
         }
       } catch {
-        // Ignore invalid JSON — proceed without mappings
+        // Ignore invalid JSON - proceed without mappings
       }
     }
     const playerMappings2: Record<string, number> = {}
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
           }
         }
       } catch {
-        // Ignore invalid JSON — proceed without mappings
+        // Ignore invalid JSON - proceed without mappings
       }
     }
 

@@ -29,7 +29,7 @@ export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
       "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
     );
 
-    -- Create tiers junction table (hasMany select — uses parent_id/order without underscore prefix)
+    -- Create tiers junction table (hasMany select - uses parent_id/order without underscore prefix)
     CREATE TABLE IF NOT EXISTS "pug_players_tiers" (
       "order" integer NOT NULL,
       "parent_id" integer NOT NULL,
@@ -37,7 +37,7 @@ export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
       "value" "enum_pug_players_tiers"
     );
 
-    -- Create approved_roles junction table (hasMany select — uses parent_id/order without underscore prefix)
+    -- Create approved_roles junction table (hasMany select - uses parent_id/order without underscore prefix)
     CREATE TABLE IF NOT EXISTS "pug_players_approved_roles" (
       "order" integer NOT NULL,
       "parent_id" integer NOT NULL,

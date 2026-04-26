@@ -288,7 +288,7 @@ export async function updateCalendarChannel(): Promise<void> {
     const { ensureDiscordClient } = await import('../bot')
     const client = await ensureDiscordClient()
     if (!client) {
-      console.warn('[Calendar] Discord client is null — bot not initialized. Check DISCORD_BOT_TOKEN, DISCORD_GUILD_ID, DISCORD_CLIENT_ID env vars.')
+      console.warn('[Calendar] Discord client is null - bot not initialized. Check DISCORD_BOT_TOKEN, DISCORD_GUILD_ID, DISCORD_CLIENT_ID env vars.')
       return
     }
     

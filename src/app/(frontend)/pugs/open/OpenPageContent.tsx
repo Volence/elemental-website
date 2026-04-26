@@ -202,7 +202,7 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
           <p className="text-lg mb-1">No active lobbies right now.</p>
           {currentUser && isRegistered && seasonId && (
             <p className="text-sm">
-              Be the first — hit{' '}
+              Be the first - hit{' '}
               <button
                 onClick={handleCreate}
                 disabled={creating}

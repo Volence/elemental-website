@@ -83,7 +83,7 @@ export const Matches: CollectionConfig = {
             // team2External was edited → sync to opponent
             data.opponent = incomingExternal
           } else if (opponentChanged && externalChanged) {
-            // Both changed (e.g. bulk update) — team2External takes priority
+            // Both changed (e.g. bulk update) - team2External takes priority
             data.opponent = incomingExternal
           }
           

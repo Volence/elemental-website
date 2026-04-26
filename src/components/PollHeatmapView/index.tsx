@@ -18,7 +18,7 @@ interface VoteData {
 }
 
 /**
- * PollHeatmapView — displays Discord poll vote heatmap on the Schedules collection.
+ * PollHeatmapView - displays Discord poll vote heatmap on the Schedules collection.
  * Reads the `votes` field directly from the form.
  * Uses the same SCSS as AvailabilityHeatmapView for visual consistency.
  */
@@ -96,7 +96,7 @@ export const PollHeatmapView: React.FC<{ path: string }> = () => {
         </div>
       </div>
 
-      {/* Grid — single row since polls are date-level only */}
+      {/* Grid - single row since polls are date-level only */}
       <div className="availability-heatmap__grid-wrapper">
         <table className="availability-heatmap__grid">
           <thead>

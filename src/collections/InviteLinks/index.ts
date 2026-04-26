@@ -167,7 +167,7 @@ export const InviteLinks: CollectionConfig = {
           label: 'Content Creator',
           defaultValue: false,
           admin: {
-            description: 'Content creator — streams appear in Creator Live channel instead of Player Live',
+            description: 'Content creator - streams appear in Creator Live channel instead of Player Live',
           },
         },
       ],

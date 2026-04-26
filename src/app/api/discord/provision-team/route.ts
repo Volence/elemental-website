@@ -38,7 +38,7 @@ function hexToInt(hex: string): number {
  *   @everyone:     deny ViewChannel (private category)
  *   Team role:     allow View, Send, Connect, threads
  *   Access role:   allow View, Send, Connect, threads
- *   Shared roles:  allow Send, Connect, threads (NOT View — view comes from Team/Access)
+ *   Shared roles:  allow Send, Connect, threads (NOT View - view comes from Team/Access)
  */
 const CHANNEL_DEFS: Array<{
   nameTemplate: (n: string) => string
@@ -52,7 +52,7 @@ const CHANNEL_DEFS: Array<{
   {
     nameTemplate: (n: string) => `${n.toLowerCase()}-chat`,
     type: ChannelType.GuildText,
-    // No exceptions — inherits all category defaults
+    // No exceptions - inherits all category defaults
   },
   {
     nameTemplate: (n: string) => `${n.toLowerCase()}-announcements`,
@@ -67,7 +67,7 @@ const CHANNEL_DEFS: Array<{
   {
     nameTemplate: (n: string) => `${n.toLowerCase()}-team-info`,
     type: ChannelType.GuildForum,
-    // No exceptions — inherits all category defaults
+    // No exceptions - inherits all category defaults
     forumPosts: (n: string) => [
       `${n} Player Info`,
       `${n} Calendar`,
@@ -98,7 +98,7 @@ const CHANNEL_DEFS: Array<{
   {
     nameTemplate: (n: string) => `${n} VC`,
     type: ChannelType.GuildVoice,
-    // No exceptions — inherits all category defaults
+    // No exceptions - inherits all category defaults
   },
   {
     nameTemplate: (n: string) => `${n} Private`,
@@ -185,7 +185,7 @@ export async function POST(req: NextRequest) {
       if (role) {
         console.log(`[Provision] Found shared role: ${name} (${role.id})`)
       } else {
-        console.warn(`[Provision] Shared role not found: "${name}" — skipping`)
+        console.warn(`[Provision] Shared role not found: "${name}" - skipping`)
       }
       return role
     }).filter(Boolean)
@@ -231,7 +231,7 @@ export async function POST(req: NextRequest) {
       },
     ]
 
-    // Shared roles: Send + Connect (NOT View — view is tied to Team/Access assignment)
+    // Shared roles: Send + Connect (NOT View - view is tied to Team/Access assignment)
     for (const role of sharedRoles) {
       categoryPerms.push({
         id: role!.id,
@@ -307,7 +307,7 @@ export async function POST(req: NextRequest) {
           try {
             const thread = await (channel as any).threads.create({
               name: postName,
-              message: { content: `${postName} — created automatically during team provisioning.` },
+              message: { content: `${postName} - created automatically during team provisioning.` },
               reason: `Default forum post for team: ${teamName}`,
             })
 

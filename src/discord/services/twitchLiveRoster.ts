@@ -78,7 +78,7 @@ async function runLiveRosterCheck(): Promise<{ live: number; total: number }> {
     })
 
     if (streamers.docs.length === 0) {
-      // No streamers to track — update both embeds to show empty state
+      // No streamers to track - update both embeds to show empty state
       for (const category of ['content-creator', 'player'] as const) {
         const channelId = getChannelForCategory(category)
         if (channelId) {
@@ -257,7 +257,7 @@ async function updateRosterMessage(
     const channel = await client.channels.fetch(channelId) as TextChannel
     if (!channel?.isTextBased()) return
 
-    // Build embeds — individual cards per streamer, or offline card
+    // Build embeds - individual cards per streamer, or offline card
     const embeds = liveStreamers.length > 0
       ? buildStreamerEmbeds(liveStreamers, category)
       : [buildOfflineEmbed(category)]
@@ -370,7 +370,7 @@ function buildStreamerEmbeds(liveStreamers: any[], category: string): EmbedBuild
       const name = personName || s.displayName || s.twitchUsername
       const game = s.currentGame || 'Just Chatting'
       const viewers = s.viewerCount || 0
-      return `**[${name}](https://twitch.tv/${s.twitchUsername})** — ${game} • 👁 ${viewers.toLocaleString()}`
+      return `**[${name}](https://twitch.tv/${s.twitchUsername})** - ${game} • 👁 ${viewers.toLocaleString()}`
     })
 
     const overflowEmbed = new EmbedBuilder()

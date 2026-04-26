@@ -68,10 +68,10 @@ const WatchedThreadsTab: React.FC = () => {
             : threads.map((t) => (
               <tr key={t.id} className="collection-list-tab__row">
                 <td className="collection-list-tab__title"><a href={`/admin/collections/watched-threads/${t.id}`}>{t.threadName || `Thread #${t.id}`}</a></td>
-                <td>{t.channelName || '—'}</td>
+                <td>{t.channelName || '-'}</td>
                 <td>{getStatusIcon(t.status)} {t.status || 'active'}</td>
                 <td>{t.keepAliveCount ?? 0}</td>
-                <td>{t.lastKeptAliveAt ? new Date(t.lastKeptAliveAt).toLocaleDateString() : '—'}</td>
+                <td>{t.lastKeptAliveAt ? new Date(t.lastKeptAliveAt).toLocaleDateString() : '-'}</td>
                 <td><a href={`/admin/collections/watched-threads/${t.id}`} className="collection-list-tab__edit-link">Edit</a></td>
               </tr>
             ))}

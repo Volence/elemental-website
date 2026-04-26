@@ -104,7 +104,7 @@ export async function updateLobbyFeed(lobbyId: number): Promise<void> {
       await msg.edit({ embeds: [embed] })
       return
     } catch {
-      // Message deleted — fall through to create new
+      // Message deleted - fall through to create new
     }
   }
 

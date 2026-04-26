@@ -60,7 +60,7 @@ const TwitchLiveTab: React.FC = () => {
       const data = await response.json()
       setPeople((data.docs || []).map((p: any) => ({ id: p.id, name: p.name })))
     } catch {
-      // Silently fail — person is optional
+      // Silently fail - person is optional
     }
   }, [])
 
@@ -295,7 +295,7 @@ const TwitchLiveTab: React.FC = () => {
       <div className="tab-header">
         <div className="tab-header-text">
           <h3><Circle size={12} /> Twitch Live Roster</h3>
-          <p>Track streamers across two channels — one for content creators, one for players.</p>
+          <p>Track streamers across two channels - one for content creators, one for players.</p>
         </div>
         <button
           className="check-now-button"
@@ -345,7 +345,7 @@ const TwitchLiveTab: React.FC = () => {
             type="text"
             value={newBio}
             onChange={(e) => setNewBio(e.target.value)}
-            placeholder="Bio tagline (optional) — e.g. Flex DPS, Variety streamer"
+            placeholder="Bio tagline (optional) - e.g. Flex DPS, Variety streamer"
             className="text-input bio-input"
           />
           <select

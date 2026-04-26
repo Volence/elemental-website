@@ -44,7 +44,7 @@ const RESULT_INFO: Record<string, { cls: string; label: string }> = {
 }
 
 /**
- * Admin view — list of uploaded scrims with search, team filter, and rich expanded cards.
+ * Admin view - list of uploaded scrims with search, team filter, and rich expanded cards.
  * Accessible at /admin/scrims.
  */
 export default function ScrimListView() {
@@ -494,7 +494,7 @@ export default function ScrimListView() {
                                             )}
                                             {effectiveScore && resultInfo && (
                                               <div className="scrim-map-row__score-group"
-                                                title={map.estimated ? 'Estimated — match ended without a final score record' : undefined}
+                                                title={map.estimated ? 'Estimated - match ended without a final score record' : undefined}
                                               >
                                                 <span className={`scrim-map-row__score ${map.estimated ? 'scrim-stat--highlight' : ''}`}>
                                                   {map.estimated ? '~' : ''}{effectiveScore}

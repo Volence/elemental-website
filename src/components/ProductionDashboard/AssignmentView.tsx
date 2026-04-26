@@ -60,7 +60,7 @@ const getUserId = (user: User | number | null | undefined): number | null => {
 }
 
 const getUserName = (user: User | number | null | undefined): string => {
-  if (!user) return '—'
+  if (!user) return '-'
   if (typeof user === 'number') return `User #${user}`
   return user.name || user.email || 'Unknown'
 }

@@ -1,10 +1,10 @@
 /**
- * Scrim Parser Library — Barrel Export
+ * Scrim Parser Library - Barrel Export
  *
  * Provides the complete pipeline for processing ScrimTime log files:
- * 1. parseScrimLog() — Parse raw .txt content into structured events
- * 2. createScrimFromParsedData() — Store parsed data in the database
- * 3. calculateStats() / calculateStatsForMap() — Compute advanced analytics
+ * 1. parseScrimLog() - Parse raw .txt content into structured events
+ * 2. createScrimFromParsedData() - Store parsed data in the database
+ * 3. calculateStats() / calculateStatsForMap() - Compute advanced analytics
  */
 
 // ── Parsing ──────────────────────────────────────────────────────────

@@ -402,7 +402,7 @@ export async function finalizeBan(lobbyId: number): Promise<void> {
     return
   }
 
-  // Team forfeited their ban — advance without recording; bans array stays shorter than banNumber
+  // Team forfeited their ban - advance without recording; bans array stays shorter than banNumber
   const newDeadline = new Date(Date.now() + BAN_TIMEOUT_MS)
   await prisma.pugBanState.update({
     where: { lobbyId },
@@ -506,7 +506,7 @@ export async function confirmResult(lobbyId: number, captainUserId: number): Pro
 
   const pending = (lobby.pendingResult ?? {}) as { result: MatchResult; reportedBy: number }
   if (pending.reportedBy === captainUserId) {
-    throw new Error('The reporting captain cannot confirm their own result — the opposing captain must confirm')
+    throw new Error('The reporting captain cannot confirm their own result - the opposing captain must confirm')
   }
 
   cancelTimer(timerKey(lobbyId, 'confirm'))
@@ -522,7 +522,7 @@ export async function disputeResult(lobbyId: number, captainUserId: number): Pro
   if (!captain) throw new Error('Only captains can dispute results')
   const pending = (lobby.pendingResult ?? {}) as { result: string; reportedBy: number }
   if (pending.reportedBy === captainUserId) {
-    throw new Error('The reporting captain cannot dispute their own result — only the opposing captain can dispute')
+    throw new Error('The reporting captain cannot dispute their own result - only the opposing captain can dispute')
   }
   cancelTimer(timerKey(lobbyId, 'confirm'))
   await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'DISPUTED' } })

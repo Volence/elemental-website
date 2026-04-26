@@ -62,7 +62,7 @@ const StaffPositionsCell: React.FC<{ rowData: any }> = ({ rowData }) => {
   }
 
   if (positions.length === 0) {
-    return <span className="list-cell-empty">—</span>
+    return <span className="list-cell-empty">-</span>
   }
 
   return (

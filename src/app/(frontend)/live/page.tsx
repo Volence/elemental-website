@@ -57,7 +57,7 @@ export default async function LivePage() {
                 live. Tune in and support our players and content creators!
               </>
             ) : (
-              <>No one is live right now — check back soon or follow our streamers on Twitch!</>
+              <>No one is live right now - check back soon or follow our streamers on Twitch!</>
             )}
           </p>
         </div>

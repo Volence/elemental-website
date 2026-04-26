@@ -25,7 +25,7 @@ export function selectCaptains(players: AssignedPlayer[]): CaptainSelection {
     }
   }
 
-  if (!bestRole) throw new Error('No valid captain pair found — role assignment malformed')
+  if (!bestRole) throw new Error('No valid captain pair found - role assignment malformed')
 
   const pair = byRole[bestRole].sort((a, b) => b.rating - a.rating)
   return {

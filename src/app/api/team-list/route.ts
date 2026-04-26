@@ -1,7 +1,7 @@
 /**
  * GET /api/teams
  * Returns a list of teams for use in dropdowns (e.g., scrim upload team selector).
- * Only returns id and name — lightweight for client consumption.
+ * Only returns id and name - lightweight for client consumption.
  */
 
 import { NextResponse } from 'next/server'

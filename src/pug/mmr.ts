@@ -1,4 +1,4 @@
-// @ts-ignore — glicko2 package has no bundled types
+// @ts-ignore - glicko2 package has no bundled types
 import Glicko2Lib from 'glicko2'
 import type { PlayerRating, MatchResult } from './types'
 

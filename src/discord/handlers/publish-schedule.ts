@@ -120,7 +120,7 @@ function formatScheduleMessageWithMap(
       // Status line
       if (block.scrim?.opponent) {
         const hostText = block.scrim.host === 'us' ? 'We host' : block.scrim.host === 'them' ? 'They host' : ''
-        message += `🆚 vs ${block.scrim.opponent}${hostText ? ` — ${hostText}` : ''}\n\n`
+        message += `🆚 vs ${block.scrim.opponent}${hostText ? ` - ${hostText}` : ''}\n\n`
       } else {
         message += `🔍 Looking for Scrim\n\n`
       }
@@ -133,7 +133,7 @@ function formatScheduleMessageWithMap(
       const maxRoleLen = Math.max(...block.slots.map(s => (s.role || 'Role').length), 10)
       
       for (const slot of block.slots) {
-        let playerName = '—'
+        let playerName = '-'
         if (slot.isRinger && slot.ringerName) {
           playerName = `${slot.ringerName} ✦` // Star indicates ringer
         } else if (slot.playerId) {

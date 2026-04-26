@@ -8,7 +8,7 @@ import type { User } from '@/payload-types'
 import { UserRole } from '@/access/roles'
 
 /**
- * Quick Actions bar — prominent shortcut buttons for frequent admin tasks.
+ * Quick Actions bar - prominent shortcut buttons for frequent admin tasks.
  * Role-filtered: buttons only show if the user has access.
  */
 export default function QuickActionsWidget() {

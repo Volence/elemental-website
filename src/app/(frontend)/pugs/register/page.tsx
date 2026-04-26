@@ -69,7 +69,7 @@ export default async function PugRegisterPage() {
         <p className="text-gray-400 mb-6">
           Signed in as{' '}
           <span className="text-white font-medium">{user.name || user.email}</span>
-          {!hasDiscord && ' — you\'ll need to connect Discord to queue.'}
+          {!hasDiscord && ' - you\'ll need to connect Discord to queue.'}
         </p>
 
         {hasDiscord ? (
@@ -100,7 +100,7 @@ export default async function PugRegisterPage() {
       <h1 className="text-2xl font-bold mb-4">Register for Open-Tier PUGs</h1>
       <p className="text-gray-400 mb-6">
         Open tier is available to everyone. Sign up with Discord to create your account and get
-        registered in one step — no invite needed.
+        registered in one step - no invite needed.
       </p>
 
       <a

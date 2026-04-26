@@ -24,7 +24,7 @@ const PlayerDashboard: React.FC<{ user: User }> = ({ user }) => {
 
   const assignedTeams = user.assignedTeams as (number | { id: number; name?: string })[] | undefined
 
-  // Build team cards — one per assigned team
+  // Build team cards - one per assigned team
   const teamCards = (assignedTeams ?? []).map((team) => {
     const teamId = typeof team === 'object' ? team.id : team
     const teamName = typeof team === 'object' && team.name ? team.name : `Team ${teamId}`

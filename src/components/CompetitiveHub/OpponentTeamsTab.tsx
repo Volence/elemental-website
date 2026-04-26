@@ -66,9 +66,9 @@ export function OpponentTeamsTab() {
             : teams.map((t) => (
               <tr key={t.id} className="collection-list-tab__row">
                 <td className="collection-list-tab__title"><a href={`/admin/collections/opponent-teams/${t.id}`}>{t.name || `Team #${t.id}`}</a></td>
-                <td>{t.region || '—'}</td>
-                <td>{t.rank || '—'}</td>
-                <td><span className={`collection-list-tab__badge ${getStatusClass(t.status)}`}>{t.status || '—'}</span></td>
+                <td>{t.region || '-'}</td>
+                <td>{t.rank || '-'}</td>
+                <td><span className={`collection-list-tab__badge ${getStatusClass(t.status)}`}>{t.status || '-'}</span></td>
                 <td><a href={`/admin/collections/opponent-teams/${t.id}`} className="collection-list-tab__edit-link">Edit</a></td>
               </tr>
             ))}

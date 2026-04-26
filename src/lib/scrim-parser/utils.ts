@@ -1,6 +1,6 @@
 /**
  * Scrim analytics utility functions.
- * Ported from parsertime — framework-free versions.
+ * Ported from parsertime - framework-free versions.
  */
 
 import prisma from '@/lib/prisma'

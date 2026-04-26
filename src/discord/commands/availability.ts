@@ -131,7 +131,7 @@ export async function handleAvailability(
             `🕐 **Time Slots:** ${slotsText}\n` +
             `🌐 **Timezone:** ${timezone}\n\n` +
             `👉 **[Click here to fill in your availability](${calendarUrl})**\n\n` +
-            `_You'll sign in with Discord — takes 2 seconds._`
+            `_You'll sign in with Discord - takes 2 seconds._`
         )
         .setColor(0x00e5ff)
         .setFooter({ text: `ELMT ${team.name} • Responses: 0` })
@@ -182,7 +182,7 @@ function calculateStartDate(mode: string): Date {
   }
 
   if (mode === 'thisweek') {
-    // Start from this Monday — even if it's already past
+    // Start from this Monday - even if it's already past
     const thisMonday = new Date(today)
     const day = thisMonday.getDay()
     const delta = day === 0 ? -6 : 1 - day

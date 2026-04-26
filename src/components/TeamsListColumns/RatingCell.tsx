@@ -35,7 +35,7 @@ const RatingCell: React.FC<{ rowData: any }> = ({ rowData }) => {
           fontSize: '0.875rem',
         }}
       >
-        —
+        -
       </div>
     )
   }

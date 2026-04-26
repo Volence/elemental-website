@@ -15,7 +15,7 @@ export const BrandingGuideAnchor: CollectionConfig = {
   admin: {
     group: 'Departments',
     description: 'Visual branding color guide for all teams',
-    // Hidden from sidebar — now a tab in Graphics Dashboard
+    // Hidden from sidebar - now a tab in Graphics Dashboard
     hidden: true,
     components: {
       views: {
