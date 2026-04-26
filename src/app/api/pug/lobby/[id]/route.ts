@@ -70,12 +70,16 @@ export async function GET(request: NextRequest, { params }: Params) {
       heroes = (heroResult.docs as any[]).map((h) => ({ id: h.id, name: h.name, role: h.role }))
     }
 
+    const u = user as any
+    const isPugAdmin = u.departments?.isPugAdmin === true || u.role === 'admin'
+
     return NextResponse.json({
       lobby: { ...lobby, players: enrichedPlayers },
       selectedMap,
       mapCandidates,
       heroes,
       currentUserId: user.id,
+      isPugAdmin,
     })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })

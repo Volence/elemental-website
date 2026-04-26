@@ -43,6 +43,7 @@ type LobbyData = {
   mapCandidates: Array<{ id: number; name: string }>
   heroes: Hero[]
   currentUserId: number
+  isPugAdmin: boolean
 }
 
 export default function LobbyPage() {
@@ -95,7 +96,7 @@ export default function LobbyPage() {
   if (error) return <main className="container mx-auto p-8 text-red-400">{error}</main>
   if (!data) return <main className="container mx-auto p-8 text-gray-500">Loading...</main>
 
-  const { lobby, selectedMap, mapCandidates, heroes, currentUserId } = data
+  const { lobby, selectedMap, mapCandidates, heroes, currentUserId, isPugAdmin } = data
   const players: Player[] = lobby.players
   const me = players.find((p) => p.userId === currentUserId)
   const inLobby = !!me
@@ -173,6 +174,10 @@ export default function LobbyPage() {
             </div>
           ) : (
             <QueueForm onJoin={(roles) => apiAction('/queue', { roles })} />
+          )}
+
+          {isPugAdmin && (
+            <TestAddDummy lobbyId={id} onAdded={fetchState} />
           )}
         </div>
       )}
@@ -586,6 +591,71 @@ function TeamsDisplay({ players, currentUserId }: { players: Player[]; currentUs
           </ul>
         </div>
       ))}
+    </div>
+  )
+}
+
+// ── Admin test: add dummy player ──
+
+function TestAddDummy({ lobbyId, onAdded }: { lobbyId: string; onAdded: () => void }) {
+  const [selected, setSelected] = useState<string[]>([])
+  const [loading, setLoading] = useState(false)
+  const [msg, setMsg] = useState<string | null>(null)
+  const roles = ['tank', 'flex_dps', 'hitscan_dps', 'flex_support', 'main_support']
+
+  function toggle(role: string) {
+    setSelected((prev) => prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role])
+  }
+
+  async function add() {
+    if (selected.length === 0) { setMsg('Pick at least one role'); return }
+    setLoading(true)
+    setMsg(null)
+    try {
+      const res = await fetch(`/api/pug/lobby/${lobbyId}/test-add`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roles: selected }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setMsg(`Added ${data.dummyName}`)
+        setSelected([])
+        onAdded()
+      } else {
+        setMsg(data.error || 'Failed')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="border border-dashed border-gray-700 rounded-lg p-4 mt-2">
+      <p className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-3">Admin - Add Dummy Player</p>
+      <div className="flex flex-wrap gap-2 mb-3">
+        {roles.map((role) => (
+          <button
+            key={role}
+            onClick={() => toggle(role)}
+            className={`text-xs px-3 py-1.5 rounded border transition-colors ${
+              selected.includes(role)
+                ? ROLE_COLORS[role] + ' font-medium'
+                : 'border-gray-700 text-gray-400 hover:border-gray-500'
+            }`}
+          >
+            {ROLE_LABELS[role]}
+          </button>
+        ))}
+      </div>
+      {msg && <p className="text-xs text-gray-400 mb-2">{msg}</p>}
+      <button
+        onClick={add}
+        disabled={loading || selected.length === 0}
+        className="px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 disabled:opacity-40 text-white rounded transition-colors"
+      >
+        {loading ? 'Adding...' : 'Add Dummy'}
+      </button>
     </div>
   )
 }
