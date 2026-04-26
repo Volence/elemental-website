@@ -1413,6 +1413,10 @@ export interface User {
      * Content creator — streams appear in Creator Live channel instead of Player Live
      */
     isContentCreator?: boolean | null;
+    /**
+     * Grants access to PUG management (create seasons, manage invite-tier players, resolve disputes)
+     */
+    isPugAdmin?: boolean | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -4142,6 +4146,7 @@ export interface UsersSelect<T extends boolean = true> {
         isEventsStaff?: T;
         isScoutingStaff?: T;
         isContentCreator?: T;
+        isPugAdmin?: T;
       };
   updatedAt?: T;
   createdAt?: T;

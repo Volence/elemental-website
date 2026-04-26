@@ -276,6 +276,15 @@ export const Users: CollectionConfig = {
             description: 'Content creator — streams appear in Creator Live channel instead of Player Live',
           },
         },
+        {
+          name: 'isPugAdmin',
+          type: 'checkbox',
+          label: 'PUG Administrator',
+          defaultValue: false,
+          admin: {
+            description: 'Grants access to PUG management (create seasons, manage invite-tier players, resolve disputes)',
+          },
+        },
       ],
     },
   ],
