@@ -410,17 +410,21 @@ async function advanceToInProgress(lobbyId: number): Promise<void> {
   const lobby = await prisma.pugLobby.findUniqueOrThrow({ where: { id: lobbyId } })
   const payloadInst = await getPayload({ config: configPromise })
 
-  const getDiscordId = async (userId: number): Promise<string> => {
-    const u = await payloadInst.findByID({ collection: 'users', id: userId, overrideAccess: true })
-    return (u as any).discordId ?? ''
-  }
+  const allUserIds = players.map((p) => p.userId)
+  const allUsers = allUserIds.length > 0
+    ? await payloadInst.find({
+        collection: 'users',
+        where: { id: { in: allUserIds } },
+        overrideAccess: true,
+        limit: allUserIds.length,
+      })
+    : { docs: [] }
+  const discordIdByUserId = new Map(
+    (allUsers.docs as any[]).map((u: any) => [u.id, u.discordId ?? '']),
+  )
 
-  const team1Ids = (await Promise.all(
-    players.filter((p) => p.team === 1).map((p) => getDiscordId(p.userId)),
-  )).filter(Boolean)
-  const team2Ids = (await Promise.all(
-    players.filter((p) => p.team === 2).map((p) => getDiscordId(p.userId)),
-  )).filter(Boolean)
+  const team1Ids = players.filter((p) => p.team === 1).map((p) => discordIdByUserId.get(p.userId) ?? '').filter(Boolean)
+  const team2Ids = players.filter((p) => p.team === 2).map((p) => discordIdByUserId.get(p.userId) ?? '').filter(Boolean)
 
   const { createMatchVoiceChannels } = await import('@/discord/services/pugVoice')
   const { team1ChannelId, team2ChannelId } = await createMatchVoiceChannels(
