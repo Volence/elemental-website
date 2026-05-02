@@ -541,7 +541,7 @@ function DraftUI({
 }: {
   players: Player[]
   draftState: any
-  currentUserId: number
+  currentUserId: number | null
   isCaptain: boolean
   isPugAdmin: boolean
   onPick: (id: number) => void
@@ -652,7 +652,7 @@ function BanUI({
   banState: any
   draftState: any
   heroes: Hero[]
-  currentUserId: number
+  currentUserId: number | null
   isCaptain: boolean
   isPugAdmin: boolean
   onBan: (id: number) => void

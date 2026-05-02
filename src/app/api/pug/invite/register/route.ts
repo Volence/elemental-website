@@ -36,8 +36,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'This invite is not for PUG access' }, { status: 400 })
   }
 
-  const inviteRoles = invite.pugInvite?.approvedRoles ?? []
-  const region: string | undefined = invite.pugInvite?.region
+  const inviteRoles = (invite.pugInvite?.approvedRoles ?? []) as ('tank' | 'flex-dps' | 'hitscan-dps' | 'flex-support' | 'main-support')[]
+  const region = invite.pugInvite?.region as 'na' | 'emea' | 'pacific' | undefined
 
   try {
     const existing = await payload.find({
