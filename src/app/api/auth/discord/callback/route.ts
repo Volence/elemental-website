@@ -400,10 +400,40 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             isEventsStaff: invite.departments?.isEventsStaff || false,
             isScoutingStaff: invite.departments?.isScoutingStaff || false,
             isContentCreator: (invite.departments as any)?.isContentCreator || false,
+            isPugAdmin: (invite.departments as any)?.isPugAdmin || false,
           },
         },
         overrideAccess: true,
       })
+
+      // Register PUG player if invite has PUG settings
+      const pugInvite = (invite as any).pugInvite
+      if (pugInvite?.isForPug) {
+        try {
+          const pugData: Record<string, any> = {
+            user: newUser.id,
+            tiers: ['invite'],
+            registeredDate: new Date().toISOString(),
+            invitedBy: invite.createdBy
+              ? typeof invite.createdBy === 'object' ? invite.createdBy.id : invite.createdBy
+              : undefined,
+          }
+          if (pugInvite.approvedRoles?.length) {
+            pugData.approvedRoles = pugInvite.approvedRoles
+          }
+          if (pugInvite.region) {
+            pugData.inviteRegions = [pugInvite.region]
+          }
+          await payload.create({
+            collection: 'pug-players',
+            data: pugData,
+            overrideAccess: true,
+          })
+          console.log(`[Discord OAuth] Registered PUG player for user ${newUser.id} (invite tier, region: ${pugInvite.region || 'none'})`)
+        } catch (pugErr: any) {
+          console.error('[Discord OAuth] PUG player registration failed:', pugErr.message)
+        }
+      }
 
       // Mark invite as used
       await payload.update({
