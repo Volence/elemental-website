@@ -70,6 +70,31 @@ function playNotificationSound() {
   } catch {}
 }
 
+function Countdown({ deadline }: { deadline: string }) {
+  const [remaining, setRemaining] = useState('')
+
+  useEffect(() => {
+    function update() {
+      const diff = new Date(deadline).getTime() - Date.now()
+      if (diff <= 0) { setRemaining('0s'); return }
+      const secs = Math.ceil(diff / 1000)
+      setRemaining(`${secs}s`)
+    }
+    update()
+    const interval = setInterval(update, 1000)
+    return () => clearInterval(interval)
+  }, [deadline])
+
+  const diff = new Date(deadline).getTime() - Date.now()
+  const urgent = diff > 0 && diff < 15000
+
+  return (
+    <span className={`font-mono text-xs ${urgent ? 'text-red-400' : 'text-yellow-500'}`}>
+      {remaining}
+    </span>
+  )
+}
+
 const NOTIFY_STATUSES = new Set(['READY', 'DRAFTING', 'MAP_VOTE', 'BANNING', 'IN_PROGRESS', 'REPORTING'])
 
 export default function LobbyPage() {
@@ -305,7 +330,10 @@ export default function LobbyPage() {
       {/* ── MAP VOTE ── */}
       {lobby.status === 'MAP_VOTE' && (
         <div>
-          <h2 className="font-semibold mb-4">Vote for a Map</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-semibold">Vote for a Map</h2>
+            {lobby.mapVote?.voteDeadline && <Countdown deadline={lobby.mapVote.voteDeadline} />}
+          </div>
           {!inLobby && !isPugAdmin && <p className="text-gray-500 text-sm mb-4">Spectating - only players can vote.</p>}
           {isPugAdmin && <p className="text-yellow-600 text-xs mb-4">Admin: clicking a map selects it for all players immediately.</p>}
           <div className="grid grid-cols-3 gap-3">
@@ -574,7 +602,10 @@ function DraftUI({
               : "You're up! Make your pick."
             : `Waiting for Team ${pickingTeam}…`}
         </span>
-        <span className="text-xs opacity-70">Pick {draftState.pickNumber + 1}/8</span>
+        <span className="flex items-center gap-2 text-xs opacity-70">
+          Pick {draftState.pickNumber + 1}/8
+          {draftState.pickDeadline && <Countdown deadline={draftState.pickDeadline} />}
+        </span>
       </div>
 
       {/* Teams */}
@@ -701,7 +732,10 @@ function BanUI({
               : "You're up! Ban a hero."
             : `Team ${banState.currentBanTeam} is banning…`}
         </span>
-        <span className="text-xs opacity-70">Ban {banState.banNumber}/4</span>
+        <span className="flex items-center gap-2 text-xs opacity-70">
+          Ban {banState.banNumber}/4
+          {banState.banDeadline && <Countdown deadline={banState.banDeadline} />}
+        </span>
       </div>
 
       {/* Bans so far */}

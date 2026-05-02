@@ -307,6 +307,26 @@ export async function makeDraftPick(
     return
   }
 
+  // Auto-pick if only 1 undrafted player remains
+  const remaining = await prisma.pugLobbyPlayer.findMany({
+    where: { lobbyId, team: null, isCaptain: false },
+  })
+  if (remaining.length === 1) {
+    const lastPlayer = remaining[0]
+    picks.push({ userId: lastPlayer.userId, team: nextTeam!, pickNumber: nextPickNumber })
+    await prisma.pugLobbyPlayer.update({
+      where: { lobbyId_userId: { lobbyId, userId: lastPlayer.userId } },
+      data: { team: nextTeam! },
+    })
+    const finalPickNumber = nextPickNumber + 1
+    await prisma.pugDraftState.update({
+      where: { lobbyId },
+      data: { picks, pickNumber: finalPickNumber, currentPickTeam: getNextPickTeam(finalPickNumber) ?? 1, pickDeadline: null },
+    })
+    await advanceToMapVote(lobbyId)
+    return
+  }
+
   const newDeadline = new Date(Date.now() + DRAFT_PICK_TIMEOUT_MS)
   await prisma.pugDraftState.update({
     where: { lobbyId },
