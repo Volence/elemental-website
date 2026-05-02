@@ -55,6 +55,20 @@ const DEPARTMENTS = [
   { key: 'isContentCreator', label: 'Content Creator' },
 ] as const
 
+const PUG_ROLES = [
+  { key: 'tank', label: 'Tank' },
+  { key: 'flex-dps', label: 'Flex DPS' },
+  { key: 'hitscan-dps', label: 'Hitscan DPS' },
+  { key: 'flex-support', label: 'Flex Support' },
+  { key: 'main-support', label: 'Main Support' },
+] as const
+
+const PUG_REGION_OPTIONS = [
+  { key: 'na', label: 'NA' },
+  { key: 'emea', label: 'EMEA' },
+  { key: 'pacific', label: 'Pacific' },
+] as const
+
 const getRoleConfig = (role: string) => ROLES.find(r => r.value === role) ?? ROLES[4]
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
@@ -221,6 +235,11 @@ export function UserEditorView() {
   const [passwordStatus, setPasswordStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [passwordError, setPasswordError] = useState('')
   const [departments, setDepartments] = useState<Record<string, boolean>>({})
+  const [pugPlayer, setPugPlayer] = useState<any>(null)
+  const [pugLoading, setPugLoading] = useState(true)
+  const [pugRegions, setPugRegions] = useState<string[]>([])
+  const [pugApprovedRoles, setPugApprovedRoles] = useState<string[]>([])
+  const [pugSaveStatus, setPugSaveStatus] = useState<SaveStatus>('idle')
 
   const fetchData = useCallback(async () => {
     if (!userId) return
@@ -257,6 +276,24 @@ export function UserEditorView() {
       if (peopleRes.ok) {
         const p = await peopleRes.json()
         setAllPeople((p.docs ?? []).map((doc: any) => ({ id: doc.id, name: doc.name })))
+      }
+      // Fetch PUG player data
+      if (userId) {
+        try {
+          const pugRes = await fetch(`/api/pug-players?where[user][equals]=${userId}&depth=0&limit=1`)
+          if (pugRes.ok) {
+            const pugData = await pugRes.json()
+            const pp = pugData.docs?.[0] ?? null
+            setPugPlayer(pp)
+            if (pp) {
+              setPugRegions(pp.inviteRegions ?? [])
+              setPugApprovedRoles(pp.approvedRoles ?? [])
+            }
+          }
+        } catch {
+          // PUG data not critical
+        }
+        setPugLoading(false)
       }
     } catch (err) {
       console.error('User load error:', err)
@@ -333,6 +370,39 @@ export function UserEditorView() {
       setPasswordStatus('error')
       setPasswordError(err.message ?? 'Failed to reset password')
     }
+  }
+
+  const handlePugSave = async () => {
+    if (!pugPlayer?.id) return
+    setPugSaveStatus('saving')
+    try {
+      const res = await fetch(`/api/pug-players/${pugPlayer.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          inviteRegions: pugRegions,
+          approvedRoles: pugApprovedRoles,
+        }),
+      })
+      if (!res.ok) throw new Error('Failed to save PUG data')
+      setPugSaveStatus('saved')
+      setTimeout(() => setPugSaveStatus('idle'), 2500)
+    } catch {
+      setPugSaveStatus('error')
+      setTimeout(() => setPugSaveStatus('idle'), 2500)
+    }
+  }
+
+  const togglePugRegion = (region: string) => {
+    setPugRegions((prev) =>
+      prev.includes(region) ? prev.filter((r) => r !== region) : [...prev, region],
+    )
+  }
+
+  const togglePugRole = (role: string) => {
+    setPugApprovedRoles((prev) =>
+      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role],
+    )
   }
 
   if (loading) {
@@ -471,6 +541,109 @@ export function UserEditorView() {
                   <span key={t.id} className="team-chip selected">{t.name}</span>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* PUG Status */}
+          {isAdmin && (
+            <div className="profile-card" style={editorStyles.card}>
+              <h3 style={editorStyles.cardTitle}><Gamepad2 size={16} /> PUG Status</h3>
+              {pugLoading ? (
+                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>Loading...</p>
+              ) : !pugPlayer ? (
+                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>Not registered for PUGs</p>
+              ) : (
+                <>
+                  {/* Tiers */}
+                  <div style={{ marginBottom: 12 }}>
+                    <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>Registered Tiers</p>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      {(pugPlayer.tiers ?? []).map((t: string) => (
+                        <span
+                          key={t}
+                          style={{
+                            padding: '4px 10px',
+                            borderRadius: 6,
+                            fontSize: 12,
+                            fontWeight: 500,
+                            background: t === 'invite' ? 'rgba(139, 92, 246, 0.1)' : 'rgba(59, 130, 246, 0.1)',
+                            border: `1px solid ${t === 'invite' ? 'rgba(139, 92, 246, 0.3)' : 'rgba(59, 130, 246, 0.3)'}`,
+                            color: t === 'invite' ? '#a78bfa' : '#60a5fa',
+                            textTransform: 'capitalize',
+                          }}
+                        >
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Invite Regions */}
+                  {pugPlayer.tiers?.includes('invite') && (
+                    <div style={{ marginBottom: 12 }}>
+                      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>Invite Regions</p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                        {PUG_REGION_OPTIONS.map((r) => (
+                          <button
+                            key={r.key}
+                            className={`team-chip ${pugRegions.includes(r.key) ? 'selected' : ''}`}
+                            onClick={() => togglePugRegion(r.key)}
+                          >
+                            {pugRegions.includes(r.key) && <Check size={12} />}
+                            {r.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Approved Roles */}
+                  {pugPlayer.tiers?.includes('invite') && (
+                    <div style={{ marginBottom: 12 }}>
+                      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>Approved Roles</p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                        {PUG_ROLES.map((r) => (
+                          <button
+                            key={r.key}
+                            className={`team-chip ${pugApprovedRoles.includes(r.key) ? 'selected' : ''}`}
+                            onClick={() => togglePugRole(r.key)}
+                          >
+                            {pugApprovedRoles.includes(r.key) && <Check size={12} />}
+                            {r.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Active Ban */}
+                  {pugPlayer.activeBan?.bannedUntil && new Date(pugPlayer.activeBan.bannedUntil) > new Date() && (
+                    <div style={{ padding: '8px 12px', borderRadius: 6, background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', marginBottom: 12 }}>
+                      <p style={{ fontSize: 12, color: '#f87171', fontWeight: 500 }}>
+                        Banned until {new Date(pugPlayer.activeBan.bannedUntil).toLocaleString()}
+                      </p>
+                      {pugPlayer.activeBan.reason && (
+                        <p style={{ fontSize: 11, color: 'rgba(248, 113, 113, 0.7)', marginTop: 2 }}>{pugPlayer.activeBan.reason}</p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Save button */}
+                  {pugPlayer.tiers?.includes('invite') && (
+                    <button
+                      className="profile-save-btn"
+                      onClick={handlePugSave}
+                      disabled={pugSaveStatus === 'saving'}
+                      style={{ fontSize: 13, padding: '6px 14px', marginTop: 4 }}
+                    >
+                      {pugSaveStatus === 'saving' ? <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Saving...</>
+                        : pugSaveStatus === 'saved' ? <><Check size={14} /> Saved!</>
+                        : pugSaveStatus === 'error' ? <><AlertCircle size={14} /> Error</>
+                        : <><Save size={14} /> Save PUG Settings</>}
+                    </button>
+                  )}
+                </>
+              )}
             </div>
           )}
         </div>
