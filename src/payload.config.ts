@@ -215,6 +215,30 @@ const config = buildConfig({
           Component: '@/components/PugLobbies/ListRoute#default',
           path: '/pug-lobbies',
         },
+        pugPlayers: {
+          Component: '@/components/PugPlayers/ListRoute#default',
+          path: '/pug-players',
+        },
+        editPugPlayer: {
+          Component: '@/components/PugPlayers/EditRoute#default',
+          path: '/edit-pug-player',
+        },
+        pugMatches: {
+          Component: '@/components/PugMatches/ListRoute#default',
+          path: '/pug-matches',
+        },
+        editPugMatch: {
+          Component: '@/components/PugMatches/EditRoute#default',
+          path: '/edit-pug-match',
+        },
+        pugLeaderboard: {
+          Component: '@/components/PugLeaderboard/ListRoute#default',
+          path: '/pug-leaderboard',
+        },
+        editPugLeaderboard: {
+          Component: '@/components/PugLeaderboard/EditRoute#default',
+          path: '/edit-pug-leaderboard',
+        },
       },
     },
     importMap: {
