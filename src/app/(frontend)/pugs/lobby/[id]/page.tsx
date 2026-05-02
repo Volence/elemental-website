@@ -105,20 +105,25 @@ export default function LobbyPage() {
   const prevStatusRef = useRef<string | null>(null)
 
   const fetchState = useCallback(async () => {
-    const res = await fetch(`/api/pug/lobby/${id}`)
-    if (!res.ok) {
-      setError(res.status === 404 ? 'Lobby not found' : 'Failed to load lobby')
-      return
+    try {
+      const res = await fetch(`/api/pug/lobby/${id}`)
+      if (!res.ok) {
+        if (!data) setError(res.status === 404 ? 'Lobby not found' : 'Failed to load lobby')
+        return
+      }
+      setError(null)
+      const newData = await res.json()
+      const newStatus = newData.lobby?.status
+      const prevStatus = prevStatusRef.current
+      if (prevStatus && newStatus !== prevStatus && NOTIFY_STATUSES.has(newStatus)) {
+        playNotificationSound()
+      }
+      prevStatusRef.current = newStatus
+      setData(newData)
+    } catch {
+      if (!data) setError('Failed to load lobby')
     }
-    const newData = await res.json()
-    const newStatus = newData.lobby?.status
-    const prevStatus = prevStatusRef.current
-    if (prevStatus && newStatus !== prevStatus && NOTIFY_STATUSES.has(newStatus)) {
-      playNotificationSound()
-    }
-    prevStatusRef.current = newStatus
-    setData(newData)
-  }, [id])
+  }, [id, data])
 
   useEffect(() => {
     fetchState()
