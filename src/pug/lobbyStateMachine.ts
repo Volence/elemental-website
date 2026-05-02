@@ -11,7 +11,7 @@ import { applyEscalatingBan } from './cooldownBans'
 import { registerTimer, cancelTimer, timerKey } from './timers'
 import type { QueuedPlayer, PlayerRating, MatchResult, PugRole } from './types'
 import {
-  READY_COUNTDOWN_MS,
+  READY_CHECK_TIMEOUT_MS,
   DRAFT_PICK_TIMEOUT_MS,
   MAP_VOTE_TIMEOUT_MS,
   BAN_TIMEOUT_MS,
@@ -173,8 +173,80 @@ async function checkAndAdvanceToReady(lobbyId: number): Promise<void> {
   const assignment = findValidAssignment(queued)
   if (!assignment) return
 
+  await prisma.pugLobbyPlayer.updateMany({
+    where: { lobbyId },
+    data: { readyConfirmed: false },
+  })
   await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'READY', readyAt: new Date() } })
-  registerTimer(timerKey(lobbyId, 'ready'), READY_COUNTDOWN_MS, () => advanceToDrafting(lobbyId))
+  registerTimer(timerKey(lobbyId, 'ready'), READY_CHECK_TIMEOUT_MS, () => expireReadyCheck(lobbyId))
+
+  getDiscordIdsForLobby(lobbyId, await getPayload({ config: configPromise })).then(async (discordIds) => {
+    const { postFeedNotification } = await import('@/discord/services/pugFeed')
+    const { formatUserPings } = await import('@/discord/services/pugNotifications')
+    const lobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId } })
+    if (!lobby) return
+    await postFeedNotification(
+      lobby.tier as 'open' | 'invite',
+      `🔔 **PUG #${lobby.lobbyNumber}** queue is full! Ready up at: https://elmt.gg/pugs/lobby/${lobbyId}\n${formatUserPings(discordIds)}`,
+    )
+  }).catch(console.error)
+}
+
+export async function readyUp(lobbyId: number, userId: number): Promise<void> {
+  const lobby = await prisma.pugLobby.findUniqueOrThrow({ where: { id: lobbyId } })
+  if (lobby.status !== 'READY') throw new Error('Lobby is not in ready check')
+
+  const player = await prisma.pugLobbyPlayer.findFirst({
+    where: { lobbyId, userId },
+  })
+  if (!player) throw new Error('You are not in this lobby')
+  if (player.readyConfirmed) throw new Error('Already readied up')
+
+  await prisma.pugLobbyPlayer.update({
+    where: { lobbyId_userId: { lobbyId, userId } },
+    data: { readyConfirmed: true },
+  })
+
+  const allPlayers = await prisma.pugLobbyPlayer.findMany({ where: { lobbyId } })
+  const allReady = allPlayers.every((p) => p.readyConfirmed)
+  if (allReady) {
+    cancelTimer(timerKey(lobbyId, 'ready'))
+    await advanceToDrafting(lobbyId)
+  }
+}
+
+export async function expireReadyCheck(lobbyId: number): Promise<void> {
+  const lobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId } })
+  if (!lobby || lobby.status !== 'READY') return
+
+  const players = await prisma.pugLobbyPlayer.findMany({ where: { lobbyId } })
+  const notReady = players.filter((p) => !p.readyConfirmed)
+
+  if (notReady.length === 0) {
+    await advanceToDrafting(lobbyId)
+    return
+  }
+
+  const payload = await getPayload({ config: configPromise })
+  for (const p of notReady) {
+    await prisma.pugLobbyPlayer.delete({
+      where: { lobbyId_userId: { lobbyId, userId: p.userId } },
+    })
+    const pugPlayer = await payload.find({
+      collection: 'pug-players',
+      where: { user: { equals: p.userId } },
+      overrideAccess: true,
+      limit: 1,
+    })
+    if (pugPlayer.docs[0]) {
+      await applyEscalatingBan((pugPlayer.docs[0] as any).id, 'Failed to ready up')
+    }
+  }
+
+  await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'OPEN' } })
+  import('@/discord/services/pugFeed').then(({ updateLobbyFeed }) => {
+    updateLobbyFeed(lobbyId).catch(console.error)
+  })
 }
 
 export async function advanceToDrafting(lobbyId: number): Promise<void> {

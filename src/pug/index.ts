@@ -10,6 +10,7 @@ export {
   reportResult,
   confirmResult,
   disputeResult,
+  readyUp,
   cancelLobby,
   completeMatch,
   cancelExpiredLobby,

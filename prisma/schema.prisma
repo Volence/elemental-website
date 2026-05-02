@@ -752,9 +752,10 @@ model PugLobbyPlayer {
   queuedRoles  PugRole[]
   assignedRole PugRole?
   team         Int?
-  isCaptain    Boolean   @default(false)
-  joinedAt     DateTime  @default(now())
-  lobby        PugLobby  @relation(fields: [lobbyId], references: [id], onDelete: Cascade)
+  isCaptain      Boolean   @default(false)
+  readyConfirmed Boolean   @default(false)
+  joinedAt       DateTime  @default(now())
+  lobby          PugLobby  @relation(fields: [lobbyId], references: [id], onDelete: Cascade)
 
   @@unique([lobbyId, userId])
   @@map("pug_lobby_players")

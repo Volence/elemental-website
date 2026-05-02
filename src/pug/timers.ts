@@ -1,5 +1,5 @@
 import prisma from '@/lib/prisma'
-import { READY_COUNTDOWN_MS, RESULT_CONFIRM_TIMEOUT_MS } from './constants'
+import { READY_CHECK_TIMEOUT_MS, RESULT_CONFIRM_TIMEOUT_MS } from './constants'
 
 type TimerCallback = () => Promise<void>
 
@@ -31,7 +31,7 @@ export function timerKey(lobbyId: number, phase: string): string {
 }
 
 export async function recoverTimers(): Promise<void> {
-  const { advanceToDrafting, finalizeDraftPick, finalizeMapVote, finalizeBan, autoConfirmResult, cancelExpiredLobby } =
+  const { expireReadyCheck, finalizeDraftPick, finalizeMapVote, finalizeBan, autoConfirmResult, cancelExpiredLobby } =
     await import('./lobbyStateMachine')
 
   const activeLobbies = await prisma.pugLobby.findMany({
@@ -87,11 +87,11 @@ export async function recoverTimers(): Promise<void> {
 
     if (lobby.status === 'READY') {
       const baseline = lobby.readyAt ?? lobby.updatedAt
-      const readyDelay = baseline.getTime() + READY_COUNTDOWN_MS - now
+      const readyDelay = baseline.getTime() + READY_CHECK_TIMEOUT_MS - now
       if (readyDelay > 0) {
-        registerTimer(timerKey(lobby.id, 'ready'), readyDelay, () => advanceToDrafting(lobby.id))
+        registerTimer(timerKey(lobby.id, 'ready'), readyDelay, () => expireReadyCheck(lobby.id))
       } else {
-        await advanceToDrafting(lobby.id).catch(console.error)
+        await expireReadyCheck(lobby.id).catch(console.error)
       }
     }
 

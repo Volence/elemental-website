@@ -34,6 +34,7 @@ type Player = {
   name: string
   team: number | null
   isCaptain: boolean
+  readyConfirmed: boolean
   assignedRole: string | null
   queuedRoles: string[]
 }
@@ -304,11 +305,49 @@ export default function LobbyPage() {
         </div>
       )}
 
-      {/* ── READY: countdown ── */}
+      {/* ── READY: ready check ── */}
       {lobby.status === 'READY' && (
-        <div className="text-center py-12 border border-gray-800 rounded-lg">
-          <p className="text-2xl font-bold mb-2">Match Found!</p>
-          <p className="text-gray-400 mb-6">Draft starting in 30 seconds…</p>
+        <div className="space-y-4">
+          <div className="text-center py-8 border border-gray-800 rounded-lg">
+            <p className="text-2xl font-bold mb-2">Match Found!</p>
+            <p className="text-gray-400 mb-1">All players must ready up to start the draft.</p>
+            {lobby.readyAt && (
+              <p className="text-sm mb-6">
+                <Countdown deadline={new Date(new Date(lobby.readyAt).getTime() + 120000).toISOString()} />
+                {' '}remaining
+              </p>
+            )}
+            {inLobby && !me?.readyConfirmed && (
+              <button
+                onClick={() => apiAction('/ready', {})}
+                className="px-6 py-3 bg-green-700 text-white rounded-lg hover:bg-green-600 transition-colors text-base font-semibold"
+              >
+                Ready Up
+              </button>
+            )}
+            {inLobby && me?.readyConfirmed && (
+              <p className="text-green-400 font-semibold">You're ready!</p>
+            )}
+          </div>
+          <div className="border border-gray-800 rounded-lg overflow-hidden">
+            <div className="px-4 py-2.5 bg-gray-900/50 border-b border-gray-800">
+              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                Players ({players.filter((p) => p.readyConfirmed).length}/{players.length} ready)
+              </span>
+            </div>
+            <div className="divide-y divide-gray-800/50">
+              {players.map((p) => (
+                <div key={p.userId} className="flex items-center justify-between gap-3 px-4 py-2.5">
+                  <span className={`text-sm ${p.userId === currentUserId ? 'text-blue-300 font-medium' : 'text-gray-200'}`}>
+                    {p.name}{p.userId === currentUserId && ' (you)'}
+                  </span>
+                  <span className={`text-xs px-2 py-0.5 rounded ${p.readyConfirmed ? 'bg-green-900/50 text-green-400 border border-green-800' : 'bg-gray-800/50 text-gray-500 border border-gray-700'}`}>
+                    {p.readyConfirmed ? 'Ready' : 'Not ready'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
           {inLobby && (
             <button
               onClick={leaveQueue}
