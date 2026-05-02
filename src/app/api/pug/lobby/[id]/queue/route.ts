@@ -44,6 +44,15 @@ export async function POST(request: NextRequest, { params }: Params) {
     if (!pugPlayer.tiers?.includes('invite')) {
       return NextResponse.json({ error: 'Not registered for invite tier' }, { status: 403 })
     }
+    if (lobby.region) {
+      const playerRegions: string[] = pugPlayer.inviteRegions ?? []
+      if (!playerRegions.includes(lobby.region)) {
+        return NextResponse.json(
+          { error: `Not invited to the ${lobby.region.toUpperCase()} region` },
+          { status: 403 },
+        )
+      }
+    }
     const approvedRolesNormalized = (pugPlayer.approvedRoles ?? []).map((r: string) => r.replace(/-/g, '_'))
     const invalidRoles = roles.filter((r: string) => !approvedRolesNormalized.includes(r))
     if (invalidRoles.length > 0) {
