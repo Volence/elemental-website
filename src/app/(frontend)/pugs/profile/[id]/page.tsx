@@ -1,5 +1,6 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
+import Link from 'next/link'
 import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
@@ -47,9 +48,11 @@ export default async function PugProfilePage({
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-1">{displayName}</h1>
+      <Link href="/pugs" className="text-sm text-gray-500 hover:text-gray-300 transition-colors">← PUGs</Link>
+      <h1 className="text-2xl font-bold mt-1 mb-1">{displayName}</h1>
       <p className="text-sm text-gray-500 mb-6">
         Registered: {pugPlayer.tiers?.join(', ')} tier
+        {pugPlayer.inviteRegions?.length > 0 && ` · Regions: ${pugPlayer.inviteRegions.map((r: string) => r.toUpperCase()).join(', ')}`}
         {pugPlayer.registeredDate && ` · Since ${new Date(pugPlayer.registeredDate).toLocaleDateString()}`}
       </p>
 
@@ -60,15 +63,20 @@ export default async function PugProfilePage({
         <div className="space-y-3">
           {leaderboardEntries.docs.map((entry: any) => {
             const seasonName = typeof entry.season === 'object' ? entry.season?.name : `Season #${entry.season}`
+            const regionLabel = entry.region ? ` - ${entry.region.toUpperCase()}` : ''
             return (
-              <div key={entry.id} className="border rounded p-4">
+              <div key={entry.id} className="border border-gray-700 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-medium">{seasonName}</span>
+                  <span className="font-medium">{seasonName}{regionLabel}</span>
                   <span className="text-sm text-gray-500 capitalize">{entry.tier} tier</span>
                 </div>
-                <div className="text-sm text-gray-600">
-                  Rating: <strong className="font-mono">{entry.rating}</strong> ·
-                  {' '}{entry.wins}W {entry.losses}L {entry.draws}D · {entry.gamesPlayed} games
+                <div className="text-sm text-gray-400">
+                  Rating: <strong className="font-mono text-blue-300">{entry.rating}</strong>
+                  {' · '}
+                  <span className="text-green-400">{entry.wins}W</span>{' '}
+                  <span className="text-red-400">{entry.losses}L</span>{' '}
+                  <span className="text-gray-500">{entry.draws}D</span>
+                  {' · '}{entry.gamesPlayed} games
                 </div>
               </div>
             )
