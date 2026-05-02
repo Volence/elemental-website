@@ -10,16 +10,20 @@ export async function GET(request: NextRequest) {
   const url = new URL(request.url)
   const tier = url.searchParams.get('tier') ?? 'open'
   const seasonId = url.searchParams.get('seasonId')
+  const region = url.searchParams.get('region')
   if (!seasonId) return NextResponse.json({ error: 'seasonId required' }, { status: 400 })
+
+  const whereConditions: any[] = [
+    { tier: { equals: tier } },
+    { season: { equals: parseInt(seasonId, 10) } },
+  ]
+  if (region) {
+    whereConditions.push({ region: { equals: region } })
+  }
 
   const entries = await payload.find({
     collection: 'pug-leaderboard',
-    where: {
-      and: [
-        { tier: { equals: tier } },
-        { season: { equals: parseInt(seasonId, 10) } },
-      ],
-    },
+    where: { and: whereConditions },
     sort: '-rating',
     limit: 100,
     depth: 2,
