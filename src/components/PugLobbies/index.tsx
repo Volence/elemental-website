@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Gamepad2, Power, PowerOff, ExternalLink, XCircle, Loader2, Users, Clock, Trophy, SkipForward, Map } from 'lucide-react'
+import { Gamepad2, Power, PowerOff, ExternalLink, XCircle, Loader2, Users, Clock, Trophy, SkipForward, Map, AlertTriangle } from 'lucide-react'
 import { PUG_ADMIN_CSS, timeAgo } from '@/components/pugAdminStyles'
 
 type Lobby = {
@@ -36,6 +36,7 @@ const STATUS_CLASSES: Record<string, string> = {
   BANNING: 'ps-status-banning',
   IN_PROGRESS: 'ps-status-in_progress',
   REPORTING: 'ps-status-reporting',
+  DISPUTED: 'ps-status-disputed',
 }
 
 function GraceCountdown({ timeoutAt }: { timeoutAt: string }) {
@@ -302,6 +303,48 @@ export function PugLobbiesDashboard() {
                     disabled={acting === `${lobby.id}-/report`}
                   >
                     Draw
+                  </button>
+                </>
+              )}
+              {lobby.status === 'DISPUTED' && (
+                <>
+                  <span style={{ fontSize: 11, color: '#f87171', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <AlertTriangle size={12} /> Needs resolution
+                  </span>
+                  <button
+                    className="ps-btn ps-btn-success"
+                    style={{ padding: '6px 10px', fontSize: 12 }}
+                    onClick={() => lobbyAction(lobby.id, '/resolve', { result: 'team1' })}
+                    disabled={acting === `${lobby.id}-/resolve`}
+                  >
+                    {acting === `${lobby.id}-/resolve` ? <Loader2 size={12} className="ps-spin" /> : <><Trophy size={12} /> Team 1 Won</>}
+                  </button>
+                  <button
+                    className="ps-btn ps-btn-warning"
+                    style={{ padding: '6px 10px', fontSize: 12 }}
+                    onClick={() => lobbyAction(lobby.id, '/resolve', { result: 'team2' })}
+                    disabled={acting === `${lobby.id}-/resolve`}
+                  >
+                    <Trophy size={12} /> Team 2 Won
+                  </button>
+                  <button
+                    className="ps-btn ps-btn-ghost"
+                    style={{ padding: '6px 10px', fontSize: 12 }}
+                    onClick={() => lobbyAction(lobby.id, '/resolve', { result: 'draw' })}
+                    disabled={acting === `${lobby.id}-/resolve`}
+                  >
+                    Draw
+                  </button>
+                  <button
+                    className="ps-btn ps-btn-danger"
+                    style={{ padding: '6px 10px', fontSize: 12 }}
+                    onClick={() => {
+                      if (confirm('Cancel this disputed match? No rating changes will be applied.'))
+                        lobbyAction(lobby.id, '/resolve', { result: 'cancel' })
+                    }}
+                    disabled={acting === `${lobby.id}-/resolve`}
+                  >
+                    <XCircle size={12} /> Cancel Match
                   </button>
                 </>
               )}

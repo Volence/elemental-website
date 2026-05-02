@@ -91,6 +91,7 @@ export const PUG_ADMIN_CSS = `
   .ps-status-banning { background: rgba(249,115,22,0.15); color: #fb923c; }
   .ps-status-in_progress { background: rgba(6,182,212,0.15); color: #22d3ee; }
   .ps-status-reporting { background: rgba(100,116,139,0.15); color: #94a3b8; }
+  .ps-status-disputed { background: rgba(239,68,68,0.15); color: #f87171; }
 
   /* Region control cards */
   .ps-region-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }

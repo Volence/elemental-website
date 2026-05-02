@@ -465,10 +465,30 @@ export default function LobbyPage() {
       )}
 
       {lobby.status === 'DISPUTED' && (
-        <div className="text-center py-12">
-          <p className="text-xl font-semibold text-yellow-400">Result disputed</p>
-          <p className="text-gray-500 text-sm mt-2">An admin will review and resolve this match.</p>
+        <div className="space-y-4">
+          <div className="text-center py-8">
+            <p className="text-xl font-semibold text-yellow-400">Result disputed</p>
+            <p className="text-gray-500 text-sm mt-2">
+              {isPugAdmin ? 'Resolve this dispute by selecting the correct result.' : 'An admin will review and resolve this match.'}
+            </p>
+          </div>
           <TeamsDisplay players={players} currentUserId={currentUserId} heroes={heroes} banState={lobby.banState} />
+          {isPugAdmin && (
+            <div className="border border-red-900/50 rounded-lg overflow-hidden">
+              <div className="px-4 py-2.5 bg-red-950/30 border-b border-red-900/50">
+                <span className="text-xs font-semibold text-red-400 uppercase tracking-wider">Admin - Resolve Dispute</span>
+              </div>
+              <div className="px-4 py-3 flex gap-3 flex-wrap">
+                <button onClick={() => apiAction('/resolve', { result: 'team1' })} className="px-4 py-2 bg-blue-900/40 border border-blue-800 text-blue-300 rounded hover:bg-blue-900 text-sm transition-colors font-medium">Team 1 Won</button>
+                <button onClick={() => apiAction('/resolve', { result: 'team2' })} className="px-4 py-2 bg-orange-900/40 border border-orange-800 text-orange-300 rounded hover:bg-orange-900 text-sm transition-colors font-medium">Team 2 Won</button>
+                <button onClick={() => apiAction('/resolve', { result: 'draw' })} className="px-4 py-2 border border-gray-700 text-gray-400 rounded hover:bg-gray-800 text-sm transition-colors">Draw</button>
+                <button
+                  onClick={() => { if (confirm('Cancel this match? No rating changes will be applied.')) apiAction('/resolve', { result: 'cancel' }) }}
+                  className="px-4 py-2 border border-red-800 text-red-400 rounded hover:bg-red-950 text-sm transition-colors"
+                >Cancel Match</button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </main>
@@ -623,11 +643,11 @@ function DraftUI({
               </div>
               <ul className="divide-y divide-gray-800/50">
                 {teamPlayers.map((p) => (
-                  <li key={p.userId} className="flex items-center gap-2 px-3 py-2">
-                    <span className={`text-sm flex-1 ${p.userId === currentUserId ? TEAM_TEXT[t] + ' font-medium' : 'text-gray-200'}`}>
+                  <li key={p.userId} className="flex items-center justify-between gap-2 px-3 py-2">
+                    <span className={`text-sm truncate min-w-0 ${p.userId === currentUserId ? TEAM_TEXT[t] + ' font-medium' : 'text-gray-200'}`}>
                       {p.name}{p.isCaptain && ' ★'}{p.userId === currentUserId && ' (you)'}
                     </span>
-                    {p.assignedRole && <RoleBadge role={p.assignedRole} />}
+                    {p.assignedRole && <span className="shrink-0"><RoleBadge role={p.assignedRole} /></span>}
                   </li>
                 ))}
                 {teamPlayers.length === 0 && (
@@ -852,11 +872,11 @@ function TeamsDisplay({ players, currentUserId, heroes, banState }: { players: P
             </div>
             <ul className="divide-y divide-gray-800/50">
               {list.map((p) => (
-                <li key={p.userId} className="flex items-center gap-2 px-3 py-2">
-                  <span className={`text-sm flex-1 ${p.userId === currentUserId ? (t === 1 ? 'text-blue-300' : 'text-orange-300') + ' font-medium' : 'text-gray-200'}`}>
+                <li key={p.userId} className="flex items-center justify-between gap-2 px-3 py-2">
+                  <span className={`text-sm truncate min-w-0 ${p.userId === currentUserId ? (t === 1 ? 'text-blue-300' : 'text-orange-300') + ' font-medium' : 'text-gray-200'}`}>
                     {p.name}{p.isCaptain && ' ★'}{p.userId === currentUserId && ' (you)'}
                   </span>
-                  {p.assignedRole && <RoleBadge role={p.assignedRole} />}
+                  {p.assignedRole && <span className="shrink-0"><RoleBadge role={p.assignedRole} /></span>}
                 </li>
               ))}
             </ul>

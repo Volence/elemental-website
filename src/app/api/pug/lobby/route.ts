@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
 
   const where: any = {
     tier: tier as any,
-    status: { in: ['OPEN', 'READY', 'DRAFTING', 'MAP_VOTE', 'BANNING', 'IN_PROGRESS', 'REPORTING'] },
+    status: { in: ['OPEN', 'READY', 'DRAFTING', 'MAP_VOTE', 'BANNING', 'IN_PROGRESS', 'REPORTING', 'DISPUTED'] },
   }
   if (region) {
     where.region = region
