@@ -720,6 +720,7 @@ model PugLobby {
   id                   Int            @id @default(autoincrement())
   lobbyNumber          Int
   tier                 PugTier
+  region               String?
   status               PugLobbyStatus @default(OPEN)
   payloadSeasonId      Int?
   scheduledWindowStart DateTime?
