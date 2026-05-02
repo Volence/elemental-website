@@ -465,7 +465,8 @@ export default function LobbyPage() {
                   <strong className="text-white">
                     {pending.result === 'team1' ? 'Team 1 Won' : pending.result === 'team2' ? 'Team 2 Won' : 'Draw'}
                   </strong>
-                  {' '}- auto-confirms in 10 minutes.
+                  {' '}- auto-confirms in{' '}
+                  {lobby.reportingAt ? <Countdown deadline={new Date(new Date(lobby.reportingAt).getTime() + 120000).toISOString()} /> : '2 minutes'}.
                 </p>
                 {isCaptain && me?.team !== players.find((p) => p.userId === pending.reportedBy)?.team && (
                   <div className="flex gap-3">
