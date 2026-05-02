@@ -118,6 +118,7 @@ const config = buildConfig({
         '@/components/BeforeDashboard/DashboardNavLink',
         '@/components/BeforeDashboard/CalendarNavLink#default',
         '@/components/BeforeDashboard/ScrimAnalyticsNavLinks#default',
+        '@/components/BeforeDashboard/PugLobbiesNavLink#default',
         '@/components/BeforeDashboard/MyProfileNavLink#default',
         '@/components/BeforeDashboard/SidebarScrollPreserver#default',
       ],

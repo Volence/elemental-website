@@ -105,6 +105,14 @@ export default function AdminProviders({ children }: { children: React.ReactNode
       '/admin/edit-invite': '/collections/invite-links',
       '/admin/manage-users': '/collections/users',
       '/admin/edit-user': '/collections/users',
+      '/admin/pug-seasons': '/collections/pug-seasons',
+      '/admin/edit-pug-season': '/collections/pug-seasons',
+      '/admin/pug-players': '/collections/pug-players',
+      '/admin/edit-pug-player': '/collections/pug-players',
+      '/admin/pug-matches': '/collections/pug-matches',
+      '/admin/edit-pug-match': '/collections/pug-matches',
+      '/admin/pug-leaderboard': '/collections/pug-leaderboard',
+      '/admin/edit-pug-leaderboard': '/collections/pug-leaderboard',
     }
     const target = routeToCollection[pathname]
     if (!target) return
