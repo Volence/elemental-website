@@ -7,7 +7,7 @@ export const PugLeaderboard: CollectionConfig = {
   labels: { singular: 'PUG Leaderboard Entry', plural: 'PUG Leaderboard' },
   admin: {
     group: 'PUGs',
-    defaultColumns: ['player', 'season', 'tier', 'rating', 'wins', 'losses', 'gamesPlayed'],
+    defaultColumns: ['player', 'season', 'tier', 'region', 'rating', 'wins', 'losses', 'gamesPlayed'],
     description: 'Per-player Glicko-2 rating and stats per season per tier. Created by the engine when a player first plays in a season; updated after each completed match.',
   },
   access: {
@@ -37,6 +37,19 @@ export const PugLeaderboard: CollectionConfig = {
         { label: 'Open', value: 'open' },
         { label: 'Invite', value: 'invite' },
       ],
+    },
+    {
+      name: 'region',
+      type: 'select',
+      options: [
+        { label: 'NA', value: 'na' },
+        { label: 'EMEA', value: 'emea' },
+        { label: 'Pacific', value: 'pacific' },
+      ],
+      admin: {
+        description: 'Region for invite-tier entries. Null for open tier.',
+        condition: (data) => data?.tier === 'invite',
+      },
     },
     {
       type: 'row',

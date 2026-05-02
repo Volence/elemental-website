@@ -206,6 +206,21 @@ export const InviteLinks: CollectionConfig = {
             { label: 'Main Support', value: 'main-support' },
           ],
         },
+        {
+          name: 'region',
+          type: 'select',
+          label: 'Invite Region',
+          required: true,
+          admin: {
+            description: 'Which region this invite grants access to.',
+            condition: (data) => data?.pugInvite?.isForPug === true,
+          },
+          options: [
+            { label: 'NA', value: 'na' },
+            { label: 'EMEA', value: 'emea' },
+            { label: 'Pacific', value: 'pacific' },
+          ],
+        },
       ],
     },
     {

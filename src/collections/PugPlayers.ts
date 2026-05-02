@@ -57,6 +57,20 @@ export const PugPlayers: CollectionConfig = {
       },
     },
     {
+      name: 'inviteRegions',
+      type: 'select',
+      hasMany: true,
+      options: [
+        { label: 'NA', value: 'na' },
+        { label: 'EMEA', value: 'emea' },
+        { label: 'Pacific', value: 'pacific' },
+      ],
+      admin: {
+        description: 'Which invite-tier regions this player has access to.',
+        condition: (data) => data?.tiers?.includes('invite'),
+      },
+    },
+    {
       name: 'registeredDate',
       type: 'date',
       admin: { readOnly: true, description: 'Auto-set on registration.' },
