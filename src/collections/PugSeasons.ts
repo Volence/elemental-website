@@ -10,6 +10,9 @@ export const PugSeasons: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'tier', 'active', 'startDate', 'endDate'],
     description: 'PUG seasons. Each tier (open/invite) has its own season with independent leaderboards.',
+    components: {
+      beforeList: ['@/components/PugSeasons/ListRedirect#default'],
+    },
   },
   access: {
     read: authenticated,
@@ -61,6 +64,67 @@ export const PugSeasons: CollectionConfig = {
       },
     },
     {
+      name: 'mapPool',
+      type: 'group',
+      label: 'Map Pool',
+      admin: {
+        description: 'Maps available for voting in this season. At least 3 total required for map vote to work.',
+        style: { paddingBottom: '200px' },
+      },
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'control',
+              type: 'relationship',
+              relationTo: 'maps',
+              hasMany: true,
+              label: 'Control',
+              admin: { width: '50%' },
+            },
+            {
+              name: 'hybrid',
+              type: 'relationship',
+              relationTo: 'maps',
+              hasMany: true,
+              label: 'Hybrid',
+              admin: { width: '50%' },
+            },
+          ],
+        },
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'push',
+              type: 'relationship',
+              relationTo: 'maps',
+              hasMany: true,
+              label: 'Push',
+              admin: { width: '33%' },
+            },
+            {
+              name: 'escort',
+              type: 'relationship',
+              relationTo: 'maps',
+              hasMany: true,
+              label: 'Escort',
+              admin: { width: '33%' },
+            },
+            {
+              name: 'flashpoint',
+              type: 'relationship',
+              relationTo: 'maps',
+              hasMany: true,
+              label: 'Flashpoint',
+              admin: { width: '33%' },
+            },
+          ],
+        },
+      ],
+    },
+    {
       name: 'timeWindows',
       type: 'array',
       admin: {
@@ -100,6 +164,19 @@ export const PugSeasons: CollectionConfig = {
           defaultValue: 'America/New_York',
           admin: { placeholder: 'IANA timezone, e.g., America/New_York' },
         },
+      ],
+    },
+    {
+      name: 'regionQueueStatus',
+      type: 'group',
+      admin: {
+        condition: (data) => data?.tier === 'invite',
+        description: 'Per-region queue open/close state. Managed from the PUG Lobbies admin page.',
+      },
+      fields: [
+        { name: 'na', type: 'checkbox', defaultValue: false, label: 'NA Open' },
+        { name: 'emea', type: 'checkbox', defaultValue: false, label: 'EMEA Open' },
+        { name: 'pacific', type: 'checkbox', defaultValue: false, label: 'Pacific Open' },
       ],
     },
   ],

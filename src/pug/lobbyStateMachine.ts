@@ -66,33 +66,38 @@ export async function createOpenLobby(createdByUserId: number, payloadSeasonId: 
 
 export async function createInviteLobby(
   payloadSeasonId: number,
-  windowStart: Date,
-  windowEnd: Date,
   region: string,
+  windowEnd?: Date,
 ) {
   const lastLobby = await prisma.pugLobby.findFirst({
     where: { tier: 'invite' },
     orderBy: { lobbyNumber: 'desc' },
   })
   const lobbyNumber = (lastLobby?.lobbyNumber ?? 0) + 1
-  const timeoutAt = new Date(windowEnd.getTime() + INVITE_TIER_LATE_CANCEL_MS)
 
-  const lobby = await prisma.pugLobby.create({
-    data: {
-      lobbyNumber,
-      tier: 'invite',
-      status: 'OPEN',
-      payloadSeasonId,
-      region,
-      scheduledWindowStart: windowStart,
-      scheduledWindowEnd: windowEnd,
-      timeoutAt,
-    },
-  })
+  const data: any = {
+    lobbyNumber,
+    tier: 'invite',
+    status: 'OPEN',
+    payloadSeasonId,
+    region,
+  }
 
-  registerTimer(timerKey(lobby.id, 'timeout'), INVITE_TIER_LATE_CANCEL_MS, () =>
-    cancelExpiredLobby(lobby.id),
-  )
+  if (windowEnd) {
+    const timeoutAt = new Date(windowEnd.getTime() + INVITE_TIER_LATE_CANCEL_MS)
+    data.scheduledWindowEnd = windowEnd
+    data.timeoutAt = timeoutAt
+  }
+
+  const lobby = await prisma.pugLobby.create({ data })
+
+  if (windowEnd) {
+    const timeoutMs = data.timeoutAt!.getTime() - Date.now()
+    registerTimer(timerKey(lobby.id, 'timeout'), timeoutMs, () =>
+      cancelExpiredLobby(lobby.id),
+    )
+  }
+
   import('@/discord/services/pugFeed').then(({ updateLobbyFeed }) => {
     updateLobbyFeed(lobby.id).catch(console.error)
   })
