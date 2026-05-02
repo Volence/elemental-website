@@ -33,6 +33,22 @@ async function getDiscordIdsForLobby(lobbyId: number, payloadInstance: any): Pro
   return (users.docs as any[]).map((u: any) => u.discordId).filter(Boolean)
 }
 
+function canAllBeAssigned(players: Array<{ queuedRoles: string[] }>): boolean {
+  const slots: Record<string, number> = { tank: 0, flex_dps: 0, hitscan_dps: 0, flex_support: 0, main_support: 0 }
+  function backtrack(i: number): boolean {
+    if (i === players.length) return true
+    for (const role of players[i].queuedRoles) {
+      if ((slots[role] ?? 0) < 2) {
+        slots[role]++
+        if (backtrack(i + 1)) return true
+        slots[role]--
+      }
+    }
+    return false
+  }
+  return backtrack(0)
+}
+
 export async function createOpenLobby(createdByUserId: number, payloadSeasonId: number) {
   const lastLobby = await prisma.pugLobby.findFirst({
     where: { tier: 'open' },
@@ -52,6 +68,7 @@ export async function createInviteLobby(
   payloadSeasonId: number,
   windowStart: Date,
   windowEnd: Date,
+  region: string,
 ) {
   const lastLobby = await prisma.pugLobby.findFirst({
     where: { tier: 'invite' },
@@ -66,6 +83,7 @@ export async function createInviteLobby(
       tier: 'invite',
       status: 'OPEN',
       payloadSeasonId,
+      region,
       scheduledWindowStart: windowStart,
       scheduledWindowEnd: windowEnd,
       timeoutAt,
@@ -84,6 +102,13 @@ export async function createInviteLobby(
 export async function joinLobby(lobbyId: number, userId: number, roles: string[]): Promise<void> {
   const lobby = await prisma.pugLobby.findUniqueOrThrow({ where: { id: lobbyId } })
   if (lobby.status !== 'OPEN') throw new Error('Lobby is not accepting players')
+
+  const allPlayers = await prisma.pugLobbyPlayer.findMany({ where: { lobbyId } })
+  const others = allPlayers.filter((p) => p.userId !== userId)
+  const withNew = [...others.map((p) => ({ queuedRoles: p.queuedRoles as string[] })), { queuedRoles: roles }]
+  if (!canAllBeAssigned(withNew)) {
+    throw new Error('No valid role assignment is possible with your selected roles - some role slots are full')
+  }
 
   await prisma.pugLobbyPlayer.upsert({
     where: { lobbyId_userId: { lobbyId, userId } },
@@ -154,14 +179,17 @@ export async function advanceToDrafting(lobbyId: number): Promise<void> {
   const lobbyPlayers = await prisma.pugLobbyPlayer.findMany({ where: { lobbyId } })
   const payload = await getPayload({ config: configPromise })
 
+  const lbWhere: any[] = [
+    { tier: { equals: lobby.tier } },
+    { season: { equals: lobby.payloadSeasonId } },
+  ]
+  if (lobby.region) {
+    lbWhere.push({ region: { equals: lobby.region } })
+  }
+
   const lb = await payload.find({
     collection: 'pug-leaderboard',
-    where: {
-      and: [
-        { tier: { equals: lobby.tier } },
-        { season: { equals: lobby.payloadSeasonId } },
-      ],
-    },
+    where: { and: lbWhere },
     overrideAccess: true,
     limit: 100,
   })
@@ -244,6 +272,14 @@ export async function makeDraftPick(
   })
   if (!pickedPlayer) throw new Error('Picked player is not available in this lobby')
 
+  // Enforce 1 role per team
+  if (pickedPlayer.assignedRole) {
+    const roleAlreadyOnTeam = await prisma.pugLobbyPlayer.findFirst({
+      where: { lobbyId, team: draft.currentPickTeam, assignedRole: pickedPlayer.assignedRole },
+    })
+    if (roleAlreadyOnTeam) throw new Error(`Team ${draft.currentPickTeam} already has a ${pickedPlayer.assignedRole}`)
+  }
+
   cancelTimer(timerKey(lobbyId, 'draft'))
 
   const picks = draft.picks as { userId: number; team: number; pickNumber: number }[]
@@ -297,13 +333,25 @@ export async function finalizeDraftPick(lobbyId: number): Promise<void> {
 
 async function advanceToMapVote(lobbyId: number): Promise<void> {
   const payload = await getPayload({ config: configPromise })
-  const maps = await payload.find({
-    collection: 'maps',
-    where: { pugEligible: { equals: true } },
-    overrideAccess: true,
-    limit: 100,
-  })
-  const eligibleIds = (maps.docs as any[]).map((m) => m.id as number)
+
+  const lobby = await prisma.pugLobby.findUniqueOrThrow({ where: { id: lobbyId } })
+  const season = lobby.payloadSeasonId
+    ? await payload.findByID({ collection: 'pug-seasons', id: lobby.payloadSeasonId, overrideAccess: true })
+    : null
+  const pool = (season as any)?.mapPool ?? {}
+  const allEntries: Array<number | { id: number }> = [
+    ...(pool.control ?? []),
+    ...(pool.hybrid ?? []),
+    ...(pool.push ?? []),
+    ...(pool.escort ?? []),
+    ...(pool.flashpoint ?? []),
+  ]
+  const eligibleIds: number[] = allEntries.map((m) => (typeof m === 'object' ? m.id : m))
+
+  if (eligibleIds.length < 3) {
+    await advanceToBanning(lobbyId)
+    return
+  }
   const candidates = drawMapCandidates(eligibleIds)
   const voteDeadline = new Date(Date.now() + MAP_VOTE_TIMEOUT_MS)
 
@@ -367,12 +415,14 @@ export async function makeBan(
   const payload = await getPayload({ config: configPromise })
   const heroes = await payload.find({ collection: 'heroes', overrideAccess: true, limit: 200 })
   const heroRoles: Record<number, 'tank' | 'dps' | 'support'> = {}
+  const heroNames: Record<number, string> = {}
   for (const h of heroes.docs as any[]) {
     heroRoles[h.id] = h.role === 'dps' ? 'dps' : h.role
+    heroNames[h.id] = h.name
   }
 
   const existingBans = banState.bans as { heroId: number; team: number; banNumber: number }[]
-  const newBans = applyBan(existingBans as any, heroId, banState.currentBanTeam as 1 | 2, heroRoles)
+  const newBans = applyBan(existingBans as any, heroId, banState.currentBanTeam as 1 | 2, heroRoles, heroNames)
   const newBanNumber = banState.banNumber + 1
   const nextTeam = getNextBanTeam(newBanNumber)
 
@@ -581,15 +631,18 @@ export async function completeMatch(lobbyId: number, result: MatchResult): Promi
       const pugPlayer = (pugPlayerResult.docs[0] as any)
       if (!pugPlayer) return null
 
+      const lbWhere: any[] = [
+        { player: { equals: pugPlayer.id } },
+        { season: { equals: lobby.payloadSeasonId } },
+        { tier: { equals: lobby.tier } },
+      ]
+      if (lobby.region) {
+        lbWhere.push({ region: { equals: lobby.region } })
+      }
+
       const lbResult = await payload.find({
         collection: 'pug-leaderboard',
-        where: {
-          and: [
-            { player: { equals: pugPlayer.id } },
-            { season: { equals: lobby.payloadSeasonId } },
-            { tier: { equals: lobby.tier } },
-          ],
-        },
+        where: { and: lbWhere },
         overrideAccess: true,
       })
 
@@ -600,6 +653,7 @@ export async function completeMatch(lobbyId: number, result: MatchResult): Promi
             player: pugPlayer.id,
             season: lobby.payloadSeasonId!,
             tier: lobby.tier,
+            region: lobby.region ?? undefined,
             rating: 1500,
             ratingDeviation: 350,
             volatility: 0.06,
