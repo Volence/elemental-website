@@ -12,12 +12,14 @@ export {
   disputeResult,
   cancelLobby,
   completeMatch,
+  cancelExpiredLobby,
 } from './lobbyStateMachine'
 
 export { findValidAssignment } from './roleAssignment'
 export { selectCaptains } from './captainSelection'
 export { calculateRatingUpdates } from './mmr'
 export { applyEscalatingBan, getActiveBan } from './cooldownBans'
-export { recoverTimers } from './timers'
+export { recoverTimers, registerTimer, timerKey } from './timers'
+export { INVITE_TIER_LATE_CANCEL_MS } from './constants'
 export { PUG_REGIONS } from './types'
 export type { PugRole, PugTier, PugRegion, PugLobbyStatus, QueuedPlayer, AssignedPlayer, MatchResult, PlayerRating } from './types'
