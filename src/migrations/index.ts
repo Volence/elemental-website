@@ -17,6 +17,8 @@ import * as migration_20260425_add_pug_leaderboard from "./20260425_add_pug_lead
 import * as migration_20260426_move_pug_offense_count from "./20260426_move_pug_offense_count";
 import * as migration_20260426_add_pug_admin_to_users from "./20260426_add_pug_admin_to_users";
 import * as migration_20260426_fix_pug_players_join_table_ids from "./20260426_fix_pug_players_join_table_ids";
+import * as migration_20260427_add_pug_season_map_pool from "./20260427_add_pug_season_map_pool";
+import * as migration_20260502_add_pug_season_queue_status from "./20260502_add_pug_season_queue_status";
 
 export const migrations = [
   {
@@ -113,5 +115,15 @@ export const migrations = [
     up: migration_20260426_fix_pug_players_join_table_ids.up,
     down: migration_20260426_fix_pug_players_join_table_ids.down,
     name: "20260426_fix_pug_players_join_table_ids",
+  },
+  {
+    up: migration_20260427_add_pug_season_map_pool.up,
+    down: migration_20260427_add_pug_season_map_pool.down,
+    name: "20260427_add_pug_season_map_pool",
+  },
+  {
+    up: migration_20260502_add_pug_season_queue_status.up,
+    down: migration_20260502_add_pug_season_queue_status.down,
+    name: "20260502_add_pug_season_queue_status",
   },
 ];
