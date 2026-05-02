@@ -237,6 +237,7 @@ export function UserEditorView() {
   const [departments, setDepartments] = useState<Record<string, boolean>>({})
   const [pugPlayer, setPugPlayer] = useState<any>(null)
   const [pugLoading, setPugLoading] = useState(true)
+  const [pugTiers, setPugTiers] = useState<string[]>([])
   const [pugRegions, setPugRegions] = useState<string[]>([])
   const [pugApprovedRoles, setPugApprovedRoles] = useState<string[]>([])
   const [pugSaveStatus, setPugSaveStatus] = useState<SaveStatus>('idle')
@@ -286,6 +287,7 @@ export function UserEditorView() {
             const pp = pugData.docs?.[0] ?? null
             setPugPlayer(pp)
             if (pp) {
+              setPugTiers(pp.tiers ?? [])
               setPugRegions(pp.inviteRegions ?? [])
               setPugApprovedRoles(pp.approvedRoles ?? [])
             }
@@ -376,21 +378,31 @@ export function UserEditorView() {
     if (!pugPlayer?.id) return
     setPugSaveStatus('saving')
     try {
+      const body: Record<string, unknown> = { tiers: pugTiers }
+      if (pugTiers.includes('invite')) {
+        body.inviteRegions = pugRegions
+        body.approvedRoles = pugApprovedRoles
+      }
       const res = await fetch(`/api/pug-players/${pugPlayer.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          inviteRegions: pugRegions,
-          approvedRoles: pugApprovedRoles,
-        }),
+        body: JSON.stringify(body),
       })
       if (!res.ok) throw new Error('Failed to save PUG data')
+      const updated = await res.json()
+      setPugPlayer(updated.doc ?? updated)
       setPugSaveStatus('saved')
       setTimeout(() => setPugSaveStatus('idle'), 2500)
     } catch {
       setPugSaveStatus('error')
       setTimeout(() => setPugSaveStatus('idle'), 2500)
     }
+  }
+
+  const togglePugTier = (tier: string) => {
+    setPugTiers((prev) =>
+      prev.includes(tier) ? prev.filter((t) => t !== tier) : [...prev, tier],
+    )
   }
 
   const togglePugRegion = (region: string) => {
@@ -558,28 +570,26 @@ export function UserEditorView() {
                   <div style={{ marginBottom: 12 }}>
                     <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>Registered Tiers</p>
                     <div style={{ display: 'flex', gap: 6 }}>
-                      {(pugPlayer.tiers ?? []).map((t: string) => (
-                        <span
+                      {['open', 'invite'].map((t) => (
+                        <button
                           key={t}
-                          style={{
-                            padding: '4px 10px',
-                            borderRadius: 6,
-                            fontSize: 12,
-                            fontWeight: 500,
-                            background: t === 'invite' ? 'rgba(139, 92, 246, 0.1)' : 'rgba(59, 130, 246, 0.1)',
-                            border: `1px solid ${t === 'invite' ? 'rgba(139, 92, 246, 0.3)' : 'rgba(59, 130, 246, 0.3)'}`,
-                            color: t === 'invite' ? '#a78bfa' : '#60a5fa',
-                            textTransform: 'capitalize',
-                          }}
+                          className={`team-chip ${pugTiers.includes(t) ? 'selected' : ''}`}
+                          onClick={() => togglePugTier(t)}
+                          style={pugTiers.includes(t) ? {
+                            background: t === 'invite' ? 'rgba(139, 92, 246, 0.15)' : undefined,
+                            borderColor: t === 'invite' ? 'rgba(139, 92, 246, 0.4)' : undefined,
+                            color: t === 'invite' ? '#a78bfa' : undefined,
+                          } : undefined}
                         >
-                          {t}
-                        </span>
+                          {pugTiers.includes(t) && <Check size={12} />}
+                          {t.charAt(0).toUpperCase() + t.slice(1)}
+                        </button>
                       ))}
                     </div>
                   </div>
 
                   {/* Invite Regions */}
-                  {pugPlayer.tiers?.includes('invite') && (
+                  {pugTiers.includes('invite') && (
                     <div style={{ marginBottom: 12 }}>
                       <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>Invite Regions</p>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -598,7 +608,7 @@ export function UserEditorView() {
                   )}
 
                   {/* Approved Roles */}
-                  {pugPlayer.tiers?.includes('invite') && (
+                  {pugTiers.includes('invite') && (
                     <div style={{ marginBottom: 12 }}>
                       <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>Approved Roles</p>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -629,7 +639,7 @@ export function UserEditorView() {
                   )}
 
                   {/* Save button */}
-                  {pugPlayer.tiers?.includes('invite') && (
+                  {pugPlayer && (
                     <button
                       className="profile-save-btn"
                       onClick={handlePugSave}

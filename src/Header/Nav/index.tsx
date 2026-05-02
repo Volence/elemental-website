@@ -1,14 +1,16 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 
 import type { Header as HeaderType } from '@/payload-types'
+import type { NavUser } from '../Component'
 
 import { CMSLink } from '@/components/Link'
 import Link from 'next/link'
 
-export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
+export const HeaderNav: React.FC<{ data: HeaderType; user: NavUser | null }> = ({ data, user }) => {
+  const router = useRouter()
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const navItems = data?.navItems || []
@@ -47,6 +49,11 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
     return pathname === href || pathname.startsWith(href + '/')
   }
 
+  async function signOut() {
+    await fetch('/api/users/logout', { method: 'POST' })
+    router.refresh()
+  }
+
   return (
     <>
       {/* Desktop Navigation */}
@@ -60,8 +67,8 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
               className={`
                 text-sm font-medium transition-all relative py-1 px-2 rounded-sm
                 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
-                ${active 
-                  ? 'text-primary font-bold' 
+                ${active
+                  ? 'text-primary font-bold'
                   : 'text-foreground hover:text-primary'
                 }
               `}
@@ -77,6 +84,34 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
         {filteredNavItems.map(({ link }, i) => {
           return <CMSLink key={i} {...link} appearance="link" />
         })}
+
+        <div className="pl-4 border-l border-border">
+          {user ? (
+            <div className="flex items-center gap-3 text-sm">
+              <span className="text-muted-foreground truncate max-w-[120px]" title={user.name ?? user.email}>
+                {user.name ?? user.email}
+              </span>
+              {user.isAdmin && (
+                <Link href="/admin" className="text-muted-foreground hover:text-foreground transition-colors">
+                  Admin
+                </Link>
+              )}
+              <button
+                onClick={signOut}
+                className="text-muted-foreground hover:text-destructive transition-colors"
+              >
+                Sign out
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/pugs/register"
+              className="text-sm font-medium px-3 py-1.5 rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors"
+            >
+              Sign in
+            </Link>
+          )}
+        </div>
       </nav>
 
       {/* Mobile Hamburger Button */}
@@ -136,6 +171,34 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
                 </div>
               )
             })}
+
+            <div className="border-t border-border mt-2 pt-3 px-4">
+              {user ? (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground truncate max-w-[180px]">
+                    {user.name ?? user.email}
+                  </span>
+                  <div className="flex items-center gap-3 text-sm">
+                    {user.isAdmin && (
+                      <Link href="/admin" className="text-muted-foreground hover:text-foreground transition-colors" onClick={() => setMobileOpen(false)}>
+                        Admin
+                      </Link>
+                    )}
+                    <button onClick={signOut} className="text-muted-foreground hover:text-destructive transition-colors">
+                      Sign out
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <Link
+                  href="/pugs/register"
+                  className="block text-sm font-medium py-2 text-muted-foreground hover:text-foreground transition-colors"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Sign in
+                </Link>
+              )}
+            </div>
           </nav>
         </div>
       )}

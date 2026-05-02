@@ -19,6 +19,7 @@ import * as migration_20260426_add_pug_admin_to_users from "./20260426_add_pug_a
 import * as migration_20260426_fix_pug_players_join_table_ids from "./20260426_fix_pug_players_join_table_ids";
 import * as migration_20260427_add_pug_season_map_pool from "./20260427_add_pug_season_map_pool";
 import * as migration_20260502_add_pug_season_queue_status from "./20260502_add_pug_season_queue_status";
+import * as migration_20260502_add_missing_pug_schema from "./20260502_add_missing_pug_schema";
 
 export const migrations = [
   {
@@ -125,5 +126,10 @@ export const migrations = [
     up: migration_20260502_add_pug_season_queue_status.up,
     down: migration_20260502_add_pug_season_queue_status.down,
     name: "20260502_add_pug_season_queue_status",
+  },
+  {
+    up: migration_20260502_add_missing_pug_schema.up,
+    down: migration_20260502_add_missing_pug_schema.down,
+    name: "20260502_add_missing_pug_schema",
   },
 ];

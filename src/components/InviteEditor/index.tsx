@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import {
   Save, Check, AlertCircle, Loader2, ArrowLeft, Plus, Trash2,
   Link as LinkIcon, Copy, Shield, Users, Clock, Mail, User,
-  ChevronRight, Search, CheckCircle, XCircle,
+  ChevronRight, Search, CheckCircle, XCircle, Gamepad2,
 } from 'lucide-react'
 import { EDITOR_CSS, styles as editorStyles } from '@/components/PersonEditor'
 
@@ -45,6 +45,21 @@ const DEPARTMENTS = [
   { key: 'isEventsStaff', label: 'Events', icon: '🎉' },
   { key: 'isScoutingStaff', label: 'Scouting', icon: '🔍' },
   { key: 'isContentCreator', label: 'Content Creator', icon: '📺' },
+  { key: 'isPugAdmin', label: 'PUG Admin', icon: '🎮' },
+]
+
+const PUG_ROLES = [
+  { key: 'tank', label: 'Tank' },
+  { key: 'flex-dps', label: 'Flex DPS' },
+  { key: 'hitscan-dps', label: 'Hitscan DPS' },
+  { key: 'flex-support', label: 'Flex Support' },
+  { key: 'main-support', label: 'Main Support' },
+]
+
+const PUG_REGIONS = [
+  { key: 'na', label: 'NA' },
+  { key: 'emea', label: 'EMEA' },
+  { key: 'pacific', label: 'Pacific' },
 ]
 
 const getRoleConfig = (r: string) => ROLES.find(x => x.value === r) ?? ROLES[4]
@@ -209,6 +224,9 @@ export function InviteEditorView() {
   const [usedAt, setUsedAt] = useState('')
   const [usedByName, setUsedByName] = useState('')
   const [createdByName, setCreatedByName] = useState('')
+  const [pugIsForPug, setPugIsForPug] = useState(false)
+  const [pugApprovedRoles, setPugApprovedRoles] = useState<string[]>([])
+  const [pugRegion, setPugRegion] = useState('')
 
   // Set default expiry for new invites
   useEffect(() => {
@@ -244,6 +262,9 @@ export function InviteEditorView() {
         setUsedAt(inv.usedAt ?? '')
         setUsedByName(typeof inv.usedBy === 'object' ? (inv.usedBy?.name || inv.usedBy?.email) : '')
         setCreatedByName(typeof inv.createdBy === 'object' ? (inv.createdBy?.name || inv.createdBy?.email) : '')
+        setPugIsForPug(inv.pugInvite?.isForPug ?? false)
+        setPugApprovedRoles(inv.pugInvite?.approvedRoles ?? [])
+        setPugRegion(inv.pugInvite?.region ?? '')
       }
     } catch (err) {
       console.error('Invite load error:', err)
@@ -267,6 +288,11 @@ export function InviteEditorView() {
         departments,
       }
       if (showTeams) payload.assignedTeams = assignedTeams
+      payload.pugInvite = {
+        isForPug: pugIsForPug,
+        approvedRoles: pugIsForPug ? pugApprovedRoles : [],
+        region: pugIsForPug ? pugRegion : null,
+      }
 
       const url = inviteId ? `/api/invite-links/${inviteId}` : '/api/invite-links'
       const method = inviteId ? 'PATCH' : 'POST'
@@ -474,6 +500,61 @@ export function InviteEditorView() {
               </div>
             </div>
           )}
+
+          {/* PUG Invite Settings */}
+          <div className="profile-card" style={editorStyles.card}>
+            <h3 style={editorStyles.cardTitle}><Gamepad2 size={16} /> PUG Invite Settings</h3>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: isUsed ? 'not-allowed' : 'pointer', marginBottom: pugIsForPug ? 14 : 0 }}>
+              <input
+                type="checkbox"
+                checked={pugIsForPug}
+                onChange={(e) => !isUsed && setPugIsForPug(e.target.checked)}
+                disabled={isUsed}
+                style={{ accentColor: '#8b5cf6', width: 16, height: 16 }}
+              />
+              <span style={{ fontSize: 13, color: pugIsForPug ? '#a78bfa' : 'rgba(255,255,255,0.5)' }}>
+                Grant PUG invite-tier access
+              </span>
+            </label>
+            {pugIsForPug && (
+              <>
+                <div style={{ marginBottom: 12 }}>
+                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>Region</p>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    {PUG_REGIONS.map((r) => (
+                      <button
+                        key={r.key}
+                        className={`team-chip ${pugRegion === r.key ? 'selected' : ''}`}
+                        onClick={() => !isUsed && setPugRegion(r.key)}
+                        disabled={isUsed}
+                      >
+                        {pugRegion === r.key && <Check size={12} />}
+                        {r.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>Approved Roles</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {PUG_ROLES.map((r) => (
+                      <button
+                        key={r.key}
+                        className={`team-chip ${pugApprovedRoles.includes(r.key) ? 'selected' : ''}`}
+                        onClick={() => !isUsed && setPugApprovedRoles(prev =>
+                          prev.includes(r.key) ? prev.filter(x => x !== r.key) : [...prev, r.key]
+                        )}
+                        disabled={isUsed}
+                      >
+                        {pugApprovedRoles.includes(r.key) && <Check size={12} />}
+                        {r.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
 
           {/* Used Info */}
           {isUsed && (

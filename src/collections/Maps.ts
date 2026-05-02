@@ -14,14 +14,7 @@ export const Maps: CollectionConfig = {
     description: 'Overwatch competitive maps',
   },
   access: {
-    // Scouting staff, team managers, and staff-manager+ can read
-    read: (args) => {
-      const { req: { user } } = args
-      if (!user) return false
-      const u = user as any
-      if (u.role === UserRole.ADMIN || u.role === UserRole.STAFF_MANAGER || u.role === UserRole.TEAM_MANAGER) return true
-      return isScoutingStaff(args)
-    },
+    read: () => true,
     create: ({ req }) => {
       if (!req.user) return false
       return [UserRole.ADMIN, UserRole.STAFF_MANAGER].includes(req.user.role as UserRole)
@@ -82,15 +75,6 @@ export const Maps: CollectionConfig = {
           },
         },
       ],
-    },
-    {
-      name: 'pugEligible',
-      type: 'checkbox',
-      label: 'PUG Eligible',
-      defaultValue: true,
-      admin: {
-        description: 'Include this map in the PUG map pool. Applies to both tiers unless configured otherwise per season.',
-      },
     },
   ],
 }

@@ -1,5 +1,5 @@
 import { EmbedBuilder, type TextChannel } from 'discord.js'
-import { getDiscordClient } from '../bot'
+import { ensureDiscordClient } from '../bot'
 import prisma from '@/lib/prisma'
 
 type PugTier = 'open' | 'invite'
@@ -17,7 +17,7 @@ function getResultsChannelId(tier: PugTier): string | undefined {
 }
 
 async function fetchTextChannel(channelId: string): Promise<TextChannel | null> {
-  const client = getDiscordClient()
+  const client = await ensureDiscordClient()
   if (!client || !channelId) return null
   try {
     const channel = await client.channels.fetch(channelId)
@@ -62,17 +62,33 @@ function buildLobbyEmbed(lobby: {
 
   if (lobby.status === 'OPEN') {
     const roles = ['tank', 'flex_dps', 'hitscan_dps', 'flex_support', 'main_support']
-    const filled: Record<string, number> = {}
-    for (const role of roles) filled[role] = 0
-    for (const p of lobby.players) {
-      for (const role of p.queuedRoles) {
-        if (filled[role] !== undefined) filled[role]++
+    const playerRoles = lobby.players.map((p) => ({ queuedRoles: p.queuedRoles as string[] }))
+
+    function canAllBeAssigned(players: Array<{ queuedRoles: string[] }>): boolean {
+      const slots: Record<string, number> = { tank: 0, flex_dps: 0, hitscan_dps: 0, flex_support: 0, main_support: 0 }
+      function bt(i: number): boolean {
+        if (i === players.length) return true
+        for (const r of players[i].queuedRoles) {
+          if ((slots[r] ?? 0) < 2) { slots[r]++; if (bt(i + 1)) return true; slots[r]-- }
+        }
+        return false
       }
+      return bt(0)
     }
-    const rolesDisplay = roles
-      .map((r) => `${filled[r]}/2 ${r.replace(/_/g, '-')}`)
-      .join('\n')
-    embed.addFields({ name: 'Role Slots', value: rolesDisplay || 'None filled' })
+
+    const spotsAvailable: Record<string, number> = {}
+    for (const role of roles) {
+      const with1 = [...playerRoles, { queuedRoles: [role] }]
+      if (!canAllBeAssigned(with1)) { spotsAvailable[role] = 0; continue }
+      const with2 = [...with1, { queuedRoles: [role] }]
+      spotsAvailable[role] = canAllBeAssigned(with2) ? 2 : 1
+    }
+
+    const open = roles.filter((r) => spotsAvailable[r] > 0)
+    const rolesDisplay = open.length > 0
+      ? open.map((r) => `${spotsAvailable[r]}× ${r.replace(/_/g, '-')}`).join('\n')
+      : 'All slots filled'
+    embed.addFields({ name: 'Spots Needed', value: rolesDisplay })
     embed.setDescription(`Join at: https://elemental.gg/pugs/lobby/${lobby.id}`)
   }
 

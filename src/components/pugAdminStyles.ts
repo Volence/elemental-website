@@ -50,7 +50,8 @@ export const PUG_ADMIN_CSS = `
   .ps-label { display: block; font-size: 12px; font-weight: 500; color: #64748b; margin-bottom: 6px; }
   .ps-input { width: 100%; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 9px 12px; color: #e2e8f0; font-size: 14px; outline: none; transition: border-color 0.15s; box-sizing: border-box; }
   .ps-input:focus { border-color: #3b82f6; }
-  .ps-select { appearance: none; cursor: pointer; }
+  .ps-select { cursor: pointer; }
+  .ps-select option { background: #1e293b; color: #e2e8f0; }
   .ps-row { display: grid; gap: 16px; }
   .ps-row-2 { grid-template-columns: 1fr 1fr; }
   .ps-row-3 { grid-template-columns: 1fr 1fr 1fr; }

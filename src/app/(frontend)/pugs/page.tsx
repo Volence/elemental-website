@@ -57,36 +57,45 @@ export default async function PugsPage() {
   const openSeason = openSeasons.docs[0] as any
   const inviteSeason = inviteSeasons.docs[0] as any
 
+  let myActiveLobby: { id: number; tier: string } | null = null
+  if (currentUser) {
+    const found = await prisma.pugLobby.findFirst({
+      where: {
+        status: { in: ['OPEN', 'READY', 'DRAFTING', 'MAP_VOTE', 'BANNING', 'IN_PROGRESS'] },
+        players: { some: { userId: (currentUser as any).id } },
+      },
+      select: { id: true, tier: true },
+    })
+    myActiveLobby = found ?? null
+  }
+
   return (
     <main className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-2">PUGs</h1>
-      <p className="text-gray-600 mb-4">
+      <p className="text-gray-400 mb-4">
         Pick-Up Games - 5v5 Overwatch with draft, map voting, hero bans, and MMR tracking.
       </p>
 
+      {myActiveLobby && (
+        <div className="mb-6 flex items-center justify-between bg-blue-500/10 border border-blue-500/30 rounded-lg px-4 py-3">
+          <span className="text-sm text-blue-300 font-medium">You are in an active lobby.</span>
+          <Link href={`/pugs/lobby/${myActiveLobby.id}`} className="text-sm font-semibold text-blue-400 hover:underline">
+            Return to Lobby →
+          </Link>
+        </div>
+      )}
+
       {!currentUser && (
-        <p className="text-sm text-gray-500 mb-8">
-          <a href="/api/auth/discord?pugSignup=true&returnUrl=/pugs" className="text-blue-400 hover:underline">
-            Sign up with Discord
+        <p className="text-sm text-gray-500 mb-6">
+          <a href="/api/auth/discord?pugSignup=true&returnUrl=/pugs/register" className="text-blue-400 hover:underline">
+            Sign up or sign in with Discord
           </a>{' '}
           to register for Open Tier - free and open to everyone.
         </p>
       )}
 
-      {currentUser && isOpenRegistered && (
-        <p className="text-sm text-gray-400 mb-8">
-          Signed in as{' '}
-          <span className="text-white font-medium">{currentUser.name || currentUser.email}</span>
-          {' '}&middot;{' '}
-          <span className="text-green-400">Registered for Open Tier</span>
-        </p>
-      )}
-
       {currentUser && !isOpenRegistered && (
-        <p className="text-sm text-gray-400 mb-8">
-          Signed in as{' '}
-          <span className="text-white font-medium">{currentUser.name || currentUser.email}</span>
-          {' '}&middot;{' '}
+        <p className="text-sm text-gray-400 mb-6">
           <Link href="/pugs/register" className="text-blue-400 hover:underline">
             Register for Open Tier →
           </Link>
@@ -148,7 +157,7 @@ export default async function PugsPage() {
       </div>
 
       <div className="mt-6 flex gap-4">
-        <Link href="/pugs/leaderboard" className="text-blue-600 hover:underline">
+        <Link href="/pugs/leaderboard" className="text-blue-400 hover:underline">
           Leaderboard →
         </Link>
       </div>

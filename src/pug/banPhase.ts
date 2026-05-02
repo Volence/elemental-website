@@ -15,19 +15,22 @@ export function validateBan(
   team: 1 | 2,
   existingBans: BanRecord[],
   heroRoles: HeroRoleMap,
+  heroNames: Record<number, string> = {},
 ): void {
+  const name = heroNames[heroId] ?? `hero ${heroId}`
+
   if (existingBans.some((b) => b.heroId === heroId)) {
-    throw new Error(`Hero ${heroId} is already banned`)
+    throw new Error(`${name} is already banned`)
   }
 
   const heroRole = heroRoles[heroId]
-  if (!heroRole) throw new Error(`Hero ${heroId} not found in role map`)
+  if (!heroRole) throw new Error(`${name} not found`)
 
   const bansForRole = existingBans.filter((b) => heroRoles[b.heroId] === heroRole)
 
   const MAX_BANS_PER_ROLE = 2
   if (bansForRole.length >= MAX_BANS_PER_ROLE) {
-    throw new Error(`Cannot ban hero ${heroId}: role ban cap (${MAX_BANS_PER_ROLE}) reached for ${heroRole}`)
+    throw new Error(`Cannot ban ${name} - ${heroRole} ban limit (${MAX_BANS_PER_ROLE}) already reached`)
   }
 }
 
@@ -36,8 +39,9 @@ export function applyBan(
   heroId: number,
   team: 1 | 2,
   heroRoles: HeroRoleMap,
+  heroNames: Record<number, string> = {},
 ): BanRecord[] {
-  validateBan(heroId, team, existingBans, heroRoles)
+  validateBan(heroId, team, existingBans, heroRoles, heroNames)
   const banNumber = existingBans.length + 1
   return [...existingBans, { heroId, team, banNumber }]
 }

@@ -44,7 +44,7 @@ export default async function PugInvitePage({
     ? await prisma.pugLobby.findMany({
         where: {
           tier: 'invite',
-          region,
+          OR: [{ region }, { region: null }],
           payloadSeasonId: season.id,
           status: { in: ['OPEN', 'READY', 'DRAFTING', 'MAP_VOTE', 'BANNING', 'IN_PROGRESS'] },
         },
@@ -53,7 +53,8 @@ export default async function PugInvitePage({
       })
     : []
 
-  const queueActive = season ? isWithinWindow(season.timeWindows ?? []) : false
+  const regionKey = region === 'emea' ? 'emea' : region === 'pacific' ? 'pacific' : 'na'
+  const queueActive = season?.regionQueueStatus?.[regionKey] === true
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -92,8 +93,8 @@ export default async function PugInvitePage({
           {lobbies.length === 0 ? (
             <p className="text-gray-500">
               {queueActive
-                ? 'No active lobbies. A lobby will auto-spawn when the queue opens.'
-                : 'Queuing is currently closed. Come back during a scheduled time window.'}
+                ? 'No active lobbies yet. Check back shortly.'
+                : 'Queuing is currently closed for this region.'}
             </p>
           ) : (
             <div className="space-y-3">

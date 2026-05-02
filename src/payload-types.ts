@@ -1838,10 +1838,6 @@ export interface Map {
         id?: string | null;
       }[]
     | null;
-  /**
-   * Include this map in the PUG map pool. Applies to both tiers unless configured otherwise per season.
-   */
-  pugEligible?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2349,6 +2345,16 @@ export interface PugSeason {
    */
   prizePool?: string | null;
   /**
+   * Maps available for voting in this season. At least 3 total required for map vote to work.
+   */
+  mapPool?: {
+    control?: (number | Map)[] | null;
+    hybrid?: (number | Map)[] | null;
+    push?: (number | Map)[] | null;
+    escort?: (number | Map)[] | null;
+    flashpoint?: (number | Map)[] | null;
+  };
+  /**
    * Time windows when queuing is available (invite tier only). Outside these windows, the queue is closed.
    */
   timeWindows?:
@@ -2360,6 +2366,14 @@ export interface PugSeason {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Per-region queue open/close state. Managed from the PUG Lobbies admin page.
+   */
+  regionQueueStatus?: {
+    na?: boolean | null;
+    emea?: boolean | null;
+    pacific?: boolean | null;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -2383,6 +2397,10 @@ export interface PugPlayer {
    * Roles approved for invite-tier queuing. Open-tier players can queue for any role regardless of this field.
    */
   approvedRoles?: ('tank' | 'flex-dps' | 'hitscan-dps' | 'flex-support' | 'main-support')[] | null;
+  /**
+   * Which invite-tier regions this player has access to.
+   */
+  inviteRegions?: ('na' | 'emea' | 'pacific')[] | null;
   /**
    * Auto-set on registration.
    */
@@ -2496,6 +2514,10 @@ export interface PugLeaderboard {
   player: number | PugPlayer;
   season: number | PugSeason;
   tier: 'open' | 'invite';
+  /**
+   * Region for invite-tier entries. Null for open tier.
+   */
+  region?: ('na' | 'emea' | 'pacific') | null;
   rating?: number | null;
   ratingDeviation?: number | null;
   volatility?: number | null;
@@ -3004,6 +3026,10 @@ export interface InviteLink {
      * Content creator - streams appear in Creator Live channel instead of Player Live
      */
     isContentCreator?: boolean | null;
+    /**
+     * Grants access to PUG management (create seasons, manage invite-tier players, resolve disputes)
+     */
+    isPugAdmin?: boolean | null;
   };
   /**
    * If this invite is for PUG invite-tier access, configure the player's approved roles here.
@@ -3017,6 +3043,10 @@ export interface InviteLink {
      * Roles this player is approved for in invite-tier PUGs.
      */
     approvedRoles?: ('tank' | 'flex-dps' | 'hitscan-dps' | 'flex-support' | 'main-support')[] | null;
+    /**
+     * Which region this invite grants access to.
+     */
+    region?: ('na' | 'emea' | 'pacific') | null;
   };
   /**
    * Optional: Pre-link this invite to a Person record (connects user to their BattleTags and scrim stats)
@@ -3704,7 +3734,6 @@ export interface MapsSelect<T extends boolean = true> {
         name?: T;
         id?: T;
       };
-  pugEligible?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3978,6 +4007,15 @@ export interface PugSeasonsSelect<T extends boolean = true> {
   endDate?: T;
   active?: T;
   prizePool?: T;
+  mapPool?:
+    | T
+    | {
+        control?: T;
+        hybrid?: T;
+        push?: T;
+        escort?: T;
+        flashpoint?: T;
+      };
   timeWindows?:
     | T
     | {
@@ -3986,6 +4024,13 @@ export interface PugSeasonsSelect<T extends boolean = true> {
         endTime?: T;
         timezone?: T;
         id?: T;
+      };
+  regionQueueStatus?:
+    | T
+    | {
+        na?: T;
+        emea?: T;
+        pacific?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -3998,6 +4043,7 @@ export interface PugPlayersSelect<T extends boolean = true> {
   user?: T;
   tiers?: T;
   approvedRoles?: T;
+  inviteRegions?: T;
   registeredDate?: T;
   invitedBy?: T;
   activeBan?:
@@ -4068,6 +4114,7 @@ export interface PugLeaderboardSelect<T extends boolean = true> {
   player?: T;
   season?: T;
   tier?: T;
+  region?: T;
   rating?: T;
   ratingDeviation?: T;
   volatility?: T;
@@ -4526,12 +4573,14 @@ export interface InviteLinksSelect<T extends boolean = true> {
         isEventsStaff?: T;
         isScoutingStaff?: T;
         isContentCreator?: T;
+        isPugAdmin?: T;
       };
   pugInvite?:
     | T
     | {
         isForPug?: T;
         approvedRoles?: T;
+        region?: T;
       };
   linkedPerson?: T;
   email?: T;

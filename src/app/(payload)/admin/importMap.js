@@ -49,6 +49,10 @@ import { default as default_3b0c933eeb58b8ba9e1fb354f07641f1 } from '@/component
 import { default as default_aa7f6faaa886a93f7a640627f141e7c7 } from '@/components/MatchesCustomList'
 import { default as default_2e617cc3176ad62e33aa558930ac7655 } from '@/components/TournamentFaceitNotice'
 import { default as default_4c7ee971bccbc12ad44464e4882fd683 } from '@/components/TournamentFields/BulkTeamSelector'
+import { default as default_a0a75307cc614f0f86e3337b3d2de124 } from '@/components/PugSeasons/ListRedirect'
+import { default as default_34ecf24bb9bec7d2bac7e9778df3ce36 } from '@/components/PugPlayers/ListRedirect'
+import { default as default_b58160abd94784e8a5a25ad97c0af14b } from '@/components/PugMatches/ListRedirect'
+import { default as default_3880bf5eeeb5562af6ac7848ea6ba687 } from '@/components/PugLeaderboard/ListRedirect'
 import { default as default_048c297467b6adbf2ab886ee3bbecc66 } from '@/components/SocialPostColumns/ContentPreviewCell'
 import { default as default_cbd62d152faae83563323bc6e1990a3d } from '@/components/SocialPostFields/ContentWithTemplate'
 import { default as default_f52f291ae9aadfb75185249ec10b563b } from '@/components/SocialPostColumns/StatusCell'
@@ -113,6 +117,7 @@ import { SectionThemeApplicator as SectionThemeApplicator_b4f71752b0da9dddb562dd
 import { default as default_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/components/BeforeLogin'
 import { default as default_cb688d169ef5bf1426eea8968f0b9a29 } from '@/components/BeforeDashboard/DashboardNavLink'
 import { default as default_564fb21592d27251bcff7c5e897d4dbc } from '@/components/BeforeDashboard/CalendarNavLink'
+import { default as default_85f2bde977b3b3772c025a1849dec0ef } from '@/components/BeforeDashboard/PugLobbiesNavLink'
 import { default as default_ab6e10b6b3865462fbf89efa35889b3d } from '@/components/BeforeDashboard/ScrimAnalyticsNavLinks'
 import { default as default_e99c5e0ebd6260b49d63c1e6ece7ec9d } from '@/components/BeforeDashboard/MyProfileNavLink'
 import { default as default_75e49641b1d841f24cd53ee63100b3ae } from '@/components/BeforeDashboard/SidebarScrollPreserver'
@@ -135,6 +140,15 @@ import { default as default_98e73b390f55261a691b577a74429de2 } from '@/component
 import { default as default_b0e989da30c56b386c2f4c651df2df39 } from '@/components/CalendarEventEditor/EditRoute'
 import { default as default_34a33320fd53659dd9841f20569ef2d8 } from '@/components/InviteEditor/EditRoute'
 import { default as default_02977a9d4ed0ed77a8d36ceed61c4d84 } from '@/components/TeamEditor/EditRoute'
+import { default as default_0b171b49db7190053259f601ea4d0eca } from '@/components/PugSeasons/ListRoute'
+import { default as default_e25f49fb258f9f3dd8ba59b20d07fcd8 } from '@/components/PugSeasons/EditRoute'
+import { default as default_9abfdc69e59faebbb0b250d370086ae2 } from '@/components/PugLobbies/ListRoute'
+import { default as default_94dc01d5ba8a2eca8deaaad802fd0b07 } from '@/components/PugPlayers/ListRoute'
+import { default as default_b65d43645901504026837c862ab8790f } from '@/components/PugPlayers/EditRoute'
+import { default as default_459642789e40f375c75a02023d531c1b } from '@/components/PugMatches/ListRoute'
+import { default as default_3f9f6e11684f60398762aa444496e6bb } from '@/components/PugMatches/EditRoute'
+import { default as default_e25103db85b92c4f15a10bbba3c779c7 } from '@/components/PugLeaderboard/ListRoute'
+import { default as default_74fb30a58c92ffc48c7a2fbce0628372 } from '@/components/PugLeaderboard/EditRoute'
 import { CollectionCards as CollectionCards_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 
 export const importMap = {
@@ -189,6 +203,10 @@ export const importMap = {
   "@/components/MatchesCustomList#default": default_aa7f6faaa886a93f7a640627f141e7c7,
   "@/components/TournamentFaceitNotice#default": default_2e617cc3176ad62e33aa558930ac7655,
   "@/components/TournamentFields/BulkTeamSelector#default": default_4c7ee971bccbc12ad44464e4882fd683,
+  "@/components/PugSeasons/ListRedirect#default": default_a0a75307cc614f0f86e3337b3d2de124,
+  "@/components/PugPlayers/ListRedirect#default": default_34ecf24bb9bec7d2bac7e9778df3ce36,
+  "@/components/PugMatches/ListRedirect#default": default_b58160abd94784e8a5a25ad97c0af14b,
+  "@/components/PugLeaderboard/ListRedirect#default": default_3880bf5eeeb5562af6ac7848ea6ba687,
   "@/components/SocialPostColumns/ContentPreviewCell#default": default_048c297467b6adbf2ab886ee3bbecc66,
   "@/components/SocialPostFields/ContentWithTemplate#default": default_cbd62d152faae83563323bc6e1990a3d,
   "@/components/SocialPostColumns/StatusCell#default": default_f52f291ae9aadfb75185249ec10b563b,
@@ -253,6 +271,7 @@ export const importMap = {
   "@/components/BeforeLogin#default": default_8a7ab0eb7ab5c511aba12e68480bfe5e,
   "@/components/BeforeDashboard/DashboardNavLink#default": default_cb688d169ef5bf1426eea8968f0b9a29,
   "@/components/BeforeDashboard/CalendarNavLink#default": default_564fb21592d27251bcff7c5e897d4dbc,
+  "@/components/BeforeDashboard/PugLobbiesNavLink#default": default_85f2bde977b3b3772c025a1849dec0ef,
   "@/components/BeforeDashboard/ScrimAnalyticsNavLinks#default": default_ab6e10b6b3865462fbf89efa35889b3d,
   "@/components/BeforeDashboard/MyProfileNavLink#default": default_e99c5e0ebd6260b49d63c1e6ece7ec9d,
   "@/components/BeforeDashboard/SidebarScrollPreserver#default": default_75e49641b1d841f24cd53ee63100b3ae,
@@ -275,5 +294,14 @@ export const importMap = {
   "@/components/CalendarEventEditor/EditRoute#default": default_b0e989da30c56b386c2f4c651df2df39,
   "@/components/InviteEditor/EditRoute#default": default_34a33320fd53659dd9841f20569ef2d8,
   "@/components/TeamEditor/EditRoute#default": default_02977a9d4ed0ed77a8d36ceed61c4d84,
+  "@/components/PugSeasons/ListRoute#default": default_0b171b49db7190053259f601ea4d0eca,
+  "@/components/PugSeasons/EditRoute#default": default_e25f49fb258f9f3dd8ba59b20d07fcd8,
+  "@/components/PugLobbies/ListRoute#default": default_9abfdc69e59faebbb0b250d370086ae2,
+  "@/components/PugPlayers/ListRoute#default": default_94dc01d5ba8a2eca8deaaad802fd0b07,
+  "@/components/PugPlayers/EditRoute#default": default_b65d43645901504026837c862ab8790f,
+  "@/components/PugMatches/ListRoute#default": default_459642789e40f375c75a02023d531c1b,
+  "@/components/PugMatches/EditRoute#default": default_3f9f6e11684f60398762aa444496e6bb,
+  "@/components/PugLeaderboard/ListRoute#default": default_e25103db85b92c4f15a10bbba3c779c7,
+  "@/components/PugLeaderboard/EditRoute#default": default_74fb30a58c92ffc48c7a2fbce0628372,
   "@payloadcms/ui/rsc#CollectionCards": CollectionCards_ab83ff7e88da8d3530831f296ec4756a
 }

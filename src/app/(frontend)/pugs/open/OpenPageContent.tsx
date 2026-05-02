@@ -9,6 +9,9 @@ type Lobby = {
   lobbyNumber: number
   status: string
   players: Array<{ userId: number }>
+  neededSlots: Record<string, number> | null
+  blockedRoles: string[]
+  spotsAvailable: Record<string, number>
 }
 
 type Props = {
@@ -88,7 +91,8 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
     }
   }
 
-  function toggleRole(role: string) {
+  function toggleRole(role: string, blocked: boolean) {
+    if (blocked) return
     setSelectedRoles((prev) =>
       prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role],
     )
@@ -126,7 +130,8 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
     <main className="container mx-auto px-4 py-8 max-w-2xl">
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Open Tier PUGs</h1>
+          <Link href="/pugs" className="text-sm text-gray-500 hover:text-gray-300 transition-colors">← PUGs</Link>
+          <h1 className="text-2xl font-bold mt-1">Open Tier PUGs</h1>
           {seasonName && <p className="text-sm text-gray-500 mt-0.5">{seasonName}</p>}
         </div>
         {currentUser && isRegistered && seasonId && (
@@ -282,8 +287,35 @@ type LobbyCardProps = {
   selectedRoles: string[]
   roleError: string | null
   onToggleJoin: () => void
-  onToggleRole: (role: string) => void
+  onToggleRole: (role: string, blocked: boolean) => void
   onJoin: () => void
+}
+
+const ROLE_COLORS_OPEN: Record<string, string> = {
+  tank: 'border-blue-700 text-blue-400',
+  flex_dps: 'border-red-700 text-red-400',
+  hitscan_dps: 'border-orange-700 text-orange-400',
+  flex_support: 'border-green-700 text-green-400',
+  main_support: 'border-teal-700 text-teal-400',
+}
+const ROLE_LABELS_OPEN: Record<string, string> = {
+  tank: 'Tank', flex_dps: 'Flex DPS', hitscan_dps: 'Hitscan', flex_support: 'Flex Sup', main_support: 'Main Sup',
+}
+
+function SpotsNeededBadges({ neededSlots, spotsAvailable }: { neededSlots: Record<string, number> | null; spotsAvailable: Record<string, number> }) {
+  const roles = ['tank', 'flex_dps', 'hitscan_dps', 'flex_support', 'main_support']
+  if (!neededSlots) return <span className="text-xs text-red-500">Role conflict</span>
+  const open = roles.filter((r) => (spotsAvailable[r] ?? 0) > 0)
+  if (open.length === 0) return <span className="text-xs text-gray-600">All roles covered</span>
+  return (
+    <>
+      {open.map((role) => (
+        <span key={role} className={`text-xs px-1.5 py-0.5 rounded border ${ROLE_COLORS_OPEN[role]}`}>
+          {spotsAvailable[role]}× {ROLE_LABELS_OPEN[role]}
+        </span>
+      ))}
+    </>
+  )
 }
 
 function LobbyCard({
@@ -301,6 +333,7 @@ function LobbyCard({
   const playerCount = lobby.players.length
   const isInThisLobby = currentUserId !== null && lobby.players.some((p) => p.userId === currentUserId)
   const isOpen = lobby.status === 'OPEN'
+  const blockedRoles = lobby.blockedRoles ?? []
 
   return (
     <div className="border border-gray-700 rounded-lg overflow-hidden">
@@ -336,23 +369,37 @@ function LobbyCard({
         </div>
       </div>
 
+      {isOpen && (
+        <div className="px-4 pb-3 flex flex-wrap items-center gap-1.5">
+          <span className="text-xs text-gray-500">{10 - lobby.players.length} needed:</span>
+          <SpotsNeededBadges neededSlots={lobby.neededSlots ?? null} spotsAvailable={lobby.spotsAvailable ?? {}} />
+        </div>
+      )}
+
       {isExpanded && (
         <div className="border-t border-gray-700 px-4 py-3 bg-gray-900/50">
           <p className="text-xs text-gray-400 mb-2 font-medium">Select your roles (pick all that apply)</p>
           <div className="flex flex-wrap gap-2 mb-3">
-            {ROLES.map((role) => (
-              <button
-                key={role.value}
-                onClick={() => onToggleRole(role.value)}
-                className={`text-xs px-3 py-1.5 rounded border transition-colors ${
-                  selectedRoles.includes(role.value)
-                    ? 'bg-blue-600 border-blue-500 text-white'
-                    : 'bg-transparent border-gray-600 text-gray-400 hover:border-gray-400'
-                }`}
-              >
-                {role.label}
-              </button>
-            ))}
+            {ROLES.map((role) => {
+              const blocked = blockedRoles.includes(role.value)
+              return (
+                <button
+                  key={role.value}
+                  onClick={() => onToggleRole(role.value, blocked)}
+                  disabled={blocked}
+                  title={blocked ? 'Role slots full' : undefined}
+                  className={`text-xs px-3 py-1.5 rounded border transition-colors ${
+                    blocked
+                      ? 'border-gray-800 text-gray-600 cursor-not-allowed'
+                      : selectedRoles.includes(role.value)
+                        ? 'bg-blue-600 border-blue-500 text-white'
+                        : 'bg-transparent border-gray-600 text-gray-400 hover:border-gray-400'
+                  }`}
+                >
+                  {role.label}{blocked ? ' (Full)' : ''}
+                </button>
+              )
+            })}
           </div>
           {roleError && <p className="text-xs text-red-400 mb-2">{roleError}</p>}
           <button
