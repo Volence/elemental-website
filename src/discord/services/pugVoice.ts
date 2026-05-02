@@ -4,14 +4,14 @@ import {
   type VoiceChannel,
   type Guild,
 } from 'discord.js'
-import { getDiscordClient } from '../bot'
+import { ensureDiscordClient } from '../bot'
 
 export async function createMatchVoiceChannels(
   lobbyNumber: number,
   team1UserIds: string[],
   team2UserIds: string[],
 ): Promise<{ team1ChannelId: string; team2ChannelId: string }> {
-  const client = getDiscordClient()
+  const client = await ensureDiscordClient()
   const categoryId = process.env.DISCORD_PUG_VOICE_CATEGORY_ID
   const guildId = process.env.DISCORD_GUILD_ID
 
@@ -64,7 +64,7 @@ export async function deleteMatchVoiceChannels(
   team1ChannelId: string,
   team2ChannelId: string,
 ): Promise<void> {
-  const client = getDiscordClient()
+  const client = await ensureDiscordClient()
   if (!client) return
 
   for (const channelId of [team1ChannelId, team2ChannelId]) {
