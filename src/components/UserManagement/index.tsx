@@ -270,6 +270,7 @@ export function UserEditorView() {
           isEventsStaff: u.departments?.isEventsStaff ?? false,
           isScoutingStaff: u.departments?.isScoutingStaff ?? false,
           isContentCreator: u.departments?.isContentCreator ?? false,
+          isPugAdmin: u.departments?.isPugAdmin ?? false,
         })
       }
       if (teamsRes.ok) {
@@ -373,6 +374,38 @@ export function UserEditorView() {
     } catch (err: any) {
       setPasswordStatus('error')
       setPasswordError(err.message ?? 'Failed to reset password')
+    }
+  }
+
+  const handlePugRegister = async () => {
+    if (!userId) return
+    setPugSaveStatus('saving')
+    try {
+      const res = await fetch('/api/pug-players', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user: Number(userId),
+          tiers: ['open'],
+          registeredDate: new Date().toISOString(),
+        }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.errors?.[0]?.message ?? 'Failed to register')
+      }
+      const created = await res.json()
+      const pp = created.doc ?? created
+      setPugPlayer(pp)
+      setPugTiers(pp.tiers ?? ['open'])
+      setPugRegions(pp.inviteRegions ?? [])
+      setPugApprovedRoles(pp.approvedRoles ?? [])
+      setPugSaveStatus('saved')
+      setTimeout(() => setPugSaveStatus('idle'), 2500)
+    } catch (err: any) {
+      setPugSaveStatus('error')
+      setErrorMsg(err.message ?? 'Failed to register')
+      setTimeout(() => setPugSaveStatus('idle'), 2500)
     }
   }
 
@@ -565,7 +598,20 @@ export function UserEditorView() {
               {pugLoading ? (
                 <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>Loading...</p>
               ) : !pugPlayer ? (
-                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>Not registered for PUGs</p>
+                <div>
+                  <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginBottom: 10 }}>Not registered for PUGs</p>
+                  <button
+                    className="profile-save-btn"
+                    onClick={handlePugRegister}
+                    disabled={pugSaveStatus === 'saving'}
+                    style={{ fontSize: 13, padding: '6px 14px' }}
+                  >
+                    {pugSaveStatus === 'saving' ? <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Registering...</>
+                      : pugSaveStatus === 'saved' ? <><Check size={14} /> Registered!</>
+                      : pugSaveStatus === 'error' ? <><AlertCircle size={14} /> Error</>
+                      : <><Plus size={14} /> Register for PUGs</>}
+                  </button>
+                </div>
               ) : (
                 <>
                   {/* Tiers */}
