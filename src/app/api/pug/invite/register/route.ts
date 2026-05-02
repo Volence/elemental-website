@@ -36,7 +36,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'This invite is not for PUG access' }, { status: 400 })
   }
 
-  const approvedRoles = invite.pugInvite?.approvedRoles ?? []
+  const inviteRoles = invite.pugInvite?.approvedRoles ?? []
+  const region: string | undefined = invite.pugInvite?.region
 
   try {
     const existing = await payload.find({
@@ -49,10 +50,19 @@ export async function POST(request: NextRequest) {
     if (existing.docs.length > 0) {
       const existingPlayer = existing.docs[0] as any
       const updatedTiers = Array.from(new Set([...(existingPlayer.tiers ?? []), 'invite']))
+      const updatedRoles = Array.from(new Set([...(existingPlayer.approvedRoles ?? []), ...inviteRoles]))
+      const updatedRegions = region
+        ? Array.from(new Set([...(existingPlayer.inviteRegions ?? []), region]))
+        : existingPlayer.inviteRegions ?? []
       await payload.update({
         collection: 'pug-players',
         id: existingPlayer.id,
-        data: { tiers: updatedTiers, approvedRoles, invitedBy: invite.createdBy?.id ?? invite.createdBy },
+        data: {
+          tiers: updatedTiers,
+          approvedRoles: updatedRoles,
+          inviteRegions: updatedRegions,
+          invitedBy: invite.createdBy?.id ?? invite.createdBy,
+        },
         overrideAccess: true,
       })
       playerId = existingPlayer.id
@@ -62,7 +72,8 @@ export async function POST(request: NextRequest) {
         data: {
           user: user.id,
           tiers: ['invite'],
-          approvedRoles,
+          approvedRoles: inviteRoles,
+          inviteRegions: region ? [region] : [],
           registeredDate: new Date().toISOString(),
           invitedBy: invite.createdBy?.id ?? invite.createdBy,
         },
