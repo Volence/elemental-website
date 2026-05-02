@@ -329,7 +329,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         try {
           const newPerson = await payload.create({
             collection: 'people',
-            data: personData,
+            data: personData as any,
             overrideAccess: true,
           })
           linkedPersonId = newPerson.id
@@ -338,7 +338,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
             personData.slug = `${displayName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${discordUser.id.slice(-4)}`
             const newPerson = await payload.create({
               collection: 'people',
-              data: personData,
+              data: personData as any,
               overrideAccess: true,
             })
             linkedPersonId = newPerson.id
@@ -428,7 +428,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           }
           await payload.create({
             collection: 'pug-players',
-            data: pugData,
+            data: pugData as any,
             overrideAccess: true,
           })
           console.log(`[Discord OAuth] Registered PUG player for user ${newUser.id} (invite tier, region: ${pugInvite.region || 'none'})`)
