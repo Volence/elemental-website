@@ -491,16 +491,44 @@ export default function LobbyPage() {
       )}
 
       {/* ── TERMINAL STATES ── */}
-      {lobby.status === 'COMPLETED' && (
-        <div className="text-center py-12">
-          <p className="text-2xl font-bold mb-2">Match Complete</p>
-          {selectedMap && <p className="text-gray-400 text-sm">Map: {selectedMap.name}</p>}
-          <TeamsDisplay players={players} currentUserId={currentUserId} heroes={heroes} banState={lobby.banState} />
-          <Link href="/pugs/open" className="mt-6 inline-block text-blue-400 hover:underline text-sm">
-            Back to Open Tier →
-          </Link>
-        </div>
-      )}
+      {lobby.status === 'COMPLETED' && (() => {
+        const pending = lobby.pendingResult as any
+        const disputeDeadline = lobby.completedAt
+          ? new Date(new Date(lobby.completedAt).getTime() + 600000).toISOString()
+          : null
+        const canDispute = disputeDeadline && new Date(disputeDeadline).getTime() > Date.now()
+        const isOpposingCaptain = isCaptain && pending && me?.team !== players.find((p: Player) => p.userId === pending.reportedBy)?.team
+        return (
+          <div className="text-center py-12">
+            <p className="text-2xl font-bold mb-2">Match Complete</p>
+            {selectedMap && <p className="text-gray-400 text-sm">Map: {selectedMap.name}</p>}
+            {pending && (
+              <p className="text-sm text-gray-500 mt-1">
+                Result: <strong className="text-white">{pending.result === 'team1' ? 'Team 1 Won' : pending.result === 'team2' ? 'Team 2 Won' : 'Draw'}</strong>
+              </p>
+            )}
+            <TeamsDisplay players={players} currentUserId={currentUserId} heroes={heroes} banState={lobby.banState} />
+            {canDispute && isOpposingCaptain && (
+              <div className="mt-4 border border-yellow-900/50 rounded-lg p-4 inline-block">
+                <p className="text-sm text-yellow-400 mb-2">
+                  Dispute window closes in {disputeDeadline && <Countdown deadline={disputeDeadline} />}
+                </p>
+                <button
+                  onClick={() => apiAction('/confirm', { action: 'dispute' })}
+                  className="px-4 py-2 border border-red-800 text-red-400 rounded hover:bg-red-950 text-sm transition-colors"
+                >
+                  Dispute Result
+                </button>
+              </div>
+            )}
+            <div className="mt-6">
+              <Link href="/pugs/open" className="text-blue-400 hover:underline text-sm">
+                Back to Open Tier →
+              </Link>
+            </div>
+          </div>
+        )
+      })()}
 
       {lobby.status === 'CANCELLED' && (
         <div className="text-center py-12">

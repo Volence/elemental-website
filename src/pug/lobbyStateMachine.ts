@@ -16,6 +16,7 @@ import {
   MAP_VOTE_TIMEOUT_MS,
   BAN_TIMEOUT_MS,
   RESULT_CONFIRM_TIMEOUT_MS,
+  DISPUTE_AFTER_COMPLETE_MS,
   VOICE_CLEANUP_TIMEOUT_MS,
   INVITE_TIER_LATE_CANCEL_MS,
 } from './constants'
@@ -684,7 +685,16 @@ export async function confirmResult(lobbyId: number, captainUserId: number): Pro
 
 export async function disputeResult(lobbyId: number, captainUserId: number): Promise<void> {
   const lobby = await prisma.pugLobby.findUniqueOrThrow({ where: { id: lobbyId } })
-  if (lobby.status !== 'REPORTING') throw new Error('No pending result to dispute')
+
+  const canDisputeCompleted =
+    lobby.status === 'COMPLETED' &&
+    lobby.completedAt &&
+    Date.now() - lobby.completedAt.getTime() < DISPUTE_AFTER_COMPLETE_MS
+
+  if (lobby.status !== 'REPORTING' && !canDisputeCompleted) {
+    throw new Error('No pending result to dispute')
+  }
+
   const captain = await prisma.pugLobbyPlayer.findFirst({
     where: { lobbyId, userId: captainUserId, isCaptain: true },
   })
@@ -693,7 +703,24 @@ export async function disputeResult(lobbyId: number, captainUserId: number): Pro
   if (pending.reportedBy === captainUserId) {
     throw new Error('The reporting captain cannot dispute their own result - only the opposing captain can dispute')
   }
-  cancelTimer(timerKey(lobbyId, 'confirm'))
+
+  if (canDisputeCompleted) {
+    const snapshots = (lobby.ratingChanges ?? []) as { leaderboardId: number; before: { rating: number; ratingDeviation: number; volatility: number; wins: number; losses: number; draws: number; gamesPlayed: number } }[]
+    if (snapshots.length > 0) {
+      const payload = await getPayload({ config: configPromise })
+      for (const snap of snapshots) {
+        await payload.update({
+          collection: 'pug-leaderboard',
+          id: snap.leaderboardId,
+          data: snap.before,
+          overrideAccess: true,
+        })
+      }
+    }
+  } else {
+    cancelTimer(timerKey(lobbyId, 'confirm'))
+  }
+
   await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'DISPUTED' } })
   import('@/discord/services/pugFeed').then(({ updateLobbyFeed }) => {
     updateLobbyFeed(lobbyId).catch(console.error)
@@ -778,18 +805,32 @@ export async function completeMatch(lobbyId: number, result: MatchResult): Promi
 
     const updates = calculateRatingUpdates(team1Ratings, team2Ratings, result)
 
+    const ratingSnapshots: { leaderboardId: number; before: { rating: number; ratingDeviation: number; volatility: number; wins: number; losses: number; draws: number; gamesPlayed: number } }[] = []
+
     for (const update of updates) {
       const isWinner =
         (result === 'team1' && team1Ratings.some((r) => r.payloadPlayerId === update.payloadPlayerId)) ||
         (result === 'team2' && team2Ratings.some((r) => r.payloadPlayerId === update.payloadPlayerId))
       const isDraw = result === 'draw'
 
-      // Read current stats then write incremented values
       const current = await payload.findByID({
         collection: 'pug-leaderboard',
         id: update.payloadPlayerId,
         overrideAccess: true,
       }) as any
+
+      ratingSnapshots.push({
+        leaderboardId: update.payloadPlayerId,
+        before: {
+          rating: current.rating ?? 1500,
+          ratingDeviation: current.ratingDeviation ?? 350,
+          volatility: current.volatility ?? 0.06,
+          wins: current.wins ?? 0,
+          losses: current.losses ?? 0,
+          draws: current.draws ?? 0,
+          gamesPlayed: current.gamesPlayed ?? 0,
+        },
+      })
 
       await payload.update({
         collection: 'pug-leaderboard',
@@ -806,9 +847,14 @@ export async function completeMatch(lobbyId: number, result: MatchResult): Promi
         overrideAccess: true,
       })
     }
+
+    await prisma.pugLobby.update({
+      where: { id: lobbyId },
+      data: { ratingChanges: ratingSnapshots },
+    })
   }
 
-  await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'COMPLETED' } })
+  await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'COMPLETED', completedAt: new Date() } })
   cancelTimer(timerKey(lobbyId, 'voice_cleanup'))
 
   const { updateLobbyFeed, postMatchResult } = await import('@/discord/services/pugFeed')

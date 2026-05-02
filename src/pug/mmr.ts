@@ -24,12 +24,16 @@ export function calculateRatingUpdates(
   else if (result === 'team2') { score1 = 0; score2 = 1 }
   else { score1 = 0.5; score2 = 0.5 }
 
+  const avg = (arr: any[], fn: (p: any) => number) => arr.reduce((s, p) => s + fn(p), 0) / arr.length
+  const team1Avg = ranking.makePlayer(avg(g2team1, (p) => p.getRating()), avg(g2team1, (p) => p.getRd()), avg(g2team1, (p) => p.getVol()))
+  const team2Avg = ranking.makePlayer(avg(g2team2, (p) => p.getRating()), avg(g2team2, (p) => p.getRd()), avg(g2team2, (p) => p.getVol()))
+
   const matches: [any, any, number][] = []
   for (const p1 of g2team1) {
-    for (const p2 of g2team2) {
-      matches.push([p1, p2, score1])
-      matches.push([p2, p1, score2])
-    }
+    matches.push([p1, team2Avg, score1])
+  }
+  for (const p2 of g2team2) {
+    matches.push([p2, team1Avg, score2])
   }
 
   ranking.updateRatings(matches)

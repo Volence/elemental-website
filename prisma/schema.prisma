@@ -728,6 +728,8 @@ model PugLobby {
   timeoutAt            DateTime?
   readyAt              DateTime?
   reportingAt          DateTime?
+  completedAt          DateTime?
+  ratingChanges        Json?
   createdByUserId      Int?
   discordFeedMessageId String?
   voiceChannel1Id      String?
