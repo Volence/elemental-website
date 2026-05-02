@@ -89,7 +89,7 @@ function buildLobbyEmbed(lobby: {
       ? open.map((r) => `${spotsAvailable[r]}× ${r.replace(/_/g, '-')}`).join('\n')
       : 'All slots filled'
     embed.addFields({ name: 'Spots Needed', value: rolesDisplay })
-    embed.setDescription(`Join at: https://elemental.gg/pugs/lobby/${lobby.id}`)
+    embed.setDescription(`Join at: https://elmt.gg/pugs/lobby/${lobby.id}`)
   }
 
   return embed
@@ -170,7 +170,7 @@ export async function postMatchResult(
       { name: 'Team 1', value: team1Names || '-', inline: true },
       { name: 'Team 2', value: team2Names || '-', inline: true },
     )
-    .setDescription(`[View lobby](https://elemental.gg/pugs/lobby/${lobbyId})`)
+    .setDescription(`[View lobby](https://elmt.gg/pugs/lobby/${lobbyId})`)
     .setTimestamp()
 
   await channel.send({ embeds: [embed] }).catch(console.error)

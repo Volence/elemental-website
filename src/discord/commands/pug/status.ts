@@ -42,7 +42,7 @@ export async function handlePugStatus(interaction: ChatInputCommandInteraction):
       { name: 'Your Role', value: lobbyPlayer.assignedRole ?? lobbyPlayer.queuedRoles.join(', '), inline: true },
       { name: 'Team', value: lobbyPlayer.team?.toString() ?? 'TBD', inline: true },
     )
-    .setURL(`https://elemental.gg/pugs/lobby/${lobby.id}`)
+    .setURL(`https://elmt.gg/pugs/lobby/${lobby.id}`)
 
   await interaction.editReply({ embeds: [embed] })
 }

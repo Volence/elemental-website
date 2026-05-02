@@ -256,7 +256,7 @@ export async function advanceToDrafting(lobbyId: number): Promise<void> {
     const { formatUserPings } = await import('@/discord/services/pugNotifications')
     await postFeedNotification(
       lobby.tier as 'open' | 'invite',
-      `🎮 **PUG #${lobby.lobbyNumber}** draft is starting! Head to: https://elemental.gg/pugs/lobby/${lobbyId}\n${formatUserPings(discordIds)}`,
+      `🎮 **PUG #${lobby.lobbyNumber}** draft is starting! Head to: https://elmt.gg/pugs/lobby/${lobbyId}\n${formatUserPings(discordIds)}`,
     )
     await updateLobbyFeed(lobbyId)
   }).catch(console.error)
@@ -513,7 +513,7 @@ async function advanceToInProgress(lobbyId: number): Promise<void> {
   if (team1ChannelId || team2ChannelId) {
     const { sendDm } = await import('@/discord/services/pugNotifications')
     const guildId = process.env.DISCORD_GUILD_ID ?? ''
-    const lobbyUrl = `https://elemental.gg/pugs/lobby/${lobbyId}`
+    const lobbyUrl = `https://elmt.gg/pugs/lobby/${lobbyId}`
     const channelUrl = (id: string) => `https://discord.com/channels/${guildId}/${id}`
 
     const notifyTeam = async (teamNum: 1 | 2, channelId: string | null) => {

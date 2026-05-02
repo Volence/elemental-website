@@ -31,7 +31,7 @@ export async function handlePugQueue(interaction: ChatInputCommandInteraction): 
   })
 
   if (users.docs.length === 0) {
-    await interaction.editReply('❌ No website account linked to your Discord. Log in at elemental.gg and link your Discord.')
+    await interaction.editReply('❌ No website account linked to your Discord. Log in at elmt.gg and link your Discord.')
     return
   }
 
@@ -43,7 +43,7 @@ export async function handlePugQueue(interaction: ChatInputCommandInteraction): 
   })
 
   if (pugPlayers.docs.length === 0) {
-    await interaction.editReply('❌ You are not registered for PUGs. Register at elemental.gg/pugs/register')
+    await interaction.editReply('❌ You are not registered for PUGs. Register at elmt.gg/pugs/register')
     return
   }
 
@@ -118,7 +118,7 @@ export async function handlePugQueue(interaction: ChatInputCommandInteraction): 
     }
 
     await interaction.editReply({
-      content: `✅ Queued for PUG #${lobby.lobbyNumber} as **${selectedRoles.join(', ')}**.\nView lobby: https://elemental.gg/pugs/lobby/${lobby.id}`,
+      content: `✅ Queued for PUG #${lobby.lobbyNumber} as **${selectedRoles.join(', ')}**.\nView lobby: https://elmt.gg/pugs/lobby/${lobby.id}`,
       components: [],
     })
     collector.stop()
