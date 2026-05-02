@@ -121,20 +121,23 @@ export default async function PugLeaderboardPage({
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800/60">
-              {(entries as any).docs.map((entry: any, index: number) => {
+              {(entries as any).docs.map((entry: any, index: number, arr: any[]) => {
                 const user = entry.player?.user
                 const displayName = typeof user === 'object' ? user?.name : `User #${entry.player?.id}`
-                const isTop3 = index < 3
+                const rank = index === 0 || entry.rating !== arr[index - 1].rating
+                  ? index + 1
+                  : arr.findIndex((e: any) => e.rating === entry.rating) + 1
+                const isTop3 = rank <= 3
                 return (
                   <tr key={entry.id} className="hover:bg-gray-800/30 transition-colors">
                     <td className="px-4 py-3">
                       <span className={`font-bold text-sm ${
-                        index === 0 ? 'text-yellow-400' :
-                        index === 1 ? 'text-gray-400' :
-                        index === 2 ? 'text-orange-600' :
+                        rank === 1 ? 'text-yellow-400' :
+                        rank === 2 ? 'text-gray-400' :
+                        rank === 3 ? 'text-orange-600' :
                         'text-gray-600'
                       }`}>
-                        {isTop3 ? ['🥇', '🥈', '🥉'][index] : index + 1}
+                        {isTop3 ? ['🥇', '🥈', '🥉'][rank - 1] : rank}
                       </span>
                     </td>
                     <td className="px-4 py-3">
