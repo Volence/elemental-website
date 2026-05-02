@@ -203,6 +203,18 @@ const config = buildConfig({
           Component: '@/components/TeamEditor/EditRoute#default',
           path: '/edit-team',
         },
+        pugSeasons: {
+          Component: '@/components/PugSeasons/ListRoute#default',
+          path: '/pug-seasons',
+        },
+        editPugSeason: {
+          Component: '@/components/PugSeasons/EditRoute#default',
+          path: '/edit-pug-season',
+        },
+        pugLobbies: {
+          Component: '@/components/PugLobbies/ListRoute#default',
+          path: '/pug-lobbies',
+        },
       },
     },
     importMap: {
