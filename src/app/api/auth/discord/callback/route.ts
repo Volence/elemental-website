@@ -321,15 +321,31 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
       // If no Person found, create one
       if (!linkedPersonId) {
-        const newPerson = await payload.create({
-          collection: 'people',
-          data: {
-            name: discordUser.global_name || discordUser.username,
-            discordId: discordUser.id,
-          },
-          overrideAccess: true,
-        })
-        linkedPersonId = newPerson.id
+        const displayName = discordUser.global_name || discordUser.username
+        let personData: Record<string, any> = {
+          name: displayName,
+          discordId: discordUser.id,
+        }
+        try {
+          const newPerson = await payload.create({
+            collection: 'people',
+            data: personData,
+            overrideAccess: true,
+          })
+          linkedPersonId = newPerson.id
+        } catch (slugError: any) {
+          if (slugError.message?.includes('slug')) {
+            personData.slug = `${displayName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${discordUser.id.slice(-4)}`
+            const newPerson = await payload.create({
+              collection: 'people',
+              data: personData,
+              overrideAccess: true,
+            })
+            linkedPersonId = newPerson.id
+          } else {
+            throw slugError
+          }
+        }
       } else {
         // Ensure Person has discordId set
         try {
