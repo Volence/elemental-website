@@ -68,7 +68,26 @@ export async function GET(request: NextRequest) {
     return { ...lobby, neededSlots, blockedRoles, spotsAvailable }
   })
 
-  return NextResponse.json({ lobbies: enriched })
+  let regionQueueStatus: Record<string, boolean> | null = null
+  if (tier === 'invite') {
+    const payload = await getPayload({ config: configPromise })
+    const activeSeason = await payload.find({
+      collection: 'pug-seasons',
+      where: { and: [{ tier: { equals: 'invite' } }, { active: { equals: true } }] },
+      overrideAccess: true,
+      limit: 1,
+    })
+    const season = activeSeason.docs[0] as any
+    if (season?.regionQueueStatus) {
+      regionQueueStatus = {
+        na: season.regionQueueStatus.na ?? false,
+        emea: season.regionQueueStatus.emea ?? false,
+        pacific: season.regionQueueStatus.pacific ?? false,
+      }
+    }
+  }
+
+  return NextResponse.json({ lobbies: enriched, regionQueueStatus })
 }
 
 export async function POST(request: NextRequest) {
@@ -77,19 +96,47 @@ export async function POST(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
+    const body = await request.json()
+    const { payloadSeasonId, tier = 'open', region } = body
+    if (!payloadSeasonId) return NextResponse.json({ error: 'payloadSeasonId required' }, { status: 400 })
+
     const pugPlayerResult = await payload.find({
       collection: 'pug-players',
       where: { user: { equals: user.id } },
       overrideAccess: true,
     })
     const pugPlayer = pugPlayerResult.docs[0] as any
+
+    if (tier === 'invite') {
+      if (!pugPlayer?.tiers?.includes('invite')) {
+        return NextResponse.json({ error: 'Not registered for invite tier' }, { status: 403 })
+      }
+      if (!region || !['na', 'emea', 'pacific'].includes(region)) {
+        return NextResponse.json({ error: 'region required for invite tier' }, { status: 400 })
+      }
+      const playerRegions: string[] = pugPlayer.inviteRegions ?? []
+      if (!playerRegions.includes(region)) {
+        return NextResponse.json({ error: `Not invited to ${region.toUpperCase()} region` }, { status: 403 })
+      }
+
+      const season = await payload.findByID({
+        collection: 'pug-seasons',
+        id: payloadSeasonId,
+        overrideAccess: true,
+      }) as any
+      const queueOpen = season?.regionQueueStatus?.[region] ?? false
+      if (!queueOpen) {
+        return NextResponse.json({ error: `${region.toUpperCase()} queue is not open` }, { status: 400 })
+      }
+
+      const { createInviteLobby } = await import('@/pug')
+      const lobby = await createInviteLobby(payloadSeasonId, region)
+      return NextResponse.json({ lobby }, { status: 201 })
+    }
+
     if (!pugPlayer?.tiers?.includes('open')) {
       return NextResponse.json({ error: 'You must register for open tier first' }, { status: 403 })
     }
-
-    const body = await request.json()
-    const { payloadSeasonId } = body
-    if (!payloadSeasonId) return NextResponse.json({ error: 'payloadSeasonId required' }, { status: 400 })
 
     const lobby = await createOpenLobby(user.id, payloadSeasonId)
     return NextResponse.json({ lobby }, { status: 201 })

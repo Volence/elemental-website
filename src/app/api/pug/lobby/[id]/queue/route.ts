@@ -53,6 +53,22 @@ export async function POST(request: NextRequest, { params }: Params) {
         )
       }
     }
+    const season = await payload.findByID({
+      collection: 'pug-seasons',
+      id: lobby.payloadSeasonId!,
+      overrideAccess: true,
+    }) as any
+    const regionField = lobby.region as string
+    const queueOpen = season?.regionQueueStatus?.[regionField] ?? false
+    if (!queueOpen) {
+      const hasGracePeriod = lobby.timeoutAt && new Date(lobby.timeoutAt) > new Date()
+      if (!hasGracePeriod) {
+        return NextResponse.json(
+          { error: `${regionField.toUpperCase()} queue is closed` },
+          { status: 400 },
+        )
+      }
+    }
     const approvedRolesNormalized = (pugPlayer.approvedRoles ?? []).map((r: string) => r.replace(/-/g, '_'))
     const invalidRoles = roles.filter((r: string) => !approvedRolesNormalized.includes(r))
     if (invalidRoles.length > 0) {
