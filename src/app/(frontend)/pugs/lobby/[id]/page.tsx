@@ -435,15 +435,17 @@ export default function LobbyPage() {
             voiceChannel2Id={lobby.voiceChannel2Id ?? null}
             guildId={guildId}
           />
-          {isCaptain && (
+          {(isCaptain || isPugAdmin) && (
             <div className="border border-gray-800 rounded-lg overflow-hidden">
               <div className="px-4 py-2.5 bg-gray-900/50 border-b border-gray-800">
-                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Submit Result (Captain Only)</span>
+                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  {isPugAdmin && !isCaptain ? 'Admin - Submit Result' : 'Submit Result (Captain Only)'}
+                </span>
               </div>
-              <div className="px-4 py-3 flex gap-3">
-                <button onClick={() => apiAction('/report', { result: 'team1' })} className="px-4 py-2 bg-blue-900/40 border border-blue-800 text-blue-300 rounded hover:bg-blue-900 text-sm transition-colors font-medium">Team 1 Won</button>
-                <button onClick={() => apiAction('/report', { result: 'team2' })} className="px-4 py-2 bg-orange-900/40 border border-orange-800 text-orange-300 rounded hover:bg-orange-900 text-sm transition-colors font-medium">Team 2 Won</button>
-                <button onClick={() => apiAction('/report', { result: 'draw' })} className="px-4 py-2 border border-gray-700 text-gray-400 rounded hover:bg-gray-800 text-sm transition-colors">Draw</button>
+              <div className="px-4 py-3 flex gap-3 flex-wrap">
+                <button onClick={() => apiAction(isPugAdmin && !isCaptain ? '/resolve' : '/report', { result: 'team1' })} className="px-4 py-2 bg-blue-900/40 border border-blue-800 text-blue-300 rounded hover:bg-blue-900 text-sm transition-colors font-medium">Team 1 Won</button>
+                <button onClick={() => apiAction(isPugAdmin && !isCaptain ? '/resolve' : '/report', { result: 'team2' })} className="px-4 py-2 bg-orange-900/40 border border-orange-800 text-orange-300 rounded hover:bg-orange-900 text-sm transition-colors font-medium">Team 2 Won</button>
+                <button onClick={() => apiAction(isPugAdmin && !isCaptain ? '/resolve' : '/report', { result: 'draw' })} className="px-4 py-2 border border-gray-700 text-gray-400 rounded hover:bg-gray-800 text-sm transition-colors">Draw</button>
               </div>
             </div>
           )}
