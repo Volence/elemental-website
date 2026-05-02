@@ -1,5 +1,12 @@
 export type PugRole = 'tank' | 'flex_dps' | 'hitscan_dps' | 'flex_support' | 'main_support'
 export type PugTier = 'open' | 'invite'
+export type PugRegion = 'na' | 'emea' | 'pacific'
+
+export const PUG_REGIONS = [
+  { value: 'na' as const, label: 'NA' },
+  { value: 'emea' as const, label: 'EMEA' },
+  { value: 'pacific' as const, label: 'Pacific' },
+] as const
 export type PugLobbyStatus =
   | 'OPEN'
   | 'READY'

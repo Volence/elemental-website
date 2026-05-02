@@ -5,6 +5,7 @@ export {
   leaveLobby,
   makeDraftPick,
   castMapVote,
+  finalizeMapVote,
   makeBan,
   reportResult,
   confirmResult,
@@ -18,4 +19,5 @@ export { selectCaptains } from './captainSelection'
 export { calculateRatingUpdates } from './mmr'
 export { applyEscalatingBan, getActiveBan } from './cooldownBans'
 export { recoverTimers } from './timers'
-export type { PugRole, PugTier, PugLobbyStatus, QueuedPlayer, AssignedPlayer, MatchResult, PlayerRating } from './types'
+export { PUG_REGIONS } from './types'
+export type { PugRole, PugTier, PugRegion, PugLobbyStatus, QueuedPlayer, AssignedPlayer, MatchResult, PlayerRating } from './types'
