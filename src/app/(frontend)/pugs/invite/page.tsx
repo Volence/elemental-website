@@ -19,7 +19,18 @@ function isWithinWindow(windows: any[]): boolean {
   })
 }
 
-export default async function PugInvitePage() {
+const REGIONS = [
+  { value: 'na', label: 'NA' },
+  { value: 'emea', label: 'EMEA' },
+  { value: 'pacific', label: 'Pacific' },
+]
+
+export default async function PugInvitePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ region?: string }>
+}) {
+  const { region = 'na' } = await searchParams
   const payload = await getPayload({ config: configPromise })
   const activeSeason = await payload.find({
     collection: 'pug-seasons',
@@ -33,6 +44,7 @@ export default async function PugInvitePage() {
     ? await prisma.pugLobby.findMany({
         where: {
           tier: 'invite',
+          region,
           payloadSeasonId: season.id,
           status: { in: ['OPEN', 'READY', 'DRAFTING', 'MAP_VOTE', 'BANNING', 'IN_PROGRESS'] },
         },
@@ -45,16 +57,34 @@ export default async function PugInvitePage() {
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-2">Invite Tier PUGs</h1>
+      <Link href="/pugs" className="text-sm text-gray-500 hover:text-gray-300 transition-colors">← PUGs</Link>
+      <h1 className="text-2xl font-bold mt-1 mb-2">Invite Tier PUGs</h1>
+
+      {/* Region tabs */}
+      <div className="flex gap-1 mb-6 p-1 bg-gray-900 border border-gray-800 rounded-lg w-fit">
+        {REGIONS.map((r) => (
+          <Link
+            key={r.value}
+            href={`/pugs/invite?region=${r.value}`}
+            className={`px-4 py-1.5 rounded text-sm font-medium transition-colors ${
+              region === r.value
+                ? 'bg-purple-600 text-white'
+                : 'text-gray-400 hover:text-gray-200'
+            }`}
+          >
+            {r.label}
+          </Link>
+        ))}
+      </div>
 
       {!season ? (
         <p className="text-gray-500">No active invite-tier season.</p>
       ) : (
         <>
-          <div className="mb-6 p-4 border rounded-lg">
+          <div className="mb-6 p-4 border border-gray-700 rounded-lg">
             <p className="font-medium">{season.name}</p>
             {season.prizePool && <p className="text-sm text-gray-500">{season.prizePool}</p>}
-            <p className={`text-sm mt-2 font-medium ${queueActive ? 'text-green-600' : 'text-red-500'}`}>
+            <p className={`text-sm mt-2 font-medium ${queueActive ? 'text-green-400' : 'text-red-400'}`}>
               Queue is {queueActive ? 'OPEN' : 'CLOSED'}
             </p>
           </div>
@@ -71,11 +101,11 @@ export default async function PugInvitePage() {
                 <Link
                   key={lobby.id}
                   href={`/pugs/lobby/${lobby.id}`}
-                  className="block border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                  className="block border border-gray-700 rounded-lg p-4 hover:bg-gray-800/40 transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-medium">PUG #{lobby.lobbyNumber}</span>
-                    <span className="text-sm px-2 py-1 bg-gray-100 rounded">{lobby.status}</span>
+                    <span className="text-sm px-2 py-1 bg-gray-800 rounded text-gray-300">{lobby.status}</span>
                   </div>
                   <p className="text-sm text-gray-500 mt-1">{lobby.players.length}/10 players</p>
                 </Link>
