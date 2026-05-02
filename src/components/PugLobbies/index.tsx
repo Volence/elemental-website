@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Gamepad2, Power, PowerOff, ExternalLink, XCircle, Loader2, Users, Clock } from 'lucide-react'
+import { Gamepad2, Power, PowerOff, ExternalLink, XCircle, Loader2, Users, Clock, Trophy, SkipForward, Map } from 'lucide-react'
 import { PUG_ADMIN_CSS, timeAgo } from '@/components/pugAdminStyles'
 
 type Lobby = {
@@ -13,7 +13,11 @@ type Lobby = {
   status: string
   createdAt: string
   timeoutAt?: string | null
-  players: Array<{ id: number; userId: number }>
+  players: Array<{ id: number; userId: number; name?: string; team?: number | null; assignedRole?: string | null }>
+  draftState?: { currentPickTeam: number; captain1Id: number; captain2Id: number } | null
+  banState?: { currentBanTeam: number; banNumber: number } | null
+  mapVote?: { candidates: number[]; votes: Record<string, number>; selectedMapId?: number | null } | null
+  pendingResult?: { result: string; reportedBy: number } | null
 }
 
 type RegionStatus = Record<string, boolean>
@@ -61,6 +65,7 @@ export function PugLobbiesDashboard() {
   const [toggling, setToggling] = useState<string | null>(null)
   const [cancelling, setCancelling] = useState<number | null>(null)
   const [tierFilter, setTierFilter] = useState<'all' | 'open' | 'invite'>('all')
+  const [acting, setActing] = useState<string | null>(null)
 
   const fetchData = useCallback(async () => {
     try {
@@ -119,6 +124,26 @@ export function PugLobbiesDashboard() {
       }
     } finally {
       setCancelling(null)
+    }
+  }
+
+  async function lobbyAction(lobbyId: number, path: string, body: Record<string, any>) {
+    const key = `${lobbyId}-${path}`
+    setActing(key)
+    try {
+      const res = await fetch(`/api/pug/lobby/${lobbyId}${path}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        credentials: 'include',
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        alert(data.error || 'Action failed')
+      }
+      await fetchData()
+    } finally {
+      setActing(null)
     }
   }
 
@@ -244,7 +269,7 @@ export function PugLobbiesDashboard() {
                 )}
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
               <button
                 className="ps-btn ps-btn-ghost"
                 style={{ padding: '6px 10px', fontSize: 12 }}
@@ -252,6 +277,62 @@ export function PugLobbiesDashboard() {
               >
                 <ExternalLink size={12} /> View
               </button>
+              {lobby.status === 'REPORTING' && (
+                <>
+                  <button
+                    className="ps-btn ps-btn-success"
+                    style={{ padding: '6px 10px', fontSize: 12 }}
+                    onClick={() => lobbyAction(lobby.id, '/report', { result: 'team1' })}
+                    disabled={acting === `${lobby.id}-/report`}
+                  >
+                    {acting === `${lobby.id}-/report` ? <Loader2 size={12} className="ps-spin" /> : <><Trophy size={12} /> Team 1 Won</>}
+                  </button>
+                  <button
+                    className="ps-btn ps-btn-warning"
+                    style={{ padding: '6px 10px', fontSize: 12 }}
+                    onClick={() => lobbyAction(lobby.id, '/report', { result: 'team2' })}
+                    disabled={acting === `${lobby.id}-/report`}
+                  >
+                    <Trophy size={12} /> Team 2 Won
+                  </button>
+                  <button
+                    className="ps-btn ps-btn-ghost"
+                    style={{ padding: '6px 10px', fontSize: 12 }}
+                    onClick={() => lobbyAction(lobby.id, '/report', { result: 'draw' })}
+                    disabled={acting === `${lobby.id}-/report`}
+                  >
+                    Draw
+                  </button>
+                </>
+              )}
+              {lobby.status === 'IN_PROGRESS' && (
+                <button
+                  className="ps-btn ps-btn-warning"
+                  style={{ padding: '6px 10px', fontSize: 12 }}
+                  onClick={() => {
+                    if (confirm('Move this lobby to reporting phase?'))
+                      lobbyAction(lobby.id, '/report', { result: 'team1' })
+                  }}
+                  disabled={acting === `${lobby.id}-/report`}
+                >
+                  <SkipForward size={12} /> End Match
+                </button>
+              )}
+              {lobby.status === 'MAP_VOTE' && lobby.mapVote?.candidates && (
+                <select
+                  className="ps-select"
+                  style={{ padding: '4px 8px', fontSize: 12, minWidth: 120 }}
+                  defaultValue=""
+                  onChange={(e) => {
+                    if (e.target.value) lobbyAction(lobby.id, '/map-vote', { mapId: parseInt(e.target.value) })
+                  }}
+                >
+                  <option value="">Force Map...</option>
+                  {lobby.mapVote.candidates.map((mapId) => (
+                    <option key={mapId} value={mapId}>Map #{mapId}</option>
+                  ))}
+                </select>
+              )}
               {['OPEN', 'READY'].includes(lobby.status) && (
                 <button
                   className="ps-btn ps-btn-danger"

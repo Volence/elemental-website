@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
 
   const where: any = {
     tier: tier as any,
-    status: { in: ['OPEN', 'READY', 'DRAFTING', 'MAP_VOTE', 'BANNING', 'IN_PROGRESS'] },
+    status: { in: ['OPEN', 'READY', 'DRAFTING', 'MAP_VOTE', 'BANNING', 'IN_PROGRESS', 'REPORTING'] },
   }
   if (region) {
     where.region = region
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
 
   const lobbies = await prisma.pugLobby.findMany({
     where,
-    include: { players: true },
+    include: { players: true, draftState: true, banState: true, mapVote: true },
     orderBy: { createdAt: 'desc' },
   })
 
@@ -54,6 +54,19 @@ export async function GET(request: NextRequest) {
     return needed
   }
 
+  const payload = await getPayload({ config: configPromise })
+  const allUserIds = [...new Set(lobbies.flatMap((l) => l.players.map((p) => p.userId)))]
+  const nameMap: Record<number, string> = {}
+  if (allUserIds.length > 0) {
+    const users = await payload.find({
+      collection: 'users',
+      where: { id: { in: allUserIds } },
+      limit: allUserIds.length,
+      overrideAccess: true,
+    })
+    for (const u of users.docs as any[]) nameMap[u.id] = u.name || u.email
+  }
+
   const enriched = lobbies.map((lobby) => {
     const playerRoles = lobby.players.map((p) => ({ queuedRoles: p.queuedRoles as string[] }))
     const spotsAvailable: Record<string, number> = {}
@@ -65,12 +78,15 @@ export async function GET(request: NextRequest) {
     }
     const blockedRoles = ALL_ROLES.filter((r) => spotsAvailable[r] === 0)
     const neededSlots = computeNeededSlots(playerRoles)
-    return { ...lobby, neededSlots, blockedRoles, spotsAvailable }
+    const enrichedPlayers = lobby.players.map((p) => ({
+      ...p,
+      name: nameMap[p.userId] ?? `Player #${p.userId}`,
+    }))
+    return { ...lobby, players: enrichedPlayers, neededSlots, blockedRoles, spotsAvailable }
   })
 
   let regionQueueStatus: Record<string, boolean> | null = null
   if (tier === 'invite') {
-    const payload = await getPayload({ config: configPromise })
     const activeSeason = await payload.find({
       collection: 'pug-seasons',
       where: { and: [{ tier: { equals: 'invite' } }, { active: { equals: true } }] },

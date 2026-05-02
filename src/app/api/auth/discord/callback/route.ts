@@ -382,13 +382,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
       // Create user - Discord users get a random password (they'll always use OAuth)
       const randomPassword = `discord_${Math.random().toString(36).substring(2)}${Date.now()}`
+      const isPugAdminInvite = (invite.departments as any)?.isPugAdmin === true
+      const userRole = isPugAdminInvite ? 'staff-manager' : invite.role
       const newUser = await payload.create({
         collection: 'users',
         data: {
           name: discordUser.global_name || discordUser.username,
           email: `discord_${discordUser.id}@elmt.placeholder`,
           password: randomPassword,
-          role: invite.role,
+          role: userRole,
           discordId: discordUser.id,
           linkedPerson: linkedPersonId,
           assignedTeams: teamIds.length > 0 ? teamIds : (invite.assignedTeams ?? undefined),
@@ -412,7 +414,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         try {
           const pugData: Record<string, any> = {
             user: newUser.id,
-            tiers: ['invite'],
+            tiers: ['open', 'invite'],
             registeredDate: new Date().toISOString(),
             invitedBy: invite.createdBy
               ? typeof invite.createdBy === 'object' ? invite.createdBy.id : invite.createdBy

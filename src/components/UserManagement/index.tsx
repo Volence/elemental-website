@@ -28,6 +28,7 @@ type UserData = {
     isEventsStaff?: boolean
     isScoutingStaff?: boolean
     isContentCreator?: boolean
+    isPugAdmin?: boolean
   } | null
   avatar?: { url: string } | number | null
   createdAt?: string
@@ -53,6 +54,7 @@ const DEPARTMENTS = [
   { key: 'isEventsStaff', label: 'Events' },
   { key: 'isScoutingStaff', label: 'Scouting' },
   { key: 'isContentCreator', label: 'Content Creator' },
+  { key: 'isPugAdmin', label: 'PUG Admin' },
 ] as const
 
 const PUG_ROLES = [

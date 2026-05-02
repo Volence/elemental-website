@@ -11,6 +11,8 @@ export const PUG_ADMIN_CSS = `
   .ps-btn-danger:hover { background: rgba(239,68,68,0.2); }
   .ps-btn-success { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.2); }
   .ps-btn-success:hover { background: rgba(34,197,94,0.25); }
+  .ps-btn-warning { background: rgba(234,179,8,0.15); color: #facc15; border: 1px solid rgba(234,179,8,0.2); }
+  .ps-btn-warning:hover { background: rgba(234,179,8,0.25); }
   .ps-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .ps-empty { text-align: center; padding: 60px 20px; color: #475569; }
   .ps-empty p { margin: 8px 0 0; font-size: 14px; }
