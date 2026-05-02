@@ -9,6 +9,9 @@ export const PugLeaderboard: CollectionConfig = {
     group: 'PUGs',
     defaultColumns: ['player', 'season', 'tier', 'region', 'rating', 'wins', 'losses', 'gamesPlayed'],
     description: 'Per-player Glicko-2 rating and stats per season per tier. Created by the engine when a player first plays in a season; updated after each completed match.',
+    components: {
+      beforeList: ['@/components/PugLeaderboard/ListRedirect#default'],
+    },
   },
   access: {
     read: authenticated,

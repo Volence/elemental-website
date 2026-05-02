@@ -7,9 +7,11 @@ export const PugPlayers: CollectionConfig = {
   labels: { singular: 'PUG Player', plural: 'PUG Players' },
   admin: {
     group: 'PUGs',
-    useAsTitle: 'user',
     defaultColumns: ['user', 'tiers', 'approvedRoles', 'registeredDate'],
     description: 'Players registered for PUGs. A player can be registered for both tiers simultaneously.',
+    components: {
+      beforeList: ['@/components/PugPlayers/ListRedirect#default'],
+    },
   },
   access: {
     read: authenticated,

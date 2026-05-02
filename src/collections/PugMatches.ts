@@ -43,6 +43,9 @@ export const PugMatches: CollectionConfig = {
     useAsTitle: 'lobbyNumber',
     defaultColumns: ['lobbyNumber', 'tier', 'result', 'date', 'disputed'],
     description: 'Completed PUG matches. Created by the engine when a lobby reaches COMPLETED state.',
+    components: {
+      beforeList: ['@/components/PugMatches/ListRedirect#default'],
+    },
   },
   access: {
     read: authenticated,
