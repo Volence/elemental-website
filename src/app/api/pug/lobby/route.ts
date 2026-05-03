@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
       limit: allUserIds.length,
       overrideAccess: true,
     })
-    for (const u of users.docs as any[]) nameMap[u.id] = u.name || u.email
+    for (const u of users.docs as any[]) nameMap[u.id] = u.name || 'Anonymous'
   }
 
   const enriched = lobbies.map((lobby) => {

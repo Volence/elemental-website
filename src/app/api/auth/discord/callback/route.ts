@@ -549,7 +549,8 @@ async function loginAndRedirect(
 
   console.log(`[Discord OAuth] Generated JWT for user ${user.id} (${user.email}), redirecting to ${returnUrl || '/admin'}`)
 
-  const response = NextResponse.redirect(new URL(returnUrl || '/admin', serverUrl))
+  const safeUrl = (returnUrl && returnUrl.startsWith('/') && !returnUrl.startsWith('//')) ? returnUrl : '/admin'
+  const response = NextResponse.redirect(new URL(safeUrl, serverUrl))
   response.cookies.set('payload-token', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',

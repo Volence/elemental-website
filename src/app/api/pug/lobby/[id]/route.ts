@@ -50,7 +50,7 @@ export async function GET(request: NextRequest, { params }: Params) {
       overrideAccess: true,
     })
     const nameMap: Record<number, string> = {}
-    for (const u of users.docs as any[]) nameMap[u.id] = u.name || u.email
+    for (const u of users.docs as any[]) nameMap[u.id] = u.name || 'Anonymous'
 
     const enrichedPlayers = lobby.players.map((p) => ({
       ...p,

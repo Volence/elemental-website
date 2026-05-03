@@ -17,7 +17,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const inviteToken = searchParams.get('invite') || ''
   const linkToExisting = searchParams.get('link') === 'true'
   const pugSignup = searchParams.get('pugSignup') === 'true'
-  const returnUrl = searchParams.get('returnUrl') || '/admin'
+  const rawReturnUrl = searchParams.get('returnUrl') || '/admin'
+  const returnUrl = (rawReturnUrl.startsWith('/') && !rawReturnUrl.startsWith('//')) ? rawReturnUrl : '/admin'
 
   const clientId = process.env.DISCORD_CLIENT_ID
   const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
@@ -47,7 +48,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       linkToExisting,
       pugSignup,
       returnUrl,
-      nonce: Math.random().toString(36).substring(2, 15),
+      nonce: crypto.randomUUID(),
     }),
   ).toString('base64url')
 

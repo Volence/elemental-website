@@ -106,21 +106,32 @@ export async function createInviteLobby(
 }
 
 export async function joinLobby(lobbyId: number, userId: number, roles: string[]): Promise<void> {
-  const lobby = await prisma.pugLobby.findUniqueOrThrow({ where: { id: lobbyId } })
-  if (lobby.status !== 'OPEN') throw new Error('Lobby is not accepting players')
+  await prisma.$transaction(async (tx) => {
+    const lobby = await tx.pugLobby.findUniqueOrThrow({ where: { id: lobbyId } })
+    if (lobby.status !== 'OPEN') throw new Error('Lobby is not accepting players')
 
-  const allPlayers = await prisma.pugLobbyPlayer.findMany({ where: { lobbyId } })
-  const others = allPlayers.filter((p) => p.userId !== userId)
-  const withNew = [...others.map((p) => ({ queuedRoles: p.queuedRoles as string[] })), { queuedRoles: roles }]
-  if (!canAllBeAssigned(withNew)) {
-    throw new Error('No valid role assignment is possible with your selected roles - some role slots are full')
-  }
+    const existingMembership = await tx.pugLobbyPlayer.findFirst({
+      where: {
+        userId,
+        lobbyId: { not: lobbyId },
+        lobby: { status: { in: ['OPEN', 'READY', 'DRAFTING', 'MAP_VOTE', 'BANNING', 'IN_PROGRESS', 'REPORTING'] } },
+      },
+    })
+    if (existingMembership) throw new Error('You are already in an active lobby')
 
-  await prisma.pugLobbyPlayer.upsert({
-    where: { lobbyId_userId: { lobbyId, userId } },
-    create: { lobbyId, userId, queuedRoles: roles as any },
-    update: { queuedRoles: roles as any },
-  })
+    const allPlayers = await tx.pugLobbyPlayer.findMany({ where: { lobbyId } })
+    const others = allPlayers.filter((p) => p.userId !== userId)
+    const withNew = [...others.map((p) => ({ queuedRoles: p.queuedRoles as string[] })), { queuedRoles: roles }]
+    if (!canAllBeAssigned(withNew)) {
+      throw new Error('No valid role assignment is possible with your selected roles - some role slots are full')
+    }
+
+    await tx.pugLobbyPlayer.upsert({
+      where: { lobbyId_userId: { lobbyId, userId } },
+      create: { lobbyId, userId, queuedRoles: roles as any },
+      update: { queuedRoles: roles as any },
+    })
+  }, { isolationLevel: 'Serializable' })
 
   await checkAndAdvanceToReady(lobbyId)
   import('@/discord/services/pugFeed').then(({ updateLobbyFeed }) => {
@@ -341,72 +352,75 @@ export async function makeDraftPick(
   captainUserId: number,
   pickedUserId: number,
 ): Promise<void> {
-  const draft = await prisma.pugDraftState.findUniqueOrThrow({ where: { lobbyId } })
-  const currentCaptainId = draft.currentPickTeam === 1 ? draft.captain1Id : draft.captain2Id
-  if (captainUserId !== currentCaptainId) throw new Error('Not your turn to pick')
+  const result = await prisma.$transaction(async (tx) => {
+    const draft = await tx.pugDraftState.findUniqueOrThrow({ where: { lobbyId } })
+    const currentCaptainId = draft.currentPickTeam === 1 ? draft.captain1Id : draft.captain2Id
+    if (captainUserId !== currentCaptainId) throw new Error('Not your turn to pick')
 
-  const pickedPlayer = await prisma.pugLobbyPlayer.findFirst({
-    where: { lobbyId, userId: pickedUserId, team: null, isCaptain: false },
-  })
-  if (!pickedPlayer) throw new Error('Picked player is not available in this lobby')
-
-  // Enforce 1 role per team
-  if (pickedPlayer.assignedRole) {
-    const roleAlreadyOnTeam = await prisma.pugLobbyPlayer.findFirst({
-      where: { lobbyId, team: draft.currentPickTeam, assignedRole: pickedPlayer.assignedRole },
+    const pickedPlayer = await tx.pugLobbyPlayer.findFirst({
+      where: { lobbyId, userId: pickedUserId, team: null, isCaptain: false },
     })
-    if (roleAlreadyOnTeam) throw new Error(`Team ${draft.currentPickTeam} already has a ${pickedPlayer.assignedRole}`)
-  }
+    if (!pickedPlayer) throw new Error('Picked player is not available in this lobby')
+
+    if (pickedPlayer.assignedRole) {
+      const roleAlreadyOnTeam = await tx.pugLobbyPlayer.findFirst({
+        where: { lobbyId, team: draft.currentPickTeam, assignedRole: pickedPlayer.assignedRole },
+      })
+      if (roleAlreadyOnTeam) throw new Error(`Team ${draft.currentPickTeam} already has a ${pickedPlayer.assignedRole}`)
+    }
+
+    const picks = draft.picks as { userId: number; team: number; pickNumber: number }[]
+    const nextPickNumber = draft.pickNumber + 1
+    const nextTeam = getNextPickTeam(nextPickNumber)
+
+    picks.push({ userId: pickedUserId, team: draft.currentPickTeam, pickNumber: draft.pickNumber })
+
+    await tx.pugLobbyPlayer.update({
+      where: { lobbyId_userId: { lobbyId, userId: pickedUserId } },
+      data: { team: draft.currentPickTeam },
+    })
+
+    if (isDraftComplete(nextPickNumber)) {
+      await tx.pugDraftState.update({
+        where: { lobbyId },
+        data: { picks, pickNumber: nextPickNumber, currentPickTeam: nextTeam ?? 1, pickDeadline: null },
+      })
+      return 'advance_map_vote' as const
+    }
+
+    const remaining = await tx.pugLobbyPlayer.findMany({
+      where: { lobbyId, team: null, isCaptain: false },
+    })
+    if (remaining.length === 1) {
+      const lastPlayer = remaining[0]
+      picks.push({ userId: lastPlayer.userId, team: nextTeam!, pickNumber: nextPickNumber })
+      await tx.pugLobbyPlayer.update({
+        where: { lobbyId_userId: { lobbyId, userId: lastPlayer.userId } },
+        data: { team: nextTeam! },
+      })
+      const finalPickNumber = nextPickNumber + 1
+      await tx.pugDraftState.update({
+        where: { lobbyId },
+        data: { picks, pickNumber: finalPickNumber, currentPickTeam: getNextPickTeam(finalPickNumber) ?? 1, pickDeadline: null },
+      })
+      return 'advance_map_vote' as const
+    }
+
+    const newDeadline = new Date(Date.now() + DRAFT_PICK_TIMEOUT_MS)
+    await tx.pugDraftState.update({
+      where: { lobbyId },
+      data: { picks, pickNumber: nextPickNumber, currentPickTeam: nextTeam!, pickDeadline: newDeadline },
+    })
+    return 'continue_draft' as const
+  }, { isolationLevel: 'Serializable' })
 
   cancelTimer(timerKey(lobbyId, 'draft'))
 
-  const picks = draft.picks as { userId: number; team: number; pickNumber: number }[]
-  const nextPickNumber = draft.pickNumber + 1
-  const nextTeam = getNextPickTeam(nextPickNumber)
-
-  picks.push({ userId: pickedUserId, team: draft.currentPickTeam, pickNumber: draft.pickNumber })
-
-  await prisma.pugLobbyPlayer.update({
-    where: { lobbyId_userId: { lobbyId, userId: pickedUserId } },
-    data: { team: draft.currentPickTeam },
-  })
-
-  if (isDraftComplete(nextPickNumber)) {
-    await prisma.pugDraftState.update({
-      where: { lobbyId },
-      data: { picks, pickNumber: nextPickNumber, currentPickTeam: nextTeam ?? 1, pickDeadline: null },
-    })
+  if (result === 'advance_map_vote') {
     await advanceToMapVote(lobbyId)
-    return
+  } else {
+    registerTimer(timerKey(lobbyId, 'draft'), DRAFT_PICK_TIMEOUT_MS, () => finalizeDraftPick(lobbyId))
   }
-
-  // Auto-pick if only 1 undrafted player remains
-  const remaining = await prisma.pugLobbyPlayer.findMany({
-    where: { lobbyId, team: null, isCaptain: false },
-  })
-  if (remaining.length === 1) {
-    const lastPlayer = remaining[0]
-    picks.push({ userId: lastPlayer.userId, team: nextTeam!, pickNumber: nextPickNumber })
-    await prisma.pugLobbyPlayer.update({
-      where: { lobbyId_userId: { lobbyId, userId: lastPlayer.userId } },
-      data: { team: nextTeam! },
-    })
-    const finalPickNumber = nextPickNumber + 1
-    await prisma.pugDraftState.update({
-      where: { lobbyId },
-      data: { picks, pickNumber: finalPickNumber, currentPickTeam: getNextPickTeam(finalPickNumber) ?? 1, pickDeadline: null },
-    })
-    await advanceToMapVote(lobbyId)
-    return
-  }
-
-  const newDeadline = new Date(Date.now() + DRAFT_PICK_TIMEOUT_MS)
-  await prisma.pugDraftState.update({
-    where: { lobbyId },
-    data: { picks, pickNumber: nextPickNumber, currentPickTeam: nextTeam!, pickDeadline: newDeadline },
-  })
-
-  registerTimer(timerKey(lobbyId, 'draft'), DRAFT_PICK_TIMEOUT_MS, () => finalizeDraftPick(lobbyId))
 }
 
 export async function finalizeDraftPick(lobbyId: number): Promise<void> {
@@ -663,6 +677,19 @@ export async function reportResult(
   registerTimer(timerKey(lobbyId, 'confirm'), RESULT_CONFIRM_TIMEOUT_MS, () =>
     autoConfirmResult(lobbyId),
   )
+
+  const otherCaptain = await prisma.pugLobbyPlayer.findFirst({
+    where: { lobbyId, isCaptain: true, userId: { not: captainUserId } },
+  })
+  if (otherCaptain) {
+    const payload = await getPayload({ config: configPromise })
+    const otherUser = await payload.findByID({ collection: 'users', id: otherCaptain.userId, overrideAccess: true }) as any
+    if (otherUser?.discordId) {
+      const resultText = result === 'team1' ? 'Team 1 Won' : result === 'team2' ? 'Team 2 Won' : 'Draw'
+      const { sendDm } = await import('@/discord/services/pugNotifications')
+      sendDm(otherUser.discordId, `PUG #${lobby.lobbyNumber} result reported: **${resultText}**. Confirm or dispute at: https://elmt.gg/pugs/lobby/${lobbyId}\nAuto-confirms in 2 minutes.`).catch(console.error)
+    }
+  }
 }
 
 export async function confirmResult(lobbyId: number, captainUserId: number): Promise<void> {

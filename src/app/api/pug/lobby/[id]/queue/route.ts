@@ -21,6 +21,11 @@ export async function POST(request: NextRequest, { params }: Params) {
     return NextResponse.json({ error: 'roles array required' }, { status: 400 })
   }
 
+  const VALID_ROLES = ['tank', 'flex_dps', 'hitscan_dps', 'flex_support', 'main_support']
+  if (!roles.every((r: string) => VALID_ROLES.includes(r))) {
+    return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
+  }
+
   const pugPlayers = await payload.find({
     collection: 'pug-players',
     where: { user: { equals: user.id } },
