@@ -84,10 +84,10 @@ export const GraphicsAssets: CollectionConfig = {
   // No custom fields - just pure file upload like a filesystem
   fields: [],
   upload: {
-    // Store graphics assets separately from general media
     staticDir: path.resolve(dirname, '../../public/graphics-assets'),
     adminThumbnail: 'thumbnail',
-    focalPoint: false, // Disable for simpler file management
+    focalPoint: false,
+    mimeTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/avif', 'image/tiff', 'application/pdf', 'application/postscript', 'image/vnd.adobe.photoshop'],
     imageSizes: [
       {
         name: 'thumbnail',

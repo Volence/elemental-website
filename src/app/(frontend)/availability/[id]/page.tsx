@@ -43,10 +43,14 @@ export default async function AvailabilityPage({ params }: PageProps) {
       )
     }
 
-    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http'
     const host = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
     const redirectUri = encodeURIComponent(`${host}/api/availability/discord-callback`)
-    const state = encodeURIComponent(id)
+    const { createHmac } = await import('crypto')
+    const secret = process.env.PAYLOAD_SECRET || 'dev-secret'
+    const nonce = crypto.randomUUID()
+    const statePayload = `${id}:${nonce}`
+    const sig = createHmac('sha256', secret).update(statePayload).digest('hex').slice(0, 16)
+    const state = encodeURIComponent(`${statePayload}:${sig}`)
     const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=identify&state=${state}`
 
     redirect(discordAuthUrl)

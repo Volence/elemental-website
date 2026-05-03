@@ -1,20 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createHmac } from 'crypto'
 
-/**
- * Discord OAuth2 callback handler for availability calendar authentication.
- * 
- * Flow:
- * 1. Player clicks calendar link → redirected to Discord OAuth consent
- * 2. Discord redirects here with an authorization code
- * 3. We exchange the code for an access token
- * 4. Fetch the user's Discord identity
- * 5. Set a secure cookie with the identity
- * 6. Redirect back to the calendar page
- */
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const code = searchParams.get('code')
-  const state = searchParams.get('state') // Contains the calendar ID to redirect back to
+  const stateRaw = searchParams.get('state')
   const error = searchParams.get('error')
 
   const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'https://elmt.gg'
@@ -26,6 +16,22 @@ export async function GET(request: NextRequest) {
   if (!code) {
     return NextResponse.redirect(new URL('/availability/error?reason=no_code', serverUrl))
   }
+
+  if (!stateRaw) {
+    return NextResponse.redirect(new URL('/availability/error?reason=invalid_state', serverUrl))
+  }
+
+  const parts = stateRaw.split(':')
+  if (parts.length !== 3) {
+    return NextResponse.redirect(new URL('/availability/error?reason=invalid_state', serverUrl))
+  }
+  const [calendarId, nonce, sig] = parts
+  const secret = process.env.PAYLOAD_SECRET || 'dev-secret'
+  const expectedSig = createHmac('sha256', secret).update(`${calendarId}:${nonce}`).digest('hex').slice(0, 16)
+  if (sig !== expectedSig) {
+    return NextResponse.redirect(new URL('/availability/error?reason=invalid_state', serverUrl))
+  }
+  const state = calendarId
 
   const clientId = process.env.DISCORD_CLIENT_ID
   const clientSecret = process.env.DISCORD_CLIENT_SECRET
