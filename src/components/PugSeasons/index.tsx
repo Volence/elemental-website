@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { Plus, ChevronRight, Check, AlertCircle, Loader2, ArrowLeft, Calendar, Trophy, Map } from 'lucide-react'
+import { Plus, ChevronRight, Check, AlertCircle, Loader2, ArrowLeft, Calendar, Trophy, Map, RotateCcw } from 'lucide-react'
 import { PUG_ADMIN_CSS, formatDate } from '@/components/pugAdminStyles'
 
 // ── Types ──
@@ -434,6 +434,38 @@ export function PugSeasonsEditView() {
           ))}
           <button className="ps-btn ps-btn-ghost" onClick={addTimeWindow}>
             <Plus size={13} /> Add Window
+          </button>
+        </div>
+      )}
+
+      {/* Leaderboard Reset */}
+      {!isNew && (
+        <div className="ps-section">
+          <p className="ps-section-title">Leaderboard</p>
+          <p style={{ fontSize: 13, color: '#64748b', marginBottom: 12 }}>
+            Reset all ratings for this season back to 1500. Win/loss records will be cleared.
+          </p>
+          <button
+            className="ps-btn ps-btn-danger"
+            onClick={async () => {
+              if (!confirm('Reset ALL leaderboard ratings for this season? This cannot be undone.')) return
+              const res = await fetch('/api/pug/leaderboard/reset', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ seasonId: parseInt(id!, 10) }),
+                credentials: 'include',
+              })
+              const data = await res.json()
+              if (res.ok) {
+                setSaveStatus('saved')
+                setSaveMsg(`Reset ${data.reset} leaderboard entries`)
+              } else {
+                setSaveStatus('error')
+                setSaveMsg(data.error ?? 'Reset failed')
+              }
+            }}
+          >
+            <RotateCcw size={13} /> Reset Leaderboard
           </button>
         </div>
       )}
