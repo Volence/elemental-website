@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { authenticateRequest, requireAdmin } from '@/utilities/apiAuth'
 
 /**
  * GET /api/faceit/lookup-championship?stageId=...&seasonId=...&conferenceId=...
- * 
+ *
  * Looks up the FACEIT Championship ID using the Season Tree API.
  * The championship_id lives on each conference within the stage→conference hierarchy.
  */
 export async function GET(request: NextRequest) {
+  const auth = await authenticateRequest()
+  if (!auth.success) return auth.response
+  const adminCheck = requireAdmin(auth.data.user)
+  if (adminCheck) return adminCheck
+
   const { searchParams } = new URL(request.url)
   const stageId = searchParams.get('stageId')
   const seasonId = searchParams.get('seasonId')

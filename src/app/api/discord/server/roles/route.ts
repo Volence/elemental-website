@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server'
 import { ensureDiscordClient } from '@/discord/bot'
+import { authenticateRequest, requireAdmin } from '@/utilities/apiAuth'
 
 /**
  * GET /api/discord/server/roles
  * Get Discord server roles only (lightweight endpoint)
  */
 export async function GET() {
+  const auth = await authenticateRequest()
+  if (!auth.success) return auth.response
+  const adminCheck = requireAdmin(auth.data.user)
+  if (adminCheck) return adminCheck
+
   try {
     const client = await ensureDiscordClient()
     if (!client) {

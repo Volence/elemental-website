@@ -2,12 +2,18 @@ import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { syncTeamData } from '@/utilities/faceitSync'
+import { authenticateRequest, requireAdmin } from '@/utilities/apiAuth'
 
 /**
  * Bulk sync all FaceIt-enabled teams
  * POST /api/faceit/sync-all
  */
 export async function POST(request: Request) {
+  const auth = await authenticateRequest()
+  if (!auth.success) return auth.response
+  const adminCheck = requireAdmin(auth.data.user)
+  if (adminCheck) return adminCheck
+
   try {
     const payload = await getPayload({ config: await configPromise })
     

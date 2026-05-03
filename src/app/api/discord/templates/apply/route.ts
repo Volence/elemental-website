@@ -3,12 +3,18 @@ import { ensureDiscordClient } from '@/discord/bot'
 import { ChannelType, PermissionFlagsBits, PermissionsBitField } from 'discord.js'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
+import { authenticateRequest, requireAdmin } from '@/utilities/apiAuth'
 
 /**
  * POST /api/discord/templates/apply
  * Create a new category from a template
  */
 export async function POST(req: NextRequest) {
+  const auth = await authenticateRequest()
+  if (!auth.success) return auth.response
+  const adminCheck = requireAdmin(auth.data.user)
+  if (adminCheck) return adminCheck
+
   try {
     const client = await ensureDiscordClient()
     if (!client) {

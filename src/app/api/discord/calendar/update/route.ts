@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { authenticateRequest, requireAdmin } from '@/utilities/apiAuth'
 
 /**
  * Manual Discord Calendar Update Trigger
@@ -8,6 +9,11 @@ import { NextResponse } from 'next/server'
  * Requires authentication via CRON_SECRET header.
  */
 export async function POST(request: Request) {
+  const auth = await authenticateRequest()
+  if (!auth.success) return auth.response
+  const adminCheck = requireAdmin(auth.data.user)
+  if (adminCheck) return adminCheck
+
   try {
     // Authenticate - accept either cron secret or check for Payload auth
     const cronSecret = request.headers.get('x-cron-secret')

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { postOrUpdateTeamCard, refreshAllTeamCards } from '@/discord/services/teamCards'
+import { authenticateRequest, requireAdmin } from '@/utilities/apiAuth'
 
 /**
  * POST /api/discord/team-cards
@@ -10,6 +11,11 @@ import { postOrUpdateTeamCard, refreshAllTeamCards } from '@/discord/services/te
  * - { refreshAll: true } - Refresh all team cards in order
  */
 export async function POST(req: NextRequest) {
+  const auth = await authenticateRequest()
+  if (!auth.success) return auth.response
+  const adminCheck = requireAdmin(auth.data.user)
+  if (adminCheck) return adminCheck
+
   try {
     const body = await req.json()
 

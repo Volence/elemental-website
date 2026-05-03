@@ -3,6 +3,7 @@ import { ensureDiscordClient } from '@/discord/bot'
 import { ChannelType, PermissionFlagsBits } from 'discord.js'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
+import { authenticateRequest, requireAdmin } from '@/utilities/apiAuth'
 
 /**
  * Lighten a hex color by a given amount (0-1)
@@ -123,6 +124,11 @@ const SHARED_ROLE_NAMES = ['Managers', 'Coaches', 'Team Captains', 'Trial Manage
  * 6 default forum posts, and saves everything back to the team record.
  */
 export async function POST(req: NextRequest) {
+  const auth = await authenticateRequest()
+  if (!auth.success) return auth.response
+  const adminCheck = requireAdmin(auth.data.user)
+  if (adminCheck) return adminCheck
+
   try {
     const client = await ensureDiscordClient()
     if (!client) {

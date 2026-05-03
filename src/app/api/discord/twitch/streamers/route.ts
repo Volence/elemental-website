@@ -2,8 +2,14 @@ import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { getTwitchUser, parseTwitchUsername } from '@/discord/utils/twitchAuth'
+import { authenticateRequest, requireAdmin } from '@/utilities/apiAuth'
 
 export async function GET() {
+  const auth = await authenticateRequest()
+  if (!auth.success) return auth.response
+  const adminCheck = requireAdmin(auth.data.user)
+  if (adminCheck) return adminCheck
+
   try {
     const payload = await getPayload({ config: configPromise })
     const streamers = await payload.find({
@@ -19,6 +25,11 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const auth = await authenticateRequest()
+  if (!auth.success) return auth.response
+  const adminCheck = requireAdmin(auth.data.user)
+  if (adminCheck) return adminCheck
+
   try {
     const payload = await getPayload({ config: configPromise })
     const body = await req.json()
@@ -81,6 +92,11 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(req: Request) {
+  const auth = await authenticateRequest()
+  if (!auth.success) return auth.response
+  const adminCheck = requireAdmin(auth.data.user)
+  if (adminCheck) return adminCheck
+
   try {
     const payload = await getPayload({ config: configPromise })
     const { searchParams } = new URL(req.url)

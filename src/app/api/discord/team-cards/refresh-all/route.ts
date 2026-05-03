@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
+import { authenticateRequest, requireAdmin } from '@/utilities/apiAuth'
 
 /**
  * POST /api/discord/team-cards/refresh-all
@@ -11,6 +12,11 @@ import configPromise from '@payload-config'
  * This is a destructive operation that ensures cards are in the correct order.
  */
 export async function POST(request: Request) {
+  const auth = await authenticateRequest()
+  if (!auth.success) return auth.response
+  const adminCheck = requireAdmin(auth.data.user)
+  if (adminCheck) return adminCheck
+
   try {
     // Verify authentication
     const payload = await getPayload({ config: configPromise })

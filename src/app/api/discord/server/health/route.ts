@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { ensureDiscordClient } from '@/discord/bot'
 import { ChannelType, PermissionsBitField, REST, Routes } from 'discord.js'
+import { authenticateRequest, requireAdmin } from '@/utilities/apiAuth'
 
 interface HealthIssue {
   type: 'warning' | 'error' | 'info'
@@ -14,6 +15,11 @@ interface HealthIssue {
  * Check Discord server health and identify potential issues
  */
 export async function GET() {
+  const auth = await authenticateRequest()
+  if (!auth.success) return auth.response
+  const adminCheck = requireAdmin(auth.data.user)
+  if (adminCheck) return adminCheck
+
   try {
     const client = await ensureDiscordClient()
     if (!client) {

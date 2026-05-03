@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ensureDiscordClient } from '@/discord/bot'
 import { ChannelType } from 'discord.js'
+import { authenticateRequest, requireAdmin } from '@/utilities/apiAuth'
 
 export async function POST(request: NextRequest) {
+  const auth = await authenticateRequest()
+  if (!auth.success) return auth.response
+  const adminCheck = requireAdmin(auth.data.user)
+  if (adminCheck) return adminCheck
+
   try {
     const { id, name, type } = await request.json()
 

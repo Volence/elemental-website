@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server'
+import { authenticateRequest, requireAdmin } from '@/utilities/apiAuth'
 
 /**
  * Internal endpoint to initialize Discord bot
  * Called automatically on server startup via middleware
  */
 export async function GET() {
+  const auth = await authenticateRequest()
+  if (!auth.success) return auth.response
+  const adminCheck = requireAdmin(auth.data.user)
+  if (adminCheck) return adminCheck
+
   try {
     // Only initialize if bot token is set
     if (!process.env.DISCORD_BOT_TOKEN) {

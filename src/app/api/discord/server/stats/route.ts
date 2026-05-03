@@ -1,12 +1,18 @@
 import { NextResponse } from 'next/server'
 import { ensureDiscordClient } from '@/discord/bot'
 import { ChannelType } from 'discord.js'
+import { authenticateRequest, requireAdmin } from '@/utilities/apiAuth'
 
 /**
  * GET /api/discord/server/stats
  * Get Discord server statistics
  */
 export async function GET() {
+  const auth = await authenticateRequest()
+  if (!auth.success) return auth.response
+  const adminCheck = requireAdmin(auth.data.user)
+  if (adminCheck) return adminCheck
+
   try {
     const client = await ensureDiscordClient()
     if (!client) {

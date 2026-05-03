@@ -18,10 +18,16 @@ export const WatchedThreads: CollectionConfig = {
         req: { user },
       } as any)
     },
-    // System can create (via Discord commands)
-    create: () => true,
-    // System can update (via keep-alive service)
-    update: () => true,
+    create: ({ req }) => {
+      const user = req.user as User | undefined
+      if (!user) return false
+      return user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER
+    },
+    update: ({ req }) => {
+      const user = req.user as User | undefined
+      if (!user) return false
+      return user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER
+    },
     // Only admins can delete
     delete: ({ req }) => {
       const user = req.user as User | undefined
