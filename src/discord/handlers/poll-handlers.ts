@@ -1222,17 +1222,23 @@ async function checkPollForVoteChanges(messageId: string): Promise<void> {
   }
 }
 
-// Start the polling interval for vote change notifications
 let pollCheckInterval: NodeJS.Timeout | null = null
+let isPollCheckRunning = false
 
 export function startPollNotificationPolling(): void {
   if (pollCheckInterval) return
 
-  pollCheckInterval = setInterval(() => {
-    for (const messageId of pollNotifications.keys()) {
-      checkPollForVoteChanges(messageId).catch((error) => {
-        console.error(`Error checking poll ${messageId}:`, error.message)
-      })
+  pollCheckInterval = setInterval(async () => {
+    if (isPollCheckRunning) return
+    isPollCheckRunning = true
+    try {
+      for (const messageId of pollNotifications.keys()) {
+        await checkPollForVoteChanges(messageId).catch((error) => {
+          console.error(`Error checking poll ${messageId}:`, error.message)
+        })
+      }
+    } finally {
+      isPollCheckRunning = false
     }
   }, 30000)
 }

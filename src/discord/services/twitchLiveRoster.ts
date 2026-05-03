@@ -2,13 +2,13 @@ import { getDiscordClient } from '../bot'
 import { EmbedBuilder } from 'discord.js'
 import type { TextChannel } from 'discord.js'
 import { getStreams } from '../utils/twitchAuth'
+import { serviceHealth } from '../serviceHealth'
 
 let liveRosterInterval: NodeJS.Timeout | null = null
+let isRunning = false
 
-// Poll every 3 minutes
 const POLL_INTERVAL_MS = 3 * 60 * 1000
 
-// Store persistent message IDs per category
 const rosterMessageIds: Record<string, string | null> = {
   'content-creator': null,
   'player': null,
@@ -17,14 +17,18 @@ const rosterMessageIds: Record<string, string | null> = {
 export function startTwitchLiveRoster(): void {
   if (liveRosterInterval) return
 
-  console.log('🔴 Starting Twitch live roster service')
+  console.log('[Twitch] Starting live roster service')
 
-  // Delay first run to ensure Payload is ready
   setTimeout(() => {
     runLiveRosterCheck().catch(console.error)
-  }, 60000) // 60 second delay
+  }, 60000)
 
   liveRosterInterval = setInterval(() => {
+    if (isRunning) {
+      console.warn('[Twitch] Previous poll still running, skipping')
+      serviceHealth.record('twitch-roster', false, 'skipped - previous run still active')
+      return
+    }
     runLiveRosterCheck().catch(err => console.error('[Twitch] Unhandled poll error:', err))
   }, POLL_INTERVAL_MS)
 }
@@ -53,6 +57,16 @@ function getChannelForCategory(category: string): string | null {
 }
 
 async function runLiveRosterCheck(): Promise<{ live: number; total: number }> {
+  const start = Date.now()
+  isRunning = true
+  try {
+    return await _runLiveRosterCheck(start)
+  } finally {
+    isRunning = false
+  }
+}
+
+async function _runLiveRosterCheck(start: number): Promise<{ live: number; total: number }> {
   const client = getDiscordClient()
   if (!client) return { live: 0, total: 0 }
 
@@ -196,10 +210,14 @@ async function runLiveRosterCheck(): Promise<{ live: number; total: number }> {
       }
     }
 
-    console.log(`[Twitch] Poll complete: ${totalLive}/${streamers.docs.length} streamers live`)
+    const durationMs = Date.now() - start
+    console.log(`[Twitch] Poll complete: ${totalLive}/${streamers.docs.length} live (${durationMs}ms)`)
+    serviceHealth.record('twitch-roster', true, `${totalLive}/${streamers.docs.length} live`, durationMs)
     return { live: totalLive, total: streamers.docs.length }
   } catch (error) {
-    console.error('[Twitch] Live roster check error:', error)
+    const durationMs = Date.now() - start
+    console.error(`[Twitch] Live roster check error (${durationMs}ms):`, error)
+    serviceHealth.record('twitch-roster', false, (error as Error).message, durationMs)
 
     // CRITICAL: Even on error, update embeds to show offline state
     try {

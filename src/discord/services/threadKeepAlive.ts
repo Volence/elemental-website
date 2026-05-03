@@ -1,21 +1,27 @@
 import { getDiscordClient } from '../bot'
 import type { ThreadChannel } from 'discord.js'
+import { serviceHealth } from '../serviceHealth'
 
 let keepAliveInterval: NodeJS.Timeout | null = null
+let isRunning = false
 
-// Keep threads alive every 2 hours
 const KEEP_ALIVE_INTERVAL_MS = 2 * 60 * 60 * 1000
 
 export function startThreadKeepAlive(): void {
   if (keepAliveInterval) return
 
+  console.log('[ThreadKeepAlive] Starting service')
 
-  // Delay first run to ensure Payload collections are fully initialized
   setTimeout(() => {
     runKeepAlive().catch(console.error)
-  }, 30000) // 30 second delay
+  }, 30000)
 
   keepAliveInterval = setInterval(() => {
+    if (isRunning) {
+      console.warn('[ThreadKeepAlive] Previous run still active, skipping')
+      serviceHealth.record('thread-keepalive', false, 'skipped - previous run still active')
+      return
+    }
     runKeepAlive().catch(console.error)
   }, KEEP_ALIVE_INTERVAL_MS)
 }
@@ -28,13 +34,15 @@ export function stopThreadKeepAlive(): void {
 }
 
 async function runKeepAlive(): Promise<void> {
+  const start = Date.now()
+  isRunning = true
   const client = getDiscordClient()
   if (!client) {
+    isRunning = false
     return
   }
 
   try {
-    // Use getPayload with config for proper initialization
     const { getPayload } = await import('payload')
     const configPromise = await import('@/payload.config')
     const payload = await getPayload({ config: configPromise.default })
@@ -124,9 +132,16 @@ async function runKeepAlive(): Promise<void> {
       }
     }
 
+    const durationMs = Date.now() - start
     if (keptAliveCount > 0 || errorCount > 0) {
+      console.log(`[ThreadKeepAlive] Done: ${keptAliveCount} kept alive, ${errorCount} errors (${durationMs}ms)`)
     }
+    serviceHealth.record('thread-keepalive', errorCount === 0, `${keptAliveCount} ok, ${errorCount} errors`, durationMs)
   } catch (error) {
-    console.error('Thread keep-alive service error:', error)
+    const durationMs = Date.now() - start
+    console.error(`[ThreadKeepAlive] Service error (${durationMs}ms):`, error)
+    serviceHealth.record('thread-keepalive', false, (error as Error).message, durationMs)
+  } finally {
+    isRunning = false
   }
 }

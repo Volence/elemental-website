@@ -3,12 +3,11 @@
  * Uses Client Credentials flow (app access token, no user login needed)
  */
 
+const FETCH_TIMEOUT_MS = 15_000
+
 let cachedToken: string | null = null
 let tokenExpiresAt: number = 0
 
-/**
- * Get a valid Twitch app access token, refreshing if needed
- */
 export async function getTwitchAccessToken(): Promise<string | null> {
   const clientId = process.env.TWITCH_CLIENT_ID
   const clientSecret = process.env.TWITCH_CLIENT_SECRET
@@ -18,7 +17,6 @@ export async function getTwitchAccessToken(): Promise<string | null> {
     return null
   }
 
-  // Return cached token if still valid (with 5 min buffer)
   if (cachedToken && Date.now() < tokenExpiresAt - 5 * 60 * 1000) {
     return cachedToken
   }
@@ -27,6 +25,7 @@ export async function getTwitchAccessToken(): Promise<string | null> {
     const response = await fetch('https://id.twitch.tv/oauth2/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
       body: new URLSearchParams({
         client_id: clientId,
         client_secret: clientSecret,
@@ -72,10 +71,10 @@ export async function fetchTwitchApi(endpoint: string, params?: Record<string, s
         'Authorization': `Bearer ${token}`,
         'Client-Id': clientId,
       },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     })
 
     if (response.status === 401) {
-      // Token expired, clear cache and retry once
       cachedToken = null
       tokenExpiresAt = 0
       const newToken = await getTwitchAccessToken()
@@ -86,6 +85,7 @@ export async function fetchTwitchApi(endpoint: string, params?: Record<string, s
           'Authorization': `Bearer ${newToken}`,
           'Client-Id': clientId,
         },
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
       })
 
       if (!retryResponse.ok) return null
@@ -144,6 +144,7 @@ export async function getStreams(userLogins: string[]): Promise<any[]> {
           'Authorization': `Bearer ${token}`,
           'Client-Id': clientId,
         },
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
       })
 
       if (!response.ok) {
