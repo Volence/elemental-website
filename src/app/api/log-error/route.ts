@@ -24,9 +24,11 @@ export async function POST(req: NextRequest) {
         const { user } = await payload.auth({ headers: req.headers as any })
         if (user) {
           userId = user.id
+        } else {
+          return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
         }
       } catch {
-        // Auth failed but that's okay for some error types
+        return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
       }
     }
     

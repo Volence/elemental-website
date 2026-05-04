@@ -5,7 +5,16 @@ import config from '@payload-config'
 export async function GET(req: NextRequest) {
   try {
     const payload = await getPayload({ config })
-    
+
+    // Authenticate user and check admin/staff-manager role
+    const { user } = await payload.auth({ headers: req.headers })
+    if (!user) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+    if (user.role !== 'admin' && user.role !== 'staff-manager') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     

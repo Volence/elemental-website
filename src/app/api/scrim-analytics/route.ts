@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { getUserScope } from '@/access/scrimScope'
 
 interface ScrimOutcome {
   opponentTeamId?: number | null
@@ -41,6 +42,11 @@ interface MapStats {
  */
 export async function GET(request: NextRequest) {
   try {
+    const scope = await getUserScope()
+    if (!scope) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+
     const { searchParams } = new URL(request.url)
     const teamId = searchParams.get('teamId')
     const range = searchParams.get('range') ?? 'last20'

@@ -1,7 +1,7 @@
-import { Client, GatewayIntentBits, Events, ActivityType } from 'discord.js'
+import { Client, GatewayIntentBits, Events, ActivityType, Options } from 'discord.js'
 
 let client: Client | null = null
-let initializationPromise: Promise<Client> | null = null
+let initializationPromise: Promise<Client | null> | null = null
 
 export function getDiscordClient(): Client | null {
   return client
@@ -19,14 +19,14 @@ export async function ensureDiscordClient(): Promise<Client | null> {
   return initializationPromise
 }
 
-export async function initializeDiscordBot(): Promise<Client> {
+export async function initializeDiscordBot(): Promise<Client | null> {
   // Skip initialization if required env vars are missing
   const token = process.env.DISCORD_BOT_TOKEN
   const guildId = process.env.DISCORD_GUILD_ID
   const clientId = process.env.DISCORD_CLIENT_ID
 
   if (!token || !guildId || !clientId) {
-    return null as any
+    return null
   }
 
   // Return existing client if already initialized
@@ -35,12 +35,23 @@ export async function initializeDiscordBot(): Promise<Client> {
   }
 
 
-  // Create client with necessary intents
   client = new Client({
     intents: [
-      GatewayIntentBits.Guilds, // Required for slash commands
-      GatewayIntentBits.GuildMembers, // For role checking in polls
+      GatewayIntentBits.Guilds,
+      GatewayIntentBits.GuildMembers,
     ],
+    makeCache: Options.cacheWithLimits({
+      ...Options.DefaultMakeCacheSettings,
+      MessageManager: 50,
+      GuildMemberManager: 200,
+    }),
+    sweepers: {
+      ...Options.DefaultSweeperSettings,
+      messages: {
+        interval: 300,
+        lifetime: 600,
+      },
+    },
   })
 
   // Ready event

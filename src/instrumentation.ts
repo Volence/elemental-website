@@ -34,12 +34,12 @@ export async function register() {
  * Logs to console with structured format for the error harvester to pick up.
  */
 function setupGlobalErrorHandlers() {
-  // Handle uncaught exceptions
+  // Handle uncaught exceptions - process is in undefined state after this, must exit
   process.on('uncaughtException', (error: Error) => {
     console.error('[CRITICAL_ERROR] uncaughtException:', error.message)
     console.error('[CRITICAL_ERROR_STACK]', error.stack)
-    // Log to database asynchronously without blocking
     logErrorToDatabase(error, 'uncaughtException').catch(() => {})
+    setTimeout(() => process.exit(1), 3000)
   })
 
   // Handle unhandled promise rejections
@@ -47,10 +47,29 @@ function setupGlobalErrorHandlers() {
     const error = reason instanceof Error ? reason : new Error(String(reason))
     console.error('[CRITICAL_ERROR] unhandledRejection:', error.message)
     console.error('[CRITICAL_ERROR_STACK]', error.stack)
-    // Log to database asynchronously without blocking
     logErrorToDatabase(error, 'unhandledRejection').catch(() => {})
   })
 
+  // Graceful shutdown on SIGTERM (Docker stop) and SIGINT (Ctrl+C)
+  const shutdown = async (signal: string) => {
+    console.log(`[Shutdown] ${signal} received, cleaning up...`)
+    try {
+      const { stopTwitchLiveRoster } = await import('./discord/services/twitchLiveRoster')
+      const { stopThreadKeepAlive } = await import('./discord/services/threadKeepAlive')
+      const { stopPollNotificationPolling } = await import('./discord/handlers/poll-handlers')
+      const { shutdownDiscordBot } = await import('./discord/bot')
+      stopTwitchLiveRoster()
+      stopThreadKeepAlive()
+      stopPollNotificationPolling()
+      await shutdownDiscordBot()
+      console.log('[Shutdown] Cleanup complete')
+    } catch (err) {
+      console.error('[Shutdown] Error during cleanup:', err)
+    }
+    process.exit(0)
+  }
+  process.on('SIGTERM', () => shutdown('SIGTERM'))
+  process.on('SIGINT', () => shutdown('SIGINT'))
 }
 
 /**

@@ -14,7 +14,16 @@ import { isAdmin } from '@/access/roles'
 export async function POST(request: NextRequest) {
   try {
     const payload = await getPayload({ config: configPromise })
-    
+
+    // Authenticate user and check admin role
+    const { user } = await payload.auth({ headers: request.headers })
+    if (!user) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+    if (user.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     // Find all matches where team exists but team1Internal is empty
     const matchesToBackfill = await payload.find({
       collection: 'matches',

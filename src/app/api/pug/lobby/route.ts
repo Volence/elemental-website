@@ -94,6 +94,9 @@ export async function GET(request: NextRequest) {
       limit: 1,
     })
     const season = activeSeason.docs[0] as any
+    if (!season) {
+      return NextResponse.json({ error: 'No active PUG season' }, { status: 400 })
+    }
     if (season?.regionQueueStatus) {
       regionQueueStatus = {
         na: season.regionQueueStatus.na ?? false,

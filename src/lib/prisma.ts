@@ -9,7 +9,7 @@ const globalForPrisma = globalThis as unknown as {
 
 // Prisma 7 requires a driver adapter - no more direct DB connections
 function createPrismaClient(): PrismaClient {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URI })
+  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URI, max: 5 })
   // Cast needed: @types/pg@8 Pool type is incompatible with @prisma/adapter-pg's bundled @types/pg
   const adapter = new PrismaPg(pool as any)
   return new PrismaClient({ adapter })

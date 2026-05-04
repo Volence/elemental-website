@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { getUserScope } from '@/access/scrimScope'
 
 /**
  * GET /api/scrim-positions?mapId=N
@@ -12,6 +13,11 @@ import prisma from '@/lib/prisma'
  * so we resample into fixed-interval frames with all players interpolated.
  */
 export async function GET(req: NextRequest) {
+  const scope = await getUserScope()
+  if (!scope) {
+    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+  }
+
   const url = new URL(req.url)
   const mapIdStr = url.searchParams.get('mapId')
 
