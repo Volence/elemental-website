@@ -17,6 +17,8 @@ interface MatchDoc {
   region?: string
   team1Type?: string
   team1Internal?: Team | number | null
+  team2Type?: string
+  team2Internal?: Team | number | null
   team?: Team | number | null
   stream?: {
     url?: string
@@ -95,19 +97,22 @@ export function StreamTrackerView() {
     return teams.map((team) => {
       // Find all matches where this team was in the broadcast schedule
       const streamedMatches = matches.filter((m) => {
-        // Check if team1Internal matches this team
         const team1Id =
           typeof m.team1Internal === 'object' && m.team1Internal !== null
             ? m.team1Internal.id
             : m.team1Internal
-        
-        // Also check legacy 'team' field
+
+        const team2Id =
+          typeof m.team2Internal === 'object' && m.team2Internal !== null
+            ? m.team2Internal.id
+            : m.team2Internal
+
         const legacyTeamId =
           typeof m.team === 'object' && m.team !== null
             ? m.team.id
             : m.team
 
-        return team1Id === team.id || legacyTeamId === team.id
+        return team1Id === team.id || team2Id === team.id || legacyTeamId === team.id
       })
 
       if (streamedMatches.length === 0) {
