@@ -4,6 +4,9 @@ import prisma from '@/lib/prisma'
 
 type PugTier = 'open' | 'invite'
 
+// Per-lobby lock to prevent race conditions when multiple updates fire concurrently
+const lobbyLocks = new Map<number, Promise<void>>()
+
 function getFeedChannelId(tier: PugTier): string | undefined {
   return tier === 'open'
     ? process.env.DISCORD_PUG_OPEN_FEED_CHANNEL_ID
@@ -96,6 +99,21 @@ function buildLobbyEmbed(lobby: {
 }
 
 export async function updateLobbyFeed(lobbyId: number): Promise<void> {
+  // Serialize concurrent calls for the same lobby to prevent duplicate messages
+  const prev = lobbyLocks.get(lobbyId) ?? Promise.resolve()
+  let resolve: () => void
+  const current = new Promise<void>((r) => { resolve = r })
+  lobbyLocks.set(lobbyId, current)
+  try {
+    await prev
+    await _updateLobbyFeed(lobbyId)
+  } finally {
+    resolve!()
+    if (lobbyLocks.get(lobbyId) === current) lobbyLocks.delete(lobbyId)
+  }
+}
+
+async function _updateLobbyFeed(lobbyId: number): Promise<void> {
   const lobby = await prisma.pugLobby.findUnique({
     where: { id: lobbyId },
     include: { players: true },
