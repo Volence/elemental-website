@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { cookies } from 'next/headers'
+import { BattleTagForm } from './BattleTagForm'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'PUGs | Elemental' }
@@ -14,6 +15,7 @@ export default async function PugsPage() {
   const cookieStore = await cookies()
   const token = cookieStore.get('payload-token')?.value
   let currentUser: any = null
+  let playerDoc: any = null
   let isOpenRegistered = false
 
   if (token) {
@@ -27,7 +29,7 @@ export default async function PugsPage() {
           overrideAccess: true,
           limit: 1,
         })
-        const playerDoc = player.docs[0] as any
+        playerDoc = player.docs[0] as any
         isOpenRegistered = playerDoc?.tiers?.includes('open') ?? false
       }
     } catch {}
@@ -100,6 +102,10 @@ export default async function PugsPage() {
             Register for Open Tier →
           </Link>
         </p>
+      )}
+
+      {currentUser && playerDoc && (
+        <BattleTagForm playerId={playerDoc.id} initialTag={playerDoc.battleTag} />
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

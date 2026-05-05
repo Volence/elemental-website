@@ -11,7 +11,8 @@ const canManageInvites = ({ req: { user } }: { req: { user: any } }) => {
   if (user.departments) {
     const deps = user.departments
     return deps.isProductionStaff || deps.isSocialMediaStaff || deps.isGraphicsStaff || 
-           deps.isVideoStaff || deps.isEventsStaff || deps.isScoutingStaff
+           deps.isVideoStaff || deps.isEventsStaff || deps.isScoutingStaff ||
+           deps.isPugAdmin
   }
   
   return false

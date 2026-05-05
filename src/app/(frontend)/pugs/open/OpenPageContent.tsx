@@ -124,7 +124,16 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
 
   const openLobbies = lobbies.filter((l) => l.status === 'OPEN')
   const activeLobbies = lobbies.filter((l) => l.status !== 'OPEN')
-  const myLobbyId = lobbies.find((l) => l.players.some((p) => p.userId === currentUser?.id))?.id
+  const myLobbyId = lobbies.find((l) => {
+    if (!l.players.some((p) => p.userId === currentUser?.id)) return false
+    if (l.status === 'REPORTING') {
+      const rs = l.reportingState as any
+      if (rs && (rs.team1Report !== null || rs.team2Report !== null)) {
+        return false // Ignore this lobby, player is free to join another
+      }
+    }
+    return true
+  })?.id
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-2xl">

@@ -204,37 +204,21 @@ const config = buildConfig({
           Component: '@/components/TeamEditor/EditRoute#default',
           path: '/edit-team',
         },
-        pugSeasons: {
-          Component: '@/components/PugSeasons/ListRoute#default',
-          path: '/pug-seasons',
+        pugDashboard: {
+          Component: '@/components/PugDashboard/Route#default',
+          path: '/pug-dashboard',
         },
         editPugSeason: {
           Component: '@/components/PugSeasons/EditRoute#default',
           path: '/edit-pug-season',
         },
-        pugLobbies: {
-          Component: '@/components/PugLobbies/ListRoute#default',
-          path: '/pug-lobbies',
-        },
-        pugPlayers: {
-          Component: '@/components/PugPlayers/ListRoute#default',
-          path: '/pug-players',
-        },
         editPugPlayer: {
           Component: '@/components/PugPlayers/EditRoute#default',
           path: '/edit-pug-player',
         },
-        pugMatches: {
-          Component: '@/components/PugMatches/ListRoute#default',
-          path: '/pug-matches',
-        },
         editPugMatch: {
           Component: '@/components/PugMatches/EditRoute#default',
           path: '/edit-pug-match',
-        },
-        pugLeaderboard: {
-          Component: '@/components/PugLeaderboard/ListRoute#default',
-          path: '/pug-leaderboard',
         },
         editPugLeaderboard: {
           Component: '@/components/PugLeaderboard/EditRoute#default',

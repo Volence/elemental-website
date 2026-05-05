@@ -40,6 +40,7 @@ export const PugMatches: CollectionConfig = {
   labels: { singular: 'PUG Match', plural: 'PUG Matches' },
   admin: {
     group: 'PUGs',
+    hidden: () => true, // Hidden from sidebar (use PUGs Dashboard instead)
     useAsTitle: 'lobbyNumber',
     defaultColumns: ['lobbyNumber', 'tier', 'result', 'date', 'disputed'],
     description: 'Completed PUG matches. Created by the engine when a lobby reaches COMPLETED state.',

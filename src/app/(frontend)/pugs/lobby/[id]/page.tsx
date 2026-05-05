@@ -40,7 +40,7 @@ type Player = {
 }
 type LobbyData = {
   lobby: any
-  selectedMap: { id: number; name: string } | null
+  selectedMap: { id: number; name: string; type?: string; settingsMapEntry?: string } | null
   mapCandidates: Array<{ id: number; name: string }>
   heroes: Hero[]
   currentUserId: number | null
@@ -51,6 +51,12 @@ type LobbyData = {
   spotsAvailable: Record<string, number>
   approvedRoles: string[] | null
   regionAllowed: boolean
+  hostInfo: {
+    hostUserId: number | null
+    hostName: string | null
+    settingsText: string | null
+    battleTags: Record<number, string | null>
+  } | null
 }
 
 function playNotificationSound() {
@@ -96,7 +102,7 @@ function Countdown({ deadline }: { deadline: string }) {
   )
 }
 
-const NOTIFY_STATUSES = new Set(['READY', 'DRAFTING', 'MAP_VOTE', 'BANNING', 'IN_PROGRESS', 'REPORTING'])
+
 
 export default function LobbyPage() {
   const { id } = useParams<{ id: string }>()
@@ -105,26 +111,29 @@ export default function LobbyPage() {
   const [actionError, setActionError] = useState<string | null>(null)
   const prevStatusRef = useRef<string | null>(null)
 
+  const isInitialLoad = useRef(true)
+
   const fetchState = useCallback(async () => {
     try {
       const res = await fetch(`/api/pug/lobby/${id}`)
       if (!res.ok) {
-        if (!data) setError(res.status === 404 ? 'Lobby not found' : 'Failed to load lobby')
+        if (isInitialLoad.current) setError(res.status === 404 ? 'Lobby not found' : 'Failed to load lobby')
         return
       }
       setError(null)
+      isInitialLoad.current = false
       const newData = await res.json()
       const newStatus = newData.lobby?.status
       const prevStatus = prevStatusRef.current
-      if (prevStatus && newStatus !== prevStatus && NOTIFY_STATUSES.has(newStatus)) {
+      if (prevStatus && newStatus !== prevStatus) {
         playNotificationSound()
       }
       prevStatusRef.current = newStatus
       setData(newData)
     } catch {
-      if (!data) setError('Failed to load lobby')
+      if (isInitialLoad.current) setError('Failed to load lobby')
     }
-  }, [id, data])
+  }, [id])
 
   useEffect(() => {
     fetchState()
@@ -161,7 +170,7 @@ export default function LobbyPage() {
   if (error) return <main className="container mx-auto p-8 text-red-400">{error}</main>
   if (!data) return <main className="container mx-auto p-8 text-gray-500">Loading...</main>
 
-  const { lobby, selectedMap, mapCandidates, heroes, currentUserId, isPugAdmin, guildId, blockedRoles, neededSlots, spotsAvailable, approvedRoles, regionAllowed } = data
+  const { lobby, selectedMap, mapCandidates, heroes, currentUserId, isPugAdmin, guildId, blockedRoles, neededSlots, spotsAvailable, approvedRoles, regionAllowed, hostInfo } = data
   const players: Player[] = lobby.players
   const me = players.find((p) => p.userId === currentUserId)
   const inLobby = !!me
@@ -326,7 +335,17 @@ export default function LobbyPage() {
               </button>
             )}
             {inLobby && me?.readyConfirmed && (
-              <p className="text-green-400 font-semibold">You're ready!</p>
+              <p className="text-green-400 font-semibold mb-6">You're ready!</p>
+            )}
+            {isPugAdmin && (
+              <div className="mt-4">
+                <button
+                  onClick={() => apiAction('/force-ready', {})}
+                  className="px-4 py-2 bg-red-600/20 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-600/30 transition-colors text-sm font-semibold"
+                >
+                  Force Ready All (Admin)
+                </button>
+              </div>
             )}
           </div>
           <div className="border border-gray-800 rounded-lg overflow-hidden">
@@ -422,12 +441,18 @@ export default function LobbyPage() {
       {/* ── IN PROGRESS ── */}
       {lobby.status === 'IN_PROGRESS' && (
         <div className="space-y-4">
-          {selectedMap && (
-            <div className="flex items-center gap-2 px-4 py-3 bg-gray-900/50 border border-gray-800 rounded-lg">
-              <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Map</span>
-              <span className="text-white font-semibold ml-1">{selectedMap.name}</span>
-            </div>
-          )}
+          {/* Lobby Setup Assistant */}
+          <LobbySetupAssistant
+            lobby={lobby}
+            hostInfo={hostInfo}
+            currentUserId={currentUserId}
+            isPugAdmin={isPugAdmin}
+            selectedMap={selectedMap}
+            players={players}
+            heroes={heroes}
+            onHost={() => apiAction('/host', {})}
+          />
+
           <TeamsDisplay players={players} currentUserId={currentUserId} heroes={heroes} banState={lobby.banState} />
           <VoiceChannelLinks
             myTeam={me?.team ?? null}
@@ -1083,6 +1108,252 @@ function TestAddDummy({ lobbyId, onAdded }: { lobbyId: string; onAdded: () => vo
       >
         {loading ? 'Adding...' : 'Add Dummy'}
       </button>
+    </div>
+  )
+}
+
+// ── Copy button ──
+
+function CopyButton({ text, label, className }: { text: string; label?: string; className?: string }) {
+  const [copied, setCopied] = useState(false)
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // Fallback for non-secure contexts
+      const ta = document.createElement('textarea')
+      ta.value = text
+      document.body.appendChild(ta)
+      ta.select()
+      document.execCommand('copy')
+      document.body.removeChild(ta)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
+  return (
+    <button
+      onClick={handleCopy}
+      className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded border transition-colors ${
+        copied
+          ? 'bg-green-900/50 border-green-700 text-green-400'
+          : 'border-gray-700 text-gray-400 hover:bg-gray-800 hover:border-gray-600'
+      } ${className ?? ''}`}
+    >
+      {copied ? '✓ Copied' : label ?? '📋 Copy'}
+    </button>
+  )
+}
+
+// ── Lobby Setup Assistant ──
+
+function LobbySetupAssistant({
+  lobby, hostInfo, currentUserId, isPugAdmin, selectedMap, players, heroes, onHost,
+}: {
+  lobby: any
+  hostInfo: LobbyData['hostInfo']
+  currentUserId: number | null
+  isPugAdmin: boolean
+  selectedMap: LobbyData['selectedMap']
+  players: Player[]
+  heroes: Hero[]
+  onHost: () => void
+}) {
+  if (!hostInfo) return null
+
+  const isHost = hostInfo.hostUserId === currentUserId
+  const hasHost = hostInfo.hostUserId !== null
+  const isPlayer = players.some((p) => p.userId === currentUserId)
+
+  // Get banned hero names from banState
+  const banRecords = (lobby.banState?.bans ?? []) as Array<{ heroId: number; team: number }>
+  const bannedHeroes = banRecords
+    .map((b) => heroes.find((h) => h.id === b.heroId)?.name)
+    .filter(Boolean) as string[]
+
+  const team1 = players.filter((p) => p.team === 1)
+  const team2 = players.filter((p) => p.team === 2)
+  const myTeam = players.find((p) => p.userId === currentUserId)?.team
+
+  // No host yet — show volunteer button
+  if (!hasHost) {
+    return (
+      <div className="border border-yellow-800/60 bg-yellow-950/20 rounded-lg p-5 text-center space-y-3">
+        <div className="flex items-center justify-center gap-2 mb-1">
+          <span className="text-lg">⚙️</span>
+          <h3 className="text-base font-semibold text-yellow-300">Lobby Setup Needed</h3>
+        </div>
+        <p className="text-sm text-gray-400 max-w-md mx-auto">
+          Someone needs to host this match in Overwatch — create the custom game, import settings, and invite all players.
+        </p>
+        {(isPlayer || isPugAdmin) && (
+          <button
+            onClick={onHost}
+            className="px-5 py-2.5 bg-yellow-700/80 text-yellow-100 rounded-lg hover:bg-yellow-600 transition-colors text-sm font-semibold"
+          >
+            🎮 I&apos;ll Host This Match
+          </button>
+        )}
+      </div>
+    )
+  }
+
+  // Current user is the host — show full setup guide
+  if (isHost) {
+    return (
+      <div className="border border-cyan-800/60 bg-cyan-950/15 rounded-lg overflow-hidden">
+        <div className="px-4 py-3 bg-cyan-950/30 border-b border-cyan-800/40">
+          <div className="flex items-center gap-2">
+            <span className="text-base">⚙️</span>
+            <h3 className="text-sm font-bold text-cyan-300 uppercase tracking-wider">You&apos;re Hosting — Follow These Steps</h3>
+          </div>
+        </div>
+
+        <div className="p-4 space-y-4">
+          {/* Step 1-3: Create and import */}
+          <div className="space-y-2">
+            <p className="text-sm text-gray-300">
+              <span className="text-cyan-400 font-semibold">1.</span> Create a <strong>Custom Game</strong> in Overwatch
+            </p>
+            <div className="flex items-center gap-3">
+              <p className="text-sm text-gray-300">
+                <span className="text-cyan-400 font-semibold">2.</span> Copy the settings code:
+              </p>
+              {hostInfo.settingsText && (
+                <CopyButton text={hostInfo.settingsText} label="📋 Copy Settings" />
+              )}
+            </div>
+            <p className="text-sm text-gray-300">
+              <span className="text-cyan-400 font-semibold">3.</span> In Overwatch, go to <strong>Settings</strong> and click the orange <strong>Import Settings</strong> icon on the right
+            </p>
+          </div>
+
+          {/* Map & Bans summary */}
+          <div className="flex flex-wrap gap-3">
+            {selectedMap && (
+              <div className="flex items-center gap-2 px-3 py-2 bg-gray-900/60 border border-gray-800 rounded-lg">
+                <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Map</span>
+                <span className="text-white font-semibold text-sm">{selectedMap.name}</span>
+              </div>
+            )}
+            {bannedHeroes.length > 0 && (
+              <div className="flex items-center gap-2 px-3 py-2 bg-gray-900/60 border border-gray-800 rounded-lg flex-wrap">
+                <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold shrink-0">Bans</span>
+                {bannedHeroes.map((h) => (
+                  <span key={h} className="text-xs px-2 py-0.5 rounded bg-red-950/60 border border-red-900 text-red-400">
+                    {h}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Step 4: Invite players */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <p className="text-sm text-gray-300">
+                <span className="text-cyan-400 font-semibold">4.</span> Invite players &amp; assign teams:
+              </p>
+              {(() => {
+                const allTags = players
+                  .map((p) => hostInfo.battleTags[p.userId])
+                  .filter(Boolean) as string[]
+                return allTags.length > 0 ? (
+                  <CopyButton text={allTags.join('\n')} label="📋 Copy All BattleTags" />
+                ) : null
+              })()}
+            </div>
+
+            {/* Team BattleTag lists */}
+            <div className="grid grid-cols-2 gap-3">
+              {([1, 2] as const).map((t) => {
+                const teamPlayers = t === 1 ? team1 : team2
+                const borderColor = t === 1 ? 'border-blue-800' : 'border-orange-800'
+                const headerBg = t === 1 ? 'bg-blue-950/40' : 'bg-orange-950/40'
+                const textColor = t === 1 ? 'text-blue-300' : 'text-orange-300'
+                return (
+                  <div key={t} className={`rounded-lg border overflow-hidden ${borderColor}`}>
+                    <div className={`px-3 py-1.5 border-b ${borderColor} ${headerBg}`}>
+                      <span className={`text-xs font-bold uppercase tracking-wider ${textColor}`}>Team {t}</span>
+                    </div>
+                    <ul className="divide-y divide-gray-800/50">
+                      {teamPlayers.map((p) => {
+                        const tag = hostInfo.battleTags[p.userId]
+                        return (
+                          <li key={p.userId} className="flex items-center justify-between gap-2 px-3 py-2">
+                            <div className="min-w-0">
+                              <span className="text-sm text-gray-200 block truncate">{p.name}</span>
+                              {tag ? (
+                                <span className="text-xs text-gray-500">{tag}</span>
+                              ) : (
+                                <span className="text-xs text-gray-600 italic">No BattleTag set</span>
+                              )}
+                            </div>
+                            {tag && <CopyButton text={tag} label="📋" />}
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Steps 5-6 */}
+          <div className="space-y-2">
+            <p className="text-sm text-gray-300">
+              <span className="text-cyan-400 font-semibold">5.</span> Move players to the correct teams in the lobby
+            </p>
+            <p className="text-sm text-gray-300">
+              <span className="text-cyan-400 font-semibold">6.</span> Start the match!
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Other player view — someone else is hosting
+  return (
+    <div className="border border-gray-800 bg-gray-900/30 rounded-lg p-5 space-y-3">
+      <div className="flex items-center gap-2">
+        <span className="text-base">⚙️</span>
+        <h3 className="text-sm font-semibold text-gray-200">
+          {hostInfo.hostName ?? 'A player'} is setting up the lobby
+        </h3>
+      </div>
+      <p className="text-sm text-gray-500">
+        Wait for an invite in Overwatch. Make sure you&apos;re online and ready.
+      </p>
+      <div className="flex flex-wrap gap-3">
+        {myTeam && (
+          <span className={`text-xs px-2.5 py-1 rounded border font-medium ${
+            myTeam === 1 ? 'bg-blue-950/40 border-blue-800 text-blue-300' : 'bg-orange-950/40 border-orange-800 text-orange-300'
+          }`}>
+            Your team: Team {myTeam}
+          </span>
+        )}
+        {selectedMap && (
+          <span className="text-xs px-2.5 py-1 rounded border border-gray-700 text-gray-300">
+            Map: {selectedMap.name}
+          </span>
+        )}
+      </div>
+      {bannedHeroes.length > 0 && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs text-gray-500 shrink-0">Bans:</span>
+          {bannedHeroes.map((h) => (
+            <span key={h} className="text-xs px-2 py-0.5 rounded bg-red-950/60 border border-red-900 text-red-400">
+              {h}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

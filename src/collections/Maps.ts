@@ -21,7 +21,8 @@ export const Maps: CollectionConfig = {
     },
     update: ({ req }) => {
       if (!req.user) return false
-      return [UserRole.ADMIN, UserRole.STAFF_MANAGER].includes(req.user.role as UserRole)
+      const u = req.user as any
+      return [UserRole.ADMIN, UserRole.STAFF_MANAGER].includes(u.role as UserRole) || u.departments?.isPugAdmin === true
     },
     delete: ({ req }) => {
       if (!req.user) return false
@@ -54,6 +55,7 @@ export const Maps: CollectionConfig = {
             { label: 'Flashpoint', value: 'flashpoint' },
             { label: 'Push', value: 'push' },
             { label: 'Escort', value: 'escort' },
+            { label: 'Clash', value: 'clash' },
           ],
         },
       ],

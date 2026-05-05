@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
+import { generateSettings } from '@/pug/settingsGenerator'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -21,14 +22,15 @@ export async function GET(request: NextRequest, { params }: Params) {
 
     if (!lobby) return NextResponse.json({ error: 'Lobby not found' }, { status: 404 })
 
-    let selectedMap: { id: number; name: string } | null = null
+    let selectedMap: { id: number; name: string; type?: string; settingsMapEntry?: string } | null = null
     if (lobby.mapVote?.selectedMapId) {
       const map = await payload.findByID({
         collection: 'maps',
         id: lobby.mapVote.selectedMapId,
         overrideAccess: true,
       })
-      selectedMap = { id: (map as any).id, name: (map as any).name }
+      const m = map as any
+      selectedMap = { id: m.id, name: m.name, type: m.type }
     }
 
     let mapCandidates: Array<{ id: number; name: string }> = []
@@ -144,6 +146,65 @@ export async function GET(request: NextRequest, { params }: Params) {
       }
     }
 
+    // Host setup data for IN_PROGRESS state
+    let hostInfo: { hostUserId: number | null; hostName: string | null; settingsText: string | null; battleTags: Record<number, string | null> } | null = null
+    const inProgressOrReporting = ['IN_PROGRESS', 'REPORTING'].includes(lobby.status)
+    if (inProgressOrReporting) {
+      // Generate settings text
+      let settingsText: string | null = null
+      if (selectedMap) {
+        // Fetch ban hero names
+        const banRecords = (lobby.banState?.bans ?? []) as Array<{ heroId: number }>
+        let bannedHeroNames: string[] = []
+        if (banRecords.length > 0) {
+          const banHeroes = heroes.length > 0 ? heroes : []
+          // If heroes weren't fetched yet, fetch them
+          if (banHeroes.length === 0) {
+            const heroResult = await payload.find({
+              collection: 'heroes',
+              where: { active: { equals: true } },
+              limit: 100,
+              overrideAccess: true,
+            })
+            for (const h of heroResult.docs as any[]) {
+              banHeroes.push({ id: h.id, name: h.name, role: h.role })
+            }
+          }
+          bannedHeroNames = banRecords
+            .map((b) => banHeroes.find((h) => h.id === b.heroId)?.name)
+            .filter(Boolean) as string[]
+        }
+        settingsText = generateSettings({
+          mapSettingsEntry: selectedMap.name ?? null,
+          mapType: selectedMap.type ?? 'control',
+          bannedHeroes: bannedHeroNames,
+        })
+      }
+
+      // Fetch BattleTags for all players
+      const pugPlayerResults = await payload.find({
+        collection: 'pug-players',
+        where: { user: { in: userIds } },
+        limit: 20,
+        overrideAccess: true,
+      })
+      const battleTags: Record<number, string | null> = {}
+      for (const pp of pugPlayerResults.docs as any[]) {
+        const uid = typeof pp.user === 'object' ? pp.user.id : pp.user
+        battleTags[uid] = pp.battleTag ?? null
+      }
+
+      // Host name
+      const hostName = lobby.hostUserId ? (nameMap[lobby.hostUserId] ?? null) : null
+
+      hostInfo = {
+        hostUserId: lobby.hostUserId,
+        hostName,
+        settingsText,
+        battleTags,
+      }
+    }
+
     return NextResponse.json({
       lobby: { ...lobby, players: enrichedPlayers },
       selectedMap,
@@ -157,6 +218,7 @@ export async function GET(request: NextRequest, { params }: Params) {
       spotsAvailable,
       approvedRoles,
       regionAllowed,
+      hostInfo,
     })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })

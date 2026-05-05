@@ -7,6 +7,7 @@ export const PugLeaderboard: CollectionConfig = {
   labels: { singular: 'PUG Leaderboard Entry', plural: 'PUG Leaderboard' },
   admin: {
     group: 'PUGs',
+    hidden: () => true, // Hidden from sidebar (use PUGs Dashboard instead)
     defaultColumns: ['player', 'season', 'tier', 'region', 'rating', 'wins', 'losses', 'gamesPlayed'],
     description: 'Per-player Glicko-2 rating and stats per season per tier. Created by the engine when a player first plays in a season; updated after each completed match.',
     components: {

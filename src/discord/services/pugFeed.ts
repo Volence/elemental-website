@@ -147,20 +147,54 @@ async function _updateLobbyFeed(lobbyId: number): Promise<void> {
       await msg.edit({ embeds: [embed] })
       return
     } catch {
-      // Message deleted - fall through to create new
+      // Message deleted or not found - fall through to create new
+    }
+  }
+
+  // Double-check: re-read the lobby to see if another concurrent call already created a message
+  // This prevents the race where createOpenLobby and joinLobby both fire updateLobbyFeed
+  // simultaneously, both see discordFeedMessageId=null, and both create messages.
+  const freshLobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId } })
+  if (freshLobby?.discordFeedMessageId && freshLobby.discordFeedMessageId !== lobby.discordFeedMessageId) {
+    try {
+      const msg = await channel.messages.fetch(freshLobby.discordFeedMessageId)
+      await msg.edit({ embeds: [embed] })
+      return
+    } catch {
+      // Still gone - create new below
     }
   }
 
   const message = await channel.send({ embeds: [embed] })
+  try {
+    await message.startThread({ name: `PUG #${lobby.lobbyNumber} Chat`, autoArchiveDuration: 60 })
+  } catch (err) {
+    console.error('Failed to start thread for lobby', err)
+  }
   await prisma.pugLobby.update({
     where: { id: lobbyId },
     data: { discordFeedMessageId: message.id },
   })
 }
 
-export async function postFeedNotification(tier: PugTier, content: string): Promise<void> {
+export async function postFeedNotification(tier: PugTier, lobbyId: number, content: string): Promise<void> {
   const channel = await getChannel(tier)
   if (!channel) return
+
+  const lobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId } })
+  if (lobby?.discordFeedMessageId) {
+    try {
+      const thread = await channel.threads.fetch(lobby.discordFeedMessageId)
+      if (thread) {
+        await thread.send(content)
+        return
+      }
+    } catch (err) {
+      // Fallback
+    }
+  }
+
+  // Fallback to channel if thread fails or message isn't created yet
   await channel.send(content).catch(console.error)
 }
 

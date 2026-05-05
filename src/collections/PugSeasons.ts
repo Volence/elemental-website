@@ -7,6 +7,7 @@ export const PugSeasons: CollectionConfig = {
   labels: { singular: 'PUG Season', plural: 'PUG Seasons' },
   admin: {
     group: 'PUGs',
+    hidden: () => true, // Hidden from sidebar (use PUGs Dashboard instead)
     useAsTitle: 'name',
     defaultColumns: ['name', 'tier', 'active', 'startDate', 'endDate'],
     description: 'PUG seasons. Each tier (open/invite) has its own season with independent leaderboards.',

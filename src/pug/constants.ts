@@ -6,3 +6,4 @@ export const RESULT_CONFIRM_TIMEOUT_MS = 120_000
 export const VOICE_CLEANUP_TIMEOUT_MS = 7_200_000
 export const DISPUTE_AFTER_COMPLETE_MS = 600_000
 export const INVITE_TIER_LATE_CANCEL_MS = 900_000
+export const AFK_TIMEOUT_MS = 5_400_000 // 90 minutes — auto-kick idle players in OPEN lobbies

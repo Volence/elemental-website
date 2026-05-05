@@ -16,6 +16,15 @@ export async function POST(request: NextRequest) {
     )
   }
 
+  // Parse optional battleTag from body
+  let battleTag: string | undefined
+  try {
+    const body = await request.json()
+    battleTag = body.battleTag?.trim() || undefined
+  } catch {
+    // No body or invalid JSON — that's fine, battleTag stays undefined
+  }
+
   try {
     const existing = await payload.find({
       collection: 'pug-players',
@@ -28,10 +37,12 @@ export async function POST(request: NextRequest) {
       if (player.tiers?.includes('open')) {
         return NextResponse.json({ error: 'Already registered for open tier' }, { status: 409 })
       }
+      const updateData: any = { tiers: [...(player.tiers ?? []), 'open'] }
+      if (battleTag) updateData.battleTag = battleTag
       await payload.update({
         collection: 'pug-players',
         id: player.id,
-        data: { tiers: [...(player.tiers ?? []), 'open'] },
+        data: updateData,
         overrideAccess: true,
       })
       return NextResponse.json({ success: true, playerId: player.id })
@@ -43,6 +54,7 @@ export async function POST(request: NextRequest) {
         user: user.id,
         tiers: ['open'],
         registeredDate: new Date().toISOString(),
+        ...(battleTag ? { battleTag } : {}),
       },
       overrideAccess: true,
     })

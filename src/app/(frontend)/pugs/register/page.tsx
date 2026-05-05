@@ -134,29 +134,16 @@ export default async function PugRegisterPage() {
         Free and open to everyone. Connect your Discord to get started.
       </p>
 
-      <div className="space-y-3">
-        <a
-          href="/api/auth/discord?pugSignup=true&returnUrl=/pugs/register"
-          className="flex items-center justify-center gap-3 w-full px-4 py-3 bg-[#5865F2] text-white rounded-lg hover:bg-[#4752c4] font-medium transition-colors"
-        >
-          {discordIcon}
-          New player - Sign up with Discord
-        </a>
-
-        <div className="flex items-center gap-3 text-xs text-gray-600">
-          <div className="flex-1 h-px bg-gray-800" />
-          already have an account?
-          <div className="flex-1 h-px bg-gray-800" />
-        </div>
-
-        <a
-          href="/api/auth/discord?returnUrl=/pugs/register"
-          className="flex items-center justify-center gap-3 w-full px-4 py-3 border border-gray-600 text-gray-200 rounded-lg hover:bg-gray-800 font-medium transition-colors"
-        >
-          {discordIcon}
-          Sign in with Discord
-        </a>
-      </div>
+      <a
+        href="/api/auth/discord?pugSignup=true&returnUrl=/pugs/register"
+        className="flex items-center justify-center gap-3 w-full px-4 py-3 bg-[#5865F2] text-white rounded-lg hover:bg-[#4752c4] font-medium transition-colors"
+      >
+        {discordIcon}
+        Continue with Discord
+      </a>
+      <p className="text-xs text-gray-500 mt-3 text-center">
+        Signs you in if you already have an account, or creates one automatically.
+      </p>
 
       <p className="text-xs text-gray-600 mt-6 text-center">
         <Link href="/pugs" className="hover:text-gray-400 transition-colors">← Back to PUGs</Link>

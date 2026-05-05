@@ -7,6 +7,7 @@ export const PugPlayers: CollectionConfig = {
   labels: { singular: 'PUG Player', plural: 'PUG Players' },
   admin: {
     group: 'PUGs',
+    hidden: () => true, // Hidden from sidebar (use PUGs Dashboard instead)
     defaultColumns: ['user', 'tiers', 'approvedRoles', 'registeredDate'],
     description: 'Players registered for PUGs. A player can be registered for both tiers simultaneously.',
     components: {
@@ -31,6 +32,14 @@ export const PugPlayers: CollectionConfig = {
       required: true,
       unique: true,
       admin: { description: 'The website user account for this PUG player.' },
+    },
+    {
+      name: 'battleTag',
+      type: 'text',
+      admin: {
+        description: 'OW2 BattleTag (e.g., Player#1234). Shown to the match host for in-game invites.',
+        placeholder: 'e.g., Player#1234',
+      },
     },
     {
       name: 'tiers',

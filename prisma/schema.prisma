@@ -735,6 +735,7 @@ model PugLobby {
   voiceChannel1Id      String?
   voiceChannel2Id      String?
   pendingResult        Json?
+  hostUserId           Int?
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
   players              PugLobbyPlayer[]

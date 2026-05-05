@@ -140,14 +140,10 @@ import { default as default_98e73b390f55261a691b577a74429de2 } from '@/component
 import { default as default_b0e989da30c56b386c2f4c651df2df39 } from '@/components/CalendarEventEditor/EditRoute'
 import { default as default_34a33320fd53659dd9841f20569ef2d8 } from '@/components/InviteEditor/EditRoute'
 import { default as default_02977a9d4ed0ed77a8d36ceed61c4d84 } from '@/components/TeamEditor/EditRoute'
-import { default as default_0b171b49db7190053259f601ea4d0eca } from '@/components/PugSeasons/ListRoute'
+import { default as default_a02c70ab9a91821a7f3d60a5827e5794 } from '@/components/PugDashboard/Route'
 import { default as default_e25f49fb258f9f3dd8ba59b20d07fcd8 } from '@/components/PugSeasons/EditRoute'
-import { default as default_9abfdc69e59faebbb0b250d370086ae2 } from '@/components/PugLobbies/ListRoute'
-import { default as default_94dc01d5ba8a2eca8deaaad802fd0b07 } from '@/components/PugPlayers/ListRoute'
 import { default as default_b65d43645901504026837c862ab8790f } from '@/components/PugPlayers/EditRoute'
-import { default as default_459642789e40f375c75a02023d531c1b } from '@/components/PugMatches/ListRoute'
 import { default as default_3f9f6e11684f60398762aa444496e6bb } from '@/components/PugMatches/EditRoute'
-import { default as default_e25103db85b92c4f15a10bbba3c779c7 } from '@/components/PugLeaderboard/ListRoute'
 import { default as default_74fb30a58c92ffc48c7a2fbce0628372 } from '@/components/PugLeaderboard/EditRoute'
 import { CollectionCards as CollectionCards_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 
@@ -294,14 +290,10 @@ export const importMap = {
   "@/components/CalendarEventEditor/EditRoute#default": default_b0e989da30c56b386c2f4c651df2df39,
   "@/components/InviteEditor/EditRoute#default": default_34a33320fd53659dd9841f20569ef2d8,
   "@/components/TeamEditor/EditRoute#default": default_02977a9d4ed0ed77a8d36ceed61c4d84,
-  "@/components/PugSeasons/ListRoute#default": default_0b171b49db7190053259f601ea4d0eca,
+  "@/components/PugDashboard/Route#default": default_a02c70ab9a91821a7f3d60a5827e5794,
   "@/components/PugSeasons/EditRoute#default": default_e25f49fb258f9f3dd8ba59b20d07fcd8,
-  "@/components/PugLobbies/ListRoute#default": default_9abfdc69e59faebbb0b250d370086ae2,
-  "@/components/PugPlayers/ListRoute#default": default_94dc01d5ba8a2eca8deaaad802fd0b07,
   "@/components/PugPlayers/EditRoute#default": default_b65d43645901504026837c862ab8790f,
-  "@/components/PugMatches/ListRoute#default": default_459642789e40f375c75a02023d531c1b,
   "@/components/PugMatches/EditRoute#default": default_3f9f6e11684f60398762aa444496e6bb,
-  "@/components/PugLeaderboard/ListRoute#default": default_e25103db85b92c4f15a10bbba3c779c7,
   "@/components/PugLeaderboard/EditRoute#default": default_74fb30a58c92ffc48c7a2fbce0628372,
   "@payloadcms/ui/rsc#CollectionCards": CollectionCards_ab83ff7e88da8d3530831f296ec4756a
 }

@@ -1828,7 +1828,7 @@ export interface Hero {
 export interface Map {
   id: number;
   name: string;
-  type: 'control' | 'hybrid' | 'flashpoint' | 'push' | 'escort';
+  type: 'control' | 'hybrid' | 'flashpoint' | 'push' | 'escort' | 'clash';
   /**
    * Submaps/points for Control maps (max 3)
    */
@@ -2389,6 +2389,10 @@ export interface PugPlayer {
    * The website user account for this PUG player.
    */
   user: number | User;
+  /**
+   * OW2 BattleTag (e.g., Player#1234). Shown to the match host for in-game invites.
+   */
+  battleTag?: string | null;
   /**
    * Which PUG tiers this player is registered for.
    */
@@ -4041,6 +4045,7 @@ export interface PugSeasonsSelect<T extends boolean = true> {
  */
 export interface PugPlayersSelect<T extends boolean = true> {
   user?: T;
+  battleTag?: T;
   tiers?: T;
   approvedRoles?: T;
   inviteRegions?: T;

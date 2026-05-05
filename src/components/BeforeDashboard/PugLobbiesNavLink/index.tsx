@@ -6,10 +6,10 @@ import { useAuth } from '@payloadcms/ui'
 import Link from 'next/link'
 import type { User } from '@/payload-types'
 
-const PugLobbiesNavLink: React.FC = () => {
+const PugDashboardNavLink: React.FC = () => {
   const pathname = usePathname()
   const { user } = useAuth<User>()
-  const isActive = pathname === '/admin/pug-lobbies'
+  const isActive = pathname === '/admin/pug-dashboard'
 
   if (!user) return null
   const u = user as any
@@ -19,7 +19,7 @@ const PugLobbiesNavLink: React.FC = () => {
   return (
     <div className="calendar-nav-link">
       <Link
-        href="/admin/pug-lobbies"
+        href="/admin/pug-dashboard"
         className={`calendar-nav-link__link ${isActive ? 'calendar-nav-link__link--active' : ''}`}
       >
         <svg
@@ -34,10 +34,10 @@ const PugLobbiesNavLink: React.FC = () => {
           <path d="M6 5V3.5a2 2 0 0 1 4 0V5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
           <circle cx="8" cy="9.5" r="1" fill="currentColor" />
         </svg>
-        PUG Lobbies
+        PUGs Dashboard
       </Link>
     </div>
   )
 }
 
-export default PugLobbiesNavLink
+export default PugDashboardNavLink

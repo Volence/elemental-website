@@ -19,15 +19,18 @@ export const Heroes: CollectionConfig = {
       if (!user) return false
       const u = user as any
       if (u.role === UserRole.ADMIN || u.role === UserRole.STAFF_MANAGER) return true
+      if (u.departments?.isPugAdmin === true) return true
       return isScoutingStaff(args)
     },
     create: ({ req }) => {
       if (!req.user) return false
-      return [UserRole.ADMIN, UserRole.STAFF_MANAGER].includes(req.user.role as UserRole)
+      const u = req.user as any
+      return [UserRole.ADMIN, UserRole.STAFF_MANAGER].includes(u.role as UserRole) || u.departments?.isPugAdmin === true
     },
     update: ({ req }) => {
       if (!req.user) return false
-      return [UserRole.ADMIN, UserRole.STAFF_MANAGER].includes(req.user.role as UserRole)
+      const u = req.user as any
+      return [UserRole.ADMIN, UserRole.STAFF_MANAGER].includes(u.role as UserRole) || u.departments?.isPugAdmin === true
     },
     delete: ({ req }) => {
       if (!req.user) return false

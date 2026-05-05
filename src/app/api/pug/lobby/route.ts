@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
 
   const lobbies = await prisma.pugLobby.findMany({
     where,
-    include: { players: true, draftState: true, banState: true, mapVote: true },
+    include: { players: true, draftState: true, banState: true, mapVote: true, reportingState: true },
     orderBy: { createdAt: 'desc' },
   })
 

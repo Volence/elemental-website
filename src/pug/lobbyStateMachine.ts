@@ -19,6 +19,7 @@ import {
   DISPUTE_AFTER_COMPLETE_MS,
   VOICE_CLEANUP_TIMEOUT_MS,
   INVITE_TIER_LATE_CANCEL_MS,
+  AFK_TIMEOUT_MS,
 } from './constants'
 
 async function getDiscordIdsForLobby(lobbyId: number, payloadInstance: any): Promise<string[]> {
@@ -116,8 +117,20 @@ export async function joinLobby(lobbyId: number, userId: number, roles: string[]
         lobbyId: { not: lobbyId },
         lobby: { status: { in: ['OPEN', 'READY', 'DRAFTING', 'MAP_VOTE', 'BANNING', 'IN_PROGRESS', 'REPORTING'] } },
       },
+      include: { lobby: true },
     })
-    if (existingMembership) throw new Error('You are already in an active lobby')
+    
+    if (existingMembership) {
+      const activeLobby = existingMembership.lobby
+      let isBlocked = true
+      if (activeLobby.status === 'REPORTING') {
+        const rs = activeLobby.reportingState as any
+        if (rs && (rs.team1Report !== null || rs.team2Report !== null)) {
+          isBlocked = false
+        }
+      }
+      if (isBlocked) throw new Error('You are already in an active lobby')
+    }
 
     const allPlayers = await tx.pugLobbyPlayer.findMany({ where: { lobbyId } })
     const others = allPlayers.filter((p) => p.userId !== userId)
@@ -134,6 +147,12 @@ export async function joinLobby(lobbyId: number, userId: number, roles: string[]
   }, { isolationLevel: 'Serializable' })
 
   await checkAndAdvanceToReady(lobbyId)
+
+  // Register AFK timer — auto-kick player if idle in OPEN lobby for too long
+  registerTimer(timerKey(lobbyId, `afk_${userId}`), AFK_TIMEOUT_MS, () =>
+    afkBootPlayer(lobbyId, userId),
+  )
+
   import('@/discord/services/pugFeed').then(({ updateLobbyFeed }) => {
     updateLobbyFeed(lobbyId).catch(console.error)
   })
@@ -164,9 +183,45 @@ export async function leaveLobby(lobbyId: number, userId: number): Promise<void>
     where: { lobbyId_userId: { lobbyId, userId } },
   })
 
+  // Cancel this player's AFK timer
+  cancelTimer(timerKey(lobbyId, `afk_${userId}`))
+
   if (lobby.status === 'READY') {
     await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'OPEN' } })
     cancelTimer(timerKey(lobbyId, 'ready'))
+  }
+
+  import('@/discord/services/pugFeed').then(({ updateLobbyFeed }) => {
+    updateLobbyFeed(lobbyId).catch(console.error)
+  })
+}
+
+/**
+ * Auto-kick a player from an OPEN lobby after AFK timeout.
+ * Called by the per-player AFK timer registered in joinLobby.
+ */
+async function afkBootPlayer(lobbyId: number, userId: number): Promise<void> {
+  const lobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId } })
+  if (!lobby || lobby.status !== 'OPEN') return // Only auto-kick from OPEN lobbies
+
+  const player = await prisma.pugLobbyPlayer.findUnique({
+    where: { lobbyId_userId: { lobbyId, userId } },
+  })
+  if (!player) return // Already left
+
+  await prisma.pugLobbyPlayer.delete({
+    where: { lobbyId_userId: { lobbyId, userId } },
+  })
+
+  // Notify the player via DM
+  const payload = await getPayload({ config: configPromise })
+  const user = await payload.findByID({ collection: 'users', id: userId, overrideAccess: true }) as any
+  if (user?.discordId) {
+    const { sendDm } = await import('@/discord/services/pugNotifications')
+    sendDm(
+      user.discordId,
+      `You were automatically removed from PUG #${lobby.lobbyNumber} after being idle for 90 minutes.`,
+    ).catch(console.error)
   }
 
   import('@/discord/services/pugFeed').then(({ updateLobbyFeed }) => {
@@ -190,6 +245,12 @@ async function checkAndAdvanceToReady(lobbyId: number): Promise<void> {
     data: { readyConfirmed: false },
   })
   await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'READY', readyAt: new Date() } })
+
+  // Cancel all AFK timers — players are now in active ready-check
+  for (const p of players) {
+    cancelTimer(timerKey(lobbyId, `afk_${p.userId}`))
+  }
+
   registerTimer(timerKey(lobbyId, 'ready'), READY_CHECK_TIMEOUT_MS, () => expireReadyCheck(lobbyId))
 
   getDiscordIdsForLobby(lobbyId, await getPayload({ config: configPromise })).then(async (discordIds) => {
@@ -199,6 +260,7 @@ async function checkAndAdvanceToReady(lobbyId: number): Promise<void> {
     if (!lobby) return
     await postFeedNotification(
       lobby.tier as 'open' | 'invite',
+      lobbyId,
       `🔔 **PUG #${lobby.lobbyNumber}** queue is full! Ready up at: https://elmt.gg/pugs/lobby/${lobbyId}\n${formatUserPings(discordIds)}`,
     )
   }).catch(console.error)
@@ -226,6 +288,20 @@ export async function readyUp(lobbyId: number, userId: number): Promise<void> {
     await advanceToDrafting(lobbyId)
   }
 }
+
+export async function forceReadyLobby(lobbyId: number): Promise<void> {
+  const lobby = await prisma.pugLobby.findUniqueOrThrow({ where: { id: lobbyId } })
+  if (lobby.status !== 'READY') throw new Error('Lobby is not in ready check')
+
+  await prisma.pugLobbyPlayer.updateMany({
+    where: { lobbyId },
+    data: { readyConfirmed: true },
+  })
+
+  cancelTimer(timerKey(lobbyId, 'ready'))
+  await advanceToDrafting(lobbyId)
+}
+
 
 export async function expireReadyCheck(lobbyId: number): Promise<void> {
   const lobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId } })
@@ -340,6 +416,7 @@ export async function advanceToDrafting(lobbyId: number): Promise<void> {
     const { formatUserPings } = await import('@/discord/services/pugNotifications')
     await postFeedNotification(
       lobby.tier as 'open' | 'invite',
+      lobbyId,
       `🎮 **PUG #${lobby.lobbyNumber}** draft is starting! Head to: https://elmt.gg/pugs/lobby/${lobbyId}\n${formatUserPings(discordIds)}`,
     )
     await updateLobbyFeed(lobbyId)
@@ -625,7 +702,7 @@ async function advanceToInProgress(lobbyId: number): Promise<void> {
 
     const notifyTeam = async (teamNum: 1 | 2, channelId: string | null) => {
       const voiceLine = channelId ? `\nVoice channel: ${channelUrl(channelId)}` : ''
-      const msg = `Your PUG #${lobby.lobbyNumber} match is starting! You're on Team ${teamNum}.${voiceLine}\nLobby: ${lobbyUrl}`
+      const msg = `Your PUG #${lobby.lobbyNumber} match is starting! You're on Team ${teamNum}.${voiceLine}\n\nA host is needed to set up the in-game lobby — check the lobby page to volunteer or wait for an invite.\nLobby: ${lobbyUrl}`
       const teamPlayers = players.filter((p) => p.team === teamNum)
       for (const p of teamPlayers) {
         const discordId = discordIdByUserId.get(p.userId)

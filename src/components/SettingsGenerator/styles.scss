@@ -1,0 +1,215 @@
+.settings-gen {
+  padding: 1.5rem;
+  max-width: 900px;
+
+  &__title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+
+  &__desc {
+    font-size: 0.8rem;
+    color: var(--theme-elevation-500);
+    margin-bottom: 1.5rem;
+  }
+
+  &__section {
+    margin-bottom: 1.25rem;
+  }
+
+  &__label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--theme-elevation-500);
+    margin-bottom: 0.5rem;
+  }
+
+  &__count {
+    font-weight: 400;
+    color: var(--theme-elevation-400);
+  }
+
+  &__role-group {
+    margin-bottom: 0.75rem;
+  }
+
+  &__role-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--theme-elevation-400);
+    margin-bottom: 0.35rem;
+  }
+
+  &__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  &__chip {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    border: 1px solid var(--theme-elevation-200);
+    background: transparent;
+    color: var(--theme-elevation-600);
+    cursor: pointer;
+    transition: all 0.15s;
+
+    &:hover {
+      border-color: var(--theme-elevation-400);
+      color: var(--theme-elevation-800);
+    }
+
+    &--active {
+      background: rgba(0, 180, 200, 0.12);
+      border-color: rgba(0, 180, 200, 0.5);
+      color: #00d4e8;
+      font-weight: 600;
+    }
+
+    &--banned {
+      background: rgba(220, 50, 50, 0.12) !important;
+      border-color: rgba(220, 50, 50, 0.5) !important;
+      color: #f06060 !important;
+      font-weight: 600;
+    }
+  }
+
+  &__warn {
+    display: none;
+  }
+
+  &__generate {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.5rem 1.25rem;
+    border-radius: 6px;
+    border: none;
+    background: rgba(0, 180, 200, 0.2);
+    color: #00d4e8;
+    cursor: pointer;
+    transition: background 0.15s;
+    margin-bottom: 1rem;
+
+    &:hover {
+      background: rgba(0, 180, 200, 0.35);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  &__error {
+    font-size: 0.8rem;
+    color: #f06060;
+    margin-bottom: 0.75rem;
+  }
+
+  &__output {
+    border: 1px solid var(--theme-elevation-200);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+
+  &__output-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    background: var(--theme-elevation-50);
+    border-bottom: 1px solid var(--theme-elevation-200);
+  }
+
+  &__output-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  &__output-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--theme-elevation-500);
+  }
+
+  &__output-info {
+    font-size: 0.7rem;
+    color: var(--theme-elevation-400);
+  }
+
+  &__copy {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid var(--theme-elevation-200);
+    background: transparent;
+    color: var(--theme-elevation-600);
+    cursor: pointer;
+    transition: all 0.15s;
+
+    &:hover {
+      background: var(--theme-elevation-100);
+    }
+
+    &--done {
+      background: rgba(50, 200, 100, 0.15);
+      border-color: rgba(50, 200, 100, 0.4);
+      color: #40d070;
+    }
+  }
+
+  &__code {
+    padding: 0.75rem;
+    font-size: 0.7rem;
+    font-family: monospace;
+    line-height: 1.5;
+    color: var(--theme-elevation-700);
+    background: var(--theme-elevation-0);
+    overflow-x: auto;
+    max-height: 500px;
+    overflow-y: auto;
+    white-space: pre;
+    margin: 0;
+  }
+
+  &__instructions {
+    border: 1px solid var(--theme-elevation-150);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-top: 1rem;
+
+    h4 {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--theme-elevation-400);
+      margin-bottom: 0.5rem;
+    }
+
+    ol {
+      font-size: 0.8rem;
+      color: var(--theme-elevation-500);
+      padding-left: 1.25rem;
+      margin: 0;
+
+      li {
+        margin-bottom: 0.25rem;
+      }
+
+      strong {
+        color: var(--theme-elevation-700);
+      }
+    }
+  }
+}

@@ -10,7 +10,7 @@ export type HeroName =
   | 'Junker Queen' | 'Junkrat' | 'Juno' | 'Kiriko' | 'Lifeweaver'
   | 'Lúcio' | 'Mauga' | 'Mei' | 'Mercy' | 'Mizuki' | 'Moira'
   | 'Orisa' | 'Pharah' | 'Ramattra' | 'Reaper' | 'Reinhardt'
-  | 'Roadhog' | 'Sigma' | 'Sojourn' | 'Soldier: 76' | 'Sombra'
+  | 'Roadhog' | 'Sierra' | 'Sigma' | 'Sojourn' | 'Soldier: 76' | 'Sombra'
   | 'Symmetra' | 'Torbjörn' | 'Tracer' | 'Vendetta' | 'Venture'
   | 'Widowmaker' | 'Winston' | 'Wrecking Ball' | 'Wuyang'
   | 'Zarya' | 'Zenyatta'
@@ -53,6 +53,7 @@ export const heroRoleMapping: Record<string, HeroRole> = {
   'Reaper': 'Damage',
   'Reinhardt': 'Tank',
   'Roadhog': 'Tank',
+  'Sierra': 'Damage',
   'Sigma': 'Tank',
   'Sojourn': 'Damage',
   'Soldier: 76': 'Damage',

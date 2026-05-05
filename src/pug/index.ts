@@ -14,6 +14,7 @@ export {
   cancelLobby,
   completeMatch,
   cancelExpiredLobby,
+  forceReadyLobby,
 } from './lobbyStateMachine'
 
 export { findValidAssignment } from './roleAssignment'
