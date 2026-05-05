@@ -12,6 +12,7 @@ type Lobby = {
   neededSlots: Record<string, number> | null
   blockedRoles: string[]
   spotsAvailable: Record<string, number>
+  reportingState?: any
 }
 
 type Props = {
