@@ -16,8 +16,8 @@ NC='\033[0m' # No Color
 echo -e "${GREEN}Starting build process...${NC}"
 
 # Step 0: Get POSTGRES_PASSWORD before starting postgres
-if [ -f .env.production ]; then
-  POSTGRES_PASSWORD=$(grep POSTGRES_PASSWORD .env.production | cut -d '=' -f2 | tr -d '"' | tr -d "'" | xargs)
+if [ -f .env ]; then
+  POSTGRES_PASSWORD=$(grep POSTGRES_PASSWORD .env | cut -d '=' -f2 | tr -d '"' | tr -d "'" | xargs)
 elif [ -n "$POSTGRES_PASSWORD" ]; then
   POSTGRES_PASSWORD="$POSTGRES_PASSWORD"
 else
@@ -89,8 +89,8 @@ fi
 
 # Step 4: Initialize database schema (create tables if they don't exist)
 echo -e "${YELLOW}Step 4: Initializing database schema...${NC}"
-if [ -f .env.production ]; then
-  PAYLOAD_SECRET=$(grep PAYLOAD_SECRET .env.production | cut -d '=' -f2 | tr -d '"' | tr -d "'" | xargs || echo "secret")
+if [ -f .env ]; then
+  PAYLOAD_SECRET=$(grep PAYLOAD_SECRET .env | cut -d '=' -f2 | tr -d '"' | tr -d "'" | xargs || echo "secret")
 else
   PAYLOAD_SECRET="${PAYLOAD_SECRET:-secret}"
 fi

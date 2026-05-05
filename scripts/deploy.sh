@@ -6,10 +6,10 @@ set -e
 
 echo "🚀 Starting deployment..."
 
-# Check if .env.production exists
-if [ ! -f ".env.production" ]; then
-    echo "❌ Error: .env.production file not found!"
-    echo "Please create .env.production from .env.production.example"
+# Check if .env exists
+if [ ! -f ".env" ]; then
+    echo "❌ Error: .env file not found!"
+    echo "Please create .env from .env.example"
 exit 1
 fi
 

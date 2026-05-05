@@ -13,7 +13,7 @@ services:
       - media:/app/public/media
       - graphics_assets:/app/public/graphics-assets
     env_file:
-      - .env.production
+      - .env
     environment:
       - DATABASE_URI=postgresql://payload:${POSTGRES_PASSWORD}@postgres:5432/payload
       - NODE_ENV=production

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Reset PostgreSQL password to match .env.production
+# Reset PostgreSQL password to match .env
 # This will recreate the PostgreSQL volume with the correct password
 
 cd ~/elemental-website
@@ -9,17 +9,17 @@ echo ""
 echo "⚠️  WARNING: This will DELETE ALL DATABASE DATA and recreate PostgreSQL with the correct password."
 echo ""
 
-# Check if .env.production exists
-if [ ! -f .env.production ]; then
-    echo "❌ .env.production file not found!"
+# Check if .env exists
+if [ ! -f .env ]; then
+    echo "❌ .env file not found!"
     exit 1
 fi
 
-# Extract password from .env.production
-export POSTGRES_PASSWORD=$(grep "^POSTGRES_PASSWORD=" .env.production | cut -d '=' -f2 | tr -d '"' | tr -d "'" | xargs)
+# Extract password from .env
+export POSTGRES_PASSWORD=$(grep "^POSTGRES_PASSWORD=" .env | cut -d '=' -f2 | tr -d '"' | tr -d "'" | xargs)
 
 if [ -z "$POSTGRES_PASSWORD" ]; then
-    echo "❌ POSTGRES_PASSWORD not found in .env.production!"
+    echo "❌ POSTGRES_PASSWORD not found in .env!"
     exit 1
 fi
 

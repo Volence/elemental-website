@@ -3,11 +3,11 @@
 
 cd ~/elemental-website
 
-# Export POSTGRES_PASSWORD from .env.production
-export POSTGRES_PASSWORD=$(grep POSTGRES_PASSWORD .env.production | cut -d '=' -f2 | tr -d '"' | tr -d "'" | xargs)
+# Export POSTGRES_PASSWORD from .env
+export POSTGRES_PASSWORD=$(grep POSTGRES_PASSWORD .env | cut -d '=' -f2 | tr -d '"' | tr -d "'" | xargs)
 
 if [ -z "$POSTGRES_PASSWORD" ]; then
-    echo "ERROR: POSTGRES_PASSWORD not found in .env.production!"
+    echo "ERROR: POSTGRES_PASSWORD not found in .env!"
     exit 1
 fi
 

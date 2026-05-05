@@ -71,7 +71,7 @@ jobs:
             fi
             
             # Get postgres password from env file
-            POSTGRES_PASS=$(grep POSTGRES_PASSWORD .env.production | cut -d= -f2)
+            POSTGRES_PASS=$(grep POSTGRES_PASSWORD .env | cut -d= -f2)
             
             # Start new container with a temporary name first
             echo "🚀 Starting new container..."
@@ -79,7 +79,7 @@ jobs:
               --name elemental-website-payload-new \
               --restart unless-stopped \
               -p 127.0.0.1:3001:3000 \
-              --env-file .env.production \
+              --env-file .env \
               -e DATABASE_URI="postgresql://payload:${POSTGRES_PASS}@elemental-website-postgres-1:5432/payload" \
               -e NODE_ENV=production \
               --network elemental-website_default \
@@ -108,7 +108,7 @@ jobs:
                 --name elemental-website-payload-1 \
                 --restart unless-stopped \
                 -p 127.0.0.1:3000:3000 \
-                --env-file .env.production \
+                --env-file .env \
                 -e DATABASE_URI="postgresql://payload:${POSTGRES_PASS}@elemental-website-postgres-1:5432/payload" \
                 -e NODE_ENV=production \
                 --network elemental-website_default \

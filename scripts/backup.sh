@@ -24,9 +24,9 @@ if [ -d "$PROJECT_DIR/public/uploads" ]; then
 fi
 
 # Backup environment file (without sensitive data)
-if [ -f "$PROJECT_DIR/.env.production" ]; then
+if [ -f "$PROJECT_DIR/.env" ]; then
     echo "Backing up environment file..."
-    cp $PROJECT_DIR/.env.production $BACKUP_DIR/env_$DATE.backup
+    cp $PROJECT_DIR/.env $BACKUP_DIR/env_$DATE.backup
 fi
 
 # Keep only last 7 days of backups
