@@ -12,7 +12,7 @@ type Lobby = {
   neededSlots: Record<string, number> | null
   blockedRoles: string[]
   spotsAvailable: Record<string, number>
-  reportingState?: any
+  pendingResult?: any
 }
 
 type Props = {
@@ -128,8 +128,8 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
   const myLobbyId = lobbies.find((l) => {
     if (!l.players.some((p) => p.userId === currentUser?.id)) return false
     if (l.status === 'REPORTING') {
-      const rs = l.reportingState as any
-      if (rs && (rs.team1Report !== null || rs.team2Report !== null)) {
+      const pr = l.pendingResult as any
+      if (pr && pr.reportedBy) {
         return false // Ignore this lobby, player is free to join another
       }
     }

@@ -124,8 +124,8 @@ export async function joinLobby(lobbyId: number, userId: number, roles: string[]
       const activeLobby = existingMembership.lobby
       let isBlocked = true
       if (activeLobby.status === 'REPORTING') {
-        const rs = activeLobby.reportingState as any
-        if (rs && (rs.team1Report !== null || rs.team2Report !== null)) {
+        const pr = activeLobby.pendingResult as any
+        if (pr && pr.reportedBy) {
           isBlocked = false
         }
       }
