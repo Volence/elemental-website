@@ -713,6 +713,15 @@ export const Teams: CollectionConfig = {
         readOnly: true,
       },
     },
+    {
+      name: 'discordFaceitUpdateMessageId',
+      type: 'text',
+      admin: {
+        description: 'Discord message ID for faceit updates channel (auto-managed)',
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
     // Discord provisioning fields - managed by Discord Server Manager provision endpoint
     {
       name: 'discordTeamRoleId',

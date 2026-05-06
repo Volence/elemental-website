@@ -711,6 +711,14 @@ export async function syncAllTeams(): Promise<SyncResult[]> {
       await new Promise(resolve => setTimeout(resolve, 1000))
     }
 
+    // Update the #faceit-updates channel after sync
+    try {
+      const { updateFaceitChannel } = await import('../discord/services/faceitUpdates')
+      await updateFaceitChannel()
+    } catch (error) {
+      console.error('[FaceIt Sync] Failed to update faceit channel:', error)
+    }
+
     return results
 
   } catch (error: any) {

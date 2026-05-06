@@ -155,6 +155,11 @@ export function buildCommands() {
       .setName('daily-results')
       .setDescription('Sync FaceIt scores and format today\'s match results'),
 
+    // Weekly recap command
+    new SlashCommandBuilder()
+      .setName('weekly-recap')
+      .setDescription('Refresh the FaceIt updates channel with latest standings and results'),
+
     // Availability calendar command
     new SlashCommandBuilder()
       .setName('availability')
