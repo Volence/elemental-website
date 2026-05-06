@@ -51,17 +51,18 @@ function setupGlobalErrorHandlers() {
   })
 
   // Graceful shutdown on SIGTERM (Docker stop) and SIGINT (Ctrl+C)
+  // Cleanup functions are registered on globalThis by onInit (payload.config.ts)
+  // to avoid importing discord modules here, which causes webpack to trace through
+  // payload -> busboy -> stream and fail with "Can't resolve 'stream'"
   const shutdown = async (signal: string) => {
     console.log(`[Shutdown] ${signal} received, cleaning up...`)
     try {
-      const { stopTwitchLiveRoster } = await import('./discord/services/twitchLiveRoster')
-      const { stopThreadKeepAlive } = await import('./discord/services/threadKeepAlive')
-      const { stopPollNotificationPolling } = await import('./discord/handlers/poll-handlers')
-      const { shutdownDiscordBot } = await import('./discord/bot')
-      stopTwitchLiveRoster()
-      stopThreadKeepAlive()
-      stopPollNotificationPolling()
-      await shutdownDiscordBot()
+      const cleanups = (globalThis as any).__shutdownCleanups as Array<() => void | Promise<void>> | undefined
+      if (cleanups?.length) {
+        for (const fn of cleanups) {
+          await fn()
+        }
+      }
       console.log('[Shutdown] Cleanup complete')
     } catch (err) {
       console.error('[Shutdown] Error during cleanup:', err)

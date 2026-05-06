@@ -374,8 +374,20 @@ const config = buildConfig({
         if (client) {
           await registerCommands()
           setupInteractionHandlers()
-          startThreadKeepAlive()  // Re-enabled - uses Thread-Watcher approach
-          startTwitchLiveRoster() // Twitch live roster
+          startThreadKeepAlive()
+          startTwitchLiveRoster()
+
+          const { stopThreadKeepAlive } = await import('./discord/services/threadKeepAlive')
+          const { stopTwitchLiveRoster } = await import('./discord/services/twitchLiveRoster')
+          const { stopPollNotificationPolling } = await import('./discord/handlers/poll-handlers')
+          const { shutdownDiscordBot } = await import('./discord/bot')
+          ;(globalThis as any).__shutdownCleanups = [
+            stopTwitchLiveRoster,
+            stopThreadKeepAlive,
+            stopPollNotificationPolling,
+            shutdownDiscordBot,
+          ]
+
           console.log('[Discord] ✅ Bot fully initialized')
         } else {
           console.error('[Discord] ❌ Client was null - check env vars')
