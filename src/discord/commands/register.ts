@@ -133,6 +133,23 @@ export function buildCommands() {
       .setName('matches')
       .setDescription('View today\'s scheduled matches across all teams'),
 
+    // Production info command (casting prep)
+    new SlashCommandBuilder()
+      .setName('production')
+      .setDescription('Get production/casting info for a team (roster, pronouns, pronunciation)')
+      .addStringOption((option) =>
+        option
+          .setName('team-name')
+          .setDescription('Name of the team')
+          .setRequired(true)
+          .setAutocomplete(true),
+      ),
+
+    // Matches post formatter for social media
+    new SlashCommandBuilder()
+      .setName('matches-post')
+      .setDescription('Format today\'s matches for social media (copy-paste ready)'),
+
     // Availability calendar command
     new SlashCommandBuilder()
       .setName('availability')

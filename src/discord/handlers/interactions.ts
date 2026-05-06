@@ -8,6 +8,8 @@ import { handleSchedulePoll } from '../commands/schedulepoll'
 import { handleThreadKeepAlive } from '../commands/tka'
 import { handleCalendar } from '../commands/calendar'
 import { handleMatchesToday } from '../commands/matches-today'
+import { handleProduction } from '../commands/production'
+import { handleMatchesPost } from '../commands/matches-post'
 import { handleAvailability } from '../commands/availability'
 import { handlePugQueue } from '../commands/pug/queue'
 import { handlePugLeave } from '../commands/pug/leave'
@@ -99,6 +101,10 @@ async function handleChatCommand(interaction: ChatInputCommandInteraction): Prom
     await handleCalendar(interaction)
   } else if (commandName === 'matches') {
     await handleMatchesToday(interaction)
+  } else if (commandName === 'production') {
+    await handleProduction(interaction)
+  } else if (commandName === 'matches-post') {
+    await handleMatchesPost(interaction)
   } else if (commandName === 'availability') {
     await handleAvailability(interaction)
   } else if (commandName === 'pug') {
@@ -128,7 +134,7 @@ async function handleChatCommand(interaction: ChatInputCommandInteraction): Prom
 async function handleAutocomplete(interaction: any): Promise<void> {
   const { commandName } = interaction
 
-  if (commandName === 'team') {
+  if (commandName === 'team' || commandName === 'production') {
     await handleTeamAutocomplete(interaction)
   }
 }
