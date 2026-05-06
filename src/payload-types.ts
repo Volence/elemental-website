@@ -521,6 +521,14 @@ export interface Person {
    */
   name: string;
   /**
+   * Pronouns (e.g., he/him, she/her, they/them)
+   */
+  pronouns?: string | null;
+  /**
+   * Name pronunciation guide for casters and production
+   */
+  pronunciation?: string | null;
+  /**
    * Optional biography or description
    */
   bio?: string | null;
@@ -3493,6 +3501,8 @@ export interface MediaBlockSelect<T extends boolean = true> {
  */
 export interface PeopleSelect<T extends boolean = true> {
   name?: T;
+  pronouns?: T;
+  pronunciation?: T;
   bio?: T;
   photo?: T;
   socialLinks?:

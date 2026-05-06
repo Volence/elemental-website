@@ -133,10 +133,10 @@ export function buildCommands() {
       .setName('matches')
       .setDescription('View today\'s scheduled matches across all teams'),
 
-    // Production info command (casting prep)
+    // Casting sheet command (casting prep for today's match)
     new SlashCommandBuilder()
-      .setName('production')
-      .setDescription('Get production/casting info for a team (roster, pronouns, pronunciation)')
+      .setName('casting-sheet')
+      .setDescription('Get casting prep sheet for today\'s match (both teams, pronouns, FaceIt stats)')
       .addStringOption((option) =>
         option
           .setName('team-name')
