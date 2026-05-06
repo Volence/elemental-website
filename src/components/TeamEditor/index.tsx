@@ -6,7 +6,7 @@ import {
   Save, Check, AlertCircle, Loader2, ArrowLeft, Plus, Trash2,
   Shield, Users, Gamepad2, Trophy, Palette, Calendar,
   Globe, Star, Eye, ExternalLink, Hash, MessageSquare, Clock,
-  ChevronUp, ChevronDown,
+  ChevronUp, ChevronDown, Image, X,
 } from 'lucide-react'
 import { EDITOR_CSS, styles as editorStyles } from '@/components/PersonEditor'
 
@@ -225,6 +225,77 @@ function PersonSearch({ value, onChange, placeholder, onRequestCreate }: { value
   )
 }
 
+// ── Logo Search ──
+
+function LogoSearch({ value, currentUrl, currentFilename, onChange }: { value: number | null; currentUrl: string; currentFilename: string; onChange: (id: number | null, url: string, filename: string) => void }) {
+  const [search, setSearch] = useState('')
+  const [results, setResults] = useState<Array<{ id: number; filename: string; url: string; thumbnailURL?: string }>>([])
+  const [showDropdown, setShowDropdown] = useState(false)
+
+  const doSearch = useCallback(async (q: string) => {
+    if (q.length < 2) { setResults([]); return }
+    try {
+      const res = await fetch(`/api/graphics-assets?where[filename][contains]=${encodeURIComponent(q)}&where[mimeType][contains]=image&limit=15&depth=0&sort=filename`)
+      if (res.ok) {
+        const data = await res.json()
+        setResults((data.docs ?? []).map((d: any) => ({ id: d.id, filename: d.filename, url: d.url, thumbnailURL: d.thumbnailURL ?? d.url })))
+      }
+    } catch {}
+  }, [])
+
+  useEffect(() => {
+    const t = setTimeout(() => doSearch(search), 250)
+    return () => clearTimeout(t)
+  }, [search, doSearch])
+
+  if (value) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        {currentUrl && <img src={currentUrl} alt="" style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 4, background: 'rgba(255,255,255,0.05)' }} />}
+        <span style={{ fontSize: 13, color: '#e2e8f0', flex: 1 }}>{currentFilename || `Asset #${value}`}</span>
+        <button
+          type="button"
+          onClick={() => onChange(null, '', '')}
+          style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4, padding: '3px 6px', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center' }}
+          title="Remove logo"
+        >
+          <X size={12} />
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <input
+        className="profile-input"
+        style={{ fontSize: 13, padding: '6px 10px' }}
+        value={search}
+        onChange={e => { setSearch(e.target.value); setShowDropdown(true) }}
+        onFocus={() => setShowDropdown(true)}
+        onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+        placeholder="Search files by name..."
+      />
+      {showDropdown && results.length > 0 && (
+        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, maxHeight: 260, overflowY: 'auto', zIndex: 50 }}>
+          {results.map(asset => (
+            <div
+              key={asset.id}
+              style={{ padding: '6px 12px', fontSize: 13, color: '#e2e8f0', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.1s', display: 'flex', alignItems: 'center', gap: 10 }}
+              onMouseDown={e => { e.preventDefault(); onChange(asset.id, asset.url, asset.filename); setSearch(''); setShowDropdown(false) }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.06)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            >
+              <img src={asset.thumbnailURL || asset.url} alt="" style={{ width: 28, height: 28, objectFit: 'contain', borderRadius: 3, background: 'rgba(255,255,255,0.05)', flexShrink: 0 }} />
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{asset.filename}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Team Editor ──
 
 export default function TeamEditor() {
@@ -281,8 +352,20 @@ export default function TeamEditor() {
   const [discordThreads, setDiscordThreads] = useState<Record<string, string>>({})
 
   // Logo
+  const [logoId, setLogoId] = useState<number | null>(null)
   const [logoUrl, setLogoUrl] = useState('')
   const [logoFilename, setLogoFilename] = useState('')
+
+  // FaceIt Leagues
+  const [currentFaceitLeague, setCurrentFaceitLeague] = useState<number | null>(null)
+  const [faceitLeagues, setFaceitLeagues] = useState<Array<{ id: number; name: string }>>([])
+
+  useEffect(() => {
+    fetch('/api/faceit-leagues?where[isActive][equals]=true&limit=50&depth=0&sort=name')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.docs) setFaceitLeagues(data.docs) })
+      .catch(() => {})
+  }, [])
 
   const fetchTeam = useCallback(async () => {
     if (!teamId) return
@@ -303,10 +386,21 @@ export default function TeamEditor() {
 
       // Logo
       if (t.logo && typeof t.logo === 'object') {
+        setLogoId(t.logo.id ?? null)
         setLogoUrl(t.logo.url ?? '')
         setLogoFilename(t.logo.filename ?? t.logoFilename ?? '')
+      } else if (typeof t.logo === 'number') {
+        setLogoId(t.logo)
+        setLogoFilename(t.logoFilename ?? '')
       } else {
         setLogoFilename(t.logoFilename ?? '')
+      }
+
+      // FaceIt League
+      if (t.currentFaceitLeague && typeof t.currentFaceitLeague === 'object') {
+        setCurrentFaceitLeague(t.currentFaceitLeague.id ?? null)
+      } else if (typeof t.currentFaceitLeague === 'number') {
+        setCurrentFaceitLeague(t.currentFaceitLeague)
       }
 
       // Staff
@@ -355,7 +449,9 @@ export default function TeamEditor() {
         roster: roster.filter(r => r.personId).map(r => ({ person: r.personId, role: r.role })),
         subs: subs.filter(s => s.personId).map(s => ({ person: s.personId })),
         achievements: achievements.filter(a => a.achievement.trim()).map(a => ({ achievement: a.achievement })),
+        logo: logoId,
         faceitEnabled, faceitTeamId, faceitShowCompetitiveSection: faceitShowCompetitive,
+        currentFaceitLeague: currentFaceitLeague,
         rolePreset, customRoles, scheduleTimezone,
         scheduleBlocks: scheduleBlocks.filter(b => b.label.trim()),
         discordThreads,
@@ -519,6 +615,15 @@ export default function TeamEditor() {
               <label style={editorStyles.fieldLabel}>Bio</label>
               <textarea className="profile-input profile-textarea" value={bio} onChange={e => setBio(e.target.value)} placeholder="Team description..." style={{ minHeight: 80 }} />
             </div>
+            <div style={editorStyles.editableField}>
+              <label style={editorStyles.fieldLabel}>Logo</label>
+              <LogoSearch
+                value={logoId}
+                currentUrl={logoUrl}
+                currentFilename={logoFilename}
+                onChange={(id, url, filename) => { setLogoId(id); setLogoUrl(url); setLogoFilename(filename) }}
+              />
+            </div>
             <div style={{ ...editorStyles.readonlyField, justifyContent: 'space-between' }}>
               <span style={editorStyles.fieldLabel}>Active</span>
               <button className={`toggle-switch ${active ? 'on' : 'off'}`} onClick={() => setActive(!active)} type="button" />
@@ -531,7 +636,7 @@ export default function TeamEditor() {
 
             <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Managers</p>
             {managers.map((m, i) => (
-              <div className="person-row" key={i}>
+              <div className="person-row" key={m.personId ?? `new-${i}`}>
                 <div style={{ flex: 1 }}>
                   <PersonSearch value={m.personId} onChange={(id, n) => setManagers(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x))} onRequestCreate={() => openCreateModal((id, n) => setManagers(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x)))} />
                 </div>
@@ -546,7 +651,7 @@ export default function TeamEditor() {
 
             <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.5)', margin: '16px 0 6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Coaches</p>
             {coaches.map((c, i) => (
-              <div className="person-row" key={i}>
+              <div className="person-row" key={c.personId ?? `new-${i}`}>
                 <div style={{ flex: 1 }}>
                   <PersonSearch value={c.personId} onChange={(id, n) => setCoaches(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x))} onRequestCreate={() => openCreateModal((id, n) => setCoaches(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x)))} />
                 </div>
@@ -561,7 +666,7 @@ export default function TeamEditor() {
 
             <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.5)', margin: '16px 0 6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Captains</p>
             {captains.map((c, i) => (
-              <div className="person-row" key={i}>
+              <div className="person-row" key={c.personId ?? `new-${i}`}>
                 <div style={{ flex: 1 }}>
                   <PersonSearch value={c.personId} onChange={(id, n) => setCaptains(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x))} onRequestCreate={() => openCreateModal((id, n) => setCaptains(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x)))} />
                 </div>
@@ -581,7 +686,7 @@ export default function TeamEditor() {
 
             <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Active Players</p>
             {roster.map((r, i) => (
-              <div className="person-row" key={i}>
+              <div className="person-row" key={r.personId ?? `new-${i}`}>
                 <div style={{ flex: 1 }}>
                   <PersonSearch value={r.personId} onChange={(id, n) => setRoster(p => p.map((x, j) => j === i ? { ...x, personId: id, personName: n } : x))} onRequestCreate={() => openCreateModal((id, n) => setRoster(p => p.map((x, j) => j === i ? { ...x, personId: id, personName: n } : x)))} />
                 </div>
@@ -599,7 +704,7 @@ export default function TeamEditor() {
 
             <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.5)', margin: '16px 0 6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Substitutes</p>
             {subs.map((s, i) => (
-              <div className="person-row" key={i}>
+              <div className="person-row" key={s.personId ?? `new-${i}`}>
                 <div style={{ flex: 1 }}>
                   <PersonSearch value={s.personId} onChange={(id, n) => setSubs(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x))} onRequestCreate={() => openCreateModal((id, n) => setSubs(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x)))} />
                 </div>
@@ -695,6 +800,14 @@ export default function TeamEditor() {
                       </a>
                     )}
                   </div>
+                </div>
+                <div style={editorStyles.editableField}>
+                  <label style={editorStyles.fieldLabel}>FaceIt League</label>
+                  <select className="profile-input" value={currentFaceitLeague ?? ''} onChange={e => setCurrentFaceitLeague(e.target.value ? Number(e.target.value) : null)} style={{ fontSize: 13 }}>
+                    <option value="">Select league...</option>
+                    {faceitLeagues.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
+                  </select>
+                  <p style={{ ...editorStyles.fieldHint, margin: '4px 0 0' }}>Current league/season this team is competing in.</p>
                 </div>
                 <div style={{ ...editorStyles.readonlyField, justifyContent: 'space-between' }}>
                   <span style={editorStyles.fieldLabel}>Show Competitive Section</span>

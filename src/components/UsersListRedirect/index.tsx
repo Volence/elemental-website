@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react'
 import { useAuth } from '@payloadcms/ui'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 /**
  * Intercepts row clicks on the Users list to redirect
@@ -10,7 +10,7 @@ import type { User } from '@/payload-types'
  * Also intercepts the top-right account avatar → custom editor.
  */
 const UsersListRedirect: React.FC = () => {
-  const { user } = useAuth<User>()
+  const { user } = useAuth<Person>()
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -24,7 +24,7 @@ const UsersListRedirect: React.FC = () => {
         if (match) {
           e.preventDefault()
           e.stopPropagation()
-          window.location.href = `/admin/edit-user?id=${match[1]}`
+          window.location.href = `/admin/edit-person?id=${match[1]}`
           return
         }
       }
@@ -35,7 +35,7 @@ const UsersListRedirect: React.FC = () => {
         e.preventDefault()
         e.stopPropagation()
         if ((user as any).role === 'admin') {
-          window.location.href = `/admin/edit-user?id=${user.id}`
+          window.location.href = `/admin/edit-person?id=${user.id}`
         } else {
           window.location.href = '/admin/my-profile'
         }

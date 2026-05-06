@@ -47,6 +47,11 @@ const BeforeLogin: React.FC = () => {
         </span>
         <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--theme-elevation-500, #555)' }} />
       </div>
+
+      <p style={{ textAlign: 'center', fontSize: '0.875rem', color: 'var(--theme-elevation-500, #888)', marginTop: '0.5rem' }}>
+        {"Don't have an account? "}
+        <a href="/signup" style={{ color: '#5865F2', textDecoration: 'none' }}>Sign up with Discord</a>
+      </p>
     </div>
   )
 }

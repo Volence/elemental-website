@@ -4,17 +4,10 @@ import React, { useState } from 'react'
 import { GradientBorder } from '../GradientBorder'
 import { CheckHeader } from './components/CheckHeader'
 import { SummaryCards } from './components/SummaryCards'
-import { OrphanedPeopleList } from './components/OrphanedPeopleList'
 import { TeamsWithIssuesList } from './components/TeamsWithIssuesList'
 import { DuplicatePeopleList } from './components/DuplicatePeopleList'
 
 interface DataConsistencyReport {
-  orphanedPeople: Array<{
-    id: number
-    name: string
-    slug: string
-    createdAt: string
-  }>
   teamsWithMissingRelationships: Array<{
     teamId: number
     teamName: string
@@ -29,7 +22,6 @@ interface DataConsistencyReport {
   summary: {
     totalPeople: number
     totalTeams: number
-    orphanedCount: number
     teamsWithIssuesCount: number
     duplicateCount: number
   }
@@ -65,8 +57,7 @@ const DataConsistencyCheck: React.FC = () => {
 
   const hasIssues =
     report &&
-    (report.summary.orphanedCount > 0 ||
-      report.summary.teamsWithIssuesCount > 0 ||
+    (report.summary.teamsWithIssuesCount > 0 ||
       report.summary.duplicateCount > 0)
 
   return (
@@ -84,7 +75,6 @@ const DataConsistencyCheck: React.FC = () => {
           <div className="mt-4">
             <SummaryCards
               totalPeople={report.summary.totalPeople}
-              orphanedCount={report.summary.orphanedCount}
               teamsWithIssuesCount={report.summary.teamsWithIssuesCount}
               duplicateCount={report.summary.duplicateCount}
             />
@@ -100,10 +90,6 @@ const DataConsistencyCheck: React.FC = () => {
 
             {showDetails && hasIssues && (
               <div className="dc-check__details-panel">
-                <OrphanedPeopleList 
-                  people={report.orphanedPeople} 
-                  onPersonDeleted={runCheck}
-                />
                 <TeamsWithIssuesList teams={report.teamsWithMissingRelationships} />
                 <DuplicatePeopleList duplicates={report.duplicatePeople} />
               </div>

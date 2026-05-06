@@ -23,14 +23,8 @@ export default async function PugsPage() {
       const { user } = await payload.auth({ headers: new Headers({ Authorization: `JWT ${token}` }) })
       currentUser = user
       if (user) {
-        const player = await payload.find({
-          collection: 'pug-players',
-          where: { user: { equals: user.id } },
-          overrideAccess: true,
-          limit: 1,
-        })
-        playerDoc = player.docs[0] as any
-        isOpenRegistered = playerDoc?.tiers?.includes('open') ?? false
+        playerDoc = user as any
+        isOpenRegistered = playerDoc?.pugTiers?.includes('open') ?? false
       }
     } catch {}
   }

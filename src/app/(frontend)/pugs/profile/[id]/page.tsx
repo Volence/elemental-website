@@ -14,19 +14,18 @@ export default async function PugProfilePage({
   const { id } = await params
   const payload = await getPayload({ config: configPromise })
 
-  let pugPlayer: any
+  let person: any
   try {
-    pugPlayer = await payload.findByID({
-      collection: 'pug-players',
+    person = await payload.findByID({
+      collection: 'people',
       id: parseInt(id, 10),
-      depth: 2,
       overrideAccess: true,
     })
   } catch {
-    pugPlayer = null
+    person = null
   }
 
-  if (!pugPlayer) {
+  if (!person || !person.pugTiers?.length) {
     return (
       <main className="container mx-auto p-8">
         <p className="text-gray-500">Player not found.</p>
@@ -34,8 +33,7 @@ export default async function PugProfilePage({
     )
   }
 
-  const displayName =
-    typeof pugPlayer.user === 'object' ? pugPlayer.user?.name : `Player #${id}`
+  const displayName = person.name ?? `Player #${id}`
 
   const leaderboardEntries = await payload.find({
     collection: 'pug-leaderboard',
@@ -51,9 +49,9 @@ export default async function PugProfilePage({
       <Link href="/pugs" className="text-sm text-gray-500 hover:text-gray-300 transition-colors">← PUGs</Link>
       <h1 className="text-2xl font-bold mt-1 mb-1">{displayName}</h1>
       <p className="text-sm text-gray-500 mb-6">
-        Registered: {pugPlayer.tiers?.join(', ')} tier
-        {pugPlayer.inviteRegions?.length > 0 && ` · Regions: ${pugPlayer.inviteRegions.map((r: string) => r.toUpperCase()).join(', ')}`}
-        {pugPlayer.registeredDate && ` · Since ${new Date(pugPlayer.registeredDate).toLocaleDateString()}`}
+        Registered: {person.pugTiers?.join(', ')} tier
+        {person.pugInviteRegions?.length > 0 && ` · Regions: ${person.pugInviteRegions.map((r: string) => r.toUpperCase()).join(', ')}`}
+        {person.pugRegisteredDate && ` · Since ${new Date(person.pugRegisteredDate).toLocaleDateString()}`}
       </p>
 
       <h2 className="text-lg font-semibold mb-3">Season History</h2>

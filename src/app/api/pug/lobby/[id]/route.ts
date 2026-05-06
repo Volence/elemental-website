@@ -43,20 +43,26 @@ export async function GET(request: NextRequest, { params }: Params) {
       )
     }
 
-    // Enrich players with names
+    // Enrich players with names and avatars
     const userIds = lobby.players.map((p) => p.userId)
     const users = await payload.find({
-      collection: 'users',
+      collection: 'people',
       where: { id: { in: userIds } },
       limit: 20,
+      depth: 1,
       overrideAccess: true,
     })
     const nameMap: Record<number, string> = {}
-    for (const u of users.docs as any[]) nameMap[u.id] = u.name || 'Anonymous'
+    const avatarMap: Record<number, string | null> = {}
+    for (const u of users.docs as any[]) {
+      nameMap[u.id] = u.name || 'Anonymous'
+      avatarMap[u.id] = u.photo?.url ?? u.avatar?.url ?? null
+    }
 
     const enrichedPlayers = lobby.players.map((p) => ({
       ...p,
       name: nameMap[p.userId] ?? `Player #${p.userId}`,
+      avatarUrl: avatarMap[p.userId] ?? null,
     }))
 
     // Fetch heroes for banning phase display and for resolving ban names in other phases
@@ -123,21 +129,15 @@ export async function GET(request: NextRequest, { params }: Params) {
     let approvedRoles: string[] | null = null
     let regionAllowed = true
     if (lobby.tier === 'invite' && user) {
-      const pugPlayerResult = await payload.find({
-        collection: 'pug-players',
-        where: { user: { equals: user.id } },
-        limit: 1,
-        overrideAccess: true,
-      })
-      const pugPlayer = pugPlayerResult.docs[0] as any
-      if (pugPlayer?.approvedRoles?.length) {
-        approvedRoles = (pugPlayer.approvedRoles as string[]).map(
+      const person = user as any
+      if (person.pugApprovedRoles?.length) {
+        approvedRoles = (person.pugApprovedRoles as string[]).map(
           (r: string) => r.replace(/-/g, '_'),
         )
       } else {
         approvedRoles = []
       }
-      const playerRegions: string[] = pugPlayer?.inviteRegions ?? []
+      const playerRegions: string[] = person.pugInviteRegions ?? []
       const lobbyRegion = lobby.region
       if (lobbyRegion && playerRegions.length > 0) {
         regionAllowed = playerRegions.includes(lobbyRegion)
@@ -182,16 +182,15 @@ export async function GET(request: NextRequest, { params }: Params) {
       }
 
       // Fetch BattleTags for all players
-      const pugPlayerResults = await payload.find({
-        collection: 'pug-players',
-        where: { user: { in: userIds } },
+      const peopleResults = await payload.find({
+        collection: 'people',
+        where: { id: { in: userIds } },
         limit: 20,
         overrideAccess: true,
       })
       const battleTags: Record<number, string | null> = {}
-      for (const pp of pugPlayerResults.docs as any[]) {
-        const uid = typeof pp.user === 'object' ? pp.user.id : pp.user
-        battleTags[uid] = pp.battleTag ?? null
+      for (const pp of peopleResults.docs as any[]) {
+        battleTags[pp.id] = pp.pugBattleTag ?? null
       }
 
       // Host name

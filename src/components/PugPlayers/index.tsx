@@ -5,16 +5,17 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { User, ChevronRight, ArrowLeft, Check, AlertCircle, Loader2, ShieldAlert, Calendar } from 'lucide-react'
 import { PUG_ADMIN_CSS, formatDate } from '@/components/pugAdminStyles'
 
-type PugPlayer = {
+type PugPerson = {
   id: number
-  user: { id: number; name?: string; email?: string } | number
-  tiers: string[]
-  approvedRoles?: string[]
-  inviteRegions?: string[]
-  registeredDate?: string | null
-  invitedBy?: { id: number; name?: string } | number | null
-  activeBan?: { bannedUntil?: string | null; reason?: string | null }
-  banOffenseCount?: number
+  name?: string
+  email?: string
+  pugTiers?: string[]
+  pugApprovedRoles?: string[]
+  pugInviteRegions?: string[]
+  pugRegisteredDate?: string | null
+  pugInvitedBy?: { id: number; name?: string } | number | null
+  pugActiveBan?: { bannedUntil?: string | null; reason?: string | null }
+  pugBanOffenseCount?: number
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -41,29 +42,24 @@ const TIER_OPTIONS = [
   { value: 'invite', label: 'Invite' },
 ]
 
-function isBanned(ban?: PugPlayer['activeBan']): boolean {
+function isBanned(ban?: PugPerson['pugActiveBan']): boolean {
   if (!ban?.bannedUntil) return false
   return new Date(ban.bannedUntil) > new Date()
-}
-
-function getUserName(user: PugPlayer['user']): string {
-  if (typeof user === 'object') return user.name ?? user.email ?? `User #${user.id}`
-  return `User #${user}`
 }
 
 // ---- List View ----
 
 export function PugPlayersListView() {
   const router = useRouter()
-  const [players, setPlayers] = useState<PugPlayer[]>([])
+  const [players, setPlayers] = useState<PugPerson[]>([])
   const [loading, setLoading] = useState(true)
 
   const fetchPlayers = useCallback(async () => {
     try {
-      const res = await fetch('/api/pug-players?limit=200&sort=-createdAt&depth=1')
+      const res = await fetch('/api/people?limit=200&sort=-updatedAt&depth=0&where[pugTiers][exists]=true')
       if (res.ok) {
         const data = await res.json()
-        setPlayers(data.docs ?? [])
+        setPlayers((data.docs ?? []).filter((p: any) => p.pugTiers?.length > 0))
       }
     } finally {
       setLoading(false)
@@ -89,8 +85,8 @@ export function PugPlayersListView() {
       )}
 
       {!loading && players.map((p) => {
-        const name = getUserName(p.user)
-        const banned = isBanned(p.activeBan)
+        const name = p.name ?? p.email ?? `Person #${p.id}`
+        const banned = isBanned(p.pugActiveBan)
         return (
           <div key={p.id} className="ps-card" onClick={() => router.push(`/admin/edit-pug-player?id=${p.id}`)}>
             <div className="ps-card-icon ps-card-icon-default">
@@ -99,22 +95,22 @@ export function PugPlayersListView() {
             <div className="ps-card-body">
               <p className="ps-card-name">{name}</p>
               <div className="ps-card-meta">
-                {p.tiers?.map((t) => (
+                {p.pugTiers?.map((t) => (
                   <span key={t} className={`ps-badge ps-badge-${t}`}>{t}</span>
                 ))}
-                {p.inviteRegions?.map((r) => (
+                {p.pugInviteRegions?.map((r) => (
                   <span key={r} className={`ps-badge ps-badge-${r}`}>{r.toUpperCase()}</span>
                 ))}
                 {banned && <span className="ps-badge ps-badge-danger">BANNED</span>}
-                {p.approvedRoles && p.approvedRoles.length > 0 && (
+                {p.pugApprovedRoles && p.pugApprovedRoles.length > 0 && (
                   <span className="ps-card-detail">
-                    {p.approvedRoles.map((r) => ROLE_LABELS[r] ?? r).join(', ')}
+                    {p.pugApprovedRoles.map((r) => ROLE_LABELS[r] ?? r).join(', ')}
                   </span>
                 )}
-                {p.registeredDate && (
+                {p.pugRegisteredDate && (
                   <span className="ps-card-detail">
                     <Calendar size={11} style={{ display: 'inline', marginRight: 4 }} />
-                    {formatDate(p.registeredDate)}
+                    {formatDate(p.pugRegisteredDate)}
                   </span>
                 )}
               </div>
@@ -139,7 +135,6 @@ export function PugPlayersEditView() {
   const [saveMsg, setSaveMsg] = useState('')
   const [form, setForm] = useState({
     userName: '',
-    userId: null as number | null,
     tiers: [] as string[],
     approvedRoles: [] as string[],
     inviteRegions: [] as string[],
@@ -152,25 +147,23 @@ export function PugPlayersEditView() {
 
   useEffect(() => {
     if (!id) { setLoading(false); return }
-    fetch(`/api/pug-players/${id}?depth=1`)
+    fetch(`/api/people/${id}?depth=1`)
       .then((r) => r.json())
-      .then((data: PugPlayer) => {
-        const userName = getUserName(data.user)
-        const userId = typeof data.user === 'object' ? data.user.id : data.user
-        const invitedByName = typeof data.invitedBy === 'object' && data.invitedBy
-          ? (data.invitedBy.name ?? `User #${data.invitedBy.id}`)
+      .then((data: any) => {
+        const userName = data.name ?? data.email ?? `Person #${id}`
+        const invitedByName = typeof data.pugInvitedBy === 'object' && data.pugInvitedBy
+          ? (data.pugInvitedBy.name ?? `Person #${data.pugInvitedBy.id}`)
           : ''
         setForm({
           userName,
-          userId,
-          tiers: data.tiers ?? [],
-          approvedRoles: data.approvedRoles ?? [],
-          inviteRegions: data.inviteRegions ?? [],
-          registeredDate: data.registeredDate ? data.registeredDate.split('T')[0] : '',
+          tiers: data.pugTiers ?? [],
+          approvedRoles: data.pugApprovedRoles ?? [],
+          inviteRegions: data.pugInviteRegions ?? [],
+          registeredDate: data.pugRegisteredDate ? data.pugRegisteredDate.split('T')[0] : '',
           invitedByName,
-          bannedUntil: data.activeBan?.bannedUntil ? data.activeBan.bannedUntil.split('T')[0] : '',
-          banReason: data.activeBan?.reason ?? '',
-          banOffenseCount: data.banOffenseCount ?? 0,
+          bannedUntil: data.pugActiveBan?.bannedUntil ? data.pugActiveBan.bannedUntil.split('T')[0] : '',
+          banReason: data.pugActiveBan?.reason ?? '',
+          banOffenseCount: data.pugBanOffenseCount ?? 0,
         })
       })
       .finally(() => setLoading(false))
@@ -191,15 +184,15 @@ export function PugPlayersEditView() {
     setSaveMsg('')
     try {
       const body: any = {
-        tiers: form.tiers,
-        approvedRoles: form.approvedRoles,
-        inviteRegions: form.inviteRegions,
-        activeBan: {
+        pugTiers: form.tiers,
+        pugApprovedRoles: form.approvedRoles,
+        pugInviteRegions: form.inviteRegions,
+        pugActiveBan: {
           bannedUntil: form.bannedUntil || null,
           reason: form.banReason || null,
         },
       }
-      const res = await fetch(`/api/pug-players/${id}`, {
+      const res = await fetch(`/api/people/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -245,7 +238,7 @@ export function PugPlayersEditView() {
         <p className="ps-section-title">Details</p>
         <div className="ps-row ps-row-2" style={{ marginBottom: 16 }}>
           <div className="ps-field" style={{ margin: 0 }}>
-            <label className="ps-label">User</label>
+            <label className="ps-label">Name</label>
             <div className="ps-input" style={{ cursor: 'default', opacity: 0.7 }}>{form.userName}</div>
           </div>
           <div className="ps-field" style={{ margin: 0 }}>

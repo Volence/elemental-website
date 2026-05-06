@@ -23,7 +23,7 @@ export async function POST(request: Request): Promise<Response> {
     // We'll catch the error and try a direct approach
     try {
       const result = await payload.login({
-        collection: 'users',
+        collection: 'people',
         data: { email, password },
       })
       

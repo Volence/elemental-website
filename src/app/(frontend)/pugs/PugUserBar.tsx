@@ -13,7 +13,7 @@ export default function PugUserBar({ user, isRegistered, isPugAdmin }: Props) {
   const router = useRouter()
 
   async function signOut() {
-    await fetch('/api/users/logout', { method: 'POST' })
+    await fetch('/api/people/logout', { method: 'POST' })
     router.refresh()
   }
 

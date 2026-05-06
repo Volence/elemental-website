@@ -1,5 +1,5 @@
 import type { Payload, PayloadRequest } from 'payload'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 /**
  * Audit Logger Utility
@@ -11,7 +11,7 @@ import type { User } from '@/payload-types'
 export type AuditAction = 'login' | 'logout' | 'create' | 'delete' | 'update' | 'bulk'
 
 export interface AuditLogParams {
-  user?: User | string | number | null
+  user?: Person | string | number | null
   action: AuditAction
   collection?: string
   documentId?: string | number
@@ -87,7 +87,7 @@ export function createAuditLogHook(collectionName: string) {
     if (!req.payload || !req.user) return doc
 
     await createAuditLog(req.payload, {
-      user: req.user,
+      user: req.user as Person,
       action: 'create',
       collection: collectionName,
       documentId: doc.id,
@@ -110,7 +110,7 @@ export function createAuditLogDeleteHook(collectionName: string) {
     if (!req.payload || !req.user) return doc
 
     await createAuditLog(req.payload, {
-      user: req.user,
+      user: req.user as Person,
       action: 'delete',
       collection: collectionName,
       documentId: doc.id,
@@ -127,13 +127,13 @@ export function createAuditLogDeleteHook(collectionName: string) {
  */
 export async function logLogin(
   payload: Payload,
-  user: User,
+  user: Person,
   req?: PayloadRequest,
 ): Promise<void> {
   await createAuditLog(payload, {
     user,
     action: 'login',
-    documentTitle: `User logged in: ${user.name || user.email}`,
+    documentTitle: `Person logged in: ${user.name || user.email}`,
     req,
   })
 }
@@ -143,13 +143,13 @@ export async function logLogin(
  */
 export async function logLogout(
   payload: Payload,
-  user: User,
+  user: Person,
   req?: PayloadRequest,
 ): Promise<void> {
   await createAuditLog(payload, {
     user,
     action: 'logout',
-    documentTitle: `User logged out: ${user.name || user.email}`,
+    documentTitle: `Person logged out: ${user.name || user.email}`,
     req,
   })
 }
@@ -159,7 +159,7 @@ export async function logLogout(
  */
 export async function logBulkOperation(
   payload: Payload,
-  user: User,
+  user: Person,
   operation: string,
   details: Record<string, any>,
   req?: PayloadRequest,

@@ -6,7 +6,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { headers as nextHeaders } from 'next/headers'
 import { UserRole } from '@/access/roles'
-import type { User, Team } from '@/payload-types'
+import type { Person, Team } from '@/payload-types'
 
 export type UserScope = {
   role: UserRole
@@ -27,7 +27,7 @@ export async function getUserScope(): Promise<UserScope | null> {
 
     // Try to get the user from the Payload auth cookie
     const result = await payload.auth({ headers: hdrs })
-    const user = result.user as User | null
+    const user = result.user as Person | null
 
     if (!user) return null
 
@@ -46,15 +46,7 @@ export async function getUserScope(): Promise<UserScope | null> {
       }
     }
 
-    // Resolve linked person ID
-    let linkedPersonId: number | null = null
-    if (user.linkedPerson) {
-      if (typeof user.linkedPerson === 'number') {
-        linkedPersonId = user.linkedPerson
-      } else if (typeof user.linkedPerson === 'object' && 'id' in user.linkedPerson) {
-        linkedPersonId = user.linkedPerson.id
-      }
-    }
+    const linkedPersonId: number = user.id
 
     return {
       role,

@@ -27,7 +27,7 @@ async function getDiscordIdsForLobby(lobbyId: number, payloadInstance: any): Pro
   const userIds = players.map((p) => p.userId)
   if (userIds.length === 0) return []
   const users = await payloadInstance.find({
-    collection: 'users',
+    collection: 'people',
     where: { id: { in: userIds } },
     overrideAccess: true,
     limit: userIds.length,
@@ -163,15 +163,7 @@ export async function leaveLobby(lobbyId: number, userId: number): Promise<void>
 
   if (lobby.status === 'DRAFTING') {
     await cancelLobby(lobbyId, 'Player left during draft')
-    const payload = await getPayload({ config: configPromise })
-    const pugPlayer = await payload.find({
-      collection: 'pug-players',
-      where: { user: { equals: userId } },
-      overrideAccess: true,
-    })
-    if (pugPlayer.docs[0]) {
-      await applyEscalatingBan((pugPlayer.docs[0] as any).id, 'Left lobby during draft phase')
-    }
+    await applyEscalatingBan(userId, 'Left lobby during draft phase')
     return
   }
 
@@ -215,7 +207,7 @@ async function afkBootPlayer(lobbyId: number, userId: number): Promise<void> {
 
   // Notify the player via DM
   const payload = await getPayload({ config: configPromise })
-  const user = await payload.findByID({ collection: 'users', id: userId, overrideAccess: true }) as any
+  const user = await payload.findByID({ collection: 'people', id: userId, overrideAccess: true }) as any
   if (user?.discordId) {
     const { sendDm } = await import('@/discord/services/pugNotifications')
     sendDm(
@@ -320,15 +312,7 @@ export async function expireReadyCheck(lobbyId: number): Promise<void> {
     await prisma.pugLobbyPlayer.delete({
       where: { lobbyId_userId: { lobbyId, userId: p.userId } },
     })
-    const pugPlayer = await payload.find({
-      collection: 'pug-players',
-      where: { user: { equals: p.userId } },
-      overrideAccess: true,
-      limit: 1,
-    })
-    if (pugPlayer.docs[0]) {
-      await applyEscalatingBan((pugPlayer.docs[0] as any).id, 'Failed to ready up')
-    }
+    await applyEscalatingBan(p.userId, 'Failed to ready up')
   }
 
   await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'OPEN' } })
@@ -385,22 +369,24 @@ export async function advanceToDrafting(lobbyId: number): Promise<void> {
 
   const { captain1Id, captain2Id, captainRole } = selectCaptains(assignment)
 
+  // Lower-rated captain gets first pick (Team 1)
   await prisma.pugLobbyPlayer.update({
-    where: { lobbyId_userId: { lobbyId, userId: captain1Id } },
+    where: { lobbyId_userId: { lobbyId, userId: captain2Id } },
     data: { isCaptain: true, team: 1 },
   })
   await prisma.pugLobbyPlayer.update({
-    where: { lobbyId_userId: { lobbyId, userId: captain2Id } },
+    where: { lobbyId_userId: { lobbyId, userId: captain1Id } },
     data: { isCaptain: true, team: 2 },
   })
 
   const pickDeadline = new Date(Date.now() + DRAFT_PICK_TIMEOUT_MS)
 
+  // captain2Id (lower-rated) is Team 1, captain1Id (higher-rated) is Team 2
   await prisma.pugDraftState.create({
     data: {
       lobbyId,
-      captain1Id,
-      captain2Id,
+      captain1Id: captain2Id,
+      captain2Id: captain1Id,
       captainRole: captainRole,
       currentPickTeam: DRAFT_PICK_ORDER[0],
       pickNumber: 0,
@@ -664,7 +650,7 @@ async function advanceToInProgress(lobbyId: number): Promise<void> {
   const allUserIds = players.map((p) => p.userId)
   const allUsers = allUserIds.length > 0
     ? await payloadInst.find({
-        collection: 'users',
+        collection: 'people',
         where: { id: { in: allUserIds } },
         overrideAccess: true,
         limit: allUserIds.length,
@@ -760,7 +746,7 @@ export async function reportResult(
   })
   if (otherCaptain) {
     const payload = await getPayload({ config: configPromise })
-    const otherUser = await payload.findByID({ collection: 'users', id: otherCaptain.userId, overrideAccess: true }) as any
+    const otherUser = await payload.findByID({ collection: 'people', id: otherCaptain.userId, overrideAccess: true }) as any
     if (otherUser?.discordId) {
       const resultText = result === 'team1' ? 'Team 1 Won' : result === 'team2' ? 'Team 2 Won' : 'Draw'
       const { sendDm } = await import('@/discord/services/pugNotifications')
@@ -851,16 +837,8 @@ export async function completeMatch(lobbyId: number, result: MatchResult): Promi
     const payload = await getPayload({ config: configPromise })
 
     const fetchOrCreateLeaderboardEntry = async (userId: number): Promise<PlayerRating | null> => {
-      const pugPlayerResult = await payload.find({
-        collection: 'pug-players',
-        where: { user: { equals: userId } },
-        overrideAccess: true,
-      })
-      const pugPlayer = (pugPlayerResult.docs[0] as any)
-      if (!pugPlayer) return null
-
       const lbWhere: any[] = [
-        { player: { equals: pugPlayer.id } },
+        { player: { equals: userId } },
         { season: { equals: lobby.payloadSeasonId } },
         { tier: { equals: lobby.tier } },
       ]
@@ -878,7 +856,7 @@ export async function completeMatch(lobbyId: number, result: MatchResult): Promi
         const entry = await payload.create({
           collection: 'pug-leaderboard',
           data: {
-            player: pugPlayer.id,
+            player: userId,
             season: lobby.payloadSeasonId!,
             tier: lobby.tier,
             region: (lobby.region as 'na' | 'emea' | 'pacific' | undefined) ?? undefined,
@@ -968,7 +946,7 @@ export async function completeMatch(lobbyId: number, result: MatchResult): Promi
     const payloadInst = await getPayload({ config: configPromise })
     const allUserIds = lobby.players.map((p) => p.userId)
     const usersResult = allUserIds.length > 0
-      ? await payloadInst.find({ collection: 'users', where: { id: { in: allUserIds } }, overrideAccess: true, limit: 20 })
+      ? await payloadInst.find({ collection: 'people', where: { id: { in: allUserIds } }, overrideAccess: true, limit: 20 })
       : { docs: [] }
     const nameMap = new Map((usersResult.docs as any[]).map((u) => [u.id, u.name || u.email]))
     const playersWithNames = lobby.players.map((p) => ({

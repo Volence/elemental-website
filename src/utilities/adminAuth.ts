@@ -1,5 +1,5 @@
 import { useAuth } from '@payloadcms/ui'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 import { UserRole } from '@/access/roles'
 
 /**
@@ -13,12 +13,12 @@ import { UserRole } from '@/access/roles'
  * Get the current authenticated user with proper typing.
  * Returns undefined if not authenticated.
  * 
- * Use this instead of manually casting `user as User` everywhere.
+ * Use this instead of manually casting `user as Person` everywhere.
  */
-export function useAdminUser(): User | undefined {
+export function useAdminUser(): Person | undefined {
   const { user } = useAuth()
   // @ts-ignore - Payload ClientUser type compatibility issue
-  return user as User | undefined
+  return user as Person | undefined
 }
 
 /**

@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@payloadcms/ui'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 /**
  * AdminProviders - Wraps all admin pages and provides shared functionality
@@ -16,7 +16,7 @@ import type { User } from '@/payload-types'
 export default function AdminProviders({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const isFirstRender = useRef(true)
-  const { user } = useAuth<User>()
+  const { user } = useAuth<Person>()
   
   // Sidebar scroll preservation
   useEffect(() => {
@@ -59,11 +59,11 @@ export default function AdminProviders({ children }: { children: React.ReactNode
       if (!link) return
       const href = link.getAttribute('href') ?? ''
 
-      // Account avatar → custom user editor for all users
+      // Account avatar → custom person editor
       if (href === '/admin/account') {
         e.preventDefault()
         e.stopPropagation()
-        window.location.href = `/admin/edit-user?id=${user.id}`
+        window.location.href = `/admin/edit-person?id=${user.id}`
         return
       }
 
@@ -84,12 +84,12 @@ export default function AdminProviders({ children }: { children: React.ReactNode
         return
       }
 
-      // Users: edit → custom editor
-      const userMatch = href.match(/\/admin\/collections\/users\/(\d+)/)
-      if (userMatch) {
+      // People: edit → custom editor
+      const personMatch = href.match(/\/admin\/collections\/people\/(\d+)/)
+      if (personMatch) {
         e.preventDefault()
         e.stopPropagation()
-        window.location.href = `/admin/edit-user?id=${userMatch[1]}`
+        window.location.href = `/admin/edit-person?id=${personMatch[1]}`
         return
       }
     }
@@ -103,12 +103,12 @@ export default function AdminProviders({ children }: { children: React.ReactNode
     const routeToCollection: Record<string, string> = {
       '/admin/edit-event': '/collections/global-calendar-events',
       '/admin/edit-invite': '/collections/invite-links',
-      '/admin/manage-users': '/collections/users',
-      '/admin/edit-user': '/collections/users',
+      '/admin/edit-person': '/collections/people',
+      '/admin/my-profile': '/collections/people',
       '/admin/pug-seasons': '/collections/pug-seasons',
       '/admin/edit-pug-season': '/collections/pug-seasons',
-      '/admin/pug-players': '/collections/pug-players',
-      '/admin/edit-pug-player': '/collections/pug-players',
+      '/admin/pug-players': '/collections/people',
+      '/admin/edit-pug-player': '/collections/people',
       '/admin/pug-matches': '/collections/pug-matches',
       '/admin/edit-pug-match': '/collections/pug-matches',
       '/admin/pug-leaderboard': '/collections/pug-leaderboard',

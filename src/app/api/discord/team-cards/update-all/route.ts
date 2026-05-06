@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     const cookieHeader = request.headers.get('cookie') || ''
     
     // Simple auth check - verify user is admin
-    const authResponse = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'}/api/users/me`, {
+    const authResponse = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'}/api/people/me`, {
       headers: {
         'Cookie': cookieHeader,
       },

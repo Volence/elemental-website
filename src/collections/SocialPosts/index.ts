@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { authenticated } from '../../access/authenticated'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 export const SocialPosts: CollectionConfig = {
   slug: 'social-posts',
@@ -12,7 +12,7 @@ export const SocialPosts: CollectionConfig = {
     admin: authenticated,
     read: ({ req: { user } }) => {
       if (!user) return false
-      const typedUser = user as User
+      const typedUser = user as Person
       // Admins and staff managers see everything
       if (typedUser.role === 'admin' || typedUser.role === 'staff-manager') return true
       // SM staff see all posts (to view calendar and collaborate)
@@ -20,13 +20,13 @@ export const SocialPosts: CollectionConfig = {
     },
     create: ({ req: { user } }) => {
       if (!user) return false
-      const typedUser = user as User
+      const typedUser = user as Person
       if (typedUser.role === 'admin' || typedUser.role === 'staff-manager') return true
       return typedUser.departments?.isSocialMediaStaff === true
     },
     update: ({ req: { user } }) => {
       if (!user) return false
-      const typedUser = user as User
+      const typedUser = user as Person
       // Admins can edit everything
       if (typedUser.role === 'admin' || typedUser.role === 'staff-manager') return true
       // SM staff can only update their own posts
@@ -38,7 +38,7 @@ export const SocialPosts: CollectionConfig = {
     },
     delete: ({ req: { user } }) => {
       if (!user) return false
-      const typedUser = user as User
+      const typedUser = user as Person
       // Only admins can delete
       return typedUser.role === 'admin' || typedUser.role === 'staff-manager'
     },
@@ -139,7 +139,7 @@ export const SocialPosts: CollectionConfig = {
       access: {
         update: ({ req: { user }, data }) => {
           if (!user) return false
-          const typedUser = user as User
+          const typedUser = user as Person
           // Admins can change status freely
           if (typedUser.role === 'admin' || typedUser.role === 'staff-manager') return true
           // SM staff can only move between Draft and Ready for Review
@@ -151,7 +151,7 @@ export const SocialPosts: CollectionConfig = {
     {
       name: 'assignedTo',
       type: 'relationship',
-      relationTo: 'users',
+      relationTo: 'people',
       required: true,
       admin: {
         description: 'SM staff member responsible for this post',
@@ -160,7 +160,7 @@ export const SocialPosts: CollectionConfig = {
     {
       name: 'approvedBy',
       type: 'relationship',
-      relationTo: 'users',
+      relationTo: 'people',
       admin: {
         description: 'Admin who approved this post',
         readOnly: true,

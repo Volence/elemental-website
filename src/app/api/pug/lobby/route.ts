@@ -57,14 +57,19 @@ export async function GET(request: NextRequest) {
   const payload = await getPayload({ config: configPromise })
   const allUserIds = [...new Set(lobbies.flatMap((l) => l.players.map((p) => p.userId)))]
   const nameMap: Record<number, string> = {}
+  const avatarMap: Record<number, string | null> = {}
   if (allUserIds.length > 0) {
     const users = await payload.find({
-      collection: 'users',
+      collection: 'people',
       where: { id: { in: allUserIds } },
       limit: allUserIds.length,
+      depth: 1,
       overrideAccess: true,
     })
-    for (const u of users.docs as any[]) nameMap[u.id] = u.name || 'Anonymous'
+    for (const u of users.docs as any[]) {
+      nameMap[u.id] = u.name || 'Anonymous'
+      avatarMap[u.id] = u.photo?.url ?? u.avatar?.url ?? null
+    }
   }
 
   const enriched = lobbies.map((lobby) => {
@@ -81,6 +86,7 @@ export async function GET(request: NextRequest) {
     const enrichedPlayers = lobby.players.map((p) => ({
       ...p,
       name: nameMap[p.userId] ?? `Player #${p.userId}`,
+      avatarUrl: avatarMap[p.userId] ?? null,
     }))
     return { ...lobby, players: enrichedPlayers, neededSlots, blockedRoles, spotsAvailable }
   })
@@ -119,21 +125,16 @@ export async function POST(request: NextRequest) {
     const { payloadSeasonId, tier = 'open', region } = body
     if (!payloadSeasonId) return NextResponse.json({ error: 'payloadSeasonId required' }, { status: 400 })
 
-    const pugPlayerResult = await payload.find({
-      collection: 'pug-players',
-      where: { user: { equals: user.id } },
-      overrideAccess: true,
-    })
-    const pugPlayer = pugPlayerResult.docs[0] as any
+    const person = user as any
 
     if (tier === 'invite') {
-      if (!pugPlayer?.tiers?.includes('invite')) {
+      if (!person.pugTiers?.includes('invite')) {
         return NextResponse.json({ error: 'Not registered for invite tier' }, { status: 403 })
       }
       if (!region || !['na', 'emea', 'pacific'].includes(region)) {
         return NextResponse.json({ error: 'region required for invite tier' }, { status: 400 })
       }
-      const playerRegions: string[] = pugPlayer.inviteRegions ?? []
+      const playerRegions: string[] = person.pugInviteRegions ?? []
       if (!playerRegions.includes(region)) {
         return NextResponse.json({ error: `Not invited to ${region.toUpperCase()} region` }, { status: 403 })
       }
@@ -153,7 +154,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ lobby }, { status: 201 })
     }
 
-    if (!pugPlayer?.tiers?.includes('open')) {
+    if (!person.pugTiers?.includes('open')) {
       return NextResponse.json({ error: 'You must register for open tier first' }, { status: 403 })
     }
 

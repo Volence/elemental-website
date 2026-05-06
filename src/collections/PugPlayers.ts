@@ -28,7 +28,7 @@ export const PugPlayers: CollectionConfig = {
     {
       name: 'user',
       type: 'relationship',
-      relationTo: 'users',
+      relationTo: 'people',
       required: true,
       unique: true,
       admin: { description: 'The website user account for this PUG player.' },
@@ -89,7 +89,7 @@ export const PugPlayers: CollectionConfig = {
     {
       name: 'invitedBy',
       type: 'relationship',
-      relationTo: 'users',
+      relationTo: 'people',
       admin: {
         description: 'The admin who invited this player to the invite tier.',
         condition: (data) => data?.tiers?.includes('invite'),

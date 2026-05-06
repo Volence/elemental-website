@@ -22,7 +22,7 @@ export async function POST(request: Request): Promise<Response> {
     const payload = await getPayload({ config })
 
     const existingUsers = await payload.count({
-      collection: 'users',
+      collection: 'people',
     })
     if (existingUsers.totalDocs > 0) {
       return Response.json(
@@ -32,7 +32,7 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     const user = await payload.create({
-      collection: 'users',
+      collection: 'people',
       data: {
         email,
         password,

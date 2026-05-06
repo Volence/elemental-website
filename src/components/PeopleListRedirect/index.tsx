@@ -2,14 +2,14 @@
 
 import React, { useEffect } from 'react'
 import { useAuth } from '@payloadcms/ui'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 /**
  * Injects into the People list view to redirect row clicks
  * to the custom PersonEditor instead of the default Payload form.
  */
 const PeopleListRedirect: React.FC = () => {
-  const { user } = useAuth<User>()
+  const { user } = useAuth<Person>()
   const role = (user?.role as string) ?? ''
   const isManager = ['admin', 'staff-manager', 'team-manager'].includes(role)
 

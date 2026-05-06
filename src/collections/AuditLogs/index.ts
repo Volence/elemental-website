@@ -26,7 +26,7 @@ export const AuditLogs: CollectionConfig = {
     {
       name: 'user',
       type: 'relationship',
-      relationTo: 'users',
+      relationTo: 'people',
       required: false, // Some actions may be system-initiated
       admin: {
         description: 'User who performed the action',

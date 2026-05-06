@@ -87,7 +87,7 @@ export async function POST(request: Request): Promise<Response> {
 
     // Check if email is already in use
     const existingUsers = await payload.find({
-      collection: 'users',
+      collection: 'people',
       where: {
         email: {
           equals: email.toLowerCase(),
@@ -103,16 +103,15 @@ export async function POST(request: Request): Promise<Response> {
       )
     }
 
-    // Create the user with the role, teams, departments, and linkedPerson from the invite
+    // Create the person with the role, teams, and departments from the invite
     const newUser = await payload.create({
-      collection: 'users',
+      collection: 'people',
       data: {
         name: name.trim(),
         email: email.toLowerCase(),
         password,
         role: invite.role,
         assignedTeams: invite.assignedTeams,
-        linkedPerson: (invite as any).linkedPerson ?? undefined,
         departments: {
           isProductionStaff: invite.departments?.isProductionStaff || false,
           isSocialMediaStaff: invite.departments?.isSocialMediaStaff || false,
@@ -137,7 +136,7 @@ export async function POST(request: Request): Promise<Response> {
 
     // Log the user in
     const loginResult = await payload.login({
-      collection: 'users',
+      collection: 'people',
       data: { email: email.toLowerCase(), password },
     })
 

@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { authenticated } from '../../access/authenticated'
 import { isEventsStaff, hideFromPlayers } from '../../access/roles'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 export const GlobalCalendarEvents: CollectionConfig = {
   slug: 'global-calendar-events',

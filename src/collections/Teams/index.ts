@@ -3,7 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { authenticated } from '../../access/authenticated'
 import { anyone } from '../../access/anyone'
 import { adminOnly, hasAnyRole, UserRole } from '../../access/roles'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 import { createAuditLogHook, createAuditLogDeleteHook } from '../../utilities/auditLogger'
 
 const formatSlug = (value: string): string => {
@@ -24,7 +24,7 @@ export const Teams: CollectionConfig = {
   access: {
     // Admins, staff managers, and team managers can create teams
     create: ({ req }) => {
-      const user = req.user as User | undefined
+      const user = req.user as Person | undefined
       if (!user) return false
       return user.role === UserRole.ADMIN || 
              user.role === UserRole.TEAM_MANAGER || 
@@ -32,7 +32,7 @@ export const Teams: CollectionConfig = {
     },
     // Admins and staff managers can delete teams
     delete: ({ req }) => {
-      const user = req.user as User | undefined
+      const user = req.user as Person | undefined
       if (!user) return false
       return user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER
     },
@@ -40,7 +40,7 @@ export const Teams: CollectionConfig = {
     read: anyone,
     // Admins and staff managers can update all teams, team managers can only update their assigned teams
     update: async ({ req, id }) => {
-      const user = req.user as User | undefined
+      const user = req.user as Person | undefined
       if (!user) return false
       
       // Admins and staff managers can update everything
@@ -356,7 +356,7 @@ export const Teams: CollectionConfig = {
               type: 'array',
               admin: {
                 description: 'Active roster players. Use the Person field to link to the People collection (recommended). Each player must have a role (Tank, DPS, or Support). Tip: Click "Create Person" to add someone new without leaving this page.',
-                className: 'roster-array-field', // Used to hide native broken move buttons via CSS
+                isSortable: false,
               },
               fields: [
                 {
@@ -1022,7 +1022,7 @@ export const Teams: CollectionConfig = {
     afterRead: [
       async ({ doc, req }) => {
         // Add metadata to indicate if this item is read-only for the current user
-        const user = req.user as User | undefined
+        const user = req.user as Person | undefined
         if (!user) {
           return { ...doc, _isReadOnly: true }
         }

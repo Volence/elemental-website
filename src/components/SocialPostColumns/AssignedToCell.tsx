@@ -37,7 +37,7 @@ export default function AssignedToCell({ rowData }: AssignedToCellProps) {
       const userId = typeof assignedTo === 'object' ? assignedTo.id : assignedTo
       
       try {
-        const response = await fetch(`/api/users/${userId}?depth=0`)
+        const response = await fetch(`/api/people/${userId}?depth=0`)
         const user = await response.json()
         
         if (user && !user.errors) {

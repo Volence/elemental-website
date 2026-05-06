@@ -9,6 +9,7 @@ import {
   Clock,
   Database,
   FileSearch,
+  GitMerge,
   Shield,
   Users,
 } from 'lucide-react'
@@ -21,6 +22,8 @@ const ActiveSessionsView = lazy(() => import('@/components/ActiveSessionsView'))
 const DatabaseHealthView = lazy(() => import('@/components/DatabaseHealthView'))
 const DataConsistencyView = lazy(() => import('@/components/DataConsistencyView'))
 const IgnoredDuplicatesView = lazy(() => import('./IgnoredDuplicatesView'))
+const MergePeopleView = lazy(() => import('./MergePeopleView'))
+const MergeSuggestionsView = lazy(() => import('./MergeSuggestionsView'))
 
 interface Tab {
   id: string
@@ -37,6 +40,8 @@ const TABS: Tab[] = [
   { id: 'database', label: 'Database', icon: <Database size={16} />, description: 'Collection health & stats' },
   { id: 'consistency', label: 'Data Integrity', icon: <FileSearch size={16} />, description: 'Check & fix data issues' },
   { id: 'duplicates', label: 'Ignored Dups', icon: <Users size={16} />, description: 'View ignored merge pairs' },
+  { id: 'suggestions', label: 'Merge Flags', icon: <AlertTriangle size={16} />, description: 'Flagged signup duplicates' },
+  { id: 'merge', label: 'Merge People', icon: <GitMerge size={16} />, description: 'Merge duplicate person records' },
 ]
 
 function TabLoadingSpinner() {
@@ -50,6 +55,8 @@ function TabLoadingSpinner() {
 
 export default function SystemHealthHub() {
   const [activeTab, setActiveTab] = useState('errors')
+  const [mergeTargetId, setMergeTargetId] = useState<number | null>(null)
+  const [mergeSourceId, setMergeSourceId] = useState<number | null>(null)
   const { setStepNav } = useStepNav()
 
   useEffect(() => {
@@ -57,6 +64,16 @@ export default function SystemHealthHub() {
       { label: 'System Health', url: '/admin/globals/system-health' },
     ])
   }, [setStepNav])
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const tab = params.get('tab')
+    if (tab && TABS.some(t => t.id === tab)) setActiveTab(tab)
+    const tId = parseInt(params.get('targetId') ?? '', 10)
+    const sId = parseInt(params.get('sourceId') ?? '', 10)
+    if (tId) setMergeTargetId(tId)
+    if (sId) setMergeSourceId(sId)
+  }, [])
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -67,6 +84,8 @@ export default function SystemHealthHub() {
       case 'database': return <DatabaseHealthView />
       case 'consistency': return <DataConsistencyView />
       case 'duplicates': return <IgnoredDuplicatesView />
+      case 'suggestions': return <MergeSuggestionsView />
+      case 'merge': return <MergePeopleView initialTargetId={mergeTargetId} initialSourceId={mergeSourceId} />
       default: return null
     }
   }

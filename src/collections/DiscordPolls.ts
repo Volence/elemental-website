@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { UserRole } from '../access/roles'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 export const DiscordPolls: CollectionConfig = {
   slug: 'discord-polls',
@@ -11,7 +11,7 @@ export const DiscordPolls: CollectionConfig = {
   access: {
     // Team managers see only their team's polls, admins/staff managers see all
     read: ({ req }) => {
-      const user = req.user as User | undefined
+      const user = req.user as Person | undefined
       if (!user) return false
       
       // Admins and Staff Managers can see all polls
@@ -43,7 +43,7 @@ export const DiscordPolls: CollectionConfig = {
     create: () => true,
     // Allow updates for schedule editing in admin panel (same access as read)
     update: ({ req }) => {
-      const user = req.user as User | undefined
+      const user = req.user as Person | undefined
       if (!user) return false
       
       // Admins and Staff Managers can update all polls
@@ -71,7 +71,7 @@ export const DiscordPolls: CollectionConfig = {
     },
     // Admins and staff managers can delete
     delete: ({ req }) => {
-      const user = req.user as User | undefined
+      const user = req.user as Person | undefined
       if (!user) return false
       return user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER
     },
@@ -251,7 +251,7 @@ export const DiscordPolls: CollectionConfig = {
     {
       name: 'createdBy',
       type: 'relationship',
-      relationTo: 'users',
+      relationTo: 'people',
       admin: {
         position: 'sidebar',
         description: 'Created by',

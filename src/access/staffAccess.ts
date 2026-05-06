@@ -1,6 +1,6 @@
 import type { AccessArgs } from 'payload'
 
-import type { OrganizationStaff, Production, User } from '@/payload-types'
+import type { OrganizationStaff, Production, Person } from '@/payload-types'
 import { UserRole, isAdmin } from './roles'
 
 /**
@@ -8,8 +8,8 @@ import { UserRole, isAdmin } from './roles'
  * - Admins can access all staff
  * - Staff managers can access all organization staff
  */
-export const canAccessOrgStaff = async ({ req, id }: AccessArgs<User> & { id?: number | string }): Promise<boolean> => {
-  const user = req.user as User | undefined
+export const canAccessOrgStaff = async ({ req, id }: AccessArgs<Person> & { id?: number | string }): Promise<boolean> => {
+  const user = req.user as Person | undefined
   if (!user) return false
 
   // Admins can access everything
@@ -28,8 +28,8 @@ export const canAccessOrgStaff = async ({ req, id }: AccessArgs<User> & { id?: n
  * - Admins can access all production staff
  * - Staff managers can access all production staff
  */
-export const canAccessProductionStaff = async ({ req, id }: AccessArgs<User> & { id?: number | string }): Promise<boolean> => {
-  const user = req.user as User | undefined
+export const canAccessProductionStaff = async ({ req, id }: AccessArgs<Person> & { id?: number | string }): Promise<boolean> => {
+  const user = req.user as Person | undefined
   if (!user) return false
 
   // Admins can access everything
@@ -47,8 +47,8 @@ export const canAccessProductionStaff = async ({ req, id }: AccessArgs<User> & {
  * Check if user can create organization staff
  * Only admins and staff managers can create
  */
-export const canCreateOrgStaff = ({ req }: AccessArgs<User>): boolean => {
-  const user = req.user as User | undefined
+export const canCreateOrgStaff = ({ req }: AccessArgs<Person>): boolean => {
+  const user = req.user as Person | undefined
   if (!user) return false
   return isAdmin({ req }) || user.role === UserRole.STAFF_MANAGER
 }
@@ -57,8 +57,8 @@ export const canCreateOrgStaff = ({ req }: AccessArgs<User>): boolean => {
  * Check if user can create production staff
  * Only admins and staff managers can create
  */
-export const canCreateProductionStaff = ({ req }: AccessArgs<User>): boolean => {
-  const user = req.user as User | undefined
+export const canCreateProductionStaff = ({ req }: AccessArgs<Person>): boolean => {
+  const user = req.user as Person | undefined
   if (!user) return false
   return isAdmin({ req }) || user.role === UserRole.STAFF_MANAGER
 }

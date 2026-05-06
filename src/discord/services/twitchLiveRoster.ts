@@ -67,51 +67,31 @@ async function runLiveRosterCheck(): Promise<{ live: number; total: number }> {
 }
 
 async function _runLiveRosterCheck(start: number): Promise<{ live: number; total: number }> {
-  const client = getDiscordClient()
-  if (!client) return { live: 0, total: 0 }
-
-  // Check that at least one channel is configured
-  const creatorsChannel = process.env.DISCORD_LIVE_ROSTER_CREATORS_CHANNEL
-  const playersChannel = process.env.DISCORD_LIVE_ROSTER_PLAYERS_CHANNEL
-  if (!creatorsChannel && !playersChannel) {
-    console.warn('[Twitch] No live roster channels configured')
-    return { live: 0, total: 0 }
-  }
-
   try {
     const { getPayload } = await import('payload')
     const configPromise = await import('@/payload.config')
     const payload = await getPayload({ config: configPromise.default })
 
-    // Get all active Twitch streamers (with person relationship populated)
     const streamers = await payload.find({
       collection: 'twitch-streamers' as any,
       where: { active: { equals: true } },
       limit: 100,
-      depth: 2, // Populate person -> teams
+      depth: 2,
     })
 
     if (streamers.docs.length === 0) {
-      // No streamers to track - update both embeds to show empty state
-      for (const category of ['content-creator', 'player'] as const) {
-        const channelId = getChannelForCategory(category)
-        if (channelId) {
-          await updateRosterMessage(client, channelId, [], category)
-        }
-      }
+      updateDiscordEmbeds({})
       return { live: 0, total: 0 }
     }
 
     const usernames = streamers.docs.map((doc: any) => doc.twitchUsername as string)
 
-    // Batch-fetch live streams from Twitch API
     const liveStreams = await getStreams(usernames)
     const liveMap = new Map<string, any>()
     for (const stream of liveStreams) {
       liveMap.set(stream.user_login.toLowerCase(), stream)
     }
 
-    // Resolve team names for streamers linked to a Person
     const teamNameCache = new Map<string, string>()
     for (const doc of streamers.docs) {
       const streamer = doc as any
@@ -128,7 +108,6 @@ async function _runLiveRosterCheck(start: number): Promise<{ live: number; total
       }
     }
 
-    // Update each streamer's status and group by category
     const liveByCategory: Record<string, any[]> = {
       'content-creator': [],
       'player': [],
@@ -140,14 +119,12 @@ async function _runLiveRosterCheck(start: number): Promise<{ live: number; total
       const category = (streamer.category as string) || 'content-creator'
       const stream = liveMap.get(username)
 
-      // Resolve team name from person
       let teamName: string | null = null
       if (streamer.person && typeof streamer.person === 'object') {
         teamName = teamNameCache.get(streamer.person.id) || null
       }
 
       if (stream) {
-        // Streamer is live
         const liveData = {
           ...streamer,
           teamName,
@@ -164,51 +141,54 @@ async function _runLiveRosterCheck(start: number): Promise<{ live: number; total
           liveByCategory[category].push(liveData)
         }
 
-        await payload.update({
-          collection: 'twitch-streamers' as any,
-          id: doc.id,
-          data: {
-            isLive: true,
-            currentStreamTitle: stream.title,
-            currentGame: stream.game_name,
-            viewerCount: stream.viewer_count,
-            thumbnailUrl: stream.thumbnail_url
-              ?.replace('{width}', '440')
-              ?.replace('{height}', '248'),
-            streamStartedAt: stream.started_at,
-          } as any,
-        })
-      } else {
-        // Streamer is offline
-        if (streamer.isLive) {
+        try {
           await payload.update({
             collection: 'twitch-streamers' as any,
             id: doc.id,
             data: {
-              isLive: false,
-              currentStreamTitle: null,
-              currentGame: null,
-              viewerCount: null,
-              thumbnailUrl: null,
-              streamStartedAt: null,
+              isLive: true,
+              currentStreamTitle: stream.title,
+              currentGame: stream.game_name,
+              viewerCount: stream.viewer_count,
+              thumbnailUrl: stream.thumbnail_url
+                ?.replace('{width}', '440')
+                ?.replace('{height}', '248'),
+              streamStartedAt: stream.started_at,
             } as any,
           })
+        } catch (err) {
+          console.error(`[Twitch] Failed to update live status for ${username}:`, err)
+        }
+      } else {
+        if (streamer.isLive) {
+          try {
+            await payload.update({
+              collection: 'twitch-streamers' as any,
+              id: doc.id,
+              data: {
+                isLive: false,
+                currentStreamTitle: null,
+                currentGame: null,
+                viewerCount: null,
+                thumbnailUrl: null,
+                streamStartedAt: null,
+              } as any,
+            })
+          } catch (err) {
+            console.error(`[Twitch] Failed to update offline status for ${username}:`, err)
+          }
         }
       }
     }
 
-    // Update roster messages per category
     let totalLive = 0
     for (const category of ['content-creator', 'player'] as const) {
-      const channelId = getChannelForCategory(category)
-      if (channelId) {
-        const liveStreamers = liveByCategory[category] || []
-        // Sort by viewers (highest first)
-        liveStreamers.sort((a, b) => (b.viewerCount || 0) - (a.viewerCount || 0))
-        totalLive += liveStreamers.length
-        await updateRosterMessage(client, channelId, liveStreamers, category)
-      }
+      const liveStreamers = liveByCategory[category] || []
+      liveStreamers.sort((a, b) => (b.viewerCount || 0) - (a.viewerCount || 0))
+      totalLive += liveStreamers.length
     }
+
+    updateDiscordEmbeds(liveByCategory)
 
     const durationMs = Date.now() - start
     console.log(`[Twitch] Poll complete: ${totalLive}/${streamers.docs.length} live (${durationMs}ms)`)
@@ -218,20 +198,28 @@ async function _runLiveRosterCheck(start: number): Promise<{ live: number; total
     const durationMs = Date.now() - start
     console.error(`[Twitch] Live roster check error (${durationMs}ms):`, error)
     serviceHealth.record('twitch-roster', false, (error as Error).message, durationMs)
-
-    // CRITICAL: Even on error, update embeds to show offline state
-    try {
-      for (const category of ['content-creator', 'player'] as const) {
-        const channelId = getChannelForCategory(category)
-        if (channelId) {
-          await updateRosterMessage(client, channelId, [], category)
-        }
-      }
-    } catch (embedError) {
-      console.error('[Twitch] Failed to clear embeds after error:', embedError)
-    }
-
     return { live: 0, total: 0 }
+  }
+}
+
+function updateDiscordEmbeds(liveByCategory: Record<string, any[]>): void {
+  const client = getDiscordClient()
+  if (!client) {
+    console.warn('[Twitch] Discord client not available, skipping embed updates')
+    return
+  }
+
+  const creatorsChannel = process.env.DISCORD_LIVE_ROSTER_CREATORS_CHANNEL
+  const playersChannel = process.env.DISCORD_LIVE_ROSTER_PLAYERS_CHANNEL
+  if (!creatorsChannel && !playersChannel) return
+
+  for (const category of ['content-creator', 'player'] as const) {
+    const channelId = getChannelForCategory(category)
+    if (!channelId) continue
+    const liveStreamers = liveByCategory[category] || []
+    updateRosterMessage(client, channelId, liveStreamers, category).catch(err =>
+      console.error(`[Twitch] Failed to update ${category} embed:`, err),
+    )
   }
 }
 

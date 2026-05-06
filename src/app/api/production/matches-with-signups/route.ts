@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
               pw.observerSignups.map(async (userId: number) => {
                 try {
                   const user = await payload.findByID({
-                    collection: 'users',
+                    collection: 'people',
                     id: userId,
                     depth: 0,
                   })
@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
               pw.producerSignups.map(async (userId: number) => {
                 try {
                   const user = await payload.findByID({
-                    collection: 'users',
+                    collection: 'people',
                     id: userId,
                     depth: 0,
                   })
@@ -92,7 +92,7 @@ export async function GET(req: NextRequest) {
               pw.casterSignups.map(async (caster: any) => {
                 try {
                   const user = await payload.findByID({
-                    collection: 'users',
+                    collection: 'people',
                     id: caster.user,
                     depth: 0,
                   })

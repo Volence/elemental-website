@@ -4,7 +4,7 @@ import React from 'react'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@payloadcms/ui'
 import Link from 'next/link'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 /**
  * Navigation link for Organization Calendar in the admin sidebar
@@ -12,7 +12,7 @@ import type { User } from '@/payload-types'
  */
 const CalendarNavLink: React.FC = () => {
   const pathname = usePathname()
-  const { user } = useAuth<User>()
+  const { user } = useAuth<Person>()
   const isActive = pathname === '/admin/globals/organization-calendar'
 
   // Hide from player/user roles

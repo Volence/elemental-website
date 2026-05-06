@@ -111,7 +111,7 @@ export const ScoutReports: CollectionConfig = {
     {
       name: 'reportedBy',
       type: 'relationship',
-      relationTo: 'users',
+      relationTo: 'people',
       admin: {
         position: 'sidebar',
         readOnly: true,

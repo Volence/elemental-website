@@ -25,6 +25,7 @@ type Player = {
   id: number
   userId: number
   name?: string
+  avatarUrl?: string | null
   team?: number | null
   isCaptain?: boolean
   readyConfirmed?: boolean
@@ -104,6 +105,13 @@ function LobbyExpanded({ lobby, onAction, acting }: {
   function PlayerRow({ p }: { p: Player }) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+        {p.avatarUrl ? (
+          <img src={p.avatarUrl} alt="" style={{ width: 20, height: 20, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+        ) : (
+          <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 9, color: 'rgba(255,255,255,0.3)' }}>
+            {(p.name ?? '?').charAt(0).toUpperCase()}
+          </div>
+        )}
         <span style={{ flex: 1, fontSize: 13, color: '#e2e8f0', minWidth: 0 }}>
           {p.name ?? `Player #${p.userId}`}
           {p.isCaptain && <span style={{ marginLeft: 6, fontSize: 10, color: '#facc15' }}>(C)</span>}

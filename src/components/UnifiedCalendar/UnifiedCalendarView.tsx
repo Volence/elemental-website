@@ -7,14 +7,14 @@ import { DEPARTMENTS, getDepartmentColor, getDepartmentColors } from './types'
 import { useUnifiedCalendarData } from './useUnifiedCalendarData'
 import { DepartmentFilterBar } from './DepartmentFilterBar'
 import { CalendarItemCard } from './CalendarItemCard'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 import './UnifiedCalendar.scss'
 import { Calendar, FileEdit, Globe, Link, ChevronLeft, ChevronRight, X } from 'lucide-react'
 
 const STORAGE_KEY = 'unifiedCalendar_enabledDepartments'
 
 // Helper to get user's departments from their department flags
-function getUserDepartments(user: User | null | undefined): Department[] {
+function getUserDepartments(user: Person | null | undefined): Department[] {
   if (!user?.departments) return []
   
   const deps: Department[] = []
@@ -29,7 +29,7 @@ function getUserDepartments(user: User | null | undefined): Department[] {
 }
 
 export default function UnifiedCalendarView() {
-  const { user } = useAuth<User>()
+  const { user } = useAuth<Person>()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [viewMode, setViewMode] = useState<'week' | 'month'>('week')
   const [isInitialized, setIsInitialized] = useState(false)

@@ -20,6 +20,11 @@ import * as migration_20260426_fix_pug_players_join_table_ids from "./20260426_f
 import * as migration_20260427_add_pug_season_map_pool from "./20260427_add_pug_season_map_pool";
 import * as migration_20260502_add_pug_season_queue_status from "./20260502_add_pug_season_queue_status";
 import * as migration_20260502_add_missing_pug_schema from "./20260502_add_missing_pug_schema";
+import * as migration_20260506_phase0_user_person_mapping from "./20260506_phase0_user_person_mapping";
+import * as migration_20260506_phase1_add_auth_fields_to_people from "./20260506_phase1_add_auth_fields_to_people";
+import * as migration_20260506_phase2_migrate_user_data_to_people from "./20260506_phase2_migrate_user_data_to_people";
+import * as migration_20260506_phase3_remap_fk_references from "./20260506_phase3_remap_fk_references";
+import * as migration_20260506_phase4_archive_old_tables from "./20260506_phase4_archive_old_tables";
 
 export const migrations = [
   {
@@ -131,5 +136,30 @@ export const migrations = [
     up: migration_20260502_add_missing_pug_schema.up,
     down: migration_20260502_add_missing_pug_schema.down,
     name: "20260502_add_missing_pug_schema",
+  },
+  {
+    up: migration_20260506_phase0_user_person_mapping.up,
+    down: migration_20260506_phase0_user_person_mapping.down,
+    name: "20260506_phase0_user_person_mapping",
+  },
+  {
+    up: migration_20260506_phase1_add_auth_fields_to_people.up,
+    down: migration_20260506_phase1_add_auth_fields_to_people.down,
+    name: "20260506_phase1_add_auth_fields_to_people",
+  },
+  {
+    up: migration_20260506_phase2_migrate_user_data_to_people.up,
+    down: migration_20260506_phase2_migrate_user_data_to_people.down,
+    name: "20260506_phase2_migrate_user_data_to_people",
+  },
+  {
+    up: migration_20260506_phase3_remap_fk_references.up,
+    down: migration_20260506_phase3_remap_fk_references.down,
+    name: "20260506_phase3_remap_fk_references",
+  },
+  {
+    up: migration_20260506_phase4_archive_old_tables.up,
+    down: migration_20260506_phase4_archive_old_tables.down,
+    name: "20260506_phase4_archive_old_tables",
   },
 ];

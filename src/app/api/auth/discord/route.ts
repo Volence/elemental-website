@@ -10,6 +10,7 @@ import { cookies } from 'next/headers'
  *   - invite: Optional invite token (for new user signup via invite link)
  *   - link: If "true", links Discord to the currently logged-in user
  *   - pugSignup: If "true", self-service PUG signup (creates player account, no invite needed)
+ *   - signup: If "true", public signup (creates user account via Discord, no invite needed)
  *   - returnUrl: Where to redirect after auth (default: /admin)
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
@@ -17,6 +18,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const inviteToken = searchParams.get('invite') || ''
   const linkToExisting = searchParams.get('link') === 'true'
   const pugSignup = searchParams.get('pugSignup') === 'true'
+  const signup = searchParams.get('signup') === 'true'
   const rawReturnUrl = searchParams.get('returnUrl') || '/admin'
   const returnUrl = (rawReturnUrl.startsWith('/') && !rawReturnUrl.startsWith('//')) ? rawReturnUrl : '/admin'
 
@@ -47,6 +49,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       inviteToken,
       linkToExisting,
       pugSignup,
+      signup,
       returnUrl,
       nonce: crypto.randomUUID(),
     }),

@@ -27,7 +27,7 @@ export const ActiveSessions: CollectionConfig = {
     {
       name: 'user',
       type: 'relationship',
-      relationTo: 'users',
+      relationTo: 'people',
       required: true,
       admin: {
         description: 'User who owns this session',

@@ -4,11 +4,11 @@ import React from 'react'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@payloadcms/ui'
 import Link from 'next/link'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 const PugDashboardNavLink: React.FC = () => {
   const pathname = usePathname()
-  const { user } = useAuth<User>()
+  const { user } = useAuth<Person>()
   const isActive = pathname === '/admin/pug-dashboard'
 
   if (!user) return null

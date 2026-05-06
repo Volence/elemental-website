@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '@payloadcms/ui'
 import { usePathname } from 'next/navigation'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 import { UserRole } from '@/access/roles'
 
 interface DetailedIssue {
@@ -18,7 +18,7 @@ interface DetailedIssue {
  * Data Consistency Dashboard - shows quick summary and links to detailed page
  */
 const DataConsistencyDashboard: React.FC = () => {
-  const { user } = useAuth<User>()
+  const { user } = useAuth<Person>()
   const pathname = usePathname()
   const [issues, setIssues] = useState<DetailedIssue[]>([])
   const [loading, setLoading] = useState(true)

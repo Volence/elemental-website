@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '@payloadcms/ui'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 import { UserRole } from '@/access/roles'
 import { LoadingState } from './DataConsistency/LoadingState'
 import { AccessDenied } from './DataConsistency/AccessDenied'
@@ -27,7 +27,7 @@ interface DetailedIssue {
 }
 
 const DataConsistencyView: React.FC = () => {
-  const { user } = useAuth<User>()
+  const { user } = useAuth<Person>()
   const [issues, setIssues] = useState<DetailedIssue[]>([])
   const [loading, setLoading] = useState(true)
   const [fixing, setFixing] = useState(false)

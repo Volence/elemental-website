@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@payloadcms/ui'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 import './InviteLinksListView.scss'
 
 interface InviteLink {
@@ -78,7 +78,7 @@ function StatusDropdown({ value, onChange }: { value: string; onChange: (v: stri
 }
 
 export default function InviteLinksListView() {
-  const { user } = useAuth<User>()
+  const { user } = useAuth<Person>()
   const [invites, setInvites] = useState<InviteLink[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -263,7 +263,7 @@ export default function InviteLinksListView() {
                     <td className="invite-links-list__user-cell">
                       {invite.createdBy && typeof invite.createdBy === 'object' ? (
                         <Link
-                          href={`/admin/collections/users/${invite.createdBy.id}`}
+                          href={`/admin/edit-person?id=${invite.createdBy.id}`}
                           className="invite-links-list__user-link"
                         >
                           {getUserName(invite.createdBy)}
@@ -275,7 +275,7 @@ export default function InviteLinksListView() {
                     <td className="invite-links-list__user-cell">
                       {invite.usedBy && typeof invite.usedBy === 'object' ? (
                         <Link
-                          href={`/admin/collections/users/${invite.usedBy.id}`}
+                          href={`/admin/edit-person?id=${invite.usedBy.id}`}
                           className="invite-links-list__user-link"
                         >
                           {getUserName(invite.usedBy)}

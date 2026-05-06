@@ -19,14 +19,7 @@ async function getAuthState() {
     const { user } = await payload.auth({ headers: new Headers({ Authorization: `JWT ${token}` }) })
     if (!user) return { user: null, isRegistered: false }
 
-    const player = await payload.find({
-      collection: 'pug-players',
-      where: { user: { equals: user.id } },
-      overrideAccess: true,
-      limit: 1,
-    })
-    const playerDoc = player.docs[0] as any
-    const isRegistered = playerDoc?.tiers?.includes('open') ?? false
+    const isRegistered = (user as any).pugTiers?.includes('open') ?? false
 
     let activeLobbyId: number | null = null
     if (isRegistered) {

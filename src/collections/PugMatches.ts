@@ -18,7 +18,7 @@ const teamPlayersField = (name: 'team1Players' | 'team2Players', label: string) 
     {
       name: 'player',
       type: 'relationship' as const,
-      relationTo: 'pug-players' as const,
+      relationTo: 'people' as const,
       required: true,
     },
     {
@@ -134,13 +134,13 @@ export const PugMatches: CollectionConfig = {
         {
           name: 'reportedBy',
           type: 'relationship',
-          relationTo: 'users',
+          relationTo: 'people',
           admin: { width: '50%' },
         },
         {
           name: 'confirmedBy',
           type: 'relationship',
-          relationTo: 'users',
+          relationTo: 'people',
           admin: { width: '50%' },
         },
       ],
@@ -156,7 +156,7 @@ export const PugMatches: CollectionConfig = {
       label: 'Dispute Resolution',
       admin: { condition: (data) => data?.disputed === true },
       fields: [
-        { name: 'resolvedBy', type: 'relationship', relationTo: 'users' },
+        { name: 'resolvedBy', type: 'relationship', relationTo: 'people' },
         { name: 'resolution', type: 'text' },
         { name: 'notes', type: 'textarea' },
       ],

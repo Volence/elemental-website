@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { headers } from 'next/headers'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 /**
  * API Authentication and Error Handling Utilities
@@ -13,7 +13,7 @@ import type { User } from '@/payload-types'
 
 export interface AuthenticatedContext {
   payload: any
-  user: User
+  user: Person
 }
 
 /**
@@ -54,7 +54,7 @@ export async function authenticateRequest(): Promise<
 
     return {
       success: true,
-      data: { payload, user },
+      data: { payload, user: user as Person },
     }
   } catch (error) {
     return {
@@ -126,7 +126,7 @@ export function apiSuccessResponse<T = any>(
  * @param user - User object from authentication
  * @returns True if user is admin
  */
-export function isAdmin(user: User): boolean {
+export function isAdmin(user: Person): boolean {
   return user.role === 'admin'
 }
 
@@ -147,7 +147,7 @@ export function isAdmin(user: User): boolean {
  * // User is admin, continue...
  * ```
  */
-export function requireAdmin(user: User): NextResponse | undefined {
+export function requireAdmin(user: Person): NextResponse | undefined {
   if (!isAdmin(user)) {
     return NextResponse.json(
       { success: false, error: 'Admin access required' },

@@ -1,14 +1,14 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 export async function POST(request: NextRequest) {
   const payload = await getPayload({ config: configPromise })
   const { user } = await payload.auth({ headers: request.headers })
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const typedUser = user as User
+  const typedUser = user as Person
   if (!typedUser.discordId) {
     return NextResponse.json(
       { error: 'You must link your Discord account before registering for PUGs.' },
@@ -40,47 +40,25 @@ export async function POST(request: NextRequest) {
   const region = invite.pugInvite?.region as 'na' | 'emea' | 'pacific' | undefined
 
   try {
-    const existing = await payload.find({
-      collection: 'pug-players',
-      where: { user: { equals: user.id } },
+    const person = user as any
+    const updatedTiers = Array.from(new Set([...(person.pugTiers ?? []), 'invite']))
+    const updatedRoles = Array.from(new Set([...(person.pugApprovedRoles ?? []), ...inviteRoles]))
+    const updatedRegions = region
+      ? Array.from(new Set([...(person.pugInviteRegions ?? []), region]))
+      : person.pugInviteRegions ?? []
+
+    await payload.update({
+      collection: 'people',
+      id: user.id,
+      data: {
+        pugTiers: updatedTiers,
+        pugApprovedRoles: updatedRoles,
+        pugInviteRegions: updatedRegions,
+        pugInvitedBy: invite.createdBy?.id ?? invite.createdBy,
+        pugRegisteredDate: person.pugRegisteredDate ?? new Date().toISOString(),
+      },
       overrideAccess: true,
     })
-
-    let playerId: number
-    if (existing.docs.length > 0) {
-      const existingPlayer = existing.docs[0] as any
-      const updatedTiers = Array.from(new Set([...(existingPlayer.tiers ?? []), 'invite']))
-      const updatedRoles = Array.from(new Set([...(existingPlayer.approvedRoles ?? []), ...inviteRoles]))
-      const updatedRegions = region
-        ? Array.from(new Set([...(existingPlayer.inviteRegions ?? []), region]))
-        : existingPlayer.inviteRegions ?? []
-      await payload.update({
-        collection: 'pug-players',
-        id: existingPlayer.id,
-        data: {
-          tiers: updatedTiers,
-          approvedRoles: updatedRoles,
-          inviteRegions: updatedRegions,
-          invitedBy: invite.createdBy?.id ?? invite.createdBy,
-        },
-        overrideAccess: true,
-      })
-      playerId = existingPlayer.id
-    } else {
-      const player = await payload.create({
-        collection: 'pug-players',
-        data: {
-          user: user.id,
-          tiers: ['invite'],
-          approvedRoles: inviteRoles,
-          inviteRegions: region ? [region] : [],
-          registeredDate: new Date().toISOString(),
-          invitedBy: invite.createdBy?.id ?? invite.createdBy,
-        },
-        overrideAccess: true,
-      })
-      playerId = (player as any).id
-    }
 
     await payload.update({
       collection: 'invite-links',
@@ -89,7 +67,7 @@ export async function POST(request: NextRequest) {
       overrideAccess: true,
     })
 
-    return NextResponse.json({ success: true, playerId })
+    return NextResponse.json({ success: true, playerId: user.id })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }

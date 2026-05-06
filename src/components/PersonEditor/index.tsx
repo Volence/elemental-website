@@ -5,10 +5,10 @@ import { useAuth } from '@payloadcms/ui'
 import { useSearchParams } from 'next/navigation'
 import {
   User as UserIcon, Save, Camera, Link as LinkIcon, Gamepad2, MessageSquare,
-  Check, AlertCircle, Loader2, ExternalLink, Shield, Twitch, Instagram,
-  Youtube, X, ArrowLeft, StickyNote, Eye, Plus, Trash2, Monitor,
+  Check, AlertCircle, Loader2, ExternalLink, Shield, ShieldCheck, Crown, Twitch, Instagram,
+  Youtube, X, ArrowLeft, StickyNote, Eye, Plus, Trash2, Monitor, KeyRound,
 } from 'lucide-react'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 // ── Shared styles & constants ──
 
@@ -19,6 +19,41 @@ export const SOCIAL_PLATFORMS = [
   { key: 'instagram', label: 'Instagram', icon: Instagram, placeholder: 'https://instagram.com/username' },
   { key: 'tiktok', label: 'TikTok', icon: Gamepad2, placeholder: 'https://tiktok.com/@username' },
 ] as const
+
+export const ROLES = [
+  { value: 'admin', label: 'Admin', icon: Crown, color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)', border: 'rgba(245, 158, 11, 0.25)' },
+  { value: 'staff-manager', label: 'Staff Manager', icon: ShieldCheck, color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)', border: 'rgba(139, 92, 246, 0.25)' },
+  { value: 'team-manager', label: 'Team Manager', icon: Shield, color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.1)', border: 'rgba(6, 182, 212, 0.25)' },
+  { value: 'player', label: 'Player', icon: Gamepad2, color: '#34d399', bg: 'rgba(52, 211, 153, 0.1)', border: 'rgba(52, 211, 153, 0.25)' },
+  { value: 'user', label: 'User', icon: UserIcon, color: '#94a3b8', bg: 'rgba(148, 163, 184, 0.1)', border: 'rgba(148, 163, 184, 0.25)' },
+] as const
+
+const DEPARTMENTS = [
+  { key: 'isProductionStaff', label: 'Production' },
+  { key: 'isSocialMediaStaff', label: 'Social Media' },
+  { key: 'isGraphicsStaff', label: 'Graphics' },
+  { key: 'isVideoStaff', label: 'Video Editing' },
+  { key: 'isEventsStaff', label: 'Events' },
+  { key: 'isScoutingStaff', label: 'Scouting' },
+  { key: 'isContentCreator', label: 'Content Creator' },
+  { key: 'isPugAdmin', label: 'PUG Admin' },
+] as const
+
+const PUG_ROLES = [
+  { key: 'tank', label: 'Tank' },
+  { key: 'flex-dps', label: 'Flex DPS' },
+  { key: 'hitscan-dps', label: 'Hitscan DPS' },
+  { key: 'flex-support', label: 'Flex Support' },
+  { key: 'main-support', label: 'Main Support' },
+] as const
+
+const PUG_REGION_OPTIONS = [
+  { key: 'na', label: 'NA' },
+  { key: 'emea', label: 'EMEA' },
+  { key: 'pacific', label: 'Pacific' },
+] as const
+
+const getRoleConfig = (role: string) => ROLES.find(r => r.value === role) ?? ROLES[4]
 
 export type PersonData = {
   id: number
@@ -81,6 +116,13 @@ export const EDITOR_CSS = `
   .toggle-switch.on::after { transform: translateX(16px); }
   .toggle-switch.off { background: rgba(255,255,255,0.15); }
   .alias-input-row { display: flex; gap: 8px; align-items: center; }
+  .role-option { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; cursor: pointer; transition: all 0.15s; border: 2px solid transparent; }
+  .role-option:hover { background: rgba(255,255,255,0.03); }
+  .role-option.selected { border-color: currentColor; background: rgba(255,255,255,0.02); }
+  .team-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: all 0.15s; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); }
+  .team-chip:hover { background: rgba(255,255,255,0.06); }
+  .team-chip.selected { background: rgba(52, 211, 153, 0.08); border-color: rgba(52, 211, 153, 0.3); color: #34d399; }
+  .dept-toggle { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
 `
 
 export const styles: Record<string, React.CSSProperties> = {
@@ -119,7 +161,7 @@ type PersonEditorProps = {
 }
 
 export default function PersonEditor({ personId: propPersonId, isManager = false }: PersonEditorProps) {
-  const { user } = useAuth<User>()
+  const { user } = useAuth<Person>()
   const [person, setPerson] = useState<PersonData | null>(null)
   const [teams, setTeams] = useState<TeamInfo[]>([])
   const [loading, setLoading] = useState(true)
@@ -140,19 +182,39 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
   const [gameAliases, setGameAliases] = useState<Array<{ alias: string }>>([])
   const [notes, setNotes] = useState('')
 
-  // Resolve person ID
-  const linkedPersonId = user
-    ? typeof user.linkedPerson === 'object' && user.linkedPerson !== null
-      ? (user.linkedPerson as any).id
-      : user.linkedPerson
-    : null
-  const resolvedPersonId = propPersonId ?? linkedPersonId
+  // Account & role fields
+  const [email, setEmail] = useState('')
+  const [role, setRole] = useState('user')
+  const [assignedTeams, setAssignedTeams] = useState<number[]>([])
+  const [allTeams, setAllTeams] = useState<Array<{ id: number; name: string }>>([])
+  const [departments, setDepartments] = useState<Record<string, boolean>>({})
+  const [newPassword, setNewPassword] = useState('')
+  const [passwordStatus, setPasswordStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [passwordError, setPasswordError] = useState('')
+
+  // PUG fields
+  const [pugRegistered, setPugRegistered] = useState(false)
+  const [pugTiers, setPugTiers] = useState<string[]>([])
+  const [pugRegions, setPugRegions] = useState<string[]>([])
+  const [pugApprovedRoles, setPugApprovedRoles] = useState<string[]>([])
+  const [pugActiveBan, setPugActiveBan] = useState<{ bannedUntil?: string; reason?: string } | null>(null)
+  const [pugSaveStatus, setPugSaveStatus] = useState<SaveStatus>('idle')
+
+  // Resolve person ID and access level
+  const resolvedPersonId = propPersonId ?? (user?.id ?? null)
+  const isAdmin = user?.role === 'admin'
+  const isSelf = user?.id != null && String(user.id) === String(resolvedPersonId)
+  const canEditPug = isAdmin || (user as any)?.departments?.isPugAdmin === true
 
   // Fetch person data
   const fetchPerson = useCallback(async () => {
     if (!resolvedPersonId) return
     try {
-      const res = await fetch(`/api/people/${resolvedPersonId}?depth=1`)
+      const [res, allTeamsRes] = await Promise.all([
+        fetch(`/api/people/${resolvedPersonId}?depth=1`),
+        fetch('/api/teams?limit=100&sort=name&depth=0'),
+      ])
+
       if (!res.ok) throw new Error('Failed to load profile')
       const data = await res.json()
       setPerson(data)
@@ -166,14 +228,44 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
       setGameAliases(data.gameAliases ?? [])
       setNotes(data.notes ?? '')
 
+      // Account & role fields
+      setEmail(data.email ?? '')
+      setRole(data.role ?? 'user')
+      setAssignedTeams((data.assignedTeams ?? []).map((t: any) => typeof t === 'object' ? t.id : t))
+      setDepartments({
+        isProductionStaff: data.departments?.isProductionStaff ?? false,
+        isSocialMediaStaff: data.departments?.isSocialMediaStaff ?? false,
+        isGraphicsStaff: data.departments?.isGraphicsStaff ?? false,
+        isVideoStaff: data.departments?.isVideoStaff ?? false,
+        isEventsStaff: data.departments?.isEventsStaff ?? false,
+        isScoutingStaff: data.departments?.isScoutingStaff ?? false,
+        isContentCreator: data.departments?.isContentCreator ?? false,
+        isPugAdmin: data.departments?.isPugAdmin ?? false,
+      })
+
+      // PUG fields
+      if (data.pugTiers?.length) {
+        setPugRegistered(true)
+        setPugTiers(data.pugTiers ?? [])
+        setPugRegions(data.pugInviteRegions ?? [])
+        setPugApprovedRoles(data.pugApprovedRoles ?? [])
+        setPugActiveBan(data.pugActiveBan ?? null)
+      }
+
       if (data.photo && typeof data.photo === 'object' && data.photo.url) {
         setPhotoPreview(data.photo.url)
       }
 
-      // Fetch teams
-      const teamsRes = await fetch(`/api/teams?where[roster.person][equals]=${resolvedPersonId}&depth=0&limit=10`)
-      if (teamsRes.ok) {
-        const teamsData = await teamsRes.json()
+      // All teams for admin chip selector
+      if (allTeamsRes.ok) {
+        const t = await allTeamsRes.json()
+        setAllTeams((t.docs ?? []).map((doc: any) => ({ id: doc.id, name: doc.name })))
+      }
+
+      // Fetch roster team memberships for display
+      const rosterRes = await fetch(`/api/teams?where[roster.person][equals]=${resolvedPersonId}&depth=0&limit=10`)
+      if (rosterRes.ok) {
+        const teamsData = await rosterRes.json()
         const teamInfos: TeamInfo[] = []
         for (const team of teamsData.docs ?? []) {
           const roster = team.roster ?? []
@@ -217,6 +309,12 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
         payload.showInLiveStreamers = showInLiveStreamers
         payload.gameAliases = gameAliases.filter(a => a.alias.trim())
         payload.notes = notes || null
+        if (isAdmin) {
+          payload.role = role
+          payload.email = email
+          payload.assignedTeams = assignedTeams.length > 0 ? assignedTeams : null
+          payload.departments = departments
+        }
       }
 
       const res = await fetch(`/api/people/${resolvedPersonId}`, {
@@ -283,6 +381,95 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
   const removeAlias = (i: number) => setGameAliases(prev => prev.filter((_, idx) => idx !== i))
   const updateAlias = (i: number, value: string) => {
     setGameAliases(prev => prev.map((a, idx) => idx === i ? { alias: value } : a))
+  }
+
+  // Team/dept/PUG toggles
+  const toggleTeam = (teamId: number) => {
+    setAssignedTeams(prev => prev.includes(teamId) ? prev.filter(t => t !== teamId) : [...prev, teamId])
+  }
+  const toggleDept = (key: string) => {
+    setDepartments(prev => ({ ...prev, [key]: !prev[key] }))
+  }
+  const togglePugTier = (tier: string) => {
+    setPugTiers(prev => prev.includes(tier) ? prev.filter(t => t !== tier) : [...prev, tier])
+  }
+  const togglePugRegion = (region: string) => {
+    setPugRegions(prev => prev.includes(region) ? prev.filter(r => r !== region) : [...prev, region])
+  }
+  const togglePugRole = (r: string) => {
+    setPugApprovedRoles(prev => prev.includes(r) ? prev.filter(x => x !== r) : [...prev, r])
+  }
+
+  const handleResetPassword = async () => {
+    if (!resolvedPersonId || !newPassword) return
+    if (newPassword.length < 4) {
+      setPasswordError('Password must be at least 4 characters')
+      setPasswordStatus('error')
+      return
+    }
+    setPasswordStatus('saving')
+    setPasswordError('')
+    try {
+      const res = await fetch(`/api/people/${resolvedPersonId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: newPassword }),
+      })
+      if (!res.ok) throw new Error('Failed to reset password')
+      setPasswordStatus('saved')
+      setNewPassword('')
+      setTimeout(() => setPasswordStatus('idle'), 2500)
+    } catch (err: any) {
+      setPasswordStatus('error')
+      setPasswordError(err.message ?? 'Failed to reset password')
+    }
+  }
+
+  const handlePugRegister = async () => {
+    if (!resolvedPersonId) return
+    setPugSaveStatus('saving')
+    try {
+      const res = await fetch(`/api/people/${resolvedPersonId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pugTiers: ['open'], pugRegisteredDate: new Date().toISOString() }),
+      })
+      if (!res.ok) throw new Error('Failed to register')
+      const updated = await res.json()
+      const pp = updated.doc ?? updated
+      setPugRegistered(true)
+      setPugTiers(pp.pugTiers ?? ['open'])
+      setPugRegions(pp.pugInviteRegions ?? [])
+      setPugApprovedRoles(pp.pugApprovedRoles ?? [])
+      setPugSaveStatus('saved')
+      setTimeout(() => setPugSaveStatus('idle'), 2500)
+    } catch {
+      setPugSaveStatus('error')
+      setTimeout(() => setPugSaveStatus('idle'), 2500)
+    }
+  }
+
+  const handlePugSave = async () => {
+    if (!resolvedPersonId) return
+    setPugSaveStatus('saving')
+    try {
+      const body: Record<string, unknown> = { pugTiers }
+      if (pugTiers.includes('invite')) {
+        body.pugInviteRegions = pugRegions
+        body.pugApprovedRoles = pugApprovedRoles
+      }
+      const res = await fetch(`/api/people/${resolvedPersonId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      if (!res.ok) throw new Error('Failed to save PUG data')
+      setPugSaveStatus('saved')
+      setTimeout(() => setPugSaveStatus('idle'), 2500)
+    } catch {
+      setPugSaveStatus('error')
+      setTimeout(() => setPugSaveStatus('idle'), 2500)
+    }
   }
 
   // ── Render ──
@@ -456,10 +643,244 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
               <p style={styles.fieldHint}>Only visible to managers. Not displayed on public profiles.</p>
             </div>
           )}
+
+          {/* Role (admin editable, others read-only) */}
+          {(isAdmin || role) && (
+            <div className="profile-card" style={styles.card}>
+              <h3 style={styles.cardTitle}><Shield size={16} /> Role</h3>
+              {isAdmin ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {ROLES.map(r => (
+                    <div
+                      key={r.value}
+                      className={`role-option ${role === r.value ? 'selected' : ''}`}
+                      style={{ color: r.color }}
+                      onClick={() => setRole(r.value)}
+                    >
+                      <r.icon size={18} />
+                      <span style={{ fontWeight: role === r.value ? 600 : 400 }}>{r.label}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (() => {
+                const rc = getRoleConfig(role)
+                return (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, border: `2px solid ${rc.border}`, background: rc.bg }}>
+                    <rc.icon size={18} color={rc.color} />
+                    <span style={{ fontWeight: 600, color: rc.color }}>{rc.label}</span>
+                  </div>
+                )
+              })()}
+            </div>
+          )}
+
+          {/* Assigned Teams */}
+          {isAdmin ? (
+            <div className="profile-card" style={styles.card}>
+              <h3 style={styles.cardTitle}><Gamepad2 size={16} /> Assigned Teams</h3>
+              <p style={styles.fieldHint}>Click to toggle. Determines scrim data access for players/managers.</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
+                {allTeams.map(t => (
+                  <button
+                    key={t.id}
+                    className={`team-chip ${assignedTeams.includes(t.id) ? 'selected' : ''}`}
+                    onClick={() => toggleTeam(t.id)}
+                  >
+                    {assignedTeams.includes(t.id) && <Check size={12} />}
+                    {t.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : assignedTeams.length > 0 ? (
+            <div className="profile-card" style={styles.card}>
+              <h3 style={styles.cardTitle}><Gamepad2 size={16} /> Assigned Teams</h3>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {allTeams.filter(t => assignedTeams.includes(t.id)).map(t => (
+                  <span key={t.id} className="team-chip selected">{t.name}</span>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {/* PUG Status (admin/pug-admin manages, others see read-only) */}
+          {(canEditPug || pugRegistered) && (
+            <div className="profile-card" style={styles.card}>
+              <h3 style={styles.cardTitle}><Gamepad2 size={16} /> PUG Status</h3>
+              {!pugRegistered ? (
+                <div>
+                  <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginBottom: 10 }}>Not registered for PUGs</p>
+                  {canEditPug && (
+                    <button
+                      className="profile-save-btn"
+                      onClick={handlePugRegister}
+                      disabled={pugSaveStatus === 'saving'}
+                      style={{ fontSize: 13, padding: '6px 14px' }}
+                    >
+                      {pugSaveStatus === 'saving' ? <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Registering...</>
+                        : pugSaveStatus === 'saved' ? <><Check size={14} /> Registered!</>
+                        : <><Plus size={14} /> Register for PUGs</>}
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <div style={{ marginBottom: 12 }}>
+                    <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>Registered Tiers</p>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      {['open', 'invite'].map((t) => (
+                        <button
+                          key={t}
+                          className={`team-chip ${pugTiers.includes(t) ? 'selected' : ''}`}
+                          onClick={canEditPug ? () => togglePugTier(t) : undefined}
+                          style={{
+                            cursor: canEditPug ? 'pointer' : 'default',
+                            ...(pugTiers.includes(t) && t === 'invite' ? {
+                              background: 'rgba(139, 92, 246, 0.15)',
+                              borderColor: 'rgba(139, 92, 246, 0.4)',
+                              color: '#a78bfa',
+                            } : {}),
+                          }}
+                        >
+                          {pugTiers.includes(t) && <Check size={12} />}
+                          {t.charAt(0).toUpperCase() + t.slice(1)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {pugTiers.includes('invite') && (
+                    <div style={{ marginBottom: 12 }}>
+                      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>Invite Regions</p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                        {PUG_REGION_OPTIONS.map((r) => (
+                          <button
+                            key={r.key}
+                            className={`team-chip ${pugRegions.includes(r.key) ? 'selected' : ''}`}
+                            onClick={canEditPug ? () => togglePugRegion(r.key) : undefined}
+                            style={{ cursor: canEditPug ? 'pointer' : 'default' }}
+                          >
+                            {pugRegions.includes(r.key) && <Check size={12} />}
+                            {r.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {pugTiers.includes('invite') && (
+                    <div style={{ marginBottom: 12 }}>
+                      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>Approved Roles</p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                        {PUG_ROLES.map((r) => (
+                          <button
+                            key={r.key}
+                            className={`team-chip ${pugApprovedRoles.includes(r.key) ? 'selected' : ''}`}
+                            onClick={canEditPug ? () => togglePugRole(r.key) : undefined}
+                            style={{ cursor: canEditPug ? 'pointer' : 'default' }}
+                          >
+                            {pugApprovedRoles.includes(r.key) && <Check size={12} />}
+                            {r.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {pugActiveBan?.bannedUntil && new Date(pugActiveBan.bannedUntil) > new Date() && (
+                    <div style={{ padding: '8px 12px', borderRadius: 6, background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', marginBottom: 12 }}>
+                      <p style={{ fontSize: 12, color: '#f87171', fontWeight: 500 }}>
+                        Banned until {new Date(pugActiveBan.bannedUntil).toLocaleString()}
+                      </p>
+                      {pugActiveBan.reason && (
+                        <p style={{ fontSize: 11, color: 'rgba(248, 113, 113, 0.7)', marginTop: 2 }}>{pugActiveBan.reason}</p>
+                      )}
+                    </div>
+                  )}
+
+                  {canEditPug && (
+                    <button
+                      className="profile-save-btn"
+                      onClick={handlePugSave}
+                      disabled={pugSaveStatus === 'saving'}
+                      style={{ fontSize: 13, padding: '6px 14px', marginTop: 4 }}
+                    >
+                      {pugSaveStatus === 'saving' ? <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Saving...</>
+                        : pugSaveStatus === 'saved' ? <><Check size={14} /> Saved!</>
+                        : pugSaveStatus === 'error' ? <><AlertCircle size={14} /> Error</>
+                        : <><Save size={14} /> Save PUG Settings</>}
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Right column */}
         <div style={styles.rightColumn}>
+          {/* Account */}
+          {(isAdmin || isSelf) && email && (
+            <div className="profile-card" style={styles.card}>
+              <h3 style={styles.cardTitle}><UserIcon size={16} /> Account</h3>
+              <div style={styles.editableField}>
+                <label style={styles.fieldLabel}>Email</label>
+                {isAdmin ? (
+                  <input className="profile-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="user@example.com" />
+                ) : (
+                  <span style={{ ...styles.readonlyValue, padding: '10px 0' }}>{email}</span>
+                )}
+              </div>
+              {isSelf && (
+                <div style={styles.editableField}>
+                  {discordId ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 6, backgroundColor: 'rgba(88,101,242,0.1)', border: '1px solid rgba(88,101,242,0.3)' }}>
+                      <svg width="14" height="11" viewBox="0 0 71 55" fill="#5865F2" xmlns="http://www.w3.org/2000/svg"><path d="M60.1045 4.8978C55.5792 2.8214 50.7265 1.2916 45.6527 0.41542C45.5603 0.39851 45.468 0.440769 45.4204 0.525289C44.7963 1.6353 44.105 3.0834 43.6209 4.2216C38.1637 3.4046 32.7345 3.4046 27.3892 4.2216C26.905 3.0581 26.1886 1.6353 25.5617 0.525289C25.5141 0.443589 25.4218 0.40133 25.3294 0.41542C20.2584 1.2888 15.4057 2.8186 10.8776 4.8978C10.8384 4.9147 10.8048 4.9429 10.7825 4.9795C1.57795 18.7309 -0.943561 32.1443 0.293408 45.3914C0.299005 45.4562 0.335386 45.5182 0.385761 45.5576C6.45866 50.0174 12.3413 52.7249 18.1147 54.5195C18.2071 54.5477 18.305 54.5139 18.3638 54.4378C19.7295 52.5728 20.9469 50.6063 21.9907 48.5383C22.0523 48.4172 21.9935 48.2735 21.8676 48.2256C19.9366 47.4931 18.0979 46.6 16.3292 45.5858C16.1893 45.5041 16.1781 45.304 16.3068 45.2082C16.679 44.9293 17.0513 44.6391 17.4067 44.3461C17.471 44.2926 17.5606 44.2813 17.6362 44.3151C29.2558 49.6202 41.8354 49.6202 53.3179 44.3151C53.3935 44.2785 53.4875 44.2898 53.5547 44.3433C53.9101 44.6363 54.2823 44.9293 54.6573 45.2082C54.786 45.304 54.7776 45.5041 54.6377 45.5858C52.869 46.6197 51.0303 47.4931 49.0965 48.2228C48.9706 48.2707 48.9146 48.4172 48.9762 48.5383C50.038 50.6034 51.2554 52.5699 52.5765 54.435C52.632 54.5139 52.7327 54.5477 52.8251 54.5195C58.6257 52.7249 64.5084 50.0174 70.5813 45.5576C70.6344 45.5182 70.668 45.459 70.6736 45.3942C72.1672 29.9752 68.2139 16.6868 60.1968 4.9823C60.1772 4.9429 60.1437 4.9147 60.1045 4.8978Z"/></svg>
+                      <span style={{ fontSize: 13, color: '#e2e8f0' }}>Discord connected</span>
+                    </div>
+                  ) : (
+                    <a
+                      href={`/api/auth/discord?link=true&returnUrl=${encodeURIComponent(`/admin/edit-person?id=${resolvedPersonId}`)}`}
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', padding: '8px 16px', borderRadius: 6, fontWeight: 500, color: '#fff', backgroundColor: '#5865F2', textDecoration: 'none', fontSize: 13, transition: 'background-color 0.15s' }}
+                      onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#4752C4')}
+                      onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#5865F2')}
+                    >
+                      <svg width="14" height="11" viewBox="0 0 71 55" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M60.1045 4.8978C55.5792 2.8214 50.7265 1.2916 45.6527 0.41542C45.5603 0.39851 45.468 0.440769 45.4204 0.525289C44.7963 1.6353 44.105 3.0834 43.6209 4.2216C38.1637 3.4046 32.7345 3.4046 27.3892 4.2216C26.905 3.0581 26.1886 1.6353 25.5617 0.525289C25.5141 0.443589 25.4218 0.40133 25.3294 0.41542C20.2584 1.2888 15.4057 2.8186 10.8776 4.8978C10.8384 4.9147 10.8048 4.9429 10.7825 4.9795C1.57795 18.7309 -0.943561 32.1443 0.293408 45.3914C0.299005 45.4562 0.335386 45.5182 0.385761 45.5576C6.45866 50.0174 12.3413 52.7249 18.1147 54.5195C18.2071 54.5477 18.305 54.5139 18.3638 54.4378C19.7295 52.5728 20.9469 50.6063 21.9907 48.5383C22.0523 48.4172 21.9935 48.2735 21.8676 48.2256C19.9366 47.4931 18.0979 46.6 16.3292 45.5858C16.1893 45.5041 16.1781 45.304 16.3068 45.2082C16.679 44.9293 17.0513 44.6391 17.4067 44.3461C17.471 44.2926 17.5606 44.2813 17.6362 44.3151C29.2558 49.6202 41.8354 49.6202 53.3179 44.3151C53.3935 44.2785 53.4875 44.2898 53.5547 44.3433C53.9101 44.6363 54.2823 44.9293 54.6573 45.2082C54.786 45.304 54.7776 45.5041 54.6377 45.5858C52.869 46.6197 51.0303 47.4931 49.0965 48.2228C48.9706 48.2707 48.9146 48.4172 48.9762 48.5383C50.038 50.6034 51.2554 52.5699 52.5765 54.435C52.632 54.5139 52.7327 54.5477 52.8251 54.5195C58.6257 52.7249 64.5084 50.0174 70.5813 45.5576C70.6344 45.5182 70.668 45.459 70.6736 45.3942C72.1672 29.9752 68.2139 16.6868 60.1968 4.9823C60.1772 4.9429 60.1437 4.9147 60.1045 4.8978Z"/></svg>
+                      Connect Discord Account
+                    </a>
+                  )}
+                </div>
+              )}
+              {(isAdmin || isSelf) && (
+                <div style={styles.editableField}>
+                  <label style={styles.fieldLabel}><KeyRound size={12} style={{ verticalAlign: 'middle', marginRight: 4 }} />Reset Password</label>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <input
+                      className="profile-input"
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Enter new password..."
+                      style={{ flex: 1 }}
+                    />
+                    <button
+                      className="profile-save-btn"
+                      onClick={handleResetPassword}
+                      disabled={!newPassword || passwordStatus === 'saving'}
+                      style={{ padding: '8px 16px', fontSize: 13, flexShrink: 0, opacity: !newPassword ? 0.4 : 1 }}
+                    >
+                      {passwordStatus === 'saving' ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
+                        : passwordStatus === 'saved' ? <><Check size={14} /> Done</>
+                        : 'Reset'}
+                    </button>
+                  </div>
+                  {passwordStatus === 'error' && passwordError && <p style={{ color: '#f87171', fontSize: 12, marginTop: 4 }}>{passwordError}</p>}
+                  {passwordStatus === 'saved' && <p style={{ color: '#34d399', fontSize: 12, marginTop: 4 }}>Password updated successfully</p>}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Identity */}
           <div className="profile-card" style={styles.card}>
             <h3 style={styles.cardTitle}>
@@ -561,6 +982,43 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
             )}
           </div>
 
+          {/* Department Access */}
+          {(() => {
+            const showDepts = role !== 'admin' && role !== 'player'
+            if (!showDepts) return null
+            if (isAdmin) {
+              return (
+                <div className="profile-card" style={styles.card}>
+                  <h3 style={styles.cardTitle}><Monitor size={16} /> Department Access</h3>
+                  {DEPARTMENTS.map(d => (
+                    <div className="dept-toggle" key={d.key}>
+                      <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>{d.label}</span>
+                      <button
+                        className={`toggle-switch ${departments[d.key] ? 'on' : 'off'}`}
+                        onClick={() => toggleDept(d.key)}
+                        type="button"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )
+            }
+            const activeDepts = DEPARTMENTS.filter(d => departments[d.key])
+            if (activeDepts.length === 0) return null
+            return (
+              <div className="profile-card" style={styles.card}>
+                <h3 style={styles.cardTitle}><Monitor size={16} /> Department Access</h3>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {activeDepts.map(d => (
+                    <span key={d.key} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, fontSize: 13, background: 'rgba(52, 211, 153, 0.08)', border: '1px solid rgba(52, 211, 153, 0.3)', color: '#34d399' }}>
+                      {d.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )
+          })()}
+
           {/* Quick Links */}
           <div className="profile-card" style={styles.card}>
             <h3 style={styles.cardTitle}><ExternalLink size={16} /> Quick Links</h3>
@@ -568,7 +1026,7 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
               <a href={`/players/${person.slug}`} target="_blank" rel="noopener noreferrer" style={styles.quickLink}>
                 <Eye size={14} /> View Public Profile
               </a>
-              {isManager && linkedPersonId !== resolvedPersonId && (
+              {isManager && user?.id !== resolvedPersonId && (
                 <a href={`/admin/scrim-player-detail?personId=${resolvedPersonId}`} style={styles.quickLink}>
                   <Monitor size={14} /> View Scrim Stats
                 </a>

@@ -16,9 +16,10 @@ import { MetaDescriptionComponent as MetaDescriptionComponent_a8a977ebc872c5d5ea
 import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { SlugField as SlugField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
 import { default as default_a57c6a823b3afaaec2d5debdf135e084 } from '@/components/ViewOnSiteButton'
-import { default as default_00c104303d223c5ad174a97bdf6b198b } from '@/components/PersonRelationshipsSidebar'
+import { default as default_e8f7b16e4c51b9728b46c9a499df8586 } from '@/components/LinkDiscordButton'
 import { default as default_890f375c2e64cfbf8289c4ab4ee8f2a1 } from '@/components/PeopleListColumns/StaffPositionsCell'
 import { default as default_04cdbc390d38c074fb71cb7d83ceaa88 } from '@/components/PeopleListColumns/TeamsCell'
+import { default as default_b4076e69b2a92013d616b7a49f1ff6ce } from '@/components/UserManagementTabs'
 import { default as default_0bef48e2ba46070d0450e759ffa990b3 } from '@/components/PeopleListRedirect'
 import { default as default_de3249083376ab0290efd4284159f820 } from '@/collections/Teams/BrandingColorField'
 import { default as default_befd121dc2c708f29d17ef6cf6b47565 } from '@/components/TeamTabCounts/StaffCount'
@@ -50,7 +51,6 @@ import { default as default_aa7f6faaa886a93f7a640627f141e7c7 } from '@/component
 import { default as default_2e617cc3176ad62e33aa558930ac7655 } from '@/components/TournamentFaceitNotice'
 import { default as default_4c7ee971bccbc12ad44464e4882fd683 } from '@/components/TournamentFields/BulkTeamSelector'
 import { default as default_a0a75307cc614f0f86e3337b3d2de124 } from '@/components/PugSeasons/ListRedirect'
-import { default as default_34ecf24bb9bec7d2bac7e9778df3ce36 } from '@/components/PugPlayers/ListRedirect'
 import { default as default_b58160abd94784e8a5a25ad97c0af14b } from '@/components/PugMatches/ListRedirect'
 import { default as default_3880bf5eeeb5562af6ac7848ea6ba687 } from '@/components/PugLeaderboard/ListRedirect'
 import { default as default_048c297467b6adbf2ab886ee3bbecc66 } from '@/components/SocialPostColumns/ContentPreviewCell'
@@ -78,9 +78,6 @@ import { FolderField as FolderField_ab83ff7e88da8d3530831f296ec4756a } from '@pa
 import { default as default_84d1cf001f7124d9b07380704ce8cd26 } from '@/components/FileBrowser/FileBrowserView'
 import { VideoWorkboard as VideoWorkboard_f4dd7e7806bf98c1c8970f346133cd5f } from '@/components/DepartmentWorkboard'
 import { EventsWorkboard as EventsWorkboard_f4dd7e7806bf98c1c8970f346133cd5f } from '@/components/DepartmentWorkboard'
-import { default as default_e8f7b16e4c51b9728b46c9a499df8586 } from '@/components/LinkDiscordButton'
-import { default as default_cf748e6d55bb950ba87b511e73ae3991 } from '@/components/UsersListRedirect'
-import { default as default_b4076e69b2a92013d616b7a49f1ff6ce } from '@/components/UserManagementTabs'
 import { default as default_1ded291ba22d6f8dbac2d341f30f3143 } from '@/components/InviteLinkFields/RoleSelectField'
 import { default as default_af352f4805551eefd7ae0beaaee692c1 } from '@/components/InviteLinkFields/CopyLinkField'
 import { default as default_c88412ef156346181b651c19a855fdb0 } from '@/components/InviteLinkColumns/DepartmentsCell'
@@ -166,9 +163,10 @@ export const importMap = {
   "@payloadcms/plugin-seo/client#PreviewComponent": PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/ui#SlugField": SlugField_3817bf644402e67bfe6577f60ef982de,
   "@/components/ViewOnSiteButton#default": default_a57c6a823b3afaaec2d5debdf135e084,
-  "@/components/PersonRelationshipsSidebar#default": default_00c104303d223c5ad174a97bdf6b198b,
+  "@/components/LinkDiscordButton#default": default_e8f7b16e4c51b9728b46c9a499df8586,
   "@/components/PeopleListColumns/StaffPositionsCell#default": default_890f375c2e64cfbf8289c4ab4ee8f2a1,
   "@/components/PeopleListColumns/TeamsCell#default": default_04cdbc390d38c074fb71cb7d83ceaa88,
+  "@/components/UserManagementTabs#default": default_b4076e69b2a92013d616b7a49f1ff6ce,
   "@/components/PeopleListRedirect#default": default_0bef48e2ba46070d0450e759ffa990b3,
   "@/collections/Teams/BrandingColorField#default": default_de3249083376ab0290efd4284159f820,
   "@/components/TeamTabCounts/StaffCount#default": default_befd121dc2c708f29d17ef6cf6b47565,
@@ -200,7 +198,6 @@ export const importMap = {
   "@/components/TournamentFaceitNotice#default": default_2e617cc3176ad62e33aa558930ac7655,
   "@/components/TournamentFields/BulkTeamSelector#default": default_4c7ee971bccbc12ad44464e4882fd683,
   "@/components/PugSeasons/ListRedirect#default": default_a0a75307cc614f0f86e3337b3d2de124,
-  "@/components/PugPlayers/ListRedirect#default": default_34ecf24bb9bec7d2bac7e9778df3ce36,
   "@/components/PugMatches/ListRedirect#default": default_b58160abd94784e8a5a25ad97c0af14b,
   "@/components/PugLeaderboard/ListRedirect#default": default_3880bf5eeeb5562af6ac7848ea6ba687,
   "@/components/SocialPostColumns/ContentPreviewCell#default": default_048c297467b6adbf2ab886ee3bbecc66,
@@ -228,9 +225,6 @@ export const importMap = {
   "@/components/FileBrowser/FileBrowserView#default": default_84d1cf001f7124d9b07380704ce8cd26,
   "@/components/DepartmentWorkboard#VideoWorkboard": VideoWorkboard_f4dd7e7806bf98c1c8970f346133cd5f,
   "@/components/DepartmentWorkboard#EventsWorkboard": EventsWorkboard_f4dd7e7806bf98c1c8970f346133cd5f,
-  "@/components/LinkDiscordButton#default": default_e8f7b16e4c51b9728b46c9a499df8586,
-  "@/components/UsersListRedirect#default": default_cf748e6d55bb950ba87b511e73ae3991,
-  "@/components/UserManagementTabs#default": default_b4076e69b2a92013d616b7a49f1ff6ce,
   "@/components/InviteLinkFields/RoleSelectField#default": default_1ded291ba22d6f8dbac2d341f30f3143,
   "@/components/InviteLinkFields/CopyLinkField#default": default_af352f4805551eefd7ae0beaaee692c1,
   "@/components/InviteLinkColumns/DepartmentsCell#default": default_c88412ef156346181b651c19a855fdb0,

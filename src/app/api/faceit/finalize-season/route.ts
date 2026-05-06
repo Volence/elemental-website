@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 const TEAM_LEAGUES_BASE = 'https://www.faceit.com/api/team-leagues/v2'
 const CHAMPIONSHIPS_BASE = 'https://www.faceit.com/api/championships/v1'
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
     
     // Auth check
     const { user } = await payload.auth({ headers: request.headers })
-    if (!user || (user as User).role !== 'admin') {
+    if (!user || (user as Person).role !== 'admin') {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
     }
 

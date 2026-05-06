@@ -11,7 +11,7 @@ export const CheckHeader: React.FC<CheckHeaderProps> = ({ loading, onRunCheck })
       <div>
         <strong className="text-gray-300">Data Consistency Check:</strong>{' '}
         <span className="text-gray-400">
-          Find orphaned People, teams with missing relationships, and duplicate entries.
+          Find teams with missing relationships and duplicate entries.
         </span>
       </div>
       <button

@@ -13,8 +13,9 @@ import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { People } from './collections/People'
 import { Teams } from './collections/Teams'
-import { Users } from './collections/Users'
+// Users collection merged into People - see People/index.ts
 import { IgnoredDuplicates } from './collections/IgnoredDuplicates'
+// MergeSuggestions uses direct SQL - not registered as a Payload collection to avoid internal table dependencies
 import { RecruitmentListings } from './collections/RecruitmentListings'
 import { RecruitmentApplications } from './collections/RecruitmentApplications'
 import { InviteLinks } from './collections/InviteLinks'
@@ -36,7 +37,7 @@ import { ScoutReports } from './collections/ScoutReports'
 import { ScrimOutcomes } from './collections/ScrimOutcomes'
 import { Maps } from './collections/Maps'
 import { PugSeasons } from './collections/PugSeasons'
-import { PugPlayers } from './collections/PugPlayers'
+// PugPlayers collection merged into People - see People/index.ts
 import { PugMatches } from './collections/PugMatches'
 import { PugLeaderboard } from './collections/PugLeaderboard'
 import { Footer } from './Footer/config'
@@ -229,7 +230,7 @@ const config = buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
-    user: Users.slug,
+    user: People.slug,
     avatar: {
       Component: '@/components/UserAvatar#default',
     },
@@ -265,7 +266,6 @@ const config = buildConfig({
     TournamentTemplates,
     FaceitSeasons,
     PugSeasons,
-    PugPlayers,
     PugMatches,
     PugLeaderboard,
     SocialPosts,
@@ -293,7 +293,6 @@ const config = buildConfig({
     ErrorLogs,
     CronJobRuns,
     ActiveSessions,
-    Users,
     IgnoredDuplicates,
     InviteLinks,
     Media,

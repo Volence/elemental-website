@@ -27,7 +27,7 @@ const LinkDiscordButton: React.FC = () => {
         return
       }
       try {
-        const res = await fetch(`/api/users/${id}?depth=0&t=${Date.now()}`, {
+        const res = await fetch(`/api/people/${id}?depth=0&t=${Date.now()}`, {
           cache: 'no-store',
         })
         if (res.ok) {
@@ -79,7 +79,7 @@ const LinkDiscordButton: React.FC = () => {
 
   return (
     <a
-      href={`/api/auth/discord?link=true&returnUrl=/admin/collections/users/${id}`}
+      href={`/api/auth/discord?link=true&returnUrl=/admin/edit-person?id=${id}`}
       style={{
         display: 'flex',
         alignItems: 'center',

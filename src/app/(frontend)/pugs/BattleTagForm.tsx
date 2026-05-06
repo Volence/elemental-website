@@ -11,10 +11,10 @@ export function BattleTagForm({ playerId, initialTag }: { playerId: number; init
     setSaving(true)
     setMsg('')
     try {
-      const res = await fetch(`/api/pug-players/${playerId}`, {
+      const res = await fetch(`/api/people/${playerId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ battleTag: tag }),
+        body: JSON.stringify({ pugBattleTag: tag }),
       })
       if (res.ok) {
         setMsg('Saved!')

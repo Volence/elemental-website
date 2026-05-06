@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useAuth } from '@payloadcms/ui'
 import { UserPlus, FileText } from 'lucide-react'
 import Link from 'next/link'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 import { UserRole } from '@/access/roles'
 
 interface RecruitmentStats {
@@ -14,7 +14,7 @@ interface RecruitmentStats {
 }
 
 export const RecruitmentWidget: React.FC = () => {
-  const { user } = useAuth<User>()
+  const { user } = useAuth<Person>()
   const [stats, setStats] = useState<RecruitmentStats | null>(null)
   const [loading, setLoading] = useState(true)
 

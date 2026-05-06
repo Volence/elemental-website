@@ -2,7 +2,7 @@ import type { CollectionConfig } from 'payload'
 import { authenticated } from '../../access/authenticated'
 import { anyone } from '../../access/anyone'
 import { adminOnly, hasAnyRole, UserRole } from '../../access/roles'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 export const RecruitmentListings: CollectionConfig = {
   slug: 'recruitment-listings',
@@ -15,7 +15,7 @@ export const RecruitmentListings: CollectionConfig = {
     read: anyone,
     // Team Managers, Staff Managers, and Admins can create listings
     create: ({ req }) => {
-      const user = req.user as User | undefined
+      const user = req.user as Person | undefined
       if (!user) return false
       return [UserRole.ADMIN, UserRole.TEAM_MANAGER, UserRole.STAFF_MANAGER].includes(
         user.role as UserRole,
@@ -23,7 +23,7 @@ export const RecruitmentListings: CollectionConfig = {
     },
     // Creator, assigned team managers, and admins can update
     update: async ({ req, id }) => {
-      const user = req.user as User | undefined
+      const user = req.user as Person | undefined
       if (!user) return false
 
       // Admins can update everything
@@ -113,7 +113,7 @@ export const RecruitmentListings: CollectionConfig = {
         },
       },
       filterOptions: ({ user, relationTo, siblingData }) => {
-        const currentUser = user as User | undefined
+        const currentUser = user as Person | undefined
         if (!currentUser) return false
 
         // Admins and Staff Managers can see all teams
@@ -220,7 +220,7 @@ export const RecruitmentListings: CollectionConfig = {
     {
       name: 'createdBy',
       type: 'relationship',
-      relationTo: 'users',
+      relationTo: 'people',
       hasMany: false,
       admin: {
         readOnly: true,
@@ -262,7 +262,7 @@ export const RecruitmentListings: CollectionConfig = {
   hooks: {
     beforeChange: [
       async ({ data, req, operation }) => {
-        const user = req.user as User | undefined
+        const user = req.user as Person | undefined
 
         // Set createdBy on create
         if (operation === 'create' && user) {

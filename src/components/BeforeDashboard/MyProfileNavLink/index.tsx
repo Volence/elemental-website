@@ -4,7 +4,7 @@ import React from 'react'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@payloadcms/ui'
 import Link from 'next/link'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 /**
  * Sidebar nav link that gives players (and others with linkedPerson)
@@ -12,22 +12,15 @@ import type { User } from '@/payload-types'
  */
 const MyProfileNavLink: React.FC = () => {
   const pathname = usePathname()
-  const { user } = useAuth<User>()
+  const { user } = useAuth<Person>()
 
   if (!user) return null
 
-  // Only show for non-admin roles that have a linkedPerson
   const role = (user.role as string) ?? ''
   const isFullAccess = ['admin', 'staff-manager', 'team-manager'].includes(role)
 
   // Full-access users already see People in the Organization nav group
   if (isFullAccess) return null
-
-  const linkedPersonId = typeof user.linkedPerson === 'object' && user.linkedPerson !== null
-    ? user.linkedPerson.id
-    : user.linkedPerson
-
-  if (!linkedPersonId) return null
 
   const profileHref = `/admin/my-profile`
   const isActive = pathname ? pathname === profileHref : false

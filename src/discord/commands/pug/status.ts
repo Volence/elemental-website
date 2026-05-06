@@ -8,7 +8,7 @@ export async function handlePugStatus(interaction: ChatInputCommandInteraction):
 
   const payload = await getPayload({ config: configPromise })
   const users = await payload.find({
-    collection: 'users',
+    collection: 'people',
     where: { discordId: { equals: interaction.user.id } },
     overrideAccess: true,
     limit: 1,

@@ -574,7 +574,7 @@ export const Matches: CollectionConfig = {
                 {
                   name: 'observerSignups',
                   type: 'relationship',
-                  relationTo: 'users',
+                  relationTo: 'people',
                   hasMany: true,
                   label: '✋ Observer Signups',
                   admin: { 
@@ -584,7 +584,7 @@ export const Matches: CollectionConfig = {
                 {
                   name: 'producerSignups',
                   type: 'relationship',
-                  relationTo: 'users',
+                  relationTo: 'people',
                   hasMany: true,
                   label: '✋ Producer Signups',
                   admin: { 
@@ -604,7 +604,7 @@ export const Matches: CollectionConfig = {
                     {
                       name: 'user',
                       type: 'relationship',
-                      relationTo: 'users',
+                      relationTo: 'people',
                       required: true,
                     },
                     {
@@ -623,7 +623,7 @@ export const Matches: CollectionConfig = {
                 {
                   name: 'assignedObserver',
                   type: 'relationship',
-                  relationTo: 'users',
+                  relationTo: 'people',
                   label: '✅ Assigned Observer',
                   admin: { 
                     description: 'CONFIRMED observer who WILL work this match (1 max)'
@@ -632,7 +632,7 @@ export const Matches: CollectionConfig = {
                 {
                   name: 'assignedProducer',
                   type: 'relationship',
-                  relationTo: 'users',
+                  relationTo: 'people',
                   label: '✅ Assigned Producer',
                   admin: { 
                     description: 'CONFIRMED producer who WILL work this match (1 max)'
@@ -652,7 +652,7 @@ export const Matches: CollectionConfig = {
                     {
                       name: 'user',
                       type: 'relationship',
-                      relationTo: 'users',
+                      relationTo: 'people',
                       required: true,
                     },
                     {

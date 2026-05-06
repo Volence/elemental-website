@@ -62,33 +62,8 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
         if (!matchesRes.ok) throw new Error('Failed to fetch matches')
         const matchesData = await matchesRes.json()
         
-        setScheduledMatches(matchesData.scheduled || [])
-        
-        // Smart BYE detection: If total matches played > actual match records, add BYE weeks
-        let results = matchesData.results || []
-        if (standingsData.currentSeason) {
-          const totalMatchesPlayed = 
-            standingsData.currentSeason.wins + 
-            standingsData.currentSeason.losses + 
-            (standingsData.currentSeason.ties || 0)
-          
-          const actualMatchCount = results.length
-          const byeWeeksCount = totalMatchesPlayed - actualMatchCount
-          
-          if (byeWeeksCount > 0) {
-            // Add BYE weeks to fill the gap
-            for (let i = 0; i < byeWeeksCount; i++) {
-              results.push({
-                id: -1 - i, // Negative ID for fake BYE entries
-                date: '', // No date for BYE
-                opponent: 'BYE',
-                result: undefined,
-              })
-            }
-          }
-        }
-        
-        setRecentResults(results)
+        setScheduledMatches((matchesData.scheduled || []).filter((m: Match) => m.opponent.toUpperCase() !== 'BYE'))
+        setRecentResults((matchesData.results || []).filter((m: Match) => m.opponent.toUpperCase() !== 'BYE'))
 
       } catch (err: any) {
         console.error('Error fetching FaceIt data:', err)
@@ -164,27 +139,21 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
           <div className="px-6 pb-6">
             <h3 className="text-lg font-semibold text-white mb-3">📅 Upcoming Matches</h3>
             <div className="space-y-2">
-              {scheduledMatches.map((match) => {
-                const isBye = match.opponent.toUpperCase() === 'BYE'
-                return (
-                  <div 
-                    key={match.id} 
-                    className={`flex items-center justify-between p-4 bg-slate-800/50 rounded-lg border transition-all ${
-                      isBye 
-                        ? 'border-slate-600/30 opacity-60' 
-                        : 'border-cyan-500/20 hover:border-cyan-500/40 hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]'
-                    }`}
+              {scheduledMatches.map((match) => (
+                  <div
+                    key={match.id}
+                    className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg border transition-all border-cyan-500/20 hover:border-cyan-500/40 hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]"
                   >
                     <div className="flex-1">
                       <div className="text-sm text-slate-400">{formatDate(match.date)}</div>
-                      <div className={`font-semibold mt-1 ${isBye ? 'text-slate-500' : 'text-white'}`}>
-                        {isBye ? '- BYE Week -' : `vs ${match.opponent}`}
+                      <div className="font-semibold mt-1 text-white">
+                        vs {match.opponent}
                       </div>
                     </div>
-                    {match.roomLink && !isBye && (
-                      <a 
-                        href={match.roomLink} 
-                        target="_blank" 
+                    {match.roomLink && (
+                      <a
+                        href={match.roomLink}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="px-4 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 border-2 border-cyan-500/50 hover:border-cyan-500 rounded-md text-sm font-medium text-cyan-300 transition-all hover:shadow-[0_0_15px_rgba(6,182,212,0.3)]"
                       >
@@ -192,8 +161,7 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
                       </a>
                     )}
                   </div>
-                )
-              })}
+              ))}
             </div>
           </div>
         )}
@@ -212,46 +180,42 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
             </button>
             {showPastMatches && (
               <div className="space-y-2">
-                {recentResults.map((match) => {
-                  const isBye = match.opponent.toUpperCase() === 'BYE'
-                  return (
-                    <div 
-                      key={match.id} 
+                {recentResults.map((match) => (
+                    <div
+                      key={match.id}
                       className={`flex items-center justify-between p-4 bg-slate-800/50 rounded-lg border transition-colors ${
-                        isBye
-                          ? 'border-slate-600/30 opacity-60'
-                          : match.result === 'win' 
-                            ? 'border-green-500/20 hover:border-green-500/40' 
-                            : 'border-red-500/20 hover:border-red-500/40'
+                        match.result === 'win'
+                          ? 'border-green-500/20 hover:border-green-500/40'
+                          : 'border-red-500/20 hover:border-red-500/40'
                       }`}
                     >
                       <div className="flex-1">
-                        {!isBye && match.date && (
+                        {match.date && (
                           <div className="text-sm text-slate-400">{formatDate(match.date)}</div>
                         )}
-                        <div className={`font-semibold ${isBye ? 'text-slate-500' : match.date ? 'mt-1' : ''} ${isBye ? 'text-slate-500' : 'text-white'}`}>
-                          {isBye ? '- BYE Week -' : `vs ${match.opponent}`}
+                        <div className={`font-semibold text-white ${match.date ? 'mt-1' : ''}`}>
+                          vs {match.opponent}
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        {!isBye && match.result === 'win' && (
+                        {match.result === 'win' && (
                           <span className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-md text-sm font-semibold text-green-300">
-                            ✓ WIN{match.elmtScore != null && match.opponentScore != null && 
-                              !(match.elmtScore === 1 && match.opponentScore === 0) && 
+                            ✓ WIN{match.elmtScore != null && match.opponentScore != null &&
+                              !(match.elmtScore === 1 && match.opponentScore === 0) &&
                               ` ${match.elmtScore}-${match.opponentScore}`}
                           </span>
                         )}
-                        {!isBye && match.result === 'loss' && (
+                        {match.result === 'loss' && (
                           <span className="px-3 py-1 bg-red-500/20 border border-red-500/30 rounded-md text-sm font-semibold text-red-300">
-                            ✗ LOSS{match.elmtScore != null && match.opponentScore != null && 
-                              !(match.elmtScore === 0 && match.opponentScore === 1) && 
+                            ✗ LOSS{match.elmtScore != null && match.opponentScore != null &&
+                              !(match.elmtScore === 0 && match.opponentScore === 1) &&
                               ` ${match.elmtScore}-${match.opponentScore}`}
                           </span>
                         )}
-                        {match.roomLink && !isBye && (
-                          <a 
-                            href={match.roomLink} 
-                            target="_blank" 
+                        {match.roomLink && (
+                          <a
+                            href={match.roomLink}
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="px-3 py-1 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-md text-xs font-medium text-slate-300 transition-colors"
                           >
@@ -260,8 +224,7 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
                         )}
                       </div>
                     </div>
-                  )
-                })}
+                ))}
               </div>
             )}
           </div>

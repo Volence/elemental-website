@@ -15,7 +15,7 @@ export async function register() {
         try {
           const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
           console.log('[Instrumentation] Triggering Payload init via self-ping...')
-          await fetch(`${serverUrl}/api/users/me`, {
+          await fetch(`${serverUrl}/api/people/me`, {
             headers: { 'Content-Type': 'application/json' },
           }).catch(() => {})
           console.log('[Instrumentation] Payload init triggered')

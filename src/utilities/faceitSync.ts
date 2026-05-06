@@ -89,7 +89,7 @@ async function fetchTeamProfile(teamId: string): Promise<FaceitTeamData | null> 
  * Fetch current standings from FaceIt Team-Leagues API (v2)
  * No authentication required!
  */
-async function fetchStandings(stageId: string, teamId: string): Promise<{ standing: FaceitStanding | null, totalTeams: number }> {
+async function fetchStandings(stageId: string, teamId: string): Promise<{ standing: FaceitStanding | null, totalTeams: number, allStandings: FaceitStanding[] }> {
   try {
     const response = await fetch(
       `${TEAM_LEAGUES_BASE}/standings?entityId=${stageId}&entityType=stage&userId=&offset=0&limit=100`
@@ -97,24 +97,25 @@ async function fetchStandings(stageId: string, teamId: string): Promise<{ standi
 
     if (!response.ok) {
       console.error(`Failed to fetch standings: ${response.status}`)
-      return { standing: null, totalTeams: 0 }
+      return { standing: null, totalTeams: 0, allStandings: [] }
     }
 
     const data = await response.json()
     const standings = data.payload?.standings || []
-    
+
     // Find this team in the standings
-    const teamStanding = standings.find((s: FaceitStanding) => 
+    const teamStanding = standings.find((s: FaceitStanding) =>
       s.premade_team_id === teamId
     )
 
     return {
       standing: teamStanding || null,
-      totalTeams: standings.length, // Actual number of teams in division
+      totalTeams: standings.length,
+      allStandings: standings,
     }
   } catch (error) {
     console.error('Error fetching standings:', error)
-    return { standing: null, totalTeams: 0 }
+    return { standing: null, totalTeams: 0, allStandings: [] }
   }
 }
 
@@ -226,12 +227,18 @@ export async function syncTeamData(
     
     const [teamProfile, standingsResult, matches] = await Promise.all([
       fetchTeamProfile(faceitTeamId),
-      stageId ? fetchStandings(stageId, faceitTeamId) : { standing: null, totalTeams: 0 },
+      stageId ? fetchStandings(stageId, faceitTeamId) : { standing: null, totalTeams: 0, allStandings: [] as FaceitStanding[] },
       championshipId ? fetchMatches(faceitTeamId, championshipId) : [],
     ])
-    
+
     const standing = standingsResult.standing
     const totalTeams = standingsResult.totalTeams
+    const standingsNameMap = new Map<string, string>()
+    for (const s of standingsResult.allStandings) {
+      if (s.premade_team_id && s.name) {
+        standingsNameMap.set(s.premade_team_id, s.name)
+      }
+    }
 
     if (!teamProfile) {
       return {
@@ -377,12 +384,16 @@ export async function syncTeamData(
         
         const opponentFaction = faceitMatch.factions.find(f => f.id !== faceitTeamId)
         const opponentId = opponentFaction?.id || ''
-        let opponentName = opponentNames.get(opponentId) || 'TBD'
-        
-        // Check if this is a BYE week (no opponent or failed to fetch opponent)
-        const isBye = !opponentId || opponentName === 'TBD'
+
+        // Only a true BYE if there's no opponent faction at all
+        const isBye = !opponentId
+        let opponentName: string
         if (isBye) {
           opponentName = 'BYE'
+        } else {
+          opponentName = opponentNames.get(opponentId)
+            || standingsNameMap.get(opponentId)
+            || `Unknown (${opponentId.slice(0, 8)})`
         }
 
         // Check if match already exists

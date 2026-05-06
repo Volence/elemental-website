@@ -85,7 +85,7 @@ export function UsersListView() {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const res = await fetch('/api/users?limit=200&sort=name&depth=1')
+      const res = await fetch('/api/people?limit=200&sort=name&depth=1')
       if (!res.ok) throw new Error('Failed to load users')
       const data = await res.json()
       setUsers(data.docs ?? [])
@@ -171,7 +171,7 @@ export function UsersListView() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {filtered.map(u => {
             const roleConf = getRoleConfig(u.role)
-            const linkedName = u.linkedPerson && typeof u.linkedPerson === 'object' ? u.linkedPerson.name : null
+            const linkedName = null
             const avatarUrl = u.avatar && typeof u.avatar === 'object' ? u.avatar.url : null
             const teamCount = (u.assignedTeams ?? []).length
 
@@ -231,7 +231,7 @@ export function UserEditorView() {
   const [email, setEmail] = useState('')
   const [role, setRole] = useState('user')
   const [discordId, setDiscordId] = useState('')
-  const [linkedPerson, setLinkedPerson] = useState<number | null>(null)
+  const linkedPerson = null
   const [assignedTeams, setAssignedTeams] = useState<number[]>([])
   const [newPassword, setNewPassword] = useState('')
   const [passwordStatus, setPasswordStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
@@ -248,7 +248,7 @@ export function UserEditorView() {
     if (!userId) return
     try {
       const [userRes, teamsRes, peopleRes] = await Promise.all([
-        fetch(`/api/users/${userId}?depth=1`),
+        fetch(`/api/people/${userId}?depth=1`),
         fetch('/api/teams?limit=100&sort=name&depth=0'),
         fetch('/api/people?limit=500&sort=name&depth=0'),
       ])
@@ -260,7 +260,6 @@ export function UserEditorView() {
         setEmail(u.email ?? '')
         setRole(u.role ?? 'user')
         setDiscordId(u.discordId ?? '')
-        setLinkedPerson(typeof u.linkedPerson === 'object' ? u.linkedPerson?.id : u.linkedPerson ?? null)
         setAssignedTeams((u.assignedTeams ?? []).map((t: any) => typeof t === 'object' ? t.id : t))
         setDepartments({
           isProductionStaff: u.departments?.isProductionStaff ?? false,
@@ -281,25 +280,17 @@ export function UserEditorView() {
         const p = await peopleRes.json()
         setAllPeople((p.docs ?? []).map((doc: any) => ({ id: doc.id, name: doc.name })))
       }
-      // Fetch PUG player data
-      if (userId) {
-        try {
-          const pugRes = await fetch(`/api/pug-players?where[user][equals]=${userId}&depth=0&limit=1`)
-          if (pugRes.ok) {
-            const pugData = await pugRes.json()
-            const pp = pugData.docs?.[0] ?? null
-            setPugPlayer(pp)
-            if (pp) {
-              setPugTiers(pp.tiers ?? [])
-              setPugRegions(pp.inviteRegions ?? [])
-              setPugApprovedRoles(pp.approvedRoles ?? [])
-            }
-          }
-        } catch {
-          // PUG data not critical
+      // Extract PUG data from person record
+      if (userRes.ok) {
+        const u = await userRes.clone().json()
+        if (u.pugTiers?.length) {
+          setPugPlayer(u)
+          setPugTiers(u.pugTiers ?? [])
+          setPugRegions(u.pugInviteRegions ?? [])
+          setPugApprovedRoles(u.pugApprovedRoles ?? [])
         }
-        setPugLoading(false)
       }
+      setPugLoading(false)
     } catch (err) {
       console.error('User load error:', err)
     } finally {
@@ -319,12 +310,11 @@ export function UserEditorView() {
         email,
         role,
         discordId: discordId || null,
-        linkedPerson: linkedPerson || null,
         assignedTeams: assignedTeams.length > 0 ? assignedTeams : null,
         departments,
       }
 
-      const res = await fetch(`/api/users/${userId}`, {
+      const res = await fetch(`/api/people/${userId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -359,7 +349,7 @@ export function UserEditorView() {
     setPasswordStatus('saving')
     setPasswordError('')
     try {
-      const res = await fetch(`/api/users/${userId}`, {
+      const res = await fetch(`/api/people/${userId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: newPassword }),
@@ -381,25 +371,24 @@ export function UserEditorView() {
     if (!userId) return
     setPugSaveStatus('saving')
     try {
-      const res = await fetch('/api/pug-players', {
-        method: 'POST',
+      const res = await fetch(`/api/people/${userId}`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          user: Number(userId),
-          tiers: ['open'],
-          registeredDate: new Date().toISOString(),
+          pugTiers: ['open'],
+          pugRegisteredDate: new Date().toISOString(),
         }),
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
         throw new Error(err.errors?.[0]?.message ?? 'Failed to register')
       }
-      const created = await res.json()
-      const pp = created.doc ?? created
+      const updated = await res.json()
+      const pp = updated.doc ?? updated
       setPugPlayer(pp)
-      setPugTiers(pp.tiers ?? ['open'])
-      setPugRegions(pp.inviteRegions ?? [])
-      setPugApprovedRoles(pp.approvedRoles ?? [])
+      setPugTiers(pp.pugTiers ?? ['open'])
+      setPugRegions(pp.pugInviteRegions ?? [])
+      setPugApprovedRoles(pp.pugApprovedRoles ?? [])
       setPugSaveStatus('saved')
       setTimeout(() => setPugSaveStatus('idle'), 2500)
     } catch (err: any) {
@@ -410,15 +399,15 @@ export function UserEditorView() {
   }
 
   const handlePugSave = async () => {
-    if (!pugPlayer?.id) return
+    if (!userId) return
     setPugSaveStatus('saving')
     try {
-      const body: Record<string, unknown> = { tiers: pugTiers }
+      const body: Record<string, unknown> = { pugTiers: pugTiers }
       if (pugTiers.includes('invite')) {
-        body.inviteRegions = pugRegions
-        body.approvedRoles = pugApprovedRoles
+        body.pugInviteRegions = pugRegions
+        body.pugApprovedRoles = pugApprovedRoles
       }
-      const res = await fetch(`/api/pug-players/${pugPlayer.id}`, {
+      const res = await fetch(`/api/people/${userId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -478,7 +467,7 @@ export function UserEditorView() {
 
   const roleConf = getRoleConfig(role)
   const showDepts = role !== 'admin' && role !== 'player'
-  const linkedPersonName = user?.linkedPerson && typeof user.linkedPerson === 'object' ? user.linkedPerson.name : allPeople.find(p => p.id === linkedPerson)?.name
+  const linkedPersonName = user?.name ?? null
 
   return (
     <div style={{ maxWidth: 960, margin: '0 auto', padding: '24px 20px 60px' }}>
@@ -496,7 +485,7 @@ export function UserEditorView() {
         .person-link-card:hover { background: rgba(99, 102, 241, 0.1); border-color: rgba(99, 102, 241, 0.35); transform: translateY(-1px); }
       `}</style>
 
-      {isAdmin && <a href="/admin/collections/users" className="back-link"><ArrowLeft size={14} /> Back to Users</a>}
+      {isAdmin && <a href="/admin/manage-users" className="back-link"><ArrowLeft size={14} /> Back to Users</a>}
 
       {/* Header */}
       <div style={editorStyles.header}>
@@ -520,9 +509,9 @@ export function UserEditorView() {
         </div>
       </div>
 
-      {/* Edit Person Profile link - shown when user has a linked person */}
-      {linkedPerson && linkedPersonName && (
-        <a href={isSelf ? '/admin/my-profile' : `/admin/edit-person?id=${linkedPerson}`} className="person-link-card" style={{ marginBottom: 20 }}>
+      {/* Edit Person Profile link */}
+      {linkedPersonName && (
+        <a href={isSelf ? '/admin/my-profile' : `/admin/edit-person?id=${userId}`} className="person-link-card" style={{ marginBottom: 20 }}>
           <div style={{ width: 42, height: 42, borderRadius: '50%', background: 'rgba(99, 102, 241, 0.15)', border: '2px solid rgba(99, 102, 241, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <UserIcon size={20} color="#818cf8" />
           </div>
@@ -742,22 +731,7 @@ export function UserEditorView() {
                 )}
               </div>
             )}
-            {isAdmin ? (
-              <div style={editorStyles.editableField}>
-                <label style={editorStyles.fieldLabel}>Linked Person</label>
-                <select className="person-select" value={linkedPerson ?? ''} onChange={(e) => setLinkedPerson(e.target.value ? Number(e.target.value) : null)}>
-                  <option value="">- None -</option>
-                  {allPeople.map(p => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
-              </div>
-            ) : linkedPersonName && (
-              <div style={editorStyles.readonlyField}>
-                <span style={editorStyles.readonlyLabel}>Linked Person</span>
-                <span style={editorStyles.readonlyValue}>{linkedPersonName}</span>
-              </div>
-            )}
+            {/* Linked Person field removed - user IS the person now */}
 
             {/* Password Reset */}
             <div style={editorStyles.editableField}>

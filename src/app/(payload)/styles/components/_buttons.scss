@@ -161,7 +161,7 @@ button.btn--withoutPopup {
 // Small square buttons for field controls
 button[class*="remove"]:not(.array-field__add-row):not([class*="multi-value"]),
 button[class*="clear"]:not(.array-field__add-row),
-button[class*="toggle"]:not(.array-field__add-row),
+button[class*="toggle"]:not(.array-field__add-row):not(.toggle-switch),
 button[class*="expand"]:not(.array-field__add-row),
 .field-type button[aria-label]:not([type="submit"]):not(.array-field__add-row) {
   padding: 0.5rem;

@@ -11,16 +11,14 @@ import TaskSummaryWidget from './TaskSummaryWidget'
 import AssignedTeamsDashboard from './AssignedTeamsDashboard'
 import RecruitmentWidget from './RecruitmentWidget'
 import { useAuth } from '@payloadcms/ui'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 import { Shield, BarChart3, Gamepad2, Zap } from 'lucide-react'
 
 /**
  * Player-focused dashboard cards for "My Stats" and "My Team"
  */
-const PlayerDashboard: React.FC<{ user: User }> = ({ user }) => {
-  const linkedPersonId = typeof user.linkedPerson === 'object' && user.linkedPerson !== null
-    ? user.linkedPerson.id
-    : user.linkedPerson
+const PlayerDashboard: React.FC<{ user: Person }> = ({ user }) => {
+  const linkedPersonId = user.id
 
   const assignedTeams = user.assignedTeams as (number | { id: number; name?: string })[] | undefined
 
@@ -112,7 +110,7 @@ const PlayerDashboard: React.FC<{ user: User }> = ({ user }) => {
 }
 
 const BeforeDashboard: React.FC = () => {
-  const { user } = useAuth<User>()
+  const { user } = useAuth<Person>()
   const wrapperRef = React.useRef<HTMLDivElement>(null)
 
   // Hide the default Payload dashboard collection groups that render after this component

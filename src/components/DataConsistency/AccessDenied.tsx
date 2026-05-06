@@ -1,8 +1,8 @@
 import React from 'react'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 interface AccessDeniedProps {
-  user: User | null | undefined
+  user: Person | null | undefined
 }
 
 export function AccessDenied({ user }: AccessDeniedProps) {

@@ -3,7 +3,7 @@ import type { CollectionConfig } from 'payload'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import type { AccessArgs } from 'payload'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 import { UserRole } from '../access/roles'
 
 /**
@@ -41,9 +41,9 @@ const canReadGraphicsAssets = (): boolean => {
   return true
 }
 
-const canWriteGraphicsAssets = ({ req: { user } }: AccessArgs<User>): boolean => {
+const canWriteGraphicsAssets = ({ req: { user } }: AccessArgs<Person>): boolean => {
   if (!user) return false
-  const u = user as User
+  const u = user as Person
   
   // Admins and staff managers always have full access
   if (u.role === UserRole.ADMIN || u.role === UserRole.STAFF_MANAGER) return true

@@ -19,7 +19,6 @@ const routeToSectionMap: Record<string, string> = {
   '/admin/collections/production-staff': 'staff',
   
   // System
-  '/admin/collections/users': 'system',
   '/admin/collections/ignored-duplicates': 'system',
   '/admin/collections/invite-links': 'system',
   

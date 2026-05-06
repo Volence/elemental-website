@@ -74,7 +74,7 @@ export async function handleAvailability(
 
     // Find creator user
     const users = await payload.find({
-      collection: 'users',
+      collection: 'people',
       where: { discordId: { equals: interaction.user.id } },
       limit: 1,
     })

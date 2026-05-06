@@ -31,14 +31,7 @@ async function getPageState() {
       return { currentUser: null, isRegistered: false, isPugAdmin: false, seasonId: season?.id ?? null, seasonName: season?.name ?? null }
     }
 
-    const player = await payload.find({
-      collection: 'pug-players',
-      where: { user: { equals: user.id } },
-      overrideAccess: true,
-      limit: 1,
-    })
-    const playerDoc = player.docs[0] as any
-    const isRegistered = playerDoc?.tiers?.includes('open') ?? false
+    const isRegistered = (user as any).pugTiers?.includes('open') ?? false
     const u = user as any
     const isPugAdmin = u.departments?.isPugAdmin === true || u.role === 'admin'
 

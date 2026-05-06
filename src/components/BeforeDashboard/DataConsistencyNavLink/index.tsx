@@ -2,14 +2,14 @@
 
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '@payloadcms/ui'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 import { UserRole } from '@/access/roles'
 
 /**
  * Data Consistency nav link - shows in sidebar with issue count badge
  */
 const DataConsistencyNavLink: React.FC = () => {
-  const { user } = useAuth<User>()
+  const { user } = useAuth<Person>()
   const [issueCount, setIssueCount] = useState(0)
   const [loading, setLoading] = useState(true)
 

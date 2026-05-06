@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@payloadcms/ui'
 import { Gamepad2, Clock } from 'lucide-react'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 import { UserRole } from '@/access/roles'
 
 interface UpcomingMatch {
@@ -20,7 +20,7 @@ interface UpcomingMatch {
  * Shows next 7 upcoming scheduled matches with date, title, and league info.
  */
 export default function UpcomingMatchesWidget() {
-  const { user } = useAuth<User>()
+  const { user } = useAuth<Person>()
   const [matches, setMatches] = useState<UpcomingMatch[]>([])
   const [loading, setLoading] = useState(true)
 

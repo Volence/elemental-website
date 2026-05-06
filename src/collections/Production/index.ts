@@ -3,7 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { authenticated } from '../../access/authenticated'
 import { anyone } from '../../access/anyone'
 import { adminOnly, UserRole } from '../../access/roles'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 const formatSlug = (value: string): string => {
   return value
@@ -23,7 +23,7 @@ export const Production: CollectionConfig = {
   access: {
     // Only admins and staff managers can create production staff
     create: ({ req }) => {
-      const user = req.user as User | undefined
+      const user = req.user as Person | undefined
       if (!user) return false
       return user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER
     },
@@ -33,7 +33,7 @@ export const Production: CollectionConfig = {
     read: anyone,
     // Admins and staff managers can update production staff
     update: ({ req }) => {
-      const user = req.user as User | undefined
+      const user = req.user as Person | undefined
       if (!user) return false
       return user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER
     },

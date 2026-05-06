@@ -4,7 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import { useAuth } from '@payloadcms/ui'
 import { BarChart3, Upload, Users, Shield } from 'lucide-react'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 export type ScrimTab = 'scrims' | 'upload' | 'players' | 'heroes'
 
@@ -18,7 +18,7 @@ interface ScrimAnalyticsTabsProps {
  * Reuses the same dashboard-tabs styling from the scrim SCSS.
  */
 export default function ScrimAnalyticsTabs({ activeTab }: ScrimAnalyticsTabsProps) {
-  const { user } = useAuth<User>()
+  const { user } = useAuth<Person>()
   const role = (user?.role as string) ?? ''
   const canUpload = ['admin', 'staff-manager', 'team-manager', 'player'].includes(role)
 

@@ -20,50 +20,14 @@ interface IssueCardProps {
 }
 
 export function IssueCard({ type, category, message, items, autoFixable, onRefresh }: IssueCardProps) {
-  const [deleting, setDeleting] = useState<number | null>(null)
-  const [deletedIds, setDeletedIds] = useState<Set<number>>(new Set())
   const [ignoring, setIgnoring] = useState<number | null>(null)
   const [ignoredIds, setIgnoredIds] = useState<Set<number>>(new Set())
   
   const hasSlug = items.some((item) => item.slug)
   const hasDetails = items.some((item) => item.details)
   
-  // Only show delete button for Orphaned People
-  const isOrphanedPeople = category === 'Orphaned People'
-  // Only show ignore button for Potential Duplicates
   const isPotentialDuplicates = category === 'Potential Duplicates'
   
-  const handleDelete = async (item: IssueItem) => {
-    if (!confirm(`Are you sure you want to delete "${item.name}"? This action cannot be undone.`)) {
-      return
-    }
-
-    setDeleting(item.id)
-    try {
-      const response = await fetch(`/api/people/${item.id}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to delete person')
-      }
-
-      // Mark as deleted
-      setDeletedIds(prev => new Set(prev).add(item.id))
-      
-      // Notify parent to refresh data
-      if (onRefresh) {
-        setTimeout(() => onRefresh(), 500)
-      }
-    } catch (error) {
-      console.error('Error deleting person:', error)
-      alert('Failed to delete person. Please try again.')
-    } finally {
-      setDeleting(null)
-    }
-  }
-
   const handleIgnore = async (item: IssueItem) => {
     // Extract the "other person" ID from the details string
     // Details format: "83% match with \"OtherName\""
@@ -116,10 +80,10 @@ export function IssueCard({ type, category, message, items, autoFixable, onRefre
     }
   }
   
-  const visibleItems = items.filter(item => !deletedIds.has(item.id) && !ignoredIds.has(item.id))
+  const visibleItems = items.filter(item => !ignoredIds.has(item.id))
 
   // If all items are resolved, show success message
-  if (visibleItems.length === 0 && (deletedIds.size > 0 || ignoredIds.size > 0)) {
+  if (visibleItems.length === 0 && ignoredIds.size > 0) {
     return (
       <div className="issue-card issue-card--success">
         <div className="issue-card__header">
@@ -127,7 +91,6 @@ export function IssueCard({ type, category, message, items, autoFixable, onRefre
             <CheckCircle2 size={16} style={{ display: 'inline', verticalAlign: 'middle', marginRight: '4px', color: 'rgb(34, 197, 94)' }} /> {category}
           </h3>
           <p className="issue-card__message">
-            {isOrphanedPeople && 'All orphaned people have been resolved!'}
             {isPotentialDuplicates && 'All duplicates have been resolved!'}
           </p>
         </div>
@@ -161,7 +124,7 @@ export function IssueCard({ type, category, message, items, autoFixable, onRefre
                   <th>Name</th>
                   {hasSlug && <th>Slug</th>}
                   {hasDetails && <th>Details</th>}
-                  {(isOrphanedPeople || isPotentialDuplicates) && <th className="issue-card__table-actions">Actions</th>}
+                  {isPotentialDuplicates && <th className="issue-card__table-actions">Actions</th>}
                 </tr>
               </thead>
               <tbody>
@@ -184,26 +147,15 @@ export function IssueCard({ type, category, message, items, autoFixable, onRefre
                     {hasDetails && (
                       <td className="issue-card__table-cell--details">{item.details || '-'}</td>
                     )}
-                    {(isOrphanedPeople || isPotentialDuplicates) && (
+                    {isPotentialDuplicates && (
                       <td className="issue-card__table-cell--actions">
-                        {isOrphanedPeople && (
-                          <button
-                            onClick={() => handleDelete(item)}
-                            disabled={deleting === item.id}
-                            className="issue-card__action-button issue-card__action-button--delete"
-                          >
-                            {deleting === item.id ? 'Deleting...' : 'Delete'}
-                          </button>
-                        )}
-                        {isPotentialDuplicates && (
-                          <button
-                            onClick={() => handleIgnore(item)}
-                            disabled={ignoring === item.id}
-                            className="issue-card__action-button issue-card__action-button--ignore"
-                          >
-                            {ignoring === item.id ? 'Ignoring...' : 'Ignore'}
-                          </button>
-                        )}
+                        <button
+                          onClick={() => handleIgnore(item)}
+                          disabled={ignoring === item.id}
+                          className="issue-card__action-button issue-card__action-button--ignore"
+                        >
+                          {ignoring === item.id ? 'Ignoring...' : 'Ignore'}
+                        </button>
                       </td>
                     )}
                   </tr>

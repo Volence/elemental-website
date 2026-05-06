@@ -1,5 +1,5 @@
 import type { Payload, PayloadRequest } from 'payload'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 /**
  * Session Tracker Utility
@@ -11,12 +11,12 @@ import type { User } from '@/payload-types'
  * Create or update a session when user logs in
  * 
  * @param payload - Payload instance
- * @param user - User who logged in
+ * @param user - Person who logged in
  * @param req - Request object for IP/user agent
  */
 export async function trackLogin(
   payload: Payload,
-  user: User,
+  user: Person,
   req?: PayloadRequest,
 ): Promise<void> {
   try {

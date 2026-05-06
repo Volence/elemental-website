@@ -4,7 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import { useAuth } from '@payloadcms/ui'
 import { Upload, BarChart3, Calendar, PlusCircle } from 'lucide-react'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 import { UserRole } from '@/access/roles'
 
 /**
@@ -12,7 +12,7 @@ import { UserRole } from '@/access/roles'
  * Role-filtered: buttons only show if the user has access.
  */
 export default function QuickActionsWidget() {
-  const { user } = useAuth<User>()
+  const { user } = useAuth<Person>()
   if (!user) return null
 
   const role = (user.role as string) ?? ''

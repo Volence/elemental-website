@@ -26,15 +26,12 @@ export async function POST(request: NextRequest, { params }: Params) {
     return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
   }
 
-  const pugPlayers = await payload.find({
-    collection: 'pug-players',
-    where: { user: { equals: user.id } },
-    overrideAccess: true,
-  })
-  const pugPlayer = pugPlayers.docs[0] as any
-  if (!pugPlayer) return NextResponse.json({ error: 'Not registered for PUGs' }, { status: 403 })
+  const person = user as any
+  if (!person.pugTiers?.length) {
+    return NextResponse.json({ error: 'Not registered for PUGs' }, { status: 403 })
+  }
 
-  const ban = await getActiveBan(pugPlayer.id)
+  const ban = await getActiveBan(user.id)
   if (ban) {
     return NextResponse.json(
       { error: `You are banned until ${ban.bannedUntil.toISOString()}. Reason: ${ban.reason}` },
@@ -46,11 +43,11 @@ export async function POST(request: NextRequest, { params }: Params) {
   if (!lobby) return NextResponse.json({ error: 'Lobby not found' }, { status: 404 })
 
   if (lobby.tier === 'invite') {
-    if (!pugPlayer.tiers?.includes('invite')) {
+    if (!person.pugTiers?.includes('invite')) {
       return NextResponse.json({ error: 'Not registered for invite tier' }, { status: 403 })
     }
     if (lobby.region) {
-      const playerRegions: string[] = pugPlayer.inviteRegions ?? []
+      const playerRegions: string[] = person.pugInviteRegions ?? []
       if (!playerRegions.includes(lobby.region)) {
         return NextResponse.json(
           { error: `Not invited to the ${lobby.region.toUpperCase()} region` },
@@ -74,7 +71,7 @@ export async function POST(request: NextRequest, { params }: Params) {
         )
       }
     }
-    const approvedRolesNormalized = (pugPlayer.approvedRoles ?? []).map((r: string) => r.replace(/-/g, '_'))
+    const approvedRolesNormalized = (person.pugApprovedRoles ?? []).map((r: string) => r.replace(/-/g, '_'))
     const invalidRoles = roles.filter((r: string) => !approvedRolesNormalized.includes(r))
     if (invalidRoles.length > 0) {
       return NextResponse.json(

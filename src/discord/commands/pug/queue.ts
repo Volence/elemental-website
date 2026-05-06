@@ -24,7 +24,7 @@ export async function handlePugQueue(interaction: ChatInputCommandInteraction): 
   const payload = await getPayload({ config: configPromise })
   const discordId = interaction.user.id
   const users = await payload.find({
-    collection: 'users',
+    collection: 'people',
     where: { discordId: { equals: discordId } },
     overrideAccess: true,
     limit: 1,
@@ -36,27 +36,15 @@ export async function handlePugQueue(interaction: ChatInputCommandInteraction): 
   }
 
   const user = users.docs[0] as any
-  const pugPlayers = await payload.find({
-    collection: 'pug-players',
-    where: { user: { equals: user.id } },
-    overrideAccess: true,
-  })
 
-  if (pugPlayers.docs.length === 0) {
-    await interaction.editReply('❌ You are not registered for PUGs. Register at elmt.gg/pugs/register')
+  if (!user.pugTiers?.includes('open')) {
+    await interaction.editReply('❌ You are not registered for open-tier PUGs. Register at elmt.gg/pugs/register')
     return
   }
 
-  const pugPlayer = pugPlayers.docs[0] as any
-
-  const ban = await getActiveBan(pugPlayer.id)
+  const ban = await getActiveBan(user.id)
   if (ban) {
     await interaction.editReply(`⛔ You are banned until <t:${Math.floor(ban.bannedUntil.getTime() / 1000)}:F>.\nReason: ${ban.reason}`)
-    return
-  }
-
-  if (!pugPlayer.tiers?.includes('open')) {
-    await interaction.editReply('❌ You are not registered for open-tier PUGs.')
     return
   }
 

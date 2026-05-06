@@ -3,13 +3,13 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '@payloadcms/ui'
 import { ClipboardList, AlertTriangle } from 'lucide-react'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 /**
  * Task Summary widget - aggregate counts of active tasks by status.
  */
 export default function TaskSummaryWidget() {
-  const { user } = useAuth<User>()
+  const { user } = useAuth<Person>()
   const [counts, setCounts] = useState<{ backlog: number; inProgress: number; review: number; overdue: number; myTasks: number } | null>(null)
   const [loading, setLoading] = useState(true)
 

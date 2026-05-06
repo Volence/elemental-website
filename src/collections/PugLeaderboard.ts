@@ -24,7 +24,7 @@ export const PugLeaderboard: CollectionConfig = {
     {
       name: 'player',
       type: 'relationship',
-      relationTo: 'pug-players',
+      relationTo: 'people',
       required: true,
     },
     {

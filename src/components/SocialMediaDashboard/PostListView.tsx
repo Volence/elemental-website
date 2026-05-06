@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '@payloadcms/ui'
 import Link from 'next/link'
 import { formatLocalDateTime } from '@/utilities/formatDateTime'
-import type { SocialPost, User } from '@/payload-types'
+import type { SocialPost, Person } from '@/payload-types'
 
 interface PostListViewProps {
   viewType: 'my-posts' | 'all-posts'
@@ -153,7 +153,7 @@ export function PostListView({ viewType }: PostListViewProps) {
             </thead>
             <tbody>
               {posts.map((post) => {
-                const assignedUser = post.assignedTo as User
+                const assignedUser = post.assignedTo as Person
                 return (
                   <tr key={post.id}>
                     <td>{post.scheduledDate ? formatLocalDateTime(post.scheduledDate) : 'Not scheduled'}</td>

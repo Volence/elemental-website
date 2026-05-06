@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { v4 as uuidv4 } from 'uuid'
 import { adminOnly } from '../../access/roles'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 const canManageInvites = ({ req: { user } }: { req: { user: any } }) => {
   if (!user) return false
@@ -274,7 +274,7 @@ export const InviteLinks: CollectionConfig = {
     {
       name: 'usedBy',
       type: 'relationship',
-      relationTo: 'users',
+      relationTo: 'people',
       admin: {
         readOnly: true,
         description: 'The user who used this invite',
@@ -283,7 +283,7 @@ export const InviteLinks: CollectionConfig = {
     {
       name: 'createdBy',
       type: 'relationship',
-      relationTo: 'users',
+      relationTo: 'people',
       admin: {
         readOnly: true,
         description: 'The admin who created this invite',
@@ -339,7 +339,7 @@ export const InviteLinks: CollectionConfig = {
 
         // Enforce role restrictions based on creator's role
         if (data?.role && req.user) {
-          const userRole = (req.user as User).role
+          const userRole = (req.user as Person).role
           if (userRole === 'staff-manager' && (data.role === 'admin' || data.role === 'staff-manager')) {
             throw new Error('Staff Managers cannot create invite links for Admin or Staff Manager roles')
           }
@@ -353,7 +353,7 @@ export const InviteLinks: CollectionConfig = {
           }
           // Team managers: auto-scope assignedTeams to their own teams
           if (userRole === 'team-manager' && operation === 'create') {
-            const creatorTeams = (req.user as User).assignedTeams
+            const creatorTeams = (req.user as Person).assignedTeams
             if (creatorTeams && Array.isArray(creatorTeams)) {
               // Only allow teams the manager is assigned to
               const managerTeamIds = creatorTeams.map((t: any) => typeof t === 'object' ? t.id : t)

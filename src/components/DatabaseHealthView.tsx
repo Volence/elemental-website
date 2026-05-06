@@ -59,7 +59,6 @@ export default function DatabaseHealthView() {
         'teams',
         'people',
         'matches',
-        'users',
         'audit-logs',
         'error-logs',
         'cron-job-runs',

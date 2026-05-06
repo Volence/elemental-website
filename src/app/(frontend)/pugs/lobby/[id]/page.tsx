@@ -32,11 +32,34 @@ type Hero = { id: number; name: string; role: string }
 type Player = {
   userId: number
   name: string
+  avatarUrl: string | null
   team: number | null
   isCaptain: boolean
   readyConfirmed: boolean
   assignedRole: string | null
   queuedRoles: string[]
+}
+
+function PlayerAvatar({ player, size = 24 }: { player: Player; size?: number }) {
+  if (player.avatarUrl) {
+    return (
+      <img
+        src={player.avatarUrl}
+        alt=""
+        className="rounded-full object-cover shrink-0"
+        style={{ width: size, height: size }}
+      />
+    )
+  }
+  const initials = (player.name ?? '?').charAt(0).toUpperCase()
+  return (
+    <div
+      className="rounded-full bg-gray-700 flex items-center justify-center shrink-0 text-gray-400 font-medium select-none"
+      style={{ width: size, height: size, fontSize: size * 0.45 }}
+    >
+      {initials}
+    </div>
+  )
 }
 type LobbyData = {
   lobby: any
@@ -261,6 +284,7 @@ export default function LobbyPage() {
               <div className="divide-y divide-gray-800/50">
                 {players.map((p) => (
                   <div key={p.userId} className="flex items-center gap-3 px-4 py-3">
+                    <PlayerAvatar player={p} size={28} />
                     <span className={`text-sm font-medium shrink-0 w-36 truncate ${p.userId === currentUserId ? 'text-blue-300' : 'text-gray-200'}`}>
                       {p.name}{p.userId === currentUserId && <span className="text-blue-500 font-normal"> (you)</span>}
                     </span>
@@ -357,10 +381,13 @@ export default function LobbyPage() {
             <div className="divide-y divide-gray-800/50">
               {players.map((p) => (
                 <div key={p.userId} className="flex items-center justify-between gap-3 px-4 py-2.5">
-                  <span className={`text-sm ${p.userId === currentUserId ? 'text-blue-300 font-medium' : 'text-gray-200'}`}>
-                    {p.name}{p.userId === currentUserId && ' (you)'}
-                  </span>
-                  <span className={`text-xs px-2 py-0.5 rounded ${p.readyConfirmed ? 'bg-green-900/50 text-green-400 border border-green-800' : 'bg-gray-800/50 text-gray-500 border border-gray-700'}`}>
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <PlayerAvatar player={p} size={24} />
+                    <span className={`text-sm truncate ${p.userId === currentUserId ? 'text-blue-300 font-medium' : 'text-gray-200'}`}>
+                      {p.name}{p.userId === currentUserId && ' (you)'}
+                    </span>
+                  </div>
+                  <span className={`text-xs px-2 py-0.5 rounded shrink-0 ${p.readyConfirmed ? 'bg-green-900/50 text-green-400 border border-green-800' : 'bg-gray-800/50 text-gray-500 border border-gray-700'}`}>
                     {p.readyConfirmed ? 'Ready' : 'Not ready'}
                   </span>
                 </div>
@@ -744,9 +771,12 @@ function DraftUI({
               <ul className="divide-y divide-gray-800/50">
                 {teamPlayers.map((p) => (
                   <li key={p.userId} className="flex items-center justify-between gap-2 px-3 py-2">
-                    <span className={`text-sm truncate min-w-0 ${p.userId === currentUserId ? TEAM_TEXT[t] + ' font-medium' : 'text-gray-200'}`}>
-                      {p.name}{p.isCaptain && ' ★'}{p.userId === currentUserId && ' (you)'}
-                    </span>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <PlayerAvatar player={p} size={22} />
+                      <span className={`text-sm truncate min-w-0 ${p.userId === currentUserId ? TEAM_TEXT[t] + ' font-medium' : 'text-gray-200'}`}>
+                        {p.name}{p.isCaptain && ' ★'}{p.userId === currentUserId && ' (you)'}
+                      </span>
+                    </div>
                     {p.assignedRole && <span className="shrink-0"><RoleBadge role={p.assignedRole} /></span>}
                   </li>
                 ))}
@@ -771,6 +801,7 @@ function DraftUI({
             const roleBlocked = p.assignedRole ? takenRoles.has(p.assignedRole) : false
             return (
               <div key={p.userId} className={`flex items-center gap-3 px-4 py-2.5 ${roleBlocked ? 'opacity-40' : ''}`}>
+                <PlayerAvatar player={p} size={22} />
                 <span className="text-sm text-gray-200 flex-1">{p.name}</span>
                 {p.assignedRole && <RoleBadge role={p.assignedRole} />}
                 {roleBlocked && <span className="text-xs text-gray-600">role taken</span>}
@@ -973,9 +1004,12 @@ function TeamsDisplay({ players, currentUserId, heroes, banState }: { players: P
             <ul className="divide-y divide-gray-800/50">
               {list.map((p) => (
                 <li key={p.userId} className="flex items-center justify-between gap-2 px-3 py-2">
-                  <span className={`text-sm truncate min-w-0 ${p.userId === currentUserId ? (t === 1 ? 'text-blue-300' : 'text-orange-300') + ' font-medium' : 'text-gray-200'}`}>
-                    {p.name}{p.isCaptain && ' ★'}{p.userId === currentUserId && ' (you)'}
-                  </span>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <PlayerAvatar player={p} size={22} />
+                    <span className={`text-sm truncate min-w-0 ${p.userId === currentUserId ? (t === 1 ? 'text-blue-300' : 'text-orange-300') + ' font-medium' : 'text-gray-200'}`}>
+                      {p.name}{p.isCaptain && ' ★'}{p.userId === currentUserId && ' (you)'}
+                    </span>
+                  </div>
                   {p.assignedRole && <span className="shrink-0"><RoleBadge role={p.assignedRole} /></span>}
                 </li>
               ))}
@@ -1285,13 +1319,16 @@ function LobbySetupAssistant({
                         const tag = hostInfo.battleTags[p.userId]
                         return (
                           <li key={p.userId} className="flex items-center justify-between gap-2 px-3 py-2">
-                            <div className="min-w-0">
-                              <span className="text-sm text-gray-200 block truncate">{p.name}</span>
-                              {tag ? (
-                                <span className="text-xs text-gray-500">{tag}</span>
-                              ) : (
-                                <span className="text-xs text-gray-600 italic">No BattleTag set</span>
-                              )}
+                            <div className="flex items-center gap-2 min-w-0">
+                              <PlayerAvatar player={p} size={22} />
+                              <div className="min-w-0">
+                                <span className="text-sm text-gray-200 block truncate">{p.name}</span>
+                                {tag ? (
+                                  <span className="text-xs text-gray-500">{tag}</span>
+                                ) : (
+                                  <span className="text-xs text-gray-600 italic">No BattleTag set</span>
+                                )}
+                              </div>
                             </div>
                             {tag && <CopyButton text={tag} label="📋" />}
                           </li>

@@ -12,7 +12,7 @@ import {
   isProductionStaff,
   isSocialMediaStaff,
 } from '../../access/roles'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 // Task types per department
 const TASK_TYPES = {
@@ -131,7 +131,7 @@ export const Tasks: CollectionConfig = {
     // Only admins/staff managers can delete
     delete: ({ req: { user } }) => {
       if (!user) return false
-      return (user as User).role === UserRole.ADMIN || (user as User).role === UserRole.STAFF_MANAGER
+      return (user as Person).role === UserRole.ADMIN || (user as Person).role === UserRole.STAFF_MANAGER
     },
   },
   admin: {
@@ -244,7 +244,7 @@ export const Tasks: CollectionConfig = {
         {
           name: 'assignedTo',
           type: 'relationship',
-          relationTo: 'users',
+          relationTo: 'people',
           hasMany: true,
           admin: {
             description: 'Staff member(s) working on this',
@@ -254,7 +254,7 @@ export const Tasks: CollectionConfig = {
         {
           name: 'requestedBy',
           type: 'relationship',
-          relationTo: 'users',
+          relationTo: 'people',
           admin: {
             description: 'Who submitted this request (for cross-department work)',
             width: '50%',
@@ -381,7 +381,7 @@ export const Tasks: CollectionConfig = {
         {
           name: 'author',
           type: 'relationship',
-          relationTo: 'users',
+          relationTo: 'people',
           required: true,
         },
         {

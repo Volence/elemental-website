@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { useAuth } from '@payloadcms/ui'
-import type { User, Media } from '@/payload-types'
+import type { Person, Media } from '@/payload-types'
 
 /**
  * Custom avatar component for the admin panel header
@@ -10,7 +10,7 @@ import type { User, Media } from '@/payload-types'
  */
 export const UserAvatar: React.FC = () => {
   const { user } = useAuth()
-  const typedUser = user as User | undefined
+  const typedUser = user as Person | undefined
 
   if (!typedUser) return null
 
@@ -33,7 +33,7 @@ export const UserAvatar: React.FC = () => {
   return (
     <img
       src={avatarUrl}
-      alt={typedUser.name || 'User avatar'}
+      alt={typedUser.name || 'Person avatar'}
       className="user-avatar"
     />
   )

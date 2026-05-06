@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { authenticated } from '../access/authenticated'
 import { hasAnyRole, UserRole } from '../access/roles'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 export const WatchedThreads: CollectionConfig = {
   slug: 'watched-threads',
@@ -12,25 +12,25 @@ export const WatchedThreads: CollectionConfig = {
   access: {
     // Team managers, staff managers, and admins can view
     read: ({ req }) => {
-      const user = req.user as User | undefined
+      const user = req.user as Person | undefined
       if (!user) return false
       return hasAnyRole(UserRole.ADMIN, UserRole.TEAM_MANAGER, UserRole.STAFF_MANAGER)({
         req: { user },
       } as any)
     },
     create: ({ req }) => {
-      const user = req.user as User | undefined
+      const user = req.user as Person | undefined
       if (!user) return false
       return user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER
     },
     update: ({ req }) => {
-      const user = req.user as User | undefined
+      const user = req.user as Person | undefined
       if (!user) return false
       return user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER
     },
     // Only admins can delete
     delete: ({ req }) => {
-      const user = req.user as User | undefined
+      const user = req.user as Person | undefined
       if (!user) return false
       return user.role === UserRole.ADMIN
     },
@@ -101,7 +101,7 @@ export const WatchedThreads: CollectionConfig = {
     {
       name: 'addedBy',
       type: 'relationship',
-      relationTo: 'users',
+      relationTo: 'people',
       admin: {
         description: 'User who added this thread to the watch list',
         readOnly: true,

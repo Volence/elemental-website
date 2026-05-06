@@ -1,5 +1,5 @@
 import type { Payload, PayloadRequest } from 'payload'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 /**
  * Error Logger Utility
@@ -12,7 +12,7 @@ export type ErrorType = 'api' | 'backend' | 'database' | 'frontend' | 'validatio
 export type ErrorSeverity = 'low' | 'medium' | 'high' | 'critical'
 
 export interface ErrorLogParams {
-  user?: User | string | number | null
+  user?: Person | string | number | null
   errorType: ErrorType
   message: string
   stack?: string
@@ -80,7 +80,7 @@ export async function logApiError(
   payload: Payload,
   error: unknown,
   url: string,
-  user?: User | null,
+  user?: Person | null,
   severity: ErrorSeverity = 'medium',
 ): Promise<void> {
   const message = error instanceof Error ? error.message : String(error)
@@ -108,7 +108,7 @@ export async function logFrontendError(
   payload: Payload,
   error: unknown,
   componentName: string,
-  user?: User | null,
+  user?: Person | null,
 ): Promise<void> {
   const message = error instanceof Error ? error.message : String(error)
   const stack = error instanceof Error ? error.stack : undefined
@@ -129,13 +129,13 @@ export async function logFrontendError(
  * @param payload - Payload instance
  * @param message - Validation error message
  * @param collection - Collection where validation failed
- * @param user - User who encountered the validation error
+ * @param user - Person who encountered the validation error
  */
 export async function logValidationError(
   payload: Payload,
   message: string,
   collection: string,
-  user?: User | null,
+  user?: Person | null,
 ): Promise<void> {
   await logError(payload, {
     user,
@@ -154,7 +154,7 @@ export async function apiErrorResponseWithLogging(
   payload: Payload,
   error: unknown,
   url: string,
-  user?: User | null,
+  user?: Person | null,
   defaultMessage = 'An error occurred',
 ): Promise<Response> {
   const errorMessage = error instanceof Error ? error.message : defaultMessage

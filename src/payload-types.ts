@@ -63,7 +63,7 @@ export type SupportedTimezones =
 
 export interface Config {
   auth: {
-    users: UserAuthOperations;
+    people: PersonAuthOperations;
   };
   blocks: {};
   collections: {
@@ -82,7 +82,6 @@ export interface Config {
     'tournament-templates': TournamentTemplate;
     'faceit-seasons': FaceitSeason;
     'pug-seasons': PugSeason;
-    'pug-players': PugPlayer;
     'pug-matches': PugMatch;
     'pug-leaderboard': PugLeaderboard;
     'social-posts': SocialPost;
@@ -104,7 +103,6 @@ export interface Config {
     'error-logs': ErrorLog;
     'cron-job-runs': CronJobRun;
     'active-sessions': ActiveSession;
-    users: User;
     'ignored-duplicates': IgnoredDuplicate;
     'invite-links': InviteLink;
     media: Media;
@@ -137,7 +135,6 @@ export interface Config {
     'tournament-templates': TournamentTemplatesSelect<false> | TournamentTemplatesSelect<true>;
     'faceit-seasons': FaceitSeasonsSelect<false> | FaceitSeasonsSelect<true>;
     'pug-seasons': PugSeasonsSelect<false> | PugSeasonsSelect<true>;
-    'pug-players': PugPlayersSelect<false> | PugPlayersSelect<true>;
     'pug-matches': PugMatchesSelect<false> | PugMatchesSelect<true>;
     'pug-leaderboard': PugLeaderboardSelect<false> | PugLeaderboardSelect<true>;
     'social-posts': SocialPostsSelect<false> | SocialPostsSelect<true>;
@@ -159,7 +156,6 @@ export interface Config {
     'error-logs': ErrorLogsSelect<false> | ErrorLogsSelect<true>;
     'cron-job-runs': CronJobRunsSelect<false> | CronJobRunsSelect<true>;
     'active-sessions': ActiveSessionsSelect<false> | ActiveSessionsSelect<true>;
-    users: UsersSelect<false> | UsersSelect<true>;
     'ignored-duplicates': IgnoredDuplicatesSelect<false> | IgnoredDuplicatesSelect<true>;
     'invite-links': InviteLinksSelect<false> | InviteLinksSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
@@ -222,8 +218,8 @@ export interface Config {
     'error-harvester-state': ErrorHarvesterStateSelect<false> | ErrorHarvesterStateSelect<true>;
   };
   locale: null;
-  user: User & {
-    collection: 'users';
+  user: Person & {
+    collection: 'people';
   };
   jobs: {
     tasks: {
@@ -236,7 +232,7 @@ export interface Config {
     workflows: unknown;
   };
 }
-export interface UserAuthOperations {
+export interface PersonAuthOperations {
   forgotPassword: {
     email: string;
     password: string;
@@ -513,7 +509,7 @@ export interface MediaBlock {
   blockType: 'mediaBlock';
 }
 /**
- * Centralized collection for all people (players, staff, casters, etc.). This is the single source of truth for person profiles.
+ * All people in the organization - players, staff, casters, and users. This is the single identity for login, profiles, and team membership.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "people".
@@ -521,17 +517,9 @@ export interface MediaBlock {
 export interface Person {
   id: number;
   /**
-   * Full display name. This name will be used across all teams and staff positions. Tip: Use the exact name format you want displayed (e.g., "Malevolence" not "malevolence").
+   * Full display name. This name will be used across all teams and staff positions.
    */
   name: string;
-  /**
-   * Auto-generated from name. You can customize it if needed.
-   */
-  slug?: string | null;
-  /**
-   * Discord User ID (17-19 digits). Used for schedule availability and auto-fill matching. Auto-set when the linked User connects via Discord OAuth. Can also be set manually here.
-   */
-  discordId?: string | null;
   /**
    * Optional biography or description
    */
@@ -541,7 +529,7 @@ export interface Person {
    */
   photo?: (number | null) | Media;
   /**
-   * Social media links. These will be displayed on player pages. Tip: Use full URLs (e.g., https://twitter.com/username) for best results.
+   * Social media links displayed on player pages.
    */
   socialLinks?: {
     /**
@@ -565,16 +553,16 @@ export interface Person {
      */
     tiktok?: string | null;
     /**
-     * Add any additional social media or personal links with custom labels
+     * Additional social media or personal links
      */
     customLinks?:
       | {
           /**
-           * Display name for this link (e.g., "Discord", "Website", "Linktree")
+           * Display name (e.g., "Discord", "Website")
            */
           label: string;
           /**
-           * Full URL for this link
+           * Full URL
            */
           url: string;
           id?: string | null;
@@ -582,27 +570,140 @@ export interface Person {
       | null;
   };
   /**
-   * In-game names this person uses. Matched against scrim log player names for automatic stat attribution. Internal only.
+   * In-game names for automatic scrim stat attribution.
    */
   gameAliases?:
     | {
         /**
-         * In-game display name exactly as it appears in scrim logs (e.g., "Soup", "xXSlayerXx")
+         * In-game name exactly as it appears in scrim logs
          */
         alias: string;
         id?: string | null;
       }[]
     | null;
   /**
-   * Show this person in the Live Streamers section when streaming. Requires a Twitch URL in Social Links.
-   */
-  showInLiveStreamers?: boolean | null;
-  /**
    * Internal notes about this person (not displayed publicly)
    */
   notes?: string | null;
+  /**
+   * Determines CMS access level. Only set for people who log in.
+   */
+  role?: ('admin' | 'staff-manager' | 'team-manager' | 'player' | 'user') | null;
+  /**
+   * Profile picture for your account
+   */
+  avatar?: (number | null) | Media;
+  /**
+   * For Team Managers & Players: Determines which team's scrim data they can access.
+   */
+  assignedTeams?: (number | Team)[] | null;
+  /**
+   * Grant access to department-specific tools and dashboards
+   */
+  departments?: {
+    /**
+     * Grants access to Production Dashboard
+     */
+    isProductionStaff?: boolean | null;
+    /**
+     * Grants access to Social Media Dashboard
+     */
+    isSocialMediaStaff?: boolean | null;
+    /**
+     * Grants access to Graphics Dashboard
+     */
+    isGraphicsStaff?: boolean | null;
+    /**
+     * Grants access to Video Editing Dashboard
+     */
+    isVideoStaff?: boolean | null;
+    /**
+     * Grants access to Events Dashboard
+     */
+    isEventsStaff?: boolean | null;
+    /**
+     * Grants access to Scouting Dashboard
+     */
+    isScoutingStaff?: boolean | null;
+    /**
+     * Streams appear in Creator Live channel instead of Player Live
+     */
+    isContentCreator?: boolean | null;
+    /**
+     * Grants access to PUG management
+     */
+    isPugAdmin?: boolean | null;
+  };
+  /**
+   * OW2 BattleTag (e.g., Player#1234). Shown to the match host for in-game invites.
+   */
+  pugBattleTag?: string | null;
+  /**
+   * Which PUG tiers this player is registered for.
+   */
+  pugTiers?: ('open' | 'invite')[] | null;
+  /**
+   * Roles approved for invite-tier queuing.
+   */
+  pugApprovedRoles?: ('tank' | 'flex-dps' | 'hitscan-dps' | 'flex-support' | 'main-support')[] | null;
+  /**
+   * Which invite-tier regions this player has access to.
+   */
+  pugInviteRegions?: ('na' | 'emea' | 'pacific')[] | null;
+  /**
+   * Auto-set on PUG registration.
+   */
+  pugRegisteredDate?: string | null;
+  /**
+   * The admin who invited this player to the invite tier.
+   */
+  pugInvitedBy?: (number | null) | Person;
+  /**
+   * Current active cooldown ban, if any.
+   */
+  pugActiveBan?: {
+    /**
+     * Ban expires at this time.
+     */
+    bannedUntil?: string | null;
+    /**
+     * Reason for the ban.
+     */
+    reason?: string | null;
+  };
+  /**
+   * Cumulative ban offense count. Escalates ban duration. Never resets.
+   */
+  pugBanOffenseCount?: number | null;
+  /**
+   * Auto-generated from name. You can customize it if needed.
+   */
+  slug?: string | null;
+  /**
+   * Discord User ID (17-19 digits). Set via Discord OAuth or manually by admins.
+   */
+  discordId?: string | null;
+  /**
+   * Show this person in the Live Streamers section when streaming.
+   */
+  showInLiveStreamers?: boolean | null;
   updatedAt: string;
   createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
 }
 /**
  * Manage all Elemental teams, including rosters, staff, and achievements.
@@ -1275,11 +1376,11 @@ export interface Task {
   /**
    * Staff member(s) working on this
    */
-  assignedTo?: (number | User)[] | null;
+  assignedTo?: (number | Person)[] | null;
   /**
    * Who submitted this request (for cross-department work)
    */
-  requestedBy?: (number | null) | User;
+  requestedBy?: (number | null) | Person;
   /**
    * Is this a request from another department?
    */
@@ -1331,7 +1432,7 @@ export interface Task {
    */
   comments?:
     | {
-        author: number | User;
+        author: number | Person;
         content: string;
         createdAt?: string | null;
         id?: string | null;
@@ -1359,90 +1460,6 @@ export interface Task {
   completedAt?: string | null;
   updatedAt: string;
   createdAt: string;
-}
-/**
- * Manage admin users who can access the CMS. Assign roles to control what each user can edit.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
- */
-export interface User {
-  id: number;
-  name?: string | null;
-  /**
-   * Profile picture for your account
-   */
-  avatar?: (number | null) | Media;
-  /**
-   * Discord User ID - used for "Login with Discord". Set via the Link Discord button below, or manually by admins. Also auto-sets the linked Person's Discord ID for calendar matching.
-   */
-  discordId?: string | null;
-  /**
-   * User role determines what they can access and edit in the CMS.
-   */
-  role?: ('admin' | 'staff-manager' | 'team-manager' | 'player' | 'user') | null;
-  /**
-   * Link this user account to a Person record. Connects their login to BattleTags, scrim stats, and team roster membership.
-   */
-  linkedPerson?: (number | null) | Person;
-  /**
-   * For Team Managers & Players: Determines which team's scrim data they can access. For Staff Managers & Admins: Quick access links (they can still see all teams).
-   */
-  assignedTeams?: (number | Team)[] | null;
-  /**
-   * Grant access to department-specific tools and dashboards
-   */
-  departments?: {
-    /**
-     * Grants access to Production Dashboard (view schedule, sign up for matches)
-     */
-    isProductionStaff?: boolean | null;
-    /**
-     * Grants access to Social Media Dashboard (manage posts, content calendar)
-     */
-    isSocialMediaStaff?: boolean | null;
-    /**
-     * Grants access to Graphics Dashboard (view requests, manage projects)
-     */
-    isGraphicsStaff?: boolean | null;
-    /**
-     * Grants access to Video Editing Dashboard (clips, montages, seminars)
-     */
-    isVideoStaff?: boolean | null;
-    /**
-     * Grants access to Events Dashboard (movie nights, PUGs, seminars, tournaments)
-     */
-    isEventsStaff?: boolean | null;
-    /**
-     * Grants access to Scouting Dashboard (enemy team intel, research)
-     */
-    isScoutingStaff?: boolean | null;
-    /**
-     * Content creator - streams appear in Creator Live channel instead of Player Live
-     */
-    isContentCreator?: boolean | null;
-    /**
-     * Grants access to PUG management (create seasons, manage invite-tier players, resolve disputes)
-     */
-    isPugAdmin?: boolean | null;
-  };
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
 }
 /**
  * Manage competitive matches for Elemental teams. Include match details, scores, streams, and VODs.
@@ -1556,17 +1573,17 @@ export interface Match {
     /**
      * Staff who are AVAILABLE to observe (not yet confirmed)
      */
-    observerSignups?: (number | User)[] | null;
+    observerSignups?: (number | Person)[] | null;
     /**
      * Staff who are AVAILABLE to produce (not yet confirmed)
      */
-    producerSignups?: (number | User)[] | null;
+    producerSignups?: (number | Person)[] | null;
     /**
      * Staff who are AVAILABLE to cast (not yet confirmed)
      */
     casterSignups?:
       | {
-          user: number | User;
+          user: number | Person;
           style?: ('play-by-play' | 'color' | 'both') | null;
           id?: string | null;
         }[]
@@ -1574,17 +1591,17 @@ export interface Match {
     /**
      * CONFIRMED observer who WILL work this match (1 max)
      */
-    assignedObserver?: (number | null) | User;
+    assignedObserver?: (number | null) | Person;
     /**
      * CONFIRMED producer who WILL work this match (1 max)
      */
-    assignedProducer?: (number | null) | User;
+    assignedProducer?: (number | null) | Person;
     /**
      * CONFIRMED casters who WILL work this match (2 max)
      */
     assignedCasters?:
       | {
-          user: number | User;
+          user: number | Person;
           style?: ('play-by-play' | 'color' | 'both') | null;
           id?: string | null;
         }[]
@@ -1681,11 +1698,11 @@ export interface SocialPost {
   /**
    * SM staff member responsible for this post
    */
-  assignedTo: number | User;
+  assignedTo: number | Person;
   /**
    * Admin who approved this post
    */
-  approvedBy?: (number | null) | User;
+  approvedBy?: (number | null) | Person;
   /**
    * If this post is promoting a specific match
    */
@@ -1764,7 +1781,7 @@ export interface RecruitmentListing {
   /**
    * User who created this listing
    */
-  createdBy?: (number | null) | User;
+  createdBy?: (number | null) | Person;
   updatedAt: string;
   createdAt: string;
 }
@@ -1946,7 +1963,7 @@ export interface ScoutReport {
    */
   patchVersion?: string | null;
   status?: ('draft' | 'active' | 'archived') | null;
-  reportedBy?: (number | null) | User;
+  reportedBy?: (number | null) | Person;
   /**
    * Opponent roster at time of scouting (use Populate button above)
    */
@@ -2169,7 +2186,7 @@ export interface DiscordPoll {
   /**
    * Created by
    */
-  createdBy?: (number | null) | User;
+  createdBy?: (number | null) | Person;
   /**
    * How this schedule was created
    */
@@ -2287,7 +2304,7 @@ export interface AvailabilityCalendar {
   /**
    * Created by
    */
-  createdBy?: (number | null) | User;
+  createdBy?: (number | null) | Person;
   /**
    * How this calendar was created
    */
@@ -2378,62 +2395,6 @@ export interface PugSeason {
   createdAt: string;
 }
 /**
- * Players registered for PUGs. A player can be registered for both tiers simultaneously.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "pug-players".
- */
-export interface PugPlayer {
-  id: number;
-  /**
-   * The website user account for this PUG player.
-   */
-  user: number | User;
-  /**
-   * OW2 BattleTag (e.g., Player#1234). Shown to the match host for in-game invites.
-   */
-  battleTag?: string | null;
-  /**
-   * Which PUG tiers this player is registered for.
-   */
-  tiers: ('open' | 'invite')[];
-  /**
-   * Roles approved for invite-tier queuing. Open-tier players can queue for any role regardless of this field.
-   */
-  approvedRoles?: ('tank' | 'flex-dps' | 'hitscan-dps' | 'flex-support' | 'main-support')[] | null;
-  /**
-   * Which invite-tier regions this player has access to.
-   */
-  inviteRegions?: ('na' | 'emea' | 'pacific')[] | null;
-  /**
-   * Auto-set on registration.
-   */
-  registeredDate?: string | null;
-  /**
-   * The admin who invited this player to the invite tier.
-   */
-  invitedBy?: (number | null) | User;
-  /**
-   * Current active cooldown ban, if any.
-   */
-  activeBan?: {
-    /**
-     * Ban expires at this time. Leave empty if not banned.
-     */
-    bannedUntil?: string | null;
-    /**
-     * Reason for the ban (leaving during draft, repeated queues without joining, etc.).
-     */
-    reason?: string | null;
-  };
-  /**
-   * Cumulative ban offense count. Escalates ban duration. Never resets - survives ban expiry.
-   */
-  banOffenseCount?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * Completed PUG matches. Created by the engine when a lobby reaches COMPLETED state.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2458,7 +2419,7 @@ export interface PugMatch {
   prismaLobbyId?: number | null;
   team1Players?:
     | {
-        player: number | PugPlayer;
+        player: number | Person;
         assignedRole: 'tank' | 'flex-dps' | 'hitscan-dps' | 'flex-support' | 'main-support';
         isCaptain?: boolean | null;
         id?: string | null;
@@ -2466,7 +2427,7 @@ export interface PugMatch {
     | null;
   team2Players?:
     | {
-        player: number | PugPlayer;
+        player: number | Person;
         assignedRole: 'tank' | 'flex-dps' | 'hitscan-dps' | 'flex-support' | 'main-support';
         isCaptain?: boolean | null;
         id?: string | null;
@@ -2484,11 +2445,11 @@ export interface PugMatch {
       }[]
     | null;
   mapPlayed?: (number | null) | Map;
-  reportedBy?: (number | null) | User;
-  confirmedBy?: (number | null) | User;
+  reportedBy?: (number | null) | Person;
+  confirmedBy?: (number | null) | Person;
   disputed?: boolean | null;
   disputeResolution?: {
-    resolvedBy?: (number | null) | User;
+    resolvedBy?: (number | null) | Person;
     resolution?: string | null;
     notes?: string | null;
   };
@@ -2515,7 +2476,7 @@ export interface PugMatch {
  */
 export interface PugLeaderboard {
   id: number;
-  player: number | PugPlayer;
+  player: number | Person;
   season: number | PugSeason;
   tier: 'open' | 'invite';
   /**
@@ -2713,7 +2674,7 @@ export interface WatchedThread {
   /**
    * User who added this thread to the watch list
    */
-  addedBy?: (number | null) | User;
+  addedBy?: (number | null) | Person;
   /**
    * Discord ID of user who added this thread
    */
@@ -2786,7 +2747,7 @@ export interface AuditLog {
   /**
    * User who performed the action
    */
-  user?: (number | null) | User;
+  user?: (number | null) | Person;
   /**
    * Type of action performed
    */
@@ -2833,7 +2794,7 @@ export interface ErrorLog {
   /**
    * User who encountered the error
    */
-  user?: (number | null) | User;
+  user?: (number | null) | Person;
   /**
    * Category of error
    */
@@ -2927,7 +2888,7 @@ export interface ActiveSession {
   /**
    * User who owns this session
    */
-  user: number | User;
+  user: number | Person;
   /**
    * When the user logged in
    */
@@ -3071,11 +3032,11 @@ export interface InviteLink {
   /**
    * The user who used this invite
    */
-  usedBy?: (number | null) | User;
+  usedBy?: (number | null) | Person;
   /**
    * The admin who created this invite
    */
-  createdBy?: (number | null) | User;
+  createdBy?: (number | null) | Person;
   updatedAt: string;
   createdAt: string;
 }
@@ -3273,10 +3234,6 @@ export interface PayloadLockedDocument {
         value: number | PugSeason;
       } | null)
     | ({
-        relationTo: 'pug-players';
-        value: number | PugPlayer;
-      } | null)
-    | ({
         relationTo: 'pug-matches';
         value: number | PugMatch;
       } | null)
@@ -3361,10 +3318,6 @@ export interface PayloadLockedDocument {
         value: number | ActiveSession;
       } | null)
     | ({
-        relationTo: 'users';
-        value: number | User;
-      } | null)
-    | ({
         relationTo: 'ignored-duplicates';
         value: number | IgnoredDuplicate;
       } | null)
@@ -3386,8 +3339,8 @@ export interface PayloadLockedDocument {
       } | null);
   globalSlug?: string | null;
   user: {
-    relationTo: 'users';
-    value: number | User;
+    relationTo: 'people';
+    value: number | Person;
   };
   updatedAt: string;
   createdAt: string;
@@ -3399,8 +3352,8 @@ export interface PayloadLockedDocument {
 export interface PayloadPreference {
   id: number;
   user: {
-    relationTo: 'users';
-    value: number | User;
+    relationTo: 'people';
+    value: number | Person;
   };
   key?: string | null;
   value?:
@@ -3540,8 +3493,6 @@ export interface MediaBlockSelect<T extends boolean = true> {
  */
 export interface PeopleSelect<T extends boolean = true> {
   name?: T;
-  slug?: T;
-  discordId?: T;
   bio?: T;
   photo?: T;
   socialLinks?:
@@ -3566,10 +3517,54 @@ export interface PeopleSelect<T extends boolean = true> {
         alias?: T;
         id?: T;
       };
-  showInLiveStreamers?: T;
   notes?: T;
+  role?: T;
+  avatar?: T;
+  assignedTeams?: T;
+  departments?:
+    | T
+    | {
+        isProductionStaff?: T;
+        isSocialMediaStaff?: T;
+        isGraphicsStaff?: T;
+        isVideoStaff?: T;
+        isEventsStaff?: T;
+        isScoutingStaff?: T;
+        isContentCreator?: T;
+        isPugAdmin?: T;
+      };
+  pugBattleTag?: T;
+  pugTiers?: T;
+  pugApprovedRoles?: T;
+  pugInviteRegions?: T;
+  pugRegisteredDate?: T;
+  pugInvitedBy?: T;
+  pugActiveBan?:
+    | T
+    | {
+        bannedUntil?: T;
+        reason?: T;
+      };
+  pugBanOffenseCount?: T;
+  slug?: T;
+  discordId?: T;
+  showInLiveStreamers?: T;
   updatedAt?: T;
   createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4041,28 +4036,6 @@ export interface PugSeasonsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "pug-players_select".
- */
-export interface PugPlayersSelect<T extends boolean = true> {
-  user?: T;
-  battleTag?: T;
-  tiers?: T;
-  approvedRoles?: T;
-  inviteRegions?: T;
-  registeredDate?: T;
-  invitedBy?: T;
-  activeBan?:
-    | T
-    | {
-        bannedUntil?: T;
-        reason?: T;
-      };
-  banOffenseCount?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pug-matches_select".
  */
 export interface PugMatchesSelect<T extends boolean = true> {
@@ -4507,46 +4480,6 @@ export interface ActiveSessionsSelect<T extends boolean = true> {
   isActive?: T;
   updatedAt?: T;
   createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users_select".
- */
-export interface UsersSelect<T extends boolean = true> {
-  name?: T;
-  avatar?: T;
-  discordId?: T;
-  role?: T;
-  linkedPerson?: T;
-  assignedTeams?: T;
-  departments?:
-    | T
-    | {
-        isProductionStaff?: T;
-        isSocialMediaStaff?: T;
-        isGraphicsStaff?: T;
-        isVideoStaff?: T;
-        isEventsStaff?: T;
-        isScoutingStaff?: T;
-        isContentCreator?: T;
-        isPugAdmin?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
-  sessions?:
-    | T
-    | {
-        id?: T;
-        createdAt?: T;
-        expiresAt?: T;
-      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -5403,7 +5336,7 @@ export interface TaskSchedulePublish {
       value: number | Page;
     } | null;
     global?: string | null;
-    user?: (number | null) | User;
+    user?: (number | null) | Person;
   };
   output?: unknown;
 }

@@ -1,10 +1,10 @@
-import type { User, RecruitmentListing, Team } from '@/payload-types'
+import type { Person, RecruitmentListing, Team } from '@/payload-types'
 import { UserRole } from '@/access/roles'
 
 /**
  * Check if a user can manage (edit/update) a recruitment listing
  */
-export const canManageListing = (user: User | null | undefined, listing: RecruitmentListing): boolean => {
+export const canManageListing = (user: Person | null | undefined, listing: RecruitmentListing): boolean => {
   if (!user) return false
 
   // Admins can manage everything
@@ -42,7 +42,7 @@ export const canManageListing = (user: User | null | undefined, listing: Recruit
 /**
  * Check if a user can view applications for a team
  */
-export const canViewApplications = (user: User | null | undefined, teamId: number): boolean => {
+export const canViewApplications = (user: Person | null | undefined, teamId: number): boolean => {
   if (!user) return false
 
   // Admins can view everything

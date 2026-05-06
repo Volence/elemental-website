@@ -58,7 +58,7 @@ export async function notifyMatchRescheduled(info: RescheduleInfo): Promise<void
       const staffUsers = await Promise.all(
         info.affectedStaffIds.map(async (id) => {
           try {
-            const user = await payload.findByID({ collection: 'users', id, depth: 0 })
+            const user = await payload.findByID({ collection: 'people', id, depth: 0 })
             return user?.name || user?.email || `User #${id}`
           } catch {
             return `User #${id}`

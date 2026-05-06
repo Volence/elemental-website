@@ -1,7 +1,7 @@
 import type { CollectionConfig } from 'payload'
 import { authenticated } from '../../access/authenticated'
 import { adminOnly, UserRole } from '../../access/roles'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 export const RecruitmentApplications: CollectionConfig = {
   slug: 'recruitment-applications',
@@ -12,7 +12,7 @@ export const RecruitmentApplications: CollectionConfig = {
   access: {
     // Team managers see only their team's applications, admins see all
     read: async ({ req }) => {
-      const user = req.user as User | undefined
+      const user = req.user as Person | undefined
       if (!user) return false
 
       // Admins can see everything
@@ -44,7 +44,7 @@ export const RecruitmentApplications: CollectionConfig = {
     create: () => false,
     // Team managers (for their teams) and admins can update
     update: async ({ req, id }) => {
-      const user = req.user as User | undefined
+      const user = req.user as Person | undefined
       if (!user) return false
 
       // Admins can update everything

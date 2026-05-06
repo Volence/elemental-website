@@ -18,7 +18,7 @@ const LogoutButton: React.FC = () => {
     
     try {
       // Call Payload's logout endpoint
-      const response = await fetch('/api/users/logout', {
+      const response = await fetch('/api/people/logout', {
         method: 'POST',
         credentials: 'include',
         headers: {

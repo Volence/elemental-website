@@ -38,14 +38,13 @@ export async function POST(request: NextRequest, { params }: Params) {
 
   // Find next available dummy slot
   let dummyUser: any = null
-  let dummyPlayer: any = null
 
   for (let n = 1; n <= DUMMY_COUNT; n++) {
     const email = `dummy${n}@test.elemental`
 
     // Get or create dummy user
     const existing = await payload.find({
-      collection: 'users',
+      collection: 'people',
       where: { email: { equals: email } },
       overrideAccess: true,
       limit: 1,
@@ -54,7 +53,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     let du = existing.docs[0] as any
     if (!du) {
       du = await payload.create({
-        collection: 'users',
+        collection: 'people',
         data: {
           email,
           name: `Dummy ${n}`,
@@ -67,36 +66,20 @@ export async function POST(request: NextRequest, { params }: Params) {
 
     if (occupiedUserIds.has(du.id)) continue
 
-    // Get or create pug-player record
-    const playerResult = await payload.find({
-      collection: 'pug-players',
-      where: { user: { equals: du.id } },
-      overrideAccess: true,
-      limit: 1,
-    })
-
-    let dp = playerResult.docs[0] as any
-    if (!dp) {
-      dp = await payload.create({
-        collection: 'pug-players',
-        data: {
-          user: du.id,
-          tiers: ['open'],
-          registeredDate: new Date().toISOString(),
-        },
-        overrideAccess: true,
-      })
-    } else if (!dp.tiers?.includes('open')) {
+    // Ensure PUG registration on person
+    if (!du.pugTiers?.includes('open')) {
       await payload.update({
-        collection: 'pug-players',
-        id: dp.id,
-        data: { tiers: [...(dp.tiers ?? []), 'open'] },
+        collection: 'people',
+        id: du.id,
+        data: {
+          pugTiers: [...(du.pugTiers ?? []), 'open'],
+          pugRegisteredDate: du.pugRegisteredDate ?? new Date().toISOString(),
+        },
         overrideAccess: true,
       })
     }
 
     dummyUser = du
-    dummyPlayer = dp
     break
   }
 

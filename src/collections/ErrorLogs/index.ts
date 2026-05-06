@@ -27,7 +27,7 @@ export const ErrorLogs: CollectionConfig = {
     {
       name: 'user',
       type: 'relationship',
-      relationTo: 'users',
+      relationTo: 'people',
       required: false, // Errors may occur without authenticated user
       admin: {
         description: 'User who encountered the error',

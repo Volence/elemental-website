@@ -80,7 +80,7 @@ export async function handleThreadKeepAlive(
 
     // Try to find user by Discord ID
     const users = await payload.find({
-      collection: 'users',
+      collection: 'people',
       where: {
         discordId: { equals: interaction.user.id },
       },

@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
-import type { User } from '../payload-types'
+import type { Person } from '../payload-types'
 import { getClientSideURL } from './getURL'
 
 export const getMeUser = async (args?: {
@@ -9,13 +9,13 @@ export const getMeUser = async (args?: {
   validUserRedirect?: string
 }): Promise<{
   token: string
-  user: User
+  user: Person
 }> => {
   const { nullUserRedirect, validUserRedirect } = args || {}
   const cookieStore = await cookies()
   const token = cookieStore.get('payload-token')?.value
 
-  const meUserReq = await fetch(`${getClientSideURL()}/api/users/me`, {
+  const meUserReq = await fetch(`${getClientSideURL()}/api/people/me`, {
     headers: {
       Authorization: `JWT ${token}`,
     },
@@ -24,7 +24,7 @@ export const getMeUser = async (args?: {
   const {
     user,
   }: {
-    user: User
+    user: Person
   } = await meUserReq.json()
 
   if (validUserRedirect && meUserReq.ok && user) {

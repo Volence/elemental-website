@@ -10,12 +10,6 @@
 import type { Payload } from 'payload'
 
 export interface DataConsistencyReport {
-  orphanedPeople: Array<{
-    id: number
-    name: string
-    slug: string
-    createdAt: string
-  }>
   teamsWithMissingRelationships: Array<{
     teamId: number
     teamName: string
@@ -30,7 +24,6 @@ export interface DataConsistencyReport {
   summary: {
     totalPeople: number
     totalTeams: number
-    orphanedCount: number
     teamsWithIssuesCount: number
     duplicateCount: number
   }
@@ -75,142 +68,6 @@ function levenshteinDistance(str1: string, str2: string): number {
   }
   
   return matrix[str2.length][str1.length]
-}
-
-/**
- * Check for orphaned People entries (not linked to any team/staff)
- * A person is only flagged as orphaned if they are:
- * - NOT on any team (in any role) AND
- * - NOT in organization staff AND
- * - NOT in production staff
- */
-async function findOrphanedPeople(payload: Payload): Promise<Array<{
-  id: number
-  name: string
-  slug: string
-  createdAt: string
-}>> {
-  // Get all people
-  const allPeople = await payload.find({
-    collection: 'people',
-    limit: 10000,
-    pagination: false,
-    depth: 0,
-  })
-
-  // Get all teams with their relationships
-  const allTeams = await payload.find({
-    collection: 'teams',
-    limit: 10000,
-    pagination: false,
-    depth: 1,
-  })
-
-  // Get all organization staff
-  const allOrgStaff = await payload.find({
-    collection: 'organization-staff',
-    limit: 10000,
-    pagination: false,
-    depth: 1, // Increased depth to ensure person is populated
-  })
-
-  // Get all production staff
-  const allProductionStaff = await payload.find({
-    collection: 'production',
-    limit: 10000,
-    pagination: false,
-    depth: 1, // Increased depth to ensure person is populated
-  })
-
-  // Collect all person IDs that are referenced in teams OR staff roles
-  const referencedPersonIds = new Set<number>()
-
-  // Check teams
-  for (const team of allTeams.docs) {
-    // Manager
-    if (team.manager && Array.isArray(team.manager)) {
-      for (const manager of team.manager) {
-        if (manager?.person) {
-          const personId = typeof manager.person === 'number' ? manager.person : manager.person?.id
-          if (personId) referencedPersonIds.add(personId)
-        }
-      }
-    }
-
-    // Coaches
-    if (team.coaches && Array.isArray(team.coaches)) {
-      for (const coach of team.coaches) {
-        if (coach?.person) {
-          const personId = typeof coach.person === 'number' ? coach.person : coach.person?.id
-          if (personId) referencedPersonIds.add(personId)
-        }
-      }
-    }
-
-    // Captain (it's an array)
-    if (team.captain && Array.isArray(team.captain)) {
-      for (const captain of team.captain) {
-        if (captain?.person) {
-          const personId = typeof captain.person === 'number' ? captain.person : captain.person?.id
-          if (personId) referencedPersonIds.add(personId)
-        }
-      }
-    }
-
-    // Co-Captain
-    if (team.coCaptain) {
-      const personId = typeof team.coCaptain === 'number' ? team.coCaptain : team.coCaptain?.id
-      if (personId) referencedPersonIds.add(personId)
-    }
-
-    // Roster
-    if (team.roster && Array.isArray(team.roster)) {
-      for (const player of team.roster) {
-        if (player?.person) {
-          const personId = typeof player.person === 'number' ? player.person : player.person?.id
-          if (personId) referencedPersonIds.add(personId)
-        }
-      }
-    }
-
-    // Subs
-    if (team.subs && Array.isArray(team.subs)) {
-      for (const sub of team.subs) {
-        if (sub?.person) {
-          const personId = typeof sub.person === 'number' ? sub.person : sub.person?.id
-          if (personId) referencedPersonIds.add(personId)
-        }
-      }
-    }
-  }
-
-  // Check organization staff
-  for (const staff of allOrgStaff.docs) {
-    if (staff.person) {
-      const personId = typeof staff.person === 'number' ? staff.person : staff.person?.id
-      if (personId) referencedPersonIds.add(personId)
-    }
-  }
-
-  // Check production staff
-  for (const staff of allProductionStaff.docs) {
-    if (staff.person) {
-      const personId = typeof staff.person === 'number' ? staff.person : staff.person?.id
-      if (personId) referencedPersonIds.add(personId)
-    }
-  }
-
-  // Find orphaned people
-  const orphaned = allPeople.docs
-    .filter((person) => !referencedPersonIds.has(person.id))
-    .map((person) => ({
-      id: person.id,
-      name: person.name || '[No Name]',
-      slug: person.slug || '[No Slug]',
-      createdAt: person.createdAt ? new Date(person.createdAt).toISOString() : '',
-    }))
-
-  return orphaned
 }
 
 /**
@@ -359,8 +216,7 @@ async function findDuplicatePeople(payload: Payload): Promise<Array<{
  * Generate a complete data consistency report
  */
 export async function checkDataConsistency(payload: Payload): Promise<DataConsistencyReport> {
-  const [orphanedPeople, teamsWithIssues, duplicatePeople] = await Promise.all([
-    findOrphanedPeople(payload),
+  const [teamsWithIssues, duplicatePeople] = await Promise.all([
     findTeamsWithMissingRelationships(payload),
     findDuplicatePeople(payload),
   ])
@@ -379,13 +235,11 @@ export async function checkDataConsistency(payload: Payload): Promise<DataConsis
   })
 
   return {
-    orphanedPeople,
     teamsWithMissingRelationships: teamsWithIssues,
     duplicatePeople,
     summary: {
       totalPeople: allPeople.totalDocs,
       totalTeams: allTeams.totalDocs,
-      orphanedCount: orphanedPeople.length,
       teamsWithIssuesCount: teamsWithIssues.length,
       duplicateCount: duplicatePeople.length,
     },

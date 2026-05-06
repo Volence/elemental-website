@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useAuth } from '@payloadcms/ui'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 /**
  * Scrim Analytics navigation links for the admin sidebar.
@@ -13,7 +13,7 @@ import type { User } from '@/payload-types'
  */
 const ScrimAnalyticsNavLinks: React.FC = () => {
   const pathname = usePathname()
-  const { user } = useAuth<User>()
+  const { user } = useAuth<Person>()
   const [allTeams, setAllTeams] = React.useState<{ id: number; name: string }[] | null>(null)
   const [teamsOpen, setTeamsOpen] = React.useState(false)
 
@@ -41,12 +41,8 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
   // Build personalized links (My Stats only)
   const personalLinks: { href: string; label: string; match: (p: string) => boolean }[] = []
 
-  // "My Stats" - only for player/team-manager roles with a linkedPerson
-  const linkedPersonId = typeof user.linkedPerson === 'object' && user.linkedPerson !== null
-    ? user.linkedPerson.id
-    : user.linkedPerson
-  if (linkedPersonId && !isFullAccess) {
-    const myStatsHref = `/admin/scrim-player-detail?personId=${linkedPersonId}`
+  if (!isFullAccess) {
+    const myStatsHref = `/admin/scrim-player-detail?personId=${user.id}`
     personalLinks.push({
       href: myStatsHref,
       label: 'My Stats',

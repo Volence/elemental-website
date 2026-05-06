@@ -237,7 +237,7 @@ async function savePollToDatabase(data: {
 
     // Try to find user by Discord ID
     const users = await payload.find({
-      collection: 'users',
+      collection: 'people',
       where: {
         discordId: {
           equals: data.creatorId,

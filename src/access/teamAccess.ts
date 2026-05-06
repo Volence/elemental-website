@@ -1,6 +1,6 @@
 import type { AccessArgs } from 'payload'
 
-import type { Team, User } from '@/payload-types'
+import type { Team, Person } from '@/payload-types'
 import { UserRole, isAdmin } from './roles'
 
 /**
@@ -8,8 +8,8 @@ import { UserRole, isAdmin } from './roles'
  * - Admins can access all teams
  * - Team managers can only access their assigned team
  */
-export const canAccessTeam = async ({ req, id }: AccessArgs<User> & { id?: number | string }): Promise<boolean> => {
-  const user = req.user as User | undefined
+export const canAccessTeam = async ({ req, id }: AccessArgs<Person> & { id?: number | string }): Promise<boolean> => {
+  const user = req.user as Person | undefined
   if (!user) return false
 
   // Admins can access everything
@@ -32,7 +32,7 @@ export const canAccessTeam = async ({ req, id }: AccessArgs<User> & { id?: numbe
  * Check if user can create teams
  * Only admins can create teams
  */
-export const canCreateTeam = ({ req }: AccessArgs<User>): boolean => {
+export const canCreateTeam = ({ req }: AccessArgs<Person>): boolean => {
   return isAdmin({ req })
 }
 
@@ -41,7 +41,7 @@ export const canCreateTeam = ({ req }: AccessArgs<User>): boolean => {
  * - Admins can update all teams
  * - Team managers can only update their assigned team
  */
-export const canUpdateTeam = async ({ req, id }: AccessArgs<User> & { id?: number | string }): Promise<boolean> => {
+export const canUpdateTeam = async ({ req, id }: AccessArgs<Person> & { id?: number | string }): Promise<boolean> => {
   return canAccessTeam({ req, id })
 }
 
@@ -49,6 +49,6 @@ export const canUpdateTeam = async ({ req, id }: AccessArgs<User> & { id?: numbe
  * Check if user can delete a team
  * Only admins can delete teams
  */
-export const canDeleteTeam = ({ req }: AccessArgs<User>): boolean => {
+export const canDeleteTeam = ({ req }: AccessArgs<Person>): boolean => {
   return isAdmin({ req })
 }

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useConfig } from '@payloadcms/ui'
 import { toast } from '@payloadcms/ui'
 import { ConfirmModal } from './ConfirmModal'
-import type { Task, User, Media } from '@/payload-types'
+import type { Task, Person, Media } from '@/payload-types'
 import { Calendar, Download, Paperclip, Save, Send, Trash2, Upload, X } from 'lucide-react'
 
 interface TaskModalProps {
@@ -71,7 +71,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   })
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
-  const [users, setUsers] = useState<User[]>([])
+  const [users, setUsers] = useState<Person[]>([])
   const [selectedAssignees, setSelectedAssignees] = useState<number[]>([])
   const [attachments, setAttachments] = useState<AttachmentItem[]>([])
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -130,7 +130,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
         }
         
         const staffField = departmentFieldMap[department]
-        let url = `${serverURL}/api/users?limit=100`
+        let url = `${serverURL}/api/people?limit=100`
         
         // Add department filter if we have a mapping
         if (staffField) {

@@ -1,39 +1,37 @@
 import type { CollectionConfig } from 'payload'
-import type { User } from '@/payload-types'
 
 import { authenticated } from '../../access/authenticated'
 import { anyone } from '../../access/anyone'
-import { UserRole } from '../../access/roles'
-import { slugField } from 'payload'
+import { UserRole, adminOnly, isAdmin, isPugAdmin } from '../../access/roles'
 import { autoCloseRecruitment } from './hooks/autoCloseRecruitment'
 import { createAuditLogHook, createAuditLogDeleteHook } from '../../utilities/auditLogger'
+import { trackLogin, trackLogout } from '../../utilities/sessionTracker'
 
-// Helper: check if user is admin/manager
 const isAdminOrManager = (user: any): boolean => {
   if (!user) return false
   return user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER || user.role === UserRole.TEAM_MANAGER
 }
 
-// Helper: check if current user owns this Person record (via linkedPerson)
 const isOwner = (user: any, docId: any): boolean => {
   if (!user || !docId) return false
-  const linkedPerson = user.linkedPerson
-  if (!linkedPerson) return false
-  const personId = typeof linkedPerson === 'object' ? linkedPerson.id : linkedPerson
-  return String(personId) === String(docId)
+  return String(user.id) === String(docId)
 }
 
-// Field-level access: admin/manager OR the person themselves
 const ownerOrManager = ({ req, doc }: any) => {
   if (!req.user) return false
   if (isAdminOrManager(req.user)) return true
   return isOwner(req.user, doc?.id)
 }
 
-// Field-level access: admin/manager only (locked fields)
 const managerOnly = ({ req }: any) => {
   if (!req.user) return false
   return isAdminOrManager(req.user)
+}
+
+const adminOrPugAdmin = ({ req }: any): boolean => {
+  if (!req.user) return false
+  if (req.user.role === UserRole.ADMIN) return true
+  return req.user.departments?.isPugAdmin === true
 }
 
 const formatSlug = (value: string): string => {
@@ -51,43 +49,47 @@ export const People: CollectionConfig = {
     singular: 'Person',
     plural: 'People',
   },
+  auth: {
+    tokenExpiration: 28800, // 8 hours
+  },
   access: {
-    create: authenticated,
-    delete: authenticated,
+    admin: authenticated,
+    create: ({ req: { user } }) => {
+      if (!user) return false
+      if (user.role === UserRole.ADMIN) return true
+      return false
+    },
+    delete: adminOnly,
     read: anyone,
-    update: authenticated,
+    update: ({ req: { user } }) => {
+      if (!user) return false
+      if (user.role === UserRole.ADMIN) return true
+      if (user.role === UserRole.STAFF_MANAGER) return true
+      if (user) return { id: { equals: user.id } }
+      return false
+    },
   },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'staffPositions', 'teams', 'updatedAt'],
-    description: 'Centralized collection for all people (players, staff, casters, etc.). This is the single source of truth for person profiles.',
+    defaultColumns: ['name', 'role', 'staffPositions', 'teams', 'updatedAt'],
+    description: 'All people in the organization - players, staff, casters, and users. This is the single identity for login, profiles, and team membership.',
     group: 'Organization',
-    listSearchableFields: ['name', 'slug'],
+    listSearchableFields: ['name', 'slug', 'email'],
     baseListFilter: () => {
-      // IMPORTANT: In Payload 3, baseListFilter always receives user=null during SSR
-      // (even for authenticated admin sessions). Do NOT filter by user here.
-      // Security is handled by: collection read access (anyone) + admin.hidden (role-gated sidebar).
       return {}
     },
     hidden: ({ user }) => {
       if (!user) return true
-      // Managers and admins always see it
       if (['admin', 'staff-manager', 'team-manager'].includes(user.role as string)) return false
-      // Players with a linkedPerson can access (to edit their own profile)
-      if (user.role === 'player' && user.linkedPerson) return false
-      // Hide from everyone else
+      if (user.role === 'player') return false
       return true
     },
     components: {
-      beforeList: ['@/components/PeopleListRedirect#default'],
+      beforeList: [
+        '@/components/UserManagementTabs#default',
+        '@/components/PeopleListRedirect#default',
+      ],
     },
-    // CRITICAL: Don't use defaultPopulate for relationship queries
-    // This can cause select clauses that filter out results
-    // defaultPopulate: {
-    //   name: true,
-    // },
-    // NOTE: PersonRelationships component integrated as a sidebar UI field (see 'relationships' field below)
-    // Currently disabled due to Payload 3 API changes
   },
   fields: [
     {
@@ -104,26 +106,284 @@ export const People: CollectionConfig = {
         },
       },
     },
+    // ── PROFILE TAB ──
     {
-      name: 'name',
-      type: 'text',
-      required: true,
-      access: {
-        update: managerOnly,
-      },
-      admin: {
-        description: 'Full display name. This name will be used across all teams and staff positions. Tip: Use the exact name format you want displayed (e.g., "Malevolence" not "malevolence").',
-      },
+      type: 'tabs',
+      tabs: [
+        {
+          label: 'Profile',
+          fields: [
+            {
+              name: 'name',
+              type: 'text',
+              required: true,
+              access: {
+                update: managerOnly,
+              },
+              admin: {
+                description: 'Full display name. This name will be used across all teams and staff positions.',
+              },
+            },
+            {
+              name: 'bio',
+              type: 'textarea',
+              access: {
+                update: ownerOrManager,
+              },
+              admin: {
+                description: 'Optional biography or description',
+              },
+            },
+            {
+              name: 'photo',
+              type: 'upload',
+              relationTo: 'media',
+              access: {
+                update: ownerOrManager,
+              },
+              admin: {
+                description: 'Profile photo (optional)',
+              },
+            },
+            {
+              name: 'socialLinks',
+              type: 'group',
+              access: {
+                update: ownerOrManager,
+              },
+              admin: {
+                description: 'Social media links displayed on player pages.',
+              },
+              fields: [
+                { name: 'twitter', type: 'text', admin: { description: 'Twitter/X profile URL' } },
+                { name: 'twitch', type: 'text', admin: { description: 'Twitch channel URL' } },
+                { name: 'youtube', type: 'text', admin: { description: 'YouTube channel URL' } },
+                { name: 'instagram', type: 'text', admin: { description: 'Instagram profile URL' } },
+                { name: 'tiktok', type: 'text', admin: { description: 'TikTok profile URL' } },
+                {
+                  name: 'customLinks',
+                  type: 'array',
+                  admin: { description: 'Additional social media or personal links' },
+                  fields: [
+                    { name: 'label', type: 'text', required: true, admin: { description: 'Display name (e.g., "Discord", "Website")' } },
+                    { name: 'url', type: 'text', required: true, admin: { description: 'Full URL' } },
+                  ],
+                },
+              ],
+            },
+            {
+              name: 'gameAliases',
+              type: 'array',
+              label: 'Game Aliases',
+              access: { update: managerOnly },
+              admin: { description: 'In-game names for automatic scrim stat attribution.' },
+              fields: [
+                { name: 'alias', type: 'text', required: true, admin: { description: 'In-game name exactly as it appears in scrim logs' } },
+              ],
+            },
+            {
+              name: 'notes',
+              type: 'textarea',
+              access: { update: managerOnly },
+              admin: { description: 'Internal notes about this person (not displayed publicly)' },
+            },
+          ],
+        },
+        // ── ACCOUNT TAB ──
+        {
+          label: 'Account',
+          fields: [
+            {
+              name: 'role',
+              type: 'select',
+              required: false,
+              admin: {
+                description: 'Determines CMS access level. Only set for people who log in.',
+              },
+              access: {
+                read: ({ req: { user } }) => Boolean(user),
+                update: ({ req }) => req.user?.role === UserRole.ADMIN,
+              },
+              options: [
+                { label: 'Admin', value: UserRole.ADMIN },
+                { label: 'Staff Manager', value: UserRole.STAFF_MANAGER },
+                { label: 'Team Manager', value: UserRole.TEAM_MANAGER },
+                { label: 'Player', value: UserRole.PLAYER },
+                { label: 'User', value: UserRole.USER },
+              ],
+            },
+            {
+              name: 'avatar',
+              type: 'upload',
+              relationTo: 'media',
+              admin: { description: 'Profile picture for your account' },
+            },
+            {
+              name: 'linkDiscord',
+              type: 'ui',
+              admin: {
+                components: {
+                  Field: '@/components/LinkDiscordButton',
+                },
+              },
+            },
+            {
+              name: 'assignedTeams',
+              type: 'relationship',
+              relationTo: 'teams',
+              hasMany: true,
+              admin: {
+                description: 'For Team Managers & Players: Determines which team\'s scrim data they can access.',
+                condition: (data) => data.role === UserRole.ADMIN || data.role === UserRole.TEAM_MANAGER || data.role === UserRole.STAFF_MANAGER || data.role === UserRole.PLAYER,
+              },
+              access: {
+                read: ({ req: { user } }) => {
+                  if (!user) return false
+                  if (user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER) return true
+                  if (user.role === UserRole.PLAYER || user.role === UserRole.TEAM_MANAGER) return true
+                  return false
+                },
+                update: ({ req }) => req.user?.role === UserRole.ADMIN,
+              },
+            },
+            {
+              name: 'departments',
+              type: 'group',
+              label: 'Department Access',
+              admin: {
+                description: 'Grant access to department-specific tools and dashboards',
+                condition: (data) => data.role !== UserRole.ADMIN && data.role !== UserRole.PLAYER,
+              },
+              access: {
+                read: ({ req: { user } }) => {
+                  if (!user) return false
+                  return user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER
+                },
+                update: ({ req }) => req.user?.role === UserRole.ADMIN,
+              },
+              fields: [
+                { name: 'isProductionStaff', type: 'checkbox', label: 'Production Staff', admin: { description: 'Grants access to Production Dashboard' } },
+                { name: 'isSocialMediaStaff', type: 'checkbox', label: 'Social Media Staff', defaultValue: false, admin: { description: 'Grants access to Social Media Dashboard' } },
+                { name: 'isGraphicsStaff', type: 'checkbox', label: 'Graphics Staff', defaultValue: false, admin: { description: 'Grants access to Graphics Dashboard' } },
+                { name: 'isVideoStaff', type: 'checkbox', label: 'Video Editing Staff', defaultValue: false, admin: { description: 'Grants access to Video Editing Dashboard' } },
+                { name: 'isEventsStaff', type: 'checkbox', label: 'Events Staff', defaultValue: false, admin: { description: 'Grants access to Events Dashboard' } },
+                { name: 'isScoutingStaff', type: 'checkbox', label: 'Scouting Staff', defaultValue: false, admin: { description: 'Grants access to Scouting Dashboard' } },
+                { name: 'isContentCreator', type: 'checkbox', label: 'Content Creator', defaultValue: false, admin: { description: 'Streams appear in Creator Live channel instead of Player Live' } },
+                { name: 'isPugAdmin', type: 'checkbox', label: 'PUG Administrator', defaultValue: false, admin: { description: 'Grants access to PUG management' } },
+              ],
+            },
+          ],
+        },
+        // ── PUG TAB ──
+        {
+          label: 'PUG',
+          description: 'Pick-Up Game registration and status',
+          fields: [
+            {
+              name: 'pugBattleTag',
+              type: 'text',
+              label: 'Battle Tag',
+              access: {
+                update: ({ req, doc }) => {
+                  if (!req.user) return false
+                  if (adminOrPugAdmin({ req })) return true
+                  return isOwner(req.user, doc?.id)
+                },
+              },
+              admin: { description: 'OW2 BattleTag (e.g., Player#1234). Shown to the match host for in-game invites.', placeholder: 'e.g., Player#1234' },
+            },
+            {
+              name: 'pugTiers',
+              type: 'select',
+              label: 'PUG Tiers',
+              hasMany: true,
+              access: { update: adminOrPugAdmin },
+              options: [
+                { label: 'Open', value: 'open' },
+                { label: 'Invite', value: 'invite' },
+              ],
+              admin: { description: 'Which PUG tiers this player is registered for.' },
+            },
+            {
+              name: 'pugApprovedRoles',
+              type: 'select',
+              label: 'Approved Roles',
+              hasMany: true,
+              access: { update: adminOrPugAdmin },
+              options: [
+                { label: 'Tank', value: 'tank' },
+                { label: 'Flex DPS', value: 'flex-dps' },
+                { label: 'Hitscan DPS', value: 'hitscan-dps' },
+                { label: 'Flex Support', value: 'flex-support' },
+                { label: 'Main Support', value: 'main-support' },
+              ],
+              admin: { description: 'Roles approved for invite-tier queuing.' },
+            },
+            {
+              name: 'pugInviteRegions',
+              type: 'select',
+              label: 'Invite Regions',
+              hasMany: true,
+              access: { update: adminOrPugAdmin },
+              options: [
+                { label: 'NA', value: 'na' },
+                { label: 'EMEA', value: 'emea' },
+                { label: 'Pacific', value: 'pacific' },
+              ],
+              admin: {
+                description: 'Which invite-tier regions this player has access to.',
+                condition: (data) => data?.pugTiers?.includes('invite'),
+              },
+            },
+            {
+              name: 'pugRegisteredDate',
+              type: 'date',
+              label: 'Registered Date',
+              access: { update: adminOrPugAdmin },
+              admin: { readOnly: true, description: 'Auto-set on PUG registration.' },
+            },
+            {
+              name: 'pugInvitedBy',
+              type: 'relationship',
+              label: 'Invited By',
+              relationTo: 'people',
+              access: { update: adminOrPugAdmin },
+              admin: {
+                description: 'The admin who invited this player to the invite tier.',
+                condition: (data) => data?.pugTiers?.includes('invite'),
+              },
+            },
+            {
+              name: 'pugActiveBan',
+              type: 'group',
+              label: 'Active Cooldown Ban',
+              access: { update: adminOrPugAdmin },
+              admin: { description: 'Current active cooldown ban, if any.' },
+              fields: [
+                { name: 'bannedUntil', type: 'date', admin: { description: 'Ban expires at this time.' } },
+                { name: 'reason', type: 'text', admin: { description: 'Reason for the ban.' } },
+              ],
+            },
+            {
+              name: 'pugBanOffenseCount',
+              type: 'number',
+              label: 'Ban Offense Count',
+              defaultValue: 0,
+              access: { update: adminOrPugAdmin },
+              admin: { readOnly: true, description: 'Cumulative ban offense count. Escalates ban duration. Never resets.' },
+            },
+          ],
+        },
+      ],
     },
+    // ── SIDEBAR FIELDS ──
     {
       name: 'slug',
       type: 'text',
       required: false,
       unique: true,
       index: true,
-      access: {
-        update: managerOnly,
-      },
+      access: { update: managerOnly },
       admin: {
         position: 'sidebar',
         description: 'Auto-generated from name. You can customize it if needed.',
@@ -134,14 +394,19 @@ export const People: CollectionConfig = {
       type: 'text',
       index: true,
       access: {
-        update: managerOnly,
+        update: ({ req }) => {
+          if (!req.user) return false
+          if (req.user.role === UserRole.ADMIN) return true
+          return isAdminOrManager(req.user)
+        },
       },
       admin: {
         position: 'sidebar',
-        description: 'Discord User ID (17-19 digits). Used for schedule availability and auto-fill matching. Auto-set when the linked User connects via Discord OAuth. Can also be set manually here.',
+        readOnly: true,
+        description: 'Discord User ID (17-19 digits). Set via Discord OAuth or manually by admins.',
       },
       validate: (value: any) => {
-        if (!value) return true // Optional
+        if (!value) return true
         if (!/^\d{17,19}$/.test(value)) {
           return 'Discord ID must be 17-19 digits'
         }
@@ -149,200 +414,66 @@ export const People: CollectionConfig = {
       },
     },
     {
-      name: 'relationships',
-      type: 'ui',
-      admin: {
-        position: 'sidebar',
-        components: {
-          Field: '@/components/PersonRelationshipsSidebar',
-        },
-      },
-    },
-    {
-      name: 'bio',
-      type: 'textarea',
-      access: {
-        update: ownerOrManager,
-      },
-      admin: {
-        description: 'Optional biography or description',
-      },
-    },
-    {
-      name: 'photo',
-      type: 'upload',
-      relationTo: 'media',
-      access: {
-        update: ownerOrManager,
-      },
-      admin: {
-        description: 'Profile photo (optional)',
-      },
-    },
-    {
-      name: 'socialLinks',
-      type: 'group',
-      access: {
-        update: ownerOrManager,
-      },
-      admin: {
-        description: 'Social media links. These will be displayed on player pages. Tip: Use full URLs (e.g., https://twitter.com/username) for best results.',
-      },
-      fields: [
-        {
-          name: 'twitter',
-          type: 'text',
-          admin: {
-            description: 'Twitter/X profile URL',
-          },
-        },
-        {
-          name: 'twitch',
-          type: 'text',
-          admin: {
-            description: 'Twitch channel URL',
-          },
-        },
-        {
-          name: 'youtube',
-          type: 'text',
-          admin: {
-            description: 'YouTube channel URL',
-          },
-        },
-        {
-          name: 'instagram',
-          type: 'text',
-          admin: {
-            description: 'Instagram profile URL',
-          },
-        },
-        {
-          name: 'tiktok',
-          type: 'text',
-          admin: {
-            description: 'TikTok profile URL',
-          },
-        },
-        {
-          name: 'customLinks',
-          type: 'array',
-          admin: {
-            description: 'Add any additional social media or personal links with custom labels',
-          },
-          fields: [
-            {
-              name: 'label',
-              type: 'text',
-              required: true,
-              admin: {
-                description: 'Display name for this link (e.g., "Discord", "Website", "Linktree")',
-              },
-            },
-            {
-              name: 'url',
-              type: 'text',
-              required: true,
-              admin: {
-                description: 'Full URL for this link',
-              },
-            },
-          ],
-        },
-      ],
-    },
-    {
-      name: 'gameAliases',
-      type: 'array',
-      label: 'Game Aliases',
-      access: {
-        update: managerOnly,
-      },
-      admin: {
-        description: 'In-game names this person uses. Matched against scrim log player names for automatic stat attribution. Internal only.',
-      },
-      fields: [
-        {
-          name: 'alias',
-          type: 'text',
-          required: true,
-          admin: {
-            description: 'In-game display name exactly as it appears in scrim logs (e.g., "Soup", "xXSlayerXx")',
-          },
-        },
-      ],
-    },
-    {
       name: 'showInLiveStreamers',
       type: 'checkbox',
       defaultValue: false,
-      access: {
-        update: managerOnly,
-      },
+      access: { update: managerOnly },
       admin: {
         position: 'sidebar',
-        description: 'Show this person in the Live Streamers section when streaming. Requires a Twitch URL in Social Links.',
-      },
-    },
-    {
-      name: 'notes',
-      type: 'textarea',
-      admin: {
-        description: 'Internal notes about this person (not displayed publicly)',
+        description: 'Show this person in the Live Streamers section when streaming.',
       },
     },
     {
       name: 'staffPositions',
       type: 'ui',
-      admin: {
-        components: {
-          Cell: '@/components/PeopleListColumns/StaffPositionsCell',
-        },
-      },
+      admin: { components: { Cell: '@/components/PeopleListColumns/StaffPositionsCell' } },
     },
     {
       name: 'teams',
       type: 'ui',
-      admin: {
-        components: {
-          Cell: '@/components/PeopleListColumns/TeamsCell',
-        },
-      },
+      admin: { components: { Cell: '@/components/PeopleListColumns/TeamsCell' } },
     },
   ],
   hooks: {
     afterChange: [autoCloseRecruitment, createAuditLogHook('people')],
     afterDelete: [createAuditLogDeleteHook('people')],
-    // REMOVED: beforeRead hook - it was removing select clauses which made the admin UI unable to fetch names
-    // The custom /api/people endpoint handles relationship dropdown queries with raw SQL
-    // Admin UI queries work fine without intervention
+    afterLogin: [
+      async ({ req, user }) => {
+        if (user && req.payload) {
+          const payload = req.payload
+          const userData = user as any
+          setTimeout(() => {
+            trackLogin(payload, userData, req).catch((err) => {
+              console.error('[Session Tracker] Deferred trackLogin failed:', err)
+            })
+          }, 100)
+        }
+      },
+    ],
+    afterLogout: [
+      async ({ req }) => {
+        if (req.user && req.payload) {
+          await trackLogout(req.payload, req.user.id)
+        }
+      },
+    ],
     beforeChange: [
       async ({ data, operation, req, originalDoc }) => {
-        // Ensure name is always populated and is a string
-        // This prevents null/empty names from being saved
         if (data) {
           if (!data.name || data.name === null || data.name === undefined || String(data.name).trim() === '') {
-            // If name is missing, try to fetch it from existing record
             if (operation === 'update' && originalDoc?.id) {
-              // Use originalDoc instead of trying to fetch by data.id
               if (originalDoc?.name && String(originalDoc.name).trim() !== '') {
                 data.name = String(originalDoc.name)
               }
             }
-            
-            // If still no name, use fallback
             if (!data.name || String(data.name).trim() === '') {
               if (data.slug && String(data.slug).trim() !== '') {
                 data.name = String(data.slug)
               } else {
-                // For creates, we can't use ID yet - it doesn't exist
-                // The name field is required, so this should not happen if validation is working
                 data.name = 'Untitled'
               }
             }
           }
-          
-          // Ensure name is always a string
           data.name = String(data.name || '').trim() || 'Untitled'
         }
         return data
@@ -350,44 +481,41 @@ export const People: CollectionConfig = {
     ],
     beforeValidate: [
       async ({ data, operation, req, originalDoc }) => {
-        // Auto-generate slug from name if not provided
         if (data && data.name) {
           if (!data.slug || String(data.slug).trim() === '') {
             data.slug = formatSlug(data.name)
           } else {
-            // Format existing slug value
             data.slug = formatSlug(data.slug)
           }
         }
-        
-        // Check for similar names when creating/updating
+
+        if (operation === 'create') {
+          if (data && !data.name) {
+            throw new Error('Name is required when creating a person')
+          }
+        }
+
+        if (operation === 'update' && originalDoc) {
+          if (data && !data.name && originalDoc.name) {
+            data.name = originalDoc.name
+          }
+          if (data && !data.role && originalDoc.role) {
+            data.role = originalDoc.role
+          }
+        }
+
         if (operation === 'create' || operation === 'update') {
           const payload = req.payload
           if (!payload || !data?.name) return data
 
-          // Build where clause - only exclude current ID if updating
-          const whereConditions: any[] = [
-            {
-              name: {
-                like: `%${data.name}%`,
-              },
-            },
-          ]
-          
-          // Only add ID exclusion for updates (creates don't have an ID yet)
+          const whereConditions: any[] = [{ name: { like: `%${data.name}%` } }]
           if (operation === 'update' && originalDoc?.id) {
-            whereConditions.push({
-              id: {
-                not_equals: originalDoc.id,
-              },
-            })
+            whereConditions.push({ id: { not_equals: originalDoc.id } })
           }
 
           const existingPeople = await payload.find({
             collection: 'people',
-            where: {
-              and: whereConditions,
-            },
+            where: { and: whereConditions },
             limit: 5,
           })
 
@@ -398,19 +526,43 @@ export const People: CollectionConfig = {
             )
           }
         }
+
+        if (operation === 'update' && req.user && originalDoc) {
+          if (req.user.role !== UserRole.ADMIN) {
+            if (data && 'role' in data && data.role !== originalDoc.role) {
+              req.payload.logger.warn('Non-admin attempted to change role - prevented')
+              data.role = originalDoc.role
+            }
+            if (data && 'assignedTeams' in data) {
+              req.payload.logger.warn('Non-admin attempted to change assignedTeams - prevented')
+              data.assignedTeams = originalDoc.assignedTeams
+            }
+            if (data && 'departments' in data) {
+              req.payload.logger.warn('Non-admin attempted to change departments - prevented')
+              data.departments = originalDoc.departments
+            }
+            if (data) {
+              delete data.createdAt
+              delete data.updatedAt
+            }
+          }
+          const canEditPug = req.user.role === UserRole.ADMIN || req.user.departments?.isPugAdmin === true
+          if (!canEditPug && data) {
+            const pugFields = ['pugTiers', 'pugApprovedRoles', 'pugInviteRegions', 'pugRegisteredDate', 'pugInvitedBy', 'pugActiveBan', 'pugBanOffenseCount'] as const
+            for (const field of pugFields) {
+              if (field in data) {
+                data[field] = originalDoc[field]
+              }
+            }
+          }
+        }
+
         return data
       },
     ],
     afterRead: [
       async ({ doc, req }) => {
-        // CRITICAL: Payload v3 calls afterRead for EACH document individually in list views
-        // Not as an array, so we need to handle single documents only
-        
-        if (!doc || typeof doc !== 'object') {
-          return doc
-        }
-        
-        // If name is missing or empty, use slug as fallback
+        if (!doc || typeof doc !== 'object') return doc
         if (!doc.name || String(doc.name).trim() === '') {
           if (doc.slug && String(doc.slug).trim() !== '') {
             doc.name = String(doc.slug)
@@ -420,9 +572,9 @@ export const People: CollectionConfig = {
             doc.name = 'Untitled'
           }
         }
-        
         return doc
       },
     ],
   },
+  timestamps: true,
 }

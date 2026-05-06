@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import { UserRole } from '../../access/roles'
-import type { User } from '@/payload-types'
+import type { Person } from '@/payload-types'
 
 export const AvailabilityCalendars: CollectionConfig = {
   slug: 'availability-calendars',
@@ -11,7 +11,7 @@ export const AvailabilityCalendars: CollectionConfig = {
   access: {
     // Team managers see only their team's calendars, admins/staff see all
     read: ({ req }) => {
-      const user = req.user as User | undefined
+      const user = req.user as Person | undefined
       if (!user) return false
 
       if (user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER) {
@@ -32,7 +32,7 @@ export const AvailabilityCalendars: CollectionConfig = {
       return false
     },
     create: ({ req }) => {
-      const user = req.user as User | undefined
+      const user = req.user as Person | undefined
       if (!user) return false
       return (
         user.role === UserRole.ADMIN ||
@@ -41,7 +41,7 @@ export const AvailabilityCalendars: CollectionConfig = {
       )
     },
     update: ({ req }) => {
-      const user = req.user as User | undefined
+      const user = req.user as Person | undefined
       if (!user) return false
       if (user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER) return true
       if (user.role === UserRole.TEAM_MANAGER) {
@@ -55,7 +55,7 @@ export const AvailabilityCalendars: CollectionConfig = {
       return false
     },
     delete: ({ req }) => {
-      const user = req.user as User | undefined
+      const user = req.user as Person | undefined
       if (!user) return false
       return user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER
     },
@@ -233,7 +233,7 @@ export const AvailabilityCalendars: CollectionConfig = {
     {
       name: 'createdBy',
       type: 'relationship',
-      relationTo: 'users',
+      relationTo: 'people',
       admin: {
         position: 'sidebar',
         readOnly: true,
