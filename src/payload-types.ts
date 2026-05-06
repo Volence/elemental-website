@@ -950,6 +950,10 @@ export interface Team {
    */
   discordCardMessageId?: string | null;
   /**
+   * Discord message ID for faceit updates channel (auto-managed)
+   */
+  discordFaceitUpdateMessageId?: string | null;
+  /**
    * Discord "Team X" role ID (auto-managed by provisioning)
    */
   discordTeamRoleId?: string | null;
@@ -3656,6 +3660,7 @@ export interface TeamsSelect<T extends boolean = true> {
   activeTournaments?: T;
   competitiveRating?: T;
   discordCardMessageId?: T;
+  discordFaceitUpdateMessageId?: T;
   discordTeamRoleId?: T;
   discordAccessRoleId?: T;
   discordCategoryId?: T;

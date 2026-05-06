@@ -226,6 +226,183 @@ export async function GET(request: NextRequest) {
       })
     }
 
+    // 5. Check for broken FaceitSeason references (active seasons pointing to deleted teams)
+    const activeSeasons = await payload.find({
+      collection: 'faceit-seasons',
+      where: { isActive: { equals: true } },
+      limit: 1000,
+      depth: 0,
+    })
+
+    const teamIds = new Set(teams.docs.map(t => t.id))
+    const brokenSeasons: Array<{ id: number | string; name: string; details: string }> = []
+    for (const season of activeSeasons.docs) {
+      const teamId = typeof (season as any).team === 'object' ? (season as any).team?.id : (season as any).team
+      if (teamId && !teamIds.has(teamId)) {
+        brokenSeasons.push({
+          id: season.id,
+          name: (season as any).seasonName || `Season #${season.id}`,
+          details: `References deleted team ID ${teamId}`,
+        })
+      }
+    }
+
+    if (brokenSeasons.length > 0) {
+      issues.push({
+        type: 'error',
+        category: 'Broken FaceIt Seasons',
+        message: 'Active FaceIt seasons reference teams that no longer exist',
+        items: brokenSeasons,
+        autoFixable: false,
+      })
+    }
+
+    // 6. FaceIt-enabled teams with no active season
+    const teamsWithActiveSeason = new Set<number | string>()
+    for (const season of activeSeasons.docs) {
+      const teamId = typeof (season as any).team === 'object' ? (season as any).team?.id : (season as any).team
+      if (teamId) teamsWithActiveSeason.add(teamId)
+    }
+
+    const faceitTeamsNoSeason = teams.docs
+      .filter((t: any) => t.faceitEnabled && !teamsWithActiveSeason.has(t.id))
+      .map((t: any) => ({
+        id: t.id,
+        name: t.name,
+        slug: t.slug || '',
+        details: 'FaceIt enabled but no active season found',
+      }))
+
+    if (faceitTeamsNoSeason.length > 0) {
+      issues.push({
+        type: 'warning',
+        category: 'FaceIt Config Issues',
+        message: 'These teams have FaceIt enabled but no active season, so sync data may be stale',
+        items: faceitTeamsNoSeason,
+        autoFixable: false,
+      })
+    }
+
+    // 7. Stale FaceIt sync (active seasons not synced in 7+ days)
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+    const staleSeasons = activeSeasons.docs
+      .filter((s: any) => {
+        if (!s.lastSynced) return true
+        return new Date(s.lastSynced) < sevenDaysAgo
+      })
+      .map((s: any) => {
+        const teamId = typeof s.team === 'object' ? s.team?.id : s.team
+        const team = teams.docs.find(t => t.id === teamId)
+        return {
+          id: s.id,
+          name: team?.name || `Season #${s.id}`,
+          details: s.lastSynced
+            ? `Last synced ${new Date(s.lastSynced).toLocaleDateString()}`
+            : 'Never synced',
+        }
+      })
+
+    if (staleSeasons.length > 0) {
+      issues.push({
+        type: 'warning',
+        category: 'Stale FaceIt Sync',
+        message: 'Active seasons have not been synced in over 7 days',
+        items: staleSeasons,
+        autoFixable: false,
+      })
+    }
+
+    // 8. Duplicate Discord IDs or emails across People
+    const discordIdMap = new Map<string, Array<{ id: number | string; name: string }>>()
+    const emailMap = new Map<string, Array<{ id: number | string; name: string }>>()
+
+    for (const person of allPeople.docs) {
+      const p = person as any
+      if (p.discordId) {
+        if (!discordIdMap.has(p.discordId)) discordIdMap.set(p.discordId, [])
+        discordIdMap.get(p.discordId)!.push({ id: p.id, name: p.name })
+      }
+      if (p.email) {
+        const email = p.email.toLowerCase()
+        if (!emailMap.has(email)) emailMap.set(email, [])
+        emailMap.get(email)!.push({ id: p.id, name: p.name })
+      }
+    }
+
+    const duplicateIdentifiers: Array<{ id: number | string; name: string; details: string }> = []
+
+    for (const [discordId, people] of discordIdMap) {
+      if (people.length > 1) {
+        for (const person of people) {
+          const others = people.filter(p => p.id !== person.id).map(p => `"${p.name}"`).join(', ')
+          duplicateIdentifiers.push({
+            id: person.id,
+            name: person.name,
+            details: `Shares Discord ID ${discordId} with ${others}`,
+          })
+        }
+      }
+    }
+
+    for (const [email, people] of emailMap) {
+      if (people.length > 1) {
+        for (const person of people) {
+          const others = people.filter(p => p.id !== person.id).map(p => `"${p.name}"`).join(', ')
+          duplicateIdentifiers.push({
+            id: person.id,
+            name: person.name,
+            details: `Shares email ${email} with ${others}`,
+          })
+        }
+      }
+    }
+
+    if (duplicateIdentifiers.length > 0) {
+      issues.push({
+        type: 'error',
+        category: 'Duplicate Identifiers',
+        message: 'Multiple People share the same Discord ID or email address and should be merged',
+        items: duplicateIdentifiers,
+        autoFixable: false,
+      })
+    }
+
+    // 9. Stale merge suggestions (pointing to deleted People)
+    const mergeSuggestions = await payload.find({
+      collection: 'merge-suggestions' as any,
+      where: { status: { equals: 'pending' } },
+      limit: 1000,
+      depth: 0,
+    })
+
+    const staleSuggestions: Array<{ id: number | string; name: string; details: string }> = []
+    for (const suggestion of mergeSuggestions.docs) {
+      const s = suggestion as any
+      const newPersonId = typeof s.newPerson === 'object' ? s.newPerson?.id : s.newPerson
+      const existingPersonId = typeof s.existingPerson === 'object' ? s.existingPerson?.id : s.existingPerson
+      const newMissing = newPersonId && !peopleIds.has(newPersonId)
+      const existingMissing = existingPersonId && !peopleIds.has(existingPersonId)
+
+      if (newMissing || existingMissing) {
+        const missing = [newMissing && 'new person', existingMissing && 'existing person'].filter(Boolean).join(' and ')
+        staleSuggestions.push({
+          id: s.id,
+          name: s.label || `Suggestion #${s.id}`,
+          details: `${missing} no longer exists`,
+        })
+      }
+    }
+
+    if (staleSuggestions.length > 0) {
+      issues.push({
+        type: 'warning',
+        category: 'Stale Merge Suggestions',
+        message: 'Pending merge suggestions reference People that have been deleted',
+        items: staleSuggestions,
+        autoFixable: true,
+      })
+    }
+
     return NextResponse.json({ issues, totalIssues: issues.length })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })

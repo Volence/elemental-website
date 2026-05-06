@@ -11,7 +11,8 @@ import AnnouncementsTab from './AnnouncementsTab'
 import TwitchLiveTab from './TwitchLiveTab'
 import WatchedThreadsTab from './WatchedThreadsTab'
 import ProvisionTeamTab from './ProvisionTeamTab'
-import { AlertTriangle, BarChart3, Bot, CheckCircle, Circle, Drama, Edit, FileText, Folder, Heart, Info, LayoutList, Lightbulb, Megaphone, MessageCircle, MessageSquare, Rocket, Save, Spade, Trash2, User, Volume2 } from 'lucide-react'
+import FaceitUpdatesTab from './FaceitUpdatesTab'
+import { AlertTriangle, BarChart3, Bot, CheckCircle, Circle, Drama, Edit, FileText, Folder, Heart, Info, LayoutList, Lightbulb, Megaphone, MessageCircle, MessageSquare, Rocket, Save, Spade, Trash2, Trophy, User, Volume2 } from 'lucide-react'
 
 interface DiscordChannel {
   id: string
@@ -97,7 +98,7 @@ const DiscordServerManagerView = () => {
   const [templates, setTemplates] = useState<Template[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'structure' | 'stats' | 'health' | 'templates' | 'team-cards' | 'announcements' | 'twitch-live' | 'watched-threads' | 'provision-team'>('structure')
+  const [activeTab, setActiveTab] = useState<'structure' | 'stats' | 'health' | 'templates' | 'team-cards' | 'announcements' | 'twitch-live' | 'watched-threads' | 'provision-team' | 'faceit-updates'>('structure')
   
   // Template form state
   const [selectedCategoryId, setSelectedCategoryId] = useState('')
@@ -828,6 +829,13 @@ const DiscordServerManagerView = () => {
           <span>Threads</span>
         </button>
         <button
+          className={`discord-server-manager__tab ${activeTab === 'faceit-updates' ? 'discord-server-manager__tab--active' : ''}`}
+          onClick={() => setActiveTab('faceit-updates')}
+        >
+          <Trophy size={14} />
+          <span>FaceIt Updates</span>
+        </button>
+        <button
           className={`discord-server-manager__tab ${activeTab === 'provision-team' ? 'discord-server-manager__tab--active' : ''}`}
           onClick={() => setActiveTab('provision-team')}
         >
@@ -1229,6 +1237,12 @@ const DiscordServerManagerView = () => {
 
         {activeTab === 'watched-threads' && (
           <WatchedThreadsTab />
+        )}
+
+        {activeTab === 'faceit-updates' && (
+          <FaceitUpdatesTab
+            onAlert={(title, message, type) => setAlertModal({ isOpen: true, title, message, type })}
+          />
         )}
 
         {activeTab === 'provision-team' && (

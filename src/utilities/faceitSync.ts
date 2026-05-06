@@ -63,7 +63,7 @@ interface SyncResult {
  */
 async function fetchTeamProfile(teamId: string): Promise<FaceitTeamData | null> {
   if (!FACEIT_API_KEY) {
-    throw new Error('FACEIT_API_KEY not configured')
+    return null
   }
 
   try {
@@ -237,13 +237,6 @@ export async function syncTeamData(
     for (const s of standingsResult.allStandings) {
       if (s.premade_team_id && s.name) {
         standingsNameMap.set(s.premade_team_id, s.name)
-      }
-    }
-
-    if (!teamProfile) {
-      return {
-        success: false,
-        error: 'Failed to fetch team profile from FaceIt',
       }
     }
 
@@ -727,6 +720,54 @@ export async function syncAllTeams(): Promise<SyncResult[]> {
       success: false,
       error: error.message || 'Unknown error during bulk sync',
     }]
+  }
+}
+
+/**
+ * Sync only teams in a specific region (faster for slash commands)
+ */
+export async function syncTeamsByRegion(region: string): Promise<SyncResult[]> {
+  try {
+    const payload = await getPayload({ config: configPromise })
+
+    const teams = await payload.find({
+      collection: 'teams',
+      where: {
+        and: [
+          { faceitEnabled: { equals: true } },
+          { currentFaceitLeague: { exists: true } },
+          { region: { equals: region } },
+        ],
+      },
+      depth: 2,
+      limit: 100,
+    })
+
+    const results: SyncResult[] = []
+    for (const team of teams.docs) {
+      const league = team.currentFaceitLeague as any
+      if (!league || !team.faceitTeamId) {
+        results.push({ success: false, error: `Missing required data for team ${team.name}` })
+        continue
+      }
+
+      const result = await syncTeamData(
+        team.id,
+        team.faceitTeamId,
+        league.championshipId,
+        league.leagueId,
+        league.seasonId,
+        league.stageId,
+      )
+      results.push({ ...result, team: team.name })
+
+      await new Promise(resolve => setTimeout(resolve, 1000))
+    }
+
+    return results
+  } catch (error: any) {
+    console.error(`[FaceIt Sync ${region}] Error:`, error)
+    return [{ success: false, error: error.message || 'Unknown error during region sync' }]
   }
 }
 

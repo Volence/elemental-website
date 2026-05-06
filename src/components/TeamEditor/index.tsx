@@ -49,6 +49,7 @@ type Team = {
   }
   activeTournaments: any[]
   discordCardMessageId: string
+  discordEmoji?: string | null
 }
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
@@ -321,6 +322,7 @@ export default function TeamEditor() {
   const [rating, setRating] = useState('')
   const [bio, setBio] = useState('')
   const [active, setActive] = useState(true)
+  const [discordEmoji, setDiscordEmoji] = useState('')
   const [competitiveRating, setCompetitiveRating] = useState('')
 
   // Branding
@@ -380,6 +382,7 @@ export default function TeamEditor() {
       setRating(t.rating ?? '')
       setBio(t.bio ?? '')
       setActive(t.active ?? true)
+      setDiscordEmoji(t.discordEmoji ?? '')
       setCompetitiveRating(t.competitiveRating?.toString() ?? '')
       setBrandingPrimary(t.brandingPrimary ?? '#34d399')
       setBrandingSecondary(t.brandingSecondary ?? '#06b6d4')
@@ -440,7 +443,7 @@ export default function TeamEditor() {
     setErrorMsg('')
     try {
       const payload: Record<string, any> = {
-        name, slug, region, rating, bio, active,
+        name, slug, region, rating, bio, active, discordEmoji,
         competitiveRating: competitiveRating ? Number(competitiveRating) : null,
         brandingPrimary, brandingSecondary,
         manager: managers.filter(m => m.personId).map(m => ({ person: m.personId })),
@@ -614,6 +617,10 @@ export default function TeamEditor() {
             <div style={editorStyles.editableField}>
               <label style={editorStyles.fieldLabel}>Bio</label>
               <textarea className="profile-input profile-textarea" value={bio} onChange={e => setBio(e.target.value)} placeholder="Team description..." style={{ minHeight: 80 }} />
+            </div>
+            <div style={editorStyles.editableField}>
+              <label style={editorStyles.fieldLabel}>Emoji</label>
+              <input className="profile-input" value={discordEmoji} onChange={e => setDiscordEmoji(e.target.value)} placeholder="e.g. ⚡" style={{ maxWidth: 80 }} maxLength={4} />
             </div>
             <div style={editorStyles.editableField}>
               <label style={editorStyles.fieldLabel}>Logo</label>

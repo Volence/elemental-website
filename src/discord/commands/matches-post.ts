@@ -6,6 +6,8 @@ export async function handleMatchesPost(interaction: ChatInputCommandInteraction
   try {
     await interaction.deferReply()
 
+    const region = interaction.options.getString('region', true)
+
     const payload = await getPayload({ config: configPromise })
 
     // Same match-day window as matches-today: 08:00 UTC -> 08:00 UTC next day
@@ -25,6 +27,7 @@ export async function handleMatchesPost(interaction: ChatInputCommandInteraction
           { date: { greater_than_equal: startOfDay.toISOString() } },
           { date: { less_than_equal: endOfDay.toISOString() } },
           { status: { not_equals: 'cancelled' } },
+          { region: { equals: region } },
         ],
       },
       limit: 50,
@@ -33,7 +36,7 @@ export async function handleMatchesPost(interaction: ChatInputCommandInteraction
     })
 
     if (!matches.docs.length) {
-      await interaction.editReply({ content: 'No matches scheduled for today.' })
+      await interaction.editReply({ content: `No ${region} matches scheduled for today.` })
       return
     }
 
@@ -50,7 +53,7 @@ export async function handleMatchesPost(interaction: ChatInputCommandInteraction
       }
     }
 
-    // Group by division
+    // Group by division (league field)
     const matchesByDivision: Record<string, any[]> = {}
     for (const match of matches.docs) {
       const division = (match as any).league || 'Other'
@@ -103,7 +106,7 @@ export async function handleMatchesPost(interaction: ChatInputCommandInteraction
       sections.push(`**${division}**\n${lines.join('\n')}`)
     }
 
-    const header = `ELMT NA GAME DAY!\n\n`
+    const header = `ELMT ${region} GAME DAY!\n\n`
     const body = sections.join('\n\n')
 
     // Send as plain text (not embed) so SM can easily copy it

@@ -40,8 +40,8 @@ export class AdminErrorBoundary extends Component<Props, State> {
           message: error.message,
           stack: error.stack + '\n\nComponent Stack:' + errorInfo.componentStack,
           url: window.location.href,
-          errorType: 'react',
-          severity: 'error',
+          errorType: 'frontend',
+          severity: 'high',
         }),
       })
     } catch (logError) {

@@ -1,18 +1,21 @@
 import type { ChatInputCommandInteraction } from 'discord.js'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { syncAllTeams } from '../../utilities/faceitSync'
 
 export async function handleDailyResults(interaction: ChatInputCommandInteraction): Promise<void> {
   try {
     await interaction.deferReply()
 
-    // Sync all teams from FaceIt to pull fresh scores
-    await syncAllTeams()
+    const region = interaction.options.getString('region', true)
+
+    // Kick off region sync in background - don't block the response
+    import('../../utilities/faceitSync')
+      .then(({ syncTeamsByRegion }) => syncTeamsByRegion(region))
+      .catch((err) => console.error('[daily-results] Background sync failed:', err))
 
     const payload = await getPayload({ config: configPromise })
 
-    // Same match-day window as matches-today: 08:00 UTC -> 08:00 UTC next day
+    // Same match-day window: 08:00 UTC -> 08:00 UTC next day
     const now = new Date()
     const startOfDay = new Date(now)
     startOfDay.setUTCHours(8, 0, 0, 0)
@@ -29,6 +32,7 @@ export async function handleDailyResults(interaction: ChatInputCommandInteractio
           { date: { greater_than_equal: startOfDay.toISOString() } },
           { date: { less_than_equal: endOfDay.toISOString() } },
           { status: { equals: 'complete' } },
+          { region: { equals: region } },
         ],
       },
       limit: 50,
@@ -37,7 +41,7 @@ export async function handleDailyResults(interaction: ChatInputCommandInteractio
     })
 
     if (!matches.docs.length) {
-      await interaction.editReply({ content: 'No completed matches for today yet.' })
+      await interaction.editReply({ content: `No completed ${region} matches for today yet.` })
       return
     }
 
@@ -102,18 +106,16 @@ export async function handleDailyResults(interaction: ChatInputCommandInteractio
         }
 
         // Format score
-        let scoreStr = ''
         if (match.score) {
           const eScore = (match.score as any).elmtScore
           const oScore = (match.score as any).opponentScore
           if (eScore != null && oScore != null) {
             const isLegacy = (eScore === 1 && oScore === 0) || (eScore === 0 && oScore === 1)
             if (isLegacy) {
-              scoreStr = eScore > oScore ? 'W' : 'L'
+              const scoreStr = eScore > oScore ? 'W' : 'L'
               lines.push(`${team1Emoji}${team1Name} ${scoreStr} ${team2Name}`)
             } else {
-              scoreStr = `${eScore}-${oScore}`
-              lines.push(`${team1Emoji}${team1Name} ${scoreStr} ${team2Name}`)
+              lines.push(`${team1Emoji}${team1Name} ${eScore}-${oScore} ${team2Name}`)
             }
           } else {
             lines.push(`${team1Emoji}${team1Name} vs ${team2Name}`)
@@ -126,7 +128,7 @@ export async function handleDailyResults(interaction: ChatInputCommandInteractio
       sections.push(`**${division}**\n${lines.join('\n')}`)
     }
 
-    const header = 'ELMT NA GAME DAY RESULTS!\n\n'
+    const header = `ELMT ${region} GAME DAY RESULTS!\n\n`
     const body = sections.join('\n\n')
 
     await interaction.editReply({ content: header + body })

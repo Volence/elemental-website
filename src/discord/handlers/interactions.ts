@@ -1,4 +1,7 @@
 import type { Interaction, ChatInputCommandInteraction, ButtonInteraction } from 'discord.js'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
+import { logError } from '@/utilities/errorLogger'
 import { getDiscordClient } from '../bot'
 import { handleTeamInfo } from '../commands/team-info'
 import { handleTeamMatches } from '../commands/team-matches'
@@ -11,7 +14,6 @@ import { handleMatchesToday } from '../commands/matches-today'
 import { handleCastingSheet } from '../commands/casting-sheet'
 import { handleMatchesPost } from '../commands/matches-post'
 import { handleDailyResults } from '../commands/daily-results'
-import { handleWeeklyRecap } from '../commands/weekly-recap'
 import { handleAvailability } from '../commands/availability'
 import { handlePugQueue } from '../commands/pug/queue'
 import { handlePugLeave } from '../commands/pug/leave'
@@ -48,6 +50,17 @@ export function setupInteractionHandlers(): void {
       }
     } catch (error) {
       console.error('Error handling interaction:', error)
+
+      try {
+        const payload = await getPayload({ config: configPromise })
+        const commandInfo = interaction.isChatInputCommand() ? `/${interaction.commandName}` : interaction.isButton() ? `button:${(interaction as ButtonInteraction).customId}` : 'unknown'
+        await logError(payload, {
+          errorType: 'backend',
+          message: `Discord interaction error: ${commandInfo} - ${error instanceof Error ? error.message : String(error)}`,
+          stack: error instanceof Error ? error.stack : undefined,
+          severity: 'high',
+        })
+      } catch {}
 
       // Only try to respond if the interaction is still valid and hasn't timed out
       if (interaction.isRepliable()) {
@@ -109,8 +122,6 @@ async function handleChatCommand(interaction: ChatInputCommandInteraction): Prom
     await handleMatchesPost(interaction)
   } else if (commandName === 'daily-results') {
     await handleDailyResults(interaction)
-  } else if (commandName === 'weekly-recap') {
-    await handleWeeklyRecap(interaction)
   } else if (commandName === 'availability') {
     await handleAvailability(interaction)
   } else if (commandName === 'pug') {

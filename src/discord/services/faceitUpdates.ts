@@ -6,13 +6,16 @@ import type { TextChannel } from 'discord.js'
 
 const FACEIT_UPDATES_CHANNEL = process.env.DISCORD_FACEIT_UPDATES_CHANNEL
 
+const REGION_ORDER = ['NA', 'EMEA', 'SA', 'OCE']
+const DIVISION_ORDER = ['Masters', 'Expert', 'Advanced', 'Open']
+
 export async function updateFaceitChannel(): Promise<void> {
   const client = await ensureDiscordClient()
   if (!client || !FACEIT_UPDATES_CHANNEL) return
 
   const payload = await getPayload({ config: configPromise })
 
-  // Find all FaceIt-enabled teams with active seasons
+  // Find all FaceIt-enabled teams
   const teams = await payload.find({
     collection: 'teams',
     where: {
@@ -23,25 +26,47 @@ export async function updateFaceitChannel(): Promise<void> {
     sort: 'name',
   })
 
+  // Fetch all active seasons to get division info
+  const allSeasons = await payload.find({
+    collection: 'faceit-seasons',
+    where: {
+      isActive: { equals: true },
+    },
+    limit: 100,
+  })
+
+  // Build a map of team ID -> active season
+  const seasonByTeamId = new Map<number, any>()
+  for (const s of allSeasons.docs) {
+    const season = s as any
+    const teamId = typeof season.team === 'object' ? season.team.id : season.team
+    if (teamId) seasonByTeamId.set(teamId, season)
+  }
+
+  // Sort teams by region then division
+  const sortedTeams = [...teams.docs].sort((a: any, b: any) => {
+    const regionA = REGION_ORDER.indexOf(a.region || 'EMEA')
+    const regionB = REGION_ORDER.indexOf(b.region || 'EMEA')
+    if (regionA !== regionB) return regionA - regionB
+
+    const seasonA = seasonByTeamId.get(a.id)
+    const seasonB = seasonByTeamId.get(b.id)
+    const divA = DIVISION_ORDER.indexOf(seasonA?.division || 'Open')
+    const divB = DIVISION_ORDER.indexOf(seasonB?.division || 'Open')
+    if (divA !== divB) return divA - divB
+
+    return (a.name || '').localeCompare(b.name || '')
+  })
+
   const channel = await client.channels.fetch(FACEIT_UPDATES_CHANNEL).catch(() => null)
   if (!channel || !channel.isTextBased()) return
   const textChannel = channel as TextChannel
 
-  for (const team of teams.docs) {
+  for (const team of sortedTeams) {
     const teamData = team as any
+    const season = seasonByTeamId.get(team.id)
 
-    // Get active season with standings
-    const seasons = await payload.find({
-      collection: 'faceit-seasons',
-      where: {
-        team: { equals: team.id },
-        isActive: { equals: true },
-      },
-      limit: 1,
-    })
-
-    if (!seasons.docs.length) continue
-    const season = seasons.docs[0] as any
+    if (!season) continue
     const standings = season.standings || {}
 
     // Get this week's completed matches for the team
@@ -74,7 +99,7 @@ export async function updateFaceitChannel(): Promise<void> {
       .setColor(teamData.brandingPrimary ? parseInt(teamData.brandingPrimary.replace('#', ''), 16) : 0x00d4aa)
 
     // Division and standings
-    const divisionLine = `**${season.division || 'Unranked'}** ${season.region || ''}`
+    const divisionLine = `**${season.division || 'Unranked'}** ${teamData.region || ''}`
     const wins = standings.wins || 0
     const losses = standings.losses || 0
     const rank = standings.currentRank
@@ -91,7 +116,7 @@ export async function updateFaceitChannel(): Promise<void> {
       inline: false,
     })
 
-    // Recent match results
+    // Recent match results with lobby links
     if (recentMatches.docs.length > 0) {
       const resultLines: string[] = []
       for (const m of recentMatches.docs) {
@@ -113,7 +138,14 @@ export async function updateFaceitChannel(): Promise<void> {
         }
         const matchDate = new Date(match.date)
         const dateStr = `<t:${Math.floor(matchDate.getTime() / 1000)}:d>`
-        resultLines.push(`${scoreStr} vs ${opponentName} (${dateStr})`)
+
+        // Add FaceIt lobby link if available
+        const lobbyUrl = match.faceitLobby
+        if (lobbyUrl) {
+          resultLines.push(`${scoreStr} vs ${opponentName} (${dateStr}) [Lobby](${lobbyUrl})`)
+        } else {
+          resultLines.push(`${scoreStr} vs ${opponentName} (${dateStr})`)
+        }
       }
       embed.addFields({
         name: 'Recent Results',
@@ -135,12 +167,10 @@ export async function updateFaceitChannel(): Promise<void> {
     }
 
     // Post or update the message
-    // Store message ID in discordFaceitUpdateMessageId
     const existingMessageId = teamData.discordFaceitUpdateMessageId
 
     try {
       if (existingMessageId) {
-        // Try to edit existing message
         const existingMessage = await textChannel.messages.fetch(existingMessageId).catch(() => null)
         if (existingMessage) {
           await existingMessage.edit({ embeds: [embed] })
@@ -148,7 +178,6 @@ export async function updateFaceitChannel(): Promise<void> {
         }
       }
 
-      // Post new message
       const newMessage = await textChannel.send({ embeds: [embed] })
       await payload.update({
         collection: 'teams',

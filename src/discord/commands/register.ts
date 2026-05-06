@@ -136,29 +136,48 @@ export function buildCommands() {
     // Casting sheet command (casting prep for today's match)
     new SlashCommandBuilder()
       .setName('casting-sheet')
-      .setDescription('Get casting prep sheet for today\'s match (both teams, pronouns, FaceIt stats)')
+      .setDescription('Get casting prep sheet for today\'s match (auto-detects casted matches)')
       .addStringOption((option) =>
         option
           .setName('team-name')
-          .setDescription('Name of the team')
-          .setRequired(true)
+          .setDescription('Team name (optional - auto-detects casted matches if omitted)')
+          .setRequired(false)
           .setAutocomplete(true),
       ),
 
     // Matches post formatter for social media
     new SlashCommandBuilder()
       .setName('matches-post')
-      .setDescription('Format today\'s matches for social media (copy-paste ready)'),
+      .setDescription('Format today\'s matches for social media (copy-paste ready)')
+      .addStringOption((option) =>
+        option
+          .setName('region')
+          .setDescription('Region to show matches for')
+          .setRequired(true)
+          .addChoices(
+            { name: 'NA', value: 'NA' },
+            { name: 'EMEA', value: 'EMEA' },
+            { name: 'SA', value: 'SA' },
+            { name: 'OCE', value: 'OCE' },
+          ),
+      ),
 
     // Daily results command (sync + format results)
     new SlashCommandBuilder()
       .setName('daily-results')
-      .setDescription('Sync FaceIt scores and format today\'s match results'),
-
-    // Weekly recap command
-    new SlashCommandBuilder()
-      .setName('weekly-recap')
-      .setDescription('Refresh the FaceIt updates channel with latest standings and results'),
+      .setDescription('Sync FaceIt scores and format today\'s match results')
+      .addStringOption((option) =>
+        option
+          .setName('region')
+          .setDescription('Region to show results for')
+          .setRequired(true)
+          .addChoices(
+            { name: 'NA', value: 'NA' },
+            { name: 'EMEA', value: 'EMEA' },
+            { name: 'SA', value: 'SA' },
+            { name: 'OCE', value: 'OCE' },
+          ),
+      ),
 
     // Availability calendar command
     new SlashCommandBuilder()

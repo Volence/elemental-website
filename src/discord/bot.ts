@@ -1,4 +1,7 @@
 import { Client, GatewayIntentBits, Events, ActivityType, Options } from 'discord.js'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
+import { logError } from '@/utilities/errorLogger'
 
 let client: Client | null = null
 let initializationPromise: Promise<Client | null> | null = null
@@ -65,6 +68,14 @@ export async function initializeDiscordBot(): Promise<Client | null> {
   // Error handling
   client.on('error', (error) => {
     console.error('❌ Discord client error:', error)
+    getPayload({ config: configPromise }).then((payload) =>
+      logError(payload, {
+        errorType: 'system',
+        message: `Discord client error: ${error.message}`,
+        stack: error.stack,
+        severity: 'critical',
+      }),
+    ).catch(() => {})
   })
 
   // Login

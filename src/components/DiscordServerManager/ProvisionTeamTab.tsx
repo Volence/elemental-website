@@ -189,8 +189,11 @@ export default function ProvisionTeamTab({ onAlert }: ProvisionTeamTabProps) {
             <select
               value={selectedTeamId || ''}
               onChange={(e) => {
-                setSelectedTeamId(e.target.value ? Number(e.target.value) : null)
+                const id = e.target.value ? Number(e.target.value) : null
+                setSelectedTeamId(id)
                 setResult(null)
+                const team = teams.find((t) => t.id === id)
+                if (team?.discordEmoji) setEmoji(team.discordEmoji)
               }}
             >
               <option value="">Choose a team...</option>

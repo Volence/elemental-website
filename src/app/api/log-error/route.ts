@@ -33,12 +33,16 @@ export async function POST(req: NextRequest) {
     }
     
     const body = await req.json()
-    const { message, stack, url, errorType = 'frontend', severity = 'medium' } = body
-    
-    // Validate required fields
+    const { message, stack, url } = body
+
     if (!message) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 })
     }
+
+    const validErrorTypes = ['api', 'backend', 'database', 'frontend', 'validation', 'system']
+    const validSeverities = ['low', 'medium', 'high', 'critical']
+    const errorType = validErrorTypes.includes(body.errorType) ? body.errorType : 'frontend'
+    const severity = validSeverities.includes(body.severity) ? body.severity : 'medium'
     
     // Create error log entry with overrideAccess to bypass collection access control
     await payload.create({
