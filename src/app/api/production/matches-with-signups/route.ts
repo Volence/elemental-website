@@ -11,7 +11,8 @@ export async function GET(req: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
-    if (user.role !== 'admin' && user.role !== 'staff-manager') {
+    const u = user as any
+    if (user.role !== 'admin' && user.role !== 'staff-manager' && !u.departments?.isProductionStaff) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
