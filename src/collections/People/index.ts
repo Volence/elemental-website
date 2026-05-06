@@ -125,6 +125,28 @@ export const People: CollectionConfig = {
               },
             },
             {
+              name: 'pronouns',
+              type: 'text',
+              access: {
+                update: ownerOrManager,
+              },
+              admin: {
+                description: 'Pronouns (e.g., he/him, she/her, they/them)',
+                placeholder: 'e.g., he/him',
+              },
+            },
+            {
+              name: 'pronunciation',
+              type: 'text',
+              access: {
+                update: ownerOrManager,
+              },
+              admin: {
+                description: 'Name pronunciation guide for casters and production',
+                placeholder: 'e.g., "VOL-ens" or "rhymes with fence"',
+              },
+            },
+            {
               name: 'bio',
               type: 'textarea',
               access: {
