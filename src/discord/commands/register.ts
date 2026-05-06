@@ -150,6 +150,11 @@ export function buildCommands() {
       .setName('matches-post')
       .setDescription('Format today\'s matches for social media (copy-paste ready)'),
 
+    // Daily results command (sync + format results)
+    new SlashCommandBuilder()
+      .setName('daily-results')
+      .setDescription('Sync FaceIt scores and format today\'s match results'),
+
     // Availability calendar command
     new SlashCommandBuilder()
       .setName('availability')

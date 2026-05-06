@@ -10,6 +10,7 @@ import { handleCalendar } from '../commands/calendar'
 import { handleMatchesToday } from '../commands/matches-today'
 import { handleCastingSheet } from '../commands/casting-sheet'
 import { handleMatchesPost } from '../commands/matches-post'
+import { handleDailyResults } from '../commands/daily-results'
 import { handleAvailability } from '../commands/availability'
 import { handlePugQueue } from '../commands/pug/queue'
 import { handlePugLeave } from '../commands/pug/leave'
@@ -105,6 +106,8 @@ async function handleChatCommand(interaction: ChatInputCommandInteraction): Prom
     await handleCastingSheet(interaction)
   } else if (commandName === 'matches-post') {
     await handleMatchesPost(interaction)
+  } else if (commandName === 'daily-results') {
+    await handleDailyResults(interaction)
   } else if (commandName === 'availability') {
     await handleAvailability(interaction)
   } else if (commandName === 'pug') {
