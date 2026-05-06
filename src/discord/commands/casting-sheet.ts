@@ -235,22 +235,40 @@ export async function handleCastingSheet(interaction: ChatInputCommandInteractio
         }
       }
 
-      // Get opponent players from FaceIt Data API (team profile includes members)
-      if (opponentTeamId && process.env.FACEIT_API_KEY) {
+      // Get opponent players from FaceIt match data (exact 5-player roster)
+      const faceitMatchId = matchData.faceitMatchId
+      if (faceitMatchId && process.env.FACEIT_API_KEY) {
         try {
-          const teamUrl = `https://open.faceit.com/data/v4/teams/${opponentTeamId}`
-          const teamRes = await fetch(teamUrl, {
+          const matchUrl = `https://open.faceit.com/data/v4/matches/${faceitMatchId}`
+          const matchRes = await fetch(matchUrl, {
             headers: {
               Authorization: `Bearer ${process.env.FACEIT_API_KEY}`,
             },
           })
 
-          if (teamRes.ok) {
-            const teamData = (await teamRes.json()) as any
-            const members = teamData?.members || []
+          if (matchRes.ok) {
+            const faceitMatch = (await matchRes.json()) as any
+            const faction1 = faceitMatch?.teams?.faction1
+            const faction2 = faceitMatch?.teams?.faction2
 
-            if (Array.isArray(members) && members.length > 0) {
-              const playerNames = members.map((m: any) => m.nickname || m.name || 'Unknown')
+            // Find opponent faction by matching opponentTeamId or by excluding our team
+            let opponentFaction = null
+            if (opponentTeamId) {
+              if (faction1?.team_id === opponentTeamId) opponentFaction = faction1
+              else if (faction2?.team_id === opponentTeamId) opponentFaction = faction2
+            }
+            if (!opponentFaction) {
+              const ourFaceitTeamId = ourSeason?.faceitTeamId
+              if (ourFaceitTeamId) {
+                opponentFaction = faction1?.team_id === ourFaceitTeamId ? faction2 : faction1
+              } else {
+                opponentFaction = faction2
+              }
+            }
+
+            const roster = opponentFaction?.roster || []
+            if (Array.isArray(roster) && roster.length > 0) {
+              const playerNames = roster.map((p: any) => p.nickname || 'Unknown')
               embed.addFields({
                 name: opponentName,
                 value: playerNames.join('\n'),
@@ -280,7 +298,7 @@ export async function handleCastingSheet(interaction: ChatInputCommandInteractio
       } else {
         embed.addFields({
           name: opponentName,
-          value: opponentTeamId ? 'FaceIt API key not configured' : 'No FaceIt data available',
+          value: faceitMatchId ? 'FaceIt API key not configured' : 'No FaceIt match data available',
           inline: false,
         })
       }
