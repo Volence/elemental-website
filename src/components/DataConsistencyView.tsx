@@ -53,6 +53,9 @@ const DataConsistencyView: React.FC = () => {
       setLoading(true)
       const response = await fetch('/api/data-consistency-check')
       const data = await response.json()
+      if (data.error) {
+        console.error('Data consistency check failed:', data.error)
+      }
       setIssues(data.issues || [])
     } catch (error) {
       console.error('Error fetching data consistency issues:', error)
