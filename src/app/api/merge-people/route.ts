@@ -293,6 +293,35 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Step 2b: Handle pug_players (NOT NULL user_id with unique constraint)
+    try {
+      const pugPlayerCheck = await drizzle.execute(sql.raw(
+        `SELECT id FROM pug_players WHERE user_id = ${sourceId}`
+      ))
+      const sourceHasPugPlayer = (pugPlayerCheck as any).rows?.length > 0
+
+      if (sourceHasPugPlayer) {
+        const targetCheck = await drizzle.execute(sql.raw(
+          `SELECT id FROM pug_players WHERE user_id = ${targetId}`
+        ))
+        const targetHasPugPlayer = (targetCheck as any).rows?.length > 0
+
+        if (targetHasPugPlayer) {
+          const sourcePugId = (pugPlayerCheck as any).rows[0].id
+          for (const childTable of ['pug_players_tiers', 'pug_players_approved_roles', 'pug_players_invite_regions']) {
+            await drizzle.execute(sql.raw(`DELETE FROM "${childTable}" WHERE parent_id = ${sourcePugId}`))
+          }
+          await drizzle.execute(sql.raw(`DELETE FROM pug_players WHERE user_id = ${sourceId}`))
+          log.push('Deleted duplicate pug_players entry (target already has one)')
+        } else {
+          await drizzle.execute(sql.raw(`UPDATE pug_players SET user_id = ${targetId} WHERE user_id = ${sourceId}`))
+          log.push('Repointed pug_players.user_id')
+        }
+      }
+    } catch (e: any) {
+      log.push(`pug_players handling: ${e.message}`)
+    }
+
     // Step 3: Delete source person
     await payload.delete({
       collection: 'people',
