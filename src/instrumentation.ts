@@ -54,10 +54,10 @@ function setupGlobalErrorHandlers() {
   const shutdown = async (signal: string) => {
     console.log(`[Shutdown] ${signal} received, cleaning up...`)
     try {
-      const { stopTwitchLiveRoster } = await import(/* webpackIgnore: true */ './discord/services/twitchLiveRoster')
-      const { stopThreadKeepAlive } = await import(/* webpackIgnore: true */ './discord/services/threadKeepAlive')
-      const { stopPollNotificationPolling } = await import(/* webpackIgnore: true */ './discord/handlers/poll-handlers')
-      const { shutdownDiscordBot } = await import(/* webpackIgnore: true */ './discord/bot')
+      const { stopTwitchLiveRoster } = await import('./discord/services/twitchLiveRoster')
+      const { stopThreadKeepAlive } = await import('./discord/services/threadKeepAlive')
+      const { stopPollNotificationPolling } = await import('./discord/handlers/poll-handlers')
+      const { shutdownDiscordBot } = await import('./discord/bot')
       stopTwitchLiveRoster()
       stopThreadKeepAlive()
       stopPollNotificationPolling()
