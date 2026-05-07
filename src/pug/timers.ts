@@ -42,79 +42,51 @@ export async function recoverTimers(): Promise<void> {
   })
 
   const now = Date.now()
+  // Expired timers use a short delay instead of running immediately because
+  // this runs inside onInit and the callbacks call getPayload() which waits
+  // for onInit to finish, creating a deadlock if awaited directly.
+  const EXPIRED_DELAY = 5000
 
   for (const lobby of activeLobbies) {
     if (lobby.status === 'DRAFTING') {
-      if (lobby.draftState?.pickDeadline) {
-        const delay = new Date(lobby.draftState.pickDeadline).getTime() - now
-        if (delay > 0) {
-          registerTimer(timerKey(lobby.id, 'draft'), delay, () => finalizeDraftPick(lobby.id))
-        } else {
-          await finalizeDraftPick(lobby.id).catch(console.error)
-        }
-      } else {
-        // No active pick deadline: last pick was processed but MAP_VOTE transition didn't complete before restart
-        await finalizeDraftPick(lobby.id).catch(console.error)
-      }
+      const deadline = lobby.draftState?.pickDeadline
+        ? new Date(lobby.draftState.pickDeadline).getTime() - now
+        : -1
+      registerTimer(timerKey(lobby.id, 'draft'), Math.max(deadline, EXPIRED_DELAY), () => finalizeDraftPick(lobby.id))
     }
 
     if (lobby.status === 'MAP_VOTE' && lobby.mapVote?.voteDeadline) {
       const delay = new Date(lobby.mapVote.voteDeadline).getTime() - now
-      if (delay > 0) {
-        registerTimer(timerKey(lobby.id, 'mapvote'), delay, () => finalizeMapVote(lobby.id))
-      } else {
-        await finalizeMapVote(lobby.id).catch(console.error)
-      }
+      registerTimer(timerKey(lobby.id, 'mapvote'), Math.max(delay, EXPIRED_DELAY), () => finalizeMapVote(lobby.id))
     }
 
     if (lobby.status === 'BANNING' && lobby.banState?.banDeadline) {
       const delay = new Date(lobby.banState.banDeadline).getTime() - now
-      if (delay > 0) {
-        registerTimer(timerKey(lobby.id, 'ban'), delay, () => finalizeBan(lobby.id))
-      } else {
-        await finalizeBan(lobby.id).catch(console.error)
-      }
+      registerTimer(timerKey(lobby.id, 'ban'), Math.max(delay, EXPIRED_DELAY), () => finalizeBan(lobby.id))
     }
 
     if (lobby.status === 'OPEN' && lobby.timeoutAt) {
       const delay = new Date(lobby.timeoutAt).getTime() - now
-      if (delay > 0) {
-        registerTimer(timerKey(lobby.id, 'timeout'), delay, () => cancelExpiredLobby(lobby.id))
-      } else {
-        await cancelExpiredLobby(lobby.id).catch(console.error)
-      }
+      registerTimer(timerKey(lobby.id, 'timeout'), Math.max(delay, EXPIRED_DELAY), () => cancelExpiredLobby(lobby.id))
     }
 
     if (lobby.status === 'OPEN') {
       for (const player of lobby.players) {
-        const afkDeadline = player.joinedAt.getTime() + AFK_TIMEOUT_MS
-        const delay = afkDeadline - now
-        if (delay > 0) {
-          registerTimer(timerKey(lobby.id, `afk_${player.userId}`), delay, () => afkBootPlayer(lobby.id, player.userId))
-        } else {
-          await afkBootPlayer(lobby.id, player.userId).catch(console.error)
-        }
+        const delay = player.joinedAt.getTime() + AFK_TIMEOUT_MS - now
+        registerTimer(timerKey(lobby.id, `afk_${player.userId}`), Math.max(delay, EXPIRED_DELAY), () => afkBootPlayer(lobby.id, player.userId))
       }
     }
 
     if (lobby.status === 'READY') {
       const baseline = lobby.readyAt ?? lobby.updatedAt
-      const readyDelay = baseline.getTime() + READY_CHECK_TIMEOUT_MS - now
-      if (readyDelay > 0) {
-        registerTimer(timerKey(lobby.id, 'ready'), readyDelay, () => expireReadyCheck(lobby.id))
-      } else {
-        await expireReadyCheck(lobby.id).catch(console.error)
-      }
+      const delay = baseline.getTime() + READY_CHECK_TIMEOUT_MS - now
+      registerTimer(timerKey(lobby.id, 'ready'), Math.max(delay, EXPIRED_DELAY), () => expireReadyCheck(lobby.id))
     }
 
     if (lobby.status === 'REPORTING') {
       const baseline = lobby.reportingAt ?? lobby.updatedAt
-      const confirmDelay = baseline.getTime() + RESULT_CONFIRM_TIMEOUT_MS - now
-      if (confirmDelay > 0) {
-        registerTimer(timerKey(lobby.id, 'confirm'), confirmDelay, () => autoConfirmResult(lobby.id))
-      } else {
-        await autoConfirmResult(lobby.id).catch(console.error)
-      }
+      const delay = baseline.getTime() + RESULT_CONFIRM_TIMEOUT_MS - now
+      registerTimer(timerKey(lobby.id, 'confirm'), Math.max(delay, EXPIRED_DELAY), () => autoConfirmResult(lobby.id))
     }
   }
 }
