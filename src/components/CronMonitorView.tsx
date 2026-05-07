@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useConfig } from '@payloadcms/ui'
 import { formatLocalDateTime } from '@/utilities/formatDateTime'
 
 interface CronJobRun {
@@ -17,25 +16,21 @@ interface CronJobRun {
 }
 
 export default function CronMonitorView() {
-  const { config } = useConfig()
   const [runs, setRuns] = useState<CronJobRun[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
 
-  const serverURL = config?.serverURL || ''
-
   useEffect(() => {
     const fetchData = async () => {
-      await fetchRuns(true) // Show loading on initial fetch or filter change
+      await fetchRuns(true)
     }
-    
+
     fetchData()
-    
-    // Refresh every 30 seconds without showing loading state (silent refresh)
+
     const interval = setInterval(() => fetchRuns(false), 30000)
     return () => clearInterval(interval)
-  }, [filter, statusFilter, serverURL])
+  }, [filter, statusFilter])
 
   const fetchRuns = async (showLoadingState = true) => {
     if (showLoadingState) {
@@ -57,19 +52,16 @@ export default function CronMonitorView() {
         queryParams += `&where[status][equals]=${statusFilter}`
       }
 
-      const response = await fetch(
-        `${serverURL}/api/cron-job-runs?${queryParams}`,
-        {
-          credentials: 'include',
-        },
-      )
+      const response = await fetch(`/api/cron-job-runs?${queryParams}`)
 
       if (response.ok) {
         const data = await response.json()
         setRuns(data.docs || [])
+      } else {
+        console.error(`[CronMonitor] API returned ${response.status}`)
       }
     } catch (error) {
-      console.error('Failed to fetch cron job runs:', error)
+      console.error('[CronMonitor] Fetch failed:', error)
     } finally {
       if (showLoadingState) {
         setLoading(false)

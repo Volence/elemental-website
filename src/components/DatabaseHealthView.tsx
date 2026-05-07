@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useConfig } from '@payloadcms/ui'
 import { formatLocalDateTime } from '@/utilities/formatDateTime'
 
 interface HealthStats {
@@ -31,23 +30,19 @@ interface HealthStats {
 }
 
 export default function DatabaseHealthView() {
-  const { config } = useConfig()
   const [stats, setStats] = useState<HealthStats | null>(null)
   const [loading, setLoading] = useState(true)
-
-  const serverURL = config?.serverURL || ''
 
   useEffect(() => {
     const fetchData = async () => {
       await fetchHealthStats(true)
     }
-    
+
     fetchData()
-    
-    // Refresh every minute without showing loading state
+
     const interval = setInterval(() => fetchHealthStats(false), 60000)
     return () => clearInterval(interval)
-  }, [serverURL])
+  }, [])
 
   const fetchHealthStats = async (showLoadingState = true) => {
     if (showLoadingState) {
@@ -69,9 +64,8 @@ export default function DatabaseHealthView() {
         collections.map(async (name) => {
           try {
             const response = await fetch(
-              `${serverURL}/api/${name}?limit=1`,
-              { credentials: 'include' },
-            )
+              `/api/${name}?limit=1`,
+              )
             if (response.ok) {
               const data = await response.json()
               return { name, count: data.totalDocs || 0 }
@@ -85,8 +79,7 @@ export default function DatabaseHealthView() {
 
       // Fetch recent audit logs
       const auditResponse = await fetch(
-        `${serverURL}/api/audit-logs?limit=100&sort=-createdAt`,
-        { credentials: 'include' },
+        `/api/audit-logs?limit=100&sort=-createdAt`,
       )
       const auditData = await auditResponse.json()
       const auditByAction: Record<string, number> = {}
@@ -96,8 +89,7 @@ export default function DatabaseHealthView() {
 
       // Fetch recent errors
       const errorResponse = await fetch(
-        `${serverURL}/api/error-logs?limit=100&sort=-createdAt`,
-        { credentials: 'include' },
+        `/api/error-logs?limit=100&sort=-createdAt`,
       )
       const errorData = await errorResponse.json()
       const unresolvedErrors = errorData.docs?.filter((e: any) => !e.resolved).length || 0
@@ -110,8 +102,7 @@ export default function DatabaseHealthView() {
 
       // Fetch cron job stats
       const cronResponse = await fetch(
-        `${serverURL}/api/cron-job-runs?limit=100&sort=-createdAt`,
-        { credentials: 'include' },
+        `/api/cron-job-runs?limit=100&sort=-createdAt`,
       )
       const cronData = await cronResponse.json()
       
@@ -132,8 +123,7 @@ export default function DatabaseHealthView() {
 
       // Fetch active sessions
       const sessionsResponse = await fetch(
-        `${serverURL}/api/active-sessions?where=${encodeURIComponent(JSON.stringify({ isActive: { equals: true } }))}&depth=1`,
-        { credentials: 'include' },
+        `/api/active-sessions?where=${encodeURIComponent(JSON.stringify({ isActive: { equals: true } }))}&depth=1`,
       )
       const sessionsData = await sessionsResponse.json()
       const activeUsers = sessionsData.docs?.map((s: any) => s.user?.name || s.user?.email || 'Unknown') || []

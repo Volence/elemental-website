@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useConfig } from '@payloadcms/ui'
 import { formatLocalDateTime } from '@/utilities/formatDateTime'
 
 interface AuditLog {
@@ -21,26 +20,22 @@ interface AuditLog {
 }
 
 export default function AuditLogView() {
-  const { config } = useConfig()
   const [logs, setLogs] = useState<AuditLog[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>('all')
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
 
-  const serverURL = config?.serverURL || ''
-
   useEffect(() => {
     const fetchData = async () => {
       await fetchLogs(true)
     }
-    
+
     fetchData()
-    
-    // Auto-refresh every 30 seconds without showing loading state
+
     const interval = setInterval(() => fetchLogs(false), 30000)
     return () => clearInterval(interval)
-  }, [filter, page, serverURL])
+  }, [filter, page])
 
   const fetchLogs = async (showLoadingState = true) => {
     if (showLoadingState) {
@@ -54,12 +49,7 @@ export default function AuditLogView() {
         queryParams += `&where[action][equals]=${filter}`
       }
 
-      const response = await fetch(
-        `${serverURL}/api/audit-logs?${queryParams}`,
-        {
-          credentials: 'include',
-        },
-      )
+      const response = await fetch(`/api/audit-logs?${queryParams}`)
 
       if (response.ok) {
         const data = await response.json()

@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react'
 import { ChevronDown, ChevronRight } from 'lucide-react'
-import { useConfig } from '@payloadcms/ui'
 import { formatLocalDateTime } from '@/utilities/formatDateTime'
 
 interface ErrorLog {
@@ -35,7 +34,6 @@ interface GroupedError {
 }
 
 export default function ErrorDashboardView() {
-  const { config } = useConfig()
   const [errors, setErrors] = useState<ErrorLog[]>([])
   const [loading, setLoading] = useState(true)
   const [typeFilter, setTypeFilter] = useState<string>('all')
@@ -44,19 +42,16 @@ export default function ErrorDashboardView() {
   const [resolvingIds, setResolvingIds] = useState<Set<number>>(new Set())
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
 
-  const serverURL = config?.serverURL || ''
-
   useEffect(() => {
     const fetchData = async () => {
       await fetchErrors(true)
     }
-    
+
     fetchData()
-    
-    // Auto-refresh every 30 seconds without showing loading state
+
     const interval = setInterval(() => fetchErrors(false), 30000)
     return () => clearInterval(interval)
-  }, [typeFilter, severityFilter, resolvedFilter, serverURL])
+  }, [typeFilter, severityFilter, resolvedFilter])
 
   const fetchErrors = async (showLoadingState = true) => {
     if (showLoadingState) {
@@ -81,18 +76,17 @@ export default function ErrorDashboardView() {
         : {}
 
       const response = await fetch(
-        `${serverURL}/api/error-logs?where=${encodeURIComponent(JSON.stringify(whereClause))}&limit=200&depth=1&sort=-createdAt`,
-        {
-          credentials: 'include',
-        },
+        `/api/error-logs?where=${encodeURIComponent(JSON.stringify(whereClause))}&limit=200&depth=1&sort=-createdAt`,
       )
 
       if (response.ok) {
         const data = await response.json()
         setErrors(data.docs || [])
+      } else {
+        console.error(`[ErrorDashboard] API returned ${response.status}`)
       }
     } catch (error) {
-      console.error('Failed to fetch error logs:', error)
+      console.error('[ErrorDashboard] Fetch failed:', error)
     } finally {
       if (showLoadingState) {
         setLoading(false)
@@ -168,13 +162,12 @@ export default function ErrorDashboardView() {
     
     try {
       const response = await fetch(
-        `${serverURL}/api/error-logs/${errorId}`,
+        `/api/error-logs/${errorId}`,
         {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
           },
-          credentials: 'include',
           body: JSON.stringify({
             resolved: true,
             resolvedAt: new Date().toISOString(),

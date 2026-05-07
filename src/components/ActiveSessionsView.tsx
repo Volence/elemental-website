@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useConfig } from '@payloadcms/ui'
 import { formatLocalDateTime } from '@/utilities/formatDateTime'
 
 interface ActiveSession {
@@ -19,24 +18,20 @@ interface ActiveSession {
 }
 
 export default function ActiveSessionsView() {
-  const { config } = useConfig()
   const [sessions, setSessions] = useState<ActiveSession[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<string>('active')
-
-  const serverURL = config?.serverURL || ''
 
   useEffect(() => {
     const fetchData = async () => {
       await fetchSessions(true)
     }
-    
+
     fetchData()
-    
-    // Auto-refresh every 30 seconds without showing loading state
+
     const interval = setInterval(() => fetchSessions(false), 30000)
     return () => clearInterval(interval)
-  }, [filter, serverURL])
+  }, [filter])
 
   const fetchSessions = async (showLoadingState = true) => {
     if (showLoadingState) {
@@ -52,12 +47,7 @@ export default function ActiveSessionsView() {
         queryParams += `&where[isActive][equals]=false`
       }
 
-      const response = await fetch(
-        `${serverURL}/api/active-sessions?${queryParams}`,
-        {
-          credentials: 'include',
-        },
-      )
+      const response = await fetch(`/api/active-sessions?${queryParams}`)
 
       if (response.ok) {
         const data = await response.json()
