@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { headers } from 'next/headers'
-import prisma from '@/lib/prisma'
 
 async function getAdmin() {
   const payload = await getPayload({ config: configPromise })
