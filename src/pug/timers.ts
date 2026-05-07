@@ -1,5 +1,5 @@
 import prisma from '@/lib/prisma'
-import { READY_CHECK_TIMEOUT_MS, RESULT_CONFIRM_TIMEOUT_MS } from './constants'
+import { READY_CHECK_TIMEOUT_MS, RESULT_CONFIRM_TIMEOUT_MS, AFK_TIMEOUT_MS } from './constants'
 
 type TimerCallback = () => Promise<void>
 
@@ -31,14 +31,14 @@ export function timerKey(lobbyId: number, phase: string): string {
 }
 
 export async function recoverTimers(): Promise<void> {
-  const { expireReadyCheck, finalizeDraftPick, finalizeMapVote, finalizeBan, autoConfirmResult, cancelExpiredLobby } =
+  const { expireReadyCheck, finalizeDraftPick, finalizeMapVote, finalizeBan, autoConfirmResult, cancelExpiredLobby, afkBootPlayer } =
     await import('./lobbyStateMachine')
 
   const activeLobbies = await prisma.pugLobby.findMany({
     where: {
       status: { in: ['READY', 'DRAFTING', 'MAP_VOTE', 'BANNING', 'REPORTING', 'OPEN'] },
     },
-    include: { draftState: true, banState: true, mapVote: true },
+    include: { draftState: true, banState: true, mapVote: true, players: true },
   })
 
   const now = Date.now()
@@ -82,6 +82,18 @@ export async function recoverTimers(): Promise<void> {
         registerTimer(timerKey(lobby.id, 'timeout'), delay, () => cancelExpiredLobby(lobby.id))
       } else {
         await cancelExpiredLobby(lobby.id).catch(console.error)
+      }
+    }
+
+    if (lobby.status === 'OPEN') {
+      for (const player of lobby.players) {
+        const afkDeadline = player.joinedAt.getTime() + AFK_TIMEOUT_MS
+        const delay = afkDeadline - now
+        if (delay > 0) {
+          registerTimer(timerKey(lobby.id, `afk_${player.userId}`), delay, () => afkBootPlayer(lobby.id, player.userId))
+        } else {
+          await afkBootPlayer(lobby.id, player.userId).catch(console.error)
+        }
       }
     }
 

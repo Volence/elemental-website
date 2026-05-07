@@ -192,7 +192,7 @@ export async function leaveLobby(lobbyId: number, userId: number): Promise<void>
  * Auto-kick a player from an OPEN lobby after AFK timeout.
  * Called by the per-player AFK timer registered in joinLobby.
  */
-async function afkBootPlayer(lobbyId: number, userId: number): Promise<void> {
+export async function afkBootPlayer(lobbyId: number, userId: number): Promise<void> {
   const lobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId } })
   if (!lobby || lobby.status !== 'OPEN') return // Only auto-kick from OPEN lobbies
 
@@ -212,7 +212,7 @@ async function afkBootPlayer(lobbyId: number, userId: number): Promise<void> {
     const { sendDm } = await import('@/discord/services/pugNotifications')
     sendDm(
       user.discordId,
-      `You were automatically removed from PUG #${lobby.lobbyNumber} after being idle for 90 minutes.`,
+      `You were automatically removed from PUG #${lobby.lobbyNumber} after being idle for 4 hours.`,
     ).catch(console.error)
   }
 
