@@ -103,26 +103,57 @@ export async function POST(request: Request): Promise<Response> {
       )
     }
 
-    // Create the person with the role, teams, and departments from the invite
-    const newUser = await payload.create({
-      collection: 'people',
-      data: {
-        name: name.trim(),
-        email: email.toLowerCase(),
-        password,
-        role: invite.role,
-        assignedTeams: invite.assignedTeams,
-        departments: {
-          isProductionStaff: invite.departments?.isProductionStaff || false,
-          isSocialMediaStaff: invite.departments?.isSocialMediaStaff || false,
-          isGraphicsStaff: invite.departments?.isGraphicsStaff || false,
-          isVideoStaff: invite.departments?.isVideoStaff || false,
-          isEventsStaff: invite.departments?.isEventsStaff || false,
-          isScoutingStaff: invite.departments?.isScoutingStaff || false,
-          isContentCreator: (invite.departments as any)?.isContentCreator || false,
+    const linkedPersonId = typeof invite.linkedPerson === 'object'
+      ? (invite.linkedPerson as any)?.id
+      : invite.linkedPerson
+
+    let newUser
+
+    if (linkedPersonId) {
+      // Link to existing person record: set their credentials and upgrade their role/permissions
+      newUser = await payload.update({
+        collection: 'people',
+        id: linkedPersonId,
+        data: {
+          name: name.trim(),
+          email: email.toLowerCase(),
+          password,
+          role: invite.role,
+          assignedTeams: invite.assignedTeams,
+          departments: {
+            isProductionStaff: invite.departments?.isProductionStaff || false,
+            isSocialMediaStaff: invite.departments?.isSocialMediaStaff || false,
+            isGraphicsStaff: invite.departments?.isGraphicsStaff || false,
+            isVideoStaff: invite.departments?.isVideoStaff || false,
+            isEventsStaff: invite.departments?.isEventsStaff || false,
+            isScoutingStaff: invite.departments?.isScoutingStaff || false,
+            isContentCreator: (invite.departments as any)?.isContentCreator || false,
+          },
         },
-      },
-    })
+        overrideAccess: true,
+      })
+    } else {
+      // Create a new person record
+      newUser = await payload.create({
+        collection: 'people',
+        data: {
+          name: name.trim(),
+          email: email.toLowerCase(),
+          password,
+          role: invite.role,
+          assignedTeams: invite.assignedTeams,
+          departments: {
+            isProductionStaff: invite.departments?.isProductionStaff || false,
+            isSocialMediaStaff: invite.departments?.isSocialMediaStaff || false,
+            isGraphicsStaff: invite.departments?.isGraphicsStaff || false,
+            isVideoStaff: invite.departments?.isVideoStaff || false,
+            isEventsStaff: invite.departments?.isEventsStaff || false,
+            isScoutingStaff: invite.departments?.isScoutingStaff || false,
+            isContentCreator: (invite.departments as any)?.isContentCreator || false,
+          },
+        },
+      })
+    }
 
     // Mark the invite as used
     await payload.update({

@@ -89,6 +89,20 @@ export default async function InvitePage({ params }: PageProps) {
     'user': 'User',
   }
 
+  // Resolve linked person name if present
+  let linkedPersonName: string | null = null
+  if (invite.linkedPerson) {
+    try {
+      const linkedId = typeof invite.linkedPerson === 'object'
+        ? (invite.linkedPerson as any)?.id
+        : invite.linkedPerson
+      if (linkedId) {
+        const person = await payload.findByID({ collection: 'people', id: linkedId, depth: 0 })
+        linkedPersonName = person?.name || null
+      }
+    } catch {}
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 py-12">
       <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
@@ -98,6 +112,11 @@ export default async function InvitePage({ params }: PageProps) {
           <p className="text-gray-600 dark:text-gray-400">
             You've been invited to join as a <span className="font-semibold">{roleLabels[invite.role]}</span>
           </p>
+          {linkedPersonName && (
+            <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">
+              Your account will be linked to the existing profile for <span className="font-semibold">{linkedPersonName}</span>
+            </p>
+          )}
         </div>
 
         <SignupForm token={token} prefilledEmail={invite.email || undefined} />
