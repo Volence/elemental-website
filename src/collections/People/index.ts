@@ -503,14 +503,6 @@ export const People: CollectionConfig = {
     ],
     beforeValidate: [
       async ({ data, operation, req, originalDoc }) => {
-        if (data && data.name) {
-          if (!data.slug || String(data.slug).trim() === '') {
-            data.slug = formatSlug(data.name)
-          } else {
-            data.slug = formatSlug(data.slug)
-          }
-        }
-
         if (operation === 'create') {
           if (data && !data.name) {
             throw new Error('Name is required when creating a person')
@@ -523,6 +515,19 @@ export const People: CollectionConfig = {
           }
           if (data && !data.role && originalDoc.role) {
             data.role = originalDoc.role
+          }
+        }
+
+        if (data && data.name) {
+          if (!data.slug || String(data.slug).trim() === '') {
+            const existingSlug = originalDoc?.slug
+            if (existingSlug && String(existingSlug).trim() !== '') {
+              data.slug = formatSlug(existingSlug)
+            } else {
+              data.slug = formatSlug(data.name)
+            }
+          } else {
+            data.slug = formatSlug(data.slug)
           }
         }
 
