@@ -73,8 +73,8 @@ export async function POST(request: Request) {
     }
     
     
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: failed === 0,
       message: `Updated ${updated} cards, ${failed} failed`,
       stats: {
         total: teams.docs.length,
