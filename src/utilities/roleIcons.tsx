@@ -1,15 +1,16 @@
 import React from 'react'
-import { 
-  Shield, 
-  Swords, 
-  Heart, 
-  Crown, 
-  UserCheck, 
-  Calendar, 
-  Share2, 
-  Image, 
-  Film, 
-  Users 
+import {
+  Shield,
+  Swords,
+  Heart,
+  Crown,
+  UserCheck,
+  Calendar,
+  Share2,
+  Image,
+  Film,
+  Users,
+  Globe,
 } from 'lucide-react'
 
 /**
@@ -18,7 +19,7 @@ import {
  */
 
 export type GameRole = 'tank' | 'dps' | 'support'
-export type OrgRole = 'owner' | 'co-owner' | 'hr' | 'moderator' | 'event-manager' | 'social-manager' | 'graphics' | 'media-editor'
+export type OrgRole = 'owner' | 'co-owner' | 'hr' | 'region-lead' | 'event-manager' | 'social-manager' | 'graphics' | 'media-editor'
 export type IconSize = 'sm' | 'md' | 'lg'
 
 const sizeClasses: Record<IconSize, string> = {
@@ -60,7 +61,7 @@ export function getOrgRoleIcon(role: string, size: IconSize = 'sm'): React.React
     'owner': Crown,
     'co-owner': Crown,
     'hr': UserCheck,
-    'moderator': Shield,
+    'region-lead': Globe,
     'event-manager': Calendar,
     'social-manager': Share2,
     'graphics': Image,
@@ -113,7 +114,7 @@ export function getOrgRoleLabel(role: string): string {
     'owner': 'Owner',
     'co-owner': 'Co-Owner',
     'hr': 'HR',
-    'moderator': 'Moderator',
+    'region-lead': 'Region Lead',
     'event-manager': 'Event Manager',
     'social-manager': 'Social Manager',
     'graphics': 'Graphics',

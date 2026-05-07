@@ -15,11 +15,20 @@ interface OrganizationStaffSectionProps {
   getStaffName: (staff: any) => string
 }
 
+const REGION_LABELS: Record<string, string> = {
+  na: 'NA',
+  emea: 'EMEA',
+  sa: 'SA',
+  oce: 'OCE',
+  apac: 'APAC',
+  sea: 'SEA',
+}
+
 const roleOrder = [
   'Owner',
   'Co-Owner',
   'HR',
-  'Moderator',
+  'Region Lead',
   'Graphics',
   'Event Manager',
   'Social Manager',
@@ -30,7 +39,7 @@ const colorMap: Record<string, string> = {
   Owner: 'bg-gradient-to-r from-[hsl(var(--accent-gold))] to-yellow-500',
   'Co-Owner': 'bg-gradient-to-r from-red-500 to-orange-500',
   HR: 'bg-gradient-to-r from-[hsl(var(--accent-green))] to-green-500',
-  Moderator: 'bg-gradient-to-r from-[hsl(var(--accent-blue))] to-blue-500',
+  'Region Lead': 'bg-gradient-to-r from-teal-500 to-emerald-500',
   'Event Manager': 'bg-gradient-to-r from-purple-500 to-pink-500',
   'Social Manager': 'bg-gradient-to-r from-cyan-500 to-blue-500',
   Graphics: 'bg-gradient-to-r from-orange-500 to-red-500',
@@ -59,11 +68,11 @@ const avatarColorMap: Record<
     text: 'text-green-500',
     ring: 'ring-green-500/20',
   },
-  Moderator: {
-    from: 'from-blue-500/20',
-    to: 'to-blue-600/10',
-    text: 'text-blue-500',
-    ring: 'ring-blue-500/20',
+  'Region Lead': {
+    from: 'from-teal-500/20',
+    to: 'to-emerald-600/10',
+    text: 'text-teal-500',
+    ring: 'ring-teal-500/20',
   },
   'Event Manager': {
     from: 'from-purple-500/20',
@@ -95,7 +104,7 @@ const sectionBgMap: Record<string, string> = {
   Owner: 'bg-yellow-500/5',
   'Co-Owner': 'bg-red-500/5',
   HR: 'bg-green-500/5',
-  Moderator: 'bg-blue-500/5',
+  'Region Lead': 'bg-teal-500/5',
   'Event Manager': 'bg-purple-500/5',
   'Social Manager': 'bg-cyan-500/5',
   Graphics: 'bg-orange-500/5',
@@ -120,7 +129,9 @@ export function OrganizationStaffSection({
               ? 'Media Editor Staff'
               : role === 'HR'
                 ? 'HR Staff'
-                : role
+                : role === 'Region Lead'
+                  ? 'Region Leads'
+                  : role
 
         const underlineColor = colorMap[role] || 'bg-primary'
         const avatarColors = avatarColorMap[role] || {
@@ -153,11 +164,16 @@ export function OrganizationStaffSection({
                   instagram: member.instagram,
                 })
 
+                const regionSubtitle = role === 'Region Lead' && member.regions?.length > 0
+                  ? member.regions.map((r: string) => REGION_LABELS[r] || r.toUpperCase()).join(', ')
+                  : undefined
+
                 return (
                   <StaffMemberCard
                     key={member.id}
                     name={name}
                     slug={getPersonSlugFromRelationship(member.person) || formatPlayerSlug(name)}
+                    subtitle={regionSubtitle}
                     photoUrl={photoUrl}
                     socialLinks={socialLinks}
                     avatarColors={avatarColors}

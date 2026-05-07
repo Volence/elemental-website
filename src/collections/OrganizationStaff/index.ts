@@ -41,7 +41,7 @@ export const OrganizationStaff: CollectionConfig = {
   admin: {
     useAsTitle: 'displayName',
     defaultColumns: ['displayName', 'roles', 'updatedAt'],
-    description: 'Manage organization staff members (owners, HR, moderators, managers, etc.). Staff can have multiple roles.',
+    description: 'Manage organization staff members (owners, HR, region leads, managers, etc.). Staff can have multiple roles.',
     group: 'Organization',
     hidden: ({ user }) => {
       if (!user) return true
@@ -181,11 +181,28 @@ export const OrganizationStaff: CollectionConfig = {
         { label: 'Owner', value: 'owner' },
         { label: 'Co-Owner', value: 'co-owner' },
         { label: 'HR', value: 'hr' },
-        { label: 'Moderator', value: 'moderator' },
+        { label: 'Region Lead', value: 'region-lead' },
         { label: 'Event Manager', value: 'event-manager' },
         { label: 'Social Manager', value: 'social-manager' },
         { label: 'Graphics', value: 'graphics' },
         { label: 'Media Editor', value: 'media-editor' },
+      ],
+    },
+    {
+      name: 'regions',
+      type: 'select',
+      hasMany: true,
+      admin: {
+        description: 'Which region(s) this staff member leads. Only applies to Region Lead role.',
+        condition: (data) => data?.roles?.includes('region-lead'),
+      },
+      options: [
+        { label: 'NA', value: 'na' },
+        { label: 'EMEA', value: 'emea' },
+        { label: 'SA', value: 'sa' },
+        { label: 'OCE', value: 'oce' },
+        { label: 'APAC', value: 'apac' },
+        { label: 'SEA', value: 'sea' },
       ],
     },
   ],

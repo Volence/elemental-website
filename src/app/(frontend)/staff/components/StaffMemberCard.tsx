@@ -6,6 +6,7 @@ import { SocialLinks } from '@/components/SocialLinks'
 interface StaffMemberCardProps {
   name: string
   slug: string
+  subtitle?: string
   photoUrl?: string | null
   socialLinks: {
     twitter?: string
@@ -24,6 +25,7 @@ interface StaffMemberCardProps {
 export function StaffMemberCard({
   name,
   slug,
+  subtitle,
   photoUrl,
   socialLinks,
   avatarColors,
@@ -59,6 +61,9 @@ export function StaffMemberCard({
         >
           {name}
         </Link>
+        {subtitle && (
+          <span className="block text-xs text-muted-foreground mb-1">{subtitle}</span>
+        )}
         <div className="scale-90 origin-left">
           <SocialLinks links={socialLinks} />
         </div>
