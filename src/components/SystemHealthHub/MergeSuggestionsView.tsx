@@ -154,7 +154,10 @@ export default function MergeSuggestionsView() {
         body: JSON.stringify({ targetId: target.id, sourceId: source.id }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
+      if (!res.ok) {
+        const detailStr = data.details ? ` (${JSON.stringify(data.details)})` : ''
+        throw new Error(`${data.error}${detailStr}`)
+      }
 
       setMergeResults(prev => ({ ...prev, [pairKey]: { success: true, message: `Merged into "${target.name}" (#${target.id})` } }))
 
@@ -315,7 +318,7 @@ export default function MergeSuggestionsView() {
                     </div>
 
                     {result && !result.success && (
-                      <div style={{ fontSize: 11, color: '#f87171', maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={result.message}>
+                      <div style={{ fontSize: 11, color: '#f87171', maxWidth: 250 }} title={result.message}>
                         {result.message}
                       </div>
                     )}

@@ -224,7 +224,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Merge departments (union of true flags)
-  if (s.departments) {
+  if (s.departments && Object.values(s.departments).some(v => v === true)) {
     const merged = { ...(t.departments ?? {}) }
     for (const [k, v] of Object.entries(s.departments)) {
       if (v === true) merged[k] = true
@@ -344,6 +344,7 @@ export async function POST(request: NextRequest) {
       log,
     })
   } catch (err: any) {
-    return NextResponse.json({ error: err.message, log }, { status: 500 })
+    const details = err.data?.errors ?? err.errors ?? undefined
+    return NextResponse.json({ error: err.message, details, log }, { status: 500 })
   }
 }
