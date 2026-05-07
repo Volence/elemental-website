@@ -7,6 +7,7 @@ import {
   ArrowLeft, ChevronRight, Plus, Trash2, Star, Mic, Eye, Film, Briefcase,
 } from 'lucide-react'
 import { EDITOR_CSS, styles as editorStyles } from '@/components/PersonEditor'
+import { useConfirm } from '@/components/ConfirmDialog'
 
 // ── Types ──
 
@@ -198,6 +199,7 @@ export function StaffEditorView() {
   const [loading, setLoading] = useState(!isNew)
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [errorMsg, setErrorMsg] = useState('')
+  const confirm = useConfirm()
 
   const [personId, setPersonId] = useState<number | null>(null)
   const [roles, setRoles] = useState<string[]>([])
@@ -277,7 +279,14 @@ export function StaffEditorView() {
   }
 
   const handleDelete = async () => {
-    if (!staffId || !confirm('Delete this staff entry?')) return
+    if (!staffId) return
+    const confirmed = await confirm({
+      title: 'Delete Staff Entry',
+      message: 'Delete this staff entry?',
+      confirmLabel: 'Delete',
+      variant: 'danger',
+    })
+    if (!confirmed) return
     try {
       await fetch(`/api/${collection}/${staffId}`, { method: 'DELETE' })
       window.location.href = '/admin/collections/organization-staff'

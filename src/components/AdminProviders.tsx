@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@payloadcms/ui'
 import type { Person } from '@/payload-types'
+import { ConfirmDialogProvider } from '@/components/ConfirmDialog'
 
 /**
  * AdminProviders - Wraps all admin pages and provides shared functionality
@@ -133,5 +134,5 @@ export default function AdminProviders({ children }: { children: React.ReactNode
   // Note: Popup positioning is handled by Payload's built-in JS.
   // Do NOT override popup positions - Payload calculates them from trigger button coordinates.
   
-  return <>{children}</>
+  return <ConfirmDialogProvider>{children}</ConfirmDialogProvider>
 }

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { formatLocalDateTime } from '@/utilities/formatDateTime'
 import { AlertTriangle, CheckCircle, FileEdit, RefreshCw, Spade, XCircle } from 'lucide-react'
+import { useConfirm } from '@/components/ConfirmDialog'
 
 interface TeamCardInfo {
   id: number
@@ -32,6 +33,7 @@ interface TeamCardsTabProps {
 }
 
 export default function TeamCardsTab({ onAlert }: TeamCardsTabProps) {
+  const confirm = useConfirm()
   const [teams, setTeams] = useState<TeamCardInfo[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState<'full' | 'soft' | null>(null)
@@ -89,7 +91,7 @@ export default function TeamCardsTab({ onAlert }: TeamCardsTabProps) {
   }
 
   const handleFullRefresh = async () => {
-    if (!confirm('⚠ Full Refresh will DELETE ALL cards and repost them in order.\n\nThis rebuilds the entire card list from scratch.\n\nContinue?')) {
+    if (!await confirm({ message: 'Full Refresh will DELETE ALL cards and repost them in order.\n\nThis rebuilds the entire card list from scratch.\n\nContinue?', variant: 'danger' })) {
       return
     }
     

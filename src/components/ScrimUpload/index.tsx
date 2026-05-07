@@ -13,6 +13,7 @@ import {
   FolderOpen,
 } from 'lucide-react'
 import ScrimAnalyticsTabs from '@/components/ScrimAnalyticsTabs'
+import { useAlert } from '@/components/ConfirmDialog'
 
 type UploadState = 'idle' | 'uploading' | 'success' | 'error'
 
@@ -58,6 +59,7 @@ type Step = 'form' | 'mapping'
  *   Step 2: Preview parsed data & map player names to People
  */
 export default function ScrimUploadView() {
+  const alert = useAlert()
   // ── Step 1 state ──
   const [files, setFiles] = useState<File[]>([])
   const [scrimName, setScrimName] = useState('')
@@ -304,7 +306,7 @@ export default function ScrimUploadView() {
       const res = await fetch('/api/scrim-preview', { method: 'POST', body: formData })
       const data = await res.json()
       if (data.error) {
-        alert(data.error)
+        await alert({ message: data.error, variant: 'danger' })
       } else {
         setPreview(data)
         setStep('mapping')
@@ -314,11 +316,11 @@ export default function ScrimUploadView() {
         }
       }
     } catch {
-      alert('Failed to preview files')
+      await alert({ message: 'Failed to preview files', variant: 'danger' })
     } finally {
       setPreviewLoading(false)
     }
-  }, [files, teamId])
+  }, [files, teamId, alert])
 
   const handleUpload = useCallback(async () => {
     if (!preview || !ourTeam || files.length === 0 || !teamId) return

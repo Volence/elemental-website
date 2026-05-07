@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { AlertTriangle, Check, GitMerge, Loader2, X, User, ChevronDown, ChevronRight } from 'lucide-react'
+import { useConfirm, useAlert } from '@/components/ConfirmDialog'
 
 interface PersonRecord {
   id: number
@@ -57,6 +58,8 @@ function pickTargetAndSource(a: PersonRecord, b: PersonRecord): { target: Person
 }
 
 export default function MergeSuggestionsView() {
+  const confirm = useConfirm()
+  const alert = useAlert()
   const [groups, setGroups] = useState<DuplicateGroup[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -144,7 +147,7 @@ export default function MergeSuggestionsView() {
     const { target, source } = pickTargetAndSource(personA, personB)
     const pairKey = [personA.id, personB.id].sort().join('-')
 
-    if (!confirm(`Merge "${source.name}" (#${source.id}) into "${target.name}" (#${target.id}) and DELETE #${source.id}? This cannot be undone.`)) return
+    if (!await confirm({ message: `Merge "${source.name}" (#${source.id}) into "${target.name}" (#${target.id}) and DELETE #${source.id}? This cannot be undone.`, variant: 'danger' })) return
 
     setMergingPair(pairKey)
     try {
@@ -191,7 +194,7 @@ export default function MergeSuggestionsView() {
         }),
       })).filter(g => g.matches.length > 0))
     } catch (e: any) {
-      alert(`Failed to ignore: ${e.message}`)
+      await alert({ message: `Failed to ignore: ${e.message}`, variant: 'danger' })
     } finally {
       setIgnoringPair(null)
     }

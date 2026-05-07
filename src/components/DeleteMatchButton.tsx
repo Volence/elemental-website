@@ -3,11 +3,13 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button, toast, useDocumentInfo } from '@payloadcms/ui'
+import { useConfirm } from '@/components/ConfirmDialog'
 
 export const DeleteMatchButton: React.FC = () => {
   const { id, title } = useDocumentInfo()
   const [isDeleting, setIsDeleting] = useState(false)
   const router = useRouter()
+  const confirm = useConfirm()
   
   
   // Don't render if no ID (creating new match)
@@ -16,9 +18,12 @@ export const DeleteMatchButton: React.FC = () => {
   }
 
   const handleDelete = async () => {
-    const confirmed = window.confirm(
-      `Are you sure you want to delete this match?\n\n"${title}"\n\nThis action cannot be undone.`
-    )
+    const confirmed = await confirm({
+      title: 'Delete Match',
+      message: `Are you sure you want to delete this match?\n\n"${title}"\n\nThis action cannot be undone.`,
+      confirmLabel: 'Delete',
+      variant: 'danger',
+    })
 
     if (!confirmed) return
 

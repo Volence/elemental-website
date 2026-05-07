@@ -283,9 +283,9 @@ async function postStaffCards(channel: TextChannel, payload: any): Promise<void>
       owner: [] as any[],
       'co-owner': [] as any[],
       hr: [] as any[],
+      'region-lead': [] as any[],
       graphics: [] as any[],
       'social-manager': [] as any[],
-      moderator: [] as any[],
       'event-manager': [] as any[],
       'media-editor': [] as any[],
     }
@@ -306,9 +306,9 @@ async function postStaffCards(channel: TextChannel, payload: any): Promise<void>
       owner: 'Owner',
       'co-owner': 'Co-Owner',
       hr: 'HR Staff',
+      'region-lead': 'Region Leads',
       graphics: 'Graphics Staff',
       'social-manager': 'Social Manager',
-      moderator: 'Moderator',
       'event-manager': 'Event Manager',
       'media-editor': 'Media Editor',
     }

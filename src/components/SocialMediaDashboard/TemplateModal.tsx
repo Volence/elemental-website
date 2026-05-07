@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ClipboardList, FileEdit, Lightbulb, Sparkles, X } from 'lucide-react'
+import { useAlert } from '@/components/ConfirmDialog'
 
 interface TemplateModalProps {
   template: {
@@ -16,6 +17,7 @@ interface TemplateModalProps {
 
 export function TemplateModal({ template, onClose }: TemplateModalProps) {
   const router = useRouter()
+  const alert = useAlert()
   const [placeholderValues, setPlaceholderValues] = useState<Record<string, string>>({})
   const [filledContent, setFilledContent] = useState('')
   const [postTitle, setPostTitle] = useState('')
@@ -65,10 +67,9 @@ export function TemplateModal({ template, onClose }: TemplateModalProps) {
     router.push('/admin/collections/social-posts/create')
   }
 
-  const handleCopyToClipboard = () => {
+  const handleCopyToClipboard = async () => {
     navigator.clipboard.writeText(filledContent)
-    // Could add a toast notification here
-    alert('Template copied to clipboard!')
+    await alert({ message: 'Template copied to clipboard!', variant: 'info' })
   }
 
   return (

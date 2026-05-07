@@ -8,6 +8,7 @@ import {
   ChevronRight, Search, CheckCircle, XCircle, Gamepad2,
 } from 'lucide-react'
 import { EDITOR_CSS, styles as editorStyles } from '@/components/PersonEditor'
+import { useConfirm } from '@/components/ConfirmDialog'
 
 // ── Types ──
 
@@ -212,6 +213,7 @@ export function InviteEditorView() {
   const [loading, setLoading] = useState(!isNew)
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [errorMsg, setErrorMsg] = useState('')
+  const confirm = useConfirm()
   const [teams, setTeams] = useState<Team[]>([])
   const [copied, setCopied] = useState(false)
 
@@ -318,7 +320,14 @@ export function InviteEditorView() {
   }
 
   const handleDelete = async () => {
-    if (!inviteId || !confirm('Delete this invite link?')) return
+    if (!inviteId) return
+    const confirmed = await confirm({
+      title: 'Delete Invite Link',
+      message: 'Delete this invite link?',
+      confirmLabel: 'Delete',
+      variant: 'danger',
+    })
+    if (!confirmed) return
     try {
       await fetch(`/api/invite-links/${inviteId}`, { method: 'DELETE' })
       window.location.href = '/admin/collections/invite-links'

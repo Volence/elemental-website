@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button, toast, useDocumentInfo } from '@payloadcms/ui'
 import { Globe, Trash2 } from 'lucide-react'
+import { useConfirm } from '@/components/ConfirmDialog'
 
 /**
  * Consolidated match actions component
@@ -14,6 +15,7 @@ const MatchActions: React.FC = () => {
   const [isDeleting, setIsDeleting] = useState(false)
   const [slug, setSlug] = useState<string | null>(null)
   const router = useRouter()
+  const confirm = useConfirm()
   
   // Don't render if no ID (creating new match)
   useEffect(() => {
@@ -34,9 +36,12 @@ const MatchActions: React.FC = () => {
   }
 
   const handleDelete = async () => {
-    const confirmed = window.confirm(
-      `Are you sure you want to delete this match?\n\n"${title}"\n\nThis action cannot be undone.`
-    )
+    const confirmed = await confirm({
+      title: 'Delete Match',
+      message: `Are you sure you want to delete this match?\n\n"${title}"\n\nThis action cannot be undone.`,
+      confirmLabel: 'Delete',
+      variant: 'danger',
+    })
 
     if (!confirmed) return
 

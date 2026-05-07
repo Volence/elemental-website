@@ -277,7 +277,7 @@ function getStaffDepartmentColor(departmentName: string): number {
     'Owner': 0xFBBF24,           // Yellow-500
     'Co-Owner': 0xF97316,        // Orange-500
     'HR Staff': 0x22C55E,        // Green-500
-    'Moderator': 0x3B82F6,       // Blue-500
+    'Region Leads': 0x14B8A6,    // Teal-500
     'Event Manager': 0xA855F7,   // Purple-500
     'Social Manager': 0x06B6D4,  // Cyan-500
     'Graphics Staff': 0xF97316,  // Orange-500
@@ -301,7 +301,7 @@ function getStaffRoleIcon(departmentName: string): string {
     'Owner': '👑',
     'Co-Owner': '⭐',
     'HR Staff': '🤝',
-    'Moderator': '🛡️',
+    'Region Leads': '🌍',
     'Event Manager': '📅',
     'Social Manager': '📱',
     'Graphics Staff': '🎨',
@@ -325,15 +325,27 @@ export function buildStaffEmbed(departmentName: string, staff: any[]): EmbedBuil
   // Extract staff names from person relationships
   const staffNames: string[] = []
   
+  const regionLabels: Record<string, string> = {
+    na: 'NA', emea: 'EMEA', sa: 'SA', oce: 'OCE', apac: 'APAC', sea: 'SEA',
+  }
+
   for (const staffMember of staff) {
-    // Handle populated person relationship
+    let name = ''
     if (staffMember.person) {
-      const personName = typeof staffMember.person === 'object' && staffMember.person.name
+      name = typeof staffMember.person === 'object' && staffMember.person.name
         ? staffMember.person.name
         : staffMember.displayName || 'Unknown'
-      staffNames.push(`• ${personName}`)
     } else if (staffMember.displayName) {
-      staffNames.push(`• ${staffMember.displayName}`)
+      name = staffMember.displayName
+    }
+    if (!name) continue
+
+    const regions = staffMember.regions as string[] | undefined
+    if (regions && regions.length > 0) {
+      const regionStr = regions.map((r: string) => regionLabels[r] || r.toUpperCase()).join(', ')
+      staffNames.push(`• ${name} (${regionStr})`)
+    } else {
+      staffNames.push(`• ${name}`)
     }
   }
 

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { Modal } from './Modal'
 import { Hash, Volume2, MessagesSquare, X, Lock } from 'lucide-react'
+import { useConfirm, useAlert } from '@/components/ConfirmDialog'
 
 interface TemplateChannel {
   name: string
@@ -26,6 +27,8 @@ export const ApplyTemplateModal: React.FC<ApplyTemplateModalProps> = ({
   onClose,
   onApply
 }) => {
+  const confirmDialog = useConfirm()
+  const alertDialog = useAlert()
   const [editedCategoryName, setEditedCategoryName] = useState(categoryName)
   const [editedChannels, setEditedChannels] = useState<TemplateChannel[]>([])
   const [isApplying, setIsApplying] = useState(false)
@@ -57,12 +60,12 @@ export const ApplyTemplateModal: React.FC<ApplyTemplateModalProps> = ({
   const handleApply = async () => {
     // Validation
     if (!editedCategoryName.trim()) {
-      alert('Please enter a category name')
+      await alertDialog({ message: 'Please enter a category name', variant: 'info' })
       return
     }
 
     if (editedChannels.length === 0) {
-      if (!confirm('You have removed all channels. Create an empty category?')) {
+      if (!await confirmDialog({ message: 'You have removed all channels. Create an empty category?' })) {
         return
       }
     }

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Gamepad2, Power, PowerOff, ExternalLink, XCircle, Loader2, Users, Clock, Trophy, SkipForward, AlertTriangle, ChevronDown, ChevronUp, UserMinus, ArrowRightLeft, Shield } from 'lucide-react'
 import { PUG_ADMIN_CSS, timeAgo } from '@/components/pugAdminStyles'
+import { useConfirm, useAlert } from '@/components/ConfirmDialog'
 
 const ROLE_LABELS: Record<string, string> = {
   tank: 'Tank',
@@ -94,6 +95,7 @@ function LobbyExpanded({ lobby, onAction, acting }: {
   onAction: (lobbyId: number, path: string, body: Record<string, any>) => Promise<void>
   acting: string | null
 }) {
+  const confirm = useConfirm()
   const team1 = lobby.players.filter((p) => p.team === 1)
   const team2 = lobby.players.filter((p) => p.team === 2)
   const unassigned = lobby.players.filter((p) => p.team == null)
@@ -163,7 +165,7 @@ function LobbyExpanded({ lobby, onAction, acting }: {
           <button
             className="ps-btn ps-btn-danger"
             style={{ padding: '2px 6px', fontSize: 10 }}
-            onClick={() => { if (confirm(`Kick ${p.name}?`)) adminAction('kick', { userId: p.userId }) }}
+            onClick={async () => { if (await confirm({ message: `Kick ${p.name}?`, variant: 'danger' })) adminAction('kick', { userId: p.userId }) }}
             title="Kick player"
           >
             <UserMinus size={10} />
@@ -289,8 +291,8 @@ function LobbyExpanded({ lobby, onAction, acting }: {
         <select
           style={{ padding: '4px 8px', fontSize: 11, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#94a3b8', cursor: 'pointer', marginLeft: 'auto' }}
           value=""
-          onChange={(e) => {
-            if (e.target.value && confirm(`Force status to ${e.target.value}? This bypasses normal flow.`)) {
+          onChange={async (e) => {
+            if (e.target.value && await confirm({ message: `Force status to ${e.target.value}? This bypasses normal flow.`, variant: 'default' })) {
               adminAction('forceStatus', { status: e.target.value })
             }
           }}
@@ -302,8 +304,8 @@ function LobbyExpanded({ lobby, onAction, acting }: {
         </select>
 
         <button className="ps-btn ps-btn-danger" style={{ padding: '4px 10px', fontSize: 11 }}
-          onClick={() => {
-            if (confirm('Cancel this lobby?')) onAction(lobby.id, '/resolve', { result: 'cancel' })
+          onClick={async () => {
+            if (await confirm({ message: 'Cancel this lobby?', variant: 'danger' })) onAction(lobby.id, '/resolve', { result: 'cancel' })
           }}
         >
           <XCircle size={11} /> Cancel
@@ -315,6 +317,7 @@ function LobbyExpanded({ lobby, onAction, acting }: {
 
 export function PugLobbiesDashboard() {
   const router = useRouter()
+  const alert = useAlert()
   const [lobbies, setLobbies] = useState<Lobby[]>([])
   const [regionStatus, setRegionStatus] = useState<RegionStatus>({ na: false, emea: false, pacific: false })
   const [loading, setLoading] = useState(true)
@@ -379,7 +382,7 @@ export function PugLobbiesDashboard() {
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        alert(data.error || 'Action failed')
+        await alert({ message: data.error || 'Action failed', variant: 'danger' })
       }
       await fetchData()
     } finally {

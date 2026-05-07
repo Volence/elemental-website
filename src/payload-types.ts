@@ -1798,7 +1798,7 @@ export interface RecruitmentListing {
   createdAt: string;
 }
 /**
- * Manage organization staff members (owners, HR, moderators, managers, etc.). Staff can have multiple roles.
+ * Manage organization staff members (owners, HR, region leads, managers, etc.). Staff can have multiple roles.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "organization-staff".
@@ -1821,12 +1821,16 @@ export interface OrganizationStaff {
     | 'owner'
     | 'co-owner'
     | 'hr'
-    | 'moderator'
+    | 'region-lead'
     | 'event-manager'
     | 'social-manager'
     | 'graphics'
     | 'media-editor'
   )[];
+  /**
+   * Which region(s) this staff member leads. Only applies to Region Lead role.
+   */
+  regions?: ('na' | 'emea' | 'sa' | 'oce' | 'apac' | 'sea')[] | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3721,6 +3725,7 @@ export interface OrganizationStaffSelect<T extends boolean = true> {
   displayName?: T;
   slug?: T;
   roles?: T;
+  regions?: T;
   updatedAt?: T;
   createdAt?: T;
 }

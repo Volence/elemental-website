@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { CheckCircle2, XCircle, AlertTriangle } from 'lucide-react'
+import { useConfirm, useAlert } from '@/components/ConfirmDialog'
 
 interface IssueItem {
   id: number
@@ -22,6 +23,8 @@ interface IssueCardProps {
 export function IssueCard({ type, category, message, items, autoFixable, onRefresh }: IssueCardProps) {
   const [ignoring, setIgnoring] = useState<number | null>(null)
   const [ignoredIds, setIgnoredIds] = useState<Set<number>>(new Set())
+  const confirm = useConfirm()
+  const alert = useAlert()
   
   const hasSlug = items.some((item) => item.slug)
   const hasDetails = items.some((item) => item.details)
@@ -33,19 +36,25 @@ export function IssueCard({ type, category, message, items, autoFixable, onRefre
     // Details format: "83% match with \"OtherName\""
     const match = item.details?.match(/match with "([^"]+)"/)
     if (!match) {
-      alert('Could not determine which duplicate to ignore')
+      await alert({ message: 'Could not determine which duplicate to ignore', variant: 'danger' })
       return
     }
 
     const otherPersonName = match[1]
     const otherPerson = items.find(i => i.name === otherPersonName)
-    
+
     if (!otherPerson) {
-      alert('Could not find the other person in this pair')
+      await alert({ message: 'Could not find the other person in this pair', variant: 'danger' })
       return
     }
 
-    if (!confirm(`Mark "${item.name}" and "${otherPersonName}" as different people? They will no longer appear as duplicates.`)) {
+    const confirmed = await confirm({
+      title: 'Ignore Duplicate',
+      message: `Mark "${item.name}" and "${otherPersonName}" as different people? They will no longer appear as duplicates.`,
+      confirmLabel: 'Ignore',
+      variant: 'default',
+    })
+    if (!confirmed) {
       return
     }
 
@@ -74,7 +83,7 @@ export function IssueCard({ type, category, message, items, autoFixable, onRefre
       }
     } catch (error) {
       console.error('Error ignoring duplicate:', error)
-      alert('Failed to ignore duplicate. Please try again.')
+      await alert({ message: 'Failed to ignore duplicate. Please try again.', variant: 'danger' })
     } finally {
       setIgnoring(null)
     }

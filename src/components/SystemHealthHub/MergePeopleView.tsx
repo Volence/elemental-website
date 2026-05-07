@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useEffect } from 'react'
 import { Search, ArrowRight, Check, AlertTriangle, Loader2, User, Trash2, Shield } from 'lucide-react'
+import { useConfirm } from '@/components/ConfirmDialog'
 
 type PersonResult = { id: number; name: string; email?: string; discordId?: string; role?: string; photoUrl?: string | null }
 type MergeField = { field: string; targetValue: any; sourceValue: any; willCopy: boolean }
@@ -108,6 +109,7 @@ function formatValue(val: any): string {
 }
 
 export default function MergePeopleView({ initialTargetId, initialSourceId }: { initialTargetId?: number | null; initialSourceId?: number | null } = {}) {
+  const confirm = useConfirm()
   const [target, setTarget] = useState<PersonResult | null>(null)
   const [source, setSource] = useState<PersonResult | null>(null)
   const [preview, setPreview] = useState<PreviewData | null>(null)
@@ -151,7 +153,7 @@ export default function MergePeopleView({ initialTargetId, initialSourceId }: { 
 
   const executeMerge = async () => {
     if (!target || !source) return
-    if (!confirm(`This will merge "${source.name}" (#${source.id}) into "${target.name}" (#${target.id}) and DELETE person #${source.id}. This cannot be undone. Continue?`)) return
+    if (!await confirm({ message: `This will merge "${source.name}" (#${source.id}) into "${target.name}" (#${target.id}) and DELETE person #${source.id}. This cannot be undone. Continue?`, variant: 'danger' })) return
     setMerging(true)
     try {
       const res = await fetch('/api/merge-people', {

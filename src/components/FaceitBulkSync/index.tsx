@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { Button } from '@payloadcms/ui'
 import { CheckCircle, RefreshCw, XCircle } from 'lucide-react'
+import { useConfirm } from '@/components/ConfirmDialog'
 
 /**
  * Bulk sync button for FaceIt Leagues page
@@ -12,13 +13,17 @@ const FaceitBulkSync: React.FC = () => {
   const [syncing, setSyncing] = useState(false)
   const [results, setResults] = useState<any>(null)
   const [progress, setProgress] = useState('')
+  const confirm = useConfirm()
 
   const handleSync = async () => {
     if (syncing) return
 
-    const confirmed = window.confirm(
-      'This will sync all teams in active FaceIt leagues. This may take a few minutes. Continue?'
-    )
+    const confirmed = await confirm({
+      title: 'Bulk Sync',
+      message: 'This will sync all teams in active FaceIt leagues. This may take a few minutes. Continue?',
+      confirmLabel: 'Sync All',
+      variant: 'danger',
+    })
     
     if (!confirmed) return
 

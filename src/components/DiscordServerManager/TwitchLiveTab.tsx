@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { CheckCircle, Circle, Clock, Eye, Gamepad2, Lightbulb, Monitor, Plus, Power, PowerOff, RefreshCw, Shield, Timer, Trash2, Video, X, XCircle } from 'lucide-react'
+import { useConfirm } from '@/components/ConfirmDialog'
 
 interface TwitchStreamer {
   id: string | number
@@ -27,6 +28,7 @@ interface PersonOption {
 }
 
 const TwitchLiveTab: React.FC = () => {
+  const confirm = useConfirm()
   const [streamers, setStreamers] = useState<TwitchStreamer[]>([])
   const [people, setPeople] = useState<PersonOption[]>([])
   const [loading, setLoading] = useState(true)
@@ -127,7 +129,7 @@ const TwitchLiveTab: React.FC = () => {
   }
 
   const handleDelete = async (streamer: TwitchStreamer) => {
-    if (!confirm(`Remove ${streamer.displayName || streamer.twitchUsername} from tracking?`)) return
+    if (!await confirm({ message: `Remove ${streamer.displayName || streamer.twitchUsername} from tracking?`, variant: 'danger' })) return
 
     try {
       setError(null)

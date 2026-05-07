@@ -8,6 +8,7 @@ import {
   Search, MessageSquare,
 } from 'lucide-react'
 import { EDITOR_CSS, styles as editorStyles } from '@/components/PersonEditor'
+import { useConfirm } from '@/components/ConfirmDialog'
 
 // ── Types ──
 
@@ -163,6 +164,7 @@ export function CalendarEventEditorView() {
   const searchParams = useSearchParams()
   const eventId = searchParams.get('id')
   const isNew = !eventId
+  const confirm = useConfirm()
 
   const [loading, setLoading] = useState(!isNew)
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
@@ -248,7 +250,7 @@ export function CalendarEventEditorView() {
   }
 
   const handleDelete = async () => {
-    if (!eventId || !confirm('Delete this event?')) return
+    if (!eventId || !await confirm({ message: 'Delete this event?', variant: 'danger' })) return
     try {
       await fetch(`/api/global-calendar-events/${eventId}`, { method: 'DELETE' })
       window.location.href = '/admin/collections/global-calendar-events'

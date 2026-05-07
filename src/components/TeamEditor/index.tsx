@@ -9,6 +9,7 @@ import {
   ChevronUp, ChevronDown, Image, X,
 } from 'lucide-react'
 import { EDITOR_CSS, styles as editorStyles } from '@/components/PersonEditor'
+import { useConfirm } from '@/components/ConfirmDialog'
 
 // ── Types ──
 
@@ -303,6 +304,7 @@ export default function TeamEditor() {
   const searchParams = useSearchParams()
   const teamId = searchParams.get('id')
   const isNew = !teamId
+  const confirm = useConfirm()
 
   const [loading, setLoading] = useState(!isNew)
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
@@ -484,7 +486,7 @@ export default function TeamEditor() {
   }
 
   const handleDelete = async () => {
-    if (!teamId || !confirm('Delete this team? This cannot be undone.')) return
+    if (!teamId || !await confirm({ message: 'Delete this team? This cannot be undone.', variant: 'danger' })) return
     try {
       await fetch(`/api/teams/${teamId}`, { method: 'DELETE' })
       window.location.href = '/admin/collections/teams'

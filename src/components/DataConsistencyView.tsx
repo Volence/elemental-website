@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '@payloadcms/ui'
+import { useConfirm } from '@/components/ConfirmDialog'
 import type { Person } from '@/payload-types'
 import { UserRole } from '@/access/roles'
 import { LoadingState } from './DataConsistency/LoadingState'
@@ -28,6 +29,7 @@ interface DetailedIssue {
 
 const DataConsistencyView: React.FC = () => {
   const { user } = useAuth<Person>()
+  const confirm = useConfirm()
   const [issues, setIssues] = useState<DetailedIssue[]>([])
   const [loading, setLoading] = useState(true)
   const [fixing, setFixing] = useState(false)
@@ -65,7 +67,13 @@ const DataConsistencyView: React.FC = () => {
   }
 
   const handleFixAll = async () => {
-    if (!confirm('This will attempt to fix all auto-fixable issues. Continue?')) return
+    const confirmed = await confirm({
+      title: 'Fix All Issues',
+      message: 'This will attempt to fix all auto-fixable issues. Continue?',
+      confirmLabel: 'Fix All',
+      variant: 'default',
+    })
+    if (!confirmed) return
 
     try {
       setFixing(true)

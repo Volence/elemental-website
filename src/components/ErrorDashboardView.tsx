@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { formatLocalDateTime } from '@/utilities/formatDateTime'
+import { useAlert } from '@/components/ConfirmDialog'
 
 interface ErrorLog {
   id: number
@@ -34,6 +35,7 @@ interface GroupedError {
 }
 
 export default function ErrorDashboardView() {
+  const alert = useAlert()
   const [errors, setErrors] = useState<ErrorLog[]>([])
   const [loading, setLoading] = useState(true)
   const [typeFilter, setTypeFilter] = useState<string>('all')
@@ -187,7 +189,7 @@ export default function ErrorDashboardView() {
       }
     } catch (error) {
       console.error('Failed to mark error as resolved:', error)
-      alert('Failed to mark error as resolved. Please try again.')
+      await alert({ message: 'Failed to mark error as resolved. Please try again.', variant: 'danger' })
     } finally {
       setResolvingIds((prev) => {
         const next = new Set(prev)

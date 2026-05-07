@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Plus, ChevronRight, Check, AlertCircle, Loader2, ArrowLeft, Calendar, Trophy, Map, RotateCcw } from 'lucide-react'
 import { PUG_ADMIN_CSS, formatDate } from '@/components/pugAdminStyles'
+import { useConfirm } from '@/components/ConfirmDialog'
 
 // ── Types ──
 
@@ -157,6 +158,7 @@ export function PugSeasonsListView() {
 // ── Edit View ──
 
 export function PugSeasonsEditView() {
+  const confirm = useConfirm()
   const router = useRouter()
   const searchParams = useSearchParams()
   const id = searchParams.get('id')
@@ -448,7 +450,7 @@ export function PugSeasonsEditView() {
           <button
             className="ps-btn ps-btn-danger"
             onClick={async () => {
-              if (!confirm('Reset ALL leaderboard ratings for this season? This cannot be undone.')) return
+              if (!await confirm({ message: 'Reset ALL leaderboard ratings for this season? This cannot be undone.', variant: 'danger' })) return
               const res = await fetch('/api/pug/leaderboard/reset', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { formatLocalDateTime } from '@/utilities/formatDateTime'
 import { CheckCircle, RefreshCw, Trophy, XCircle } from 'lucide-react'
+import { useConfirm } from '@/components/ConfirmDialog'
 
 interface TeamInfo {
   id: number
@@ -25,6 +26,7 @@ interface FaceitUpdatesTabProps {
 }
 
 export default function FaceitUpdatesTab({ onAlert }: FaceitUpdatesTabProps) {
+  const confirm = useConfirm()
   const [teams, setTeams] = useState<TeamInfo[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
@@ -74,9 +76,10 @@ export default function FaceitUpdatesTab({ onAlert }: FaceitUpdatesTabProps) {
 
   const handleFullRefresh = async () => {
     if (
-      !confirm(
-        'This will DELETE all FaceIt update embeds and repost them in the correct order (region, then division).\n\nContinue?',
-      )
+      !await confirm({
+        message: 'This will DELETE all FaceIt update embeds and repost them in the correct order (region, then division).\n\nContinue?',
+        variant: 'danger',
+      })
     ) {
       return
     }

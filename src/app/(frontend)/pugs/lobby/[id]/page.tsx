@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import { useConfirm } from '@/components/ConfirmDialog'
 
 const ROLE_LABELS: Record<string, string> = {
   tank: 'Tank',
@@ -129,6 +130,7 @@ function Countdown({ deadline }: { deadline: string }) {
 
 export default function LobbyPage() {
   const { id } = useParams<{ id: string }>()
+  const confirm = useConfirm()
   const [data, setData] = useState<LobbyData | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
@@ -610,7 +612,7 @@ export default function LobbyPage() {
                 <button onClick={() => apiAction('/resolve', { result: 'team2' })} className="px-4 py-2 bg-orange-900/40 border border-orange-800 text-orange-300 rounded hover:bg-orange-900 text-sm transition-colors font-medium">Team 2 Won</button>
                 <button onClick={() => apiAction('/resolve', { result: 'draw' })} className="px-4 py-2 border border-gray-700 text-gray-400 rounded hover:bg-gray-800 text-sm transition-colors">Draw</button>
                 <button
-                  onClick={() => { if (confirm('Cancel this match? No rating changes will be applied.')) apiAction('/resolve', { result: 'cancel' }) }}
+                  onClick={async () => { if (await confirm({ message: 'Cancel this match? No rating changes will be applied.', variant: 'danger' })) apiAction('/resolve', { result: 'cancel' }) }}
                   className="px-4 py-2 border border-red-800 text-red-400 rounded hover:bg-red-950 text-sm transition-colors"
                 >Cancel Match</button>
               </div>
