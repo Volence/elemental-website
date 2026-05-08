@@ -96,6 +96,11 @@ export default async function AvailabilityPage({ params }: PageProps) {
     if (calendar?.team && typeof calendar.team === 'object') {
       team = calendar.team
     }
+
+    if (team?.slug) {
+      const slug = team.slug as string
+      redirect(`/schedule/${slug}?tab=availability`)
+    }
   } catch (err) {
     console.error('[Availability Page] Error fetching calendar:', err)
   }
