@@ -1,0 +1,86 @@
+.schedule-page {
+  min-height: 100vh;
+  background: #0a0a0f;
+  padding: 24px 16px 80px;
+}
+
+.schedule-page--error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  color: #94a3b8;
+  text-align: center;
+}
+
+.schedule-page--error h1 {
+  color: #f1f5f9;
+  margin-bottom: 8px;
+}
+
+.schedule-page__container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.schedule-page__header {
+  margin-bottom: 24px;
+}
+
+.schedule-page__team-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0 0 4px;
+}
+
+.schedule-page__subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+.schedule-page__tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 24px;
+}
+
+.schedule-page__tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.schedule-page__tab:hover {
+  color: #94a3b8;
+}
+
+.schedule-page__tab--active {
+  color: #f1f5f9;
+  border-bottom-color: #3b82f6;
+}
+
+.schedule-page__content {
+  min-height: 400px;
+}
+
+.schedule-page__tab-panel {
+  animation: schedTabFadeIn 0.15s ease;
+}
+
+@keyframes schedTabFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
