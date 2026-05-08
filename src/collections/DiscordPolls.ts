@@ -550,5 +550,67 @@ export const DiscordPolls: CollectionConfig = {
       ],
     },
   ],
+  hooks: {
+    afterChange: [
+      async ({ doc, operation, req }) => {
+        if (operation !== 'create') return doc
+        if ((doc as any).scheduleType !== 'calendar') return doc
+
+        const teamId = (doc as any).team
+        const dateRange = (doc as any).dateRange
+        if (!teamId || !dateRange?.start || !dateRange?.end) return doc
+
+        try {
+          const preAvails = await req.payload.find({
+            collection: 'absences',
+            where: {
+              and: [
+                { team: { equals: typeof teamId === 'object' ? teamId.id : teamId } },
+                { type: { equals: 'pre-availability' } },
+                { startDate: { less_than_equal: dateRange.end } },
+                { endDate: { greater_than_equal: dateRange.start } },
+              ],
+            },
+            limit: 50,
+            depth: 1,
+          })
+
+          if (preAvails.docs.length === 0) return doc
+
+          const existingResponses = ((doc as any).responses || []) as any[]
+          const newResponses = [...existingResponses]
+
+          for (const preAvail of preAvails.docs) {
+            const pa = preAvail as any
+            if (!pa.selections || !pa.discordId) continue
+            if (newResponses.some(r => r.discordId === pa.discordId)) continue
+
+            const person = typeof pa.person === 'object' ? pa.person : null
+            newResponses.push({
+              discordId: pa.discordId,
+              discordUsername: person?.name || 'Unknown',
+              respondedAt: new Date().toISOString(),
+              selections: pa.selections,
+            })
+          }
+
+          if (newResponses.length > existingResponses.length) {
+            await req.payload.update({
+              collection: 'discord-polls' as any,
+              id: doc.id as any,
+              data: {
+                responses: newResponses,
+                responseCount: newResponses.length,
+              } as any,
+            })
+          }
+        } catch (err) {
+          console.error('[DiscordPolls afterChange] Pre-availability import error:', err)
+        }
+
+        return doc
+      },
+    ],
+  },
   timestamps: true,
 }
