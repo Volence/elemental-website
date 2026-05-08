@@ -265,6 +265,7 @@ export const DiscordPolls: CollectionConfig = {
       options: [
         { label: 'Discord Poll', value: 'discord-command' },
         { label: 'Manual Entry', value: 'admin-panel' },
+        { label: 'Auto-Created', value: 'auto' },
       ],
       admin: {
         position: 'sidebar',

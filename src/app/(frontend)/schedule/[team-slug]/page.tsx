@@ -53,16 +53,33 @@ export default async function SchedulePageRoute({ params, searchParams }: PagePr
 
   const team = teamResult.docs[0] as any
 
-  // Check Discord identity
+  // Check auth: Payload session first, then Discord identity cookie
   const cookieStore = await cookies()
-  const identityCookie = cookieStore.get('discord_identity')
   let discordUser: any = null
-  if (identityCookie?.value) {
-    try { discordUser = JSON.parse(identityCookie.value) } catch {}
+
+  const payloadToken = cookieStore.get('payload-token')?.value
+  if (payloadToken) {
+    try {
+      const { user } = await payload.auth({ headers: new Headers({ Authorization: `JWT ${payloadToken}` }) })
+      if (user && (user as any).discordId) {
+        discordUser = {
+          id: (user as any).discordId,
+          username: (user as any).name || (user as any).email,
+          avatar: (user as any).discordAvatar || null,
+        }
+      }
+    } catch {}
   }
 
-  // Find active calendar
-  const calendarResult = await payload.find({
+  if (!discordUser) {
+    const identityCookie = cookieStore.get('discord_identity')
+    if (identityCookie?.value) {
+      try { discordUser = JSON.parse(identityCookie.value) } catch {}
+    }
+  }
+
+  // Find active calendar, auto-create for current week if none exists
+  let calendarResult = await payload.find({
     collection: 'discord-polls' as any,
     where: {
       and: [
@@ -76,6 +93,64 @@ export default async function SchedulePageRoute({ params, searchParams }: PagePr
     depth: 0,
     overrideAccess: true,
   })
+
+  if (calendarResult.docs.length === 0) {
+    const now = new Date()
+    const dayOfWeek = now.getDay()
+    const monday = new Date(now)
+    monday.setDate(now.getDate() - ((dayOfWeek + 6) % 7))
+    monday.setHours(0, 0, 0, 0)
+    const sunday = new Date(monday)
+    sunday.setDate(monday.getDate() + 6)
+
+    const mondayStr = monday.toISOString().split('T')[0]
+    const sundayStr = sunday.toISOString().split('T')[0]
+    const monthDay = monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+
+    const scheduleBlocks = team.scheduleBlocks || []
+    const timeSlots = scheduleBlocks.map((b: any) => ({
+      id: `auto_${b.startTime}_${Date.now()}`,
+      label: b.label,
+      startTime: b.startTime,
+      endTime: b.endTime,
+    }))
+
+    try {
+      await payload.create({
+        collection: 'discord-polls' as any,
+        data: {
+          pollName: `Week of ${monthDay}`,
+          team: team.id,
+          scheduleType: 'calendar',
+          status: 'active',
+          dateRange: { start: mondayStr, end: sundayStr },
+          timeSlots: timeSlots.length > 0 ? timeSlots : undefined,
+          timezone: team.scheduleTimezone || 'America/New_York',
+          createdVia: 'auto',
+          responses: [],
+          responseCount: 0,
+        },
+        overrideAccess: true,
+      })
+
+      calendarResult = await payload.find({
+        collection: 'discord-polls' as any,
+        where: {
+          and: [
+            { team: { equals: team.id } },
+            { scheduleType: { equals: 'calendar' } },
+            { status: { equals: 'active' } },
+          ],
+        },
+        limit: 1,
+        sort: '-createdAt',
+        depth: 0,
+        overrideAccess: true,
+      })
+    } catch (err) {
+      console.error('[Schedule] Auto-create calendar error:', err)
+    }
+  }
 
   // Recent schedules for calendar view (include both poll and calendar types for history)
   const recentResult = await payload.find({

@@ -2,7 +2,24 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 
-function getDiscordIdentity(request: NextRequest) {
+async function getDiscordIdentity(request: NextRequest) {
+  const payloadToken = request.cookies.get('payload-token')?.value
+  if (payloadToken) {
+    try {
+      const { getPayload: gp } = await import('payload')
+      const config = (await import('@payload-config')).default
+      const payload = await gp({ config })
+      const { user } = await payload.auth({ headers: new Headers({ Authorization: `JWT ${payloadToken}` }) })
+      if (user && (user as any).discordId) {
+        return {
+          id: (user as any).discordId,
+          username: (user as any).name || (user as any).email,
+          avatar: (user as any).discordAvatar || null,
+        }
+      }
+    } catch {}
+  }
+
   const cookie = request.cookies.get('discord_identity')
   if (!cookie?.value) return null
   try {
@@ -43,7 +60,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const discordUser = getDiscordIdentity(request)
+  const discordUser = await getDiscordIdentity(request)
   if (!discordUser) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
   }
@@ -90,7 +107,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const discordUser = getDiscordIdentity(request)
+  const discordUser = await getDiscordIdentity(request)
   if (!discordUser) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
   }
