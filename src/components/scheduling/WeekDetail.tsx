@@ -26,6 +26,9 @@ export function WeekDetail({ weekStart }: WeekDetailProps) {
     for (const entry of [...team.roster, ...team.subs]) {
       if (entry.person) {
         map[String(entry.person.id)] = entry.person.name || 'Unknown'
+        if (entry.person.discordId) {
+          map[entry.person.discordId] = entry.person.name || 'Unknown'
+        }
       }
     }
     return map
@@ -55,15 +58,17 @@ export function WeekDetail({ weekStart }: WeekDetailProps) {
 
   const schedule = matchingSchedule.schedule
   const responses = matchingSchedule.responses || []
+  const votes = matchingSchedule.votes || []
   const days = schedule?.days || []
   const enabledDays = days.filter((d: any) => d.enabled)
+  const responseCount = responses.length || (votes.length > 0 ? new Set(votes.flatMap((v: any) => (v.voters || []).map((p: any) => p.id))).size : 0)
 
   return (
     <div className="week-detail">
       <div className="week-detail__summary">
         <span className="week-detail__stat">
           <Users size={14} />
-          {responses.length} response{responses.length !== 1 ? 's' : ''}
+          {responseCount} response{responseCount !== 1 ? 's' : ''}
         </span>
         <span className="week-detail__stat">
           <Swords size={14} />

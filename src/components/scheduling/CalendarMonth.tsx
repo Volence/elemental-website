@@ -31,14 +31,16 @@ export function CalendarMonth() {
         current.setDate(current.getDate() + 1)
       }
       if (s.schedule?.days) {
-        for (const day of s.schedule.days) {
+        const rangeStart = new Date(s.dateRange.start)
+        for (let i = 0; i < s.schedule.days.length; i++) {
+          const day = s.schedule.days[i]
           if (!day.enabled) continue
-          for (const block of day.blocks || []) {
-            if (block.scrim?.opponent) {
-              const dateKey = typeof day.date === 'string' ? day.date : ''
-              if (map[dateKey]) map[dateKey].hasScrim = true
-            }
-          }
+          const hasScrim = (day.blocks || []).some((b: any) => b.scrim?.opponent)
+          if (!hasScrim) continue
+          const dayDate = new Date(rangeStart)
+          dayDate.setDate(dayDate.getDate() + i)
+          const dateKey = day.isoDate || dayDate.toISOString().split('T')[0]
+          if (map[dateKey]) map[dateKey].hasScrim = true
         }
       }
     }

@@ -77,16 +77,16 @@ export default async function SchedulePageRoute({ params, searchParams }: PagePr
     overrideAccess: true,
   })
 
-  // Recent schedules for calendar view
+  // Recent schedules for calendar view (include both poll and calendar types for history)
   const recentResult = await payload.find({
     collection: 'discord-polls' as any,
     where: {
       and: [
         { team: { equals: team.id } },
-        { scheduleType: { equals: 'calendar' } },
+        { 'dateRange.start': { exists: true } },
       ],
     },
-    limit: 12,
+    limit: 52,
     sort: '-createdAt',
     depth: 0,
     overrideAccess: true,

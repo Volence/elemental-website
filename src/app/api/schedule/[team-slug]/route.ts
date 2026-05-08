@@ -62,10 +62,10 @@ export async function GET(
       where: {
         and: [
           { team: { equals: team.id } },
-          { scheduleType: { equals: 'calendar' } },
+          { 'dateRange.start': { exists: true } },
         ],
       },
-      limit: 8,
+      limit: 52,
       sort: '-createdAt',
       depth: 0,
       overrideAccess: true,
