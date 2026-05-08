@@ -146,15 +146,24 @@ export function CalendarMonth() {
                   )
                 })}
               </div>
-              {isExpanded && weekKey && (
-                <div className="cal-month__week-detail">
-                  {weekHasSchedule(new Date(weekKey)) ? (
-                    <WeekDetail weekStart={new Date(weekKey)} />
-                  ) : (
-                    <FutureAvailabilityForm weekStart={new Date(weekKey)} onClose={() => setExpandedWeek(null)} />
-                  )}
-                </div>
-              )}
+              {isExpanded && weekKey && (() => {
+                const weekStart = new Date(weekKey)
+                const weekEnd = new Date(weekStart)
+                weekEnd.setDate(weekEnd.getDate() + 6)
+                const isPast = weekEnd < new Date(today)
+                const hasSchedule = weekHasSchedule(weekStart)
+                return (
+                  <div className="cal-month__week-detail">
+                    {hasSchedule ? (
+                      <WeekDetail weekStart={weekStart} />
+                    ) : isPast ? (
+                      <div className="cal-month__future-empty"><p>No schedule data for this week.</p></div>
+                    ) : (
+                      <FutureAvailabilityForm weekStart={weekStart} onClose={() => setExpandedWeek(null)} />
+                    )}
+                  </div>
+                )
+              })()}
             </React.Fragment>
           )
         })}
