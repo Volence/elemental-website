@@ -324,6 +324,69 @@
   to { transform: rotate(360deg); }
 }
 
+.build-tab__slot--drag-over {
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px dashed rgba(59, 130, 246, 0.4);
+  border-radius: 4px;
+}
+
+.build-tab__slot-player-card {
+  font-size: 0.8rem;
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: grab;
+  user-select: none;
+}
+
+.build-tab__slot-player-card:active {
+  cursor: grabbing;
+  opacity: 0.6;
+}
+
+.build-tab__pool {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.build-tab__pool-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 0.5rem;
+}
+
+.build-tab__pool-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.build-tab__pool-card {
+  font-size: 0.75rem;
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 3px 10px;
+  border-radius: 4px;
+  cursor: grab;
+  user-select: none;
+  transition: all 0.15s;
+}
+
+.build-tab__pool-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.build-tab__pool-card:active {
+  cursor: grabbing;
+  opacity: 0.6;
+}
+
 @media (max-width: 600px) {
   .build-tab {
     padding: 1rem;

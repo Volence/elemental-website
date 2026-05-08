@@ -54,6 +54,8 @@ export function BuildTab() {
   const [publishing, setPublishing] = useState(false)
   const [published, setPublished] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [dragData, setDragData] = useState<{ dayIdx: number; blockIdx: number; slotIdx: number; playerId: string } | null>(null)
+  const [dragOverSlot, setDragOverSlot] = useState<string | null>(null)
 
   const roles = useMemo(() => {
     let preset = team.rolePreset || 'specific'
@@ -84,6 +86,23 @@ export function BuildTab() {
         isSub: team.subs.some(s => s.person?.id === e.person.id),
       }))
   }, [team.roster, team.subs])
+
+  const assignedPlayerIds = useMemo(() => {
+    const ids = new Set<string>()
+    for (const day of days) {
+      for (const block of day.blocks) {
+        for (const slot of block.slots) {
+          if (slot.playerId) ids.add(slot.playerId)
+        }
+      }
+    }
+    return ids
+  }, [days])
+
+  const unassignedPlayers = useMemo(() =>
+    rosterPlayers.filter(p => !assignedPlayerIds.has(p.id)),
+    [rosterPlayers, assignedPlayerIds]
+  )
 
   const generateBlockId = () => `block_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
@@ -212,6 +231,62 @@ export function BuildTab() {
     setSaved(false)
   }
 
+  const handleDragStart = (e: React.DragEvent, dayIdx: number, blockIdx: number, slotIdx: number, playerId: string) => {
+    setDragData({ dayIdx, blockIdx, slotIdx, playerId })
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
+  const handlePoolDragStart = (e: React.DragEvent, playerId: string) => {
+    setDragData({ dayIdx: -1, blockIdx: -1, slotIdx: -1, playerId })
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
+  const handleDragOver = (e: React.DragEvent, slotKey: string) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    setDragOverSlot(slotKey)
+  }
+
+  const handleDragLeave = () => {
+    setDragOverSlot(null)
+  }
+
+  const handleDrop = (e: React.DragEvent, targetDayIdx: number, targetBlockIdx: number, targetSlotIdx: number) => {
+    e.preventDefault()
+    setDragOverSlot(null)
+    if (!dragData) return
+
+    const { dayIdx: srcDay, blockIdx: srcBlock, slotIdx: srcSlot, playerId } = dragData
+
+    setDays(prev => {
+      const next = prev.map(d => ({ ...d, blocks: d.blocks.map(b => ({ ...b, slots: [...b.slots] })) }))
+
+      const targetSlot = next[targetDayIdx].blocks[targetBlockIdx].slots[targetSlotIdx]
+      const existingPlayerId = targetSlot.playerId
+
+      // Place dragged player in target
+      next[targetDayIdx].blocks[targetBlockIdx].slots[targetSlotIdx] = { ...targetSlot, playerId }
+
+      // If source was from a slot (not pool), update source
+      if (srcDay >= 0) {
+        next[srcDay].blocks[srcBlock].slots[srcSlot] = {
+          ...next[srcDay].blocks[srcBlock].slots[srcSlot],
+          playerId: existingPlayerId,
+        }
+      }
+
+      return next
+    })
+
+    setDragData(null)
+    setSaved(false)
+  }
+
+  const handleDragEnd = () => {
+    setDragData(null)
+    setDragOverSlot(null)
+  }
+
   const handleSuggest = () => {
     if (!activeCalendar?.responses) return
     const suggested = suggestLineup(
@@ -311,6 +386,25 @@ export function BuildTab() {
         </div>
       </div>
 
+      {unassignedPlayers.length > 0 && (
+        <div className="build-tab__pool">
+          <h4 className="build-tab__pool-title">Available Players</h4>
+          <div className="build-tab__pool-cards">
+            {unassignedPlayers.map(p => (
+              <div
+                key={p.id}
+                className="build-tab__pool-card"
+                draggable
+                onDragStart={e => handlePoolDragStart(e, p.id)}
+                onDragEnd={handleDragEnd}
+              >
+                {p.name}{p.isSub ? ' (S)' : ''}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="build-tab__days">
         {days.map((day, dayIdx) => (
           <div key={dayIdx} className={`build-tab__day ${!day.enabled ? 'build-tab__day--disabled' : ''}`}>
@@ -352,23 +446,42 @@ export function BuildTab() {
                       )}
                     </div>
                     <div className="build-tab__slots">
-                      {block.slots.map((slot, slotIdx) => (
-                        <div key={slotIdx} className="build-tab__slot">
-                          <span className="build-tab__slot-role">{slot.role}</span>
-                          <select
-                            className="build-tab__slot-select"
-                            value={slot.playerId || ''}
-                            onChange={e => updateSlot(dayIdx, blockIdx, slotIdx, e.target.value || null)}
+                      {block.slots.map((slot, slotIdx) => {
+                        const slotKey = `${dayIdx}-${blockIdx}-${slotIdx}`
+                        return (
+                          <div
+                            key={slotIdx}
+                            className={`build-tab__slot ${dragOverSlot === slotKey ? 'build-tab__slot--drag-over' : ''}`}
+                            onDragOver={e => handleDragOver(e, slotKey)}
+                            onDragLeave={handleDragLeave}
+                            onDrop={e => handleDrop(e, dayIdx, blockIdx, slotIdx)}
                           >
-                            <option value="">-- Select --</option>
-                            {rosterPlayers.map(p => (
-                              <option key={p.id} value={p.id}>
-                                {p.name}{p.isSub ? ' (Sub)' : ''}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      ))}
+                            <span className="build-tab__slot-role">{slot.role}</span>
+                            {slot.playerId && (
+                              <div
+                                className="build-tab__slot-player-card"
+                                draggable
+                                onDragStart={e => handleDragStart(e, dayIdx, blockIdx, slotIdx, slot.playerId!)}
+                                onDragEnd={handleDragEnd}
+                              >
+                                {playerMap[slot.playerId] || 'Unknown'}
+                              </div>
+                            )}
+                            <select
+                              className="build-tab__slot-select"
+                              value={slot.playerId || ''}
+                              onChange={e => updateSlot(dayIdx, blockIdx, slotIdx, e.target.value || null)}
+                            >
+                              <option value="">-- Select --</option>
+                              {rosterPlayers.map(p => (
+                                <option key={p.id} value={p.id}>
+                                  {p.name}{p.isSub ? ' (Sub)' : ''}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )
+                      })}
                     </div>
                   </div>
                 ))}
