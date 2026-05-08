@@ -104,7 +104,8 @@ export async function handleAvailability(
 
     // Build the link
     const siteUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'https://elmt.gg'
-    const calendarUrl = `${siteUrl}/availability/${calendar.id}`
+    const teamSlug = (team as any).slug || (team as any).name?.toLowerCase().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '')
+    const calendarUrl = `${siteUrl}/schedule/${teamSlug}?tab=availability`
 
     // Post embed to the channel
     if (
