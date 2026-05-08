@@ -1,0 +1,144 @@
+.week-detail {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.week-detail--empty {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.4);
+  padding: 1.5rem;
+}
+
+.week-detail--empty p {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.week-detail__summary {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.week-detail__stat {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.week-detail__no-days {
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.week-detail__day {
+  margin-bottom: 0.75rem;
+}
+
+.week-detail__day:last-child {
+  margin-bottom: 0;
+}
+
+.week-detail__day-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin: 0 0 0.4rem;
+}
+
+.week-detail__block {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 0.5rem 0.6rem;
+  margin-bottom: 0.35rem;
+}
+
+.week-detail__block-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.week-detail__block-time {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.week-detail__block-opponent {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  color: #60a5fa;
+}
+
+.week-detail__outcome {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.week-detail__outcome--easy_win,
+.week-detail__outcome--close_win {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.week-detail__outcome--neutral {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+}
+
+.week-detail__outcome--close_loss,
+.week-detail__outcome--got_rolled {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.week-detail__slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.week-detail__slot {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.7rem;
+}
+
+.week-detail__slot-role {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.week-detail__slot-player {
+  color: #e2e8f0;
+  font-weight: 500;
+}
+
+@media (max-width: 600px) {
+  .week-detail {
+    padding: 0.75rem;
+  }
+
+  .week-detail__slots {
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+}

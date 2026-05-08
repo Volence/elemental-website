@@ -5,6 +5,8 @@ import { Calendar, ClipboardList, Wrench } from 'lucide-react'
 import { ScheduleProvider, useSchedule } from '@/components/scheduling/ScheduleContext'
 import { AvailabilityVoting } from '@/components/scheduling/AvailabilityVoting'
 import { AvailabilityMatrix } from '@/components/scheduling/AvailabilityMatrix'
+import { CalendarMonth } from '@/components/scheduling/CalendarMonth'
+import { AbsenceManager } from '@/components/scheduling/AbsenceManager'
 import type { SchedulePageData, ScheduleTab } from '@/components/scheduling/types'
 import './SchedulePage.css'
 
@@ -61,7 +63,8 @@ function SchedulePageInner() {
         )}
         {activeTab === 'calendar' && (
           <div className="schedule-page__tab-panel">
-            <p style={{ color: '#94a3b8' }}>Calendar tab - coming in Task 9</p>
+            <CalendarMonth />
+            <AbsenceManager />
           </div>
         )}
         {activeTab === 'build' && data.authState.isManager && (
