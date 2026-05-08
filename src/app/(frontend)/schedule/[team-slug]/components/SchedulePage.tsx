@@ -4,6 +4,7 @@ import React from 'react'
 import { Calendar, ClipboardList, Wrench } from 'lucide-react'
 import { ScheduleProvider, useSchedule } from '@/components/scheduling/ScheduleContext'
 import { AvailabilityVoting } from '@/components/scheduling/AvailabilityVoting'
+import { AvailabilityMatrix } from '@/components/scheduling/AvailabilityMatrix'
 import type { SchedulePageData, ScheduleTab } from '@/components/scheduling/types'
 import './SchedulePage.css'
 
@@ -55,6 +56,7 @@ function SchedulePageInner() {
         {activeTab === 'availability' && (
           <div className="schedule-page__tab-panel">
             <AvailabilityVoting />
+            <AvailabilityMatrix />
           </div>
         )}
         {activeTab === 'calendar' && (

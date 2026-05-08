@@ -1,0 +1,279 @@
+.avail-matrix {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.avail-matrix--empty {
+  text-align: center;
+  padding: 2rem;
+  color: rgba(255, 255, 255, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avail-matrix__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.avail-matrix__header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #00e5ff;
+}
+
+.avail-matrix__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin: 0;
+}
+
+.avail-matrix__response-count {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.avail-matrix__filters {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.avail-matrix__filter-btn {
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.avail-matrix__filter-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.avail-matrix__filter-btn--active {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #60a5fa;
+}
+
+.avail-matrix__grid-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.avail-matrix__grid {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 2px;
+}
+
+.avail-matrix__player-header {
+  text-align: left;
+  padding: 0.5rem;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  min-width: 150px;
+  position: sticky;
+  left: 0;
+  background: #0a0a0f;
+  z-index: 1;
+}
+
+.avail-matrix__slot-header {
+  text-align: center;
+  padding: 0.35rem 0.25rem;
+  vertical-align: bottom;
+  min-width: 44px;
+}
+
+.avail-matrix__slot-day {
+  display: block;
+  font-weight: 700;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+}
+
+.avail-matrix__slot-date {
+  display: block;
+  font-size: 0.55rem;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.avail-matrix__slot-time {
+  display: block;
+  font-size: 0.55rem;
+  color: rgba(255, 255, 255, 0.3);
+  margin-top: 2px;
+}
+
+.avail-matrix__slot-count {
+  display: block;
+  font-size: 0.65rem;
+  color: #00e5ff;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.avail-matrix__row--no-response {
+  opacity: 0.5;
+}
+
+.avail-matrix__player-cell {
+  padding: 0.35rem 0.5rem;
+  position: sticky;
+  left: 0;
+  background: #0a0a0f;
+  z-index: 1;
+}
+
+.avail-matrix__player-info {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+
+.avail-matrix__player-avatar {
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.avail-matrix__player-name {
+  font-size: 0.8rem;
+  color: #e2e8f0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+}
+
+.avail-matrix__role-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.role-badge--tank {
+  background: rgba(96, 165, 250, 0.2);
+  color: #60a5fa;
+}
+
+.role-badge--dps {
+  background: rgba(248, 113, 113, 0.2);
+  color: #f87171;
+}
+
+.role-badge--support {
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+}
+
+.avail-matrix__sub-badge {
+  font-size: 0.55rem;
+  font-weight: 600;
+  padding: 1px 3px;
+  border-radius: 3px;
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  flex-shrink: 0;
+}
+
+.avail-matrix__cell {
+  width: 36px;
+  height: 32px;
+  text-align: center;
+  vertical-align: middle;
+  border-radius: 4px;
+}
+
+.avail-matrix__cell svg {
+  display: block;
+  margin: 0 auto;
+}
+
+.avail-matrix__cell--available {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.avail-matrix__cell--maybe {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+}
+
+.avail-matrix__cell--none {
+  background: rgba(255, 255, 255, 0.02);
+  color: rgba(255, 255, 255, 0.15);
+}
+
+.avail-matrix__cell--absent {
+  background: rgba(148, 163, 184, 0.1);
+  color: rgba(148, 163, 184, 0.4);
+}
+
+.avail-matrix__missing {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.avail-matrix__missing-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.avail-matrix__missing-name {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+@media (max-width: 600px) {
+  .avail-matrix {
+    padding: 1rem;
+    border-radius: 8px;
+  }
+
+  .avail-matrix__player-name {
+    max-width: 70px;
+    font-size: 0.7rem;
+  }
+
+  .avail-matrix__cell {
+    width: 30px;
+    height: 28px;
+  }
+
+  .avail-matrix__grid {
+    border-spacing: 1px;
+  }
+}
