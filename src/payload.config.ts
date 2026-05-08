@@ -29,6 +29,7 @@ import { CronJobRuns } from './collections/CronJobRuns'
 import { ActiveSessions } from './collections/ActiveSessions'
 import { DiscordPolls } from './collections/DiscordPolls'
 import { AvailabilityCalendars } from './collections/AvailabilityCalendars'
+import { Absences } from './collections/Absences'
 
 import { WatchedThreads } from './collections/WatchedThreads'
 import { Heroes } from './collections/Heroes'
@@ -274,7 +275,8 @@ const config = buildConfig({
     RecruitmentApplications,
     DiscordPolls,
     AvailabilityCalendars,
-    
+    Absences,
+
     // ── DEPARTMENT WORKBOARDS (anchors to workboard dashboards) ──
     GraphicsAnchor,
     BrandingGuideAnchor,
