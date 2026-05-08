@@ -102,7 +102,7 @@ export const DiscordPolls: CollectionConfig = {
           type: 'ui',
           admin: {
             components: {
-              Field: '@/components/ScheduleHeatmapView#default',
+              Field: '@/components/scheduling/AdminScheduleView#default',
             },
           },
         },
