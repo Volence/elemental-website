@@ -22,16 +22,30 @@ export async function GET(request: NextRequest) {
   }
 
   const parts = stateRaw.split(':')
-  if (parts.length !== 3) {
+
+  let redirectPath: string
+
+  if (parts.length === 4 && parts[0] === 'schedule') {
+    // New format: schedule:teamSlug:nonce:sig
+    const [, teamSlug, nonce, sig] = parts
+    const secret = process.env.PAYLOAD_SECRET || 'dev-secret'
+    const expectedSig = createHmac('sha256', secret).update(`schedule:${teamSlug}:${nonce}`).digest('hex').slice(0, 16)
+    if (sig !== expectedSig) {
+      return NextResponse.redirect(new URL('/availability/error?reason=invalid_state', serverUrl))
+    }
+    redirectPath = `/schedule/${teamSlug}?tab=availability`
+  } else if (parts.length === 3) {
+    // Legacy format: calendarId:nonce:sig
+    const [calendarId, nonce, sig] = parts
+    const secret = process.env.PAYLOAD_SECRET || 'dev-secret'
+    const expectedSig = createHmac('sha256', secret).update(`${calendarId}:${nonce}`).digest('hex').slice(0, 16)
+    if (sig !== expectedSig) {
+      return NextResponse.redirect(new URL('/availability/error?reason=invalid_state', serverUrl))
+    }
+    redirectPath = `/availability/${calendarId}`
+  } else {
     return NextResponse.redirect(new URL('/availability/error?reason=invalid_state', serverUrl))
   }
-  const [calendarId, nonce, sig] = parts
-  const secret = process.env.PAYLOAD_SECRET || 'dev-secret'
-  const expectedSig = createHmac('sha256', secret).update(`${calendarId}:${nonce}`).digest('hex').slice(0, 16)
-  if (sig !== expectedSig) {
-    return NextResponse.redirect(new URL('/availability/error?reason=invalid_state', serverUrl))
-  }
-  const state = calendarId
 
   const clientId = process.env.DISCORD_CLIENT_ID
   const clientSecret = process.env.DISCORD_CLIENT_SECRET
@@ -88,8 +102,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Set the identity in a secure cookie
-    const calendarId = state || ''
-    const redirectPath = calendarId ? `/availability/${calendarId}` : '/availability/error?reason=no_calendar'
+    if (!redirectPath) {
+      return NextResponse.redirect(new URL('/availability/error?reason=no_calendar', serverUrl))
+    }
     const response = NextResponse.redirect(new URL(redirectPath, serverUrl))
 
     response.cookies.set('discord_identity', JSON.stringify(identity), {

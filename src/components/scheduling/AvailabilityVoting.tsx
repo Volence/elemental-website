@@ -27,7 +27,7 @@ export function AvailabilityVoting() {
           <LogIn size={24} />
           <p>Sign in with Discord to submit your availability.</p>
           <a
-            href={`/api/discord-auth?redirect=/schedule/${team.slug}`}
+            href={`/api/schedule-auth?teamSlug=${team.slug}`}
             className="avail-voting__auth-btn"
           >
             Sign in with Discord

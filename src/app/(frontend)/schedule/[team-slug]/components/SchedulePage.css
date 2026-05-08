@@ -84,3 +84,24 @@
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+@media (max-width: 768px) {
+  .schedule-page {
+    padding: 16px 12px 60px;
+  }
+
+  .schedule-page__team-name {
+    font-size: 20px;
+  }
+
+  .schedule-page__tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .schedule-page__tab {
+    white-space: nowrap;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}
