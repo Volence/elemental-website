@@ -8,6 +8,7 @@ import { AvailabilityMatrix } from '@/components/scheduling/AvailabilityMatrix'
 import { CalendarMonth } from '@/components/scheduling/CalendarMonth'
 import { AbsenceManager } from '@/components/scheduling/AbsenceManager'
 import type { SchedulePageData, ScheduleTab } from '@/components/scheduling/types'
+import { BuildTab } from './BuildTab'
 import './SchedulePage.css'
 
 interface SchedulePageProps {
@@ -69,7 +70,7 @@ function SchedulePageInner() {
         )}
         {activeTab === 'build' && data.authState.isManager && (
           <div className="schedule-page__tab-panel">
-            <p style={{ color: '#94a3b8' }}>Build tab - coming in Task 11</p>
+            <BuildTab />
           </div>
         )}
       </div>

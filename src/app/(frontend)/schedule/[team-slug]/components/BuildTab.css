@@ -1,0 +1,361 @@
+.build-tab {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.build-tab--empty {
+  text-align: center;
+  padding: 3rem;
+  color: rgba(255, 255, 255, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.build-tab__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.build-tab__header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #00e5ff;
+}
+
+.build-tab__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin: 0;
+}
+
+.build-tab__changes-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.build-tab__header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.build-tab__suggest-btn,
+.build-tab__recalc-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.build-tab__suggest-btn {
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+
+.build-tab__suggest-btn:hover {
+  background: rgba(251, 191, 36, 0.2);
+}
+
+.build-tab__recalc-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.build-tab__recalc-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.build-tab__days {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.build-tab__day {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.build-tab__day--disabled {
+  opacity: 0.5;
+}
+
+.build-tab__day-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.6);
+  transition: background 0.15s;
+}
+
+.build-tab__day-header:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.build-tab__day-date {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  flex: 1;
+}
+
+.build-tab__day-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+}
+
+.build-tab__day-toggle input {
+  accent-color: #3b82f6;
+}
+
+.build-tab__day-toggle-label {
+  user-select: none;
+}
+
+.build-tab__day-content {
+  padding: 0.5rem 0.75rem 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  animation: buildFadeIn 0.15s ease;
+}
+
+@keyframes buildFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.build-tab__block {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.build-tab__block-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.build-tab__block-time {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.build-tab__opponent-select {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: #e2e8f0;
+  padding: 3px 6px;
+  font-size: 0.75rem;
+  font-family: inherit;
+}
+
+.build-tab__remove-block {
+  background: none;
+  border: none;
+  color: rgba(239, 68, 68, 0.5);
+  cursor: pointer;
+  padding: 2px;
+  margin-left: auto;
+}
+
+.build-tab__remove-block:hover {
+  color: #ef4444;
+}
+
+.build-tab__slots {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.build-tab__slot {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.build-tab__slot-role {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.45);
+  min-width: 90px;
+  text-align: right;
+}
+
+.build-tab__slot-select {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: #e2e8f0;
+  padding: 4px 6px;
+  font-size: 0.8rem;
+  font-family: inherit;
+}
+
+.build-tab__add-block {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.75rem;
+  cursor: pointer;
+  width: 100%;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.build-tab__add-block:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.build-tab__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  flex-wrap: wrap;
+}
+
+.build-tab__error {
+  font-size: 0.8rem;
+  color: #ef4444;
+  margin-right: auto;
+}
+
+.build-tab__save-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #00e5ff, #00b8d4);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.build-tab__save-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 229, 255, 0.3);
+}
+
+.build-tab__save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.build-tab__publish-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  background: rgba(88, 101, 242, 0.15);
+  color: #7c8aff;
+  border: 1px solid rgba(88, 101, 242, 0.3);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.build-tab__publish-btn:hover:not(:disabled) {
+  background: rgba(88, 101, 242, 0.25);
+}
+
+.build-tab__publish-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.build-tab__spinner {
+  animation: buildSpin 1s linear infinite;
+}
+
+@keyframes buildSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 600px) {
+  .build-tab {
+    padding: 1rem;
+  }
+
+  .build-tab__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .build-tab__slot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+  }
+
+  .build-tab__slot-role {
+    text-align: left;
+    min-width: unset;
+  }
+
+  .build-tab__slot-select {
+    width: 100%;
+  }
+
+  .build-tab__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .build-tab__save-btn,
+  .build-tab__publish-btn {
+    justify-content: center;
+  }
+}
