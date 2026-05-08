@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createHmac } from 'crypto'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
+import { SignJWT } from 'jose'
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
@@ -91,27 +94,79 @@ export async function GET(request: NextRequest) {
 
     const userData = await userResponse.json()
 
-    // Create a lightweight identity object
-    const identity = {
-      id: userData.id,
-      username: userData.username,
-      global_name: userData.global_name || userData.username,
-      avatar: userData.avatar
-        ? `https://cdn.discordapp.com/avatars/${userData.id}/${userData.avatar}.png`
-        : null,
-    }
+    const avatarUrl = userData.avatar
+      ? `https://cdn.discordapp.com/avatars/${userData.id}/${userData.avatar}.png`
+      : null
 
-    // Set the identity in a secure cookie
     if (!redirectPath) {
       return NextResponse.redirect(new URL('/availability/error?reason=no_calendar', serverUrl))
     }
     const response = NextResponse.redirect(new URL(redirectPath, serverUrl))
 
+    // Look up or create People record, generate Payload JWT for unified auth
+    try {
+      const payload = await getPayload({ config: configPromise })
+
+      const existing = await payload.find({
+        collection: 'people',
+        where: { discordId: { equals: userData.id } },
+        limit: 1,
+        overrideAccess: true,
+      })
+
+      let person = existing.docs[0]
+
+      if (!person) {
+        person = await payload.create({
+          collection: 'people',
+          data: {
+            name: userData.global_name || userData.username,
+            email: `${userData.id}@discord.placeholder`,
+            discordId: userData.id,
+            role: 'user',
+          },
+          overrideAccess: true,
+        })
+      }
+
+      const secret = payload.secret
+      const secretKey = new TextEncoder().encode(secret)
+      const tokenExpiration = 28800 // 8 hours, matches People collection config
+      const issuedAt = Math.floor(Date.now() / 1000)
+
+      const token = await new SignJWT({
+        id: person.id,
+        collection: 'people',
+        email: (person as any).email,
+      })
+        .setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
+        .setIssuedAt(issuedAt)
+        .setExpirationTime(issuedAt + tokenExpiration)
+        .sign(secretKey)
+
+      response.cookies.set('payload-token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: tokenExpiration,
+        path: '/',
+      })
+    } catch (err) {
+      console.error('[Discord OAuth] Failed to create Payload session:', err)
+    }
+
+    // Also set discord_identity for backward compatibility
+    const identity = {
+      id: userData.id,
+      username: userData.username,
+      global_name: userData.global_name || userData.username,
+      avatar: avatarUrl,
+    }
     response.cookies.set('discord_identity', JSON.stringify(identity), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 30, // 30 days
+      maxAge: 60 * 60 * 24 * 30,
       path: '/',
     })
 

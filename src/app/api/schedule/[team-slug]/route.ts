@@ -11,7 +11,7 @@ async function getDiscordIdentity(request: NextRequest, payload: any) {
         return {
           id: (user as any).discordId,
           username: (user as any).name || (user as any).email,
-          avatar: (user as any).discordAvatar || null,
+          avatar: null,
         }
       }
     } catch {}

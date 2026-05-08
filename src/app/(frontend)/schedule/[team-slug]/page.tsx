@@ -65,7 +65,7 @@ export default async function SchedulePageRoute({ params, searchParams }: PagePr
         discordUser = {
           id: (user as any).discordId,
           username: (user as any).name || (user as any).email,
-          avatar: (user as any).discordAvatar || null,
+          avatar: null,
         }
       }
     } catch {}
