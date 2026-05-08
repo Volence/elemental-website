@@ -78,7 +78,42 @@ export default async function SchedulePageRoute({ params, searchParams }: PagePr
     }
   }
 
-  // Find active calendar, auto-create for current week if none exists
+  // Calculate current week boundaries (Mon-Sun)
+  const now = new Date()
+  const dayOfWeek = now.getDay()
+  const monday = new Date(now)
+  monday.setDate(now.getDate() - ((dayOfWeek + 6) % 7))
+  monday.setHours(0, 0, 0, 0)
+  const sunday = new Date(monday)
+  sunday.setDate(monday.getDate() + 6)
+  const mondayStr = monday.toISOString().split('T')[0]
+  const sundayStr = sunday.toISOString().split('T')[0]
+
+  // Close expired active calendars for this team
+  const expiredCalendars = await payload.find({
+    collection: 'discord-polls' as any,
+    where: {
+      and: [
+        { team: { equals: team.id } },
+        { scheduleType: { equals: 'calendar' } },
+        { status: { equals: 'active' } },
+        { 'dateRange.end': { less_than: mondayStr } },
+      ],
+    },
+    limit: 50,
+    depth: 0,
+    overrideAccess: true,
+  })
+  for (const expired of expiredCalendars.docs) {
+    await payload.update({
+      collection: 'discord-polls' as any,
+      id: expired.id,
+      data: { status: 'closed' },
+      overrideAccess: true,
+    })
+  }
+
+  // Find active calendar for current week
   let calendarResult = await payload.find({
     collection: 'discord-polls' as any,
     where: {
@@ -86,6 +121,8 @@ export default async function SchedulePageRoute({ params, searchParams }: PagePr
         { team: { equals: team.id } },
         { scheduleType: { equals: 'calendar' } },
         { status: { equals: 'active' } },
+        { 'dateRange.start': { less_than_equal: sundayStr } },
+        { 'dateRange.end': { greater_than_equal: mondayStr } },
       ],
     },
     limit: 1,
@@ -94,19 +131,9 @@ export default async function SchedulePageRoute({ params, searchParams }: PagePr
     overrideAccess: true,
   })
 
+  // Auto-create calendar for current week if none exists
   if (calendarResult.docs.length === 0) {
-    const now = new Date()
-    const dayOfWeek = now.getDay()
-    const monday = new Date(now)
-    monday.setDate(now.getDate() - ((dayOfWeek + 6) % 7))
-    monday.setHours(0, 0, 0, 0)
-    const sunday = new Date(monday)
-    sunday.setDate(monday.getDate() + 6)
-
-    const mondayStr = monday.toISOString().split('T')[0]
-    const sundayStr = sunday.toISOString().split('T')[0]
     const monthDay = monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-
     const scheduleBlocks = team.scheduleBlocks || []
     const timeSlots = scheduleBlocks.map((b: any) => ({
       id: `auto_${b.startTime}_${Date.now()}`,
@@ -116,7 +143,7 @@ export default async function SchedulePageRoute({ params, searchParams }: PagePr
     }))
 
     try {
-      await payload.create({
+      const created = await payload.create({
         collection: 'discord-polls' as any,
         data: {
           pollName: `Week of ${monthDay}`,
@@ -132,21 +159,7 @@ export default async function SchedulePageRoute({ params, searchParams }: PagePr
         },
         overrideAccess: true,
       })
-
-      calendarResult = await payload.find({
-        collection: 'discord-polls' as any,
-        where: {
-          and: [
-            { team: { equals: team.id } },
-            { scheduleType: { equals: 'calendar' } },
-            { status: { equals: 'active' } },
-          ],
-        },
-        limit: 1,
-        sort: '-createdAt',
-        depth: 0,
-        overrideAccess: true,
-      })
+      calendarResult = { docs: [created], totalDocs: 1, totalPages: 1, page: 1, pagingCounter: 1, hasPrevPage: false, hasNextPage: false, prevPage: null, nextPage: null, limit: 1 } as any
     } catch (err) {
       console.error('[Schedule] Auto-create calendar error:', err)
     }
