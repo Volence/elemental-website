@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
-import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react'
+import React, { useState, useMemo, useCallback } from 'react'
+import { ChevronLeft, ChevronRight, Calendar, Check, HelpCircle, Save, Loader2 } from 'lucide-react'
 import { useSchedule } from './ScheduleContext'
 import { WeekDetail } from './WeekDetail'
 import './CalendarMonth.css'
@@ -84,6 +84,17 @@ export function CalendarMonth() {
     setExpandedWeek(prev => prev === weekKey ? null : weekKey)
   }
 
+  const weekHasSchedule = useCallback((weekStartDate: Date) => {
+    const weekEnd = new Date(weekStartDate)
+    weekEnd.setDate(weekEnd.getDate() + 6)
+    const startStr = weekStartDate.toISOString().split('T')[0]
+    const endStr = weekEnd.toISOString().split('T')[0]
+    return (recentSchedules as any[]).some(s => {
+      if (!s.dateRange?.start || !s.dateRange?.end) return false
+      return s.dateRange.start.split('T')[0] <= endStr && s.dateRange.end.split('T')[0] >= startStr
+    })
+  }, [recentSchedules])
+
   return (
     <div className="cal-month">
       <div className="cal-month__header">
@@ -135,12 +146,158 @@ export function CalendarMonth() {
               </div>
               {isExpanded && weekKey && (
                 <div className="cal-month__week-detail">
-                  <WeekDetail weekStart={new Date(weekKey)} />
+                  {weekHasSchedule(new Date(weekKey)) ? (
+                    <WeekDetail weekStart={new Date(weekKey)} />
+                  ) : (
+                    <FutureAvailabilityForm weekStart={new Date(weekKey)} onClose={() => setExpandedWeek(null)} />
+                  )}
                 </div>
               )}
             </React.Fragment>
           )
         })}
+      </div>
+    </div>
+  )
+}
+
+function FutureAvailabilityForm({ weekStart, onClose }: { weekStart: Date; onClose: () => void }) {
+  const { data, refreshData } = useSchedule()
+  const { team, authState } = data
+  const scheduleBlocks = team.scheduleBlocks || []
+
+  const weekDates = useMemo(() => {
+    const dates: string[] = []
+    const current = new Date(weekStart)
+    for (let i = 0; i < 7; i++) {
+      dates.push(current.toISOString().split('T')[0])
+      current.setDate(current.getDate() + 1)
+    }
+    return dates
+  }, [weekStart])
+
+  const [selections, setSelections] = useState<Record<string, Record<string, 'available' | 'maybe' | null>>>(() => {
+    const init: Record<string, Record<string, 'available' | 'maybe' | null>> = {}
+    weekDates.forEach(date => {
+      init[date] = {}
+      scheduleBlocks.forEach(block => { init[date][block.startTime] = null })
+    })
+    return init
+  })
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  if (!authState.isAuthenticated) {
+    return (
+      <div className="cal-month__future-empty">
+        <p>No schedule for this week yet. Sign in to pre-mark your availability.</p>
+      </div>
+    )
+  }
+
+  if (scheduleBlocks.length === 0) {
+    return (
+      <div className="cal-month__future-empty">
+        <p>No schedule blocks configured for this team.</p>
+      </div>
+    )
+  }
+
+  const cycleCell = (date: string, slotTime: string) => {
+    setSelections(prev => {
+      const current = prev[date]?.[slotTime]
+      let next: 'available' | 'maybe' | null
+      if (!current) next = 'available'
+      else if (current === 'available') next = 'maybe'
+      else next = null
+      return { ...prev, [date]: { ...prev[date], [slotTime]: next } }
+    })
+  }
+
+  const handleSave = async () => {
+    setSaving(true)
+    setError(null)
+    const cleanSelections: Record<string, Record<string, 'available' | 'maybe'>> = {}
+    Object.entries(selections).forEach(([date, slots]) => {
+      Object.entries(slots).forEach(([time, status]) => {
+        if (status) {
+          if (!cleanSelections[date]) cleanSelections[date] = {}
+          cleanSelections[date][time] = status
+        }
+      })
+    })
+    try {
+      const weekEnd = new Date(weekStart)
+      weekEnd.setDate(weekEnd.getDate() + 6)
+      const res = await fetch('/api/absences', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          teamId: team.id,
+          type: 'pre-availability',
+          startDate: weekStart.toISOString().split('T')[0],
+          endDate: weekEnd.toISOString().split('T')[0],
+          selections: cleanSelections,
+        }),
+      })
+      if (!res.ok) throw new Error('Failed to save')
+      await refreshData()
+      onClose()
+    } catch (err: any) {
+      setError(err.message || 'Failed to save')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const getDayLabel = (dateStr: string) => {
+    const d = new Date(dateStr + 'T12:00:00')
+    return d.toLocaleDateString('en-US', { weekday: 'short' })
+  }
+
+  return (
+    <div className="cal-month__future-form">
+      <h4 className="cal-month__future-title">Pre-mark your availability</h4>
+      <div className="cal-month__future-grid-wrapper">
+        <table className="cal-month__future-grid">
+          <thead>
+            <tr>
+              <th></th>
+              {weekDates.map(date => (
+                <th key={date} className="cal-month__future-day-header">{getDayLabel(date)}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {scheduleBlocks.map(block => (
+              <tr key={block.startTime}>
+                <td className="cal-month__future-slot-label">{block.label}</td>
+                {weekDates.map(date => {
+                  const status = selections[date]?.[block.startTime]
+                  return (
+                    <td
+                      key={`${date}-${block.startTime}`}
+                      className={`cal-month__future-cell ${status === 'available' ? 'cal-month__future-cell--available' : status === 'maybe' ? 'cal-month__future-cell--maybe' : 'cal-month__future-cell--empty'}`}
+                      onClick={() => cycleCell(date, block.startTime)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cycleCell(date, block.startTime) } }}
+                    >
+                      {status === 'available' ? <Check size={14} strokeWidth={3} /> : status === 'maybe' ? <HelpCircle size={12} /> : null}
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {error && <p className="cal-month__future-error">{error}</p>}
+      <div className="cal-month__future-actions">
+        <button className="cal-month__future-cancel" onClick={onClose}>Cancel</button>
+        <button className="cal-month__future-save" onClick={handleSave} disabled={saving}>
+          {saving ? <><Loader2 size={14} className="cal-month__spinner" /> Saving...</> : <><Save size={14} /> Save</>}
+        </button>
       </div>
     </div>
   )

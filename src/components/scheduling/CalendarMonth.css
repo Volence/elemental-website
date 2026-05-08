@@ -189,3 +189,143 @@
     align-items: flex-start;
   }
 }
+
+.cal-month__future-empty {
+  padding: 1.5rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.85rem;
+}
+
+.cal-month__future-empty p {
+  margin: 0;
+}
+
+.cal-month__future-form {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.cal-month__future-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin: 0 0 0.75rem;
+}
+
+.cal-month__future-grid-wrapper {
+  overflow-x: auto;
+  margin-bottom: 0.75rem;
+}
+
+.cal-month__future-grid {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 3px;
+}
+
+.cal-month__future-day-header {
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  padding: 4px;
+}
+
+.cal-month__future-slot-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.45);
+  text-align: right;
+  padding-right: 8px;
+  white-space: nowrap;
+}
+
+.cal-month__future-cell {
+  width: 40px;
+  height: 36px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+  vertical-align: middle;
+  transition: all 0.15s;
+  user-select: none;
+}
+
+.cal-month__future-cell svg {
+  display: block;
+  margin: 0 auto;
+}
+
+.cal-month__future-cell--empty {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cal-month__future-cell--empty:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.cal-month__future-cell--available {
+  background: rgba(34, 197, 94, 0.25);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: #22c55e;
+}
+
+.cal-month__future-cell--maybe {
+  background: rgba(251, 191, 36, 0.2);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  color: #fbbf24;
+}
+
+.cal-month__future-error {
+  font-size: 0.75rem;
+  color: #ef4444;
+  margin: 0 0 0.5rem;
+}
+
+.cal-month__future-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.cal-month__future-cancel {
+  padding: 4px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.cal-month__future-save {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 4px 12px;
+  background: linear-gradient(135deg, #00e5ff, #00b8d4);
+  border: none;
+  border-radius: 6px;
+  color: #000;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cal-month__future-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cal-month__spinner {
+  animation: calSpin 1s linear infinite;
+}
+
+@keyframes calSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
