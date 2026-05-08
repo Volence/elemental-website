@@ -1,0 +1,250 @@
+.absence-mgr {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.absence-mgr__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #00e5ff;
+  margin-bottom: 1rem;
+}
+
+.absence-mgr__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin: 0;
+}
+
+.absence-mgr__section {
+  margin-bottom: 1.25rem;
+}
+
+.absence-mgr__section:last-child {
+  margin-bottom: 0;
+}
+
+.absence-mgr__section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.absence-mgr__section-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.absence-mgr__add-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 4px 10px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 6px;
+  color: #60a5fa;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.absence-mgr__add-btn:hover {
+  background: rgba(59, 130, 246, 0.2);
+}
+
+.absence-mgr__form {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.absence-mgr__form-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.absence-mgr__form-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  flex: 1;
+}
+
+.absence-mgr__form-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  color: #fff;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.8rem;
+  font-family: inherit;
+  color-scheme: dark;
+}
+
+.absence-mgr__form-input:focus {
+  outline: none;
+  border-color: #00e5ff;
+}
+
+.absence-mgr__form-reason {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  color: #fff;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.8rem;
+  font-family: inherit;
+  margin-bottom: 0.75rem;
+  box-sizing: border-box;
+}
+
+.absence-mgr__form-reason:focus {
+  outline: none;
+  border-color: #00e5ff;
+}
+
+.absence-mgr__form-reason::placeholder {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.absence-mgr__form-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.absence-mgr__cancel-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.4rem 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.absence-mgr__save-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.4rem 0.75rem;
+  background: linear-gradient(135deg, #00e5ff, #00b8d4);
+  border: none;
+  border-radius: 6px;
+  color: #000;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.absence-mgr__save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.absence-mgr__error {
+  font-size: 0.75rem;
+  color: #ef4444;
+  margin: 0 0 0.5rem;
+}
+
+.absence-mgr__empty {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.3);
+  margin: 0;
+}
+
+.absence-mgr__item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.6rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  margin-bottom: 0.4rem;
+}
+
+.absence-mgr__item--team {
+  flex-wrap: wrap;
+}
+
+.absence-mgr__item-name {
+  font-size: 0.8rem;
+  color: #e2e8f0;
+  font-weight: 500;
+}
+
+.absence-mgr__item-dates {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.absence-mgr__item-reason {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.35);
+  font-style: italic;
+}
+
+.absence-mgr__delete-btn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: rgba(239, 68, 68, 0.6);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+}
+
+.absence-mgr__delete-btn:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.absence-mgr__delete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.absence-mgr__spinner {
+  animation: absenceSpin 1s linear infinite;
+}
+
+@keyframes absenceSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 600px) {
+  .absence-mgr {
+    padding: 1rem;
+  }
+
+  .absence-mgr__form-row {
+    flex-direction: column;
+  }
+}
