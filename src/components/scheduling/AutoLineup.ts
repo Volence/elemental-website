@@ -10,12 +10,14 @@ interface PlayerSlot {
 interface TimeBlock {
   id: string
   time: string
+  startTime?: string
   slots: PlayerSlot[]
   scrim?: any
 }
 
 interface DaySchedule {
   date: string
+  isoDate?: string
   enabled: boolean
   blocks: TimeBlock[]
 }
@@ -27,11 +29,6 @@ interface AvailablePlayer {
   rosterRole: 'tank' | 'dps' | 'support'
   status: 'main' | 'sub'
   availableBlocks: number
-}
-
-const ROLE_PRESETS: Record<string, string[]> = {
-  specific: ['Tank', 'Hitscan', 'Flex DPS', 'Main Support', 'Flex Support'],
-  generic: ['Tank', 'DPS', 'DPS', 'Support', 'Support'],
 }
 
 function roleMatchesSlot(rosterRole: string, slotRole: string): boolean {
@@ -49,7 +46,6 @@ export function suggestLineup(
   roster: RosterEntry[],
   subs: RosterEntry[],
   calendarResponses: any[],
-  roles: string[],
 ): DaySchedule[] {
   const playerMap = new Map<string, { personId: string; name: string; rosterRole: string; status: 'main' | 'sub' }>()
   for (const entry of roster) {
@@ -88,14 +84,17 @@ export function suggestLineup(
         let totalBlocksAvailable = 0
 
         for (const [dateKey, slots] of Object.entries(response.selections)) {
-          const dateMatches = day.date.includes(dateKey) || dateKey === day.date
+          const dateMatches = day.isoDate
+            ? dateKey === day.isoDate
+            : day.date.includes(dateKey) || dateKey === day.date
           if (!dateMatches) continue
 
           const daySlots = slots as Record<string, string>
+          const blockMatchKey = block.startTime || block.time
           for (const [slotTime, status] of Object.entries(daySlots)) {
             if (status === 'available' || status === 'maybe') {
               totalBlocksAvailable++
-              if (block.time.includes(slotTime) || slotTime === block.time) {
+              if (slotTime === blockMatchKey) {
                 isAvailableThisBlock = true
               }
             }

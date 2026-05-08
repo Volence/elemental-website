@@ -17,6 +17,7 @@ interface PlayerSlot {
 interface TimeBlock {
   id: string
   time: string
+  startTime?: string
   slots: PlayerSlot[]
   scrim?: {
     opponentTeamId?: number | null
@@ -33,6 +34,7 @@ interface TimeBlock {
 
 interface DaySchedule {
   date: string
+  isoDate?: string
   enabled: boolean
   blocks: TimeBlock[]
 }
@@ -106,9 +108,10 @@ export function BuildTab() {
 
   const generateBlockId = () => `block_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
-  const createDefaultBlock = useCallback((time: string): TimeBlock => ({
+  const createDefaultBlock = useCallback((time: string, startTime?: string): TimeBlock => ({
     id: generateBlockId(),
     time,
+    startTime,
     slots: roles.map(role => ({ role, playerId: null })),
     scrim: {
       opponentTeamId: null,
@@ -143,13 +146,13 @@ export function BuildTab() {
     const current = new Date(start)
 
     while (current <= end) {
-      const dateStr = current.toISOString().split('T')[0]
+      const isoDate = current.toISOString().split('T')[0]
       const dayName = current.toLocaleDateString('en-US', { weekday: 'long' })
       const dateLabel = current.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
       const blocks = (timeSlots || team.scheduleBlocks || []).map((slot: any) =>
-        createDefaultBlock(slot.label || slot.startTime || '8-10')
+        createDefaultBlock(slot.label || slot.startTime || '8-10', slot.startTime)
       )
-      newDays.push({ date: `${dayName} ${dateLabel}`, enabled: true, blocks })
+      newDays.push({ date: `${dayName} ${dateLabel}`, isoDate, enabled: true, blocks })
       current.setDate(current.getDate() + 1)
     }
 
@@ -287,28 +290,32 @@ export function BuildTab() {
     setDragOverSlot(null)
   }
 
-  const handleSuggest = () => {
-    if (!activeCalendar?.responses) return
-    const suggested = suggestLineup(
-      days,
+  const runSuggest = useCallback((currentDays: DaySchedule[]) => {
+    if (!activeCalendar?.responses) return currentDays
+    return suggestLineup(
+      currentDays,
       team.roster as RosterEntry[],
       team.subs as RosterEntry[],
       activeCalendar.responses,
-      roles,
     )
+  }, [activeCalendar, team.roster, team.subs])
+
+  const handleSuggest = () => {
+    const suggested = runSuggest(days)
     setDays(suggested)
     setSaved(false)
   }
 
   const handleRecalculate = () => {
-    setDays(prev => prev.map(day => ({
+    const cleared = days.map(day => ({
       ...day,
       blocks: day.blocks.map(block => ({
         ...block,
         slots: block.slots.map(slot => ({ ...slot, playerId: null })),
       })),
-    })))
-    setTimeout(() => handleSuggest(), 0)
+    }))
+    setDays(runSuggest(cleared))
+    setSaved(false)
   }
 
   const handleSave = async () => {

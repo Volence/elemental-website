@@ -13,9 +13,10 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { 'team-slug': teamSlug } = await params
+  const { 'team-slug': slug } = await params
+  const name = slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
   return {
-    title: `Schedule | Elemental`,
+    title: `${name} Schedule | Elemental`,
     robots: { index: false, follow: false },
   }
 }
