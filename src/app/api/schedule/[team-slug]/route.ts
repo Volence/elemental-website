@@ -54,6 +54,17 @@ export async function GET(
 
     const team = teamResult.docs[0] as any
 
+    // Find active calendar scoped to current week
+    const now = new Date()
+    const dow = now.getDay()
+    const mon = new Date(now)
+    mon.setDate(now.getDate() - ((dow + 6) % 7))
+    mon.setHours(0, 0, 0, 0)
+    const sun = new Date(mon)
+    sun.setDate(mon.getDate() + 6)
+    const monStr = mon.toISOString().split('T')[0]
+    const sunStr = sun.toISOString().split('T')[0]
+
     const calendarResult = await payload.find({
       collection: 'discord-polls' as any,
       where: {
@@ -61,6 +72,8 @@ export async function GET(
           { team: { equals: team.id } },
           { scheduleType: { equals: 'calendar' } },
           { status: { equals: 'active' } },
+          { 'dateRange.start': { less_than_equal: sunStr } },
+          { 'dateRange.end': { greater_than_equal: monStr } },
         ],
       },
       limit: 1,
