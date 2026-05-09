@@ -63,34 +63,10 @@ export function buildCommands() {
           ),
       ),
 
-    // Schedule poll command (migrated from discord-bot)
+    // Schedule poll command - links to the schedule builder page
     new SlashCommandBuilder()
       .setName('schedulepoll')
-      .setDescription('Create an availability poll for scheduling')
-      .addStringOption((option) =>
-        option
-          .setName('name')
-          .setDescription('Poll name (e.g., "Week 5 Scrims")')
-          .setRequired(true)
-          .setMaxLength(300),
-      )
-      .addStringOption((option) =>
-        option
-          .setName('start')
-          .setDescription('When to start the poll')
-          .setRequired(true)
-          .addChoices(
-            { name: 'Tomorrow', value: 'tomorrow' },
-            { name: 'Next Monday', value: 'monday' },
-            { name: 'This Week (from Monday)', value: 'thisweek' },
-          ),
-      )
-      .addStringOption((option) =>
-        option
-          .setName('time')
-          .setDescription('Time slot (default: 8-10 EST)')
-          .setRequired(false),
-      ),
+      .setDescription('Open the schedule builder for your team'),
 
     // Thread Keep-Alive command
     new SlashCommandBuilder()
