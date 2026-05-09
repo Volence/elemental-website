@@ -6,6 +6,7 @@ type PugTier = 'open' | 'invite'
 
 // Per-lobby lock to prevent race conditions when multiple updates fire concurrently
 const lobbyLocks = new Map<number, Promise<void>>()
+const LOBBY_LOCK_TIMEOUT_MS = 30_000
 
 function getFeedChannelId(tier: PugTier): string | undefined {
   return tier === 'open'
@@ -105,8 +106,18 @@ export async function updateLobbyFeed(lobbyId: number): Promise<void> {
   const current = new Promise<void>((r) => { resolve = r })
   lobbyLocks.set(lobbyId, current)
   try {
-    await prev
-    await _updateLobbyFeed(lobbyId)
+    await Promise.race([
+      prev,
+      new Promise<void>((r) => setTimeout(r, LOBBY_LOCK_TIMEOUT_MS)),
+    ])
+    await Promise.race([
+      _updateLobbyFeed(lobbyId),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error(`Lobby ${lobbyId} feed update timed out`)), LOBBY_LOCK_TIMEOUT_MS),
+      ),
+    ])
+  } catch (error) {
+    console.error(`[PugFeed] Error updating lobby ${lobbyId}:`, (error as Error).message)
   } finally {
     resolve!()
     if (lobbyLocks.get(lobbyId) === current) lobbyLocks.delete(lobbyId)

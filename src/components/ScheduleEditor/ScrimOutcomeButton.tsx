@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { toast } from '@payloadcms/ui'
-import { AlertTriangle, BarChart3, Check, RefreshCw, X } from 'lucide-react'
+import { BarChart3 } from 'lucide-react'
 import type { TimeBlockOutcome } from './types'
 
 interface ScrimOutcomeButtonProps {
@@ -12,20 +12,13 @@ interface ScrimOutcomeButtonProps {
   availableMaps: Array<{ id: number; name: string }>
 }
 
-/**
- * Button component for recording scrim outcomes
- * Extracted from ScheduleEditor for better code organization
- */
 export const ScrimOutcomeButton: React.FC<ScrimOutcomeButtonProps> = ({
   opponentName,
   outcome,
   onSaveOutcome,
-  availableMaps,
 }) => {
   const [showModal, setShowModal] = useState(false)
   const [localOutcome, setLocalOutcome] = useState<NonNullable<TimeBlockOutcome>>(outcome || {})
-  const [newMap, setNewMap] = useState({ mapName: '', result: '' as 'win' | 'loss' | 'draw' | '', score: '' })
-  const [showMapDropdown, setShowMapDropdown] = useState(false)
 
   useEffect(() => {
     if (showModal) {
@@ -34,59 +27,12 @@ export const ScrimOutcomeButton: React.FC<ScrimOutcomeButtonProps> = ({
   }, [showModal, outcome])
 
   const handleSave = () => {
-    // Validate all maps in the list are valid
-    const invalidMaps = (localOutcome.mapsPlayed || []).filter(
-      (m) => !availableMaps.some((am) => am.name.toLowerCase() === m.mapName.toLowerCase())
-    )
-    if (invalidMaps.length > 0) {
-      toast.error(`Invalid map(s): ${invalidMaps.map((m) => m.mapName).join(', ')}. Please select from the dropdown.`)
-      return
-    }
     onSaveOutcome(localOutcome)
     setShowModal(false)
     toast.success('Scrim outcome saved!')
   }
 
-  const addMap = () => {
-    // Only add if there's at least a map name
-    if (!newMap.mapName.trim()) return
-    // Find exact map name if it exists (for proper casing)
-    const exactMap = availableMaps.find((m) => m.name.toLowerCase() === newMap.mapName.toLowerCase())
-    const mapsPlayed = localOutcome.mapsPlayed || []
-    setLocalOutcome({
-      ...localOutcome,
-      mapsPlayed: [
-        ...mapsPlayed,
-        {
-          mapName: exactMap?.name || newMap.mapName,
-          result: (newMap.result || 'win') as 'win' | 'loss' | 'draw',
-          score: newMap.score,
-        },
-      ],
-    })
-    setNewMap({ mapName: '', result: '', score: '' })
-  }
-
-  const removeMap = (index: number) => {
-    const mapsPlayed = [...(localOutcome.mapsPlayed || [])]
-    mapsPlayed.splice(index, 1)
-    setLocalOutcome({ ...localOutcome, mapsPlayed })
-  }
-
-  // Check if any maps in the list are invalid
-  const hasInvalidMaps = (localOutcome.mapsPlayed || []).some(
-    (m) => !availableMaps.some((am) => am.name.toLowerCase() === m.mapName.toLowerCase())
-  )
-
-  // Check if there's a pending map entry that's invalid (typed but not added)
-  const hasPendingInvalidMap =
-    newMap.mapName.trim() !== '' &&
-    !availableMaps.some((am) => am.name.toLowerCase() === newMap.mapName.toLowerCase())
-
-  // Block save if any invalid maps or pending invalid input
-  const cannotSave = hasInvalidMaps || hasPendingInvalidMap
-
-  const hasOutcome = Boolean(outcome?.ourRating || outcome?.mapsPlayed?.length)
+  const hasOutcome = Boolean(outcome?.ourRating || outcome?.opponentRating || outcome?.worthScrimAgain)
 
   return (
     <>
@@ -109,7 +55,6 @@ export const ScrimOutcomeButton: React.FC<ScrimOutcomeButtonProps> = ({
               <h3>Scrim Outcome{opponentName ? ` vs ${opponentName}` : ''}</h3>
             </div>
             <div className="schedule-editor__modal-body schedule-editor__outcome-form">
-              {/* Ratings Row */}
               <div className="schedule-editor__outcome-row">
                 <div className="schedule-editor__outcome-field">
                   <label>Our Performance</label>
@@ -167,94 +112,6 @@ export const ScrimOutcomeButton: React.FC<ScrimOutcomeButtonProps> = ({
                 </div>
               </div>
 
-              {/* Maps Played */}
-              <div className="schedule-editor__outcome-maps">
-                <label>Maps Played</label>
-                {localOutcome.mapsPlayed && localOutcome.mapsPlayed.length > 0 && (
-                  <div className="schedule-editor__outcome-map-list">
-                    {localOutcome.mapsPlayed.map((m, i) => {
-                      const isInvalidMap = !availableMaps.some(
-                        (am) => am.name.toLowerCase() === m.mapName.toLowerCase()
-                      )
-                      return (
-                        <div
-                          key={i}
-                          className={`schedule-editor__outcome-map-item schedule-editor__outcome-map-item--${m.result} ${isInvalidMap ? 'schedule-editor__outcome-map-item--invalid' : ''}`}
-                        >
-                          <span>
-                            {isInvalidMap ? <><AlertTriangle size={12} /> </> : ''}
-                            {m.mapName}
-                          </span>
-                          <span className="schedule-editor__outcome-map-result">
-                            {m.result === 'win' ? <><Check size={12} /> W</> : m.result === 'loss' ? <><X size={12} /> L</> : <><RefreshCw size={12} /> D</>}
-                            {m.score && ` (${m.score})`}
-                          </span>
-                          <button type="button" onClick={() => removeMap(i)}>
-                            <X size={10} />
-                          </button>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-                <div className="schedule-editor__outcome-add-map">
-                  <div className="schedule-editor__map-autocomplete">
-                    <input
-                      type="text"
-                      placeholder="Search map..."
-                      value={newMap.mapName}
-                      onChange={(e) => {
-                        setNewMap({ ...newMap, mapName: e.target.value })
-                        setShowMapDropdown(true)
-                      }}
-                      onFocus={() => setShowMapDropdown(true)}
-                      onBlur={() => setTimeout(() => setShowMapDropdown(false), 200)}
-                    />
-                    {showMapDropdown &&
-                      newMap.mapName &&
-                      availableMaps.filter((m) => m.name.toLowerCase().includes(newMap.mapName.toLowerCase()))
-                        .length > 0 && (
-                      <div className="schedule-editor__map-dropdown">
-                        {availableMaps
-                          .filter((m) => m.name.toLowerCase().includes(newMap.mapName.toLowerCase()))
-                          .slice(0, 8)
-                          .map((map) => (
-                            <button
-                              key={map.id}
-                              type="button"
-                              onClick={() => {
-                                setNewMap({ ...newMap, mapName: map.name })
-                                setShowMapDropdown(false)
-                              }}
-                            >
-                              {map.name}
-                            </button>
-                          ))}
-                      </div>
-                    )}
-                  </div>
-                  <select
-                    value={newMap.result}
-                    onChange={(e) => setNewMap({ ...newMap, result: e.target.value as 'win' | 'loss' | 'draw' | '' })}
-                  >
-                    <option value="">Result</option>
-                    <option value="win">Win</option>
-                    <option value="loss">Loss</option>
-                    <option value="draw">Draw</option>
-                  </select>
-                  <input
-                    type="text"
-                    placeholder="Score"
-                    value={newMap.score}
-                    onChange={(e) => setNewMap({ ...newMap, score: e.target.value })}
-                  />
-                  <button type="button" onClick={addMap}>
-                    +
-                  </button>
-                </div>
-              </div>
-
-              {/* Notes */}
               <div className="schedule-editor__outcome-field schedule-editor__outcome-field--full">
                 <label>Notes</label>
                 <textarea
@@ -275,12 +132,10 @@ export const ScrimOutcomeButton: React.FC<ScrimOutcomeButtonProps> = ({
               </button>
               <button
                 type="button"
-                className={`schedule-editor__modal-confirm schedule-editor__modal-confirm--outcome ${cannotSave ? 'schedule-editor__modal-confirm--disabled' : ''}`}
+                className="schedule-editor__modal-confirm schedule-editor__modal-confirm--outcome"
                 onClick={handleSave}
-                disabled={cannotSave}
-                title={cannotSave ? 'Fix invalid map names first' : 'Save outcome'}
               >
-                {cannotSave ? <><AlertTriangle size={12} /> Fix Invalid Maps</> : 'Save Outcome'}
+                Save Outcome
               </button>
             </div>
           </div>

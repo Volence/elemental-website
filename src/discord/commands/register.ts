@@ -182,25 +182,7 @@ export function buildCommands() {
     // Availability calendar command
     new SlashCommandBuilder()
       .setName('availability')
-      .setDescription('Create an availability calendar for your team')
-      .addStringOption((option) =>
-        option
-          .setName('name')
-          .setDescription('Calendar name (e.g., "Week 5 Scrims")')
-          .setRequired(true)
-          .setMaxLength(300),
-      )
-      .addStringOption((option) =>
-        option
-          .setName('start')
-          .setDescription('When does the calendar week start?')
-          .setRequired(true)
-          .addChoices(
-            { name: 'Tomorrow', value: 'tomorrow' },
-            { name: 'Next Monday', value: 'monday' },
-            { name: 'This Week (from Monday)', value: 'thisweek' },
-          ),
-      ),
+      .setDescription('Get the link to fill in your availability'),
 
     // PUG (Pick-Up Game) commands
     new SlashCommandBuilder()

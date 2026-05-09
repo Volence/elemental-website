@@ -160,6 +160,10 @@
   background: #22c55e;
 }
 
+.cal-month__dot--outcome {
+  background: #fbbf24;
+}
+
 .cal-month__week-detail {
   margin-bottom: 8px;
   animation: calWeekExpand 0.2s ease;

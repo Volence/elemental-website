@@ -51,6 +51,7 @@ export interface Absence {
 export interface SchedulePageData {
   team: ScheduleTeam
   activeCalendar: any | null
+  nextWeekCalendar: any | null
   recentSchedules: any[]
   absences: Absence[]
   authState: ScheduleAuthState

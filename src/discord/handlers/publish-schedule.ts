@@ -6,11 +6,14 @@ import type { TextChannel, ThreadChannel } from 'discord.js'
 interface PlayerSlot {
   role: string
   playerId: string | null
+  playerIds?: string[]
   isRinger?: boolean
   ringerName?: string
+  isTrial?: boolean
 }
 
 interface ScrimDetails {
+  isScrim?: boolean
   opponentTeamId?: number | null
   opponent: string
   opponentRoster: string
@@ -25,6 +28,7 @@ interface ScrimDetails {
 interface TimeBlock {
   id: string
   time: string
+  activity?: string
   slots: PlayerSlot[]
   scrim?: ScrimDetails
   reminderPosted?: boolean
@@ -68,12 +72,9 @@ function formatScheduleMessageWithMap(
   timeSlot: string,
 ): string {
   const enabledDays = schedule.days.filter((d) => d.enabled)
-  
-  if (enabledDays.length === 0) {
-    return `📅 **Schedule: ${pollName}**\n\nNo scrim days scheduled this week.`
-  }
 
   let message = `📅 **${pollName}**\n`
+  let hasAnyScrim = false
 
   for (const day of enabledDays) {
     // Get blocks - migrate legacy format if needed
@@ -101,7 +102,9 @@ function formatScheduleMessageWithMap(
       }]
     }
 
+    blocks = blocks.filter(b => b.activity === 'match' || b.scrim?.isScrim || b.scrim?.opponent || b.scrim?.opponentTeamId)
     if (blocks.length === 0) continue
+    hasAnyScrim = true
 
     // Format each block
     for (let i = 0; i < blocks.length; i++) {
@@ -126,24 +129,39 @@ function formatScheduleMessageWithMap(
       }
       
       // === ROSTER (aligned) ===
-      const filledSlots = block.slots.filter(s => s.playerId || (s.isRinger && s.ringerName))
-      const totalSlots = block.slots.length
-      
-      // Pad role names for alignment (find longest role name)
-      const maxRoleLen = Math.max(...block.slots.map(s => (s.role || 'Role').length), 10)
-      
-      for (const slot of block.slots) {
+      const mainSlots = block.slots.filter(s => !s.isTrial)
+      const trialSlots = block.slots.filter(s => s.isTrial)
+      const getPlayerIds = (s: PlayerSlot) => s.playerIds?.length ? s.playerIds : s.playerId ? [s.playerId] : []
+      const filledSlots = mainSlots.filter(s => getPlayerIds(s).length > 0 || (s.isRinger && s.ringerName))
+      const totalSlots = mainSlots.length
+
+      const maxRoleLen = Math.max(...mainSlots.map(s => (s.role || 'Role').length), 10)
+
+      for (const slot of mainSlots) {
         let playerName = '-'
         if (slot.isRinger && slot.ringerName) {
-          playerName = `${slot.ringerName} ✦` // Star indicates ringer
-        } else if (slot.playerId) {
-          playerName = playerMap.get(slot.playerId) || '?'
+          playerName = slot.ringerName === 'Ringer Needed' ? 'Ringer Needed ✦' : `${slot.ringerName} ✦`
+        } else {
+          const ids = getPlayerIds(slot)
+          if (ids.length > 0) {
+            playerName = ids.map(id => playerMap.get(id) || '?').join(', ')
+          }
         }
         const role = (slot.role || 'Role').padEnd(maxRoleLen)
         message += `${role}  ${playerName}\n`
       }
-      
-      // Roster summary
+
+      const filledTrials = trialSlots.filter(s => getPlayerIds(s).length > 0)
+      if (filledTrials.length > 0) {
+        message += `\n--- Trials ---\n`
+        for (const slot of filledTrials) {
+          const ids = getPlayerIds(slot)
+          const playerName = ids.map(id => playerMap.get(id) || '?').join(', ')
+          const role = (slot.role || 'Role').padEnd(maxRoleLen)
+          message += `${role}  ${playerName}\n`
+        }
+      }
+
       if (filledSlots.length === totalSlots && totalSlots > 0) {
         message += `\n✓ Roster confirmed\n`
       } else if (filledSlots.length > 0) {
@@ -181,6 +199,10 @@ function formatScheduleMessageWithMap(
     message += '\n'
   }
 
+  if (!hasAnyScrim) {
+    return `📅 **${pollName}**\n\nNo scrims scheduled this week.`
+  }
+
   return message.trim()
 }
 
@@ -201,7 +223,7 @@ export async function publishScheduleToDiscord(pollId: number): Promise<{ succes
     const poll = await payload.findByID({
       collection: 'discord-polls',
       id: pollId,
-      depth: 1, // Populate team
+      depth: 2,
       overrideAccess: true, // Ensure fresh data
     })
 
@@ -236,7 +258,10 @@ export async function publishScheduleToDiscord(pollId: number): Promise<{ succes
       if (day.blocks) {
         for (const block of day.blocks) {
           for (const slot of block.slots) {
-            if (slot.playerId && !slot.isRinger) {
+            if (slot.isRinger) continue
+            if (slot.playerIds?.length) {
+              for (const id of slot.playerIds) playerIdsToResolve.add(id)
+            } else if (slot.playerId) {
               playerIdsToResolve.add(slot.playerId)
             }
           }
@@ -244,30 +269,58 @@ export async function publishScheduleToDiscord(pollId: number): Promise<{ succes
       }
     }
 
-    // Build player ID → name map from votes (Discord IDs)
+    // Build player ID -> name map from team roster (People IDs)
     const playerMap = new Map<string, string>()
-    if (votes) {
-      for (const day of votes) {
-        for (const voter of day.voters) {
-          playerMap.set(voter.id, voter.displayName || voter.username)
+    const rosterArrays = [team.roster || [], team.subs || []]
+    for (const arr of rosterArrays) {
+      for (const entry of arr) {
+        const person = typeof entry === 'object' && entry.person
+          ? (typeof entry.person === 'object' ? entry.person : null)
+          : null
+        if (person) {
+          playerMap.set(String(person.id), person.name || 'Unknown')
+          if (person.discordId) {
+            playerMap.set(person.discordId, person.name || 'Unknown')
+          }
         }
       }
     }
 
-    // For any IDs not in votes, try to look them up as People records
+    // Pull from calendar responses (discordId -> username)
+    const responses = (poll as any).responses || []
+    for (const r of responses) {
+      if (r.discordId && r.discordUsername && !playerMap.has(r.discordId)) {
+        playerMap.set(r.discordId, r.discordUsername.replace(/^@/, ''))
+      }
+    }
+
+    // Also add from votes (Discord IDs) for any not covered by roster
+    if (votes) {
+      for (const day of votes) {
+        for (const voter of day.voters) {
+          if (!playerMap.has(voter.id)) {
+            playerMap.set(voter.id, voter.displayName || voter.username)
+          }
+        }
+      }
+    }
+
+    // For any IDs still missing, look them up as People records
     const missingIds = Array.from(playerIdsToResolve).filter(id => !playerMap.has(id))
     if (missingIds.length > 0) {
       try {
-        // Fetch People records for missing IDs
-        const peopleResult = await payload.find({
-          collection: 'people',
-          where: {
-            id: { in: missingIds.map(id => parseInt(id)) },
-          },
-          limit: missingIds.length,
-        })
-        for (const person of peopleResult.docs) {
-          playerMap.set(String(person.id), (person as any).name || 'Unknown')
+        const numericIds = missingIds.filter(id => /^\d+$/.test(id))
+        if (numericIds.length > 0) {
+          const peopleResult = await payload.find({
+            collection: 'people',
+            where: {
+              id: { in: numericIds.map(id => parseInt(id)) },
+            },
+            limit: numericIds.length,
+          })
+          for (const person of peopleResult.docs) {
+            playerMap.set(String(person.id), (person as any).name || 'Unknown')
+          }
         }
       } catch (e) {
       }

@@ -8,10 +8,10 @@ import './AvailabilityVoting.css'
 type CellStatus = 'available' | 'maybe' | null
 
 export function AvailabilityVoting() {
-  const { data, refreshData } = useSchedule()
-  const { activeCalendar, authState, absences, team } = data
+  const { data, refreshData, viewedCalendar } = useSchedule()
+  const { authState, absences, team } = data
 
-  if (!activeCalendar) {
+  if (!viewedCalendar) {
     return (
       <div className="avail-voting avail-voting--empty">
         <Calendar size={32} />
@@ -39,7 +39,8 @@ export function AvailabilityVoting() {
 
   return (
     <AvailabilityVotingGrid
-      calendar={activeCalendar}
+      key={viewedCalendar.id}
+      calendar={viewedCalendar}
       authState={authState}
       absences={absences}
       teamSlug={team.slug}

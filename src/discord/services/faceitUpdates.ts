@@ -5,11 +5,34 @@ import configPromise from '@payload-config'
 import type { TextChannel } from 'discord.js'
 
 const FACEIT_UPDATES_CHANNEL = process.env.DISCORD_FACEIT_UPDATES_CHANNEL
+const UPDATE_TIMEOUT_MS = 3 * 60 * 1000
 
 const REGION_ORDER = ['NA', 'EMEA', 'SA', 'OCE']
 const DIVISION_ORDER = ['Masters', 'Expert', 'Advanced', 'Open']
 
+let isUpdating = false
+
 export async function updateFaceitChannel(): Promise<void> {
+  if (isUpdating) {
+    console.warn('[FaceIt Updates] Update already in progress, skipping')
+    return
+  }
+  isUpdating = true
+  try {
+    await Promise.race([
+      _updateFaceitChannel(),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('FaceIt channel update timed out')), UPDATE_TIMEOUT_MS),
+      ),
+    ])
+  } catch (error) {
+    console.error('[FaceIt Updates] Failed:', (error as Error).message)
+  } finally {
+    isUpdating = false
+  }
+}
+
+async function _updateFaceitChannel(): Promise<void> {
   const client = await ensureDiscordClient()
   if (!client || !FACEIT_UPDATES_CHANNEL) return
 

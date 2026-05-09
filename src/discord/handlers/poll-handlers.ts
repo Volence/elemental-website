@@ -1225,6 +1225,9 @@ async function checkPollForVoteChanges(messageId: string): Promise<void> {
 let pollCheckInterval: NodeJS.Timeout | null = null
 let isPollCheckRunning = false
 
+const POLL_CHECK_INTERVAL_MS = 30_000
+const POLL_CHECK_TIMEOUT_MS = 25_000
+
 export function startPollNotificationPolling(): void {
   if (pollCheckInterval) return
 
@@ -1232,15 +1235,24 @@ export function startPollNotificationPolling(): void {
     if (isPollCheckRunning) return
     isPollCheckRunning = true
     try {
-      for (const messageId of pollNotifications.keys()) {
-        await checkPollForVoteChanges(messageId).catch((error) => {
-          console.error(`Error checking poll ${messageId}:`, error.message)
-        })
-      }
+      await Promise.race([
+        (async () => {
+          for (const messageId of pollNotifications.keys()) {
+            await checkPollForVoteChanges(messageId).catch((error) => {
+              console.error(`Error checking poll ${messageId}:`, error.message)
+            })
+          }
+        })(),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Poll check timed out')), POLL_CHECK_TIMEOUT_MS),
+        ),
+      ])
+    } catch (error) {
+      console.error('[PollCheck] Run failed:', (error as Error).message)
     } finally {
       isPollCheckRunning = false
     }
-  }, 30000)
+  }, POLL_CHECK_INTERVAL_MS)
 }
 
 export function stopPollNotificationPolling(): void {

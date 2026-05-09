@@ -254,9 +254,10 @@ async function savePollToDatabase(data: {
       const teams = await payload.find({
         collection: 'teams',
         where: {
-          'discordThreads.availabilityThreadId': {
-            equals: data.threadId,
-          },
+          and: [
+            { 'discordThreads.availabilityThreadId': { equals: data.threadId } },
+            { active: { equals: true } },
+          ],
         },
         limit: 1,
       })

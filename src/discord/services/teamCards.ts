@@ -5,6 +5,9 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import type { Team } from '@/payload-types'
 
+let isRefreshing = false
+const REFRESH_TIMEOUT_MS = 5 * 60 * 1000
+
 export interface TeamCardOptions {
   teamId: string | number
   forceRepost?: boolean
@@ -115,58 +118,57 @@ export async function postOrUpdateTeamCard(options: TeamCardOptions): Promise<st
  * Refresh all team cards in order: Staff first, then teams by Division/SR
  */
 export async function refreshAllTeamCards(): Promise<void> {
+  if (isRefreshing) {
+    console.warn('[TeamCards] Refresh already in progress, skipping')
+    return
+  }
+  isRefreshing = true
   try {
-    const client = await ensureDiscordClient()
-    if (!client) {
-      console.warn('[TeamCards] No Discord client available, skipping refresh')
-      return
-    }
-
-    const channelId = process.env.DISCORD_CARDS_CHANNEL
-    if (!channelId) {
-      console.warn('[TeamCards] DISCORD_CARDS_CHANNEL not set, skipping refresh')
-      return
-    }
-
-    const channel = (await client.channels.fetch(channelId)) as TextChannel
-    if (!channel || !channel.isTextBased()) {
-      console.warn('[TeamCards] Could not fetch cards channel, skipping refresh')
-      return
-    }
-
-
-
-
-    // Get payload instance
-    const payload = await getPayload({ config: configPromise })
-
-    // Step 1: Delete ALL messages from the channel
-    await clearAllChannelMessages(channel)
-
-    // Step 2: Post staff cards
-    await postStaffCards(channel, payload)
-
-    // Step 3: Fetch and sort all teams by Division > SR
-    const teams = await fetchAllTeamsSorted(payload)
-
-    // Step 4: Post team cards in order
-    for (const team of teams) {
-      const embed = await buildEnhancedTeamEmbed(team, payload)
-      const message = await channel.send({ embeds: [embed] })
-      
-      // Save message ID so future edits update in-place (with skipDiscordUpdate to prevent loop)
-      await saveTeamMessageId(team.id, message.id, payload)
-      
-      const division = (typeof team.currentFaceitLeague === 'object' && team.currentFaceitLeague?.division) 
-        ? team.currentFaceitLeague.division 
-        : 'Open'
-
-      // Small delay to avoid rate limiting
-      await new Promise((resolve) => setTimeout(resolve, 500))
-    }
-
+    await Promise.race([
+      _refreshAllTeamCards(),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Team cards refresh timed out')), REFRESH_TIMEOUT_MS),
+      ),
+    ])
   } catch (error) {
-    console.error('Error refreshing all team cards:', error)
+    console.error('[TeamCards] Refresh failed:', (error as Error).message)
+  } finally {
+    isRefreshing = false
+  }
+}
+
+async function _refreshAllTeamCards(): Promise<void> {
+  const client = await ensureDiscordClient()
+  if (!client) {
+    console.warn('[TeamCards] No Discord client available, skipping refresh')
+    return
+  }
+
+  const channelId = process.env.DISCORD_CARDS_CHANNEL
+  if (!channelId) {
+    console.warn('[TeamCards] DISCORD_CARDS_CHANNEL not set, skipping refresh')
+    return
+  }
+
+  const channel = (await client.channels.fetch(channelId)) as TextChannel
+  if (!channel || !channel.isTextBased()) {
+    console.warn('[TeamCards] Could not fetch cards channel, skipping refresh')
+    return
+  }
+
+  const payload = await getPayload({ config: configPromise })
+
+  await clearAllChannelMessages(channel)
+  await postStaffCards(channel, payload)
+
+  const teams = await fetchAllTeamsSorted(payload)
+
+  for (const team of teams) {
+    const embed = await buildEnhancedTeamEmbed(team, payload)
+    const message = await channel.send({ embeds: [embed] })
+    await saveTeamMessageId(team.id, message.id, payload)
+
+    await new Promise((resolve) => setTimeout(resolve, 500))
   }
 }
 

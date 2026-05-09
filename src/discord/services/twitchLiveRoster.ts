@@ -8,6 +8,7 @@ let liveRosterInterval: NodeJS.Timeout | null = null
 let isRunning = false
 
 const POLL_INTERVAL_MS = 3 * 60 * 1000
+const POLL_TIMEOUT_MS = 2 * 60 * 1000
 
 const rosterMessageIds: Record<string, string | null> = {
   'content-creator': null,
@@ -60,7 +61,18 @@ async function runLiveRosterCheck(): Promise<{ live: number; total: number }> {
   const start = Date.now()
   isRunning = true
   try {
-    return await _runLiveRosterCheck(start)
+    const result = await Promise.race([
+      _runLiveRosterCheck(start),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Poll timed out')), POLL_TIMEOUT_MS),
+      ),
+    ])
+    return result
+  } catch (error) {
+    const durationMs = Date.now() - start
+    console.error(`[Twitch] Poll failed after ${durationMs}ms:`, error)
+    serviceHealth.record('twitch-roster', false, (error as Error).message, durationMs)
+    return { live: 0, total: 0 }
   } finally {
     isRunning = false
   }

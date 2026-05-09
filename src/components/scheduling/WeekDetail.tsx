@@ -3,14 +3,22 @@
 import React, { useMemo } from 'react'
 import { Users, Swords, Trophy } from 'lucide-react'
 import { useSchedule } from './ScheduleContext'
+import { ACTIVITY_TYPES, OPPONENT_ACTIVITIES, getBlockActivity } from '@/components/ScheduleEditor/types'
 import './WeekDetail.css'
 
 const OUTCOME_LABELS: Record<string, string> = {
-  easy_win: 'Easy Win',
-  close_win: 'Close Win',
+  easywin: 'Easy Win',
+  closewin: 'Close Win',
   neutral: 'Neutral',
-  close_loss: 'Close Loss',
-  got_rolled: 'Got Rolled',
+  closeloss: 'Close Loss',
+  gotrolled: 'Got Rolled',
+}
+
+const OPPONENT_RATING_LABELS: Record<string, string> = {
+  weak: 'Weak',
+  average: 'Average',
+  strong: 'Strong',
+  verystrong: 'Very Strong',
 }
 
 interface WeekDetailProps {
@@ -82,35 +90,57 @@ export function WeekDetail({ weekStart }: WeekDetailProps) {
         enabledDays.map((day: any, di: number) => (
           <div key={di} className="week-detail__day">
             <h4 className="week-detail__day-title">{day.date}</h4>
-            {(day.blocks || []).map((block: any, bi: number) => (
-              <div key={bi} className="week-detail__block">
-                <div className="week-detail__block-header">
-                  <span className="week-detail__block-time">{block.time}</span>
-                  {block.scrim?.opponent && (
-                    <span className="week-detail__block-opponent">
-                      <Swords size={12} />
-                      vs {typeof block.scrim.opponent === 'object' ? block.scrim.opponent.name : block.scrim.opponent}
-                    </span>
-                  )}
-                  {block.scrim?.outcome?.rating && (
-                    <span className={`week-detail__outcome week-detail__outcome--${block.scrim.outcome.rating}`}>
-                      <Trophy size={12} />
-                      {OUTCOME_LABELS[block.scrim.outcome.rating] || block.scrim.outcome.rating}
-                    </span>
-                  )}
-                </div>
-                <div className="week-detail__slots">
-                  {(block.slots || []).map((slot: any, si: number) => (
-                    <span key={si} className="week-detail__slot">
-                      <span className="week-detail__slot-role">{slot.role}:</span>
-                      <span className="week-detail__slot-player">
-                        {slot.isRinger ? slot.ringerName : (slot.playerId ? playerNameMap[String(slot.playerId)] || 'Unknown' : '-')}
+            {(day.blocks || []).map((block: any, bi: number) => {
+              const activity = getBlockActivity(block)
+              const activityLabel = ACTIVITY_TYPES.find(a => a.value === activity)?.label || activity
+              const isOpponentBlock = OPPONENT_ACTIVITIES.has(activity)
+              const outcome = block.outcome
+              return (
+                <div key={bi} className="week-detail__block">
+                  <div className="week-detail__block-header">
+                    <span className="week-detail__block-time">{block.time}</span>
+                    <span className={`week-detail__activity week-detail__activity--${activity}`}>{activityLabel}</span>
+                    {isOpponentBlock && block.scrim?.opponent && (
+                      <span className="week-detail__block-opponent">
+                        <Swords size={12} />
+                        vs {typeof block.scrim.opponent === 'object' ? block.scrim.opponent.name : block.scrim.opponent}
                       </span>
-                    </span>
-                  ))}
+                    )}
+                    {outcome?.ourRating && (
+                      <span className={`week-detail__outcome week-detail__outcome--${outcome.ourRating}`}>
+                        <Trophy size={12} />
+                        {OUTCOME_LABELS[outcome.ourRating] || outcome.ourRating}
+                      </span>
+                    )}
+                  </div>
+                  {outcome && (outcome.opponentRating || outcome.worthScrimAgain || outcome.scrimNotes) && (
+                    <div className="week-detail__outcome-detail">
+                      {outcome.opponentRating && (
+                        <span className="week-detail__outcome-tag">Opponent: {OPPONENT_RATING_LABELS[outcome.opponentRating] || outcome.opponentRating}</span>
+                      )}
+                      {outcome.worthScrimAgain && (
+                        <span className={`week-detail__outcome-tag week-detail__outcome-tag--again-${outcome.worthScrimAgain}`}>
+                          Again: {outcome.worthScrimAgain === 'yes' ? 'Yes' : outcome.worthScrimAgain === 'maybe' ? 'Maybe' : 'No'}
+                        </span>
+                      )}
+                      {outcome.scrimNotes && (
+                        <span className="week-detail__outcome-notes">{outcome.scrimNotes}</span>
+                      )}
+                    </div>
+                  )}
+                  <div className="week-detail__slots">
+                    {(block.slots || []).map((slot: any, si: number) => (
+                      <span key={si} className="week-detail__slot">
+                        <span className="week-detail__slot-role">{slot.role}:</span>
+                        <span className="week-detail__slot-player">
+                          {slot.isRinger ? slot.ringerName : (slot.playerId ? playerNameMap[String(slot.playerId)] || 'Unknown' : '-')}
+                        </span>
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         ))
       )}

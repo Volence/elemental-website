@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useField, useFormFields, useDocumentInfo, toast } from '@payloadcms/ui'
 import { Calendar, CalendarPlus, BarChart3, Trash2, Plus, Lightbulb, X, ChevronDown, ChevronRight } from 'lucide-react'
@@ -10,6 +10,7 @@ import { ScrimAnalytics } from '@/components/ScrimAnalytics'
 import { ReminderButton } from './ReminderButton'
 import { PublishButton } from './PublishButton'
 import { ScrimOutcomeButton } from './ScrimOutcomeButton'
+import { GridView } from './GridView'
 import type { TimeBlock, TimeBlockOutcome, PlayerSlot, DaySchedule, ScheduleData, VoteData, LegacyScrim } from './types'
 import { normalizeCalendarToVoteData } from './normalizeCalendarData'
 
@@ -82,6 +83,9 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
   // Keys are "dayIndex-blockIndex" strings
   const [expandedBlocks, setExpandedBlocks] = useState<Set<string>>(new Set())
   
+  // Discord ID -> display name map from calendar responses
+  const [discordNameMap, setDiscordNameMap] = useState<Record<string, string>>({})
+
   // For calendar-type schedules, fetch responses from the same document's API
   useEffect(() => {
     if (scheduleType !== 'calendar' || !id) {
@@ -95,16 +99,25 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
         const res = await fetch(`/api/${slug}/${id}?depth=0`)
         if (!res.ok) return
         const doc = await res.json()
-        
+
         const responses = doc.responses || []
         const start = doc.dateRange?.start
         const end = doc.dateRange?.end
-        
+
+        // Build Discord ID -> name map from responses
+        const nameMap: Record<string, string> = {}
+        for (const r of responses) {
+          if (r.discordId && r.discordUsername) {
+            nameMap[r.discordId] = r.discordUsername.replace(/^@/, '')
+          }
+        }
+        setDiscordNameMap(nameMap)
+
         if (!start || !end || responses.length === 0) {
           setCalendarVotes([])
           return
         }
-        
+
         const normalized = normalizeCalendarToVoteData(responses, start, end, doc.timeSlots)
         setCalendarVotes(normalized)
       } catch (error) {
@@ -582,6 +595,31 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
         staggers: currentScrim?.staggers ?? false,
         notes: currentScrim?.notes || '',
         [field]: fieldValue,
+      },
+    }
+    newDays[dayIndex] = { ...newDays[dayIndex], blocks: newBlocks }
+    updateSchedule({ ...schedule, days: newDays })
+  }
+
+  const setBlockActivity = (dayIndex: number, blockIndex: number, activity: string) => {
+    const newDays = [...schedule.days]
+    const newBlocks = [...newDays[dayIndex].blocks]
+    const currentScrim = newBlocks[blockIndex].scrim
+    const needsOpponent = activity === 'scrim' || activity === 'match'
+    newBlocks[blockIndex] = {
+      ...newBlocks[blockIndex],
+      activity: activity as any,
+      scrim: {
+        opponentTeamId: needsOpponent ? (currentScrim?.opponentTeamId ?? null) : null,
+        opponent: needsOpponent ? (currentScrim?.opponent || '') : '',
+        opponentRoster: currentScrim?.opponentRoster || '',
+        contact: currentScrim?.contact || '',
+        host: currentScrim?.host || '',
+        mapPool: currentScrim?.mapPool || '',
+        heroBans: currentScrim?.heroBans ?? true,
+        staggers: currentScrim?.staggers ?? false,
+        notes: currentScrim?.notes || '',
+        isScrim: needsOpponent,
       },
     }
     newDays[dayIndex] = { ...newDays[dayIndex], blocks: newBlocks }
@@ -1124,508 +1162,26 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
         </div>
       )}
 
-      {/* Standalone creation: Add days form */}
-      <div className="schedule-editor__add-day-section">
-        <label className="schedule-editor__add-day-label">Add Scrim Day:</label>
-        <input
-          type="date"
-          className="schedule-editor__add-day-input"
-          onClick={(e) => (e.target as HTMLInputElement).showPicker?.()}
-          onChange={(e) => {
-            if (e.target.value) {
-              // Format date as "Day Month Xth" (e.g., "Monday January 20th")
-              const date = new Date(e.target.value + 'T12:00:00')
-              const dayName = date.toLocaleDateString('en-US', { weekday: 'long' })
-              const monthName = date.toLocaleDateString('en-US', { month: 'long' })
-              const dayNum = date.getDate()
-              const suffix = ['th', 'st', 'nd', 'rd'][(dayNum % 10 > 3 || Math.floor(dayNum % 100 / 10) === 1) ? 0 : dayNum % 10]
-              const formattedDate = `${dayName} ${monthName} ${dayNum}${suffix}`
-              
-              // Check if day already exists
-              if (schedule.days.some(d => d.date === formattedDate)) {
-                return
-              }
-              
-              // Add new day
-              const newDay: DaySchedule = {
-                date: formattedDate,
-                enabled: true,
-                useAllMembers: true, // Default to all members for manual creation
-                blocks: [createDefaultBlock(timeSlot || '8-10 EST')],
-              }
-              updateSchedule({
-                ...schedule,
-                days: [...schedule.days, newDay].sort((a, b) => {
-                  // Sort by date - parse the formatted string back (e.g., "Wednesday January 21st")
-                  const parseDate = (str: string) => {
-                    const months = ['January', 'February', 'March', 'April', 'May', 'June', 
-                                   'July', 'August', 'September', 'October', 'November', 'December']
-                    const parts = str.split(' ')
-                    if (parts.length < 3) return 0
-                    const month = months.indexOf(parts[1])
-                    // Remove ordinal suffix (st, nd, rd, th) from day number
-                    const dayStr = parts[2].replace(/(st|nd|rd|th)$/i, '')
-                    const day = parseInt(dayStr)
-                    if (isNaN(day) || month === -1) return 0
-                    return new Date(2026, month, day).getTime()
-                  }
-                  return parseDate(a.date) - parseDate(b.date)
-                })
-              })
-              e.target.value = ''
-            }
-          }}
-        />
-      </div>
-
-      {/* Smart Suggestions Toolbar */}
-      {schedule.days.length > 0 && votes && votes.length > 0 && (
-        <div className="schedule-editor__toolbar">
-          <div className="schedule-editor__toolbar-suggestion">
-            <Lightbulb size={13} />
-            <span>
-              {(() => {
-                const suggested = getSuggestedDays()
-                if (suggested.length === 0) return 'No availability data yet'
-                const dayNames = suggested.map(i => schedule.days[i]?.date.split(' ')[0]).filter(Boolean)
-                const bestCount = Math.max(...suggested.map(i => votes?.find(v => v.date === schedule.days[i]?.date)?.voterCount || 0))
-                return `Best days: ${dayNames.join(', ')} (${bestCount} available)`
-              })()}
-            </span>
-          </div>
-          <div className="schedule-editor__toolbar-actions">
-            <button type="button" className="schedule-editor__toolbar-btn schedule-editor__toolbar-btn--suggest" onClick={enableSuggestedDays}>
-              <Lightbulb size={12} /> Enable Best
-            </button>
-            <button type="button" className="schedule-editor__toolbar-btn" onClick={enableAllDays}>
-              Enable All
-            </button>
-            <button type="button" className="schedule-editor__toolbar-btn" onClick={clearAllDays}>
-              Clear All
-            </button>
-            {teamMembers.length > 0 && (
-              <button type="button" className="schedule-editor__toolbar-btn schedule-editor__toolbar-btn--autofill" onClick={autoFillAll}>
-                ⚡ Auto-Fill All
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
-      <div className="schedule-editor__days">
-        {schedule.days.map((day, dayIndex) => {
-          // Use team members if "use all members" is checked, otherwise use voters
-          const votersForDay = getAvailablePlayers(votes, day.date)
-          const rawPlayers = day.useAllMembers ? teamMembers : votersForDay
-          // Deduplicate by ID to avoid React key errors
-          const availablePlayers = rawPlayers.filter((player, index, arr) => 
-            arr.findIndex(p => p.id === player.id) === index
-          )
-          const voteData = votes?.find((v) => v.date === day.date)
-          const isExpanded = expandedDays.has(dayIndex)
-          
-          // Parse day name and date for modern header
-          const dateParts = day.date.split(' ')
-          const dayName = dateParts[0] || day.date
-          const dateRest = dateParts.slice(1).join(' ')
-
-          return (
-            <div
-              key={day.date}
-              className={`schedule-editor__day-card ${!day.enabled ? 'schedule-editor__day-card--disabled' : ''} ${isExpanded ? 'schedule-editor__day-card--expanded' : ''}`}
-            >
-              <div className="schedule-editor__day-header">
-                <label className="schedule-editor__day-toggle" onClick={(e) => e.stopPropagation()}>
-                  <input
-                    type="checkbox"
-                    checked={day.enabled}
-                    onChange={() => toggleDay(dayIndex)}
-                  />
-                </label>
-                <button
-                  type="button"
-                  className="schedule-editor__day-expand"
-                  onClick={() => setExpandedDays(prev => {
-                    const next = new Set(prev)
-                    if (next.has(dayIndex)) next.delete(dayIndex)
-                    else next.add(dayIndex)
-                    return next
-                  })}
-                >
-                  {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                  <div className="schedule-editor__day-name-group">
-                    <span className="schedule-editor__day-title">{dayName}</span>
-                    {dateRest && <span className="schedule-editor__day-date">{dateRest}</span>}
-                  </div>
-                </button>
-                {voteData && (
-                  <span className="schedule-editor__day-voters">
-                    {voteData.voterCount} available
-                  </span>
-                )}
-                {/* Collapsed summary: show block count */}
-                {!isExpanded && day.enabled && day.blocks.length > 0 && (
-                  <span className="schedule-editor__day-summary">
-                    {day.blocks.length} block{day.blocks.length !== 1 ? 's' : ''}
-                  </span>
-                )}
-                {day.enabled && isExpanded && (
-                  <label className="schedule-editor__use-all-toggle">
-                    <input
-                      type="checkbox"
-                      checked={day.useAllMembers || false}
-                      onChange={() => toggleUseAllMembers(dayIndex)}
-                    />
-                    <span>All members</span>
-                  </label>
-                )}
-                {/* Remove day button - only for manually created days (no poll data) */}
-                {!voteData && (
-                  <button
-                    type="button"
-                    className="schedule-editor__remove-day-btn"
-                    onClick={() => removeDay(dayIndex)}
-                    title="Remove this day"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                )}
-              </div>
-
-              {day.enabled && isExpanded && (
-                <div className="schedule-editor__day-content">
-                  {day.blocks.map((block, blockIndex) => {
-                    const assignedIds = getAssignedPlayerIds(dayIndex, blockIndex)
-                    const blockKey = `${dayIndex}-${blockIndex}`
-                    const isBlockExpanded = expandedBlocks.has(blockKey)
-                    const filledCount = block.slots.filter(s => s.playerId || s.isRinger).length
-                    
-                    return (
-                      <div key={block.id} className={`schedule-editor__block ${isBlockExpanded ? 'schedule-editor__block--expanded' : ''}`}>
-                        <div className="schedule-editor__block-header">
-                          <button
-                            type="button"
-                            className="schedule-editor__block-toggle"
-                            onClick={() => setExpandedBlocks(prev => {
-                              const next = new Set(prev)
-                              if (next.has(blockKey)) next.delete(blockKey)
-                              else next.add(blockKey)
-                              return next
-                            })}
-                          >
-                            {isBlockExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                          </button>
-                          <input
-                            type="text"
-                            className="schedule-editor__block-time"
-                            value={block.time}
-                            onChange={(e) => updateBlockTime(dayIndex, blockIndex, e.target.value)}
-                            placeholder="8-10 EST"
-                          />
-                          {!isBlockExpanded && (
-                            <span className="schedule-editor__block-summary">
-                              {filledCount > 0 ? `${filledCount}/${block.slots.length} filled` : `${block.slots.length} slots`}
-                              {(() => {
-                                const slotVoters = voteData?.timeSlots?.find(ts => ts.time === block.time)
-                                if (slotVoters) return ` · ${slotVoters.voters.length} avail`
-                                return ''
-                              })()}
-                            </span>
-                          )}
-                          {!isBlockExpanded && teamMembers.length > 0 && (
-                            <button
-                              type="button"
-                              className="schedule-editor__block-autofill"
-                              onClick={(e) => { e.stopPropagation(); autoFillBlock(dayIndex, blockIndex) }}
-                              title="Auto-fill this block with available players"
-                            >
-                              ⚡
-                            </button>
-                          )}
-                          {day.blocks.length > 1 && (
-                            <button
-                              type="button"
-                              className="schedule-editor__block-remove"
-                              onClick={() => removeBlock(dayIndex, blockIndex)}
-                              title="Remove this time block"
-                            >
-                              <X size={12} />
-                            </button>
-                          )}
-                        </div>
-
-                        {isBlockExpanded && (
-                        <>
-                        <div className="schedule-editor__roles">
-                          {block.slots.map((slot, slotIndex) => {
-                            const filteredPlayers = availablePlayers.filter(
-                              (p) => !assignedIds.has(p.id) || p.id === slot.playerId,
-                            )
-
-                            return (
-                              <div key={slotIndex} className={`schedule-editor__role-row ${slot.isRinger ? 'schedule-editor__role-row--ringer' : ''}`} data-role={slot.role.toLowerCase()}>
-                                <input
-                                  type="text"
-                                  className="schedule-editor__role-input"
-                                  value={slot.role}
-                                  onChange={(e) => updateSlotRole(dayIndex, blockIndex, slotIndex, e.target.value)}
-                                  placeholder="Role..."
-                                />
-                                
-                                {/* Ringer checkbox */}
-                                <label className="schedule-editor__ringer-toggle" title="Mark as external player">
-                                  <input
-                                    type="checkbox"
-                                    checked={slot.isRinger || false}
-                                    onChange={() => toggleSlotRinger(dayIndex, blockIndex, slotIndex)}
-                                  />
-                                  <span className="schedule-editor__ringer-label">R</span>
-                                </label>
-                                
-                                {/* Normal player dropdown OR Ringer autocomplete */}
-                                {slot.isRinger ? (
-                                  <div className="schedule-editor__ringer-autocomplete">
-                                    <input
-                                      type="text"
-                                      className="schedule-editor__ringer-input"
-                                      placeholder="Search or type ringer name..."
-                                      value={slot.ringerName || ''}
-                                      onChange={(e) => updateRingerName(dayIndex, blockIndex, slotIndex, e.target.value)}
-                                    />
-                                    {slot.ringerName && !slot.playerId && allPeople.filter(p => 
-                                      p.name.toLowerCase().includes((slot.ringerName || '').toLowerCase())
-                                    ).length > 0 && (
-                                      <div className="schedule-editor__autocomplete-dropdown">
-                                        {allPeople
-                                          .filter(p => p.name.toLowerCase().includes((slot.ringerName || '').toLowerCase()))
-                                          .slice(0, 6)
-                                          .map(person => (
-                                            <button
-                                              key={person.id}
-                                              type="button"
-                                              className="schedule-editor__autocomplete-option"
-                                              onClick={() => updateRingerName(dayIndex, blockIndex, slotIndex, person.name, person.id)}
-                                            >
-                                              {person.name}
-                                            </button>
-                                          ))}
-                                      </div>
-                                    )}
-                                    {slot.playerId && (
-                                      <span className="schedule-editor__autocomplete-linked">✓</span>
-                                    )}
-                                  </div>
-                                ) : (
-                                  <select
-                                    className="schedule-editor__role-select"
-                                    value={slot.playerId || ''}
-                                    onChange={(e) =>
-                                      assignSlot(dayIndex, blockIndex, slotIndex, e.target.value || null)
-                                    }
-                                  >
-                                    <option value="">- Select -</option>
-                                    {filteredPlayers.map((player) => {
-                                      const avail = getPlayerSlotAvailability(day.date, block.time, player.id)
-                                      const prefix = avail === 'available' ? '✓ ' : avail === 'maybe' ? '? ' : ''
-                                      return (
-                                        <option key={player.id} value={player.id}>
-                                          {prefix}{player.displayName || player.username}
-                                        </option>
-                                      )
-                                    })}
-                                  </select>
-                                )}
-                                
-                                {slotIndex >= roles.length && (
-                                  <button
-                                    type="button"
-                                    className="schedule-editor__remove-btn"
-                                    onClick={() => removeSlot(dayIndex, blockIndex, slotIndex)}
-                                    title="Remove slot"
-                                  >
-                                    <X size={10} />
-                                  </button>
-                                )}
-                              </div>
-                            )
-                          })}
-
-                          <div className="schedule-editor__block-actions">
-                            <button
-                              type="button"
-                              className="schedule-editor__add-btn"
-                              onClick={() => addExtraPlayer(dayIndex, blockIndex)}
-                            >
-                              + Add Player
-                            </button>
-                            {teamMembers.length > 0 && (
-                              <button
-                                type="button"
-                                className="schedule-editor__autofill-btn"
-                                onClick={() => autoFillBlock(dayIndex, blockIndex)}
-                              >
-                                ⚡ Auto-Fill
-                              </button>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="schedule-editor__scrim">
-                          <div className="schedule-editor__scrim-header">Scrim Details</div>
-                          <div className="schedule-editor__scrim-fields">
-                            <div className="schedule-editor__scrim-field schedule-editor__scrim-field--autocomplete">
-                              <label>Opponent:</label>
-                              <div className="schedule-editor__autocomplete">
-                                <input
-                                  type="text"
-                                  placeholder="Search or type team name..."
-                                  value={block.scrim?.opponent || ''}
-                                  onChange={(e) => {
-                                    updateBlockScrim(dayIndex, blockIndex, 'opponent', e.target.value)
-                                    if (block.scrim?.opponentTeamId) {
-                                      const team = opponentTeams.find(t => t.id === block.scrim?.opponentTeamId)
-                                      if (team && team.name !== e.target.value) {
-                                        updateBlockScrim(dayIndex, blockIndex, 'opponentTeamId', null)
-                                      }
-                                    }
-                                  }}
-                                />
-                                {block.scrim?.opponent && !block.scrim?.opponentTeamId && opponentTeams.filter(t => 
-                                  t.name.toLowerCase().includes((block.scrim?.opponent || '').toLowerCase())
-                                ).length > 0 && (
-                                  <div className="schedule-editor__autocomplete-dropdown">
-                                    {opponentTeams
-                                      .filter(t => t.name.toLowerCase().includes((block.scrim?.opponent || '').toLowerCase()))
-                                      .slice(0, 8)
-                                      .map(team => (
-                                        <button
-                                          key={team.id}
-                                          type="button"
-                                          className="schedule-editor__autocomplete-option"
-                                          onClick={() => {
-                                            updateBlockScrim(dayIndex, blockIndex, 'opponentTeamId', team.id)
-                                            updateBlockScrim(dayIndex, blockIndex, 'opponent', team.name)
-                                          }}
-                                        >
-                                          {team.name}
-                                        </button>
-                                      ))}
-                                  </div>
-                                )}
-                                {block.scrim?.opponentTeamId && (
-                                  <span className="schedule-editor__autocomplete-linked">✓ Linked</span>
-                                )}
-                              </div>
-                            </div>
-                            <div className="schedule-editor__scrim-field">
-                              <label>Contact:</label>
-                              <input
-                                type="text"
-                                placeholder="e.g., Username#1234"
-                                value={block.scrim?.contact || ''}
-                                onChange={(e) => updateBlockScrim(dayIndex, blockIndex, 'contact', e.target.value)}
-                              />
-                            </div>
-                            <div className="schedule-editor__scrim-field">
-                              <label>Host:</label>
-                              <select
-                                value={block.scrim?.host || ''}
-                                onChange={(e) => updateBlockScrim(dayIndex, blockIndex, 'host', e.target.value)}
-                              >
-                                <option value="">- Select -</option>
-                                <option value="us">Us</option>
-                                <option value="them">Them</option>
-                              </select>
-                            </div>
-                            <div className="schedule-editor__scrim-field">
-                              <label>Map Pool:</label>
-                              <input
-                                type="text"
-                                placeholder="e.g., Faceit"
-                                value={block.scrim?.mapPool || ''}
-                                onChange={(e) => updateBlockScrim(dayIndex, blockIndex, 'mapPool', e.target.value)}
-                              />
-                            </div>
-                            <div className="schedule-editor__scrim-field">
-                              <label>Hero Bans:</label>
-                              <div className="schedule-editor__toggle">
-                                <label className="schedule-editor__toggle-label">
-                                  <input
-                                    type="checkbox"
-                                    checked={block.scrim?.heroBans ?? true}
-                                    onChange={(e) => updateBlockScrim(dayIndex, blockIndex, 'heroBans', e.target.checked)}
-                                  />
-                                  <span>{block.scrim?.heroBans ?? true ? 'On' : 'Off'}</span>
-                                </label>
-                              </div>
-                            </div>
-                            <div className="schedule-editor__scrim-field">
-                              <label>Staggers:</label>
-                              <div className="schedule-editor__toggle">
-                                <label className="schedule-editor__toggle-label">
-                                  <input
-                                    type="checkbox"
-                                    checked={block.scrim?.staggers ?? false}
-                                    onChange={(e) => updateBlockScrim(dayIndex, blockIndex, 'staggers', e.target.checked)}
-                                  />
-                                  <span>{block.scrim?.staggers ? 'On' : 'Off'}</span>
-                                </label>
-                              </div>
-                            </div>
-                            <div className="schedule-editor__scrim-field schedule-editor__scrim-field--full">
-                              <label>Opponent Roster:</label>
-                              <textarea
-                                placeholder="Paste opponent roster here..."
-                                rows={3}
-                                value={block.scrim?.opponentRoster || ''}
-                                onChange={(e) => updateBlockScrim(dayIndex, blockIndex, 'opponentRoster', e.target.value)}
-                              />
-                            </div>
-                            <div className="schedule-editor__scrim-field schedule-editor__scrim-field--full">
-                              <label>Notes:</label>
-                              <input
-                                type="text"
-                                placeholder="Any additional notes..."
-                                value={block.scrim?.notes || ''}
-                                onChange={(e) => updateBlockScrim(dayIndex, blockIndex, 'notes', e.target.value)}
-                              />
-                            </div>
-                            <div className="schedule-editor__scrim-actions">
-                              <ReminderButton 
-                                dayDate={day.date}
-                                blockTime={block.time}
-                                hasOpponent={Boolean(block.scrim?.opponent)}
-                                reminderPosted={block.reminderPosted}
-                                onReminderPosted={() => markBlockReminderPosted(dayIndex, blockIndex)}
-                              />
-                              <ScrimOutcomeButton
-                                opponentName={block.scrim?.opponent || ''}
-                                outcome={block.outcome}
-                                onSaveOutcome={(outcome) => updateBlockOutcome(dayIndex, blockIndex, outcome)}
-                                availableMaps={maps}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                        </>
-                        )}
-                      </div>
-                    )
-                  })}
-
-                  <button
-                    type="button"
-                    className="schedule-editor__add-block-btn"
-                    onClick={() => addBlock(dayIndex)}
-                  >
-                    <Plus size={12} /> Add Time Block
-                  </button>
-                </div>
-              )}
-            </div>
-          )
-        })}
-      </div>
+      <GridView
+        schedule={schedule}
+        roles={roles}
+        teamMembers={teamMembers}
+        opponentTeams={opponentTeams}
+        maps={maps}
+        votes={votes}
+        discordNameMap={discordNameMap}
+        getAssignedPlayerIds={getAssignedPlayerIds}
+        getPlayerSlotAvailability={getPlayerSlotAvailability}
+        onAssignSlot={assignSlot}
+        onToggleDay={toggleDay}
+        onUpdateBlockTime={updateBlockTime}
+        onUpdateBlockScrim={updateBlockScrim}
+        onSetBlockActivity={setBlockActivity}
+        onToggleSlotRinger={toggleSlotRinger}
+        onUpdateRingerName={updateRingerName}
+        onMarkBlockReminderPosted={markBlockReminderPosted}
+        onUpdateBlockOutcome={updateBlockOutcome}
+      />
 
       <div className="schedule-editor__footer">
         {schedule.lastUpdated && (

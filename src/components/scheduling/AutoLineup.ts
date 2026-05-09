@@ -26,12 +26,21 @@ interface AvailablePlayer {
   personId: string
   discordId: string
   name: string
-  rosterRole: 'tank' | 'dps' | 'support'
-  status: 'main' | 'sub'
+  scheduleRole: string
+  rosterRole: string
+  status: 'main' | 'sub' | 'trial'
   availableBlocks: number
 }
 
-function roleMatchesSlot(rosterRole: string, slotRole: string): boolean {
+const ROSTER_ROLE_MAP: Record<string, string> = {
+  tank: 'Tank',
+  dps: 'DPS',
+  support: 'Support',
+}
+
+function roleMatchesSlot(scheduleRole: string, rosterRole: string, slotRole: string): boolean {
+  if (scheduleRole && scheduleRole === slotRole) return true
+
   const role = rosterRole.toLowerCase()
   const slot = slotRole.toLowerCase()
 
@@ -47,7 +56,7 @@ export function suggestLineup(
   subs: RosterEntry[],
   calendarResponses: any[],
 ): DaySchedule[] {
-  const playerMap = new Map<string, { personId: string; name: string; rosterRole: string; status: 'main' | 'sub' }>()
+  const playerMap = new Map<string, { personId: string; name: string; rosterRole: string; status: 'main' | 'sub' | 'trial' }>()
   for (const entry of roster) {
     if (entry.person?.discordId) {
       playerMap.set(entry.person.discordId, {
@@ -78,7 +87,7 @@ export function suggestLineup(
       for (const response of calendarResponses) {
         if (!response.selections) continue
         const playerInfo = playerMap.get(response.discordId)
-        if (!playerInfo) continue
+        const scheduleRole = response.scheduleRole || (playerInfo ? ROSTER_ROLE_MAP[playerInfo.rosterRole] : '') || ''
 
         let isAvailableThisBlock = false
         let totalBlocksAvailable = 0
@@ -103,25 +112,31 @@ export function suggestLineup(
 
         if (isAvailableThisBlock) {
           availablePlayers.push({
-            personId: playerInfo.personId,
+            personId: playerInfo?.personId || response.discordId,
             discordId: response.discordId,
-            name: playerInfo.name,
-            rosterRole: playerInfo.rosterRole as 'tank' | 'dps' | 'support',
-            status: playerInfo.status,
+            name: playerInfo?.name || response.discordUsername || 'Unknown',
+            scheduleRole,
+            rosterRole: playerInfo?.rosterRole || '',
+            status: playerInfo?.status || 'trial',
             availableBlocks: totalBlocksAvailable,
           })
         }
       }
 
       availablePlayers.sort((a, b) => {
-        if (a.status !== b.status) return a.status === 'main' ? -1 : 1
+        if (a.status !== b.status) {
+          if (a.status === 'main') return -1
+          if (b.status === 'main') return 1
+          if (a.status === 'sub') return -1
+          if (b.status === 'sub') return 1
+        }
         return b.availableBlocks - a.availableBlocks
       })
 
       const assignedIds = new Set<string>()
       const newSlots: PlayerSlot[] = block.slots.map(slot => {
         const match = availablePlayers.find(
-          p => !assignedIds.has(p.personId) && roleMatchesSlot(p.rosterRole, slot.role)
+          p => !assignedIds.has(p.personId) && roleMatchesSlot(p.scheduleRole, p.rosterRole, slot.role)
         )
 
         if (match) {

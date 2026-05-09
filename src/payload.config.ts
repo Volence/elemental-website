@@ -372,12 +372,17 @@ const config = buildConfig({
         const { startTwitchLiveRoster } = await import('./discord/services/twitchLiveRoster')
 
         const client = await ensureDiscordClient()
-        
+
         if (client) {
           await registerCommands()
           setupInteractionHandlers()
           startThreadKeepAlive()
           startTwitchLiveRoster()
+
+          const { serviceHealth } = await import('./discord/serviceHealth')
+          serviceHealth.register('twitch-roster', 3 * 60 * 1000)
+          serviceHealth.register('thread-keepalive', 2 * 60 * 60 * 1000)
+          serviceHealth.startStalenessChecker()
 
           const { stopThreadKeepAlive } = await import('./discord/services/threadKeepAlive')
           const { stopTwitchLiveRoster } = await import('./discord/services/twitchLiveRoster')
@@ -387,6 +392,7 @@ const config = buildConfig({
             stopTwitchLiveRoster,
             stopThreadKeepAlive,
             stopPollNotificationPolling,
+            serviceHealth.stopStalenessChecker,
             shutdownDiscordBot,
           ]
 

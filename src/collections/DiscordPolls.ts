@@ -87,52 +87,24 @@ export const DiscordPolls: CollectionConfig = {
   },
   fields: [
     // ============================================
-    // MAIN CONTENT AREA - Heatmap, Votes & Schedule Editor
+    // MAIN CONTENT AREA - Schedule Editor & Availability
     // ============================================
-    {
-      type: 'collapsible',
-      label: 'Availability Heatmap',
-      admin: {
-        initCollapsed: false,
-        description: 'Visual overview of who is available',
-      },
-      fields: [
-        {
-          name: 'heatmapDisplay',
-          type: 'ui',
-          admin: {
-            components: {
-              Field: '@/components/scheduling/AdminScheduleView#default',
-            },
-          },
-        },
-      ],
-    },
-    {
-      type: 'collapsible',
-      label: 'Player Availability',
-      admin: {
-        initCollapsed: true,
-      },
-      fields: [
-        {
-          name: 'votes',
-          type: 'json',
-          admin: {
-            readOnly: true,
-            components: {
-              Field: '@/components/VotesDisplay#default',
-            },
-          },
-        },
-      ],
-    },
     {
       name: 'schedule',
       type: 'json',
       admin: {
         components: {
           Field: '@/components/ScheduleEditor#default',
+        },
+      },
+    },
+    {
+      name: 'votes',
+      type: 'json',
+      admin: {
+        readOnly: true,
+        components: {
+          Field: '@/components/VotesDisplay#default',
         },
       },
     },
@@ -421,135 +393,6 @@ export const DiscordPolls: CollectionConfig = {
       admin: { hidden: true },
     },
     
-    // ============================================
-    // SCRIM OUTCOME - Post-scrim feedback
-    // ============================================
-    {
-      type: 'collapsible',
-      label: 'Scrim Outcome',
-      admin: {
-        initCollapsed: true,
-        description: 'Record the results after scrimmaging',
-      },
-      fields: [
-        {
-          name: 'opponentTeam',
-          type: 'relationship',
-          relationTo: 'opponent-teams',
-          admin: {
-            description: 'Who did you scrim against?',
-          },
-        },
-        {
-          type: 'row',
-          fields: [
-            {
-              name: 'ourRating',
-              label: 'Our Performance',
-              type: 'select',
-              admin: {
-                width: '50%',
-                description: 'How did we perform?',
-              },
-              options: [
-                { label: '✅ Easy Win', value: 'easywin' },
-                { label: '🔥 Close Win', value: 'closewin' },
-                { label: '😐 Neutral', value: 'neutral' },
-                { label: '😓 Close Loss', value: 'closeloss' },
-                { label: '💀 Got Rolled', value: 'gotrolled' },
-              ],
-            },
-            {
-              name: 'opponentRating',
-              label: 'Opponent Strength',
-              type: 'select',
-              admin: {
-                width: '50%',
-                description: 'How strong was the opponent?',
-              },
-              options: [
-                { label: '🟢 Weak', value: 'weak' },
-                { label: '🟡 Average', value: 'average' },
-                { label: '🔴 Strong', value: 'strong' },
-                { label: '💀 Very Strong', value: 'verystrong' },
-              ],
-            },
-          ],
-        },
-        {
-          name: 'worthScrimAgain',
-          label: 'Worth Scrimming Again?',
-          type: 'select',
-          admin: {
-            description: 'Should we scrim this team again?',
-          },
-          options: [
-            { label: '👍 Yes', value: 'yes' },
-            { label: '🤔 Maybe', value: 'maybe' },
-            { label: '👎 No', value: 'no' },
-          ],
-        },
-        {
-          name: 'mapsPlayed',
-          label: 'Maps Played',
-          type: 'array',
-          admin: {
-            description: 'Record results per map',
-          },
-          fields: [
-            {
-              type: 'row',
-              fields: [
-                {
-                  name: 'map',
-                  type: 'relationship',
-                  relationTo: 'maps',
-                  admin: {
-                    width: '40%',
-                  },
-                },
-                {
-                  name: 'result',
-                  type: 'select',
-                  admin: {
-                    width: '30%',
-                  },
-                  options: [
-                    { label: '✅ Win', value: 'win' },
-                    { label: '❌ Loss', value: 'loss' },
-                    { label: '🔄 Draw', value: 'draw' },
-                  ],
-                },
-                {
-                  name: 'score',
-                  type: 'text',
-                  admin: {
-                    width: '30%',
-                    placeholder: '2-1',
-                  },
-                },
-              ],
-            },
-            {
-              name: 'mapNotes',
-              type: 'textarea',
-              admin: {
-                placeholder: 'Map-specific notes...',
-              },
-            },
-          ],
-        },
-        {
-          name: 'scrimNotes',
-          label: 'Overall Notes',
-          type: 'textarea',
-          admin: {
-            description: 'Post-scrim thoughts, areas to improve, etc.',
-            placeholder: 'e.g., "We need to practice against Ball more", "Our ult economy was bad on control"',
-          },
-        },
-      ],
-    },
   ],
   hooks: {
     afterChange: [

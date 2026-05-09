@@ -3,10 +3,15 @@
 import React, { createContext, useContext, useState, useCallback } from 'react'
 import type { SchedulePageData, ScheduleTab } from './types'
 
+export type WeekView = 'current' | 'next'
+
 interface ScheduleContextValue {
   data: SchedulePageData
   activeTab: ScheduleTab
   setActiveTab: (tab: ScheduleTab) => void
+  weekView: WeekView
+  setWeekView: (view: WeekView) => void
+  viewedCalendar: any | null
   refreshData: () => Promise<void>
 }
 
@@ -27,6 +32,11 @@ interface ScheduleProviderProps {
 export function ScheduleProvider({ initialData, initialTab, children }: ScheduleProviderProps) {
   const [data, setData] = useState<SchedulePageData>(initialData)
   const [activeTab, setActiveTab] = useState<ScheduleTab>(initialTab)
+  const [weekView, setWeekView] = useState<WeekView>(initialData.nextWeekCalendar ? 'next' : 'current')
+
+  const viewedCalendar = weekView === 'next' && data.nextWeekCalendar
+    ? data.nextWeekCalendar
+    : data.activeCalendar
 
   const refreshData = useCallback(async () => {
     try {
@@ -41,7 +51,7 @@ export function ScheduleProvider({ initialData, initialTab, children }: Schedule
   }, [data.team.slug])
 
   return (
-    <ScheduleContext.Provider value={{ data, activeTab, setActiveTab, refreshData }}>
+    <ScheduleContext.Provider value={{ data, activeTab, setActiveTab, weekView, setWeekView, viewedCalendar, refreshData }}>
       {children}
     </ScheduleContext.Provider>
   )

@@ -17,7 +17,7 @@ export function CalendarMonth() {
   const [expandedWeek, setExpandedWeek] = useState<string | null>(null)
 
   const scheduleDateMap = useMemo(() => {
-    const map: Record<string, { hasCalendar: boolean; hasScrim: boolean }> = {}
+    const map: Record<string, { hasCalendar: boolean; hasScrim: boolean; hasOutcome: boolean }> = {}
     for (const schedule of recentSchedules) {
       const s = schedule as any
       if (!s.dateRange?.start || !s.dateRange?.end) continue
@@ -26,7 +26,7 @@ export function CalendarMonth() {
       const current = new Date(start)
       while (current <= end) {
         const key = current.toISOString().split('T')[0]
-        if (!map[key]) map[key] = { hasCalendar: false, hasScrim: false }
+        if (!map[key]) map[key] = { hasCalendar: false, hasScrim: false, hasOutcome: false }
         map[key].hasCalendar = true
         current.setDate(current.getDate() + 1)
       }
@@ -35,12 +35,14 @@ export function CalendarMonth() {
         for (let i = 0; i < s.schedule.days.length; i++) {
           const day = s.schedule.days[i]
           if (!day.enabled) continue
-          const hasScrim = (day.blocks || []).some((b: any) => b.scrim?.opponent)
-          if (!hasScrim) continue
           const dayDate = new Date(rangeStart)
           dayDate.setDate(dayDate.getDate() + i)
           const dateKey = day.isoDate || dayDate.toISOString().split('T')[0]
-          if (map[dateKey]) map[dateKey].hasScrim = true
+          if (!map[dateKey]) continue
+          const hasScrim = (day.blocks || []).some((b: any) => b.scrim?.opponent)
+          if (hasScrim) map[dateKey].hasScrim = true
+          const hasOutcome = (day.blocks || []).some((b: any) => b.outcome?.ourRating)
+          if (hasOutcome) map[dateKey].hasOutcome = true
         }
       }
     }
@@ -141,6 +143,7 @@ export function CalendarMonth() {
                       <div className="cal-month__day-dots">
                         {info?.hasCalendar && <span className="cal-month__dot cal-month__dot--calendar"></span>}
                         {info?.hasScrim && <span className="cal-month__dot cal-month__dot--scrim"></span>}
+                        {info?.hasOutcome && <span className="cal-month__dot cal-month__dot--outcome"></span>}
                       </div>
                     </div>
                   )

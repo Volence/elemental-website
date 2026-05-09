@@ -66,9 +66,8 @@ import { default as default_1f089b8c2a27470c9bbc5822da887828 } from '@/component
 import { default as default_4b32192632526300c4dfce3ec06124cb } from '@/components/RecruitmentListColumns/ListingCell'
 import { default as default_46b3ed67e65478b5cdaa83f2b09fc358 } from '@/components/RecruitmentApplicationColumns/PositionCell'
 import { default as default_91b673ad90a59e578cd7d9f0fa7f0d19 } from '@/components/RecruitmentApplicationColumns/ActionsCell'
-import { default as default_238f119f0194480b8f4a52e1860c95e2 } from '@/components/ScheduleHeatmapView'
-import { default as default_d11a66a204e3df3a186a3bc326f6d7e4 } from '@/components/VotesDisplay'
 import { default as default_7c520a493bba693939ee544b7090b356 } from '@/components/ScheduleEditor'
+import { default as default_d11a66a204e3df3a186a3bc326f6d7e4 } from '@/components/VotesDisplay'
 import { default as default_187be048b128856df5138905b5a2ba07 } from '@/components/PollScopeToggle'
 import { default as default_0a8046206052a3b56c63d934ab686c00 } from '@/components/AvailabilityHeatmapView'
 import { default as default_c768ad956bb88923e7aa7b8670a7f64a } from '@/components/GraphicsDashboardTabs'
@@ -213,9 +212,8 @@ export const importMap = {
   "@/components/RecruitmentListColumns/ListingCell#default": default_4b32192632526300c4dfce3ec06124cb,
   "@/components/RecruitmentApplicationColumns/PositionCell#default": default_46b3ed67e65478b5cdaa83f2b09fc358,
   "@/components/RecruitmentApplicationColumns/ActionsCell#default": default_91b673ad90a59e578cd7d9f0fa7f0d19,
-  "@/components/ScheduleHeatmapView#default": default_238f119f0194480b8f4a52e1860c95e2,
-  "@/components/VotesDisplay#default": default_d11a66a204e3df3a186a3bc326f6d7e4,
   "@/components/ScheduleEditor#default": default_7c520a493bba693939ee544b7090b356,
+  "@/components/VotesDisplay#default": default_d11a66a204e3df3a186a3bc326f6d7e4,
   "@/components/PollScopeToggle#default": default_187be048b128856df5138905b5a2ba07,
   "@/components/AvailabilityHeatmapView#default": default_0a8046206052a3b56c63d934ab686c00,
   "@/components/GraphicsDashboardTabs#default": default_c768ad956bb88923e7aa7b8670a7f64a,

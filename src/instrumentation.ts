@@ -73,17 +73,15 @@ function setupGlobalErrorHandlers() {
   process.on('SIGINT', () => shutdown('SIGINT'))
 }
 
-/**
- * Log error to the database via API call
- * Uses fetch instead of importing Payload to avoid bundling issues
- */
+let logErrorSuspendedUntil = 0
+
 async function logErrorToDatabase(error: Error, source: string) {
+  if (Date.now() < logErrorSuspendedUntil) return
+
   try {
-    // Use internal API endpoint to log errors
-    // This avoids importing Payload which causes bundling issues
     const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
-    
-    await fetch(`${serverUrl}/api/log-error`, {
+
+    const response = await fetch(`${serverUrl}/api/log-error`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -95,10 +93,13 @@ async function logErrorToDatabase(error: Error, source: string) {
         stack: error.stack,
         severity: 'critical',
       }),
+      signal: AbortSignal.timeout(5000),
     })
-    
-  } catch (logError) {
-    // Don't throw - we don't want error logging to cause more errors
-    console.error('[Global Error Handler] Failed to log error to database')
+
+    if (response.status === 503) {
+      logErrorSuspendedUntil = Date.now() + 60_000
+    }
+  } catch {
+    logErrorSuspendedUntil = Date.now() + 60_000
   }
 }

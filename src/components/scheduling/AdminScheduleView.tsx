@@ -77,6 +77,7 @@ const AdminScheduleView: React.FC = () => {
         responseCount,
         scheduleType,
       },
+      nextWeekCalendar: null,
       recentSchedules: [],
       absences: [],
       authState: {

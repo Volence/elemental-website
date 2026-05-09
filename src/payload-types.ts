@@ -90,6 +90,7 @@ export interface Config {
     'recruitment-applications': RecruitmentApplication;
     'discord-polls': DiscordPoll;
     'availability-calendars': AvailabilityCalendar;
+    absences: Absence;
     'graphics-anchor': GraphicsAnchor;
     'branding-guide-anchor': BrandingGuideAnchor;
     'graphics-assets': GraphicsAsset;
@@ -143,6 +144,7 @@ export interface Config {
     'recruitment-applications': RecruitmentApplicationsSelect<false> | RecruitmentApplicationsSelect<true>;
     'discord-polls': DiscordPollsSelect<false> | DiscordPollsSelect<true>;
     'availability-calendars': AvailabilityCalendarsSelect<false> | AvailabilityCalendarsSelect<true>;
+    absences: AbsencesSelect<false> | AbsencesSelect<true>;
     'graphics-anchor': GraphicsAnchorSelect<false> | GraphicsAnchorSelect<true>;
     'branding-guide-anchor': BrandingGuideAnchorSelect<false> | BrandingGuideAnchorSelect<true>;
     'graphics-assets': GraphicsAssetsSelect<false> | GraphicsAssetsSelect<true>;
@@ -2156,7 +2158,7 @@ export interface ScrimOutcome {
  */
 export interface DiscordPoll {
   id: number;
-  votes?:
+  schedule?:
     | {
         [k: string]: unknown;
       }
@@ -2165,7 +2167,7 @@ export interface DiscordPoll {
     | number
     | boolean
     | null;
-  schedule?:
+  votes?:
     | {
         [k: string]: unknown;
       }
@@ -2206,7 +2208,7 @@ export interface DiscordPoll {
   /**
    * How this schedule was created
    */
-  createdVia?: ('discord-command' | 'admin-panel') | null;
+  createdVia?: ('discord-command' | 'admin-panel' | 'auto') | null;
   dataSource?: ('poll' | 'calendar' | 'manual') | null;
   availabilityCalendar?: (number | null) | AvailabilityCalendar;
   /**
@@ -2249,38 +2251,6 @@ export interface DiscordPoll {
   timezone?: string | null;
   discordChannelId?: string | null;
   discordMessageId?: string | null;
-  /**
-   * Who did you scrim against?
-   */
-  opponentTeam?: (number | null) | OpponentTeam;
-  /**
-   * How did we perform?
-   */
-  ourRating?: ('easywin' | 'closewin' | 'neutral' | 'closeloss' | 'gotrolled') | null;
-  /**
-   * How strong was the opponent?
-   */
-  opponentRating?: ('weak' | 'average' | 'strong' | 'verystrong') | null;
-  /**
-   * Should we scrim this team again?
-   */
-  worthScrimAgain?: ('yes' | 'maybe' | 'no') | null;
-  /**
-   * Record results per map
-   */
-  mapsPlayed?:
-    | {
-        map?: (number | null) | Map;
-        result?: ('win' | 'loss' | 'draw') | null;
-        score?: string | null;
-        mapNotes?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Post-scrim thoughts, areas to improve, etc.
-   */
-  scrimNotes?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2565,6 +2535,40 @@ export interface RecruitmentApplication {
    * Archive old applications to hide them from active list
    */
   archived?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "absences".
+ */
+export interface Absence {
+  id: number;
+  person: number | Person;
+  team: number | Team;
+  type: 'absence' | 'pre-availability';
+  startDate: string;
+  endDate: string;
+  /**
+   * Optional reason for the absence (visible to team)
+   */
+  reason?: string | null;
+  /**
+   * Pre-submitted availability selections for a future week
+   */
+  selections?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Discord ID of the player who created this absence
+   */
+  discordId: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -3280,6 +3284,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'availability-calendars';
         value: number | AvailabilityCalendar;
+      } | null)
+    | ({
+        relationTo: 'absences';
+        value: number | Absence;
       } | null)
     | ({
         relationTo: 'graphics-anchor';
@@ -4195,8 +4203,8 @@ export interface RecruitmentApplicationsSelect<T extends boolean = true> {
  * via the `definition` "discord-polls_select".
  */
 export interface DiscordPollsSelect<T extends boolean = true> {
-  votes?: T;
   schedule?: T;
+  votes?: T;
   team?: T;
   scheduleType?: T;
   status?: T;
@@ -4225,20 +4233,6 @@ export interface DiscordPollsSelect<T extends boolean = true> {
   timezone?: T;
   discordChannelId?: T;
   discordMessageId?: T;
-  opponentTeam?: T;
-  ourRating?: T;
-  opponentRating?: T;
-  worthScrimAgain?: T;
-  mapsPlayed?:
-    | T
-    | {
-        map?: T;
-        result?: T;
-        score?: T;
-        mapNotes?: T;
-        id?: T;
-      };
-  scrimNotes?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -4268,6 +4262,22 @@ export interface AvailabilityCalendarsSelect<T extends boolean = true> {
   responses?: T;
   discordMessageId?: T;
   discordChannelId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "absences_select".
+ */
+export interface AbsencesSelect<T extends boolean = true> {
+  person?: T;
+  team?: T;
+  type?: T;
+  startDate?: T;
+  endDate?: T;
+  reason?: T;
+  selections?: T;
+  discordId?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -80,10 +80,12 @@
 
 .avail-matrix__grid {
   width: 100%;
+  table-layout: fixed;
   border-collapse: separate;
   border-spacing: 2px;
 }
 
+/* Player column gets fixed width, slot columns share the rest */
 .avail-matrix__player-header {
   text-align: left;
   padding: 0.5rem;
@@ -91,72 +93,96 @@
   color: rgba(255, 255, 255, 0.4);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  min-width: 150px;
+  width: 140px;
   position: sticky;
   left: 0;
   background: #0a0a0f;
-  z-index: 1;
-}
-
-.avail-matrix__slot-header {
-  text-align: center;
-  padding: 0.35rem 0.25rem;
+  z-index: 2;
   vertical-align: bottom;
-  min-width: 44px;
 }
 
-.avail-matrix__slot-day {
+/* Day group header */
+.avail-matrix__day-header {
+  text-align: center;
+  padding: 0.5rem 0 0.3rem;
+  border-left: 2px solid rgba(255, 255, 255, 0.08);
+}
+
+.avail-matrix__day-header:first-of-type {
+  border-left: none;
+}
+
+.avail-matrix__day-name {
   display: block;
   font-weight: 700;
-  font-size: 0.65rem;
-  color: rgba(255, 255, 255, 0.6);
-  text-transform: uppercase;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.75);
 }
 
-.avail-matrix__slot-date {
+.avail-matrix__day-date {
   display: block;
-  font-size: 0.55rem;
-  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.35);
+  margin-top: 1px;
+}
+
+/* Time slot sub-headers */
+.avail-matrix__slot-header {
+  text-align: center;
+  padding: 0.2rem 0 0.35rem;
+  vertical-align: bottom;
 }
 
 .avail-matrix__slot-time {
   display: block;
-  font-size: 0.55rem;
-  color: rgba(255, 255, 255, 0.3);
-  margin-top: 2px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.45);
+  white-space: nowrap;
 }
 
 .avail-matrix__slot-count {
   display: block;
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   color: #00e5ff;
   font-weight: 600;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
+/* Day dividers */
+.avail-matrix__slot-header--day-start {
+  border-left: 2px solid rgba(255, 255, 255, 0.08);
+}
+
+.avail-matrix__cell--day-start {
+  border-left: 2px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Player rows */
 .avail-matrix__row--no-response {
   opacity: 0.5;
 }
 
 .avail-matrix__player-cell {
-  padding: 0.35rem 0.5rem;
+  padding: 0.4rem 0.5rem;
   position: sticky;
   left: 0;
   background: #0a0a0f;
   z-index: 1;
+  overflow: hidden;
 }
 
 .avail-matrix__player-info {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.35rem;
   white-space: nowrap;
 }
 
 .avail-matrix__player-avatar {
   border-radius: 50%;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   flex-shrink: 0;
 }
 
@@ -165,34 +191,137 @@
   color: #e2e8f0;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 100px;
 }
 
 .avail-matrix__role-badge {
-  font-size: 0.6rem;
+  font-size: 0.55rem;
   font-weight: 700;
   padding: 1px 4px;
   border-radius: 3px;
   flex-shrink: 0;
 }
 
-.role-badge--tank {
-  background: rgba(96, 165, 250, 0.2);
+.avail-matrix__role-badge--clickable {
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.35);
+  transition: filter 0.15s;
+}
+
+.avail-matrix__role-badge--clickable:hover {
+  filter: brightness(1.3);
+}
+
+.avail-matrix__modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.avail-matrix__modal {
+  background: #1a1a24;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 1.25rem;
+  min-width: 220px;
+  max-width: 300px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+}
+
+.avail-matrix__modal-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.avail-matrix__modal-avatar {
+  border-radius: 50%;
+}
+
+.avail-matrix__modal-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.avail-matrix__modal-options {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.avail-matrix__modal-cancel {
+  display: block;
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.avail-matrix__modal-cancel:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.avail-matrix__role-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 10px;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.75rem;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s;
+}
+
+.avail-matrix__role-option:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f1f5f9;
+}
+
+.avail-matrix__role-option--active {
+  background: rgba(59, 130, 246, 0.15);
   color: #60a5fa;
 }
 
-.role-badge--dps {
-  background: rgba(248, 113, 113, 0.2);
-  color: #f87171;
+.avail-matrix__role-option--clear {
+  color: rgba(255, 255, 255, 0.35);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-top: 2px;
+  padding-top: 8px;
 }
 
-.role-badge--support {
-  background: rgba(74, 222, 128, 0.2);
-  color: #4ade80;
+.avail-matrix__role-option-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .avail-matrix__sub-badge {
-  font-size: 0.55rem;
+  font-size: 0.5rem;
   font-weight: 600;
   padding: 1px 3px;
   border-radius: 3px;
@@ -201,12 +330,37 @@
   flex-shrink: 0;
 }
 
+.avail-matrix__tryout-badge {
+  font-size: 0.5rem;
+  font-weight: 600;
+  padding: 1px 3px;
+  border-radius: 3px;
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  flex-shrink: 0;
+}
+
+.avail-matrix__modal-divider {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 8px 0 4px;
+}
+
+.avail-matrix__modal-section-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0 4px;
+}
+
+/* Availability cells */
 .avail-matrix__cell {
-  width: 36px;
-  height: 32px;
   text-align: center;
   vertical-align: middle;
   border-radius: 4px;
+  height: 32px;
+  padding: 0;
 }
 
 .avail-matrix__cell svg {
@@ -234,6 +388,7 @@
   color: rgba(148, 163, 184, 0.4);
 }
 
+/* Not responded footer */
 .avail-matrix__missing {
   display: flex;
   flex-wrap: wrap;
@@ -257,19 +412,21 @@
   border-radius: 4px;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .avail-matrix {
     padding: 1rem;
     border-radius: 8px;
   }
 
+  .avail-matrix__player-header {
+    width: 100px;
+  }
+
   .avail-matrix__player-name {
-    max-width: 70px;
     font-size: 0.7rem;
   }
 
   .avail-matrix__cell {
-    width: 30px;
     height: 28px;
   }
 

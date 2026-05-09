@@ -6,6 +6,7 @@ let keepAliveInterval: NodeJS.Timeout | null = null
 let isRunning = false
 
 const KEEP_ALIVE_INTERVAL_MS = 2 * 60 * 60 * 1000
+const RUN_TIMEOUT_MS = 5 * 60 * 1000
 
 export function startThreadKeepAlive(): void {
   if (keepAliveInterval) return
@@ -42,6 +43,23 @@ async function runKeepAlive(): Promise<void> {
     return
   }
 
+  try {
+    await Promise.race([
+      _runKeepAlive(client, start),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Keep-alive timed out')), RUN_TIMEOUT_MS),
+      ),
+    ])
+  } catch (error) {
+    const durationMs = Date.now() - start
+    console.error(`[ThreadKeepAlive] Run failed after ${durationMs}ms:`, error)
+    serviceHealth.record('thread-keepalive', false, (error as Error).message, durationMs)
+  } finally {
+    isRunning = false
+  }
+}
+
+async function _runKeepAlive(client: any, start: number): Promise<void> {
   try {
     const { getPayload } = await import('payload')
     const configPromise = await import('@/payload.config')
@@ -141,7 +159,5 @@ async function runKeepAlive(): Promise<void> {
     const durationMs = Date.now() - start
     console.error(`[ThreadKeepAlive] Service error (${durationMs}ms):`, error)
     serviceHealth.record('thread-keepalive', false, (error as Error).message, durationMs)
-  } finally {
-    isRunning = false
   }
 }

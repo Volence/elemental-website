@@ -1,0 +1,218 @@
+.week-schedule {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.week-schedule__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #00e5ff;
+  margin-bottom: 1rem;
+}
+
+.week-schedule__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin: 0;
+}
+
+.week-schedule__count {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.week-schedule__days {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.week-schedule__block {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.week-schedule__block--has-opponent {
+  border-color: rgba(251, 191, 36, 0.15);
+}
+
+.week-schedule__block-top {
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.week-schedule__block-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.week-schedule__block-day {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #f1f5f9;
+}
+
+.week-schedule__block-time {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.week-schedule__block-opponent {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.week-schedule__swords-icon {
+  color: #fbbf24;
+}
+
+.week-schedule__search-icon {
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.week-schedule__opponent-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fbbf24;
+}
+
+.week-schedule__host-badge {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 1px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.week-schedule__opponent-tbd {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.25);
+  font-style: italic;
+}
+
+.week-schedule__roster {
+  padding: 0.6rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.week-schedule__slot {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 3px 0;
+}
+
+.week-schedule__slot-bar {
+  width: 3px;
+  height: 16px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.week-schedule__slot-role {
+  font-size: 0.72rem;
+  font-weight: 600;
+  width: 100px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.week-schedule__slot-player {
+  font-size: 0.8rem;
+  color: #e2e8f0;
+}
+
+.week-schedule__slot-player--empty {
+  color: rgba(255, 255, 255, 0.15);
+}
+
+.week-schedule__slot-player--ringer {
+  color: #fbbf24;
+  font-style: italic;
+}
+
+.week-schedule__trial-divider {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: rgba(251, 191, 36, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 4px 0 2px;
+  margin-top: 2px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.week-schedule__slot--trial .week-schedule__slot-role {
+  opacity: 0.7;
+}
+
+.week-schedule__slot--trial .week-schedule__slot-player {
+  color: rgba(251, 191, 36, 0.7);
+}
+
+.week-schedule__block-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 1rem;
+  background: rgba(255, 255, 255, 0.015);
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.week-schedule__roster-status {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.week-schedule__roster-status--full {
+  color: #22c55e;
+  font-weight: 600;
+}
+
+.week-schedule__map-pool {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.25);
+}
+
+@media (max-width: 768px) {
+  .week-schedule {
+    padding: 1rem;
+    border-radius: 8px;
+  }
+
+  .week-schedule__block-top {
+    padding: 0.6rem 0.75rem;
+  }
+
+  .week-schedule__roster {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .week-schedule__slot-role {
+    width: 80px;
+  }
+
+  .week-schedule__block-footer {
+    padding: 0.35rem 0.75rem;
+  }
+}

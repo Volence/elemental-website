@@ -93,8 +93,8 @@
   border-radius: 4px;
 }
 
-.week-detail__outcome--easy_win,
-.week-detail__outcome--close_win {
+.week-detail__outcome--easywin,
+.week-detail__outcome--closewin {
   background: rgba(34, 197, 94, 0.15);
   color: #4ade80;
 }
@@ -104,10 +104,89 @@
   color: #fbbf24;
 }
 
-.week-detail__outcome--close_loss,
-.week-detail__outcome--got_rolled {
+.week-detail__outcome--closeloss,
+.week-detail__outcome--gotrolled {
   background: rgba(239, 68, 68, 0.15);
   color: #f87171;
+}
+
+.week-detail__activity {
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+
+.week-detail__activity--scrim {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+}
+
+.week-detail__activity--match {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+}
+
+.week-detail__activity--warmup {
+  background: rgba(59, 130, 246, 0.12);
+  color: #60a5fa;
+}
+
+.week-detail__activity--vod {
+  background: rgba(168, 85, 247, 0.12);
+  color: #a855f7;
+}
+
+.week-detail__activity--scouting {
+  background: rgba(6, 182, 212, 0.12);
+  color: #06b6d4;
+}
+
+.week-detail__activity--free {
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.week-detail__activity--other {
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.week-detail__outcome-detail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.35rem;
+  padding: 0.3rem 0;
+}
+
+.week-detail__outcome-tag {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+
+.week-detail__outcome-tag--again-yes {
+  color: #4ade80;
+}
+
+.week-detail__outcome-tag--again-no {
+  color: #f87171;
+}
+
+.week-detail__outcome-tag--again-maybe {
+  color: #fbbf24;
+}
+
+.week-detail__outcome-notes {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-style: italic;
+  width: 100%;
 }
 
 .week-detail__slots {

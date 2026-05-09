@@ -4,29 +4,19 @@ import configPromise from '@payload-config'
 
 async function getDiscordIdentity(request: NextRequest) {
   const payloadToken = request.cookies.get('payload-token')?.value
-  if (payloadToken) {
-    try {
-      const { getPayload: gp } = await import('payload')
-      const config = (await import('@payload-config')).default
-      const payload = await gp({ config })
-      const { user } = await payload.auth({ headers: new Headers({ Authorization: `JWT ${payloadToken}` }) })
-      if (user && (user as any).discordId) {
-        return {
-          id: (user as any).discordId,
-          username: (user as any).name || (user as any).email,
-          avatar: null,
-        }
-      }
-    } catch {}
-  }
-
-  const cookie = request.cookies.get('discord_identity')
-  if (!cookie?.value) return null
+  if (!payloadToken) return null
   try {
-    return JSON.parse(cookie.value)
-  } catch {
-    return null
-  }
+    const payload = await getPayload({ config: configPromise })
+    const { user } = await payload.auth({ headers: new Headers({ Authorization: `JWT ${payloadToken}` }) })
+    if (user && (user as any).discordId) {
+      return {
+        id: (user as any).discordId,
+        username: (user as any).name || (user as any).email,
+        avatar: null,
+      }
+    }
+  } catch {}
+  return null
 }
 
 export async function GET(request: NextRequest) {

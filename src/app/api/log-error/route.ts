@@ -9,7 +9,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 
+let payloadInitFailed = false
+
 export async function POST(req: NextRequest) {
+  if (payloadInitFailed) {
+    return NextResponse.json({ error: 'Payload unavailable' }, { status: 503 })
+  }
+
   try {
     const payload = await getPayload({ config: configPromise })
     
@@ -60,7 +66,11 @@ export async function POST(req: NextRequest) {
     })
     
     return NextResponse.json({ success: true })
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.payloadInitError) {
+      payloadInitFailed = true
+      setTimeout(() => { payloadInitFailed = false }, 60_000)
+    }
     console.error('[log-error API] Failed to log error:', error)
     return NextResponse.json({ error: 'Failed to log error' }, { status: 500 })
   }

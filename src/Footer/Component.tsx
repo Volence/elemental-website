@@ -5,7 +5,6 @@ import { Twitter, Youtube, Instagram, MessageCircle } from 'lucide-react'
 
 import type { Footer } from '@/payload-types'
 
-import { ThemeSelector } from '@/providers/Theme/ThemeSelector'
 import { CMSLink } from '@/components/Link'
 import { Logo } from '@/components/Logo/Logo'
 
@@ -78,10 +77,7 @@ export async function Footer() {
                   </Link>
                 ))}
               </div>
-              <div className="mt-4">
-                <ThemeSelector />
               </div>
-            </div>
           </div>
           <div className="pt-8 border-t border-border text-center text-sm text-muted-foreground">
             <p>&copy; {new Date().getFullYear()} Elemental (ELMT). All rights reserved.</p>
@@ -161,9 +157,6 @@ export async function Footer() {
                 </Link>
               ))}
             </div>
-            <div className="mt-4">
-              <ThemeSelector />
-            </div>
           </div>
         </div>
         
@@ -222,10 +215,7 @@ export async function Footer() {
                   </Link>
                 ))}
               </div>
-              <div className="mt-4">
-                <ThemeSelector />
               </div>
-            </div>
           </div>
           <div className="pt-8 border-t border-border text-center text-sm text-muted-foreground">
             <p>&copy; {new Date().getFullYear()} Elemental (ELMT). All rights reserved.</p>

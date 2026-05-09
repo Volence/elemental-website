@@ -53,29 +53,33 @@ export default async function SchedulePageRoute({ params, searchParams }: PagePr
 
   const team = teamResult.docs[0] as any
 
-  // Check auth: Payload session first, then Discord identity cookie
+  // Check auth via Payload session only
   const cookieStore = await cookies()
   let discordUser: any = null
 
   const payloadToken = cookieStore.get('payload-token')?.value
+  let isSiteAdmin = false
   if (payloadToken) {
     try {
       const { user } = await payload.auth({ headers: new Headers({ Authorization: `JWT ${payloadToken}` }) })
-      if (user && (user as any).discordId) {
-        discordUser = {
-          id: (user as any).discordId,
-          username: (user as any).name || (user as any).email,
-          avatar: null,
+      if (user) {
+        const role = (user as any).role || ''
+        isSiteAdmin = role === 'admin' || role === 'staff-manager' || role === 'team-manager'
+        if ((user as any).discordId) {
+          discordUser = {
+            id: (user as any).discordId,
+            username: (user as any).name || (user as any).email,
+            avatar: null,
+          }
+        } else if (isSiteAdmin) {
+          discordUser = {
+            id: `payload-${user.id}`,
+            username: (user as any).name || (user as any).email,
+            avatar: null,
+          }
         }
       }
     } catch {}
-  }
-
-  if (!discordUser) {
-    const identityCookie = cookieStore.get('discord_identity')
-    if (identityCookie?.value) {
-      try { discordUser = JSON.parse(identityCookie.value) } catch {}
-    }
   }
 
   // Calculate current week boundaries (Mon-Sun)
@@ -113,27 +117,30 @@ export default async function SchedulePageRoute({ params, searchParams }: PagePr
     })
   }
 
-  // Find active calendar for current week
-  let calendarResult = await payload.find({
-    collection: 'discord-polls' as any,
-    where: {
-      and: [
-        { team: { equals: team.id } },
-        { scheduleType: { equals: 'calendar' } },
-        { status: { equals: 'active' } },
-        { 'dateRange.start': { less_than_equal: sundayStr } },
-        { 'dateRange.end': { greater_than_equal: mondayStr } },
-      ],
-    },
-    limit: 1,
-    sort: '-createdAt',
-    depth: 0,
-    overrideAccess: true,
-  })
+  async function ensureCalendar(weekStart: Date, weekEnd: Date) {
+    const startStr = weekStart.toISOString().split('T')[0]
+    const endStr = weekEnd.toISOString().split('T')[0]
 
-  // Auto-create calendar for current week if none exists
-  if (calendarResult.docs.length === 0) {
-    const monthDay = monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    const existing = await payload.find({
+      collection: 'discord-polls' as any,
+      where: {
+        and: [
+          { team: { equals: team.id } },
+          { scheduleType: { equals: 'calendar' } },
+          { status: { equals: 'active' } },
+          { 'dateRange.start': { less_than_equal: endStr } },
+          { 'dateRange.end': { greater_than_equal: startStr } },
+        ],
+      },
+      limit: 1,
+      sort: '-createdAt',
+      depth: 0,
+      overrideAccess: true,
+    })
+
+    if (existing.docs.length > 0) return existing.docs[0]
+
+    const monthDay = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     const scheduleBlocks = team.scheduleBlocks || []
     const timeSlots = scheduleBlocks.map((b: any) => ({
       id: `auto_${b.startTime}_${Date.now()}`,
@@ -143,14 +150,14 @@ export default async function SchedulePageRoute({ params, searchParams }: PagePr
     }))
 
     try {
-      const created = await payload.create({
+      return await payload.create({
         collection: 'discord-polls' as any,
         data: {
           pollName: `Week of ${monthDay}`,
           team: team.id,
           scheduleType: 'calendar',
           status: 'active',
-          dateRange: { start: mondayStr, end: sundayStr },
+          dateRange: { start: startStr, end: endStr },
           timeSlots: timeSlots.length > 0 ? timeSlots : undefined,
           timezone: team.scheduleTimezone || 'America/New_York',
           createdVia: 'auto',
@@ -159,10 +166,25 @@ export default async function SchedulePageRoute({ params, searchParams }: PagePr
         },
         overrideAccess: true,
       })
-      calendarResult = { docs: [created], totalDocs: 1, totalPages: 1, page: 1, pagingCounter: 1, hasPrevPage: false, hasNextPage: false, prevPage: null, nextPage: null, limit: 1 } as any
     } catch (err) {
       console.error('[Schedule] Auto-create calendar error:', err)
+      return null
     }
+  }
+
+  // Ensure current week calendar exists
+  const currentWeekCalendar = await ensureCalendar(monday, sunday)
+
+  // On Friday or later, also ensure next week's calendar exists
+  // dayOfWeek: 0=Sun, 5=Fri, 6=Sat
+  const isFridayOrLater = dayOfWeek === 5 || dayOfWeek === 6 || dayOfWeek === 0
+  let nextWeekCalendar: any = null
+  if (isFridayOrLater) {
+    const nextMonday = new Date(monday)
+    nextMonday.setDate(monday.getDate() + 7)
+    const nextSunday = new Date(nextMonday)
+    nextSunday.setDate(nextMonday.getDate() + 6)
+    nextWeekCalendar = await ensureCalendar(nextMonday, nextSunday)
   }
 
   // Recent schedules for calendar view (include both poll and calendar types for history)
@@ -224,6 +246,9 @@ export default async function SchedulePageRoute({ params, searchParams }: PagePr
       const co = typeof team.coCaptain === 'object' ? team.coCaptain : null
       if (co?.discordId === discordUser.id) isManager = true
     }
+    if (!isManager && isSiteAdmin) {
+      isManager = true
+    }
   }
 
   // Build roster data
@@ -254,7 +279,8 @@ export default async function SchedulePageRoute({ params, searchParams }: PagePr
       customRoles: team.customRoles,
       discordThreads: team.discordThreads || {},
     },
-    activeCalendar: calendarResult.docs[0] || null,
+    activeCalendar: currentWeekCalendar || null,
+    nextWeekCalendar: nextWeekCalendar || null,
     recentSchedules: recentResult.docs,
     absences: absenceResult.docs as any[],
     authState: {
