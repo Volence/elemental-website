@@ -77,10 +77,16 @@ export function AvailabilityMatrix() {
     )
   }
 
-  const timeSlots = viewedCalendar.timeSlots || []
+  const scheduleBlocks = team.scheduleBlocks || []
+  const fallbackSlots = scheduleBlocks.map((b: any) => ({
+    id: b.id || `block_${b.startTime}`,
+    label: b.label,
+    startTime: b.startTime,
+    endTime: b.endTime,
+  }))
+  const timeSlots = viewedCalendar.timeSlots?.length ? viewedCalendar.timeSlots : fallbackSlots
   const dateRange = viewedCalendar.dateRange || {}
   const responses = (viewedCalendar.responses || []) as any[]
-  const scheduleBlocks = team.scheduleBlocks || []
 
   const dates = useMemo(() => {
     if (!dateRange?.start || !dateRange?.end) return []

@@ -138,7 +138,26 @@ export default async function SchedulePageRoute({ params, searchParams }: PagePr
       overrideAccess: true,
     })
 
-    if (existing.docs.length > 0) return existing.docs[0]
+    if (existing.docs.length > 0) {
+      const cal = existing.docs[0] as any
+      const teamBlocks = team.scheduleBlocks || []
+      if ((!cal.timeSlots || cal.timeSlots.length === 0) && teamBlocks.length > 0) {
+        const backfilledSlots = teamBlocks.map((b: any) => ({
+          id: `auto_${b.startTime}_${Date.now()}`,
+          label: b.label,
+          startTime: b.startTime,
+          endTime: b.endTime,
+        }))
+        await payload.update({
+          collection: 'discord-polls' as any,
+          id: cal.id,
+          data: { timeSlots: backfilledSlots },
+          overrideAccess: true,
+        })
+        return { ...cal, timeSlots: backfilledSlots }
+      }
+      return cal
+    }
 
     const monthDay = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     const scheduleBlocks = team.scheduleBlocks || []

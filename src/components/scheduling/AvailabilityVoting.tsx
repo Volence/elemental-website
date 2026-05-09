@@ -62,7 +62,15 @@ function AvailabilityVotingGrid({
   teamSlug: string
   onSaved: () => Promise<void>
 }) {
-  const timeSlots = calendar.timeSlots || []
+  const { data } = useSchedule()
+  const teamBlocks = data.team?.scheduleBlocks || []
+  const fallbackSlots = teamBlocks.map((b: any) => ({
+    id: b.id || `block_${b.startTime}`,
+    label: b.label,
+    startTime: b.startTime,
+    endTime: b.endTime,
+  }))
+  const timeSlots = calendar.timeSlots?.length ? calendar.timeSlots : fallbackSlots
   const dateRange = calendar.dateRange || {}
   const isClosed = calendar.status === 'closed'
 
