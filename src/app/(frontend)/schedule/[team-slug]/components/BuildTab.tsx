@@ -315,9 +315,12 @@ export function BuildTab() {
     const mainAvail = avail.filter(a => a.scheduleStatus === 'main')
     const coreRoles = roles.filter(r => r !== 'Coach' && r !== 'Sub')
     if (coreRoles.length === 0) return 'none'
+    const slotsNeeded: Record<string, number> = {}
+    for (const role of coreRoles) slotsNeeded[role] = (slotsNeeded[role] || 0) + 1
     let covered = 0
-    for (const role of coreRoles) {
-      if (mainAvail.some(a => a.role === role)) covered++
+    for (const [role, needed] of Object.entries(slotsNeeded)) {
+      const uniquePlayers = new Set(mainAvail.filter(a => a.role === role).map(a => a.personId))
+      covered += Math.min(uniquePlayers.size, needed)
     }
     if (covered >= coreRoles.length) return 'green'
     if (covered >= coreRoles.length - 1) return 'yellow'
@@ -861,14 +864,17 @@ export function BuildTab() {
   const hasChanges = viewedCalendar.availabilityChangedAfterSchedule
 
   const rowDefs = useMemo(() => {
-    const defs: { role: string; isTrial: boolean }[] = []
+    const defs: { role: string; isTrial: boolean; occurrence: number }[] = []
+    const occCounts: Record<string, number> = {}
     for (const role of roles) {
-      defs.push({ role, isTrial: false })
+      const occ = occCounts[role] || 0
+      occCounts[role] = occ + 1
+      defs.push({ role, isTrial: false, occurrence: occ })
       if (trialRoles.has(role)) {
-        defs.push({ role, isTrial: true })
+        defs.push({ role, isTrial: true, occurrence: occ })
       }
     }
-    defs.push({ role: 'Sub', isTrial: false })
+    defs.push({ role: 'Sub', isTrial: false, occurrence: 0 })
     return defs
   }, [roles, trialRoles])
   return (
@@ -985,12 +991,12 @@ export function BuildTab() {
           </thead>
           <tbody>
             {rowDefs.map((rowDef, roleIdx) => {
-              const { role: roleName, isTrial } = rowDef
+              const { role: roleName, isTrial, occurrence } = rowDef
               const color = isTrial ? '#fbbf24' : getRoleColor(roleName, roleOptions)
               const isSub = roleName === 'Sub'
 
               return (
-                <tr key={`${roleName}-${isTrial}`} className={`build-tab__role-row ${isTrial ? 'build-tab__role-row--trial' : ''}`}>
+                <tr key={`${roleName}-${isTrial}-${occurrence}`} className={`build-tab__role-row ${isTrial ? 'build-tab__role-row--trial' : ''}`}>
                   <td className="build-tab__role-label" style={{ borderLeftColor: color }}>
                     <span className="build-tab__role-label-text" style={{ color }}>
                       {roleName}
@@ -1005,13 +1011,27 @@ export function BuildTab() {
                     let slotIdx = -1
 
                     if (isTrial) {
-                      slotIdx = block.slots.findIndex(s => s.role === roleName && s.isTrial)
+                      let count = 0
+                      slotIdx = block.slots.findIndex(s => {
+                        if (s.role === roleName && s.isTrial) {
+                          if (count === occurrence) return true
+                          count++
+                        }
+                        return false
+                      })
                       slot = slotIdx >= 0 ? block.slots[slotIdx] : undefined
                     } else if (isSub) {
                       slotIdx = block.slots.findIndex(s => s.role === 'Sub' && !s.isTrial)
                       slot = slotIdx >= 0 ? block.slots[slotIdx] : undefined
                     } else {
-                      slotIdx = block.slots.findIndex(s => s.role === roleName && !s.isTrial)
+                      let count = 0
+                      slotIdx = block.slots.findIndex(s => {
+                        if (s.role === roleName && !s.isTrial) {
+                          if (count === occurrence) return true
+                          count++
+                        }
+                        return false
+                      })
                       slot = slotIdx >= 0 ? block.slots[slotIdx] : undefined
                     }
 
