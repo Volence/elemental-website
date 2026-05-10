@@ -10,6 +10,16 @@ interface PageProps {
 
 export default async function AvailabilityPage({ params }: PageProps) {
   const { id } = await params
+  const numericId = parseInt(id)
+
+  if (isNaN(numericId)) {
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center' }}>
+        <h1>Calendar Not Found</h1>
+        <p>This availability calendar doesn&apos;t exist or has been removed.</p>
+      </div>
+    )
+  }
 
   try {
     const payload = await getPayload({ config: configPromise })
@@ -18,7 +28,7 @@ export default async function AvailabilityPage({ params }: PageProps) {
     try {
       calendar = await payload.findByID({
         collection: 'discord-polls' as any,
-        id: parseInt(id),
+        id: numericId,
         depth: 1,
         overrideAccess: true,
       })
@@ -33,7 +43,7 @@ export default async function AvailabilityPage({ params }: PageProps) {
       try {
         calendar = await payload.findByID({
           collection: 'availability-calendars' as any,
-          id: parseInt(id),
+          id: numericId,
           depth: 1,
           overrideAccess: true,
         })
