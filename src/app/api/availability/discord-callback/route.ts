@@ -111,11 +111,13 @@ export async function GET(request: NextRequest) {
     console.log('[Discord OAuth] Lookup discordId:', userData.id, '-> found:', !!person, person ? `id=${person.id} email=${(person as any).email}` : '')
 
     if (!person) {
+      const { randomBytes } = await import('crypto')
       person = await payload.create({
         collection: 'people',
         data: {
           name: userData.global_name || userData.username,
           email: `${userData.id}@discord.placeholder`,
+          password: randomBytes(32).toString('hex'),
           discordId: userData.id,
           role: 'user',
         },
