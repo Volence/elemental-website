@@ -59,8 +59,8 @@ export async function GET(
       return NextResponse.json({ error: 'Calendar not found' }, { status: 404 })
     }
 
-    // Get current user from discord cookie
-    const discordIdentity = getDiscordIdentity(request)
+    // Get current user from discord cookie or payload-token
+    const discordIdentity = await getDiscordIdentity(request)
 
     // Find the user's existing response
     const responses = (calendar.responses as AvailabilityResponse[] | null) || []
@@ -105,7 +105,7 @@ export async function PATCH(
   const { id } = await params
 
   // Require Discord identity
-  const discordIdentity = getDiscordIdentity(request)
+  const discordIdentity = await getDiscordIdentity(request)
   if (!discordIdentity) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
   }
@@ -203,14 +203,31 @@ export async function PATCH(
 }
 
 /**
- * Extract Discord identity from the httpOnly cookie
+ * Extract Discord identity from cookies.
+ * Tries payload-token first (Payload CMS login), then discord_identity cookie.
  */
-function getDiscordIdentity(request: NextRequest): {
+async function getDiscordIdentity(request: NextRequest): Promise<{
   id: string
   username: string
   global_name?: string
   avatar?: string | null
-} | null {
+} | null> {
+  const payloadToken = request.cookies.get('payload-token')?.value
+  if (payloadToken) {
+    try {
+      const payload = await getPayload({ config: configPromise })
+      const { user } = await payload.auth({ headers: new Headers({ Authorization: `JWT ${payloadToken}` }) })
+      if (user && (user as any).discordId) {
+        return {
+          id: (user as any).discordId,
+          username: (user as any).name || (user as any).email,
+          global_name: (user as any).name,
+          avatar: null,
+        }
+      }
+    } catch {}
+  }
+
   const cookie = request.cookies.get('discord_identity')
   if (!cookie?.value) return null
 
