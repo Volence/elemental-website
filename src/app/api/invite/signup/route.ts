@@ -107,6 +107,20 @@ export async function POST(request: Request): Promise<Response> {
       ? (invite.linkedPerson as any)?.id
       : invite.linkedPerson
 
+    const isPugAdminInvite = (invite.departments as any)?.isPugAdmin === true
+    const userRole = isPugAdminInvite ? 'staff-manager' : invite.role
+
+    const departments = {
+      isProductionStaff: invite.departments?.isProductionStaff || false,
+      isSocialMediaStaff: invite.departments?.isSocialMediaStaff || false,
+      isGraphicsStaff: invite.departments?.isGraphicsStaff || false,
+      isVideoStaff: invite.departments?.isVideoStaff || false,
+      isEventsStaff: invite.departments?.isEventsStaff || false,
+      isScoutingStaff: invite.departments?.isScoutingStaff || false,
+      isContentCreator: (invite.departments as any)?.isContentCreator || false,
+      isPugAdmin: (invite.departments as any)?.isPugAdmin || false,
+    }
+
     let newUser
 
     if (linkedPersonId) {
@@ -118,17 +132,9 @@ export async function POST(request: Request): Promise<Response> {
           name: name.trim(),
           email: email.toLowerCase(),
           password,
-          role: invite.role,
+          role: userRole,
           assignedTeams: invite.assignedTeams,
-          departments: {
-            isProductionStaff: invite.departments?.isProductionStaff || false,
-            isSocialMediaStaff: invite.departments?.isSocialMediaStaff || false,
-            isGraphicsStaff: invite.departments?.isGraphicsStaff || false,
-            isVideoStaff: invite.departments?.isVideoStaff || false,
-            isEventsStaff: invite.departments?.isEventsStaff || false,
-            isScoutingStaff: invite.departments?.isScoutingStaff || false,
-            isContentCreator: (invite.departments as any)?.isContentCreator || false,
-          },
+          departments,
         },
         overrideAccess: true,
       })
@@ -138,22 +144,15 @@ export async function POST(request: Request): Promise<Response> {
         name: name.trim(),
         email: email.toLowerCase(),
         password,
-        role: invite.role,
+        role: userRole,
         assignedTeams: invite.assignedTeams,
-        departments: {
-          isProductionStaff: invite.departments?.isProductionStaff || false,
-          isSocialMediaStaff: invite.departments?.isSocialMediaStaff || false,
-          isGraphicsStaff: invite.departments?.isGraphicsStaff || false,
-          isVideoStaff: invite.departments?.isVideoStaff || false,
-          isEventsStaff: invite.departments?.isEventsStaff || false,
-          isScoutingStaff: invite.departments?.isScoutingStaff || false,
-          isContentCreator: (invite.departments as any)?.isContentCreator || false,
-        },
+        departments,
       }
       try {
         newUser = await payload.create({
           collection: 'people',
           data: personData,
+          overrideAccess: true,
         })
       } catch (slugError: any) {
         if (slugError.message?.includes('slug')) {
@@ -163,10 +162,39 @@ export async function POST(request: Request): Promise<Response> {
               ...personData,
               slug: `${name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now().toString(36).slice(-4)}`,
             },
+            overrideAccess: true,
           })
         } else {
           throw slugError
         }
+      }
+    }
+
+    // Register PUG fields if invite has PUG settings
+    const pugInvite = (invite as any).pugInvite
+    if (pugInvite?.isForPug) {
+      try {
+        const pugUpdate: Record<string, any> = {
+          pugTiers: ['open', 'invite'],
+          pugRegisteredDate: new Date().toISOString(),
+          pugInvitedBy: invite.createdBy
+            ? typeof invite.createdBy === 'object' ? (invite.createdBy as any).id : invite.createdBy
+            : undefined,
+        }
+        if (pugInvite.approvedRoles?.length) {
+          pugUpdate.pugApprovedRoles = pugInvite.approvedRoles
+        }
+        if (pugInvite.region) {
+          pugUpdate.pugInviteRegions = [pugInvite.region]
+        }
+        await payload.update({
+          collection: 'people',
+          id: newUser.id,
+          data: pugUpdate as any,
+          overrideAccess: true,
+        })
+      } catch (pugErr: any) {
+        console.error('[Invite Signup] PUG registration failed:', pugErr.message)
       }
     }
 
@@ -194,7 +222,7 @@ export async function POST(request: Request): Promise<Response> {
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         path: '/',
-        maxAge: 60 * 60 * 24 * 7, // 7 days
+        maxAge: 28800, // 8 hours - match People collection tokenExpiration
       })
     }
 

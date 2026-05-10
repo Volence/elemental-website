@@ -41,8 +41,10 @@ interface PollNotification {
   lastVoters: Map<number, Set<string>>
   channelId: string
   guildId: string
+  createdAt: number
 }
 const pollNotifications = new Map<string, PollNotification>()
+const POLL_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000
 
 // Track truncated content for pagination
 interface TruncatedContent {
@@ -59,12 +61,21 @@ export function registerPollForNotifications(
   channelId: string,
   guildId: string,
 ): void {
+  // Clean up expired entries on each registration
+  const now = Date.now()
+  for (const [id, entry] of pollNotifications) {
+    if (now - entry.createdAt > POLL_MAX_AGE_MS) {
+      pollNotifications.delete(id)
+    }
+  }
+
   pollNotifications.set(messageId, {
     enabledUsers: new Set(),
     lastVoteCounts: new Map(),
     lastVoters: new Map(),
     channelId,
     guildId,
+    createdAt: now,
   })
 }
 

@@ -37,6 +37,7 @@ async function fetchTeamName(teamId: string): Promise<string> {
   try {
     const response = await fetch(`${DATA_API_BASE}/teams/${teamId}`, {
       headers: { 'Authorization': `Bearer ${FACEIT_API_KEY}` },
+      signal: AbortSignal.timeout(15_000),
     })
     if (response.ok) {
       const data = await response.json()
@@ -57,7 +58,8 @@ async function fetchStandingsTeamNames(stageId: string): Promise<Map<string, str
   
   try {
     const response = await fetch(
-      `${TEAM_LEAGUES_BASE}/standings?entityType=stage&entityId=${stageId}&offset=0&limit=100`
+      `${TEAM_LEAGUES_BASE}/standings?entityType=stage&entityId=${stageId}&offset=0&limit=100`,
+      { signal: AbortSignal.timeout(15_000) },
     )
     
     if (!response.ok) {
@@ -88,7 +90,8 @@ async function fetchStandingsTeamNames(stageId: string): Promise<Map<string, str
 async function fetchMatches(teamId: string, championshipId: string): Promise<FaceitMatch[]> {
   try {
     const response = await fetch(
-      `${CHAMPIONSHIPS_BASE}/matches?participantId=${teamId}&participantType=TEAM&championshipId=${championshipId}&limit=70&offset=0&sort=ASC`
+      `${CHAMPIONSHIPS_BASE}/matches?participantId=${teamId}&participantType=TEAM&championshipId=${championshipId}&limit=70&offset=0&sort=ASC`,
+      { signal: AbortSignal.timeout(15_000) },
     )
     if (!response.ok) return []
     const data = await response.json()

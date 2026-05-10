@@ -71,6 +71,7 @@ async function fetchTeamProfile(teamId: string): Promise<FaceitTeamData | null> 
       headers: {
         'Authorization': `Bearer ${FACEIT_API_KEY}`,
       },
+      signal: AbortSignal.timeout(15_000),
     })
 
     if (!response.ok) {
@@ -92,7 +93,8 @@ async function fetchTeamProfile(teamId: string): Promise<FaceitTeamData | null> 
 async function fetchStandings(stageId: string, teamId: string): Promise<{ standing: FaceitStanding | null, totalTeams: number, allStandings: FaceitStanding[] }> {
   try {
     const response = await fetch(
-      `${TEAM_LEAGUES_BASE}/standings?entityId=${stageId}&entityType=stage&userId=&offset=0&limit=100`
+      `${TEAM_LEAGUES_BASE}/standings?entityId=${stageId}&entityType=stage&userId=&offset=0&limit=100`,
+      { signal: AbortSignal.timeout(15_000) },
     )
 
     if (!response.ok) {
@@ -126,7 +128,8 @@ async function fetchStandings(stageId: string, teamId: string): Promise<{ standi
 async function fetchMatches(teamId: string, championshipId: string): Promise<FaceitMatch[]> {
   try {
     const response = await fetch(
-      `${CHAMPIONSHIPS_BASE}/matches?participantId=${teamId}&participantType=TEAM&championshipId=${championshipId}&limit=70&offset=0&sort=ASC`
+      `${CHAMPIONSHIPS_BASE}/matches?participantId=${teamId}&participantType=TEAM&championshipId=${championshipId}&limit=70&offset=0&sort=ASC`,
+      { signal: AbortSignal.timeout(15_000) },
     )
 
     if (!response.ok) {
@@ -153,6 +156,7 @@ async function fetchMatchDetails(matchId: string): Promise<{ faction1Score: numb
   try {
     const response = await fetch(`${DATA_API_BASE}/matches/${matchId}`, {
       headers: { 'Authorization': `Bearer ${FACEIT_API_KEY}` },
+      signal: AbortSignal.timeout(15_000),
     })
 
     if (!response.ok) return null

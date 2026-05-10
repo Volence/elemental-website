@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     // The seasons/tree API returns the full league hierarchy including championship_id on each conference
     const response = await fetch(
       `https://www.faceit.com/api/team-leagues/v2/seasons/tree?entityType=season&entityId=${seasonId}`,
-      { next: { revalidate: 0 } }
+      { next: { revalidate: 0 }, signal: AbortSignal.timeout(15_000) },
     )
 
     if (!response.ok) {

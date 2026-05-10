@@ -242,6 +242,9 @@ const config = buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URI || 'postgresql://build:build@localhost:5432/build',
+      max: 10,
+      connectionTimeoutMillis: 5_000,
+      idleTimeoutMillis: 30_000,
     },
     idType: 'serial', // Use 'serial' for auto-incrementing numeric IDs
     push: process.env.PAYLOAD_DB_PUSH === 'true' || false,

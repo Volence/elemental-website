@@ -4,24 +4,15 @@ import configPromise from '@payload-config'
 import { syncTeamData } from '@/utilities/faceitSync'
 import { startCronJob, completeCronJob, failCronJob } from '@/utilities/cronLogger'
 
-/**
- * Full Sync Cron Job
- * POST /api/cron/full-sync
- * 
- * Runs every 3 hours:
- * - Syncs ALL active FaceIt-enabled teams
- * - Updates match data, team records, standings
- * - Ensures data stays fresh throughout the day
- * 
- * Requires: x-cron-secret header matching CRON_SECRET env var
- */
+let syncInProgress = false
+
 export async function POST(request: Request) {
   let cronJobRunId: number | string | undefined
-  
+
   try {
     // Authenticate cron request
     const cronSecret = request.headers.get('x-cron-secret')
-    
+
     if (!cronSecret || cronSecret !== process.env.CRON_SECRET) {
       console.error('[Full Sync] Unauthorized: Invalid or missing cron secret')
       return NextResponse.json(
@@ -29,6 +20,15 @@ export async function POST(request: Request) {
         { status: 401 }
       )
     }
+
+    if (syncInProgress) {
+      console.warn('[Full Sync] Skipping - previous sync still running')
+      return NextResponse.json(
+        { success: false, error: 'Sync already in progress' },
+        { status: 409 }
+      )
+    }
+    syncInProgress = true
     
     
     const payload = await getPayload({ config: await configPromise })
@@ -60,12 +60,13 @@ export async function POST(request: Request) {
         teamsTotal: 0,
         apiCalls: 0,
       }
-      
+
       // Mark cron job as completed even when no work was done
       if (cronJobRunId) {
         await completeCronJob(payload, cronJobRunId, summary)
       }
-      
+
+      syncInProgress = false
       return NextResponse.json(summary)
     }
     
@@ -170,17 +171,19 @@ export async function POST(request: Request) {
       }
     }
     
+    syncInProgress = false
     return NextResponse.json(summary)
-    
+
   } catch (error: any) {
+    syncInProgress = false
     console.error('[Full Sync] Fatal error:', error)
-    
+
     // Mark cron job as failed
     if (cronJobRunId) {
       const payload = await getPayload({ config: await configPromise })
       await failCronJob(payload, cronJobRunId, error.message || 'Internal server error')
     }
-    
+
     return NextResponse.json(
       { success: false, error: error.message || 'Internal server error' },
       { status: 500 }

@@ -60,6 +60,7 @@ export async function GET(request: NextRequest) {
         code,
         redirect_uri: redirectUri,
       }),
+      signal: AbortSignal.timeout(15_000),
     })
 
     if (!tokenResponse.ok) {
@@ -73,6 +74,7 @@ export async function GET(request: NextRequest) {
 
     const userResponse = await fetch('https://discord.com/api/users/@me', {
       headers: { Authorization: `Bearer ${accessToken}` },
+      signal: AbortSignal.timeout(15_000),
     })
 
     if (!userResponse.ok) {
