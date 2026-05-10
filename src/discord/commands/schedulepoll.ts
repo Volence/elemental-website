@@ -45,13 +45,13 @@ export async function handleSchedulePoll(
 
     const siteUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'https://elmt.gg'
     const teamSlug = team.slug || team.name?.toLowerCase().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '')
-    const buildUrl = `${siteUrl}/schedule/${teamSlug}?tab=build`
+    const availUrl = `${siteUrl}/schedule/${teamSlug}?tab=availability`
 
     const embed = new EmbedBuilder()
-      .setTitle(`Schedule Builder - ${team.name}`)
+      .setTitle(`Weekly Availability - ${team.name}`)
       .setDescription(
-        `Use the schedule page to build lineups, assign scrims, and publish to Discord.\n\n` +
-        `[Open Schedule Builder](${buildUrl})`
+        `Submit your availability for this week so we can build the schedule.\n\n` +
+        `[Fill Out Availability](${availUrl})`
       )
       .setColor(0x5865f2)
 
