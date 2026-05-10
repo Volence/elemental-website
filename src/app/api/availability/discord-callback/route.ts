@@ -112,17 +112,34 @@ export async function GET(request: NextRequest) {
 
     if (!person) {
       const { randomBytes } = await import('crypto')
-      person = await payload.create({
-        collection: 'people',
-        data: {
-          name: userData.global_name || userData.username,
-          email: `${userData.id}@discord.placeholder`,
-          password: randomBytes(32).toString('hex'),
-          discordId: userData.id,
-          role: 'user',
-        },
-        overrideAccess: true,
-      })
+      const displayName = userData.global_name || userData.username
+      const createData = {
+        name: displayName,
+        email: `${userData.id}@discord.placeholder`,
+        password: randomBytes(32).toString('hex'),
+        discordId: userData.id,
+        role: 'user' as const,
+      }
+      try {
+        person = await payload.create({
+          collection: 'people',
+          data: createData,
+          overrideAccess: true,
+        })
+      } catch (slugError: any) {
+        if (slugError.message?.includes('slug')) {
+          person = await payload.create({
+            collection: 'people',
+            data: {
+              ...createData,
+              slug: `${displayName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${userData.id.slice(-4)}`,
+            },
+            overrideAccess: true,
+          })
+        } else {
+          throw slugError
+        }
+      }
       console.log('[Discord OAuth] Created People record:', person.id)
     }
 

@@ -12,99 +12,108 @@ async function getAdmin() {
 }
 
 export async function GET(request: NextRequest) {
-  const payload = await getAdmin()
-  if (!payload) return NextResponse.json({ error: 'Admin required' }, { status: 403 })
+  try {
+    const payload = await getAdmin()
+    if (!payload) return NextResponse.json({ error: 'Admin required' }, { status: 403 })
 
-  const url = new URL(request.url)
-  const targetId = parseInt(url.searchParams.get('targetId') ?? '', 10)
-  const sourceId = parseInt(url.searchParams.get('sourceId') ?? '', 10)
-  if (!targetId || !sourceId || targetId === sourceId) {
-    return NextResponse.json({ error: 'Two different person IDs required' }, { status: 400 })
-  }
-
-  const [target, source] = await Promise.all([
-    payload.findByID({ collection: 'people', id: targetId, depth: 1, overrideAccess: true }),
-    payload.findByID({ collection: 'people', id: sourceId, depth: 1, overrideAccess: true }),
-  ])
-
-  if (!target || !source) {
-    return NextResponse.json({ error: 'One or both people not found' }, { status: 404 })
-  }
-
-  const t = target as any
-  const s = source as any
-
-  const fieldsToMerge: Array<{ field: string; targetValue: any; sourceValue: any; willCopy: boolean }> = []
-
-  const checkField = (field: string, tVal: any, sVal: any) => {
-    const tEmpty = tVal == null || tVal === '' || (Array.isArray(tVal) && tVal.length === 0)
-    const sEmpty = sVal == null || sVal === '' || (Array.isArray(sVal) && sVal.length === 0)
-    if (!sEmpty) {
-      fieldsToMerge.push({ field, targetValue: tVal, sourceValue: sVal, willCopy: tEmpty })
+    const url = new URL(request.url)
+    const targetId = parseInt(url.searchParams.get('targetId') ?? '', 10)
+    const sourceId = parseInt(url.searchParams.get('sourceId') ?? '', 10)
+    if (!targetId || !sourceId || targetId === sourceId) {
+      return NextResponse.json({ error: 'Two different person IDs required' }, { status: 400 })
     }
-  }
 
-  checkField('discordId', t.discordId, s.discordId)
-  checkField('email', t.email, s.email)
-  checkField('bio', t.bio, s.bio)
-  checkField('photo', t.photo?.url ?? t.photo, s.photo?.url ?? s.photo)
-  checkField('avatar', t.avatar?.url ?? t.avatar, s.avatar?.url ?? s.avatar)
-  checkField('role', t.role, s.role)
-  checkField('pugTiers', t.pugTiers, s.pugTiers)
-  checkField('pugApprovedRoles', t.pugApprovedRoles, s.pugApprovedRoles)
-  checkField('pugInviteRegions', t.pugInviteRegions, s.pugInviteRegions)
-  checkField('pugBattleTag', t.pugBattleTag, s.pugBattleTag)
-  checkField('pugRegisteredDate', t.pugRegisteredDate, s.pugRegisteredDate)
-  checkField('pugBanOffenseCount', t.pugBanOffenseCount, s.pugBanOffenseCount)
-  checkField('socialLinks', t.socialLinks, s.socialLinks)
-  checkField('gameAliases', t.gameAliases, s.gameAliases)
-  checkField('assignedTeams', t.assignedTeams, s.assignedTeams)
-  checkField('showInLiveStreamers', t.showInLiveStreamers, s.showInLiveStreamers)
+    let target: any, source: any
+    try {
+      ;[target, source] = await Promise.all([
+        payload.findByID({ collection: 'people', id: targetId, depth: 1, overrideAccess: true }),
+        payload.findByID({ collection: 'people', id: sourceId, depth: 1, overrideAccess: true }),
+      ])
+    } catch (findErr: any) {
+      return NextResponse.json({ error: `Failed to look up people: ${findErr.message}` }, { status: 404 })
+    }
 
-  // Find teams that reference either person
-  const allTeams = await payload.find({
-    collection: 'teams',
-    limit: 1000,
-    depth: 0,
-    overrideAccess: true,
-  })
+    if (!target || !source) {
+      return NextResponse.json({ error: 'One or both people not found' }, { status: 404 })
+    }
 
-  type TeamRef = { teamId: number; teamName: string; roles: string[] }
-  const findTeamRefs = (personId: number): TeamRef[] => {
-    const refs: TeamRef[] = []
-    for (const team of allTeams.docs) {
-      const roles: string[] = []
-      const checkArr = (arr: any[] | undefined, role: string) => {
-        if (arr?.some((item: any) => {
-          const pid = typeof item.person === 'object' ? item.person?.id : item.person
-          return pid === personId
-        })) roles.push(role)
-      }
-      checkArr(team.roster ?? undefined, 'Roster')
-      checkArr(team.subs ?? undefined, 'Sub')
-      checkArr(team.captain ?? undefined, 'Captain')
-      checkArr(team.coaches ?? undefined, 'Coach')
-      checkArr(team.manager ?? undefined, 'Manager')
-      if ((typeof team.coCaptain === 'object' ? (team.coCaptain as any)?.id : team.coCaptain) === personId) {
-        roles.push('Co-Captain')
-      }
-      if (roles.length > 0) {
-        refs.push({ teamId: team.id, teamName: team.name, roles })
+    const t = target as any
+    const s = source as any
+
+    const fieldsToMerge: Array<{ field: string; targetValue: any; sourceValue: any; willCopy: boolean }> = []
+
+    const checkField = (field: string, tVal: any, sVal: any) => {
+      const tEmpty = tVal == null || tVal === '' || (Array.isArray(tVal) && tVal.length === 0)
+      const sEmpty = sVal == null || sVal === '' || (Array.isArray(sVal) && sVal.length === 0)
+      if (!sEmpty) {
+        fieldsToMerge.push({ field, targetValue: tVal, sourceValue: sVal, willCopy: tEmpty })
       }
     }
-    return refs
+
+    checkField('discordId', t.discordId, s.discordId)
+    checkField('email', t.email, s.email)
+    checkField('bio', t.bio, s.bio)
+    checkField('photo', t.photo?.url ?? t.photo, s.photo?.url ?? s.photo)
+    checkField('avatar', t.avatar?.url ?? t.avatar, s.avatar?.url ?? s.avatar)
+    checkField('role', t.role, s.role)
+    checkField('pugTiers', t.pugTiers, s.pugTiers)
+    checkField('pugApprovedRoles', t.pugApprovedRoles, s.pugApprovedRoles)
+    checkField('pugInviteRegions', t.pugInviteRegions, s.pugInviteRegions)
+    checkField('pugBattleTag', t.pugBattleTag, s.pugBattleTag)
+    checkField('pugRegisteredDate', t.pugRegisteredDate, s.pugRegisteredDate)
+    checkField('pugBanOffenseCount', t.pugBanOffenseCount, s.pugBanOffenseCount)
+    checkField('socialLinks', t.socialLinks, s.socialLinks)
+    checkField('gameAliases', t.gameAliases, s.gameAliases)
+    checkField('assignedTeams', t.assignedTeams, s.assignedTeams)
+    checkField('showInLiveStreamers', t.showInLiveStreamers, s.showInLiveStreamers)
+
+    const allTeams = await payload.find({
+      collection: 'teams',
+      limit: 1000,
+      depth: 0,
+      overrideAccess: true,
+    })
+
+    type TeamRef = { teamId: number; teamName: string; roles: string[] }
+    const findTeamRefs = (personId: number): TeamRef[] => {
+      const refs: TeamRef[] = []
+      for (const team of allTeams.docs) {
+        const roles: string[] = []
+        const checkArr = (arr: any[] | undefined, role: string) => {
+          if (arr?.some((item: any) => {
+            const pid = typeof item.person === 'object' ? item.person?.id : item.person
+            return pid === personId
+          })) roles.push(role)
+        }
+        checkArr(team.roster ?? undefined, 'Roster')
+        checkArr(team.subs ?? undefined, 'Sub')
+        checkArr(team.captain ?? undefined, 'Captain')
+        checkArr(team.coaches ?? undefined, 'Coach')
+        checkArr(team.manager ?? undefined, 'Manager')
+        if ((typeof team.coCaptain === 'object' ? (team.coCaptain as any)?.id : team.coCaptain) === personId) {
+          roles.push('Co-Captain')
+        }
+        if (roles.length > 0) {
+          refs.push({ teamId: team.id, teamName: team.name, roles })
+        }
+      }
+      return refs
+    }
+
+    const targetTeamRefs = findTeamRefs(targetId)
+    const sourceTeamRefs = findTeamRefs(sourceId)
+
+    return NextResponse.json({
+      target: { id: t.id, name: t.name, email: t.email, discordId: t.discordId, role: t.role, photoUrl: t.photo?.url ?? null },
+      source: { id: s.id, name: s.name, email: s.email, discordId: s.discordId, role: s.role, photoUrl: s.photo?.url ?? null },
+      fieldsToMerge,
+      targetTeamRefs,
+      sourceTeamRefs,
+    })
+  } catch (err: any) {
+    console.error('[Merge People] GET error:', err)
+    return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 })
   }
-
-  const targetTeamRefs = findTeamRefs(targetId)
-  const sourceTeamRefs = findTeamRefs(sourceId)
-
-  return NextResponse.json({
-    target: { id: t.id, name: t.name, email: t.email, discordId: t.discordId, role: t.role, photoUrl: t.photo?.url ?? null },
-    source: { id: s.id, name: s.name, email: s.email, discordId: s.discordId, role: s.role, photoUrl: s.photo?.url ?? null },
-    fieldsToMerge,
-    targetTeamRefs,
-    sourceTeamRefs,
-  })
 }
 
 // All FK references to people across both Payload and Prisma tables
@@ -143,6 +152,8 @@ const FK_UPDATES: Array<{ table: string; column: string }> = [
   { table: 'watched_threads', column: 'added_by_id' },
   { table: 'caster_su', column: 'user_id' },
   { table: 'assigned_c', column: 'user_id' },
+  // Absences
+  { table: 'absences', column: 'person_id' },
   // Self-reference
   { table: 'people', column: 'pug_invited_by_id' },
   // Payload rels/junction tables
@@ -169,6 +180,8 @@ const PRISMA_UPDATES: Array<{ table: string; column: string }> = [
 ]
 
 export async function POST(request: NextRequest) {
+  let log: string[] = []
+  try {
   const payload = await getAdmin()
   if (!payload) return NextResponse.json({ error: 'Admin required' }, { status: 403 })
 
@@ -179,10 +192,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Two different person IDs required' }, { status: 400 })
   }
 
-  const [target, source] = await Promise.all([
-    payload.findByID({ collection: 'people', id: targetId, depth: 0, overrideAccess: true }),
-    payload.findByID({ collection: 'people', id: sourceId, depth: 0, overrideAccess: true }),
-  ])
+  let target: any, source: any
+  try {
+    ;[target, source] = await Promise.all([
+      payload.findByID({ collection: 'people', id: targetId, depth: 0, overrideAccess: true }),
+      payload.findByID({ collection: 'people', id: sourceId, depth: 0, overrideAccess: true }),
+    ])
+  } catch (findErr: any) {
+    return NextResponse.json({ error: `Failed to look up people: ${findErr.message}` }, { status: 404 })
+  }
   if (!target || !source) {
     return NextResponse.json({ error: 'One or both people not found' }, { status: 404 })
   }
@@ -233,9 +251,6 @@ export async function POST(request: NextRequest) {
   }
 
   const db = (payload as any).db?.pool ?? (payload as any).db?.client
-  const log: string[] = []
-
-  try {
     // Step 1: Update target person with merged fields
     if (Object.keys(mergeData).length > 0) {
       await payload.update({
@@ -344,7 +359,8 @@ export async function POST(request: NextRequest) {
       log,
     })
   } catch (err: any) {
+    console.error('[Merge People] POST error:', err)
     const details = err.data?.errors ?? err.errors ?? undefined
-    return NextResponse.json({ error: err.message, details, log }, { status: 500 })
+    return NextResponse.json({ error: err.message || 'Internal server error', details, log }, { status: 500 })
   }
 }
