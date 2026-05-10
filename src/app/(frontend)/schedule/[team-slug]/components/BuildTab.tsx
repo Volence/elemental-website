@@ -392,7 +392,8 @@ export function BuildTab() {
 
     while (current <= end) {
       const isoDate = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`
-      const blocks = (timeSlots || team.scheduleBlocks || []).map((slot: any) =>
+      const effectiveSlots = timeSlots?.length ? timeSlots : (team.scheduleBlocks || [])
+      const blocks = effectiveSlots.map((slot: any) =>
         createDefaultBlock(slot.label || slot.startTime || '8-10', slot.startTime)
       )
       newDays.push({ date: formatDayLabel(current), isoDate, enabled: true, blocks })
