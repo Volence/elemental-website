@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createHmac } from 'crypto'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
+import { checkSignupDuplicates } from '@/utilities/checkSignupDuplicates'
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
@@ -35,14 +36,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL('/availability/error?reason=invalid_state', serverUrl))
     }
     redirectPath = `/schedule/${teamSlug}?tab=availability`
-  } else if (parts.length === 3) {
-    const [calendarId, nonce, sig] = parts
-    const secret = process.env.PAYLOAD_SECRET || 'dev-secret'
-    const expectedSig = createHmac('sha256', secret).update(`${calendarId}:${nonce}`).digest('hex').slice(0, 16)
-    if (sig !== expectedSig) {
-      return NextResponse.redirect(new URL('/availability/error?reason=invalid_state', serverUrl))
-    }
-    redirectPath = `/availability/${calendarId}`
   } else {
     return NextResponse.redirect(new URL('/availability/error?reason=invalid_state', serverUrl))
   }
@@ -89,10 +82,6 @@ export async function GET(request: NextRequest) {
 
     const userData = await userResponse.json()
 
-    const avatarUrl = userData.avatar
-      ? `https://cdn.discordapp.com/avatars/${userData.id}/${userData.avatar}.png`
-      : null
-
     if (!redirectPath) {
       return NextResponse.redirect(new URL('/availability/error?reason=no_calendar', serverUrl))
     }
@@ -115,7 +104,7 @@ export async function GET(request: NextRequest) {
       const displayName = userData.global_name || userData.username
       const createData = {
         name: displayName,
-        email: `${userData.id}@discord.placeholder`,
+        email: `discord_${userData.id}@elmt.placeholder`,
         password: randomBytes(32).toString('hex'),
         discordId: userData.id,
         role: 'user' as const,
@@ -141,6 +130,7 @@ export async function GET(request: NextRequest) {
         }
       }
       console.log('[Discord OAuth] Created People record:', person.id)
+      checkSignupDuplicates(payload, person.id as number, displayName, 'schedule-oauth')
     }
 
     const { jwtSign } = await import('payload')
@@ -188,20 +178,6 @@ export async function GET(request: NextRequest) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       maxAge: tokenExpiration,
-      path: '/',
-    })
-
-    // Also set discord_identity for backward compatibility
-    response.cookies.set('discord_identity', JSON.stringify({
-      id: userData.id,
-      username: userData.username,
-      global_name: userData.global_name || userData.username,
-      avatar: avatarUrl,
-    }), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 30,
       path: '/',
     })
 

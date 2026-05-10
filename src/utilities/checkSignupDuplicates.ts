@@ -32,7 +32,7 @@ export async function checkSignupDuplicates(
   payload: Payload,
   newPersonId: number,
   newPersonName: string,
-  source: 'pug-signup' | 'public-signup' | 'auto-login',
+  source: 'pug-signup' | 'public-signup' | 'auto-login' | 'schedule-oauth',
 ): Promise<void> {
   try {
     const drizzle = (payload as any).db?.drizzle

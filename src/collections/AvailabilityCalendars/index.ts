@@ -223,6 +223,10 @@ export const AvailabilityCalendars: CollectionConfig = {
         afterRead: [
           ({ data }) => {
             if (data?.id) {
+              const team = data.team
+              if (team && typeof team === 'object' && (team as any).slug) {
+                return `/schedule/${(team as any).slug}?tab=availability`
+              }
               return `/availability/${data.id}`
             }
             return ''

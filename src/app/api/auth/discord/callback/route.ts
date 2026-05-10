@@ -224,21 +224,39 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       }
 
       // New user - create a minimal player account (no team, no linked person)
-      const randomPassword = `discord_${Math.random().toString(36).substring(2)}${Date.now()}`
-      const newUser = await payload.create({
-        collection: 'people',
-        data: {
-          name: discordUser.global_name || discordUser.username,
-          email: `discord_${discordUser.id}@elmt.placeholder`,
-          password: randomPassword,
-          role: 'player',
-          discordId: discordUser.id,
-        },
-        overrideAccess: true,
-      })
+      const { randomBytes } = await import('crypto')
+      const displayName = discordUser.global_name || discordUser.username
+      const createData = {
+        name: displayName,
+        email: `discord_${discordUser.id}@elmt.placeholder`,
+        password: randomBytes(32).toString('hex'),
+        role: 'player' as const,
+        discordId: discordUser.id,
+      }
+      let newUser: any
+      try {
+        newUser = await payload.create({
+          collection: 'people',
+          data: createData,
+          overrideAccess: true,
+        })
+      } catch (slugError: any) {
+        if (slugError.message?.includes('slug')) {
+          newUser = await payload.create({
+            collection: 'people',
+            data: {
+              ...createData,
+              slug: `${displayName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${discordUser.id.slice(-4)}`,
+            },
+            overrideAccess: true,
+          })
+        } else {
+          throw slugError
+        }
+      }
 
       await ensureOpenPugRegistration(payload, newUser.id)
-      checkSignupDuplicates(payload, newUser.id, discordUser.global_name || discordUser.username, 'pug-signup')
+      checkSignupDuplicates(payload, newUser.id, displayName, 'pug-signup')
       return await loginAndRedirect(payload, newUser, cookieStore, serverUrl, state.returnUrl || '/pugs')
     } catch (error: any) {
       console.error('[Discord OAuth] PUG self-signup failed:', error)
@@ -262,20 +280,21 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         return await loginAndRedirect(payload, existingUser.docs[0], cookieStore, serverUrl, state.returnUrl || '/admin')
       }
 
-      const randomPassword = `discord_${Math.random().toString(36).substring(2)}${Date.now()}`
+      const { randomBytes: rb } = await import('crypto')
       const displayName = discordUser.global_name || discordUser.username
+      const signupData = {
+        name: displayName,
+        email: `discord_${discordUser.id}@elmt.placeholder`,
+        password: rb(32).toString('hex'),
+        role: 'user' as const,
+        discordId: discordUser.id,
+      }
 
       let newUser: any
       try {
         newUser = await payload.create({
           collection: 'people',
-          data: {
-            name: displayName,
-            email: `discord_${discordUser.id}@elmt.placeholder`,
-            password: randomPassword,
-            role: 'user',
-            discordId: discordUser.id,
-          },
+          data: signupData,
           overrideAccess: true,
         })
       } catch (slugError: any) {
@@ -283,12 +302,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           newUser = await payload.create({
             collection: 'people',
             data: {
-              name: displayName,
+              ...signupData,
               slug: `${displayName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${discordUser.id.slice(-4)}`,
-              email: `discord_${discordUser.id}@elmt.placeholder`,
-              password: randomPassword,
-              role: 'user',
-              discordId: discordUser.id,
             },
             overrideAccess: true,
           })
@@ -381,12 +396,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         }
       }
 
-      const randomPassword = `discord_${Math.random().toString(36).substring(2)}${Date.now()}`
+      const { randomBytes: rb2 } = await import('crypto')
       const isPugAdminInvite = (invite.departments as any)?.isPugAdmin === true
       const userRole = isPugAdminInvite ? 'staff-manager' : invite.role
       const authData: Record<string, any> = {
         email: `discord_${discordUser.id}@elmt.placeholder`,
-        password: randomPassword,
+        password: rb2(32).toString('hex'),
         role: userRole,
         discordId: discordUser.id,
         assignedTeams: teamIds.length > 0 ? teamIds : (invite.assignedTeams ?? undefined),
@@ -500,20 +515,21 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     if (existingUser.docs.length === 0) {
       // Auto-create account for Discord users who don't have one yet
-      const randomPassword = `discord_${Math.random().toString(36).substring(2)}${Date.now()}`
+      const { randomBytes: rb } = await import('crypto')
       const displayName = discordUser.global_name || discordUser.username
+      const autoCreateData = {
+        name: displayName,
+        email: `discord_${discordUser.id}@elmt.placeholder`,
+        password: rb(32).toString('hex'),
+        role: 'user' as const,
+        discordId: discordUser.id,
+      }
 
       let newUser: any
       try {
         newUser = await payload.create({
           collection: 'people',
-          data: {
-            name: displayName,
-            email: `discord_${discordUser.id}@elmt.placeholder`,
-            password: randomPassword,
-            role: 'user',
-            discordId: discordUser.id,
-          },
+          data: autoCreateData,
           overrideAccess: true,
         })
       } catch (slugError: any) {
@@ -521,12 +537,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           newUser = await payload.create({
             collection: 'people',
             data: {
-              name: displayName,
+              ...autoCreateData,
               slug: `${displayName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${discordUser.id.slice(-4)}`,
-              email: `discord_${discordUser.id}@elmt.placeholder`,
-              password: randomPassword,
-              role: 'user',
-              discordId: discordUser.id,
             },
             overrideAccess: true,
           })

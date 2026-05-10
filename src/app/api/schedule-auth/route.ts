@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
   const sig = createHmac('sha256', secret).update(statePayload).digest('hex').slice(0, 16)
   const state = encodeURIComponent(`${statePayload}:${sig}`)
 
-  const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=identify&state=${state}`
+  const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=identify&state=${state}&prompt=none`
 
   return NextResponse.redirect(discordAuthUrl)
 }

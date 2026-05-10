@@ -134,25 +134,40 @@ export async function POST(request: Request): Promise<Response> {
       })
     } else {
       // Create a new person record
-      newUser = await payload.create({
-        collection: 'people',
-        data: {
-          name: name.trim(),
-          email: email.toLowerCase(),
-          password,
-          role: invite.role,
-          assignedTeams: invite.assignedTeams,
-          departments: {
-            isProductionStaff: invite.departments?.isProductionStaff || false,
-            isSocialMediaStaff: invite.departments?.isSocialMediaStaff || false,
-            isGraphicsStaff: invite.departments?.isGraphicsStaff || false,
-            isVideoStaff: invite.departments?.isVideoStaff || false,
-            isEventsStaff: invite.departments?.isEventsStaff || false,
-            isScoutingStaff: invite.departments?.isScoutingStaff || false,
-            isContentCreator: (invite.departments as any)?.isContentCreator || false,
-          },
+      const personData = {
+        name: name.trim(),
+        email: email.toLowerCase(),
+        password,
+        role: invite.role,
+        assignedTeams: invite.assignedTeams,
+        departments: {
+          isProductionStaff: invite.departments?.isProductionStaff || false,
+          isSocialMediaStaff: invite.departments?.isSocialMediaStaff || false,
+          isGraphicsStaff: invite.departments?.isGraphicsStaff || false,
+          isVideoStaff: invite.departments?.isVideoStaff || false,
+          isEventsStaff: invite.departments?.isEventsStaff || false,
+          isScoutingStaff: invite.departments?.isScoutingStaff || false,
+          isContentCreator: (invite.departments as any)?.isContentCreator || false,
         },
-      })
+      }
+      try {
+        newUser = await payload.create({
+          collection: 'people',
+          data: personData,
+        })
+      } catch (slugError: any) {
+        if (slugError.message?.includes('slug')) {
+          newUser = await payload.create({
+            collection: 'people',
+            data: {
+              ...personData,
+              slug: `${name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now().toString(36).slice(-4)}`,
+            },
+          })
+        } else {
+          throw slugError
+        }
+      }
     }
 
     // Mark the invite as used

@@ -202,10 +202,6 @@ export async function PATCH(
   }
 }
 
-/**
- * Extract Discord identity from cookies.
- * Tries payload-token first (Payload CMS login), then discord_identity cookie.
- */
 async function getDiscordIdentity(request: NextRequest): Promise<{
   id: string
   username: string
@@ -213,27 +209,20 @@ async function getDiscordIdentity(request: NextRequest): Promise<{
   avatar?: string | null
 } | null> {
   const payloadToken = request.cookies.get('payload-token')?.value
-  if (payloadToken) {
-    try {
-      const payload = await getPayload({ config: configPromise })
-      const { user } = await payload.auth({ headers: new Headers({ Authorization: `JWT ${payloadToken}` }) })
-      if (user && (user as any).discordId) {
-        return {
-          id: (user as any).discordId,
-          username: (user as any).name || (user as any).email,
-          global_name: (user as any).name,
-          avatar: null,
-        }
-      }
-    } catch {}
-  }
-
-  const cookie = request.cookies.get('discord_identity')
-  if (!cookie?.value) return null
+  if (!payloadToken) return null
 
   try {
-    return JSON.parse(cookie.value)
-  } catch {
-    return null
-  }
+    const payload = await getPayload({ config: configPromise })
+    const { user } = await payload.auth({ headers: new Headers({ Authorization: `JWT ${payloadToken}` }) })
+    if (user && (user as any).discordId) {
+      return {
+        id: (user as any).discordId,
+        username: (user as any).name || (user as any).email,
+        global_name: (user as any).name,
+        avatar: null,
+      }
+    }
+  } catch {}
+
+  return null
 }

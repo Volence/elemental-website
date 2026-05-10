@@ -294,6 +294,10 @@ export const DiscordPolls: CollectionConfig = {
         afterRead: [
           ({ data }) => {
             if (data?.id && data?.scheduleType === 'calendar') {
+              const team = data.team
+              if (team && typeof team === 'object' && team.slug) {
+                return `/schedule/${team.slug}?tab=availability`
+              }
               return `/availability/${data.id}`
             }
             return ''
