@@ -230,7 +230,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         name: displayName,
         email: `discord_${discordUser.id}@elmt.placeholder`,
         password: randomBytes(32).toString('hex'),
-        role: 'player' as const,
+        role: 'user' as const,
         discordId: discordUser.id,
       }
       let newUser: any
