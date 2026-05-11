@@ -35,12 +35,12 @@ interface FaceitStanding {
 
 interface FaceitMatch {
   factions: Array<{ id: string; number: number }>
-  status: 'created' | 'finished'
+  status: 'created' | 'finished' | 'dummy'
   winner?: string
-  origin: {
+  origin?: {
     id: string
     state: string
-    schedule: number
+    schedule?: number
     startedAt?: number
     finishedAt?: number
   }
@@ -321,7 +321,7 @@ async function syncTeamPlayoffMatches(
   const opponentIds = new Set<string>()
   matches.forEach(match => {
     const opponentFaction = match.factions.find(f => f.id !== faceitTeamId)
-    if (opponentFaction) opponentIds.add(opponentFaction.id)
+    if (opponentFaction && opponentFaction.id !== 'bye') opponentIds.add(opponentFaction.id)
   })
   const opponentNames = await resolveOpponentNames(Array.from(opponentIds))
 
@@ -331,13 +331,18 @@ async function syncTeamPlayoffMatches(
   let losses = 0
 
   for (const faceitMatch of matches) {
-    if (!faceitMatch.origin?.schedule) continue
-    const matchDate = new Date(faceitMatch.origin.schedule)
+    // Skip "dummy" placeholder matches (no origin, future bracket slots)
+    if (!faceitMatch.origin) continue
+
+    // Use schedule timestamp, fall back to finishedAt for BYE/auto-resolved matches
+    const timestamp = faceitMatch.origin.schedule || faceitMatch.origin.finishedAt
+    if (!timestamp) continue
+    const matchDate = new Date(timestamp)
     if (isNaN(matchDate.getTime())) continue
 
     const opponentFaction = faceitMatch.factions.find(f => f.id !== faceitTeamId)
     const opponentId = opponentFaction?.id || ''
-    const isBye = !opponentId
+    const isBye = !opponentId || opponentId === 'bye'
     const opponentName = isBye ? 'BYE' : (opponentNames.get(opponentId) || `Unknown (${opponentId.slice(0, 8)})`)
 
     const isFinished = faceitMatch.status === 'finished'
