@@ -532,33 +532,6 @@ export const People: CollectionConfig = {
           }
         }
 
-        if (operation === 'create' || operation === 'update') {
-          try {
-            const payload = req.payload
-            if (payload && data?.name) {
-              const whereConditions: any[] = [{ name: { like: data.name } }]
-              if (operation === 'update' && originalDoc?.id) {
-                whereConditions.push({ id: { not_equals: originalDoc.id } })
-              }
-
-              const existingPeople = await payload.find({
-                collection: 'people',
-                where: { and: whereConditions },
-                limit: 5,
-              })
-
-              if (existingPeople.docs.length > 0) {
-                const similarNames = existingPeople.docs.map((p) => p.name).join(', ')
-                req.payload.logger.warn(
-                  `Similar names found: ${similarNames}. Make sure "${data.name}" is not a duplicate.`,
-                )
-              }
-            }
-          } catch {
-            // Non-critical duplicate check - don't block the save
-          }
-        }
-
         if (operation === 'update' && req.user && originalDoc) {
           if (req.user.role !== UserRole.ADMIN) {
             if (data && 'role' in data && data.role !== originalDoc.role) {
