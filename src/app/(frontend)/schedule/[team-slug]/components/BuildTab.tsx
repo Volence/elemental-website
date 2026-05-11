@@ -374,12 +374,6 @@ export function BuildTab() {
         setDays(fixed)
         return
       }
-      if (viewedCalendar.responses?.length) {
-        setDays(suggestLineup(fixed, team.roster as RosterEntry[], team.subs as RosterEntry[], viewedCalendar.responses))
-        return
-      }
-      setDays(fixed)
-      return
     }
 
     const { dateRange, timeSlots } = viewedCalendar
