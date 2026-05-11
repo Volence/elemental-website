@@ -27,6 +27,7 @@ interface Match {
   opponentScore?: number
   roomLink?: string
   faceitRoomId?: string
+  isPlayoff?: boolean
 }
 
 interface PlayoffData {
@@ -148,33 +149,121 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
         </div>
         )}
 
-        {/* Playoff Status */}
-        {playoff && (
+        {/* Playoff Section */}
+        {playoff && (() => {
+          const playoffUpcoming = scheduledMatches.filter(m => m.isPlayoff)
+          const playoffResults = recentResults.filter(m => m.isPlayoff)
+          const regularUpcoming = scheduledMatches.filter(m => !m.isPlayoff)
+
+          return (
           <div className="px-6 pb-4">
             <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-amber-300">Playoffs</h3>
-                {playoff.eliminated ? (
-                  <span className="px-3 py-1 bg-red-500/20 border border-red-500/30 rounded-md text-sm font-semibold text-red-300">
-                    Eliminated
-                  </span>
-                ) : (
-                  <span className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-md text-sm font-semibold text-green-300">
-                    Active
-                  </span>
-                )}
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl font-bold text-white">{playoff.record}</span>
+                  {playoff.eliminated ? (
+                    <span className="px-3 py-1 bg-red-500/20 border border-red-500/30 rounded-md text-sm font-semibold text-red-300">
+                      Eliminated
+                    </span>
+                  ) : (
+                    <span className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-md text-sm font-semibold text-green-300">
+                      Active
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="mt-2 text-2xl font-bold text-white">{playoff.record}</div>
+
+              {/* Upcoming Playoff Matches */}
+              {playoffUpcoming.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  {playoffUpcoming.map((match) => (
+                    <div
+                      key={match.id}
+                      className="flex items-center justify-between p-3 bg-amber-500/5 rounded-lg border border-amber-500/20"
+                    >
+                      <div className="flex-1">
+                        <div className="text-sm text-amber-200/60">{formatDate(match.date)}</div>
+                        <div className="font-semibold mt-1 text-white">
+                          vs {match.opponent}
+                        </div>
+                      </div>
+                      {match.roomLink && (
+                        <a
+                          href={match.roomLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-2 bg-amber-500/10 hover:bg-amber-500/20 border-2 border-amber-500/40 hover:border-amber-500 rounded-md text-sm font-medium text-amber-300 transition-all hover:shadow-[0_0_15px_rgba(245,158,11,0.2)]"
+                        >
+                          Match Room
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Past Playoff Matches */}
+              {playoffResults.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  {playoffResults.map((match) => (
+                    <div
+                      key={match.id}
+                      className={`flex items-center justify-between p-3 rounded-lg border ${
+                        match.result === 'win'
+                          ? 'bg-green-500/5 border-green-500/20'
+                          : 'bg-red-500/5 border-red-500/20'
+                      }`}
+                    >
+                      <div className="flex-1">
+                        {match.date && (
+                          <div className="text-sm text-slate-400">{formatDate(match.date)}</div>
+                        )}
+                        <div className={`font-semibold text-white ${match.date ? 'mt-1' : ''}`}>
+                          vs {match.opponent}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {match.result === 'win' && (
+                          <span className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-md text-sm font-semibold text-green-300">
+                            W{match.elmtScore != null && match.opponentScore != null &&
+                              !(match.elmtScore === 1 && match.opponentScore === 0) &&
+                              ` ${match.elmtScore}-${match.opponentScore}`}
+                          </span>
+                        )}
+                        {match.result === 'loss' && (
+                          <span className="px-3 py-1 bg-red-500/20 border border-red-500/30 rounded-md text-sm font-semibold text-red-300">
+                            L{match.elmtScore != null && match.opponentScore != null &&
+                              !(match.elmtScore === 0 && match.opponentScore === 1) &&
+                              ` ${match.elmtScore}-${match.opponentScore}`}
+                          </span>
+                        )}
+                        {match.roomLink && (
+                          <a
+                            href={match.roomLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-md text-xs font-medium text-slate-300 transition-colors"
+                          >
+                            Room
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
-        )}
+          )
+        })()}
 
-        {/* Upcoming Matches */}
-        {scheduledMatches.length > 0 && (
+        {/* Upcoming Matches (regular season) */}
+        {scheduledMatches.filter(m => !m.isPlayoff).length > 0 && (
           <div className="px-6 pb-6">
-            <h3 className="text-lg font-semibold text-white mb-3">📅 Upcoming Matches</h3>
+            <h3 className="text-lg font-semibold text-white mb-3">Upcoming Matches</h3>
             <div className="space-y-2">
-              {scheduledMatches.map((match) => (
+              {scheduledMatches.filter(m => !m.isPlayoff).map((match) => (
                   <div
                     key={match.id}
                     className="flex items-center justify-between p-4 bg-slate-800/50 rounded-lg border transition-all border-cyan-500/20 hover:border-cyan-500/40 hover:shadow-[0_0_15px_rgba(6,182,212,0.1)]"
@@ -192,7 +281,7 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
                         rel="noopener noreferrer"
                         className="px-4 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 border-2 border-cyan-500/50 hover:border-cyan-500 rounded-md text-sm font-medium text-cyan-300 transition-all hover:shadow-[0_0_15px_rgba(6,182,212,0.3)]"
                       >
-                        Match Room →
+                        Match Room
                       </a>
                     )}
                   </div>
@@ -201,21 +290,21 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
           </div>
         )}
 
-        {/* Past Matches - Collapsible */}
-        {recentResults.length > 0 && (
+        {/* Past Matches - Collapsible (regular season only, playoff results shown above) */}
+        {recentResults.filter(m => !m.isPlayoff).length > 0 && (
           <div className="px-6 pb-6">
-            <button 
+            <button
               className="flex items-center gap-2 text-lg font-semibold text-white mb-3 hover:text-cyan-300 transition-colors"
               onClick={() => setShowPastMatches(!showPastMatches)}
             >
               <span className="transform transition-transform" style={{ transform: showPastMatches ? 'rotate(90deg)' : 'rotate(0deg)' }}>
                 ▶
               </span>
-              Past Matches ({recentResults.length})
+              Past Matches ({recentResults.filter(m => !m.isPlayoff).length})
             </button>
             {showPastMatches && (
               <div className="space-y-2">
-                {recentResults.map((match) => (
+                {recentResults.filter(m => !m.isPlayoff).map((match) => (
                     <div
                       key={match.id}
                       className={`flex items-center justify-between p-4 bg-slate-800/50 rounded-lg border transition-colors ${

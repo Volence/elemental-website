@@ -140,6 +140,7 @@ export async function GET(
         league: match.league,
         roomLink: match.faceitLobby,
         faceitRoomId: match.faceitRoomId,
+        isPlayoff: (match as any).isPlayoff || false,
       })),
       results: recentResults.docs.map(match => {
         const elmtScore = (match.score as any)?.elmtScore
@@ -156,13 +157,14 @@ export async function GET(
           date: match.date,
           opponent: match.opponent,
           result,
-          score: (elmtScore !== null && opponentScore !== null) 
-            ? `${elmtScore}-${opponentScore}` 
+          score: (elmtScore !== null && opponentScore !== null)
+            ? `${elmtScore}-${opponentScore}`
             : null,
           elmtScore,
           opponentScore,
           roomLink: match.faceitLobby,
           faceitRoomId: match.faceitRoomId,
+          isPlayoff: (match as any).isPlayoff || false,
         }
       }),
     }
