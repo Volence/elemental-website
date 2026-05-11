@@ -67,8 +67,8 @@ export async function createAuditLog(
         metadata: params.metadata,
         ipAddress,
       },
-      // Bypass access control for system-generated logs
       overrideAccess: true,
+      req: params.req,
     })
   } catch (error) {
     // Log error but don't throw - audit logging shouldn't break the main operation

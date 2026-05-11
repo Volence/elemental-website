@@ -27,6 +27,7 @@ export const autoCloseRecruitment: CollectionAfterChangeHook<Person> = async ({
       },
       depth: 1,
       limit: 100,
+      req,
     })
 
     for (const team of playerTeams.docs) {
@@ -52,6 +53,7 @@ export const autoCloseRecruitment: CollectionAfterChangeHook<Person> = async ({
       },
       depth: 1,
       limit: 100,
+      req,
     })
 
     for (const team of managerTeams.docs) {
@@ -68,6 +70,7 @@ export const autoCloseRecruitment: CollectionAfterChangeHook<Person> = async ({
       },
       depth: 1,
       limit: 100,
+      req,
     })
 
     for (const team of coachTeams.docs) {
@@ -121,6 +124,7 @@ async function closeMatchingListings(
       ],
     },
     limit: 10,
+    req,
   })
 
   for (const listing of openListings.docs) {
@@ -131,6 +135,7 @@ async function closeMatchingListings(
         status: 'filled',
         filledBy: person.id,
       },
+      req,
     })
   }
 }
