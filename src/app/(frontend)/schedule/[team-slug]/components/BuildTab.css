@@ -485,6 +485,48 @@
   user-select: none;
 }
 
+.build-tab__legend {
+  display: flex;
+  gap: 16px;
+  padding: 0 8px 6px;
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.build-tab__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.build-tab__legend-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 10px;
+  border-radius: 2px;
+  border-left: 3px solid;
+}
+
+.build-tab__legend-swatch--available {
+  background: rgba(0, 229, 255, 0.18);
+  border-left-color: #00e5ff;
+}
+
+.build-tab__legend-swatch--maybe {
+  background: rgba(251, 146, 60, 0.15);
+  border-left-color: #fb923c;
+}
+
+.build-tab__legend-swatch--unassigned {
+  background: rgba(255, 255, 255, 0.04);
+  border-left-color: #64748b;
+}
+
+.build-tab__legend-swatch--ringer {
+  background: rgba(251, 191, 36, 0.1);
+  border-left-color: #fbbf24;
+}
+
 .build-tab__cell-avail-players {
   display: flex;
   flex-direction: column;
@@ -518,7 +560,14 @@
 }
 
 .build-tab__avail-chip--maybe {
-  opacity: 0.5;
+  font-style: italic;
+  color: #94a3b8;
+}
+
+.build-tab__avail-chip--maybe.build-tab__avail-chip--assigned {
+  background: rgba(251, 146, 60, 0.15);
+  color: #fb923c;
+  border-left-color: #fb923c;
 }
 
 .build-tab__avail-chip--assigned {
@@ -539,7 +588,6 @@
 }
 
 .build-tab__avail-chip--ringer-placeholder {
-  border-style: dashed;
   animation: ringerPulse 2s ease-in-out infinite;
 }
 

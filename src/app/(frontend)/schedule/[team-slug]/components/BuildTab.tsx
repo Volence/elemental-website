@@ -68,9 +68,8 @@ function roleMatchesFamily(playerRole: string, slotRole: string): boolean {
   if (playerRole === slotRole) return true
   const pr = playerRole.toLowerCase()
   const sr = slotRole.toLowerCase()
-  for (const members of Object.values(ROLE_FAMILY)) {
-    if (members.includes(pr) && members.includes(sr)) return true
-  }
+  if (sr === 'dps') return ROLE_FAMILY.dps.includes(pr)
+  if (sr === 'support') return ROLE_FAMILY.support.includes(pr)
   return false
 }
 
@@ -922,6 +921,13 @@ export function BuildTab() {
       </div>
 
       {error && <div className="build-tab__error">{error}</div>}
+
+      <div className="build-tab__legend">
+        <span className="build-tab__legend-item"><span className="build-tab__legend-swatch build-tab__legend-swatch--available" />Selected</span>
+        <span className="build-tab__legend-item"><span className="build-tab__legend-swatch build-tab__legend-swatch--maybe" />Maybe</span>
+        <span className="build-tab__legend-item"><span className="build-tab__legend-swatch build-tab__legend-swatch--unassigned" />Unselected</span>
+        <span className="build-tab__legend-item"><span className="build-tab__legend-swatch build-tab__legend-swatch--ringer" />Ringer</span>
+      </div>
 
       {unassignedPlayers.length > 0 && (
         <div className="build-tab__pool">

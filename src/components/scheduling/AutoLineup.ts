@@ -31,6 +31,7 @@ interface AvailablePlayer {
   rosterRole: string
   status: 'main' | 'sub' | 'trial'
   availableBlocks: number
+  blockStatus: 'available' | 'maybe'
 }
 
 const ROSTER_ROLE_MAP: Record<string, string> = {
@@ -45,18 +46,17 @@ const ROLE_FAMILY: Record<string, string[]> = {
   support: ['support', 'main support', 'flex support'],
 }
 
-function sameFamily(a: string, b: string): boolean {
-  const la = a.toLowerCase()
-  const lb = b.toLowerCase()
-  for (const members of Object.values(ROLE_FAMILY)) {
-    if (members.includes(la) && members.includes(lb)) return true
-  }
+function slotAcceptsRole(playerRole: string, slotRole: string): boolean {
+  if (playerRole === slotRole) return true
+  const pr = playerRole.toLowerCase()
+  const sr = slotRole.toLowerCase()
+  if (sr === 'dps') return ROLE_FAMILY.dps.includes(pr)
+  if (sr === 'support') return ROLE_FAMILY.support.includes(pr)
   return false
 }
 
 function roleMatchesSlot(scheduleRole: string, rosterRole: string, slotRole: string): boolean {
-  if (scheduleRole && scheduleRole === slotRole) return true
-  if (scheduleRole && sameFamily(scheduleRole, slotRole)) return true
+  if (scheduleRole && slotAcceptsRole(scheduleRole, slotRole)) return true
 
   const role = rosterRole.toLowerCase()
   const slot = slotRole.toLowerCase()
@@ -106,7 +106,7 @@ export function suggestLineup(
         const playerInfo = playerMap.get(response.discordId)
         const scheduleRole = response.scheduleRole || (playerInfo ? ROSTER_ROLE_MAP[playerInfo.rosterRole] : '') || ''
 
-        let isAvailableThisBlock = false
+        let blockStatus: 'available' | 'maybe' | null = null
         let totalBlocksAvailable = 0
 
         for (const [dateKey, slots] of Object.entries(response.selections)) {
@@ -121,13 +121,13 @@ export function suggestLineup(
             if (status === 'available' || status === 'maybe') {
               totalBlocksAvailable++
               if (slotTime === blockMatchKey) {
-                isAvailableThisBlock = true
+                blockStatus = status as 'available' | 'maybe'
               }
             }
           }
         }
 
-        if (isAvailableThisBlock) {
+        if (blockStatus) {
           availablePlayers.push({
             personId: playerInfo?.personId || response.discordId,
             discordId: response.discordId,
@@ -136,11 +136,15 @@ export function suggestLineup(
             rosterRole: playerInfo?.rosterRole || '',
             status: playerInfo?.status || 'trial',
             availableBlocks: totalBlocksAvailable,
+            blockStatus,
           })
         }
       }
 
       availablePlayers.sort((a, b) => {
+        if (a.blockStatus !== b.blockStatus) {
+          return a.blockStatus === 'available' ? -1 : 1
+        }
         if (a.status !== b.status) {
           if (a.status === 'main') return -1
           if (b.status === 'main') return 1
@@ -155,19 +159,19 @@ export function suggestLineup(
 
       const assignedIds = new Set<string>()
       const newSlots: PlayerSlot[] = block.slots.map(slot => {
-        const matches = availablePlayers.filter(
-          p => !assignedIds.has(p.personId) && roleMatchesSlot(p.scheduleRole, p.rosterRole, slot.role)
+        const confirmed = availablePlayers.filter(
+          p => !assignedIds.has(p.personId) && p.blockStatus === 'available' && roleMatchesSlot(p.scheduleRole, p.rosterRole, slot.role)
         )
 
-        if (matches.length > 0) {
+        if (confirmed.length > 0) {
           const isUniqueRole = (roleCounts[slot.role] || 0) <= 1
           if (isUniqueRole) {
-            for (const m of matches) assignedIds.add(m.personId)
-            const ids = matches.map(m => m.personId)
+            for (const m of confirmed) assignedIds.add(m.personId)
+            const ids = confirmed.map(m => m.personId)
             return { ...slot, playerId: ids[0], playerIds: ids }
           }
-          assignedIds.add(matches[0].personId)
-          return { ...slot, playerId: matches[0].personId }
+          assignedIds.add(confirmed[0].personId)
+          return { ...slot, playerId: confirmed[0].personId }
         }
 
         return { ...slot, playerId: null }
