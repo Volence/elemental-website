@@ -92,6 +92,7 @@ export async function GET(request: NextRequest) {
   })
 
   let regionQueueStatus: Record<string, boolean> | null = null
+  let seasonId: number | undefined
   if (tier === 'invite') {
     const activeSeason = await payload.find({
       collection: 'pug-seasons',
@@ -103,6 +104,7 @@ export async function GET(request: NextRequest) {
     if (!season) {
       return NextResponse.json({ error: 'No active PUG season' }, { status: 400 })
     }
+    seasonId = season.id
     if (season?.regionQueueStatus) {
       regionQueueStatus = {
         na: season.regionQueueStatus.na ?? false,
@@ -112,7 +114,7 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ lobbies: enriched, regionQueueStatus })
+  return NextResponse.json({ lobbies: enriched, regionQueueStatus, seasonId })
 }
 
 export async function POST(request: NextRequest) {

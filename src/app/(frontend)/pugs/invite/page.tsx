@@ -3,6 +3,7 @@ import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { CreateLobbyButton } from './CreateLobbyButton'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'Invite Tier PUGs | Elemental' }
@@ -90,28 +91,33 @@ export default async function PugInvitePage({
             </p>
           </div>
 
-          {lobbies.length === 0 ? (
-            <p className="text-gray-500">
-              {queueActive
-                ? 'No active lobbies yet. Check back shortly.'
-                : 'Queuing is currently closed for this region.'}
-            </p>
+          {lobbies.length === 0 && !queueActive ? (
+            <p className="text-gray-500">Queuing is currently closed for this region.</p>
           ) : (
-            <div className="space-y-3">
-              {lobbies.map((lobby) => (
-                <Link
-                  key={lobby.id}
-                  href={`/pugs/lobby/${lobby.id}`}
-                  className="block border border-gray-700 rounded-lg p-4 hover:bg-gray-800/40 transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">PUG #{lobby.lobbyNumber}</span>
-                    <span className="text-sm px-2 py-1 bg-gray-800 rounded text-gray-300">{lobby.status}</span>
-                  </div>
-                  <p className="text-sm text-gray-500 mt-1">{lobby.players.length}/10 players</p>
-                </Link>
-              ))}
-            </div>
+            <>
+              {queueActive && (
+                <CreateLobbyButton seasonId={season.id} region={region} />
+              )}
+              {lobbies.length === 0 ? (
+                <p className="text-gray-500 mt-3">No active lobbies yet. Create one above or check back shortly.</p>
+              ) : (
+                <div className="space-y-3">
+                  {lobbies.map((lobby) => (
+                    <Link
+                      key={lobby.id}
+                      href={`/pugs/lobby/${lobby.id}`}
+                      className="block border border-gray-700 rounded-lg p-4 hover:bg-gray-800/40 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">PUG #{lobby.lobbyNumber}</span>
+                        <span className="text-sm px-2 py-1 bg-gray-800 rounded text-gray-300">{lobby.status}</span>
+                      </div>
+                      <p className="text-sm text-gray-500 mt-1">{lobby.players.length}/10 players</p>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </>
       )}

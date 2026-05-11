@@ -320,8 +320,10 @@ export function PugLobbiesDashboard() {
   const alert = useAlert()
   const [lobbies, setLobbies] = useState<Lobby[]>([])
   const [regionStatus, setRegionStatus] = useState<RegionStatus>({ na: false, emea: false, pacific: false })
+  const [inviteSeasonId, setInviteSeasonId] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [toggling, setToggling] = useState<string | null>(null)
+  const [creatingLobby, setCreatingLobby] = useState<string | null>(null)
   const [tierFilter, setTierFilter] = useState<'all' | 'open' | 'invite'>('all')
   const [acting, setActing] = useState<string | null>(null)
   const [expanded, setExpanded] = useState<Set<number>>(new Set())
@@ -338,6 +340,9 @@ export function PugLobbiesDashboard() {
       setLobbies([...openData.lobbies, ...inviteData.lobbies])
       if (inviteData.regionQueueStatus) {
         setRegionStatus(inviteData.regionQueueStatus)
+      }
+      if (inviteData.seasonId) {
+        setInviteSeasonId(inviteData.seasonId)
       }
     } finally {
       setLoading(false)
@@ -367,6 +372,26 @@ export function PugLobbiesDashboard() {
       }
     } finally {
       setToggling(null)
+    }
+  }
+
+  async function createNewLobby(region: string) {
+    if (!inviteSeasonId) return
+    setCreatingLobby(region)
+    try {
+      const res = await fetch('/api/pug/lobby', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ payloadSeasonId: inviteSeasonId, tier: 'invite', region }),
+        credentials: 'include',
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        await alert({ message: data.error || 'Failed to create lobby', variant: 'danger' })
+      }
+      await fetchData()
+    } finally {
+      setCreatingLobby(null)
     }
   }
 
@@ -445,20 +470,36 @@ export function PugLobbiesDashboard() {
                     )}
                   </div>
                 </div>
-                <button
-                  className={`ps-btn ${isOpen ? 'ps-btn-danger' : 'ps-btn-success'}`}
-                  onClick={() => toggleRegion(r.value)}
-                  disabled={isToggling}
-                  style={{ padding: '6px 14px', fontSize: 12 }}
-                >
-                  {isToggling ? (
-                    <Loader2 size={14} className="ps-spin" />
-                  ) : isOpen ? (
-                    <><PowerOff size={14} /> Close</>
-                  ) : (
-                    <><Power size={14} /> Open</>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {isOpen && (
+                    <button
+                      className="ps-btn ps-btn-primary"
+                      onClick={() => createNewLobby(r.value)}
+                      disabled={creatingLobby === r.value}
+                      style={{ padding: '6px 14px', fontSize: 12 }}
+                    >
+                      {creatingLobby === r.value ? (
+                        <Loader2 size={14} className="ps-spin" />
+                      ) : (
+                        <><Gamepad2 size={14} /> New Lobby</>
+                      )}
+                    </button>
                   )}
-                </button>
+                  <button
+                    className={`ps-btn ${isOpen ? 'ps-btn-danger' : 'ps-btn-success'}`}
+                    onClick={() => toggleRegion(r.value)}
+                    disabled={isToggling}
+                    style={{ padding: '6px 14px', fontSize: 12 }}
+                  >
+                    {isToggling ? (
+                      <Loader2 size={14} className="ps-spin" />
+                    ) : isOpen ? (
+                      <><PowerOff size={14} /> Close</>
+                    ) : (
+                      <><Power size={14} /> Open</>
+                    )}
+                  </button>
+                </div>
               </div>
             )
           })}
