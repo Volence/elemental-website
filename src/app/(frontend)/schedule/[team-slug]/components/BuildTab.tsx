@@ -58,6 +58,22 @@ interface DaySchedule {
   blocks: TimeBlock[]
 }
 
+const ROLE_FAMILY: Record<string, string[]> = {
+  tank: ['tank'],
+  dps: ['dps', 'hitscan', 'flex dps'],
+  support: ['support', 'main support', 'flex support'],
+}
+
+function roleMatchesFamily(playerRole: string, slotRole: string): boolean {
+  if (playerRole === slotRole) return true
+  const pr = playerRole.toLowerCase()
+  const sr = slotRole.toLowerCase()
+  for (const members of Object.values(ROLE_FAMILY)) {
+    if (members.includes(pr) && members.includes(sr)) return true
+  }
+  return false
+}
+
 interface RoleOption {
   label: string
   abbrev: string
@@ -319,7 +335,7 @@ export function BuildTab() {
     for (const role of coreRoles) slotsNeeded[role] = (slotsNeeded[role] || 0) + 1
     let covered = 0
     for (const [role, needed] of Object.entries(slotsNeeded)) {
-      const uniquePlayers = new Set(mainAvail.filter(a => a.role === role).map(a => a.personId))
+      const uniquePlayers = new Set(mainAvail.filter(a => roleMatchesFamily(a.role, role)).map(a => a.personId))
       covered += Math.min(uniquePlayers.size, needed)
     }
     if (covered >= coreRoles.length) return 'green'
@@ -1039,7 +1055,7 @@ export function BuildTab() {
                               const availKey = `${day.isoDate}|${block.startTime || block.time}`
                               const allAvail = availabilityMap[availKey] || []
                               const forRole = isTrial
-                                ? allAvail.filter(a => a.role === roleName && a.scheduleStatus === 'tryout')
+                                ? allAvail.filter(a => roleMatchesFamily(a.role, roleName) && a.scheduleStatus === 'tryout')
                                 : allAvail.filter(a => a.scheduleStatus === 'sub')
                               return forRole.length > 0 ? (
                                 <div className="build-tab__cell-avail-players">
@@ -1094,10 +1110,10 @@ export function BuildTab() {
                           const availKey = `${day.isoDate}|${block.startTime || block.time}`
                           const allAvail = availabilityMap[availKey] || []
                           const forRole = isTrial
-                            ? allAvail.filter(a => a.role === roleName && a.scheduleStatus === 'tryout')
+                            ? allAvail.filter(a => roleMatchesFamily(a.role, roleName) && a.scheduleStatus === 'tryout')
                             : isSub
                               ? allAvail.filter(a => a.scheduleStatus === 'sub')
-                              : allAvail.filter(a => a.role === roleName && a.scheduleStatus === 'main')
+                              : allAvail.filter(a => roleMatchesFamily(a.role, roleName) && a.scheduleStatus === 'main')
                           const assignedIds = new Set(getSlotPlayerIds(slot))
                           const hasRinger = slot.isRinger && slot.ringerName
 
@@ -1350,7 +1366,7 @@ export function BuildTab() {
               const day = days[openDropdown.dayIdx]
               const availKey = `${day?.isoDate}|${block.startTime || block.time}`
               const allAvail = availabilityMap[availKey] || []
-              const availableHere = new Set(allAvail.filter(a => a.role === slot.role).map(a => a.personId))
+              const availableHere = new Set(allAvail.filter(a => roleMatchesFamily(a.role, slot.role)).map(a => a.personId))
               const respondedIds = new Set(respondedPlayers.map(p => p.id))
               const sorted = [...rosterPlayers].sort((a, b) => {
                 const aAvail = availableHere.has(a.id) ? 0 : 1

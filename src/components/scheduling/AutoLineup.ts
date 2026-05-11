@@ -39,15 +39,31 @@ const ROSTER_ROLE_MAP: Record<string, string> = {
   support: 'Support',
 }
 
+const ROLE_FAMILY: Record<string, string[]> = {
+  tank: ['tank'],
+  dps: ['dps', 'hitscan', 'flex dps'],
+  support: ['support', 'main support', 'flex support'],
+}
+
+function sameFamily(a: string, b: string): boolean {
+  const la = a.toLowerCase()
+  const lb = b.toLowerCase()
+  for (const members of Object.values(ROLE_FAMILY)) {
+    if (members.includes(la) && members.includes(lb)) return true
+  }
+  return false
+}
+
 function roleMatchesSlot(scheduleRole: string, rosterRole: string, slotRole: string): boolean {
   if (scheduleRole && scheduleRole === slotRole) return true
+  if (scheduleRole && sameFamily(scheduleRole, slotRole)) return true
 
   const role = rosterRole.toLowerCase()
   const slot = slotRole.toLowerCase()
 
   if (role === 'tank') return slot === 'tank'
-  if (role === 'dps') return ['dps', 'hitscan', 'flex dps'].includes(slot)
-  if (role === 'support') return ['support', 'main support', 'flex support'].includes(slot)
+  if (role === 'dps') return ROLE_FAMILY.dps.includes(slot)
+  if (role === 'support') return ROLE_FAMILY.support.includes(slot)
   return false
 }
 
