@@ -27,17 +27,18 @@ export async function createMatchVoiceChannels(
       name,
       type: ChannelType.GuildVoice,
       parent: categoryId,
-      permissionOverwrites: [
-        {
-          id: guild.roles.everyone,
-          deny: [PermissionFlagsBits.Connect],
-        },
-        ...allowedUserIds.map((userId) => ({
-          id: userId,
-          allow: [PermissionFlagsBits.Connect, PermissionFlagsBits.Speak],
-        })),
-      ],
     })
+
+    await channel.permissionOverwrites.edit(guild.roles.everyone, { Connect: false })
+    for (const userId of allowedUserIds) {
+      if (!/^\d{17,20}$/.test(userId)) continue
+      try {
+        await channel.permissionOverwrites.edit(userId, { Connect: true, Speak: true })
+      } catch (err) {
+        console.warn(`[PUG Voice] Could not set perms for user ${userId}:`, err)
+      }
+    }
+
     return channel.id
   }
 

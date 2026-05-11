@@ -99,7 +99,7 @@ export default async function PugsPage() {
       )}
 
       {currentUser && playerDoc && (
-        <BattleTagForm playerId={playerDoc.id} initialTag={playerDoc.battleTag} />
+        <BattleTagForm playerId={playerDoc.id} initialTag={playerDoc.pugBattleTag} />
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -46,7 +46,7 @@ export const autoCloseRecruitment: CollectionAfterChangeHook<Person> = async ({
     const managerTeams = await req.payload.find({
       collection: 'teams',
       where: {
-        manager: {
+        'manager.person': {
           equals: doc.id,
         },
       },
@@ -62,8 +62,8 @@ export const autoCloseRecruitment: CollectionAfterChangeHook<Person> = async ({
     const coachTeams = await req.payload.find({
       collection: 'teams',
       where: {
-        coaches: {
-          contains: doc.id,
+        'coaches.person': {
+          equals: doc.id,
         },
       },
       depth: 1,

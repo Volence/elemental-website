@@ -855,10 +855,22 @@ function BanUI({
   const filtered = heroes.filter(
     (h) => !bannedIds.has(h.id) && h.name.toLowerCase().includes(filter.toLowerCase()),
   )
-  const grouped = filtered.reduce<Record<string, Hero[]>>((acc, h) => {
+  const roleOrder = ['tank', 'damage', 'support']
+  const ungrouped = filtered.reduce<Record<string, Hero[]>>((acc, h) => {
     ;(acc[h.role] ??= []).push(h)
     return acc
   }, {})
+  const grouped: Record<string, Hero[]> = {}
+  for (const role of roleOrder) {
+    if (ungrouped[role]) {
+      grouped[role] = ungrouped[role].sort((a, b) => a.name.localeCompare(b.name))
+    }
+  }
+  for (const [role, hs] of Object.entries(ungrouped)) {
+    if (!grouped[role]) {
+      grouped[role] = hs.sort((a, b) => a.name.localeCompare(b.name))
+    }
+  }
 
   const bansByTeam = [1, 2].map((t) => ({
     team: t,
