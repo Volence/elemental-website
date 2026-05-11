@@ -77,11 +77,12 @@ export async function handleTeamMatches(interaction: ChatInputCommandInteraction
         // Get opponent name
         const opponentName = match.opponent || 'TBD'
 
-        // Match league/division
+        // Match league/division + playoff tag
         const leagueInfo = match.league ? ` • ${match.league}` : ''
+        const playoffTag = (match as any).isPlayoff ? ' `PLAYOFF`' : ''
 
         // Build match line
-        let matchLine = `**vs ${opponentName}**${leagueInfo}\n${dateStr}`
+        let matchLine = `**vs ${opponentName}**${leagueInfo}${playoffTag}\n${dateStr}`
         
         // Add lobby link if available
         if (match.faceitLobby) {

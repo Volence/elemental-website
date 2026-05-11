@@ -48,6 +48,26 @@ interface FaceitMatch {
   round: number
 }
 
+interface SeasonTreeStage {
+  id: string
+  name: string
+  bracket_style?: string
+  conferences: Array<{
+    id: string
+    name: string
+    championship_id: string
+  }>
+}
+
+interface PlayoffChampionship {
+  championshipId: string
+  stageId: string
+  stageName: string
+  conferenceName: string
+  divisionName: string
+  regionName: string
+}
+
 interface SyncResult {
   success: boolean
   error?: string
@@ -197,6 +217,339 @@ async function resolveOpponentNames(opponentIds: string[]): Promise<Map<string, 
   }
 
   return names
+}
+
+/**
+ * Fetch the full season tree from FACEIT Team-Leagues API
+ * Returns the raw tree structure with regions > divisions > stages > conferences
+ */
+async function fetchSeasonTree(seasonId: string): Promise<any | null> {
+  try {
+    const response = await fetch(
+      `${TEAM_LEAGUES_BASE}/seasons/tree?entityType=season&entityId=${seasonId}`,
+      { signal: AbortSignal.timeout(15_000) },
+    )
+
+    if (!response.ok) {
+      console.error(`[Playoff Discovery] Season tree API returned ${response.status}`)
+      return null
+    }
+
+    const data = await response.json()
+    return data?.payload || null
+  } catch (error) {
+    console.error('[Playoff Discovery] Error fetching season tree:', error)
+    return null
+  }
+}
+
+/**
+ * Walk the season tree to find all playoff championship IDs.
+ * Playoff stages have bracket_style 'doubleElimination' or stage name containing 'Playoff'.
+ */
+function discoverPlayoffChampionships(tree: any): PlayoffChampionship[] {
+  const results: PlayoffChampionship[] = []
+
+  if (!tree?.regions) return results
+
+  for (const region of tree.regions) {
+    for (const division of region.divisions || []) {
+      for (const stage of division.stages || []) {
+        const isPlayoff = stage.bracket_style === 'doubleElimination'
+          || (stage.name && stage.name.toLowerCase().includes('playoff'))
+
+        if (!isPlayoff) continue
+
+        for (const conference of stage.conferences || []) {
+          if (conference.championship_id) {
+            results.push({
+              championshipId: conference.championship_id,
+              stageId: stage.id,
+              stageName: stage.name,
+              conferenceName: conference.name,
+              divisionName: division.name,
+              regionName: region.name,
+            })
+          }
+        }
+      }
+    }
+  }
+
+  return results
+}
+
+/**
+ * Sync playoff matches for a single team
+ */
+async function syncTeamPlayoffMatches(
+  teamId: number,
+  faceitTeamId: string,
+  playoffChampionship: PlayoffChampionship,
+  seasonRecord: any,
+): Promise<{ matchesCreated: number; matchesUpdated: number; wins: number; losses: number }> {
+  const payload = await getPayload({ config: configPromise })
+
+  const matches = await fetchMatches(faceitTeamId, playoffChampionship.championshipId)
+
+  if (matches.length === 0) {
+    return { matchesCreated: 0, matchesUpdated: 0, wins: 0, losses: 0 }
+  }
+
+  const team = await payload.findByID({ collection: 'teams', id: teamId, depth: 0 })
+
+  const opponentIds = new Set<string>()
+  matches.forEach(match => {
+    const opponentFaction = match.factions.find(f => f.id !== faceitTeamId)
+    if (opponentFaction) opponentIds.add(opponentFaction.id)
+  })
+  const opponentNames = await resolveOpponentNames(Array.from(opponentIds))
+
+  let matchesCreated = 0
+  let matchesUpdated = 0
+  let wins = 0
+  let losses = 0
+
+  for (const faceitMatch of matches) {
+    if (!faceitMatch.origin?.schedule) continue
+    const matchDate = new Date(faceitMatch.origin.schedule)
+    if (isNaN(matchDate.getTime())) continue
+
+    const opponentFaction = faceitMatch.factions.find(f => f.id !== faceitTeamId)
+    const opponentId = opponentFaction?.id || ''
+    const isBye = !opponentId
+    const opponentName = isBye ? 'BYE' : (opponentNames.get(opponentId) || `Unknown (${opponentId.slice(0, 8)})`)
+
+    const isFinished = faceitMatch.status === 'finished'
+    const didWin = isFinished && faceitMatch.winner === faceitTeamId
+    if (isFinished) {
+      if (didWin) wins++
+      else losses++
+    }
+
+    let existingMatches = await payload.find({
+      collection: 'matches',
+      where: {
+        and: [
+          {
+            or: [
+              { team: { equals: teamId } },
+              { team1Internal: { equals: teamId } },
+            ],
+          },
+          { faceitMatchId: { equals: faceitMatch.origin.id } },
+        ],
+      },
+      limit: 1,
+    })
+
+    const division = seasonRecord?.division || 'Advanced'
+    const matchData: any = {
+      team: teamId,
+      team1Type: 'internal',
+      team1Internal: teamId,
+      team2Type: 'external',
+      team2External: opponentName,
+      opponent: opponentName,
+      date: matchDate.toISOString(),
+      region: team.region || 'NA',
+      league: division,
+      season: `${seasonRecord?.seasonName || 'Season'} Playoffs`,
+      status: isFinished ? 'complete' : 'scheduled',
+      matchType: 'team-match',
+      faceitMatchId: faceitMatch.origin.id,
+      faceitRoomId: faceitMatch.origin.id,
+      faceitLobby: `https://www.faceit.com/en/ow2/room/${faceitMatch.origin.id}`,
+      syncedFromFaceit: true,
+      isPlayoff: true,
+      faceitSeasonId: seasonRecord?.id,
+    }
+
+    if (isFinished) {
+      const ourFaction = faceitMatch.factions.find(f => f.id === faceitTeamId)
+      const theirFaction = faceitMatch.factions.find(f => f.id !== faceitTeamId)
+      const details = await fetchMatchDetails(faceitMatch.origin.id)
+
+      if (details && ourFaction && theirFaction) {
+        const ourScore = ourFaction.number === 1 ? details.faction1Score : details.faction2Score
+        const theirScore = ourFaction.number === 1 ? details.faction2Score : details.faction1Score
+        matchData.score = { elmtScore: ourScore, opponentScore: theirScore }
+      } else {
+        matchData.score = { elmtScore: didWin ? 1 : 0, opponentScore: didWin ? 0 : 1 }
+      }
+    }
+
+    if (existingMatches.docs.length > 0) {
+      const existing = existingMatches.docs[0]
+      const updateData: any = {
+        opponent: matchData.opponent,
+        date: matchData.date,
+        region: matchData.region,
+        league: matchData.league,
+        season: matchData.season,
+        status: matchData.status,
+        faceitLobby: matchData.faceitLobby,
+        faceitMatchId: matchData.faceitMatchId,
+        faceitRoomId: matchData.faceitRoomId,
+        faceitSeasonId: matchData.faceitSeasonId,
+        syncedFromFaceit: true,
+        isPlayoff: true,
+        team1Type: existing.team1Type || 'internal',
+        team1Internal: existing.team1Internal || teamId,
+        team2Type: 'external',
+        team2External: matchData.opponent,
+      }
+
+      if (matchData.score) updateData.score = matchData.score
+
+      await payload.update({ collection: 'matches', id: existing.id, data: updateData })
+      matchesUpdated++
+    } else {
+      await payload.create({ collection: 'matches', data: matchData })
+      matchesCreated++
+    }
+  }
+
+  return { matchesCreated, matchesUpdated, wins, losses }
+}
+
+/**
+ * Auto-discover and sync playoff data for all teams.
+ * Groups FaceitSeasons by seasonId, fetches tree once per season,
+ * discovers playoff championships, and syncs matches for qualifying teams.
+ */
+export async function syncPlayoffs(): Promise<{
+  success: boolean
+  error?: string
+  teamsChecked: number
+  teamsInPlayoffs: number
+  matchesCreated: number
+  matchesUpdated: number
+}> {
+  try {
+    const payload = await getPayload({ config: configPromise })
+
+    // Find all FaceitSeasons that could have playoffs:
+    // - currently active (regular season still running)
+    // - already marked as in playoffs (keep syncing)
+    // - recently archived (finalized but playoffs may not be discovered yet)
+    const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
+
+    const seasons = await payload.find({
+      collection: 'faceit-seasons',
+      where: {
+        or: [
+          { isActive: { equals: true } },
+          { inPlayoffs: { equals: true } },
+          { archivedAt: { greater_than_equal: ninetyDaysAgo } },
+        ],
+      },
+      depth: 1,
+      limit: 200,
+    })
+
+    if (seasons.docs.length === 0) {
+      return { success: true, teamsChecked: 0, teamsInPlayoffs: 0, matchesCreated: 0, matchesUpdated: 0 }
+    }
+
+    // Group by seasonId so we fetch the tree only once per season
+    const bySeasonId = new Map<string, typeof seasons.docs>()
+    for (const season of seasons.docs) {
+      const sid = (season as any).seasonId
+      if (!sid) continue
+      const group = bySeasonId.get(sid) || []
+      group.push(season)
+      bySeasonId.set(sid, group)
+    }
+
+    let totalTeamsChecked = 0
+    let totalTeamsInPlayoffs = 0
+    let totalMatchesCreated = 0
+    let totalMatchesUpdated = 0
+
+    for (const [seasonId, seasonGroup] of bySeasonId) {
+      // Fetch season tree once
+      const tree = await fetchSeasonTree(seasonId)
+      if (!tree) continue
+
+      const playoffChampionships = discoverPlayoffChampionships(tree)
+      if (playoffChampionships.length === 0) continue
+
+      console.log(`[Playoff Sync] Found ${playoffChampionships.length} playoff championships for season ${seasonId}`)
+
+      for (const season of seasonGroup) {
+        totalTeamsChecked++
+        const faceitTeamId = (season as any).faceitTeamId
+        const teamId = typeof season.team === 'object' ? season.team.id : season.team
+        if (!faceitTeamId || !teamId) continue
+
+        const seasonDivision = (season as any).division?.toLowerCase() || ''
+        const seasonRegion = (season as any).region || ''
+
+        // Find the playoff championship matching this team's division+region
+        const matchingPlayoff = playoffChampionships.find(pc => {
+          const divMatch = pc.divisionName.toLowerCase().includes(seasonDivision)
+            || seasonDivision.includes(pc.divisionName.toLowerCase())
+          const regMatch = pc.regionName.toLowerCase().includes(seasonRegion.toLowerCase())
+            || seasonRegion.toLowerCase().includes(pc.regionName.toLowerCase())
+          return divMatch && regMatch
+        })
+
+        if (!matchingPlayoff) continue
+
+        // Check if this team has playoff matches
+        const result = await syncTeamPlayoffMatches(teamId, faceitTeamId, matchingPlayoff, season)
+
+        if (result.matchesCreated > 0 || result.matchesUpdated > 0 || (season as any).inPlayoffs) {
+          totalTeamsInPlayoffs++
+          totalMatchesCreated += result.matchesCreated
+          totalMatchesUpdated += result.matchesUpdated
+
+          // Update FaceitSeason with playoff data
+          await payload.update({
+            collection: 'faceit-seasons',
+            id: season.id,
+            data: {
+              inPlayoffs: true,
+              playoffChampionshipId: matchingPlayoff.championshipId,
+              playoffStageId: matchingPlayoff.stageId,
+              playoffStandings: {
+                wins: result.wins,
+                losses: result.losses,
+                eliminated: result.losses >= 2,
+              },
+              lastSynced: new Date().toISOString(),
+            },
+          })
+
+          console.log(`[Playoff Sync] Team ${teamId}: ${result.matchesCreated} created, ${result.matchesUpdated} updated (${result.wins}W-${result.losses}L)`)
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 500))
+      }
+    }
+
+    // Update Discord team cards for teams in playoffs
+    if (totalTeamsInPlayoffs > 0) {
+      try {
+        const { updateFaceitChannel } = await import('../discord/services/faceitUpdates')
+        await updateFaceitChannel()
+      } catch (error) {
+        console.warn('[Playoff Sync] Failed to update faceit channel:', error)
+      }
+    }
+
+    return {
+      success: true,
+      teamsChecked: totalTeamsChecked,
+      teamsInPlayoffs: totalTeamsInPlayoffs,
+      matchesCreated: totalMatchesCreated,
+      matchesUpdated: totalMatchesUpdated,
+    }
+  } catch (error: any) {
+    console.error('[Playoff Sync] Error:', error)
+    return { success: false, error: error.message, teamsChecked: 0, teamsInPlayoffs: 0, matchesCreated: 0, matchesUpdated: 0 }
+  }
 }
 
 /**

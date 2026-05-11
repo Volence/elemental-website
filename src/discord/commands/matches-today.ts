@@ -115,7 +115,8 @@ export async function handleMatchesToday(interaction: ChatInputCommandInteractio
         }
 
         // Build match line
-        let line = `${statusIcon} **${team1Name}** vs **${team2Name}**${scoreStr} • ${timeStr}`
+        const playoffTag = (match as any).isPlayoff ? ' `PLAYOFF`' : ''
+        let line = `${statusIcon} **${team1Name}** vs **${team2Name}**${scoreStr}${playoffTag} • ${timeStr}`
 
         // Add lobby link
         if (match.faceitLobby && !isComplete) {

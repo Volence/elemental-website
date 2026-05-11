@@ -733,6 +733,16 @@ export const Matches: CollectionConfig = {
     },
     // FaceIt Integration (sidebar)
     {
+      name: 'isPlayoff',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        position: 'sidebar',
+        description: 'Playoff match (auto-set by sync)',
+        readOnly: true,
+      },
+    },
+    {
       name: 'syncedFromFaceit',
       type: 'checkbox',
       defaultValue: false,

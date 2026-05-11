@@ -32,6 +32,7 @@ export const CronJobRuns: CollectionConfig = {
         { label: 'Full Sync', value: 'full-sync' },
         { label: 'Session Cleanup', value: 'session-cleanup' },
         { label: 'Error Harvester', value: 'error-harvester' },
+        { label: 'Playoff Sync', value: 'playoff-sync' },
       ],
       admin: {
         description: 'Name of the cron job',

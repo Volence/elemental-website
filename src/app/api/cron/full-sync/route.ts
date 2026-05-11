@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { syncTeamData } from '@/utilities/faceitSync'
+import { syncTeamData, syncPlayoffs } from '@/utilities/faceitSync'
 import { startCronJob, completeCronJob, failCronJob } from '@/utilities/cronLogger'
 
 let syncInProgress = false
@@ -140,10 +140,22 @@ export async function POST(request: Request) {
       }
     }
     
+    // Run playoff sync after regular sync
+    let playoffResult: any = null
+    try {
+      playoffResult = await syncPlayoffs()
+      if (playoffResult.matchesCreated > 0 || playoffResult.matchesUpdated > 0) {
+        totalMatchesCreated += playoffResult.matchesCreated
+        totalMatchesUpdated += playoffResult.matchesUpdated
+      }
+    } catch (playoffError) {
+      console.error('[Full Sync] Playoff sync error:', playoffError)
+    }
+
     // Determine if the job was successful overall
     // Consider it a failure if ALL teams failed, or if more than 50% failed
     const overallSuccess = successCount > 0 && (successCount >= failCount)
-    
+
     const summary = {
       success: overallSuccess,
       teamsTotal: teams.docs.length,
@@ -156,6 +168,12 @@ export async function POST(request: Request) {
         created: totalMatchesCreated,
         updated: totalMatchesUpdated,
       },
+      playoffs: playoffResult ? {
+        teamsChecked: playoffResult.teamsChecked,
+        teamsInPlayoffs: playoffResult.teamsInPlayoffs,
+        matchesCreated: playoffResult.matchesCreated,
+        matchesUpdated: playoffResult.matchesUpdated,
+      } : null,
       timestamp: now.toISOString(),
       results, // Include individual team results for debugging
     }

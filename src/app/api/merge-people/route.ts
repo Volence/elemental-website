@@ -52,6 +52,8 @@ export async function GET(request: NextRequest) {
 
     checkField('discordId', t.discordId, s.discordId)
     checkField('email', t.email, s.email)
+    checkField('hash', t.hash ? '(set)' : null, s.hash ? '(set)' : null)
+    checkField('salt', t.salt ? '(set)' : null, s.salt ? '(set)' : null)
     checkField('bio', t.bio, s.bio)
     checkField('photo', t.photo?.url ?? t.photo, s.photo?.url ?? s.photo)
     checkField('avatar', t.avatar?.url ?? t.avatar, s.avatar?.url ?? s.avatar)
@@ -64,8 +66,15 @@ export async function GET(request: NextRequest) {
     checkField('pugBanOffenseCount', t.pugBanOffenseCount, s.pugBanOffenseCount)
     checkField('socialLinks', t.socialLinks, s.socialLinks)
     checkField('gameAliases', t.gameAliases, s.gameAliases)
-    checkField('assignedTeams', t.assignedTeams, s.assignedTeams)
     checkField('showInLiveStreamers', t.showInLiveStreamers, s.showInLiveStreamers)
+
+    // assignedTeams: show union preview
+    const tTeamIds = (t.assignedTeams || []).map((x: any) => typeof x === 'object' ? x.id : x)
+    const sTeamIds = (s.assignedTeams || []).map((x: any) => typeof x === 'object' ? x.id : x)
+    const newTeams = sTeamIds.filter((id: number) => !tTeamIds.includes(id))
+    if (newTeams.length > 0) {
+      fieldsToMerge.push({ field: 'assignedTeams', targetValue: t.assignedTeams, sourceValue: s.assignedTeams, willCopy: true })
+    }
 
     const allTeams = await payload.find({
       collection: 'teams',
@@ -219,6 +228,8 @@ export async function POST(request: NextRequest) {
 
   mergeField('discordId')
   mergeField('email')
+  mergeField('hash')
+  mergeField('salt')
   mergeField('bio')
   mergeField('photo')
   mergeField('avatar')
@@ -230,8 +241,15 @@ export async function POST(request: NextRequest) {
   mergeField('pugBanOffenseCount')
   mergeField('socialLinks')
   mergeField('gameAliases')
-  mergeField('assignedTeams')
   mergeField('showInLiveStreamers')
+
+  // assignedTeams: union both lists instead of replace
+  const tTeams = (t.assignedTeams || []).map((x: any) => typeof x === 'object' ? x.id : x)
+  const sTeams = (s.assignedTeams || []).map((x: any) => typeof x === 'object' ? x.id : x)
+  const unionTeams = [...new Set([...tTeams, ...sTeams])]
+  if (unionTeams.length > tTeams.length) {
+    mergeData.assignedTeams = unionTeams
+  }
 
   // Higher role wins (lower index = more powerful)
   const ROLE_PRIORITY = ['admin', 'staff-manager', 'team-manager', 'player', 'user']

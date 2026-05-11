@@ -29,12 +29,23 @@ interface Match {
   faceitRoomId?: string
 }
 
+interface PlayoffData {
+  season: string
+  record: string
+  wins: number
+  losses: number
+  eliminated: boolean
+  division: string
+  region: string
+}
+
 interface CompetitiveSectionProps {
   teamId: number
 }
 
 export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) {
   const [standing, setStanding] = useState<Standing | null>(null)
+  const [playoff, setPlayoff] = useState<PlayoffData | null>(null)
   const [historicalSeasons, setHistoricalSeasons] = useState<Standing[]>([])
   const [scheduledMatches, setScheduledMatches] = useState<Match[]>([])
   const [recentResults, setRecentResults] = useState<Match[]>([])
@@ -55,6 +66,7 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
         const standingsData = await standingsRes.json()
         
         setStanding(standingsData.currentSeason)
+        setPlayoff(standingsData.playoff || null)
         setHistoricalSeasons(standingsData.historicalSeasons || [])
 
         // Fetch matches
@@ -133,6 +145,27 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
             </div>
           </div>
         </div>
+
+        {/* Playoff Status */}
+        {playoff && (
+          <div className="px-6 pb-4">
+            <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-amber-300">Playoffs</h3>
+                {playoff.eliminated ? (
+                  <span className="px-3 py-1 bg-red-500/20 border border-red-500/30 rounded-md text-sm font-semibold text-red-300">
+                    Eliminated
+                  </span>
+                ) : (
+                  <span className="px-3 py-1 bg-green-500/20 border border-green-500/30 rounded-md text-sm font-semibold text-green-300">
+                    Active
+                  </span>
+                )}
+              </div>
+              <div className="mt-2 text-2xl font-bold text-white">{playoff.record}</div>
+            </div>
+          </div>
+        )}
 
         {/* Upcoming Matches */}
         {scheduledMatches.length > 0 && (

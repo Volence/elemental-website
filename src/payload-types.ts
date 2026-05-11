@@ -1182,6 +1182,29 @@ export interface FaceitSeason {
    */
   dataSource?: 'faceit' | null;
   /**
+   * Team qualified for playoffs (auto-detected)
+   */
+  inPlayoffs?: boolean | null;
+  /**
+   * Auto-discovered playoff championship ID
+   */
+  playoffChampionshipId?: string | null;
+  /**
+   * Auto-discovered playoff stage ID
+   */
+  playoffStageId?: string | null;
+  /**
+   * Playoff record
+   */
+  playoffStandings?: {
+    wins?: number | null;
+    losses?: number | null;
+    /**
+     * Team has been eliminated from playoffs
+     */
+    eliminated?: boolean | null;
+  };
+  /**
    * When this season was archived/finalized
    */
   archivedAt?: string | null;
@@ -1659,6 +1682,10 @@ export interface Match {
    * Tournament slot for pre-match signups (not a confirmed match yet)
    */
   isTournamentSlot?: boolean | null;
+  /**
+   * Playoff match (auto-set by sync)
+   */
+  isPlayoff?: boolean | null;
   /**
    * Auto-populated from FaceIt API
    */
@@ -2861,7 +2888,7 @@ export interface CronJobRun {
   /**
    * Name of the cron job
    */
-  jobName: 'smart-sync' | 'full-sync' | 'session-cleanup' | 'error-harvester';
+  jobName: 'smart-sync' | 'full-sync' | 'session-cleanup' | 'error-harvester' | 'playoff-sync';
   /**
    * Current status of the job
    */
@@ -3946,6 +3973,7 @@ export interface MatchesSelect<T extends boolean = true> {
         productionNotes?: T;
       };
   isTournamentSlot?: T;
+  isPlayoff?: T;
   syncedFromFaceit?: T;
   faceitSeasonId?: T;
   slug?: T;
@@ -4009,6 +4037,16 @@ export interface FaceitSeasonsSelect<T extends boolean = true> {
       };
   lastSynced?: T;
   dataSource?: T;
+  inPlayoffs?: T;
+  playoffChampionshipId?: T;
+  playoffStageId?: T;
+  playoffStandings?:
+    | T
+    | {
+        wins?: T;
+        losses?: T;
+        eliminated?: T;
+      };
   archivedAt?: T;
   archivedMatches?:
     | T

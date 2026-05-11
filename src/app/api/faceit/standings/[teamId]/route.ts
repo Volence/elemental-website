@@ -52,6 +52,20 @@ export async function GET(
       limit: 10,
     })
     
+    // Check for playoff season
+    const playoffSeasons = await payload.find({
+      collection: 'faceit-seasons',
+      where: {
+        and: [
+          { team: { equals: teamId } },
+          { inPlayoffs: { equals: true } },
+        ],
+      },
+      limit: 1,
+    })
+
+    const playoffSeason = playoffSeasons.docs[0] || null
+
     // Format response
     const response = {
       currentSeason: currentSeason ? {
@@ -66,6 +80,15 @@ export async function GET(
         division: currentSeason.division,
         region: currentSeason.region,
         lastSynced: currentSeason.lastSynced,
+      } : null,
+      playoff: playoffSeason ? {
+        season: playoffSeason.seasonName,
+        record: `${(playoffSeason as any).playoffStandings?.wins || 0}-${(playoffSeason as any).playoffStandings?.losses || 0}`,
+        wins: (playoffSeason as any).playoffStandings?.wins || 0,
+        losses: (playoffSeason as any).playoffStandings?.losses || 0,
+        eliminated: (playoffSeason as any).playoffStandings?.eliminated || false,
+        division: playoffSeason.division,
+        region: playoffSeason.region,
       } : null,
       historicalSeasons: historicalSeasons.docs.map(season => ({
         season: season.seasonName,

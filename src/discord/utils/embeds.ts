@@ -85,6 +85,34 @@ export async function buildEnhancedTeamEmbed(team: any, payload: Payload): Promi
           inline: false,
         })
       }
+
+      // Check for playoff season (may be separate from active regular season)
+      const playoffSeasons = await payload.find({
+        collection: 'faceit-seasons',
+        where: {
+          team: { equals: team.id },
+          inPlayoffs: { equals: true },
+        },
+        limit: 1,
+      })
+
+      if (playoffSeasons.docs.length) {
+        const ps = playoffSeasons.docs[0] as any
+        const pw = ps.playoffStandings?.wins || 0
+        const pl = ps.playoffStandings?.losses || 0
+        const eliminated = ps.playoffStandings?.eliminated
+
+        const playoffInfo: string[] = []
+        playoffInfo.push(`**${ps.division || ''} ${ps.region || ''}** Playoffs`)
+        playoffInfo.push(`Record: **${pw}-${pl}**`)
+        if (eliminated) playoffInfo.push('Eliminated')
+
+        embed.addFields({
+          name: 'Playoffs',
+          value: playoffInfo.join('\n') + '\n\u200B',
+          inline: false,
+        })
+      }
     } catch (error) {
       console.error('Error fetching FaceIt data:', error)
     }

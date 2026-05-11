@@ -276,6 +276,67 @@ export const FaceitSeasons: CollectionConfig = {
       ],
     },
     
+    // Playoff Data (auto-discovered from season tree)
+    {
+      name: 'inPlayoffs',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'Team qualified for playoffs (auto-detected)',
+      },
+    },
+    {
+      name: 'playoffChampionshipId',
+      type: 'text',
+      admin: {
+        description: 'Auto-discovered playoff championship ID',
+        readOnly: true,
+        condition: (data) => !!data.inPlayoffs,
+      },
+    },
+    {
+      name: 'playoffStageId',
+      type: 'text',
+      admin: {
+        description: 'Auto-discovered playoff stage ID',
+        readOnly: true,
+        condition: (data) => !!data.inPlayoffs,
+      },
+    },
+    {
+      name: 'playoffStandings',
+      type: 'group',
+      admin: {
+        description: 'Playoff record',
+        condition: (data) => !!data.inPlayoffs,
+      },
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'wins',
+              type: 'number',
+              defaultValue: 0,
+            },
+            {
+              name: 'losses',
+              type: 'number',
+              defaultValue: 0,
+            },
+          ],
+        },
+        {
+          name: 'eliminated',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: {
+            description: 'Team has been eliminated from playoffs',
+          },
+        },
+      ],
+    },
+
     // Archive Data (populated when season is finalized)
     {
       name: 'archivedAt',

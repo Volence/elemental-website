@@ -6,7 +6,7 @@ import type { Payload } from 'payload'
  * Provides functions to track cron job execution for monitoring.
  */
 
-export type CronJobName = 'full-sync' | 'session-cleanup' | 'error-harvester'
+export type CronJobName = 'full-sync' | 'session-cleanup' | 'error-harvester' | 'playoff-sync'
 export type CronJobStatus = 'running' | 'success' | 'failed'
 
 /**

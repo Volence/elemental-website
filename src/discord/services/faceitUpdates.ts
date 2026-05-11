@@ -58,12 +58,28 @@ async function _updateFaceitChannel(): Promise<void> {
     limit: 100,
   })
 
-  // Build a map of team ID -> active season
+  // Fetch playoff seasons
+  const playoffSeasons = await payload.find({
+    collection: 'faceit-seasons',
+    where: {
+      inPlayoffs: { equals: true },
+    },
+    limit: 100,
+  })
+
+  // Build maps of team ID -> active season and playoff season
   const seasonByTeamId = new Map<number, any>()
   for (const s of allSeasons.docs) {
     const season = s as any
     const teamId = typeof season.team === 'object' ? season.team.id : season.team
     if (teamId) seasonByTeamId.set(teamId, season)
+  }
+
+  const playoffByTeamId = new Map<number, any>()
+  for (const s of playoffSeasons.docs) {
+    const season = s as any
+    const teamId = typeof season.team === 'object' ? season.team.id : season.team
+    if (teamId) playoffByTeamId.set(teamId, season)
   }
 
   // Sort teams by region then division
@@ -138,6 +154,22 @@ async function _updateFaceitChannel(): Promise<void> {
       value: standingsLines.join('\n'),
       inline: false,
     })
+
+    // Playoff info if applicable
+    const playoffSeason = playoffByTeamId.get(team.id)
+    if (playoffSeason) {
+      const pw = playoffSeason.playoffStandings?.wins || 0
+      const pl = playoffSeason.playoffStandings?.losses || 0
+      const eliminated = playoffSeason.playoffStandings?.eliminated
+      const playoffLines: string[] = []
+      playoffLines.push(`Record: **${pw}-${pl}**`)
+      if (eliminated) playoffLines.push('Eliminated')
+      embed.addFields({
+        name: 'Playoffs',
+        value: playoffLines.join('\n'),
+        inline: false,
+      })
+    }
 
     // Recent match results with lobby links
     if (recentMatches.docs.length > 0) {
