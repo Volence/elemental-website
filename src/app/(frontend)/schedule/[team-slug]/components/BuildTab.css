@@ -522,8 +522,10 @@
 }
 
 .build-tab__avail-chip--assigned {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 229, 255, 0.18);
   font-weight: 600;
+  color: #ffffff;
+  border-left-width: 3px;
 }
 
 .build-tab__avail-chip--ringer {
