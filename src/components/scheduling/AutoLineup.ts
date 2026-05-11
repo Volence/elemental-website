@@ -3,6 +3,7 @@ import type { RosterEntry } from './types'
 interface PlayerSlot {
   role: string
   playerId: string | null
+  playerIds?: string[]
   isRinger?: boolean
   ringerName?: string
 }
@@ -133,15 +134,24 @@ export function suggestLineup(
         return b.availableBlocks - a.availableBlocks
       })
 
+      const roleCounts: Record<string, number> = {}
+      for (const s of block.slots) roleCounts[s.role] = (roleCounts[s.role] || 0) + 1
+
       const assignedIds = new Set<string>()
       const newSlots: PlayerSlot[] = block.slots.map(slot => {
-        const match = availablePlayers.find(
+        const matches = availablePlayers.filter(
           p => !assignedIds.has(p.personId) && roleMatchesSlot(p.scheduleRole, p.rosterRole, slot.role)
         )
 
-        if (match) {
-          assignedIds.add(match.personId)
-          return { ...slot, playerId: match.personId }
+        if (matches.length > 0) {
+          const isUniqueRole = (roleCounts[slot.role] || 0) <= 1
+          if (isUniqueRole) {
+            for (const m of matches) assignedIds.add(m.personId)
+            const ids = matches.map(m => m.personId)
+            return { ...slot, playerId: ids[0], playerIds: ids }
+          }
+          assignedIds.add(matches[0].personId)
+          return { ...slot, playerId: matches[0].personId }
         }
 
         return { ...slot, playerId: null }

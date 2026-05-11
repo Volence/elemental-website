@@ -84,7 +84,7 @@ const CUSTOM_COLORS = ['#00e5ff', '#ff3e8a', '#ff9f1c', '#00ff9f', '#b44dff', '#
 
 const ROLE_PRESETS: Record<string, string[]> = {
   specific: ['Tank', 'Hitscan', 'Flex DPS', 'Main Support', 'Flex Support'],
-  generic: ['Tank', 'DPS', 'DPS', 'Support', 'Support'],
+  generic: ['Tank', 'DPS', 'Support'],
 }
 
 function getRoleOptions(team: any): RoleOption[] {
@@ -764,7 +764,7 @@ export function BuildTab() {
       ...day,
       blocks: day.blocks.map(block => ({
         ...block,
-        slots: block.slots.map(slot => ({ ...slot, playerId: null })),
+        slots: block.slots.map(slot => ({ ...slot, playerId: null, playerIds: [] })),
       })),
     }))
     setDays(runSuggest(cleared))
