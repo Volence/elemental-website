@@ -421,50 +421,63 @@ export default function LobbyPage() {
 
       {/* ── MAP VOTE ── */}
       {lobby.status === 'MAP_VOTE' && (
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold">Vote for a Map</h2>
-            {lobby.mapVote?.voteDeadline && <Countdown deadline={lobby.mapVote.voteDeadline} />}
-          </div>
-          {!inLobby && !isPugAdmin && <p className="text-gray-500 text-sm mb-4">Spectating - only players can vote.</p>}
-          {isPugAdmin && <p className="text-yellow-600 text-xs mb-4">Admin: clicking a map selects it for all players immediately.</p>}
-          <div className="grid grid-cols-3 gap-3">
-            {mapCandidates.map((m) => {
-              const myVote = lobby.mapVote?.votes?.[String(currentUserId)]
-              const voted = myVote === m.id
-              const count = Object.values(lobby.mapVote?.votes ?? {}).filter((v) => v === m.id).length
-              const canVote = inLobby || isPugAdmin
-              return (
-                <button
-                  key={m.id}
-                  onClick={() => canVote && apiAction('/map-vote', { mapId: m.id })}
-                  disabled={!canVote}
-                  className={`p-4 border rounded-lg transition-colors text-center ${
-                    voted
-                      ? 'bg-blue-900/50 border-blue-600 text-blue-200'
-                      : 'border-gray-700 hover:bg-gray-800 disabled:opacity-50'
-                  }`}
-                >
-                  <p className="font-medium">{m.name}</p>
-                  <p className="text-xs text-gray-500 mt-1">{count} vote{count !== 1 ? 's' : ''}</p>
-                </button>
-              )
-            })}
+        <div className="space-y-4">
+          <TeamsDisplay players={players} currentUserId={currentUserId} heroes={heroes} />
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold">Vote for a Map</h2>
+              {lobby.mapVote?.voteDeadline && <Countdown deadline={lobby.mapVote.voteDeadline} />}
+            </div>
+            {!inLobby && !isPugAdmin && <p className="text-gray-500 text-sm mb-4">Spectating - only players can vote.</p>}
+            {isPugAdmin && <p className="text-yellow-600 text-xs mb-4">Admin: clicking a map selects it for all players immediately.</p>}
+            <div className="grid grid-cols-3 gap-3">
+              {mapCandidates.map((m) => {
+                const myVote = lobby.mapVote?.votes?.[String(currentUserId)]
+                const voted = myVote === m.id
+                const count = Object.values(lobby.mapVote?.votes ?? {}).filter((v) => v === m.id).length
+                const canVote = inLobby || isPugAdmin
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => canVote && apiAction('/map-vote', { mapId: m.id })}
+                    disabled={!canVote}
+                    className={`p-4 border rounded-lg transition-colors text-center ${
+                      voted
+                        ? 'bg-blue-900/50 border-blue-600 text-blue-200'
+                        : 'border-gray-700 hover:bg-gray-800 disabled:opacity-50'
+                    }`}
+                  >
+                    <p className="font-medium">{m.name}</p>
+                    <p className="text-xs text-gray-500 mt-1">{count} vote{count !== 1 ? 's' : ''}</p>
+                  </button>
+                )
+              })}
+            </div>
           </div>
         </div>
       )}
 
       {/* ── BANNING ── */}
       {lobby.status === 'BANNING' && lobby.banState && (
-        <BanUI
-          banState={lobby.banState}
-          draftState={lobby.draftState}
-          heroes={heroes}
-          currentUserId={currentUserId}
-          isCaptain={isCaptain}
-          isPugAdmin={isPugAdmin}
-          onBan={(heroId) => apiAction('/ban', { heroId })}
-        />
+        <div className="space-y-4">
+          <TeamsDisplay players={players} currentUserId={currentUserId} heroes={heroes} />
+          {selectedMap && (
+            <div className="border border-gray-800 rounded-lg p-3 flex items-center gap-2">
+              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Map:</span>
+              <span className="text-sm font-medium text-gray-200">{selectedMap.name}</span>
+              <span className="text-xs text-gray-500">({selectedMap.type})</span>
+            </div>
+          )}
+          <BanUI
+            banState={lobby.banState}
+            draftState={lobby.draftState}
+            heroes={heroes}
+            currentUserId={currentUserId}
+            isCaptain={isCaptain}
+            isPugAdmin={isPugAdmin}
+            onBan={(heroId) => apiAction('/ban', { heroId })}
+          />
+        </div>
       )}
 
       {/* ── IN PROGRESS ── */}

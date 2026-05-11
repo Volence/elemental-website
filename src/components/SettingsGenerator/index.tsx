@@ -18,12 +18,21 @@ const ALWAYS_DISABLED_MODES = [
 ]
 
 const MODE_SETTINGS: Record<string, string[]> = {
-  Clash: ['\t\t\tCapture Speed Modifier: 45%', '\t\t\tCompetitive Rules: On'],
-  Control: ['\t\t\tCompetitive Rules: On'],
+  Clash: ['\t\t\tCapture Speed Modifier: 45%', '\t\t\tCompetitive Rules: Enabled'],
+  Control: ['\t\t\tCompetitive Rules: Enabled'],
   Escort: ['\t\t\tCompetitive Rules: On'],
-  Flashpoint: ['\t\t\tCompetitive Rules: On'],
-  Hybrid: ['\t\t\tCompetitive Rules: On'],
+  Flashpoint: ['\t\t\tCompetitive Rules: Enabled'],
+  Hybrid: ['\t\t\tCompetitive Rules: Enabled'],
   Push: ['\t\t\tCompetitive Rules: On'],
+}
+
+const DISABLED_MODE_SETTINGS: Record<string, string[]> = {
+  'Clash 6v6': ['\t\t\tCapture Speed Modifier: 45%', '\t\t\tCompetitive Rules: Enabled'],
+  'Control 6v6': ['\t\t\tCompetitive Rules: Enabled'],
+  'Escort 6v6': ['\t\t\tCompetitive Rules: On'],
+  'Flashpoint 6v6': ['\t\t\tCompetitive Rules: Enabled'],
+  'Hybrid 6v6': ['\t\t\tCompetitive Rules: Enabled'],
+  'Push 6v6': ['\t\t\tCompetitive Rules: On'],
 }
 
 function generateSettingsText(
@@ -40,7 +49,7 @@ function generateSettingsText(
 
   for (const mode of ALWAYS_DISABLED_MODES) {
     lines.push(`\t\tdisabled ${mode}`, '\t\t{')
-    const settings = MODE_SETTINGS[mode] || MODE_SETTINGS[mode.replace(' 6v6', '')]
+    const settings = DISABLED_MODE_SETTINGS[mode] || MODE_SETTINGS[mode.replace(' 6v6', '')]
     if (settings) lines.push(...settings)
     lines.push('\t\t}', '')
   }
@@ -56,6 +65,11 @@ function generateSettingsText(
     }
     lines.push('\t\t\t}', '\t\t}', '')
   }
+
+  lines.push('\t\tGeneral', '\t\t{')
+  lines.push('\t\t\tLimit Roles: 1 Tank 2 Offense 2 Support')
+  lines.push('\t\t\tRandom Hero Role Limit Per Team: 5')
+  lines.push('\t\t}')
 
   lines.push('\t}')
 
