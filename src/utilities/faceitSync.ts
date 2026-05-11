@@ -620,16 +620,21 @@ export async function syncTeamData(
     if (standing) {
       // If no season exists, create one with data from the team's league
       if (!existingSeason) {
-        
+
         // Get division/region from team's current FaceIt league
         const teamData = await payload.findByID({
           collection: 'teams',
           id: teamId,
           depth: 1,
         })
-        
+
         const league = teamData.currentFaceitLeague as any
-        
+
+        // Don't recreate seasons for finalized leagues
+        if (league && league.isActive === false) {
+          return { success: true, teamId, matchesCreated: 0, matchesUpdated: 0, seasonUpdated: false }
+        }
+
         seasonRecord = await payload.create({
           collection: 'faceit-seasons',
           data: {

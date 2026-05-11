@@ -92,6 +92,10 @@ export async function POST(request: Request) {
           failCount++
           continue
         }
+
+        if (league.isActive === false) {
+          continue
+        }
         
         
         const syncResult = await syncTeamData(
