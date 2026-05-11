@@ -459,25 +459,17 @@ export default function LobbyPage() {
 
       {/* ── BANNING ── */}
       {lobby.status === 'BANNING' && lobby.banState && (
-        <div className="space-y-4">
-          <TeamsDisplay players={players} currentUserId={currentUserId} heroes={heroes} />
-          {selectedMap && (
-            <div className="border border-gray-800 rounded-lg p-3 flex items-center gap-2">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Map:</span>
-              <span className="text-sm font-medium text-gray-200">{selectedMap.name}</span>
-              <span className="text-xs text-gray-500">({selectedMap.type})</span>
-            </div>
-          )}
-          <BanUI
-            banState={lobby.banState}
-            draftState={lobby.draftState}
-            heroes={heroes}
-            currentUserId={currentUserId}
-            isCaptain={isCaptain}
-            isPugAdmin={isPugAdmin}
-            onBan={(heroId) => apiAction('/ban', { heroId })}
-          />
-        </div>
+        <BanUI
+          banState={lobby.banState}
+          draftState={lobby.draftState}
+          heroes={heroes}
+          currentUserId={currentUserId}
+          isCaptain={isCaptain}
+          isPugAdmin={isPugAdmin}
+          onBan={(heroId) => apiAction('/ban', { heroId })}
+          players={players}
+          selectedMap={selectedMap}
+        />
       )}
 
       {/* ── IN PROGRESS ── */}
@@ -844,7 +836,7 @@ function DraftUI({
 // ── Ban UI ──
 
 function BanUI({
-  banState, draftState, heroes, currentUserId, isCaptain, isPugAdmin, onBan,
+  banState, draftState, heroes, currentUserId, isCaptain, isPugAdmin, onBan, players, selectedMap,
 }: {
   banState: any
   draftState: any
@@ -853,6 +845,8 @@ function BanUI({
   isCaptain: boolean
   isPugAdmin: boolean
   onBan: (id: number) => void
+  players?: Player[]
+  selectedMap?: { id: number; name: string; type?: string } | null
 }) {
   const [filter, setFilter] = useState('')
   const existingBans: Array<{ heroId: number; team: number; banNumber: number }> = banState.bans ?? []
@@ -935,6 +929,18 @@ function BanUI({
               })}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Teams & map context */}
+      {players && players.length > 0 && (
+        <TeamsDisplay players={players} currentUserId={currentUserId} heroes={heroes} />
+      )}
+      {selectedMap && (
+        <div className="border border-gray-800 rounded-lg p-3 flex items-center gap-2">
+          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Map:</span>
+          <span className="text-sm font-medium text-gray-200">{selectedMap.name}</span>
+          <span className="text-xs text-gray-500">({selectedMap.type})</span>
         </div>
       )}
 
