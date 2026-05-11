@@ -73,17 +73,39 @@ function formatScheduleMessageWithMap(
 ): string {
   const enabledDays = schedule.days.filter((d) => d.enabled)
 
-  let message = `📅 **${pollName}**\n`
-  let hasAnyScrim = false
+  const ACTIVITY_LABELS: Record<string, string> = {
+    scrim: 'Scrim',
+    match: 'Match',
+    warmup: 'Warmup',
+    vod: 'VOD Review',
+    scouting: 'Scouting',
+    other: 'Other',
+  }
+
+  const ACTIVITY_ICONS: Record<string, string> = {
+    scrim: '',
+    match: '',
+    warmup: '',
+    vod: '',
+    scouting: '',
+    other: '',
+  }
+
+  function getActivity(block: TimeBlock): string {
+    if (block.activity && block.activity !== 'free') return block.activity
+    if (block.scrim?.isScrim || block.scrim?.opponent || block.scrim?.opponentTeamId) return 'scrim'
+    return 'free'
+  }
+
+  let message = `**${pollName}**\n`
+  let hasAnyActivity = false
 
   for (const day of enabledDays) {
-    // Get blocks - migrate legacy format if needed
     let blocks: TimeBlock[] = []
-    
+
     if (day.blocks && day.blocks.length > 0) {
       blocks = day.blocks
     } else if (day.slots) {
-      // Legacy format - create virtual block
       blocks = [{
         id: 'legacy',
         time: day.scrim?.time || timeSlot,
@@ -102,33 +124,35 @@ function formatScheduleMessageWithMap(
       }]
     }
 
-    blocks = blocks.filter(b => b.activity === 'scrim' || b.activity === 'match' || b.scrim?.isScrim || b.scrim?.opponent || b.scrim?.opponentTeamId)
+    blocks = blocks.filter(b => getActivity(b) !== 'free')
     if (blocks.length === 0) continue
-    hasAnyScrim = true
+    hasAnyActivity = true
 
-    // Format each block
     for (let i = 0; i < blocks.length; i++) {
       const block = blocks[i]
-      
-      // === HEADER (outside code block) ===
+      const activity = getActivity(block)
+      const isScrimLike = activity === 'scrim' || activity === 'match'
+
+      // === HEADER ===
       if (blocks.length > 1) {
-        message += `\n**${day.date}** • Block ${i + 1} • ${block.time}\n`
+        message += `\n**${day.date}** - Block ${i + 1} - ${block.time}\n`
       } else {
-        message += `\n**${day.date}** • ${block.time}\n`
+        message += `\n**${day.date}** - ${block.time}\n`
       }
-      
-      // === CODE BLOCK START ===
+
       message += '```\n'
-      
-      // Status line
-      if (block.scrim?.opponent) {
+
+      // === STATUS LINE ===
+      if (isScrimLike && block.scrim?.opponent) {
         const hostText = block.scrim.host === 'us' ? 'We host' : block.scrim.host === 'them' ? 'They host' : ''
-        message += `🆚 vs ${block.scrim.opponent}${hostText ? ` - ${hostText}` : ''}\n\n`
+        message += `vs ${block.scrim.opponent}${hostText ? ` - ${hostText}` : ''}\n\n`
+      } else if (isScrimLike) {
+        message += `Looking for ${ACTIVITY_LABELS[activity] || 'Scrim'}\n\n`
       } else {
-        message += `🔍 Looking for Scrim\n\n`
+        message += `${ACTIVITY_ICONS[activity] || ''} ${ACTIVITY_LABELS[activity] || activity}\n\n`
       }
-      
-      // === ROSTER (aligned) ===
+
+      // === ROSTER ===
       const mainSlots = block.slots.filter(s => !s.isTrial)
       const trialSlots = block.slots.filter(s => s.isTrial)
       const getPlayerIds = (s: PlayerSlot) => s.playerIds?.length ? s.playerIds : s.playerId ? [s.playerId] : []
@@ -140,7 +164,7 @@ function formatScheduleMessageWithMap(
       for (const slot of mainSlots) {
         let playerName = '-'
         if (slot.isRinger && slot.ringerName) {
-          playerName = slot.ringerName === 'Ringer Needed' ? 'Ringer Needed ✦' : `${slot.ringerName} ✦`
+          playerName = slot.ringerName === 'Ringer Needed' ? 'Ringer Needed' : `${slot.ringerName} (R)`
         } else {
           const ids = getPlayerIds(slot)
           if (ids.length > 0) {
@@ -163,44 +187,42 @@ function formatScheduleMessageWithMap(
       }
 
       if (filledSlots.length === totalSlots && totalSlots > 0) {
-        message += `\n✓ Roster confirmed\n`
+        message += `\nRoster confirmed\n`
       } else if (filledSlots.length > 0) {
         message += `\n${filledSlots.length}/${totalSlots} slots filled\n`
       }
-      
-      // === SETTINGS LINE ===
-      const settings: string[] = []
-      if (block.scrim?.heroBans) settings.push('Hero Bans')
-      if (block.scrim?.staggers) settings.push('Staggers')
-      if (block.scrim?.mapPool) settings.push(`Maps: ${block.scrim.mapPool}`)
-      if (settings.length > 0) {
-        message += `⚙️ ${settings.join(' • ')}\n`
-      }
-      
-      // === CONTACT ===
-      if (block.scrim?.contact) {
-        message += `📞 ${block.scrim.contact}\n`
-      }
-      
-      // === THEIR ROSTER (inside code block) ===
-      if (block.scrim?.opponentRoster) {
-        message += `\n─── Their Roster ───\n${block.scrim.opponentRoster}\n`
+
+      // === SCRIM DETAILS (only for scrim/match) ===
+      if (isScrimLike) {
+        const settings: string[] = []
+        if (block.scrim?.heroBans) settings.push('Hero Bans')
+        if (block.scrim?.staggers) settings.push('Staggers')
+        if (block.scrim?.mapPool) settings.push(`Maps: ${block.scrim.mapPool}`)
+        if (settings.length > 0) {
+          message += `${settings.join(' | ')}\n`
+        }
+
+        if (block.scrim?.contact) {
+          message += `Contact: ${block.scrim.contact}\n`
+        }
+
+        if (block.scrim?.opponentRoster) {
+          message += `\n--- Their Roster ---\n${block.scrim.opponentRoster}\n`
+        }
       }
 
-      // === NOTES (inside code block) ===
       if (block.scrim?.notes) {
-        message += `\n📝 ${block.scrim.notes}\n`
+        message += `\n${block.scrim.notes}\n`
       }
-      
-      // === CODE BLOCK END ===
+
       message += '```'
     }
-    
+
     message += '\n'
   }
 
-  if (!hasAnyScrim) {
-    return `📅 **${pollName}**\n\nNo scrims scheduled this week.`
+  if (!hasAnyActivity) {
+    return `**${pollName}**\n\nNothing scheduled this week.`
   }
 
   return message.trim()
