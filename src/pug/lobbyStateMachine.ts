@@ -970,9 +970,12 @@ export async function completeMatch(lobbyId: number, result: MatchResult): Promi
       data: { voiceChannel1Id: null, voiceChannel2Id: null },
     }).catch(console.error)
   }
+
+  await autoCreateReplacementLobby(lobby).catch(console.error)
 }
 
 export async function cancelLobby(lobbyId: number, reason?: string): Promise<void> {
+  const lobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId } })
   await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'CANCELLED' } })
   ;['ready', 'draft', 'mapvote', 'ban', 'confirm', 'timeout', 'voice_cleanup'].forEach((phase) =>
     cancelTimer(timerKey(lobbyId, phase)),
@@ -993,10 +996,30 @@ export async function cancelLobby(lobbyId: number, reason?: string): Promise<voi
       data: { voiceChannel1Id: null, voiceChannel2Id: null },
     }).catch(console.error)
   }
+
+  if (lobby) {
+    await autoCreateReplacementLobby(lobby).catch(console.error)
+  }
 }
 
 export async function cancelExpiredLobby(lobbyId: number): Promise<void> {
   const lobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId } })
   if (!lobby || lobby.status !== 'OPEN') return
   await cancelLobby(lobbyId, 'Time window expired without enough players')
+}
+
+async function autoCreateReplacementLobby(lobby: { tier: string; region: string | null; payloadSeasonId: number | null }): Promise<void> {
+  if (lobby.tier !== 'invite' || !lobby.region || !lobby.payloadSeasonId) return
+
+  const payloadInst = await getPayload({ config: configPromise })
+  const season = await payloadInst.findByID({
+    collection: 'pug-seasons',
+    id: lobby.payloadSeasonId,
+    overrideAccess: true,
+  }) as any
+
+  if (!season?.regionQueueStatus?.[lobby.region]) return
+
+  const newLobby = await createInviteLobby(lobby.payloadSeasonId, lobby.region)
+  console.log(`[PUG] Auto-created replacement invite lobby #${newLobby.lobbyNumber} for ${lobby.region.toUpperCase()}`)
 }
