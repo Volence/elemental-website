@@ -46,6 +46,21 @@ export async function GET(
         limit: 1,
       })
       faceitSeasonId = currentSeasons.docs[0]?.id || null
+
+      // Fall back to playoff season if no active season
+      if (!faceitSeasonId) {
+        const playoffSeasons = await payload.find({
+          collection: 'faceit-seasons',
+          where: {
+            and: [
+              { team: { equals: teamId } },
+              { inPlayoffs: { equals: true } },
+            ],
+          },
+          limit: 1,
+        })
+        faceitSeasonId = playoffSeasons.docs[0]?.id || null
+      }
     } else {
       faceitSeasonId = parseInt(seasonParam)
     }

@@ -66,6 +66,7 @@ interface PlayoffChampionship {
   conferenceName: string
   divisionName: string
   regionName: string
+  regionCode: string
 }
 
 interface SyncResult {
@@ -243,6 +244,21 @@ async function fetchSeasonTree(seasonId: string): Promise<any | null> {
   }
 }
 
+function normalizeRegion(region: string): string {
+  const lower = region.toLowerCase().trim()
+  if (lower === 'na' || lower === 'north america') return 'NA'
+  if (lower === 'sa' || lower === 'south america') return 'SA'
+  if (lower === 'oce' || lower === 'oceania') return 'OCE'
+  if (lower === 'emea') return 'EMEA'
+  return region.toUpperCase()
+}
+
+function normalizeDivision(division: string): string {
+  const lower = division.toLowerCase().trim()
+  if (lower === 'master') return 'masters'
+  return lower
+}
+
 /**
  * Walk the season tree to find all playoff championship IDs.
  * Playoff stages have bracket_style 'doubleElimination' or stage name containing 'Playoff'.
@@ -261,16 +277,20 @@ function discoverPlayoffChampionships(tree: any): PlayoffChampionship[] {
         if (!isPlayoff) continue
 
         for (const conference of stage.conferences || []) {
-          if (conference.championship_id) {
-            results.push({
-              championshipId: conference.championship_id,
-              stageId: stage.id,
-              stageName: stage.name,
-              conferenceName: conference.name,
-              divisionName: division.name,
-              regionName: region.name,
-            })
-          }
+          const bs = conference.bracket_style
+          const isPlayoffConf = bs === 'doubleElimination'
+            || (stage.name && stage.name.toLowerCase().includes('playoff'))
+          if (!isPlayoffConf || !conference.championship_id) continue
+
+          results.push({
+            championshipId: conference.championship_id,
+            stageId: stage.id,
+            stageName: stage.name,
+            conferenceName: conference.name,
+            divisionName: division.name,
+            regionName: region.name,
+            regionCode: region.code || region.name,
+          })
         }
       }
     }
@@ -483,16 +503,15 @@ export async function syncPlayoffs(): Promise<{
         const teamId = typeof season.team === 'object' ? season.team.id : season.team
         if (!faceitTeamId || !teamId) continue
 
-        const seasonDivision = (season as any).division?.toLowerCase() || ''
+        const seasonDivision = (season as any).division || ''
         const seasonRegion = (season as any).region || ''
 
-        // Find the playoff championship matching this team's division+region
+        const normalizedSeasonDiv = normalizeDivision(seasonDivision)
+        const normalizedSeasonReg = normalizeRegion(seasonRegion)
+
         const matchingPlayoff = playoffChampionships.find(pc => {
-          const divMatch = pc.divisionName.toLowerCase().includes(seasonDivision)
-            || seasonDivision.includes(pc.divisionName.toLowerCase())
-          const regMatch = pc.regionName.toLowerCase().includes(seasonRegion.toLowerCase())
-            || seasonRegion.toLowerCase().includes(pc.regionName.toLowerCase())
-          return divMatch && regMatch
+          return normalizeDivision(pc.divisionName) === normalizedSeasonDiv
+            && normalizeRegion(pc.regionCode) === normalizedSeasonReg
         })
 
         if (!matchingPlayoff) continue

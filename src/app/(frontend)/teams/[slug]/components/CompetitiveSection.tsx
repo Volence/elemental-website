@@ -99,8 +99,8 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
     )
   }
 
-  if (error || !standing) {
-    return null // Don't show section if no data
+  if (error || (!standing && !playoff)) {
+    return null // Don't show section if no data at all
   }
 
   const formatDate = (dateString: string) => {
@@ -125,12 +125,13 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
               🏆 FaceIt Competitive
             </h2>
             <div className="px-3 py-1 bg-cyan-500/20 border border-cyan-500/30 rounded-md text-sm font-medium text-cyan-300">
-              {standing.season}
+              {standing?.season || playoff?.season || ''}
             </div>
           </div>
         </div>
 
         {/* Current Season Standings */}
+        {standing && (
         <div className="p-6">
           <div className="grid grid-cols-2 gap-6">
             <div>
@@ -145,6 +146,7 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
             </div>
           </div>
         </div>
+        )}
 
         {/* Playoff Status */}
         {playoff && (

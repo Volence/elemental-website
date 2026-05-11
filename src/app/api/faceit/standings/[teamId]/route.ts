@@ -66,20 +66,33 @@ export async function GET(
 
     const playoffSeason = playoffSeasons.docs[0] || null
 
-    // Format response
+    // If no active season but there IS a playoff season, use the playoff season's
+    // regular-season data as the "current" display so the section still renders
+    let effectiveCurrentSeason = currentSeason
+    if (!currentSeason && playoffSeason) {
+      effectiveCurrentSeason = playoffSeason
+    }
+
+    // Filter historical seasons: exclude the season that's shown as current/playoff
+    const playoffSeasonId = playoffSeason?.id
+    const currentSeasonId = effectiveCurrentSeason?.id
+    const filteredHistory = historicalSeasons.docs.filter(s =>
+      s.id !== playoffSeasonId && s.id !== currentSeasonId
+    )
+
     const response = {
-      currentSeason: currentSeason ? {
-        season: currentSeason.seasonName,
-        rank: currentSeason.standings?.currentRank,
-        totalTeams: currentSeason.standings?.totalTeams,
-        record: `${currentSeason.standings?.wins}-${currentSeason.standings?.losses}`,
-        wins: currentSeason.standings?.wins,
-        losses: currentSeason.standings?.losses,
-        ties: currentSeason.standings?.ties,
-        points: currentSeason.standings?.points,
-        division: currentSeason.division,
-        region: currentSeason.region,
-        lastSynced: currentSeason.lastSynced,
+      currentSeason: effectiveCurrentSeason ? {
+        season: effectiveCurrentSeason.seasonName,
+        rank: effectiveCurrentSeason.standings?.currentRank,
+        totalTeams: effectiveCurrentSeason.standings?.totalTeams,
+        record: `${effectiveCurrentSeason.standings?.wins}-${effectiveCurrentSeason.standings?.losses}`,
+        wins: effectiveCurrentSeason.standings?.wins,
+        losses: effectiveCurrentSeason.standings?.losses,
+        ties: effectiveCurrentSeason.standings?.ties,
+        points: effectiveCurrentSeason.standings?.points,
+        division: effectiveCurrentSeason.division,
+        region: effectiveCurrentSeason.region,
+        lastSynced: effectiveCurrentSeason.lastSynced,
       } : null,
       playoff: playoffSeason ? {
         season: playoffSeason.seasonName,
@@ -90,7 +103,7 @@ export async function GET(
         division: playoffSeason.division,
         region: playoffSeason.region,
       } : null,
-      historicalSeasons: historicalSeasons.docs.map(season => ({
+      historicalSeasons: filteredHistory.map(season => ({
         season: season.seasonName,
         rank: season.standings?.currentRank,
         totalTeams: season.standings?.totalTeams,
