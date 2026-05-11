@@ -102,7 +102,7 @@ function formatScheduleMessageWithMap(
       }]
     }
 
-    blocks = blocks.filter(b => b.activity === 'match' || b.scrim?.isScrim || b.scrim?.opponent || b.scrim?.opponentTeamId)
+    blocks = blocks.filter(b => b.activity === 'scrim' || b.activity === 'match' || b.scrim?.isScrim || b.scrim?.opponent || b.scrim?.opponentTeamId)
     if (blocks.length === 0) continue
     hasAnyScrim = true
 
