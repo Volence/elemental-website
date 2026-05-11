@@ -36,7 +36,7 @@ export function CreateLobbyButton({ seasonId, region }: { seasonId: number; regi
   }
 
   return (
-    <div>
+    <div className="mb-4">
       <button
         onClick={handleCreate}
         disabled={creating}
