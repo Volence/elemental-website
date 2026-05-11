@@ -97,8 +97,42 @@ export async function POST(request: Request): Promise<Response> {
     })
 
     if (existingUsers.docs.length > 0) {
+      const existingPerson = existingUsers.docs[0] as any
+      // If this is a PUG invite, apply PUG settings to the existing account
+      const pugInvite = (invite as any).pugInvite
+      if (pugInvite?.isForPug) {
+        const pugUpdate: Record<string, any> = {
+          pugTiers: Array.from(new Set([...(existingPerson.pugTiers ?? []), 'open', 'invite'])),
+          pugRegisteredDate: existingPerson.pugRegisteredDate ?? new Date().toISOString(),
+          pugInvitedBy: invite.createdBy
+            ? typeof invite.createdBy === 'object' ? (invite.createdBy as any).id : invite.createdBy
+            : undefined,
+        }
+        if (pugInvite.approvedRoles?.length) {
+          pugUpdate.pugApprovedRoles = Array.from(new Set([...(existingPerson.pugApprovedRoles ?? []), ...pugInvite.approvedRoles]))
+        }
+        if (pugInvite.region) {
+          pugUpdate.pugInviteRegions = Array.from(new Set([...(existingPerson.pugInviteRegions ?? []), pugInvite.region]))
+        }
+        await payload.update({
+          collection: 'people',
+          id: existingPerson.id,
+          data: pugUpdate as any,
+          overrideAccess: true,
+        })
+        await payload.update({
+          collection: 'invite-links',
+          id: invite.id,
+          data: { usedAt: new Date().toISOString(), usedBy: existingPerson.id },
+        })
+        return Response.json({
+          success: true,
+          message: 'PUG invite applied to your existing account. Please log in.',
+          existingAccount: true,
+        })
+      }
       return Response.json(
-        { error: 'An account with this email already exists' },
+        { error: 'An account with this email already exists. Please log in instead.' },
         { status: 400 }
       )
     }

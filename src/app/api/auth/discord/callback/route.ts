@@ -360,8 +360,44 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       })
 
       if (existingUser.docs.length > 0) {
-        // Already has an account - just log them in
-        return await loginAndRedirect(payload, existingUser.docs[0], cookieStore, serverUrl, state.returnUrl)
+        const existingPerson = existingUser.docs[0]
+        // Apply PUG invite settings to existing user before logging them in
+        const pugInviteData = (invite as any).pugInvite
+        if (pugInviteData?.isForPug) {
+          try {
+            const person = existingPerson as any
+            const pugUpdate: Record<string, any> = {
+              pugTiers: Array.from(new Set([...(person.pugTiers ?? []), 'open', 'invite'])),
+              pugRegisteredDate: person.pugRegisteredDate ?? new Date().toISOString(),
+              pugInvitedBy: invite.createdBy
+                ? typeof invite.createdBy === 'object' ? invite.createdBy.id : invite.createdBy
+                : undefined,
+            }
+            if (pugInviteData.approvedRoles?.length) {
+              pugUpdate.pugApprovedRoles = Array.from(new Set([...(person.pugApprovedRoles ?? []), ...pugInviteData.approvedRoles]))
+            }
+            if (pugInviteData.region) {
+              pugUpdate.pugInviteRegions = Array.from(new Set([...(person.pugInviteRegions ?? []), pugInviteData.region]))
+            }
+            await payload.update({
+              collection: 'people',
+              id: existingPerson.id,
+              data: pugUpdate as any,
+              overrideAccess: true,
+            })
+            console.log(`[Discord OAuth] Applied PUG invite to existing person ${existingPerson.id}`)
+          } catch (pugErr: any) {
+            console.error('[Discord OAuth] PUG invite application failed:', pugErr.message)
+          }
+        }
+        // Mark invite as used
+        await payload.update({
+          collection: 'invite-links',
+          id: invite.id,
+          data: { usedAt: new Date().toISOString(), usedBy: existingPerson.id },
+          overrideAccess: true,
+        })
+        return await loginAndRedirect(payload, existingPerson, cookieStore, serverUrl, state.returnUrl)
       }
 
       // Find existing person from invite's linkedPerson or by discordId
