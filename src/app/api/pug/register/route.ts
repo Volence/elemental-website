@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, playerId: user.id })
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    console.error('[PUG Register] Error:', err)
+    return NextResponse.json({ error: 'Registration failed. Please try again.' }, { status: 500 })
   }
 }

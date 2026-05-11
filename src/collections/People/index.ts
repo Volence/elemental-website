@@ -65,6 +65,7 @@ export const People: CollectionConfig = {
       if (!user) return false
       if (user.role === UserRole.ADMIN) return true
       if (user.role === UserRole.STAFF_MANAGER) return true
+      if ((user as any).departments?.isPugAdmin === true) return true
       if (user) return { id: { equals: user.id } }
       return false
     },
@@ -532,25 +533,29 @@ export const People: CollectionConfig = {
         }
 
         if (operation === 'create' || operation === 'update') {
-          const payload = req.payload
-          if (!payload || !data?.name) return data
+          try {
+            const payload = req.payload
+            if (payload && data?.name) {
+              const whereConditions: any[] = [{ name: { like: data.name } }]
+              if (operation === 'update' && originalDoc?.id) {
+                whereConditions.push({ id: { not_equals: originalDoc.id } })
+              }
 
-          const whereConditions: any[] = [{ name: { like: `%${data.name}%` } }]
-          if (operation === 'update' && originalDoc?.id) {
-            whereConditions.push({ id: { not_equals: originalDoc.id } })
-          }
+              const existingPeople = await payload.find({
+                collection: 'people',
+                where: { and: whereConditions },
+                limit: 5,
+              })
 
-          const existingPeople = await payload.find({
-            collection: 'people',
-            where: { and: whereConditions },
-            limit: 5,
-          })
-
-          if (existingPeople.docs.length > 0) {
-            const similarNames = existingPeople.docs.map((p) => p.name).join(', ')
-            req.payload.logger.warn(
-              `Similar names found: ${similarNames}. Make sure "${data.name}" is not a duplicate.`,
-            )
+              if (existingPeople.docs.length > 0) {
+                const similarNames = existingPeople.docs.map((p) => p.name).join(', ')
+                req.payload.logger.warn(
+                  `Similar names found: ${similarNames}. Make sure "${data.name}" is not a duplicate.`,
+                )
+              }
+            }
+          } catch {
+            // Non-critical duplicate check - don't block the save
           }
         }
 
