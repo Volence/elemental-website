@@ -449,9 +449,6 @@ export const Teams: CollectionConfig = {
               type: 'relationship',
               relationTo: 'faceit-leagues',
               hasMany: false,
-              filterOptions: () => ({
-                isActive: { equals: true },
-              }),
               admin: {
                 description: 'Current league/season this team is competing in - Selecting this auto-creates the season entry',
                 condition: (data) => data.faceitEnabled === true,
