@@ -30,6 +30,7 @@ export default async function PugLeaderboardPage({
   const leaderboardWhere: any[] = [
     { tier: { equals: tier } },
     { season: { equals: resolvedSeasonId } },
+    { gamesPlayed: { greater_than: 0 } },
   ]
   if (tier === 'invite' && region) {
     leaderboardWhere.push({ region: { equals: region } })
