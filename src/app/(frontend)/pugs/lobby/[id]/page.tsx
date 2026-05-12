@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useConfirm } from '@/components/ConfirmDialog'
+import { PugNav } from '../../PugNav'
 
 const ROLE_LABELS: Record<string, string> = {
   tank: 'Tank',
@@ -229,17 +230,8 @@ export default function LobbyPage() {
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-3xl">
+      <PugNav active={lobby.tier === 'invite' ? 'invite' : 'open'} />
       <div className="mb-6">
-        <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-1">
-          <Link href="/pugs" className="hover:text-gray-300 transition-colors">PUGs</Link>
-          <span className="text-gray-700">/</span>
-          <Link
-            href={lobby.tier === 'invite' ? '/pugs/invite' : '/pugs/open'}
-            className="hover:text-gray-300 transition-colors"
-          >
-            {lobby.tier === 'invite' ? 'Invite Tier' : 'Open Tier'}
-          </Link>
-        </div>
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold text-white">PUG #{lobby.lobbyNumber}</h1>
           <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
@@ -316,9 +308,9 @@ export default function LobbyPage() {
                   {players.map((p) => (
                     <div key={p.userId} className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-white/[0.03]">
                       <PlayerAvatar player={p} size={28} />
-                      <span className={`text-sm font-medium shrink-0 w-36 truncate ${p.userId === currentUserId ? 'text-blue-300' : 'text-gray-200'}`}>
+                      <Link href={`/pugs/profile/${p.userId}`} className={`text-sm font-medium shrink-0 w-36 truncate hover:underline ${p.userId === currentUserId ? 'text-blue-300' : 'text-gray-200 hover:text-white'}`}>
                         {p.name}{p.userId === currentUserId && <span className="text-blue-500 font-normal"> (you)</span>}
-                      </span>
+                      </Link>
                       <div className="flex gap-1.5 flex-wrap flex-1">
                         {p.queuedRoles.map((r) => <RoleBadge key={r} role={r} />)}
                       </div>
@@ -438,9 +430,9 @@ export default function LobbyPage() {
                   <div key={p.userId} className={`flex items-center justify-between gap-3 px-4 py-2.5 transition-colors hover:bg-white/[0.03] ${p.readyConfirmed ? 'bg-green-950/10' : ''}`}>
                     <div className="flex items-center gap-2.5 min-w-0">
                       <PlayerAvatar player={p} size={28} />
-                      <span className={`text-sm truncate ${p.userId === currentUserId ? 'text-blue-300 font-medium' : 'text-gray-200'}`}>
+                      <Link href={`/pugs/profile/${p.userId}`} className={`text-sm truncate hover:underline ${p.userId === currentUserId ? 'text-blue-300 font-medium' : 'text-gray-200 hover:text-white'}`}>
                         {p.name}{p.userId === currentUserId && ' (you)'}
-                      </span>
+                      </Link>
                     </div>
                     <span className={`text-xs px-2.5 py-1 rounded-lg shrink-0 font-medium transition-colors ${
                       p.readyConfirmed
@@ -886,9 +878,9 @@ function DraftUI({
                   <li key={p.userId} className={`flex items-center justify-between gap-2 px-4 py-2.5 transition-colors hover:bg-white/[0.03] ${i < teamPlayers.length - 1 ? 'border-b border-gray-800/30' : ''}`}>
                     <div className="flex items-center gap-2.5 min-w-0">
                       <PlayerAvatar player={p} size={26} />
-                      <span className={`text-sm truncate min-w-0 ${p.userId === currentUserId ? TEAM_TEXT[t] + ' font-semibold' : 'text-gray-200'}`}>
+                      <Link href={`/pugs/profile/${p.userId}`} className={`text-sm truncate min-w-0 hover:underline ${p.userId === currentUserId ? TEAM_TEXT[t] + ' font-semibold' : 'text-gray-200 hover:text-white'}`}>
                         {p.name}{p.isCaptain && ' ★'}{p.userId === currentUserId && ' (you)'}
-                      </span>
+                      </Link>
                     </div>
                     {p.assignedRole && <span className="shrink-0"><RoleBadge role={p.assignedRole} /></span>}
                   </li>
@@ -915,7 +907,7 @@ function DraftUI({
             return (
               <div key={p.userId} className={`flex items-center gap-3 px-4 py-3 transition-all duration-200 ${roleBlocked ? 'opacity-30' : 'hover:bg-white/[0.03]'}`}>
                 <PlayerAvatar player={p} size={28} />
-                <span className="text-sm text-gray-200 flex-1 font-medium">{p.name}</span>
+                <Link href={`/pugs/profile/${p.userId}`} className="text-sm text-gray-200 hover:text-white hover:underline flex-1 font-medium">{p.name}</Link>
                 {p.assignedRole && <RoleBadge role={p.assignedRole} />}
                 {roleBlocked && <span className="text-xs text-gray-600 italic">role taken</span>}
                 {isMyTurn && (
@@ -1191,9 +1183,9 @@ function TeamsDisplay({ players, currentUserId, heroes, banState }: { players: P
                     <div className="flex items-center gap-2.5 min-w-0">
                       <PlayerAvatar player={p} size={28} />
                       <div className="min-w-0">
-                        <span className={`text-sm truncate block ${p.userId === currentUserId ? cfg.highlight + ' font-semibold' : 'text-gray-200'}`}>
+                        <Link href={`/pugs/profile/${p.userId}`} className={`text-sm truncate block hover:underline ${p.userId === currentUserId ? cfg.highlight + ' font-semibold' : 'text-gray-200 hover:text-white'}`}>
                           {p.name}{p.isCaptain && ' ★'}{p.userId === currentUserId && ' (you)'}
-                        </span>
+                        </Link>
                       </div>
                     </div>
                     {p.assignedRole && <span className="shrink-0"><RoleBadge role={p.assignedRole} /></span>}
@@ -1513,7 +1505,7 @@ function LobbySetupAssistant({
                             <div className="flex items-center gap-2 min-w-0">
                               <PlayerAvatar player={p} size={22} />
                               <div className="min-w-0">
-                                <span className="text-sm text-gray-200 block truncate">{p.name}</span>
+                                <Link href={`/pugs/profile/${p.userId}`} className="text-sm text-gray-200 hover:text-white hover:underline block truncate">{p.name}</Link>
                                 {tag ? (
                                   <span className="text-xs text-gray-500">{tag}</span>
                                 ) : (

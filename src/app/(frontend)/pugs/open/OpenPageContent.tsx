@@ -149,11 +149,10 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
   })?.id
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-2xl">
+    <>
       <div className="flex items-start justify-between mb-6">
         <div>
-          <Link href="/pugs" className="text-sm text-gray-500 hover:text-gray-300 transition-colors">← PUGs</Link>
-          <h1 className="text-2xl font-bold mt-1">Open Tier PUGs</h1>
+          <h1 className="text-2xl font-bold">Open Tier PUGs</h1>
           {seasonName && <p className="text-sm text-gray-500 mt-0.5">{seasonName}</p>}
         </div>
         {currentUser && isRegistered && seasonId && (
@@ -301,7 +300,7 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
           )}
         </div>
       )}
-    </main>
+    </>
   )
 }
 

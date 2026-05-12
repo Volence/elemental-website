@@ -2,6 +2,7 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { PugNav } from '../PugNav'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'PUG Leaderboard | Elemental' }
@@ -51,14 +52,10 @@ export default async function PugLeaderboardPage({
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-3xl">
-      <div className="flex items-center justify-between mb-1">
-        <h1 className="text-3xl font-bold">PUG Leaderboard</h1>
-        <Link href="/pugs" className="text-sm text-gray-500 hover:text-gray-300 transition-colors">
-          ← PUGs
-        </Link>
-      </div>
+      <PugNav active="leaderboard" />
+      <h1 className="text-3xl font-bold mb-1">PUG Leaderboard</h1>
       {currentSeason && (
-        <p className="text-gray-500 mb-6">{currentSeason.name}</p>
+        <p className="text-gray-500 mb-4">{currentSeason.name}</p>
       )}
 
       {/* Tier tabs */}

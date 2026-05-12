@@ -5,6 +5,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { cookies } from 'next/headers'
 import { BattleTagForm } from './BattleTagForm'
+import { PugNav } from './PugNav'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'PUGs | Elemental' }
@@ -71,6 +72,8 @@ export default async function PugsPage() {
       <p className="text-gray-500 mb-6">
         Pick-Up Games - 5v5 Overwatch with draft, map voting, hero bans, and MMR tracking.
       </p>
+
+      <PugNav active="home" />
 
       {myActiveLobby && (
         <Link
@@ -194,11 +197,6 @@ export default async function PugsPage() {
         </Link>
       </div>
 
-      <div className="mt-6">
-        <Link href="/pugs/leaderboard" className="text-sm text-gray-500 hover:text-gray-300 transition-colors">
-          View Leaderboard &rarr;
-        </Link>
-      </div>
     </main>
   )
 }

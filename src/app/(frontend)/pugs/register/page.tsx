@@ -5,6 +5,7 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
 import RegisterOpenButton from './RegisterOpenButton'
+import { PugNav } from '../PugNav'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'Register for PUGs | Elemental' }
@@ -51,6 +52,7 @@ export default async function PugRegisterPage() {
   if (user && isRegistered) {
     return (
       <main className="container mx-auto px-4 py-8 max-w-md">
+        <PugNav active="register" />
         <h1 className="text-2xl font-bold mb-2">You&apos;re Registered!</h1>
         <p className="text-gray-400 mb-4">
           Signed in as <span className="text-white font-medium">{user.name || user.email}</span>
@@ -77,14 +79,9 @@ export default async function PugRegisterPage() {
           <p className="text-xs text-gray-500">Joins the queue for the next open-tier lobby</p>
         </div>
 
-        <div className="flex gap-4">
-          <Link href="/pugs/open" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
-            View Lobbies
-          </Link>
-          <Link href="/pugs" className="text-sm text-gray-400 hover:text-gray-200 flex items-center transition-colors">
-            ← Back to PUGs
-          </Link>
-        </div>
+        <Link href="/pugs/open" className="inline-block px-4 py-2 bg-blue-600 hover:bg-blue-500 hover:shadow-md hover:shadow-blue-600/20 text-white text-sm font-medium rounded-lg transition-all duration-200">
+          View Lobbies
+        </Link>
       </main>
     )
   }
@@ -92,6 +89,7 @@ export default async function PugRegisterPage() {
   if (user && !isRegistered) {
     return (
       <main className="container mx-auto px-4 py-8 max-w-md">
+        <PugNav active="register" />
         <h1 className="text-2xl font-bold mb-2">Register for Open-Tier PUGs</h1>
         <p className="text-gray-400 mb-6">
           Signed in as{' '}
@@ -111,17 +109,13 @@ export default async function PugRegisterPage() {
           </a>
         )}
 
-        <p className="text-xs text-gray-500 mt-4 text-center">
-          <Link href="/pugs" className="text-blue-400 hover:underline">
-            ← Back to PUGs
-          </Link>
-        </p>
       </main>
     )
   }
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-md">
+      <PugNav active="register" />
       <h1 className="text-2xl font-bold mb-2">Play Open-Tier PUGs</h1>
       <p className="text-gray-400 mb-6">
         Free and open to everyone. Connect your Discord to get started.
@@ -138,9 +132,6 @@ export default async function PugRegisterPage() {
         Signs you in if you already have an account, or creates one automatically.
       </p>
 
-      <p className="text-xs text-gray-600 mt-6 text-center">
-        <Link href="/pugs" className="hover:text-gray-400 transition-colors">← Back to PUGs</Link>
-      </p>
     </main>
   )
 }

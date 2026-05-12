@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { CreateLobbyButton } from './CreateLobbyButton'
+import { PugNav } from '../PugNav'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'Invite Tier PUGs | Elemental' }
@@ -59,19 +60,19 @@ export default async function PugInvitePage({
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <Link href="/pugs" className="text-sm text-gray-500 hover:text-gray-300 transition-colors">← PUGs</Link>
-      <h1 className="text-2xl font-bold mt-1 mb-2">Invite Tier PUGs</h1>
+      <PugNav active="invite" />
+      <h1 className="text-2xl font-bold mb-2">Invite Tier PUGs</h1>
 
       {/* Region tabs */}
-      <div className="flex gap-1 mb-6 p-1 bg-gray-900 border border-gray-800 rounded-lg w-fit">
+      <div className="flex gap-1 mb-4 p-1 bg-gray-900/50 border border-gray-800 rounded-xl w-fit">
         {REGIONS.map((r) => (
           <Link
             key={r.value}
             href={`/pugs/invite?region=${r.value}`}
-            className={`px-4 py-1.5 rounded text-sm font-medium transition-colors ${
+            className={`px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
               region === r.value
-                ? 'bg-purple-600 text-white'
-                : 'text-gray-400 hover:text-gray-200'
+                ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20'
+                : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'
             }`}
           >
             {r.label}
