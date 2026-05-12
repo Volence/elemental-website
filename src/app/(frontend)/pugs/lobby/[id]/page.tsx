@@ -905,7 +905,7 @@ function BanUI({
             : `Team ${banState.currentBanTeam} is banning…`}
         </span>
         <span className="flex items-center gap-2 text-xs opacity-70">
-          Ban {banState.banNumber}/4
+          Ban {banState.banNumber}/2
           {banState.banDeadline && <Countdown deadline={banState.banDeadline} />}
         </span>
       </div>

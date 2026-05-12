@@ -3,7 +3,7 @@ import type { BanRecord } from './types'
 export type HeroRole = 'tank' | 'dps' | 'support'
 export type HeroRoleMap = Record<number, HeroRole>
 
-export const BAN_ORDER: Array<1 | 2> = [2, 1, 2, 1]
+export const BAN_ORDER: Array<1 | 2> = [2, 1]
 
 export function getNextBanTeam(banNumber: number): 1 | 2 | null {
   if (banNumber > BAN_ORDER.length) return null
