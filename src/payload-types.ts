@@ -1875,6 +1875,10 @@ export interface Hero {
   name: string;
   role: 'tank' | 'dps' | 'support';
   /**
+   * Hero portrait image
+   */
+  image?: (number | null) | Media;
+  /**
    * Is this hero currently in the game?
    */
   active?: boolean | null;
@@ -1891,6 +1895,10 @@ export interface Map {
   id: number;
   name: string;
   type: 'control' | 'hybrid' | 'flashpoint' | 'push' | 'escort' | 'clash';
+  /**
+   * Map screenshot or banner image
+   */
+  image?: (number | null) | Media;
   /**
    * Submaps/points for Control maps (max 3)
    */
@@ -3771,6 +3779,7 @@ export interface OrganizationStaffSelect<T extends boolean = true> {
 export interface HeroesSelect<T extends boolean = true> {
   name?: T;
   role?: T;
+  image?: T;
   active?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -3782,6 +3791,7 @@ export interface HeroesSelect<T extends boolean = true> {
 export interface MapsSelect<T extends boolean = true> {
   name?: T;
   type?: T;
+  image?: T;
   submaps?:
     | T
     | {

@@ -4,15 +4,27 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
+type LobbyPlayer = {
+  userId: number
+  name?: string
+  avatarUrl?: string | null
+  team?: number | null
+  assignedRole?: string | null
+  queuedRoles?: string[]
+  isCaptain?: boolean
+}
+
 type Lobby = {
   id: number
   lobbyNumber: number
   status: string
-  players: Array<{ userId: number }>
+  players: LobbyPlayer[]
   neededSlots: Record<string, number> | null
   blockedRoles: string[]
   spotsAvailable: Record<string, number>
   pendingResult?: any
+  mapVote?: { selectedMapId?: number | null } | null
+  selectedMapName?: string | null
 }
 
 type Props = {
@@ -199,33 +211,37 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
       )}
 
       {myLobbyId && (
-        <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg px-4 py-3 mb-6 flex items-center justify-between">
-          <span className="text-sm text-blue-300">You are in an active lobby.</span>
-          <Link
-            href={`/pugs/lobby/${myLobbyId}`}
-            className="text-sm font-medium text-blue-400 hover:underline"
-          >
+        <Link
+          href={`/pugs/lobby/${myLobbyId}`}
+          className="bg-blue-600/15 border border-blue-500/30 rounded-xl px-4 py-3 mb-6 flex items-center justify-between hover:bg-blue-600/20 transition-colors group"
+        >
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+            <span className="text-sm text-blue-300 font-medium">You are in an active lobby</span>
+          </div>
+          <span className="text-sm font-semibold text-blue-400 group-hover:text-blue-300 transition-colors">
             View Lobby →
-          </Link>
-        </div>
+          </span>
+        </Link>
       )}
 
       {loadingLobbies ? (
         <p className="text-gray-500 text-sm">Loading lobbies…</p>
       ) : lobbies.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          <p className="text-lg mb-1">No active lobbies right now.</p>
+        <div className="text-center py-16 text-gray-500">
+          <div className="text-4xl mb-3 opacity-30">🎮</div>
+          <p className="text-lg mb-1 text-gray-400">No active lobbies</p>
           {currentUser && isRegistered && seasonId && (
-            <p className="text-sm">
-              Be the first - hit{' '}
+            <p className="text-sm text-gray-500">
+              Be the first -{' '}
               <button
                 onClick={handleCreate}
                 disabled={creating}
-                className="text-blue-400 hover:underline disabled:opacity-50"
+                className="text-blue-400 hover:text-blue-300 disabled:opacity-50 font-medium"
               >
-                Create Lobby
+                create a lobby
               </button>{' '}
-              to start one.
+              to get started.
             </p>
           )}
         </div>
@@ -308,8 +324,89 @@ const ROLE_COLORS_OPEN: Record<string, string> = {
   flex_support: 'border-green-700 text-green-400',
   main_support: 'border-teal-700 text-teal-400',
 }
+const ROLE_BG: Record<string, string> = {
+  tank: 'bg-blue-500',
+  flex_dps: 'bg-red-500',
+  hitscan_dps: 'bg-orange-500',
+  flex_support: 'bg-green-500',
+  main_support: 'bg-teal-500',
+}
 const ROLE_LABELS_OPEN: Record<string, string> = {
   tank: 'Tank', flex_dps: 'Flex DPS', hitscan_dps: 'Hitscan', flex_support: 'Flex Sup', main_support: 'Main Sup',
+}
+
+function PlayerAvatarStack({ players, max = 10 }: { players: LobbyPlayer[]; max?: number }) {
+  const shown = players.slice(0, max)
+  const extra = players.length - max
+  return (
+    <div className="flex items-center -space-x-2">
+      {shown.map((p) => (
+        <div
+          key={p.userId}
+          title={p.name || `Player #${p.userId}`}
+          className="w-7 h-7 rounded-full border-2 border-gray-900 bg-gray-700 flex items-center justify-center text-[10px] font-bold text-gray-300 uppercase overflow-hidden shrink-0"
+        >
+          {p.avatarUrl ? (
+            <img src={p.avatarUrl} alt="" className="w-full h-full object-cover" />
+          ) : (
+            (p.name || '?')[0]
+          )}
+        </div>
+      ))}
+      {extra > 0 && (
+        <div className="w-7 h-7 rounded-full border-2 border-gray-900 bg-gray-800 flex items-center justify-center text-[10px] text-gray-400 shrink-0">
+          +{extra}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function FillBar({ current, total }: { current: number; total: number }) {
+  const pct = Math.min((current / total) * 100, 100)
+  return (
+    <div className="h-1 bg-gray-800 rounded-full overflow-hidden">
+      <div
+        className={`h-full rounded-full transition-all duration-500 ${
+          current >= total ? 'bg-green-500' : current >= total / 2 ? 'bg-blue-500' : 'bg-blue-500/60'
+        }`}
+        style={{ width: `${pct}%` }}
+      />
+    </div>
+  )
+}
+
+function MiniTeams({ players }: { players: LobbyPlayer[] }) {
+  const team1 = players.filter((p) => p.team === 1)
+  const team2 = players.filter((p) => p.team === 2)
+  if (team1.length === 0 && team2.length === 0) return null
+
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      {[{ label: 'Team 1', list: team1, color: 'border-blue-800/60' }, { label: 'Team 2', list: team2, color: 'border-orange-800/60' }].map(({ label, list, color }) => (
+        <div key={label} className={`border ${color} rounded-lg px-3 py-2`}>
+          <p className={`text-[10px] font-semibold uppercase tracking-wider mb-1.5 ${label === 'Team 1' ? 'text-blue-400' : 'text-orange-400'}`}>{label}</p>
+          <div className="space-y-1">
+            {list.map((p) => (
+              <div key={p.userId} className="flex items-center gap-1.5">
+                <div className="w-5 h-5 rounded-full bg-gray-700 overflow-hidden shrink-0">
+                  {p.avatarUrl ? (
+                    <img src={p.avatarUrl} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-[8px] text-gray-400 font-bold">{(p.name || '?')[0]}</div>
+                  )}
+                </div>
+                <span className="text-xs text-gray-300 truncate">{p.name}{p.isCaptain ? ' ★' : ''}</span>
+                {p.assignedRole && (
+                  <span className={`ml-auto w-1.5 h-1.5 rounded-full shrink-0 ${ROLE_BG[p.assignedRole] ?? 'bg-gray-500'}`} title={ROLE_LABELS_OPEN[p.assignedRole] ?? p.assignedRole} />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
 }
 
 function SpotsNeededBadges({ neededSlots, spotsAvailable }: { neededSlots: Record<string, number> | null; spotsAvailable: Record<string, number> }) {
@@ -344,51 +441,84 @@ function LobbyCard({
   const isInThisLobby = currentUserId !== null && lobby.players.some((p) => p.userId === currentUserId)
   const isOpen = lobby.status === 'OPEN'
   const blockedRoles = lobby.blockedRoles ?? []
+  const hasTeams = lobby.players.some((p) => p.team)
 
   return (
-    <div className="border border-gray-700 rounded-lg overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-3">
-          <span className="font-semibold">PUG #{lobby.lobbyNumber}</span>
-          <span className={`text-xs px-2 py-0.5 rounded-full ${meta.color}`}>{meta.label}</span>
+    <div className="border border-gray-700/80 rounded-xl overflow-hidden bg-gradient-to-b from-gray-900/80 to-gray-950/80">
+      {/* Header */}
+      <div className="px-4 pt-3 pb-2">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2.5">
+            <span className="font-bold text-lg text-gray-100">PUG #{lobby.lobbyNumber}</span>
+            <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${meta.color}`}>{meta.label}</span>
+          </div>
+          <div className="flex items-center gap-3">
+            {isInThisLobby ? (
+              <Link
+                href={`/pugs/lobby/${lobby.id}`}
+                className="text-sm px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors"
+              >
+                View Lobby
+              </Link>
+            ) : isOpen && isRegistered ? (
+              <button
+                onClick={onToggleJoin}
+                className={`text-sm px-3 py-1.5 rounded-lg font-medium transition-colors ${
+                  isExpanded
+                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    : 'bg-blue-600 hover:bg-blue-500 text-white'
+                }`}
+              >
+                {isExpanded ? 'Cancel' : 'Join Queue'}
+              </button>
+            ) : (
+              <Link
+                href={`/pugs/lobby/${lobby.id}`}
+                className="text-sm px-3 py-1.5 border border-gray-700 hover:border-gray-500 text-gray-400 hover:text-gray-200 rounded-lg transition-colors"
+              >
+                Spectate
+              </Link>
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-400">{playerCount}/10</span>
-          {isInThisLobby ? (
-            <Link
-              href={`/pugs/lobby/${lobby.id}`}
-              className="text-sm text-blue-400 hover:underline font-medium"
-            >
-              View →
-            </Link>
-          ) : isOpen && isRegistered ? (
-            <button
-              onClick={onToggleJoin}
-              className="text-sm px-3 py-1 border border-gray-600 hover:border-blue-500 hover:text-blue-400 rounded transition-colors"
-            >
-              {isExpanded ? 'Cancel' : 'Join'}
-            </button>
-          ) : (
-            <Link
-              href={`/pugs/lobby/${lobby.id}`}
-              className="text-sm text-gray-500 hover:text-gray-300 transition-colors"
-            >
-              View
-            </Link>
-          )}
+
+        {/* Fill bar + count */}
+        <div className="flex items-center gap-3 mb-2">
+          <div className="flex-1">
+            <FillBar current={playerCount} total={10} />
+          </div>
+          <span className="text-xs text-gray-400 font-medium tabular-nums shrink-0">{playerCount}/10</span>
         </div>
+
+        {/* Player avatars */}
+        {playerCount > 0 && !hasTeams && (
+          <div className="flex items-center gap-3">
+            <PlayerAvatarStack players={lobby.players} />
+            {isOpen && playerCount < 10 && (
+              <span className="text-xs text-gray-500">{10 - playerCount} more needed</span>
+            )}
+          </div>
+        )}
       </div>
 
+      {/* Role needs for open lobbies */}
       {isOpen && (
         <div className="px-4 pb-3 flex flex-wrap items-center gap-1.5">
-          <span className="text-xs text-gray-500">{10 - lobby.players.length} needed:</span>
           <SpotsNeededBadges neededSlots={lobby.neededSlots ?? null} spotsAvailable={lobby.spotsAvailable ?? {}} />
         </div>
       )}
 
+      {/* Mini team preview for in-progress lobbies */}
+      {hasTeams && (
+        <div className="px-4 pb-3">
+          <MiniTeams players={lobby.players} />
+        </div>
+      )}
+
+      {/* Join role picker */}
       {isExpanded && (
-        <div className="border-t border-gray-700 px-4 py-3 bg-gray-900/50">
-          <p className="text-xs text-gray-400 mb-2 font-medium">Select your roles (pick all that apply)</p>
+        <div className="border-t border-gray-700/80 px-4 py-3 bg-gray-900/60">
+          <p className="text-xs text-gray-400 mb-2 font-medium">Select your roles (pick all you can play)</p>
           <div className="flex flex-wrap gap-2 mb-3">
             {ROLES.map((role) => {
               const blocked = blockedRoles.includes(role.value)
@@ -398,7 +528,7 @@ function LobbyCard({
                   onClick={() => onToggleRole(role.value, blocked)}
                   disabled={blocked}
                   title={blocked ? 'Role slots full' : undefined}
-                  className={`text-xs px-3 py-1.5 rounded border transition-colors ${
+                  className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
                     blocked
                       ? 'border-gray-800 text-gray-600 cursor-not-allowed'
                       : selectedRoles.includes(role.value)
@@ -415,7 +545,7 @@ function LobbyCard({
           <button
             onClick={onJoin}
             disabled={selectedRoles.length === 0}
-            className="w-full py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded transition-colors"
+            className="w-full py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg transition-colors"
           >
             Join Lobby
           </button>

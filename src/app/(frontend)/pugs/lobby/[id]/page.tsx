@@ -21,6 +21,19 @@ const ROLE_COLORS: Record<string, string> = {
   main_support: 'bg-teal-900/50 text-teal-300 border-teal-700',
 }
 
+const STATUS_BADGE: Record<string, string> = {
+  OPEN: 'bg-green-500/20 text-green-400 border border-green-500/30',
+  READY: 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30',
+  DRAFTING: 'bg-blue-500/20 text-blue-400 border border-blue-500/30',
+  MAP_VOTE: 'bg-purple-500/20 text-purple-400 border border-purple-500/30',
+  BANNING: 'bg-orange-500/20 text-orange-400 border border-orange-500/30',
+  IN_PROGRESS: 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30',
+  REPORTING: 'bg-pink-500/20 text-pink-400 border border-pink-500/30',
+  COMPLETED: 'bg-gray-500/20 text-gray-400 border border-gray-500/30',
+  CANCELLED: 'bg-red-500/20 text-red-400 border border-red-500/30',
+  DISPUTED: 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30',
+}
+
 function RoleBadge({ role }: { role: string }) {
   return (
     <span className={`text-xs px-2 py-0.5 rounded border ${ROLE_COLORS[role] ?? 'bg-gray-800 text-gray-400 border-gray-700'}`}>
@@ -29,7 +42,7 @@ function RoleBadge({ role }: { role: string }) {
   )
 }
 
-type Hero = { id: number; name: string; role: string }
+type Hero = { id: number; name: string; role: string; imageUrl?: string | null }
 type Player = {
   userId: number
   name: string
@@ -64,8 +77,8 @@ function PlayerAvatar({ player, size = 24 }: { player: Player; size?: number }) 
 }
 type LobbyData = {
   lobby: any
-  selectedMap: { id: number; name: string; type?: string; settingsMapEntry?: string } | null
-  mapCandidates: Array<{ id: number; name: string }>
+  selectedMap: { id: number; name: string; type?: string; settingsMapEntry?: string; imageUrl?: string | null } | null
+  mapCandidates: Array<{ id: number; name: string; imageUrl?: string | null }>
   heroes: Hero[]
   currentUserId: number | null
   isPugAdmin: boolean
@@ -216,20 +229,25 @@ export default function LobbyPage() {
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-3xl">
-      <div className="flex items-center gap-2 mb-6 text-sm">
-        <Link href="/pugs" className="text-gray-500 hover:text-gray-300 transition-colors">PUGs</Link>
-        <span className="text-gray-700">/</span>
-        <Link
-          href={lobby.tier === 'invite' ? '/pugs/invite' : '/pugs/open'}
-          className="text-gray-500 hover:text-gray-300 transition-colors"
-        >
-          {lobby.tier === 'invite' ? 'Invite Tier' : 'Open Tier'}
-        </Link>
-        <span className="text-gray-700">/</span>
-        <h1 className="text-xl font-bold text-white">PUG #{lobby.lobbyNumber}</h1>
-        <span className="px-2 py-0.5 rounded bg-gray-800 text-gray-400 border border-gray-700">
-          {statusLabel[lobby.status] ?? lobby.status}
-        </span>
+      <div className="mb-6">
+        <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-1">
+          <Link href="/pugs" className="hover:text-gray-300 transition-colors">PUGs</Link>
+          <span className="text-gray-700">/</span>
+          <Link
+            href={lobby.tier === 'invite' ? '/pugs/invite' : '/pugs/open'}
+            className="hover:text-gray-300 transition-colors"
+          >
+            {lobby.tier === 'invite' ? 'Invite Tier' : 'Open Tier'}
+          </Link>
+        </div>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-white">PUG #{lobby.lobbyNumber}</h1>
+          <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
+            (STATUS_BADGE[lobby.status] ?? 'bg-gray-500/20 text-gray-400 border border-gray-500/30')
+          }`}>
+            {statusLabel[lobby.status] ?? lobby.status}
+          </span>
+        </div>
       </div>
 
       {currentUserId === null && lobby.status === 'OPEN' && (
@@ -253,9 +271,9 @@ export default function LobbyPage() {
       {/* ── OPEN: queue ── */}
       {lobby.status === 'OPEN' && (
         <div className="space-y-4">
-          <div className="border border-gray-800 rounded-lg overflow-hidden">
+          <div className="border border-gray-800 rounded-xl overflow-hidden bg-gray-950/50">
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-gray-900/50 border-b border-gray-800">
+            <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-900/80 to-gray-900/40 border-b border-gray-800">
               <div className="flex items-center gap-2.5">
                 <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Queue</h2>
                 <span className="text-sm font-bold text-white">{players.length}<span className="text-gray-600 font-normal">/10</span></span>
@@ -267,67 +285,82 @@ export default function LobbyPage() {
                     if (res.ok) fetchState()
                     else { const j = await res.json(); setActionError(j.error ?? 'Failed to clear queue') }
                   }}
-                  className="text-xs px-2.5 py-1 border border-red-900 text-red-500 rounded hover:bg-red-950 transition-colors"
+                  className="text-xs px-2.5 py-1 border border-red-900 text-red-500 rounded-lg hover:bg-red-950 hover:border-red-800 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
                 >
                   Clear Queue
                 </button>
               )}
             </div>
 
+            {/* Fill bar */}
+            <div className="px-4 pt-3 pb-1">
+              <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${players.length >= 10 ? 'bg-green-500' : players.length >= 7 ? 'bg-yellow-500' : 'bg-blue-500/70'}`}
+                  style={{ width: `${(players.length / 10) * 100}%` }}
+                />
+              </div>
+            </div>
+
             {/* Spots needed */}
-            <div className="px-4 py-2.5 border-b border-gray-800/60 bg-gray-900/20">
+            <div className="px-4 py-2.5">
               <SpotsNeeded neededSlots={neededSlots} spotsAvailable={spotsAvailable ?? {}} totalPlayers={players.length} />
             </div>
 
-            {/* Player rows */}
-            {players.length === 0 ? (
-              <p className="px-4 py-5 text-gray-600 text-sm">No one queued yet. Be the first!</p>
-            ) : (
-              <div className="divide-y divide-gray-800/50">
-                {players.map((p) => (
-                  <div key={p.userId} className="flex items-center gap-3 px-4 py-3">
-                    <PlayerAvatar player={p} size={28} />
-                    <span className={`text-sm font-medium shrink-0 w-36 truncate ${p.userId === currentUserId ? 'text-blue-300' : 'text-gray-200'}`}>
-                      {p.name}{p.userId === currentUserId && <span className="text-blue-500 font-normal"> (you)</span>}
-                    </span>
-                    <div className="flex gap-1.5 flex-wrap flex-1">
-                      {p.queuedRoles.map((r) => <RoleBadge key={r} role={r} />)}
+            <div className="border-t border-gray-800/60">
+              {/* Player rows */}
+              {players.length === 0 ? (
+                <p className="px-4 py-6 text-gray-600 text-sm text-center">No one queued yet. Be the first!</p>
+              ) : (
+                <div className="divide-y divide-gray-800/50">
+                  {players.map((p) => (
+                    <div key={p.userId} className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-white/[0.03]">
+                      <PlayerAvatar player={p} size={28} />
+                      <span className={`text-sm font-medium shrink-0 w-36 truncate ${p.userId === currentUserId ? 'text-blue-300' : 'text-gray-200'}`}>
+                        {p.name}{p.userId === currentUserId && <span className="text-blue-500 font-normal"> (you)</span>}
+                      </span>
+                      <div className="flex gap-1.5 flex-wrap flex-1">
+                        {p.queuedRoles.map((r) => <RoleBadge key={r} role={r} />)}
+                      </div>
+                      {isPugAdmin && p.userId !== currentUserId && (
+                        <button
+                          onClick={async () => {
+                            const res = await fetch(`/api/pug/lobby/${id}/queue/${p.userId}`, { method: 'DELETE' })
+                            if (res.ok) fetchState()
+                            else { const j = await res.json(); setActionError(j.error ?? 'Failed to remove player') }
+                          }}
+                          className="shrink-0 text-xs px-2.5 py-1 border border-red-900/60 text-red-600 rounded-lg hover:bg-red-950 hover:border-red-800 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                        >
+                          Remove
+                        </button>
+                      )}
                     </div>
-                    {isPugAdmin && p.userId !== currentUserId && (
-                      <button
-                        onClick={async () => {
-                          const res = await fetch(`/api/pug/lobby/${id}/queue/${p.userId}`, { method: 'DELETE' })
-                          if (res.ok) fetchState()
-                          else { const j = await res.json(); setActionError(j.error ?? 'Failed to remove player') }
-                        }}
-                        className="shrink-0 text-xs px-2.5 py-1 border border-red-900/60 text-red-600 rounded hover:bg-red-950 hover:border-red-800 transition-colors"
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {inLobby ? (
-            <div className="flex items-center justify-between border border-gray-800 rounded-lg p-4">
-              <div>
-                <p className="text-sm font-medium text-gray-200">You're queued</p>
-                <div className="flex gap-1 mt-1 flex-wrap">
-                  {me!.queuedRoles.map((r) => <RoleBadge key={r} role={r} />)}
+            <div className="flex items-center justify-between border border-green-800/40 rounded-xl p-4 bg-gradient-to-r from-green-950/20 to-gray-950/80">
+              <div className="flex items-center gap-3">
+                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                <div>
+                  <p className="text-sm font-medium text-green-200">You're in the queue</p>
+                  <div className="flex gap-1.5 mt-1 flex-wrap">
+                    {me!.queuedRoles.map((r) => <RoleBadge key={r} role={r} />)}
+                  </div>
                 </div>
               </div>
               <button
                 onClick={leaveQueue}
-                className="px-3 py-1.5 text-sm border border-red-800 text-red-400 rounded hover:bg-red-950 transition-colors"
+                className="px-3 py-1.5 text-sm border border-red-800 text-red-400 rounded-lg hover:bg-red-950 hover:border-red-700 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
               >
                 Leave Queue
               </button>
             </div>
           ) : !regionAllowed ? (
-            <div className="border border-gray-800 rounded-lg p-4">
+            <div className="border border-gray-800 rounded-xl p-4 bg-gray-900/40">
               <p className="text-sm text-gray-500">You don't have access to this region. Contact a PUG admin to get added.</p>
             </div>
           ) : (
@@ -341,71 +374,96 @@ export default function LobbyPage() {
       )}
 
       {/* ── READY: ready check ── */}
-      {lobby.status === 'READY' && (
-        <div className="space-y-4">
-          <div className="text-center py-8 border border-gray-800 rounded-lg">
-            <p className="text-2xl font-bold mb-2">Match Found!</p>
-            <p className="text-gray-400 mb-1">All players must ready up to start the draft.</p>
-            {lobby.readyAt && (
-              <p className="text-sm mb-6">
-                <Countdown deadline={new Date(new Date(lobby.readyAt).getTime() + 120000).toISOString()} />
-                {' '}remaining
-              </p>
-            )}
-            {inLobby && !me?.readyConfirmed && (
-              <button
-                onClick={() => apiAction('/ready', {})}
-                className="px-6 py-3 bg-green-700 text-white rounded-lg hover:bg-green-600 transition-colors text-base font-semibold"
-              >
-                Ready Up
-              </button>
-            )}
-            {inLobby && me?.readyConfirmed && (
-              <p className="text-green-400 font-semibold mb-6">You're ready!</p>
-            )}
-            {isPugAdmin && (
-              <div className="mt-4">
-                <button
-                  onClick={() => apiAction('/force-ready', {})}
-                  className="px-4 py-2 bg-red-600/20 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-600/30 transition-colors text-sm font-semibold"
-                >
-                  Force Ready All (Admin)
-                </button>
+      {lobby.status === 'READY' && (() => {
+        const readyCount = players.filter((p) => p.readyConfirmed).length
+        return (
+          <div className="space-y-4">
+            <div className="border border-green-800/40 rounded-xl overflow-hidden bg-gradient-to-b from-green-950/30 to-gray-950/80">
+              <div className="text-center py-8 px-4">
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <span className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse" />
+                  <p className="text-xs font-semibold uppercase tracking-wider text-green-400">Match Found</p>
+                </div>
+                <p className="text-gray-400 text-sm mb-2">All players must ready up to start the draft.</p>
+                {lobby.readyAt && (
+                  <p className="text-sm mb-6 text-gray-500">
+                    Time remaining: <Countdown deadline={new Date(new Date(lobby.readyAt).getTime() + 120000).toISOString()} />
+                  </p>
+                )}
+                {inLobby && !me?.readyConfirmed && (
+                  <button
+                    onClick={() => apiAction('/ready', {})}
+                    className="px-8 py-3 bg-green-600 text-white rounded-xl hover:bg-green-500 hover:shadow-lg hover:shadow-green-500/25 hover:scale-[1.03] active:scale-[0.97] transition-all duration-200 text-base font-bold"
+                  >
+                    Ready Up
+                  </button>
+                )}
+                {inLobby && me?.readyConfirmed && (
+                  <div className="flex justify-center">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-green-900/30 border border-green-800/40">
+                      <span className="w-2 h-2 rounded-full bg-green-400" />
+                      <span className="text-green-300 font-semibold text-sm">You're ready!</span>
+                    </div>
+                  </div>
+                )}
+                {isPugAdmin && (
+                  <div className="mt-4">
+                    <button
+                      onClick={() => apiAction('/force-ready', {})}
+                      className="px-4 py-2 bg-red-600/15 text-red-400 border border-red-500/30 rounded-xl hover:bg-red-600/25 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-sm font-semibold"
+                    >
+                      Force Ready All (Admin)
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          <div className="border border-gray-800 rounded-lg overflow-hidden">
-            <div className="px-4 py-2.5 bg-gray-900/50 border-b border-gray-800">
-              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                Players ({players.filter((p) => p.readyConfirmed).length}/{players.length} ready)
-              </span>
+              {/* Ready progress bar */}
+              <div className="px-4 pb-3">
+                <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-green-500 transition-all duration-500"
+                    style={{ width: `${(readyCount / players.length) * 100}%` }}
+                  />
+                </div>
+                <p className="text-xs text-gray-500 text-center mt-1.5">{readyCount}/{players.length} ready</p>
+              </div>
             </div>
-            <div className="divide-y divide-gray-800/50">
-              {players.map((p) => (
-                <div key={p.userId} className="flex items-center justify-between gap-3 px-4 py-2.5">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <PlayerAvatar player={p} size={24} />
-                    <span className={`text-sm truncate ${p.userId === currentUserId ? 'text-blue-300 font-medium' : 'text-gray-200'}`}>
-                      {p.name}{p.userId === currentUserId && ' (you)'}
+
+            <div className="border border-gray-800 rounded-xl overflow-hidden bg-gray-950/50">
+              <div className="px-4 py-2.5 bg-gradient-to-r from-gray-900/80 to-gray-900/40 border-b border-gray-800">
+                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Players</span>
+              </div>
+              <div className="divide-y divide-gray-800/50">
+                {players.map((p) => (
+                  <div key={p.userId} className={`flex items-center justify-between gap-3 px-4 py-2.5 transition-colors hover:bg-white/[0.03] ${p.readyConfirmed ? 'bg-green-950/10' : ''}`}>
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <PlayerAvatar player={p} size={28} />
+                      <span className={`text-sm truncate ${p.userId === currentUserId ? 'text-blue-300 font-medium' : 'text-gray-200'}`}>
+                        {p.name}{p.userId === currentUserId && ' (you)'}
+                      </span>
+                    </div>
+                    <span className={`text-xs px-2.5 py-1 rounded-lg shrink-0 font-medium transition-colors ${
+                      p.readyConfirmed
+                        ? 'bg-green-900/40 text-green-400 border border-green-800/50'
+                        : 'bg-gray-800/50 text-gray-500 border border-gray-700/50'
+                    }`}>
+                      {p.readyConfirmed ? 'Ready' : 'Not ready'}
                     </span>
                   </div>
-                  <span className={`text-xs px-2 py-0.5 rounded shrink-0 ${p.readyConfirmed ? 'bg-green-900/50 text-green-400 border border-green-800' : 'bg-gray-800/50 text-gray-500 border border-gray-700'}`}>
-                    {p.readyConfirmed ? 'Ready' : 'Not ready'}
-                  </span>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
+            {inLobby && (
+              <button
+                onClick={leaveQueue}
+                className="px-4 py-2 border border-red-800 text-red-400 rounded-xl hover:bg-red-950 hover:border-red-700 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-sm"
+              >
+                Leave (penalised)
+              </button>
+            )}
           </div>
-          {inLobby && (
-            <button
-              onClick={leaveQueue}
-              className="px-4 py-2 border border-red-800 text-red-400 rounded hover:bg-red-950 transition-colors text-sm"
-            >
-              Leave (penalised)
-            </button>
-          )}
-        </div>
-      )}
+        )
+      })()}
 
       {/* ── DRAFTING ── */}
       {lobby.status === 'DRAFTING' && lobby.draftState && (
@@ -441,14 +499,24 @@ export default function LobbyPage() {
                     key={m.id}
                     onClick={() => canVote && apiAction('/map-vote', { mapId: m.id })}
                     disabled={!canVote}
-                    className={`p-4 border rounded-lg transition-colors text-center ${
+                    className={`relative overflow-hidden border rounded-xl transition-all duration-200 text-center group ${
                       voted
-                        ? 'bg-blue-900/50 border-blue-600 text-blue-200'
-                        : 'border-gray-700 hover:bg-gray-800 disabled:opacity-50'
+                        ? 'border-blue-500 ring-2 ring-blue-500/40 shadow-lg shadow-blue-500/10'
+                        : 'border-gray-700 hover:border-gray-500 hover:scale-[1.03] hover:shadow-lg hover:shadow-black/20 active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100'
                     }`}
                   >
-                    <p className="font-medium">{m.name}</p>
-                    <p className="text-xs text-gray-500 mt-1">{count} vote{count !== 1 ? 's' : ''}</p>
+                    {m.imageUrl ? (
+                      <div className="relative h-24">
+                        <img src={m.imageUrl} alt={m.name} className="w-full h-full object-cover" />
+                        <div className={`absolute inset-0 ${voted ? 'bg-blue-900/60' : 'bg-black/40 group-hover:bg-black/30'} transition-colors`} />
+                      </div>
+                    ) : (
+                      <div className={`h-24 ${voted ? 'bg-blue-900/30' : 'bg-gray-800/50'}`} />
+                    )}
+                    <div className={`px-3 py-2 ${voted ? 'bg-blue-950/80' : 'bg-gray-900/80'}`}>
+                      <p className={`font-medium text-sm ${voted ? 'text-blue-200' : 'text-gray-200'}`}>{m.name}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{count} vote{count !== 1 ? 's' : ''}</p>
+                    </div>
                   </button>
                 )
               })}
@@ -495,16 +563,16 @@ export default function LobbyPage() {
             guildId={guildId}
           />
           {(isCaptain || isPugAdmin) && (
-            <div className="border border-gray-800 rounded-lg overflow-hidden">
-              <div className="px-4 py-2.5 bg-gray-900/50 border-b border-gray-800">
+            <div className="border border-gray-800/60 rounded-xl overflow-hidden bg-gray-900/40">
+              <div className="px-4 py-2.5 border-b border-gray-800/60">
                 <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   {isPugAdmin && !isCaptain ? 'Admin - Submit Result' : 'Submit Result (Captain Only)'}
                 </span>
               </div>
-              <div className="px-4 py-3 flex gap-3 flex-wrap">
-                <button onClick={() => apiAction(isPugAdmin && !isCaptain ? '/resolve' : '/report', { result: 'team1' })} className="px-4 py-2 bg-blue-900/40 border border-blue-800 text-blue-300 rounded hover:bg-blue-900 text-sm transition-colors font-medium">Team 1 Won</button>
-                <button onClick={() => apiAction(isPugAdmin && !isCaptain ? '/resolve' : '/report', { result: 'team2' })} className="px-4 py-2 bg-orange-900/40 border border-orange-800 text-orange-300 rounded hover:bg-orange-900 text-sm transition-colors font-medium">Team 2 Won</button>
-                <button onClick={() => apiAction(isPugAdmin && !isCaptain ? '/resolve' : '/report', { result: 'draw' })} className="px-4 py-2 border border-gray-700 text-gray-400 rounded hover:bg-gray-800 text-sm transition-colors">Draw</button>
+              <div className="px-4 py-3 grid grid-cols-3 gap-3">
+                <button onClick={() => apiAction(isPugAdmin && !isCaptain ? '/resolve' : '/report', { result: 'team1' })} className="px-4 py-2.5 bg-blue-600/15 border border-blue-500/30 text-blue-300 rounded-xl hover:bg-blue-600/25 hover:shadow-lg hover:shadow-blue-500/10 hover:scale-[1.02] active:scale-[0.98] text-sm transition-all duration-200 font-semibold">Team 1 Won</button>
+                <button onClick={() => apiAction(isPugAdmin && !isCaptain ? '/resolve' : '/report', { result: 'team2' })} className="px-4 py-2.5 bg-orange-600/15 border border-orange-500/30 text-orange-300 rounded-xl hover:bg-orange-600/25 hover:shadow-lg hover:shadow-orange-500/10 hover:scale-[1.02] active:scale-[0.98] text-sm transition-all duration-200 font-semibold">Team 2 Won</button>
+                <button onClick={() => apiAction(isPugAdmin && !isCaptain ? '/resolve' : '/report', { result: 'draw' })} className="px-4 py-2.5 border border-gray-700 text-gray-400 rounded-xl hover:bg-gray-800 hover:border-gray-600 hover:scale-[1.02] active:scale-[0.98] text-sm transition-all duration-200">Draw</button>
               </div>
             </div>
           )}
@@ -514,75 +582,98 @@ export default function LobbyPage() {
       {/* ── REPORTING ── */}
       {lobby.status === 'REPORTING' && (
         <div className="space-y-4">
-          <TeamsDisplay players={players} currentUserId={currentUserId} heroes={heroes} banState={lobby.banState} />
           {(() => {
             const pending = lobby.pendingResult as any
+            const resultColor = pending?.result === 'team1' ? 'blue' : pending?.result === 'team2' ? 'orange' : 'gray'
+            const resultLabel = pending?.result === 'team1' ? 'Team 1 Won' : pending?.result === 'team2' ? 'Team 2 Won' : 'Draw'
+            const reporter = pending ? players.find((p) => p.userId === pending.reportedBy) : null
+            const isOpposingCaptain = isCaptain && me?.team !== reporter?.team
             return pending ? (
-              <div className="border border-gray-800 rounded-lg p-4">
-                <p className="text-sm text-gray-400 mb-4">
-                  Result submitted:{' '}
-                  <strong className="text-white">
-                    {pending.result === 'team1' ? 'Team 1 Won' : pending.result === 'team2' ? 'Team 2 Won' : 'Draw'}
-                  </strong>
-                  {' '}- auto-confirms in{' '}
-                  {lobby.reportingAt ? <Countdown deadline={new Date(new Date(lobby.reportingAt).getTime() + 120000).toISOString()} /> : '2 minutes'}.
-                </p>
-                {isCaptain && me?.team !== players.find((p) => p.userId === pending.reportedBy)?.team && (
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => apiAction('/confirm', { action: 'confirm' })}
-                      className="px-4 py-2 bg-green-800 text-green-100 rounded hover:bg-green-700 text-sm transition-colors"
-                    >
-                      Confirm Result
-                    </button>
-                    <button
-                      onClick={() => apiAction('/confirm', { action: 'dispute' })}
-                      className="px-4 py-2 border border-red-800 text-red-400 rounded hover:bg-red-950 text-sm transition-colors"
-                    >
-                      Dispute
-                    </button>
+              <div className={`border rounded-xl overflow-hidden ${
+                resultColor === 'blue' ? 'border-blue-800/60 bg-gradient-to-b from-blue-950/30 to-gray-950/80'
+                : resultColor === 'orange' ? 'border-orange-800/60 bg-gradient-to-b from-orange-950/30 to-gray-950/80'
+                : 'border-gray-700/60 bg-gradient-to-b from-gray-900/50 to-gray-950/80'
+              }`}>
+                <div className="px-5 py-4 text-center space-y-3">
+                  <div className="flex items-center justify-center gap-2">
+                    <span className={`w-2.5 h-2.5 rounded-full animate-pulse ${
+                      resultColor === 'blue' ? 'bg-blue-400' : resultColor === 'orange' ? 'bg-orange-400' : 'bg-gray-400'
+                    }`} />
+                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Awaiting Confirmation</p>
                   </div>
-                )}
+                  <p className="text-lg font-bold text-white">{resultLabel}</p>
+                  <div className="flex items-center justify-center gap-2 text-sm text-gray-400">
+                    <span>Reported by {reporter?.name ?? 'Unknown'}</span>
+                    <span className="text-gray-700">-</span>
+                    <span>auto-confirms in {lobby.reportingAt ? <Countdown deadline={new Date(new Date(lobby.reportingAt).getTime() + 120000).toISOString()} /> : '2 min'}</span>
+                  </div>
+                  {isOpposingCaptain && (
+                    <div className="flex items-center justify-center gap-3 pt-2">
+                      <button
+                        onClick={() => apiAction('/confirm', { action: 'confirm' })}
+                        className="px-5 py-2.5 bg-green-700/80 text-green-100 rounded-xl hover:bg-green-600 hover:shadow-lg hover:shadow-green-600/20 hover:scale-[1.02] active:scale-[0.98] text-sm font-semibold transition-all duration-200"
+                      >
+                        Confirm Result
+                      </button>
+                      <button
+                        onClick={() => apiAction('/confirm', { action: 'dispute' })}
+                        className="px-5 py-2.5 border border-red-800 text-red-400 rounded-xl hover:bg-red-950 hover:border-red-700 hover:scale-[1.02] active:scale-[0.98] text-sm font-medium transition-all duration-200"
+                      >
+                        Dispute
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : null
           })()}
+          <TeamsDisplay players={players} currentUserId={currentUserId} heroes={heroes} banState={lobby.banState} />
         </div>
       )}
 
       {/* ── TERMINAL STATES ── */}
       {lobby.status === 'COMPLETED' && (() => {
         const pending = lobby.pendingResult as any
+        const resultColor = pending?.result === 'team1' ? 'blue' : pending?.result === 'team2' ? 'orange' : 'gray'
+        const resultLabel = pending?.result === 'team1' ? 'Team 1 Won' : pending?.result === 'team2' ? 'Team 2 Won' : 'Draw'
         const disputeDeadline = lobby.completedAt
           ? new Date(new Date(lobby.completedAt).getTime() + 600000).toISOString()
           : null
         const canDispute = disputeDeadline && new Date(disputeDeadline).getTime() > Date.now()
         const isOpposingCaptain = isCaptain && pending && me?.team !== players.find((p: Player) => p.userId === pending.reportedBy)?.team
         return (
-          <div className="text-center py-12">
-            <p className="text-2xl font-bold mb-2">Match Complete</p>
-            {selectedMap && <p className="text-gray-400 text-sm">Map: {selectedMap.name}</p>}
-            {pending && (
-              <p className="text-sm text-gray-500 mt-1">
-                Result: <strong className="text-white">{pending.result === 'team1' ? 'Team 1 Won' : pending.result === 'team2' ? 'Team 2 Won' : 'Draw'}</strong>
-              </p>
-            )}
+          <div className="space-y-4">
+            <div className={`border rounded-xl overflow-hidden text-center py-8 ${
+              resultColor === 'blue' ? 'border-blue-800/40 bg-gradient-to-b from-blue-950/20 to-gray-950/80'
+              : resultColor === 'orange' ? 'border-orange-800/40 bg-gradient-to-b from-orange-950/20 to-gray-950/80'
+              : 'border-gray-700/40 bg-gradient-to-b from-gray-900/30 to-gray-950/80'
+            }`}>
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Match Complete</p>
+              {pending && <p className="text-2xl font-bold text-white mb-2">{resultLabel}</p>}
+              {selectedMap && (
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-900/60 border border-gray-800/60">
+                  {selectedMap.imageUrl && <img src={selectedMap.imageUrl} alt="" className="w-6 h-6 rounded object-cover" />}
+                  <span className="text-sm text-gray-300">{selectedMap.name}</span>
+                </div>
+              )}
+            </div>
             <TeamsDisplay players={players} currentUserId={currentUserId} heroes={heroes} banState={lobby.banState} />
             {canDispute && isOpposingCaptain && (
-              <div className="mt-4 border border-yellow-900/50 rounded-lg p-4 inline-block">
-                <p className="text-sm text-yellow-400 mb-2">
+              <div className="border border-yellow-900/50 rounded-xl p-4 text-center bg-yellow-950/10">
+                <p className="text-sm text-yellow-400 mb-3">
                   Dispute window closes in {disputeDeadline && <Countdown deadline={disputeDeadline} />}
                 </p>
                 <button
                   onClick={() => apiAction('/confirm', { action: 'dispute' })}
-                  className="px-4 py-2 border border-red-800 text-red-400 rounded hover:bg-red-950 text-sm transition-colors"
+                  className="px-5 py-2.5 border border-red-800 text-red-400 rounded-xl hover:bg-red-950 hover:border-red-700 hover:scale-[1.02] active:scale-[0.98] text-sm font-medium transition-all duration-200"
                 >
                   Dispute Result
                 </button>
               </div>
             )}
-            <div className="mt-6">
-              <Link href="/pugs/open" className="text-blue-400 hover:underline text-sm">
-                Back to Open Tier →
+            <div className="text-center pt-2">
+              <Link href={lobby.tier === 'invite' ? '/pugs/invite' : '/pugs/open'} className="text-sm text-gray-500 hover:text-gray-300 transition-colors">
+                Back to {lobby.tier === 'invite' ? 'Invite' : 'Open'} Tier
               </Link>
             </div>
           </div>
@@ -590,35 +681,43 @@ export default function LobbyPage() {
       })()}
 
       {lobby.status === 'CANCELLED' && (
-        <div className="text-center py-12">
-          <p className="text-xl font-semibold text-gray-400">Lobby cancelled.</p>
-          <Link href="/pugs/open" className="mt-4 inline-block text-blue-400 hover:underline text-sm">
-            Back to Open Tier →
-          </Link>
+        <div className="space-y-4">
+          <div className="border border-red-900/30 rounded-xl text-center py-10 bg-gradient-to-b from-red-950/10 to-gray-950/80">
+            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Match Cancelled</p>
+            <p className="text-lg text-gray-400">This lobby has been cancelled.</p>
+          </div>
+          <div className="text-center">
+            <Link href={lobby.tier === 'invite' ? '/pugs/invite' : '/pugs/open'} className="text-sm text-gray-500 hover:text-gray-300 transition-colors">
+              Back to {lobby.tier === 'invite' ? 'Invite' : 'Open'} Tier
+            </Link>
+          </div>
         </div>
       )}
 
       {lobby.status === 'DISPUTED' && (
         <div className="space-y-4">
-          <div className="text-center py-8">
-            <p className="text-xl font-semibold text-yellow-400">Result disputed</p>
-            <p className="text-gray-500 text-sm mt-2">
-              {isPugAdmin ? 'Resolve this dispute by selecting the correct result.' : 'An admin will review and resolve this match.'}
+          <div className="border border-yellow-800/40 rounded-xl text-center py-8 bg-gradient-to-b from-yellow-950/20 to-gray-950/80">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-yellow-400 animate-pulse" />
+              <p className="text-xs font-semibold uppercase tracking-wider text-yellow-500">Result Disputed</p>
+            </div>
+            <p className="text-gray-400 text-sm mt-1">
+              {isPugAdmin ? 'Resolve this dispute by selecting the correct result below.' : 'An admin will review and resolve this match.'}
             </p>
           </div>
           <TeamsDisplay players={players} currentUserId={currentUserId} heroes={heroes} banState={lobby.banState} />
           {isPugAdmin && (
-            <div className="border border-red-900/50 rounded-lg overflow-hidden">
-              <div className="px-4 py-2.5 bg-red-950/30 border-b border-red-900/50">
+            <div className="border border-red-900/40 rounded-xl overflow-hidden bg-gray-900/40">
+              <div className="px-4 py-2.5 bg-red-950/30 border-b border-red-900/40">
                 <span className="text-xs font-semibold text-red-400 uppercase tracking-wider">Admin - Resolve Dispute</span>
               </div>
-              <div className="px-4 py-3 flex gap-3 flex-wrap">
-                <button onClick={() => apiAction('/resolve', { result: 'team1' })} className="px-4 py-2 bg-blue-900/40 border border-blue-800 text-blue-300 rounded hover:bg-blue-900 text-sm transition-colors font-medium">Team 1 Won</button>
-                <button onClick={() => apiAction('/resolve', { result: 'team2' })} className="px-4 py-2 bg-orange-900/40 border border-orange-800 text-orange-300 rounded hover:bg-orange-900 text-sm transition-colors font-medium">Team 2 Won</button>
-                <button onClick={() => apiAction('/resolve', { result: 'draw' })} className="px-4 py-2 border border-gray-700 text-gray-400 rounded hover:bg-gray-800 text-sm transition-colors">Draw</button>
+              <div className="px-4 py-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <button onClick={() => apiAction('/resolve', { result: 'team1' })} className="px-4 py-2.5 bg-blue-600/15 border border-blue-500/30 text-blue-300 rounded-xl hover:bg-blue-600/25 hover:shadow-lg hover:shadow-blue-500/10 hover:scale-[1.02] active:scale-[0.98] text-sm transition-all duration-200 font-semibold">Team 1 Won</button>
+                <button onClick={() => apiAction('/resolve', { result: 'team2' })} className="px-4 py-2.5 bg-orange-600/15 border border-orange-500/30 text-orange-300 rounded-xl hover:bg-orange-600/25 hover:shadow-lg hover:shadow-orange-500/10 hover:scale-[1.02] active:scale-[0.98] text-sm transition-all duration-200 font-semibold">Team 2 Won</button>
+                <button onClick={() => apiAction('/resolve', { result: 'draw' })} className="px-4 py-2.5 border border-gray-700 text-gray-400 rounded-xl hover:bg-gray-800 hover:border-gray-600 hover:scale-[1.02] active:scale-[0.98] text-sm transition-all duration-200">Draw</button>
                 <button
                   onClick={async () => { if (await confirm({ message: 'Cancel this match? No rating changes will be applied.', variant: 'danger' })) apiAction('/resolve', { result: 'cancel' }) }}
-                  className="px-4 py-2 border border-red-800 text-red-400 rounded hover:bg-red-950 text-sm transition-colors"
+                  className="px-4 py-2.5 border border-red-800 text-red-400 rounded-xl hover:bg-red-950 hover:border-red-700 hover:scale-[1.02] active:scale-[0.98] text-sm transition-all duration-200"
                 >Cancel Match</button>
               </div>
             </div>
@@ -674,14 +773,14 @@ function QueueForm({ onJoin, blockedRoles, approvedRoles }: { onJoin: (roles: st
 
   if (roles.length === 0) {
     return (
-      <div className="border border-gray-800 rounded-lg p-4">
+      <div className="border border-gray-800 rounded-xl p-4 bg-gray-900/40">
         <p className="text-sm text-gray-500">You have no approved roles for this lobby. Contact a PUG admin to get roles assigned.</p>
       </div>
     )
   }
 
   return (
-    <div className="border border-gray-800 rounded-lg p-4">
+    <div className="border border-gray-800 rounded-xl p-5 bg-gradient-to-b from-gray-900/60 to-gray-950/60">
       <p className="text-sm font-medium text-gray-300 mb-3">Select your roles to queue:</p>
       <div className="flex flex-wrap gap-2 mb-4">
         {roles.map((role) => {
@@ -692,12 +791,12 @@ function QueueForm({ onJoin, blockedRoles, approvedRoles }: { onJoin: (roles: st
               onClick={() => toggle(role)}
               disabled={blocked}
               title={blocked ? 'Role slots full' : undefined}
-              className={`px-3 py-1.5 text-sm rounded border transition-colors ${
+              className={`px-3 py-1.5 text-sm rounded-lg border transition-all duration-200 ${
                 blocked
                   ? 'border-gray-800 text-gray-600 cursor-not-allowed'
                   : selected.includes(role)
-                    ? ROLE_COLORS[role] + ' font-medium'
-                    : 'border-gray-700 text-gray-400 hover:border-gray-500'
+                    ? ROLE_COLORS[role] + ' font-medium shadow-md'
+                    : 'border-gray-700 text-gray-400 hover:border-gray-500 hover:scale-[1.03] active:scale-[0.97]'
               }`}
             >
               {ROLE_LABELS[role]}{blocked ? ' (Full)' : ''}
@@ -708,7 +807,7 @@ function QueueForm({ onJoin, blockedRoles, approvedRoles }: { onJoin: (roles: st
       <button
         onClick={() => selected.length > 0 && onJoin(selected)}
         disabled={selected.length === 0}
-        className="px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-600 disabled:opacity-40 text-sm font-medium transition-colors"
+        className="px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-600/20 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:hover:scale-100 disabled:hover:shadow-none text-sm font-medium transition-all duration-200"
       >
         Join Queue
       </button>
@@ -737,26 +836,30 @@ function DraftUI({
   const captains = players.filter((p) => p.isCaptain)
   const pickingTeam = draftState.currentPickTeam as 1 | 2
 
-  const TEAM_BORDER = { 1: 'border-blue-800', 2: 'border-orange-800' } as const
-  const TEAM_HEADER_BG = { 1: 'bg-blue-950/40', 2: 'bg-orange-950/40' } as const
+  const TEAM_BORDER = { 1: 'border-blue-800/50', 2: 'border-orange-800/50' } as const
+  const TEAM_HEADER = { 1: 'from-blue-950/50 to-blue-950/20', 2: 'from-orange-950/50 to-orange-950/20' } as const
   const TEAM_TEXT = { 1: 'text-blue-300', 2: 'text-orange-300' } as const
+  const TEAM_ACCENT = { 1: 'bg-blue-500', 2: 'bg-orange-500' } as const
 
   return (
     <div className="space-y-4">
       {/* Turn banner */}
-      <div className={`flex items-center justify-between px-4 py-3 rounded-lg border ${
+      <div className={`flex items-center justify-between px-5 py-3.5 rounded-xl border ${
         isMyTurn
-          ? 'bg-blue-950/60 border-blue-700 text-blue-200'
-          : 'bg-gray-900/60 border-gray-700 text-gray-400'
+          ? 'bg-gradient-to-r from-blue-950/60 to-blue-950/30 border-blue-700/60 text-blue-200'
+          : 'bg-gray-900/60 border-gray-700/60 text-gray-400'
       }`}>
-        <span className="font-semibold text-sm">
-          {isMyTurn
-            ? isPugAdmin && !isCaptain
-              ? `Admin - picking for Team ${pickingTeam}`
-              : "You're up! Make your pick."
-            : `Waiting for Team ${pickingTeam}…`}
-        </span>
-        <span className="flex items-center gap-2 text-xs opacity-70">
+        <div className="flex items-center gap-2.5">
+          {(isCaptain && draftState.currentPickTeam === myTeam) && <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />}
+          <span className="font-semibold text-sm">
+            {isCaptain && draftState.currentPickTeam === myTeam
+              ? "Your turn to pick!"
+              : isPugAdmin
+                ? `Admin - Team ${pickingTeam} is picking`
+                : `Waiting for Team ${pickingTeam}...`}
+          </span>
+        </div>
+        <span className="flex items-center gap-2 text-xs text-gray-400">
           Pick {draftState.pickNumber + 1}/8
           {draftState.pickDeadline && <Countdown deadline={draftState.pickDeadline} />}
         </span>
@@ -769,18 +872,21 @@ function DraftUI({
           const cap = captains.find((c) => c.team === t)
           const isPicking = pickingTeam === t
           return (
-            <div key={t} className={`rounded-lg border overflow-hidden ${TEAM_BORDER[t]} ${isPicking ? 'ring-1 ring-offset-1 ring-offset-black ' + (t === 1 ? 'ring-blue-700' : 'ring-orange-700') : ''}`}>
-              <div className={`px-3 py-2 border-b ${TEAM_BORDER[t]} ${TEAM_HEADER_BG[t]}`}>
-                <span className={`text-xs font-bold uppercase tracking-wider ${TEAM_TEXT[t]}`}>Team {t}</span>
-                {cap && <span className="text-xs text-gray-500 ml-2">C: {cap.name}</span>}
-                {isPicking && <span className={`ml-2 text-xs font-medium ${TEAM_TEXT[t]}`}>● picking</span>}
+            <div key={t} className={`rounded-xl border overflow-hidden bg-gray-950/50 transition-all duration-200 ${TEAM_BORDER[t]} ${isPicking ? 'ring-1 ring-offset-1 ring-offset-black ' + (t === 1 ? 'ring-blue-600/50' : 'ring-orange-600/50') : ''}`}>
+              <div className={`px-4 py-2.5 bg-gradient-to-r ${TEAM_HEADER[t]} border-b ${TEAM_BORDER[t]}`}>
+                <div className="flex items-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${TEAM_ACCENT[t]} ${isPicking ? 'animate-pulse' : ''}`} />
+                  <span className={`text-xs font-bold uppercase tracking-wider ${TEAM_TEXT[t]}`}>Team {t}</span>
+                  {cap && <span className="text-xs text-gray-500 ml-1">C: {cap.name}</span>}
+                  {isPicking && <span className={`ml-auto text-xs font-medium ${TEAM_TEXT[t]}`}>picking</span>}
+                </div>
               </div>
-              <ul className="divide-y divide-gray-800/50">
-                {teamPlayers.map((p) => (
-                  <li key={p.userId} className="flex items-center justify-between gap-2 px-3 py-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <PlayerAvatar player={p} size={22} />
-                      <span className={`text-sm truncate min-w-0 ${p.userId === currentUserId ? TEAM_TEXT[t] + ' font-medium' : 'text-gray-200'}`}>
+              <ul>
+                {teamPlayers.map((p, i) => (
+                  <li key={p.userId} className={`flex items-center justify-between gap-2 px-4 py-2.5 transition-colors hover:bg-white/[0.03] ${i < teamPlayers.length - 1 ? 'border-b border-gray-800/30' : ''}`}>
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <PlayerAvatar player={p} size={26} />
+                      <span className={`text-sm truncate min-w-0 ${p.userId === currentUserId ? TEAM_TEXT[t] + ' font-semibold' : 'text-gray-200'}`}>
                         {p.name}{p.isCaptain && ' ★'}{p.userId === currentUserId && ' (you)'}
                       </span>
                     </div>
@@ -788,7 +894,7 @@ function DraftUI({
                   </li>
                 ))}
                 {teamPlayers.length === 0 && (
-                  <li className="px-3 py-3 text-xs text-gray-600">No players yet</li>
+                  <li className="px-4 py-4 text-xs text-gray-600 text-center">No players yet</li>
                 )}
               </ul>
             </div>
@@ -797,26 +903,26 @@ function DraftUI({
       </div>
 
       {/* Available pool */}
-      <div className="border border-gray-800 rounded-lg overflow-hidden">
-        <div className="px-4 py-2.5 bg-gray-900/50 border-b border-gray-800">
+      <div className="border border-gray-800 rounded-xl overflow-hidden bg-gray-950/50">
+        <div className="px-4 py-2.5 bg-gradient-to-r from-gray-900/80 to-gray-900/40 border-b border-gray-800">
           <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Available players</span>
         </div>
-        <div className="divide-y divide-gray-800/50">
+        <div className="divide-y divide-gray-800/40">
           {undrafted.map((p) => {
             const teamPlayers = pickingTeam === 1 ? team1 : team2
             const takenRoles = new Set(teamPlayers.map((tp) => tp.assignedRole).filter(Boolean))
             const roleBlocked = p.assignedRole ? takenRoles.has(p.assignedRole) : false
             return (
-              <div key={p.userId} className={`flex items-center gap-3 px-4 py-2.5 ${roleBlocked ? 'opacity-40' : ''}`}>
-                <PlayerAvatar player={p} size={22} />
-                <span className="text-sm text-gray-200 flex-1">{p.name}</span>
+              <div key={p.userId} className={`flex items-center gap-3 px-4 py-3 transition-all duration-200 ${roleBlocked ? 'opacity-30' : 'hover:bg-white/[0.03]'}`}>
+                <PlayerAvatar player={p} size={28} />
+                <span className="text-sm text-gray-200 flex-1 font-medium">{p.name}</span>
                 {p.assignedRole && <RoleBadge role={p.assignedRole} />}
-                {roleBlocked && <span className="text-xs text-gray-600">role taken</span>}
+                {roleBlocked && <span className="text-xs text-gray-600 italic">role taken</span>}
                 {isMyTurn && (
                   <button
                     onClick={() => !roleBlocked && onPick(p.userId)}
                     disabled={roleBlocked}
-                    className="px-3 py-1 text-xs bg-blue-700 text-white rounded hover:bg-blue-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
+                    className="px-3.5 py-1.5 text-xs bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 hover:shadow-md hover:shadow-blue-500/20 hover:scale-[1.05] active:scale-[0.95] transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none shrink-0"
                   >
                     Pick
                   </button>
@@ -825,7 +931,7 @@ function DraftUI({
             )
           })}
           {undrafted.length === 0 && (
-            <p className="px-4 py-4 text-sm text-gray-600">All players drafted</p>
+            <p className="px-4 py-5 text-sm text-gray-600 text-center">All players drafted</p>
           )}
         </div>
       </div>
@@ -846,7 +952,7 @@ function BanUI({
   isPugAdmin: boolean
   onBan: (id: number) => void
   players?: Player[]
-  selectedMap?: { id: number; name: string; type?: string } | null
+  selectedMap?: { id: number; name: string; type?: string; imageUrl?: string | null } | null
 }) {
   const [filter, setFilter] = useState('')
   const existingBans: Array<{ heroId: number; team: number; banNumber: number }> = banState.bans ?? []
@@ -892,19 +998,22 @@ function BanUI({
   return (
     <div className="space-y-4">
       {/* Turn banner */}
-      <div className={`flex items-center justify-between px-4 py-3 rounded-lg border ${
+      <div className={`flex items-center justify-between px-5 py-3.5 rounded-xl border ${
         isMyTurn
-          ? 'bg-blue-950/60 border-blue-700 text-blue-200'
-          : 'bg-gray-900/60 border-gray-700 text-gray-400'
+          ? 'bg-gradient-to-r from-blue-950/60 to-blue-950/30 border-blue-700/60 text-blue-200'
+          : 'bg-gray-900/60 border-gray-700/60 text-gray-400'
       }`}>
-        <span className="font-semibold text-sm">
-          {isMyTurn
-            ? isPugAdmin && !isCaptain
-              ? `Admin - banning for Team ${banState.currentBanTeam}`
-              : "You're up! Ban a hero."
-            : `Team ${banState.currentBanTeam} is banning…`}
-        </span>
-        <span className="flex items-center gap-2 text-xs opacity-70">
+        <div className="flex items-center gap-2.5">
+          {isMyTurn && !isPugAdmin && <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />}
+          <span className="font-semibold text-sm">
+            {isMyTurn
+              ? isPugAdmin && !isCaptain
+                ? `Admin - Team ${banState.currentBanTeam} is banning`
+                : "Your turn to ban!"
+              : `Team ${banState.currentBanTeam} is banning...`}
+          </span>
+        </div>
+        <span className="flex items-center gap-2 text-xs text-gray-400">
           Ban {banState.banNumber}/2
           {banState.banDeadline && <Countdown deadline={banState.banDeadline} />}
         </span>
@@ -912,18 +1021,19 @@ function BanUI({
 
       {/* Bans so far */}
       {existingBans.length > 0 && (
-        <div className="border border-gray-800 rounded-lg p-3 space-y-2">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Bans so far</p>
+        <div className="border border-gray-800/60 rounded-xl p-4 bg-gray-900/40 space-y-2.5">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Bans</p>
           {bansByTeam.map(({ team, bans }) => bans.length > 0 && (
             <div key={team} className="flex items-center gap-2 flex-wrap">
-              <span className={`text-xs font-semibold px-2 py-0.5 rounded border shrink-0 ${TEAM_BADGE[team as 1 | 2]}`}>
+              <span className={`text-xs font-semibold px-2 py-0.5 rounded-lg border shrink-0 ${TEAM_BADGE[team as 1 | 2]}`}>
                 Team {team}
               </span>
               {bans.map((b) => {
                 const hero = heroes.find((h) => h.id === b.heroId)
                 return (
-                  <span key={b.heroId} className="text-xs px-2 py-0.5 rounded bg-red-950/60 border border-red-900 text-red-400 line-through">
-                    {hero?.name ?? `#${b.heroId}`}
+                  <span key={b.heroId} className="inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-lg bg-red-950/40 border border-red-900/50 text-red-400">
+                    {hero?.imageUrl && <img src={hero.imageUrl} alt="" className="w-5 h-5 rounded-full object-cover ring-1 ring-red-900/50" />}
+                    <span className="line-through">{hero?.name ?? `#${b.heroId}`}</span>
                   </span>
                 )
               })}
@@ -937,50 +1047,64 @@ function BanUI({
         <TeamsDisplay players={players} currentUserId={currentUserId} heroes={heroes} />
       )}
       {selectedMap && (
-        <div className="border border-gray-800 rounded-lg p-3 flex items-center gap-2">
-          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Map:</span>
-          <span className="text-sm font-medium text-gray-200">{selectedMap.name}</span>
-          <span className="text-xs text-gray-500">({selectedMap.type})</span>
+        <div className="border border-gray-800/60 rounded-xl overflow-hidden flex items-center bg-gray-900/40">
+          {selectedMap.imageUrl && (
+            <img src={selectedMap.imageUrl} alt={selectedMap.name} className="w-20 h-14 object-cover shrink-0" />
+          )}
+          <div className="px-4 py-2.5">
+            <span className="text-sm font-medium text-gray-200">{selectedMap.name}</span>
+            <span className="text-xs text-gray-500 ml-2">({selectedMap.type})</span>
+          </div>
         </div>
       )}
 
       {/* Ban picker */}
       {isMyTurn ? (
-        <div className="border border-gray-800 rounded-lg overflow-hidden">
-          <div className="px-4 py-2.5 bg-gray-900/50 border-b border-gray-800">
+        <div className="border border-gray-800 rounded-xl overflow-hidden bg-gray-950/50">
+          <div className="px-4 py-3 bg-gradient-to-r from-gray-900/80 to-gray-900/40 border-b border-gray-800">
             <input
               type="text"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              placeholder="Search heroes…"
+              placeholder="Search heroes..."
               className="w-full bg-transparent text-sm text-gray-200 placeholder-gray-600 outline-none"
             />
           </div>
-          <div className="p-4 space-y-4">
-            {Object.entries(grouped).map(([role, hs]) => (
-              <div key={role}>
-                <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-2">{role}</p>
-                <div className="flex flex-wrap gap-2">
-                  {hs.map((h) => (
-                    <button
-                      key={h.id}
-                      onClick={() => onBan(h.id)}
-                      className="px-3 py-1.5 text-sm border border-red-900/60 text-red-400 rounded hover:bg-red-950 hover:border-red-700 transition-colors"
-                    >
-                      {h.name}
-                    </button>
-                  ))}
+          <div className="p-4 space-y-5">
+            {Object.entries(grouped).map(([role, hs]) => {
+              const roleStyle: Record<string, string> = {
+                tank: 'border-blue-800/40 text-blue-300 hover:bg-blue-950/40 hover:border-blue-700/60',
+                damage: 'border-orange-800/40 text-orange-300 hover:bg-orange-950/40 hover:border-orange-700/60',
+                dps: 'border-orange-800/40 text-orange-300 hover:bg-orange-950/40 hover:border-orange-700/60',
+                support: 'border-green-800/40 text-green-300 hover:bg-green-950/40 hover:border-green-700/60',
+              }
+              const style = roleStyle[role] ?? 'border-gray-700 text-gray-300 hover:bg-gray-800/40'
+              return (
+                <div key={role}>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-2.5">{role}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {hs.map((h) => (
+                      <button
+                        key={h.id}
+                        onClick={() => onBan(h.id)}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border rounded-lg hover:scale-[1.03] active:scale-[0.97] transition-all duration-150 ${style}`}
+                      >
+                        {h.imageUrl && <img src={h.imageUrl} alt="" className="w-6 h-6 rounded-full object-cover" />}
+                        {h.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
             {Object.keys(grouped).length === 0 && (
-              <p className="text-sm text-gray-600">No heroes match your search</p>
+              <p className="text-sm text-gray-600 text-center py-2">No heroes match your search</p>
             )}
           </div>
         </div>
       ) : (
-        <div className="border border-gray-800 rounded-lg px-4 py-6 text-center text-gray-500 text-sm">
-          Waiting for Team {banState.currentBanTeam} to ban…
+        <div className="border border-gray-800 rounded-xl px-4 py-8 text-center text-gray-500 text-sm bg-gray-950/50">
+          Waiting for Team {banState.currentBanTeam} to ban...
         </div>
       )}
     </div>
@@ -1002,53 +1126,83 @@ function TeamsDisplay({ players, currentUserId, heroes, banState }: { players: P
       }))
     : []
 
-  const TEAM_BORDER = { 1: 'border-blue-900', 2: 'border-orange-900' } as const
-  const TEAM_HEADER = { 1: 'bg-blue-950/30 text-blue-300', 2: 'bg-orange-950/30 text-orange-300' } as const
+  const TEAM_CONFIG = {
+    1: {
+      border: 'border-blue-800/50',
+      header: 'from-blue-950/50 to-blue-950/20',
+      headerText: 'text-blue-300',
+      highlight: 'text-blue-300',
+      accent: 'bg-blue-500',
+    },
+    2: {
+      border: 'border-orange-800/50',
+      header: 'from-orange-950/50 to-orange-950/20',
+      headerText: 'text-orange-300',
+      highlight: 'text-orange-300',
+      accent: 'bg-orange-500',
+    },
+  } as const
 
   return (
     <div className="space-y-3">
       {bansByTeam.some((t) => t.bans.length > 0) && (
-        <div className="border border-gray-800 rounded-lg p-3 space-y-2">
+        <div className="border border-gray-800/60 rounded-xl p-3 bg-gray-900/40 space-y-2">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Hero Bans</p>
-          {bansByTeam.map(({ team, bans }) => bans.length > 0 && (
-            <div key={team} className="flex items-center gap-2 flex-wrap">
-              <span className={`text-xs font-semibold px-2 py-0.5 rounded border shrink-0 ${team === 1 ? 'bg-blue-950 border-blue-800 text-blue-300' : 'bg-orange-950 border-orange-800 text-orange-300'}`}>
-                Team {team}
-              </span>
-              {bans.map((b) => {
-                const hero = heroes?.find((h) => h.id === b.heroId)
-                return (
-                  <span key={b.heroId} className="text-xs px-2 py-0.5 rounded bg-red-950/60 border border-red-900 text-red-400 line-through">
-                    {hero?.name ?? `#${b.heroId}`}
-                  </span>
-                )
-              })}
-            </div>
-          ))}
+          <div className="flex gap-4 flex-wrap">
+            {bansByTeam.map(({ team, bans }) => bans.length > 0 && (
+              <div key={team} className="flex items-center gap-2">
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded-lg border shrink-0 ${team === 1 ? 'bg-blue-950/60 border-blue-800/60 text-blue-400' : 'bg-orange-950/60 border-orange-800/60 text-orange-400'}`}>
+                  Team {team}
+                </span>
+                {bans.map((b) => {
+                  const hero = heroes?.find((h) => h.id === b.heroId)
+                  return (
+                    <span key={b.heroId} className="inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-lg bg-red-950/40 border border-red-900/50 text-red-400">
+                      {hero?.imageUrl ? (
+                        <img src={hero.imageUrl} alt="" className="w-5 h-5 rounded-full object-cover ring-1 ring-red-900/50" />
+                      ) : (
+                        <span className="w-5 h-5 rounded-full bg-red-900/40 flex items-center justify-center text-[9px] font-bold">X</span>
+                      )}
+                      <span className="line-through">{hero?.name ?? `#${b.heroId}`}</span>
+                    </span>
+                  )
+                })}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
       <div className="grid grid-cols-2 gap-3">
-        {([{ label: 'Team 1', t: 1, list: team1 }, { label: 'Team 2', t: 2, list: team2 }] as const).map(({ label, t, list }) => (
-          <div key={label} className={`border rounded-lg overflow-hidden ${TEAM_BORDER[t]}`}>
-            <div className={`px-3 py-2 border-b ${TEAM_BORDER[t]} ${TEAM_HEADER[t]}`}>
-              <span className="text-xs font-bold uppercase tracking-wider">{label}</span>
+        {([{ label: 'Team 1', t: 1, list: team1 }, { label: 'Team 2', t: 2, list: team2 }] as const).map(({ label, t, list }) => {
+          const cfg = TEAM_CONFIG[t]
+          return (
+            <div key={label} className={`border rounded-xl overflow-hidden ${cfg.border} bg-gray-950/50`}>
+              <div className={`px-4 py-2.5 bg-gradient-to-r ${cfg.header} border-b ${cfg.border}`}>
+                <div className="flex items-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${cfg.accent}`} />
+                  <span className={`text-xs font-bold uppercase tracking-wider ${cfg.headerText}`}>{label}</span>
+                  <span className="text-xs text-gray-500 ml-auto">{list.length} players</span>
+                </div>
+              </div>
+              <ul>
+                {list.map((p, i) => (
+                  <li key={p.userId} className={`flex items-center justify-between gap-2 px-4 py-2.5 transition-colors hover:bg-white/[0.03] ${i < list.length - 1 ? 'border-b border-gray-800/30' : ''}`}>
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <PlayerAvatar player={p} size={28} />
+                      <div className="min-w-0">
+                        <span className={`text-sm truncate block ${p.userId === currentUserId ? cfg.highlight + ' font-semibold' : 'text-gray-200'}`}>
+                          {p.name}{p.isCaptain && ' ★'}{p.userId === currentUserId && ' (you)'}
+                        </span>
+                      </div>
+                    </div>
+                    {p.assignedRole && <span className="shrink-0"><RoleBadge role={p.assignedRole} /></span>}
+                  </li>
+                ))}
+              </ul>
             </div>
-            <ul className="divide-y divide-gray-800/50">
-              {list.map((p) => (
-                <li key={p.userId} className="flex items-center justify-between gap-2 px-3 py-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <PlayerAvatar player={p} size={22} />
-                    <span className={`text-sm truncate min-w-0 ${p.userId === currentUserId ? (t === 1 ? 'text-blue-300' : 'text-orange-300') + ' font-medium' : 'text-gray-200'}`}>
-                      {p.name}{p.isCaptain && ' ★'}{p.userId === currentUserId && ' (you)'}
-                    </span>
-                  </div>
-                  {p.assignedRole && <span className="shrink-0"><RoleBadge role={p.assignedRole} /></span>}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )
@@ -1070,26 +1224,29 @@ function VoiceChannelLinks({
   if (!guildId || (!voiceChannel1Id && !voiceChannel2Id)) return null
 
   const channelUrl = (id: string) => `https://discord.com/channels/${guildId}/${id}`
+  const discordIcon = (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="shrink-0">
+      <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.086-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.42 0 1.332-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.086-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.42 0 1.332-.946 2.418-2.157 2.418z"/>
+    </svg>
+  )
 
   return (
-    <div className="border border-gray-800 rounded-lg p-4">
-      <p className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-3">Voice Channels</p>
-      <div className="flex gap-3 flex-wrap">
+    <div className="border border-gray-800/60 rounded-xl p-4 bg-gray-900/40">
+      <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-3">Voice Channels</p>
+      <div className="grid grid-cols-2 gap-3">
         {voiceChannel1Id && (
           <a
             href={channelUrl(voiceChannel1Id)}
             target="_blank"
             rel="noreferrer"
-            className={`flex items-center gap-2 px-3 py-2 rounded border text-sm transition-colors ${
+            className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${
               myTeam === 1
-                ? 'border-blue-600 bg-blue-950 text-blue-200 font-medium'
-                : 'border-gray-700 text-gray-400 hover:border-gray-500'
+                ? 'bg-blue-600/20 border-2 border-blue-500/50 text-blue-200 hover:bg-blue-600/30 hover:shadow-lg hover:shadow-blue-500/10'
+                : 'bg-gray-800/50 border border-gray-700 text-gray-400 hover:border-gray-500 hover:text-gray-300'
             }`}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="opacity-70">
-              <path d="M11.998 2.005C6.476 2.005 2 6.481 2 12.002a9.994 9.994 0 0 0 6.837 9.48c.5.091.683-.217.683-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.341-3.369-1.341-.454-1.156-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.532 1.032 1.532 1.032.891 1.529 2.341 1.087 2.912.832.091-.647.349-1.086.635-1.337-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.682-.103-.254-.447-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.338c1.909-1.294 2.747-1.025 2.747-1.025.548 1.377.204 2.393.1 2.647.64.698 1.028 1.59 1.028 2.682 0 3.841-2.337 4.687-4.565 4.935.359.307.679.917.679 1.852 0 1.335-.012 2.415-.012 2.741 0 .267.18.578.688.479A9.997 9.997 0 0 0 22 12.002C22 6.481 17.523 2.005 12 2.005h-.002z"/>
-            </svg>
-            Team 1 Voice{myTeam === 1 ? ' (your team)' : ''}
+            {discordIcon}
+            Team 1 Voice{myTeam === 1 ? ' (yours)' : ''}
           </a>
         )}
         {voiceChannel2Id && (
@@ -1097,16 +1254,14 @@ function VoiceChannelLinks({
             href={channelUrl(voiceChannel2Id)}
             target="_blank"
             rel="noreferrer"
-            className={`flex items-center gap-2 px-3 py-2 rounded border text-sm transition-colors ${
+            className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${
               myTeam === 2
-                ? 'border-blue-600 bg-blue-950 text-blue-200 font-medium'
-                : 'border-gray-700 text-gray-400 hover:border-gray-500'
+                ? 'bg-orange-600/20 border-2 border-orange-500/50 text-orange-200 hover:bg-orange-600/30 hover:shadow-lg hover:shadow-orange-500/10'
+                : 'bg-gray-800/50 border border-gray-700 text-gray-400 hover:border-gray-500 hover:text-gray-300'
             }`}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="opacity-70">
-              <path d="M11.998 2.005C6.476 2.005 2 6.481 2 12.002a9.994 9.994 0 0 0 6.837 9.48c.5.091.683-.217.683-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.341-3.369-1.341-.454-1.156-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.532 1.032 1.532 1.032.891 1.529 2.341 1.087 2.912.832.091-.647.349-1.086.635-1.337-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.682-.103-.254-.447-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.338c1.909-1.294 2.747-1.025 2.747-1.025.548 1.377.204 2.393.1 2.647.64.698 1.028 1.59 1.028 2.682 0 3.841-2.337 4.687-4.565 4.935.359.307.679.917.679 1.852 0 1.335-.012 2.415-.012 2.741 0 .267.18.578.688.479A9.997 9.997 0 0 0 22 12.002C22 6.481 17.523 2.005 12 2.005h-.002z"/>
-            </svg>
-            Team 2 Voice{myTeam === 2 ? ' (your team)' : ''}
+            {discordIcon}
+            Team 2 Voice{myTeam === 2 ? ' (yours)' : ''}
           </a>
         )}
       </div>
@@ -1150,17 +1305,17 @@ function TestAddDummy({ lobbyId, onAdded }: { lobbyId: string; onAdded: () => vo
   }
 
   return (
-    <div className="border border-dashed border-gray-700 rounded-lg p-4 mt-2">
-      <p className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-3">Admin - Add Dummy Player</p>
+    <div className="border border-dashed border-gray-700/60 rounded-xl p-4 mt-2 bg-gray-900/30">
+      <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-3">Admin - Add Dummy Player</p>
       <div className="flex flex-wrap gap-2 mb-3">
         {roles.map((role) => (
           <button
             key={role}
             onClick={() => toggle(role)}
-            className={`text-xs px-3 py-1.5 rounded border transition-colors ${
+            className={`text-xs px-3 py-1.5 rounded-lg border transition-all duration-200 ${
               selected.includes(role)
-                ? ROLE_COLORS[role] + ' font-medium'
-                : 'border-gray-700 text-gray-400 hover:border-gray-500'
+                ? ROLE_COLORS[role] + ' font-medium shadow-md'
+                : 'border-gray-700 text-gray-400 hover:border-gray-500 hover:scale-[1.03] active:scale-[0.97]'
             }`}
           >
             {ROLE_LABELS[role]}
@@ -1171,7 +1326,7 @@ function TestAddDummy({ lobbyId, onAdded }: { lobbyId: string; onAdded: () => vo
       <button
         onClick={add}
         disabled={loading || selected.length === 0}
-        className="px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 disabled:opacity-40 text-white rounded transition-colors"
+        className="px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:hover:scale-100 text-white rounded-lg transition-all duration-200"
       >
         {loading ? 'Adding...' : 'Add Dummy'}
       </button>
@@ -1238,9 +1393,10 @@ function LobbySetupAssistant({
 
   // Get banned hero names from banState
   const banRecords = (lobby.banState?.bans ?? []) as Array<{ heroId: number; team: number }>
-  const bannedHeroes = banRecords
-    .map((b) => heroes.find((h) => h.id === b.heroId)?.name)
-    .filter(Boolean) as string[]
+  const bannedHeroObjects = banRecords
+    .map((b) => heroes.find((h) => h.id === b.heroId))
+    .filter(Boolean) as Hero[]
+  const bannedHeroes = bannedHeroObjects.map((h) => h.name)
 
   const team1 = players.filter((p) => p.team === 1)
   const team2 = players.filter((p) => p.team === 2)
@@ -1260,7 +1416,7 @@ function LobbySetupAssistant({
         {(isPlayer || isPugAdmin) && (
           <button
             onClick={onHost}
-            className="px-5 py-2.5 bg-yellow-700/80 text-yellow-100 rounded-lg hover:bg-yellow-600 transition-colors text-sm font-semibold"
+            className="px-5 py-2.5 bg-yellow-700/80 text-yellow-100 rounded-lg hover:bg-yellow-600 hover:shadow-lg hover:shadow-yellow-600/20 hover:scale-[1.03] active:scale-[0.97] transition-all duration-200 text-sm font-semibold"
           >
             🎮 I&apos;ll Host This Match
           </button>
@@ -1302,17 +1458,19 @@ function LobbySetupAssistant({
           {/* Map & Bans summary */}
           <div className="flex flex-wrap gap-3">
             {selectedMap && (
-              <div className="flex items-center gap-2 px-3 py-2 bg-gray-900/60 border border-gray-800 rounded-lg">
+              <div className="flex items-center gap-2 px-3 py-2 bg-gray-900/60 border border-gray-800 rounded-lg overflow-hidden">
+                {selectedMap.imageUrl && <img src={selectedMap.imageUrl} alt="" className="w-8 h-8 rounded object-cover" />}
                 <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Map</span>
                 <span className="text-white font-semibold text-sm">{selectedMap.name}</span>
               </div>
             )}
-            {bannedHeroes.length > 0 && (
+            {bannedHeroObjects.length > 0 && (
               <div className="flex items-center gap-2 px-3 py-2 bg-gray-900/60 border border-gray-800 rounded-lg flex-wrap">
                 <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold shrink-0">Bans</span>
-                {bannedHeroes.map((h) => (
-                  <span key={h} className="text-xs px-2 py-0.5 rounded bg-red-950/60 border border-red-900 text-red-400">
-                    {h}
+                {bannedHeroObjects.map((h) => (
+                  <span key={h.id} className="inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded bg-red-950/60 border border-red-900 text-red-400">
+                    {h.imageUrl && <img src={h.imageUrl} alt="" className="w-5 h-5 rounded-full object-cover" />}
+                    {h.name}
                   </span>
                 ))}
               </div>
@@ -1409,17 +1567,19 @@ function LobbySetupAssistant({
           </span>
         )}
         {selectedMap && (
-          <span className="text-xs px-2.5 py-1 rounded border border-gray-700 text-gray-300">
+          <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded border border-gray-700 text-gray-300">
+            {selectedMap.imageUrl && <img src={selectedMap.imageUrl} alt="" className="w-5 h-5 rounded object-cover" />}
             Map: {selectedMap.name}
           </span>
         )}
       </div>
-      {bannedHeroes.length > 0 && (
+      {bannedHeroObjects.length > 0 && (
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs text-gray-500 shrink-0">Bans:</span>
-          {bannedHeroes.map((h) => (
-            <span key={h} className="text-xs px-2 py-0.5 rounded bg-red-950/60 border border-red-900 text-red-400">
-              {h}
+          {bannedHeroObjects.map((h) => (
+            <span key={h.id} className="inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded bg-red-950/60 border border-red-900 text-red-400">
+              {h.imageUrl && <img src={h.imageUrl} alt="" className="w-5 h-5 rounded-full object-cover" />}
+              {h.name}
             </span>
           ))}
         </div>

@@ -28,26 +28,32 @@ export function BattleTagForm({ playerId, initialTag }: { playerId: number; init
     setSaving(false)
   }
 
+  const changed = tag !== (initialTag || '')
+
   return (
-    <div className="flex items-center gap-3 bg-gray-800/50 p-4 rounded-lg border border-gray-700 w-full max-w-md mb-6">
-      <div className="flex-1">
-        <label className="block text-xs text-gray-400 mb-1 font-semibold uppercase">Your Overwatch BattleTag</label>
-        <input 
-          type="text" 
-          value={tag} 
+    <div className="mb-6 border border-gray-800 rounded-xl bg-gray-900/50 overflow-hidden">
+      <div className="px-4 py-2.5 border-b border-gray-800/60">
+        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Overwatch BattleTag</span>
+      </div>
+      <div className="px-4 py-3 flex items-center gap-3">
+        <input
+          type="text"
+          value={tag}
           onChange={e => setTag(e.target.value)}
           placeholder="e.g. Player#1234"
-          className="w-full bg-gray-900 border border-gray-600 rounded px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none transition-colors"
+          className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-all placeholder-gray-600 appearance-none"
         />
+        <button
+          onClick={handleSave}
+          disabled={saving || !changed}
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-500 hover:shadow-md hover:shadow-blue-600/20 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:hover:scale-100 disabled:hover:shadow-none text-white text-sm font-medium rounded-lg transition-all duration-200"
+        >
+          {saving ? 'Saving...' : 'Save'}
+        </button>
+        {msg && (
+          <span className={`text-xs font-medium ${msg === 'Saved!' ? 'text-green-400' : 'text-red-400'}`}>{msg}</span>
+        )}
       </div>
-      <button 
-        onClick={handleSave} 
-        disabled={saving}
-        className="mt-5 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-medium rounded transition-colors"
-      >
-        {saving ? 'Saving...' : 'Save'}
-      </button>
-      {msg && <span className={`mt-5 text-xs ${msg === 'Saved!' ? 'text-green-400' : 'text-red-400'}`}>{msg}</span>}
     </div>
   )
 }

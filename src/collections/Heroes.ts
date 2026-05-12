@@ -58,6 +58,14 @@ export const Heroes: CollectionConfig = {
       ],
     },
     {
+      name: 'image',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description: 'Hero portrait image',
+      },
+    },
+    {
       name: 'active',
       type: 'checkbox',
       defaultValue: true,

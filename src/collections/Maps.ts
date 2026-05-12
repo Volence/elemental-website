@@ -61,6 +61,14 @@ export const Maps: CollectionConfig = {
       ],
     },
     {
+      name: 'image',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description: 'Map screenshot or banner image',
+      },
+    },
+    {
       name: 'submaps',
       type: 'array',
       admin: {

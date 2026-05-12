@@ -307,15 +307,29 @@ export async function expireReadyCheck(lobbyId: number): Promise<void> {
     return
   }
 
-  const payload = await getPayload({ config: configPromise })
   for (const p of notReady) {
     await prisma.pugLobbyPlayer.delete({
       where: { lobbyId_userId: { lobbyId, userId: p.userId } },
     })
-    await applyEscalatingBan(p.userId, 'Failed to ready up')
+    try {
+      await applyEscalatingBan(p.userId, 'Failed to ready up')
+    } catch (err) {
+      console.error(`[PUG] Failed to apply ban to user ${p.userId}:`, err)
+    }
   }
 
   await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'OPEN' } })
+
+  // Reset joinedAt and readyConfirmed for remaining players so AFK timers restart from now
+  const remaining = players.filter((p) => p.readyConfirmed)
+  for (const p of remaining) {
+    await prisma.pugLobbyPlayer.update({
+      where: { lobbyId_userId: { lobbyId, userId: p.userId } },
+      data: { joinedAt: new Date(), readyConfirmed: false },
+    })
+    registerTimer(timerKey(lobbyId, `afk_${p.userId}`), AFK_TIMEOUT_MS, () => afkBootPlayer(lobbyId, p.userId))
+  }
+
   import('@/discord/services/pugFeed').then(({ updateLobbyFeed }) => {
     updateLobbyFeed(lobbyId).catch(console.error)
   })

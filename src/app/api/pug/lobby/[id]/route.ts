@@ -22,7 +22,7 @@ export async function GET(request: NextRequest, { params }: Params) {
 
     if (!lobby) return NextResponse.json({ error: 'Lobby not found' }, { status: 404 })
 
-    let selectedMap: { id: number; name: string; type?: string; settingsMapEntry?: string } | null = null
+    let selectedMap: { id: number; name: string; type?: string; settingsMapEntry?: string; imageUrl?: string | null } | null = null
     if (lobby.mapVote?.selectedMapId) {
       const map = await payload.findByID({
         collection: 'maps',
@@ -30,15 +30,16 @@ export async function GET(request: NextRequest, { params }: Params) {
         overrideAccess: true,
       })
       const m = map as any
-      selectedMap = { id: m.id, name: m.name, type: m.type }
+      selectedMap = { id: m.id, name: m.name, type: m.type, imageUrl: m.image?.url ?? null }
     }
 
-    let mapCandidates: Array<{ id: number; name: string }> = []
+    let mapCandidates: Array<{ id: number; name: string; imageUrl: string | null }> = []
     if (lobby.status === 'MAP_VOTE' && lobby.mapVote?.candidates) {
       mapCandidates = await Promise.all(
         lobby.mapVote.candidates.map(async (mapId) => {
-          const map = await payload.findByID({ collection: 'maps', id: mapId, overrideAccess: true })
-          return { id: (map as any).id, name: (map as any).name }
+          const map = await payload.findByID({ collection: 'maps', id: mapId, overrideAccess: true, depth: 1 })
+          const m = map as any
+          return { id: m.id, name: m.name, imageUrl: m.image?.url ?? null }
         }),
       )
     }
@@ -75,7 +76,7 @@ export async function GET(request: NextRequest, { params }: Params) {
         limit: 100,
         overrideAccess: true,
       })
-      heroes = (heroResult.docs as any[]).map((h) => ({ id: h.id, name: h.name, role: h.role }))
+      heroes = (heroResult.docs as any[]).map((h) => ({ id: h.id, name: h.name, role: h.role, imageUrl: h.image?.url ?? null }))
     }
 
     const allRoles = ['tank', 'flex_dps', 'hitscan_dps', 'flex_support', 'main_support']
