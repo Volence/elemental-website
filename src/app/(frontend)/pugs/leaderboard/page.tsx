@@ -122,8 +122,7 @@ export default async function PugLeaderboardPage({
             </thead>
             <tbody className="divide-y divide-gray-800/60">
               {(entries as any).docs.map((entry: any, index: number, arr: any[]) => {
-                const user = entry.player?.user
-                const displayName = typeof user === 'object' ? user?.name : `User #${entry.player?.id}`
+                const displayName = typeof entry.player === 'object' ? entry.player?.name : `User #${entry.player}`
                 const rank = index === 0 || entry.rating !== arr[index - 1].rating
                   ? index + 1
                   : arr.findIndex((e: any) => e.rating === entry.rating) + 1
@@ -142,7 +141,7 @@ export default async function PugLeaderboardPage({
                     </td>
                     <td className="px-4 py-3">
                       <Link
-                        href={`/pugs/profile/${entry.player?.id}`}
+                        href={`/pugs/profile/${typeof entry.player === 'object' ? entry.player?.id : entry.player}`}
                         className="text-gray-200 hover:text-white hover:underline font-medium transition-colors"
                       >
                         {displayName}
