@@ -176,7 +176,7 @@ export async function GET(request: NextRequest, { params }: Params) {
             .filter(Boolean) as string[]
         }
         settingsText = generateSettings({
-          mapSettingsEntry: selectedMap.name ?? null,
+          mapSettingsEntry: selectedMap.settingsEntry ?? selectedMap.name ?? null,
           mapType: selectedMap.type ?? 'control',
           bannedHeroes: bannedHeroNames,
         })

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import './styles.scss'
 
-type MapData = { id: number; name: string; type: string }
+type MapData = { id: number; name: string; type: string; settingsEntry?: string }
 type HeroData = { id: number; name: string; role: string }
 
 /** Mode names in the OW2 settings format, keyed by Maps collection type */
@@ -12,28 +12,16 @@ const MODE_BY_MAP_TYPE: Record<string, string> = {
   flashpoint: 'Flashpoint', hybrid: 'Hybrid', push: 'Push',
 }
 
-const ALWAYS_DISABLED_MODES = [
-  'Assault', 'Clash 6v6', 'Control 6v6', 'Escort 6v6',
-  'Flashpoint 6v6', 'Hybrid 6v6', 'Push 6v6',
-]
-
 const MODE_SETTINGS: Record<string, string[]> = {
-  Clash: ['\t\t\tCapture Speed Modifier: 45%', '\t\t\tCompetitive Rules: Enabled'],
-  Control: ['\t\t\tCompetitive Rules: Enabled'],
+  Clash: ['\t\t\tCapture Speed Modifier: 45%'],
+  Control: ['\t\t\tCompetitive Rules: On'],
   Escort: ['\t\t\tCompetitive Rules: On'],
-  Flashpoint: ['\t\t\tCompetitive Rules: Enabled'],
-  Hybrid: ['\t\t\tCompetitive Rules: Enabled'],
+  Flashpoint: ['\t\t\tCompetitive Rules: On'],
+  Hybrid: ['\t\t\tCompetitive Rules: On'],
   Push: ['\t\t\tCompetitive Rules: On'],
 }
 
-const DISABLED_MODE_SETTINGS: Record<string, string[]> = {
-  'Clash 6v6': ['\t\t\tCapture Speed Modifier: 45%', '\t\t\tCompetitive Rules: Enabled'],
-  'Control 6v6': ['\t\t\tCompetitive Rules: Enabled'],
-  'Escort 6v6': ['\t\t\tCompetitive Rules: On'],
-  'Flashpoint 6v6': ['\t\t\tCompetitive Rules: Enabled'],
-  'Hybrid 6v6': ['\t\t\tCompetitive Rules: Enabled'],
-  'Push 6v6': ['\t\t\tCompetitive Rules: On'],
-}
+const ALL_MODES = ['Clash', 'Control', 'Escort', 'Flashpoint', 'Hybrid', 'Push']
 
 function generateSettingsText(
   mapSettingsEntry: string | null,
@@ -47,22 +35,12 @@ function generateSettingsText(
   lines.push('\tlobby', '\t{', '\t\tData Center Preference: USA - Central', '\t\tPause Game On Player Disconnect: Yes', '\t}', '')
   lines.push('\tmodes', '\t{')
 
-  for (const mode of ALWAYS_DISABLED_MODES) {
-    lines.push(`\t\tdisabled ${mode}`, '\t\t{')
-    const settings = DISABLED_MODE_SETTINGS[mode] || MODE_SETTINGS[mode.replace(' 6v6', '')]
-    if (settings) lines.push(...settings)
-    lines.push('\t\t}', '')
-  }
-
-  const activeModes = ['Clash', 'Control', 'Escort', 'Flashpoint', 'Hybrid', 'Push']
-  for (const mode of activeModes) {
+  for (const mode of ALL_MODES) {
     const settings = MODE_SETTINGS[mode]
     lines.push(`\t\t${mode}`, '\t\t{')
-    if (settings) lines.push(...settings)
-    lines.push('', '\t\t\tenabled maps', '\t\t\t{')
-    if (mode === targetMode && mapSettingsEntry) {
-      lines.push(`\t\t\t\t${mapSettingsEntry}`)
-    }
+    if (settings) lines.push(...settings, '')
+    lines.push('\t\t\tenabled maps', '\t\t\t{')
+    if (mode === targetMode && mapSettingsEntry) lines.push(`\t\t\t\t${mapSettingsEntry}`)
     lines.push('\t\t\t}', '\t\t}', '')
   }
 
@@ -106,6 +84,7 @@ export const SettingsGeneratorPanel: React.FC = () => {
             id: m.id,
             name: m.name,
             type: m.type,
+            settingsEntry: m.settingsEntry ?? undefined,
           })),
         )
         setHeroes(
@@ -133,7 +112,7 @@ export const SettingsGeneratorPanel: React.FC = () => {
   function generate() {
     const selectedMap = maps.find((m) => m.id === selectedMapId)
     const mapType = selectedMap?.type || 'control'
-    const mapEntry = selectedMap?.name || null
+    const mapEntry = selectedMap?.settingsEntry || selectedMap?.name || null
     const bannedNames = heroes.filter((h) => bannedHeroIds.includes(h.id)).map((h) => h.name)
     setSettingsText(generateSettingsText(mapEntry, mapType, bannedNames))
   }

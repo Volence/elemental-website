@@ -61,6 +61,14 @@ export const Maps: CollectionConfig = {
       ],
     },
     {
+      name: 'settingsEntry',
+      type: 'text',
+      admin: {
+        description: 'OW2 settings entry (name + ID). Export from OW2 Custom Game to get this. e.g., "Samoa 972777519512068154"',
+        placeholder: 'e.g., Samoa 972777519512068154',
+      },
+    },
+    {
       name: 'image',
       type: 'upload',
       relationTo: 'media',

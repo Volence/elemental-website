@@ -1896,6 +1896,10 @@ export interface Map {
   name: string;
   type: 'control' | 'hybrid' | 'flashpoint' | 'push' | 'escort' | 'clash';
   /**
+   * OW2 settings entry (name + ID). Export from OW2 Custom Game to get this. e.g., "Samoa 972777519512068154"
+   */
+  settingsEntry?: string | null;
+  /**
    * Map screenshot or banner image
    */
   image?: (number | null) | Media;
@@ -3791,6 +3795,7 @@ export interface HeroesSelect<T extends boolean = true> {
 export interface MapsSelect<T extends boolean = true> {
   name?: T;
   type?: T;
+  settingsEntry?: T;
   image?: T;
   submaps?:
     | T
