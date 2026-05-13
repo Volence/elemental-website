@@ -22,7 +22,7 @@ export async function GET(request: NextRequest, { params }: Params) {
 
     if (!lobby) return NextResponse.json({ error: 'Lobby not found' }, { status: 404 })
 
-    let selectedMap: { id: number; name: string; type?: string; settingsMapEntry?: string; imageUrl?: string | null } | null = null
+    let selectedMap: { id: number; name: string; type?: string; settingsEntry?: string; imageUrl?: string | null } | null = null
     if (lobby.mapVote?.selectedMapId) {
       const map = await payload.findByID({
         collection: 'maps',
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest, { params }: Params) {
         overrideAccess: true,
       })
       const m = map as any
-      selectedMap = { id: m.id, name: m.name, type: m.type, imageUrl: m.image?.url ?? null }
+      selectedMap = { id: m.id, name: m.name, type: m.type, settingsEntry: m.settingsEntry ?? undefined, imageUrl: m.image?.url ?? null }
     }
 
     let mapCandidates: Array<{ id: number; name: string; imageUrl: string | null }> = []
