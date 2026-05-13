@@ -151,6 +151,20 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: `${region.toUpperCase()} queue is not open` }, { status: 400 })
       }
 
+      const openLobbies = await prisma.pugLobby.findMany({
+        where: {
+          tier: 'invite',
+          region,
+          payloadSeasonId,
+          status: 'OPEN',
+        },
+        include: { _count: { select: { players: true } } },
+      })
+      const hasJoinableLobby = openLobbies.some((l) => l._count.players < 8)
+      if (hasJoinableLobby) {
+        return NextResponse.json({ error: 'An open lobby with available spots exists for this region' }, { status: 409 })
+      }
+
       const { createInviteLobby } = await import('@/pug')
       const lobby = await createInviteLobby(payloadSeasonId, region)
       return NextResponse.json({ lobby }, { status: 201 })
