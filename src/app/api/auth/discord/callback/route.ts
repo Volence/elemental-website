@@ -442,7 +442,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         password: rb2(32).toString('hex'),
         role: userRole,
         discordId: discordUser.id,
-        assignedTeams: teamIds.length > 0 ? teamIds : (invite.assignedTeams ?? undefined),
+        assignedTeams: teamIds.length > 0 ? teamIds : (invite.assignedTeams?.map((t: any) => typeof t === 'object' ? t.id : t) ?? undefined),
         departments: {
           isProductionStaff: invite.departments?.isProductionStaff || false,
           isSocialMediaStaff: invite.departments?.isSocialMediaStaff || false,
