@@ -807,3 +807,18 @@ model PugMapVote {
 
   @@map("pug_map_votes")
 }
+
+model PugQueueEntry {
+  id              Int       @id @default(autoincrement())
+  userId          Int
+  tier            PugTier
+  region          String?
+  roles           PugRole[]
+  payloadSeasonId Int
+  queuedAt        DateTime  @default(now())
+  lastPing        DateTime  @default(now())
+
+  @@unique([userId, tier])
+  @@map("pug_queue_entries")
+  @@index([tier, region])
+}

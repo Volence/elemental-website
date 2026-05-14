@@ -41,6 +41,8 @@ function buildLobbyEmbed(lobby: {
   id: number
   lobbyNumber: number
   status: string
+  tier: string
+  region?: string | null
   players: Array<{ userId: number; queuedRoles: string[]; assignedRole?: string | null; team?: number | null; isCaptain: boolean }>
 }): EmbedBuilder {
   const statusColors: Record<string, number> = {
@@ -93,7 +95,11 @@ function buildLobbyEmbed(lobby: {
       ? open.map((r) => `${spotsAvailable[r]}× ${r.replace(/_/g, '-')}`).join('\n')
       : 'All slots filled'
     embed.addFields({ name: 'Spots Needed', value: rolesDisplay })
-    embed.setDescription(`Join at: https://elmt.gg/pugs/lobby/${lobby.id}`)
+    if (lobby.tier === 'invite' && lobby.region) {
+      embed.setDescription(`Queue at: https://elmt.gg/pugs/invite?region=${lobby.region}`)
+    } else {
+      embed.setDescription(`Join at: https://elmt.gg/pugs/lobby/${lobby.id}`)
+    }
   }
 
   return embed

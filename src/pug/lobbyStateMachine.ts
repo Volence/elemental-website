@@ -8,6 +8,7 @@ import { drawMapCandidates, resolveMapVote } from './mapVote'
 import { applyBan, getNextBanTeam } from './banPhase'
 import { calculateRatingUpdates } from './mmr'
 import { applyEscalatingBan } from './cooldownBans'
+import { processQueue } from './queueProcessor'
 import { registerTimer, cancelTimer, timerKey } from './timers'
 import type { QueuedPlayer, PlayerRating, MatchResult, PugRole } from './types'
 import {
@@ -186,6 +187,10 @@ export async function leaveLobby(lobbyId: number, userId: number): Promise<void>
   import('@/discord/services/pugFeed').then(({ updateLobbyFeed }) => {
     updateLobbyFeed(lobbyId).catch(console.error)
   })
+
+  if (lobby.status === 'OPEN' || lobby.status === 'READY') {
+    processQueue(lobby.tier as any, lobby.region).catch(console.error)
+  }
 }
 
 /**
@@ -333,6 +338,8 @@ export async function expireReadyCheck(lobbyId: number): Promise<void> {
   import('@/discord/services/pugFeed').then(({ updateLobbyFeed }) => {
     updateLobbyFeed(lobbyId).catch(console.error)
   })
+
+  processQueue(lobby.tier as any, lobby.region).catch(console.error)
 }
 
 export async function advanceToDrafting(lobbyId: number): Promise<void> {
@@ -410,6 +417,7 @@ export async function advanceToDrafting(lobbyId: number): Promise<void> {
   })
 
   await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'DRAFTING' } })
+  await autoCreateReplacementLobby(lobby).catch(console.error)
   // Fire-and-forget: notify players and update feed (don't block timer registration)
   getDiscordIdsForLobby(lobbyId, payload).then(async (discordIds) => {
     const { postFeedNotification, updateLobbyFeed } = await import('@/discord/services/pugFeed')
@@ -1034,6 +1042,13 @@ async function autoCreateReplacementLobby(lobby: { tier: string; region: string 
 
   if (!season?.regionQueueStatus?.[lobby.region]) return
 
+  const existingOpen = await prisma.pugLobby.findFirst({
+    where: { tier: 'invite', region: lobby.region, status: 'OPEN' },
+  })
+  if (existingOpen) return
+
   const newLobby = await createInviteLobby(lobby.payloadSeasonId, lobby.region)
   console.log(`[PUG] Auto-created replacement invite lobby #${newLobby.lobbyNumber} for ${lobby.region.toUpperCase()}`)
+
+  processQueue('invite', lobby.region).catch(console.error)
 }

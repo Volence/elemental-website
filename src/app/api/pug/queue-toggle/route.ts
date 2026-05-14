@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
-import { createInviteLobby, cancelExpiredLobby, registerTimer, timerKey, INVITE_TIER_LATE_CANCEL_MS } from '@/pug'
+import { createInviteLobby, cancelExpiredLobby, registerTimer, timerKey, INVITE_TIER_LATE_CANCEL_MS, clearQueueForRegion, processQueue } from '@/pug'
 
 export async function POST(request: NextRequest) {
   const payload = await getPayload({ config: configPromise })
@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
     })
 
     const lobby = await createInviteLobby(season.id, region)
+    await processQueue('invite', region).catch(console.error)
     return NextResponse.json({ success: true, lobby })
   }
 
@@ -83,10 +84,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const cleared = await clearQueueForRegion('invite', region)
+
     return NextResponse.json({
       success: true,
       gracePeriodLobbies: openLobbies.length,
       graceDeadline: graceDeadline.toISOString(),
+      queueEntriesCleared: cleared,
     })
   }
 }

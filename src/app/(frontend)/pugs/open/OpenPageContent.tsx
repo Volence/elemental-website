@@ -62,6 +62,9 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
   const [selectedRoles, setSelectedRoles] = useState<string[]>([])
   const [roleError, setRoleError] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [quickJoinOpen, setQuickJoinOpen] = useState(false)
+  const [quickJoinRoles, setQuickJoinRoles] = useState<string[]>([])
+  const [quickJoining, setQuickJoining] = useState(false)
 
   const fetchLobbies = useCallback(async () => {
     try {
@@ -112,6 +115,32 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
     setRoleError(null)
   }
 
+  async function handleQuickJoin() {
+    if (quickJoinRoles.length === 0) {
+      setActionError('Select at least one role')
+      return
+    }
+    setQuickJoining(true)
+    setActionError(null)
+    try {
+      const res = await fetch('/api/pug/lobby/quick-join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roles: quickJoinRoles }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        router.push(`/pugs/lobby/${data.lobbyId}`)
+      } else {
+        setActionError(data.error || 'No available lobbies')
+      }
+    } catch {
+      setActionError('Failed to quick join')
+    } finally {
+      setQuickJoining(false)
+    }
+  }
+
   async function handleJoin(lobbyId: number) {
     if (selectedRoles.length === 0) {
       setRoleError('Select at least one role')
@@ -148,6 +177,8 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
     return true
   })?.id
 
+  const hasJoinableLobbies = openLobbies.length > 0
+
   return (
     <>
       <div className="flex items-start justify-between mb-6">
@@ -155,16 +186,64 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
           <h1 className="text-2xl font-bold">Open Tier PUGs</h1>
           {seasonName && <p className="text-sm text-gray-500 mt-0.5">{seasonName}</p>}
         </div>
-        {currentUser && isRegistered && seasonId && (
-          <button
-            onClick={handleCreate}
-            disabled={creating}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
-          >
-            {creating ? 'Creating…' : 'Create Lobby'}
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {currentUser && isRegistered && seasonId && hasJoinableLobbies && !myLobbyId && (
+            <button
+              onClick={() => { setQuickJoinOpen(!quickJoinOpen); setQuickJoinRoles([]); setActionError(null) }}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                quickJoinOpen
+                  ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                  : 'bg-green-600 hover:bg-green-500 text-white'
+              }`}
+            >
+              {quickJoinOpen ? 'Cancel' : 'Quick Join'}
+            </button>
+          )}
+          {currentUser && isRegistered && seasonId && (
+            <button
+              onClick={handleCreate}
+              disabled={creating}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+            >
+              {creating ? 'Creating…' : 'Create Lobby'}
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* Quick Join role picker */}
+      {quickJoinOpen && (
+        <div className="border border-gray-700/80 rounded-xl p-4 mb-6 bg-gradient-to-b from-gray-900/80 to-gray-950/80">
+          <p className="text-sm text-gray-400 mb-3 font-medium">Select your roles and we will place you in the best lobby</p>
+          <div className="flex flex-wrap gap-2 mb-3">
+            {ROLES.map((role) => (
+              <button
+                key={role.value}
+                onClick={() => {
+                  setQuickJoinRoles((prev) =>
+                    prev.includes(role.value) ? prev.filter((r) => r !== role.value) : [...prev, role.value],
+                  )
+                  setActionError(null)
+                }}
+                className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
+                  quickJoinRoles.includes(role.value)
+                    ? 'bg-blue-600 border-blue-500 text-white'
+                    : 'bg-transparent border-gray-600 text-gray-400 hover:border-gray-400'
+                }`}
+              >
+                {role.label}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={handleQuickJoin}
+            disabled={quickJoining || quickJoinRoles.length === 0}
+            className="w-full py-2 bg-green-600 hover:bg-green-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg transition-colors"
+          >
+            {quickJoining ? 'Joining...' : 'Join Best Lobby'}
+          </button>
+        </div>
+      )}
 
       {!currentUser && (
         <div className="bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 mb-6 text-sm text-gray-400">
