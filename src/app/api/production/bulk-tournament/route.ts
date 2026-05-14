@@ -39,37 +39,32 @@ export async function POST(req: NextRequest) {
       }, { status: 400 })
     }
 
+    const IANA_TIMEZONES: Record<string, string> = {
+      CET: 'Europe/Berlin',
+      EST: 'America/New_York',
+      BRT: 'America/Sao_Paulo',
+      AEST: 'Australia/Sydney',
+      SGT: 'Asia/Singapore',
+      JST: 'Asia/Tokyo',
+      CST: 'Asia/Shanghai',
+    }
+
+    function localTimeToUTC(dateStr: string, time: string, tz: string): Date {
+      const [y, m, d] = dateStr.split('T')[0].split('-').map(Number)
+      const [h, min] = time.split(':').map(Number)
+      const guess = new Date(Date.UTC(y, m - 1, d, h, min))
+      const ianaZone = IANA_TIMEZONES[tz] ?? 'UTC'
+      const localStr = guess.toLocaleString('en-US', { timeZone: ianaZone })
+      const utcStr = guess.toLocaleString('en-US', { timeZone: 'UTC' })
+      const offsetMs = new Date(utcStr).getTime() - new Date(localStr).getTime()
+      return new Date(guess.getTime() + offsetMs)
+    }
+
     const createdMatches: number[] = []
-    
+
     for (const slot of slots) {
-      // Parse the date and apply time
-      const slotDate = new Date(slot.date)
       const timeToUse = slot.time || defaultTime
-      const [hours, minutes] = timeToUse.split(':').map(Number)
-      
-      // Set time based on timezone
-      if (defaultTimezone === 'CET') {
-        // CET is UTC+1 (simplified - doesn't account for DST)
-        slotDate.setUTCHours(hours - 1, minutes, 0, 0)
-      } else if (defaultTimezone === 'EST') {
-        // EST is UTC-5 (simplified - doesn't account for DST)
-        slotDate.setUTCHours(hours + 5, minutes, 0, 0)
-      } else if (defaultTimezone === 'BRT') {
-        // BRT is UTC-3
-        slotDate.setUTCHours(hours + 3, minutes, 0, 0)
-      } else if (defaultTimezone === 'AEST') {
-        // AEST is UTC+10
-        slotDate.setUTCHours(hours - 10, minutes, 0, 0)
-      } else if (defaultTimezone === 'SGT') {
-        // SGT is UTC+8
-        slotDate.setUTCHours(hours - 8, minutes, 0, 0)
-      } else if (defaultTimezone === 'JST') {
-        // JST is UTC+9
-        slotDate.setUTCHours(hours - 9, minutes, 0, 0)
-      } else if (defaultTimezone === 'CST') {
-        // CST (China Standard Time) is UTC+8
-        slotDate.setUTCHours(hours - 8, minutes, 0, 0)
-      }
+      const slotDate = localTimeToUTC(slot.date, timeToUse, defaultTimezone)
 
       // Build the title: baseTitle + slot title, or just baseTitle, or slot title, or empty
       let matchTitle = ''

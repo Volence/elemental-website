@@ -159,17 +159,21 @@ export async function POST(request: Request): Promise<Response> {
 
     if (linkedPersonId) {
       // Link to existing person record: set their credentials and upgrade their role/permissions
+      const updateData: Record<string, unknown> = {
+        name: name.trim(),
+        email: email.toLowerCase(),
+        password,
+        role: userRole,
+        departments,
+      }
+      const inviteTeams = invite.assignedTeams as any[] | null | undefined
+      if (inviteTeams && inviteTeams.length > 0) {
+        updateData.assignedTeams = inviteTeams
+      }
       newUser = await payload.update({
         collection: 'people',
         id: linkedPersonId,
-        data: {
-          name: name.trim(),
-          email: email.toLowerCase(),
-          password,
-          role: userRole,
-          assignedTeams: invite.assignedTeams,
-          departments,
-        },
+        data: updateData,
         overrideAccess: true,
       })
     } else {

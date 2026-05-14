@@ -210,16 +210,23 @@ function calculateMatchDate(dayOfWeek: string, time: string, timezone: string): 
   
   // Parse time (HH:MM format)
   const [hours, minutes] = time.split(':').map(Number)
-  
-  // Set time based on timezone
-  if (timezone === 'CET') {
-    // CET is UTC+1 (or UTC+2 during DST)
-    targetDate.setUTCHours(hours - 1, minutes, 0, 0)
-  } else if (timezone === 'EST') {
-    // EST is UTC-5 (or UTC-4 during EDT)
-    targetDate.setUTCHours(hours + 5, minutes, 0, 0)
+
+  const IANA_TIMEZONES: Record<string, string> = {
+    CET: 'Europe/Berlin',
+    EST: 'America/New_York',
+    BRT: 'America/Sao_Paulo',
+    AEST: 'Australia/Sydney',
+    SGT: 'Asia/Singapore',
+    JST: 'Asia/Tokyo',
+    CST: 'Asia/Shanghai',
   }
-  
-  return targetDate
+
+  const ianaZone = IANA_TIMEZONES[timezone] ?? 'UTC'
+  const guess = new Date(Date.UTC(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), hours, minutes))
+  const localStr = guess.toLocaleString('en-US', { timeZone: ianaZone })
+  const utcStr = guess.toLocaleString('en-US', { timeZone: 'UTC' })
+  const offsetMs = new Date(utcStr).getTime() - new Date(localStr).getTime()
+
+  return new Date(guess.getTime() + offsetMs)
 }
 

@@ -186,6 +186,7 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
   const [email, setEmail] = useState('')
   const [role, setRole] = useState('user')
   const [assignedTeams, setAssignedTeams] = useState<number[]>([])
+  const [initialAssignedTeams, setInitialAssignedTeams] = useState<number[]>([])
   const [allTeams, setAllTeams] = useState<Array<{ id: number; name: string }>>([])
   const [departments, setDepartments] = useState<Record<string, boolean>>({})
   const [newPassword, setNewPassword] = useState('')
@@ -231,7 +232,9 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
       // Account & role fields
       setEmail(data.email ?? '')
       setRole(data.role ?? 'user')
-      setAssignedTeams((data.assignedTeams ?? []).map((t: any) => typeof t === 'object' ? t.id : t))
+      const teamIds = (data.assignedTeams ?? []).map((t: any) => typeof t === 'object' ? t.id : t)
+      setAssignedTeams(teamIds)
+      setInitialAssignedTeams(teamIds)
       setDepartments({
         isProductionStaff: data.departments?.isProductionStaff ?? false,
         isSocialMediaStaff: data.departments?.isSocialMediaStaff ?? false,
@@ -312,7 +315,10 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
         if (isAdmin) {
           payload.role = role
           payload.email = email
-          payload.assignedTeams = assignedTeams.length > 0 ? assignedTeams : null
+          const teamsChanged = JSON.stringify([...assignedTeams].sort()) !== JSON.stringify([...initialAssignedTeams].sort())
+          if (teamsChanged) {
+            payload.assignedTeams = assignedTeams.length > 0 ? assignedTeams : null
+          }
           payload.departments = departments
         }
       }
