@@ -13,6 +13,14 @@ export async function GET(request: NextRequest) {
 
   const url = new URL(request.url)
   const tier = (url.searchParams.get('tier') ?? 'invite') as 'open' | 'invite'
+  const region = url.searchParams.get('region')
+
+  const person = user as any
+  const pugTiers: string[] = person.pugTiers ?? []
+  const pugRegions: string[] = person.pugInviteRegions ?? []
+  const approvedRoles: string[] = (person.pugApprovedRoles ?? []).map((r: string) => r.replace(/-/g, '_'))
+  const registeredForTier = pugTiers.includes(tier)
+  const registeredForRegion = tier !== 'invite' || !region || pugRegions.includes(region)
 
   // Check if user is in an active lobby
   const activeLobbyPlayer = await prisma.pugLobbyPlayer.findFirst({
@@ -32,8 +40,10 @@ export async function GET(request: NextRequest) {
     await prisma.pugQueueEntry.delete({ where: { id: entry.id } })
   }
 
+  const regInfo = { registeredForTier, registeredForRegion, approvedRoles }
+
   if (!entry && !activeLobbyPlayer) {
-    return NextResponse.json({ inQueue: false, currentUserId: user.id })
+    return NextResponse.json({ inQueue: false, currentUserId: user.id, ...regInfo })
   }
 
   if (activeLobbyPlayer) {
@@ -42,6 +52,7 @@ export async function GET(request: NextRequest) {
       placed: true,
       lobbyId: activeLobbyPlayer.lobbyId,
       currentUserId: user.id,
+      ...regInfo,
     })
   }
 
@@ -60,6 +71,7 @@ export async function GET(request: NextRequest) {
     region: entry!.region,
     queuedAt: entry!.queuedAt,
     currentUserId: user.id,
+    ...regInfo,
   })
 }
 

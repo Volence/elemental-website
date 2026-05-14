@@ -39,15 +39,17 @@ type QueueStatus = {
   total?: number
   roles?: string[]
   currentUserId?: number
+  registeredForTier?: boolean
+  registeredForRegion?: boolean
+  approvedRoles?: string[]
 }
 
 type Props = {
   region: string
   queueActive: boolean
-  approvedRoles: string[] | null
 }
 
-export function InviteQueuePanel({ region, queueActive, approvedRoles }: Props) {
+export function InviteQueuePanel({ region, queueActive }: Props) {
   const router = useRouter()
   const [selectedRoles, setSelectedRoles] = useState<string[]>([])
   const [queueStatus, setQueueStatus] = useState<QueueStatus | null>(null)
@@ -60,7 +62,7 @@ export function InviteQueuePanel({ region, queueActive, approvedRoles }: Props) 
     try {
       const [lobbyRes, queueRes] = await Promise.all([
         fetch(`/api/pug/lobby?tier=invite&region=${region}`),
-        fetch(`/api/pug/queue?tier=invite`),
+        fetch(`/api/pug/queue?tier=invite&region=${region}`),
       ])
       if (lobbyRes.ok) {
         const data = await lobbyRes.json()
@@ -130,6 +132,9 @@ export function InviteQueuePanel({ region, queueActive, approvedRoles }: Props) 
     }
   }
 
+  const approvedRoles = queueStatus?.approvedRoles ?? null
+  const canQueue = queueStatus?.registeredForTier && queueStatus?.registeredForRegion
+
   function toggleRole(role: string) {
     if (approvedRoles && !approvedRoles.includes(role)) return
     setSelectedRoles((prev) =>
@@ -165,8 +170,17 @@ export function InviteQueuePanel({ region, queueActive, approvedRoles }: Props) 
         </Link>
       )}
 
+      {/* Not registered message */}
+      {queueActive && !myLobbyId && queueStatus && !canQueue && (
+        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-4 py-3 text-sm text-yellow-400">
+          {!queueStatus.registeredForTier
+            ? 'You are not registered for Invite Tier PUGs.'
+            : `You are not registered for the ${region.toUpperCase()} region.`}
+        </div>
+      )}
+
       {/* Queue interface */}
-      {queueActive && !myLobbyId && (
+      {queueActive && !myLobbyId && canQueue && (
         <div className="border border-gray-700/80 rounded-xl p-5 bg-gradient-to-b from-gray-900/80 to-gray-950/80">
           {queueStatus?.inQueue ? (
             // In queue state

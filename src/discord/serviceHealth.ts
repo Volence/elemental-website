@@ -47,6 +47,7 @@ function record(name: string, ok: boolean, message: string, durationMs?: number)
 
 function startStalenessChecker(): void {
   if (stalenessInterval) return
+  if (process.env.NODE_ENV === 'development') return
   stalenessInterval = setInterval(() => {
     const now = Date.now()
     let anyStale = false

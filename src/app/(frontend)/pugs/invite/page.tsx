@@ -79,7 +79,7 @@ export default async function PugInvitePage({
               <p className="text-gray-400">Queuing is currently closed for this region.</p>
             </div>
           ) : (
-            <InviteQueuePanel region={region} queueActive={queueActive} approvedRoles={null} />
+            <InviteQueuePanel region={region} queueActive={queueActive} />
           )}
         </>
       )}
