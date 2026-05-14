@@ -7,16 +7,20 @@
  *
  * Output is the full OW2 settings text block that the host pastes into
  * Custom Game > Settings > Import.
+ *
+ * Samoa, Colosseo, and Esperanca have duplicate entries in OW2's internal
+ * Map enum (confirmed OW2 bug). They can't be referenced in enabled maps,
+ * so we use disabled maps to exclude everything else instead.
  */
 
 export type SettingsInput = {
-  /** The exact OW2 settings map entry, including internal IDs.
-   *  e.g., "Samoa 972777519512068154" */
   mapSettingsEntry: string | null
-  /** Map type from the Maps collection (control, escort, hybrid, push, flashpoint, clash) */
   mapType: string
-  /** Hero names to ban, e.g., ["Widowmaker", "Tracer", "Ana", "Reinhardt"] */
   bannedHeroes: string[]
+  /** Other map names in the same mode, used for disabled-maps workaround */
+  otherMapsInMode?: string[]
+  /** Host instruction when disabled maps can't fully isolate the target */
+  hostNote?: string
 }
 
 const MODE_BY_MAP_TYPE: Record<string, string> = {
@@ -39,9 +43,18 @@ const MODE_SETTINGS: Record<string, string[]> = {
 
 const ALL_MODES = ['Clash', 'Control', 'Escort', 'Flashpoint', 'Hybrid', 'Push']
 
+// OW2 map variants not in our DB that need to be disabled
+const VARIANT_MAPS: Record<string, string[]> = {
+  Control: ['Lijiang Tower Lunar New Year'],
+}
+
+// Maps with duplicate OW2 enum entries that can't be used in enabled/disabled maps
+const BROKEN_MAP_NAMES = ['Samoa', 'Colosseo', 'Esperança']
+
 export function generateSettings(input: SettingsInput): string {
-  const { mapSettingsEntry, mapType, bannedHeroes } = input
+  const { mapSettingsEntry, mapType, bannedHeroes, otherMapsInMode, hostNote } = input
   const targetMode = MODE_BY_MAP_TYPE[mapType]
+  const useDisabledApproach = otherMapsInMode && otherMapsInMode.length > 0
 
   const lines: string[] = []
   lines.push('settings')
@@ -71,12 +84,28 @@ export function generateSettings(input: SettingsInput): string {
       lines.push(...settings)
       lines.push('')
     }
-    lines.push('\t\t\tenabled maps')
-    lines.push('\t\t\t{')
-    if (mode === targetMode && mapSettingsEntry) {
-      lines.push(`\t\t\t\t${mapSettingsEntry}`)
+
+    if (mode === targetMode && useDisabledApproach) {
+      const variants = VARIANT_MAPS[mode] ?? []
+      const mapsToDisable = [...otherMapsInMode, ...variants]
+        .filter((name) => !BROKEN_MAP_NAMES.includes(name))
+      if (mapsToDisable.length > 0) {
+        lines.push('\t\t\tdisabled maps')
+        lines.push('\t\t\t{')
+        for (const name of mapsToDisable) {
+          lines.push(`\t\t\t\t${name}`)
+        }
+        lines.push('\t\t\t}')
+      }
+    } else {
+      lines.push('\t\t\tenabled maps')
+      lines.push('\t\t\t{')
+      if (mode === targetMode && mapSettingsEntry) {
+        lines.push(`\t\t\t\t${mapSettingsEntry}`)
+      }
+      lines.push('\t\t\t}')
     }
-    lines.push('\t\t\t}')
+
     lines.push('\t\t}')
     lines.push('')
   }
@@ -107,5 +136,9 @@ export function generateSettings(input: SettingsInput): string {
 
   lines.push('}')
 
-  return lines.join('\n')
+  let result = lines.join('\n')
+  if (hostNote) {
+    result = `// HOST: ${hostNote}\n${result}`
+  }
+  return result
 }

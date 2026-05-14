@@ -23,13 +23,23 @@ const MODE_SETTINGS: Record<string, string[]> = {
 
 const ALL_MODES = ['Clash', 'Control', 'Escort', 'Flashpoint', 'Hybrid', 'Push']
 
+const VARIANT_MAPS: Record<string, string[]> = {
+  Control: ['Lijiang Tower Lunar New Year'],
+}
+
+const BROKEN_MAP_NAMES = ['Samoa', 'Colosseo', 'Esperança']
+
 function generateSettingsText(
   mapSettingsEntry: string | null,
   mapType: string,
   bannedHeroes: string[],
+  otherMapsInMode?: string[],
+  hostNote?: string,
 ): string {
   const targetMode = MODE_BY_MAP_TYPE[mapType]
+  const useDisabled = otherMapsInMode && otherMapsInMode.length > 0
   const lines: string[] = []
+  if (hostNote) lines.push(`// HOST: ${hostNote}`)
   lines.push('settings', '{')
   lines.push('\tmain', '\t{', '\t\tMode Name: "Competitive Rules"', '\t}', '')
   lines.push('\tlobby', '\t{', '\t\tData Center Preference: USA - Central', '\t\tPause Game On Player Disconnect: Yes', '\t}', '')
@@ -39,9 +49,22 @@ function generateSettingsText(
     const settings = MODE_SETTINGS[mode]
     lines.push(`\t\t${mode}`, '\t\t{')
     if (settings) lines.push(...settings, '')
-    lines.push('\t\t\tenabled maps', '\t\t\t{')
-    if (mode === targetMode && mapSettingsEntry) lines.push(`\t\t\t\t${mapSettingsEntry}`)
-    lines.push('\t\t\t}', '\t\t}', '')
+
+    if (mode === targetMode && useDisabled) {
+      const variants = VARIANT_MAPS[mode] ?? []
+      const toDisable = [...otherMapsInMode, ...variants].filter((n) => !BROKEN_MAP_NAMES.includes(n))
+      if (toDisable.length > 0) {
+        lines.push('\t\t\tdisabled maps', '\t\t\t{')
+        for (const n of toDisable) lines.push(`\t\t\t\t${n}`)
+        lines.push('\t\t\t}')
+      }
+    } else {
+      lines.push('\t\t\tenabled maps', '\t\t\t{')
+      if (mode === targetMode && mapSettingsEntry) lines.push(`\t\t\t\t${mapSettingsEntry}`)
+      lines.push('\t\t\t}')
+    }
+
+    lines.push('\t\t}', '')
   }
 
   lines.push('\t\tGeneral', '\t\t{')
@@ -113,8 +136,22 @@ export const SettingsGeneratorPanel: React.FC = () => {
     const selectedMap = maps.find((m) => m.id === selectedMapId)
     const mapType = selectedMap?.type || 'control'
     const mapEntry = selectedMap?.settingsEntry || selectedMap?.name || null
+    const mapName = selectedMap?.name ?? ''
     const bannedNames = heroes.filter((h) => bannedHeroIds.includes(h.id)).map((h) => h.name)
-    setSettingsText(generateSettingsText(mapEntry, mapType, bannedNames))
+
+    let otherMapsInMode: string[] | undefined
+    let hostNote: string | undefined
+
+    if (BROKEN_MAP_NAMES.includes(mapName)) {
+      otherMapsInMode = maps.filter((m) => m.type === mapType && m.name !== mapName).map((m) => m.name)
+      const brokenPush = ['Colosseo', 'Esperança']
+      if (brokenPush.includes(mapName)) {
+        const other = brokenPush.find((n) => n !== mapName)
+        if (other) hostNote = `Manually disable ${other} in Push > Maps`
+      }
+    }
+
+    setSettingsText(generateSettingsText(mapEntry, mapType, bannedNames, otherMapsInMode, hostNote))
   }
 
   async function copySettings() {

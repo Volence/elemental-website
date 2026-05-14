@@ -175,10 +175,38 @@ export async function GET(request: NextRequest, { params }: Params) {
             .map((b) => banHeroes.find((h) => h.id === b.heroId)?.name)
             .filter(Boolean) as string[]
         }
+        const mapName = selectedMap.name ?? ''
+        const isBrokenMap = ['Samoa', 'Colosseo', 'Esperança'].includes(mapName)
+        let otherMapsInMode: string[] | undefined
+        let hostNote: string | undefined
+
+        if (isBrokenMap) {
+          const sameModeType = selectedMap.type ?? 'control'
+          const allMapsResult = await payload.find({
+            collection: 'maps',
+            where: { type: { equals: sameModeType } },
+            limit: 50,
+            overrideAccess: true,
+          })
+          otherMapsInMode = (allMapsResult.docs as any[])
+            .map((m) => m.name as string)
+            .filter((n) => n !== mapName)
+
+          const brokenPushMaps = ['Colosseo', 'Esperança']
+          if (brokenPushMaps.includes(mapName)) {
+            const otherBroken = brokenPushMaps.find((n) => n !== mapName)
+            if (otherBroken) {
+              hostNote = `Manually disable ${otherBroken} in Push > Maps`
+            }
+          }
+        }
+
         settingsText = generateSettings({
           mapSettingsEntry: selectedMap.settingsEntry ?? selectedMap.name ?? null,
           mapType: selectedMap.type ?? 'control',
           bannedHeroes: bannedHeroNames,
+          otherMapsInMode,
+          hostNote,
         })
       }
 
