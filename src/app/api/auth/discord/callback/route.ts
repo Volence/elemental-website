@@ -437,12 +437,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       const { randomBytes: rb2 } = await import('crypto')
       const isPugAdminInvite = (invite.departments as any)?.isPugAdmin === true
       const userRole = isPugAdminInvite ? 'staff-manager' : invite.role
+      const resolvedTeams = teamIds.length > 0
+        ? teamIds
+        : (invite.assignedTeams?.map((t: any) => typeof t === 'object' ? t.id : t) ?? [])
+
       const authData: Record<string, any> = {
         email: `discord_${discordUser.id}@elmt.placeholder`,
         password: rb2(32).toString('hex'),
         role: userRole,
         discordId: discordUser.id,
-        assignedTeams: teamIds.length > 0 ? teamIds : (invite.assignedTeams?.map((t: any) => typeof t === 'object' ? t.id : t) ?? undefined),
         departments: {
           isProductionStaff: invite.departments?.isProductionStaff || false,
           isSocialMediaStaff: invite.departments?.isSocialMediaStaff || false,
@@ -453,6 +456,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           isContentCreator: (invite.departments as any)?.isContentCreator || false,
           isPugAdmin: (invite.departments as any)?.isPugAdmin || false,
         },
+      }
+      if (resolvedTeams.length > 0) {
+        authData.assignedTeams = resolvedTeams
       }
 
       let newUser: any
@@ -643,11 +649,13 @@ async function loginAndRedirect(
       expiresAt,
     })
 
-    // Update user with new session
+    // Update ONLY the sessions field — spreading the entire user object
+    // triggers Payload's full upsertRow path which delete-reinserts all
+    // relationship rows (e.g. assignedTeams), risking data loss.
     await payload.db.updateOne({
       id: user.id,
       collection: 'people',
-      data: { ...user, sessions: currentSessions, updatedAt: null },
+      data: { sessions: currentSessions, updatedAt: null },
       req: { payload } as any,
       returning: false,
     })

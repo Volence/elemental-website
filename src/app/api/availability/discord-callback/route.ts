@@ -160,7 +160,7 @@ export async function GET(request: NextRequest) {
       await payload.db.updateOne({
         id: person.id,
         collection: 'people',
-        data: { ...person, sessions: currentSessions, updatedAt: null },
+        data: { sessions: currentSessions, updatedAt: null },
         req: { payload } as any,
         returning: false,
       })
