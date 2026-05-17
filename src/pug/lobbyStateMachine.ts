@@ -163,6 +163,12 @@ export async function leaveLobby(lobbyId: number, userId: number): Promise<void>
   const lobby = await prisma.pugLobby.findUniqueOrThrow({ where: { id: lobbyId } })
 
   if (lobby.status === 'DRAFTING') {
+    // Re-check status atomically to avoid racing with advanceToMapVote
+    const still = await prisma.pugLobby.updateMany({
+      where: { id: lobbyId, status: 'DRAFTING' },
+      data: { status: 'DRAFTING' },
+    })
+    if (still.count === 0) throw new Error('Cannot leave lobby in current state')
     await cancelLobby(lobbyId, 'Player left during draft')
     await applyEscalatingBan(userId, 'Left lobby during draft phase')
     return
@@ -529,6 +535,12 @@ export async function finalizeDraftPick(lobbyId: number): Promise<void> {
 }
 
 async function advanceToMapVote(lobbyId: number): Promise<void> {
+  const advanced = await prisma.pugLobby.updateMany({
+    where: { id: lobbyId, status: 'DRAFTING' },
+    data: { status: 'MAP_VOTE' },
+  })
+  if (advanced.count === 0) return
+
   const payload = await getPayload({ config: configPromise })
 
   const lobby = await prisma.pugLobby.findUniqueOrThrow({ where: { id: lobbyId } })
@@ -553,7 +565,6 @@ async function advanceToMapVote(lobbyId: number): Promise<void> {
   const voteDeadline = new Date(Date.now() + MAP_VOTE_TIMEOUT_MS)
 
   await prisma.pugMapVote.create({ data: { lobbyId, candidates, votes: {}, voteDeadline } })
-  await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'MAP_VOTE' } })
   registerTimer(timerKey(lobbyId, 'mapvote'), MAP_VOTE_TIMEOUT_MS, () => finalizeMapVote(lobbyId))
 }
 
@@ -663,7 +674,11 @@ export async function finalizeBan(lobbyId: number): Promise<void> {
 }
 
 async function advanceToInProgress(lobbyId: number): Promise<void> {
-  await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'IN_PROGRESS' } })
+  const advanced = await prisma.pugLobby.updateMany({
+    where: { id: lobbyId, status: 'BANNING' },
+    data: { status: 'IN_PROGRESS' },
+  })
+  if (advanced.count === 0) return
 
   const players = await prisma.pugLobbyPlayer.findMany({ where: { lobbyId } })
   const lobby = await prisma.pugLobby.findUniqueOrThrow({ where: { id: lobbyId } })
@@ -685,12 +700,16 @@ async function advanceToInProgress(lobbyId: number): Promise<void> {
   const team1Ids = players.filter((p) => p.team === 1).map((p) => discordIdByUserId.get(p.userId) ?? '').filter(Boolean)
   const team2Ids = players.filter((p) => p.team === 2).map((p) => discordIdByUserId.get(p.userId) ?? '').filter(Boolean)
 
-  const { createMatchVoiceChannels } = await import('@/discord/services/pugVoice')
-  const { team1ChannelId, team2ChannelId } = await createMatchVoiceChannels(
-    lobby.lobbyNumber,
-    team1Ids,
-    team2Ids,
-  )
+  let team1ChannelId: string | null = null
+  let team2ChannelId: string | null = null
+  try {
+    const { createMatchVoiceChannels } = await import('@/discord/services/pugVoice')
+    const channels = await createMatchVoiceChannels(lobby.lobbyNumber, team1Ids, team2Ids)
+    team1ChannelId = channels.team1ChannelId
+    team2ChannelId = channels.team2ChannelId
+  } catch (err) {
+    console.error(`[PUG #${lobby.lobbyNumber}] Failed to create voice channels:`, err)
+  }
 
   if (team1ChannelId || team2ChannelId) {
     await prisma.pugLobby.update({
@@ -864,106 +883,110 @@ export async function completeMatch(lobbyId: number, result: MatchResult): Promi
   const team2Players = lobby.players.filter((p) => p.team === 2)
 
   if (result !== 'cancelled') {
-    const payload = await getPayload({ config: configPromise })
+    try {
+      const payload = await getPayload({ config: configPromise })
 
-    const fetchOrCreateLeaderboardEntry = async (userId: number): Promise<PlayerRating | null> => {
-      const lbWhere: any[] = [
-        { player: { equals: userId } },
-        { season: { equals: lobby.payloadSeasonId } },
-        { tier: { equals: lobby.tier } },
-      ]
-      if (lobby.region) {
-        lbWhere.push({ region: { equals: lobby.region } })
+      const fetchOrCreateLeaderboardEntry = async (userId: number): Promise<PlayerRating | null> => {
+        const lbWhere: any[] = [
+          { player: { equals: userId } },
+          { season: { equals: lobby.payloadSeasonId } },
+          { tier: { equals: lobby.tier } },
+        ]
+        if (lobby.region) {
+          lbWhere.push({ region: { equals: lobby.region } })
+        }
+
+        const lbResult = await payload.find({
+          collection: 'pug-leaderboard',
+          where: { and: lbWhere },
+          overrideAccess: true,
+        })
+
+        if (lbResult.docs.length === 0) {
+          const entry = await payload.create({
+            collection: 'pug-leaderboard',
+            data: {
+              player: userId,
+              season: lobby.payloadSeasonId!,
+              tier: lobby.tier,
+              region: (lobby.region as 'na' | 'emea' | 'pacific' | undefined) ?? undefined,
+              rating: 1500,
+              ratingDeviation: 350,
+              volatility: 0.06,
+              wins: 0,
+              losses: 0,
+              draws: 0,
+              gamesPlayed: 0,
+            },
+            overrideAccess: true,
+          })
+          return { payloadPlayerId: (entry as any).id, rating: 1500, ratingDeviation: 350, volatility: 0.06 }
+        }
+
+        const entry = lbResult.docs[0] as any
+        return {
+          payloadPlayerId: entry.id,
+          rating: entry.rating ?? 1500,
+          ratingDeviation: entry.ratingDeviation ?? 350,
+          volatility: entry.volatility ?? 0.06,
+        }
       }
 
-      const lbResult = await payload.find({
-        collection: 'pug-leaderboard',
-        where: { and: lbWhere },
-        overrideAccess: true,
-      })
+      const team1Ratings = (await Promise.all(team1Players.map((p) => fetchOrCreateLeaderboardEntry(p.userId)))).filter(Boolean) as PlayerRating[]
+      const team2Ratings = (await Promise.all(team2Players.map((p) => fetchOrCreateLeaderboardEntry(p.userId)))).filter(Boolean) as PlayerRating[]
 
-      if (lbResult.docs.length === 0) {
-        const entry = await payload.create({
+      const updates = calculateRatingUpdates(team1Ratings, team2Ratings, result)
+
+      const ratingSnapshots: { leaderboardId: number; before: { rating: number; ratingDeviation: number; volatility: number; wins: number; losses: number; draws: number; gamesPlayed: number } }[] = []
+
+      for (const update of updates) {
+        const isWinner =
+          (result === 'team1' && team1Ratings.some((r) => r.payloadPlayerId === update.payloadPlayerId)) ||
+          (result === 'team2' && team2Ratings.some((r) => r.payloadPlayerId === update.payloadPlayerId))
+        const isDraw = result === 'draw'
+
+        const current = await payload.findByID({
           collection: 'pug-leaderboard',
+          id: update.payloadPlayerId,
+          overrideAccess: true,
+        }) as any
+
+        ratingSnapshots.push({
+          leaderboardId: update.payloadPlayerId,
+          before: {
+            rating: current.rating ?? 1500,
+            ratingDeviation: current.ratingDeviation ?? 350,
+            volatility: current.volatility ?? 0.06,
+            wins: current.wins ?? 0,
+            losses: current.losses ?? 0,
+            draws: current.draws ?? 0,
+            gamesPlayed: current.gamesPlayed ?? 0,
+          },
+        })
+
+        await payload.update({
+          collection: 'pug-leaderboard',
+          id: update.payloadPlayerId,
           data: {
-            player: userId,
-            season: lobby.payloadSeasonId!,
-            tier: lobby.tier,
-            region: (lobby.region as 'na' | 'emea' | 'pacific' | undefined) ?? undefined,
-            rating: 1500,
-            ratingDeviation: 350,
-            volatility: 0.06,
-            wins: 0,
-            losses: 0,
-            draws: 0,
-            gamesPlayed: 0,
+            rating: update.rating,
+            ratingDeviation: update.ratingDeviation,
+            volatility: update.volatility,
+            wins: (current.wins ?? 0) + (isWinner && !isDraw ? 1 : 0),
+            losses: (current.losses ?? 0) + (!isWinner && !isDraw ? 1 : 0),
+            draws: (current.draws ?? 0) + (isDraw ? 1 : 0),
+            gamesPlayed: (current.gamesPlayed ?? 0) + 1,
           },
           overrideAccess: true,
         })
-        return { payloadPlayerId: (entry as any).id, rating: 1500, ratingDeviation: 350, volatility: 0.06 }
       }
 
-      const entry = lbResult.docs[0] as any
-      return {
-        payloadPlayerId: entry.id,
-        rating: entry.rating ?? 1500,
-        ratingDeviation: entry.ratingDeviation ?? 350,
-        volatility: entry.volatility ?? 0.06,
-      }
-    }
-
-    const team1Ratings = (await Promise.all(team1Players.map((p) => fetchOrCreateLeaderboardEntry(p.userId)))).filter(Boolean) as PlayerRating[]
-    const team2Ratings = (await Promise.all(team2Players.map((p) => fetchOrCreateLeaderboardEntry(p.userId)))).filter(Boolean) as PlayerRating[]
-
-    const updates = calculateRatingUpdates(team1Ratings, team2Ratings, result)
-
-    const ratingSnapshots: { leaderboardId: number; before: { rating: number; ratingDeviation: number; volatility: number; wins: number; losses: number; draws: number; gamesPlayed: number } }[] = []
-
-    for (const update of updates) {
-      const isWinner =
-        (result === 'team1' && team1Ratings.some((r) => r.payloadPlayerId === update.payloadPlayerId)) ||
-        (result === 'team2' && team2Ratings.some((r) => r.payloadPlayerId === update.payloadPlayerId))
-      const isDraw = result === 'draw'
-
-      const current = await payload.findByID({
-        collection: 'pug-leaderboard',
-        id: update.payloadPlayerId,
-        overrideAccess: true,
-      }) as any
-
-      ratingSnapshots.push({
-        leaderboardId: update.payloadPlayerId,
-        before: {
-          rating: current.rating ?? 1500,
-          ratingDeviation: current.ratingDeviation ?? 350,
-          volatility: current.volatility ?? 0.06,
-          wins: current.wins ?? 0,
-          losses: current.losses ?? 0,
-          draws: current.draws ?? 0,
-          gamesPlayed: current.gamesPlayed ?? 0,
-        },
+      await prisma.pugLobby.update({
+        where: { id: lobbyId },
+        data: { ratingChanges: ratingSnapshots },
       })
-
-      await payload.update({
-        collection: 'pug-leaderboard',
-        id: update.payloadPlayerId,
-        data: {
-          rating: update.rating,
-          ratingDeviation: update.ratingDeviation,
-          volatility: update.volatility,
-          wins: (current.wins ?? 0) + (isWinner && !isDraw ? 1 : 0),
-          losses: (current.losses ?? 0) + (!isWinner && !isDraw ? 1 : 0),
-          draws: (current.draws ?? 0) + (isDraw ? 1 : 0),
-          gamesPlayed: (current.gamesPlayed ?? 0) + 1,
-        },
-        overrideAccess: true,
-      })
+    } catch (err) {
+      console.error(`[PUG #${lobby.players[0]?.lobbyId ?? lobbyId}] ELO update failed — match is COMPLETED but ratings may be incomplete:`, err)
     }
-
-    await prisma.pugLobby.update({
-      where: { id: lobbyId },
-      data: { ratingChanges: ratingSnapshots },
-    })
   }
 
   // Status already set to COMPLETED by the atomic claim above
