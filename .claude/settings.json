@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "discord": {
+      "command": "/home/volence/elmt/elemental-website/node_modules/.bin/tsx",
+      "args": ["/home/volence/elmt/elemental-website/src/discord/mcp-server.ts"]
+    }
+  }
+}
