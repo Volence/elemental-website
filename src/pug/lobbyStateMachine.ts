@@ -847,6 +847,14 @@ export async function autoConfirmResult(lobbyId: number): Promise<void> {
 }
 
 export async function completeMatch(lobbyId: number, result: MatchResult): Promise<void> {
+  // Atomically claim this completion — prevents double ELO/posting from race
+  // between confirmResult() and autoConfirmResult() timer.
+  const claimed = await prisma.pugLobby.updateMany({
+    where: { id: lobbyId, status: { in: ['REPORTING', 'IN_PROGRESS'] } },
+    data: { status: 'COMPLETED', completedAt: new Date() },
+  })
+  if (claimed.count === 0) return
+
   const lobby = await prisma.pugLobby.findUniqueOrThrow({
     where: { id: lobbyId },
     include: { players: true, banState: true, mapVote: true, draftState: true },
@@ -958,7 +966,7 @@ export async function completeMatch(lobbyId: number, result: MatchResult): Promi
     })
   }
 
-  await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'COMPLETED', completedAt: new Date() } })
+  // Status already set to COMPLETED by the atomic claim above
   cancelTimer(timerKey(lobbyId, 'voice_cleanup'))
 
   const { updateLobbyFeed, postMatchResult } = await import('@/discord/services/pugFeed')
