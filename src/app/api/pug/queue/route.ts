@@ -35,12 +35,29 @@ export async function GET(request: NextRequest) {
     where: { userId_tier: { userId: user.id, tier } },
   })
 
+  const regInfo = { registeredForTier, registeredForRegion, approvedRoles }
+
+  // Player is requeuing from an active game — keep the queue entry alive
+  if (activeLobbyPlayer && entry && ['IN_PROGRESS', 'REPORTING'].includes(activeLobbyPlayer.lobby.status)) {
+    await prisma.pugQueueEntry.update({
+      where: { id: entry.id },
+      data: { lastPing: new Date() },
+    })
+    const positionInfo = await getQueuePosition(user.id, tier)
+    return NextResponse.json({
+      inQueue: true,
+      requeued: true,
+      position: positionInfo?.position ?? 1,
+      total: positionInfo?.total ?? 1,
+      currentUserId: user.id,
+      ...regInfo,
+    })
+  }
+
   // If placed in a lobby, clean up queue entry
   if (activeLobbyPlayer && entry) {
     await prisma.pugQueueEntry.delete({ where: { id: entry.id } })
   }
-
-  const regInfo = { registeredForTier, registeredForRegion, approvedRoles }
 
   if (!entry && !activeLobbyPlayer) {
     return NextResponse.json({ inQueue: false, currentUserId: user.id, ...regInfo })
@@ -107,7 +124,7 @@ export async function POST(request: NextRequest) {
   const existingLobby = await prisma.pugLobbyPlayer.findFirst({
     where: {
       userId: user.id,
-      lobby: { status: { in: ['OPEN', 'READY', 'DRAFTING', 'MAP_VOTE', 'BANNING', 'IN_PROGRESS'] } },
+      lobby: { status: { in: ['OPEN', 'READY', 'DRAFTING', 'MAP_VOTE', 'BANNING'] } },
     },
   })
   if (existingLobby) {

@@ -568,6 +568,7 @@ export default function LobbyPage() {
               </div>
             </div>
           )}
+          {inLobby && me && <RequeueButton lobby={lobby} me={me} />}
         </div>
       )}
 
@@ -620,6 +621,7 @@ export default function LobbyPage() {
             ) : null
           })()}
           <TeamsDisplay players={players} currentUserId={currentUserId} heroes={heroes} banState={lobby.banState} />
+          {inLobby && me && <RequeueButton lobby={lobby} me={me} />}
         </div>
       )}
 
@@ -663,6 +665,7 @@ export default function LobbyPage() {
                 </button>
               </div>
             )}
+            {inLobby && me && <RequeueButton lobby={lobby} me={me} />}
             <div className="text-center pt-2">
               <Link href={lobby.tier === 'invite' ? '/pugs/invite' : '/pugs/open'} className="text-sm text-gray-500 hover:text-gray-300 transition-colors">
                 Back to {lobby.tier === 'invite' ? 'Invite' : 'Open'} Tier
@@ -1360,6 +1363,104 @@ function CopyButton({ text, label, className }: { text: string; label?: string; 
     >
       {copied ? '✓ Copied' : label ?? '📋 Copy'}
     </button>
+  )
+}
+
+// ── Requeue button ──
+
+function RequeueButton({ lobby, me }: { lobby: any; me: Player }) {
+  const [status, setStatus] = useState<'idle' | 'queued' | 'placed'>('idle')
+  const [placedLobbyId, setPlacedLobbyId] = useState<number | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [visible, setVisible] = useState(false)
+  const timerStarted = useRef(false)
+
+  useEffect(() => {
+    if (['REPORTING', 'COMPLETED'].includes(lobby.status)) {
+      setVisible(true)
+      return
+    }
+    if (lobby.status === 'IN_PROGRESS' && !timerStarted.current) {
+      timerStarted.current = true
+      const timer = setTimeout(() => setVisible(true), 120_000)
+      return () => clearTimeout(timer)
+    }
+  }, [lobby.status])
+
+  async function handleRequeue() {
+    setError(null)
+    const res = await fetch('/api/pug/queue', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ roles: me.queuedRoles, tier: lobby.tier, region: lobby.region }),
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      setError(data.error ?? 'Failed to queue')
+      return
+    }
+    if (data.placed) {
+      setStatus('placed')
+      setPlacedLobbyId(data.lobbyId)
+    } else {
+      setStatus('queued')
+    }
+  }
+
+  async function handleCancel() {
+    await fetch(`/api/pug/queue?tier=${lobby.tier}`, { method: 'DELETE' })
+    setStatus('idle')
+    setError(null)
+  }
+
+  if (!visible) return null
+
+  if (status === 'placed' && placedLobbyId) {
+    return (
+      <div className="border border-green-700/50 rounded-xl p-4 bg-gradient-to-r from-green-950/30 to-gray-950/80">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse" />
+            <span className="text-sm font-semibold text-green-200">Placed in next game!</span>
+          </div>
+          <Link
+            href={`/pugs/lobby/${placedLobbyId}`}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-500 hover:shadow-lg hover:shadow-green-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+          >
+            Go to Lobby
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  if (status === 'queued') {
+    return (
+      <div className="flex items-center justify-between border border-cyan-800/40 rounded-xl p-4 bg-gradient-to-r from-cyan-950/20 to-gray-950/80">
+        <div className="flex items-center gap-2.5">
+          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+          <span className="text-sm font-medium text-cyan-200">Queued for next game</span>
+        </div>
+        <button
+          onClick={handleCancel}
+          className="px-3 py-1.5 text-sm border border-gray-700 text-gray-400 rounded-lg hover:bg-gray-800 hover:border-gray-600 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+        >
+          Cancel
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      {error && <p className="text-xs text-red-400 mb-2">{error}</p>}
+      <button
+        onClick={handleRequeue}
+        className="w-full px-4 py-3 border border-cyan-800/50 text-cyan-300 rounded-xl bg-cyan-950/15 hover:bg-cyan-950/30 hover:border-cyan-700/60 hover:shadow-lg hover:shadow-cyan-500/10 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 text-sm font-semibold"
+      >
+        Requeue for Next Game
+      </button>
+    </div>
   )
 }
 
