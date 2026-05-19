@@ -28,7 +28,7 @@ export function validateBan(
 
   const bansForRole = existingBans.filter((b) => heroRoles[b.heroId] === heroRole)
 
-  const MAX_BANS_PER_ROLE = 2
+  const MAX_BANS_PER_ROLE = 1
   if (bansForRole.length >= MAX_BANS_PER_ROLE) {
     throw new Error(`Cannot ban ${name} - ${heroRole} ban limit (${MAX_BANS_PER_ROLE}) already reached`)
   }

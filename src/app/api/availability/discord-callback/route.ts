@@ -149,21 +149,23 @@ export async function GET(request: NextRequest) {
 
     const useSessions = collectionConfig?.auth?.useSessions !== false
     if (useSessions) {
+      const { sql } = await import('drizzle-orm')
       const sid = uuid()
       const now = new Date()
       const expiresAt = new Date(now.getTime() + tokenExpiration * 1000)
-      const currentSessions = ((person as any).sessions || []).filter((s: any) => {
-        const expiry = s.expiresAt instanceof Date ? s.expiresAt : new Date(s.expiresAt)
-        return expiry > now
-      })
-      currentSessions.push({ id: sid, createdAt: now, expiresAt })
-      await payload.db.updateOne({
-        id: person.id,
-        collection: 'people',
-        data: { sessions: currentSessions, updatedAt: null },
-        req: { payload } as any,
-        returning: false,
-      })
+
+      // Use raw SQL — payload.db.updateOne with partial data wipes hasMany select tables
+      const drizzle = (payload as any).db.drizzle
+      await drizzle.execute(sql`DELETE FROM people_sessions WHERE _parent_id = ${person.id} AND expires_at <= ${now}`)
+
+      const nextOrder = await drizzle.execute(
+        sql`SELECT COALESCE(MAX(_order), 0) + 1 AS next_order FROM people_sessions WHERE _parent_id = ${person.id}`,
+      )
+      const order = (nextOrder as any).rows?.[0]?.next_order ?? (nextOrder as any)[0]?.next_order ?? 1
+
+      await drizzle.execute(
+        sql`INSERT INTO people_sessions (_order, _parent_id, id, created_at, expires_at) VALUES (${order}, ${person.id}, ${sid}, ${now}, ${expiresAt})`,
+      )
       fieldsToSign.sid = sid
     }
 
