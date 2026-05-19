@@ -481,31 +481,24 @@
   }
 
   .avail-matrix__player-header {
-    width: 110px;
+    width: 120px;
   }
 
   .avail-matrix__player-name {
     font-size: 0.75rem;
+    max-width: 70px;
   }
 
   .avail-matrix__cell {
     height: 32px;
-    min-width: 40px;
+    min-width: 72px;
   }
 
   .avail-matrix__slot-header {
-    min-width: 40px;
+    min-width: 72px;
   }
 
   .avail-matrix__grid {
     border-spacing: 2px;
-  }
-
-  .avail-matrix__day-header {
-    display: none;
-  }
-
-  .avail-matrix__day-row {
-    display: none;
   }
 }

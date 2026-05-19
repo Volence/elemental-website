@@ -315,16 +315,19 @@ export function AvailabilityMatrix() {
       <div className="avail-matrix__grid-wrapper">
         <table className="avail-matrix__grid">
           <thead>
-            <tr className="avail-matrix__day-row">
-              <th className="avail-matrix__player-header" rowSpan={2}>Player</th>
-              {displayDates.map(date => (
-                <th key={date} className="avail-matrix__day-header" colSpan={filteredSlots.length}>
-                  <span className="avail-matrix__day-name">{getDayLabel(date)}</span>
-                  <span className="avail-matrix__day-date">{getDateLabel(date)}</span>
-                </th>
-              ))}
-            </tr>
+            {!isMobile && (
+              <tr className="avail-matrix__day-row">
+                <th className="avail-matrix__player-header" rowSpan={2}>Player</th>
+                {displayDates.map(date => (
+                  <th key={date} className="avail-matrix__day-header" colSpan={filteredSlots.length}>
+                    <span className="avail-matrix__day-name">{getDayLabel(date)}</span>
+                    <span className="avail-matrix__day-date">{getDateLabel(date)}</span>
+                  </th>
+                ))}
+              </tr>
+            )}
             <tr className="avail-matrix__time-row">
+              {isMobile && <th className="avail-matrix__player-header">Player</th>}
               {displayDates.map(date => (
                 filteredSlots.map((slot: any, si: number) => (
                   <th key={`${date}-${slot.startTime}`} className={`avail-matrix__slot-header${si === 0 ? ' avail-matrix__slot-header--day-start' : ''}`}>
