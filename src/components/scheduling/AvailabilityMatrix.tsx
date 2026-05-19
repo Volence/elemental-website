@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { Check, HelpCircle, Minus, XCircle, Users } from 'lucide-react'
 import { useSchedule } from './ScheduleContext'
 import './AvailabilityMatrix.css'
@@ -65,6 +65,16 @@ export function AvailabilityMatrix() {
   const { team, absences, authState } = data
   const [activeFilter, setActiveFilter] = useState<string>('all')
   const [roleModal, setRoleModal] = useState<{ discordId: string; name: string; avatar?: string; currentRole: string; currentStatus: string } | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
+  const [mobileDay, setMobileDay] = useState<string | null>(null)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)')
+    setIsMobile(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
 
   const roleOptions = useMemo(() => getRoleOptions(team), [team.rolePreset, team.customRoles])
 
@@ -237,6 +247,19 @@ export function AvailabilityMatrix() {
     }
   }
 
+  // Default mobile day to today or nearest available date
+  useEffect(() => {
+    if (!isMobile || dates.length === 0) return
+    if (mobileDay && dates.includes(mobileDay)) return
+    const today = new Date().toISOString().split('T')[0]
+    setMobileDay(dates.includes(today) ? today : dates[0])
+  }, [isMobile, dates, mobileDay])
+
+  const displayDates = useMemo(() => {
+    if (!isMobile || !mobileDay) return dates
+    return dates.filter(d => d === mobileDay)
+  }, [isMobile, mobileDay, dates])
+
   if (dates.length === 0 || timeSlots.length === 0) return null
 
   return (
@@ -271,12 +294,30 @@ export function AvailabilityMatrix() {
         </div>
       )}
 
+      {isMobile && dates.length > 1 && (
+        <div className="avail-matrix__day-nav">
+          {dates.map(date => {
+            const today = new Date().toISOString().split('T')[0]
+            return (
+              <button
+                key={date}
+                className={`avail-matrix__day-nav-btn${mobileDay === date ? ' avail-matrix__day-nav-btn--active' : ''}${date === today ? ' avail-matrix__day-nav-btn--today' : ''}`}
+                onClick={() => setMobileDay(date)}
+              >
+                <span className="avail-matrix__day-nav-weekday">{getDayLabel(date)}</span>
+                <span className="avail-matrix__day-nav-date">{getDateLabel(date)}</span>
+              </button>
+            )
+          })}
+        </div>
+      )}
+
       <div className="avail-matrix__grid-wrapper">
         <table className="avail-matrix__grid">
           <thead>
             <tr className="avail-matrix__day-row">
               <th className="avail-matrix__player-header" rowSpan={2}>Player</th>
-              {dates.map(date => (
+              {displayDates.map(date => (
                 <th key={date} className="avail-matrix__day-header" colSpan={filteredSlots.length}>
                   <span className="avail-matrix__day-name">{getDayLabel(date)}</span>
                   <span className="avail-matrix__day-date">{getDateLabel(date)}</span>
@@ -284,7 +325,7 @@ export function AvailabilityMatrix() {
               ))}
             </tr>
             <tr className="avail-matrix__time-row">
-              {dates.map(date => (
+              {displayDates.map(date => (
                 filteredSlots.map((slot: any, si: number) => (
                   <th key={`${date}-${slot.startTime}`} className={`avail-matrix__slot-header${si === 0 ? ' avail-matrix__slot-header--day-start' : ''}`}>
                     <span className="avail-matrix__slot-time">{slot.label}</span>
@@ -323,7 +364,7 @@ export function AvailabilityMatrix() {
                       {player.scheduleStatus === 'tryout' && <span className="avail-matrix__tryout-badge">TRIAL</span>}
                     </div>
                   </td>
-                  {dates.map(date => {
+                  {displayDates.map(date => {
                     const isAbsent = absentDatesByPlayer[player.discordId]?.has(date)
                     return filteredSlots.map((slot: any, si: number) => {
                       const status = isAbsent ? 'absent' : (player.selections[date]?.[slot.startTime] || null)

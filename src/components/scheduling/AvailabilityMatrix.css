@@ -412,25 +412,100 @@
   border-radius: 4px;
 }
 
+/* Mobile day nav - hidden on desktop */
+.avail-matrix__day-nav {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .avail-matrix {
     padding: 1rem;
     border-radius: 8px;
   }
 
+  .avail-matrix__day-nav {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 0.75rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .avail-matrix__day-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .avail-matrix__day-nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.45);
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+    min-width: 48px;
+  }
+
+  .avail-matrix__day-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.07);
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  .avail-matrix__day-nav-btn--active {
+    background: rgba(0, 229, 255, 0.12);
+    border-color: rgba(0, 229, 255, 0.3);
+    color: #00e5ff;
+  }
+
+  .avail-matrix__day-nav-btn--today {
+    border-color: rgba(0, 229, 255, 0.2);
+  }
+
+  .avail-matrix__day-nav-weekday {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .avail-matrix__day-nav-date {
+    font-size: 0.6rem;
+    opacity: 0.7;
+    margin-top: 1px;
+  }
+
   .avail-matrix__player-header {
-    width: 100px;
+    width: 110px;
   }
 
   .avail-matrix__player-name {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
   }
 
   .avail-matrix__cell {
-    height: 28px;
+    height: 32px;
+    min-width: 40px;
+  }
+
+  .avail-matrix__slot-header {
+    min-width: 40px;
   }
 
   .avail-matrix__grid {
-    border-spacing: 1px;
+    border-spacing: 2px;
+  }
+
+  .avail-matrix__day-header {
+    display: none;
+  }
+
+  .avail-matrix__day-row {
+    display: none;
   }
 }
