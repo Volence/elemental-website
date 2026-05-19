@@ -157,14 +157,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       if (existingWithDiscord.docs.length > 0) {
         const conflictUser = existingWithDiscord.docs[0] as any
         if (conflictUser.email?.endsWith('@elmt.placeholder')) {
-          // Auto-created placeholder account - safe to transfer Discord ID to the real account
-          await payload.db.updateOne({
-            id: conflictUser.id,
-            collection: 'people',
-            data: { discordId: null },
-            req: { payload } as any,
-            returning: false,
-          })
+          // Use raw SQL — payload.db.updateOne with partial data wipes hasMany select tables
+          const { sql: rawSql } = await import('drizzle-orm')
+          const drizzle0 = (payload as any).db.drizzle
+          await drizzle0.execute(rawSql`UPDATE people SET discord_id = NULL WHERE id = ${conflictUser.id}`)
           console.log(`[Discord OAuth] Transferred Discord ID from placeholder account ${conflictUser.id} to ${currentUser.id}`)
         } else {
           // Discord ID is on a real account - can't transfer automatically
@@ -178,15 +174,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         }
       }
 
-      // Update user with Discord ID - use db.updateOne to bypass field-level access controls
-      // (payload.update with overrideAccess doesn't reliably bypass field-level update access in Payload 3)
-      await payload.db.updateOne({
-        id: currentUser.id,
-        collection: 'people',
-        data: { discordId: discordUser.id },
-        req: { payload } as any,
-        returning: false,
-      })
+      // Use raw SQL — payload.db.updateOne with partial data wipes hasMany select tables
+      const { sql: rawSql2 } = await import('drizzle-orm')
+      const drizzle1 = (payload as any).db.drizzle
+      await drizzle1.execute(rawSql2`UPDATE people SET discord_id = ${discordUser.id} WHERE id = ${currentUser.id}`)
       console.log(`[Discord OAuth] Successfully linked Discord ${discordUser.id} to user ${currentUser.id}`)
 
       // If also a PUG signup request, register for open tier now that Discord is linked
@@ -637,28 +628,21 @@ async function loginAndRedirect(
     const now = new Date()
     const expiresAt = new Date(now.getTime() + tokenExpiration * 1000)
 
-    // Get current sessions and clean expired ones
-    const currentSessions = (user.sessions || []).filter((s: any) => {
-      const expiry = s.expiresAt instanceof Date ? s.expiresAt : new Date(s.expiresAt)
-      return expiry > now
-    })
+    // Manage sessions via raw SQL. payload.db.updateOne with partial data triggers
+    // upsertRow which delete-reinserts ALL hasMany select tables — wiping pugTiers,
+    // pugApprovedRoles, pugInviteRegions even when they aren't in the update data.
+    const { sql } = await import('drizzle-orm')
+    const drizzle = payload.db.drizzle
+    await drizzle.execute(sql`DELETE FROM people_sessions WHERE _parent_id = ${user.id} AND expires_at <= ${now}`)
 
-    currentSessions.push({
-      id: sid,
-      createdAt: now,
-      expiresAt,
-    })
+    const nextOrder = await drizzle.execute(
+      sql`SELECT COALESCE(MAX(_order), 0) + 1 AS next_order FROM people_sessions WHERE _parent_id = ${user.id}`,
+    )
+    const order = (nextOrder as any).rows?.[0]?.next_order ?? (nextOrder as any)[0]?.next_order ?? 1
 
-    // Update ONLY the sessions field — spreading the entire user object
-    // triggers Payload's full upsertRow path which delete-reinserts all
-    // relationship rows (e.g. assignedTeams), risking data loss.
-    await payload.db.updateOne({
-      id: user.id,
-      collection: 'people',
-      data: { sessions: currentSessions, updatedAt: null },
-      req: { payload } as any,
-      returning: false,
-    })
+    await drizzle.execute(
+      sql`INSERT INTO people_sessions (_order, _parent_id, id, created_at, expires_at) VALUES (${order}, ${user.id}, ${sid}, ${now}, ${expiresAt})`,
+    )
 
     fieldsToSign.sid = sid
     console.log(`[Discord OAuth] Created session ${sid} for user ${user.id}`)
