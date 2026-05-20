@@ -222,8 +222,8 @@ export async function GET(request: NextRequest, { params }: Params) {
         battleTags[pp.id] = pp.pugBattleTag ?? null
       }
 
-      // Host name
-      const hostName = lobby.hostUserId ? (nameMap[lobby.hostUserId] ?? null) : null
+      const isBotHost = lobby.hostUserId === -1
+      const hostName = isBotHost ? 'Bot' : lobby.hostUserId ? (nameMap[lobby.hostUserId] ?? null) : null
 
       hostInfo = {
         hostUserId: lobby.hostUserId,
@@ -231,6 +231,16 @@ export async function GET(request: NextRequest, { params }: Params) {
         settingsText,
         battleTags,
       }
+    }
+
+    // Look up linked scrim for completed bot-hosted matches
+    let linkedScrimId: number | null = null
+    if (lobby.status === 'COMPLETED') {
+      const linkedScrim = await prisma.scrim.findUnique({
+        where: { pugLobbyId: lobby.id },
+        select: { id: true },
+      })
+      if (linkedScrim) linkedScrimId = linkedScrim.id
     }
 
     return NextResponse.json({
@@ -247,6 +257,7 @@ export async function GET(request: NextRequest, { params }: Params) {
       approvedRoles,
       regionAllowed,
       hostInfo,
+      linkedScrimId,
     })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })

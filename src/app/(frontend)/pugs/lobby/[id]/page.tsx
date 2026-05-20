@@ -209,7 +209,7 @@ export default function LobbyPage() {
   if (error) return <main className="container mx-auto p-8 text-red-400">{error}</main>
   if (!data) return <main className="container mx-auto p-8 text-gray-500">Loading...</main>
 
-  const { lobby, selectedMap, mapCandidates, heroes, currentUserId, isPugAdmin, guildId, blockedRoles, neededSlots, spotsAvailable, approvedRoles, regionAllowed, hostInfo } = data
+  const { lobby, selectedMap, mapCandidates, heroes, currentUserId, isPugAdmin, guildId, blockedRoles, neededSlots, spotsAvailable, approvedRoles, regionAllowed, hostInfo, linkedScrimId } = data
   const players: Player[] = lobby.players
   const me = players.find((p) => p.userId === currentUserId)
   const inLobby = !!me
@@ -652,6 +652,16 @@ export default function LobbyPage() {
               )}
             </div>
             <TeamsDisplay players={players} currentUserId={currentUserId} heroes={heroes} banState={lobby.banState} />
+            {linkedScrimId && (
+              <div className="text-center">
+                <Link
+                  href={`/scrims/${linkedScrimId}`}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600/15 border border-cyan-500/30 text-cyan-300 rounded-xl hover:bg-cyan-600/25 hover:shadow-lg hover:shadow-cyan-500/10 hover:scale-[1.02] active:scale-[0.98] text-sm font-semibold transition-all duration-200"
+                >
+                  View Match Stats
+                </Link>
+              </div>
+            )}
             {canDispute && isOpposingCaptain && (
               <div className="border border-yellow-900/50 rounded-xl p-4 text-center bg-yellow-950/10">
                 <p className="text-sm text-yellow-400 mb-3">
