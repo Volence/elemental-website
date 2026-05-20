@@ -6,7 +6,7 @@ import './styles.scss'
 type MapData = { id: number; name: string; type: string; settingsEntry?: string }
 type HeroData = { id: number; name: string; role: string }
 
-/** Mode names in the OW2 settings format, keyed by Maps collection type */
+/** Mode names in the OW settings format, keyed by Maps collection type */
 const MODE_BY_MAP_TYPE: Record<string, string> = {
   clash: 'Clash', control: 'Control', escort: 'Escort',
   flashpoint: 'Flashpoint', hybrid: 'Hybrid', push: 'Push',
@@ -185,9 +185,9 @@ export const SettingsGeneratorPanel: React.FC = () => {
 
   return (
     <div className="settings-gen">
-      <h2 className="settings-gen__title">OW2 Settings Generator</h2>
+      <h2 className="settings-gen__title">OW Settings Generator</h2>
       <p className="settings-gen__desc">
-        Select a map and heroes to ban, generate settings, and paste into OW2 Custom Game → Import to verify.
+        Select a map and heroes to ban, generate settings, and paste into OW Custom Game → Import to verify.
       </p>
 
       {error && <p className="settings-gen__error">{error}</p>}
@@ -264,7 +264,7 @@ export const SettingsGeneratorPanel: React.FC = () => {
           <li>Select a map and optionally some hero bans above</li>
           <li>Click &quot;Generate Settings&quot;</li>
           <li>Click &quot;Copy&quot;</li>
-          <li>In OW2: <strong>Play → Custom Game → Create → Settings → Import</strong></li>
+          <li>In OW: <strong>Play → Custom Game → Create → Settings → Import</strong></li>
           <li>Paste and confirm the settings imported correctly</li>
         </ol>
       </div>

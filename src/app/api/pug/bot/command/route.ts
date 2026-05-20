@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
   const auth = await requirePugAdmin(request)
   if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status })
 
-  if (!process.env.OW2_BOT_SERVICE_URL) {
+  if (!process.env.OW_BOT_SERVICE_URL) {
     return NextResponse.json({ error: 'Bot service not configured' }, { status: 503 })
   }
 
@@ -42,11 +42,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Lobby is not bot-hosted' }, { status: 400 })
   }
 
-  const botResponse = await fetch(`${process.env.OW2_BOT_SERVICE_URL}/lobby/${pugLobbyId}/command`, {
+  const botResponse = await fetch(`${process.env.OW_BOT_SERVICE_URL}/lobby/${pugLobbyId}/command`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Bot-Secret': process.env.OW2_BOT_SECRET ?? '',
+      'X-Bot-Secret': process.env.OW_BOT_SECRET ?? '',
     },
     body: JSON.stringify({ command }),
   })

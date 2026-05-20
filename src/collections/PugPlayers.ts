@@ -37,7 +37,7 @@ export const PugPlayers: CollectionConfig = {
       name: 'battleTag',
       type: 'text',
       admin: {
-        description: 'OW2 BattleTag (e.g., Player#1234). Shown to the match host for in-game invites.',
+        description: 'OW BattleTag (e.g., Player#1234). Shown to the match host for in-game invites.',
         placeholder: 'e.g., Player#1234',
       },
     },

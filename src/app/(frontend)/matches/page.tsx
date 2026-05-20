@@ -13,11 +13,11 @@ import { ParticleBackground } from '@/components/ParticleBackground'
 export const dynamic = 'force-dynamic' // Always render dynamically to fetch fresh data
 
 export const metadata: Metadata = {
-  title: 'ELMT Match Schedule & Results - Overwatch 2 Esports | Elemental',
-  description: 'Live scores, upcoming match schedule, and past results for all ELMT Overwatch 2 teams. Follow our FACEIT league progress across Expert, Advanced, and Open divisions.',
+  title: 'ELMT Match Schedule & Results - Overwatch Esports | Elemental',
+  description: 'Live scores, upcoming match schedule, and past results for all ELMT Overwatch teams. Follow our FACEIT league progress across Expert, Advanced, and Open divisions.',
   openGraph: {
-    title: 'ELMT Match Schedule & Results - Overwatch 2 Esports | Elemental',
-    description: 'Live scores, upcoming match schedule, and past results for all ELMT Overwatch 2 teams. Follow our FACEIT league progress across Expert, Advanced, and Open divisions.',
+    title: 'ELMT Match Schedule & Results - Overwatch Esports | Elemental',
+    description: 'Live scores, upcoming match schedule, and past results for all ELMT Overwatch teams. Follow our FACEIT league progress across Expert, Advanced, and Open divisions.',
   },
 }
 

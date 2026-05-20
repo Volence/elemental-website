@@ -14,7 +14,7 @@ type BotStatus = (typeof BOT_STATUSES)[number]
 
 function validateBotSecret(request: NextRequest): boolean {
   const secret = request.headers.get('x-bot-secret')
-  return !!secret && secret === process.env.OW2_BOT_SECRET
+  return !!secret && secret === process.env.OW_BOT_SECRET
 }
 
 export async function POST(request: NextRequest) {

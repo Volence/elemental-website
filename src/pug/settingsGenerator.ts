@@ -1,15 +1,15 @@
 /**
- * OW2 Custom Game Settings Generator for PUG matches.
+ * OW Custom Game Settings Generator for PUG matches.
  *
  * Takes the base competitive settings template and dynamically injects:
  * - The voted map (only that map enabled, all others empty)
  * - Hero bans (via the `disabled heroes` block)
  *
- * Output is the full OW2 settings text block that the host pastes into
+ * Output is the full OW settings text block that the host pastes into
  * Custom Game > Settings > Import.
  *
- * Samoa, Colosseo, and Esperanca have duplicate entries in OW2's internal
- * Map enum (confirmed OW2 bug). They can't be referenced in enabled maps,
+ * Samoa, Colosseo, and Esperanca have duplicate entries in OW's internal
+ * Map enum (confirmed OW bug). They can't be referenced in enabled maps,
  * so we use disabled maps to exclude everything else instead.
  */
 
@@ -43,12 +43,12 @@ const MODE_SETTINGS: Record<string, string[]> = {
 
 const ALL_MODES = ['Clash', 'Control', 'Escort', 'Flashpoint', 'Hybrid', 'Push']
 
-// OW2 map variants not in our DB that need to be disabled
+// OW map variants not in our DB that need to be disabled
 const VARIANT_MAPS: Record<string, string[]> = {
   Control: ['Lijiang Tower Lunar New Year'],
 }
 
-// Maps with duplicate OW2 enum entries that can't be used in enabled/disabled maps
+// Maps with duplicate OW enum entries that can't be used in enabled/disabled maps
 const BROKEN_MAP_NAMES = ['Samoa', 'Colosseo', 'Esperança']
 
 export function generateSettings(input: SettingsInput): string {

@@ -21,7 +21,7 @@ const VALID_MAP_TYPES = new Set([
  * Checks multiple signatures unique to dkeeh's workshop code output:
  *  1. A meaningful percentage of lines have recognized event types
  *  2. A match_start event exists with the correct column count
- *  3. The map_type field is a real OW2 game mode
+ *  3. The map_type field is a real OW game mode
  *  4. player_stat events exist (always present in valid logs)
  *
  * @returns null if valid, or a human-readable error string if invalid
@@ -74,7 +74,7 @@ export function validateScrimLog(fileContent: string): string | null {
     }
   }
 
-  // 4. Validate map_type is a real OW2 game mode
+  // 4. Validate map_type is a real OW game mode
   const mapType = matchStarts[0][3]?.trim()
   if (mapType && !VALID_MAP_TYPES.has(mapType)) {
     return (

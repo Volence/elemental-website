@@ -9,7 +9,7 @@ import type { ParserData } from '@/lib/scrim-parser/types'
 
 function validateBotSecret(request: NextRequest): boolean {
   const secret = request.headers.get('x-bot-secret')
-  return !!secret && secret === process.env.OW2_BOT_SECRET
+  return !!secret && secret === process.env.OW_BOT_SECRET
 }
 
 export async function POST(request: NextRequest) {

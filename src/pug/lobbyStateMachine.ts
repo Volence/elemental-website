@@ -720,7 +720,7 @@ async function advanceToInProgress(lobbyId: number): Promise<void> {
 
   // Attempt automated lobby creation via bot service
   let botHosting = false
-  if (process.env.OW2_BOT_SERVICE_URL) {
+  if (process.env.OW_BOT_SERVICE_URL) {
     try {
       const battleTags: Record<number, string> = {}
       for (const u of allUsers.docs as any[]) {
@@ -790,11 +790,11 @@ async function advanceToInProgress(lobbyId: number): Promise<void> {
         })
       }
 
-      const botResponse = await fetch(`${process.env.OW2_BOT_SERVICE_URL}/lobby/create`, {
+      const botResponse = await fetch(`${process.env.OW_BOT_SERVICE_URL}/lobby/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Bot-Secret': process.env.OW2_BOT_SECRET ?? '',
+          'X-Bot-Secret': process.env.OW_BOT_SECRET ?? '',
         },
         body: JSON.stringify({
           pugLobbyId: lobbyId,
