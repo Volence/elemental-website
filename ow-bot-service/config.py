@@ -11,7 +11,10 @@ class BattleNetAccount(BaseSettings):
 
 
 class Settings(BaseSettings):
-    model_config = {"env_prefix": "OW_BOT_"}
+    model_config = {
+        "env_prefix": "OW_BOT_",
+        "env_file": Path(__file__).parent / ".env",
+    }
 
     web_app_url: str = "https://elmt.gg"
     web_app_secret: str = ""
