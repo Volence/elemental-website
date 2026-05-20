@@ -47,8 +47,6 @@ const HUMAN_MODE_SETTINGS: Record<string, string[]> = {
 
 const BOT_MODE_SETTINGS: Record<string, string[]> = {
   Clash: ['\t\t\tCapture Speed Modifier: 45%'],
-  Control: ['\t\t\tScore To Win: 3'],
-  Flashpoint: ['\t\t\tScore To Win: 5'],
 }
 
 const ALL_MODES = ['Clash', 'Control', 'Escort', 'Flashpoint', 'Hybrid', 'Push']
@@ -242,13 +240,23 @@ function generateBotSettings(input: SettingsInput): string {
   lines.push('\t}')
   lines.push(...buildHeroesBlock(bannedHeroes))
 
-  // Workshop settings block — hardcoded values for bot-hosted PUGs
+  // Workshop settings block — hardcoded values for bot-hosted PUGs.
+  // ScrimTime defaults are tuned for scrims (full map play, etc).
+  // We override to match competitive rules for PUGs.
   lines.push('')
   lines.push('\tworkshop')
   lines.push('\t{')
   lines.push('\t\tControl Point Progress Increment: 33.300')
   lines.push('\t\tEnable Debug Mode: On')
   lines.push('\t\tAutomatically End Match Time: 2700')
+  lines.push(
+    '\t\tEnd Assault, Escort and Hybrid Maps After Two Rounds: [2]',
+  )
+  lines.push('\t\tEnd Control Maps After Three Rounds: Off')
+  lines.push('\t\tEnd Flashpoint Maps After Five Captures: Off')
+  lines.push(
+    '\t\tEnsure Full Map is Attacked on Round 2 for Assault, Escort and Hybrid Maps: Off',
+  )
   lines.push('\t\tPayload Progress Increment: 10.000')
   lines.push('\t}')
 
