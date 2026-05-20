@@ -190,6 +190,17 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    // Warm up an OW instance if the bot service is configured
+    if (process.env.OW2_BOT_SERVICE_URL) {
+      fetch(`${process.env.OW2_BOT_SERVICE_URL}/instance/warmup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Bot-Secret': process.env.OW2_BOT_SECRET ?? '',
+        },
+      }).catch(() => {})
+    }
+
     await processQueue(tier, region)
 
     const placed = await prisma.pugLobbyPlayer.findFirst({
