@@ -1464,6 +1464,148 @@ function RequeueButton({ lobby, me }: { lobby: any; me: Player }) {
   )
 }
 
+// ── Bot Hosting Panel ──
+
+const BOT_STATUS_DISPLAY: Record<string, { label: string; color: string; pulse?: boolean }> = {
+  creating: { label: 'Creating Lobby', color: 'text-cyan-400', pulse: true },
+  lobby_created: { label: 'Lobby Created', color: 'text-cyan-400' },
+  invites_sent: { label: 'Invites Sent', color: 'text-blue-400' },
+  players_joining: { label: 'Players Joining', color: 'text-blue-400', pulse: true },
+  game_started: { label: 'Game In Progress', color: 'text-green-400' },
+  game_ended: { label: 'Game Ended', color: 'text-gray-400' },
+  error: { label: 'Error', color: 'text-red-400' },
+}
+
+function BotHostingPanel({
+  lobby, isPugAdmin, selectedMap, bannedHeroObjects, myTeam,
+}: {
+  lobby: any
+  isPugAdmin: boolean
+  selectedMap: LobbyData['selectedMap']
+  bannedHeroObjects: Hero[]
+  myTeam: number | null
+}) {
+  const [cmdLoading, setCmdLoading] = useState<string | null>(null)
+  const [cmdError, setCmdError] = useState<string | null>(null)
+
+  const botStatus = (lobby.botStatus as string) ?? 'creating'
+  const statusInfo = BOT_STATUS_DISPLAY[botStatus] ?? { label: botStatus, color: 'text-gray-400' }
+
+  async function sendBotCommand(command: string) {
+    setCmdLoading(command)
+    setCmdError(null)
+    try {
+      const res = await fetch('/api/pug/bot/command', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pugLobbyId: lobby.id, command }),
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        setCmdError(data.error ?? 'Command failed')
+      }
+    } catch {
+      setCmdError('Failed to send command')
+    } finally {
+      setCmdLoading(null)
+    }
+  }
+
+  const gameActive = ['game_started', 'players_joining'].includes(botStatus)
+
+  return (
+    <div className="border border-cyan-800/60 bg-cyan-950/15 rounded-lg overflow-hidden">
+      <div className="px-4 py-3 bg-cyan-950/30 border-b border-cyan-800/40">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-base">🤖</span>
+            <h3 className="text-sm font-bold text-cyan-300 uppercase tracking-wider">Automated Lobby</h3>
+          </div>
+          <div className="flex items-center gap-2">
+            {statusInfo.pulse && (
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500" />
+              </span>
+            )}
+            <span className={`text-xs font-semibold ${statusInfo.color}`}>{statusInfo.label}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-4 space-y-3">
+        <p className="text-sm text-gray-400">
+          {botStatus === 'creating' && 'The bot is creating the in-game lobby and importing settings...'}
+          {botStatus === 'lobby_created' && 'Lobby created! Sending invites to all players...'}
+          {botStatus === 'invites_sent' && 'Invites sent! Join the game when you receive your invite in Overwatch.'}
+          {botStatus === 'players_joining' && 'Players are joining the lobby. Get ready!'}
+          {botStatus === 'game_started' && 'The match is live! Good luck, have fun.'}
+          {botStatus === 'game_ended' && 'Match complete. Results are being processed...'}
+          {botStatus === 'error' && 'Automated setup failed. A manual host is needed.'}
+        </p>
+
+        <div className="flex flex-wrap gap-3">
+          {myTeam && (
+            <span className={`text-xs px-2.5 py-1 rounded border font-medium ${
+              myTeam === 1 ? 'bg-blue-950/40 border-blue-800 text-blue-300' : 'bg-orange-950/40 border-orange-800 text-orange-300'
+            }`}>
+              Your team: Team {myTeam}
+            </span>
+          )}
+          {selectedMap && (
+            <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded border border-gray-700 text-gray-300">
+              {selectedMap.imageUrl && <img src={selectedMap.imageUrl} alt="" className="w-5 h-5 rounded object-cover" />}
+              Map: {selectedMap.name}
+            </span>
+          )}
+        </div>
+
+        {bannedHeroObjects.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-gray-500 shrink-0">Bans:</span>
+            {bannedHeroObjects.map((h) => (
+              <span key={h.id} className="inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded bg-red-950/60 border border-red-900 text-red-400">
+                {h.imageUrl && <img src={h.imageUrl} alt="" className="w-5 h-5 rounded-full object-cover" />}
+                {h.name}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {isPugAdmin && gameActive && (
+          <div className="border-t border-cyan-800/30 pt-3 mt-3">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Admin Controls</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => sendBotCommand('pause')}
+                disabled={cmdLoading !== null}
+                className="px-3 py-1.5 text-xs font-medium bg-yellow-600/15 border border-yellow-500/30 text-yellow-300 rounded-lg hover:bg-yellow-600/25 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                {cmdLoading === 'pause' ? 'Sending...' : 'Pause'}
+              </button>
+              <button
+                onClick={() => sendBotCommand('unpause')}
+                disabled={cmdLoading !== null}
+                className="px-3 py-1.5 text-xs font-medium bg-green-600/15 border border-green-500/30 text-green-300 rounded-lg hover:bg-green-600/25 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                {cmdLoading === 'unpause' ? 'Sending...' : 'Unpause'}
+              </button>
+              <button
+                onClick={() => sendBotCommand('end_game')}
+                disabled={cmdLoading !== null}
+                className="px-3 py-1.5 text-xs font-medium bg-red-600/15 border border-red-500/30 text-red-300 rounded-lg hover:bg-red-600/25 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                {cmdLoading === 'end_game' ? 'Sending...' : 'End Game'}
+              </button>
+            </div>
+            {cmdError && <p className="text-xs text-red-400 mt-2">{cmdError}</p>}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ── Lobby Setup Assistant ──
 
 function LobbySetupAssistant({
@@ -1482,6 +1624,7 @@ function LobbySetupAssistant({
 
   const isHost = hostInfo.hostUserId === currentUserId
   const hasHost = hostInfo.hostUserId !== null
+  const isBotHosting = hostInfo.hostUserId === -1
   const isPlayer = players.some((p) => p.userId === currentUserId)
 
   // Get banned hero names from banState
@@ -1494,6 +1637,19 @@ function LobbySetupAssistant({
   const team1 = players.filter((p) => p.team === 1)
   const team2 = players.filter((p) => p.team === 2)
   const myTeam = players.find((p) => p.userId === currentUserId)?.team
+
+  // Bot is hosting — show automated status
+  if (isBotHosting) {
+    return (
+      <BotHostingPanel
+        lobby={lobby}
+        isPugAdmin={isPugAdmin}
+        selectedMap={selectedMap}
+        bannedHeroObjects={bannedHeroObjects}
+        myTeam={myTeam ?? null}
+      />
+    )
+  }
 
   // No host yet — show volunteer button
   if (!hasHost) {

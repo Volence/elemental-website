@@ -4,6 +4,8 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { parseScrimLog, validateScrimLog } from '@/lib/scrim-parser/parser'
 import { createScrimFromParsedData } from '@/lib/scrim-parser/storage'
+import { completeMatch } from '@/pug/lobbyStateMachine'
+import type { ParserData } from '@/lib/scrim-parser/types'
 
 function validateBotSecret(request: NextRequest): boolean {
   const secret = request.headers.get('x-bot-secret')
@@ -80,10 +82,31 @@ export async function POST(request: NextRequest) {
       data: { pugLobbyId },
     })
 
+    // Auto-complete the match using scores from the log
+    let matchResult: 'team1' | 'team2' | 'draw' | null = null
+    const matchEnd = (parsedData as ParserData).match_end
+    if (matchEnd && matchEnd.length > 0) {
+      const lastEnd = matchEnd[matchEnd.length - 1]
+      const t1Score = lastEnd[3]
+      const t2Score = lastEnd[4]
+      if (t1Score > t2Score) matchResult = 'team1'
+      else if (t2Score > t1Score) matchResult = 'team2'
+      else matchResult = 'draw'
+    }
+
+    if (matchResult && lobby.status === 'IN_PROGRESS') {
+      try {
+        await completeMatch(pugLobbyId, matchResult)
+      } catch (err) {
+        console.error(`[PUG Bot] Auto-complete failed for lobby ${pugLobbyId}:`, err)
+      }
+    }
+
     return NextResponse.json({
       ok: true,
       scrimId: result.scrim.id,
       mapsProcessed: result.maps.length,
+      autoResult: matchResult,
     })
   } catch (err) {
     console.error(`[PUG Bot] Failed to process stats for lobby ${pugLobbyId}:`, err)

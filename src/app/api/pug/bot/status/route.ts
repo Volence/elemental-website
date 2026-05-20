@@ -48,11 +48,6 @@ export async function POST(request: NextRequest) {
     },
   })
 
-  if (status === 'game_ended') {
-    // Bot reports game ended — auto result reporting will be handled
-    // by the stats endpoint when log data arrives
-  }
-
   if (status === 'error') {
     console.error(`[PUG Bot] Lobby ${pugLobbyId} error: ${errorMsg}`)
     await prisma.pugLobby.update({
