@@ -727,7 +727,7 @@ async function advanceToInProgress(lobbyId: number): Promise<void> {
         if (u.pugBattleTag) battleTags[u.id] = u.pugBattleTag
       }
 
-      const { generateSettings } = await import('./settingsGenerator')
+      const { generateFullCode } = await import('./settingsGenerator')
       const payloadInst2 = await getPayload({ config: configPromise })
 
       // Resolve map and bans for settings generation
@@ -781,7 +781,7 @@ async function advanceToInProgress(lobbyId: number): Promise<void> {
           }
         }
 
-        settingsText = generateSettings({
+        settingsText = generateFullCode({
           mapSettingsEntry: selectedMap.settingsEntry ?? selectedMap.name ?? null,
           mapType: selectedMap.type ?? 'control',
           bannedHeroes: bannedHeroNames,

@@ -4,18 +4,14 @@ from automation.actions import press_key
 
 log = logging.getLogger("ow-bot.workshop.admin")
 
-# Phase 2: Workshop admin commands via host spectator key presses
-# The bot sits as the host spectator. OW Workshop detects button presses
-# via Is Button Held(Host Player, Button).
+# Workshop admin commands via host spectator key presses.
+# The bot sits as the host spectator. The Workshop rules in the generated
+# code blob (src/pug/workshopTemplate.ts) detect button presses via
+# Is Button Held(Host Player, Button).
 #
-# Key mapping:
-#   E (Interact)      → pause/unpause toggle
-#   Q (Ability 1)     → end game
-#   Shift (Sec. Fire) → spare
-#   Ctrl (Pri. Fire)  → spare
-#   Left Click (Ab.2) → spare
-#   B (Jump)          → spare
-#   Z (Ultimate)      → spare
+# Key mapping (must match ELMT Admin rules in workshopTemplate.ts):
+#   E (Interact)  → pause/unpause toggle
+#   Q (Ability 1) → end game
 
 COMMAND_KEYS = {
     "pause": "e",
