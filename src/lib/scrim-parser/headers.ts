@@ -4,6 +4,19 @@
  * Ported from parsertime (MIT license).
  */
 export const headers: Record<string, string[]> = {
+  ability_1_used: [
+    'event_type', 'Match Time', 'Player Team', 'Player Name',
+    'Player Hero', 'Hero Duplicated',
+  ],
+  ability_2_used: [
+    'event_type', 'Match Time', 'Player Team', 'Player Name',
+    'Player Hero', 'Hero Duplicated',
+  ],
+  damage: [
+    'event_type', 'Match Time', 'Attacker Team', 'Attacker Name',
+    'Attacker Hero', 'Victim Team', 'Victim Name', 'Victim Hero',
+    'Event Ability', 'Event Damage', 'Is Critical Hit', 'Is Environmental',
+  ],
   defensive_assist: [
     'event_type', 'Match Time', 'Player Team', 'Player Name',
     'Player Hero', 'Hero Duplicated',
@@ -19,6 +32,11 @@ export const headers: Record<string, string[]> = {
   echo_duplicate_start: [
     'event_type', 'Match Time', 'Player Team', 'Player Name',
     'Player Hero', 'Hero Duplicated', 'Ultimate ID',
+  ],
+  healing: [
+    'event_type', 'Match Time', 'Healer Team', 'Healer Name',
+    'Healer Hero', 'Healee Team', 'Healee Name', 'Healee Hero',
+    'Event Ability', 'Event Healing', 'Is Health Pack',
   ],
   hero_spawn: [
     'event_type', 'Match Time', 'Player Team', 'Player Name',
