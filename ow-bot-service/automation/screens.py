@@ -1,158 +1,175 @@
 import logging
 import time
 from enum import Enum
-from pathlib import Path
 
+import numpy as np
 import pyautogui
 from PIL import Image
 
 log = logging.getLogger("ow-bot.screens")
 
-TEMPLATES_DIR = Path(__file__).parent / "templates"
+_reader = None
+
+
+def _get_reader():
+    global _reader
+    if _reader is None:
+        import easyocr
+        _reader = easyocr.Reader(["en"], gpu=True)
+        log.info("OCR reader initialized")
+    return _reader
 
 
 class Screen(Enum):
-    """Known OW screen states, ordered roughly by menu depth."""
     UNKNOWN = "unknown"
     LOGIN = "login"
     MAIN_MENU = "main_menu"
-    PLAY_MENU = "play_menu"       # After clicking PLAY, before MORE
-    CUSTOM_GAMES = "custom_games" # Custom Games browser (has +CREATE)
-    LOBBY = "lobby"               # Custom game lobby (has SETTINGS, START)
-    SETTINGS = "settings"         # Settings panel inside lobby
+    PLAY_MENU = "play_menu"
+    CUSTOM_GAMES = "custom_games"
+    LOBBY = "lobby"
+    SETTINGS = "settings"
     IN_GAME = "in_game"
     MATCH_END = "match_end"
 
 
-# Maps Screen → the template that uniquely identifies it.
-# Order matters: more specific screens are checked first so we don't
-# mistake a deeper screen for a shallower one (e.g. lobby has the same
-# top bar as custom_games, but lobby also has the settings button).
-_SCREEN_SIGNATURES: list[tuple[Screen, str, float]] = [
-    # (screen, template, confidence)
-    (Screen.SETTINGS,     "settings_import_button.png", 0.7),  # Only visible in settings panel with clipboard
-    (Screen.SETTINGS,     "lobby_settings_button.png",  0.7),  # Fallback — if we see BACK + tiles, it's settings
-    (Screen.LOBBY,        "lobby_start_button.png",     0.7),
-    (Screen.LOBBY,        "lobby_settings_button.png",  0.8),
-    (Screen.CUSTOM_GAMES, "custom_game_create_button.png", 0.8),
-    (Screen.PLAY_MENU,    "custom_game_more_button.png", 0.8),
-    (Screen.MAIN_MENU,    "main_menu_play_button.png",  0.8),
-    # (Screen.LOGIN,      "battlenet_login_email.png",  0.8),  # TODO: capture template
-    # (Screen.MATCH_END,  "match_end_screen.png",       0.8),  # TODO: capture template
+# (Screen, required_texts, forbidden_texts)
+# Checked in order — first match wins. Most specific first.
+_SCREEN_SIGNATURES: list[tuple[Screen, list[str], list[str]]] = [
+    (Screen.SETTINGS,     ["IMPORT"],   []),
+    (Screen.LOBBY,        ["START"],    ["IMPORT"]),
+    (Screen.CUSTOM_GAMES, ["CREATE"],   ["START"]),
+    (Screen.PLAY_MENU,    ["CUSTOM"],   ["CREATE"]),
+    (Screen.MAIN_MENU,    ["PLAY"],     ["CUSTOM", "CREATE", "START"]),
 ]
 
-# How many ESC presses to get from a screen back to main menu.
-# Used by navigate_to() to "back out" before navigating forward.
 _DEPTH: dict[Screen, int] = {
     Screen.MAIN_MENU: 0,
     Screen.PLAY_MENU: 1,
     Screen.CUSTOM_GAMES: 2,
-    Screen.LOBBY: 3,       # ESC from lobby goes to custom games (or exits lobby)
-    Screen.SETTINGS: 4,    # ESC from settings goes to lobby
+    Screen.LOBBY: 3,
+    Screen.SETTINGS: 4,
 }
 
 
 class ScreenDetector:
     def __init__(self, region: tuple[int, int, int, int]):
         self.region = region
+        self._cached_results: list[tuple] = []
 
     def screenshot(self) -> Image.Image:
         return pyautogui.screenshot(region=self.region)
 
-    def locate_template(
+    def scan(self, image: Image.Image | None = None) -> list[tuple]:
+        """Take screenshot and run OCR. Returns [(bbox, text, confidence), ...]."""
+        if image is None:
+            image = self.screenshot()
+        self._cached_results = _get_reader().readtext(np.array(image))
+        return self._cached_results
+
+    def find_text(
         self,
-        template_name: str,
-        confidence: float = 0.8,
+        label: str,
+        confidence: float = 0.4,
+        rescan: bool = True,
         retries: int = 1,
     ) -> tuple[int, int] | None:
-        template_path = TEMPLATES_DIR / template_name
-        if not template_path.exists():
-            log.warning("Template not found on disk: %s", template_path)
-            return None
+        """Find text on screen, return center (x, y) in screen coords."""
+        label_upper = label.upper()
         for attempt in range(retries):
-            try:
-                location = pyautogui.locateOnScreen(
-                    str(template_path),
-                    region=self.region,
-                    confidence=confidence,
-                )
-                if location:
-                    center = pyautogui.center(location)
-                    return (center.x, center.y)
-            except pyautogui.ImageNotFoundException:
-                pass
-            except Exception as e:
-                if attempt == retries - 1:
-                    log.warning("Error locating %s: %s", template_name, e)
+            if rescan or not self._cached_results:
+                self.scan()
+            for bbox, text, conf in self._cached_results:
+                if conf < confidence:
+                    continue
+                if label_upper in text.upper():
+                    x1, y1 = bbox[0]
+                    x2, y2 = bbox[2]
+                    cx = int((x1 + x2) / 2) + self.region[0]
+                    cy = int((y1 + y2) / 2) + self.region[1]
+                    log.debug("find_text(%r): (%d,%d) conf=%.2f", label, cx, cy, conf)
+                    return (cx, cy)
             if attempt < retries - 1:
                 time.sleep(0.5)
         return None
 
-    def pixel_color_at(self, x: int, y: int) -> tuple[int, int, int]:
-        screenshot = self.screenshot()
-        rel_x = x - self.region[0]
-        rel_y = y - self.region[1]
-        return screenshot.getpixel((rel_x, rel_y))[:3]
+    def find_all_text(
+        self, confidence: float = 0.3, rescan: bool = True,
+    ) -> list[tuple[str, tuple[int, int], float]]:
+        """Return all detected text with screen-coordinate positions."""
+        if rescan or not self._cached_results:
+            self.scan()
+        found = []
+        for bbox, text, conf in self._cached_results:
+            if conf < confidence:
+                continue
+            x1, y1 = bbox[0]
+            x2, y2 = bbox[2]
+            cx = int((x1 + x2) / 2) + self.region[0]
+            cy = int((y1 + y2) / 2) + self.region[1]
+            found.append((text, (cx, cy), conf))
+        return found
 
-    # ── Screen detection ──
+    def _texts_contain(self, label: str, texts: list[str]) -> bool:
+        upper = label.upper()
+        return any(upper in t.upper() for t in texts)
 
     def detect_screen(self) -> Screen:
-        """Identify which screen OW is currently showing.
-
-        Checks templates from most-specific to least-specific.  The first
-        match wins.  Returns Screen.UNKNOWN if nothing matches (OW may be
-        in a transition, loading, or crashed).
-        """
-        seen: set[Screen] = set()
-        for screen, template, confidence in _SCREEN_SIGNATURES:
-            if screen in seen:
-                continue  # Already matched a more-specific sig for this screen
-            if self.locate_template(template, confidence=confidence):
-                log.debug("detect_screen: matched %s via %s", screen.value, template)
-                return screen
-            seen.add(screen)
-
-        log.warning("detect_screen: no known screen detected")
+        """Identify which OW screen is showing via OCR."""
+        self.scan()
+        texts = [text for _, text, conf in self._cached_results if conf > 0.3]
+        log.debug("detect_screen texts: %s", texts)
+        for screen, required, forbidden in _SCREEN_SIGNATURES:
+            if all(self._texts_contain(r, texts) for r in required):
+                if not any(self._texts_contain(f, texts) for f in forbidden):
+                    log.debug("detect_screen: %s", screen.value)
+                    return screen
+        log.warning("detect_screen: no match (texts: %s)", texts)
         return Screen.UNKNOWN
 
     def wait_for_screen(
-        self,
-        target: Screen,
-        timeout: float = 10.0,
-        poll: float = 1.0,
+        self, target: Screen, timeout: float = 10.0, poll: float = 1.0,
     ) -> bool:
-        """Block until the screen matches *target* or timeout expires."""
         elapsed = 0.0
         while elapsed < timeout:
             if self.detect_screen() == target:
                 return True
             time.sleep(poll)
             elapsed += poll
-        log.warning("wait_for_screen: timed out waiting for %s", target.value)
+        log.warning("wait_for_screen: timed out for %s", target.value)
         return False
 
-    # ── Convenience checks (kept for backward compat) ──
+    def wait_for_text(
+        self, label: str, timeout: float = 10.0, poll: float = 1.0,
+    ) -> tuple[int, int] | None:
+        """Block until text appears on screen. Returns position or None."""
+        elapsed = 0.0
+        while elapsed < timeout:
+            pos = self.find_text(label)
+            if pos:
+                return pos
+            time.sleep(poll)
+            elapsed += poll
+        log.warning("wait_for_text: timed out for %r", label)
+        return None
 
     def is_at_main_menu(self) -> bool:
-        return self.locate_template("main_menu_play_button.png") is not None
+        return self.detect_screen() == Screen.MAIN_MENU
 
     def is_at_custom_game(self) -> bool:
-        return self.locate_template("custom_game_create_button.png") is not None
+        return self.detect_screen() == Screen.CUSTOM_GAMES
 
     def is_at_lobby(self) -> bool:
-        return self.locate_template("lobby_settings_button.png") is not None
+        return self.detect_screen() == Screen.LOBBY
 
     def is_at_login_screen(self) -> bool:
-        return self.locate_template("battlenet_login_email.png") is not None
+        return self.find_text("LOG IN") is not None
 
     def get_player_count(self) -> int | None:
-        # TODO: implement OCR or template matching for player count display
         return None
 
     def is_match_ended(self) -> bool:
-        return self.locate_template("match_end_screen.png") is not None
+        return self.detect_screen() == Screen.MATCH_END
 
 
 def get_depth(screen: Screen) -> int:
-    """Return the menu depth of a screen, or -1 for unmapped screens."""
     return _DEPTH.get(screen, -1)
