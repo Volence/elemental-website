@@ -76,9 +76,8 @@ class OWInstance:
         self,
         pug_lobby_id: int,
         lobby_number: int,
-        settings_text: str | None,
+        full_code: str,
         players: list[tuple[int, str | None, int]],
-        workshop_code: str,
     ) -> bool:
         if self.state != InstanceState.READY:
             return False
@@ -90,12 +89,24 @@ class OWInstance:
             from automation.controller import LobbyController
 
             controller = LobbyController(self)
-            await controller.create_and_configure(settings_text, workshop_code)
-            await controller.invite_players(players)
+            await controller.create_and_configure(full_code)
+            invite_result = await controller.invite_players(players)
+
+            if invite_result.joined < invite_result.total - len(invite_result.missing_tags):
+                log.warning(
+                    "[%s] Not all players joined: %d/%d (timed_out=%d, failed=%d)",
+                    self.id, invite_result.joined, invite_result.total,
+                    len(invite_result.timed_out), len(invite_result.failed_invites),
+                )
+                # Still start the game — the web app decides whether to cancel
+                # based on Workshop events and its own join tracking.
+
+            await controller.start_game()
             self.state = InstanceState.WAITING_FOR_PLAYERS
             return True
         except Exception as e:
-            log.error("[%s] Lobby creation failed: %s", self.id, e)
+            # NavigationError is a subclass of Exception, caught here too
+            log.error("[%s] Lobby creation failed: %s: %s", self.id, type(e).__name__, e)
             self.state = InstanceState.ERROR
             return False
 
@@ -137,6 +148,21 @@ class OWInstance:
         await self._close_ow()
         self.pug_lobby_id = None
         self.state = InstanceState.AVAILABLE
+
+    def check_health(self) -> tuple[str, bool]:
+        """Poll OW screen state. Returns (screen_name, is_healthy).
+
+        Healthy means the screen is any known navigable state.
+        Returns (state_name, True) for instances not running OW.
+        """
+        if self.state in (InstanceState.AVAILABLE, InstanceState.ERROR):
+            return (self.state.value, self.state != InstanceState.ERROR)
+
+        from automation.controller import LobbyController
+
+        controller = LobbyController(self)
+        screen, healthy = controller.check_health()
+        return (screen.value, healthy)
 
     async def recover(self):
         log.info("[%s] Recovering from error state", self.id)

@@ -13,7 +13,7 @@ rule("ELMT Admin: Pause/Unpause — Host presses Interact")
 
 \tconditions
 \t{
-\t\tIs Button Held(Host Player, Interact) == True;
+\t\tIs Button Held(Host Player, Button(Interact)) == True;
 \t}
 
 \tactions
@@ -42,7 +42,7 @@ rule("ELMT Admin: End Game — Host presses Ability 1")
 
 \tconditions
 \t{
-\t\tIs Button Held(Host Player, Ability 1) == True;
+\t\tIs Button Held(Host Player, Button(Ability 1)) == True;
 \t}
 
 \tactions
@@ -108,9 +108,10 @@ export function getWorkshopTemplate(): string {
   const afterSettings = lines.slice(settingsEnd).join('\n').trim()
 
   // Inject admin variable into the global variables block
+  // Position tracking vars (70-72) were removed; ELMT_IsPaused goes at slot 70
   const withAdminVar = afterSettings.replace(
-    '\t\t72: ELMT_MovementThreshold',
-    '\t\t72: ELMT_MovementThreshold\n\t\t73: ELMT_IsPaused',
+    '\t\t69: Logs_PlayerSummaryCount',
+    '\t\t69: Logs_PlayerSummaryCount\n\t\t70: ELMT_IsPaused',
   )
 
   _cached = withAdminVar + '\n' + ADMIN_RULES

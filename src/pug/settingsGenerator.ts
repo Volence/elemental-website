@@ -194,7 +194,7 @@ function generateBotSettings(input: SettingsInput): string {
   lines.push('\tmain')
   lines.push('\t{')
   lines.push(
-    '\t\tDescription: "ELMT PUG — ScrimTime + Position Tracking + Admin Controls\\nPowered by elmt.gg"',
+    '\t\tDescription: "ELMT PUG — ScrimTime + Admin Controls\\nPowered by elmt.gg"',
   )
   lines.push('\t\tMode Name: "ELMT PUG"')
   lines.push('\t}')
@@ -205,7 +205,7 @@ function generateBotSettings(input: SettingsInput): string {
   lines.push('\t\tData Center Preference: USA - Central')
   lines.push('\t\tMap Rotation: After A Game')
   lines.push('\t\tMax Spectators: 12')
-  lines.push('\t\tPause Game On Player Disconnect: Yes')
+  lines.push('\t\tPause Game On Player Disconnect: No')
   lines.push('\t\tReturn To Lobby: After A Game')
   lines.push('\t}')
   lines.push('')

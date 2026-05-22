@@ -7,7 +7,7 @@ import pyperclip
 
 log = logging.getLogger("ow-bot.actions")
 
-pyautogui.FAILSAFE = True
+pyautogui.FAILSAFE = False  # Disabled: bot runs headless via scheduled task, mouse starts at (0,0)
 pyautogui.PAUSE = 0.05
 
 

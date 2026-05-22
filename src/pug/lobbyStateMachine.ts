@@ -799,13 +799,12 @@ async function advanceToInProgress(lobbyId: number): Promise<void> {
         body: JSON.stringify({
           pugLobbyId: lobbyId,
           lobbyNumber: lobby.lobbyNumber,
-          settingsText,
+          fullCode: settingsText,
           players: players.map((p) => ({
             userId: p.userId,
             battleTag: battleTags[p.userId] ?? null,
             team: p.team,
           })),
-          workshopCode: 'F6WTA',
         }),
       })
 

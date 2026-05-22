@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from config import settings
@@ -11,6 +12,8 @@ log = logging.getLogger("ow-bot.manager")
 class InstanceManager:
     def __init__(self):
         self.instances: list[OWInstance] = []
+        self._watchdog_task: asyncio.Task | None = None
+        self._watchdog_failures: dict[str, int] = {}  # instance_id → consecutive failures
 
     async def start(self):
         for i, acct_cfg in enumerate(settings.accounts):
@@ -23,8 +26,10 @@ class InstanceManager:
             instance = OWInstance(id=f"inst-{i}", account=account)
             self.instances.append(instance)
             log.info("Registered instance %s for %s", instance.id, account.email)
+        self._start_watchdog()
 
     async def shutdown(self):
+        self._stop_watchdog()
         for inst in self.instances:
             await inst.force_close()
         log.info("All instances shut down")
@@ -55,9 +60,8 @@ class InstanceManager:
         self,
         pug_lobby_id: int,
         lobby_number: int,
-        settings_text: str | None,
+        full_code: str,
         players: list[tuple[int, str | None, int]],
-        workshop_code: str,
     ) -> OWInstance | None:
         instance = self._first_warm() or self._first_available()
         if not instance:
@@ -69,7 +73,7 @@ class InstanceManager:
                 return None
 
         success = await instance.create_lobby(
-            pug_lobby_id, lobby_number, settings_text, players, workshop_code,
+            pug_lobby_id, lobby_number, full_code, players,
         )
         if not success:
             await callback_client.report_status(pug_lobby_id, "error", error="Lobby creation failed")
@@ -109,6 +113,70 @@ class InstanceManager:
         inst.on_game_ended()
         others_active = self._other_instances_active(inst.id)
         await inst.cleanup(others_active, settings.idle_shutdown_seconds)
+
+    # ── Watchdog ───────────────────────────────────────────────────────
+
+    def _start_watchdog(self):
+        if self._watchdog_task and not self._watchdog_task.done():
+            return
+        self._watchdog_task = asyncio.create_task(self._watchdog_loop())
+        log.info("Watchdog started")
+
+    def _stop_watchdog(self):
+        if self._watchdog_task and not self._watchdog_task.done():
+            self._watchdog_task.cancel()
+            self._watchdog_task = None
+            log.info("Watchdog stopped")
+
+    async def _watchdog_loop(self, interval: int = 30, max_failures: int = 3):
+        """Periodically poll active instances for screen health.
+
+        If an instance reports UNKNOWN screen for *max_failures* consecutive
+        checks, trigger automatic recovery (close OW, reset state).
+        """
+        while True:
+            try:
+                await asyncio.sleep(interval)
+                for inst in self.instances:
+                    if not inst.is_in_game and inst.state != InstanceState.READY:
+                        # Not running OW — nothing to watch
+                        self._watchdog_failures.pop(inst.id, None)
+                        continue
+
+                    screen_name, healthy = inst.check_health()
+                    if healthy:
+                        if inst.id in self._watchdog_failures:
+                            log.info(
+                                "[%s] Watchdog: healthy again (screen=%s)",
+                                inst.id, screen_name,
+                            )
+                        self._watchdog_failures.pop(inst.id, None)
+                    else:
+                        count = self._watchdog_failures.get(inst.id, 0) + 1
+                        self._watchdog_failures[inst.id] = count
+                        log.warning(
+                            "[%s] Watchdog: unhealthy screen=%s (failure %d/%d)",
+                            inst.id, screen_name, count, max_failures,
+                        )
+
+                        if count >= max_failures:
+                            log.error(
+                                "[%s] Watchdog: %d consecutive failures — recovering",
+                                inst.id, count,
+                            )
+                            pug_id = inst.pug_lobby_id
+                            await inst.recover()
+                            self._watchdog_failures.pop(inst.id, None)
+                            if pug_id:
+                                await callback_client.report_status(
+                                    pug_id, "error",
+                                    error="Watchdog: instance stuck on unknown screen",
+                                )
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                log.error("Watchdog loop error: %s", e, exc_info=True)
+                await asyncio.sleep(interval)
 
 
 instance_manager = InstanceManager()

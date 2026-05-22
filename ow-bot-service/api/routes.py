@@ -37,9 +37,8 @@ class PlayerInfo(BaseModel):
 class LobbyCreateRequest(BaseModel):
     pugLobbyId: int
     lobbyNumber: int
-    settingsText: str | None = None
+    fullCode: str
     players: list[PlayerInfo]
-    workshopCode: str = "F6WTA"
 
 
 class LobbyCreateResponse(BaseModel):
@@ -97,9 +96,8 @@ async def create_lobby(req: LobbyCreateRequest):
     instance = await instance_manager.create_lobby(
         pug_lobby_id=req.pugLobbyId,
         lobby_number=req.lobbyNumber,
-        settings_text=req.settingsText,
+        full_code=req.fullCode,
         players=[(p.userId, p.battleTag, p.team) for p in req.players],
-        workshop_code=req.workshopCode,
     )
     if not instance:
         raise HTTPException(status_code=503, detail="no_idle_instance")
