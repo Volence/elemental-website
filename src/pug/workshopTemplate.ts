@@ -33,7 +33,7 @@ rule("ELMT Admin: Pause/Unpause — Host presses Interact")
 \t}
 }
 
-rule("ELMT Admin: End Game — Host presses Ability 1")
+rule("ELMT Admin: End Game Draw — Host presses Ability 1")
 {
 \tevent
 \t{
@@ -47,9 +47,51 @@ rule("ELMT Admin: End Game — Host presses Ability 1")
 
 \tactions
 \t{
-\t\tBig Message(All Players(All Teams), Custom String("MATCH ENDING"));
+\t\tBig Message(All Players(All Teams), Custom String("MATCH ENDING — DRAW"));
 \t\tWait(3, Ignore Condition);
 \t\tDeclare Match Draw;
+\t}
+}
+
+rule("ELMT Admin: Team 1 Wins — Host presses Ability 2")
+{
+\tevent
+\t{
+\t\tOngoing - Global;
+\t}
+
+\tconditions
+\t{
+\t\tIs Button Held(Host Player, Button(Ability 2)) == True;
+\t}
+
+\tactions
+\t{
+\t\tBig Message(All Players(All Teams), Custom String("TEAM 1 WINS"));
+\t\tSet Team Score(Team 1, Max(Team Score(Team 1), Add(Team Score(Team 2), 1)));
+\t\tWait(3, Ignore Condition);
+\t\tDeclare Team Victory(Team 1);
+\t}
+}
+
+rule("ELMT Admin: Team 2 Wins — Host presses Ultimate")
+{
+\tevent
+\t{
+\t\tOngoing - Global;
+\t}
+
+\tconditions
+\t{
+\t\tIs Button Held(Host Player, Button(Ultimate)) == True;
+\t}
+
+\tactions
+\t{
+\t\tBig Message(All Players(All Teams), Custom String("TEAM 2 WINS"));
+\t\tSet Team Score(Team 2, Max(Team Score(Team 2), Add(Team Score(Team 1), 1)));
+\t\tWait(3, Ignore Condition);
+\t\tDeclare Team Victory(Team 2);
 \t}
 }
 
