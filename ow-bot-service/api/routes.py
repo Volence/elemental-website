@@ -135,6 +135,15 @@ async def send_command(pug_lobby_id: int, req: CommandRequest):
     return {"ok": True}
 
 
+@router.post("/instance/{instance_id}/recover")
+async def recover_instance(instance_id: str):
+    inst = next((i for i in instance_manager.instances if i.id == instance_id), None)
+    if not inst:
+        raise HTTPException(status_code=404, detail="Instance not found")
+    await inst.recover()
+    return {"ok": True, "state": inst.state.value}
+
+
 @router.get("/instances", response_model=list[InstanceInfo])
 async def list_instances():
     return [

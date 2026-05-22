@@ -34,13 +34,17 @@ class Screen(Enum):
 
 # (Screen, required_texts, forbidden_texts)
 # Checked in order — first match wins. Most specific first.
+# Texts are matched against SHORT OCR results only (<25 chars) to avoid
+# false matches from description text like "Create and join lobbies..."
 _SCREEN_SIGNATURES: list[tuple[Screen, list[str], list[str]]] = [
-    (Screen.SETTINGS,     ["IMPORT"],   []),
-    (Screen.LOBBY,        ["START"],    ["IMPORT"]),
-    (Screen.CUSTOM_GAMES, ["CREATE"],   ["START"]),
-    (Screen.PLAY_MENU,    ["CUSTOM"],   ["CREATE"]),
-    (Screen.MAIN_MENU,    ["PLAY"],     ["CUSTOM", "CREATE", "START"]),
+    (Screen.SETTINGS,     ["PRESETS"],             []),
+    (Screen.LOBBY,        ["START", "INVITE"],      []),
+    (Screen.CUSTOM_GAMES, ["FILTER"],              ["START"]),
+    (Screen.PLAY_MENU,    ["UNRANKED"],            []),
+    (Screen.MAIN_MENU,    ["PLAY", "HEROES"],      ["UNRANKED", "FILTER", "START", "PRESETS"]),
 ]
+
+MAX_TEXT_LEN = 25
 
 _DEPTH: dict[Screen, int] = {
     Screen.MAIN_MENU: 0,
@@ -111,11 +115,17 @@ class ScreenDetector:
 
     def _texts_contain(self, label: str, texts: list[str]) -> bool:
         upper = label.upper()
-        return any(upper in t.upper() for t in texts)
+        return any(upper in t.upper() for t in texts if len(t) <= MAX_TEXT_LEN)
 
-    def detect_screen(self) -> Screen:
-        """Identify which OW screen is showing via OCR."""
-        self.scan()
+    def detect_screen(self, rescan: bool = True) -> Screen:
+        """Identify which OW screen is showing via OCR.
+
+        Args:
+            rescan: Take a fresh screenshot. Set False to reuse the last scan
+                    (useful after find_all_text to avoid a second screenshot).
+        """
+        if rescan or not self._cached_results:
+            self.scan()
         texts = [text for _, text, conf in self._cached_results if conf > 0.3]
         log.debug("detect_screen texts: %s", texts)
         for screen, required, forbidden in _SCREEN_SIGNATURES:

@@ -61,9 +61,11 @@ class OWInstance:
             return False
         self._cancel_idle_timer()
         self.state = InstanceState.WARMING_UP
-        log.info("[%s] Warming up (launching OW)", self.id)
+        log.info("[%s] Warming up via scheduler", self.id)
         try:
-            await self._launch_ow()
+            from automation.scheduler import scheduler
+            future = scheduler.add_warmup(self.id, account=self.account)
+            self.ow_process_id = await future
             self.state = InstanceState.READY
             log.info("[%s] Warm and ready", self.id)
             return True
@@ -113,10 +115,8 @@ class OWInstance:
     async def send_command(self, command: str) -> None:
         if not self.is_in_game:
             raise ValueError(f"Instance {self.id} is not in game (state={self.state.value})")
-        from automation.controller import LobbyController
-
-        controller = LobbyController(self)
-        await controller.send_admin_command(command)
+        from workshop.admin import send_workshop_command
+        send_workshop_command(self.id, command)
 
     def on_players_joining(self, count: int):
         self.players_joined = count

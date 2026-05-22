@@ -16,7 +16,9 @@ def _human_delay(base: float = 0.1, variance: float = 0.05) -> float:
 
 
 async def click(x: int, y: int, delay: float = 0.1):
-    pyautogui.click(x, y)
+    pyautogui.moveTo(x, y, duration=random.uniform(0.08, 0.15))
+    await asyncio.sleep(0.15)
+    pyautogui.click()
     await asyncio.sleep(_human_delay(delay))
 
 
