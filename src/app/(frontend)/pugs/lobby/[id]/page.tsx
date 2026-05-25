@@ -95,6 +95,7 @@ type LobbyData = {
     settingsText: string | null
     battleTags: Record<number, string | null>
   } | null
+  linkedScrimId: number | null
 }
 
 function playNotificationSound() {
