@@ -1,0 +1,25 @@
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# IDE
+.vscode/
+.idea/
+
+# Env
+.env
+
+# Logs
+logs/
+*.log
+
+# Screen templates are committed, but local test screenshots aren't
+automation/templates/test_*
+automation/templates/debug_*

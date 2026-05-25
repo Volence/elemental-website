@@ -718,6 +718,113 @@ async function advanceToInProgress(lobbyId: number): Promise<void> {
     })
   }
 
+  // Attempt automated lobby creation via bot service
+  let botHosting = false
+  if (process.env.OW_BOT_SERVICE_URL) {
+    try {
+      const battleTags: Record<number, string> = {}
+      for (const u of allUsers.docs as any[]) {
+        if (u.pugBattleTag) battleTags[u.id] = u.pugBattleTag
+      }
+
+      const { generateFullCode } = await import('./settingsGenerator')
+      const payloadInst2 = await getPayload({ config: configPromise })
+
+      // Resolve map and bans for settings generation
+      const lobbyWithVote = await prisma.pugLobby.findUnique({
+        where: { id: lobbyId },
+        include: { mapVote: true, banState: true },
+      })
+      let settingsText: string | null = null
+      if (lobbyWithVote?.mapVote?.selectedMapId) {
+        const selectedMap = await payloadInst2.findByID({
+          collection: 'maps',
+          id: lobbyWithVote.mapVote.selectedMapId,
+          overrideAccess: true,
+        }) as any
+
+        const banRecords = (lobbyWithVote.banState?.bans ?? []) as Array<{ heroId: number }>
+        let bannedHeroNames: string[] = []
+        if (banRecords.length > 0) {
+          const heroResult = await payloadInst2.find({
+            collection: 'heroes',
+            where: { active: { equals: true } },
+            limit: 100,
+            overrideAccess: true,
+          })
+          bannedHeroNames = banRecords
+            .map((b) => (heroResult.docs as any[]).find((h: any) => h.id === b.heroId)?.name)
+            .filter(Boolean) as string[]
+        }
+
+        const mapName = selectedMap.name ?? ''
+        const isBrokenMap = ['Samoa', 'Colosseo', 'Esperança'].includes(mapName)
+        let otherMapsInMode: string[] | undefined
+        let hostNote: string | undefined
+
+        if (isBrokenMap) {
+          const sameModeType = selectedMap.type ?? 'control'
+          const allMapsResult = await payloadInst2.find({
+            collection: 'maps',
+            where: { type: { equals: sameModeType } },
+            limit: 50,
+            overrideAccess: true,
+          })
+          otherMapsInMode = (allMapsResult.docs as any[])
+            .map((m: any) => m.name as string)
+            .filter((n: string) => n !== mapName)
+
+          const brokenPushMaps = ['Colosseo', 'Esperança']
+          if (brokenPushMaps.includes(mapName)) {
+            const otherBroken = brokenPushMaps.find((n) => n !== mapName)
+            if (otherBroken) hostNote = `Manually disable ${otherBroken} in Push > Maps`
+          }
+        }
+
+        settingsText = generateFullCode({
+          mapSettingsEntry: selectedMap.settingsEntry ?? selectedMap.name ?? null,
+          mapType: selectedMap.type ?? 'control',
+          bannedHeroes: bannedHeroNames,
+          otherMapsInMode,
+          hostNote,
+        })
+      }
+
+      const botResponse = await fetch(`${process.env.OW_BOT_SERVICE_URL}/lobby/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Bot-Secret': process.env.OW_BOT_SECRET ?? '',
+        },
+        body: JSON.stringify({
+          pugLobbyId: lobbyId,
+          lobbyNumber: lobby.lobbyNumber,
+          fullCode: settingsText,
+          players: players.map((p) => ({
+            userId: p.userId,
+            battleTag: battleTags[p.userId] ?? null,
+            team: p.team,
+          })),
+        }),
+      })
+
+      if (botResponse.ok) {
+        const botData = await botResponse.json()
+        await prisma.pugLobby.update({
+          where: { id: lobbyId },
+          data: {
+            hostUserId: -1,
+            botInstanceId: botData.instanceId ?? null,
+            botStatus: 'creating',
+          },
+        })
+        botHosting = true
+      }
+    } catch (err) {
+      console.error(`[PUG #${lobby.lobbyNumber}] Bot service unavailable, falling back to manual host:`, err)
+    }
+  }
+
   const { updateLobbyFeed } = await import('@/discord/services/pugFeed')
   await updateLobbyFeed(lobbyId).catch(console.error)
 
@@ -729,7 +836,10 @@ async function advanceToInProgress(lobbyId: number): Promise<void> {
 
     const notifyTeam = async (teamNum: 1 | 2, channelId: string | null) => {
       const voiceLine = channelId ? `\nVoice channel: ${channelUrl(channelId)}` : ''
-      const msg = `Your PUG #${lobby.lobbyNumber} match is starting! You're on Team ${teamNum}.${voiceLine}\n\nA host is needed to set up the in-game lobby — check the lobby page to volunteer or wait for an invite.\nLobby: ${lobbyUrl}`
+      const hostLine = botHosting
+        ? 'The lobby is being set up automatically — you\'ll receive an in-game invite shortly!'
+        : 'A host is needed to set up the in-game lobby — check the lobby page to volunteer or wait for an invite.'
+      const msg = `Your PUG #${lobby.lobbyNumber} match is starting! You're on Team ${teamNum}.${voiceLine}\n\n${hostLine}\nLobby: ${lobbyUrl}`
       const teamPlayers = players.filter((p) => p.team === teamNum)
       for (const p of teamPlayers) {
         const discordId = discordIdByUserId.get(p.userId)

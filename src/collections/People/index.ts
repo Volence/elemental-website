@@ -313,7 +313,7 @@ export const People: CollectionConfig = {
                   return isOwner(req.user, doc?.id)
                 },
               },
-              admin: { description: 'OW2 BattleTag (e.g., Player#1234). Shown to the match host for in-game invites.', placeholder: 'e.g., Player#1234' },
+              admin: { description: 'OW BattleTag (e.g., Player#1234). Shown to the match host for in-game invites.', placeholder: 'e.g., Player#1234' },
             },
             {
               name: 'pugTiers',

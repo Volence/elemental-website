@@ -6,7 +6,7 @@ import prisma from '@/lib/prisma'
 type Params = { params: Promise<{ id: string }> }
 
 /**
- * POST /api/pug/lobby/[id]/host — Volunteer to host the in-game OW2 custom lobby.
+ * POST /api/pug/lobby/[id]/host — Volunteer to host the in-game OW custom lobby.
  * Any player in the lobby can claim host. First come, first served.
  * PUG admins can host even if they're not a player in the lobby.
  */

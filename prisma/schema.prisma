@@ -28,6 +28,7 @@ model Scrim {
   creatorEmail  String
   // Optional override for opponent team name (used when lobby names are wrong)
   opponentName  String?
+  pugLobbyId    Int?       @unique
   maps      ScrimMap[]
 
   @@map("scrim_scrims")
@@ -736,6 +737,8 @@ model PugLobby {
   voiceChannel2Id      String?
   pendingResult        Json?
   hostUserId           Int?
+  botInstanceId        String?
+  botStatus            String?
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
   players              PugLobbyPlayer[]

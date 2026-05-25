@@ -130,9 +130,6 @@ variables
 		67: Logs_TrackMatchStartEnd
 		68: Logs_PlayerSummaryFrequency
 		69: Logs_PlayerSummaryCount
-		70: ELMT_EnablePositions
-		71: ELMT_SnapshotInterval
-		72: ELMT_MovementThreshold
 
 	player:
 		0: Text_PlayerLanguage
@@ -148,8 +145,6 @@ variables
 		10: Logs_CurrentHeroIterated
 		11: Logs_UltimateID
 		12: Logs_DuplicateID
-		13: ELMT_LastLoggedPos
-		14: ELMT_IsTracking
 }
 
 subroutines
@@ -2962,132 +2957,4 @@ rule("Debug: Display Server Loads")
 	}
 }
 
-rule("Settings: ELMT Position Tracking Options")
-{
-	event
-	{
-		Ongoing - Global;
-	}
 
-	actions
-	{
-		Global.ELMT_EnablePositions = Workshop Setting Toggle(Custom String("9. ELMT Position Tracking"), Custom String(
-			"Enable Position Tracking"), True, 0);
-		Global.ELMT_SnapshotInterval = Workshop Setting Real(Custom String("9. ELMT Position Tracking"), Custom String(
-			"Snapshot Interval (seconds)"), 0.500, 0.250, 2, 1);
-		Global.ELMT_MovementThreshold = Workshop Setting Real(Custom String("9. ELMT Position Tracking"), Custom String(
-			"Movement Threshold (meters)"), 0.500, 0.100, 3, 2);
-	}
-}
-
-rule("ELMT: Init Position Tracking")
-{
-	event
-	{
-		Ongoing - Each Player;
-		All;
-		All;
-	}
-
-	conditions
-	{
-		Is Game In Progress == True;
-		Is Alive(Event Player) == True;
-		Global.ELMT_EnablePositions == True;
-		Event Player.ELMT_LastLoggedPos == 0;
-	}
-
-	actions
-	{
-		Event Player.ELMT_LastLoggedPos = Position Of(Event Player);
-	}
-}
-
-rule("ELMT: Position Snapshot")
-{
-	event
-	{
-		Ongoing - Each Player;
-		All;
-		All;
-	}
-
-	conditions
-	{
-		Is Game In Progress == True;
-		Global.ELMT_EnablePositions == True;
-	}
-
-	actions
-	{
-		Wait(Global.ELMT_SnapshotInterval, Ignore Condition);
-		If(Is Alive(Event Player) == True && Distance Between(Position Of(Event Player), Event Player.ELMT_LastLoggedPos) > Global.ELMT_MovementThreshold || Is Alive(Event Player) == False);
-			Event Player.ELMT_LastLoggedPos = Position Of(Event Player);
-			Log To Inspector(Custom String("{0},{1},{2}", Custom String(",player_position,{0},{1},{2}", Global.Match_CurrentMatchTime, Team Of(Event Player), Custom String("{0}", Event Player)), Custom String("{0},{1},{2}", Hero Of(Event Player), X Component Of(Position Of(Event Player)), Custom String("{0},{1},{2}", Y Component Of(Position Of(Event Player)), Z Component Of(Position Of(Event Player)), Ultimate Charge Percent(Event Player))), Custom String("{0},{1},{2}", Custom String("{0},{1}", True, X Component Of(Facing Direction Of(Event Player))), Custom String("{0},{1},{2}", Z Component Of(Facing Direction Of(Event Player)), Normalized Health(Event Player), Is In Spawn Room(Event Player)), Custom String("{0},{1},{2}", Is On Ground(Event Player), Player Hero Stat(Event Player, Hero Of(Event Player), Hero Damage Dealt), Custom String("{0},{1},{2}", Player Hero Stat(Event Player, Hero Of(Event Player), Healing Dealt), Player Hero Stat(Event Player, Hero Of(Event Player), Damage Taken), Custom String("{0},{1},{2}", Player Hero Stat(Event Player, Hero Of(Event Player), Damage Blocked), Custom String("{0},{1},{2}", Player Hero Stat(Event Player, Hero Of(Event Player), Eliminations), Is Using Ultimate(Event Player), Is Alive(Event Player)), Null))))));
-		End;
-		Loop If Condition Is True;
-	}
-}
-
-rule("ELMT: Death Position")
-{
-	event
-	{
-		Player Died;
-		All;
-		All;
-	}
-
-	conditions
-	{
-		Is Game In Progress == True;
-		Global.ELMT_EnablePositions == True;
-	}
-
-	actions
-	{
-		Log To Inspector(Custom String("{0},{1},{2}", Custom String(",player_position,{0},{1},{2}", Global.Match_CurrentMatchTime, Team Of(Event Player), Custom String("{0}", Event Player)), Custom String("{0},{1},{2}", Hero Of(Event Player), X Component Of(Position Of(Event Player)), Custom String("{0},{1},{2}", Y Component Of(Position Of(Event Player)), Z Component Of(Position Of(Event Player)), Ultimate Charge Percent(Event Player))), Custom String("{0},{1},{2}", Custom String("{0},{1}", False, X Component Of(Facing Direction Of(Event Player))), Custom String("{0},{1},{2}", Z Component Of(Facing Direction Of(Event Player)), 0, Is In Spawn Room(Event Player)), Custom String("{0},{1},{2}", Is On Ground(Event Player), Player Hero Stat(Event Player, Hero Of(Event Player), Hero Damage Dealt), Custom String("{0},{1},{2}", Player Hero Stat(Event Player, Hero Of(Event Player), Healing Dealt), Player Hero Stat(Event Player, Hero Of(Event Player), Damage Taken), Custom String("{0},{1},{2}", Player Hero Stat(Event Player, Hero Of(Event Player), Damage Blocked), Custom String("{0},{1},{2}", Player Hero Stat(Event Player, Hero Of(Event Player), Eliminations), Is Using Ultimate(Event Player), False), Null))))));
-	}
-}
-
-rule("ELMT: Kill Positions")
-{
-	event
-	{
-		Player Dealt Final Blow;
-		All;
-		All;
-	}
-
-	conditions
-	{
-		Is Game In Progress == True;
-		Global.ELMT_EnablePositions == True;
-	}
-
-	actions
-	{
-		Log To Inspector(Custom String(",kill_position,{0},{1},{2}", Global.Match_CurrentMatchTime, Custom String("{0},{1},{2}", X Component Of(Position Of(Event Player)), Y Component Of(Position Of(Event Player)), Z Component Of(Position Of(Event Player))), Custom String("{0},{1}", Custom String("{0},{1},{2}", X Component Of(Position Of(Victim)), Y Component Of(Position Of(Victim)), Z Component Of(Position Of(Victim))), Null)));
-	}
-}
-
-rule("ELMT: Objective Position Snapshot")
-{
-	event
-	{
-		Ongoing - Global;
-	}
-
-	conditions
-	{
-		Is Game In Progress == True;
-		Global.ELMT_EnablePositions == True;
-	}
-
-	actions
-	{
-		Wait(Global.ELMT_SnapshotInterval, Ignore Condition);
-		Log To Inspector(Custom String(",objective_position,{0},{1},{2}", Global.Match_CurrentMatchTime, Custom String("{0},{1},{2}", X Component Of(Payload Position), Y Component Of(Payload Position), Z Component Of(Payload Position)), Custom String("{0},{1},{2}", X Component Of(Objective Position(Objective Index)), Y Component Of(Objective Position(Objective Index)), Z Component Of(Objective Position(Objective Index)))));
-		Loop If Condition Is True;
-	}
-}

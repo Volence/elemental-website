@@ -18,7 +18,7 @@ import './index.scss'
 
 // Role presets matching Teams collection
 const rolePresets: Record<string, string[]> = {
-  'ow2-specific': ['Tank', 'Hitscan', 'Flex DPS', 'Main Support', 'Flex Support'],
+  'ow-specific': ['Tank', 'Hitscan', 'Flex DPS', 'Main Support', 'Flex Support'],
   'generic': ['Tank', 'DPS', 'DPS', 'Support', 'Support'],
   'custom': [], // Will use customRoles from team
 }
@@ -53,7 +53,7 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
   const votes = scheduleType === 'calendar' ? calendarVotes : pollVotes
 
   // Determine roles based on team preset
-  const [roles, setRoles] = useState<string[]>(rolePresets['ow2-specific'])
+  const [roles, setRoles] = useState<string[]>(rolePresets['ow-specific'])
   
   // Opponent teams for dropdown
   const [opponentTeams, setOpponentTeams] = useState<Array<{id: number, name: string}>>([])
@@ -224,9 +224,9 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
           setDiscordToPersonId(discordMap)
           
           // Set roles from team's rolePreset (at root level, not in discordThreads)
-          // Teams collection uses 'specific' but our preset map uses 'ow2-specific'
-          let preset = teamData.rolePreset || 'ow2-specific'
-          if (preset === 'specific') preset = 'ow2-specific' // Map Teams value to preset key
+          // Teams collection uses 'specific' but our preset map uses 'ow-specific'
+          let preset = teamData.rolePreset || 'ow-specific'
+          if (preset === 'specific') preset = 'ow-specific' // Map Teams value to preset key
           
           
           if (preset === 'custom' && teamData.customRoles) {

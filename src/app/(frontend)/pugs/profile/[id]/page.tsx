@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { PugNav } from '../../PugNav'
+import { PlayerPerformanceStats } from '@/components/PugProfile/PlayerPerformanceStats'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'PUG Profile | Elemental' }
@@ -58,7 +59,7 @@ export default async function PugProfilePage({
 
   const displayName = person.name ?? `Player #${id}`
 
-  const [leaderboardEntries, completedLobbies] = await Promise.all([
+  const [leaderboardEntries, completedLobbies, allSeasons] = await Promise.all([
     payload.find({
       collection: 'pug-leaderboard',
       where: {
@@ -84,7 +85,19 @@ export default async function PugProfilePage({
       orderBy: { completedAt: 'desc' },
       take: 20,
     }),
+    payload.find({
+      collection: 'pug-seasons',
+      sort: '-startDate',
+      overrideAccess: true,
+      limit: 50,
+    }),
   ])
+
+  const seasons = (allSeasons.docs as any[]).map((s) => ({
+    id: s.id as number,
+    name: s.name as string,
+    tier: s.tier as string,
+  }))
 
   const mapIds = completedLobbies
     .map((l) => l.mapVote?.selectedMapId)
@@ -183,6 +196,8 @@ export default async function PugProfilePage({
           ))}
         </div>
       )}
+
+      <PlayerPerformanceStats playerId={playerId} seasons={seasons} />
 
       <h2 className="text-lg font-semibold mb-3">Season Stats</h2>
       {leaderboardEntries.docs.length === 0 ? (

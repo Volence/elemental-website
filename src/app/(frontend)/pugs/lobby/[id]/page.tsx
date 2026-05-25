@@ -209,7 +209,7 @@ export default function LobbyPage() {
   if (error) return <main className="container mx-auto p-8 text-red-400">{error}</main>
   if (!data) return <main className="container mx-auto p-8 text-gray-500">Loading...</main>
 
-  const { lobby, selectedMap, mapCandidates, heroes, currentUserId, isPugAdmin, guildId, blockedRoles, neededSlots, spotsAvailable, approvedRoles, regionAllowed, hostInfo } = data
+  const { lobby, selectedMap, mapCandidates, heroes, currentUserId, isPugAdmin, guildId, blockedRoles, neededSlots, spotsAvailable, approvedRoles, regionAllowed, hostInfo, linkedScrimId } = data
   const players: Player[] = lobby.players
   const me = players.find((p) => p.userId === currentUserId)
   const inLobby = !!me
@@ -547,6 +547,10 @@ export default function LobbyPage() {
             onHost={() => apiAction('/host', {})}
           />
 
+          {lobby.botInstanceId && (
+            <LiveScoreboard lobbyId={lobby.id} botStatus={lobby.botStatus ?? ''} />
+          )}
+
           <TeamsDisplay players={players} currentUserId={currentUserId} heroes={heroes} banState={lobby.banState} />
           <VoiceChannelLinks
             myTeam={me?.team ?? null}
@@ -652,6 +656,16 @@ export default function LobbyPage() {
               )}
             </div>
             <TeamsDisplay players={players} currentUserId={currentUserId} heroes={heroes} banState={lobby.banState} />
+            {linkedScrimId && (
+              <div className="text-center">
+                <Link
+                  href={`/scrims/${linkedScrimId}`}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600/15 border border-cyan-500/30 text-cyan-300 rounded-xl hover:bg-cyan-600/25 hover:shadow-lg hover:shadow-cyan-500/10 hover:scale-[1.02] active:scale-[0.98] text-sm font-semibold transition-all duration-200"
+                >
+                  View Match Stats
+                </Link>
+              </div>
+            )}
             {canDispute && isOpposingCaptain && (
               <div className="border border-yellow-900/50 rounded-xl p-4 text-center bg-yellow-950/10">
                 <p className="text-sm text-yellow-400 mb-3">
@@ -1464,6 +1478,311 @@ function RequeueButton({ lobby, me }: { lobby: any; me: Player }) {
   )
 }
 
+// ── Live Scoreboard ──
+
+type LivePlayerStats = {
+  team: string
+  hero: string
+  finalBlows: number
+  deaths: number
+  damageDelt: number
+  healingDealt: number
+}
+
+type LiveStats = {
+  map: string | null
+  mapType: string | null
+  team1: { name: string; score: number; players: Record<string, LivePlayerStats> }
+  team2: { name: string; score: number; players: Record<string, LivePlayerStats> }
+  round: number
+  matchTime: number
+  matchEnded: boolean
+  matchResult: string | null
+  eventCount: number
+}
+
+function fmtTime(s: number): string {
+  return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
+}
+
+function fmtStat(n: number): string {
+  if (n >= 10000) return `${(n / 1000).toFixed(0)}k`
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}k`
+  return String(n)
+}
+
+function LiveScoreboard({ lobbyId, botStatus }: { lobbyId: number; botStatus: string }) {
+  const [stats, setStats] = useState<LiveStats | null>(null)
+
+  useEffect(() => {
+    if (!['game_started', 'players_joining'].includes(botStatus)) {
+      setStats(null)
+      return
+    }
+
+    let active = true
+    async function poll() {
+      try {
+        const res = await fetch(`/api/pug/lobby/${lobbyId}/live-stats`)
+        if (res.ok && active) {
+          const data = await res.json()
+          if (data.liveStats) setStats(data.liveStats)
+        }
+      } catch { /* ignore */ }
+    }
+
+    poll()
+    const interval = setInterval(poll, 5000)
+    return () => { active = false; clearInterval(interval) }
+  }, [lobbyId, botStatus])
+
+  if (!stats || stats.eventCount === 0) return null
+
+  const t1 = Object.entries(stats.team1.players)
+  const t2 = Object.entries(stats.team2.players)
+  if (t1.length === 0 && t2.length === 0) return null
+
+  const renderTeam = (
+    entries: [string, LivePlayerStats][],
+    teamColor: 'blue' | 'orange',
+    teamName: string,
+  ) => {
+    const colors = teamColor === 'blue'
+      ? { header: 'text-blue-400', row: 'hover:bg-blue-950/20', border: 'border-blue-800/30' }
+      : { header: 'text-orange-400', row: 'hover:bg-orange-950/20', border: 'border-orange-800/30' }
+
+    return (
+      <div>
+        <div className={`text-[10px] font-bold uppercase tracking-wider ${colors.header} px-3 py-1.5`}>
+          {teamName}
+        </div>
+        {entries.map(([name, p]) => (
+          <div
+            key={name}
+            className={`grid grid-cols-[1fr_72px_32px_32px_48px_48px] gap-1 px-3 py-1.5 text-xs border-t ${colors.border} ${colors.row} transition-colors`}
+          >
+            <span className="text-gray-200 truncate">{name}</span>
+            <span className="text-gray-500 truncate text-[11px]">{p.hero}</span>
+            <span className="text-green-400 text-right font-medium">{p.finalBlows}</span>
+            <span className="text-red-400 text-right font-medium">{p.deaths}</span>
+            <span className="text-amber-400 text-right text-[11px]">{fmtStat(p.damageDelt)}</span>
+            <span className="text-emerald-400 text-right text-[11px]">{fmtStat(p.healingDealt)}</span>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  return (
+    <div className="border border-cyan-800/40 bg-gradient-to-b from-cyan-950/20 to-gray-950/80 rounded-xl overflow-hidden">
+      {/* Header */}
+      <div className="px-4 py-2.5 bg-cyan-950/30 border-b border-cyan-800/40 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+          </span>
+          <span className="text-xs font-bold text-cyan-300 uppercase tracking-wider">Live Scoreboard</span>
+        </div>
+        <div className="flex items-center gap-3 text-xs text-gray-500">
+          {stats.map && (
+            <span className="text-gray-400">
+              {stats.map}
+              {stats.mapType && <span className="text-gray-600"> · {stats.mapType}</span>}
+            </span>
+          )}
+          {stats.round > 0 && <span>R{stats.round}</span>}
+          <span className="font-mono">{fmtTime(stats.matchTime)}</span>
+        </div>
+      </div>
+
+      {/* Score */}
+      <div className="flex items-center justify-center gap-6 py-3 border-b border-gray-800/40">
+        <span className="text-sm font-bold text-blue-400">{stats.team1.name}</span>
+        <div className="flex items-center gap-3">
+          <span className="text-2xl font-black text-blue-300">{stats.team1.score}</span>
+          <span className="text-gray-600 text-lg">—</span>
+          <span className="text-2xl font-black text-orange-300">{stats.team2.score}</span>
+        </div>
+        <span className="text-sm font-bold text-orange-400">{stats.team2.name}</span>
+      </div>
+
+      {/* Column headers */}
+      <div className="grid grid-cols-[1fr_72px_32px_32px_48px_48px] gap-1 px-3 py-1.5 text-[10px] font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-800/30">
+        <span>Player</span>
+        <span>Hero</span>
+        <span className="text-right">K</span>
+        <span className="text-right">D</span>
+        <span className="text-right">Dmg</span>
+        <span className="text-right">Heal</span>
+      </div>
+
+      {/* Teams */}
+      {t1.length > 0 && renderTeam(t1, 'blue', stats.team1.name)}
+      {t2.length > 0 && (
+        <div className="border-t border-gray-700/50">
+          {renderTeam(t2, 'orange', stats.team2.name)}
+        </div>
+      )}
+
+      {/* Match result */}
+      {stats.matchEnded && stats.matchResult && (
+        <div className={`text-center py-2 text-xs font-bold border-t ${
+          stats.matchResult === 'team1' ? 'bg-blue-950/30 border-blue-800/40 text-blue-300'
+          : stats.matchResult === 'team2' ? 'bg-orange-950/30 border-orange-800/40 text-orange-300'
+          : 'bg-gray-900/50 border-gray-700/40 text-gray-400'
+        }`}>
+          {stats.matchResult === 'team1' ? `${stats.team1.name} Wins!`
+          : stats.matchResult === 'team2' ? `${stats.team2.name} Wins!`
+          : 'Draw'}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Bot Hosting Panel ──
+
+const BOT_STATUS_DISPLAY: Record<string, { label: string; color: string; pulse?: boolean }> = {
+  creating: { label: 'Creating Lobby', color: 'text-cyan-400', pulse: true },
+  lobby_created: { label: 'Lobby Created', color: 'text-cyan-400' },
+  invites_sent: { label: 'Invites Sent', color: 'text-blue-400' },
+  players_joining: { label: 'Players Joining', color: 'text-blue-400', pulse: true },
+  game_started: { label: 'Game In Progress', color: 'text-green-400' },
+  game_ended: { label: 'Game Ended', color: 'text-gray-400' },
+  error: { label: 'Error', color: 'text-red-400' },
+}
+
+function BotHostingPanel({
+  lobby, isPugAdmin, selectedMap, bannedHeroObjects, myTeam,
+}: {
+  lobby: any
+  isPugAdmin: boolean
+  selectedMap: LobbyData['selectedMap']
+  bannedHeroObjects: Hero[]
+  myTeam: number | null
+}) {
+  const [cmdLoading, setCmdLoading] = useState<string | null>(null)
+  const [cmdError, setCmdError] = useState<string | null>(null)
+
+  const botStatus = (lobby.botStatus as string) ?? 'creating'
+  const statusInfo = BOT_STATUS_DISPLAY[botStatus] ?? { label: botStatus, color: 'text-gray-400' }
+
+  async function sendBotCommand(command: string) {
+    setCmdLoading(command)
+    setCmdError(null)
+    try {
+      const res = await fetch('/api/pug/bot/command', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pugLobbyId: lobby.id, command }),
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        setCmdError(data.error ?? 'Command failed')
+      }
+    } catch {
+      setCmdError('Failed to send command')
+    } finally {
+      setCmdLoading(null)
+    }
+  }
+
+  const gameActive = ['game_started', 'players_joining'].includes(botStatus)
+
+  return (
+    <div className="border border-cyan-800/60 bg-cyan-950/15 rounded-lg overflow-hidden">
+      <div className="px-4 py-3 bg-cyan-950/30 border-b border-cyan-800/40">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-base">🤖</span>
+            <h3 className="text-sm font-bold text-cyan-300 uppercase tracking-wider">Automated Lobby</h3>
+          </div>
+          <div className="flex items-center gap-2">
+            {statusInfo.pulse && (
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500" />
+              </span>
+            )}
+            <span className={`text-xs font-semibold ${statusInfo.color}`}>{statusInfo.label}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-4 space-y-3">
+        <p className="text-sm text-gray-400">
+          {botStatus === 'creating' && 'The bot is creating the in-game lobby and importing settings...'}
+          {botStatus === 'lobby_created' && 'Lobby created! Sending invites to all players...'}
+          {botStatus === 'invites_sent' && 'Invites sent! Join the game when you receive your invite in Overwatch.'}
+          {botStatus === 'players_joining' && 'Players are joining the lobby. Get ready!'}
+          {botStatus === 'game_started' && 'The match is live! Good luck, have fun.'}
+          {botStatus === 'game_ended' && 'Match complete. Results are being processed...'}
+          {botStatus === 'error' && 'Automated setup failed. A manual host is needed.'}
+        </p>
+
+        <div className="flex flex-wrap gap-3">
+          {myTeam && (
+            <span className={`text-xs px-2.5 py-1 rounded border font-medium ${
+              myTeam === 1 ? 'bg-blue-950/40 border-blue-800 text-blue-300' : 'bg-orange-950/40 border-orange-800 text-orange-300'
+            }`}>
+              Your team: Team {myTeam}
+            </span>
+          )}
+          {selectedMap && (
+            <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded border border-gray-700 text-gray-300">
+              {selectedMap.imageUrl && <img src={selectedMap.imageUrl} alt="" className="w-5 h-5 rounded object-cover" />}
+              Map: {selectedMap.name}
+            </span>
+          )}
+        </div>
+
+        {bannedHeroObjects.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-gray-500 shrink-0">Bans:</span>
+            {bannedHeroObjects.map((h) => (
+              <span key={h.id} className="inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded bg-red-950/60 border border-red-900 text-red-400">
+                {h.imageUrl && <img src={h.imageUrl} alt="" className="w-5 h-5 rounded-full object-cover" />}
+                {h.name}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {isPugAdmin && gameActive && (
+          <div className="border-t border-cyan-800/30 pt-3 mt-3">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Admin Controls</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => sendBotCommand('pause')}
+                disabled={cmdLoading !== null}
+                className="px-3 py-1.5 text-xs font-medium bg-yellow-600/15 border border-yellow-500/30 text-yellow-300 rounded-lg hover:bg-yellow-600/25 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                {cmdLoading === 'pause' ? 'Sending...' : 'Pause'}
+              </button>
+              <button
+                onClick={() => sendBotCommand('unpause')}
+                disabled={cmdLoading !== null}
+                className="px-3 py-1.5 text-xs font-medium bg-green-600/15 border border-green-500/30 text-green-300 rounded-lg hover:bg-green-600/25 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                {cmdLoading === 'unpause' ? 'Sending...' : 'Unpause'}
+              </button>
+              <button
+                onClick={() => sendBotCommand('end_game')}
+                disabled={cmdLoading !== null}
+                className="px-3 py-1.5 text-xs font-medium bg-red-600/15 border border-red-500/30 text-red-300 rounded-lg hover:bg-red-600/25 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                {cmdLoading === 'end_game' ? 'Sending...' : 'End Game'}
+              </button>
+            </div>
+            {cmdError && <p className="text-xs text-red-400 mt-2">{cmdError}</p>}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ── Lobby Setup Assistant ──
 
 function LobbySetupAssistant({
@@ -1482,6 +1801,7 @@ function LobbySetupAssistant({
 
   const isHost = hostInfo.hostUserId === currentUserId
   const hasHost = hostInfo.hostUserId !== null
+  const isBotHosting = hostInfo.hostUserId === -1
   const isPlayer = players.some((p) => p.userId === currentUserId)
 
   // Get banned hero names from banState
@@ -1494,6 +1814,19 @@ function LobbySetupAssistant({
   const team1 = players.filter((p) => p.team === 1)
   const team2 = players.filter((p) => p.team === 2)
   const myTeam = players.find((p) => p.userId === currentUserId)?.team
+
+  // Bot is hosting — show automated status
+  if (isBotHosting) {
+    return (
+      <BotHostingPanel
+        lobby={lobby}
+        isPugAdmin={isPugAdmin}
+        selectedMap={selectedMap}
+        bannedHeroObjects={bannedHeroObjects}
+        myTeam={myTeam ?? null}
+      />
+    )
+  }
 
   // No host yet — show volunteer button
   if (!hasHost) {
