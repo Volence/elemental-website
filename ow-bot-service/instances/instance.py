@@ -29,6 +29,8 @@ class OWInstance:
         self.ow_process_id: int | None = None
         self.players_joined: int = 0
         self.started_at: datetime | None = None
+        self.live_stats: dict | None = None
+        self.player_names: set[str] = set()
         self._idle_timer: asyncio.Task | None = None
 
     @property
@@ -85,6 +87,7 @@ class OWInstance:
             return False
         self.pug_lobby_id = pug_lobby_id
         self.lobby_number = lobby_number
+        self.player_names = {tag.split("#")[0] for _, tag, _ in players if tag}
         self.state = InstanceState.CREATING_LOBBY
         log.info("[%s] Creating lobby for PUG #%d", self.id, lobby_number)
         try:
@@ -124,6 +127,7 @@ class OWInstance:
     def on_game_started(self):
         self.state = InstanceState.IN_GAME
         self.started_at = datetime.now()
+        self.live_stats = None
         log.info("[%s] Game started for PUG #%s", self.id, self.lobby_number)
 
     def on_game_ended(self):
@@ -131,10 +135,15 @@ class OWInstance:
         log.info("[%s] Game ended for PUG #%s", self.id, self.lobby_number)
 
     async def cleanup(self, other_instances_active: bool, idle_timeout: int):
+        from workshop.monitor import workshop_monitor
+
+        workshop_monitor.cleanup_instance(self.id)
         self.pug_lobby_id = None
         self.lobby_number = None
         self.players_joined = 0
         self.started_at = None
+        self.live_stats = None
+        self.player_names = set()
 
         if other_instances_active:
             await self._close_ow()

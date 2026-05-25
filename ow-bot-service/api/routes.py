@@ -51,6 +51,7 @@ class LobbyStatusResponse(BaseModel):
     state: str
     playersJoined: int
     startedAt: str | None = None
+    liveStats: dict | None = None
 
 
 class CommandRequest(BaseModel):
@@ -62,6 +63,7 @@ class InstanceInfo(BaseModel):
     state: str
     pugLobbyId: int | None = None
     account: str
+    liveStats: dict | None = None
 
 
 class HealthResponse(BaseModel):
@@ -114,6 +116,7 @@ async def lobby_status(pug_lobby_id: int):
         state=instance.state.value,
         playersJoined=instance.players_joined,
         startedAt=instance.started_at.isoformat() if instance.started_at else None,
+        liveStats=instance.live_stats,
     )
 
 
@@ -152,6 +155,7 @@ async def list_instances():
             state=inst.state.value,
             pugLobbyId=inst.pug_lobby_id,
             account=inst.account_email,
+            liveStats=inst.live_stats,
         )
         for inst in instance_manager.instances
     ]

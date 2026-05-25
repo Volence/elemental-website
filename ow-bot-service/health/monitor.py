@@ -51,25 +51,31 @@ class HealthMonitor:
             await self._auto_reauth(inst, screen)
 
     async def _auto_reauth(self, inst, screen):
-        from automation.actions import click, type_text, press_key
+        from automation.actions import click, click_text, type_text, press_key
 
         try:
-            email_field = screen.locate_template("battlenet_login_email.png")
-            if not email_field:
-                log.error("[%s] Cannot locate email field for re-auth", inst.id)
+            pos = screen.find_text("LOG IN", retries=3)
+            if not pos:
+                pos = screen.find_text("EMAIL", retries=3)
+            if not pos:
+                log.error("[%s] Cannot locate login field for re-auth", inst.id)
                 return
 
-            await click(*email_field)
+            await click(*pos)
+            await asyncio.sleep(0.5)
             await type_text(inst.account.email)
             await press_key("tab")
             await type_text(inst.account.password)
             await press_key("enter")
             await asyncio.sleep(3)
 
-            totp_field = screen.locate_template("battlenet_totp_field.png")
-            if totp_field:
+            totp_pos = screen.find_text("AUTHENTICATOR", retries=3)
+            if not totp_pos:
+                totp_pos = screen.find_text("CODE", retries=3)
+            if totp_pos:
                 code = inst.account.generate_totp()
-                await click(*totp_field)
+                await click(*totp_pos)
+                await asyncio.sleep(0.3)
                 await type_text(code)
                 await press_key("enter")
                 log.info("[%s] Re-auth TOTP submitted", inst.id)

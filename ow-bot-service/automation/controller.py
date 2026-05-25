@@ -7,7 +7,6 @@ numpy-based color scanning (for the orange import button).
 
 import asyncio
 import logging
-import random
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -16,7 +15,7 @@ from scipy import ndimage
 
 from config import settings
 from automation.actions import click, click_text, move_to, paste_text, press_key, hotkey
-from automation.screens import Screen, ScreenDetector, get_depth
+from automation.screens import Screen, ScreenDetector, get_depth, DISMISS_KEYWORDS
 from automation.window_manager import window_manager
 from automation import background_input
 
@@ -82,8 +81,10 @@ class LobbyController:
                 continue
 
             if current == Screen.UNKNOWN:
-                await press_key("escape")
-                await asyncio.sleep(2)
+                recovered = await self._recover_from_unknown()
+                if not recovered:
+                    await press_key("escape")
+                    await asyncio.sleep(2)
                 continue
 
             cur_depth = get_depth(current)
@@ -101,6 +102,28 @@ class LobbyController:
             raise NavigationError(
                 f"[{self.instance.id}] Cannot reach {target.value}, at {actual.value}"
             )
+
+    async def _recover_from_unknown(self) -> bool:
+        """Try to recover from an unknown screen state.
+
+        Returns True if a recovery action was taken (caller should re-detect).
+        """
+        classification = self.detector.classify_unknown()
+
+        if classification == Screen.LOADING:
+            log.info("[%s] Loading screen detected, waiting", self.instance.id)
+            await asyncio.sleep(5)
+            return True
+
+        if classification == Screen.DIALOG:
+            pos = self.detector.find_dismiss_button()
+            if pos:
+                log.info("[%s] Dismissing dialog at %s", self.instance.id, pos)
+                await click(*pos)
+                await asyncio.sleep(3)
+                return True
+
+        return False
 
     def check_health(self) -> tuple[Screen, bool]:
         current = self.detector.detect_screen()

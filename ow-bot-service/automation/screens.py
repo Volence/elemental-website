@@ -30,6 +30,8 @@ class Screen(Enum):
     SETTINGS = "settings"
     IN_GAME = "in_game"
     MATCH_END = "match_end"
+    LOADING = "loading"
+    DIALOG = "dialog"
 
 
 # (Screen, required_texts, forbidden_texts)
@@ -42,6 +44,11 @@ _SCREEN_SIGNATURES: list[tuple[Screen, list[str], list[str]]] = [
     (Screen.CUSTOM_GAMES, ["FILTER"],              ["START"]),
     (Screen.PLAY_MENU,    ["UNRANKED"],            []),
     (Screen.MAIN_MENU,    ["PLAY", "HEROES"],      ["UNRANKED", "FILTER", "START", "PRESETS"]),
+]
+
+DISMISS_KEYWORDS = [
+    "OK", "ACCEPT", "CONTINUE", "DISMISS", "RECONNECT",
+    "CLOSE", "CONFIRM", "YES", "GOT IT", "UNDERSTOOD",
 ]
 
 MAX_TEXT_LEN = 25
@@ -179,6 +186,35 @@ class ScreenDetector:
 
     def is_match_ended(self) -> bool:
         return self.detect_screen() == Screen.MATCH_END
+
+    def classify_unknown(self) -> Screen:
+        """When detect_screen returns UNKNOWN, try to classify further.
+
+        Distinguishes between loading screens (very little/no text),
+        dismissable dialogs (contain OK/ACCEPT/etc.), and true unknowns.
+        """
+        texts = [text for _, text, conf in self._cached_results if conf > 0.3]
+        short_texts = [t for t in texts if len(t) <= MAX_TEXT_LEN]
+
+        if len(short_texts) <= 1:
+            log.debug("classify_unknown: loading (only %d text fragments)", len(short_texts))
+            return Screen.LOADING
+
+        for kw in DISMISS_KEYWORDS:
+            if any(kw in t.upper() for t in short_texts):
+                log.info("classify_unknown: dialog (found '%s')", kw)
+                return Screen.DIALOG
+
+        return Screen.UNKNOWN
+
+    def find_dismiss_button(self) -> tuple[int, int] | None:
+        """Find a clickable dismiss/confirm button on a dialog screen."""
+        for kw in DISMISS_KEYWORDS:
+            pos = self.find_text(kw, rescan=False, retries=1)
+            if pos:
+                log.info("find_dismiss_button: found '%s' at %s", kw, pos)
+                return pos
+        return None
 
 
 def get_depth(screen: Screen) -> int:

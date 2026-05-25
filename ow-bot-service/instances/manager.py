@@ -20,6 +20,7 @@ class InstanceManager:
                 password=acct_cfg.password,
                 authenticator_secret=acct_cfg.authenticator_secret,
                 screen_region=acct_cfg.screen_region,
+                battle_tag=getattr(acct_cfg, 'battle_tag', ''),
             )
             instance = OWInstance(id=f"inst-{i}", account=account)
             self.instances.append(instance)
@@ -39,8 +40,8 @@ class InstanceManager:
     def get_by_lobby(self, pug_lobby_id: int) -> OWInstance | None:
         return next((i for i in self.instances if i.pug_lobby_id == pug_lobby_id), None)
 
-    def _other_instances_active(self, exclude_id: str) -> bool:
-        return any(i.is_in_game for i in self.instances if i.id != exclude_id)
+    def _another_is_ready(self, exclude_id: str) -> bool:
+        return any(i.is_warm for i in self.instances if i.id != exclude_id)
 
     async def warmup(self, pug_lobby_id: int | None = None) -> OWInstance | None:
         warm = self._first_warm()
@@ -83,7 +84,7 @@ class InstanceManager:
         inst = next((i for i in self.instances if i.id == instance_id), None)
         if not inst:
             return
-        others_active = self._other_instances_active(inst.id)
+        others_active = self._another_is_ready(inst.id)
         await inst.cleanup(others_active, settings.idle_shutdown_seconds)
 
     async def shutdown_instance(self, instance_id: str):
@@ -107,7 +108,7 @@ class InstanceManager:
         if not inst:
             return
         inst.on_game_ended()
-        others_active = self._other_instances_active(inst.id)
+        others_active = self._another_is_ready(inst.id)
         await inst.cleanup(others_active, settings.idle_shutdown_seconds)
 
 

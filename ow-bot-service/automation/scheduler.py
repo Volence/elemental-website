@@ -242,7 +242,10 @@ class Scheduler:
             now = time.time()
             if now - last_error_check > 60:
                 last_error_check = now
-                await self._auto_recover_errors()
+                try:
+                    await self._auto_recover_errors()
+                except Exception:
+                    logger.exception("Error in auto-recover pass")
 
             # Phase 1: check import timeouts
             for task in self.active_lobbies:
@@ -267,7 +270,8 @@ class Scheduler:
                         and t.state == LobbyState.SENDING_INVITES]
             if bg_tasks:
                 await asyncio.gather(
-                    *(self._do_send_invites(t) for t in bg_tasks)
+                    *(self._do_send_invites(t) for t in bg_tasks),
+                    return_exceptions=True,
                 )
 
             await asyncio.sleep(0.1)
@@ -565,11 +569,40 @@ class Scheduler:
                 logger.info(f"[{task.instance_id}] Health: recovered ({screen.value})")
             task.consecutive_failures = 0
         else:
+            # Try to classify and auto-dismiss dialogs before counting as failure
+            classification = detector.classify_unknown()
+            if classification == Screen.DIALOG:
+                pos = detector.find_dismiss_button()
+                if pos:
+                    from automation import actions
+                    logger.info(f"[{task.instance_id}] Health: dismissing dialog at {pos}")
+                    await actions.click(*pos)
+                    await asyncio.sleep(3)
+                    return
+            elif classification == Screen.LOADING:
+                logger.debug(f"[{task.instance_id}] Health: loading screen, skipping")
+                return
+
             task.consecutive_failures += 1
             logger.warning(
                 f"[{task.instance_id}] Health: unknown screen "
                 f"(failure {task.consecutive_failures}/{task.max_failures})"
             )
+            if task.consecutive_failures >= task.max_failures:
+                from instances.manager import instance_manager
+                from instances.instance import InstanceState
+                inst = next(
+                    (i for i in instance_manager.instances if i.id == task.instance_id),
+                    None,
+                )
+                if inst:
+                    logger.error(f"[{task.instance_id}] Max health failures reached, recovering")
+                    inst.state = InstanceState.ERROR
+                    try:
+                        await inst.recover()
+                    except Exception:
+                        logger.exception(f"[{task.instance_id}] Recovery after health failures failed")
+                    task.consecutive_failures = 0
 
         # Check for Battle.net login screen
         pos = detector.find_text("LOG IN", retries=1)

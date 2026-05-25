@@ -9,6 +9,7 @@ class BattleNetAccount:
     password: str
     authenticator_secret: str
     screen_region: tuple[int, int, int, int]
+    battle_tag: str = ""
 
     def generate_totp(self) -> str:
         if not self.authenticator_secret:

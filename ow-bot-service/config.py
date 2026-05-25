@@ -4,6 +4,8 @@ from pathlib import Path
 
 
 class BattleNetAccount(BaseSettings):
+    model_config = {"extra": "ignore"}
+
     email: str = ""
     password: str = ""
     authenticator_secret: str = ""
@@ -23,9 +25,7 @@ class Settings(BaseSettings):
     workshop_log_dir: Path = Path.home() / "Documents" / "Overwatch" / "Workshop"
     battlenet_exe: Path = Path(r"C:\Program Files (x86)\Battle.net\Battle.net.exe")
 
-    max_instances: int = 5
     warmup_timeout_seconds: int = 180
-    invite_timeout_seconds: int = 300
     idle_shutdown_seconds: int = 7200
     health_check_interval_seconds: int = 30
 
