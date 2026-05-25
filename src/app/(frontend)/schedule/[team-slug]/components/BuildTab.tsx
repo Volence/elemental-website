@@ -68,8 +68,10 @@ function roleMatchesFamily(playerRole: string, slotRole: string): boolean {
   if (playerRole === slotRole) return true
   const pr = playerRole.toLowerCase()
   const sr = slotRole.toLowerCase()
-  if (sr === 'dps') return ROLE_FAMILY.dps.includes(pr)
-  if (sr === 'support') return ROLE_FAMILY.support.includes(pr)
+  if (pr === sr) return true
+  for (const family of Object.values(ROLE_FAMILY)) {
+    if (family.includes(pr) && family.includes(sr)) return true
+  }
   return false
 }
 

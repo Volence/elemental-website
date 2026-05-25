@@ -6,6 +6,7 @@ interface PlayerSlot {
   playerIds?: string[]
   isRinger?: boolean
   ringerName?: string
+  isTrial?: boolean
 }
 
 interface TimeBlock {
@@ -46,24 +47,14 @@ const ROLE_FAMILY: Record<string, string[]> = {
   support: ['support', 'main support', 'flex support'],
 }
 
-function slotAcceptsRole(playerRole: string, slotRole: string): boolean {
+function rolesMatch(playerRole: string, slotRole: string): boolean {
   if (playerRole === slotRole) return true
   const pr = playerRole.toLowerCase()
   const sr = slotRole.toLowerCase()
-  if (sr === 'dps') return ROLE_FAMILY.dps.includes(pr)
-  if (sr === 'support') return ROLE_FAMILY.support.includes(pr)
-  return false
-}
-
-function roleMatchesSlot(scheduleRole: string, rosterRole: string, slotRole: string): boolean {
-  if (scheduleRole && slotAcceptsRole(scheduleRole, slotRole)) return true
-
-  const role = rosterRole.toLowerCase()
-  const slot = slotRole.toLowerCase()
-
-  if (role === 'tank') return slot === 'tank'
-  if (role === 'dps') return ROLE_FAMILY.dps.includes(slot)
-  if (role === 'support') return ROLE_FAMILY.support.includes(slot)
+  if (pr === sr) return true
+  for (const family of Object.values(ROLE_FAMILY)) {
+    if (family.includes(pr) && family.includes(sr)) return true
+  }
   return false
 }
 
@@ -160,7 +151,8 @@ export function suggestLineup(
       const assignedIds = new Set<string>()
       const newSlots: PlayerSlot[] = block.slots.map(slot => {
         const confirmed = availablePlayers.filter(
-          p => !assignedIds.has(p.personId) && p.blockStatus === 'available' && roleMatchesSlot(p.scheduleRole, p.rosterRole, slot.role)
+          p => !assignedIds.has(p.personId) && p.blockStatus === 'available' && rolesMatch(p.scheduleRole, slot.role)
+            && (slot.isTrial ? p.status === 'trial' : p.status !== 'trial')
         )
 
         if (confirmed.length > 0) {
