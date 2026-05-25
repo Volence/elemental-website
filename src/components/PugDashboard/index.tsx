@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, lazy, Suspense } from 'react'
-import { Gamepad2, Settings, Calendar, Users, Swords, Trophy, LinkIcon, Shield } from 'lucide-react'
+import { Gamepad2, Settings, Calendar, Users, Swords, Trophy, LinkIcon, Shield, Bot } from 'lucide-react'
 import { PugLobbiesDashboard } from '@/components/PugLobbies'
 import { SettingsGeneratorPanel } from '@/components/SettingsGenerator'
 
@@ -24,14 +24,18 @@ const PugInviteGenerator = lazy(() =>
 const PugModerationPanel = lazy(() =>
   import('@/components/PugModeration').then((m) => ({ default: m.PugModerationPanel })),
 )
+const PugBotTestingPanel = lazy(() =>
+  import('@/components/PugBotTesting').then((m) => ({ default: m.PugBotTestingPanel })),
+)
 
-type TabId = 'lobbies' | 'settings' | 'invites' | 'moderation' | 'seasons' | 'players' | 'matches' | 'leaderboard'
+type TabId = 'lobbies' | 'settings' | 'invites' | 'moderation' | 'bot' | 'seasons' | 'players' | 'matches' | 'leaderboard'
 
 const tabs: { id: TabId; label: string; icon: React.ReactNode; dividerBefore?: boolean }[] = [
   { id: 'lobbies', label: 'Lobbies', icon: <Gamepad2 size={14} /> },
   { id: 'settings', label: 'Settings Generator', icon: <Settings size={14} /> },
   { id: 'invites', label: 'Invites', icon: <LinkIcon size={14} /> },
   { id: 'moderation', label: 'Moderation', icon: <Shield size={14} /> },
+  { id: 'bot', label: 'Bot Control', icon: <Bot size={14} /> },
   { id: 'seasons', label: 'Seasons', icon: <Calendar size={14} />, dividerBefore: true },
   { id: 'players', label: 'Players', icon: <Users size={14} /> },
   { id: 'matches', label: 'Matches', icon: <Swords size={14} />, dividerBefore: true },
@@ -70,6 +74,7 @@ export default function PugDashboard() {
         <Suspense fallback={<LoadingSpinner />}>
           {activeTab === 'invites' && <PugInviteGenerator />}
           {activeTab === 'moderation' && <PugModerationPanel />}
+          {activeTab === 'bot' && <PugBotTestingPanel />}
           {activeTab === 'seasons' && <PugSeasonsListView />}
           {activeTab === 'players' && <PugPlayersListView />}
           {activeTab === 'matches' && <PugMatchesListView />}
