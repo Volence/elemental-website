@@ -561,7 +561,7 @@ export default function LobbyPage() {
             voiceChannel2Id={lobby.voiceChannel2Id ?? null}
             guildId={guildId}
           />
-          {(isCaptain || isPugAdmin) && (
+          {(isCaptain || isPugAdmin) && !lobby.botInstanceId && (
             <div className="border border-gray-800/60 rounded-xl overflow-hidden bg-gray-900/40">
               <div className="px-4 py-2.5 border-b border-gray-800/60">
                 <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">

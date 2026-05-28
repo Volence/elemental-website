@@ -26,12 +26,13 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json()
-  const { pugLobbyId, status, playersJoined, error: errorMsg, instanceId } = body as {
+  const { pugLobbyId, status, playersJoined, error: errorMsg, instanceId, matchResult } = body as {
     pugLobbyId: number
     status: BotStatus
     playersJoined?: number
     error?: string
     instanceId?: string
+    matchResult?: 'team1' | 'team2' | 'draw'
   }
 
   if (!pugLobbyId || !status || !BOT_STATUSES.includes(status)) {
@@ -50,6 +51,18 @@ export async function POST(request: NextRequest) {
       ...(instanceId ? { botInstanceId: instanceId } : {}),
     },
   })
+
+  // Fallback auto-complete: if stats upload already completed the match, this is a no-op.
+  // If stats upload failed, use the match result from the bot to complete it.
+  if (status === 'game_ended' && matchResult && lobby.status === 'IN_PROGRESS') {
+    try {
+      const { completeMatch } = await import('@/pug/lobbyStateMachine')
+      await completeMatch(pugLobbyId, matchResult)
+      console.log(`[PUG Bot] Fallback auto-complete for lobby ${pugLobbyId}: ${matchResult}`)
+    } catch (err) {
+      console.error(`[PUG Bot] Fallback auto-complete failed for lobby ${pugLobbyId}:`, err)
+    }
+  }
 
   if (status === 'error') {
     console.error(`[PUG Bot] Lobby ${pugLobbyId} error: ${errorMsg}`)

@@ -29,6 +29,7 @@ class CallbackClient:
         players_joined: int | None = None,
         error: str | None = None,
         instance_id: str | None = None,
+        match_result: str | None = None,
     ):
         body: dict = {"pugLobbyId": pug_lobby_id, "status": status}
         if players_joined is not None:
@@ -37,6 +38,8 @@ class CallbackClient:
             body["error"] = error
         if instance_id:
             body["instanceId"] = instance_id
+        if match_result:
+            body["matchResult"] = match_result
 
         try:
             resp = await self.client.post("/api/pug/bot/status", json=body)

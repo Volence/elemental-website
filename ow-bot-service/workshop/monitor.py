@@ -122,10 +122,20 @@ class LogTailer:
         else:
             log.warning("Stats upload failed for PUG %d — keeping log", self.pug_lobby_id)
 
+        # Determine match result from scores
+        match_result = None
+        if self.stats.team_1_score > self.stats.team_2_score:
+            match_result = "team1"
+        elif self.stats.team_2_score > self.stats.team_1_score:
+            match_result = "team2"
+        elif self.stats.match_ended:
+            match_result = "draw"
+
         await callback_client.report_status(
             self.pug_lobby_id,
             "game_ended",
             instance_id=self.instance_id,
+            match_result=match_result,
         )
         inst.on_game_ended()
 

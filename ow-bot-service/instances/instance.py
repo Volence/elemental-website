@@ -138,13 +138,15 @@ class OWInstance:
 
             controller = LobbyController(self)
 
+            # Step 0: Import settings
             await callback_client.report_status(self.pug_lobby_id, "creating", instance_id=self.id)
             await controller._import_settings(full_code)
             await controller.navigate_to(
                 __import__('automation.screens', fromlist=['Screen']).Screen.LOBBY
             )
 
-            await callback_client.report_status(self.pug_lobby_id, "invites_sent", instance_id=self.id)
+            # Step 1: Send invites
+            await callback_client.report_status(self.pug_lobby_id, "lobby_created", instance_id=self.id)
             invite_result = await controller.invite_players(players)
 
             if invite_result.joined < invite_result.total - len(invite_result.missing_tags):
@@ -154,6 +156,10 @@ class OWInstance:
                     len(invite_result.timed_out), len(invite_result.failed_invites),
                 )
 
+            # Step 2: Players joining
+            await callback_client.report_status(self.pug_lobby_id, "players_joining", instance_id=self.id)
+
+            # Step 3: Start game
             await controller.start_game()
             self.on_game_started()
             await callback_client.report_status(self.pug_lobby_id, "game_started", instance_id=self.id)
@@ -187,10 +193,12 @@ class OWInstance:
 
             controller = LobbyController(self)
 
+            # Step 0: Create lobby and import settings
             await callback_client.report_status(pug_lobby_id, "creating", instance_id=self.id)
             await controller.create_and_configure(full_code)
 
-            await callback_client.report_status(pug_lobby_id, "invites_sent", instance_id=self.id)
+            # Step 1: Send invites
+            await callback_client.report_status(pug_lobby_id, "lobby_created", instance_id=self.id)
             invite_result = await controller.invite_players(players)
 
             if invite_result.joined < invite_result.total - len(invite_result.missing_tags):
@@ -200,6 +208,10 @@ class OWInstance:
                     len(invite_result.timed_out), len(invite_result.failed_invites),
                 )
 
+            # Step 2: Players joining
+            await callback_client.report_status(pug_lobby_id, "players_joining", instance_id=self.id)
+
+            # Step 3: Start game
             await controller.start_game()
             self.on_game_started()
             await callback_client.report_status(pug_lobby_id, "game_started", instance_id=self.id)
