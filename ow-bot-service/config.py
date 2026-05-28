@@ -10,6 +10,7 @@ class BattleNetAccount(BaseSettings):
     password: str = ""
     authenticator_secret: str = ""
     screen_region: tuple[int, int, int, int] = (0, 0, 1280, 720)
+    battle_tag: str = ""
 
 
 class Settings(BaseSettings):

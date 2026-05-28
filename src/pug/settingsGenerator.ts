@@ -247,7 +247,8 @@ function generateBotSettings(input: SettingsInput): string {
   lines.push('\tworkshop')
   lines.push('\t{')
   lines.push('\t\tControl Point Progress Increment: 33.300')
-  lines.push('\t\tEnable Debug Mode: On')
+  lines.push('\t\tEnable Debug Mode: Off')
+  lines.push('\t\tEnable Ready Up System: [2]')
   lines.push('\t\tAutomatically End Match Time: 2700')
   lines.push(
     '\t\tEnd Assault, Escort and Hybrid Maps After Two Rounds: [2]',

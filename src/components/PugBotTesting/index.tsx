@@ -5,7 +5,7 @@ import {
   Loader2, Wifi, WifiOff, Zap, Play, CheckCircle2, AlertTriangle,
   ChevronDown, ChevronRight, Power, PowerOff, RefreshCw, Pause,
   Square, Monitor, Bot, UserPlus, Users, Gamepad2, Code, Send,
-  RotateCcw, ServerCrash,
+  RotateCcw, ServerCrash, Camera, X, RefreshCcw, ScanLine,
 } from 'lucide-react'
 import { PUG_ADMIN_CSS } from '@/components/pugAdminStyles'
 import { useAlert, useConfirm } from '@/components/ConfirmDialog'
@@ -75,7 +75,7 @@ const STATE_CONFIG: Record<string, { color: string; bg: string; label: string }>
   available: { color: '#4ade80', bg: 'rgba(74,222,128,0.1)', label: 'Available' },
   warming_up: { color: '#60a5fa', bg: 'rgba(96,165,250,0.1)', label: 'Warming Up' },
   ready: { color: '#2dd4bf', bg: 'rgba(45,212,191,0.1)', label: 'Ready' },
-  creating_lobby: { color: '#facc15', bg: 'rgba(250,204,21,0.1)', label: 'Creating Lobby' },
+  creating_lobby: { color: '#facc15', bg: 'rgba(250,204,21,0.1)', label: 'In Lobby' },
   waiting_for_players: { color: '#fb923c', bg: 'rgba(251,146,60,0.1)', label: 'Waiting for Players' },
   in_game: { color: '#f97316', bg: 'rgba(249,115,22,0.1)', label: 'In Game' },
   post_game: { color: '#a78bfa', bg: 'rgba(167,139,250,0.1)', label: 'Post Game' },
@@ -188,7 +188,7 @@ function CodeImportPanel({
   onCancel,
   disabled,
 }: {
-  onImport: (code: string) => void
+  onImport: (code: string, meta?: { mapSettingsEntry?: string; mapType?: string; bannedHeroes?: string[]; otherMapsInMode?: string[]; hostNote?: string }) => void
   onCancel: () => void
   disabled: boolean
 }) {
@@ -233,8 +233,14 @@ function CodeImportPanel({
         if (other) hostNote = `Manually disable ${other} in Push > Maps`
       }
     }
-    const code = buildSettingsCode(selectedMap.settingsEntry || selectedMap.name, selectedMap.type, bannedNames, otherMapsInMode, hostNote)
-    onImport(code)
+    // Send a placeholder code + metadata so the server generates the full bot code
+    onImport('__generate__', {
+      mapSettingsEntry: selectedMap.settingsEntry || selectedMap.name,
+      mapType: selectedMap.type,
+      bannedHeroes: bannedNames,
+      otherMapsInMode,
+      hostNote,
+    })
   }
 
   if (loading) return <div style={{ fontSize: 12, color: '#64748b', padding: '12px 0' }}>Loading maps & heroes...</div>
@@ -395,16 +401,18 @@ function InviteInput({ onInvite, disabled }: { onInvite: (tag: string, team: num
         onChange={(e) => setTeam(Number(e.target.value))}
         disabled={disabled}
         style={{
-          padding: '5px 8px',
-          fontSize: 11,
-          background: 'rgba(0,0,0,0.3)',
-          border: '1px solid rgba(255,255,255,0.1)',
+          padding: '5px 10px',
+          fontSize: 13,
+          fontWeight: 600,
+          background: 'rgba(0,0,0,0.5)',
+          border: '1px solid rgba(255,255,255,0.2)',
           borderRadius: 6,
-          color: '#94a3b8',
+          color: '#e2e8f0',
         }}
       >
         <option value={1}>T1</option>
         <option value={2}>T2</option>
+        <option value={0}>Spec</option>
       </select>
       <button
         className="ps-btn ps-btn-primary"
@@ -625,6 +633,112 @@ function LiveStatsPanel({ stats }: { stats: LiveStats }) {
   )
 }
 
+// ── Screenshot Viewer ──
+
+function ScreenshotViewer({
+  instanceId,
+  onClose,
+}: {
+  instanceId: string
+  onClose: () => void
+}) {
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [autoRefresh, setAutoRefresh] = useState(false)
+
+  const fetchScreenshot = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/pug/bot/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'screenshot', instanceId }),
+        credentials: 'include',
+      })
+      const data = await res.json()
+      if (data.error) throw new Error(data.error)
+      setImageUrl(data.image)
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch screenshot')
+    } finally {
+      setLoading(false)
+    }
+  }, [instanceId])
+
+  useEffect(() => { fetchScreenshot() }, [fetchScreenshot])
+
+  useEffect(() => {
+    if (!autoRefresh) return
+    const interval = setInterval(fetchScreenshot, 5000)
+    return () => clearInterval(interval)
+  }, [autoRefresh, fetchScreenshot])
+
+  return (
+    <div style={{
+      marginTop: 8,
+      padding: 10,
+      background: 'rgba(0,0,0,0.3)',
+      borderRadius: 8,
+      border: '1px solid rgba(255,255,255,0.08)',
+    }} onClick={(e) => e.stopPropagation()}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+        <span style={{ fontSize: 12, fontWeight: 600, color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <Camera size={12} /> Desktop Screenshot
+        </span>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: '#64748b', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={autoRefresh}
+              onChange={(e) => setAutoRefresh(e.target.checked)}
+              style={{ width: 12, height: 12 }}
+            />
+            Auto (5s)
+          </label>
+          <button
+            className="ps-btn ps-btn-ghost"
+            style={{ padding: '2px 6px', fontSize: 10 }}
+            onClick={fetchScreenshot}
+            disabled={loading}
+          >
+            <RefreshCcw size={10} />
+          </button>
+          <button
+            className="ps-btn ps-btn-ghost"
+            style={{ padding: '2px 6px', fontSize: 10 }}
+            onClick={onClose}
+          >
+            <X size={10} />
+          </button>
+        </div>
+      </div>
+      {loading && !imageUrl && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px 0', color: '#64748b', fontSize: 12 }}>
+          <Loader2 size={14} className="ps-spin" style={{ marginRight: 6 }} /> Loading screenshot...
+        </div>
+      )}
+      {error && (
+        <div style={{ fontSize: 12, color: '#f87171', padding: '8px 0' }}>{error}</div>
+      )}
+      {imageUrl && (
+        <img
+          src={imageUrl}
+          alt="Bot desktop screenshot"
+          style={{
+            width: '100%',
+            borderRadius: 6,
+            border: '1px solid rgba(255,255,255,0.06)',
+            opacity: loading ? 0.6 : 1,
+            transition: 'opacity 0.2s',
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
 // ── Main Panel ──
 
 export function PugBotTestingPanel() {
@@ -643,6 +757,12 @@ export function PugBotTestingPanel() {
   const [expandedInstances, setExpandedInstances] = useState<Set<string>>(new Set())
   const [codeImport, setCodeImport] = useState<{ instanceId: string } | null>(null)
   const [importingInstanceId, setImportingInstanceId] = useState<string | null>(null)
+  const [invitingInstanceId, setInvitingInstanceId] = useState<string | null>(null)
+  const [screenshotInstanceId, setScreenshotInstanceId] = useState<string | null>(null)
+  const [syncingInstanceId, setSyncingInstanceId] = useState<string | null>(null)
+  const [pausedInstances, setPausedInstances] = useState<Set<string>>(new Set())
+  const [testTagsInput, setTestTagsInput] = useState('')
+  const [testLobbyRunning, setTestLobbyRunning] = useState(false)
 
   const checkHealth = useCallback(async () => {
     setHealthLoading(true)
@@ -911,7 +1031,8 @@ export function PugBotTestingPanel() {
               const stateConf = getStateConfig(inst.state)
               const displayName = getDisplayName(inst)
               const isImporting = importingInstanceId === inst.id
-              const isWorking = inst.state === 'warming_up' || inst.state === 'creating_lobby' || isImporting
+              const isInviting = invitingInstanceId === inst.id
+              const isWorking = inst.state === 'warming_up' || inst.state === 'creating_lobby' || isImporting || isInviting
               const isInLobby = inst.state === 'waiting_for_players' || inst.state === 'in_game' || inst.state === 'creating_lobby'
               const isError = inst.state === 'error'
               const isIdle = inst.state === 'available'
@@ -941,27 +1062,92 @@ export function PugBotTestingPanel() {
                       </span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <button
+                        className="ps-btn ps-btn-ghost"
+                        style={{ padding: '3px 6px', fontSize: 10, opacity: 0.6 }}
+                        onClick={async (e) => {
+                          e.stopPropagation()
+                          setSyncingInstanceId(inst.id)
+                          try {
+                            const res = await fetch('/api/pug/bot/test', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ action: 'syncInstance', instanceId: inst.id }),
+                              credentials: 'include',
+                            })
+                            const data = await res.json()
+                            if (data.ok) {
+                              fetchInstances()
+                            } else {
+                              await alert({ message: data.error || 'Sync failed', variant: 'danger' })
+                            }
+                          } catch (err: any) {
+                            await alert({ message: err.message, variant: 'danger' })
+                          } finally {
+                            setSyncingInstanceId(null)
+                          }
+                        }}
+                        title="Detect actual OW screen and sync state"
+                        disabled={syncingInstanceId === inst.id}
+                      >
+                        {syncingInstanceId === inst.id ? <Loader2 size={12} className="ps-spin" /> : <ScanLine size={12} />}
+                      </button>
+                      <button
+                        className="ps-btn ps-btn-ghost"
+                        style={{ padding: '3px 6px', fontSize: 10, opacity: 0.6 }}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setScreenshotInstanceId(screenshotInstanceId === inst.id ? null : inst.id)
+                        }}
+                        title="View desktop screenshot"
+                      >
+                        <Camera size={12} />
+                      </button>
                       <span style={{
                         fontSize: 11, fontWeight: 500, color: stateConf.color,
                         padding: '3px 10px', background: `${stateConf.color}18`, borderRadius: 6,
                         display: 'flex', alignItems: 'center', gap: 5,
                       }}>
                         {isWorking && <Loader2 size={10} className="ps-spin" />}
-                        {isImporting ? 'Importing Code…' : stateConf.label}
+                        {syncingInstanceId === inst.id ? 'Scanning...' : isInviting ? 'Inviting Player...' : isImporting ? 'Importing Code...' : stateConf.label}
                       </span>
                       {expanded ? <ChevronDown size={14} style={{ color: '#475569' }} /> : <ChevronRight size={14} style={{ color: '#475569' }} />}
                     </div>
                   </div>
 
                   {/* Status detail — shows what the bot is actively doing */}
-                  {(inst.statusDetail || isImporting) && (
+                  {(inst.statusDetail || isImporting || isInviting) && (
                     <div style={{
                       display: 'flex', alignItems: 'center', gap: 6,
                       padding: '6px 10px', fontSize: 12, color: '#94a3b8',
                       background: 'rgba(0,0,0,0.15)', borderRadius: 6,
                     }}>
                       <Loader2 size={11} className="ps-spin" style={{ color: stateConf.color, flexShrink: 0 }} />
-                      <span>{isImporting ? 'Importing settings code…' : inst.statusDetail}</span>
+                      <span>{isInviting ? 'Sending invite in Overwatch - this takes up to 2 minutes…' : isImporting ? 'Importing settings code…' : inst.statusDetail}</span>
+                    </div>
+                  )}
+
+                  {/* Step-by-step workflow hint */}
+                  {inst.state === 'creating_lobby' && !isImporting && !inst.statusDetail && (
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      padding: '6px 10px', fontSize: 12, color: '#facc15',
+                      background: 'rgba(250,204,21,0.06)', borderRadius: 6,
+                      border: '1px solid rgba(250,204,21,0.12)',
+                    }}>
+                      <CheckCircle2 size={11} style={{ flexShrink: 0 }} />
+                      <span>Custom game created. Next: Import Code, Invite Players, or Start Game</span>
+                    </div>
+                  )}
+                  {inst.state === 'ready' && (
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      padding: '6px 10px', fontSize: 12, color: '#2dd4bf',
+                      background: 'rgba(45,212,191,0.06)', borderRadius: 6,
+                      border: '1px solid rgba(45,212,191,0.12)',
+                    }}>
+                      <Zap size={11} style={{ flexShrink: 0 }} />
+                      <span>Instance warmed up. Click Create Game to open a custom lobby</span>
                     </div>
                   )}
 
@@ -1018,7 +1204,7 @@ export function PugBotTestingPanel() {
                     )}
 
                     {/* In lobby: Import / Start */}
-                    {inst.state === 'waiting_for_players' && (
+                    {(inst.state === 'waiting_for_players' || inst.state === 'creating_lobby') && (
                       <>
                         <button
                           className="ps-btn ps-btn-ghost"
@@ -1043,31 +1229,62 @@ export function PugBotTestingPanel() {
                     )}
 
                     {/* In game: Pause / End */}
-                    {inst.state === 'in_game' && inst.pugLobbyId && (
+                    {inst.state === 'in_game' && (
                       <>
                         <button
-                          className="ps-btn ps-btn-warning"
+                          className={pausedInstances.has(inst.id) ? 'ps-btn ps-btn-success' : 'ps-btn ps-btn-warning'}
                           style={{ padding: '5px 12px', fontSize: 11 }}
-                          onClick={(e) => { e.stopPropagation(); botAction({ action: 'lobbyCommand', pugLobbyId: inst.pugLobbyId, command: 'pause' }) }}
+                          onClick={async (e) => {
+                            e.stopPropagation()
+                            const cmd = pausedInstances.has(inst.id) ? 'unpause' : 'pause'
+                            const result = inst.pugLobbyId
+                              ? await botAction({ action: 'lobbyCommand', pugLobbyId: inst.pugLobbyId, command: cmd })
+                              : await botAction({ action: 'instanceStep', instanceId: inst.id, command: cmd })
+                            if (result?.ok) {
+                              setPausedInstances(prev => {
+                                const next = new Set(prev)
+                                if (cmd === 'pause') next.add(inst.id)
+                                else next.delete(inst.id)
+                                return next
+                              })
+                            }
+                          }}
                           disabled={acting !== null}
                         >
-                          <Pause size={11} /> Pause
+                          {pausedInstances.has(inst.id) ? <><Play size={11} /> Unpause</> : <><Pause size={11} /> Pause</>}
+                        </button>
+                        <button
+                          className="ps-btn"
+                          style={{ padding: '5px 12px', fontSize: 11, background: '#2563eb', color: '#fff' }}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            botAction({ action: 'instanceStep', instanceId: inst.id, command: 'end_team1' })
+                          }}
+                          disabled={acting !== null}
+                        >
+                          T1 Wins
+                        </button>
+                        <button
+                          className="ps-btn"
+                          style={{ padding: '5px 12px', fontSize: 11, background: '#dc2626', color: '#fff' }}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            botAction({ action: 'instanceStep', instanceId: inst.id, command: 'end_team2' })
+                          }}
+                          disabled={acting !== null}
+                        >
+                          T2 Wins
                         </button>
                         <button
                           className="ps-btn ps-btn-ghost"
                           style={{ padding: '5px 12px', fontSize: 11 }}
-                          onClick={(e) => { e.stopPropagation(); botAction({ action: 'lobbyCommand', pugLobbyId: inst.pugLobbyId, command: 'unpause' }) }}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            botAction({ action: 'instanceStep', instanceId: inst.id, command: 'end_draw' })
+                          }}
                           disabled={acting !== null}
                         >
-                          <Play size={11} /> Unpause
-                        </button>
-                        <button
-                          className="ps-btn ps-btn-danger"
-                          style={{ padding: '5px 12px', fontSize: 11 }}
-                          onClick={(e) => { e.stopPropagation(); botAction({ action: 'lobbyCommand', pugLobbyId: inst.pugLobbyId, command: 'end_game' }) }}
-                          disabled={acting !== null}
-                        >
-                          <Square size={11} /> End Game
+                          Draw
                         </button>
                       </>
                     )}
@@ -1081,6 +1298,21 @@ export function PugBotTestingPanel() {
                         disabled={acting !== null}
                       >
                         Cancel Lobby
+                      </button>
+                    )}
+
+                    {/* Reset for step-by-step testing (no pugLobbyId) */}
+                    {(isInLobby || inst.state === 'in_game' || inst.state === 'post_game') && !inst.pugLobbyId && (
+                      <button
+                        className="ps-btn ps-btn-ghost"
+                        style={{ padding: '5px 12px', fontSize: 11 }}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          botAction({ action: 'recoverInstance', instanceId: inst.id }, undefined, { instanceId: inst.id, state: 'available' })
+                        }}
+                        disabled={acting !== null}
+                      >
+                        <RotateCcw size={11} /> Reset Instance
                       </button>
                     )}
 
@@ -1115,11 +1347,11 @@ export function PugBotTestingPanel() {
                   {/* Code import — settings generator or manual paste */}
                   {codeImport?.instanceId === inst.id && (
                     <CodeImportPanel
-                      onImport={async (code) => {
+                      onImport={async (code, meta) => {
                         setCodeImport(null)
                         setImportingInstanceId(inst.id)
                         try {
-                          await botAction({ action: 'instanceStep', instanceId: inst.id, command: 'import_code', code })
+                          await botAction({ action: 'instanceStep', instanceId: inst.id, command: 'import_code', code, ...meta })
                         } finally {
                           setImportingInstanceId(null)
                         }
@@ -1142,20 +1374,42 @@ export function PugBotTestingPanel() {
                         />
                       )}
                       <InviteInput
-                        onInvite={(tag, team) => {
-                          if (inst.pugLobbyId) {
-                            botAction({ action: 'inviteToLobby', pugLobbyId: inst.pugLobbyId, battleTag: tag, team })
-                          } else {
-                            botAction({
-                              action: 'instanceStep', instanceId: inst.id,
-                              command: 'invite_players',
-                              players: [{ userId: 0, battleTag: tag, team }],
+                        onInvite={async (tag, team) => {
+                          setInvitingInstanceId(inst.id)
+                          try {
+                            const body = inst.pugLobbyId
+                              ? { action: 'inviteToLobby', pugLobbyId: inst.pugLobbyId, battleTag: tag, team }
+                              : { action: 'instanceStep', instanceId: inst.id, command: 'invite_players', players: [{ userId: 0, battleTag: tag, team }] }
+                            const res = await fetch('/api/pug/bot/test', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify(body),
+                              credentials: 'include',
                             })
+                            const result = await res.json()
+                            if (!res.ok || result.error) {
+                              await alert({ message: result.error || 'Invite failed', variant: 'danger' })
+                            } else {
+                              await alert({ message: 'Invite sent in Overwatch', variant: 'info' })
+                            }
+                            fetchInstances()
+                          } catch (err: any) {
+                            await alert({ message: err.message, variant: 'danger' })
+                          } finally {
+                            setInvitingInstanceId(null)
                           }
                         }}
                         disabled={acting !== null}
                       />
                     </div>
+                  )}
+
+                  {/* Screenshot viewer */}
+                  {screenshotInstanceId === inst.id && (
+                    <ScreenshotViewer
+                      instanceId={inst.id}
+                      onClose={() => setScreenshotInstanceId(null)}
+                    />
                   )}
 
                   {/* Expanded: extra details */}
@@ -1205,6 +1459,70 @@ export function PugBotTestingPanel() {
                 </button>
                 <span style={{ fontSize: 12, color: '#64748b' }}>
                   Creates a lobby, fills with 10 dummies, advances through all phases.
+                </span>
+              </div>
+            </div>
+
+            {/* Start Test Lobby with BattleTags */}
+            <div style={{ marginBottom: 20, padding: 16, borderRadius: 10, border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Gamepad2 size={14} /> Start Test Lobby
+              </p>
+              <p style={{ fontSize: 11, color: '#64748b', marginBottom: 10 }}>
+                Enter BattleTags (one per line). First half = Team 1, second half = Team 2. The bot will create a custom game, import settings, and invite everyone.
+              </p>
+              <textarea
+                value={testTagsInput}
+                onChange={(e) => setTestTagsInput(e.target.value)}
+                placeholder={'Player1#1234\nPlayer2#5678\nPlayer3#9012\n...'}
+                style={{
+                  width: '100%', minHeight: 120, padding: 10, borderRadius: 8,
+                  background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)',
+                  color: '#e2e8f0', fontSize: 12, fontFamily: 'monospace', resize: 'vertical',
+                }}
+              />
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 10 }}>
+                <button
+                  className="ps-btn ps-btn-primary"
+                  disabled={testLobbyRunning || !testTagsInput.trim()}
+                  onClick={async () => {
+                    const tags = testTagsInput.trim().split('\n').map(t => t.trim()).filter(Boolean)
+                    if (tags.length < 2) { alert({ message: 'Need at least 2 BattleTags' }); return }
+                    if (tags.length > 10) { alert({ message: 'Max 10 BattleTags' }); return }
+                    setTestLobbyRunning(true)
+                    try {
+                      const res = await fetch('/api/pug/bot/test', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'startTestLobby', battleTags: tags }),
+                        credentials: 'include',
+                      })
+                      const data = await res.json()
+                      setLastResult(JSON.stringify(data, null, 2))
+                      if (data.ok) {
+                        fetchInstances()
+                        fetchLobbies()
+                      }
+                    } catch (err: any) {
+                      setLastResult(`Error: ${err.message}`)
+                    } finally {
+                      setTestLobbyRunning(false)
+                    }
+                  }}
+                  style={{ padding: '10px 20px', fontSize: 13 }}
+                >
+                  {testLobbyRunning ? (
+                    <><Loader2 size={14} className="ps-spin" /> Starting...</>
+                  ) : (
+                    <><Play size={14} /> Start Test Lobby ({testTagsInput.trim().split('\n').filter(t => t.trim()).length} players)</>
+                  )}
+                </button>
+                <span style={{ fontSize: 11, color: '#64748b' }}>
+                  {(() => {
+                    const tags = testTagsInput.trim().split('\n').filter(t => t.trim())
+                    const half = Math.ceil(tags.length / 2)
+                    return tags.length >= 2 ? `T1: ${half} / T2: ${tags.length - half}` : ''
+                  })()}
                 </span>
               </div>
             </div>

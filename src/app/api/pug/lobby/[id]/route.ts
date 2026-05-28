@@ -258,6 +258,7 @@ export async function GET(request: NextRequest, { params }: Params) {
       regionAllowed,
       hostInfo,
       linkedScrimId,
+      botEnabled: !!process.env.OW_BOT_SERVICE_URL,
     })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })

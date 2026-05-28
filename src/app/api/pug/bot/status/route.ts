@@ -2,6 +2,9 @@ import { NextResponse, type NextRequest } from 'next/server'
 import prisma from '@/lib/prisma'
 
 const BOT_STATUSES = [
+  'preparing',
+  'lobby_ready',
+  'creating',
   'lobby_created',
   'invites_sent',
   'players_joining',

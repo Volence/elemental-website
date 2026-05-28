@@ -40,6 +40,8 @@ async def lifespan(app: FastAPI):
     await scheduler.start()
     await instance_manager.start()
     workshop_monitor.start()
+    # Background recovery: detect running OW windows and sync state
+    asyncio.create_task(instance_manager.recover_running())
     yield
     workshop_monitor.stop()
     await instance_manager.shutdown()

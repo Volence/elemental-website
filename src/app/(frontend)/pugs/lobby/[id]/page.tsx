@@ -96,6 +96,7 @@ type LobbyData = {
     battleTags: Record<number, string | null>
   } | null
   linkedScrimId: number | null
+  botEnabled: boolean
 }
 
 function playNotificationSound() {
@@ -210,7 +211,7 @@ export default function LobbyPage() {
   if (error) return <main className="container mx-auto p-8 text-red-400">{error}</main>
   if (!data) return <main className="container mx-auto p-8 text-gray-500">Loading...</main>
 
-  const { lobby, selectedMap, mapCandidates, heroes, currentUserId, isPugAdmin, guildId, blockedRoles, neededSlots, spotsAvailable, approvedRoles, regionAllowed, hostInfo, linkedScrimId } = data
+  const { lobby, selectedMap, mapCandidates, heroes, currentUserId, isPugAdmin, guildId, blockedRoles, neededSlots, spotsAvailable, approvedRoles, regionAllowed, hostInfo, linkedScrimId, botEnabled } = data
   const players: Player[] = lobby.players
   const me = players.find((p) => p.userId === currentUserId)
   const inLobby = !!me
@@ -545,6 +546,7 @@ export default function LobbyPage() {
             selectedMap={selectedMap}
             players={players}
             heroes={heroes}
+            botEnabled={botEnabled}
             onHost={() => apiAction('/host', {})}
           />
 
@@ -1644,14 +1646,73 @@ function LiveScoreboard({ lobbyId, botStatus }: { lobbyId: number; botStatus: st
 
 // ── Bot Hosting Panel ──
 
-const BOT_STATUS_DISPLAY: Record<string, { label: string; color: string; pulse?: boolean }> = {
-  creating: { label: 'Creating Lobby', color: 'text-cyan-400', pulse: true },
-  lobby_created: { label: 'Lobby Created', color: 'text-cyan-400' },
-  invites_sent: { label: 'Invites Sent', color: 'text-blue-400' },
-  players_joining: { label: 'Players Joining', color: 'text-blue-400', pulse: true },
-  game_started: { label: 'Game In Progress', color: 'text-green-400' },
-  game_ended: { label: 'Game Ended', color: 'text-gray-400' },
-  error: { label: 'Error', color: 'text-red-400' },
+const BOT_STATUS_DISPLAY: Record<string, { label: string; color: string; pulse?: boolean; description: string; step: number }> = {
+  warming_up: {
+    label: 'Starting Up',
+    color: 'text-cyan-400',
+    pulse: true,
+    step: 0,
+    description: 'The bot is launching Overwatch. This usually takes about 30 seconds.',
+  },
+  preparing: {
+    label: 'Creating Lobby',
+    color: 'text-cyan-400',
+    pulse: true,
+    step: 0,
+    description: 'Setting up the custom game lobby while teams pick maps and bans.',
+  },
+  lobby_ready: {
+    label: 'Lobby Ready',
+    color: 'text-cyan-400',
+    step: 0,
+    description: 'Lobby is created and waiting for match settings.',
+  },
+  creating: {
+    label: 'Importing Settings',
+    color: 'text-cyan-400',
+    pulse: true,
+    step: 0,
+    description: 'Importing match settings with your map, bans, and workshop code.',
+  },
+  lobby_created: {
+    label: 'Sending Invites',
+    color: 'text-cyan-400',
+    pulse: true,
+    step: 1,
+    description: 'Lobby ready! Sending invites to all 10 players now.',
+  },
+  invites_sent: {
+    label: 'Invites Sent',
+    color: 'text-blue-400',
+    step: 1,
+    description: 'All invites sent! Accept your invite in Overwatch to join the match.',
+  },
+  players_joining: {
+    label: 'Players Joining',
+    color: 'text-blue-400',
+    pulse: true,
+    step: 2,
+    description: 'Players are joining the lobby. The game will start once everyone is in.',
+  },
+  game_started: {
+    label: 'Match Live',
+    color: 'text-green-400',
+    step: 3,
+    description: 'The match is live! Good luck, have fun.',
+  },
+  game_ended: {
+    label: 'Game Ended',
+    color: 'text-gray-400',
+    step: 3,
+    description: 'Match complete. Results are being processed...',
+  },
+  error: {
+    label: 'Retrying...',
+    color: 'text-yellow-400',
+    pulse: true,
+    step: 0,
+    description: 'The bot ran into an issue and is recovering. It will retry automatically.',
+  },
 }
 
 function BotHostingPanel({
@@ -1666,8 +1727,9 @@ function BotHostingPanel({
   const [cmdLoading, setCmdLoading] = useState<string | null>(null)
   const [cmdError, setCmdError] = useState<string | null>(null)
 
-  const botStatus = (lobby.botStatus as string) ?? 'creating'
-  const statusInfo = BOT_STATUS_DISPLAY[botStatus] ?? { label: botStatus, color: 'text-gray-400' }
+  const botStatus = (lobby.botStatus as string) ?? 'warming_up'
+  const defaultStatus = { label: botStatus, color: 'text-gray-400', description: '' }
+  const statusInfo = BOT_STATUS_DISPLAY[botStatus] ?? defaultStatus
 
   async function sendBotCommand(command: string) {
     setCmdLoading(command)
@@ -1691,6 +1753,22 @@ function BotHostingPanel({
 
   const gameActive = ['game_started', 'players_joining'].includes(botStatus)
 
+  // Step progress tracking
+  const steps = [
+    { key: 'setup', label: 'Import Settings' },
+    { key: 'invite', label: 'Send Invites' },
+    { key: 'join', label: 'Players Join' },
+    { key: 'play', label: 'Match Live' },
+  ]
+  const currentStep = statusInfo.step ?? 0
+  const getStepState = (i: number) => {
+    if (botStatus === 'error') return i === currentStep ? 'error' : i < currentStep ? 'done' : 'pending'
+    if (botStatus === 'game_ended') return 'done'
+    if (i < currentStep) return 'done'
+    if (i === currentStep) return 'active'
+    return 'pending'
+  }
+
   return (
     <div className="border border-cyan-800/60 bg-cyan-950/15 rounded-lg overflow-hidden">
       <div className="px-4 py-3 bg-cyan-950/30 border-b border-cyan-800/40">
@@ -1711,15 +1789,34 @@ function BotHostingPanel({
         </div>
       </div>
 
-      <div className="p-4 space-y-3">
+      <div className="p-4 space-y-4">
+        {/* Step progress bar */}
+        <div className="flex items-center gap-1">
+          {steps.map((step, i) => {
+            const state = getStepState(i)
+            return (
+              <div key={step.key} className="flex items-center flex-1 min-w-0">
+                <div className="flex flex-col items-center flex-1 min-w-0">
+                  <div className={`w-full h-1.5 rounded-full transition-all duration-500 ${
+                    state === 'done' ? 'bg-cyan-500' :
+                    state === 'active' ? 'bg-cyan-400 animate-pulse' :
+                    state === 'error' ? 'bg-yellow-500 animate-pulse' :
+                    'bg-gray-700'
+                  }`} />
+                  <span className={`text-[10px] mt-1 truncate ${
+                    state === 'done' ? 'text-cyan-500' :
+                    state === 'active' ? 'text-cyan-300 font-semibold' :
+                    state === 'error' ? 'text-yellow-400' :
+                    'text-gray-600'
+                  }`}>{step.label}</span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
         <p className="text-sm text-gray-400">
-          {botStatus === 'creating' && 'The bot is creating the in-game lobby and importing settings...'}
-          {botStatus === 'lobby_created' && 'Lobby created! Sending invites to all players...'}
-          {botStatus === 'invites_sent' && 'Invites sent! Join the game when you receive your invite in Overwatch.'}
-          {botStatus === 'players_joining' && 'Players are joining the lobby. Get ready!'}
-          {botStatus === 'game_started' && 'The match is live! Good luck, have fun.'}
-          {botStatus === 'game_ended' && 'Match complete. Results are being processed...'}
-          {botStatus === 'error' && 'Automated setup failed. A manual host is needed.'}
+          {statusInfo.description}
         </p>
 
         <div className="flex flex-wrap gap-3">
@@ -1787,7 +1884,7 @@ function BotHostingPanel({
 // ── Lobby Setup Assistant ──
 
 function LobbySetupAssistant({
-  lobby, hostInfo, currentUserId, isPugAdmin, selectedMap, players, heroes, onHost,
+  lobby, hostInfo, currentUserId, isPugAdmin, selectedMap, players, heroes, botEnabled, onHost,
 }: {
   lobby: any
   hostInfo: LobbyData['hostInfo']
@@ -1796,13 +1893,14 @@ function LobbySetupAssistant({
   selectedMap: LobbyData['selectedMap']
   players: Player[]
   heroes: Hero[]
+  botEnabled: boolean
   onHost: () => void
 }) {
   if (!hostInfo) return null
 
   const isHost = hostInfo.hostUserId === currentUserId
   const hasHost = hostInfo.hostUserId !== null
-  const isBotHosting = hostInfo.hostUserId === -1
+  const isBotHosting = hostInfo.hostUserId === -1 || (botEnabled && !hasHost)
   const isPlayer = players.some((p) => p.userId === currentUserId)
 
   // Get banned hero names from banState

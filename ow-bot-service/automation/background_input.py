@@ -140,6 +140,35 @@ def send_click(hwnd: int, x: int, y: int, hold_ms: int = 50) -> bool:
     return True
 
 
+def get_clipboard() -> str | None:
+    """Read current clipboard text. Returns None if empty or failed."""
+    kernel32 = ctypes.windll.kernel32
+    kernel32.GlobalLock.restype = ctypes.c_void_p
+    kernel32.GlobalLock.argtypes = [ctypes.c_void_p]
+    kernel32.GlobalUnlock.argtypes = [ctypes.c_void_p]
+    kernel32.GlobalSize.restype = ctypes.c_size_t
+    kernel32.GlobalSize.argtypes = [ctypes.c_void_p]
+    user32.GetClipboardData.restype = ctypes.c_void_p
+    user32.GetClipboardData.argtypes = [ctypes.wintypes.UINT]
+
+    if not user32.OpenClipboard(0):
+        logger.error("get_clipboard: OpenClipboard failed")
+        return None
+    try:
+        h = user32.GetClipboardData(13)  # CF_UNICODETEXT
+        if not h:
+            return None
+        p = kernel32.GlobalLock(h)
+        if not p:
+            return None
+        size = kernel32.GlobalSize(h)
+        raw = ctypes.string_at(p, size)
+        kernel32.GlobalUnlock(h)
+        return raw.decode("utf-16-le").rstrip("\x00")
+    finally:
+        user32.CloseClipboard()
+
+
 def set_clipboard(text: str) -> bool:
     """Set clipboard text using Win32 API (works from any context)."""
     kernel32 = ctypes.windll.kernel32
@@ -178,3 +207,54 @@ def set_clipboard(text: str) -> bool:
         return True
     finally:
         user32.CloseClipboard()
+
+
+def set_clipboard_powershell(text: str) -> bool:
+    """Set clipboard via PowerShell as a fallback.
+
+    Uses .NET's System.Windows.Forms.Clipboard which has its own
+    message pump and clipboard notification handling. This can work
+    better when Win32 API clipboard updates aren't being picked up
+    by DirectX applications.
+    """
+    import subprocess
+    import tempfile
+    import os
+
+    # Write to temp file first (too large for command line arg)
+    tmp_path = "C:/ow-bot-service/_clip_tmp.txt"
+    try:
+        with open(tmp_path, "w", encoding="utf-8") as f:
+            f.write(text)
+        result = subprocess.run(
+            [
+                "powershell", "-NoProfile", "-Command",
+                f'Get-Content "{tmp_path}" -Raw -Encoding UTF8 | Set-Clipboard',
+            ],
+            capture_output=True, text=True, timeout=15,
+        )
+        if result.returncode != 0:
+            logger.error("PowerShell Set-Clipboard failed: %s", result.stderr.strip())
+            return False
+        logger.info("PowerShell Set-Clipboard OK")
+        return True
+    except Exception as e:
+        logger.error("PowerShell Set-Clipboard exception: %s", e)
+        return False
+    finally:
+        try:
+            os.remove(tmp_path)
+        except OSError:
+            pass
+
+
+def notify_clipboard_change(hwnd: int = 0):
+    """Send WM_CLIPBOARDUPDATE to a window to force it to re-check clipboard.
+
+    If hwnd is 0, broadcasts to all top-level windows via HWND_BROADCAST.
+    """
+    WM_CLIPBOARDUPDATE = 0x031D
+    HWND_BROADCAST = 0xFFFF
+    target = hwnd or HWND_BROADCAST
+    user32.SendMessageW(target, WM_CLIPBOARDUPDATE, 0, 0)
+    logger.debug("Sent WM_CLIPBOARDUPDATE to hwnd=%d", target)

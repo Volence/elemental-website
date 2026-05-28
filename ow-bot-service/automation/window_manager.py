@@ -208,22 +208,29 @@ class WindowManager:
         return success
 
     def screenshot(self, instance_id: str) -> "Image | None":
-        """Take a screenshot of a specific instance's region.
+        """Take a screenshot of a specific instance's window.
 
-        NOTE: The window must be in the foreground for DirectX games.
-        Use focus_window() first.
+        Uses focus + region capture. The window must be in the
+        foreground for DirectX content to appear in screenshots.
+        We verify focus and retry if needed.
         """
         win = self._windows.get(instance_id)
         if not win:
             return None
 
+        # Update stored region from current window position
         rect = ctypes.wintypes.RECT()
         user32.GetWindowRect(win.hwnd, ctypes.byref(rect))
-        # Update stored region
         x, y = rect.left, rect.top
         w = rect.right - rect.left
         h = rect.bottom - rect.top
         win.region = (max(0, x), max(0, y), w, h)
+
+        # Ensure this window is actually in the foreground before
+        # capturing. DirectX only renders to the screen when focused.
+        if not win.is_foreground:
+            self.focus_window(instance_id)
+            time.sleep(0.5)
 
         return pyautogui.screenshot(region=win.region)
 

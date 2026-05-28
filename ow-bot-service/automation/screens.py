@@ -39,6 +39,7 @@ class Screen(Enum):
 # Texts are matched against SHORT OCR results only (<25 chars) to avoid
 # false matches from description text like "Create and join lobbies..."
 _SCREEN_SIGNATURES: list[tuple[Screen, list[str], list[str]]] = [
+    (Screen.LOGIN,        ["LOGIN"],                ["PLAY", "HEROES", "FILTER", "START"]),
     (Screen.SETTINGS,     ["PRESETS"],             []),
     (Screen.LOBBY,        ["START", "INVITE"],      []),
     (Screen.CUSTOM_GAMES, ["FILTER"],              ["START"]),

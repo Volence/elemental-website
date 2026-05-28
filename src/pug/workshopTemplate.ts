@@ -4,7 +4,7 @@ import path from 'path'
 let _cached: string | null = null
 
 const ADMIN_RULES = `
-rule("ELMT Admin: Pause/Unpause — Host presses Interact")
+rule("ELMT Admin: Pause or Unpause")
 {
 \tevent
 \t{
@@ -33,7 +33,27 @@ rule("ELMT Admin: Pause/Unpause — Host presses Interact")
 \t}
 }
 
-rule("ELMT Admin: End Game Draw — Host presses Ability 1")
+rule("ELMT Admin: End Game Draw")
+{
+\tevent
+\t{
+\t\tOngoing - Global;
+\t}
+
+\tconditions
+\t{
+\t\tIs Button Held(Host Player, Button(Ultimate)) == True;
+\t}
+
+\tactions
+\t{
+\t\tBig Message(All Players(All Teams), Custom String("MATCH ENDING - DRAW"));
+\t\tWait(3, Ignore Condition);
+\t\tDeclare Match Draw;
+\t}
+}
+
+rule("ELMT Admin: Team 1 Wins")
 {
 \tevent
 \t{
@@ -47,13 +67,14 @@ rule("ELMT Admin: End Game Draw — Host presses Ability 1")
 
 \tactions
 \t{
-\t\tBig Message(All Players(All Teams), Custom String("MATCH ENDING — DRAW"));
+\t\tBig Message(All Players(All Teams), Custom String("TEAM 1 WINS"));
+\t\tSet Team Score(Team 1, Max(Team Score(Team 1), Add(Team Score(Team 2), 1)));
 \t\tWait(3, Ignore Condition);
-\t\tDeclare Match Draw;
+\t\tDeclare Team Victory(Team 1);
 \t}
 }
 
-rule("ELMT Admin: Team 1 Wins — Host presses Ability 2")
+rule("ELMT Admin: Team 2 Wins")
 {
 \tevent
 \t{
@@ -63,27 +84,6 @@ rule("ELMT Admin: Team 1 Wins — Host presses Ability 2")
 \tconditions
 \t{
 \t\tIs Button Held(Host Player, Button(Ability 2)) == True;
-\t}
-
-\tactions
-\t{
-\t\tBig Message(All Players(All Teams), Custom String("TEAM 1 WINS"));
-\t\tSet Team Score(Team 1, Max(Team Score(Team 1), Add(Team Score(Team 2), 1)));
-\t\tWait(3, Ignore Condition);
-\t\tDeclare Team Victory(Team 1);
-\t}
-}
-
-rule("ELMT Admin: Team 2 Wins — Host presses Ultimate")
-{
-\tevent
-\t{
-\t\tOngoing - Global;
-\t}
-
-\tconditions
-\t{
-\t\tIs Button Held(Host Player, Button(Ultimate)) == True;
 \t}
 
 \tactions
@@ -116,6 +116,7 @@ rule("ELMT Admin: Unpause on Game End")
 \t\tEnd;
 \t}
 }
+
 `
 
 export function getWorkshopTemplate(): string {

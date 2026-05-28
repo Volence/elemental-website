@@ -21,6 +21,7 @@ import psutil
 
 from automation.window_manager import window_manager
 from automation import background_input
+from automation import timing as T
 
 logger = logging.getLogger("ow-bot.scheduler")
 
@@ -144,7 +145,7 @@ class HealthTask:
     last_check: float = 0
     check_interval: float = 30.0
     consecutive_failures: int = 0
-    max_failures: int = 3
+    max_failures: int = 10
 
     @property
     def needs_focus(self) -> bool:
@@ -180,6 +181,11 @@ class Scheduler:
         self.on_invites_sent: Callable | None = None
         self.on_game_started: Callable | None = None
         self.on_error: Callable | None = None
+
+    @property
+    def focus_lock(self) -> asyncio.Lock:
+        """Expose focus lock so API step commands can acquire it."""
+        return self._focus_lock
 
     @property
     def active_lobbies(self) -> list[LobbyTask]:
@@ -300,8 +306,29 @@ class Scheduler:
 
         for inst in instance_manager.instances:
             if inst.state == InstanceState.ERROR:
-                logger.info(f"[{inst.id}] Auto-recovering from error state")
-                await inst.recover()
+                # Only auto-recover if OW is actually running - otherwise
+                # recover() just resets to AVAILABLE and health check
+                # immediately starts failing again in an infinite loop.
+                ow_alive = inst.ow_process_id and psutil.pid_exists(inst.ow_process_id)
+                if ow_alive:
+                    logger.info(f"[{inst.id}] Auto-recovering from error state (OW alive)")
+                    await inst.recover()
+                    # Re-warmup since OW is running but in unknown state
+                    try:
+                        await inst.warmup()
+                    except Exception as e:
+                        logger.warning(f"[{inst.id}] Post-recover warmup failed: {e}")
+                else:
+                    logger.info(f"[{inst.id}] OW is dead, cleaning up error state (warmup needed)")
+                    inst.ow_process_id = None
+                    inst.pug_lobby_id = None
+                    inst.lobby_number = None
+                    inst.live_stats = None
+                    inst.player_names = set()
+                    inst.started_at = None
+                    self.unregister_health_check(inst.id)
+                    window_manager.remove_window(inst.id)
+                    inst.state = InstanceState.AVAILABLE
             elif inst.state != InstanceState.AVAILABLE and inst.ow_process_id:
                 if not psutil.pid_exists(inst.ow_process_id):
                     logger.warning(
@@ -309,9 +336,11 @@ class Scheduler:
                         f"resetting from {inst.state.value} to available"
                     )
                     self.unregister_health_check(inst.id)
+                    window_manager.remove_window(inst.id)
                     inst.ow_process_id = None
                     inst.pug_lobby_id = None
                     inst.lobby_number = None
+                    inst.live_stats = None
                     inst.state = InstanceState.AVAILABLE
 
     async def _execute_focus_task(self, tagged_task):
@@ -342,8 +371,10 @@ class Scheduler:
     def _get_detector(self, instance_id: str):
         from automation.screens import ScreenDetector
         win = window_manager.get_window(instance_id)
-        region = win.region if win else (0, 0, 1280, 720)
-        return ScreenDetector(region=region)
+        if not win:
+            logger.warning(f"[{instance_id}] No tracked window for detector")
+            return None
+        return ScreenDetector(region=win.region)
 
     async def _focus_instance(self, instance_id: str):
         import ctypes
@@ -369,7 +400,7 @@ class Scheduler:
         user32.SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0,
                             SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW)
         user32.SetForegroundWindow(hwnd)
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(T.FOCUS_AFTER)
 
     # ── Focus: warmup ─────────────────────────────────────────────────
 
@@ -412,7 +443,7 @@ class Scheduler:
                     shell=False,
                     cwd=str(ow_exe.parent),
                 )
-                await asyncio.sleep(5)
+                await asyncio.sleep(T.LAUNCH_AFTER_START)
                 task.state = WarmupState.LAUNCHING
 
         if task.state == WarmupState.LAUNCHING:
@@ -489,10 +520,11 @@ class Scheduler:
         if email_pos:
             await actions.click(*email_pos)
             await asyncio.sleep(0.5)
-        await actions.type_text(task.account.email)
+        await actions.hotkey("ctrl", "a")
+        await actions.paste_text(task.account.email)
         await actions.press_key("tab")
         await asyncio.sleep(0.3)
-        await actions.type_text(task.account.password)
+        await actions.paste_text(task.account.password)
         await actions.press_key("enter")
         await asyncio.sleep(5)
 
@@ -522,8 +554,20 @@ class Scheduler:
         return None
 
     def _ensure_window_registered(self, instance_id: str, pid: int):
-        if window_manager.get_window(instance_id):
-            return
+        existing = window_manager.get_window(instance_id)
+        if existing and existing.is_valid:
+            # Also verify it matches the expected PID
+            if existing.pid == pid:
+                return
+            # PID changed (new OW process) - remove stale entry
+            logger.info(
+                f"[{instance_id}] Window PID mismatch "
+                f"(tracked={existing.pid}, expected={pid}), re-registering"
+            )
+            window_manager.remove_window(instance_id)
+        elif existing and not existing.is_valid:
+            logger.info(f"[{instance_id}] Stale window handle, removing")
+            window_manager.remove_window(instance_id)
         import ctypes
         import ctypes.wintypes
         user32 = ctypes.windll.user32
@@ -558,16 +602,51 @@ class Scheduler:
 
     async def _execute_health_check(self, task: HealthTask):
         from automation.screens import Screen
+        from instances.manager import instance_manager
 
         task.last_check = time.time()
+
+        # Verify the OW process is still alive before doing anything
+        inst = next(
+            (i for i in instance_manager.instances if i.id == task.instance_id),
+            None,
+        )
+        if inst and inst.ow_process_id and not psutil.pid_exists(inst.ow_process_id):
+            logger.warning(f"[{task.instance_id}] Health: OW process {inst.ow_process_id} is dead, cleaning up")
+            inst.ow_process_id = None
+            inst.live_stats = None
+            inst.state = __import__('instances.instance', fromlist=['InstanceState']).InstanceState.AVAILABLE
+            window_manager.remove_window(task.instance_id)
+            self.unregister_health_check(task.instance_id)
+            return
+
+        win = window_manager.get_window(task.instance_id)
+        if not win or not win.is_valid:
+            logger.warning(f"[{task.instance_id}] Health: no valid window, unregistering health check")
+            self.unregister_health_check(task.instance_id)
+            return
+
         await self._focus_instance(task.instance_id)
         detector = self._get_detector(task.instance_id)
+        if not detector:
+            return
         screen = detector.detect_screen()
 
         if screen != Screen.UNKNOWN:
             if task.consecutive_failures > 0:
                 logger.info(f"[{task.instance_id}] Health: recovered ({screen.value})")
             task.consecutive_failures = 0
+
+            if screen == Screen.LOBBY:
+                from instances.instance import InstanceState
+                from instances.manager import instance_manager
+                inst = next(
+                    (i for i in instance_manager.instances if i.id == task.instance_id),
+                    None,
+                )
+                if inst and inst.state in (InstanceState.IN_GAME, InstanceState.POST_GAME):
+                    logger.info(f"[{task.instance_id}] Health: match ended (at lobby while {inst.state.value}), navigating to main menu")
+                    asyncio.create_task(self._return_to_main_menu(task.instance_id))
         else:
             # Try to classify and auto-dismiss dialogs before counting as failure
             classification = detector.classify_unknown()
@@ -577,7 +656,7 @@ class Scheduler:
                     from automation import actions
                     logger.info(f"[{task.instance_id}] Health: dismissing dialog at {pos}")
                     await actions.click(*pos)
-                    await asyncio.sleep(3)
+                    await asyncio.sleep(T.TRANSITION_DIALOG)
                     return
             elif classification == Screen.LOADING:
                 logger.debug(f"[{task.instance_id}] Health: loading screen, skipping")
@@ -589,26 +668,54 @@ class Scheduler:
                 f"(failure {task.consecutive_failures}/{task.max_failures})"
             )
             if task.consecutive_failures >= task.max_failures:
-                from instances.manager import instance_manager
                 from instances.instance import InstanceState
+                from instances.manager import instance_manager
                 inst = next(
                     (i for i in instance_manager.instances if i.id == task.instance_id),
                     None,
                 )
                 if inst:
-                    logger.error(f"[{task.instance_id}] Max health failures reached, recovering")
-                    inst.state = InstanceState.ERROR
-                    try:
-                        await inst.recover()
-                    except Exception:
-                        logger.exception(f"[{task.instance_id}] Recovery after health failures failed")
-                    task.consecutive_failures = 0
+                    # Check if OW process is actually dead
+                    ow_alive = inst.ow_process_id and psutil.pid_exists(inst.ow_process_id)
+                    if ow_alive:
+                        logger.error(f"[{task.instance_id}] Max health failures reached, OW running but unresponsive - marking error")
+                        inst.state = InstanceState.ERROR
+                    else:
+                        logger.error(f"[{task.instance_id}] Max health failures reached, OW is dead - cleaning up")
+                        inst.ow_process_id = None
+                        inst.live_stats = None
+                        inst.state = InstanceState.AVAILABLE
+                        window_manager.remove_window(task.instance_id)
+                        self.unregister_health_check(task.instance_id)
+                        logger.info(f"[{task.instance_id}] Cleaned up - awaiting warmup to relaunch OW")
+                task.consecutive_failures = 0
 
         # Check for Battle.net login screen
         pos = detector.find_text("LOG IN", retries=1)
         if pos:
             logger.warning(f"[{task.instance_id}] Battle.net login detected")
             await self._do_reauth(task.instance_id, detector)
+
+    async def _return_to_main_menu(self, instance_id: str):
+        from automation.controller import LobbyController
+        from automation.screens import Screen
+        from instances.manager import instance_manager
+
+        inst = next(
+            (i for i in instance_manager.instances if i.id == instance_id),
+            None,
+        )
+        if not inst:
+            return
+
+        try:
+            controller = LobbyController(inst)
+            await controller.navigate_to(Screen.MAIN_MENU)
+            logger.info(f"[{instance_id}] Reached main menu after match end")
+        except Exception as e:
+            logger.error(f"[{instance_id}] Failed to navigate to main menu: {e}")
+
+        await instance_manager.on_game_ended(instance_id)
 
     async def _do_reauth(self, instance_id: str, detector):
         from automation import actions
@@ -628,9 +735,10 @@ class Scheduler:
 
             await actions.click(*pos)
             await asyncio.sleep(0.5)
-            await actions.type_text(inst.account.email)
+            await actions.hotkey("ctrl", "a")
+            await actions.paste_text(inst.account.email)
             await actions.press_key("tab")
-            await actions.type_text(inst.account.password)
+            await actions.paste_text(inst.account.password)
             await actions.press_key("enter")
             await asyncio.sleep(3)
 
@@ -658,7 +766,7 @@ class Scheduler:
         if win and not win.is_foreground:
             logger.warning(f"Lobby #{task.lobby_number}: focus retry")
             window_manager.focus_window(task.instance_id)
-            await asyncio.sleep(1.0)
+            await asyncio.sleep(T.FOCUS_RETRY_AFTER)
 
         if task.state == LobbyState.PENDING:
             task.transition(LobbyState.CREATING_GAME)
@@ -684,7 +792,7 @@ class Scheduler:
                 await actions.click(*pos)
                 logger.info(f"Lobby #{task.lobby_number}: clicked CUSTOM at {pos}")
                 return True
-            await asyncio.sleep(1.5)
+            await asyncio.sleep(T.NAV_AFTER_ESC)
             pos = detector.find_text("CUSTOM", retries=2)
             if pos:
                 await actions.click(*pos)
@@ -705,41 +813,41 @@ class Scheduler:
 
         if current == Screen.UNKNOWN:
             await actions.press_key("escape")
-            await asyncio.sleep(1.5)
+            await asyncio.sleep(T.NAV_AFTER_ESC)
             current = detector.detect_screen()
 
         if current == Screen.LOBBY:
             # Already in a lobby — exit first
             await actions.click_text("EXIT", detector, retries=3)
-            await asyncio.sleep(2)
+            await asyncio.sleep(T.NAV_AFTER_EXIT)
             pos = detector.find_text("YES", retries=3)
             if pos:
                 await actions.move_to(*pos)
                 await asyncio.sleep(0.3)
                 await actions.click(*pos, delay=0.3)
-                await asyncio.sleep(5)
+                await asyncio.sleep(T.NAV_AFTER_EXIT_YES)
             current = detector.detect_screen()
 
         if current == Screen.MAIN_MENU:
             if not await actions.click_text("PLAY", detector, retries=3):
                 raise RuntimeError("PLAY button not found")
-            await asyncio.sleep(3)
+            await asyncio.sleep(T.TRANSITION_PLAY)
 
             if not await self._navigate_to_custom_games(task, detector):
                 raise RuntimeError("CUSTOM GAME button not found")
-            await asyncio.sleep(3)
+            await asyncio.sleep(T.TRANSITION_CUSTOM)
 
             if not await actions.click_text("CREATE", detector, retries=5):
                 raise RuntimeError("CREATE button not found")
-            await asyncio.sleep(3)
+            await asyncio.sleep(T.TRANSITION_CREATE)
 
         elif current in (Screen.PLAY_MENU, Screen.CUSTOM_GAMES):
             if current == Screen.PLAY_MENU:
                 if not await self._navigate_to_custom_games(task, detector):
                     raise RuntimeError("CUSTOM GAME button not found")
-                await asyncio.sleep(3)
+                await asyncio.sleep(T.TRANSITION_CUSTOM)
             await actions.click_text("CREATE", detector, retries=5)
-            await asyncio.sleep(3)
+            await asyncio.sleep(T.TRANSITION_CREATE)
 
         final = detector.detect_screen()
         if final == Screen.LOBBY:
@@ -757,29 +865,53 @@ class Scheduler:
 
         if not await actions.click_text("MOVE", detector, retries=3):
             raise RuntimeError("MOVE button not found")
-        await asyncio.sleep(1.5)
+        await asyncio.sleep(T.SPECTATOR_AFTER_MOVE)
 
         all_text = detector.find_all_text()
+
+        # Strategy: find the first EMPTY slot in Team 1 area.
+        # The bot is in the slot directly above it. Fall back to
+        # "Team" header position if needed.
+        team1_empties = []
+        team1_header_pos = None
         player_pos = None
         player_name = None
+
         for text, pos, conf in all_text:
-            words = text.upper().strip().split()
+            upper = text.upper().strip()
+            if upper in ("TEAM", "TEAM 1") and pos[0] > 450 and pos[0] < 800 and pos[1] < 300:
+                team1_header_pos = pos
+            if "EMPTY" in upper and pos[0] > 450 and pos[0] < 800 and pos[1] > 300 and pos[1] < 520:
+                team1_empties.append(pos)
+            words = upper.split()
             if (pos[1] > 270 and pos[1] < 520
-                    and pos[0] < 800
+                    and pos[0] > 450 and pos[0] < 800
                     and conf > 0.4
                     and all(w not in _UI_LABELS for w in words)
                     and len(text.strip()) > 1
-                    and not text.strip().isdigit()):
-                player_pos = pos
-                player_name = text
-                break
+                    and not text.strip().isdigit()
+                    and "EMPTY" not in upper):
+                if not player_pos:
+                    player_pos = pos
+                    player_name = text
 
         if not player_pos:
-            raise RuntimeError("Bot name not found in Team 1")
+            if team1_empties:
+                team1_empties.sort(key=lambda p: p[1])
+                first_empty = team1_empties[0]
+                player_pos = (first_empty[0], first_empty[1] - 35)
+                player_name = "(above first empty)"
+                logger.info(f"Lobby #{task.lobby_number}: name not OCR'd, clicking above first EMPTY at {first_empty}")
+            elif team1_header_pos:
+                player_pos = (team1_header_pos[0], team1_header_pos[1] + 45)
+                player_name = "(below Team header)"
+                logger.info(f"Lobby #{task.lobby_number}: name not OCR'd, clicking below Team header at {team1_header_pos}")
+            else:
+                raise RuntimeError("Bot name not found in Team 1")
 
         logger.info(f"Lobby #{task.lobby_number}: clicking bot '{player_name}' at {player_pos}")
         await actions.click(*player_pos)
-        await asyncio.sleep(1.5)
+        await asyncio.sleep(T.SPECTATOR_AFTER_PLAYER)
 
         all_text = detector.find_all_text()
         spectator_slot = None
@@ -792,16 +924,78 @@ class Scheduler:
             raise RuntimeError("No empty spectator slot")
 
         await actions.click(*spectator_slot)
-        await asyncio.sleep(1.5)
+        await asyncio.sleep(T.SPECTATOR_AFTER_SLOT)
 
         if not await actions.click_text("DONE", detector, retries=3):
             raise RuntimeError("DONE button not found")
-        await asyncio.sleep(1)
+        await asyncio.sleep(T.SPECTATOR_AFTER_DONE)
         logger.info(f"Lobby #{task.lobby_number}: moved to spectator")
 
-    async def _do_import_code(self, task: LobbyTask):
+    def _find_orange_button(self, img, instance_id: str, label: str = "") -> tuple[int | None, int | None, int]:
+        """Scan screenshot for the orange import icon.
+
+        Returns (cx_local, cy_local, size) in image-local coords.
+        """
         import numpy as np
         from scipy import ndimage
+
+        arr = np.array(img)
+        r, g, b = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2]
+        mask = (r > 180) & (g > 40) & (g < 150) & (b < 100)
+        labeled, num_features = ndimage.label(mask)
+
+        clusters = []
+        for i in range(1, num_features + 1):
+            cluster = np.argwhere(labeled == i)
+            cy = int(np.mean(cluster[:, 0]))
+            cx = int(np.mean(cluster[:, 1]))
+            clusters.append((len(cluster), cx, cy))
+        clusters.sort(key=lambda c: c[0], reverse=True)
+
+        if clusters:
+            top5 = clusters[:5]
+            logger.info(
+                "[%s] Orange clusters%s: %s",
+                instance_id, f" ({label})" if label else "",
+                ", ".join(f"{sz}px@({cx},{cy})" for sz, cx, cy in top5),
+            )
+        else:
+            logger.info("[%s] No orange clusters found%s", instance_id,
+                        f" ({label})" if label else "")
+
+        # Best (largest) cluster in settings area:
+        # y < 350 (import icon is in SUMMARY area ~y=258)
+        # x > 300 (right side, past left panel)
+        # >= 20px to filter noise
+        best_cluster = None
+        best_size = 0
+        for i in range(1, num_features + 1):
+            cluster = np.argwhere(labeled == i)
+            cy = int(np.mean(cluster[:, 0]))
+            cx = int(np.mean(cluster[:, 1]))
+            sz = len(cluster)
+            if sz > best_size and cy < 350 and cx > 300 and sz >= 20:
+                best_size = sz
+                best_cluster = cluster
+
+        # Fallback: relax thresholds
+        if best_cluster is None:
+            for i in range(1, num_features + 1):
+                cluster = np.argwhere(labeled == i)
+                cy = int(np.mean(cluster[:, 0]))
+                cx = int(np.mean(cluster[:, 1]))
+                sz = len(cluster)
+                if sz > best_size and cy < 500 and cx > 200 and sz >= 5:
+                    best_size = sz
+                    best_cluster = cluster
+
+        if best_cluster is not None and best_size >= 5:
+            cy = int(np.mean(best_cluster[:, 0]))
+            cx = int(np.mean(best_cluster[:, 1]))
+            return (cx, cy, best_size)
+        return (None, None, best_size)
+
+    async def _do_import_code(self, task: LobbyTask):
         from automation import actions
 
         detector = self._get_detector(task.instance_id)
@@ -809,43 +1003,108 @@ class Scheduler:
         code = task.full_code
         if code.startswith("﻿"):
             code = code[1:]
-        background_input.set_clipboard(code)
-        await asyncio.sleep(1)
 
+        # Focus THIS window so clicks hit the right instance
+        await self._focus_instance(task.instance_id)
+
+        # Set clipboard BEFORE clicking SETTINGS - OW checks clipboard
+        # when the settings screen LOADS
+        ok1 = background_input.set_clipboard(code)
+        logger.info("Lobby #%s: pre-set clipboard: %s (%d chars)", task.lobby_number, ok1, len(code))
+
+        # Navigate to settings screen
         if not await actions.click_text("SETTINGS", detector, retries=5):
             raise RuntimeError("SETTINGS button not found")
-        await asyncio.sleep(5)
+        await asyncio.sleep(T.IMPORT_AFTER_SETTINGS)
 
+        # Re-focus in case another instance stole it during load
+        await self._focus_instance(task.instance_id)
+        await asyncio.sleep(T.IMPORT_REFOCUS_PAUSE)
+
+        # Set clipboard AGAIN as backup
+        ok2 = background_input.set_clipboard(code)
+        logger.info("Lobby #%s: post-set clipboard: %s (%d chars)", task.lobby_number, ok2, len(code))
+
+        # Verify clipboard wasn't cleared by another OW instance
+        await asyncio.sleep(T.IMPORT_REFOCUS_PAUSE)
+        content = background_input.get_clipboard()
+        clip_ok = content is not None and len(content) == len(code)
+        logger.info("Lobby #%s: clipboard verify: %s (%d chars)",
+                     task.lobby_number, clip_ok,
+                     len(content) if content else 0)
+        if not clip_ok:
+            background_input.set_clipboard(code)
+            await asyncio.sleep(T.IMPORT_REFOCUS_PAUSE)
+
+        # Wait for OW to detect clipboard change
+        await asyncio.sleep(T.IMPORT_CLIPBOARD_DETECT)
+        await self._focus_instance(task.instance_id)
+
+        # Attempt 1
         img = detector.screenshot()
-        arr = np.array(img)
-        r, g, b = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2]
-        mask = (r > 180) & (g > 40) & (g < 150) & (b < 100)
-        labeled, num_features = ndimage.label(mask)
+        cx, cy, size = self._find_orange_button(img, task.instance_id, "attempt 1")
 
-        best_cluster = None
-        best_size = 0
-        for i in range(1, num_features + 1):
-            cluster = np.argwhere(labeled == i)
-            cy = int(np.mean(cluster[:, 0]))
-            if len(cluster) > best_size and cy < 600:
-                best_size = len(cluster)
-                best_cluster = cluster
+        if cx is None:
+            # Retry: re-set clipboard, click settings area to wake up
+            # OW's clipboard polling
+            await self._focus_instance(task.instance_id)
+            background_input.set_clipboard(code)
+            await asyncio.sleep(T.IMPORT_RETRY_CLIPBOARD_SET)
+            win = window_manager.get_window(task.instance_id)
+            region = win.region if win else (0, 0, 1280, 720)
+            await actions.click(region[0] + 640, region[1] + 300)
+            await asyncio.sleep(T.IMPORT_RETRY_AREA_CLICK)
+            await actions.click(region[0] + 400, region[1] + 260)
+            await asyncio.sleep(T.IMPORT_RETRY_AREA_SCAN)
+            await self._focus_instance(task.instance_id)
+            img = detector.screenshot()
+            cx, cy, size = self._find_orange_button(img, task.instance_id, "attempt 2")
 
-        if best_cluster is None or best_size < 20:
-            raise RuntimeError(f"Import button not found (best={best_size}px)")
+        if cx is None:
+            # Attempt 3: ESC out and re-enter settings with clipboard set
+            await self._focus_instance(task.instance_id)
+            background_input.set_clipboard(code)
+            await asyncio.sleep(T.IMPORT_REFOCUS_PAUSE)
+            await actions.press_key("escape")
+            await asyncio.sleep(T.IMPORT_RETRY_ESC)
+            if not await actions.click_text("SETTINGS", detector, retries=3):
+                logger.warning("Lobby #%s: SETTINGS not found on retry", task.lobby_number)
+            await asyncio.sleep(T.IMPORT_RETRY_REENTER)
+            await self._focus_instance(task.instance_id)
+            background_input.set_clipboard(code)
+            await asyncio.sleep(T.IMPORT_RETRY_FINAL_WAIT)
+            await self._focus_instance(task.instance_id)
+            img = detector.screenshot()
+            cx, cy, size = self._find_orange_button(img, task.instance_id, "attempt 3")
 
         win = window_manager.get_window(task.instance_id)
         region = win.region if win else (0, 0, 1280, 720)
-        cy = int(np.mean(best_cluster[:, 0])) + region[1]
-        cx = int(np.mean(best_cluster[:, 1])) + region[0]
-        logger.info(f"Lobby #{task.lobby_number}: import button {best_size}px at ({cx},{cy})")
-        await actions.click(cx, cy)
-        await asyncio.sleep(3)
+
+        if cx is not None:
+            abs_cx = cx + region[0]
+            abs_cy = cy + region[1]
+            logger.info("Lobby #%s: import button %dpx at (%d,%d)", task.lobby_number, size, abs_cx, abs_cy)
+            await actions.click(abs_cx, abs_cy)
+            await asyncio.sleep(T.IMPORT_AFTER_ORANGE_CLICK)
+        else:
+            # Last resort: click right of PRESETS text
+            logger.warning("Lobby #%s: orange detection failed (best=%dpx), trying PRESETS position", task.lobby_number, size)
+            presets_pos = detector.find_text("PRESETS", retries=2)
+            if presets_pos:
+                approx_x = presets_pos[0] + 80
+                approx_y = presets_pos[1]
+                logger.info("Lobby #%s: clicking approx import (%d,%d) right of PRESETS", task.lobby_number, approx_x, approx_y)
+                await actions.click(approx_x, approx_y)
+                await asyncio.sleep(T.IMPORT_AFTER_ORANGE_CLICK)
+            else:
+                raise RuntimeError(f"Import button not found and PRESETS not visible (best={size}px)")
 
         pos = detector.find_text("IMPORT", retries=3)
         if pos:
             await actions.click(*pos)
-            await asyncio.sleep(3)
+            await asyncio.sleep(T.IMPORT_AFTER_IMPORT_CLICK)
+        else:
+            logger.warning("Lobby #%s: IMPORT dialog text not found", task.lobby_number)
 
         if not await actions.click_text("CONFIRM", detector, retries=3):
             raise RuntimeError("CONFIRM button not found")
@@ -864,24 +1123,86 @@ class Scheduler:
                 tag = player.get("battleTag", "")
                 if not tag:
                     continue
+                team = player.get("team", 0)
 
                 if not await actions.click_text("INVITE", detector, retries=3):
                     logger.warning(f"INVITE button not found for {tag}")
                     continue
-                await asyncio.sleep(1)
+                await asyncio.sleep(T.INVITE_AFTER_OPEN)
 
-                await actions.click_text("BATTLETAG", detector, retries=3)
-                await asyncio.sleep(0.5)
+                # Switch to BattleTag view if needed
+                all_text = detector.find_all_text()
+                if any("VIA" in t.upper() or "NO PLAYERS" in t.upper()
+                       for t, _, c in all_text if c > 0.3):
+                    await actions.click_text("BATTLETAG", detector, retries=3)
+                    await asyncio.sleep(T.INVITE_AFTER_VIEW_SWITCH)
+                    all_text = detector.find_all_text()
 
+                # Team selection (0=spectator, 1=team1, 2=team2)
+                if team in (0, 1, 2):
+                    both_pos = None
+                    for text, pos, conf in all_text:
+                        upper = text.upper().strip()
+                        if upper in ("BOTH", "ROTH") and conf > 0.4:
+                            both_pos = pos
+                            break
+                    if both_pos:
+                        await actions.click(*both_pos)
+                        await asyncio.sleep(0.5)
+                        dropdown_text = detector.find_all_text()
+                        # Collect entries below BOTH, sorted by y
+                        team_entries = [
+                            (t.strip(), pos, c) for t, pos, c in dropdown_text
+                            if "TEAM" in t.upper() and pos[1] > both_pos[1]
+                            and "SPECT" not in t.upper() and c > 0.3
+                        ]
+                        team_entries.sort(key=lambda e: e[1][1])
+                        spec_entries = [
+                            (t.strip(), pos, c) for t, pos, c in dropdown_text
+                            if "SPECT" in t.upper() and pos[1] > both_pos[1] and c > 0.3
+                        ]
+                        team_clicked = False
+                        if team == 0:
+                            if spec_entries:
+                                await actions.click(*spec_entries[0][1])
+                                team_clicked = True
+                            if not team_clicked:
+                                await actions.click(both_pos[0], both_pos[1] + 96)
+                                team_clicked = True
+                        elif team == 2:
+                            for t, pos, c in team_entries:
+                                if "2" in t.upper():
+                                    await actions.click(*pos)
+                                    team_clicked = True
+                                    break
+                            if not team_clicked and len(team_entries) >= 2:
+                                await actions.click(*team_entries[1][1])
+                                team_clicked = True
+                        else:
+                            for t, pos, c in team_entries:
+                                if "2" not in t.upper():
+                                    await actions.click(*pos)
+                                    team_clicked = True
+                                    break
+                            if not team_clicked and len(team_entries) >= 1:
+                                await actions.click(*team_entries[0][1])
+                                team_clicked = True
+                        if not team_clicked:
+                            offsets = {1: 52, 2: 74, 0: 96}
+                            await actions.click(both_pos[0], both_pos[1] + offsets.get(team, 52))
+                        await asyncio.sleep(0.5)
+
+                # Type the BattleTag
+                await actions.click_text("BATTLETAG", detector, retries=2)
+                await asyncio.sleep(0.3)
+                await actions.hotkey("ctrl", "a")
                 await actions.paste_text(tag)
-                await asyncio.sleep(0.5)
+                await asyncio.sleep(T.INVITE_AFTER_PASTE)
 
                 await actions.press_key("enter")
-                await asyncio.sleep(2)
-
-                await actions.press_key("escape")
-                await asyncio.sleep(1)
-                logger.info(f"Lobby #{task.lobby_number}: invited {tag}")
+                await asyncio.sleep(T.INVITE_AFTER_SEND)
+                # Panel auto-closes when invite sends - no ESC needed
+                logger.info(f"Lobby #{task.lobby_number}: invited {tag} to team {team}")
 
         task.transition(LobbyState.WAITING_PLAYERS)
         if self.on_invites_sent:
@@ -914,17 +1235,17 @@ class Scheduler:
 
         if not await actions.click_text("START", detector, retries=3):
             raise RuntimeError("START button not found")
-        await asyncio.sleep(5)
+        await asyncio.sleep(T.START_AFTER_CLICK)
 
         for _ in range(5):
-            await asyncio.sleep(5)
+            await asyncio.sleep(T.START_CONTINUE_CHECK)
             found = False
             for label in ["CONTINUE", "CONFIRM"]:
                 pos = detector.find_text(label, retries=2)
                 if pos:
                     logger.info(f"Lobby #{task.lobby_number}: clicking {label}")
                     await actions.click(*pos)
-                    await asyncio.sleep(3)
+                    await asyncio.sleep(T.START_AFTER_CONTINUE)
                     found = True
                     break
             if not found:

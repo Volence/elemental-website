@@ -423,6 +423,47 @@ export async function advanceToDrafting(lobbyId: number): Promise<void> {
   })
 
   await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'DRAFTING' } })
+
+  // Fire-and-forget: tell bot to prepare OW lobby while players draft/ban/vote
+  if (process.env.OW_BOT_SERVICE_URL) {
+    fetch(`${process.env.OW_BOT_SERVICE_URL}/lobby/prepare`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Bot-Secret': process.env.OW_BOT_SECRET ?? '',
+      },
+      body: JSON.stringify({
+        pugLobbyId: lobbyId,
+        lobbyNumber: lobby.lobbyNumber,
+      }),
+    }).then(async (res) => {
+      if (res.ok) {
+        const data = await res.json()
+        await prisma.pugLobby.update({
+          where: { id: lobbyId },
+          data: {
+            hostUserId: -1,
+            botInstanceId: data.instanceId ?? null,
+            botStatus: 'preparing',
+          },
+        })
+        console.log(`[PUG #${lobby.lobbyNumber}] Bot preparing lobby on ${data.instanceId}`)
+      } else {
+        console.error(`[PUG #${lobby.lobbyNumber}] Bot prepare failed: ${res.status}`)
+        await prisma.pugLobby.update({
+          where: { id: lobbyId },
+          data: { hostUserId: -1, botStatus: 'error' },
+        })
+      }
+    }).catch((err) => {
+      console.error(`[PUG #${lobby.lobbyNumber}] Bot prepare unreachable:`, err)
+      prisma.pugLobby.update({
+        where: { id: lobbyId },
+        data: { hostUserId: -1, botStatus: 'error' },
+      }).catch(() => {})
+    })
+  }
+
   await autoCreateReplacementLobby(lobby).catch(console.error)
   // Fire-and-forget: notify players and update feed (don't block timer registration)
   getDiscordIdsForLobby(lobbyId, payload).then(async (discordIds) => {
@@ -718,7 +759,7 @@ async function advanceToInProgress(lobbyId: number): Promise<void> {
     })
   }
 
-  // Attempt automated lobby creation via bot service
+  // Attempt automated lobby configuration via bot service
   let botHosting = false
   if (process.env.OW_BOT_SERVICE_URL) {
     try {
@@ -790,22 +831,42 @@ async function advanceToInProgress(lobbyId: number): Promise<void> {
         })
       }
 
-      const botResponse = await fetch(`${process.env.OW_BOT_SERVICE_URL}/lobby/create`, {
+      // Check if lobby was already prepared (has botInstanceId from ready phase)
+      const isPrepared = !!lobby.botInstanceId
+      const botUrl = isPrepared
+        ? `${process.env.OW_BOT_SERVICE_URL}/lobby/configure`
+        : `${process.env.OW_BOT_SERVICE_URL}/lobby/create`
+
+      const botBody = isPrepared
+        ? {
+            pugLobbyId: lobbyId,
+            fullCode: settingsText,
+            players: players.map((p) => ({
+              userId: p.userId,
+              battleTag: battleTags[p.userId] ?? null,
+              team: p.team,
+            })),
+          }
+        : {
+            pugLobbyId: lobbyId,
+            lobbyNumber: lobby.lobbyNumber,
+            fullCode: settingsText,
+            players: players.map((p) => ({
+              userId: p.userId,
+              battleTag: battleTags[p.userId] ?? null,
+              team: p.team,
+            })),
+          }
+
+      console.log(`[PUG #${lobby.lobbyNumber}] Using ${isPrepared ? 'configure' : 'create'} path`)
+
+      const botResponse = await fetch(botUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'X-Bot-Secret': process.env.OW_BOT_SECRET ?? '',
         },
-        body: JSON.stringify({
-          pugLobbyId: lobbyId,
-          lobbyNumber: lobby.lobbyNumber,
-          fullCode: settingsText,
-          players: players.map((p) => ({
-            userId: p.userId,
-            battleTag: battleTags[p.userId] ?? null,
-            team: p.team,
-          })),
-        }),
+        body: JSON.stringify(botBody),
       })
 
       if (botResponse.ok) {
@@ -819,9 +880,21 @@ async function advanceToInProgress(lobbyId: number): Promise<void> {
           },
         })
         botHosting = true
+      } else {
+        console.error(`[PUG #${lobby.lobbyNumber}] Bot returned ${botResponse.status}, will retry`)
+        await prisma.pugLobby.update({
+          where: { id: lobbyId },
+          data: { hostUserId: -1, botStatus: 'error' },
+        })
+        botHosting = true
       }
     } catch (err) {
-      console.error(`[PUG #${lobby.lobbyNumber}] Bot service unavailable, falling back to manual host:`, err)
+      console.error(`[PUG #${lobby.lobbyNumber}] Bot service unavailable:`, err)
+      await prisma.pugLobby.update({
+        where: { id: lobbyId },
+        data: { hostUserId: -1, botStatus: 'error' },
+      }).catch(() => {})
+      botHosting = true
     }
   }
 

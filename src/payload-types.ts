@@ -645,7 +645,7 @@ export interface Person {
     isPugAdmin?: boolean | null;
   };
   /**
-   * OW2 BattleTag (e.g., Player#1234). Shown to the match host for in-game invites.
+   * OW BattleTag (e.g., Player#1234). Shown to the match host for in-game invites.
    */
   pugBattleTag?: string | null;
   /**
@@ -1896,7 +1896,7 @@ export interface Map {
   name: string;
   type: 'control' | 'hybrid' | 'flashpoint' | 'push' | 'escort' | 'clash';
   /**
-   * OW2 settings entry (name + ID). Export from OW2 Custom Game to get this. e.g., "Samoa 972777519512068154"
+   * OW settings entry (name + ID). Export from OW Custom Game to get this. e.g., "Samoa 972777519512068154"
    */
   settingsEntry?: string | null;
   /**

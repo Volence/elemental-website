@@ -198,6 +198,7 @@ export async function POST(request: NextRequest) {
           'Content-Type': 'application/json',
           'X-Bot-Secret': process.env.OW_BOT_SECRET ?? '',
         },
+        body: JSON.stringify({}),
       }).catch(() => {})
     }
 
