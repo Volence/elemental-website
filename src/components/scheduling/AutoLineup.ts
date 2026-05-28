@@ -47,11 +47,24 @@ const ROLE_FAMILY: Record<string, string[]> = {
   support: ['support', 'main support', 'flex support'],
 }
 
-function rolesMatch(playerRole: string, slotRole: string): boolean {
-  if (playerRole === slotRole) return true
+const BROAD_ROLES = new Set(['tank', 'dps', 'support'])
+
+function rolePrimaryMatch(playerRole: string, slotRole: string): boolean {
   const pr = playerRole.toLowerCase()
   const sr = slotRole.toLowerCase()
   if (pr === sr) return true
+  if (BROAD_ROLES.has(pr)) {
+    for (const family of Object.values(ROLE_FAMILY)) {
+      if (family.includes(pr) && family.includes(sr)) return true
+    }
+  }
+  return false
+}
+
+function rolesMatch(playerRole: string, slotRole: string): boolean {
+  if (rolePrimaryMatch(playerRole, slotRole)) return true
+  const pr = playerRole.toLowerCase()
+  const sr = slotRole.toLowerCase()
   for (const family of Object.values(ROLE_FAMILY)) {
     if (family.includes(pr) && family.includes(sr)) return true
   }
@@ -149,25 +162,41 @@ export function suggestLineup(
       for (const s of block.slots) roleCounts[s.role] = (roleCounts[s.role] || 0) + 1
 
       const assignedIds = new Set<string>()
-      const newSlots: PlayerSlot[] = block.slots.map(slot => {
+      const newSlots: PlayerSlot[] = [...block.slots]
+
+      // First pass: exact role matches only
+      for (let i = 0; i < newSlots.length; i++) {
+        const slot = newSlots[i]
         const confirmed = availablePlayers.filter(
-          p => !assignedIds.has(p.personId) && p.blockStatus === 'available' && rolesMatch(p.scheduleRole, slot.role)
+          p => !assignedIds.has(p.personId) && p.blockStatus === 'available' && rolePrimaryMatch(p.scheduleRole, slot.role)
             && (slot.isTrial ? p.status === 'trial' : p.status !== 'trial')
         )
-
         if (confirmed.length > 0) {
           const isUniqueRole = (roleCounts[slot.role] || 0) <= 1
           if (isUniqueRole) {
             for (const m of confirmed) assignedIds.add(m.personId)
             const ids = confirmed.map(m => m.personId)
-            return { ...slot, playerId: ids[0], playerIds: ids }
+            newSlots[i] = { ...slot, playerId: ids[0], playerIds: ids }
+          } else {
+            assignedIds.add(confirmed[0].personId)
+            newSlots[i] = { ...slot, playerId: confirmed[0].personId }
           }
-          assignedIds.add(confirmed[0].personId)
-          return { ...slot, playerId: confirmed[0].personId }
         }
+      }
 
-        return { ...slot, playerId: null }
-      })
+      // Second pass: family matches for unfilled slots
+      for (let i = 0; i < newSlots.length; i++) {
+        if (newSlots[i].playerId) continue
+        const slot = newSlots[i]
+        const confirmed = availablePlayers.filter(
+          p => !assignedIds.has(p.personId) && p.blockStatus === 'available' && rolesMatch(p.scheduleRole, slot.role)
+            && (slot.isTrial ? p.status === 'trial' : p.status !== 'trial')
+        )
+        if (confirmed.length > 0) {
+          assignedIds.add(confirmed[0].personId)
+          newSlots[i] = { ...slot, playerId: confirmed[0].personId }
+        }
+      }
 
       return { ...block, slots: newSlots }
     })

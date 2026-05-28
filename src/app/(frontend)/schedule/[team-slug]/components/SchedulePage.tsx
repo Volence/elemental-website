@@ -1,7 +1,7 @@
 'use client'
 
-import React from 'react'
-import { Calendar, ClipboardList, Wrench, ChevronLeft, ChevronRight } from 'lucide-react'
+import React, { useState } from 'react'
+import { Calendar, ClipboardList, Wrench, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react'
 import { ScheduleProvider, useSchedule } from '@/components/scheduling/ScheduleContext'
 import type { WeekView } from '@/components/scheduling/ScheduleContext'
 import { AvailabilityVoting } from '@/components/scheduling/AvailabilityVoting'
@@ -62,6 +62,138 @@ function WeekSwitcher() {
   )
 }
 
+function formatDateKey(dateKey: string): string {
+  const d = new Date(dateKey + 'T12:00:00Z')
+  if (isNaN(d.getTime())) return dateKey
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  return days[d.getUTCDay()]
+}
+
+function diffSelections(
+  prev: Record<string, Record<string, string>> | undefined,
+  curr: Record<string, Record<string, string>> | undefined,
+  slotLabelMap: Record<string, string>,
+): { added: string[]; removed: string[] } {
+  const added: string[] = []
+  const removed: string[] = []
+  const allDates = new Set([...Object.keys(prev || {}), ...Object.keys(curr || {})])
+
+  for (const dateKey of allDates) {
+    const dayLabel = formatDateKey(dateKey)
+    const prevSlots = (prev || {})[dateKey] || {}
+    const currSlots = (curr || {})[dateKey] || {}
+    const allTimes = new Set([...Object.keys(prevSlots), ...Object.keys(currSlots)])
+
+    for (const time of allTimes) {
+      const prevStatus = prevSlots[time]
+      const currStatus = currSlots[time]
+      const label = slotLabelMap[time] || time
+      const tag = `${dayLabel} ${label}`
+
+      const wasAvail = prevStatus === 'available' || prevStatus === 'maybe'
+      const isAvail = currStatus === 'available' || currStatus === 'maybe'
+
+      if (isAvail && !wasAvail) added.push(tag)
+      if (wasAvail && !isAvail) removed.push(tag)
+    }
+  }
+  return { added, removed }
+}
+
+function ChangesBanner({ calendar }: { calendar: any }) {
+  const [expanded, setExpanded] = useState(false)
+  const lastBuilt = calendar.schedule?.lastUpdated
+  if (!lastBuilt) return null
+
+  const responses = (calendar.responses || []) as any[]
+  const changed = responses.filter(
+    (r: any) => r.respondedAt && new Date(r.respondedAt) > new Date(lastBuilt)
+  )
+  if (changed.length === 0) return null
+
+  const timeSlots = (calendar.timeSlots || []) as any[]
+  const slotLabelMap: Record<string, string> = {}
+  for (const ts of timeSlots) {
+    if (ts.startTime && ts.label) slotLabelMap[ts.startTime] = ts.label
+  }
+
+  const snapshot: Record<string, Record<string, Record<string, string>>> =
+    calendar.schedule?.responseSnapshot || {}
+
+  return (
+    <div className="schedule-page__changes-banner-wrap">
+      <button
+        className="schedule-page__changes-banner"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <span className="schedule-page__changes-dot" />
+        {changed.length} new response{changed.length !== 1 ? 's' : ''} since last build
+        <ChevronDown
+          size={14}
+          className={`schedule-page__changes-chevron ${expanded ? 'schedule-page__changes-chevron--open' : ''}`}
+        />
+      </button>
+      {expanded && (
+        <div className="schedule-page__changes-details">
+          {changed.map((r: any) => {
+            const name = (r.discordUsername || 'Unknown').replace(/^@/, '')
+            const prev = snapshot[r.discordId]
+            const curr = r.selections || {}
+            const { added, removed } = diffSelections(prev, curr, slotLabelMap)
+
+            const parts: React.ReactNode[] = []
+            if (added.length > 0) {
+              parts.push(
+                <span key="added" className="schedule-page__changes-added">
+                  added {added.join(', ')}
+                </span>
+              )
+            }
+            if (removed.length > 0) {
+              parts.push(
+                <span key="removed" className="schedule-page__changes-removed">
+                  removed {removed.join(', ')}
+                </span>
+              )
+            }
+            if (parts.length === 0 && !prev) {
+              const daySlots: string[] = []
+              for (const [dateKey, slots] of Object.entries(curr)) {
+                const dayLabel = formatDateKey(dateKey)
+                const times = Object.entries(slots as Record<string, string>)
+                  .filter(([, status]) => status === 'available' || status === 'maybe')
+                  .map(([time]) => slotLabelMap[time] || time)
+                if (times.length > 0) daySlots.push(`${dayLabel} ${times.join(', ')}`)
+              }
+              parts.push(
+                <span key="new" className="schedule-page__changes-added">
+                  {daySlots.length > 0 ? `new: ${daySlots.join(' / ')}` : 'responded (no availability)'}
+                </span>
+              )
+            }
+            if (parts.length === 0) {
+              parts.push(<span key="same" className="schedule-page__changes-neutral">updated (no slot changes)</span>)
+            }
+
+            return (
+              <div key={r.discordId} className="schedule-page__changes-player">
+                <span className="schedule-page__changes-name">{name}</span>
+                <span className="schedule-page__changes-avail">
+                  {parts.reduce<React.ReactNode[]>((acc, part, i) => {
+                    if (i > 0) acc.push(<span key={`sep-${i}`} className="schedule-page__changes-sep"> / </span>)
+                    acc.push(part)
+                    return acc
+                  }, [])}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function SchedulePageInner() {
   const { data, activeTab, setActiveTab, viewedCalendar } = useSchedule()
   const calendarKey = viewedCalendar?.id || 'none'
@@ -99,20 +231,9 @@ function SchedulePageInner() {
       <div className="schedule-page__content">
         {activeTab === 'availability' && (
           <div className="schedule-page__tab-panel" key={`avail-${calendarKey}`}>
-            {data.authState.isManager && viewedCalendar && (() => {
-              const lastBuilt = (viewedCalendar as any).schedule?.lastUpdated
-              if (!lastBuilt) return null
-              const newCount = ((viewedCalendar as any).responses || []).filter(
-                (r: any) => r.respondedAt && new Date(r.respondedAt) > new Date(lastBuilt)
-              ).length
-              if (newCount === 0) return null
-              return (
-                <div className="schedule-page__changes-banner">
-                  <span className="schedule-page__changes-dot" />
-                  {newCount} new response{newCount !== 1 ? 's' : ''} since last build
-                </div>
-              )
-            })()}
+            {data.authState.isManager && viewedCalendar && (
+              <ChangesBanner calendar={viewedCalendar} />
+            )}
             <AvailabilityVoting />
             <AvailabilityMatrix />
             <WeekScheduleSummary />

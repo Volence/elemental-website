@@ -300,10 +300,24 @@ export async function PATCH(
         return NextResponse.json({ error: 'Missing calendarId or schedule' }, { status: 400 })
       }
 
+      const calendarDoc = await payload.findByID({
+        collection: 'discord-polls' as any,
+        id: calendarId,
+        depth: 0,
+        overrideAccess: true,
+      })
+      const responses = (calendarDoc as any).responses || []
+      const responseSnapshot: Record<string, Record<string, Record<string, string>>> = {}
+      for (const r of responses) {
+        if (r.discordId && r.selections) {
+          responseSnapshot[r.discordId] = r.selections
+        }
+      }
+
       await payload.update({
         collection: 'discord-polls' as any,
         id: calendarId,
-        data: { schedule },
+        data: { schedule: { ...schedule, responseSnapshot } },
         overrideAccess: true,
       })
 

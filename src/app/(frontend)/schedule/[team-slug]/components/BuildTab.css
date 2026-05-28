@@ -825,6 +825,10 @@
   flex-shrink: 0;
 }
 
+.build-tab__dropdown-avail-dot--family {
+  background: #ff9f1c;
+}
+
 .build-tab__activity-badge {
   display: inline-block;
   font-size: 0.65rem;

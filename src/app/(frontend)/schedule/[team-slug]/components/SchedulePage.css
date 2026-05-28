@@ -129,17 +129,41 @@
   opacity: 0.7;
 }
 
+.schedule-page__changes-banner-wrap {
+  margin-bottom: 1rem;
+  border: 1px solid rgba(251, 191, 36, 0.15);
+  border-radius: 8px;
+  background: rgba(251, 191, 36, 0.08);
+  overflow: hidden;
+}
+
 .schedule-page__changes-banner {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-size: 0.8rem;
   color: #fbbf24;
-  background: rgba(251, 191, 36, 0.08);
-  border: 1px solid rgba(251, 191, 36, 0.15);
-  border-radius: 8px;
+  background: none;
+  border: none;
   padding: 0.5rem 1rem;
-  margin-bottom: 1rem;
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.schedule-page__changes-banner:hover {
+  background: rgba(251, 191, 36, 0.05);
+}
+
+.schedule-page__changes-chevron {
+  margin-left: auto;
+  transition: transform 0.2s;
+  opacity: 0.6;
+}
+
+.schedule-page__changes-chevron--open {
+  transform: rotate(180deg);
 }
 
 .schedule-page__changes-dot {
@@ -149,6 +173,52 @@
   background: #fbbf24;
   flex-shrink: 0;
   animation: changesPulse 2s ease-in-out infinite;
+}
+
+.schedule-page__changes-details {
+  padding: 0 1rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border-top: 1px solid rgba(251, 191, 36, 0.1);
+}
+
+.schedule-page__changes-player {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  padding: 0.25rem 0;
+}
+
+.schedule-page__changes-name {
+  color: #e2e8f0;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.schedule-page__changes-avail {
+  color: #94a3b8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.schedule-page__changes-added {
+  color: #4ade80;
+}
+
+.schedule-page__changes-removed {
+  color: #f87171;
+}
+
+.schedule-page__changes-neutral {
+  color: #64748b;
+  font-style: italic;
+}
+
+.schedule-page__changes-sep {
+  color: #475569;
 }
 
 @keyframes changesPulse {

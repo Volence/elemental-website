@@ -64,11 +64,24 @@ const ROLE_FAMILY: Record<string, string[]> = {
   support: ['support', 'main support', 'flex support'],
 }
 
-function roleMatchesFamily(playerRole: string, slotRole: string): boolean {
-  if (playerRole === slotRole) return true
+const BROAD_ROLES = new Set(['tank', 'dps', 'support'])
+
+function rolePrimaryMatch(playerRole: string, slotRole: string): boolean {
   const pr = playerRole.toLowerCase()
   const sr = slotRole.toLowerCase()
   if (pr === sr) return true
+  if (BROAD_ROLES.has(pr)) {
+    for (const family of Object.values(ROLE_FAMILY)) {
+      if (family.includes(pr) && family.includes(sr)) return true
+    }
+  }
+  return false
+}
+
+function roleMatchesFamily(playerRole: string, slotRole: string): boolean {
+  if (rolePrimaryMatch(playerRole, slotRole)) return true
+  const pr = playerRole.toLowerCase()
+  const sr = slotRole.toLowerCase()
   for (const family of Object.values(ROLE_FAMILY)) {
     if (family.includes(pr) && family.includes(sr)) return true
   }
@@ -336,7 +349,7 @@ export function BuildTab() {
     for (const role of coreRoles) slotsNeeded[role] = (slotsNeeded[role] || 0) + 1
     let covered = 0
     for (const [role, needed] of Object.entries(slotsNeeded)) {
-      const uniquePlayers = new Set(mainAvail.filter(a => roleMatchesFamily(a.role, role)).map(a => a.personId))
+      const uniquePlayers = new Set(mainAvail.filter(a => rolePrimaryMatch(a.role, role)).map(a => a.personId))
       covered += Math.min(uniquePlayers.size, needed)
     }
     if (covered >= coreRoles.length) return 'green'
@@ -1063,7 +1076,7 @@ export function BuildTab() {
                               const availKey = `${day.isoDate}|${block.startTime || block.time}`
                               const allAvail = availabilityMap[availKey] || []
                               const forRole = isTrial
-                                ? allAvail.filter(a => roleMatchesFamily(a.role, roleName) && a.scheduleStatus === 'tryout')
+                                ? allAvail.filter(a => rolePrimaryMatch(a.role, roleName) && a.scheduleStatus === 'tryout')
                                 : allAvail.filter(a => a.scheduleStatus === 'sub')
                               return forRole.length > 0 ? (
                                 <div className="build-tab__cell-avail-players">
@@ -1118,10 +1131,10 @@ export function BuildTab() {
                           const availKey = `${day.isoDate}|${block.startTime || block.time}`
                           const allAvail = availabilityMap[availKey] || []
                           const forRole = isTrial
-                            ? allAvail.filter(a => roleMatchesFamily(a.role, roleName) && a.scheduleStatus === 'tryout')
+                            ? allAvail.filter(a => rolePrimaryMatch(a.role, roleName) && a.scheduleStatus === 'tryout')
                             : isSub
                               ? allAvail.filter(a => a.scheduleStatus === 'sub')
-                              : allAvail.filter(a => roleMatchesFamily(a.role, roleName) && a.scheduleStatus === 'main')
+                              : allAvail.filter(a => rolePrimaryMatch(a.role, roleName) && a.scheduleStatus === 'main')
                           const assignedIds = new Set(getSlotPlayerIds(slot))
                           const hasRinger = slot.isRinger && slot.ringerName
 
@@ -1374,17 +1387,24 @@ export function BuildTab() {
               const day = days[openDropdown.dayIdx]
               const availKey = `${day?.isoDate}|${block.startTime || block.time}`
               const allAvail = availabilityMap[availKey] || []
-              const availableHere = new Set(allAvail.filter(a => roleMatchesFamily(a.role, slot.role)).map(a => a.personId))
+              const slotAssigned = new Set(getSlotPlayerIds(slot))
+              const exactAvail = new Set(allAvail.filter(a => rolePrimaryMatch(a.role, slot.role)).map(a => a.personId))
+              const familyAvail = new Set(allAvail.filter(a => roleMatchesFamily(a.role, slot.role) && !rolePrimaryMatch(a.role, slot.role)).map(a => a.personId))
               const respondedIds = new Set(respondedPlayers.map(p => p.id))
-              const sorted = [...rosterPlayers].sort((a, b) => {
-                const aAvail = availableHere.has(a.id) ? 0 : 1
-                const bAvail = availableHere.has(b.id) ? 0 : 1
+              const exactPlayers = [...rosterPlayers].filter(p => exactAvail.has(p.id) || slotAssigned.has(p.id)).sort((a, b) => {
+                const aAvail = exactAvail.has(a.id) ? 0 : 1
+                const bAvail = exactAvail.has(b.id) ? 0 : 1
                 if (aAvail !== bAvail) return aAvail - bAvail
                 const aResponded = respondedIds.has(a.id) ? 0 : 1
                 const bResponded = respondedIds.has(b.id) ? 0 : 1
                 return aResponded - bResponded
               })
-              const slotAssigned = new Set(getSlotPlayerIds(slot))
+              const familyPlayers = [...rosterPlayers].filter(p => familyAvail.has(p.id) && !exactAvail.has(p.id) && !slotAssigned.has(p.id)).sort((a, b) => {
+                const aResponded = respondedIds.has(a.id) ? 0 : 1
+                const bResponded = respondedIds.has(b.id) ? 0 : 1
+                return aResponded - bResponded
+              })
+              const restPlayers = [...rosterPlayers].filter(p => !exactAvail.has(p.id) && !familyAvail.has(p.id) && !slotAssigned.has(p.id))
               return (
                 <div className="build-tab__dropdown-scroll">
                   {(slotAssigned.size > 0 || slot.isRinger) && (
@@ -1395,18 +1415,51 @@ export function BuildTab() {
                       Clear All
                     </button>
                   )}
-                  {sorted.map(p => (
+                  {exactPlayers.map(p => (
                     <button
                       key={p.id}
-                      className={`build-tab__dropdown-item ${slotAssigned.has(p.id) ? 'build-tab__dropdown-item--active' : ''} ${!availableHere.has(p.id) ? 'build-tab__dropdown-item--unavailable' : ''}`}
+                      className={`build-tab__dropdown-item ${slotAssigned.has(p.id) ? 'build-tab__dropdown-item--active' : ''} ${!exactAvail.has(p.id) && !slotAssigned.has(p.id) ? 'build-tab__dropdown-item--unavailable' : ''}`}
                       onClick={() => {
                         toggleSlotPlayer(openDropdown.dayIdx, openDropdown.blockIdx, openDropdown.slotIdx, p.id)
                       }}
                     >
-                      {availableHere.has(p.id) && <span className="build-tab__dropdown-avail-dot" />}
+                      {exactAvail.has(p.id) && <span className="build-tab__dropdown-avail-dot" />}
                       {p.name}{p.isSub ? ' (S)' : ''}
                     </button>
                   ))}
+                  {familyPlayers.length > 0 && (
+                    <>
+                      <div className="build-tab__dropdown-ringer-divider" />
+                      {familyPlayers.map(p => (
+                        <button
+                          key={p.id}
+                          className={`build-tab__dropdown-item ${slotAssigned.has(p.id) ? 'build-tab__dropdown-item--active' : ''}`}
+                          onClick={() => {
+                            toggleSlotPlayer(openDropdown.dayIdx, openDropdown.blockIdx, openDropdown.slotIdx, p.id)
+                          }}
+                        >
+                          <span className="build-tab__dropdown-avail-dot build-tab__dropdown-avail-dot--family" />
+                          {p.name}{p.isSub ? ' (S)' : ''}
+                        </button>
+                      ))}
+                    </>
+                  )}
+                  {restPlayers.length > 0 && (
+                    <>
+                      <div className="build-tab__dropdown-ringer-divider" />
+                      {restPlayers.map(p => (
+                        <button
+                          key={p.id}
+                          className={`build-tab__dropdown-item build-tab__dropdown-item--unavailable`}
+                          onClick={() => {
+                            toggleSlotPlayer(openDropdown.dayIdx, openDropdown.blockIdx, openDropdown.slotIdx, p.id)
+                          }}
+                        >
+                          {p.name}{p.isSub ? ' (S)' : ''}
+                        </button>
+                      ))}
+                    </>
+                  )}
                   <div className="build-tab__dropdown-ringer-divider" />
                   <button
                     className="build-tab__dropdown-item build-tab__dropdown-item--need-ringer"
