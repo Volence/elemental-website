@@ -109,10 +109,13 @@ function CreatePersonModal({ onCreated, onClose }: { onCreated: (id: number, nam
     setCreating(true)
     setError('')
     try {
+      const slug = newName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+      const placeholder = `${slug}-${Date.now()}@noreply.elemental.local`
+      const tempPassword = crypto.randomUUID()
       const res = await fetch('/api/people', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newName.trim() }),
+        body: JSON.stringify({ name: newName.trim(), email: placeholder, password: tempPassword }),
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
@@ -539,7 +542,7 @@ export default function TeamEditor() {
         .toggle-switch.off { background: rgba(255,255,255,0.15); }
         .color-swatch { width: 36px; height: 36px; border-radius: 8px; cursor: pointer; position: relative; overflow: hidden; border: 2px solid rgba(255,255,255,0.1); flex-shrink: 0; }
         .color-swatch input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-        .person-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .person-row { display: flex; align-items: center; gap: 6px; padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.04); min-height: 28px; }
         .person-row:last-child { border-bottom: none; }
         .role-select { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 6px; color: #e2e8f0; padding: 4px 8px; font-size: 12px; }
         .role-select option { background: #1a1f2e; color: #e2e8f0; }
@@ -548,10 +551,11 @@ export default function TeamEditor() {
         select.profile-input option { background: #1a1f2e; color: #e2e8f0; padding: 8px; }
         .thread-field { display: flex; flex-direction: column; gap: 4px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
         .block-row { display: grid; grid-template-columns: 1.2fr 1fr 1fr auto; gap: 8px; align-items: center; padding: 4px 0; }
-        .reorder-btns { display: flex; flex-direction: column; gap: 1px; flex-shrink: 0; }
-        .reorder-btn { background: none; border: 1px solid rgba(255,255,255,0.06); color: rgba(255,255,255,0.35); cursor: pointer; padding: 1px 3px; border-radius: 3px; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; line-height: 0; }
-        .reorder-btn:hover:not(:disabled) { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.8); border-color: rgba(255,255,255,0.15); }
-        .reorder-btn:disabled { opacity: 0.2; cursor: default; }
+        .reorder-btns { display: flex; flex-direction: column; gap: 0; flex-shrink: 0; opacity: 0.3; transition: opacity 0.15s; }
+        .reorder-btns:hover { opacity: 0.7; }
+        .reorder-btn { background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center; transition: color 0.15s; line-height: 0; }
+        .reorder-btn:hover:not(:disabled) { color: rgba(255,255,255,1); }
+        .reorder-btn:disabled { opacity: 0.15; cursor: default; }
       `}</style>
 
       <a href="/admin/collections/teams" className="back-link"><ArrowLeft size={14} /> Back to Teams</a>
@@ -643,57 +647,63 @@ export default function TeamEditor() {
           <div className="profile-card" style={editorStyles.card}>
             <h3 style={editorStyles.cardTitle}><Users size={16} /> Staff</h3>
 
-            <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Managers</p>
+            <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Managers</p>
             {managers.map((m, i) => (
               <div className="person-row" key={m.personId ?? `new-${i}`}>
                 <div style={{ flex: 1 }}>
                   <PersonSearch value={m.personId} onChange={(id, n) => setManagers(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x))} onRequestCreate={() => openCreateModal((id, n) => setManagers(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x)))} />
                 </div>
-                <div className="reorder-btns">
-                  <button className="reorder-btn" onClick={() => move(setManagers, i, i - 1)} disabled={i === 0} title="Move up"><ChevronUp size={12} /></button>
-                  <button className="reorder-btn" onClick={() => move(setManagers, i, i + 1)} disabled={i === managers.length - 1} title="Move down"><ChevronDown size={12} /></button>
-                </div>
-                <button className="remove-btn" style={{ width: 24, height: 24 }} onClick={() => setManagers(p => p.filter((_, j) => j !== i))} title="Remove"><Trash2 size={12} /></button>
+                {managers.length > 1 && (
+                  <div className="reorder-btns">
+                    <button className="reorder-btn" onClick={() => move(setManagers, i, i - 1)} disabled={i === 0} title="Move up"><ChevronUp size={10} /></button>
+                    <button className="reorder-btn" onClick={() => move(setManagers, i, i + 1)} disabled={i === managers.length - 1} title="Move down"><ChevronDown size={10} /></button>
+                  </div>
+                )}
+                <button className="remove-btn" style={{ width: 20, height: 20 }} onClick={() => setManagers(p => p.filter((_, j) => j !== i))} title="Remove"><Trash2 size={11} /></button>
               </div>
             ))}
-            <button className="add-link-btn" style={{ marginTop: 4, fontSize: 12 }} onClick={addManager}>+ Add Manager</button>
+            <button className="add-link-btn" style={{ marginTop: 2, fontSize: 11 }} onClick={addManager}>+ Add Manager</button>
 
-            <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.5)', margin: '16px 0 6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Coaches</p>
+            <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', margin: '10px 0 4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Coaches</p>
             {coaches.map((c, i) => (
               <div className="person-row" key={c.personId ?? `new-${i}`}>
                 <div style={{ flex: 1 }}>
                   <PersonSearch value={c.personId} onChange={(id, n) => setCoaches(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x))} onRequestCreate={() => openCreateModal((id, n) => setCoaches(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x)))} />
                 </div>
-                <div className="reorder-btns">
-                  <button className="reorder-btn" onClick={() => move(setCoaches, i, i - 1)} disabled={i === 0} title="Move up"><ChevronUp size={12} /></button>
-                  <button className="reorder-btn" onClick={() => move(setCoaches, i, i + 1)} disabled={i === coaches.length - 1} title="Move down"><ChevronDown size={12} /></button>
-                </div>
-                <button className="remove-btn" style={{ width: 24, height: 24 }} onClick={() => setCoaches(p => p.filter((_, j) => j !== i))} title="Remove"><Trash2 size={12} /></button>
+                {coaches.length > 1 && (
+                  <div className="reorder-btns">
+                    <button className="reorder-btn" onClick={() => move(setCoaches, i, i - 1)} disabled={i === 0} title="Move up"><ChevronUp size={10} /></button>
+                    <button className="reorder-btn" onClick={() => move(setCoaches, i, i + 1)} disabled={i === coaches.length - 1} title="Move down"><ChevronDown size={10} /></button>
+                  </div>
+                )}
+                <button className="remove-btn" style={{ width: 20, height: 20 }} onClick={() => setCoaches(p => p.filter((_, j) => j !== i))} title="Remove"><Trash2 size={11} /></button>
               </div>
             ))}
-            <button className="add-link-btn" style={{ marginTop: 4, fontSize: 12 }} onClick={addCoach}>+ Add Coach</button>
+            <button className="add-link-btn" style={{ marginTop: 2, fontSize: 11 }} onClick={addCoach}>+ Add Coach</button>
 
-            <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.5)', margin: '16px 0 6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Captains</p>
+            <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', margin: '10px 0 4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Captains</p>
             {captains.map((c, i) => (
               <div className="person-row" key={c.personId ?? `new-${i}`}>
                 <div style={{ flex: 1 }}>
                   <PersonSearch value={c.personId} onChange={(id, n) => setCaptains(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x))} onRequestCreate={() => openCreateModal((id, n) => setCaptains(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x)))} />
                 </div>
-                <div className="reorder-btns">
-                  <button className="reorder-btn" onClick={() => move(setCaptains, i, i - 1)} disabled={i === 0} title="Move up"><ChevronUp size={12} /></button>
-                  <button className="reorder-btn" onClick={() => move(setCaptains, i, i + 1)} disabled={i === captains.length - 1} title="Move down"><ChevronDown size={12} /></button>
-                </div>
-                <button className="remove-btn" style={{ width: 24, height: 24 }} onClick={() => setCaptains(p => p.filter((_, j) => j !== i))} title="Remove"><Trash2 size={12} /></button>
+                {captains.length > 1 && (
+                  <div className="reorder-btns">
+                    <button className="reorder-btn" onClick={() => move(setCaptains, i, i - 1)} disabled={i === 0} title="Move up"><ChevronUp size={10} /></button>
+                    <button className="reorder-btn" onClick={() => move(setCaptains, i, i + 1)} disabled={i === captains.length - 1} title="Move down"><ChevronDown size={10} /></button>
+                  </div>
+                )}
+                <button className="remove-btn" style={{ width: 20, height: 20 }} onClick={() => setCaptains(p => p.filter((_, j) => j !== i))} title="Remove"><Trash2 size={11} /></button>
               </div>
             ))}
-            <button className="add-link-btn" style={{ marginTop: 4, fontSize: 12 }} onClick={addCaptain}>+ Add Captain</button>
+            <button className="add-link-btn" style={{ marginTop: 2, fontSize: 11 }} onClick={addCaptain}>+ Add Captain</button>
           </div>
 
           {/* Roster */}
           <div className="profile-card" style={editorStyles.card}>
             <h3 style={editorStyles.cardTitle}><Gamepad2 size={16} /> Roster</h3>
 
-            <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.5)', margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Active Players</p>
+            <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Active Players</p>
             {roster.map((r, i) => (
               <div className="person-row" key={r.personId ?? `new-${i}`}>
                 <div style={{ flex: 1 }}>
@@ -702,29 +712,33 @@ export default function TeamEditor() {
                 <select className="role-select" value={r.role} onChange={e => setRoster(p => p.map((x, j) => j === i ? { ...x, role: e.target.value } : x))}>
                   {ROLES.map(rl => <option key={rl.value} value={rl.value}>{rl.label}</option>)}
                 </select>
-                <div className="reorder-btns">
-                  <button className="reorder-btn" onClick={() => move(setRoster, i, i - 1)} disabled={i === 0} title="Move up"><ChevronUp size={12} /></button>
-                  <button className="reorder-btn" onClick={() => move(setRoster, i, i + 1)} disabled={i === roster.length - 1} title="Move down"><ChevronDown size={12} /></button>
-                </div>
-                <button className="remove-btn" style={{ width: 24, height: 24 }} onClick={() => setRoster(p => p.filter((_, j) => j !== i))} title="Remove"><Trash2 size={12} /></button>
+                {roster.length > 1 && (
+                  <div className="reorder-btns">
+                    <button className="reorder-btn" onClick={() => move(setRoster, i, i - 1)} disabled={i === 0} title="Move up"><ChevronUp size={10} /></button>
+                    <button className="reorder-btn" onClick={() => move(setRoster, i, i + 1)} disabled={i === roster.length - 1} title="Move down"><ChevronDown size={10} /></button>
+                  </div>
+                )}
+                <button className="remove-btn" style={{ width: 20, height: 20 }} onClick={() => setRoster(p => p.filter((_, j) => j !== i))} title="Remove"><Trash2 size={11} /></button>
               </div>
             ))}
-            <button className="add-link-btn" style={{ marginTop: 4, fontSize: 12 }} onClick={addRoster}>+ Add Player</button>
+            <button className="add-link-btn" style={{ marginTop: 2, fontSize: 11 }} onClick={addRoster}>+ Add Player</button>
 
-            <p style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.5)', margin: '16px 0 6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Substitutes</p>
+            <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', margin: '10px 0 4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Substitutes</p>
             {subs.map((s, i) => (
               <div className="person-row" key={s.personId ?? `new-${i}`}>
                 <div style={{ flex: 1 }}>
                   <PersonSearch value={s.personId} onChange={(id, n) => setSubs(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x))} onRequestCreate={() => openCreateModal((id, n) => setSubs(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x)))} />
                 </div>
-                <div className="reorder-btns">
-                  <button className="reorder-btn" onClick={() => move(setSubs, i, i - 1)} disabled={i === 0} title="Move up"><ChevronUp size={12} /></button>
-                  <button className="reorder-btn" onClick={() => move(setSubs, i, i + 1)} disabled={i === subs.length - 1} title="Move down"><ChevronDown size={12} /></button>
-                </div>
-                <button className="remove-btn" style={{ width: 24, height: 24 }} onClick={() => setSubs(p => p.filter((_, j) => j !== i))} title="Remove"><Trash2 size={12} /></button>
+                {subs.length > 1 && (
+                  <div className="reorder-btns">
+                    <button className="reorder-btn" onClick={() => move(setSubs, i, i - 1)} disabled={i === 0} title="Move up"><ChevronUp size={10} /></button>
+                    <button className="reorder-btn" onClick={() => move(setSubs, i, i + 1)} disabled={i === subs.length - 1} title="Move down"><ChevronDown size={10} /></button>
+                  </div>
+                )}
+                <button className="remove-btn" style={{ width: 20, height: 20 }} onClick={() => setSubs(p => p.filter((_, j) => j !== i))} title="Remove"><Trash2 size={11} /></button>
               </div>
             ))}
-            <button className="add-link-btn" style={{ marginTop: 4, fontSize: 12 }} onClick={addSub}>+ Add Sub</button>
+            <button className="add-link-btn" style={{ marginTop: 2, fontSize: 11 }} onClick={addSub}>+ Add Sub</button>
           </div>
 
           {/* Achievements */}

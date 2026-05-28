@@ -61,15 +61,6 @@ function rolePrimaryMatch(playerRole: string, slotRole: string): boolean {
   return false
 }
 
-function rolesMatch(playerRole: string, slotRole: string): boolean {
-  if (rolePrimaryMatch(playerRole, slotRole)) return true
-  const pr = playerRole.toLowerCase()
-  const sr = slotRole.toLowerCase()
-  for (const family of Object.values(ROLE_FAMILY)) {
-    if (family.includes(pr) && family.includes(sr)) return true
-  }
-  return false
-}
 
 export function suggestLineup(
   days: DaySchedule[],
@@ -181,20 +172,6 @@ export function suggestLineup(
             assignedIds.add(confirmed[0].personId)
             newSlots[i] = { ...slot, playerId: confirmed[0].personId }
           }
-        }
-      }
-
-      // Second pass: family matches for unfilled slots
-      for (let i = 0; i < newSlots.length; i++) {
-        if (newSlots[i].playerId) continue
-        const slot = newSlots[i]
-        const confirmed = availablePlayers.filter(
-          p => !assignedIds.has(p.personId) && p.blockStatus === 'available' && rolesMatch(p.scheduleRole, slot.role)
-            && (slot.isTrial ? p.status === 'trial' : p.status !== 'trial')
-        )
-        if (confirmed.length > 0) {
-          assignedIds.add(confirmed[0].personId)
-          newSlots[i] = { ...slot, playerId: confirmed[0].personId }
         }
       }
 

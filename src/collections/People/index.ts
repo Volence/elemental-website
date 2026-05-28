@@ -57,6 +57,8 @@ export const People: CollectionConfig = {
     create: ({ req: { user } }) => {
       if (!user) return false
       if (user.role === UserRole.ADMIN) return true
+      if (user.role === UserRole.STAFF_MANAGER) return true
+      if (user.role === UserRole.TEAM_MANAGER) return true
       return false
     },
     delete: adminOnly,

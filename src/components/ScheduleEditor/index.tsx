@@ -745,17 +745,6 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
     return false
   }
 
-  // Family-level match (broader, for fallback)
-  const roleMatchesSlot = (rosterRole: string, slotRole: string): boolean => {
-    if (rolePrimaryMatch(rosterRole, slotRole)) return true
-    const normalized = rosterRole.toLowerCase()
-    const slot = slotRole.toLowerCase()
-    if (normalized === 'tank' && slot === 'tank') return true
-    if (['dps', 'hitscan', 'flex dps'].includes(normalized) && ['dps', 'hitscan', 'flex dps'].includes(slot)) return true
-    if (['support', 'main support', 'flex support'].includes(normalized) && ['support', 'main support', 'flex support'].includes(slot)) return true
-    return false
-  }
-
   // Auto-fill a single block using available players + team roster roles
   const autoFillBlock = (dayIndex: number, blockIndex: number) => {
     const day = schedule.days[dayIndex]
@@ -818,30 +807,6 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
       }
     }
 
-    // Second pass: family role match for unfilled slots
-    for (let i = 0; i < newSlots.length; i++) {
-      if (newSlots[i].playerId) continue
-      const slot = newSlots[i]
-      const match = playerPool.find(p =>
-        !assigned.has(p.id) && p.isAvailable && roleMatchesSlot(p.rosterRole, slot.role)
-      )
-      if (match) {
-        newSlots[i] = { ...slot, playerId: match.id }
-        assigned.add(match.id)
-      }
-    }
-
-    // Third pass: fill remaining empty slots with any available player
-    for (let i = 0; i < newSlots.length; i++) {
-      if (newSlots[i].playerId) continue
-      const slot = newSlots[i]
-      const fallback = playerPool.find(p => !assigned.has(p.id) && p.isAvailable)
-      if (fallback) {
-        newSlots[i] = { ...slot, playerId: fallback.id }
-        assigned.add(fallback.id)
-      }
-    }
-
     // Update schedule
     const newDays = [...schedule.days]
     const newBlocks = [...newDays[dayIndex].blocks]
@@ -896,26 +861,6 @@ export const ScheduleEditor: React.FC<{ path: string }> = ({ path }) => {
           if (match) {
             newSlots[i] = { ...slot, playerId: match.id }
             assigned.add(match.id)
-          }
-        }
-        // Second pass: family role match
-        for (let i = 0; i < newSlots.length; i++) {
-          if (newSlots[i].playerId) continue
-          const slot = newSlots[i]
-          const match = playerPool.find(p => !assigned.has(p.id) && p.isAvailable && roleMatchesSlot(p.rosterRole, slot.role))
-          if (match) {
-            newSlots[i] = { ...slot, playerId: match.id }
-            assigned.add(match.id)
-          }
-        }
-        // Third pass: any available player
-        for (let i = 0; i < newSlots.length; i++) {
-          if (newSlots[i].playerId) continue
-          const slot = newSlots[i]
-          const fallback = playerPool.find(p => !assigned.has(p.id) && p.isAvailable)
-          if (fallback) {
-            newSlots[i] = { ...slot, playerId: fallback.id }
-            assigned.add(fallback.id)
           }
         }
 
