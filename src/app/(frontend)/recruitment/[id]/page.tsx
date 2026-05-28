@@ -101,7 +101,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // Build description with team's rating and region for Discord embed
     const descriptionParts: string[] = []
     if (team?.rating) {
-      descriptionParts.push(`SR: ${team.rating}`)
+      descriptionParts.push(/\d/.test(team.rating) ? `SR: ${team.rating}` : team.rating)
     }
     if (team?.region) {
       descriptionParts.push(`Region: ${team.region}`)
@@ -198,7 +198,7 @@ export default async function RecruitmentDetailPage({ params }: Props) {
           </span>
           {team?.rating && (
             <span className="inline-flex items-center gap-1 rounded-full border border-primary-500/50 bg-primary-500/10 px-3 py-1 text-sm font-semibold text-primary-400">
-              SR: {team.rating}
+              {/\d/.test(team.rating) ? `SR: ${team.rating}` : team.rating}
             </span>
           )}
         </div>

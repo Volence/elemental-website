@@ -46,7 +46,7 @@ export async function buildEnhancedTeamEmbed(team: any, payload: Payload): Promi
     descParts.push(`**${team.region}**`)
   }
   if (team.rating) {
-    descParts.push(`**SR ${team.rating}**`)
+    descParts.push(/\d/.test(team.rating) ? `**SR ${team.rating}**` : `**${team.rating}**`)
   }
   if (descParts.length) {
     embed.setDescription(descParts.join('  •  ') + '\n\u200B') // Add blank line
@@ -228,7 +228,7 @@ export async function buildTeamEmbed(team: any): Promise<EmbedBuilder> {
 
   // Competitive rating badge
   if (team.competitiveRating) {
-    embed.setDescription(`**SR:** ${team.competitiveRating}`)
+    embed.setDescription(/\d/.test(team.competitiveRating) ? `**SR:** ${team.competitiveRating}` : `**${team.competitiveRating}**`)
   }
 
   // Region
