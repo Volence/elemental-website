@@ -338,11 +338,18 @@ class LobbyController:
                 await paste_text(self.instance.account.password)
                 await asyncio.sleep(0.3)
                 await press_key("enter")
-                await asyncio.sleep(T.LOGIN_AFTER_SUBMIT)
 
-                # Re-focus (the submit can briefly drop foreground) then
-                # handle the authenticator/TOTP prompt if it appears.
+                # Re-focus (the submit can briefly drop foreground) then wait for
+                # the authenticator/TOTP prompt to render before reading it -
+                # polling for the prompt instead of a blind settle, bounded by the
+                # old wait so a slow prompt is still caught.
                 await self._focus()
+                await self._wait_for_any_text(
+                    ["AUTHENTICATOR", "CODE"],
+                    timeout=T.LOGIN_AFTER_SUBMIT,
+                    floor=T.WAIT_FLOOR,
+                    poll=T.WAIT_SCREEN_POLL,
+                )
                 await self._submit_totp_if_present()
 
                 await self._wait_for_main_menu(timeout=120)
@@ -362,7 +369,14 @@ class LobbyController:
                     self.instance.id, pos, attempt, max_attempts,
                 )
                 await click(*pos)
-                await asyncio.sleep(T.TRANSITION_LOGIN)
+                # Wait for the click to advance the page (to the TOTP prompt or
+                # the game) instead of a blind settle; bounded by the old delay.
+                await self._wait_for_any_text(
+                    ["AUTHENTICATOR", "CODE", "PLAY", "HEROES"],
+                    timeout=T.TRANSITION_LOGIN,
+                    floor=T.WAIT_FLOOR,
+                    poll=T.WAIT_SCREEN_POLL,
+                )
                 continue
 
             log.warning(
@@ -400,7 +414,8 @@ class LobbyController:
         await asyncio.sleep(0.3)
         await type_text(code)
         await press_key("enter")
-        await asyncio.sleep(T.LOGIN_AFTER_TOTP)
+        # No post-submit settle here: every caller immediately polls
+        # _wait_for_main_menu(timeout=120), which waits for the login to land.
         return True
 
     def check_health(self) -> tuple[Screen, bool]:
@@ -615,20 +630,35 @@ class LobbyController:
                     )
                     return
                 raise NavigationError(f"[{self.instance.id}] START button not found")
-            await asyncio.sleep(T.START_AFTER_CLICK)
 
-            # Handle CONTINUE / CONFIRM prompts (hero select, assemble, etc.)
+            # Click through any CONTINUE / CONFIRM prompts (hero select, assemble,
+            # "start anyway?", etc.). Poll for each to appear rather than
+            # blind-sleeping before the check: click it the instant it shows, and
+            # stop once no prompt appears within the window. The first window folds
+            # in the old post-click settle (START_AFTER_CLICK + START_CONTINUE_CHECK)
+            # so a slow-rendering prompt is still caught; later windows use the
+            # per-prompt interval. Never slower than the old fixed sleeps.
+            first_window = True
             for _ in range(5):
-                await asyncio.sleep(T.START_CONTINUE_CHECK)
+                window = (
+                    T.START_AFTER_CLICK + T.START_CONTINUE_CHECK
+                    if first_window else T.START_CONTINUE_CHECK
+                )
+                first_window = False
+                if not await self._wait_for_any_text(
+                    ["CONTINUE", "CONFIRM"],
+                    timeout=window,
+                    floor=T.WAIT_FLOOR,
+                    poll=T.WAIT_SCREEN_POLL,
+                ):
+                    break
                 for label in ["CONTINUE", "CONFIRM"]:
-                    pos = self.detector.find_text(label, retries=2)
+                    pos = self.detector.find_text(label, rescan=False, retries=1)
                     if pos:
                         log.info("[%s] Clicking %s at %s", self.instance.id, label, pos)
                         await click(*pos)
                         await asyncio.sleep(T.START_AFTER_CONTINUE)
                         break
-                else:
-                    break
 
             if await self._verify_game_started():
                 log.info("[%s] Game started (verified left lobby)", self.instance.id)
@@ -983,10 +1013,18 @@ class LobbyController:
         # Step 3: Click SETTINGS to open the settings screen
         if not await click_text("SETTIN", self.detector, retries=5):
             raise NavigationError(f"[{self.instance.id}] SETTINGS not found")
-        await asyncio.sleep(T.IMPORT_AFTER_SETTINGS)
 
-        # Step 4: Re-focus (in case another instance stole it during load)
+        # Re-focus (another instance can steal foreground during the settings
+        # load) then wait for the settings screen to actually render - its PRESETS
+        # tab is the signature - instead of a blind settle. Falls through at the
+        # timeout, so a missed label costs time but cannot break the import.
         await self._focus()
+        await self._wait_for_text(
+            "PRESETS",
+            timeout=T.WAIT_MENU_TIMEOUT,
+            floor=T.WAIT_FLOOR,
+            poll=T.WAIT_SCREEN_POLL,
+        )
         await asyncio.sleep(T.IMPORT_REFOCUS_PAUSE)
 
         # Step 5: Set clipboard AGAIN via PowerShell and notify OW window
@@ -1008,20 +1046,31 @@ class LobbyController:
             await asyncio.sleep(0.3)
             self._verify_clipboard(code, "after retry")
 
-        # Step 4: Wait for OW to detect clipboard change and show orange icon
-        # OW polls clipboard periodically; give it time
-        await asyncio.sleep(T.IMPORT_CLIPBOARD_DETECT)
-
-        # Verify clipboard is STILL there before scanning
+        # Step 4: Wait for OW to detect the clipboard change and render the
+        # orange import icon. OW polls the clipboard periodically, so instead of
+        # one scan after a fixed settle we poll for the icon and grab it the
+        # instant it appears - the biggest time save in the import path. The poll
+        # window equals the old blind wait, so within it this is at least as
+        # reliable (several scans vs one) and never slower; if the icon never
+        # shows we fall through to the existing clipboard-rewake retry ladder.
         self._verify_clipboard(code, "before scan")
-
-        # Re-focus to make sure we screenshot THIS window
-        await self._focus()
-
-        # --- Attempt 1: scan for orange import icon ---
-        img = self.detector.screenshot()
-        img.save(f"C:/ow-bot-service/debug_import_{self.instance.id}_1.png")
-        cx, cy, size = self._find_orange_button(img, label="attempt 1")
+        cx = cy = None
+        size = 0
+        saved_debug = False
+        await asyncio.sleep(T.WAIT_FLOOR)
+        elapsed = T.WAIT_FLOOR
+        while elapsed < T.IMPORT_CLIPBOARD_DETECT:
+            # Re-focus each poll to make sure we screenshot THIS window
+            await self._focus()
+            img = self.detector.screenshot()
+            if not saved_debug:
+                img.save(f"C:/ow-bot-service/debug_import_{self.instance.id}_1.png")
+                saved_debug = True
+            cx, cy, size = self._find_orange_button(img, label="attempt 1")
+            if cx is not None:
+                break
+            await asyncio.sleep(T.WAIT_POLL)
+            elapsed += T.WAIT_POLL
 
         if cx is None:
             # Retry: re-set clipboard, click settings area to wake up
@@ -1085,7 +1134,14 @@ class LobbyController:
                 self.instance.id, size, abs_cx, abs_cy,
             )
             await click(abs_cx, abs_cy)
-            await asyncio.sleep(T.IMPORT_AFTER_ORANGE_CLICK)
+            # Wait for the import confirmation dialog (its IMPORT text) instead
+            # of a blind settle; bounded so a miss only costs the timeout.
+            await self._wait_for_text(
+                "IMPORT",
+                timeout=T.WAIT_DIALOG_TIMEOUT,
+                floor=T.WAIT_FLOOR,
+                poll=T.WAIT_POLL,
+            )
         else:
             # Last resort: try clicking the approximate position where the
             # import icon should be (right side of the settings tab bar).
@@ -1108,7 +1164,14 @@ class LobbyController:
                     self.instance.id, approx_x, approx_y, presets_pos,
                 )
                 await click(approx_x, approx_y)
-                await asyncio.sleep(T.IMPORT_AFTER_ORANGE_CLICK)
+                # Wait for the import confirmation dialog (its IMPORT text)
+                # instead of a blind settle; bounded by the timeout.
+                await self._wait_for_text(
+                    "IMPORT",
+                    timeout=T.WAIT_DIALOG_TIMEOUT,
+                    floor=T.WAIT_FLOOR,
+                    poll=T.WAIT_POLL,
+                )
             else:
                 raise NavigationError(
                     f"[{self.instance.id}] Import button not found and "
@@ -1120,7 +1183,13 @@ class LobbyController:
         if pos:
             log.info("[%s] Clicking IMPORT at %s", self.instance.id, pos)
             await click(*pos)
-            await asyncio.sleep(T.IMPORT_AFTER_IMPORT_CLICK)
+            # Wait for the CONFIRM button to appear instead of a blind settle.
+            await self._wait_for_text(
+                "CONFIRM",
+                timeout=T.WAIT_DIALOG_TIMEOUT,
+                floor=T.WAIT_FLOOR,
+                poll=T.WAIT_POLL,
+            )
         else:
             log.warning(
                 "[%s] IMPORT dialog text not found - button click may not "
@@ -1132,15 +1201,28 @@ class LobbyController:
         if not await click_text("CONFIRM", self.detector, retries=3):
             raise NavigationError(f"[{self.instance.id}] CONFIRM not found after import")
         log.info("[%s] Import confirmed, waiting for load", self.instance.id)
+        # Kept as a blind wait on purpose: the import loads into the settings
+        # screen with no distinctive OCR signal for "done", and ESC-ing out too
+        # early can interrupt it. Better to give the heavy load ample fixed time.
         await asyncio.sleep(T.IMPORT_LOAD_AFTER_CONFIRM)
 
-        # ESC back to lobby
+        # ESC back to the lobby, waiting for it to actually appear rather than
+        # blind-sleeping. If we are not at the lobby after the first ESC (a stray
+        # dialog, or settings still up), press ESC once more and wait again.
         await press_key("escape")
-        await asyncio.sleep(T.IMPORT_AFTER_ESC_BACK)
-        screen = self.detector.detect_screen()
-        if screen == Screen.UNKNOWN:
+        if not await self._wait_for_screen(
+            Screen.LOBBY,
+            timeout=T.WAIT_SCREEN_TIMEOUT,
+            floor=T.WAIT_FLOOR,
+            poll=T.WAIT_SCREEN_POLL,
+        ):
             await press_key("escape")
-            await asyncio.sleep(T.IMPORT_AFTER_ESC_BACK)
+            await self._wait_for_screen(
+                Screen.LOBBY,
+                timeout=T.WAIT_SCREEN_TIMEOUT,
+                floor=T.WAIT_FLOOR,
+                poll=T.WAIT_SCREEN_POLL,
+            )
 
         log.info("[%s] Settings imported", self.instance.id)
 
