@@ -8,6 +8,7 @@ export interface SchedulePerson {
 export interface RosterEntry {
   person: SchedulePerson
   role: 'tank' | 'dps' | 'support'
+  lastScheduleRole?: string
 }
 
 export interface ScheduleTeam {

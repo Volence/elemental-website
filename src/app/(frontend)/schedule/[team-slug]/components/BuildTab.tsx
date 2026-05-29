@@ -215,6 +215,7 @@ export function BuildTab() {
         name: e.person.name || 'Unknown',
         discordId: e.person.discordId || '',
         role: e.role,
+        lastScheduleRole: e.lastScheduleRole,
         isSub: team.subs.some((s: any) => s.person?.id === e.person.id),
       }))
   }, [team.roster, team.subs])
@@ -257,7 +258,7 @@ export function BuildTab() {
       const personId = discordToPersonId[r.discordId]
       const player = rosterPlayers.find(p => p.discordId === r.discordId)
       const name = player?.name || r.discordUsername || 'Unknown'
-      const role = r.scheduleRole || (player ? ROSTER_ROLE_MAP[player.role] : '') || ''
+      const role = r.scheduleRole || (player ? (player.lastScheduleRole || ROSTER_ROLE_MAP[player.role]) : '') || ''
       const defaultStatus = player?.isSub ? 'sub' : 'main'
       const scheduleStatus = r.scheduleStatus || defaultStatus
       for (const [dateKey, slots] of Object.entries(r.selections)) {

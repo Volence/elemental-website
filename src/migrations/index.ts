@@ -25,6 +25,7 @@ import * as migration_20260506_phase1_add_auth_fields_to_people from "./20260506
 import * as migration_20260506_phase2_migrate_user_data_to_people from "./20260506_phase2_migrate_user_data_to_people";
 import * as migration_20260506_phase3_remap_fk_references from "./20260506_phase3_remap_fk_references";
 import * as migration_20260506_phase4_archive_old_tables from "./20260506_phase4_archive_old_tables";
+import * as migration_20260529_add_last_schedule_role from "./20260529_add_last_schedule_role";
 
 export const migrations = [
   {
@@ -161,5 +162,10 @@ export const migrations = [
     up: migration_20260506_phase4_archive_old_tables.up,
     down: migration_20260506_phase4_archive_old_tables.down,
     name: "20260506_phase4_archive_old_tables",
+  },
+  {
+    up: migration_20260529_add_last_schedule_role.up,
+    down: migration_20260529_add_last_schedule_role.down,
+    name: "20260529_add_last_schedule_role",
   },
 ];

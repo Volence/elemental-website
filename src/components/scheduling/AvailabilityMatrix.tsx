@@ -145,7 +145,7 @@ export function AvailabilityMatrix() {
         if (!person?.discordId || seenIds.has(person.discordId)) continue
         seenIds.add(person.discordId)
         const response = responses.find((r: any) => r.discordId === person.discordId)
-        const scheduleRole = response?.scheduleRole || ROSTER_ROLE_MAP[entry.role] || ''
+        const scheduleRole = response?.scheduleRole || entry.lastScheduleRole || ROSTER_ROLE_MAP[entry.role] || ''
         const defaultStatus = isSub ? 'sub' : 'main'
         rows.push({
           discordId: person.discordId,

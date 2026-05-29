@@ -213,6 +213,7 @@ export async function GET(
         discordAvatar: entry.person.discordAvatar,
       } : null,
       role: entry.role,
+      lastScheduleRole: entry.lastScheduleRole,
     })).filter((e: any) => e.person)
 
     const subsData = (team.subs || []).map((entry: any) => ({
@@ -223,6 +224,7 @@ export async function GET(
         discordAvatar: entry.person.discordAvatar,
       } : null,
       role: entry.role,
+      lastScheduleRole: entry.lastScheduleRole,
     })).filter((e: any) => e.person)
 
     return NextResponse.json({
@@ -395,6 +397,34 @@ export async function PATCH(
       data: { responses },
       overrideAccess: true,
     })
+
+    // Carry the chosen role forward: remember it per-team on the player's
+    // roster/subs entry so future weeks default to it. Only persist a real
+    // (non-empty) selection; clearing a week keeps the remembered default.
+    if (typeof scheduleRole === 'string' && scheduleRole) {
+      let touched = false
+      const applyTo = (entries: any[]) => {
+        for (const entry of entries || []) {
+          const personDiscordId =
+            typeof entry.person === 'object' ? entry.person?.discordId : undefined
+          if (personDiscordId === discordId && entry.lastScheduleRole !== scheduleRole) {
+            entry.lastScheduleRole = scheduleRole
+            touched = true
+          }
+        }
+      }
+      applyTo(team.roster)
+      applyTo(team.subs)
+
+      if (touched) {
+        await payload.update({
+          collection: 'teams',
+          id: team.id,
+          data: { roster: team.roster, subs: team.subs },
+          overrideAccess: true,
+        })
+      }
+    }
 
     return NextResponse.json({ success: true })
   } catch (err) {

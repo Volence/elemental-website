@@ -821,6 +821,10 @@ export interface Team {
          * Player role in-game
          */
         role: 'tank' | 'dps' | 'support';
+        /**
+         * Most recent schedule role this player was assigned, auto-filled by the scheduler to carry forward week-to-week. Not normally edited by hand.
+         */
+        lastScheduleRole?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -833,6 +837,10 @@ export interface Team {
          * Link to a person in the People collection. Social links are managed in the People collection.
          */
         person: number | Person;
+        /**
+         * Most recent schedule role this player was assigned, auto-filled by the scheduler to carry forward week-to-week. Not normally edited by hand.
+         */
+        lastScheduleRole?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -3675,12 +3683,14 @@ export interface TeamsSelect<T extends boolean = true> {
     | {
         person?: T;
         role?: T;
+        lastScheduleRole?: T;
         id?: T;
       };
   subs?:
     | T
     | {
         person?: T;
+        lastScheduleRole?: T;
         id?: T;
       };
   faceitEnabled?: T;

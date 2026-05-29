@@ -387,6 +387,14 @@ export const Teams: CollectionConfig = {
                     { label: 'Support', value: 'support' },
                   ],
                 },
+                {
+                  name: 'lastScheduleRole',
+                  type: 'text',
+                  admin: {
+                    description: 'Most recent schedule role this player was assigned, auto-filled by the scheduler to carry forward week-to-week. Not normally edited by hand.',
+                    readOnly: true,
+                  },
+                },
               ],
             },
             {
@@ -409,6 +417,14 @@ export const Teams: CollectionConfig = {
                   admin: {
                     description: 'Link to a person in the People collection. Social links are managed in the People collection.',
                     allowCreate: true,
+                  },
+                },
+                {
+                  name: 'lastScheduleRole',
+                  type: 'text',
+                  admin: {
+                    description: 'Most recent schedule role this player was assigned, auto-filled by the scheduler to carry forward week-to-week. Not normally edited by hand.',
+                    readOnly: true,
                   },
                 },
               ],

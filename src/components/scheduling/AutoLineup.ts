@@ -68,13 +68,14 @@ export function suggestLineup(
   subs: RosterEntry[],
   calendarResponses: any[],
 ): DaySchedule[] {
-  const playerMap = new Map<string, { personId: string; name: string; rosterRole: string; status: 'main' | 'sub' | 'trial' }>()
+  const playerMap = new Map<string, { personId: string; name: string; rosterRole: string; lastScheduleRole?: string; status: 'main' | 'sub' | 'trial' }>()
   for (const entry of roster) {
     if (entry.person?.discordId) {
       playerMap.set(entry.person.discordId, {
         personId: String(entry.person.id),
         name: entry.person.name || 'Unknown',
         rosterRole: entry.role,
+        lastScheduleRole: entry.lastScheduleRole,
         status: 'main',
       })
     }
@@ -85,6 +86,7 @@ export function suggestLineup(
         personId: String(entry.person.id),
         name: entry.person.name || 'Unknown',
         rosterRole: entry.role,
+        lastScheduleRole: entry.lastScheduleRole,
         status: 'sub',
       })
     }
@@ -99,7 +101,7 @@ export function suggestLineup(
       for (const response of calendarResponses) {
         if (!response.selections) continue
         const playerInfo = playerMap.get(response.discordId)
-        const scheduleRole = response.scheduleRole || (playerInfo ? ROSTER_ROLE_MAP[playerInfo.rosterRole] : '') || ''
+        const scheduleRole = response.scheduleRole || (playerInfo ? (playerInfo.lastScheduleRole || ROSTER_ROLE_MAP[playerInfo.rosterRole]) : '') || ''
 
         let blockStatus: 'available' | 'maybe' | null = null
         let totalBlocksAvailable = 0
