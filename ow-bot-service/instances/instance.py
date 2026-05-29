@@ -33,6 +33,9 @@ class OWInstance:
         self.live_stats: dict | None = None
         self.player_names: set[str] = set()
         self._idle_timer: asyncio.Task | None = None
+        # Set while a post-match navigation/free is in progress so the admin
+        # result path and the workshop-log match-end path don't both run it.
+        self._finalizing: bool = False
 
     @property
     def account_email(self) -> str:
@@ -234,6 +237,7 @@ class OWInstance:
         self.state = InstanceState.IN_GAME
         self.started_at = datetime.now()
         self.live_stats = None
+        self._finalizing = False
         log.info("[%s] Game started for PUG #%s", self.id, self.lobby_number)
 
     def on_game_ended(self):
@@ -262,6 +266,7 @@ class OWInstance:
         self._cancel_idle_timer()
         await self._close_ow()
         self.pug_lobby_id = None
+        self._finalizing = False
         self.state = InstanceState.AVAILABLE
 
     def check_health(self) -> tuple[str, bool]:

@@ -734,7 +734,7 @@ class LobbyController:
         if command in ("end_draw", "end_team1", "end_team2"):
             asyncio.create_task(self._handle_post_match())
 
-    async def _handle_post_match(self):
+    async def _handle_post_match(self, report: bool = True):
         from instances.instance import InstanceState
 
         inst_id = self.instance.id
@@ -742,35 +742,49 @@ class LobbyController:
             log.info("[%s] Post-match: already cleaned up, skipping", inst_id)
             return
 
-        log.info("[%s] Waiting for match to end and return to lobby...", inst_id)
-
-        await asyncio.sleep(10)
-
-        screen = None
-        for attempt in range(12):
-            if self.instance.state in (InstanceState.AVAILABLE, InstanceState.READY):
-                log.info("[%s] Post-match: cleaned up during wait, skipping", inst_id)
-                return
-            await self._focus()
-            screen = self.detector.detect_screen()
-            log.info("[%s] Post-match check %d/12: screen=%s", inst_id, attempt + 1, screen.value)
-            if screen in (Screen.LOBBY, Screen.MAIN_MENU):
-                break
-            await asyncio.sleep(5)
-        else:
-            log.warning("[%s] Timed out waiting for lobby after match end", inst_id)
+        # Two paths can trigger post-match handling: the admin result buttons
+        # and the workshop-log match-end monitor. Guard so only one navigates
+        # the OW window and frees the instance. The check and set have no await
+        # between them, so this is atomic on the single asyncio loop. The flag
+        # is released in finally, so a concurrent second trigger is skipped
+        # while a genuine retry after this fully finishes is still allowed.
+        if self.instance._finalizing:
+            log.info("[%s] Post-match: already finalizing, skipping", inst_id)
             return
+        self.instance._finalizing = True
 
-        if screen != Screen.MAIN_MENU:
-            log.info("[%s] Back at lobby, navigating to main menu", inst_id)
-            try:
-                await self.navigate_to(Screen.MAIN_MENU)
-                log.info("[%s] Reached main menu after match", inst_id)
-            except Exception as e:
-                log.error("[%s] Failed to navigate to main menu: %s", inst_id, e)
+        try:
+            log.info("[%s] Waiting for match to end and return to lobby...", inst_id)
 
-        from instances.manager import instance_manager
-        await instance_manager.on_game_ended(inst_id)
+            await asyncio.sleep(10)
+
+            screen = None
+            for attempt in range(12):
+                if self.instance.state in (InstanceState.AVAILABLE, InstanceState.READY):
+                    log.info("[%s] Post-match: cleaned up during wait, skipping", inst_id)
+                    return
+                await self._focus()
+                screen = self.detector.detect_screen()
+                log.info("[%s] Post-match check %d/12: screen=%s", inst_id, attempt + 1, screen.value)
+                if screen in (Screen.LOBBY, Screen.MAIN_MENU):
+                    break
+                await asyncio.sleep(5)
+            else:
+                log.warning("[%s] Timed out waiting for lobby after match end", inst_id)
+                return
+
+            if screen != Screen.MAIN_MENU:
+                log.info("[%s] Back at lobby, navigating to main menu", inst_id)
+                try:
+                    await self.navigate_to(Screen.MAIN_MENU)
+                    log.info("[%s] Reached main menu after match", inst_id)
+                except Exception as e:
+                    log.error("[%s] Failed to navigate to main menu: %s", inst_id, e)
+
+            from instances.manager import instance_manager
+            await instance_manager.on_game_ended(inst_id, report=report)
+        finally:
+            self.instance._finalizing = False
 
     # ── Private helpers ───────────────────────────────────────────────
 
@@ -800,7 +814,10 @@ class LobbyController:
         # has its own OCR retries plus the orange-button fallback.
         await self._wait_for_screen(Screen.CUSTOM_GAMES, timeout=T.WAIT_MENU_TIMEOUT)
 
-        create_pos = await click_text("CREATE", self.detector, retries=3)
+        # whole_word so "CREATE" never matches "Created by" entries in the
+        # custom-games browser list. If the real button is unreadable this
+        # frame, fall through to the orange-button color scan below.
+        create_pos = await click_text("CREATE", self.detector, retries=3, whole_word=True)
         if not create_pos:
             all_text = self.detector.find_all_text(confidence=0.3, rescan=False)
             log.warning("[%s] CREATE not found via OCR, texts on screen: %s",
@@ -1258,6 +1275,7 @@ class LobbyController:
         await self._wait_for_any_text(
             ["ADD PLAYER", "VIA", "NO PLAYER"],
             timeout=T.INVITE_PANEL_TIMEOUT, floor=T.INVITE_PANEL_FLOOR,
+            poll=T.INVITE_PANEL_POLL,
         )
 
         # 2) Scan panel
@@ -1297,6 +1315,7 @@ class LobbyController:
                 await self._wait_for_any_text(
                     ["BOTH", "ROTH", "BATTLE"],
                     timeout=T.INVITE_PANEL_TIMEOUT, floor=T.INVITE_PANEL_FLOOR,
+                    poll=T.INVITE_PANEL_POLL,
                 )
                 all_text = self.detector.find_all_text()
 
@@ -1422,6 +1441,7 @@ class LobbyController:
         await self._wait_for_any_text(
             ["ADD PLAYER", "VIA", "NO PLAYER"],
             timeout=T.INVITE_PANEL_TIMEOUT, floor=T.INVITE_PANEL_FLOOR,
+            poll=T.INVITE_PANEL_POLL,
         )
 
         # 2) Switch to BattleTag view (panel always opens in friends view)
@@ -1431,6 +1451,7 @@ class LobbyController:
             await self._wait_for_any_text(
                 ["BOTH", "ROTH", "BATTLE"],
                 timeout=T.INVITE_PANEL_TIMEOUT, floor=T.INVITE_PANEL_FLOOR,
+                poll=T.INVITE_PANEL_POLL,
             )
 
         # 3) Team selector - only change if different from last invite
@@ -1475,6 +1496,7 @@ class LobbyController:
         await self._wait_until_text_gone(
             ["ADD PLAYER", "BOTH", "ROTH", "VIA"],
             timeout=T.INVITE_SEND_TIMEOUT, floor=T.INVITE_PANEL_FLOOR,
+            poll=T.INVITE_PANEL_POLL,
         )
 
     async def _count_lobby_players(self) -> int:

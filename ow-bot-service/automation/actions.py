@@ -60,13 +60,17 @@ async def scroll_at(x: int, y: int, clicks: int = 3):
     await asyncio.sleep(_human_delay(0.1))
 
 
-async def click_text(label: str, detector, retries: int = 3, delay: float = 0.2):
+async def click_text(
+    label: str, detector, retries: int = 3, delay: float = 0.2,
+    whole_word: bool = False,
+):
     """Find text on screen via OCR and click its center.
 
-    Returns (x, y) if clicked, None if not found.
+    whole_word=True matches `label` only as a standalone word, so e.g. CREATE
+    will not click a "Created by" lobby entry. Returns (x, y) if clicked, None.
     """
     for attempt in range(retries):
-        pos = detector.find_text(label)
+        pos = detector.find_text(label, whole_word=whole_word)
         if pos:
             await click(*pos, delay=delay)
             log.info("click_text(%r): clicked (%d,%d)", label, *pos)

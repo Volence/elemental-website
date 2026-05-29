@@ -313,7 +313,7 @@ class Scheduler:
                 if ow_alive:
                     logger.info(f"[{inst.id}] Auto-recovering from error state (OW alive)")
                     await inst.recover()
-                    # Re-warmup since OW is running but in unknown state
+                    await asyncio.sleep(10)
                     try:
                         await inst.warmup()
                     except Exception as e:

@@ -98,31 +98,6 @@ class LogTailer:
             log.info("Instance %s already transitioned, skipping upload", self.instance_id)
             return
 
-        try:
-            content = self.path.read_text(encoding="utf-8", errors="replace")
-        except Exception:
-            log.exception("Failed reading %s for upload", self.path.name)
-            return
-
-        from callbacks.client import callback_client
-
-        result = await callback_client.send_stats(self.pug_lobby_id, content)
-        if result:
-            log.info(
-                "Stats uploaded for PUG %d: scrimId=%s result=%s",
-                self.pug_lobby_id,
-                result.get("scrimId"),
-                result.get("autoResult"),
-            )
-            try:
-                self.path.unlink()
-                log.info("Deleted processed log %s", self.path.name)
-            except Exception:
-                log.warning("Could not delete log %s", self.path.name)
-        else:
-            log.warning("Stats upload failed for PUG %d — keeping log", self.pug_lobby_id)
-
-        # Determine match result from scores
         match_result = None
         if self.stats.team_1_score > self.stats.team_2_score:
             match_result = "team1"
@@ -131,13 +106,50 @@ class LogTailer:
         elif self.stats.match_ended:
             match_result = "draw"
 
-        await callback_client.report_status(
-            self.pug_lobby_id,
-            "game_ended",
-            instance_id=self.instance_id,
-            match_result=match_result,
-        )
-        inst.on_game_ended()
+        if self.pug_lobby_id is not None:
+            try:
+                content = self.path.read_text(encoding="utf-8", errors="replace")
+            except Exception:
+                log.exception("Failed reading %s for upload", self.path.name)
+                content = None
+
+            if content:
+                from callbacks.client import callback_client
+
+                result = await callback_client.send_stats(self.pug_lobby_id, content)
+                if result:
+                    log.info(
+                        "Stats uploaded for PUG %d: scrimId=%s result=%s",
+                        self.pug_lobby_id,
+                        result.get("scrimId"),
+                        result.get("autoResult"),
+                    )
+                    try:
+                        self.path.unlink()
+                        log.info("Deleted processed log %s", self.path.name)
+                    except Exception:
+                        log.warning("Could not delete log %s", self.path.name)
+                else:
+                    log.warning("Stats upload failed for PUG %d - keeping log", self.pug_lobby_id)
+
+            from callbacks.client import callback_client
+            await callback_client.report_status(
+                self.pug_lobby_id,
+                "game_ended",
+                instance_id=self.instance_id,
+                match_result=match_result,
+            )
+        else:
+            log.info("No PUG ID for instance %s, skipping stats upload (manual test)", self.instance_id)
+
+        log.info("[%s] Game ended, result=%s", self.instance_id, match_result)
+        # Hand off to the shared post-match handler: wait for the lobby to
+        # settle, navigate OW back to the main menu, then free the instance.
+        # Run it as a separate task (not awaited) because that handler calls
+        # cleanup, which stops this tailer and cancels the task we're in.
+        # report=False: we already reported game_ended above with the result.
+        from automation.controller import LobbyController
+        asyncio.create_task(LobbyController(inst)._handle_post_match(report=False))
 
 
 class _LogHandler(FileSystemEventHandler):
@@ -230,8 +242,12 @@ class WorkshopMonitor:
         ]
 
         if not active:
-            log.info("No active instance for %s (solo testing?)", path.name)
-            return
+            # Fall back to any in-game instance (admin/manual tests without PUG ID)
+            active = [i for i in instance_manager.instances if i.is_in_game]
+            if not active:
+                log.info("No active instance for %s (solo testing?)", path.name)
+                return
+            log.info("No PUG-linked instance, using in-game instance %s for %s", active[0].id, path.name)
 
         if len(active) == 1:
             self._start_tailer(path, active[0])

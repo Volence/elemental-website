@@ -362,7 +362,7 @@ class InstanceManager:
             raise ValueError(f"Instance {instance_id} not found")
         await inst.send_command(command)
 
-    async def on_game_ended(self, instance_id: str):
+    async def on_game_ended(self, instance_id: str, report: bool = True):
         inst = next((i for i in self.instances if i.id == instance_id), None)
         if not inst:
             return
@@ -373,7 +373,9 @@ class InstanceManager:
         pug_lobby_id = inst.pug_lobby_id
         inst.on_game_ended()
 
-        if pug_lobby_id:
+        # report=False when the caller already reported game_ended (e.g. the
+        # workshop-log monitor, which reports with the match_result attached).
+        if report and pug_lobby_id:
             await callback_client.report_status(
                 pug_lobby_id, "game_ended", instance_id=instance_id,
             )

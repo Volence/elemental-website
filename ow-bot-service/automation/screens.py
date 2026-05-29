@@ -1,4 +1,5 @@
 import logging
+import re
 import time
 from enum import Enum
 
@@ -104,16 +105,30 @@ class ScreenDetector:
         confidence: float = 0.4,
         rescan: bool = True,
         retries: int = 1,
+        whole_word: bool = False,
     ) -> tuple[int, int] | None:
-        """Find text on screen, return center (x, y) in screen coords."""
+        """Find text on screen, return center (x, y) in screen coords.
+
+        whole_word=True matches `label` only as a standalone word (regex word
+        boundaries), so "CREATE" will not match "Created by" lobby entries in
+        the custom-games browser. Default stays substring matching, which is
+        tolerant of OCR splitting/merging longer labels.
+        """
         label_upper = label.upper()
+        pattern = re.compile(rf"\b{re.escape(label_upper)}\b") if whole_word else None
         for attempt in range(retries):
             if rescan or not self._cached_results:
                 self.scan()
             for bbox, text, conf in self._cached_results:
                 if conf < confidence:
                     continue
-                if label_upper in text.upper():
+                text_upper = text.upper()
+                matched = (
+                    pattern.search(text_upper) is not None
+                    if whole_word
+                    else label_upper in text_upper
+                )
+                if matched:
                     x1, y1 = bbox[0]
                     x2, y2 = bbox[2]
                     cx = int((x1 + x2) / 2) + self.region[0]

@@ -82,6 +82,9 @@ INVITE_AFTER_SEND = 1.0     # (scheduler path) after clicking INVITE send (panel
 # after a send (return to lobby). Snappy floor since these are sub-second when
 # healthy; on a missed OCR label the wait falls through at the timeout.
 INVITE_PANEL_FLOOR = 0.15   # initial settle before polling for the panel/view
+INVITE_PANEL_POLL = 0.2     # gap between invite-panel condition checks (these
+                            # transitions are sub-second; the generic 0.4 poll
+                            # overshoots them and feels sluggish across N invites)
 INVITE_PANEL_TIMEOUT = 4.0  # max wait for the invite panel / BattleTag view
 INVITE_SEND_TIMEOUT = 5.0   # max wait for the panel to close (back to lobby)
 
