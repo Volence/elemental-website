@@ -155,6 +155,62 @@ class LobbyController:
             elapsed += poll
         return False
 
+    async def _wait_for_any_text(
+        self,
+        labels: list[str],
+        timeout: float | None = None,
+        floor: float | None = None,
+        poll: float | None = None,
+    ) -> bool:
+        """Wait until ANY of `labels` appears on screen. Returns True if seen.
+
+        Like _wait_for_text but tolerant of OCR misreads: one scan is checked
+        against several candidate labels, so e.g. the team dropdown (often
+        OCR'd "ROTH" instead of "BOTH") is still detected. Used for invite-panel
+        transitions where a single label is unreliable.
+        """
+        timeout = T.WAIT_DIALOG_TIMEOUT if timeout is None else timeout
+        floor = T.WAIT_FLOOR if floor is None else floor
+        poll = T.WAIT_POLL if poll is None else poll
+        uppers = [label.upper() for label in labels]
+        await asyncio.sleep(floor)
+        elapsed = floor
+        while elapsed < timeout:
+            haystack = " ".join(t.upper() for t, _, _ in self.detector.find_all_text())
+            if any(u in haystack for u in uppers):
+                return True
+            await asyncio.sleep(poll)
+            elapsed += poll
+        return False
+
+    async def _wait_until_text_gone(
+        self,
+        labels: list[str],
+        timeout: float | None = None,
+        floor: float | None = None,
+        poll: float | None = None,
+    ) -> bool:
+        """Wait until NONE of `labels` is on screen. Returns True once gone.
+
+        Used after sending an invite: the panel closes and returns to the
+        lobby, so we poll until the panel's distinctive text disappears rather
+        than blind-sleeping. More precise than waiting for the LOBBY screen,
+        whose START/INVITE buttons can OCR-match through a half-closed panel.
+        """
+        timeout = T.WAIT_DIALOG_TIMEOUT if timeout is None else timeout
+        floor = T.WAIT_FLOOR if floor is None else floor
+        poll = T.WAIT_POLL if poll is None else poll
+        uppers = [label.upper() for label in labels]
+        await asyncio.sleep(floor)
+        elapsed = floor
+        while elapsed < timeout:
+            haystack = " ".join(t.upper() for t, _, _ in self.detector.find_all_text())
+            if not any(u in haystack for u in uppers):
+                return True
+            await asyncio.sleep(poll)
+            elapsed += poll
+        return False
+
     async def _dismiss_blocking_dialog(self) -> str | None:
         """If a known error pop-up is on screen, dismiss it. Returns phrase.
 
@@ -1117,7 +1173,10 @@ class LobbyController:
         # 1) Click INVITE in lobby to open the ADD PLAYERS panel
         if not await click_text("INVITE", self.detector, retries=3):
             raise NavigationError(f"[{self.instance.id}] INVITE not found")
-        await asyncio.sleep(T.INVITE_AFTER_OPEN)
+        await self._wait_for_any_text(
+            ["ADD PLAYER", "VIA", "NO PLAYER"],
+            timeout=T.INVITE_PANEL_TIMEOUT, floor=T.INVITE_PANEL_FLOOR,
+        )
 
         # 2) Scan panel
         all_text = self.detector.find_all_text()
@@ -1153,7 +1212,10 @@ class LobbyController:
                 log.info("[%s] Clicking BattleTag view at %s", self.instance.id, via_pos)
                 cache["via_battletag_pos"] = via_pos
                 await click(*via_pos)
-                await asyncio.sleep(T.INVITE_AFTER_VIEW_SWITCH)
+                await self._wait_for_any_text(
+                    ["BOTH", "ROTH", "BATTLE"],
+                    timeout=T.INVITE_PANEL_TIMEOUT, floor=T.INVITE_PANEL_FLOOR,
+                )
                 all_text = self.detector.find_all_text()
 
         # 4) Cache key positions from the BattleTag view
@@ -1212,7 +1274,9 @@ class LobbyController:
         log.info("[%s] Opening team dropdown at %s (target: TEAM %d)",
                  self.instance.id, both_pos, team)
         await click(*both_pos)
-        await asyncio.sleep(T.INVITE_AFTER_OPEN)
+        await self._wait_for_text(
+            "TEAM", timeout=T.INVITE_PANEL_TIMEOUT, floor=T.INVITE_PANEL_FLOOR,
+        )
 
         dropdown_text = self.detector.find_all_text()
         log.info(
@@ -1273,13 +1337,19 @@ class LobbyController:
         else:
             if not await click_text("INVITE", self.detector, retries=2):
                 raise NavigationError(f"[{self.instance.id}] INVITE not found")
-        await asyncio.sleep(T.INVITE_AFTER_OPEN)
+        await self._wait_for_any_text(
+            ["ADD PLAYER", "VIA", "NO PLAYER"],
+            timeout=T.INVITE_PANEL_TIMEOUT, floor=T.INVITE_PANEL_FLOOR,
+        )
 
         # 2) Switch to BattleTag view (panel always opens in friends view)
         via_pos = cache.get("via_battletag_pos")
         if via_pos:
             await click(*via_pos)
-            await asyncio.sleep(T.INVITE_AFTER_VIEW_SWITCH)
+            await self._wait_for_any_text(
+                ["BOTH", "ROTH", "BATTLE"],
+                timeout=T.INVITE_PANEL_TIMEOUT, floor=T.INVITE_PANEL_FLOOR,
+            )
 
         # 3) Team selector - only change if different from last invite
         both_pos = cache.get("both_pos")
@@ -1312,13 +1382,18 @@ class LobbyController:
         log.info("[%s] Pasted BattleTag: %s", self.instance.id, battle_tag)
         await asyncio.sleep(T.INVITE_AFTER_PASTE)
 
-        # Click INVITE send (panel auto-closes)
+        # Click INVITE send. The panel closes and returns to the lobby, so
+        # wait for its distinctive text to disappear instead of blind-sleeping;
+        # the next invite then starts as soon as we are actually back.
         send_pos = cache.get("send_pos")
         if send_pos:
             await click(*send_pos)
         else:
             await press_key("enter")
-        await asyncio.sleep(T.INVITE_AFTER_SEND)
+        await self._wait_until_text_gone(
+            ["ADD PLAYER", "BOTH", "ROTH", "VIA"],
+            timeout=T.INVITE_SEND_TIMEOUT, floor=T.INVITE_PANEL_FLOOR,
+        )
 
     async def _count_lobby_players(self) -> int:
         """OCR the lobby screen and count filled team slots."""
