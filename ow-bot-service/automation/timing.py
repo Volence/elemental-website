@@ -10,6 +10,33 @@ FOCUS_AFTER = 0.4          # wait after successful focus
 FOCUS_RETRY_BEFORE = 0.3   # pause before retrying a failed focus
 FOCUS_RETRY_AFTER = 0.5    # wait after retry focus
 
+# ── Condition-based waiting ──────────────────────────────────────────
+# Instead of blindly sleeping a fixed amount after a click, we wait for the
+# *expected* next element/screen to appear, polling until it does (or a max
+# timeout elapses). FLOOR is a short initial sleep to let the transition
+# begin before the first poll; POLL is the gap between checks; the *_TIMEOUT
+# values are the upper bound before we give up and let the caller's own
+# retry/verify logic take over. Best case: much faster than the old fixed
+# sleeps. Worst case: waits up to the timeout, then proceeds.
+WAIT_FLOOR = 0.3              # initial settle before first poll
+WAIT_POLL = 0.4              # gap between condition checks
+WAIT_SCREEN_POLL = 0.5      # gap between detect_screen checks (OCR heavier)
+WAIT_MENU_TIMEOUT = 8.0     # max wait for a menu transition (PLAY/CUSTOM/etc.)
+WAIT_SCREEN_TIMEOUT = 10.0  # max wait for a full screen transition
+WAIT_DIALOG_TIMEOUT = 4.0   # max wait for a dialog/element to appear
+
+# ── Screen detection stability ──────────────────────────────────────
+DETECT_RETRY_DELAY = 0.4    # gap between re-scans when detect returns UNKNOWN
+
+# ── Login / TOTP ─────────────────────────────────────────────────────
+LOGIN_AFTER_SUBMIT = 5.0    # wait after submitting credentials before TOTP check
+LOGIN_AFTER_TOTP = 5.0      # wait after submitting the TOTP code
+LOGIN_MAX_ATTEMPTS = 3      # bound on login button click recursion
+
+# ── Start game verification ──────────────────────────────────────────
+START_VERIFY_TIMEOUT = 15.0  # max wait to confirm the game actually left the lobby
+START_VERIFY_POLL = 1.5     # gap between start-verification checks
+
 # ── Navigation (ESC, back) ──────────────────────────────────────────
 NAV_AFTER_ESC = 1.0        # after pressing ESC to go back a screen
 NAV_AFTER_EXIT = 1.0       # after clicking EXIT in a lobby

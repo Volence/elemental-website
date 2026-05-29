@@ -52,6 +52,26 @@ DISMISS_KEYWORDS = [
     "CLOSE", "CONFIRM", "YES", "GOT IT", "UNDERSTOOD",
 ]
 
+# Substrings (case-insensitive) that identify a blocking pop-up dialog even
+# when it has no standard dismiss button text. When any of these appear, the
+# screen is treated as a dismissable DIALOG so the controller clears it
+# (click a dismiss button if present, else ESC) instead of stalling on UNKNOWN.
+KNOWN_DIALOG_PHRASES = [
+    "disabled invitation",     # "They have disabled Invitations..."
+    "unable to invite",        # "Unable to invite player to custom game"
+    "cannot invite",
+    "could not invite",
+    "invitation failed",
+    "lost connection",
+    "connection to the game",
+    "you have been removed",
+    "you were removed",
+    "rejoin",
+    "has been disbanded",
+    "no longer available",
+    "try again",
+]
+
 MAX_TEXT_LEN = 25
 
 _DEPTH: dict[Screen, int] = {
@@ -125,15 +145,8 @@ class ScreenDetector:
         upper = label.upper()
         return any(upper in t.upper() for t in texts if len(t) <= MAX_TEXT_LEN)
 
-    def detect_screen(self, rescan: bool = True) -> Screen:
-        """Identify which OW screen is showing via OCR.
-
-        Args:
-            rescan: Take a fresh screenshot. Set False to reuse the last scan
-                    (useful after find_all_text to avoid a second screenshot).
-        """
-        if rescan or not self._cached_results:
-            self.scan()
+    def _match_signatures(self) -> Screen:
+        """Match the most recent OCR scan against the screen signatures."""
         texts = [text for _, text, conf in self._cached_results if conf > 0.3]
         log.debug("detect_screen texts: %s", texts)
         for screen, required, forbidden in _SCREEN_SIGNATURES:
@@ -141,7 +154,38 @@ class ScreenDetector:
                 if not any(self._texts_contain(f, texts) for f in forbidden):
                     log.debug("detect_screen: %s", screen.value)
                     return screen
-        log.warning("detect_screen: no match (texts: %s)", texts)
+        return Screen.UNKNOWN
+
+    def detect_screen(
+        self, rescan: bool = True, retries: int = 1, retry_delay: float = 0.4,
+    ) -> Screen:
+        """Identify which OW screen is showing via OCR.
+
+        Args:
+            rescan: Take a fresh screenshot. Set False to reuse the last scan
+                    (useful after find_all_text to avoid a second screenshot).
+            retries: If the first frame yields UNKNOWN, re-scan and retry up to
+                    this many total attempts. OCR is frame-to-frame noisy, so a
+                    single bad frame should not be trusted as a real UNKNOWN.
+                    A known screen is returned as soon as it is seen; only a
+                    persistent UNKNOWN survives all retries.
+            retry_delay: Seconds between retry scans.
+        """
+        attempts = max(1, retries)
+        for attempt in range(attempts):
+            if rescan or not self._cached_results:
+                self.scan()
+            screen = self._match_signatures()
+            if screen != Screen.UNKNOWN:
+                return screen
+            if attempt < attempts - 1:
+                rescan = True  # force a fresh frame on the next try
+                time.sleep(retry_delay)
+        texts = [text for _, text, conf in self._cached_results if conf > 0.3]
+        log.warning(
+            "detect_screen: no match after %d attempt(s) (texts: %s)",
+            attempts, texts,
+        )
         return Screen.UNKNOWN
 
     def wait_for_screen(
@@ -197,6 +241,15 @@ class ScreenDetector:
         texts = [text for _, text, conf in self._cached_results if conf > 0.3]
         short_texts = [t for t in texts if len(t) <= MAX_TEXT_LEN]
 
+        # Known blocking dialogs (e.g. "unable to invite", "lost connection")
+        # are matched against the FULL text, since their identifying phrase is
+        # usually a long sentence, not a short button label.
+        joined = " ".join(texts).lower()
+        for phrase in KNOWN_DIALOG_PHRASES:
+            if phrase in joined:
+                log.info("classify_unknown: known dialog phrase '%s'", phrase)
+                return Screen.DIALOG
+
         if len(short_texts) <= 1:
             log.debug("classify_unknown: loading (only %d text fragments)", len(short_texts))
             return Screen.LOADING
@@ -207,6 +260,19 @@ class ScreenDetector:
                 return Screen.DIALOG
 
         return Screen.UNKNOWN
+
+    def has_blocking_dialog(self) -> str | None:
+        """Return the matched phrase if a known blocking dialog is on screen.
+
+        Re-uses the last OCR scan (does not rescan). Used to detect error
+        pop-ups (e.g. invite-disabled) that appear mid-operation.
+        """
+        texts = [text for _, text, conf in self._cached_results if conf > 0.3]
+        joined = " ".join(texts).lower()
+        for phrase in KNOWN_DIALOG_PHRASES:
+            if phrase in joined:
+                return phrase
+        return None
 
     def find_dismiss_button(self) -> tuple[int, int] | None:
         """Find a clickable dismiss/confirm button on a dialog screen."""

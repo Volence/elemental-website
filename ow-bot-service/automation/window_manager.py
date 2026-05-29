@@ -67,6 +67,27 @@ class WindowManager:
             ctypes.wintypes.HWND, ctypes.c_int, ctypes.c_int,
             ctypes.c_int, ctypes.c_int, ctypes.wintypes.BOOL,
         ]
+        user32.SetWindowPos.argtypes = [
+            ctypes.wintypes.HWND, ctypes.wintypes.HWND,
+            ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+            ctypes.wintypes.UINT,
+        ]
+        user32.SetWindowPos.restype = ctypes.wintypes.BOOL
+
+    def _topmost_toggle(self, hwnd: int):
+        """Briefly mark a window TOPMOST then release it.
+
+        This forces the window above all others (including other DirectX
+        fullscreen windows) more reliably than SetForegroundWindow alone.
+        """
+        SWP_NOMOVE = 0x0002
+        SWP_NOSIZE = 0x0001
+        SWP_SHOWWINDOW = 0x0040
+        HWND_TOPMOST = -1
+        HWND_NOTOPMOST = -2
+        flags = SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW
+        user32.SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, flags)
+        user32.SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, flags)
 
     def discover_windows(self) -> list[OWWindow]:
         """Find all Overwatch windows and register them."""
@@ -142,6 +163,27 @@ class WindowManager:
         """Get a tracked window by instance ID."""
         return self._windows.get(instance_id)
 
+    def refresh_region(self, instance_id: str) -> tuple[int, int, int, int] | None:
+        """Update a window's stored region from its live position/size.
+
+        OW windows can move or resize (restore from minimized, DPI changes,
+        alt-tab), which leaves the cached region stale and makes OCR capture
+        the wrong rectangle. Call this after focusing, before screenshotting.
+        """
+        win = self._windows.get(instance_id)
+        if not win or not win.is_valid:
+            return None
+        rect = ctypes.wintypes.RECT()
+        user32.GetWindowRect(win.hwnd, ctypes.byref(rect))
+        x, y = rect.left, rect.top
+        w = rect.right - rect.left
+        h = rect.bottom - rect.top
+        # Ignore obviously bogus rects (minimized windows report -32000).
+        if w <= 0 or h <= 0 or x <= -30000 or y <= -30000:
+            return win.region
+        win.region = (max(0, x), max(0, y), w, h)
+        return win.region
+
     def get_all_windows(self) -> list[OWWindow]:
         """Get all tracked windows."""
         return list(self._windows.values())
@@ -177,9 +219,12 @@ class WindowManager:
                 time.sleep(0.1)
                 break
 
-        # Step 2: Restore target window and bring to front
+        # Step 2: Restore target window and bring to front. The TOPMOST
+        # toggle forces it above other DirectX windows more reliably than
+        # SetForegroundWindow on its own.
         user32.ShowWindow(win.hwnd, SW_RESTORE)
         time.sleep(0.1)
+        self._topmost_toggle(win.hwnd)
         result = user32.SetForegroundWindow(win.hwnd)
         time.sleep(0.3)  # Let DirectX re-render
 

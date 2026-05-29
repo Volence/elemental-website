@@ -14,7 +14,7 @@ import psutil
 from scipy import ndimage
 
 from config import settings
-from automation.actions import click, click_text, move_to, paste_text, press_key, hotkey
+from automation.actions import click, click_text, move_to, paste_text, press_key, hotkey, type_text
 from automation.screens import Screen, ScreenDetector, get_depth, DISMISS_KEYWORDS
 from automation.window_manager import window_manager
 from automation import background_input
@@ -36,6 +36,30 @@ class NavigationError(Exception):
     pass
 
 
+def _find_orange_button(detector: ScreenDetector) -> tuple[int, int] | None:
+    """Find an orange button by color when OCR fails on colored backgrounds."""
+    img = detector.screenshot()
+    arr = np.array(img)
+    r, g, b = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2]
+    mask = (r > 180) & (g > 60) & (g < 160) & (b < 100)
+    labeled, num = ndimage.label(mask)
+    best = None
+    best_size = 0
+    for i in range(1, num + 1):
+        c = np.argwhere(labeled == i)
+        if len(c) > best_size and len(c) > 50:
+            cy = int(np.mean(c[:, 0]))
+            if cy < 600:
+                best_size = len(c)
+                best = c
+    if best is not None:
+        cy = int(np.mean(best[:, 0])) + detector.region[1]
+        cx = int(np.mean(best[:, 1])) + detector.region[0]
+        log.info("Orange button found: %dpx at (%d,%d)", best_size, cx, cy)
+        return (cx, cy)
+    return None
+
+
 class LobbyController:
     def __init__(self, instance):
         self.instance = instance
@@ -54,15 +78,102 @@ class LobbyController:
         win = window_manager.get_window(self.instance.id)
         return win.region if win else self.instance.account.screen_region
 
-    async def _focus(self):
+    async def _focus(self) -> bool:
+        """Focus this instance's window. Returns True if it ends up foreground.
+
+        Every UI operation routes through here, so this is where we guarantee
+        the window is actually tracked. The #1 real-world failure ("Cannot
+        focus inst-X: window not found or invalid") was ops running before the
+        window was registered - focus then no-ops and screenshots capture a
+        default/blank region, cascading into OCR failures. We self-heal by
+        (re)discovering the window when it is missing/stale, and we refresh the
+        OCR region from the live window rect after focusing.
+        """
+        win = window_manager.get_window(self.instance.id)
+        if not win or not win.is_valid:
+            self.instance._ensure_window_tracked()
+            self._detector = None  # region likely changed; rebuild lazily
+
         success = window_manager.focus_window(self.instance.id)
         await asyncio.sleep(T.FOCUS_AFTER)
         if not success:
-            # Retry once with a longer pause
             log.warning("[%s] Focus failed, retrying", self.instance.id)
             await asyncio.sleep(T.FOCUS_RETRY_BEFORE)
-            window_manager.focus_window(self.instance.id)
+            # Re-discover in case the handle went stale between attempts.
+            self.instance._ensure_window_tracked()
+            success = window_manager.focus_window(self.instance.id)
             await asyncio.sleep(T.FOCUS_RETRY_AFTER)
+
+        # Keep the OCR capture region aligned with the live window.
+        window_manager.refresh_region(self.instance.id)
+        return success
+
+    async def _wait_for_text(
+        self,
+        label: str,
+        timeout: float | None = None,
+        floor: float | None = None,
+        poll: float | None = None,
+    ) -> tuple[int, int] | None:
+        """Wait for `label` to appear on screen; return its position or None.
+
+        Condition-based replacement for a blind sleep after a click: returns
+        as soon as the expected next element is visible (fast path), but waits
+        up to `timeout` before giving up (slow path). Sleeps `floor` first to
+        let the transition begin so we do not OCR a half-rendered frame.
+        """
+        timeout = T.WAIT_MENU_TIMEOUT if timeout is None else timeout
+        floor = T.WAIT_FLOOR if floor is None else floor
+        poll = T.WAIT_POLL if poll is None else poll
+        await asyncio.sleep(floor)
+        elapsed = floor
+        while elapsed < timeout:
+            pos = self.detector.find_text(label, retries=1)
+            if pos:
+                return pos
+            await asyncio.sleep(poll)
+            elapsed += poll
+        return None
+
+    async def _wait_for_screen(
+        self,
+        target: Screen,
+        timeout: float | None = None,
+        floor: float | None = None,
+        poll: float | None = None,
+    ) -> bool:
+        """Wait until `target` screen is detected (stable). Returns success."""
+        timeout = T.WAIT_SCREEN_TIMEOUT if timeout is None else timeout
+        floor = T.WAIT_FLOOR if floor is None else floor
+        poll = T.WAIT_SCREEN_POLL if poll is None else poll
+        await asyncio.sleep(floor)
+        elapsed = floor
+        while elapsed < timeout:
+            if self.detector.detect_screen() == target:
+                return True
+            await asyncio.sleep(poll)
+            elapsed += poll
+        return False
+
+    async def _dismiss_blocking_dialog(self) -> str | None:
+        """If a known error pop-up is on screen, dismiss it. Returns phrase.
+
+        Uses the most recent OCR scan first (cheap), and only acts when a
+        recognised blocking phrase (e.g. invite-disabled, lost connection) is
+        present. Clicks a dismiss button if one exists, otherwise presses ESC.
+        """
+        self.detector.scan()
+        phrase = self.detector.has_blocking_dialog()
+        if not phrase:
+            return None
+        log.warning("[%s] Blocking dialog detected ('%s'), dismissing", self.instance.id, phrase)
+        pos = self.detector.find_dismiss_button()
+        if pos:
+            await click(*pos)
+        else:
+            await press_key("escape")
+        await asyncio.sleep(T.TRANSITION_DIALOG)
+        return phrase
 
     # ── Navigation ────────────────────────────────────────────────────
 
@@ -70,7 +181,7 @@ class LobbyController:
         await self._focus()
 
         for attempt in range(1, max_attempts + 1):
-            current = self.detector.detect_screen()
+            current = self.detector.detect_screen(retries=3)
             log.info(
                 "[%s] nav(%s): at %s (attempt %d/%d)",
                 self.instance.id, target.value, current.value,
@@ -98,6 +209,9 @@ class LobbyController:
                 continue
 
             if current == Screen.UNKNOWN:
+                # Re-focus first: a stolen/lost foreground is a common cause of
+                # a bogus UNKNOWN (we screenshot the wrong or blank window).
+                await self._focus()
                 recovered = await self._recover_from_unknown()
                 if not recovered:
                     await press_key("escape")
@@ -114,7 +228,7 @@ class LobbyController:
             elif cur_depth < tgt_depth:
                 break
 
-        actual = self.detector.detect_screen()
+        actual = self.detector.detect_screen(retries=3)
         if actual != target:
             raise NavigationError(
                 f"[{self.instance.id}] Cannot reach {target.value}, at {actual.value}"
@@ -142,36 +256,103 @@ class LobbyController:
 
         return False
 
-    async def _handle_login_screen(self):
-        email_pos = self.detector.find_text("Email", retries=3)
-        if email_pos:
-            log.info("[%s] Credential entry screen, typing email", self.instance.id)
-            await click(*email_pos)
-            await asyncio.sleep(0.3)
-            await hotkey("ctrl", "a")
-            await paste_text(self.instance.account.email)
-            await asyncio.sleep(0.3)
-            await press_key("tab")
-            await asyncio.sleep(0.3)
-            await paste_text(self.instance.account.password)
-            await asyncio.sleep(0.3)
-            await press_key("enter")
-            await asyncio.sleep(15)
-            await self._wait_for_main_menu(timeout=120)
-            log.info("[%s] Re-login successful", self.instance.id)
-            return
+    async def _handle_login_screen(self, max_attempts: int | None = None):
+        """Log in from the Battle.net login screen, including TOTP 2FA.
 
-        pos = self.detector.find_text("LOGIN", retries=3)
-        if pos:
-            log.info("[%s] Clicking LOGIN button at %s", self.instance.id, pos)
-            await click(*pos)
+        Bounded loop (the old version recursed without a limit, which could spin
+        forever if the screen never advanced). Each pass either enters
+        credentials, clicks the LOGIN button, or submits a TOTP code, then
+        re-checks. Gives up after `max_attempts` passes.
+        """
+        max_attempts = T.LOGIN_MAX_ATTEMPTS if max_attempts is None else max_attempts
+
+        for attempt in range(1, max_attempts + 1):
+            email_pos = self.detector.find_text("Email", retries=3)
+            if not email_pos:
+                email_pos = self.detector.find_text("Phone", retries=1)
+            if email_pos:
+                log.info("[%s] Credential entry screen, typing email", self.instance.id)
+                await click(*email_pos)
+                await asyncio.sleep(0.3)
+                await hotkey("ctrl", "a")
+                await paste_text(self.instance.account.email)
+                await asyncio.sleep(0.3)
+                await press_key("tab")
+                await asyncio.sleep(0.3)
+                await paste_text(self.instance.account.password)
+                await asyncio.sleep(0.3)
+                await press_key("enter")
+                await asyncio.sleep(T.LOGIN_AFTER_SUBMIT)
+
+                # Re-focus (the submit can briefly drop foreground) then
+                # handle the authenticator/TOTP prompt if it appears.
+                await self._focus()
+                await self._submit_totp_if_present()
+
+                await self._wait_for_main_menu(timeout=120)
+                log.info("[%s] Re-login successful", self.instance.id)
+                return
+
+            # A TOTP-only prompt (already past credentials) can appear here.
+            if await self._submit_totp_if_present():
+                await self._wait_for_main_menu(timeout=120)
+                log.info("[%s] Re-login successful (TOTP)", self.instance.id)
+                return
+
+            pos = self.detector.find_text("LOGIN", retries=3)
+            if pos:
+                log.info(
+                    "[%s] Clicking LOGIN button at %s (attempt %d/%d)",
+                    self.instance.id, pos, attempt, max_attempts,
+                )
+                await click(*pos)
+                await asyncio.sleep(T.TRANSITION_LOGIN)
+                continue
+
+            log.warning(
+                "[%s] No login/credential field found (attempt %d/%d)",
+                self.instance.id, attempt, max_attempts,
+            )
             await asyncio.sleep(T.TRANSITION_LOGIN)
-            return await self._handle_login_screen()
 
-        log.warning("[%s] LOGIN button not found on login screen", self.instance.id)
+        log.warning(
+            "[%s] Login did not complete after %d attempts",
+            self.instance.id, max_attempts,
+        )
+
+    async def _submit_totp_if_present(self) -> bool:
+        """Enter a TOTP code if the authenticator prompt is showing.
+
+        Returns True if a code was submitted. Mirrors the warmup login path so
+        re-login from a lobby/health-check context can also clear 2FA.
+        """
+        totp_pos = self.detector.find_text("AUTHENTICATOR", retries=2)
+        if not totp_pos:
+            totp_pos = self.detector.find_text("CODE", retries=2)
+        if not totp_pos:
+            return False
+        try:
+            code = self.instance.account.generate_totp()
+        except Exception as e:
+            log.error("[%s] Could not generate TOTP: %s", self.instance.id, e)
+            return False
+        if not code:
+            log.warning("[%s] TOTP prompt present but no code generated", self.instance.id)
+            return False
+        log.info("[%s] TOTP prompt detected, submitting code", self.instance.id)
+        await click(*totp_pos)
+        await asyncio.sleep(0.3)
+        await type_text(code)
+        await press_key("enter")
+        await asyncio.sleep(T.LOGIN_AFTER_TOTP)
+        return True
 
     def check_health(self) -> tuple[Screen, bool]:
-        current = self.detector.detect_screen()
+        # Use stable detection: a single noisy OCR frame should not flip an
+        # otherwise-fine instance into ERROR and trigger a needless recover.
+        current = self.detector.detect_screen(retries=2)
+        if current == Screen.UNKNOWN and self.instance.state.value == "in_game":
+            return current, True
         return current, current not in (Screen.UNKNOWN, Screen.LOGIN)
 
     # ── High-level operations ─────────────────────────────────────────
@@ -328,7 +509,21 @@ class LobbyController:
                     log.info("[%s] Invited %s to team %d (%d/%d)", self.instance.id, battle_tag, team, i + 1, len(pending))
                 except NavigationError as e:
                     log.error("[%s] Failed to invite %s: %s", self.instance.id, battle_tag, e)
-                    result.failed_invites.append(user_id)
+                    if user_id not in result.failed_invites:
+                        result.failed_invites.append(user_id)
+                    continue
+
+                # Clear an invite-refused pop-up (e.g. the player disabled
+                # invites from non-friends) so it does not block the next
+                # invite. Such a dialog means this invite did not land.
+                dialog = await self._dismiss_blocking_dialog()
+                if dialog and "invit" in dialog:
+                    log.warning(
+                        "[%s] Invite to %s appears refused (%s)",
+                        self.instance.id, battle_tag, dialog,
+                    )
+                    if user_id not in result.failed_invites:
+                        result.failed_invites.append(user_id)
 
             joined_count = await self._wait_for_players(expected_count, join_timeout, poll_interval)
             result.joined = joined_count
@@ -351,25 +546,73 @@ class LobbyController:
         await self._focus()
         await self.navigate_to(Screen.LOBBY)
 
-        log.info("[%s] Starting game", self.instance.id)
-        if not await click_text("START", self.detector, retries=3):
-            raise NavigationError(f"[{self.instance.id}] START button not found")
-        await asyncio.sleep(T.START_AFTER_CLICK)
+        for start_attempt in range(1, 3):  # up to 2 START presses
+            log.info("[%s] Starting game (attempt %d)", self.instance.id, start_attempt)
+            if not await click_text("START", self.detector, retries=3):
+                # START not visible: either it never rendered, or the match
+                # already left the lobby. Only treat a still-at-lobby state as
+                # a hard failure; otherwise assume it started.
+                if self.detector.detect_screen(retries=2) != Screen.LOBBY:
+                    log.info(
+                        "[%s] START not visible and no longer at lobby - assuming started",
+                        self.instance.id,
+                    )
+                    return
+                raise NavigationError(f"[{self.instance.id}] START button not found")
+            await asyncio.sleep(T.START_AFTER_CLICK)
 
-        # Handle CONTINUE / CONFIRM screens (hero select, assemble, etc.)
-        for _ in range(5):
-            await asyncio.sleep(T.START_CONTINUE_CHECK)
-            for label in ["CONTINUE", "CONFIRM"]:
-                pos = self.detector.find_text(label, retries=2)
-                if pos:
-                    log.info("[%s] Clicking %s at %s", self.instance.id, label, pos)
-                    await click(*pos)
-                    await asyncio.sleep(T.START_AFTER_CONTINUE)
+            # Handle CONTINUE / CONFIRM prompts (hero select, assemble, etc.)
+            for _ in range(5):
+                await asyncio.sleep(T.START_CONTINUE_CHECK)
+                for label in ["CONTINUE", "CONFIRM"]:
+                    pos = self.detector.find_text(label, retries=2)
+                    if pos:
+                        log.info("[%s] Clicking %s at %s", self.instance.id, label, pos)
+                        await click(*pos)
+                        await asyncio.sleep(T.START_AFTER_CONTINUE)
+                        break
+                else:
                     break
-            else:
-                break
 
-        log.info("[%s] Game started", self.instance.id)
+            if await self._verify_game_started():
+                log.info("[%s] Game started (verified left lobby)", self.instance.id)
+                return
+
+            log.warning(
+                "[%s] Still at lobby after START (attempt %d), retrying",
+                self.instance.id, start_attempt,
+            )
+            await self._focus()
+
+        # Could not positively confirm the transition. Do NOT raise: the match
+        # has very likely started (verification can false-negative because the
+        # in-game/loading screens have no OCR signature), and raising here would
+        # flip a live game to ERROR. Caller proceeds; workshop log confirms.
+        log.warning(
+            "[%s] Game start not confirmed via OCR; proceeding optimistically",
+            self.instance.id,
+        )
+
+    async def _verify_game_started(self) -> bool:
+        """Return True once the lobby screen is gone (match underway).
+
+        The lobby uniquely shows START+INVITE; once the match starts those
+        disappear (LOADING then the in-game spectator HUD, neither of which
+        matches the LOBBY signature). Also clears any blocking pop-up that
+        could be pinning us on the lobby (e.g. a stray error dialog).
+        """
+        elapsed = 0.0
+        while elapsed < T.START_VERIFY_TIMEOUT:
+            screen = self.detector.detect_screen(retries=2)
+            if screen != Screen.LOBBY:
+                if screen == Screen.UNKNOWN and self.detector.classify_unknown() == Screen.DIALOG:
+                    # A dialog (not the game) is up - dismiss and keep checking.
+                    await self._dismiss_blocking_dialog()
+                else:
+                    return True
+            await asyncio.sleep(T.START_VERIFY_POLL)
+            elapsed += T.START_VERIFY_POLL
+        return False
 
     async def send_admin_command(self, command: str):
         key_map = {
@@ -450,27 +693,44 @@ class LobbyController:
 
         if not await click_text("PLAY", self.detector, retries=3):
             raise NavigationError(f"[{self.instance.id}] PLAY not found")
-        await asyncio.sleep(T.TRANSITION_PLAY)
 
-        # MORE dropdown -- scan fast before it closes
-        if not await click_text("MORE", self.detector, retries=2):
+        # Wait for the PLAY submenu (MORE dropdown) to render, rather than a
+        # blind sleep: proceeds as soon as MORE is visible, up to a max wait.
+        more_pos = await self._wait_for_text("MORE", timeout=T.WAIT_MENU_TIMEOUT)
+        if not more_pos:
             raise NavigationError(f"[{self.instance.id}] MORE not found")
-        await asyncio.sleep(0.3)
+        await click(*more_pos)
 
-        pos = self.detector.find_text("CUSTOM")
-        if not pos:
-            await asyncio.sleep(1)
-            pos = self.detector.find_text("CUSTOM", retries=2)
+        # CUSTOM appears in the MORE dropdown shortly after it opens.
+        pos = await self._wait_for_text(
+            "CUSTOM", timeout=T.WAIT_DIALOG_TIMEOUT, floor=0.2,
+        )
         if not pos:
             raise NavigationError(f"[{self.instance.id}] CUSTOM GAMES not found")
         await click(*pos)
-        await asyncio.sleep(T.TRANSITION_CUSTOM)
 
-        if not await click_text("CREATE", self.detector, retries=5):
-            raise NavigationError(f"[{self.instance.id}] CREATE not found")
-        await asyncio.sleep(T.TRANSITION_CREATE)
+        # Wait for the Custom Games browser instead of a fixed sleep. Best
+        # effort: if detection is flaky we still fall through to CREATE, which
+        # has its own OCR retries plus the orange-button fallback.
+        await self._wait_for_screen(Screen.CUSTOM_GAMES, timeout=T.WAIT_MENU_TIMEOUT)
 
-        if not self.detector.wait_for_screen(Screen.LOBBY, timeout=5.0):
+        create_pos = await click_text("CREATE", self.detector, retries=3)
+        if not create_pos:
+            all_text = self.detector.find_all_text(confidence=0.3, rescan=False)
+            log.warning("[%s] CREATE not found via OCR, texts on screen: %s",
+                        self.instance.id,
+                        [(t, p, f"{c:.2f}") for t, p, c in all_text if len(t) <= 25])
+            create_pos = _find_orange_button(self.detector)
+            if create_pos:
+                log.info("[%s] Clicking orange CREATE button at (%d,%d)", self.instance.id, *create_pos)
+                await click(*create_pos)
+            else:
+                raise NavigationError(f"[{self.instance.id}] CREATE not found (OCR + color scan)")
+        # Wait for the lobby to actually appear (async, non-blocking) rather
+        # than a fixed sleep + short blocking poll.
+        if not await self._wait_for_screen(
+            Screen.LOBBY, timeout=T.WAIT_SCREEN_TIMEOUT, floor=T.TRANSITION_CREATE,
+        ):
             raise NavigationError(f"[{self.instance.id}] Did not arrive at lobby after Create")
         log.info("[%s] New lobby created", self.instance.id)
 
