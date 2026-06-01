@@ -232,6 +232,7 @@ async function handleInstanceStep(instanceId: string, command: string, extra?: R
           bannedHeroes: extra.bannedHeroes ?? [],
           otherMapsInMode: extra.otherMapsInMode,
           hostNote: extra.hostNote,
+          region: 'na',
         })
       } else {
         // Fallback: append workshop template to whatever was sent
@@ -351,6 +352,7 @@ async function handleStartTestLobby(battleTags: string[]) {
     mapSettingsEntry: null,
     mapType: 'control',
     bannedHeroes: [],
+    region: 'na',
   })
 
   // Call the bot directly
@@ -469,6 +471,7 @@ async function handleFillAndAdvance() {
       mapSettingsEntry: null,
       mapType: 'control',
       bannedHeroes: [],
+      region: 'na',
     })
 
     // Players with null battleTags so invites are skipped
