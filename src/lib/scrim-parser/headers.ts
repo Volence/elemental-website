@@ -89,7 +89,7 @@ export const headers: Record<string, string[]> = {
     'Solo Kills', 'Objective Kills', 'Environmental Kills',
     'Environmental Deaths', 'Critical Hits', 'Critical Hit Accuracy',
     'Scoped Accuracy', 'Scoped Critical Hit Accuracy', 'Scoped Critical Hit Kills',
-    'Shots Fired', 'Shots Hit', 'Shots Missed', 'Scoped Shots',
+    'Shots Fired', 'Shots Hit', 'Shots Missed', 'Scoped Shots', 'Scoped Shots Hit',
     'Weapon Accuracy', 'Hero Time Played',
   ],
   point_progress: [

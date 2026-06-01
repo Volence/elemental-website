@@ -62,7 +62,7 @@ export async function getFinalRoundStats(mapId: number) {
       shots_fired: number
       shots_hit: number
       shots_missed: number
-      scoped_shots_fired: number
+      scoped_shots: number
       scoped_shots_hit: number
       weapon_accuracy: number
       hero_time_played: number
@@ -80,6 +80,11 @@ export async function getFinalRoundStats(mapId: number) {
   `
 
   return removeDuplicateRows(rows)
+    // Overwatch emits a final player_stat snapshot for every hero a player
+    // touched, including heroes hovered or swapped through with no play time.
+    // Those 0-time rows have all-zero stats and only clutter the per-hero
+    // tables, so drop them.
+    .filter((r) => r.hero_time_played > 0)
     .sort((a, b) => a.player_name.localeCompare(b.player_name))
     .sort(
       (a, b) =>
@@ -132,7 +137,7 @@ export async function getPlayerFinalStats(mapId: number, playerName: string) {
       shots_fired: number
       shots_hit: number
       shots_missed: number
-      scoped_shots_fired: number
+      scoped_shots: number
       scoped_shots_hit: number
       weapon_accuracy: number
       hero_time_played: number
