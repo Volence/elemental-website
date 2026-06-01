@@ -52,14 +52,18 @@ function canAllBeAssigned(players: Array<{ queuedRoles: string[] }>): boolean {
   return backtrack(0)
 }
 
-export async function createOpenLobby(createdByUserId: number, payloadSeasonId: number) {
+export async function createOpenLobby(
+  createdByUserId: number | null,
+  payloadSeasonId: number,
+  region: string,
+) {
   const lastLobby = await prisma.pugLobby.findFirst({
     where: { tier: 'open' },
     orderBy: { lobbyNumber: 'desc' },
   })
   const lobbyNumber = (lastLobby?.lobbyNumber ?? 0) + 1
   const lobby = await prisma.pugLobby.create({
-    data: { lobbyNumber, tier: 'open', status: 'OPEN', createdByUserId, payloadSeasonId },
+    data: { lobbyNumber, tier: 'open', status: 'OPEN', createdByUserId, payloadSeasonId, region },
   })
   import('@/discord/services/pugFeed').then(({ updateLobbyFeed }) => {
     updateLobbyFeed(lobby.id).catch(console.error)
