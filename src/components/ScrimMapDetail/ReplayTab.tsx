@@ -1675,7 +1675,7 @@ export default function ReplayTab({ mapId }: { mapId: string }) {
                           {hasBlock && (
                             <div className="replay__player-focus-stat">
                               <span className="replay__player-focus-stat-value replay__stat--block">{fmt(pFrame.dmgBlocked)}</span>
-                              <span className="replay__player-focus-stat-label">Blocked</span>
+                              <span className="replay__player-focus-stat-label">Mitigated</span>
                             </div>
                           )}
                           <div className="replay__player-focus-stat">
@@ -1713,7 +1713,7 @@ export default function ReplayTab({ mapId }: { mapId: string }) {
                         {hasBlock && (
                           <div className="replay__player-focus-stat">
                             <span className="replay__player-focus-stat-value replay__stat--block">{fmt(st.damageBlocked)}</span>
-                            <span className="replay__player-focus-stat-label">Blocked</span>
+                            <span className="replay__player-focus-stat-label">Mitigated</span>
                           </div>
                         )}
                         <div className="replay__player-focus-stat">

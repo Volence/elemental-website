@@ -198,11 +198,16 @@ function cleanInvalidLines(lines: string[][]): string[][] {
     })
 }
 
-// Indexes for the 'kill' event type to skip parsing
-const killSkipIndexes = {
-  eventAbilityIndex: 8,
-  criticalHitIndex: 10,
-  environmentalIndex: 11,
+/**
+ * Columns that hold identifier/label strings and must NOT be coerced to numbers
+ * even when they look numeric (e.g. a player named "76", or a kill ability).
+ * Team-name columns are handled separately by teamNameFields.
+ */
+const stringFieldIndexes: Record<string, number[]> = {
+  // attacker name, attacker hero, victim name, victim hero, ability, crit, env
+  kill: [3, 4, 6, 7, 8, 10, 11],
+  // player name, hero (the team column is a teamNameField)
+  player_stat: [4, 5],
 }
 
 /**
@@ -268,12 +273,7 @@ function convertToNumberOrReplaceEmpty(
     return value
   }
 
-  if (
-    eventType === 'kill' &&
-    (index === killSkipIndexes.eventAbilityIndex ||
-      index === killSkipIndexes.criticalHitIndex ||
-      index === killSkipIndexes.environmentalIndex)
-  ) {
+  if (stringFieldIndexes[eventType]?.includes(index)) {
     return value
   }
 

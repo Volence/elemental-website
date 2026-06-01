@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 // groupKillsIntoFights replaced with inline batch query for performance
 import { heroRoleMapping } from '@/lib/scrim-parser/heroes'
+import { assessConfidence } from '@/lib/scrim-parser/confidence'
+import { computeUltEconomy, type UltEconomyMapInput } from '@/lib/scrim-parser/ult-economy'
+import { processFightStats, type FightStatsAnalysis } from '@/lib/scrim-parser/fight-stats'
 import { getUserScope } from '@/access/scrimScope'
 
 /**
@@ -10,6 +13,35 @@ import { getUserScope } from '@/access/scrimScope'
  * Enhanced with Parsertime-inspired features: trends, heroes, teamfights,
  * role performance, player×map matrix, and strengths/weaknesses.
  */
+
+/** Shape the fight-stats analysis into the `teamfights` response (rounded for display). */
+function buildTeamfights(fs: FightStatsAnalysis) {
+  const r1 = (n: number) => Math.round(n * 10) / 10
+  return {
+    totalFights: fs.totalFights,
+    fightWinRate: Math.round(fs.overallWinrate),
+    firstPickWinRate: Math.round(fs.firstPickWinrate),
+    firstDeathWinRate: Math.round(fs.firstDeathWinrate),
+    avgFightDuration: r1(fs.avgFightDuration),
+    firstPickTotal: fs.firstPickFights,
+    firstDeathTotal: fs.firstDeathFights,
+    fightsWon: fs.fightsWon,
+    fightsLost: fs.fightsLost,
+    firstUltWinRate: Math.round(fs.firstUltWinrate),
+    firstUltTotal: fs.firstUltFights,
+    dryFights: fs.dryFights,
+    dryFightWinRate: Math.round(fs.dryFightWinrate),
+    dryFightReversalRate: Math.round(fs.dryFightReversalRate),
+    nonDryFights: fs.nonDryFights,
+    nonDryFightReversalRate: Math.round(fs.nonDryFightReversalRate),
+    avgUltsPerNonDryFight: r1(fs.avgUltsPerNonDryFight),
+    ultimateEfficiency: Math.round(fs.ultimateEfficiency * 100) / 100,
+    avgUltsInWonFights: r1(fs.avgUltsInWonFights),
+    avgUltsInLostFights: r1(fs.avgUltsInLostFights),
+    wastedUltimates: fs.wastedUltimates,
+    totalUltsUsed: fs.totalUltsUsed,
+  }
+}
 export async function GET(req: NextRequest) {
   const url = new URL(req.url)
   const teamIdStr = url.searchParams.get('teamId')
@@ -63,12 +95,14 @@ export async function GET(req: NextRequest) {
     const emptyResponse = {
       teamId, teamName,
       totalScrims: 0, totalMaps: 0,
+      confidence: assessConfidence(0),
       record: { wins: 0, losses: 0, draws: 0 },
       winRate: 0, avgMatchTime: null,
       recentScrims: [], mapStats: [], roster: [], opponents: [],
       trends: { weeklyWinRates: [], recentForm: [], streaks: { current: 0, currentType: null, longestWin: 0, longestLoss: 0 } },
       heroes: { totalUnique: 0, diversityScore: 0, heroPool: [], roleBreakdown: { Tank: 0, Damage: 0, Support: 0 } },
-      teamfights: { totalFights: 0, fightWinRate: 0, firstPickWinRate: 0, firstDeathWinRate: 0, avgFightDuration: 0 },
+      teamfights: buildTeamfights(processFightStats([], 0)),
+      ultEconomy: computeUltEconomy([], 0),
       rolePerformance: [],
       playerMapMatrix: [],
       strengths: { best: null, worst: null },
@@ -579,103 +613,84 @@ export async function GET(req: NextRequest) {
 
     const heroes = { totalUnique: totalUniqueHeroes, diversityScore, heroPool, roleBreakdown }
 
-    // ── 15. Teamfights: Fight analysis across all maps ──
-    let totalFights = 0
-    let fightsWon = 0
-    let firstPickWins = 0
-    let firstPickTotal = 0
-    let firstDeathWins = 0
-    let firstDeathTotal = 0
-    let totalFightDuration = 0
+    // ── 15. Teamfights + Ult Economy: fight analysis across all maps ──
+    // Fight model (ported from parsertime): kills, mercy-rezzes, and ult-starts
+    // are all fight events; a >15s gap between consecutive events starts a new
+    // fight, and a rez undoes a kill against the resurrected team. The ult-aware
+    // metrics (dry fights, reversals, wasted ults, first-ult win rate) come from
+    // this same model. Note this differs from the old kills-only heuristic: every
+    // fight now counts (no >=2-kill trivial-skip) and segmentation spans ults and
+    // rezzes, so the headline fight counts / win rates shift accordingly.
+    const [allKills, chargedRows, ultStartRows, rezRows] = await Promise.all([
+      prisma.$queryRaw<Array<{
+        mapDataId: number; match_time: number; attacker_team: string; attacker_name: string;
+        victim_team: string; victim_name: string; event_ability: string;
+      }>>`
+        SELECT "mapDataId", match_time, attacker_team, attacker_name,
+               victim_team, victim_name, event_ability
+        FROM scrim_kills
+        WHERE "mapDataId" = ANY(${filteredMapDataIds}::int[])
+        ORDER BY "mapDataId", match_time
+      `,
+      prisma.$queryRaw<Array<{ mapDataId: number; match_time: number; player_team: string; player_name: string }>>`
+        SELECT "mapDataId", match_time, player_team, player_name
+        FROM scrim_ultimate_charged
+        WHERE "mapDataId" = ANY(${filteredMapDataIds}::int[])
+        ORDER BY "mapDataId", match_time
+      `,
+      prisma.$queryRaw<Array<{ mapDataId: number; match_time: number; player_team: string; player_name: string }>>`
+        SELECT "mapDataId", match_time, player_team, player_name
+        FROM scrim_ultimate_starts
+        WHERE "mapDataId" = ANY(${filteredMapDataIds}::int[])
+        ORDER BY "mapDataId", match_time
+      `,
+      prisma.$queryRaw<Array<{ mapDataId: number; match_time: number; resurrecter_team: string; resurrectee_team: string }>>`
+        SELECT "mapDataId", match_time, resurrecter_team, resurrectee_team
+        FROM scrim_mercy_rezs
+        WHERE "mapDataId" = ANY(${filteredMapDataIds}::int[])
+        ORDER BY "mapDataId", match_time
+      `,
+    ])
 
-    // Batch-load all kills for all filtered maps in one query
-    const allKills = await prisma.$queryRaw<Array<{
-      mapDataId: number; match_time: number; attacker_team: string; attacker_name: string;
-      victim_team: string; victim_name: string; event_ability: string;
-    }>>`
-      SELECT "mapDataId", match_time, attacker_team, attacker_name,
-             victim_team, victim_name, event_ability
-      FROM scrim_kills
-      WHERE "mapDataId" = ANY(${filteredMapDataIds}::int[])
-      ORDER BY "mapDataId", match_time
-    `
-
-    // Group kills by map, then into fights per map
     const killsByMap = new Map<number, typeof allKills>()
     for (const k of allKills) {
       if (!killsByMap.has(k.mapDataId)) killsByMap.set(k.mapDataId, [])
       killsByMap.get(k.mapDataId)!.push(k)
     }
+    const chargedByMap = new Map<number, typeof chargedRows>()
+    for (const c of chargedRows) {
+      if (!chargedByMap.has(c.mapDataId)) chargedByMap.set(c.mapDataId, [])
+      chargedByMap.get(c.mapDataId)!.push(c)
+    }
+    const ultStartByMap = new Map<number, typeof ultStartRows>()
+    for (const u of ultStartRows) {
+      if (!ultStartByMap.has(u.mapDataId)) ultStartByMap.set(u.mapDataId, [])
+      ultStartByMap.get(u.mapDataId)!.push(u)
+    }
+    const rezByMap = new Map<number, typeof rezRows>()
+    for (const r of rezRows) {
+      if (!rezByMap.has(r.mapDataId)) rezByMap.set(r.mapDataId, [])
+      rezByMap.get(r.mapDataId)!.push(r)
+    }
 
-    // Process fights for each mapDataId using pre-loaded data
+    // Per-map inputs shared by fight-stats and ult-economy. Resurrect rows in
+    // scrim_kills are rez markers; the real rezzes come from scrim_mercy_rezs.
+    const perMapInputs: UltEconomyMapInput[] = []
     for (const mapDataId of filteredMapDataIds) {
       const ourTeam = ourTeamByMap.get(mapDataId)
       if (!ourTeam) continue
-
-      const mr = mapResults.find(r => r.mapDataId === mapDataId)
-      if (!mr) continue
-
-      const mapKills = killsByMap.get(mapDataId) ?? []
-
-      // Group kills into fights (15s gap = new fight)
-      type Kill = typeof mapKills[number]
-      const fights: Kill[][] = []
-      let currentFight: Kill[] = []
-      for (const kill of mapKills) {
-        if (kill.event_ability === 'Resurrect') continue
-        if (currentFight.length === 0 || kill.match_time - currentFight[currentFight.length - 1].match_time <= 15) {
-          currentFight.push(kill)
-        } else {
-          if (currentFight.length > 0) fights.push(currentFight)
-          currentFight = [kill]
-        }
-      }
-      if (currentFight.length > 0) fights.push(currentFight)
-
-      for (const fight of fights) {
-        if (fight.length < 2) continue // Skip trivial fights
-        totalFights++
-        totalFightDuration += fight[fight.length - 1].match_time - fight[0].match_time
-
-        // Determine fight winner: team with more kills
-        let ourKills = 0
-        let theirKills = 0
-        for (const k of fight) {
-          if (k.attacker_team === ourTeam) ourKills++
-          else theirKills++
-        }
-        const weWon = ourKills > theirKills
-
-        if (weWon) fightsWon++
-
-        // First pick analysis
-        const firstKill = fight[0]
-        if (firstKill) {
-          const weGotFirstPick = firstKill.attacker_team === ourTeam
-          const weGotFirstDeath = firstKill.victim_team === ourTeam
-
-          if (weGotFirstPick) {
-            firstPickTotal++
-            if (weWon) firstPickWins++
-          }
-          if (weGotFirstDeath) {
-            firstDeathTotal++
-            if (weWon) firstDeathWins++
-          }
-        }
-      }
+      perMapInputs.push({
+        mapDataId,
+        ourTeamName: ourTeam,
+        kills: (killsByMap.get(mapDataId) ?? []).filter(k => k.event_ability !== 'Resurrect'),
+        rezzes: rezByMap.get(mapDataId) ?? [],
+        ults: ultStartByMap.get(mapDataId) ?? [],
+        charged: chargedByMap.get(mapDataId) ?? [],
+      })
     }
 
-    const teamfights = {
-      totalFights,
-      fightWinRate: totalFights > 0 ? Math.round((fightsWon / totalFights) * 100) : 0,
-      firstPickWinRate: firstPickTotal > 0 ? Math.round((firstPickWins / firstPickTotal) * 100) : 0,
-      firstDeathWinRate: firstDeathTotal > 0 ? Math.round((firstDeathWins / firstDeathTotal) * 100) : 0,
-      avgFightDuration: totalFights > 0 ? Math.round(totalFightDuration / totalFights * 10) / 10 : 0,
-      firstPickTotal,
-      firstDeathTotal,
-      fightsWon,
-    }
+    const teamfights = buildTeamfights(processFightStats(perMapInputs, mapResults.length))
+    const ultEconomy = computeUltEconomy(perMapInputs, mapResults.length)
 
     // ── 16. Role Performance ──
     type RoleAgg = {
@@ -807,6 +822,7 @@ export async function GET(req: NextRequest) {
       teamName,
       totalScrims: scrims.length,
       totalMaps: mapResults.length,
+      confidence: assessConfidence(mapResults.length),
       record,
       winRate,
       avgMatchTime,
@@ -818,6 +834,7 @@ export async function GET(req: NextRequest) {
       trends,
       heroes,
       teamfights,
+      ultEconomy,
       rolePerformance,
       playerMapMatrix,
       strengths,

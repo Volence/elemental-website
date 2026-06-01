@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react'
 import { Loader2, AlertCircle, ArrowLeft } from 'lucide-react'
 import RangeFilter, { type RangeValue } from '@/components/RangeFilter'
 import ScrimAnalyticsTabs from '@/components/ScrimAnalyticsTabs'
+import { type ConfidenceMetadata } from '@/lib/scrim-parser/confidence'
+import { type UltEconomyAnalysis } from '@/lib/scrim-parser/ult-economy'
 
 // ── Types ──
 interface TopHero { hero: string; time: number }
@@ -42,10 +44,20 @@ interface TeamData {
   teamId: number; teamName: string; totalScrims: number; totalMaps: number
   record: { wins: number; losses: number; draws: number }
   winRate: number; avgMatchTime: number | null
+  confidence: ConfidenceMetadata
   recentScrims: RecentScrim[]; mapStats: MapStat[]; roster: RosterPlayer[]; opponents: Opponent[]
   trends: { weeklyWinRates: WeeklyWinRate[]; recentForm: RecentFormEntry[]; streaks: Streaks }
   heroes: { totalUnique: number; diversityScore: number; heroPool: HeroPoolEntry[]; roleBreakdown: { Tank: number; Damage: number; Support: number } }
-  teamfights: { totalFights: number; fightWinRate: number; firstPickWinRate: number; firstDeathWinRate: number; avgFightDuration: number; firstPickTotal: number; firstDeathTotal: number; fightsWon: number }
+  teamfights: {
+    totalFights: number; fightWinRate: number; firstPickWinRate: number; firstDeathWinRate: number
+    avgFightDuration: number; firstPickTotal: number; firstDeathTotal: number; fightsWon: number; fightsLost: number
+    firstUltWinRate: number; firstUltTotal: number
+    dryFights: number; dryFightWinRate: number; dryFightReversalRate: number
+    nonDryFights: number; nonDryFightReversalRate: number; avgUltsPerNonDryFight: number
+    ultimateEfficiency: number; avgUltsInWonFights: number; avgUltsInLostFights: number
+    wastedUltimates: number; totalUltsUsed: number
+  }
+  ultEconomy: UltEconomyAnalysis
   rolePerformance: RolePerf[]
   playerMapMatrix: PlayerMapEntry[]
   strengths: { best: StrengthEntry | null; worst: StrengthEntry | null }
@@ -98,6 +110,31 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
+const CONFIDENCE_COLORS: Record<string, string> = {
+  high: GREEN, medium: CYAN, low: AMBER, insufficient: RED,
+}
+// Sample-size confidence pill: signals how much data backs these aggregates so a
+// thin range (e.g. 3 maps) isn't read as settled. Level text on the pill, full
+// "Based on N maps" label in the tooltip (map count already shown in the meta).
+function ConfidenceBadge({ meta }: { meta: ConfidenceMetadata }) {
+  const color = CONFIDENCE_COLORS[meta.level] ?? TEXT_DIM
+  const text = meta.level === 'insufficient' ? 'Low data' : `${meta.level} confidence`
+  return (
+    <span
+      title={meta.label}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: '5px',
+        padding: '2px 9px', borderRadius: '999px',
+        background: `${color}14`, border: `1px solid ${color}33`,
+        color, fontSize: '11px', fontWeight: 600, textTransform: 'capitalize',
+      }}
+    >
+      <span style={{ width: '6px', height: '6px', borderRadius: '999px', background: color }} />
+      {text}
+    </span>
+  )
+}
+
 // ── Main Component ──
 export default function ScrimTeamDetailView() {
   const [data, setData] = useState<TeamData | null>(null)
@@ -135,6 +172,7 @@ export default function ScrimTeamDetailView() {
             <p className="scrim-detail__player-meta">
               {data.totalScrims} scrim{data.totalScrims !== 1 ? 's' : ''} · {data.totalMaps} map{data.totalMaps !== 1 ? 's' : ''}
             </p>
+            <div style={{ marginTop: '8px' }}><ConfidenceBadge meta={data.confidence} /></div>
           </div>
           <RangeFilter value={range} onChange={setRange} />
         </div>
@@ -729,6 +767,12 @@ function TeamfightsTab({ data }: { data: TeamData }) {
       </div>
     </div>
 
+    {/* Ult Advantage (bank-model: win rate by ult advantage entering fights) */}
+    <UltAdvantageCard ult={data.ultEconomy} />
+
+    {/* Ult Discipline (fight-level: how our ult usage tracks with winning fights) */}
+    <UltDisciplineCard tf={teamfights} />
+
     {/* Ultimate Economy */}
     <div className="scrim-detail__card">
       <h3 className="scrim-detail__card-title">Ultimate Economy</h3>
@@ -759,6 +803,115 @@ function InsightBar({ label, value, total, color }: { label: string; value: numb
       </div>
       <div style={{ height: '8px', background: `${BORDER}66`, borderRadius: '4px', overflow: 'hidden' }}>
         <div style={{ height: '100%', width: `${value}%`, background: color, borderRadius: '4px', transition: 'width 0.4s ease' }} />
+      </div>
+    </div>
+  )
+}
+
+// ── Ult Advantage Card ──
+// Renders the ult-bank advantage analysis: win rate when entering fights ahead /
+// even / behind on charged ultimates, plus a per-bucket breakdown. "Advantage"
+// is our charged-but-unused ult count minus the enemy's, just before a fight.
+const ULT_BUCKET_META: Record<string, { label: string; color: string }> = {
+  behind2: { label: '-2 or more', color: RED },
+  behind1: { label: '-1', color: AMBER },
+  even: { label: 'Even', color: BLUE },
+  ahead1: { label: '+1', color: CYAN },
+  ahead2: { label: '+2 or more', color: GREEN },
+}
+
+function UltAdvantageCard({ ult }: { ult: UltEconomyAnalysis }) {
+  if (ult.totalFights === 0) {
+    return (
+      <div className="scrim-detail__card">
+        <h3 className="scrim-detail__card-title">Ult Advantage</h3>
+        <p className="scrim-detail__text-secondary" style={{ margin: 0 }}>
+          Not enough ultimate-charge data to model the ult bank for these maps.
+        </p>
+      </div>
+    )
+  }
+
+  const byKey = new Map(ult.buckets.map(b => [b.key, b]))
+  const aheadFights = (byKey.get('ahead1')?.fights ?? 0) + (byKey.get('ahead2')?.fights ?? 0)
+  const behindFights = (byKey.get('behind1')?.fights ?? 0) + (byKey.get('behind2')?.fights ?? 0)
+  const evenFights = byKey.get('even')?.fights ?? 0
+  const advLabel = ult.avgAdvantage >= 0 ? `+${ult.avgAdvantage.toFixed(2)}` : ult.avgAdvantage.toFixed(2)
+
+  return (
+    <div className="scrim-detail__card">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '8px' }}>
+        <h3 className="scrim-detail__card-title" style={{ margin: 0 }}>Ult Advantage</h3>
+        <span style={{ color: TEXT_DIM, fontSize: '12px' }}>{ult.totalFights} fights · avg {advLabel} ults</span>
+      </div>
+      <p className="scrim-detail__text-secondary" style={{ marginTop: '4px', marginBottom: '16px', fontSize: '12px' }}>
+        How many more charged ultimates we held than the enemy entering each fight, and how often we won.
+      </p>
+
+      {/* Win rate when ahead / even / behind on ults */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '18px' }}>
+        <InsightBar label="When ahead on ults" value={Math.round(ult.winrateAhead)} total={aheadFights} color={GREEN} />
+        <InsightBar label="When even on ults" value={Math.round(ult.winrateEven)} total={evenFights} color={BLUE} />
+        <InsightBar label="When behind on ults" value={Math.round(ult.winrateBehind)} total={behindFights} color={RED} />
+      </div>
+
+      {/* Win rate by exact advantage bucket */}
+      <div style={{ color: TEXT_SECONDARY, fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>Win rate by ult advantage</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {ult.buckets.map(b => {
+          const meta = ULT_BUCKET_META[b.key]
+          return (
+            <div key={b.key} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ width: '82px', flexShrink: 0, color: meta.color, fontSize: '12px', fontWeight: 600 }}>{meta.label}</span>
+              <div style={{ flex: 1, height: '10px', background: `${BORDER}66`, borderRadius: '5px', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${b.fights > 0 ? b.winrate : 0}%`, background: meta.color, borderRadius: '5px', transition: 'width 0.4s ease', opacity: b.fights > 0 ? 1 : 0.3 }} />
+              </div>
+              <span style={{ width: '132px', flexShrink: 0, textAlign: 'right', color: TEXT_DIM, fontSize: '11px' }}>
+                {b.fights > 0 ? `${Math.round(b.winrate)}% WR` : '—'} · {Math.round(b.share)}% ({b.fights})
+              </span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// ── Ult Discipline Card ──
+// Fight-level ult usage, ported from parsertime's fight analysis. A "dry fight"
+// is one we won/lost without spending any ultimate; a "wasted" ult is one popped
+// while already 3+ kills behind; "ult efficiency" is fights won per ult spent.
+function UltDisciplineCard({ tf }: { tf: TeamData['teamfights'] }) {
+  if (tf.totalFights === 0) {
+    return (
+      <div className="scrim-detail__card">
+        <h3 className="scrim-detail__card-title">Ult Discipline</h3>
+        <p className="scrim-detail__text-secondary" style={{ margin: 0 }}>
+          Not enough fight data to analyze ultimate usage for these maps.
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="scrim-detail__card">
+      <h3 className="scrim-detail__card-title">Ult Discipline</h3>
+      <p className="scrim-detail__text-secondary" style={{ marginTop: '4px', marginBottom: '16px', fontSize: '12px' }}>
+        How our ultimate usage tracks with winning fights: committing the first ult, winning without ults, and converting ults into wins.
+      </p>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '18px' }}>
+        <InsightBar label="When we use the first ult of a fight" value={tf.firstUltWinRate} total={tf.firstUltTotal} color={GREEN} />
+        <InsightBar label="Dry fights (won without spending an ult)" value={tf.dryFightWinRate} total={tf.dryFights} color={BLUE} />
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', padding: '14px', background: BG_BASE, borderRadius: '8px' }}>
+        <MiniStat label="Wins / Ult Spent" value={tf.ultimateEfficiency.toFixed(2)} color={CYAN} />
+        <MiniStat label="Avg Ults / Won Fight" value={tf.avgUltsInWonFights.toFixed(1)} color={GREEN} />
+        <MiniStat label="Avg Ults / Lost Fight" value={tf.avgUltsInLostFights.toFixed(1)} color={RED} />
+        <MiniStat label="Wasted Ults (3+ behind)" value={String(tf.wastedUltimates)} color={tf.wastedUltimates > 0 ? AMBER : GREEN} />
+        <MiniStat label="Comeback Win Rate" value={`${tf.nonDryFightReversalRate}%`} color={PURPLE} />
+        <MiniStat label="Total Ults Used" value={String(tf.totalUltsUsed)} color={TEXT_SECONDARY} />
       </div>
     </div>
   )

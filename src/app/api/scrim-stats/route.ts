@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma'
 import { getUserScope } from '@/access/scrimScope'
 import { getFinalRoundStats } from '@/lib/scrim-parser/data-access'
 import { groupKillsIntoFights, round } from '@/lib/scrim-parser/utils'
+import { sumStatByRound } from '@/lib/scrim-parser/round-stats'
 import { batchCalculateStatsForMap } from '@/lib/scrim-parser/batch-stats'
 import { heroRoleMapping, getRoleForHero } from '@/lib/scrim-parser/heroes'
 
@@ -888,6 +889,7 @@ async function getChartsData(mapId: number) {
       select: {
         round_number: true,
         player_team: true,
+        player_name: true,
         player_hero: true,
         final_blows: true,
         hero_damage_dealt: true,
@@ -923,14 +925,20 @@ async function getChartsData(mapId: number) {
     }
   }
 
-  // ── Cumulative Hero Damage By Round ──
-  const rounds = [...new Set(playerStats.map(s => s.round_number))].sort((a, b) => a - b)
-  const damageByRound = rounds.map(roundNum => {
-    const roundStats = playerStats.filter(s => s.round_number === roundNum)
-    const t1Damage = round(roundStats.filter(s => s.player_team === team1).reduce((a, s) => a + s.hero_damage_dealt, 0))
-    const t2Damage = round(roundStats.filter(s => s.player_team === team2).reduce((a, s) => a + s.hero_damage_dealt, 0))
-    return { round: roundNum, team1Damage: t1Damage, team2Damage: t2Damage }
-  })
+  // ── Per-Round Hero Damage ──
+  // ScrimPlayerStat rows are CUMULATIVE match totals per (player, hero), carried
+  // forward each round. sumStatByRound diffs consecutive rounds into per-round
+  // increments (the damage actually done IN each round).
+  const t1ByRound = sumStatByRound(playerStats.filter(s => s.player_team === team1), 'hero_damage_dealt')
+  const t2ByRound = sumStatByRound(playerStats.filter(s => s.player_team === team2), 'hero_damage_dealt')
+  const t1DmgMap = new Map(t1ByRound.map(r => [r.round_number, r.value]))
+  const t2DmgMap = new Map(t2ByRound.map(r => [r.round_number, r.value]))
+  const damageRounds = [...new Set([...t1ByRound, ...t2ByRound].map(r => r.round_number))].sort((a, b) => a - b)
+  const damageByRound = damageRounds.map(roundNum => ({
+    round: roundNum,
+    team1Damage: round(t1DmgMap.get(roundNum) ?? 0),
+    team2Damage: round(t2DmgMap.get(roundNum) ?? 0),
+  }))
 
   return NextResponse.json({
     teams: { team1: displayTeam1, team2: displayTeam2, isDualTeam: dn.isDualTeam },

@@ -106,7 +106,7 @@ const COLUMN_DEFS: { key: SortKey; label: string; align: 'left' | 'right' }[] = 
   { key: 'kad', label: 'KA/D', align: 'right' },
   { key: 'damage', label: 'Hero Damage Dealt', align: 'right' },
   { key: 'damageReceived', label: 'Damage Received', align: 'right' },
-  { key: 'damageBlocked', label: 'Damage Blocked', align: 'right' },
+  { key: 'damageBlocked', label: 'Damage Mitigated', align: 'right' },
   { key: 'healingReceived', label: 'Healing Received', align: 'right' },
   { key: 'healing', label: 'Healing Dealt', align: 'right' },
 ]
@@ -377,27 +377,25 @@ export default function ScrimMapDetailView() {
 
         {/* Score card with inline editing */}
         <div className="scrim-detail__summary-card" style={{ borderTop: `2px solid ${CYAN}` }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '14px' }}><Trophy size={14} /></span>
-              <span className="scrim-detail__label">
-                Score
-              </span>
-            </div>
-            {data.summary.canEditScore && !editingScore && (
-              <button
-                onClick={() => {
-                  const [s1, s2] = data.summary.score.split(' - ').map(Number)
-                  setScoreInput1(String(s1 ?? 0))
-                  setScoreInput2(String(s2 ?? 0))
-                  setEditingScore(true)
-                }}
-                title="Edit score"
-                className="scrim-list__action-btn"
-              >
-                <Pencil size={12} />
-              </button>
-            )}
+          <div className="scrim-detail__summary-glow" style={{ background: `radial-gradient(circle at 80% 0%, ${CYAN}0a 0%, transparent 70%)` }} />
+          {data.summary.canEditScore && !editingScore && (
+            <button
+              onClick={() => {
+                const [s1, s2] = data.summary.score.split(' - ').map(Number)
+                setScoreInput1(String(s1 ?? 0))
+                setScoreInput2(String(s2 ?? 0))
+                setEditingScore(true)
+              }}
+              title="Edit score"
+              className="scrim-list__action-btn"
+              style={{ position: 'absolute', top: '14px', right: '14px', zIndex: 1 }}
+            >
+              <Pencil size={12} />
+            </button>
+          )}
+          <div className="scrim-detail__summary-label">
+            <span className="scrim-detail__summary-icon"><Trophy size={16} /></span>
+            Score
           </div>
           {editingScore ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -496,8 +494,8 @@ export default function ScrimMapDetailView() {
             </div>
           ) : (
             <>
-              <div style={VALUE_STYLE}>{data.summary.score}</div>
-              <div style={SUB_STYLE}>
+              <div className="scrim-detail__summary-value" style={{ color: CYAN, textShadow: `0 0 16px ${CYAN}44` }}>{data.summary.score}</div>
+              <div className="scrim-detail__summary-sub">
                 {team1Won ? `Winner: ${data.teams.team1}` : team2Won ? `Winner: ${data.teams.team2}` : 'Draw'}
                 {data.summary.scoreOverride && (
                   <span style={{ marginLeft: '8px', fontSize: '10px', color: AMBER, fontWeight: 600 }}>✓ manual</span>
@@ -736,11 +734,11 @@ export default function ScrimMapDetailView() {
             <ColumnKeyToggle />
           </div>
           <div className="scrim-detail__map-table-scroll">
-            <table className="scrim-detail__map-table">
+            <table className="scrim-detail__map-table scrim-detail__map-table--compact">
               <thead>
                 <tr>
                   {['Player', 'Hero', 'FP%', 'FD%', 'Fleta%', 'Ult Charge', 'Ult Hold', 'K/Ult', 'Drought'].map((h) => (
-                    <th key={h} className={`scrim-detail__map-th ${h !== 'Player' && h !== 'Hero' ? 'scrim-detail__map-th--right' : ''}`}>
+                    <th key={h} className="scrim-detail__map-th">
                       {h}
                     </th>
                   ))}

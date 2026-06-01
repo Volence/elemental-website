@@ -186,7 +186,7 @@ export function PlayerPerformanceStats({
                 value={fmtNum(stats.averages.healing)}
               />
               <StatBox
-                label="Avg Blocked"
+                label="Avg Mitigated"
                 value={fmtNum(stats.averages.blocked)}
               />
               <StatBox

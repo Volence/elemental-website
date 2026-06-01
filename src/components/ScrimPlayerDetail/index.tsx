@@ -829,7 +829,7 @@ export default function ScrimPlayerDetailView() {
             damagePer10: { label: 'Damage /10', color: CYAN },
             healingPer10: { label: 'Healing /10', color: PURPLE },
             damageTakenPer10: { label: 'Damage Taken /10', color: '#ec4899' },
-            damageBlockedPer10: { label: 'Damage Blocked /10', color: '#6366f1' },
+            damageBlockedPer10: { label: 'Damage Mitigated /10', color: '#6366f1' },
             ultsEarnedPer10: { label: 'Ults Earned /10', color: AMBER },
             soloKillsPer10: { label: 'Solo Kills /10', color: GREEN },
             envKillsPer10: { label: 'Env Kills /10', color: RED },
@@ -1092,7 +1092,7 @@ function HeroDetailSection({ hero: h, color, isExpanded, onToggle }: {
               { label: 'Hero Damage', value: formatNumber(h.totalDamage) },
               { label: 'Barrier Damage', value: formatNumber(h.barrierDamageDealt), sub: timeMins > 0 ? `${formatNumber(Math.round(h.barrierDamageDealt / timeMins * 10))} /10` : '-' },
               { label: 'Damage Taken', value: formatNumber(h.damageTaken), sub: timeMins > 0 ? `${formatNumber(Math.round(h.damageTaken / timeMins * 10))} /10` : '-' },
-              { label: 'Damage Blocked', value: formatNumber(h.damageBlocked), sub: timeMins > 0 ? `${formatNumber(Math.round(h.damageBlocked / timeMins * 10))} /10` : '-' },
+              { label: 'Damage Mitigated', value: formatNumber(h.damageBlocked), sub: timeMins > 0 ? `${formatNumber(Math.round(h.damageBlocked / timeMins * 10))} /10` : '-' },
             ]} />
 
             <StatGroupCard title="Healing & Support" color={GREEN} stats={[

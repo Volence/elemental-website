@@ -1727,7 +1727,11 @@
 
   // ── Dropdown Item (shared across mapping + team dropdowns) ──
   &__menu-search {
+    position: sticky;
+    top: 0;
+    z-index: 1;
     padding: 4px 4px 6px;
+    background: #141824;
 
     input {
       width: 100%;
@@ -1740,6 +1744,13 @@
       outline: none;
       box-sizing: border-box;
     }
+  }
+
+  &__menu-empty {
+    padding: 10px 12px;
+    color: $admin-text-muted;
+    font-size: 12px;
+    font-style: italic;
   }
 
   &__menu-item {
@@ -2717,6 +2728,17 @@
     }
   }
 
+  // Advanced Stats table: fill the card width with left-aligned, content-proportional columns
+  &__map-table--compact {
+    width: 100%;
+    min-width: 720px;
+
+    .scrim-detail__map-th,
+    .scrim-detail__map-td {
+      text-align: left;
+    }
+  }
+
   // ── Hero Pill Selector ──
   &__hero-pills {
     display: flex;
@@ -2956,6 +2978,9 @@
 
   &__summary-icon {
     font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    line-height: 0;
   }
 
   &__summary-value {

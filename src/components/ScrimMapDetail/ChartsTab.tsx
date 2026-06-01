@@ -117,6 +117,9 @@ export default function ChartsTab({ mapId }: { mapId: string }) {
           <CumulativeDamageChart data={chartsData} />
         </div>
       )}
+
+      {/* ── Per-Round Hero Damage (increments) ── */}
+      {chartsData && <DamageByRoundChart data={chartsData} />}
     </div>
   )
 }
@@ -498,9 +501,92 @@ function CumulativeDamageChart({ data }: { data: ChartsAPIData }) {
       </div>
 
       <p style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '8px', lineHeight: 1.5 }}>
-        This chart shows the hero damage done by round for each team. The x-axis represents the round,
-        and the y-axis represents the damage done. Note that the damage done in round 2 includes the
-        damage done in round 1.
+        This chart shows the running total of hero damage by round for each team. The x-axis represents
+        the round, and the y-axis represents the cumulative damage done through that round.
+      </p>
+    </div>
+  )
+}
+
+// ── Hero Damage By Round (Grouped Bar Chart) ──
+// Plots the per-round increments straight from the API (damage done IN each
+// round), in contrast to the running total in CumulativeDamageChart above.
+function DamageByRoundChart({ data }: { data: ChartsAPIData }) {
+  const rounds = data.damageByRound
+  if (rounds.length === 0) return null
+
+  const maxDmg = Math.max(...rounds.map(r => r.team1Damage), ...rounds.map(r => r.team2Damage), 1)
+
+  const W = 1100
+  const H = 340
+  const PAD = { top: 30, bottom: 40, left: 60, right: 20 }
+  const plotW = W - PAD.left - PAD.right
+  const plotH = H - PAD.top - PAD.bottom
+
+  const barGroupWidth = plotW / rounds.length
+  const barWidth = Math.min(barGroupWidth * 0.3, 60)
+  const gap = barGroupWidth * 0.08
+
+  const yTickCount = 4
+  const yTicks = Array.from({ length: yTickCount + 1 }, (_, i) => Math.round((maxDmg / yTickCount) * i))
+
+  return (
+    <div className="scrim-detail__card" style={{ marginTop: '20px' }}>
+      <div style={{ fontWeight: 700, fontSize: '15px', color: TEXT_PRIMARY, marginBottom: '4px' }}>
+        Hero Damage By Round
+        <span style={{ fontWeight: 400, fontSize: '12px', color: TEXT_DIM, marginLeft: '8px' }}>ⓘ</span>
+      </div>
+
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto' }}>
+        {/* Y-axis grid lines and labels */}
+        {yTicks.map(v => {
+          const y = PAD.top + plotH - (v / maxDmg) * plotH
+          return (
+            <g key={v}>
+              <line x1={PAD.left} y1={y} x2={W - PAD.right} y2={y}
+                stroke="rgba(148, 163, 184, 0.06)" strokeWidth={1} />
+              <text x={PAD.left - 8} y={y} textAnchor="end" dominantBaseline="middle"
+                fill={TEXT_DIM} fontSize={10}>{v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}</text>
+            </g>
+          )
+        })}
+        {/* Bottom axis line */}
+        <line x1={PAD.left} y1={PAD.top + plotH} x2={W - PAD.right} y2={PAD.top + plotH}
+          stroke="rgba(148, 163, 184, 0.15)" strokeWidth={1} />
+
+        {/* Grouped bars per round */}
+        {rounds.map((r, i) => {
+          const groupX = PAD.left + i * barGroupWidth + barGroupWidth / 2
+          const t1Height = (r.team1Damage / maxDmg) * plotH
+          const t2Height = (r.team2Damage / maxDmg) * plotH
+          return (
+            <g key={r.round}>
+              <rect x={groupX - barWidth - gap / 2} y={PAD.top + plotH - t1Height}
+                width={barWidth} height={t1Height} fill={CYAN} rx={2} />
+              <rect x={groupX + gap / 2} y={PAD.top + plotH - t2Height}
+                width={barWidth} height={t2Height} fill={RED} rx={2} />
+              <text x={groupX} y={H - PAD.bottom + 20} textAnchor="middle"
+                fill={TEXT_DIM} fontSize={11}>Round {r.round}</text>
+            </g>
+          )
+        })}
+      </svg>
+
+      {/* Legend */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginTop: '4px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}>
+          <div style={{ width: '10px', height: '10px', background: CYAN, borderRadius: '2px' }} />
+          <span style={{ color: TEXT_SECONDARY }}>{data.teams.team1}</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}>
+          <div style={{ width: '10px', height: '10px', background: RED, borderRadius: '2px' }} />
+          <span style={{ color: TEXT_SECONDARY }}>{data.teams.team2}</span>
+        </div>
+      </div>
+
+      <p style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '8px', lineHeight: 1.5 }}>
+        Hero damage dealt within each round alone (not cumulative). The x-axis represents the round,
+        and the y-axis represents the damage done in that round.
       </p>
     </div>
   )

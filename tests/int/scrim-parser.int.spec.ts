@@ -44,6 +44,32 @@ describe('parseScrimLog - censored kill events', () => {
   })
 })
 
+describe('parseScrimLog - numeric player names', () => {
+  // A player whose name is purely numeric (e.g. "76", "100") must stay a string.
+  // The name/hero columns of a kill row (idx 3,4,6,7) used to fall through to
+  // parseFloat, silently turning "76" into the number 76 and breaking every
+  // join against the same player elsewhere (fights, first picks/deaths, duels).
+  const NUMERIC_NAME_LOG = [
+    '[00:00:00] ,match_start,0,Ilios,Control,Team 1,Team 2',
+    '[00:00:01] ,player_stat,0,1,Team 1,76,Tracer,3,2,1,1000,0,900,0,0,0,500,0,0,0,1,1,0,0,0,0,0,0,5,50,40,30,2,100,80,20,0,0,0,80,120',
+    '[00:00:04] ,kill,60.00,Team 1,76,Tracer,Team 2,100,Ashe,Primary Fire,150,True,0',
+  ].join('\n')
+
+  it('keeps numeric attacker/victim names as strings in kill rows', () => {
+    const data = parseScrimLog(NUMERIC_NAME_LOG)
+    const k = data.kill[0]
+    // [event_type, match_time, atkTeam, atkName, atkHero, vicTeam, vicName, vicHero, ...]
+    expect(k[3]).toBe('76') // attacker name - string, not number 76
+    expect(k[6]).toBe('100') // victim name - string, not number 100
+  })
+
+  it('keeps the numeric name as a string in player_stat rows', () => {
+    const data = parseScrimLog(NUMERIC_NAME_LOG)
+    // player_stat: [event_type, match_time, round, team, name, hero, ...]
+    expect(data.player_stat[0][4]).toBe('76')
+  })
+})
+
 describe('validateScrimLog - censored kills', () => {
   it('counts "****" lines as recognized kill events for the validity threshold', () => {
     // A combat-heavy log dominated by censored kills must still validate.

@@ -453,7 +453,7 @@ function TeamSide({
           accentColor={PURPLE}
         />
         <StatCard
-          label="Damage Blocked"
+          label="Damage Mitigated"
           value={formatBigNumber(player.damageBlocked)}
           sub={`${formatBigNumber(Number(per10(player.damageBlocked, tp)))} / 10 min`}
           accentColor={CYAN}

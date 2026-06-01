@@ -67,6 +67,7 @@ export default function ScrimUploadView() {
   const [teams, setTeams] = useState<TeamOption[]>([])
   const [teamsLoading, setTeamsLoading] = useState(true)
   const [teamDropdownOpen, setTeamDropdownOpen] = useState(false)
+  const [teamSearch, setTeamSearch] = useState('')
   const [dragActive, setDragActive] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -90,6 +91,7 @@ export default function ScrimUploadView() {
   const [dualTeam, setDualTeam] = useState(false)
   const [teamId2, setTeamId2] = useState<string>('')
   const [teamId2DropdownOpen, setTeamId2DropdownOpen] = useState(false)
+  const [teamSearch2, setTeamSearch2] = useState('')
   const [people2, setPeople2] = useState<PersonOption[]>([])
   const [playerMappings2, setPlayerMappings2] = useState<Record<string, string>>({})
   const [mappingDropdownOpen2, setMappingDropdownOpen2] = useState<string | null>(null)
@@ -534,7 +536,7 @@ export default function ScrimUploadView() {
               </label>
               <button
                 type="button"
-                onClick={() => setTeamDropdownOpen(!teamDropdownOpen)}
+                onClick={() => { setTeamDropdownOpen(!teamDropdownOpen); setTeamSearch('') }}
                 className={`scrim-upload__dropdown-trigger ${!teamId ? 'scrim-upload__dropdown-trigger--empty' : ''} ${!teamId ? 'scrim-upload__dropdown-trigger--error' : ''}`}
               >
                 <span>{selectedTeamName}</span>
@@ -547,22 +549,38 @@ export default function ScrimUploadView() {
                 <>
                   <div
                     className="scrim-upload__dropdown-backdrop"
-                    onClick={() => setTeamDropdownOpen(false)}
+                    onClick={() => { setTeamDropdownOpen(false); setTeamSearch('') }}
                   />
                   <div className="scrim-upload__dropdown-menu">
-                    {teams.map((team) => (
-                      <button
-                        key={team.id}
-                        type="button"
-                        onClick={() => {
-                          setTeamId(String(team.id))
-                          setTeamDropdownOpen(false)
-                        }}
-                        className={`scrim-upload__dropdown-item ${String(team.id) === teamId ? 'scrim-upload__dropdown-item--selected' : ''}`}
-                      >
-                        {team.name}
-                      </button>
-                    ))}
+                    <div className="scrim-upload__menu-search">
+                      <input
+                        autoFocus
+                        placeholder="Search teams…"
+                        value={teamSearch}
+                        onChange={(e) => setTeamSearch(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
+                    {(() => {
+                      const filtered = teams.filter((t) => t.name.toLowerCase().includes(teamSearch.trim().toLowerCase()))
+                      if (filtered.length === 0) {
+                        return <div className="scrim-upload__menu-empty">No teams match “{teamSearch}”</div>
+                      }
+                      return filtered.map((team) => (
+                        <button
+                          key={team.id}
+                          type="button"
+                          onClick={() => {
+                            setTeamId(String(team.id))
+                            setTeamDropdownOpen(false)
+                            setTeamSearch('')
+                          }}
+                          className={`scrim-upload__dropdown-item ${String(team.id) === teamId ? 'scrim-upload__dropdown-item--selected' : ''}`}
+                        >
+                          {team.name}
+                        </button>
+                      ))
+                    })()}
                   </div>
                 </>
               )}
@@ -757,7 +775,7 @@ export default function ScrimUploadView() {
                     <div className="scrim-upload__relative">
                       <button
                         type="button"
-                        onClick={() => setTeamId2DropdownOpen(!teamId2DropdownOpen)}
+                        onClick={() => { setTeamId2DropdownOpen(!teamId2DropdownOpen); setTeamSearch2('') }}
                         className={`scrim-upload__dropdown-trigger scrim-upload__dropdown-trigger--compact ${!teamId2 ? 'scrim-upload__dropdown-trigger--empty scrim-upload__dropdown-trigger--error' : ''}`}
                       >
                         <span>{selectedTeam2Name}</span>
@@ -768,18 +786,33 @@ export default function ScrimUploadView() {
                       </button>
                       {teamId2DropdownOpen && (
                         <>
-                          <div className="scrim-upload__dropdown-backdrop" onClick={() => setTeamId2DropdownOpen(false)} />
+                          <div className="scrim-upload__dropdown-backdrop" onClick={() => { setTeamId2DropdownOpen(false); setTeamSearch2('') }} />
                           <div className="scrim-upload__dropdown-menu scrim-upload__dropdown-menu--short">
-                            {teams.filter(t => String(t.id) !== teamId).map((team) => (
-                              <button
-                                key={team.id}
-                                type="button"
-                                onClick={() => { setTeamId2(String(team.id)); setTeamId2DropdownOpen(false) }}
-                                className={`scrim-upload__dropdown-item scrim-upload__dropdown-item--compact ${String(team.id) === teamId2 ? 'scrim-upload__dropdown-item--selected' : ''}`}
-                              >
-                                {team.name}
-                              </button>
-                            ))}
+                            <div className="scrim-upload__menu-search">
+                              <input
+                                autoFocus
+                                placeholder="Search teams…"
+                                value={teamSearch2}
+                                onChange={(e) => setTeamSearch2(e.target.value)}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
+                            {(() => {
+                              const filtered = teams.filter(t => String(t.id) !== teamId && t.name.toLowerCase().includes(teamSearch2.trim().toLowerCase()))
+                              if (filtered.length === 0) {
+                                return <div className="scrim-upload__menu-empty">No teams match “{teamSearch2}”</div>
+                              }
+                              return filtered.map((team) => (
+                                <button
+                                  key={team.id}
+                                  type="button"
+                                  onClick={() => { setTeamId2(String(team.id)); setTeamId2DropdownOpen(false); setTeamSearch2('') }}
+                                  className={`scrim-upload__dropdown-item scrim-upload__dropdown-item--compact ${String(team.id) === teamId2 ? 'scrim-upload__dropdown-item--selected' : ''}`}
+                                >
+                                  {team.name}
+                                </button>
+                              ))
+                            })()}
                           </div>
                         </>
                       )}
