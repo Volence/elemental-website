@@ -32,7 +32,7 @@ export type EnrichedSpectator = {
   note: string | null
 }
 
-const TAG_RE = /^.{1,32}#\d{3,}$/
+const TAG_RE = /^[^#]{1,32}#\d{3,}$/
 
 export function normalizeBattleTag(raw: string): string | null {
   const tag = raw.trim()
@@ -131,7 +131,13 @@ export async function addSpectator(
   const tag = rawTag ? normalizeBattleTag(rawTag) : null
   if (!tag) return { ok: false, error: 'A valid BattleTag (Name#1234) is required', status: 400 }
 
-  // Insert PENDING (dedupe on the unique constraint - duplicate is a no-op).
+  // Read the prior status before upserting so a re-add of an already-INVITED spectator
+  // does not re-fire the bot call (a duplicate invite the bot may reject would wrongly
+  // flip the row to FAILED). A duplicate is otherwise a no-op refresh.
+  const existing = await prisma.pugLobbySpectator.findUnique({
+    where: { lobbyId_battleTag: { lobbyId, battleTag: tag } },
+    select: { status: true },
+  })
   await prisma.pugLobbySpectator.upsert({
     where: { lobbyId_battleTag: { lobbyId, battleTag: tag } },
     create: { lobbyId, battleTag: tag, personId, addedByUserId: input.addedByUserId, status: 'PENDING' },
@@ -140,7 +146,7 @@ export async function addSpectator(
 
   // Decide and act.
   const action = decideSpectatorInvite(lobby.botStatus, lobby.botInstanceId)
-  if (action === 'INVITE_NOW' && lobby.botInstanceId) {
+  if (action === 'INVITE_NOW' && lobby.botInstanceId && existing?.status !== 'INVITED') {
     try {
       const res = await inviteSpectator(lobby.botInstanceId, tag)
       if (res.ok) {
