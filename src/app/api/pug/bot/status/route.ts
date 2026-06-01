@@ -52,6 +52,16 @@ export async function POST(request: NextRequest) {
     },
   })
 
+  // When the OW lobby becomes invitable, invite any spectators that were added earlier.
+  if (['lobby_created', 'invites_sent', 'players_joining'].includes(status)) {
+    try {
+      const { invitePendingSpectators } = await import('@/pug/spectators')
+      await invitePendingSpectators(pugLobbyId)
+    } catch (err) {
+      console.error(`[PUG Bot] invitePendingSpectators failed for lobby ${pugLobbyId}:`, err)
+    }
+  }
+
   // Fallback auto-complete: if stats upload already completed the match, this is a no-op.
   // If stats upload failed, use the match result from the bot to complete it.
   if (status === 'game_ended' && matchResult && lobby.status === 'IN_PROGRESS') {
