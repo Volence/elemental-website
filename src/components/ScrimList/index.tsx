@@ -29,12 +29,14 @@ interface Scrim {
   maps: ScrimMap[]
 }
 
-interface Pagination {
-  page: number
-  limit: number
-  total: number
-  totalPages: number
+interface TeamSummary {
+  teamId: number | null
+  name: string
+  count: number
+  lastPlayed: string
 }
+
+type ScrimEntry = { scrim: Scrim; viewingAsTeam2: boolean }
 
 /* ─── Result color mapping ─── */
 const RESULT_INFO: Record<string, { cls: string; label: string }> = {
@@ -43,13 +45,38 @@ const RESULT_INFO: Record<string, { cls: string; label: string }> = {
   draw: { cls: 'scrim-map-row__result--draw', label: 'D' },
 }
 
+const teamKeyOf = (t: TeamSummary) => (t.teamId != null ? `t${t.teamId}` : 'other')
+
+// Apply an opponent rename to a scrim (mirrors the server-side override).
+const applyOpponentRename = (s: Scrim, name: string): Scrim => ({
+  ...s,
+  opponentName: name.trim() || null,
+  maps: s.maps.map((m) => ({ ...m, opponent: name.trim() || m.opponent })),
+})
+
+const toEntries = (scrims: Scrim[], teamId: number): ScrimEntry[] =>
+  scrims.map((s) => ({
+    scrim: s,
+    viewingAsTeam2: s.payloadTeamId2 === teamId && s.payloadTeamId !== teamId,
+  }))
+
 /**
- * Admin view - list of uploaded scrims with search, team filter, and rich expanded cards.
+ * Admin view - list of uploaded scrims.
+ * Browse mode (no search): collapsed team rows; expanding one lazily loads its
+ * last 10 scrims. Search mode: flat list grouped by team across all matches.
  * Accessible at /admin/scrims.
  */
 export default function ScrimListView() {
+  // Browse mode: collapsed team rows + lazily-loaded scrims per team.
+  const [teams, setTeams] = useState<TeamSummary[]>([])
+  const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set())
+  const [teamScrims, setTeamScrims] = useState<Record<string, ScrimEntry[]>>({})
+  const [loadingTeamKeys, setLoadingTeamKeys] = useState<Set<string>>(new Set())
+
+  // Search mode: flat list of matching scrims.
   const [scrims, setScrims] = useState<Scrim[]>([])
-  const [pagination, setPagination] = useState<Pagination | null>(null)
+
+  const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [expandedId, setExpandedId] = useState<number | null>(null)
   const [deleting, setDeleting] = useState<number | null>(null)
@@ -96,19 +123,22 @@ export default function ScrimListView() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ scrimId, opponentName: name }),
       })
-      // Update local state
-      setScrims(prev => prev.map(s =>
-        s.id === scrimId
-          ? {
-              ...s,
-              opponentName: name.trim() || null,
-              maps: s.maps.map(m => ({
-                ...m,
-                opponent: name.trim() || m.opponent,
-              })),
+      // Update local state in both views
+      setScrims((prev) => prev.map((s) => (s.id === scrimId ? applyOpponentRename(s, name) : s)))
+      setTeamScrims((prev) => {
+        let changed = false
+        const next: Record<string, ScrimEntry[]> = {}
+        for (const [k, entries] of Object.entries(prev)) {
+          next[k] = entries.map((e) => {
+            if (e.scrim.id === scrimId) {
+              changed = true
+              return { ...e, scrim: applyOpponentRename(e.scrim, name) }
             }
-          : s
-      ))
+            return e
+          })
+        }
+        return changed ? next : prev
+      })
     } catch {
       // silently fail
     }
@@ -157,24 +187,100 @@ export default function ScrimListView() {
     return () => { if (searchTimeout.current) clearTimeout(searchTimeout.current) }
   }, [searchText])
 
-  const fetchScrims = useCallback(async (page = 1) => {
+  const isSearching = debouncedSearch.length > 0
+
+  const fetchData = useCallback(async () => {
     setLoading(true)
     try {
-      const params = new URLSearchParams({ page: String(page), limit: '10' })
-      if (debouncedSearch) params.set('search', debouncedSearch)
-      const res = await fetch(`/api/scrims?${params}`)
-      const data = await res.json()
-      setScrims(data.scrims)
-      setPagination(data.pagination)
+      if (debouncedSearch) {
+        // Search mode: pull every matching scrim so teams group across the set.
+        const params = new URLSearchParams({ limit: 'all', search: debouncedSearch })
+        const res = await fetch(`/api/scrims?${params}`)
+        const data = await res.json()
+        setScrims(data.scrims)
+        setTotal(data.pagination.total)
+      } else {
+        // Browse mode: collapsed team rows, scrims loaded on expand.
+        const res = await fetch('/api/scrim-teams')
+        const data = await res.json()
+        setTeams(data.teams)
+        setTotal(data.total)
+        setExpandedTeams(new Set())
+        setTeamScrims({})
+      }
     } catch {
       setScrims([])
+      setTeams([])
     }
     setLoading(false)
   }, [debouncedSearch])
 
   useEffect(() => {
-    fetchScrims()
-  }, [fetchScrims])
+    fetchData()
+  }, [fetchData])
+
+  // Lazily fetch a team's most recent scrims on first expand.
+  const loadTeam = useCallback(async (t: TeamSummary) => {
+    if (t.teamId == null) return
+    const key = teamKeyOf(t)
+    const teamId = t.teamId
+    setLoadingTeamKeys((prev) => new Set(prev).add(key))
+    try {
+      const res = await fetch(`/api/scrims?teamId=${teamId}&limit=10`)
+      const data = await res.json()
+      setTeamScrims((prev) => ({ ...prev, [key]: toEntries(data.scrims as Scrim[], teamId) }))
+    } catch {
+      setTeamScrims((prev) => ({ ...prev, [key]: [] }))
+    } finally {
+      setLoadingTeamKeys((prev) => {
+        const n = new Set(prev)
+        n.delete(key)
+        return n
+      })
+    }
+  }, [])
+
+  const toggleTeam = useCallback((t: TeamSummary) => {
+    const key = teamKeyOf(t)
+    const wasOpen = expandedTeams.has(key)
+    setExpandedTeams((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+    if (!wasOpen && !teamScrims[key] && t.teamId != null) {
+      loadTeam(t)
+    }
+  }, [expandedTeams, teamScrims, loadTeam])
+
+  // After a delete, refresh the active view (keeping any expanded teams open).
+  const refreshBrowse = useCallback(async () => {
+    try {
+      const res = await fetch('/api/scrim-teams')
+      const data = await res.json()
+      const newTeams: TeamSummary[] = data.teams
+      setTeams(newTeams)
+      setTotal(data.total)
+      const validKeys = new Set(newTeams.map(teamKeyOf))
+      const keptExpanded = [...expandedTeams].filter((k) => validKeys.has(k))
+      setExpandedTeams(new Set(keptExpanded))
+      const cache: Record<string, ScrimEntry[]> = {}
+      await Promise.all(
+        keptExpanded.map(async (key) => {
+          const t = newTeams.find((tt) => teamKeyOf(tt) === key)
+          if (t && t.teamId != null) {
+            const r = await fetch(`/api/scrims?teamId=${t.teamId}&limit=10`)
+            const d = await r.json()
+            cache[key] = toEntries(d.scrims as Scrim[], t.teamId)
+          }
+        }),
+      )
+      setTeamScrims(cache)
+    } catch {
+      // ignore
+    }
+  }, [expandedTeams])
 
   const handleDelete = (scrimId: number) => {
     setDeleteError(null)
@@ -183,11 +289,13 @@ export default function ScrimListView() {
 
   const executeDelete = async () => {
     if (confirmDeleteId === null) return
-    setDeleting(confirmDeleteId)
+    const id = confirmDeleteId
+    setDeleting(id)
     setConfirmDeleteId(null)
     try {
-      await fetch(`/api/scrims?id=${confirmDeleteId}`, { method: 'DELETE' })
-      fetchScrims(pagination?.page)
+      await fetch(`/api/scrims?id=${id}`, { method: 'DELETE' })
+      if (isSearching) await fetchData()
+      else await refreshBrowse()
     } catch {
       setDeleteError('Failed to delete scrim. Please try again.')
     }
@@ -205,6 +313,336 @@ export default function ScrimListView() {
     })
   }
 
+  const formatDateShort = (iso: string) => {
+    const d = new Date(iso)
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  }
+
+  // A single scrim card (header row + expandable map list). Shared by both views.
+  const renderScrimCard = (scrim: Scrim, viewingAsTeam2: boolean) => {
+    const isExpanded = expandedId === scrim.id
+
+    const flipResult = (r: 'win' | 'loss' | 'draw' | null) => {
+      if (!viewingAsTeam2 || !r) return r
+      if (r === 'win') return 'loss' as const
+      if (r === 'loss') return 'win' as const
+      return r
+    }
+    const flipScore = (score: string | null) => {
+      if (!viewingAsTeam2 || !score) return score
+      const parts = score.split('-').map((s) => s.trim())
+      return parts.length === 2 ? `${parts[1]}-${parts[0]}` : score
+    }
+    const effectiveOpponent = viewingAsTeam2
+      ? (scrim.teamName ?? scrim.maps[0]?.opponent ?? 'Unknown')
+      : (scrim.opponentName ?? scrim.maps[0]?.opponent ?? 'Unknown')
+
+    const record = scrim.maps.reduce(
+      (acc, m) => {
+        const result = flipResult(m.result)
+        if (result === 'win') acc.wins++
+        else if (result === 'loss') acc.losses++
+        else if (result === 'draw') acc.draws++
+        return acc
+      },
+      { wins: 0, losses: 0, draws: 0 },
+    )
+
+    return (
+      <div
+        key={scrim.id}
+        className={`scrim-card ${isExpanded ? 'scrim-card--expanded' : ''}`}
+      >
+        {/* Scrim header row */}
+        <div
+          onClick={() => setExpandedId(isExpanded ? null : scrim.id)}
+          className="scrim-card__row"
+          style={{ cursor: 'pointer' }}
+        >
+          <div className="scrim-card__info">
+            <ChevronRight
+              size={12}
+              className={`scrim-card__expand-icon ${isExpanded ? 'scrim-card__expand-icon--open' : ''}`}
+            />
+            <div>
+              <div className="scrim-card__title">{scrim.name}</div>
+              <div className="scrim-card__meta">
+                <span>{formatDate(scrim.date)}</span>
+                <span className="scrim-dot" />
+                <span className="scrim-card__maps-count">
+                  {scrim.mapCount} map{scrim.mapCount !== 1 ? 's' : ''}
+                </span>
+                {scrim.teamName && (
+                  <>
+                    <span className="scrim-dot" />
+                    <span className="scrim-card__team-badge">{scrim.teamName}</span>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="scrim-card__actions">
+            <span className="scrim-card__creator">
+              {scrim.creatorEmail.split('@')[0]}
+            </span>
+            <button
+              onClick={(e) => { e.stopPropagation(); handleDelete(scrim.id) }}
+              disabled={deleting === scrim.id}
+              className="scrim-card__delete-btn"
+              title="Delete scrim"
+            >
+              <Trash2 size={14} />
+            </button>
+          </div>
+        </div>
+
+        {/* Expanded map list */}
+        {isExpanded && (
+          <div className="scrim-expanded">
+            {/* Opponent name + inline edit */}
+            <div className="scrim-expanded-meta">
+              <span className="scrim-expanded-meta__label">Opponent:</span>
+              {editingOpponentScrimId === scrim.id ? (
+                <div className="scrim-opponent-edit">
+                  <input
+                    ref={opponentInputRef}
+                    type="text"
+                    value={opponentInput}
+                    onChange={(e) => handleOpponentInputChange(e.target.value)}
+                    onFocus={() => setShowSuggestions(true)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        saveOpponentName(scrim.id, opponentInput)
+                      } else if (e.key === 'Escape') {
+                        setEditingOpponentScrimId(null)
+                        setShowSuggestions(false)
+                      }
+                    }}
+                    placeholder="Type opponent name..."
+                    disabled={savingOpponent}
+                    className="scrim-opponent-edit__input"
+                  />
+                  {showSuggestions && opponentSuggestions.length > 0 && (
+                    <div ref={suggestionsRef} className="scrim-opponent-edit__suggestions">
+                      {opponentSuggestions.map((name) => (
+                        <button
+                          key={name}
+                          onClick={() => {
+                            setOpponentInput(name)
+                            saveOpponentName(scrim.id, name)
+                          }}
+                          className="scrim-opponent-edit__suggestion"
+                        >
+                          {name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <span className={`scrim-expanded-meta__value ${(viewingAsTeam2 || scrim.opponentName) ? 'scrim-expanded-meta__value--highlighted' : ''}`}>
+                    {effectiveOpponent}
+                    {scrim.opponentName && (
+                      <span className="scrim-expanded-meta__label" style={{ marginLeft: '6px' }}>✓ renamed</span>
+                    )}
+                  </span>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); startEditingOpponent(scrim) }}
+                    title="Rename opponent"
+                    className="scrim-opponent-edit__cancel-btn"
+                  >
+                    <Edit3 size={12} />
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Quick record summary */}
+            {(record.wins > 0 || record.losses > 0 || record.draws > 0) && (
+              <div className="scrim-expanded-meta">
+                <span className="scrim-expanded-meta__label">Record:</span>
+                <div className="scrim-record">
+                  {record.wins > 0 && <span className="scrim-record__win">{record.wins}W</span>}
+                  {record.losses > 0 && <span className="scrim-record__loss">{record.losses}L</span>}
+                  {record.draws > 0 && <span className="scrim-record__draw">{record.draws}D</span>}
+                </div>
+              </div>
+            )}
+
+            {scrim.maps.length === 0 ? (
+              <p className="scrim-expanded-meta__label" style={{ padding: '12px 0', textAlign: 'center' }}>
+                No maps found
+              </p>
+            ) : (
+              <div className="scrim-expanded__maps">
+                {scrim.maps.map((map) => {
+                  const effectiveResult = flipResult(map.result)
+                  const effectiveScore = flipScore(map.score)
+                  const effectiveMapOpponent = viewingAsTeam2
+                    ? (scrim.teamName ?? map.opponent)
+                    : map.opponent
+                  const resultInfo = effectiveResult ? RESULT_INFO[effectiveResult] : null
+
+                  return (
+                    <a
+                      key={map.id}
+                      href={map.mapDataId ? `/admin/scrim-map?mapId=${map.mapDataId}` : '#'}
+                      className="scrim-map-row"
+                    >
+                      <div className="scrim-map-row__info">
+                        <span className="scrim-map-row__name">{map.name}</span>
+                        {effectiveMapOpponent && (
+                          <span className="scrim-map-row__opponent">vs {effectiveMapOpponent}</span>
+                        )}
+                        {effectiveScore && resultInfo && (
+                          <div className="scrim-map-row__score-group"
+                            title={map.estimated ? 'Estimated - match ended without a final score record' : undefined}
+                          >
+                            <span className={`scrim-map-row__score ${map.estimated ? 'scrim-stat--highlight' : ''}`}>
+                              {map.estimated ? '~' : ''}{effectiveScore}
+                            </span>
+                            <span className={`scrim-map-row__result ${resultInfo.cls}`}>
+                              {resultInfo.label}
+                            </span>
+                            {map.estimated && (
+                              <span className="scrim-est-badge">est</span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      {map.mapDataId ? (
+                        <span className="scrim-map-row__view-link">View Stats →</span>
+                      ) : (
+                        <span className="scrim-expanded-meta__label">No data</span>
+                      )}
+                    </a>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Search mode groups every matching scrim by team (dual-team scrims appear
+  // under both, perspective-flipped).
+  const renderSearchGroups = () => {
+    const teamGroups = new Map<string, ScrimEntry[]>()
+    for (const s of scrims) {
+      const key = s.teamName ?? 'Other'
+      const group = teamGroups.get(key) ?? []
+      group.push({ scrim: s, viewingAsTeam2: false })
+      teamGroups.set(key, group)
+      if (s.teamName2 && s.teamName2 !== s.teamName) {
+        const key2 = s.teamName2
+        const group2 = teamGroups.get(key2) ?? []
+        group2.push({ scrim: s, viewingAsTeam2: true })
+        teamGroups.set(key2, group2)
+      }
+    }
+    const sortedKeys = [...teamGroups.keys()].sort((a, b) => {
+      if (a === 'Other') return 1
+      if (b === 'Other') return -1
+      return a.localeCompare(b)
+    })
+    return sortedKeys.map((teamKey) => {
+      const teamEntries = teamGroups.get(teamKey)!
+      const firstEntry = teamEntries[0]
+      const firstScrim = firstEntry?.scrim
+      const teamIdForLink = firstEntry?.viewingAsTeam2 && firstScrim?.payloadTeamId2
+        ? firstScrim.payloadTeamId2
+        : firstScrim?.payloadTeamId ?? null
+      const teamHref = teamIdForLink ? `/admin/scrim-team?teamId=${teamIdForLink}` : null
+      return (
+        <div key={teamKey} className="scrim-team-group">
+          <div className="scrim-team-group__header">
+            {teamHref ? (
+              <a href={teamHref} className="scrim-team-group__name">
+                {teamKey} →
+              </a>
+            ) : (
+              <h2 className="scrim-team-group__name">{teamKey}</h2>
+            )}
+            <span className="scrim-team-group__count">
+              {teamEntries.length} scrim{teamEntries.length !== 1 ? 's' : ''}
+            </span>
+          </div>
+          <div className="scrim-team-group__scrims">
+            {teamEntries.map(({ scrim, viewingAsTeam2 }) => renderScrimCard(scrim, viewingAsTeam2))}
+          </div>
+        </div>
+      )
+    })
+  }
+
+  // Browse mode renders collapsed team rows; expanding one shows its scrims.
+  const renderTeamRows = () =>
+    teams.map((t) => {
+      const key = teamKeyOf(t)
+      const isOpen = expandedTeams.has(key)
+      const isLoadingTeam = loadingTeamKeys.has(key)
+      const entries = teamScrims[key]
+      return (
+        <div key={key} className={`scrim-team-row ${isOpen ? 'scrim-team-row--open' : ''}`}>
+          <div
+            className="scrim-team-row__header"
+            onClick={() => toggleTeam(t)}
+            style={{ cursor: 'pointer' }}
+          >
+            <ChevronRight
+              size={14}
+              className={`scrim-team-row__chevron ${isOpen ? 'scrim-team-row__chevron--open' : ''}`}
+            />
+            <span className="scrim-team-row__name">{t.name}</span>
+            <span className="scrim-team-row__meta">
+              <span className="scrim-team-row__last">Last {formatDateShort(t.lastPlayed)}</span>
+              <span className="scrim-dot" />
+              <span className="scrim-team-row__count">
+                {t.count} scrim{t.count !== 1 ? 's' : ''}
+              </span>
+            </span>
+            {t.teamId != null && (
+              <a
+                href={`/admin/scrim-team?teamId=${t.teamId}`}
+                className="scrim-team-row__link"
+                onClick={(e) => e.stopPropagation()}
+              >
+                View team →
+              </a>
+            )}
+          </div>
+          {isOpen && (
+            <div className="scrim-team-row__body">
+              {isLoadingTeam ? (
+                <div className="scrim-loading">Loading scrims…</div>
+              ) : entries && entries.length > 0 ? (
+                <>
+                  <div className="scrim-team-group__scrims">
+                    {entries.map(({ scrim, viewingAsTeam2 }) => renderScrimCard(scrim, viewingAsTeam2))}
+                  </div>
+                  {t.teamId != null && t.count > entries.length && (
+                    <a href={`/admin/scrim-team?teamId=${t.teamId}`} className="scrim-team-row__more">
+                      View all {t.count} scrims →
+                    </a>
+                  )}
+                </>
+              ) : (
+                <p className="scrim-expanded-meta__label" style={{ padding: '12px', textAlign: 'center' }}>
+                  No scrims
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )
+    })
+
+  const isEmpty = isSearching ? scrims.length === 0 : teams.length === 0
+
   return (
     <>
     <ScrimAnalyticsTabs activeTab="scrims" />
@@ -215,7 +653,7 @@ export default function ScrimListView() {
           <div>
             <h1 className="scrim-page__title">Scrim Analytics</h1>
             <p className="scrim-page__subtitle">
-              {pagination ? `${pagination.total} scrim${pagination.total !== 1 ? 's' : ''} uploaded` : 'Loading…'}
+              {loading ? 'Loading…' : `${total} scrim${total !== 1 ? 's' : ''} uploaded`}
             </p>
           </div>
           <a href="/admin/scrim-upload" className="scrim-upload-btn">
@@ -253,305 +691,20 @@ export default function ScrimListView() {
           <div className="scrim-loading">
             Loading scrims…
           </div>
-        ) : scrims.length === 0 ? (
+        ) : isEmpty ? (
           <div className="scrim-empty">
             <div className="scrim-empty__icon"><BarChart3 size={40} /></div>
             <p className="scrim-empty__title">
-              {debouncedSearch ? 'No scrims match your search' : 'No scrims uploaded yet'}
+              {isSearching ? 'No scrims match your search' : 'No scrims uploaded yet'}
             </p>
             <p className="scrim-empty__hint">
-              {debouncedSearch ? 'Try a different search term' : 'Upload ScrimTime log files to get started'}
+              {isSearching ? 'Try a different search term' : 'Upload ScrimTime log files to get started'}
             </p>
           </div>
+        ) : isSearching ? (
+          renderSearchGroups()
         ) : (
-          <>
-            {/* Group scrims by team */}
-            {(() => {
-              type ScrimEntry = { scrim: Scrim; viewingAsTeam2: boolean }
-              const teamGroups = new Map<string, ScrimEntry[]>()
-              for (const s of scrims) {
-                const key = s.teamName ?? 'Other'
-                const group = teamGroups.get(key) ?? []
-                group.push({ scrim: s, viewingAsTeam2: false })
-                teamGroups.set(key, group)
-                if (s.teamName2 && s.teamName2 !== s.teamName) {
-                  const key2 = s.teamName2
-                  const group2 = teamGroups.get(key2) ?? []
-                  group2.push({ scrim: s, viewingAsTeam2: true })
-                  teamGroups.set(key2, group2)
-                }
-              }
-              const sortedKeys = [...teamGroups.keys()].sort((a, b) => {
-                if (a === 'Other') return 1
-                if (b === 'Other') return -1
-                return a.localeCompare(b)
-              })
-              return sortedKeys.map((teamKey) => {
-                const teamEntries = teamGroups.get(teamKey)!
-                return (
-                  <div key={teamKey} className="scrim-team-group">
-                    {(() => {
-                      const firstEntry = teamEntries[0]
-                      const firstScrim = firstEntry?.scrim
-                      const teamIdForLink = firstEntry?.viewingAsTeam2 && firstScrim?.payloadTeamId2
-                        ? firstScrim.payloadTeamId2
-                        : firstScrim?.payloadTeamId ?? null
-                      const teamHref = teamIdForLink
-                        ? `/admin/scrim-team?teamId=${teamIdForLink}`
-                        : null
-                      return (
-                        <div className="scrim-team-group__header">
-                          {teamHref ? (
-                            <a href={teamHref} className="scrim-team-group__name">
-                              {teamKey} →
-                            </a>
-                          ) : (
-                            <h2 className="scrim-team-group__name">{teamKey}</h2>
-                          )}
-                          <span className="scrim-team-group__count">
-                            {teamEntries.length} scrim{teamEntries.length !== 1 ? 's' : ''}
-                          </span>
-                        </div>
-                      )
-                    })()}
-                    <div className="scrim-team-group__scrims">
-                      {teamEntries.map(({ scrim, viewingAsTeam2 }) => {
-                        const isExpanded = expandedId === scrim.id
-
-                        const flipResult = (r: 'win' | 'loss' | 'draw' | null) => {
-                          if (!viewingAsTeam2 || !r) return r
-                          if (r === 'win') return 'loss' as const
-                          if (r === 'loss') return 'win' as const
-                          return r
-                        }
-                        const flipScore = (score: string | null) => {
-                          if (!viewingAsTeam2 || !score) return score
-                          const parts = score.split('-').map(s => s.trim())
-                          return parts.length === 2 ? `${parts[1]}-${parts[0]}` : score
-                        }
-                        const effectiveOpponent = viewingAsTeam2
-                          ? (scrim.teamName ?? scrim.maps[0]?.opponent ?? 'Unknown')
-                          : (scrim.opponentName ?? scrim.maps[0]?.opponent ?? 'Unknown')
-
-                        const record = scrim.maps.reduce(
-                          (acc, m) => {
-                            const result = flipResult(m.result)
-                            if (result === 'win') acc.wins++
-                            else if (result === 'loss') acc.losses++
-                            else if (result === 'draw') acc.draws++
-                            return acc
-                          },
-                          { wins: 0, losses: 0, draws: 0 },
-                        )
-
-                        return (
-                          <div
-                            key={scrim.id}
-                            className={`scrim-card ${isExpanded ? 'scrim-card--expanded' : ''}`}
-                          >
-                            {/* Scrim header row */}
-                            <div
-                              onClick={() => setExpandedId(isExpanded ? null : scrim.id)}
-                              className="scrim-card__row"
-                              style={{ cursor: 'pointer' }}
-                            >
-                              <div className="scrim-card__info">
-                                <ChevronRight
-                                  size={12}
-                                  className={`scrim-card__expand-icon ${isExpanded ? 'scrim-card__expand-icon--open' : ''}`}
-                                />
-                                <div>
-                                  <div className="scrim-card__title">{scrim.name}</div>
-                                  <div className="scrim-card__meta">
-                                    <span>{formatDate(scrim.date)}</span>
-                                    <span className="scrim-dot" />
-                                    <span className="scrim-card__maps-count">
-                                      {scrim.mapCount} map{scrim.mapCount !== 1 ? 's' : ''}
-                                    </span>
-                                    {scrim.teamName && (
-                                      <>
-                                        <span className="scrim-dot" />
-                                        <span className="scrim-card__team-badge">{scrim.teamName}</span>
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="scrim-card__actions">
-                                <span className="scrim-card__creator">
-                                  {scrim.creatorEmail.split('@')[0]}
-                                </span>
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); handleDelete(scrim.id) }}
-                                  disabled={deleting === scrim.id}
-                                  className="scrim-card__delete-btn"
-                                  title="Delete scrim"
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                              </div>
-                            </div>
-
-                            {/* Expanded map list */}
-                            {isExpanded && (
-                              <div className="scrim-expanded">
-                                {/* Opponent name + inline edit */}
-                                <div className="scrim-expanded-meta">
-                                  <span className="scrim-expanded-meta__label">Opponent:</span>
-                                  {editingOpponentScrimId === scrim.id ? (
-                                    <div className="scrim-opponent-edit">
-                                      <input
-                                        ref={opponentInputRef}
-                                        type="text"
-                                        value={opponentInput}
-                                        onChange={e => handleOpponentInputChange(e.target.value)}
-                                        onFocus={() => setShowSuggestions(true)}
-                                        onKeyDown={e => {
-                                          if (e.key === 'Enter') {
-                                            e.preventDefault()
-                                            saveOpponentName(scrim.id, opponentInput)
-                                          } else if (e.key === 'Escape') {
-                                            setEditingOpponentScrimId(null)
-                                            setShowSuggestions(false)
-                                          }
-                                        }}
-                                        placeholder="Type opponent name..."
-                                        disabled={savingOpponent}
-                                        className="scrim-opponent-edit__input"
-                                      />
-                                      {showSuggestions && opponentSuggestions.length > 0 && (
-                                        <div ref={suggestionsRef} className="scrim-opponent-edit__suggestions">
-                                          {opponentSuggestions.map(name => (
-                                            <button
-                                              key={name}
-                                              onClick={() => {
-                                                setOpponentInput(name)
-                                                saveOpponentName(scrim.id, name)
-                                              }}
-                                              className="scrim-opponent-edit__suggestion"
-                                            >
-                                              {name}
-                                            </button>
-                                          ))}
-                                        </div>
-                                      )}
-                                    </div>
-                                  ) : (
-                                    <>
-                                      <span className={`scrim-expanded-meta__value ${(viewingAsTeam2 || scrim.opponentName) ? 'scrim-expanded-meta__value--highlighted' : ''}`}>
-                                        {effectiveOpponent}
-                                        {scrim.opponentName && (
-                                          <span className="scrim-expanded-meta__label" style={{ marginLeft: '6px' }}>✓ renamed</span>
-                                        )}
-                                      </span>
-                                      <button
-                                        onClick={e => { e.stopPropagation(); startEditingOpponent(scrim) }}
-                                        title="Rename opponent"
-                                        className="scrim-opponent-edit__cancel-btn"
-                                      >
-                                        <Edit3 size={12} />
-                                      </button>
-                                    </>
-                                  )}
-                                </div>
-
-                                {/* Quick record summary */}
-                                {(record.wins > 0 || record.losses > 0 || record.draws > 0) && (
-                                  <div className="scrim-expanded-meta">
-                                    <span className="scrim-expanded-meta__label">Record:</span>
-                                    <div className="scrim-record">
-                                      {record.wins > 0 && <span className="scrim-record__win">{record.wins}W</span>}
-                                      {record.losses > 0 && <span className="scrim-record__loss">{record.losses}L</span>}
-                                      {record.draws > 0 && <span className="scrim-record__draw">{record.draws}D</span>}
-                                    </div>
-                                  </div>
-                                )}
-
-                                {scrim.maps.length === 0 ? (
-                                  <p className="scrim-expanded-meta__label" style={{ padding: '12px 0', textAlign: 'center' }}>
-                                    No maps found
-                                  </p>
-                                ) : (
-                                  <div className="scrim-expanded__maps">
-                                    {scrim.maps.map((map) => {
-                                      const effectiveResult = flipResult(map.result)
-                                      const effectiveScore = flipScore(map.score)
-                                      const effectiveMapOpponent = viewingAsTeam2
-                                        ? (scrim.teamName ?? map.opponent)
-                                        : map.opponent
-                                      const resultInfo = effectiveResult ? RESULT_INFO[effectiveResult] : null
-
-                                      return (
-                                        <a
-                                          key={map.id}
-                                          href={map.mapDataId ? `/admin/scrim-map?mapId=${map.mapDataId}` : '#'}
-                                          className="scrim-map-row"
-                                        >
-                                          <div className="scrim-map-row__info">
-                                            <span className="scrim-map-row__name">{map.name}</span>
-                                            {effectiveMapOpponent && (
-                                              <span className="scrim-map-row__opponent">vs {effectiveMapOpponent}</span>
-                                            )}
-                                            {effectiveScore && resultInfo && (
-                                              <div className="scrim-map-row__score-group"
-                                                title={map.estimated ? 'Estimated - match ended without a final score record' : undefined}
-                                              >
-                                                <span className={`scrim-map-row__score ${map.estimated ? 'scrim-stat--highlight' : ''}`}>
-                                                  {map.estimated ? '~' : ''}{effectiveScore}
-                                                </span>
-                                                <span className={`scrim-map-row__result ${resultInfo.cls}`}>
-                                                  {resultInfo.label}
-                                                </span>
-                                                {map.estimated && (
-                                                  <span className="scrim-est-badge">est</span>
-                                                )}
-                                              </div>
-                                            )}
-                                          </div>
-                                          {map.mapDataId ? (
-                                            <span className="scrim-map-row__view-link">View Stats →</span>
-                                          ) : (
-                                            <span className="scrim-expanded-meta__label">No data</span>
-                                          )}
-                                        </a>
-                                      )
-                                    })}
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )
-              })
-            })()}
-
-            {/* Pagination */}
-            {pagination && pagination.totalPages > 1 && (
-              <div className="scrim-pagination">
-                <button
-                  onClick={() => fetchScrims(pagination.page - 1)}
-                  disabled={pagination.page <= 1}
-                  className="scrim-pagination__btn"
-                >
-                  ← Previous
-                </button>
-                <span className="scrim-pagination__info">
-                  Page {pagination.page} of {pagination.totalPages}
-                </span>
-                <button
-                  onClick={() => fetchScrims(pagination.page + 1)}
-                  disabled={pagination.page >= pagination.totalPages}
-                  className="scrim-pagination__btn"
-                >
-                  Next →
-                </button>
-              </div>
-            )}
-          </>
+          <div className="scrim-team-list">{renderTeamRows()}</div>
         )}
       </div>
 

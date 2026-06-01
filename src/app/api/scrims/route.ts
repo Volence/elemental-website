@@ -10,7 +10,11 @@ import { getUserScope } from '@/access/scrimScope'
 export async function GET(req: NextRequest) {
   const url = new URL(req.url)
   const page = Math.max(1, parseInt(url.searchParams.get('page') ?? '1'))
-  const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get('limit') ?? '10')))
+  // limit=all returns every scrim (used by the grouped list view, which groups
+  // by team across the whole set and must not split a team across pages).
+  const limitParam = url.searchParams.get('limit') ?? '10'
+  const fetchAll = limitParam === 'all'
+  const limit = fetchAll ? null : Math.min(50, Math.max(1, parseInt(limitParam)))
   const search = url.searchParams.get('search')?.trim() || ''
   const teamIdStr = url.searchParams.get('teamId')
   const teamId = teamIdStr ? parseInt(teamIdStr) : null
@@ -24,15 +28,21 @@ export async function GET(req: NextRequest) {
     where.name = { contains: search, mode: 'insensitive' }
   }
 
-  // Team scoping: for non-full-access users, limit to their assigned teams
-  if (scope && !scope.isFullAccess && scope.assignedTeamIds.length > 0) {
+  // Team scoping: for non-full-access users, limit to their assigned teams.
+  if (scope && !scope.isFullAccess) {
+    if (scope.assignedTeamIds.length === 0) {
+      // No assigned teams - return empty
+      return NextResponse.json({ scrims: [], pagination: { page, limit, total: 0, totalPages: 0 } })
+    }
+    // If a specific (allowed) team is requested, narrow to it; else show all assigned.
+    const ids =
+      teamId && !isNaN(teamId) && scope.assignedTeamIds.includes(teamId)
+        ? [teamId]
+        : scope.assignedTeamIds
     where.OR = [
-      { payloadTeamId: { in: scope.assignedTeamIds } },
-      { payloadTeamId2: { in: scope.assignedTeamIds } },
+      { payloadTeamId: { in: ids } },
+      { payloadTeamId2: { in: ids } },
     ]
-  } else if (scope && !scope.isFullAccess) {
-    // No assigned teams - return empty
-    return NextResponse.json({ scrims: [], pagination: { page, limit, total: 0, totalPages: 0 } })
   } else if (teamId && !isNaN(teamId)) {
     // Admin/staff-manager explicit team filter
     where.OR = [
@@ -41,14 +51,14 @@ export async function GET(req: NextRequest) {
     ]
   }
 
-  const skip = (page - 1) * limit
+  const skip = fetchAll ? 0 : (page - 1) * limit!
 
   const [scrims, total] = await Promise.all([
     prisma.scrim.findMany({
       where,
       orderBy: { date: 'desc' },
-      skip,
-      take: limit,
+      skip: fetchAll ? undefined : skip,
+      take: fetchAll ? undefined : limit!,
       include: {
         maps: {
           select: {
@@ -257,10 +267,10 @@ export async function GET(req: NextRequest) {
       }
     }),
     pagination: {
-      page,
-      limit,
+      page: fetchAll ? 1 : page,
+      limit: fetchAll ? total : limit!,
       total,
-      totalPages: Math.ceil(total / limit),
+      totalPages: fetchAll ? 1 : Math.ceil(total / limit!),
     },
   })
 }
