@@ -1,0 +1,33 @@
+import { describe, it, expect } from 'vitest'
+import { decideSpectatorInvite } from '../../src/pug/spectators'
+
+describe('decideSpectatorInvite', () => {
+  const INVITABLE = ['lobby_created', 'invites_sent', 'players_joining']
+  const IN_GAME = ['game_started', 'game_ended']
+  const NOT_YET = ['preparing', 'lobby_ready', 'creating', 'error']
+
+  for (const status of INVITABLE) {
+    it(`INVITE_NOW when status=${status} and instance present`, () => {
+      expect(decideSpectatorInvite(status, 'inst-1')).toBe('INVITE_NOW')
+    })
+    it(`KEEP_PENDING when status=${status} but no instance`, () => {
+      expect(decideSpectatorInvite(status, null)).toBe('KEEP_PENDING')
+    })
+  }
+
+  for (const status of IN_GAME) {
+    it(`PENDING_IN_GAME when status=${status}`, () => {
+      expect(decideSpectatorInvite(status, 'inst-1')).toBe('PENDING_IN_GAME')
+    })
+  }
+
+  for (const status of NOT_YET) {
+    it(`KEEP_PENDING when status=${status}`, () => {
+      expect(decideSpectatorInvite(status, 'inst-1')).toBe('KEEP_PENDING')
+    })
+  }
+
+  it('KEEP_PENDING when status is null', () => {
+    expect(decideSpectatorInvite(null, 'inst-1')).toBe('KEEP_PENDING')
+  })
+})
