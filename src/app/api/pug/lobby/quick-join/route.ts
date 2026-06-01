@@ -12,13 +12,16 @@ export async function POST(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { roles } = body
+  const { roles, region } = body
 
   if (!roles || !Array.isArray(roles) || roles.length === 0) {
     return NextResponse.json({ error: 'roles array required' }, { status: 400 })
   }
   if (!roles.every((r: string) => VALID_ROLES.includes(r))) {
     return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
+  }
+  if (!region || !['na', 'emea', 'pacific'].includes(region)) {
+    return NextResponse.json({ error: 'region required (na, emea, or pacific)' }, { status: 400 })
   }
 
   const person = user as any
@@ -35,7 +38,7 @@ export async function POST(request: NextRequest) {
   }
 
   const openLobbies = await prisma.pugLobby.findMany({
-    where: { tier: 'open', status: 'OPEN' },
+    where: { tier: 'open', region, status: 'OPEN' },
     include: { _count: { select: { players: true } } },
     orderBy: { createdAt: 'asc' },
   })
