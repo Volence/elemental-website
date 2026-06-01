@@ -47,6 +47,7 @@ type Lobby = {
   banState?: { currentBanTeam: number; banNumber: number; bans: any[] } | null
   mapVote?: { candidates: number[]; votes: Record<string, number>; selectedMapId?: number | null } | null
   pendingResult?: { result: string; reportedBy: number } | null
+  spectators?: Array<{ id: number; battleTag: string; personId: number | null; displayName: string; status: string; note: string | null }>
 }
 
 type RegionStatus = Record<string, boolean>
@@ -90,10 +91,70 @@ function GraceCountdown({ timeoutAt }: { timeoutAt: string }) {
   return <span style={{ color: '#facc15', fontSize: 12, fontFamily: 'monospace' }}>{remaining}</span>
 }
 
-function LobbyExpanded({ lobby, onAction, acting }: {
+function SpectatorStatusBadge({ status, note }: { status: string; note: string | null }) {
+  const color = status === 'INVITED' ? '#4ade80' : status === 'FAILED' ? '#f87171' : '#fbbf24'
+  return <span title={note ?? undefined} style={{ fontSize: 10, color, border: `1px solid ${color}`, borderRadius: 4, padding: '1px 5px' }}>{status}</span>
+}
+
+function SpectatorPanel({
+  lobbyId,
+  spectators,
+  onChange,
+}: {
+  lobbyId: number
+  spectators: NonNullable<Lobby['spectators']>
+  onChange: (next: NonNullable<Lobby['spectators']>) => void
+}) {
+  const [tag, setTag] = useState('')
+  const [busy, setBusy] = useState(false)
+  const alert = useAlert()
+
+  async function mutate(method: 'POST' | 'DELETE', body: any) {
+    setBusy(true)
+    try {
+      const res = await fetch(`/api/pug/lobby/${lobbyId}/spectators`, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        credentials: 'include',
+      })
+      const data = await res.json()
+      if (!res.ok) { await alert({ message: data.error || 'Failed', variant: 'danger' }); return }
+      onChange(data.spectators)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 12, marginTop: 16 }}>
+      <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Spectators</p>
+      {spectators.length === 0 && <p style={{ fontSize: 12, color: '#475569', marginBottom: 6 }}>None yet.</p>}
+      {spectators.map((s) => (
+        <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, marginBottom: 4 }}>
+          <span style={{ flex: 1, color: '#e2e8f0', minWidth: 0 }}>{s.displayName}{s.displayName !== s.battleTag && ` (${s.battleTag})`}</span>
+          <SpectatorStatusBadge status={s.status} note={s.note} />
+          <button className="ps-btn ps-btn-ghost" style={{ padding: '2px 8px', fontSize: 11 }} disabled={busy} onClick={() => mutate('DELETE', { id: s.id })} title="Remove from list (does not kick from the live OW lobby)">x</button>
+        </div>
+      ))}
+      <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+        <input
+          type="text" value={tag} placeholder="BattleTag#1234" disabled={busy}
+          onChange={(e) => setTag(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter' && tag.trim()) { mutate('POST', { battleTag: tag.trim() }); setTag('') } }}
+          style={{ flex: 1, padding: '5px 10px', fontSize: 12, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#e2e8f0' }}
+        />
+        <button className="ps-btn ps-btn-primary" style={{ padding: '5px 12px', fontSize: 12 }} disabled={busy || !tag.trim()} onClick={() => { mutate('POST', { battleTag: tag.trim() }); setTag('') }}>Add</button>
+      </div>
+    </div>
+  )
+}
+
+function LobbyExpanded({ lobby, onAction, acting, onSpectatorsChange }: {
   lobby: Lobby
   onAction: (lobbyId: number, path: string, body: Record<string, any>) => Promise<void>
   acting: string | null
+  onSpectatorsChange: (next: NonNullable<Lobby['spectators']>) => void
 }) {
   const confirm = useConfirm()
   const team1 = lobby.players.filter((p) => p.team === 1)
@@ -311,6 +372,12 @@ function LobbyExpanded({ lobby, onAction, acting }: {
           <XCircle size={11} /> Cancel
         </button>
       </div>
+
+      <SpectatorPanel
+        lobbyId={lobby.id}
+        spectators={lobby.spectators ?? []}
+        onChange={onSpectatorsChange}
+      />
     </div>
   )
 }
@@ -422,6 +489,10 @@ export function PugLobbiesDashboard() {
       else next.add(lobbyId)
       return next
     })
+  }
+
+  function updateLobbySpectators(lobbyId: number, next: NonNullable<Lobby['spectators']>) {
+    setLobbies((prev) => prev.map((l) => (l.id === lobbyId ? { ...l, spectators: next } : l)))
   }
 
   const filteredLobbies = lobbies
@@ -583,7 +654,7 @@ export function PugLobbiesDashboard() {
 
             {/* Expanded panel */}
             {isExpanded && (
-              <LobbyExpanded lobby={lobby} onAction={lobbyAction} acting={acting} />
+              <LobbyExpanded lobby={lobby} onAction={lobbyAction} acting={acting} onSpectatorsChange={(next) => updateLobbySpectators(lobby.id, next)} />
             )}
           </div>
         )
