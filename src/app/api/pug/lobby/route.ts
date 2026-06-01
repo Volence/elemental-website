@@ -173,8 +173,22 @@ export async function POST(request: NextRequest) {
     if (!person.pugTiers?.includes('open')) {
       return NextResponse.json({ error: 'You must register for open tier first' }, { status: 403 })
     }
+    if (!region || !['na', 'emea', 'pacific'].includes(region)) {
+      return NextResponse.json({ error: 'region required (na, emea, or pacific)' }, { status: 400 })
+    }
 
-    const lobby = await createOpenLobby(user.id, payloadSeasonId)
+    // One joinable lobby at a time per region: funnel into the existing open
+    // lobby for this region if one has room, otherwise create a fresh one.
+    const existing = await prisma.pugLobby.findFirst({
+      where: { tier: 'open', region, payloadSeasonId, status: 'OPEN' },
+      include: { _count: { select: { players: true } } },
+      orderBy: { createdAt: 'asc' },
+    })
+    if (existing && existing._count.players < 10) {
+      return NextResponse.json({ lobby: existing }, { status: 200 })
+    }
+
+    const lobby = await createOpenLobby(user.id, payloadSeasonId, region)
     return NextResponse.json({ lobby }, { status: 201 })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
