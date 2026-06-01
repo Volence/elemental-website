@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
 import { createOpenLobby, isPugRegion } from '@/pug'
+import { enrichSpectators } from '@/pug/spectators'
 
 export async function GET(request: NextRequest) {
   const url = new URL(request.url)
@@ -72,24 +73,27 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const enriched = lobbies.map((lobby) => {
-    const playerRoles = lobby.players.map((p) => ({ queuedRoles: p.queuedRoles as string[] }))
-    const spotsAvailable: Record<string, number> = {}
-    for (const role of ALL_ROLES) {
-      const with1 = [...playerRoles, { queuedRoles: [role] }]
-      if (!canAllBeAssigned(with1)) { spotsAvailable[role] = 0; continue }
-      const with2 = [...with1, { queuedRoles: [role] }]
-      spotsAvailable[role] = canAllBeAssigned(with2) ? 2 : 1
-    }
-    const blockedRoles = ALL_ROLES.filter((r) => spotsAvailable[r] === 0)
-    const neededSlots = computeNeededSlots(playerRoles)
-    const enrichedPlayers = lobby.players.map((p) => ({
-      ...p,
-      name: nameMap[p.userId] ?? `Player #${p.userId}`,
-      avatarUrl: avatarMap[p.userId] ?? null,
-    }))
-    return { ...lobby, players: enrichedPlayers, neededSlots, blockedRoles, spotsAvailable }
-  })
+  const enriched = await Promise.all(
+    lobbies.map(async (lobby) => {
+      const playerRoles = lobby.players.map((p) => ({ queuedRoles: p.queuedRoles as string[] }))
+      const spotsAvailable: Record<string, number> = {}
+      for (const role of ALL_ROLES) {
+        const with1 = [...playerRoles, { queuedRoles: [role] }]
+        if (!canAllBeAssigned(with1)) { spotsAvailable[role] = 0; continue }
+        const with2 = [...with1, { queuedRoles: [role] }]
+        spotsAvailable[role] = canAllBeAssigned(with2) ? 2 : 1
+      }
+      const blockedRoles = ALL_ROLES.filter((r) => spotsAvailable[r] === 0)
+      const neededSlots = computeNeededSlots(playerRoles)
+      const enrichedPlayers = lobby.players.map((p) => ({
+        ...p,
+        name: nameMap[p.userId] ?? `Player #${p.userId}`,
+        avatarUrl: avatarMap[p.userId] ?? null,
+      }))
+      const spectators = await enrichSpectators(lobby.id)
+      return { ...lobby, players: enrichedPlayers, neededSlots, blockedRoles, spotsAvailable, spectators }
+    }),
+  )
 
   let regionQueueStatus: Record<string, boolean> | null = null
   let seasonId: number | undefined

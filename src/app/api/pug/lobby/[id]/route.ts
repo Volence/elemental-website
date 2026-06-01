@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
 import { generateSettings } from '@/pug/settingsGenerator'
+import { enrichSpectators } from '@/pug/spectators'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -244,8 +245,10 @@ export async function GET(request: NextRequest, { params }: Params) {
       if (linkedScrim) linkedScrimId = linkedScrim.id
     }
 
+    const spectators = await enrichSpectators(lobbyId)
+
     return NextResponse.json({
-      lobby: { ...lobby, players: enrichedPlayers },
+      lobby: { ...lobby, players: enrichedPlayers, spectators },
       selectedMap,
       mapCandidates,
       heroes,
