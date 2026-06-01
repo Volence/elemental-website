@@ -96,6 +96,12 @@ const TEAM_COLORS = {
 
 const SPEEDS = [0.25, 0.5, 1, 2, 4]
 
+// The calibration tool captures reference points to derive the world→image
+// affine transforms. Those transforms are already baked in, so this is a
+// one-off dev activity (e.g. onboarding a new map image) and is hidden from
+// the shipped UI.
+const CALIBRATION_ENABLED = process.env.NODE_ENV === 'development'
+
 /** Short hero name for display in badges (3-4 chars) */
 const HERO_ABBREVS: Record<string, string> = {
   'Ana': 'Ana', 'Ashe': 'Ash', 'Baptiste': 'Bap', 'Bastion': 'Bas',
@@ -1268,7 +1274,7 @@ export default function ReplayTab({ mapId }: { mapId: string }) {
     const dy = Math.abs(e.clientY - lastMouseRef2.current.y)
     if (dx > 3 || dy > 3) return
 
-    if (calibrateMode && canvasRef.current && activeTransform && viewport) {
+    if (CALIBRATION_ENABLED && calibrateMode && canvasRef.current && activeTransform && viewport) {
       // Reverse canvas click → image-space coordinates
       // In calibrate mode, use the FULL image dimensions (not the dynamic viewport)
       // to avoid circular dependency: changing transform → changes viewport → changes calibration
@@ -1453,14 +1459,16 @@ export default function ReplayTab({ mapId }: { mapId: string }) {
               <button className="replay__toggle" onClick={handleSnapshot} title="Screenshot (S)">
                 <Camera size={14} />
               </button>
-              <button
-                className={`replay__toggle ${calibrateMode ? 'replay__toggle--active' : ''}`}
-                onClick={() => { setCalibrateMode(v => !v); setCalibratePoints([]) }}
-                title="Calibration mode"
-                style={calibrateMode ? { background: '#f59e0b', color: '#000' } : {}}
-              >
-                🎯 Calibrate
-              </button>
+              {CALIBRATION_ENABLED && (
+                <button
+                  className={`replay__toggle ${calibrateMode ? 'replay__toggle--active' : ''}`}
+                  onClick={() => { setCalibrateMode(v => !v); setCalibratePoints([]) }}
+                  title="Calibration mode"
+                  style={calibrateMode ? { background: '#f59e0b', color: '#000' } : {}}
+                >
+                  🎯 Calibrate
+                </button>
+              )}
             </div>
           </div>
 
@@ -1476,7 +1484,7 @@ export default function ReplayTab({ mapId }: { mapId: string }) {
           />
 
           {/* Calibration overlay */}
-          {calibrateMode && data && (
+          {CALIBRATION_ENABLED && calibrateMode && data && (
             <div style={{ background: 'rgba(0,0,0,0.85)', color: '#fff', padding: '12px 16px', fontFamily: 'monospace', fontSize: '11px', borderRadius: 8, marginTop: 8, maxHeight: 300, overflowY: 'auto' }}>
               <div style={{ marginBottom: 8, color: '#f59e0b', fontWeight: 'bold' }}>🎯 CALIBRATION MODE - Click map to add reference points</div>
               <div style={{ marginBottom: 8, color: '#94a3b8' }}>Player world coords at t={formatTime(currentTime)}:</div>
