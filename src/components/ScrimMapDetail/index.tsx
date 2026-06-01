@@ -24,7 +24,15 @@ type PlayerRow = {
   kd: number
   kad: number
   damageReceived: number
+  damageBlocked: number
   healingReceived: number
+  selfHealing: number
+  soloKills: number
+  objectiveKills: number
+  multikills: number
+  multikillBest: number
+  environmentalKills: number
+  environmentalDeaths: number
 }
 
 type CalculatedStat = {
@@ -98,6 +106,7 @@ const COLUMN_DEFS: { key: SortKey; label: string; align: 'left' | 'right' }[] = 
   { key: 'kad', label: 'KA/D', align: 'right' },
   { key: 'damage', label: 'Hero Damage Dealt', align: 'right' },
   { key: 'damageReceived', label: 'Damage Received', align: 'right' },
+  { key: 'damageBlocked', label: 'Damage Blocked', align: 'right' },
   { key: 'healingReceived', label: 'Healing Received', align: 'right' },
   { key: 'healing', label: 'Healing Dealt', align: 'right' },
 ]
@@ -248,6 +257,24 @@ export default function ScrimMapDetailView() {
 
   const selectedCalcStat = selectedPlayer
     ? data.calculatedStats.find((s) => s.playerName === selectedPlayer)
+    : null
+
+  // Raw impact stats for the selected player, summed across every hero they
+  // played on this map (player_stat rows are per-hero).
+  const selectedImpact = selectedPlayer
+    ? (() => {
+        const rows = data.players.filter((p) => p.name === selectedPlayer)
+        if (rows.length === 0) return null
+        return {
+          soloKills: rows.reduce((a, p) => a + p.soloKills, 0),
+          objectiveKills: rows.reduce((a, p) => a + p.objectiveKills, 0),
+          multikills: rows.reduce((a, p) => a + p.multikills, 0),
+          multikillBest: Math.max(0, ...rows.map((p) => p.multikillBest)),
+          environmentalKills: rows.reduce((a, p) => a + p.environmentalKills, 0),
+          environmentalDeaths: rows.reduce((a, p) => a + p.environmentalDeaths, 0),
+          selfHealing: rows.reduce((a, p) => a + p.selfHealing, 0),
+        }
+      })()
     : null
 
   // Parse score for win/loss coloring
@@ -643,6 +670,23 @@ export default function ScrimMapDetailView() {
             <StatMini label="Drought Time" value={`${selectedCalcStat.droughtTime}s`} sub="avg between kills" />
           </div>
 
+          {selectedImpact && (
+            <>
+              <div style={{ fontWeight: 700, fontSize: '13px', margin: '4px 0 10px', color: TEXT_PRIMARY }}>Impact</div>
+              <div className="scrim-detail__stat-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+                <StatMini label="Solo Kills" value={formatNumber(selectedImpact.soloKills)} color={AMBER} />
+                <StatMini label="Multikills" value={formatNumber(selectedImpact.multikills)} sub={selectedImpact.multikillBest > 0 ? `best ${selectedImpact.multikillBest}x` : undefined} color={PURPLE} />
+                <StatMini label="Objective Kills" value={formatNumber(selectedImpact.objectiveKills)} color={CYAN} />
+                <StatMini label="Self Healing" value={formatNumber(selectedImpact.selfHealing)} color={GREEN} />
+              </div>
+              {selectedImpact.environmentalKills + selectedImpact.environmentalDeaths > 0 && (
+                <div style={{ fontSize: '12px', color: TEXT_DIM, marginBottom: '16px' }}>
+                  Environmental: <strong style={{ color: GREEN }}>{selectedImpact.environmentalKills}</strong> kills · <strong style={{ color: RED }}>{selectedImpact.environmentalDeaths}</strong> deaths
+                </div>
+              )}
+            </>
+          )}
+
           {selectedCalcStat.ajaxCount > 0 && (
             <div style={{ fontSize: '13px', padding: '10px 14px', background: RED_DIM, borderRadius: '8px', marginBottom: '16px', border: `1px solid rgba(239, 68, 68, 0.15)` }}>
               <Music size={12} style={{ verticalAlign: 'text-bottom', marginRight: '2px' }} /> <strong>{selectedCalcStat.ajaxCount}</strong> Ajax{selectedCalcStat.ajaxCount !== 1 ? 'es' : ''} (died during Lúcio ult)
@@ -796,6 +840,7 @@ function TeamTotalRow({ players, color }: { players: PlayerRow[]; color: string 
       <td style={cellStyle}>{totalDeaths > 0 ? Math.round((totalElims + totalAssists) / totalDeaths * 100) / 100 : totalElims + totalAssists}</td>
       <td style={cellStyle}>{formatNumber(sumStat(players, 'damage'))}</td>
       <td style={cellStyle}>{formatNumber(sumStat(players, 'damageReceived'))}</td>
+      <td style={cellStyle}>{formatNumber(sumStat(players, 'damageBlocked'))}</td>
       <td style={cellStyle}>{formatNumber(sumStat(players, 'healingReceived'))}</td>
       <td style={cellStyle}>{formatNumber(sumStat(players, 'healing'))}</td>
     </tr>
@@ -828,6 +873,7 @@ function StatRow({ player, onClick, selected }: { player: PlayerRow; onClick: ()
       <td style={{ ...cell, color: player.kad >= 3 ? GREEN : player.kad < 1.5 ? RED : TEXT_PRIMARY, fontWeight: 600 }}>{player.kad}</td>
       <td style={cell}>{formatNumber(player.damage)}</td>
       <td style={cell}>{formatNumber(player.damageReceived)}</td>
+      <td style={cell}>{formatNumber(player.damageBlocked)}</td>
       <td style={cell}>{formatNumber(player.healingReceived)}</td>
       <td style={cell}>{formatNumber(player.healing)}</td>
     </tr>

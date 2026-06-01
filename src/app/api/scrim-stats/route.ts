@@ -377,7 +377,17 @@ export async function GET(req: NextRequest) {
       kd: p.deaths > 0 ? round(p.eliminations / p.deaths) : p.eliminations,
       kad: p.deaths > 0 ? round((p.eliminations + (p.defensive_assists + p.offensive_assists)) / p.deaths) : p.eliminations + (p.defensive_assists + p.offensive_assists),
       damageReceived: round(p.damage_taken),
+      damageBlocked: round(p.damage_blocked),
       healingReceived: round(p.healing_received),
+      // Impact stats - surfaced in the player detail card (summed across the
+      // player's heroes for the map).
+      selfHealing: round(p.self_healing),
+      soloKills: p.solo_kills,
+      objectiveKills: p.objective_kills,
+      multikills: p.multikills,
+      multikillBest: p.multikill_best,
+      environmentalKills: p.environmental_kills,
+      environmentalDeaths: p.environmental_deaths,
     })),
     analysis: {
       totalFights: fights.length,
