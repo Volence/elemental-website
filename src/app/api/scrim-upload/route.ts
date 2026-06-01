@@ -11,6 +11,8 @@
  *   - date: string (ISO date string)
  *   - teamId: string (Payload team ID, optional)
  *   - teamId2: string (second Payload team ID for internal scrims, optional)
+ *   - mappings: JSON string, player_name -> Person id for the primary team
+ *   - mappings2: JSON string, player_name -> Person id for the second team
  */
 
 import { NextResponse } from 'next/server'
@@ -53,8 +55,12 @@ export async function POST(request: Request) {
       }
     }
 
-    const playerMappingsStr = formData.get('playerMappings') as string | null
-    const playerMappings2Str = formData.get('playerMappings2') as string | null
+    // Form keys are 'mappings'/'mappings2' (set by ScrimUpload). These carry the
+    // player_name -> Person id maps that let storage stamp personId onto each
+    // scrim_player_stat row; without personId the scrim-stats route cannot
+    // correlate raw "Team 1"/"Team 2" to Payload teams or resolve player names.
+    const playerMappingsStr = formData.get('mappings') as string | null
+    const playerMappings2Str = formData.get('mappings2') as string | null
     const opponentNameOverride = (formData.get('opponentName') as string | null)?.trim() || null
     const teamId2Str = formData.get('teamId2') as string | null
     const playerMappings: Record<string, number> = {}
