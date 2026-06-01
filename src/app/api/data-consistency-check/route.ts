@@ -407,46 +407,55 @@ export async function GET(request: NextRequest) {
     }
 
     // 8. Stale merge suggestions (pointing to deleted People)
+    // merge_suggestions is a raw SQL table, not a registered Payload collection,
+    // so it must be queried directly via drizzle rather than payload.find().
     try {
-      const mergeSuggestions = await payload.find({
-        collection: 'merge-suggestions' as any,
-        where: { status: { equals: 'pending' } },
-        limit: 1000,
-        depth: 0,
-      })
+      const drizzle = (payload as any).db?.drizzle
+      if (drizzle) {
+        const { sql } = await import('drizzle-orm')
+        const result = await drizzle.execute(
+          sql.raw(`
+            SELECT ms.id, ms.label, ms.new_person_id, ms.existing_person_id,
+              np.id AS new_exists, ep.id AS existing_exists
+            FROM merge_suggestions ms
+            LEFT JOIN people np ON np.id = ms.new_person_id
+            LEFT JOIN people ep ON ep.id = ms.existing_person_id
+            WHERE ms.status = 'pending'
+              AND ((ms.new_person_id IS NOT NULL AND np.id IS NULL)
+                OR (ms.existing_person_id IS NOT NULL AND ep.id IS NULL))
+            LIMIT 1000
+          `),
+        )
+        const rows = (result.rows ?? result) as any[]
 
-      const staleSuggestions: Array<{ id: number | string; name: string; details: string }> = []
-      for (const suggestion of mergeSuggestions.docs) {
-        const s = suggestion as any
-        const newPersonId = typeof s.newPerson === 'object' ? s.newPerson?.id : s.newPerson
-        const existingPersonId =
-          typeof s.existingPerson === 'object' ? s.existingPerson?.id : s.existingPerson
-        const newMissing = newPersonId && !peopleIds.has(newPersonId)
-        const existingMissing = existingPersonId && !peopleIds.has(existingPersonId)
-
-        if (newMissing || existingMissing) {
+        const staleSuggestions = rows.map((r: any) => {
+          const newMissing = r.new_person_id != null && r.new_exists == null
+          const existingMissing = r.existing_person_id != null && r.existing_exists == null
           const missing = [newMissing && 'new person', existingMissing && 'existing person']
             .filter(Boolean)
             .join(' and ')
-          staleSuggestions.push({
-            id: s.id,
-            name: s.label || `Suggestion #${s.id}`,
+          return {
+            id: r.id,
+            name: r.label || `Suggestion #${r.id}`,
             details: `${missing} no longer exists`,
+          }
+        })
+
+        if (staleSuggestions.length > 0) {
+          issues.push({
+            type: 'warning',
+            category: 'Stale Merge Suggestions',
+            message: 'Pending merge suggestions reference People that have been deleted',
+            items: staleSuggestions,
+            autoFixable: true,
           })
         }
       }
-
-      if (staleSuggestions.length > 0) {
-        issues.push({
-          type: 'warning',
-          category: 'Stale Merge Suggestions',
-          message: 'Pending merge suggestions reference People that have been deleted',
-          items: staleSuggestions,
-          autoFixable: true,
-        })
+    } catch (err: any) {
+      // Table may not exist yet (migration not run) - treat as no issues
+      if (!err?.message?.includes('does not exist')) {
+        console.error('[Data Consistency] Check 8 (stale merge suggestions) failed:', err)
       }
-    } catch (err) {
-      console.error('[Data Consistency] Check 8 (stale merge suggestions) failed:', err)
     }
 
     return NextResponse.json({ issues, totalIssues: issues.length })

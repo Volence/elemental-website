@@ -11,6 +11,22 @@ async function getAdmin() {
   return payload
 }
 
+// Recursively drop `id` keys from nested objects so Payload mints fresh array/group
+// row ids instead of trying to reuse ids that belong to another document.
+// Safe here because relationships are loaded at depth 0 (scalar ids, not objects).
+function stripRowIds<T>(value: T): T {
+  if (Array.isArray(value)) return value.map(stripRowIds) as unknown as T
+  if (value && typeof value === 'object') {
+    const out: Record<string, any> = {}
+    for (const [key, val] of Object.entries(value)) {
+      if (key === 'id') continue
+      out[key] = stripRowIds(val)
+    }
+    return out as T
+  }
+  return value
+}
+
 export async function GET(request: NextRequest) {
   try {
     const payload = await getAdmin()
@@ -269,12 +285,15 @@ export async function POST(request: NextRequest) {
   }
 
   const db = (payload as any).db?.pool ?? (payload as any).db?.client
-    // Step 1: Update target person with merged fields
+    // Step 1: Update target person with merged fields.
+    // Array/group fields (gameAliases, socialLinks.customLinks) carry per-row ids
+    // belonging to the source person; Payload rejects those ids on the target, so
+    // strip every nested `id` and let Payload mint fresh rows.
     if (Object.keys(mergeData).length > 0) {
       await payload.update({
         collection: 'people',
         id: targetId,
-        data: mergeData,
+        data: stripRowIds(mergeData),
         overrideAccess: true,
       })
       log.push(`Merged fields into target: ${Object.keys(mergeData).join(', ')}`)
