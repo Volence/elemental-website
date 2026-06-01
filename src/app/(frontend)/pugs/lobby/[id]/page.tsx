@@ -736,6 +736,20 @@ export default function LobbyPage() {
           )}
         </div>
       )}
+
+      {lobby.spectators && lobby.spectators.length > 0 && (
+        <div className="mt-6">
+          <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wider mb-2">Spectators</h3>
+          <div className="flex flex-wrap gap-2">
+            {lobby.spectators.map((s: any) => (
+              <span key={s.id} className="text-xs px-2 py-1 rounded border border-gray-700 bg-gray-800/50 text-gray-300">
+                {s.displayName}
+                {s.status !== 'INVITED' && <span className="ml-1 text-gray-500">({s.status.toLowerCase()})</span>}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
     </main>
   )
 }
