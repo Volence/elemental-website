@@ -17,6 +17,17 @@ const VALID_MAP_TYPES = new Set([
 ])
 
 /**
+ * Overwatch's mature-language filter masks the 4-letter word "kill" as "****"
+ * (one asterisk per letter) in Log To Inspector output when the uploading
+ * client has the text filter enabled - which is the default. Logs from a
+ * client with the filter off carry the literal "kill". Treat the censored form
+ * as "kill" so kill events are parsed regardless of the uploader's filter
+ * setting; without this every kill-derived stat (fights, first picks/deaths,
+ * K/Ult, drought, killfeed, charts) silently shows nothing.
+ */
+const CENSORED_KILL_TOKEN = '****'
+
+/**
  * Validate that a file's content looks like a ScrimTime log.
  * Checks multiple signatures unique to dkeeh's workshop code output:
  *  1. A meaningful percentage of lines have recognized event types
@@ -43,7 +54,8 @@ export function validateScrimLog(fileContent: string): string | null {
   // 1. Check that a meaningful percentage of lines have recognized event types
   let recognizedCount = 0
   for (const line of lines) {
-    if (headers[line[0]]) recognizedCount++
+    const eventType = line[0] === CENSORED_KILL_TOKEN ? 'kill' : line[0]
+    if (headers[eventType]) recognizedCount++
   }
   const recognizedPct = recognizedCount / lines.length
   if (recognizedPct < 0.5) {
@@ -112,6 +124,13 @@ export function parseScrimLog(fileContent: string): ParserData {
 
   // Remove first element of each array (the timestamp column)
   lines.forEach((line) => line.shift())
+
+  // Un-censor kill events masked by Overwatch's text filter. Must run before
+  // cleanInvalidLines, which would otherwise rewrite the "****" event type to
+  // "0" and drop the line entirely (see CENSORED_KILL_TOKEN).
+  lines.forEach((line) => {
+    if (line[0] === CENSORED_KILL_TOKEN) line[0] = 'kill'
+  })
 
   // Clean invalid lines
   const cleanedLines = cleanInvalidLines(lines)
