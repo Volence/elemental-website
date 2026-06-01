@@ -38,6 +38,12 @@ type KillfeedData = {
   fights: FightData[]
 }
 
+type KillBuckets = {
+  buckets: { time: number; team1: number; team2: number }[]
+  minTime: number
+  maxTime: number
+}
+
 type ChartsAPIData = {
   teams: { team1: string; team2: string }
   finalBlowsByRole: {
@@ -66,8 +72,9 @@ export default function ChartsTab({ mapId }: { mapId: string }) {
       .finally(() => setLoading(false))
   }, [mapId])
 
-  // Build SVG chart data for kills-by-fight
-  const chartData = useMemo(() => {
+  // Kill-derived buckets for the Kills By Fight chart. Null when the map has no
+  // parsed kills/fights; in that case the role/damage charts below still render.
+  const chartData = useMemo<KillBuckets | null>(() => {
     if (!data || data.fights.length === 0) return null
 
     const team1 = data.teams.team1
@@ -92,8 +99,33 @@ export default function ChartsTab({ mapId }: { mapId: string }) {
   }, [data])
 
   if (loading) return <div style={{ padding: '40px', textAlign: 'center', color: TEXT_SECONDARY }}>Loading charts…</div>
-  if (!data || !chartData) return <div style={{ padding: '40px', textAlign: 'center', color: TEXT_DIM }}>No chart data available</div>
+  // Only show the empty state when neither the kill-derived chart nor the
+  // role/damage charts have data. (Previously this bailed whenever the kill
+  // chart alone was empty, which hid the role/damage charts too.)
+  if (!chartData && !chartsData) return <div style={{ padding: '40px', textAlign: 'center', color: TEXT_DIM }}>No chart data available</div>
 
+  return (
+    <div>
+      {data && chartData && <KillsByFightCharts data={data} chartData={chartData} />}
+
+      {/* ── Final Blows By Role + Cumulative Damage ── */}
+      {chartsData && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '20px' }}>
+          {/* Final Blows By Role Bar Chart */}
+          <FinalBlowsByRoleChart data={chartsData} />
+          {/* Cumulative Hero Damage By Round Area Chart */}
+          <CumulativeDamageChart data={chartsData} />
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Kills By Fight (line chart) + Fight Momentum strip ──
+// Both are derived from kill events, so they render only when the map has
+// parsed kills. Kept separate from the role/damage charts so an empty killfeed
+// does not blank the whole tab.
+function KillsByFightCharts({ data, chartData }: { data: KillfeedData; chartData: KillBuckets }) {
   const { buckets } = chartData
   const maxVal = Math.max(...buckets.map(b => Math.abs(b.team1)), ...buckets.map(b => Math.abs(b.team2)), 1)
 
@@ -120,7 +152,7 @@ export default function ChartsTab({ mapId }: { mapId: string }) {
   const xLabels = buckets.filter((_, i) => i % 4 === 0 || i === buckets.length - 1)
 
   return (
-    <div>
+    <>
       {/* ── Kills By Fight Line Chart ── */}
       <div className="scrim-detail__card">
         <div style={{ fontWeight: 700, fontSize: '15px', color: TEXT_PRIMARY, marginBottom: '4px' }}>
@@ -256,17 +288,7 @@ export default function ChartsTab({ mapId }: { mapId: string }) {
           </div>
         )
       })()}
-
-      {/* ── Final Blows By Role + Cumulative Damage ── */}
-      {chartsData && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '20px' }}>
-          {/* Final Blows By Role Bar Chart */}
-          <FinalBlowsByRoleChart data={chartsData} />
-          {/* Cumulative Hero Damage By Round Area Chart */}
-          <CumulativeDamageChart data={chartsData} />
-        </div>
-      )}
-    </div>
+    </>
   )
 }
 
