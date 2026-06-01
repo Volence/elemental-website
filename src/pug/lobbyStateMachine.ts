@@ -10,7 +10,7 @@ import { calculateRatingUpdates } from './mmr'
 import { applyEscalatingBan } from './cooldownBans'
 import { processQueue } from './queueProcessor'
 import { registerTimer, cancelTimer, timerKey } from './timers'
-import type { QueuedPlayer, PlayerRating, MatchResult, PugRole } from './types'
+import type { QueuedPlayer, PlayerRating, MatchResult, PugRole, PugRegion } from './types'
 import {
   READY_CHECK_TIMEOUT_MS,
   DRAFT_PICK_TIMEOUT_MS,
@@ -828,6 +828,7 @@ async function advanceToInProgress(lobbyId: number): Promise<void> {
           bannedHeroes: bannedHeroNames,
           otherMapsInMode,
           hostNote,
+          region: lobby.region as PugRegion | null,
         })
       }
 
