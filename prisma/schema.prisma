@@ -742,6 +742,7 @@ model PugLobby {
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
   players              PugLobbyPlayer[]
+  spectators           PugLobbySpectator[]
   draftState           PugDraftState?
   banState             PugBanState?
   mapVote              PugMapVote?
@@ -767,6 +768,23 @@ model PugLobbyPlayer {
   @@map("pug_lobby_players")
   @@index([lobbyId])
   @@index([userId])
+}
+
+model PugLobbySpectator {
+  id            Int       @id @default(autoincrement())
+  lobbyId       Int
+  battleTag     String
+  personId      Int?
+  status        String    @default("PENDING")
+  note          String?
+  addedByUserId Int?
+  addedAt       DateTime  @default(now())
+  invitedAt     DateTime?
+  lobby         PugLobby  @relation(fields: [lobbyId], references: [id], onDelete: Cascade)
+
+  @@unique([lobbyId, battleTag])
+  @@map("pug_lobby_spectators")
+  @@index([lobbyId])
 }
 
 model PugDraftState {
