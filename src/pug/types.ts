@@ -7,6 +7,12 @@ export const PUG_REGIONS = [
   { value: 'emea' as const, label: 'EMEA' },
   { value: 'pacific' as const, label: 'Pacific' },
 ] as const
+
+export const VALID_REGIONS = PUG_REGIONS.map((r) => r.value)
+
+export function isPugRegion(value: unknown): value is PugRegion {
+  return typeof value === 'string' && VALID_REGIONS.includes(value as PugRegion)
+}
 export type PugLobbyStatus =
   | 'OPEN'
   | 'READY'

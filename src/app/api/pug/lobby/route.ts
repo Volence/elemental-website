@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
-import { createOpenLobby } from '@/pug'
+import { createOpenLobby, isPugRegion } from '@/pug'
 
 export async function GET(request: NextRequest) {
   const url = new URL(request.url)
@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
       if (!person.pugTiers?.includes('invite')) {
         return NextResponse.json({ error: 'Not registered for invite tier' }, { status: 403 })
       }
-      if (!region || !['na', 'emea', 'pacific'].includes(region)) {
+      if (!isPugRegion(region)) {
         return NextResponse.json({ error: 'region required for invite tier' }, { status: 400 })
       }
       const playerRegions: string[] = person.pugInviteRegions ?? []
@@ -173,7 +173,7 @@ export async function POST(request: NextRequest) {
     if (!person.pugTiers?.includes('open')) {
       return NextResponse.json({ error: 'You must register for open tier first' }, { status: 403 })
     }
-    if (!region || !['na', 'emea', 'pacific'].includes(region)) {
+    if (!isPugRegion(region)) {
       return NextResponse.json({ error: 'region required (na, emea, or pacific)' }, { status: 400 })
     }
 
@@ -185,11 +185,11 @@ export async function POST(request: NextRequest) {
       orderBy: { createdAt: 'asc' },
     })
     if (existing && existing._count.players < 10) {
-      return NextResponse.json({ lobby: existing }, { status: 200 })
+      return NextResponse.json({ lobby: existing, created: false }, { status: 200 })
     }
 
     const lobby = await createOpenLobby(user.id, payloadSeasonId, region)
-    return NextResponse.json({ lobby }, { status: 201 })
+    return NextResponse.json({ lobby, created: true }, { status: 200 })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }

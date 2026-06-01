@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
-import { joinLobby, getActiveBan } from '@/pug'
+import { joinLobby, getActiveBan, isPugRegion } from '@/pug'
 
 const VALID_ROLES = ['tank', 'flex_dps', 'hitscan_dps', 'flex_support', 'main_support']
 
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
   if (!roles.every((r: string) => VALID_ROLES.includes(r))) {
     return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
   }
-  if (!region || !['na', 'emea', 'pacific'].includes(region)) {
+  if (!isPugRegion(region)) {
     return NextResponse.json({ error: 'region required (na, emea, or pacific)' }, { status: 400 })
   }
 
