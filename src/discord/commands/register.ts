@@ -165,7 +165,20 @@ export function buildCommands() {
       .setName('pug')
       .setDescription('PUG (Pick-Up Game) commands')
       .addSubcommand((sub) =>
-        sub.setName('queue').setDescription('Queue for an open-tier PUG lobby'),
+        sub
+          .setName('queue')
+          .setDescription('Queue for an open-tier PUG lobby')
+          .addStringOption((opt) =>
+            opt
+              .setName('region')
+              .setDescription('Which region to queue in')
+              .setRequired(true)
+              .addChoices(
+                { name: 'NA', value: 'na' },
+                { name: 'EMEA', value: 'emea' },
+                { name: 'Pacific', value: 'pacific' },
+              ),
+          ),
       )
       .addSubcommand((sub) =>
         sub.setName('leave').setDescription('Leave your current PUG lobby'),

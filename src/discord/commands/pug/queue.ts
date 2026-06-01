@@ -21,6 +21,8 @@ const OPEN_ROLES = [
 export async function handlePugQueue(interaction: ChatInputCommandInteraction): Promise<void> {
   await interaction.deferReply({ ephemeral: true })
 
+  const region = interaction.options.getString('region', true)
+
   const payload = await getPayload({ config: configPromise })
   const discordId = interaction.user.id
   const users = await payload.find({
@@ -90,12 +92,12 @@ export async function handlePugQueue(interaction: ChatInputCommandInteraction): 
     }
 
     let lobby = await prisma.pugLobby.findFirst({
-      where: { tier: 'open', status: 'OPEN', payloadSeasonId: season.id },
+      where: { tier: 'open', status: 'OPEN', payloadSeasonId: season.id, region },
       orderBy: { createdAt: 'asc' },
     })
 
     if (!lobby) {
-      lobby = await createOpenLobby(user.id, season.id)
+      lobby = await createOpenLobby(user.id, season.id, region)
     }
 
     try {
