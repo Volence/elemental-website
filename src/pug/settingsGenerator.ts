@@ -10,12 +10,24 @@
  *   Combines dynamic settings (maps, hero bans, mode config, workshop
  *   settings) with the full Workshop code (ScrimTime logging rules,
  *   ELMT position tracking, admin controls). The bot pastes this as a
- *   single import — no separate share code needed.
+ *   single import -- no separate share code needed.
  *
  * Samoa, Colosseo, and Esperanca have duplicate entries in OW's internal
  * Map enum (confirmed OW bug). They can't be referenced in enabled maps,
  * so we use disabled maps to exclude everything else instead.
  */
+
+import type { PugRegion } from './types'
+
+const DATA_CENTER_BY_REGION: Record<PugRegion, string> = {
+  na: 'USA - Central',
+  emea: 'Netherlands',
+  pacific: 'Singapore 2',
+}
+
+function dataCenterFor(region: PugRegion | null | undefined): string {
+  return (region && DATA_CENTER_BY_REGION[region]) || 'USA - Central'
+}
 
 export type SettingsInput = {
   mapSettingsEntry: string | null
@@ -25,6 +37,8 @@ export type SettingsInput = {
   otherMapsInMode?: string[]
   /** Host instruction when disabled maps can't fully isolate the target */
   hostNote?: string
+  /** Lobby region -> selects the OW Data Center Preference. Defaults to na. */
+  region?: PugRegion | null
 }
 
 const MODE_BY_MAP_TYPE: Record<string, string> = {
@@ -128,7 +142,7 @@ export function generateSettings(input: SettingsInput): string {
 
   lines.push('\tlobby')
   lines.push('\t{')
-  lines.push('\t\tData Center Preference: USA - Central')
+  lines.push(`\t\tData Center Preference: ${dataCenterFor(input.region)}`)
   lines.push('\t\tPause Game On Player Disconnect: Yes')
   lines.push('\t}')
   lines.push('')
@@ -202,7 +216,7 @@ function generateBotSettings(input: SettingsInput): string {
 
   lines.push('\tlobby')
   lines.push('\t{')
-  lines.push('\t\tData Center Preference: USA - Central')
+  lines.push(`\t\tData Center Preference: ${dataCenterFor(input.region)}`)
   lines.push('\t\tMap Rotation: After A Game')
   lines.push('\t\tMax Spectators: 12')
   lines.push('\t\tPause Game On Player Disconnect: No')
