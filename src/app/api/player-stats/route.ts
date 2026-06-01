@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { round } from '@/lib/scrim-parser/utils'
 import { batchCalculateStats } from '@/lib/scrim-parser/batch-stats'
+import { playedMeaningfully } from '@/lib/scrim-parser/player-maps'
 import { loadHeroPortraits, heroNameToSlug } from '@/lib/scrim-parser/heroIcons'
 import { heroRoleMapping } from '@/lib/scrim-parser/heroes'
 import { getUserScope, type UserScope } from '@/access/scrimScope'
@@ -223,6 +224,9 @@ async function getPlayerList(range: string, scopedScrimIds: number[] | null = nu
             GROUP BY "mapDataId"
           ) mx ON ps."mapDataId" = mx."mapDataId" AND ps.match_time = mx.max_time
           WHERE ps."mapDataId" = ANY(${filterIds}::int[])
+            -- Exclude phantom subbed-out rows; mirrors playedMeaningfully()
+            AND (ps.eliminations > 0 OR ps.final_blows > 0 OR ps.deaths > 0
+              OR ps.hero_damage_dealt > 0 OR ps.healing_dealt > 0)
         ),
         deduped AS (
           SELECT DISTINCT ON (player_name, player_hero, "mapDataId")
@@ -272,6 +276,9 @@ async function getPlayerList(range: string, scopedScrimIds: number[] | null = nu
           FROM scrim_player_stats
           GROUP BY "mapDataId"
         ) mx ON ps."mapDataId" = mx."mapDataId" AND ps.match_time = mx.max_time
+        -- Exclude phantom subbed-out rows; mirrors playedMeaningfully()
+        WHERE (ps.eliminations > 0 OR ps.final_blows > 0 OR ps.deaths > 0
+          OR ps.hero_damage_dealt > 0 OR ps.healing_dealt > 0)
       ),
       deduped AS (
         SELECT DISTINCT ON (player_name, player_hero, "mapDataId")
@@ -656,7 +663,12 @@ async function buildPlayerDetailResponse(
 
   // Filter playerMaps to only include maps in the range
   playerMaps = playerMaps.filter(m => filteredMapIds.has(m.mapDataId))
-  const mapDataIds = [...filteredMapIds]
+
+  // Drop phantom appearances: a player subbed out after a second or two leaves
+  // a final-round row with zero of every counting stat. These pollute the map
+  // history and skew per-map averages, so exclude them before aggregating.
+  playerMaps = playerMaps.filter(playedMeaningfully)
+  const mapDataIds = [...new Set(playerMaps.map((m) => m.mapDataId))]
 
   // Calculate advanced stats for all maps in batch (4 bulk queries instead of ~10×N)
   const advancedStatsMap = await batchCalculateStats(mapDataIds, aliases)
