@@ -245,7 +245,14 @@ export async function GET(request: NextRequest, { params }: Params) {
       if (linkedScrim) linkedScrimId = linkedScrim.id
     }
 
-    const spectators = await enrichSpectators(lobbyId)
+    // Public endpoint (no auth required): omit `note`, which can carry raw bot error text.
+    const spectators = (await enrichSpectators(lobbyId)).map((s) => ({
+      id: s.id,
+      battleTag: s.battleTag,
+      personId: s.personId,
+      displayName: s.displayName,
+      status: s.status,
+    }))
 
     return NextResponse.json({
       lobby: { ...lobby, players: enrichedPlayers, spectators },
