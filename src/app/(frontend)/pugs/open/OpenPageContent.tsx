@@ -18,6 +18,7 @@ type Lobby = {
   id: number
   lobbyNumber: number
   status: string
+  region?: string | null
   players: LobbyPlayer[]
   neededSlots: Record<string, number> | null
   blockedRoles: string[]
@@ -43,6 +44,14 @@ const ROLES = [
   { value: 'main_support', label: 'Main Support' },
 ]
 
+const REGIONS = [
+  { value: 'na', label: 'NA' },
+  { value: 'emea', label: 'EMEA' },
+  { value: 'pacific', label: 'Pacific' },
+] as const
+
+const REGION_LABELS: Record<string, string> = { na: 'NA', emea: 'EMEA', pacific: 'Pacific' }
+
 const STATUS_META: Record<string, { label: string; color: string }> = {
   OPEN: { label: 'Open', color: 'bg-green-500/20 text-green-400 border border-green-500/30' },
   READY: { label: 'Ready', color: 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' },
@@ -65,6 +74,7 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
   const [quickJoinOpen, setQuickJoinOpen] = useState(false)
   const [quickJoinRoles, setQuickJoinRoles] = useState<string[]>([])
   const [quickJoining, setQuickJoining] = useState(false)
+  const [selectedRegion, setSelectedRegion] = useState<string>('na')
 
   const fetchLobbies = useCallback(async () => {
     try {
@@ -92,7 +102,7 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
       const res = await fetch('/api/pug/lobby', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ payloadSeasonId: seasonId }),
+        body: JSON.stringify({ payloadSeasonId: seasonId, region: selectedRegion }),
       })
       const data = await res.json()
       if (res.ok) {
@@ -126,7 +136,7 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
       const res = await fetch('/api/pug/lobby/quick-join', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roles: quickJoinRoles }),
+        body: JSON.stringify({ roles: quickJoinRoles, region: selectedRegion }),
       })
       const data = await res.json()
       if (res.ok) {
@@ -187,6 +197,23 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
           {seasonName && <p className="text-sm text-gray-500 mt-0.5">{seasonName}</p>}
         </div>
         <div className="flex items-center gap-2">
+          {currentUser && isRegistered && seasonId && (
+            <div className="flex items-center gap-1 mr-1">
+              {REGIONS.map((r) => (
+                <button
+                  key={r.value}
+                  onClick={() => setSelectedRegion(r.value)}
+                  className={`px-2.5 py-2 text-xs font-semibold rounded-lg border transition-colors ${
+                    selectedRegion === r.value
+                      ? 'bg-blue-600 border-blue-500 text-white'
+                      : 'bg-transparent border-gray-600 text-gray-400 hover:border-gray-400'
+                  }`}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
+          )}
           {currentUser && isRegistered && seasonId && hasJoinableLobbies && !myLobbyId && (
             <button
               onClick={() => { setQuickJoinOpen(!quickJoinOpen); setQuickJoinRoles([]); setActionError(null) }}
@@ -528,6 +555,11 @@ function LobbyCard({
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2.5">
             <span className="font-bold text-lg text-gray-100">PUG #{lobby.lobbyNumber}</span>
+            {lobby.region && (
+              <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-gray-700/60 text-gray-300 border border-gray-600">
+                {REGION_LABELS[lobby.region] ?? lobby.region.toUpperCase()}
+              </span>
+            )}
             <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${meta.color}`}>{meta.label}</span>
           </div>
           <div className="flex items-center gap-3">
