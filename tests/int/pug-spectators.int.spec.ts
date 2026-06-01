@@ -31,3 +31,21 @@ describe('decideSpectatorInvite', () => {
     expect(decideSpectatorInvite(null, 'inst-1')).toBe('KEEP_PENDING')
   })
 })
+
+const BASE = 'http://localhost:3000'
+const h = { 'Content-Type': 'application/json' }
+
+describe('Spectators API - auth gating', () => {
+  it('POST /api/pug/lobby/1/spectators - 401 without auth', async () => {
+    const res = await fetch(`${BASE}/api/pug/lobby/1/spectators`, {
+      method: 'POST', headers: h, body: JSON.stringify({ battleTag: 'Test#1234' }),
+    })
+    expect(res.status).toBe(401)
+  })
+  it('DELETE /api/pug/lobby/1/spectators - 401 without auth', async () => {
+    const res = await fetch(`${BASE}/api/pug/lobby/1/spectators`, {
+      method: 'DELETE', headers: h, body: JSON.stringify({ battleTag: 'Test#1234' }),
+    })
+    expect(res.status).toBe(401)
+  })
+})
