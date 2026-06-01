@@ -7,7 +7,8 @@
  */
 
 import { NextResponse } from 'next/server'
-import { parseScrimLog, validateScrimLog } from '@/lib/scrim-parser'
+import { parseScrimLog, validateScrimLog, groupPlayersByTeam } from '@/lib/scrim-parser'
+import type { ParserData } from '@/lib/scrim-parser'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 
@@ -45,8 +46,8 @@ export async function POST(request: Request) {
       team2: string
     }[] = []
 
-    // Track unique player names per team
-    const playersByTeam: Record<string, Set<string>> = {}
+    // Parsed data per file, kept in upload order for team assignment.
+    const parsedPerFile: ParserData[] = []
 
     for (const file of files) {
       const content = await file.text()
@@ -84,29 +85,7 @@ export async function POST(request: Request) {
           team2,
         })
 
-        // Collect unique player names from player_stat events
-        if (parsedData.player_stat) {
-          for (const stat of parsedData.player_stat) {
-            const teamName = String(stat[3])
-            const playerName = String(stat[4])
-            if (!playersByTeam[teamName]) {
-              playersByTeam[teamName] = new Set()
-            }
-            playersByTeam[teamName].add(playerName)
-          }
-        }
-
-        // Also pull from hero_spawn events for completeness
-        if (parsedData.hero_spawn) {
-          for (const spawn of parsedData.hero_spawn) {
-            const teamName = String(spawn[2])
-            const playerName = String(spawn[3])
-            if (!playersByTeam[teamName]) {
-              playersByTeam[teamName] = new Set()
-            }
-            playersByTeam[teamName].add(playerName)
-          }
-        }
+        parsedPerFile.push(parsedData)
       } catch (parseError) {
         return NextResponse.json(
           {
@@ -117,11 +96,9 @@ export async function POST(request: Request) {
       }
     }
 
-    // Convert Sets to arrays for JSON serialization
-    const players: Record<string, string[]> = {}
-    for (const [team, names] of Object.entries(playersByTeam)) {
-      players[team] = Array.from(names).sort()
-    }
+    // Assign each player to a single team from their earliest appearance, so
+    // side-swaps and mid-match slot reshuffles don't list everyone under both.
+    const players = groupPlayersByTeam(parsedPerFile)
 
     return NextResponse.json({
       maps,

@@ -10,6 +10,9 @@
 // ── Parsing ──────────────────────────────────────────────────────────
 export { parseScrimLog, validateScrimLog, toTitleCase } from './parser'
 
+// ── Team Assignment ──────────────────────────────────────────────────
+export { groupPlayersByTeam } from './team-assignment'
+
 // ── Storage ──────────────────────────────────────────────────────────
 export { createScrimFromParsedData } from './storage'
 export type { CreateScrimOptions } from './storage'
