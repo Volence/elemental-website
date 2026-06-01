@@ -19,7 +19,7 @@ Make open PUGs **region-based** (mirroring the invite model): one open lobby per
 
 - Apply invite-style "one joinable lobby at a time" gating to open, **scoped per region**. At most one forming OPEN lobby per region (NA, EMEA, Pacific).
 - When a player creates/joins open in a region that already has a joinable lobby, funnel them into it (reuse invite's has-joinable-lobby / 409 path in `src/app/api/pug/lobby/route.ts`) instead of spawning a new lobby.
-- A new open lobby for a region spawns only when the current one fills its roles or otherwise leaves the joinable state, reusing the `autoCreateReplacementLobby` pattern in `lobbyStateMachine.ts` (today invite-only).
+- A new open lobby for a region spawns only when the current one is full or has left the OPEN state. Because open creation is user-initiated, this happens organically: funnel-or-create returns the existing joinable lobby while one exists, and creates a fresh one on the next join attempt once it is gone. No proactive `autoCreateReplacementLobby` is needed for open (that stays invite-only).
 - `createOpenLobby` gains a `region` parameter (today it takes only `createdByUserId`, `payloadSeasonId`).
 
 ### 2. Region selection (joining)
