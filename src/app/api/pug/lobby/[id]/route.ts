@@ -207,6 +207,7 @@ export async function GET(request: NextRequest, { params }: Params) {
           bannedHeroes: bannedHeroNames,
           otherMapsInMode,
           hostNote,
+          region: lobby.region as ('na' | 'emea' | 'pacific') | null,
         })
       }
 
