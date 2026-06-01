@@ -196,7 +196,7 @@ export function generateFullCode(input: SettingsInput): string {
   return settingsBlock + '\n\n' + workshopCode
 }
 
-function generateBotSettings(input: SettingsInput): string {
+export function generateBotSettings(input: SettingsInput): string {
   const { mapSettingsEntry, mapType, bannedHeroes, otherMapsInMode } = input
   const targetMode = MODE_BY_MAP_TYPE[mapType]
   const useDisabledApproach = otherMapsInMode && otherMapsInMode.length > 0

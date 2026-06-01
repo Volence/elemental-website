@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { generateSettings, generateFullCode } from '../../src/pug/settingsGenerator'
+import { generateSettings, generateBotSettings } from '../../src/pug/settingsGenerator'
 
 const base = {
   mapSettingsEntry: 'Hanaoka',
@@ -28,8 +28,8 @@ describe('settings generator data center by region', () => {
     expect(out).toContain('Data Center Preference: USA - Central')
   })
 
-  it('threads region into the bot full code', () => {
-    const out = generateFullCode({ ...base, region: 'emea' })
+  it('threads region into the bot settings', () => {
+    const out = generateBotSettings({ ...base, region: 'emea' })
     expect(out).toContain('Data Center Preference: Netherlands')
   })
 })
