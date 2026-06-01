@@ -55,6 +55,9 @@ type HeroStatRow = {
   multikill_best: number
   multikills: number
   scoped_accuracy: number
+  critical_hits: number
+  shots_fired: number
+  shots_hit: number
 }
 
 type MapInfoRow = {
@@ -463,6 +466,14 @@ async function getHeroDetail(hero: string, range: string, team: string, scopedSc
   const totalHealing = filteredStats.reduce((a, s) => a + s.healing_dealt, 0)
   const totalFB = filteredStats.reduce((a, s) => a + s.final_blows, 0)
 
+  // Precision + ult economy. Accuracy is re-derived from raw shot counts (not
+  // averaged from the per-snapshot percentage) so maps weight by volume.
+  const totalShotsFired = filteredStats.reduce((a, s) => a + s.shots_fired, 0)
+  const totalShotsHit = filteredStats.reduce((a, s) => a + s.shots_hit, 0)
+  const totalCrits = filteredStats.reduce((a, s) => a + s.critical_hits, 0)
+  const totalUltsEarned = filteredStats.reduce((a, s) => a + s.ultimates_earned, 0)
+  const totalUltsUsed = filteredStats.reduce((a, s) => a + s.ultimates_used, 0)
+
   // ── Top players on this hero ──
   const playerAgg = new Map<string, { maps: Set<number>; elims: number; deaths: number; damage: number; healing: number; time: number; fb: number }>()
   for (const s of filteredStats) {
@@ -610,6 +621,15 @@ async function getHeroDetail(hero: string, range: string, team: string, scopedSc
       damagePer10: round(totalDamage * t10),
       healingPer10: round(totalHealing * t10),
       fbPer10: round(totalFB * t10),
+      shotsFired: totalShotsFired,
+      shotsHit: totalShotsHit,
+      crits: totalCrits,
+      weaponAccuracy: totalShotsFired > 0 ? round((totalShotsHit / totalShotsFired) * 100) : 0,
+      critAccuracy: totalShotsHit > 0 ? round((totalCrits / totalShotsHit) * 100) : 0,
+      ultsEarned: totalUltsEarned,
+      ultsUsed: totalUltsUsed,
+      ultsPer10: round(totalUltsEarned * t10),
+      ultEfficiency: totalUltsEarned > 0 ? round((totalUltsUsed / totalUltsEarned) * 100) : 0,
     },
     topPlayers,
     bestGame,

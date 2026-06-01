@@ -69,6 +69,8 @@ type HeroDetail = {
   career: {
     eliminations: number; deaths: number; damage: number; healing: number; finalBlows: number
     elimsPer10: number; deathsPer10: number; damagePer10: number; healingPer10: number; fbPer10: number
+    shotsFired: number; shotsHit: number; crits: number; weaponAccuracy: number; critAccuracy: number
+    ultsEarned: number; ultsUsed: number; ultsPer10: number; ultEfficiency: number
   }
   topPlayers: TopPlayer[]
   bestGame: BestGame | null
@@ -639,6 +641,42 @@ export default function ScrimHeroDetailView() {
               <div className="scrim-detail__label">{s.label}</div>
               <div style={{ fontSize: '22px', fontWeight: 800, color: s.color, textShadow: `0 0 16px ${s.color}33` }}>{s.value}</div>
               <div style={{ fontSize: '10px', color: TEXT_DIM, marginTop: '4px' }}>{formatNumber(s.total)} total</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Precision + Ultimate Economy */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
+          {[
+            {
+              label: 'Weapon Accuracy',
+              value: career.shotsFired > 0 ? `${career.weaponAccuracy}%` : 'N/A',
+              sub: career.shotsFired > 0 ? `${formatNumber(career.shotsHit)} / ${formatNumber(career.shotsFired)} shots` : 'no shots fired',
+              color: CYAN,
+            },
+            {
+              label: 'Crit Accuracy',
+              value: career.shotsHit > 0 ? `${career.critAccuracy}%` : 'N/A',
+              sub: career.shotsHit > 0 ? `${formatNumber(career.crits)} crits` : 'no shots hit',
+              color: AMBER,
+            },
+            {
+              label: 'Ults /10',
+              value: `${career.ultsPer10}`,
+              sub: `${formatNumber(career.ultsEarned)} earned`,
+              color: PURPLE,
+            },
+            {
+              label: 'Ult Efficiency',
+              value: career.ultsEarned > 0 ? `${career.ultEfficiency}%` : 'N/A',
+              sub: career.ultsEarned > 0 ? `${formatNumber(career.ultsUsed)} of ${formatNumber(career.ultsEarned)} used` : 'no ults earned',
+              color: GREEN,
+            },
+          ].map(s => (
+            <div key={s.label} className="scrim-detail__summary-card" style={{ borderTop: `2px solid ${s.color}`, textAlign: 'center' }}>
+              <div className="scrim-detail__label">{s.label}</div>
+              <div style={{ fontSize: '22px', fontWeight: 800, color: s.color, textShadow: `0 0 16px ${s.color}33` }}>{s.value}</div>
+              <div style={{ fontSize: '10px', color: TEXT_DIM, marginTop: '4px' }}>{s.sub}</div>
             </div>
           ))}
         </div>
