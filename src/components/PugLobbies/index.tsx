@@ -126,6 +126,20 @@ function SpectatorPanel({
     }
   }
 
+  async function inviteNow(specId: number) {
+    setBusy(true)
+    try {
+      const res = await fetch(`/api/pug/lobby/${lobbyId}/spectators/${specId}/invite`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+      })
+      const data = await res.json()
+      if (!res.ok) { await alert({ message: data.error || 'Failed', variant: 'danger' }); return }
+      onChange(data.spectators)
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 12, marginTop: 16 }}>
       <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Spectators</p>
@@ -134,6 +148,9 @@ function SpectatorPanel({
         <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, marginBottom: 4 }}>
           <span style={{ flex: 1, color: '#e2e8f0', minWidth: 0 }}>{s.displayName}{s.displayName !== s.battleTag && ` (${s.battleTag})`}</span>
           <SpectatorStatusBadge status={s.status} note={s.note} />
+          {(s.status === 'PENDING' || s.status === 'FAILED') && (
+            <button className="ps-btn ps-btn-ghost" style={{ padding: '2px 8px', fontSize: 11 }} disabled={busy} onClick={() => inviteNow(s.id)} title="Invite this spectator to the OW lobby now (works mid-match)">Invite now</button>
+          )}
           <button className="ps-btn ps-btn-ghost" style={{ padding: '2px 8px', fontSize: 11 }} disabled={busy} onClick={() => mutate('DELETE', { id: s.id })} title="Remove from list (does not kick from the live OW lobby)">x</button>
         </div>
       ))}
