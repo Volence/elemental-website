@@ -58,4 +58,10 @@ describe('Spectators API - auth gating', () => {
     })
     expect(res.status).toBe(401)
   })
+  it('POST /api/pug/lobby/1/spectators/1/invite - 401 without auth', async () => {
+    const res = await fetch(`${BASE}/api/pug/lobby/1/spectators/1/invite`, {
+      method: 'POST', headers: h,
+    })
+    expect(res.status).toBe(401)
+  })
 })
