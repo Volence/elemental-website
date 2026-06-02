@@ -30,6 +30,7 @@ class Screen(Enum):
     LOBBY = "lobby"
     SETTINGS = "settings"
     IN_GAME = "in_game"
+    PAUSE_MENU = "pause_menu"
     MATCH_END = "match_end"
     LOADING = "loading"
     DIALOG = "dialog"
@@ -40,6 +41,9 @@ class Screen(Enum):
 # Texts are matched against SHORT OCR results only (<25 chars) to avoid
 # false matches from description text like "Create and join lobbies..."
 _SCREEN_SIGNATURES: list[tuple[Screen, list[str], list[str]]] = [
+    # In-match pause menu (ESC during a live game). "SHOW LOBBY" is unique to it
+    # and a single OCR token; no other screen contains it.
+    (Screen.PAUSE_MENU,   ["SHOW LOBBY"],          []),
     (Screen.LOGIN,        ["LOGIN"],                ["PLAY", "HEROES", "FILTER", "START"]),
     (Screen.SETTINGS,     ["PRESETS"],             []),
     (Screen.LOBBY,        ["START", "INVITE"],      []),
