@@ -62,10 +62,14 @@
   
   .quick-filter-btn {
     @include glow-button($admin-accent-primary);
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-sm;
     padding: $spacing-sm $spacing-lg;
     font-size: 0.85rem;
     font-weight: 500;
     white-space: nowrap;
+    text-decoration: none;
     
     &--active {
       background: $admin-accent-primary;

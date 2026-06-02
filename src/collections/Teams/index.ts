@@ -785,6 +785,7 @@ export const Teams: CollectionConfig = {
     {
       name: 'logoPreview',
       type: 'ui',
+      label: 'Logo',
       admin: {
         components: {
           Cell: '@/components/TeamsListColumns/LogoCell#default',
@@ -794,6 +795,7 @@ export const Teams: CollectionConfig = {
     {
       name: 'nameCell',
       type: 'ui',
+      label: 'Name',
       admin: {
         components: {
           Cell: '@/components/TeamsListColumns/NameCell#default',
@@ -803,6 +805,7 @@ export const Teams: CollectionConfig = {
     {
       name: 'regionCell',
       type: 'ui',
+      label: 'Region',
       admin: {
         components: {
           Cell: '@/components/TeamsListColumns/RegionCell#default',
@@ -812,6 +815,7 @@ export const Teams: CollectionConfig = {
     {
       name: 'ratingCell',
       type: 'ui',
+      label: 'Rating',
       admin: {
         components: {
           Cell: '@/components/TeamsListColumns/RatingCell#default',
@@ -821,6 +825,7 @@ export const Teams: CollectionConfig = {
     {
       name: 'status',
       type: 'ui',
+      label: 'Status',
       admin: {
         components: {
           Cell: '@/components/TeamsListColumns/StatusCell#default',
@@ -830,6 +835,7 @@ export const Teams: CollectionConfig = {
     {
       name: 'updatedAtCell',
       type: 'ui',
+      label: 'Updated At',
       admin: {
         components: {
           Cell: '@/components/TeamsListColumns/UpdatedAtCell#default',

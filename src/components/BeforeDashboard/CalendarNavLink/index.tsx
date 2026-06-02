@@ -13,7 +13,7 @@ import type { Person } from '@/payload-types'
 const CalendarNavLink: React.FC = () => {
   const pathname = usePathname()
   const { user } = useAuth<Person>()
-  const isActive = pathname === '/admin/globals/organization-calendar'
+  const isActive = pathname === '/admin/calendar'
 
   // Hide from player/user roles
   if (!user) return null
@@ -23,7 +23,7 @@ const CalendarNavLink: React.FC = () => {
   return (
     <div className="calendar-nav-link">
       <Link
-        href="/admin/globals/organization-calendar"
+        href="/admin/calendar"
         className={`calendar-nav-link__link ${isActive ? 'calendar-nav-link__link--active' : ''}`}
       >
         <svg
