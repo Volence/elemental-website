@@ -135,7 +135,7 @@ const config = buildConfig({
       // Custom admin views
       views: {
         calendar: {
-          Component: '@/components/UnifiedCalendar#default',
+          Component: '@/components/UnifiedCalendar/Route#default',
           path: '/calendar',
         },
         scrimUpload: {

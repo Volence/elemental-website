@@ -16,6 +16,8 @@ export const Absences: CollectionConfig = {
     useAsTitle: 'reason',
     defaultColumns: ['person', 'team', 'type', 'startDate', 'endDate', 'reason'],
     group: 'Data',
+    // Hidden from the sidebar nav; absence records are managed elsewhere, not browsed directly.
+    hidden: true,
   },
   fields: [
     {
