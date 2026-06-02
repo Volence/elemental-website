@@ -109,6 +109,46 @@ export async function invitePendingSpectators(lobbyId: number): Promise<void> {
   }
 }
 
+// Force-invite a single spectator row by id, regardless of match state.
+// Backs the manual "Invite now" button. Returns the enriched list.
+export async function inviteSpectatorById(
+  lobbyId: number,
+  specId: number,
+): Promise<EnrichedSpectator[]> {
+  if (!botConfigured()) return enrichSpectators(lobbyId)
+  const spec = await prisma.pugLobbySpectator.findFirst({ where: { id: specId, lobbyId } })
+  if (!spec) return enrichSpectators(lobbyId)
+  const lobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId } })
+  if (!lobby?.botInstanceId) {
+    await prisma.pugLobbySpectator.update({
+      where: { id: spec.id },
+      data: { status: 'FAILED', note: 'No bot instance assigned to this lobby' },
+    })
+    return enrichSpectators(lobbyId)
+  }
+  try {
+    const res = await inviteSpectator(lobby.botInstanceId, spec.battleTag)
+    if (res.ok) {
+      await prisma.pugLobbySpectator.update({
+        where: { id: spec.id },
+        data: { status: 'INVITED', invitedAt: new Date(), note: null },
+      })
+    } else {
+      const text = await res.text().catch(() => '')
+      await prisma.pugLobbySpectator.update({
+        where: { id: spec.id },
+        data: { status: 'FAILED', note: `Bot error: ${text}`.slice(0, 300) },
+      })
+    }
+  } catch (err: any) {
+    await prisma.pugLobbySpectator.update({
+      where: { id: spec.id },
+      data: { status: 'FAILED', note: (err?.message ?? 'invite failed').slice(0, 300) },
+    })
+  }
+  return enrichSpectators(lobbyId)
+}
+
 export type AddSpectatorInput = { battleTag?: string; personId?: number; addedByUserId?: number }
 export type AddSpectatorResult =
   | { ok: true; spectators: EnrichedSpectator[] }
