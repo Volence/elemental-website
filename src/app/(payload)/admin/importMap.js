@@ -118,7 +118,7 @@ import { default as default_ab6e10b6b3865462fbf89efa35889b3d } from '@/component
 import { default as default_e99c5e0ebd6260b49d63c1e6ece7ec9d } from '@/components/BeforeDashboard/MyProfileNavLink'
 import { default as default_75e49641b1d841f24cd53ee63100b3ae } from '@/components/BeforeDashboard/SidebarScrollPreserver'
 import { default as default_aeef0123fea1af819397817664b7330c } from '@/components/AdminProviders'
-import { default as default_1afe941534b3971b0de8f4fbeca9a6d3 } from '@/components/UnifiedCalendar'
+import { default as default_d27bcf9be933ec5d939f574ab307facf } from '@/components/UnifiedCalendar/Route'
 import { default as default_5f96af94fd29a7fa1e87fa3501f9e389 } from '@/components/ScrimUpload/Route'
 import { default as default_32b53b290bff18166c7f0c6cf1c91a06 } from '@/components/ScrimList/Route'
 import { default as default_bdff09751c710a3004781be3d6039e13 } from '@/components/ScrimMapDetail/Route'
@@ -264,7 +264,7 @@ export const importMap = {
   "@/components/BeforeDashboard/MyProfileNavLink#default": default_e99c5e0ebd6260b49d63c1e6ece7ec9d,
   "@/components/BeforeDashboard/SidebarScrollPreserver#default": default_75e49641b1d841f24cd53ee63100b3ae,
   "@/components/AdminProviders#default": default_aeef0123fea1af819397817664b7330c,
-  "@/components/UnifiedCalendar#default": default_1afe941534b3971b0de8f4fbeca9a6d3,
+  "@/components/UnifiedCalendar/Route#default": default_d27bcf9be933ec5d939f574ab307facf,
   "@/components/ScrimUpload/Route#default": default_5f96af94fd29a7fa1e87fa3501f9e389,
   "@/components/ScrimList/Route#default": default_32b53b290bff18166c7f0c6cf1c91a06,
   "@/components/ScrimMapDetail/Route#default": default_bdff09751c710a3004781be3d6039e13,
