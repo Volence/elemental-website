@@ -40,6 +40,17 @@ triggers (both requested):
   ESC back to the spectator view.
 - The `/instance/{id}/step` handler holds `scheduler.focus_lock` for the whole
   step, so a mid-game invite will not race the scheduler for window focus.
+- HEALTH WATCHDOG EDGE CASE (found in live capture 2026-06-02): the scheduler's
+  health check (`_execute_health_check`) counts every `UNKNOWN` screen frame as a
+  failure (no `in_game` exemption) and kills/relaunches OW at 10 consecutive
+  failures (~5 min). The pause menu and Show Lobby roster both read `UNKNOWN`, so
+  leaving the bot there ~5 min tears down the match - this is what wedged inst-0
+  during capture. The feature is protected because the health check runs via
+  `_execute_focus_task`, which acquires the SAME `scheduler.focus_lock` the invite
+  holds, so the watchdog cannot run during the invite. As added safety the invite
+  resets the instance's `HealthTask.consecutive_failures` on reaching the lobby.
+  The broader watchdog behavior on long in-game `UNKNOWN` periods is pre-existing
+  and out of scope for this feature.
 - Source of truth for the bot is `ow-bot-service/` in this repo (in sync with the
   deployed box). The box also has a stale `automation/automation/` duplicate that
   is NOT in the repo and must be ignored.
