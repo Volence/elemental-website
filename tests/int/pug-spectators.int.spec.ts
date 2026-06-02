@@ -3,7 +3,8 @@ import { decideSpectatorInvite } from '../../src/pug/spectators'
 
 describe('decideSpectatorInvite', () => {
   const INVITABLE = ['lobby_created', 'invites_sent', 'players_joining']
-  const IN_GAME = ['game_started', 'game_ended']
+  const LIVE = ['game_started']
+  const PENDING_AFTER = ['game_ended']
   const NOT_YET = ['preparing', 'lobby_ready', 'creating', 'error']
 
   for (const status of INVITABLE) {
@@ -15,9 +16,18 @@ describe('decideSpectatorInvite', () => {
     })
   }
 
-  for (const status of IN_GAME) {
-    it(`PENDING_IN_GAME when status=${status}`, () => {
-      expect(decideSpectatorInvite(status, 'inst-1')).toBe('PENDING_IN_GAME')
+  for (const status of LIVE) {
+    it(`INVITE_NOW when status=${status} (live match) with instance`, () => {
+      expect(decideSpectatorInvite(status, 'inst-1')).toBe('INVITE_NOW')
+    })
+    it(`KEEP_PENDING when status=${status} but no instance`, () => {
+      expect(decideSpectatorInvite(status, null)).toBe('KEEP_PENDING')
+    })
+  }
+
+  for (const status of PENDING_AFTER) {
+    it(`KEEP_PENDING when status=${status}`, () => {
+      expect(decideSpectatorInvite(status, 'inst-1')).toBe('KEEP_PENDING')
     })
   }
 
