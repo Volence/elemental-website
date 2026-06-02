@@ -4,7 +4,7 @@ import React from 'react'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@payloadcms/ui'
 import Link from 'next/link'
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, BarChart3, User } from 'lucide-react'
 import type { Person } from '@/payload-types'
 
 /**
@@ -98,70 +98,65 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
   const hasTeamLinks = teamLinks.length > 0
 
   return (
-    <div className="nav-group Scrim Analytics" id="nav-group-Scrim-Analytics">
-      <button
-        className="nav-group__toggle nav-group__toggle--open"
-        type="button"
-        tabIndex={-1}
-      >
-        <div className="nav-group__label">Scrim Analytics</div>
-        <div className="nav-group__indicator" />
-      </button>
-      <div className="nav-group__content">
-        {/* Dashboard - single entry for all scrim analytics */}
+    <>
+      {/* Scrim Analytics Dashboard - grouped with the other top dashboards (no section header) */}
+      <div className="calendar-nav-link">
         <Link
           href="/admin/scrim-dashboard"
-          className={`nav__link${isDashboardActive ? ' active' : ''}`}
+          className={`calendar-nav-link__link${isDashboardActive ? ' calendar-nav-link__link--active' : ''}`}
           id="nav-scrim-dashboard"
         >
-          <span className="nav__link-label">Dashboard</span>
+          <BarChart3 size={18} className="calendar-nav-link__icon" />
+          Scrim Analytics Dashboard
         </Link>
+      </div>
 
-        {/* Personal quick links (My Stats) */}
-        {hasPersonalLinks && personalLinks.map((link) => {
-          const isActive = pathname ? link.match(pathname) : false
-          return (
+      {/* Personal quick link (My Stats) - players only */}
+      {hasPersonalLinks && personalLinks.map((link) => {
+        const isActive = pathname ? link.match(pathname) : false
+        return (
+          <div className="calendar-nav-link" key={link.href}>
             <Link
-              key={link.href}
               href={link.href}
-              className={`nav__link${isActive ? ' active' : ''}`}
+              className={`calendar-nav-link__link${isActive ? ' calendar-nav-link__link--active' : ''}`}
               id={`nav-${link.label.toLowerCase().replace(/\s/g, '-')}`}
             >
-              <span className="nav__link-label">{link.label}</span>
+              <User size={18} className="calendar-nav-link__icon" />
+              {link.label}
             </Link>
-          )
-        })}
+          </div>
+        )
+      })}
 
-        {/* Team links - collapsible when > 1 */}
-        {hasTeamLinks && (
-          <>
-            {isCollapsible ? (
-              <button
-                type="button"
-                onClick={() => setTeamsOpen(!teamsOpen)}
-                className="scrim-nav__teams-toggle"
+      {/* Teams quick links - collapsible when > 1, sits directly below the dashboards */}
+      {hasTeamLinks && (
+        <div className="scrim-nav__teams">
+          {isCollapsible ? (
+            <button
+              type="button"
+              onClick={() => setTeamsOpen(!teamsOpen)}
+              className="scrim-nav__teams-toggle"
+            >
+              <span className={`scrim-nav__teams-arrow${showTeams ? ' scrim-nav__teams-arrow--open' : ''}`}><ChevronRight size={10} /></span>
+              Teams ({teamLinks.length})
+            </button>
+          ) : null}
+          {showTeams && teamLinks.map((link) => {
+            const isActive = pathname ? link.match(pathname) : false
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`nav__link${isActive ? ' active' : ''}`}
+                id={`nav-${link.label.toLowerCase().replace(/\s/g, '-')}`}
               >
-                <span className={`scrim-nav__teams-arrow${showTeams ? ' scrim-nav__teams-arrow--open' : ''}`}><ChevronRight size={10} /></span>
-                Teams ({teamLinks.length})
-              </button>
-            ) : null}
-            {showTeams && teamLinks.map((link) => {
-              const isActive = pathname ? link.match(pathname) : false
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`nav__link${isActive ? ' active' : ''}`}
-                  id={`nav-${link.label.toLowerCase().replace(/\s/g, '-')}`}
-                >
-                  <span className="nav__link-label">{link.label}</span>
-                </Link>
-              )
-            })}
-          </>
-        )}
-      </div>
-    </div>
+                <span className="nav__link-label">{link.label}</span>
+              </Link>
+            )
+          })}
+        </div>
+      )}
+    </>
   )
 }
 

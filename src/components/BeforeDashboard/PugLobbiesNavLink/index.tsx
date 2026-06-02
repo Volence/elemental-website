@@ -34,7 +34,7 @@ const PugDashboardNavLink: React.FC = () => {
           <path d="M6 5V3.5a2 2 0 0 1 4 0V5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
           <circle cx="8" cy="9.5" r="1" fill="currentColor" />
         </svg>
-        PUGs Dashboard
+        PUG Dashboard
       </Link>
     </div>
   )
