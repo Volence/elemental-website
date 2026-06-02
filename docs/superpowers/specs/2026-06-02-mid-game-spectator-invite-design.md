@@ -156,10 +156,26 @@ ESC count blind. So step one is empirical:
   the new endpoint gates on admin and updates status; manual UI check of the
   "Invite now" button against a running lobby.
 
+## Deployment
+
+The website ships via CI/CD on push to main. The bot does NOT - it runs on the
+Windows box (185.154.146.242) and is deployed manually over SSH as user
+`administrator`:
+
+1. Copy the changed files into `C:\ow-bot-service\...` (e.g. `scp` over SSH, or
+   the bot's `/deploy-file` endpoint).
+2. Restart via the scheduled task: `schtasks /end /tn OWBotAPI`, force-kill any
+   lingering `python.exe` (the `/end` does not reap the detached child), then
+   `schtasks /run /tn OWBotAPI`. Do NOT launch `start_api.py` directly over SSH -
+   it dies when the SSH session closes. The `OWBotWatchdog` task also backstops a
+   crash within ~2 min.
+3. Verify: `netstat -ano | findstr :8420` listening and `GET /health` returns ok.
+
+Edit the repo copy under `ow-bot-service/` (source of truth), then deploy that to
+the box. Ignore the stale `automation/automation/` copy on the box.
+
 ## Open items for the plan
 
-- Confirm bot deploy mechanism to the Windows box (`/deploy-file` endpoint vs
-  manual copy); the website CI/CD does not deploy the bot.
 - Confirm exactly which `botStatus` values count as "invite live now" vs stay
   pending (`game_started` yes; `game_ended` likely no).
 - Confirm the return-to-game ESC count from the capture.
