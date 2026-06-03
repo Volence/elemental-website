@@ -148,9 +148,7 @@ function SpectatorPanel({
         <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, marginBottom: 4 }}>
           <span style={{ flex: 1, color: '#e2e8f0', minWidth: 0 }}>{s.displayName}{s.displayName !== s.battleTag && ` (${s.battleTag})`}</span>
           <SpectatorStatusBadge status={s.status} note={s.note} />
-          {(s.status === 'PENDING' || s.status === 'FAILED') && (
-            <button className="ps-btn ps-btn-ghost" style={{ padding: '2px 8px', fontSize: 11 }} disabled={busy} onClick={() => inviteNow(s.id)} title="Invite this spectator to the OW lobby now (works mid-match)">Invite now</button>
-          )}
+          <button className="ps-btn ps-btn-ghost" style={{ padding: '2px 8px', fontSize: 11 }} disabled={busy} onClick={() => inviteNow(s.id)} title="Invite (or re-invite) this spectator to the OW lobby now - works mid-match">{s.status === 'INVITED' ? 'Re-invite' : 'Invite now'}</button>
           <button className="ps-btn ps-btn-ghost" style={{ padding: '2px 8px', fontSize: 11 }} disabled={busy} onClick={() => mutate('DELETE', { id: s.id })} title="Remove from list (does not kick from the live OW lobby)">x</button>
         </div>
       ))}
