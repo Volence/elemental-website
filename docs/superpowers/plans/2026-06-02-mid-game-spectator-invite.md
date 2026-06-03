@@ -47,11 +47,14 @@ Expected: `screen: "unknown"` while the match HUD is up. Record it.
 
 - [ ] **Step 6: Write the findings into this plan.** Fill the "CAPTURE RESULT" notes in Task 2 and Task 3 with the actual tokens/counts before implementing them. Remove any temporary capture script from the box and repo.
 
-**CAPTURE RESULT (fill in before Task 2/3):**
-- Pause-menu distinctive token(s): `__________`
-- Show Lobby button OCR token (single token to click): `__________`
-- Roster confirms via token: `INVITE` (verify present), `START` absent? `__________`
-- ESC presses to return roster -> spectator HUD: `__________`
+**CAPTURE RESULT (captured live 2026-06-02 on inst-0):**
+- Pause menu OCR: `['Overwatch','BACK','MENU','SOCIAL','CHALLENGES','CAREER PROFILE','OPTIONS','OPEN WORKSHOP EDITOR','OPEN WORKSHOP INSPECTOR','SHOW LOBBY','PAUSE MATCH','LEAVE GAME','EXIT TO DESKTOP','CHAT','BACK']`. `SHOW LOBBY` is a **single clean token** -> signature `required=["SHOW LOBBY"]` and `click_text("SHOW LOBBY")` both work as written.
+- Show Lobby roster OCR: `['Overwatch','BACK','MOVE','SETTINGS','INVITE','ADD','PARAISO','Team','Team 2','EMPTY'...,'SPECTATORS','BACK TO LOBBY','RESTART MATCH','CHAT','SELECT','BACK']`. `INVITE` present (single token) -> confirm arrival via `find_text("INVITE")`. **`START` is absent** -> pre-game LOBBY signature does NOT false-match the mid-match roster (roster reads UNKNOWN; we key off INVITE).
+- In-game HUD baseline OCR: `['Overwatch','GET READY','READY FOR BATTLE','PRESS B FOR SPECTATOR OPTIONS']` -> reads UNKNOWN as expected.
+- ESC presses to return roster -> spectator HUD: **2 escapes** (roster -> pause menu -> live game), confirmed by operator. `return_to_game()`'s ESC-until-no-lobby-UI loop lands correctly with 2 ESC (ESC1 -> PAUSE_MENU, ESC2 -> in-game UNKNOWN with no INVITE -> stop).
+
+**EDGE CASE found during capture (health watchdog vs UNKNOWN screens):**
+The scheduler health check (`automation/scheduler.py` `_execute_health_check`) counts every `UNKNOWN` frame as a failure with NO exemption for `in_game`, and at 10 consecutive failures (~5 min at 30s interval) marks the instance ERROR and kills/relaunches OW. The pause menu and Show Lobby roster both read UNKNOWN, so leaving the bot there ~5 min tears down the match. For OUR feature this is mitigated because the `/step` invite holds `scheduler.focus_lock`, and the health check also acquires that lock via `_execute_focus_task` - so the watchdog CANNOT run during the invite. Task 4 additionally resets the instance's health failure counter on a successful mid-game lobby reach (proof OW is responsive). NOTE (out of scope, flag to user): the same watchdog could in principle affect any long in-game UNKNOWN period; not addressed by this feature.
 
 ---
 
@@ -126,6 +129,18 @@ git commit -m "feat(bot): detect OW pause menu via SHOW LOBBY signature"
         if not self.detector.wait_for_text("INVITE", timeout=8.0, poll=1.0):
             log.warning("[%s] Lobby roster not visible after SHOW LOBBY", self.instance.id)
             return False
+        # Reaching the lobby proves OW is responsive. Reset the health watchdog's
+        # failure counter so the UNKNOWN frames of the pause menu / roster do not
+        # push it toward the 10-failure kill (see EDGE CASE in Task 1). The
+        # focus_lock held by /step already blocks the watchdog DURING the invite;
+        # this clears any failures that accrued BEFORE it.
+        try:
+            from automation.scheduler import scheduler
+            ht = scheduler._health_tasks.get(self.instance.id)
+            if ht:
+                ht.consecutive_failures = 0
+        except Exception:
+            pass
         log.info("[%s] Reached lobby roster during live match", self.instance.id)
         return True
 

@@ -3,21 +3,23 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { inviteSpectator, botConfigured } from './botClient'
 
-export type SpectatorInviteAction = 'INVITE_NOW' | 'PENDING_IN_GAME' | 'KEEP_PENDING'
+export type SpectatorInviteAction = 'INVITE_NOW' | 'KEEP_PENDING'
 
 const INVITABLE_STATUSES = ['lobby_created', 'invites_sent', 'players_joining']
-const IN_GAME_STATUSES = ['game_started', 'game_ended']
+// Match underway: the bot (a spectator) can invite mid-game via the pause-menu
+// Show Lobby flow. 'game_ended' is the between-state, not a live lobby, so it
+// stays pending until the lobby is up again or an admin invites manually.
+const LIVE_STATUSES = ['game_started']
 
-// Decide what to do with a spectator given the bot's current state.
-// INVITE_NOW: OW lobby is up and match not started, and we have an instance to call.
-// PENDING_IN_GAME: match is live/ended - bot cannot invite without in-game OCR (out of scope).
-// KEEP_PENDING: no lobby yet, or still setting up - invite later when it becomes invitable.
+// INVITE_NOW: we have an instance and the OW lobby is invitable (pre-game) or a
+// match is live (in-game invite). KEEP_PENDING: not ready - invite later.
 export function decideSpectatorInvite(
   botStatus: string | null,
   botInstanceId: string | null,
 ): SpectatorInviteAction {
-  if (botStatus && IN_GAME_STATUSES.includes(botStatus)) return 'PENDING_IN_GAME'
-  if (botInstanceId && botStatus && INVITABLE_STATUSES.includes(botStatus)) return 'INVITE_NOW'
+  if (!botInstanceId || !botStatus) return 'KEEP_PENDING'
+  if (INVITABLE_STATUSES.includes(botStatus)) return 'INVITE_NOW'
+  if (LIVE_STATUSES.includes(botStatus)) return 'INVITE_NOW'
   return 'KEEP_PENDING'
 }
 
@@ -107,6 +109,46 @@ export async function invitePendingSpectators(lobbyId: number): Promise<void> {
   }
 }
 
+// Force-invite a single spectator row by id, regardless of match state.
+// Backs the manual "Invite now" button. Returns the enriched list.
+export async function inviteSpectatorById(
+  lobbyId: number,
+  specId: number,
+): Promise<EnrichedSpectator[]> {
+  if (!botConfigured()) return enrichSpectators(lobbyId)
+  const spec = await prisma.pugLobbySpectator.findFirst({ where: { id: specId, lobbyId } })
+  if (!spec) return enrichSpectators(lobbyId)
+  const lobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId } })
+  if (!lobby?.botInstanceId) {
+    await prisma.pugLobbySpectator.update({
+      where: { id: spec.id },
+      data: { status: 'FAILED', note: 'No bot instance assigned to this lobby' },
+    })
+    return enrichSpectators(lobbyId)
+  }
+  try {
+    const res = await inviteSpectator(lobby.botInstanceId, spec.battleTag)
+    if (res.ok) {
+      await prisma.pugLobbySpectator.update({
+        where: { id: spec.id },
+        data: { status: 'INVITED', invitedAt: new Date(), note: null },
+      })
+    } else {
+      const text = await res.text().catch(() => '')
+      await prisma.pugLobbySpectator.update({
+        where: { id: spec.id },
+        data: { status: 'FAILED', note: `Bot error: ${text}`.slice(0, 300) },
+      })
+    }
+  } catch (err: any) {
+    await prisma.pugLobbySpectator.update({
+      where: { id: spec.id },
+      data: { status: 'FAILED', note: (err?.message ?? 'invite failed').slice(0, 300) },
+    })
+  }
+  return enrichSpectators(lobbyId)
+}
+
 export type AddSpectatorInput = { battleTag?: string; personId?: number; addedByUserId?: number }
 export type AddSpectatorResult =
   | { ok: true; spectators: EnrichedSpectator[] }
@@ -167,11 +209,6 @@ export async function addSpectator(
         data: { status: 'FAILED', note: (err?.message ?? 'invite failed').slice(0, 300) },
       })
     }
-  } else if (action === 'PENDING_IN_GAME') {
-    await prisma.pugLobbySpectator.update({
-      where: { lobbyId_battleTag: { lobbyId, battleTag: tag } },
-      data: { note: 'Match is live - in-game spectator invite needs OCR (not yet supported). Will stay pending.' },
-    })
   }
 
   return { ok: true, spectators: await enrichSpectators(lobbyId) }

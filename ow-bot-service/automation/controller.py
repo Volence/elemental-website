@@ -547,6 +547,60 @@ class LobbyController:
         await self._import_settings(full_code)
         await self.navigate_to(Screen.LOBBY)
 
+    async def show_lobby_during_game(self) -> bool:
+        """From a live match, open the pause menu and click SHOW LOBBY to reach
+        the lobby roster (where INVITE is available). Returns True on success.
+
+        The bot is a spectator, so this only moves the bot's own client - the
+        match keeps running for everyone else.
+        """
+        await self._focus()
+        await press_key("escape")
+        await asyncio.sleep(T.NAV_AFTER_ESC)
+        if self.detector.detect_screen(retries=2) != Screen.PAUSE_MENU:
+            log.warning("[%s] Pause menu not detected after ESC", self.instance.id)
+            await press_key("escape")
+            await asyncio.sleep(T.NAV_AFTER_ESC)
+            return False
+        if not await click_text("SHOW LOBBY", self.detector, retries=3):
+            log.warning("[%s] SHOW LOBBY not found in pause menu", self.instance.id)
+            await press_key("escape")
+            await asyncio.sleep(T.NAV_AFTER_ESC)
+            return False
+        await asyncio.sleep(T.NAV_AFTER_EXIT)
+        if not self.detector.wait_for_text("INVITE", timeout=8.0, poll=1.0):
+            log.warning("[%s] Lobby roster not visible after SHOW LOBBY", self.instance.id)
+            return False
+        # Reaching the lobby proves OW is responsive. Reset the health watchdog's
+        # failure counter so the UNKNOWN frames of the pause menu / roster do not
+        # push it toward the 10-failure kill (the focus_lock held by /step already
+        # blocks the watchdog DURING the invite; this clears prior failures).
+        try:
+            from automation.scheduler import scheduler
+            ht = scheduler._health_tasks.get(self.instance.id)
+            if ht:
+                ht.consecutive_failures = 0
+        except Exception:
+            pass
+        log.info("[%s] Reached lobby roster during live match", self.instance.id)
+        return True
+
+    async def return_to_game(self) -> None:
+        """ESC back to the spectator view (roster -> pause menu -> game, ~2 ESC).
+        Deliberately does NOT use navigate_to, which would EXIT the custom game
+        when starting from the lobby.
+        """
+        await self._focus()
+        for _ in range(3):
+            await press_key("escape")
+            await asyncio.sleep(T.NAV_AFTER_ESC)
+            s = self.detector.detect_screen(retries=1)
+            # In-game HUD reads UNKNOWN with no INVITE; the roster shows INVITE and
+            # the pause menu is PAUSE_MENU. Stop once neither lobby UI is up.
+            if s != Screen.PAUSE_MENU and not self.detector.find_text("INVITE", rescan=False, retries=1):
+                return
+        log.warning("[%s] return_to_game: still on a menu after ESCs", self.instance.id)
+
     async def invite_players(
         self,
         players: list[tuple[int, str | None, int]],
@@ -557,54 +611,77 @@ class LobbyController:
     ) -> InviteResult:
         result = InviteResult(total=len(players))
         self._clear_invite_cache()
-        await self.navigate_to(Screen.LOBBY)
 
-        valid = [(uid, tag, team) for uid, tag, team in players if tag]
-        no_tag = [uid for uid, tag, _ in players if not tag]
-        if no_tag:
-            log.warning("[%s] Skipping %d players with no BattleTag", self.instance.id, len(no_tag))
-            result.missing_tags = no_tag
+        # Reach the lobby roster. Pre-game we navigate the menu tree to LOBBY.
+        # During a live match the menu tree can't reach it (no START on the
+        # mid-match roster): the bot (a spectator) opens the pause menu and
+        # clicks SHOW LOBBY, then returns to the spectator view afterwards.
+        # Non-disruptive: only the bot's client moves.
+        in_game = self.instance.state.value == "in_game"
+        if in_game:
+            if not await self.show_lobby_during_game():
+                log.error("[%s] Could not reach lobby from live match", self.instance.id)
+                await self.return_to_game()
+                result.failed_invites = [uid for uid, tag, _ in players if tag]
+                return result
+        else:
+            await self.navigate_to(Screen.LOBBY)
 
-        valid.sort(key=lambda p: p[2])
-        expected_count = len(valid)
-        log.info("[%s] Inviting %d players", self.instance.id, expected_count)
+        try:
+            valid = [(uid, tag, team) for uid, tag, team in players if tag]
+            no_tag = [uid for uid, tag, _ in players if not tag]
+            if no_tag:
+                log.warning("[%s] Skipping %d players with no BattleTag", self.instance.id, len(no_tag))
+                result.missing_tags = no_tag
 
-        pending = list(valid)
-        for round_num in range(1 + max_reinvites):
-            if round_num > 0:
-                log.info("[%s] Re-invite round %d for %d remaining", self.instance.id, round_num, len(pending))
+            valid.sort(key=lambda p: p[2])
+            expected_count = len(valid)
+            log.info("[%s] Inviting %d players", self.instance.id, expected_count)
 
-            for i, (user_id, battle_tag, team) in enumerate(pending):
-                try:
-                    await self._invite_one_player(battle_tag, team)
-                    log.info("[%s] Invited %s to team %d (%d/%d)", self.instance.id, battle_tag, team, i + 1, len(pending))
-                except NavigationError as e:
-                    log.error("[%s] Failed to invite %s: %s", self.instance.id, battle_tag, e)
-                    if user_id not in result.failed_invites:
-                        result.failed_invites.append(user_id)
-                    continue
+            pending = list(valid)
+            for round_num in range(1 + max_reinvites):
+                if round_num > 0:
+                    log.info("[%s] Re-invite round %d for %d remaining", self.instance.id, round_num, len(pending))
 
-                # Clear an invite-refused pop-up (e.g. the player disabled
-                # invites from non-friends) so it does not block the next
-                # invite. Such a dialog means this invite did not land.
-                dialog = await self._dismiss_blocking_dialog()
-                if dialog and "invit" in dialog:
-                    log.warning(
-                        "[%s] Invite to %s appears refused (%s)",
-                        self.instance.id, battle_tag, dialog,
-                    )
-                    if user_id not in result.failed_invites:
-                        result.failed_invites.append(user_id)
+                for i, (user_id, battle_tag, team) in enumerate(pending):
+                    try:
+                        await self._invite_one_player(battle_tag, team)
+                        log.info("[%s] Invited %s to team %d (%d/%d)", self.instance.id, battle_tag, team, i + 1, len(pending))
+                    except NavigationError as e:
+                        log.error("[%s] Failed to invite %s: %s", self.instance.id, battle_tag, e)
+                        if user_id not in result.failed_invites:
+                            result.failed_invites.append(user_id)
+                        continue
 
-            joined_count = await self._wait_for_players(expected_count, join_timeout, poll_interval)
-            result.joined = joined_count
+                    # Clear an invite-refused pop-up (e.g. the player disabled
+                    # invites from non-friends) so it does not block the next
+                    # invite. Such a dialog means this invite did not land.
+                    dialog = await self._dismiss_blocking_dialog()
+                    if dialog and "invit" in dialog:
+                        log.warning(
+                            "[%s] Invite to %s appears refused (%s)",
+                            self.instance.id, battle_tag, dialog,
+                        )
+                        if user_id not in result.failed_invites:
+                            result.failed_invites.append(user_id)
 
-            if joined_count >= expected_count:
-                log.info("[%s] All %d players joined!", self.instance.id, expected_count)
-                break
+                # A live-match spectator invite does not register as a filled team
+                # slot, so skip the join-wait and do a single round.
+                if in_game:
+                    break
 
-            if round_num >= max_reinvites:
-                result.timed_out = [uid for uid, _, _ in pending]
+                joined_count = await self._wait_for_players(expected_count, join_timeout, poll_interval)
+                result.joined = joined_count
+
+                if joined_count >= expected_count:
+                    log.info("[%s] All %d players joined!", self.instance.id, expected_count)
+                    break
+
+                if round_num >= max_reinvites:
+                    result.timed_out = [uid for uid, _, _ in pending]
+        finally:
+            if in_game:
+                await self.return_to_game()
 
         log.info(
             "[%s] Invite phase: %d/%d joined, %d timed out, %d failed, %d no tag",
