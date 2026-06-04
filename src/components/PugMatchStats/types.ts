@@ -12,6 +12,7 @@ export interface PlayerLine {
   assists: number // offensive_assists + defensive_assists
   heroDamage: number
   healing: number
+  healingReceived: number
   damageBlocked: number
   ultsUsed: number
   heroes: HeroLine[] // sorted by timePlayed desc

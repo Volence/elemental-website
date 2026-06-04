@@ -25,7 +25,7 @@ export function aggregatePlayerLines(
         assignedRole: info?.assignedRole ?? null,
         isCaptain: info?.isCaptain ?? false,
         eliminations: 0, finalBlows: 0, deaths: 0, assists: 0,
-        heroDamage: 0, healing: 0, damageBlocked: 0, ultsUsed: 0, heroes: [],
+        heroDamage: 0, healing: 0, healingReceived: 0, damageBlocked: 0, ultsUsed: 0, heroes: [],
       }
       byPlayer.set(key, line)
     }
@@ -35,6 +35,7 @@ export function aggregatePlayerLines(
     line.assists += r.offensive_assists + r.defensive_assists
     line.heroDamage += r.hero_damage_dealt
     line.healing += r.healing_dealt
+    line.healingReceived += r.healing_received
     line.damageBlocked += r.damage_blocked
     line.ultsUsed += r.ultimates_used
 

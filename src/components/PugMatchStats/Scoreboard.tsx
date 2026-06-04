@@ -9,7 +9,7 @@ function TeamTable({ team, players }: { team: TeamKey; players: PlayerLine[] }) 
       <h3 className="text-sm font-semibold text-gray-300 mb-1">Team {team}</h3>
       <table className="w-full text-sm">
         <thead className="text-gray-500 text-xs">
-          <tr><th className="text-left">Player</th><th>E</th><th>D</th><th>A</th><th>Dmg</th><th>Heal</th><th>Blk</th></tr>
+          <tr><th className="text-left">Player</th><th>E</th><th>D</th><th>A</th><th>Dmg</th><th>Heal</th><th>Rcv</th><th>Blk</th></tr>
         </thead>
         <tbody>
           {rows.map((p) => (
@@ -20,6 +20,7 @@ function TeamTable({ team, players }: { team: TeamKey; players: PlayerLine[] }) 
               <td className="text-center">{p.assists}</td>
               <td className="text-center">{n(p.heroDamage)}</td>
               <td className="text-center">{n(p.healing)}</td>
+              <td className="text-center">{n(p.healingReceived)}</td>
               <td className="text-center">{n(p.damageBlocked)}</td>
             </tr>
           ))}

@@ -4,7 +4,7 @@ import { aggregatePlayerLines, deriveSummary, pairRoleMatchups } from '../../src
 const row = (o: Partial<any> = {}) => ({
   player_name: 'Vex', player_team: 'Team 1', personId: 5, player_hero: 'Hazard',
   eliminations: 3, final_blows: 2, deaths: 1, offensive_assists: 1, defensive_assists: 0,
-  hero_damage_dealt: 1000, healing_dealt: 0, damage_blocked: 500, ultimates_used: 1,
+  hero_damage_dealt: 1000, healing_dealt: 0, healing_received: 0, damage_blocked: 500, ultimates_used: 1,
   hero_time_played: 120, round_number: 1, ...o,
 })
 
@@ -20,6 +20,15 @@ describe('aggregatePlayerLines', () => {
     expect(line.eliminations).toBe(5)
     expect(line.deaths).toBe(3)
     expect(line.heroes.map((h) => h.hero)).toEqual(['Hazard', 'Mauga']) // timePlayed desc
+  })
+
+  it('sums healing received across rows', () => {
+    const rows = [
+      row({ player_hero: 'Kiriko', healing_received: 300, hero_time_played: 100 }),
+      row({ player_hero: 'Mizuki', healing_received: 150, hero_time_played: 50 }),
+    ]
+    const [line] = aggregatePlayerLines(rows as any, new Map())
+    expect(line.healingReceived).toBe(450)
   })
 
   it('accumulates the same hero across rounds (one row per player+hero+round)', () => {
