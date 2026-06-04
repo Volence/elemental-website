@@ -9,32 +9,7 @@ import CompareTab from './CompareTab'
 import ReplayTab from './ReplayTab'
 import ScrimAnalyticsTabs from '@/components/ScrimAnalyticsTabs'
 import { PlayerStatsTable } from '@/components/MatchStats/PlayerStatsTable'
-
-type PlayerRow = {
-  name: string
-  team: string
-  hero: string
-  role: string
-  eliminations: number
-  assists: number
-  deaths: number
-  damage: number
-  healing: number
-  finalBlows: number
-  timePlayed: number
-  kd: number
-  kad: number
-  damageReceived: number
-  damageBlocked: number
-  healingReceived: number
-  selfHealing: number
-  soloKills: number
-  objectiveKills: number
-  multikills: number
-  multikillBest: number
-  environmentalKills: number
-  environmentalDeaths: number
-}
+import type { PlayerRow } from '@/components/MatchStats/types'
 
 type CalculatedStat = {
   playerName: string
