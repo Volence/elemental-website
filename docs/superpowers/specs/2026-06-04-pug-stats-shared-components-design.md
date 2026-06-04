@@ -48,7 +48,38 @@ components** and keep only the views that are genuinely PUG-specific.
   the `mapDataId` server-side (the existing `loadMatchStats` already walks
   scrim -> maps[0] -> mapData[0]).
 
+### Styling reality (decided: bring the admin look to the frontend)
+
+The admin components are **not** Tailwind. They use inline-style constants
+(`CYAN`, `TEXT_PRIMARY`, ...) plus SCSS classes (`scrim-detail__*`) from
+`src/app/(payload)/styles/components/_scrim-analytics.scss` (4,172 lines, namespaced
+under `.scrim-detail` / `.scrim-upload` / `.scrim-list`). That partial depends on
+admin theme `$variables` and `@include` mixins from
+`src/app/(payload)/styles/_variables.scss` and `_mixins.scss`. It is imported only
+by the admin route group (`(payload)/styles/admin.scss`); the public `(frontend)`
+group uses Tailwind via `globals.css`.
+
+Decision (user, 2026-06-04): use the admin styling on the PUG page even though it
+will not match the frontend theme exactly. Do **not** rebuild in the frontend's
+Tailwind (that produced the bare look we are replacing).
+
+`sass` is installed (`node_modules/.bin/sass`). Because `_variables.scss` and
+`_mixins.scss` emit no CSS on their own, a frontend-imported SCSS entry that
+`@import`s variables -> mixins -> scrim-analytics compiles to **only** the
+namespaced `.scrim-*` rules - safe to load on a public page without colliding with
+or restyling frontend elements.
+
 ## Architecture
+
+### Make the admin SCSS available to the frontend
+
+- Add a shared SCSS entry, `src/styles/scrim-shared.scss`, that `@import`s (in
+  order) the admin `variables`, `mixins`, then `components/scrim-analytics` partials.
+  Import it once from the PUG stats page (`stats/page.tsx`). Output is only
+  `.scrim-*` namespaced CSS.
+- The reused components must render inside a `.scrim-detail` root element (the styles
+  are scoped under it). The PUG page wraps its content in
+  `<div className="scrim-detail"> ... </div>`.
 
 ### Shared presentational components
 
@@ -56,11 +87,11 @@ components** and keep only the views that are genuinely PUG-specific.
   `ScrimMapDetail/index.tsx` into a standalone `src/components/MatchStats/PlayerStatsTable.tsx`.
   Props: the overview data shape already returned by `/api/scrim-stats` (teams,
   `PlayerRow[]`), plus a `readOnly` flag that hides the score-edit affordance.
-  Switch the admin `index.tsx` to render this extracted component (kept as a tight
-  diff to avoid regressing the admin page).
+  It keeps the existing `scrim-detail__*` classes + inline-style constants. Switch
+  the admin `index.tsx` to render this extracted component (kept as a tight diff to
+  avoid regressing the admin page).
 - **Reuse as-is**: `KillfeedTab`, `EventsTab`, `CompareTab` (take `mapId`, fetch
-  public `scrim-stats`). They render the same on the public frontend route (Tailwind
-  is global).
+  public `scrim-stats`; styled by the shared SCSS once it is loaded on the page).
 
 ### PUG page composition
 
@@ -104,7 +135,9 @@ Tab container (`MatchAnalytics`, client):
 
 - The PUG page renders shared components **without admin chrome**: no
   `ScrimAnalyticsTabs` nav, no edit-score controls, no "Back to scrims".
-  `PlayerStatsTable` `readOnly` enforces this.
+  `PlayerStatsTable` `readOnly` enforces this. The page still wraps content in a
+  `.scrim-detail` element so the shared SCSS applies, but composes the tabs itself
+  (it does not reuse the admin `ScrimMapDetail/index.tsx` shell).
 - Access matches the existing PUG page (public, same as the lobby page). No new
   endpoints; relies on `scrim-stats` already being read-open.
 
