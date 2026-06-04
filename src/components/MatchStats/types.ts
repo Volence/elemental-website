@@ -3,6 +3,7 @@ export type PlayerRow = {
   team: string
   hero: string
   role: string
+  personId?: number | null
   eliminations: number
   assists: number
   deaths: number

@@ -348,6 +348,17 @@ export async function GET(req: NextRequest) {
     },
   } : {}
 
+  // Build player_name -> personId map from scrim_player_stats (first non-null per player)
+  const personIdRows = await prisma.$queryRaw<Array<{ player_name: string; personId: number | null }>>`
+    SELECT DISTINCT ON (player_name) player_name, "personId"
+    FROM scrim_player_stats
+    WHERE "mapDataId" = ${mapId} AND "personId" IS NOT NULL
+  `
+  const personIdMap = new Map<string, number>()
+  for (const row of personIdRows) {
+    if (row.personId != null) personIdMap.set(row.player_name, row.personId)
+  }
+
   return NextResponse.json({
     mapName: matchStart.map_name,
     mapType: matchStart.map_type,
@@ -367,6 +378,7 @@ export async function GET(req: NextRequest) {
       name: dn.playerName(p.player_name),
       team: dn.teamName(p.player_team),
       hero: p.player_hero,
+      personId: personIdMap.get(p.player_name) ?? null,
       role: (heroRoleMapping as Record<string, string>)[p.player_hero] ?? 'Damage',
       eliminations: p.eliminations,
       assists: p.defensive_assists + p.offensive_assists,

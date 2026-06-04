@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import Link from 'next/link'
 import type { PlayerRow, OverviewTeams } from './types'
 
 // ── Color tokens (mirrored from ScrimMapDetail for byte-identical markup) ──
@@ -115,7 +116,19 @@ function StatRow({ player, selected, readOnly }: { player: PlayerRow; selected: 
         transition: 'background 0.15s',
       }}
     >
-      <td style={{ padding: '10px 12px', fontWeight: 600, color: CYAN }}>{player.name}</td>
+      <td style={{ padding: '10px 12px', fontWeight: 600, color: CYAN }}>
+        {readOnly && player.personId != null ? (
+          <Link
+            href={`/pugs/profile/${player.personId}`}
+            onClick={(e) => e.stopPropagation()}
+            style={{ color: CYAN, textDecoration: 'none' }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = 'underline' }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = 'none' }}
+          >
+            {player.name}
+          </Link>
+        ) : player.name}
+      </td>
       <td style={{ padding: '10px 12px', color: TEXT_SECONDARY }}>{player.hero}</td>
       <td style={{ padding: '10px 12px', color: TEXT_DIM, fontSize: '12px' }}>{player.role}</td>
       <td style={{ ...cell, color: TEXT_DIM }}>{timeStr}</td>
