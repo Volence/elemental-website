@@ -27,58 +27,10 @@ export interface HeroLine {
   healing: number
 }
 
-export interface HeroSwap {
-  matchTimeSec: number
-  player: string
-  team: TeamKey
-  fromHero: string
-  toHero: string
-}
-
-export interface KillEvent {
-  matchTimeSec: number
-  attacker: string
-  attackerTeam: TeamKey
-  attackerHero: string
-  victim: string
-  victimTeam: TeamKey
-  victimHero: string
-  ability: string
-  isCrit: boolean
-  isEnvironmental: boolean
-}
-
-export interface UltEvent {
-  matchTimeSec: number
-  player: string
-  team: TeamKey
-  hero: string
-}
-
-export interface MatchSummaryData {
-  lobbyNumber: number
-  mapName: string
-  durationSec: number
-  result: 'team1' | 'team2' | 'draw'
-  team1Score: number
-  team2Score: number
-  standout: { name: string; eliminations: number; deaths: number } | null
-}
-
 export interface RoleMatchup {
   role: string
   team1: PlayerLine | null
   team2: PlayerLine | null
-}
-
-export interface MatchStats {
-  summary: MatchSummaryData
-  players: PlayerLine[]
-  matchups: RoleMatchup[]
-  unpaired: PlayerLine[] // players with no role mirror
-  kills: KillEvent[]
-  ults: UltEvent[]
-  heroSwaps: HeroSwap[]
 }
 
 export interface PugMatchData {

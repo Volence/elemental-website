@@ -1,4 +1,4 @@
-import type { PlayerLine, HeroLine, TeamKey, MatchSummaryData, RoleMatchup } from './types'
+import type { PlayerLine, HeroLine, TeamKey, RoleMatchup } from './types'
 
 export interface LobbyPlayerInfo { team: number | null; assignedRole: string | null; isCaptain: boolean }
 
@@ -54,31 +54,6 @@ export function aggregatePlayerLines(
     line.heroes.sort((a, b) => b.timePlayedSec - a.timePlayedSec)
   }
   return [...byPlayer.values()]
-}
-
-export function deriveSummary(
-  matchEnds: Array<{ round_number: number; team_1_score: number; team_2_score: number; match_time: number }>,
-  players: Pick<PlayerLine, 'name' | 'eliminations' | 'deaths'>[],
-  mapName: string,
-  lobbyNumber: number,
-): MatchSummaryData {
-  const last = [...matchEnds].sort((a, b) => a.match_time - b.match_time).at(-1)
-  const team1Score = last?.team_1_score ?? 0
-  const team2Score = last?.team_2_score ?? 0
-  const result = team1Score > team2Score ? 'team1' : team2Score > team1Score ? 'team2' : 'draw'
-  const durationSec = last?.match_time ?? 0
-
-  let standout: MatchSummaryData['standout'] = null
-  for (const p of players) {
-    if (
-      !standout ||
-      p.eliminations > standout.eliminations ||
-      (p.eliminations === standout.eliminations && p.deaths < standout.deaths)
-    ) {
-      standout = { name: p.name, eliminations: p.eliminations, deaths: p.deaths }
-    }
-  }
-  return { lobbyNumber, mapName, durationSec, result, team1Score, team2Score, standout }
 }
 
 const ROLE_ORDER = ['tank', 'hitscan-dps', 'flex-dps', 'main-support', 'flex-support']
