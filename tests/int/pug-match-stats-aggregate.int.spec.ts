@@ -22,6 +22,29 @@ describe('aggregatePlayerLines', () => {
     expect(line.heroes.map((h) => h.hero)).toEqual(['Hazard', 'Mauga']) // timePlayed desc
   })
 
+  it('accumulates the same hero across rounds (one row per player+hero+round)', () => {
+    const rows = [
+      row({ player_hero: 'Hazard', round_number: 1, eliminations: 4, hero_time_played: 120 }),
+      row({ player_hero: 'Hazard', round_number: 2, eliminations: 3, hero_time_played: 80 }),
+    ]
+    const [line] = aggregatePlayerLines(rows as any, new Map())
+    expect(line.heroes).toHaveLength(1)
+    expect(line.heroes[0].hero).toBe('Hazard')
+    expect(line.heroes[0].timePlayedSec).toBe(200)
+    expect(line.heroes[0].eliminations).toBe(7)
+    expect(line.eliminations).toBe(7)
+  })
+
+  it('keeps same-named guests on opposite teams separate when unlinked', () => {
+    const rows = [
+      row({ personId: null, player_name: 'Smurf', player_team: 'Team 1', eliminations: 5 }),
+      row({ personId: null, player_name: 'Smurf', player_team: 'Team 2', eliminations: 2 }),
+    ]
+    const lines = aggregatePlayerLines(rows as any, new Map())
+    expect(lines).toHaveLength(2)
+    expect(lines.map((l) => l.team).sort()).toEqual([1, 2])
+  })
+
   it('maps team string to numeric and pulls role/captain from lobby map', () => {
     const lobby = new Map([[5, { team: 2, assignedRole: 'main-support', isCaptain: true }]])
     const [line] = aggregatePlayerLines([row({ personId: 5 })] as any, lobby as any)

@@ -2,7 +2,7 @@ import type { PlayerLine, HeroLine, TeamKey, MatchSummaryData, RoleMatchup } fro
 
 export interface LobbyPlayerInfo { team: number | null; assignedRole: string | null; isCaptain: boolean }
 
-function teamFromString(s: string): TeamKey {
+export function teamFromString(s: string): TeamKey {
   return s.trim().endsWith('2') ? 2 : 1
 }
 
@@ -12,7 +12,9 @@ export function aggregatePlayerLines(
 ): PlayerLine[] {
   const byPlayer = new Map<string, PlayerLine>()
   for (const r of rows) {
-    const key = r.personId != null ? `p:${r.personId}` : `n:${r.player_name}`
+    // For guests with no linked Person, include team so two same-named players
+    // on opposite teams aren't silently merged into one scoreboard row.
+    const key = r.personId != null ? `p:${r.personId}` : `n:${r.player_name}:${r.player_team}`
     let line = byPlayer.get(key)
     if (!line) {
       const info = r.personId != null ? lobbyByPerson.get(r.personId) : undefined
