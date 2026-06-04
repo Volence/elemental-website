@@ -80,3 +80,11 @@ export interface MatchStats {
   ults: UltEvent[]
   heroSwaps: HeroSwap[]
 }
+
+export interface PugMatchData {
+  lobbyNumber: number
+  mapName: string
+  mapDataId: number
+  matchups: RoleMatchup[]
+  unpaired: PlayerLine[]
+}
