@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import prisma from '@/lib/prisma'
 import { loadMatchStats } from '@/components/PugMatchStats/loadMatchStats'
 import { MatchAnalytics } from '@/components/PugMatchStats/MatchAnalytics'
+import { PugNav } from '../../../PugNav'
 import '@/styles/scrim-shared.scss'
 
 export default async function MatchStatsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -9,7 +10,7 @@ export default async function MatchStatsPage({ params }: { params: Promise<{ id:
   const lobbyId = Number(id)
   if (Number.isNaN(lobbyId)) notFound()
 
-  const lobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId }, select: { lobbyNumber: true, status: true } })
+  const lobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId }, select: { lobbyNumber: true, status: true, tier: true } })
   if (!lobby) notFound()
 
   const data = await loadMatchStats(lobbyId)
@@ -17,6 +18,7 @@ export default async function MatchStatsPage({ params }: { params: Promise<{ id:
   return (
     <div className="scrim-detail scrim-detail__bg">
       <div className="max-w-4xl mx-auto px-4 py-6">
+        <PugNav active={lobby.tier === 'invite' ? 'invite' : 'open'} />
         {data ? (
           <MatchAnalytics
             mapDataId={data.mapDataId}
