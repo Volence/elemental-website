@@ -443,12 +443,14 @@ export async function advanceToDrafting(lobbyId: number): Promise<void> {
     }).then(async (res) => {
       if (res.ok) {
         const data = await res.json()
+        // NOTE: do NOT set botStatus here - the bot's /api/pug/bot/status
+        // callbacks (preparing -> lobby_ready) own it. Writing 'preparing'
+        // after this resolves would clobber a later 'lobby_ready' callback.
         await prisma.pugLobby.update({
           where: { id: lobbyId },
           data: {
             hostUserId: -1,
-            botInstanceId: data.instanceId ?? null,
-            botStatus: 'preparing',
+            ...(data.instanceId ? { botInstanceId: data.instanceId } : {}),
           },
         })
         console.log(`[PUG #${lobby.lobbyNumber}] Bot preparing lobby on ${data.instanceId}`)
@@ -876,12 +878,16 @@ async function advanceToInProgress(lobbyId: number): Promise<void> {
 
       if (botResponse.ok) {
         const botData = await botResponse.json()
+        // NOTE: do NOT set botStatus here. This fetch awaits the bot's full
+        // create/configure flow, which only returns after the game has started.
+        // By then the bot's /api/pug/bot/status callbacks have already advanced
+        // botStatus to game_started; writing 'creating' here would clobber it
+        // back and freeze the progress bar. The bot callbacks own botStatus.
         await prisma.pugLobby.update({
           where: { id: lobbyId },
           data: {
             hostUserId: -1,
-            botInstanceId: botData.instanceId ?? null,
-            botStatus: 'creating',
+            ...(botData.instanceId ? { botInstanceId: botData.instanceId } : {}),
           },
         })
         botHosting = true
