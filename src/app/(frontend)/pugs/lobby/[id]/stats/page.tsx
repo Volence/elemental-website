@@ -15,8 +15,7 @@ export default async function MatchStatsPage({ params }: { params: Promise<{ id:
   const data = await loadMatchStats(lobbyId)
 
   return (
-    <div className="scrim-detail">
-      <div className="scrim-detail__bg" />
+    <div className="scrim-detail scrim-detail__bg">
       <div className="max-w-4xl mx-auto px-4 py-6">
         <h1 className="text-xl font-bold mb-4">PUG #{lobby.lobbyNumber} — Match Stats</h1>
         {data ? (
