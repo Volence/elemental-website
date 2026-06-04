@@ -1,0 +1,5 @@
+// Frontend-importable scrim analytics styles. variables + mixins emit no CSS;
+// scrim-analytics emits only `.scrim-*` namespaced rules — safe on public pages.
+@import '../app/(payload)/styles/variables';
+@import '../app/(payload)/styles/mixins';
+@import '../app/(payload)/styles/components/scrim-analytics';
