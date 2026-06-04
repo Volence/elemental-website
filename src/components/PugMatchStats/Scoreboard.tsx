@@ -13,7 +13,7 @@ function TeamTable({ team, players }: { team: TeamKey; players: PlayerLine[] }) 
         </thead>
         <tbody>
           {rows.map((p) => (
-            <tr key={p.name} className="border-t border-gray-800/60">
+            <tr key={p.personId ?? p.name} className="border-t border-gray-800/60">
               <td className="text-left py-1 text-gray-200">{p.isCaptain ? '★ ' : ''}{p.name}</td>
               <td className="text-center">{p.eliminations}</td>
               <td className="text-center">{p.deaths}</td>

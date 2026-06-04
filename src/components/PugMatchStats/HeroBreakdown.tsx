@@ -6,7 +6,7 @@ export function HeroBreakdown({ players, heroSwaps }: { players: PlayerLine[]; h
   return (
     <div className="space-y-2">
       {players.map((p) => (
-        <div key={p.name} className="rounded-lg border border-gray-800 p-2">
+        <div key={p.personId ?? p.name} className="rounded-lg border border-gray-800 p-2">
           <div className="text-sm text-gray-200 mb-1">Team {p.team} · {p.name}</div>
           <div className="flex flex-wrap gap-2 text-xs text-gray-400">
             {p.heroes.map((h) => (
