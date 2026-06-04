@@ -14,6 +14,7 @@ rule("ELMT Admin: Pause or Unpause")
 \tconditions
 \t{
 \t\tIs Button Held(Host Player, Button(Interact)) == True;
+\t\tTeam Of(Host Player) == All Teams;
 \t}
 
 \tactions
@@ -43,6 +44,7 @@ rule("ELMT Admin: End Game Draw")
 \tconditions
 \t{
 \t\tIs Button Held(Host Player, Button(Ultimate)) == True;
+\t\tTeam Of(Host Player) == All Teams;
 \t}
 
 \tactions
@@ -63,6 +65,7 @@ rule("ELMT Admin: Team 1 Wins")
 \tconditions
 \t{
 \t\tIs Button Held(Host Player, Button(Ability 1)) == True;
+\t\tTeam Of(Host Player) == All Teams;
 \t}
 
 \tactions
@@ -84,6 +87,7 @@ rule("ELMT Admin: Team 2 Wins")
 \tconditions
 \t{
 \t\tIs Button Held(Host Player, Button(Ability 2)) == True;
+\t\tTeam Of(Host Player) == All Teams;
 \t}
 
 \tactions
