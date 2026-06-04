@@ -17,9 +17,14 @@ export default async function MatchStatsPage({ params }: { params: Promise<{ id:
   return (
     <div className="scrim-detail scrim-detail__bg">
       <div className="max-w-4xl mx-auto px-4 py-6">
-        <h1 className="text-xl font-bold mb-4">PUG #{lobby.lobbyNumber} — Match Stats</h1>
         {data ? (
-          <MatchAnalytics data={data} />
+          <MatchAnalytics
+            mapDataId={data.mapDataId}
+            lobbyNumber={data.lobbyNumber}
+            mapName={data.mapName}
+            matchups={data.matchups}
+            unpaired={data.unpaired}
+          />
         ) : (
           <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-8 text-center text-gray-400">
             Stats aren&apos;t available for this match
