@@ -60,3 +60,29 @@ describe('deriveSummary', () => {
     expect(s.result).toBe('draw')
   })
 })
+
+const pl = (name: string, team: number, role: string | null) =>
+  ({ name, team, assignedRole: role, eliminations: 0, deaths: 0 } as any)
+
+describe('pairRoleMatchups', () => {
+  it('pairs one team1 + one team2 player per role; leftovers go unpaired', () => {
+    const players = [
+      pl('A', 1, 'tank'), pl('B', 2, 'tank'),
+      pl('C', 1, 'main-support'), pl('D', 2, 'main-support'),
+      pl('E', 1, null), // no role -> unpaired
+    ]
+    const { matchups, unpaired } = pairRoleMatchups(players)
+    const tank = matchups.find((m) => m.role === 'tank')!
+    expect(tank.team1?.name).toBe('A')
+    expect(tank.team2?.name).toBe('B')
+    expect(unpaired.map((p) => p.name)).toEqual(['E'])
+  })
+
+  it('keeps a half-filled role as a matchup with one null side', () => {
+    const players = [pl('A', 1, 'tank'), pl('B', 2, 'main-support')]
+    const { matchups, unpaired } = pairRoleMatchups(players)
+    expect(matchups.find((m) => m.role === 'tank')?.team2).toBeNull()
+    expect(matchups.find((m) => m.role === 'main-support')?.team1).toBeNull()
+    expect(unpaired).toEqual([])
+  })
+})
