@@ -135,13 +135,14 @@ function StatRow({ player, selected, readOnly }: { player: PlayerRow; selected: 
 }
 
 export function PlayerStatsTable({
-  teams, players, team1Won, team2Won, readOnly = true,
+  teams, players, team1Won, team2Won, readOnly = true, selectedPlayer,
 }: {
   teams: OverviewTeams
   players: PlayerRow[]
   team1Won: boolean
   team2Won: boolean
   readOnly?: boolean
+  selectedPlayer?: string | null
 }) {
   const [sortKey, setSortKey] = useState<SortKey>('team')
   const [sortDir, setSortDir] = useState<SortDir>('asc')
@@ -196,13 +197,13 @@ export function PlayerStatsTable({
             {/* Team 1 */}
             <TeamHeader name={teams.team1} color={TEAM1_COLOR} bgColor={TEAM1_DIM} won={team1Won} />
             {team1Players.map((p) => (
-              <StatRow key={p.name + p.hero} player={p} selected={false} readOnly={readOnly} />
+              <StatRow key={p.name + p.hero} player={p} selected={selectedPlayer === p.name} readOnly={readOnly} />
             ))}
             <TeamTotalRow players={team1Players} color={TEAM1_COLOR} />
             {/* Team 2 */}
             <TeamHeader name={teams.team2} color={TEAM2_COLOR} bgColor={TEAM2_DIM} won={team2Won} />
             {team2Players.map((p) => (
-              <StatRow key={p.name + p.hero} player={p} selected={false} readOnly={readOnly} />
+              <StatRow key={p.name + p.hero} player={p} selected={selectedPlayer === p.name} readOnly={readOnly} />
             ))}
             <TeamTotalRow players={team2Players} color={TEAM2_COLOR} />
           </tbody>

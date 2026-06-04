@@ -485,7 +485,7 @@ export default function ScrimMapDetailView() {
       </div>
 
       {/* Stat Table */}
-      <PlayerStatsTable teams={data.teams} players={data.players} team1Won={team1Won} team2Won={team2Won} readOnly={false} />
+      <PlayerStatsTable teams={data.teams} players={data.players} team1Won={team1Won} team2Won={team2Won} readOnly={false} selectedPlayer={selectedPlayer} />
 
       {/* Fight Analysis */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '28px' }}>
