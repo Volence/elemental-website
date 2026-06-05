@@ -373,6 +373,19 @@ class OWInstance:
         win = window_manager.get_window(self.id)
         if not win or not win.is_valid:
             if self.state not in (InstanceState.AVAILABLE, InstanceState.WARMING_UP):
+                # No OW window = no game running. If this instance was still
+                # tagged to a lobby (e.g. the window was torn down mid-flow by
+                # a reset/crash), the claim is now stale - clear it, otherwise
+                # the instance shows AVAILABLE in the UI but _first_free skips
+                # it (pug_lobby_id set = taken) and _pick_instance returns None
+                # -> 503 no_idle_instance -> lobby stuck "Retrying".
+                if self.pug_lobby_id is not None:
+                    log.warning(
+                        "[%s] No window but still tagged to lobby %s - clearing stale claim",
+                        self.id, self.pug_lobby_id,
+                    )
+                    self.pug_lobby_id = None
+                    self.lobby_number = None
                 self.state = InstanceState.AVAILABLE
             log.info(
                 "[%s] No tracked window, staying %s",
