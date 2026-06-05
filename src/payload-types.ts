@@ -2424,6 +2424,10 @@ export interface PugSeason {
     emea?: boolean | null;
     pacific?: boolean | null;
   };
+  /**
+   * When off, PUG lobbies skip the OW bot and use manual hosting.
+   */
+  botEnabled?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -4122,6 +4126,7 @@ export interface PugSeasonsSelect<T extends boolean = true> {
         emea?: T;
         pacific?: T;
       };
+  botEnabled?: T;
   updatedAt?: T;
   createdAt?: T;
 }

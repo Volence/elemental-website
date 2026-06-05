@@ -429,7 +429,14 @@ export async function advanceToDrafting(lobbyId: number): Promise<void> {
   await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'DRAFTING' } })
 
   // Fire-and-forget: tell bot to prepare OW lobby while players draft/ban/vote
-  if (process.env.OW_BOT_SERVICE_URL) {
+  const botEnabledForDraft = lobby.payloadSeasonId
+    ? ((await payload.findByID({
+        collection: 'pug-seasons',
+        id: lobby.payloadSeasonId,
+        overrideAccess: true,
+      }) as any)?.botEnabled !== false)
+    : true
+  if (process.env.OW_BOT_SERVICE_URL && botEnabledForDraft) {
     fetch(`${process.env.OW_BOT_SERVICE_URL}/lobby/prepare`, {
       method: 'POST',
       headers: {
@@ -766,8 +773,15 @@ async function advanceToInProgress(lobbyId: number): Promise<void> {
   }
 
   // Attempt automated lobby configuration via bot service
+  const botEnabledForInProgress = lobby.payloadSeasonId
+    ? ((await payloadInst.findByID({
+        collection: 'pug-seasons',
+        id: lobby.payloadSeasonId,
+        overrideAccess: true,
+      }) as any)?.botEnabled !== false)
+    : true
   let botHosting = false
-  if (process.env.OW_BOT_SERVICE_URL) {
+  if (process.env.OW_BOT_SERVICE_URL && botEnabledForInProgress) {
     try {
       const battleTags: Record<number, string> = {}
       for (const u of allUsers.docs as any[]) {

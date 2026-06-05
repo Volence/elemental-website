@@ -27,6 +27,7 @@ import * as migration_20260506_phase3_remap_fk_references from "./20260506_phase
 import * as migration_20260506_phase4_archive_old_tables from "./20260506_phase4_archive_old_tables";
 import * as migration_20260529_add_last_schedule_role from "./20260529_add_last_schedule_role";
 import * as migration_20260601_link_orphan_scrim_stats_to_people from "./20260601_link_orphan_scrim_stats_to_people";
+import * as migration_20260605_add_pug_season_bot_enabled from "./20260605_add_pug_season_bot_enabled";
 
 export const migrations = [
   {
@@ -173,5 +174,10 @@ export const migrations = [
     up: migration_20260601_link_orphan_scrim_stats_to_people.up,
     down: migration_20260601_link_orphan_scrim_stats_to_people.down,
     name: "20260601_link_orphan_scrim_stats_to_people",
+  },
+  {
+    up: migration_20260605_add_pug_season_bot_enabled.up,
+    down: migration_20260605_add_pug_season_bot_enabled.down,
+    name: "20260605_add_pug_season_bot_enabled",
   },
 ];

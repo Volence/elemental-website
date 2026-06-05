@@ -180,6 +180,14 @@ export const PugSeasons: CollectionConfig = {
         { name: 'pacific', type: 'checkbox', defaultValue: false, label: 'Pacific Open' },
       ],
     },
+    {
+      name: 'botEnabled',
+      type: 'checkbox',
+      defaultValue: true,
+      admin: {
+        description: 'When off, PUG lobbies skip the OW bot and use manual hosting.',
+      },
+    },
   ],
   timestamps: true,
 }
