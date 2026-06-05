@@ -5,6 +5,8 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useConfirm } from '@/components/ConfirmDialog'
 import { PugNav } from '../../PugNav'
+import '@/styles/scrim-shared.scss'
+import { LiveMatchView } from '@/components/PugLiveMatch/LiveMatchView'
 
 const ROLE_LABELS: Record<string, string> = {
   tank: 'Tank',
@@ -558,7 +560,7 @@ export default function LobbyPage() {
           />
 
           {lobby.botInstanceId && (
-            <LiveScoreboard lobbyId={lobby.id} botStatus={lobby.botStatus ?? ''} />
+            <LiveMatchView lobbyId={lobby.id} botStatus={lobby.botStatus} />
           )}
 
           <TeamsDisplay players={players} currentUserId={currentUserId} heroes={heroes} banState={lobby.banState} />
@@ -1488,169 +1490,6 @@ function RequeueButton({ lobby, me }: { lobby: any; me: Player }) {
       >
         Requeue for Next Game
       </button>
-    </div>
-  )
-}
-
-// ── Live Scoreboard ──
-
-type LivePlayerStats = {
-  team: string
-  hero: string
-  finalBlows: number
-  deaths: number
-  damageDelt: number
-  healingDealt: number
-}
-
-type LiveStats = {
-  map: string | null
-  mapType: string | null
-  team1: { name: string; score: number; players: Record<string, LivePlayerStats> }
-  team2: { name: string; score: number; players: Record<string, LivePlayerStats> }
-  round: number
-  matchTime: number
-  matchEnded: boolean
-  matchResult: string | null
-  eventCount: number
-}
-
-function fmtTime(s: number): string {
-  return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
-}
-
-function fmtStat(n: number): string {
-  if (n >= 10000) return `${(n / 1000).toFixed(0)}k`
-  if (n >= 1000) return `${(n / 1000).toFixed(1)}k`
-  return String(n)
-}
-
-function LiveScoreboard({ lobbyId, botStatus }: { lobbyId: number; botStatus: string }) {
-  const [stats, setStats] = useState<LiveStats | null>(null)
-
-  useEffect(() => {
-    if (!['game_started', 'players_joining'].includes(botStatus)) {
-      setStats(null)
-      return
-    }
-
-    let active = true
-    async function poll() {
-      try {
-        const res = await fetch(`/api/pug/lobby/${lobbyId}/live-stats`)
-        if (res.ok && active) {
-          const data = await res.json()
-          if (data.liveStats) setStats(data.liveStats)
-        }
-      } catch { /* ignore */ }
-    }
-
-    poll()
-    const interval = setInterval(poll, 5000)
-    return () => { active = false; clearInterval(interval) }
-  }, [lobbyId, botStatus])
-
-  if (!stats || stats.eventCount === 0) return null
-
-  const t1 = Object.entries(stats.team1.players)
-  const t2 = Object.entries(stats.team2.players)
-  if (t1.length === 0 && t2.length === 0) return null
-
-  const renderTeam = (
-    entries: [string, LivePlayerStats][],
-    teamColor: 'blue' | 'orange',
-    teamName: string,
-  ) => {
-    const colors = teamColor === 'blue'
-      ? { header: 'text-blue-400', row: 'hover:bg-blue-950/20', border: 'border-blue-800/30' }
-      : { header: 'text-orange-400', row: 'hover:bg-orange-950/20', border: 'border-orange-800/30' }
-
-    return (
-      <div>
-        <div className={`text-[10px] font-bold uppercase tracking-wider ${colors.header} px-3 py-1.5`}>
-          {teamName}
-        </div>
-        {entries.map(([name, p]) => (
-          <div
-            key={name}
-            className={`grid grid-cols-[1fr_72px_32px_32px_48px_48px] gap-1 px-3 py-1.5 text-xs border-t ${colors.border} ${colors.row} transition-colors`}
-          >
-            <span className="text-gray-200 truncate">{name}</span>
-            <span className="text-gray-500 truncate text-[11px]">{p.hero}</span>
-            <span className="text-green-400 text-right font-medium">{p.finalBlows}</span>
-            <span className="text-red-400 text-right font-medium">{p.deaths}</span>
-            <span className="text-amber-400 text-right text-[11px]">{fmtStat(p.damageDelt)}</span>
-            <span className="text-emerald-400 text-right text-[11px]">{fmtStat(p.healingDealt)}</span>
-          </div>
-        ))}
-      </div>
-    )
-  }
-
-  return (
-    <div className="border border-cyan-800/40 bg-gradient-to-b from-cyan-950/20 to-gray-950/80 rounded-xl overflow-hidden">
-      {/* Header */}
-      <div className="px-4 py-2.5 bg-cyan-950/30 border-b border-cyan-800/40 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
-          </span>
-          <span className="text-xs font-bold text-cyan-300 uppercase tracking-wider">Live Scoreboard</span>
-        </div>
-        <div className="flex items-center gap-3 text-xs text-gray-500">
-          {stats.map && (
-            <span className="text-gray-400">
-              {stats.map}
-              {stats.mapType && <span className="text-gray-600"> · {stats.mapType}</span>}
-            </span>
-          )}
-          {stats.round > 0 && <span>R{stats.round}</span>}
-          <span className="font-mono">{fmtTime(stats.matchTime)}</span>
-        </div>
-      </div>
-
-      {/* Score */}
-      <div className="flex items-center justify-center gap-6 py-3 border-b border-gray-800/40">
-        <span className="text-sm font-bold text-blue-400">{stats.team1.name}</span>
-        <div className="flex items-center gap-3">
-          <span className="text-2xl font-black text-blue-300">{stats.team1.score}</span>
-          <span className="text-gray-600 text-lg">—</span>
-          <span className="text-2xl font-black text-orange-300">{stats.team2.score}</span>
-        </div>
-        <span className="text-sm font-bold text-orange-400">{stats.team2.name}</span>
-      </div>
-
-      {/* Column headers */}
-      <div className="grid grid-cols-[1fr_72px_32px_32px_48px_48px] gap-1 px-3 py-1.5 text-[10px] font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-800/30">
-        <span>Player</span>
-        <span>Hero</span>
-        <span className="text-right">K</span>
-        <span className="text-right">D</span>
-        <span className="text-right">Dmg</span>
-        <span className="text-right">Heal</span>
-      </div>
-
-      {/* Teams */}
-      {t1.length > 0 && renderTeam(t1, 'blue', stats.team1.name)}
-      {t2.length > 0 && (
-        <div className="border-t border-gray-700/50">
-          {renderTeam(t2, 'orange', stats.team2.name)}
-        </div>
-      )}
-
-      {/* Match result */}
-      {stats.matchEnded && stats.matchResult && (
-        <div className={`text-center py-2 text-xs font-bold border-t ${
-          stats.matchResult === 'team1' ? 'bg-blue-950/30 border-blue-800/40 text-blue-300'
-          : stats.matchResult === 'team2' ? 'bg-orange-950/30 border-orange-800/40 text-orange-300'
-          : 'bg-gray-900/50 border-gray-700/40 text-gray-400'
-        }`}>
-          {stats.matchResult === 'team1' ? `${stats.team1.name} Wins!`
-          : stats.matchResult === 'team2' ? `${stats.team2.name} Wins!`
-          : 'Draw'}
-        </div>
-      )}
     </div>
   )
 }
