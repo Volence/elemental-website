@@ -53,6 +53,10 @@ class CallbackClient:
             )
             if inst:
                 inst.last_status = status
+            # Remember terminal outcomes so the website can pull the result even
+            # after the instance is freed (it unassigns right after game end).
+            if status == "game_ended":
+                instance_manager.record_finished(pug_lobby_id, status, match_result)
         except Exception:
             pass
 

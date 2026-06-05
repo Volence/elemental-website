@@ -64,6 +64,7 @@ class LobbyStatusResponse(BaseModel):
     instanceId: str
     state: str
     status: str | None = None
+    matchResult: str | None = None
     playersJoined: int
     startedAt: str | None = None
     liveStats: dict | None = None
@@ -167,11 +168,24 @@ async def create_lobby(req: LobbyCreateRequest):
 async def lobby_status(pug_lobby_id: int):
     instance = instance_manager.get_by_lobby(pug_lobby_id)
     if not instance:
+        # Instance already freed - serve the remembered final outcome if we have
+        # it, so the website can still complete the match via the status pull.
+        finished = instance_manager.finished_lobbies.get(pug_lobby_id)
+        if finished:
+            return LobbyStatusResponse(
+                instanceId="",
+                state="post_game",
+                status=finished.get("status"),
+                matchResult=finished.get("matchResult"),
+                playersJoined=0,
+            )
         raise HTTPException(status_code=404, detail="No instance assigned to this lobby")
+    live = instance.live_stats or {}
     return LobbyStatusResponse(
         instanceId=instance.id,
         state=instance.state.value,
         status=instance.last_status,
+        matchResult=live.get("matchResult") if isinstance(live, dict) else None,
         playersJoined=instance.players_joined,
         startedAt=instance.started_at.isoformat() if instance.started_at else None,
         liveStats=instance.live_stats,

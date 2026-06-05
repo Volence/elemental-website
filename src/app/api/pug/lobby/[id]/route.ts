@@ -32,8 +32,7 @@ export async function GET(request: NextRequest, { params }: Params) {
     if (
       process.env.OW_BOT_SERVICE_URL &&
       lobby.hostUserId === -1 &&
-      lobby.status === 'IN_PROGRESS' &&
-      !['game_started', 'game_ended'].includes(lobby.botStatus ?? '')
+      lobby.status === 'IN_PROGRESS'
     ) {
       try {
         const ctrl = new AbortController()
@@ -46,10 +45,29 @@ export async function GET(request: NextRequest, { params }: Params) {
         if (botRes.ok) {
           const botData = await botRes.json()
           const pulled = botData?.status as string | null
-          if (pulled && pulled !== lobby.botStatus) {
+          if (pulled === 'game_ended') {
+            // Match finished. Complete it with the bot's result if we have one
+            // (completeMatch is idempotent - it atomically claims the lobby);
+            // otherwise drop to REPORTING so players report it manually.
+            const result = botData?.matchResult as string | null
+            if (result) {
+              const { completeMatch } = await import('@/pug/lobbyStateMachine')
+              await completeMatch(lobbyId, result as any).catch(() => {})
+              lobby.status = 'COMPLETED'
+            } else {
+              await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'REPORTING', botStatus: 'game_ended' } })
+              lobby.status = 'REPORTING'
+              lobby.botStatus = 'game_ended'
+            }
+          } else if (pulled && pulled !== lobby.botStatus) {
             await prisma.pugLobby.update({ where: { id: lobbyId }, data: { botStatus: pulled } })
             lobby.botStatus = pulled
           }
+        } else if (botRes.status === 404 && lobby.botStatus === 'game_started') {
+          // Match was live but the bot instance is gone with no remembered
+          // result (e.g. the bot restarted mid-game) - unstick to manual report.
+          await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'REPORTING' } })
+          lobby.status = 'REPORTING'
         }
       } catch {
         /* bot unreachable / slow - keep existing botStatus */

@@ -12,6 +12,18 @@ log = logging.getLogger("ow-bot.manager")
 class InstanceManager:
     def __init__(self):
         self.instances: list[OWInstance] = []
+        # Remembers the final outcome of recently-finished lobbies, keyed by
+        # pug_lobby_id, so the website can pull the result via /lobby/{id}/status
+        # even after the instance is freed (cleanup clears pug_lobby_id almost
+        # immediately after game end). Bounded to the most recent entries.
+        self.finished_lobbies: dict[int, dict] = {}
+
+    def record_finished(self, pug_lobby_id: int, status: str, match_result: str | None):
+        self.finished_lobbies[pug_lobby_id] = {"status": status, "matchResult": match_result}
+        # Keep only the most recent 50 to bound memory over a long session.
+        if len(self.finished_lobbies) > 50:
+            oldest = next(iter(self.finished_lobbies))
+            self.finished_lobbies.pop(oldest, None)
 
     async def start(self):
         for i, acct_cfg in enumerate(settings.accounts):
