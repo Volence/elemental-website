@@ -1528,6 +1528,14 @@ function RequeueButton({ lobby, me }: { lobby: any; me: Player }) {
 
 // ── Bot Hosting Panel ──
 
+// Ban chip colors by the team that banned the hero - Team 1 blue, Team 2 orange
+// (matches team colors used across the lobby/open views).
+function banChipClasses(team: number): string {
+  return team === 1
+    ? 'bg-blue-950/50 border-blue-800 text-blue-300'
+    : 'bg-orange-950/50 border-orange-800 text-orange-300'
+}
+
 const BOT_STATUS_DISPLAY: Record<string, { label: string; color: string; pulse?: boolean; description: string; step: number }> = {
   warming_up: {
     label: 'Starting Up',
@@ -1603,7 +1611,7 @@ function BotHostingPanel({
   lobby: any
   isPugAdmin: boolean
   selectedMap: LobbyData['selectedMap']
-  bannedHeroObjects: Hero[]
+  bannedHeroObjects: Array<Hero & { banTeam: number }>
   myTeam: number | null
 }) {
   const [cmdLoading, setCmdLoading] = useState<string | null>(null)
@@ -1759,7 +1767,7 @@ function BotHostingPanel({
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs text-gray-500 shrink-0">Bans:</span>
             {bannedHeroObjects.map((h) => (
-              <span key={h.id} className="inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded bg-red-950/60 border border-red-900 text-red-400">
+              <span key={h.id} title={`Banned by Team ${h.banTeam}`} className={`inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded border ${banChipClasses(h.banTeam)}`}>
                 {h.imageUrl && <img src={h.imageUrl} alt="" className="w-5 h-5 rounded-full object-cover" />}
                 {h.name}
               </span>
@@ -1836,8 +1844,11 @@ function LobbySetupAssistant({
   // Get banned hero names from banState
   const banRecords = (lobby.banState?.bans ?? []) as Array<{ heroId: number; team: number }>
   const bannedHeroObjects = banRecords
-    .map((b) => heroes.find((h) => h.id === b.heroId))
-    .filter(Boolean) as Hero[]
+    .map((b) => {
+      const hero = heroes.find((h) => h.id === b.heroId)
+      return hero ? { ...hero, banTeam: b.team } : null
+    })
+    .filter(Boolean) as Array<Hero & { banTeam: number }>
   const bannedHeroes = bannedHeroObjects.map((h) => h.name)
 
   const team1 = players.filter((p) => p.team === 1)
@@ -1923,7 +1934,7 @@ function LobbySetupAssistant({
               <div className="flex items-center gap-2 px-3 py-2 bg-gray-900/60 border border-gray-800 rounded-lg flex-wrap">
                 <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold shrink-0">Bans</span>
                 {bannedHeroObjects.map((h) => (
-                  <span key={h.id} className="inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded bg-red-950/60 border border-red-900 text-red-400">
+                  <span key={h.id} title={`Banned by Team ${h.banTeam}`} className={`inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded border ${banChipClasses(h.banTeam)}`}>
                     {h.imageUrl && <img src={h.imageUrl} alt="" className="w-5 h-5 rounded-full object-cover" />}
                     {h.name}
                   </span>
@@ -2032,7 +2043,7 @@ function LobbySetupAssistant({
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs text-gray-500 shrink-0">Bans:</span>
           {bannedHeroObjects.map((h) => (
-            <span key={h.id} className="inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded bg-red-950/60 border border-red-900 text-red-400">
+            <span key={h.id} title={`Banned by Team ${h.banTeam}`} className={`inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded border ${banChipClasses(h.banTeam)}`}>
               {h.imageUrl && <img src={h.imageUrl} alt="" className="w-5 h-5 rounded-full object-cover" />}
               {h.name}
             </span>
