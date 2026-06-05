@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { isPugAdmin } from '@/access/roles'
 import prisma from '@/lib/prisma'
+import { freeBotInstanceForLobby } from '@/pug/lobbyStateMachine'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -55,10 +56,16 @@ export async function POST(request: NextRequest, { params }: Params) {
       if (!validStatuses.includes(status)) {
         return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
       }
+      const before = await prisma.pugLobby.findUnique({ where: { id: lobbyId }, select: { botInstanceId: true } })
       await prisma.pugLobby.update({
         where: { id: lobbyId },
         data: { status },
       })
+      // Forcing a lobby out of the active flow should release any bound bot
+      // instance (otherwise a reset mid code-import leaves it stuck Warming Up).
+      if (['OPEN', 'READY', 'CANCELLED', 'COMPLETED', 'DISPUTED'].includes(status) && before?.botInstanceId) {
+        await freeBotInstanceForLobby(lobbyId, before.botInstanceId)
+      }
       return NextResponse.json({ success: true })
     }
 

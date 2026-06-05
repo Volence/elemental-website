@@ -1243,9 +1243,27 @@ export async function completeMatch(lobbyId: number, result: MatchResult): Promi
   await autoCreateReplacementLobby(lobby).catch(console.error)
 }
 
+/** Release the bot instance bound to this lobby and clear the lobby's bot fields.
+ *  Fire-and-forget to the bot so a slow/unreachable bot can't block a reset.
+ *  Fixes: resetting a lobby mid code-import left the instance stuck (Warming Up). */
+export async function freeBotInstanceForLobby(lobbyId: number, botInstanceId: string | null): Promise<void> {
+  if (!botInstanceId) return
+  if (process.env.OW_BOT_SERVICE_URL) {
+    fetch(`${process.env.OW_BOT_SERVICE_URL}/lobby/${lobbyId}/cancel`, {
+      method: 'POST',
+      headers: { 'X-Bot-Secret': process.env.OW_BOT_SECRET ?? '' },
+      signal: AbortSignal.timeout(5000),
+    }).catch(() => {})
+  }
+  await prisma.pugLobby
+    .update({ where: { id: lobbyId }, data: { botInstanceId: null, botStatus: null } })
+    .catch(() => {})
+}
+
 export async function cancelLobby(lobbyId: number, reason?: string): Promise<void> {
   const lobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId } })
   await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'CANCELLED' } })
+  await freeBotInstanceForLobby(lobbyId, lobby?.botInstanceId ?? null)
   ;['ready', 'draft', 'mapvote', 'ban', 'confirm', 'timeout', 'voice_cleanup'].forEach((phase) =>
     cancelTimer(timerKey(lobbyId, phase)),
   )
