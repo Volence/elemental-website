@@ -1589,11 +1589,11 @@ const BOT_STATUS_DISPLAY: Record<string, { label: string; color: string; pulse?:
     description: 'Match complete. Results are being processed...',
   },
   error: {
-    label: 'Retrying...',
+    label: 'Bot Problem',
     color: 'text-yellow-400',
     pulse: true,
     step: 0,
-    description: 'The bot ran into an issue and is recovering. It will retry automatically.',
+    description: 'The bot hit a problem setting up. Re-checking its status - if it can\'t recover on its own, switch to a manual host below.',
   },
 }
 
@@ -1608,6 +1608,7 @@ function BotHostingPanel({
 }) {
   const [cmdLoading, setCmdLoading] = useState<string | null>(null)
   const [cmdError, setCmdError] = useState<string | null>(null)
+  const [switching, setSwitching] = useState(false)
 
   const botStatus = (lobby.botStatus as string) ?? 'warming_up'
   const defaultStatus = { label: botStatus, color: 'text-gray-400', description: '' }
@@ -1633,7 +1634,30 @@ function BotHostingPanel({
     }
   }
 
+  async function handleSwitchToManual() {
+    setSwitching(true)
+    setCmdError(null)
+    try {
+      const res = await fetch(`/api/pug/lobby/${lobby.id}/host`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'switchToManual' }),
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        setCmdError(data.error ?? 'Failed to switch to manual host')
+        setSwitching(false)
+      }
+      // On success the lobby poll flips hostUserId -> null within a few seconds
+      // and this panel is replaced by the manual volunteer-host UI.
+    } catch {
+      setCmdError('Failed to switch to manual host')
+      setSwitching(false)
+    }
+  }
+
   const gameActive = ['game_started', 'players_joining'].includes(botStatus)
+  const canManage = isPugAdmin || myTeam != null
 
   // Step progress tracking
   const steps = [
@@ -1700,6 +1724,20 @@ function BotHostingPanel({
         <p className="text-sm text-gray-400">
           {statusInfo.description}
         </p>
+
+        {botStatus === 'error' && canManage && (
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={handleSwitchToManual}
+              disabled={switching}
+              className="px-3 py-1.5 text-xs font-medium bg-yellow-600/15 border border-yellow-500/30 text-yellow-300 rounded-lg hover:bg-yellow-600/25 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              {switching ? 'Switching…' : 'Switch to manual host'}
+            </button>
+            <span className="text-[11px] text-gray-500">Skip the bot and let a player host the OW lobby.</span>
+            {cmdError && <span className="text-[11px] text-red-400">{cmdError}</span>}
+          </div>
+        )}
 
         <div className="flex flex-wrap gap-3">
           {myTeam && (
