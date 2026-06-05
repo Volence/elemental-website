@@ -908,12 +908,30 @@ async function advanceToInProgress(lobbyId: number): Promise<void> {
         })
         botHosting = true
       } else {
-        console.error(`[PUG #${lobby.lobbyNumber}] Bot returned ${botResponse.status}, will retry`)
-        await prisma.pugLobby.update({
-          where: { id: lobbyId },
-          data: { hostUserId: -1, botStatus: 'error' },
-        })
-        botHosting = true
+        // Distinguish "all bots busy" (503 no_idle_instance / no_prepared_instance)
+        // from a real bot error. When no instance is free, don't sit in an endless
+        // "recovering/retrying" - fall back to MANUAL hosting (leave hostUserId null
+        // so the volunteer-host UI appears) so the lobby is never stuck.
+        let detail = ''
+        try { detail = ((await botResponse.json()) as any)?.detail ?? '' } catch { /* no body */ }
+        const noBotAvailable =
+          botResponse.status === 503 &&
+          (detail.includes('no_idle_instance') || detail.includes('no_prepared_instance'))
+        if (noBotAvailable) {
+          console.warn(`[PUG #${lobby.lobbyNumber}] No free bot instance - falling back to manual hosting`)
+          await prisma.pugLobby.update({
+            where: { id: lobbyId },
+            data: { hostUserId: null, botStatus: 'no_bot', botInstanceId: null },
+          })
+          // botHosting stays false -> lobby shows the manual volunteer-host UI
+        } else {
+          console.error(`[PUG #${lobby.lobbyNumber}] Bot returned ${botResponse.status}`)
+          await prisma.pugLobby.update({
+            where: { id: lobbyId },
+            data: { hostUserId: -1, botStatus: 'error' },
+          })
+          botHosting = true
+        }
       }
     } catch (err) {
       console.error(`[PUG #${lobby.lobbyNumber}] Bot service unavailable:`, err)
