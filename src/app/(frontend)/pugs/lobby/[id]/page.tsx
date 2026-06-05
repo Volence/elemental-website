@@ -1821,9 +1821,13 @@ function LobbySetupAssistant({
 
   const isHost = hostInfo.hostUserId === currentUserId
   const hasHost = hostInfo.hostUserId !== null
+  // 'no_bot' means the bot was given up on for this lobby (no free instance, or
+  // an admin/player switched it to manual) - it must not auto-re-engage even
+  // though bots are globally enabled.
+  const botGaveUp = lobby.botStatus === 'no_bot'
   // In manual mode the bot is never hosting. Otherwise the bot hosts when the
   // sentinel id (-1) is set or when no human host exists and the bot is on.
-  const isBotHosting = !manualMode && (hostInfo.hostUserId === -1 || (botEnabled && !hasHost))
+  const isBotHosting = !manualMode && !botGaveUp && (hostInfo.hostUserId === -1 || (botEnabled && !hasHost))
   // Allow a human to take over a lobby that has no host, or a bot/errored lobby
   // (sentinel -1) while in manual mode.
   const canVolunteer = hostInfo.hostUserId === null || (manualMode && hostInfo.hostUserId === -1)

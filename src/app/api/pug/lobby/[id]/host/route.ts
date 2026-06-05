@@ -59,7 +59,10 @@ export async function POST(request: NextRequest, { params }: Params) {
       }
       await prisma.pugLobby.update({
         where: { id: lobbyId },
-        data: { hostUserId: null, botStatus: null, botInstanceId: null },
+        // botStatus 'no_bot' marks the lobby manual so the bot doesn't auto
+        // re-engage (it would, since bots are globally enabled and there's no
+        // human host yet). The lobby page treats 'no_bot' as "show volunteer UI".
+        data: { hostUserId: null, botStatus: 'no_bot', botInstanceId: null },
       })
       return NextResponse.json({ success: true, manual: true })
     }
