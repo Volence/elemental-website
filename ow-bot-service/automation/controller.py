@@ -1535,11 +1535,11 @@ class LobbyController:
         both_pos = cache.get("both_pos")
         if both_pos and cache.get("last_team") != team:
             await click(*both_pos)
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(0.2)
             target_pos = {0: cache["spec_pos"], 1: cache["team1_pos"], 2: cache["team2_pos"]}.get(team)
             if target_pos:
                 await click(*target_pos)
-                await asyncio.sleep(0.5)
+                await asyncio.sleep(0.2)
             cache["last_team"] = team
 
         # 4) Paste and send
