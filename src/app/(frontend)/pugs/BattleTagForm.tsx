@@ -7,14 +7,20 @@ export function BattleTagForm({ playerId, initialTag }: { playerId: number; init
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState('')
 
+  const valid = tag.trim() !== '' && tag.includes('#')
+
   async function handleSave() {
+    if (!valid) {
+      setMsg('Enter a valid BattleTag (e.g. Player#1234)')
+      return
+    }
     setSaving(true)
     setMsg('')
     try {
       const res = await fetch(`/api/people/${playerId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pugBattleTag: tag }),
+        body: JSON.stringify({ pugBattleTag: tag.trim() }),
       })
       if (res.ok) {
         setMsg('Saved!')
@@ -45,13 +51,16 @@ export function BattleTagForm({ playerId, initialTag }: { playerId: number; init
         />
         <button
           onClick={handleSave}
-          disabled={saving || !changed}
+          disabled={saving || !changed || !valid}
           className="px-4 py-2 bg-blue-600 hover:bg-blue-500 hover:shadow-md hover:shadow-blue-600/20 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:hover:scale-100 disabled:hover:shadow-none text-white text-sm font-medium rounded-lg transition-all duration-200"
         >
           {saving ? 'Saving...' : 'Save'}
         </button>
         {msg && (
           <span className={`text-xs font-medium ${msg === 'Saved!' ? 'text-green-400' : 'text-red-400'}`}>{msg}</span>
+        )}
+        {!msg && changed && !valid && (
+          <span className="text-xs font-medium text-amber-400">Can&apos;t be empty - use Name#1234</span>
         )}
       </div>
     </div>
