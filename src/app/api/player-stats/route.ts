@@ -111,7 +111,7 @@ export async function GET(req: NextRequest) {
       if (allowedPersonIds && !allowedPersonIds.has(personId)) {
         return NextResponse.json({ error: 'Access denied - you can only view stats for your teammates' }, { status: 403 })
       }
-      return getPlayerDetailByPerson(personId, range, scopedScrimIds)
+      return getPlayerDetailByPerson(personId, range, null)
     }
   }
 
@@ -127,7 +127,7 @@ export async function GET(req: NextRequest) {
       if (allowedPersonIds && !allowedPersonIds.has(personId)) {
         return NextResponse.json({ error: 'Access denied - you can only view stats for your teammates' }, { status: 403 })
       }
-      return getPlayerDetailByPerson(personId, range, scopedScrimIds)
+      return getPlayerDetailByPerson(personId, range, null)
     }
 
     // Fallback: try raw player_name match (for unlinked players)
@@ -472,7 +472,7 @@ async function getPlayerList(range: string, scopedScrimIds: number[] | null = nu
 
 // ── Player Detail (by personId - merges all aliases) ────
 
-async function getPlayerDetailByPerson(personId: number, range: string, _scopedScrimIds: number[] | null = null) {
+async function getPlayerDetailByPerson(personId: number, range: string, scopeMapDataIds: number[] | null = null) {
   // Look up Person display name
   const personRow = await prisma.$queryRaw<[{ name: string }]>`
     SELECT name FROM people WHERE id = ${personId} LIMIT 1
@@ -536,6 +536,7 @@ async function getPlayerDetailByPerson(personId: number, range: string, _scopedS
       scoped_accuracy
     FROM final_stats
     WHERE "personId" = ${personId}
+      AND (${scopeMapDataIds === null} OR "mapDataId" = ANY(${scopeMapDataIds ?? []}::int[]))
     ORDER BY player_name, player_hero, "mapDataId", id DESC
   `
 
