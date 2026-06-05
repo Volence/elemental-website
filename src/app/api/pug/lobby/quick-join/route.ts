@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
-import { joinLobby, getActiveBan, isPugRegion } from '@/pug'
+import { joinLobby, getActiveBan, isPugRegion, createOpenLobby } from '@/pug'
 
 const VALID_ROLES = ['tank', 'flex_dps', 'hitscan_dps', 'flex_support', 'main_support']
 
@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { roles, region } = body
+  const { roles, region, payloadSeasonId } = body
 
   if (!roles || !Array.isArray(roles) || roles.length === 0) {
     return NextResponse.json({ error: 'roles array required' }, { status: 400 })
@@ -64,8 +64,16 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  return NextResponse.json(
-    { error: 'No available lobbies to join. Try creating a new lobby.' },
-    { status: 404 },
-  )
+  // No joinable lobby exists (none open, or all full / role-conflicting) -
+  // create a fresh one and join it, so "Join Queue" always works in one step.
+  if (typeof payloadSeasonId !== 'number') {
+    return NextResponse.json({ error: 'season required' }, { status: 400 })
+  }
+  try {
+    const newLobby = await createOpenLobby(user.id, payloadSeasonId, region)
+    await joinLobby(newLobby.id, user.id, roles)
+    return NextResponse.json({ success: true, lobbyId: newLobby.id, created: true })
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Failed to join queue' }, { status: 500 })
+  }
 }

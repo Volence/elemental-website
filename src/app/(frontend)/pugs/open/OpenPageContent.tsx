@@ -66,7 +66,6 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
   const router = useRouter()
   const [lobbies, setLobbies] = useState<Lobby[]>([])
   const [loadingLobbies, setLoadingLobbies] = useState(true)
-  const [creating, setCreating] = useState(false)
   const [joiningId, setJoiningId] = useState<number | null>(null)
   const [selectedRoles, setSelectedRoles] = useState<string[]>([])
   const [roleError, setRoleError] = useState<string | null>(null)
@@ -94,27 +93,10 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
     return () => clearInterval(interval)
   }, [fetchLobbies])
 
-  async function handleCreate() {
-    if (!seasonId) return
-    setCreating(true)
+  function openJoinQueue() {
+    setQuickJoinOpen(true)
+    setQuickJoinRoles([])
     setActionError(null)
-    try {
-      const res = await fetch('/api/pug/lobby', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ payloadSeasonId: seasonId, region: selectedRegion }),
-      })
-      const data = await res.json()
-      if (res.ok) {
-        router.push(`/pugs/lobby/${data.lobby.id}`)
-      } else {
-        setActionError(data.error || 'Failed to create lobby')
-      }
-    } catch {
-      setActionError('Failed to create lobby')
-    } finally {
-      setCreating(false)
-    }
   }
 
   function toggleRole(role: string, blocked: boolean) {
@@ -136,7 +118,7 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
       const res = await fetch('/api/pug/lobby/quick-join', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roles: quickJoinRoles, region: selectedRegion }),
+        body: JSON.stringify({ roles: quickJoinRoles, region: selectedRegion, payloadSeasonId: seasonId }),
       })
       const data = await res.json()
       if (res.ok) {
@@ -189,8 +171,6 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
     return true
   })?.id
 
-  const hasJoinableLobbies = openLobbies.length > 0
-
   return (
     <>
       <div className="flex items-start justify-between mb-4">
@@ -199,26 +179,17 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
           {seasonName && <p className="text-sm text-gray-500 mt-0.5">{seasonName}</p>}
         </div>
         <div className="flex items-center gap-2">
-          {currentUser && isRegistered && seasonId && hasJoinableLobbies && !myLobbyId && (
+          {currentUser && isRegistered && seasonId && !myLobbyId && (
             <button
               onClick={() => { setQuickJoinOpen(!quickJoinOpen); setQuickJoinRoles([]); setActionError(null) }}
               disabled={needsBattleTag}
               className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
                 quickJoinOpen
                   ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                  : 'bg-green-600 hover:bg-green-500 text-white'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
               }`}
             >
-              {quickJoinOpen ? 'Cancel' : 'Quick Join'}
-            </button>
-          )}
-          {currentUser && isRegistered && seasonId && (
-            <button
-              onClick={handleCreate}
-              disabled={creating || needsBattleTag}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors"
-            >
-              {creating ? 'Joining…' : 'Join Queue'}
+              {quickJoinOpen ? 'Cancel' : 'Join Queue'}
             </button>
           )}
         </div>
@@ -244,7 +215,7 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
       {/* Quick Join role picker */}
       {quickJoinOpen && (
         <div className="border border-gray-700/80 rounded-xl p-4 mb-6 bg-gradient-to-b from-gray-900/80 to-gray-950/80">
-          <p className="text-sm text-gray-400 mb-3 font-medium">Select your roles and we will place you in the best lobby</p>
+          <p className="text-sm text-gray-400 mb-3 font-medium">Select your roles and we will place you in a lobby</p>
           <div className="flex flex-wrap gap-2 mb-3">
             {ROLES.map((role) => (
               <button
@@ -270,7 +241,7 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
             disabled={quickJoining || quickJoinRoles.length === 0}
             className="w-full py-2 bg-green-600 hover:bg-green-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-lg transition-colors"
           >
-            {quickJoining ? 'Joining...' : 'Join Best Lobby'}
+            {quickJoining ? 'Joining...' : 'Join Queue'}
           </button>
         </div>
       )}
@@ -349,13 +320,12 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
         <div className="text-center py-16 text-gray-500">
           <div className="text-4xl mb-3 opacity-30">🎮</div>
           <p className="text-lg mb-1 text-gray-400">No active lobbies</p>
-          {currentUser && isRegistered && seasonId && (
+          {currentUser && isRegistered && seasonId && !needsBattleTag && (
             <p className="text-sm text-gray-500">
               Be the first -{' '}
               <button
-                onClick={handleCreate}
-                disabled={creating}
-                className="text-blue-400 hover:text-blue-300 disabled:opacity-50 font-medium"
+                onClick={openJoinQueue}
+                className="text-blue-400 hover:text-blue-300 font-medium"
               >
                 join the queue
               </button>{' '}
