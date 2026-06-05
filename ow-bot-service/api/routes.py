@@ -192,6 +192,22 @@ async def lobby_status(pug_lobby_id: int):
     )
 
 
+class ResultLogResponse(BaseModel):
+    logContent: str | None = None
+    matchResult: str | None = None
+
+
+@router.get("/lobby/{pug_lobby_id}/result-log", response_model=ResultLogResponse)
+async def lobby_result_log(pug_lobby_id: int):
+    """Retained workshop log + result for a finished lobby, so the website can
+    pull full stats instead of relying on the push callback."""
+    finished = instance_manager.finished_lobbies.get(pug_lobby_id) or {}
+    return ResultLogResponse(
+        logContent=instance_manager.finished_logs.get(pug_lobby_id),
+        matchResult=finished.get("matchResult"),
+    )
+
+
 @router.post("/lobby/{pug_lobby_id}/cancel")
 async def cancel_lobby(pug_lobby_id: int):
     instance = instance_manager.get_by_lobby(pug_lobby_id)

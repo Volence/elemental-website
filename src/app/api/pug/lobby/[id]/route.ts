@@ -46,18 +46,56 @@ export async function GET(request: NextRequest, { params }: Params) {
           const botData = await botRes.json()
           const pulled = botData?.status as string | null
           if (pulled === 'game_ended') {
-            // Match finished. Complete it with the bot's result if we have one
-            // (completeMatch is idempotent - it atomically claims the lobby);
-            // otherwise drop to REPORTING so players report it manually.
-            const result = botData?.matchResult as string | null
-            if (result) {
-              const { completeMatch } = await import('@/pug/lobbyStateMachine')
-              await completeMatch(lobbyId, result as any).catch(() => {})
-              lobby.status = 'COMPLETED'
-            } else {
-              await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'REPORTING', botStatus: 'game_ended' } })
-              lobby.status = 'REPORTING'
-              lobby.botStatus = 'game_ended'
+            // Atomically claim ingestion so concurrent polls don't double-ingest
+            // (stats + ELO aren't safe to repeat). Only the poll that flips
+            // botStatus to 'ingesting' proceeds; others skip this round.
+            const claim = await prisma.pugLobby.updateMany({
+              where: { id: lobbyId, status: 'IN_PROGRESS', botStatus: { not: 'ingesting' } },
+              data: { botStatus: 'ingesting' },
+            })
+            if (claim.count === 1) {
+              try {
+                // Pull the match log and ingest full stats (scoreboard + ELO +
+                // completion). Falls back to result-only, then to manual report.
+                let done = false
+                try {
+                  const lc = new AbortController()
+                  const lt = setTimeout(() => lc.abort(), 8000)
+                  const logRes = await fetch(`${process.env.OW_BOT_SERVICE_URL}/lobby/${lobbyId}/result-log`, {
+                    headers: { 'X-Bot-Secret': process.env.OW_BOT_SECRET ?? '' },
+                    signal: lc.signal,
+                  })
+                  clearTimeout(lt)
+                  if (logRes.ok) {
+                    const logData = await logRes.json()
+                    if (logData?.logContent) {
+                      const { ingestMatchLog } = await import('@/pug/ingestStats')
+                      await ingestMatchLog(lobbyId, logData.logContent)
+                      done = true
+                    }
+                  }
+                } catch {
+                  /* log fetch/ingest failed - fall through to result-only */
+                }
+
+                if (done) {
+                  lobby.status = 'COMPLETED'
+                } else {
+                  const result = botData?.matchResult as string | null
+                  if (result) {
+                    const { completeMatch } = await import('@/pug/lobbyStateMachine')
+                    await completeMatch(lobbyId, result as any)
+                    lobby.status = 'COMPLETED'
+                  } else {
+                    await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'REPORTING', botStatus: 'game_ended' } })
+                    lobby.status = 'REPORTING'
+                    lobby.botStatus = 'game_ended'
+                  }
+                }
+              } catch {
+                // Release the claim so a later poll can retry the completion.
+                await prisma.pugLobby.update({ where: { id: lobbyId }, data: { botStatus: 'game_ended' } }).catch(() => {})
+              }
             }
           } else if (pulled && pulled !== lobby.botStatus) {
             await prisma.pugLobby.update({ where: { id: lobbyId }, data: { botStatus: pulled } })

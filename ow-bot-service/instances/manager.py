@@ -17,6 +17,10 @@ class InstanceManager:
         # even after the instance is freed (cleanup clears pug_lobby_id almost
         # immediately after game end). Bounded to the most recent entries.
         self.finished_lobbies: dict[int, dict] = {}
+        # Workshop log content of recently-finished lobbies, so the website can
+        # pull full stats via /lobby/{id}/result-log even after the disk log is
+        # deleted. Logs are larger, so keep fewer.
+        self.finished_logs: dict[int, str] = {}
 
     def record_finished(self, pug_lobby_id: int, status: str, match_result: str | None):
         self.finished_lobbies[pug_lobby_id] = {"status": status, "matchResult": match_result}
@@ -24,6 +28,12 @@ class InstanceManager:
         if len(self.finished_lobbies) > 50:
             oldest = next(iter(self.finished_lobbies))
             self.finished_lobbies.pop(oldest, None)
+
+    def record_finished_log(self, pug_lobby_id: int, log_content: str):
+        self.finished_logs[pug_lobby_id] = log_content
+        if len(self.finished_logs) > 20:
+            oldest = next(iter(self.finished_logs))
+            self.finished_logs.pop(oldest, None)
 
     async def start(self):
         for i, acct_cfg in enumerate(settings.accounts):

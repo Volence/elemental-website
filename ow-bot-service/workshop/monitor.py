@@ -115,6 +115,12 @@ class LogTailer:
 
             if content:
                 from callbacks.client import callback_client
+                from instances.manager import instance_manager
+
+                # Keep the log in memory so the website can pull it via
+                # /lobby/{id}/result-log even if the push below fails or the
+                # disk log is deleted (local dev, dropped callbacks).
+                instance_manager.record_finished_log(self.pug_lobby_id, content)
 
                 result = await callback_client.send_stats(self.pug_lobby_id, content)
                 if result:
