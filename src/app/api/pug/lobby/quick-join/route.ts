@@ -29,6 +29,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Not registered for open tier' }, { status: 403 })
   }
 
+  // Require a valid BattleTag up front so quick-join returns a clear message
+  // (the per-lobby loop below swallows joinLobby errors as "try next lobby").
+  if (!person.pugBattleTag || !person.pugBattleTag.includes('#')) {
+    return NextResponse.json(
+      { error: 'Add your Battle.net BattleTag before joining a lobby.' },
+      { status: 400 },
+    )
+  }
+
   const ban = await getActiveBan(user.id)
   if (ban) {
     return NextResponse.json(
