@@ -989,7 +989,13 @@ export async function reportResult(
   result: 'team1' | 'team2' | 'draw',
 ): Promise<void> {
   const lobby = await prisma.pugLobby.findUniqueOrThrow({ where: { id: lobbyId } })
-  if (lobby.status !== 'IN_PROGRESS') throw new Error('Match is not in progress')
+  // Normally reported from IN_PROGRESS. Also allow it from REPORTING when no
+  // result is pending yet - a bot-hosted match can land in REPORTING with no
+  // result if the auto-detect (workshop-log callback) never arrived, and a
+  // captain needs to be able to report it manually.
+  const canReport =
+    lobby.status === 'IN_PROGRESS' || (lobby.status === 'REPORTING' && !lobby.pendingResult)
+  if (!canReport) throw new Error('Match is not in progress')
 
   const captain = await prisma.pugLobbyPlayer.findFirst({
     where: { lobbyId, userId: captainUserId, isCaptain: true },
@@ -997,7 +1003,7 @@ export async function reportResult(
   if (!captain) throw new Error('Only captains can report results')
 
   const updated = await prisma.pugLobby.updateMany({
-    where: { id: lobbyId, status: 'IN_PROGRESS' },
+    where: { id: lobbyId, status: { in: ['IN_PROGRESS', 'REPORTING'] } },
     data: {
       status: 'REPORTING',
       reportingAt: new Date(),

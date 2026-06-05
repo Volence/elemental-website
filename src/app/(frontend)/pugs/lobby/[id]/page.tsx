@@ -644,7 +644,25 @@ export default function LobbyPage() {
                   )}
                 </div>
               </div>
-            ) : null
+            ) : (isCaptain || isPugAdmin) ? (
+              <div className="border border-yellow-800/50 rounded-xl overflow-hidden bg-yellow-950/10">
+                <div className="px-4 py-2.5 border-b border-yellow-800/40">
+                  <span className="text-xs font-semibold text-yellow-300 uppercase tracking-wider">
+                    Report Result {isPugAdmin && !isCaptain ? '(Admin)' : '(Captain)'}
+                  </span>
+                </div>
+                <p className="px-4 pt-3 text-xs text-gray-400">The match ended but no result was recorded automatically. Submit who won:</p>
+                <div className="px-4 py-3 grid grid-cols-3 gap-3">
+                  <button onClick={() => apiAction(isPugAdmin && !isCaptain ? '/resolve' : '/report', { result: 'team1' })} className="px-4 py-2.5 bg-blue-600/15 border border-blue-500/30 text-blue-300 rounded-xl hover:bg-blue-600/25 hover:scale-[1.02] active:scale-[0.98] text-sm transition-all duration-200 font-semibold">Team 1 Won</button>
+                  <button onClick={() => apiAction(isPugAdmin && !isCaptain ? '/resolve' : '/report', { result: 'team2' })} className="px-4 py-2.5 bg-orange-600/15 border border-orange-500/30 text-orange-300 rounded-xl hover:bg-orange-600/25 hover:scale-[1.02] active:scale-[0.98] text-sm transition-all duration-200 font-semibold">Team 2 Won</button>
+                  <button onClick={() => apiAction(isPugAdmin && !isCaptain ? '/resolve' : '/report', { result: 'draw' })} className="px-4 py-2.5 border border-gray-700 text-gray-400 rounded-xl hover:bg-gray-800 hover:border-gray-600 hover:scale-[1.02] active:scale-[0.98] text-sm transition-all duration-200">Draw</button>
+                </div>
+              </div>
+            ) : (
+              <div className="border border-gray-800/60 rounded-xl p-4 text-center text-sm text-gray-400">
+                Waiting for the match result to be reported…
+              </div>
+            )
           })()}
           <TeamsDisplay players={players} currentUserId={currentUserId} heroes={heroes} banState={lobby.banState} />
           {inLobby && me && <RequeueButton lobby={lobby} me={me} />}
