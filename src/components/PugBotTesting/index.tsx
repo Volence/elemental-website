@@ -1046,7 +1046,8 @@ export function PugBotTestingPanel() {
               {health === null ? 'Connecting...' : isConnected ? 'Connected' : health.reachable ? 'Auth Mismatch' : 'Unreachable'}
             </span>
             {isConnected && instances.length > 0 && (() => {
-              const idle = instances.filter((i) => i.state === 'available').length
+              const orphaned = instances.filter((i) => i.state === 'available' && i.pugLobbyId != null).length
+              const idle = instances.filter((i) => i.state === 'available' && i.pugLobbyId == null).length
               const ready = instances.filter((i) => i.state === 'ready').length
               const warming = instances.filter((i) => i.state === 'warming_up').length
               const inGame = instances.filter((i) => ['creating_lobby', 'waiting_for_players', 'in_game'].includes(i.state)).length
@@ -1058,6 +1059,7 @@ export function PugBotTestingPanel() {
                   {ready > 0 && <span style={{ color: '#2dd4bf' }}>{ready} ready</span>}
                   {warming > 0 && <span style={{ color: '#60a5fa' }}>{warming} warming</span>}
                   {inGame > 0 && <span style={{ color: '#f97316' }}>{inGame} in game</span>}
+                  {orphaned > 0 && <span style={{ color: '#fbbf24' }}>{orphaned} orphaned</span>}
                   {errored > 0 && <span style={{ color: '#f87171' }}>{errored} error</span>}
                 </div>
               )
@@ -1137,6 +1139,10 @@ export function PugBotTestingPanel() {
               const isError = inst.state === 'error'
               const isIdle = inst.state === 'available'
               const isReady = inst.state === 'ready'
+              // Orphaned: an idle instance still tagged to a lobby. Never valid -
+              // makes the instance unpickable for new lobbies. The bot self-heals
+              // this within 60s; this surfaces it and offers an immediate clear.
+              const isOrphaned = inst.state === 'available' && inst.pugLobbyId != null
               const expanded = expandedInstances.has(inst.id)
               const players = instancePlayers[inst.id] ?? []
 
@@ -1266,6 +1272,32 @@ export function PugBotTestingPanel() {
                           {inst.playerCount} players
                         </span>
                       )}
+                    </div>
+                  )}
+
+                  {/* Orphaned claim warning — idle but still tagged to a lobby */}
+                  {isOrphaned && (
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 8,
+                      padding: '8px 10px', fontSize: 12, color: '#fbbf24',
+                      background: 'rgba(251,191,36,0.08)', borderRadius: 6,
+                      border: '1px solid rgba(251,191,36,0.25)',
+                    }}>
+                      <AlertTriangle size={13} style={{ flexShrink: 0 }} />
+                      <span style={{ flex: 1 }}>
+                        Shows Available but still tied to PUG #{inst.lobbyNumber ?? inst.pugLobbyId} — it won&apos;t be picked for new lobbies until cleared. Auto-clears within 60s.
+                      </span>
+                      <button
+                        className="ps-btn ps-btn-warning"
+                        style={{ padding: '4px 10px', fontSize: 11, whiteSpace: 'nowrap' }}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          botAction({ action: 'recoverInstance', instanceId: inst.id }, undefined, { instanceId: inst.id, state: 'available' })
+                        }}
+                        disabled={acting !== null}
+                      >
+                        <RotateCcw size={11} /> Clear now
+                      </button>
                     </div>
                   )}
 
