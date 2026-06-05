@@ -606,7 +606,7 @@ class LobbyController:
         players: list[tuple[int, str | None, int]],
         *,
         join_timeout: int = 60,
-        poll_interval: int = 10,
+        poll_interval: int = 3,
         max_reinvites: int = 1,
     ) -> InviteResult:
         result = InviteResult(total=len(players))
@@ -1553,11 +1553,11 @@ class LobbyController:
             await click(*input_pos)
         else:
             await press_key("tab")
-        await asyncio.sleep(0.2)
+        await asyncio.sleep(0.1)
 
         # Select all + paste
         await hotkey("ctrl", "a")
-        await asyncio.sleep(0.2)
+        await asyncio.sleep(0.1)
         await paste_text(battle_tag)
         log.info("[%s] Pasted BattleTag: %s", self.instance.id, battle_tag)
         await asyncio.sleep(T.INVITE_AFTER_PASTE)

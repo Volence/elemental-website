@@ -75,18 +75,19 @@ IMPORT_AFTER_ESC_BACK = 1.0       # after ESC-ing back to lobby post-import
 # ── Invite players ──────────────────────────────────────────────────
 INVITE_AFTER_OPEN = 0.8     # (scheduler path) after clicking INVITE to open panel
 INVITE_AFTER_VIEW_SWITCH = 0.8  # (scheduler path) after switching to BattleTag view
-INVITE_AFTER_PASTE = 0.25   # after pasting a BattleTag (clipboard paste is instant)
+INVITE_AFTER_PASTE = 0.1    # after pasting a BattleTag (clipboard paste is instant)
 INVITE_AFTER_SEND = 1.0     # (scheduler path) after clicking INVITE send (panel auto-closes)
 # Controller path uses condition-based waits instead of the blind sleeps above:
 # poll for the panel / BattleTag view to appear, and for the panel to disappear
 # after a send (return to lobby). Snappy floor since these are sub-second when
 # healthy; on a missed OCR label the wait falls through at the timeout.
-INVITE_PANEL_FLOOR = 0.15   # initial settle before polling for the panel/view
-INVITE_PANEL_POLL = 0.2     # gap between invite-panel condition checks (these
+INVITE_PANEL_FLOOR = 0.05   # initial settle before polling for the panel/view
+INVITE_PANEL_POLL = 0.15    # gap between invite-panel condition checks (these
                             # transitions are sub-second; the generic 0.4 poll
                             # overshoots them and feels sluggish across N invites)
 INVITE_PANEL_TIMEOUT = 4.0  # max wait for the invite panel / BattleTag view
-INVITE_SEND_TIMEOUT = 5.0   # max wait for the panel to close (back to lobby)
+INVITE_SEND_TIMEOUT = 2.5   # max wait for the panel to close (back to lobby);
+                            # healthy close is <0.2s so 2.5s is still a wide margin
 
 # ── Start game ──────────────────────────────────────────────────────
 START_AFTER_CLICK = 3.0          # after clicking START
