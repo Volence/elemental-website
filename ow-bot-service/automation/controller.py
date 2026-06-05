@@ -1531,9 +1531,9 @@ class LobbyController:
                 poll=T.INVITE_PANEL_POLL,
             )
 
-        # 3) Team selector - only change if different from last invite
+        # 3) Team selector - re-select every invite (panel resets to BOTH on each reopen)
         both_pos = cache.get("both_pos")
-        if both_pos and cache.get("last_team") != team:
+        if both_pos:  # always re-select team; invite panel resets to BOTH each reopen
             await click(*both_pos)
             await asyncio.sleep(0.2)
             target_pos = {0: cache["spec_pos"], 1: cache["team1_pos"], 2: cache["team2_pos"]}.get(team)
