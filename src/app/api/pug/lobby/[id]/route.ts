@@ -24,6 +24,38 @@ export async function GET(request: NextRequest, { params }: Params) {
 
     if (!lobby) return NextResponse.json({ error: 'Lobby not found' }, { status: 404 })
 
+    // Pull bot status as a fallback when push callbacks don't arrive - local dev
+    // (the bot host can't reach this machine) or a dropped callback in prod. The
+    // bot keeps its last reported status in memory; ask for it while the lobby is
+    // in the bot setup phase and reconcile our stored botStatus so the progress
+    // bar reflects reality instead of sitting on the default "Starting Up".
+    if (
+      process.env.OW_BOT_SERVICE_URL &&
+      lobby.hostUserId === -1 &&
+      lobby.status === 'IN_PROGRESS' &&
+      !['game_started', 'game_ended'].includes(lobby.botStatus ?? '')
+    ) {
+      try {
+        const ctrl = new AbortController()
+        const t = setTimeout(() => ctrl.abort(), 3000)
+        const botRes = await fetch(`${process.env.OW_BOT_SERVICE_URL}/lobby/${lobbyId}/status`, {
+          headers: { 'X-Bot-Secret': process.env.OW_BOT_SECRET ?? '' },
+          signal: ctrl.signal,
+        })
+        clearTimeout(t)
+        if (botRes.ok) {
+          const botData = await botRes.json()
+          const pulled = botData?.status as string | null
+          if (pulled && pulled !== lobby.botStatus) {
+            await prisma.pugLobby.update({ where: { id: lobbyId }, data: { botStatus: pulled } })
+            lobby.botStatus = pulled
+          }
+        }
+      } catch {
+        /* bot unreachable / slow - keep existing botStatus */
+      }
+    }
+
     let selectedMap: { id: number; name: string; type?: string; settingsEntry?: string; imageUrl?: string | null } | null = null
     if (lobby.mapVote?.selectedMapId) {
       const map = await payload.findByID({

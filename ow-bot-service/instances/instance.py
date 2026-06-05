@@ -27,6 +27,11 @@ class OWInstance:
         self.state = InstanceState.AVAILABLE
         self.pug_lobby_id: int | None = None
         self.lobby_number: int | None = None
+        # Last fine-grained status reported via callback (creating, lobby_created,
+        # players_joining, game_started, ...). Kept here so the website can poll
+        # /lobby/{id}/status as a fallback when the push callback can't be
+        # delivered (e.g. local dev, or a dropped callback in prod).
+        self.last_status: str | None = None
         self.ow_process_id: int | None = None
         self.players_joined: int = 0
         self.started_at: datetime | None = None

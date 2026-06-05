@@ -41,6 +41,21 @@ class CallbackClient:
         if match_result:
             body["matchResult"] = match_result
 
+        # Record the status on the instance first, so it is available via the
+        # /lobby/{id}/status pull even when the callback POST below fails (e.g.
+        # the web app is unreachable from the bot host, or a dropped request).
+        try:
+            from instances.manager import instance_manager
+            inst = (
+                next((i for i in instance_manager.instances if i.id == instance_id), None)
+                if instance_id
+                else instance_manager.get_by_lobby(pug_lobby_id)
+            )
+            if inst:
+                inst.last_status = status
+        except Exception:
+            pass
+
         try:
             resp = await self.client.post("/api/pug/bot/status", json=body)
             if resp.status_code != 200:

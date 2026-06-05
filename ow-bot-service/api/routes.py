@@ -63,6 +63,7 @@ class LobbyCreateResponse(BaseModel):
 class LobbyStatusResponse(BaseModel):
     instanceId: str
     state: str
+    status: str | None = None
     playersJoined: int
     startedAt: str | None = None
     liveStats: dict | None = None
@@ -170,6 +171,7 @@ async def lobby_status(pug_lobby_id: int):
     return LobbyStatusResponse(
         instanceId=instance.id,
         state=instance.state.value,
+        status=instance.last_status,
         playersJoined=instance.players_joined,
         startedAt=instance.started_at.isoformat() if instance.started_at else None,
         liveStats=instance.live_stats,
