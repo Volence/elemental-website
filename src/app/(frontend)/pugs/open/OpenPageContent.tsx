@@ -297,7 +297,7 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
       {needsBattleTag && (
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-4 py-3 mb-6 text-sm text-amber-400">
           Add your Battle.net BattleTag to join lobbies.{' '}
-          <Link href="/pugs/register" className="underline hover:text-amber-200">
+          <Link href="/pugs" className="underline hover:text-amber-200">
             Update your profile
           </Link>{' '}
           to continue.
