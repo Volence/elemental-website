@@ -112,6 +112,14 @@ export async function createInviteLobby(
 }
 
 export async function joinLobby(lobbyId: number, userId: number, roles: string[]): Promise<void> {
+  // Require a valid BattleTag - players without one cannot be invited to the OW lobby
+  const payloadForCheck = await getPayload({ config: configPromise })
+  const personForCheck = await payloadForCheck.findByID({ collection: 'people', id: userId, overrideAccess: true }) as any
+  const battleTag: string | null | undefined = personForCheck?.pugBattleTag
+  if (!battleTag || !battleTag.includes('#')) {
+    throw new Error('Add your Battle.net BattleTag before joining a lobby.')
+  }
+
   await prisma.$transaction(async (tx) => {
     const lobby = await tx.pugLobby.findUniqueOrThrow({ where: { id: lobbyId } })
     if (lobby.status !== 'OPEN') throw new Error('Lobby is not accepting players')

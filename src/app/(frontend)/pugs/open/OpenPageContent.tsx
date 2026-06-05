@@ -29,7 +29,7 @@ type Lobby = {
 }
 
 type Props = {
-  currentUser: { id: number; name?: string | null; email?: string } | null
+  currentUser: { id: number; name?: string | null; email?: string; battleTag?: string | null } | null
   isRegistered: boolean
   isPugAdmin: boolean
   seasonId: number | null
@@ -174,6 +174,8 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
     }
   }
 
+  const needsBattleTag = !!currentUser && isRegistered && !(currentUser.battleTag && currentUser.battleTag.includes('#'))
+
   const openLobbies = lobbies.filter((l) => l.status === 'OPEN' && l.region === selectedRegion)
   const activeLobbies = lobbies.filter((l) => l.status !== 'OPEN' && l.region === selectedRegion)
   const myLobbyId = lobbies.find((l) => {
@@ -200,7 +202,8 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
           {currentUser && isRegistered && seasonId && hasJoinableLobbies && !myLobbyId && (
             <button
               onClick={() => { setQuickJoinOpen(!quickJoinOpen); setQuickJoinRoles([]); setActionError(null) }}
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+              disabled={needsBattleTag}
+              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
                 quickJoinOpen
                   ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                   : 'bg-green-600 hover:bg-green-500 text-white'
@@ -212,8 +215,8 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
           {currentUser && isRegistered && seasonId && (
             <button
               onClick={handleCreate}
-              disabled={creating}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+              disabled={creating || needsBattleTag}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors"
             >
               {creating ? 'Creating…' : 'Create Lobby'}
             </button>
@@ -291,6 +294,16 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
         </div>
       )}
 
+      {needsBattleTag && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-4 py-3 mb-6 text-sm text-amber-400">
+          Add your Battle.net BattleTag to join lobbies.{' '}
+          <Link href="/pugs/register" className="underline hover:text-amber-200">
+            Update your profile
+          </Link>{' '}
+          to continue.
+        </div>
+      )}
+
       {!seasonId && (
         <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-4 py-3 mb-6 text-sm text-yellow-400">
           No active Open Tier season right now.
@@ -364,6 +377,7 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
                     lobby={lobby}
                     currentUserId={currentUser?.id ?? null}
                     isRegistered={isRegistered}
+                    needsBattleTag={needsBattleTag}
                     isExpanded={joiningId === lobby.id}
                     selectedRoles={selectedRoles}
                     roleError={roleError}
@@ -414,6 +428,7 @@ type LobbyCardProps = {
   lobby: Lobby
   currentUserId: number | null
   isRegistered: boolean
+  needsBattleTag?: boolean
   isExpanded: boolean
   selectedRoles: string[]
   roleError: string | null
@@ -534,6 +549,7 @@ function LobbyCard({
   lobby,
   currentUserId,
   isRegistered,
+  needsBattleTag = false,
   isExpanded,
   selectedRoles,
   roleError,
@@ -573,7 +589,9 @@ function LobbyCard({
             ) : isOpen && isRegistered ? (
               <button
                 onClick={onToggleJoin}
-                className={`text-sm px-3 py-1.5 rounded-lg font-medium transition-colors ${
+                disabled={needsBattleTag}
+                title={needsBattleTag ? 'Add your BattleTag to join' : undefined}
+                className={`text-sm px-3 py-1.5 rounded-lg font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
                   isExpanded
                     ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                     : 'bg-blue-600 hover:bg-blue-500 text-white'

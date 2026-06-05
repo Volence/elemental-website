@@ -37,7 +37,7 @@ async function getPageState() {
     const isPugAdmin = u.departments?.isPugAdmin === true || u.role === 'admin'
 
     return {
-      currentUser: { id: user.id as number, name: (user as any).name ?? null, email: user.email },
+      currentUser: { id: user.id as number, name: (user as any).name ?? null, email: user.email, battleTag: (user as any).pugBattleTag ?? null },
       isRegistered,
       isPugAdmin,
       seasonId: season?.id ?? null,
