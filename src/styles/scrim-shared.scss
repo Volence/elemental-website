@@ -1,3 +1,13 @@
 // Loads the namespaced .scrim-* analytics styles (and their admin theme deps,
 // which scrim-analytics imports itself) for use on the public frontend.
 @import '../app/(payload)/styles/components/scrim-analytics';
+
+// ── PUG live scoreboard flash animation ──
+@keyframes pugLiveFlash {
+  0%   { background: rgba(6, 182, 212, 0.45); }
+  100% { background: transparent; }
+}
+
+.pug-live-flash {
+  animation: pugLiveFlash 0.8s ease-out;
+}
