@@ -342,6 +342,22 @@ class Scheduler:
                     inst.lobby_number = None
                     inst.live_stats = None
                     inst.state = InstanceState.AVAILABLE
+            elif inst.state == InstanceState.AVAILABLE and inst.pug_lobby_id is not None:
+                # Orphaned claim: an AVAILABLE instance is idle by definition, so
+                # a lingering pug_lobby_id is always stale (e.g. a lobby was reset
+                # or cancelled without freeing the bot, or the OW window died while
+                # claimed). Left uncleared it makes the instance unpickable -
+                # _first_free treats a set pug_lobby_id as taken, so _pick_instance
+                # returns None -> 503 no_idle_instance -> lobby stuck "Retrying"
+                # next to a bot that looks Available. This state is never valid, so
+                # self-heal it instead of waiting for a human to reset the instance.
+                logger.warning(
+                    f"[{inst.id}] Orphaned claim: AVAILABLE but still tagged to "
+                    f"lobby {inst.pug_lobby_id} - clearing stale claim"
+                )
+                inst.pug_lobby_id = None
+                inst.lobby_number = None
+                inst.live_stats = None
 
     async def _execute_focus_task(self, tagged_task):
         task_type, task = tagged_task
