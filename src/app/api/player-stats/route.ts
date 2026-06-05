@@ -473,7 +473,7 @@ async function getPlayerList(range: string, scopedScrimIds: number[] | null = nu
 
 // ── Player Detail (by personId - merges all aliases) ────
 
-async function getPlayerDetailByPerson(personId: number, range: string, scopeMapDataIds: number[] | null = null) {
+export async function getPlayerDetailByPerson(personId: number, range: string, scopeMapDataIds: number[] | null = null) {
   // Look up Person display name
   const personRow = await prisma.$queryRaw<[{ name: string }]>`
     SELECT name FROM people WHERE id = ${personId} LIMIT 1
