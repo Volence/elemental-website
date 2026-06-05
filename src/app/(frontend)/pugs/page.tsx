@@ -67,7 +67,7 @@ export default async function PugsPage() {
   }
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-4xl">
+    <main className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-1">PUGs</h1>
       <p className="text-gray-500 mb-6">
         Pick-Up Games - 5v5 Overwatch with draft, map voting, hero bans, and MMR tracking.

@@ -52,7 +52,7 @@ export default async function PugOpenPage() {
   const { currentUser, isRegistered, isPugAdmin, seasonId, seasonName } = await getPageState()
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-2xl">
+    <main className="container mx-auto px-4 py-8">
       <PugNav active="open" />
       <OpenPageContent
         currentUser={currentUser}

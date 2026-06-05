@@ -48,7 +48,7 @@ export default async function PugProfilePage({
 
   if (!person || !person.pugTiers?.length) {
     return (
-      <main className="container mx-auto px-4 py-8 max-w-3xl">
+      <main className="container mx-auto px-4 py-8">
         <PugNav active="profile" />
         <div className="text-center py-16 border border-gray-800 rounded-xl bg-gray-900/30">
           <p className="text-lg font-medium text-gray-400">Player not found</p>
@@ -143,7 +143,7 @@ export default async function PugProfilePage({
   const topRoles = Object.entries(roleCounts).sort((a, b) => b[1] - a[1])
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-3xl">
+    <main className="container mx-auto px-4 py-8">
       <PugNav active="profile" />
 
       <div className="border border-gray-800 rounded-xl bg-gray-900/30 overflow-hidden mb-6">

@@ -51,7 +51,7 @@ export default async function PugLeaderboardPage({
   const currentSeason = (seasons.docs[0] as any)
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-3xl">
+    <main className="container mx-auto px-4 py-8">
       <PugNav active="leaderboard" />
       <h1 className="text-3xl font-bold mb-1">PUG Leaderboard</h1>
       {currentSeason && (
