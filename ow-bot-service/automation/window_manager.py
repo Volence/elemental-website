@@ -97,6 +97,12 @@ class WindowManager:
         found = []
 
         def callback(hwnd, lparam):
+            # Skip hidden/zombie windows. A single OW process can own several
+            # top-level "Overwatch" windows (the game window plus secondary or
+            # not-yet-destroyed ones); the hidden ones screenshot blank and must
+            # not be tracked.
+            if not user32.IsWindowVisible(hwnd):
+                return True
             length = user32.GetWindowTextLengthW(hwnd)
             if length > 0:
                 buf = ctypes.create_unicode_buffer(length + 1)
@@ -106,21 +112,36 @@ class WindowManager:
                     user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
                     rect = ctypes.wintypes.RECT()
                     user32.GetWindowRect(hwnd, ctypes.byref(rect))
-                    found.append({
-                        "hwnd": hwnd,
-                        "pid": pid.value,
-                        "title": buf.value,
-                        "x": rect.left,
-                        "y": rect.top,
-                        "w": rect.right - rect.left,
-                        "h": rect.bottom - rect.top,
-                    })
+                    w = rect.right - rect.left
+                    h = rect.bottom - rect.top
+                    # Drop degenerate (0x0 / tiny) windows - the real game
+                    # render is large.
+                    if w >= 100 and h >= 100:
+                        found.append({
+                            "hwnd": hwnd,
+                            "pid": pid.value,
+                            "title": buf.value,
+                            "x": rect.left,
+                            "y": rect.top,
+                            "w": w,
+                            "h": h,
+                        })
             return True
 
         user32.EnumWindows(EnumWindowsProc(callback), 0)
-        found.sort(key=lambda w: w["pid"])
 
-        for i, win in enumerate(found):
+        # Exactly one window per OW process: if a process exposed several
+        # matching windows, keep the largest (the actual game render). This is
+        # what prevents duplicate "Overwatch N" registrations and the blank-
+        # screenshot failures that follow when a secondary window gets picked.
+        by_pid: dict[int, dict] = {}
+        for win in found:
+            cur = by_pid.get(win["pid"])
+            if cur is None or win["w"] * win["h"] > cur["w"] * cur["h"]:
+                by_pid[win["pid"]] = win
+        unique = sorted(by_pid.values(), key=lambda w: w["pid"])
+
+        for i, win in enumerate(unique):
             instance_id = f"ow_{i + 1}"
             label = f"Overwatch {i + 1}"
             ow_win = OWWindow(
@@ -142,6 +163,12 @@ class WindowManager:
 
     def register_window(self, instance_id: str, hwnd: int, pid: int) -> OWWindow:
         """Manually register a window (e.g., after launching a new OW instance)."""
+        # Drop any other tracked entry for this PID or hwnd so one OW process
+        # can't accumulate multiple "Overwatch N" registrations across
+        # re-discovery / re-assignment.
+        for existing_id, w in list(self._windows.items()):
+            if existing_id != instance_id and (w.pid == pid or w.hwnd == hwnd):
+                del self._windows[existing_id]
         index = len(self._windows) + 1
         label = f"Overwatch {index}"
         rect = ctypes.wintypes.RECT()
