@@ -73,6 +73,7 @@ interface MapInfoRow {
   map_type: string
   scrim_name: string
   scrim_date: Date
+  pugLobbyId: number | null
 }
 
 export async function GET(req: NextRequest) {
@@ -620,7 +621,8 @@ async function buildPlayerDetailResponse(
       ms.map_name,
       ms.map_type,
       s.name as scrim_name,
-      s.date as scrim_date
+      s.date as scrim_date,
+      s."pugLobbyId" as "pugLobbyId"
     FROM scrim_map_data md
     JOIN scrim_maps sm ON md."mapId" = sm.id
     JOIN scrim_scrims s ON sm."scrimId" = s.id
@@ -637,6 +639,7 @@ async function buildPlayerDetailResponse(
         mapType: info.map_type,
         scrimName: info.scrim_name,
         scrimDate: info.scrim_date,
+        pugLobbyId: info.pugLobbyId,
       },
     ])
   )
@@ -685,6 +688,7 @@ async function buildPlayerDetailResponse(
       mapType: info?.mapType ?? 'Unknown',
       scrimName: info?.scrimName ?? 'Unknown',
       scrimDate: info?.scrimDate ?? new Date(),
+      pugLobbyId: info?.pugLobbyId ?? null,
       hero: row.player_hero,
       eliminations: row.eliminations,
       finalBlows: row.final_blows,
