@@ -648,6 +648,13 @@ class Scheduler:
                     logger.info(f"[{task.instance_id}] Health: match ended (at lobby while {inst.state.value}), navigating to main menu")
                     asyncio.create_task(self._return_to_main_menu(task.instance_id))
         else:
+            # In-game the bot is spectating; detect_screen reads UNKNOWN by
+            # design. Never count that as a health failure or we kill the live
+            # match (2026-06-03 incident). Mirrors the bot-server hotfix.
+            from instances.instance import InstanceState
+            if inst and inst.state in (InstanceState.IN_GAME, InstanceState.POST_GAME):
+                task.consecutive_failures = 0
+                return
             # Try to classify and auto-dismiss dialogs before counting as failure
             classification = detector.classify_unknown()
             if classification == Screen.DIALOG:
