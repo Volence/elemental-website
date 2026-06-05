@@ -164,16 +164,16 @@ function formatPct(n: number): string {
 }
 
 type ScrimPlayerDetailViewProps = {
-  buildEndpoint?: (range: string) => string
+  apiBase?: string
   readOnly?: boolean
 }
 
 /**
  * Admin view - individual player analytics dashboard.
  * Accessible at /admin/scrim-player?player=Name.
- * Pass buildEndpoint + readOnly to embed on public pages.
+ * Pass apiBase + readOnly to embed on public pages.
  */
-export default function ScrimPlayerDetailView({ buildEndpoint, readOnly = false }: ScrimPlayerDetailViewProps = {}) {
+export default function ScrimPlayerDetailView({ apiBase, readOnly = false }: ScrimPlayerDetailViewProps = {}) {
   const [data, setData] = useState<PlayerData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -192,20 +192,19 @@ export default function ScrimPlayerDetailView({ buildEndpoint, readOnly = false 
     const personId = params.get('personId')
     const playerName = params.get('player')
 
-    if (!buildEndpoint && !personId && !playerName) {
+    if (!apiBase && !personId && !playerName) {
       setError('No player specified')
       setLoading(false)
       return
     }
 
-    // Route through buildEndpoint when provided; otherwise build admin URL
-    const apiUrl = buildEndpoint
-      ? buildEndpoint(range)
+    const url = apiBase
+      ? `${apiBase}?range=${range}`
       : (personId
-          ? `/api/player-stats?personId=${encodeURIComponent(personId)}&range=${range}`
+          ? `/api/player-stats?personId=${personId}&range=${range}`
           : `/api/player-stats?player=${encodeURIComponent(playerName!)}&range=${range}`)
 
-    fetch(apiUrl)
+    fetch(url)
       .then((r) => r.json())
       .then((d) => {
         if (d.error) setError(d.error)
@@ -220,7 +219,7 @@ export default function ScrimPlayerDetailView({ buildEndpoint, readOnly = false 
       })
       .catch(() => setError('Failed to fetch player stats'))
       .finally(() => setLoading(false))
-  }, [range])
+  }, [range, apiBase])
 
   if (loading) {
     return (
