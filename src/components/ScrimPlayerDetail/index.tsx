@@ -93,6 +93,7 @@ type MapEntry = {
   ultHold: number
   kPerUlt: number
   drought: number
+  pugLobbyId?: number | null
 }
 
 type TrendEntry = {
@@ -162,11 +163,17 @@ function formatPct(n: number): string {
   return `${n.toFixed(1)}%`
 }
 
+type ScrimPlayerDetailViewProps = {
+  buildEndpoint?: (range: string) => string
+  readOnly?: boolean
+}
+
 /**
  * Admin view - individual player analytics dashboard.
  * Accessible at /admin/scrim-player?player=Name.
+ * Pass buildEndpoint + readOnly to embed on public pages.
  */
-export default function ScrimPlayerDetailView() {
+export default function ScrimPlayerDetailView({ buildEndpoint, readOnly = false }: ScrimPlayerDetailViewProps = {}) {
   const [data, setData] = useState<PlayerData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -183,18 +190,20 @@ export default function ScrimPlayerDetailView() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const personId = params.get('personId')
-    const player = params.get('player')
+    const playerName = params.get('player')
 
-    if (!personId && !player) {
+    if (!buildEndpoint && !personId && !playerName) {
       setError('No player specified')
       setLoading(false)
       return
     }
 
-    // Prefer personId (merged profile) over raw player name
-    const apiUrl = personId
-      ? `/api/player-stats?personId=${encodeURIComponent(personId)}&range=${range}`
-      : `/api/player-stats?player=${encodeURIComponent(player!)}&range=${range}`
+    // Route through buildEndpoint when provided; otherwise build admin URL
+    const apiUrl = buildEndpoint
+      ? buildEndpoint(range)
+      : (personId
+          ? `/api/player-stats?personId=${encodeURIComponent(personId)}&range=${range}`
+          : `/api/player-stats?player=${encodeURIComponent(playerName!)}&range=${range}`)
 
     fetch(apiUrl)
       .then((r) => r.json())
@@ -216,7 +225,7 @@ export default function ScrimPlayerDetailView() {
   if (loading) {
     return (
       <>
-      <ScrimAnalyticsTabs activeTab="players" />
+      {!readOnly && <ScrimAnalyticsTabs activeTab="players" />}
       <div className="scrim-players__loading">
         <div className="scrim-players__loading-icon">
           <Loader2 size={32} />
@@ -229,12 +238,14 @@ export default function ScrimPlayerDetailView() {
   if (error || !data) {
     return (
       <>
-      <ScrimAnalyticsTabs activeTab="players" />
+      {!readOnly && <ScrimAnalyticsTabs activeTab="players" />}
       <div className="scrim-players__error">
         <p><AlertCircle size={16} style={{ verticalAlign: 'middle', marginRight: '6px' }} />{error || 'Unknown error'}</p>
-        <a href="/admin/scrim-players" className="scrim-detail__back-link">
-          <ArrowLeft size={12} /> Back to players
-        </a>
+        {!readOnly && (
+          <a href="/admin/scrim-players" className="scrim-detail__back-link">
+            <ArrowLeft size={12} /> Back to players
+          </a>
+        )}
       </div>
       </>
     )
@@ -263,7 +274,7 @@ export default function ScrimPlayerDetailView() {
 
   return (
     <>
-    <ScrimAnalyticsTabs activeTab="players" />
+    {!readOnly && <ScrimAnalyticsTabs activeTab="players" />}
     <div className="scrim-detail scrim-detail__bg">
       {/* Ambient floating glow orbs */}
       <div className="scrim-detail__orb" style={{ top: '10%', right: '5%', width: '400px', height: '400px', background: `radial-gradient(circle, ${CYAN}06 0%, transparent 70%)` }} />
@@ -274,16 +285,18 @@ export default function ScrimPlayerDetailView() {
       <div className="scrim-detail__content">
       {/* Header */}
       <div className="scrim-detail__header">
-        <a href="/admin/scrim-players" className="scrim-detail__back-link">
-          <ArrowLeft size={12} /> Back to players
-        </a>
+        {!readOnly && (
+          <a href="/admin/scrim-players" className="scrim-detail__back-link">
+            <ArrowLeft size={12} /> Back to players
+          </a>
+        )}
         <div className="scrim-detail__header-row">
           <div>
             <h1 className="scrim-detail__player-name">
               {data.player.name}
             </h1>
             <p className="scrim-detail__player-meta">
-              {data.player.payloadTeamId ? (
+              {!readOnly && data.player.payloadTeamId ? (
                 <a
                   href={`/admin/scrim-team?teamId=${data.player.payloadTeamId}`}
                   className="scrim-detail__team-link"
@@ -390,7 +403,13 @@ export default function ScrimPlayerDetailView() {
               {sortedMaps.map((m) => (
                 <tr
                   key={`${m.mapDataId}-${m.hero}`}
-                  onClick={() => window.location.href = `/admin/scrim-map?mapId=${m.mapDataId}`}
+                  onClick={() => {
+                    if (readOnly) {
+                      if (m.pugLobbyId != null) window.location.href = `/pugs/lobby/${m.pugLobbyId}/stats`
+                    } else {
+                      window.location.href = `/admin/scrim-map?mapId=${m.mapDataId}`
+                    }
+                  }}
                   className="scrim-detail__map-row"
                 >
                   <td className="scrim-detail__map-td scrim-detail__map-td--map">
