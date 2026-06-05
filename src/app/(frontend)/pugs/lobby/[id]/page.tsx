@@ -1429,6 +1429,28 @@ function RequeueButton({ lobby, me }: { lobby: any; me: Player }) {
 
   async function handleRequeue() {
     setError(null)
+    // Open tier is a direct funnel (one open lobby per region), not a
+    // matchmaking queue. Use the same path as the Open page's "Join Queue"
+    // (quick-join) so requeue places the player into the next open lobby
+    // immediately and both entry points stay consistent. Otherwise requeue
+    // sat in pugQueueEntry waiting for a processQueue fill that never came,
+    // while the Open page (which checks lobby membership) still offered
+    // "Join Queue", letting the player double-queue.
+    if (lobby.tier === 'open') {
+      const res = await fetch('/api/pug/lobby/quick-join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roles: me.queuedRoles, region: lobby.region, payloadSeasonId: lobby.payloadSeasonId }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error ?? 'Failed to queue')
+        return
+      }
+      setStatus('placed')
+      setPlacedLobbyId(data.lobbyId)
+      return
+    }
     const res = await fetch('/api/pug/queue', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
