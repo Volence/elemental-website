@@ -486,17 +486,11 @@ export async function advanceToDrafting(lobbyId: number): Promise<void> {
   }
 
   await autoCreateReplacementLobby(lobby).catch(console.error)
-  // Fire-and-forget: notify players and update feed (don't block timer registration)
-  getDiscordIdsForLobby(lobbyId, payload).then(async (discordIds) => {
-    const { postFeedNotification, updateLobbyFeed } = await import('@/discord/services/pugFeed')
-    const { formatUserPings } = await import('@/discord/services/pugNotifications')
-    await postFeedNotification(
-      lobby.tier as 'open' | 'invite',
-      lobbyId,
-      `🎮 **PUG #${lobby.lobbyNumber}** draft is starting! Head to: https://elmt.gg/pugs/lobby/${lobbyId}\n${formatUserPings(discordIds)}`,
-    )
-    await updateLobbyFeed(lobbyId)
-  }).catch(console.error)
+  // Fire-and-forget: silently refresh the feed only. The single "queue is full"
+  // ping at fill is the only player ping - no separate draft-starting ping.
+  import('@/discord/services/pugFeed').then(({ updateLobbyFeed }) => {
+    updateLobbyFeed(lobbyId).catch(console.error)
+  })
   registerTimer(timerKey(lobbyId, 'draft'), DRAFT_PICK_TIMEOUT_MS, () => finalizeDraftPick(lobbyId))
 }
 
