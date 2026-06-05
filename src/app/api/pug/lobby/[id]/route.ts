@@ -4,6 +4,7 @@ import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
 import { generateSettings } from '@/pug/settingsGenerator'
 import { enrichSpectators } from '@/pug/spectators'
+import { isBotEnabled } from '@/pug/botMode'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -269,7 +270,10 @@ export async function GET(request: NextRequest, { params }: Params) {
       regionAllowed,
       hostInfo,
       linkedScrimId,
-      botEnabled: !!process.env.OW_BOT_SERVICE_URL,
+      // Bot is "enabled" only when the service is configured AND the admin
+      // kill-switch on the active season hasn't disabled it. When false the
+      // lobby page falls into manual-hosting mode.
+      botEnabled: !!process.env.OW_BOT_SERVICE_URL && (await isBotEnabled()),
     })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })

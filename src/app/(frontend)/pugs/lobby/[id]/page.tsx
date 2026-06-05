@@ -221,6 +221,9 @@ export default function LobbyPage() {
   if (!data) return <main className="container mx-auto p-8 text-gray-500">Loading...</main>
 
   const { lobby, selectedMap, mapCandidates, heroes, currentUserId, isPugAdmin, guildId, blockedRoles, neededSlots, spotsAvailable, approvedRoles, regionAllowed, hostInfo, botEnabled } = data
+  // botEnabled is false when the admin kill-switch is on (or the bot service is
+  // unconfigured): the system runs in manual-hosting mode.
+  const manualMode = botEnabled === false
   const players: Player[] = lobby.players
   const me = players.find((p) => p.userId === currentUserId)
   const inLobby = !!me
@@ -252,6 +255,12 @@ export default function LobbyPage() {
           </span>
         </div>
       </div>
+
+      {manualMode && (
+        <div className="mb-4 p-3 bg-red-950/60 border border-red-700 rounded-lg text-sm text-red-200 font-medium">
+          🔴 Manual hosting mode — the bot is disabled. A host sets up the OW lobby and captains report results.
+        </div>
+      )}
 
       {currentUserId === null && lobby.status === 'OPEN' && (
         <div className="mb-4 flex items-center justify-between bg-gray-800/60 border border-gray-700 rounded-lg px-4 py-3">
@@ -556,10 +565,11 @@ export default function LobbyPage() {
             players={players}
             heroes={heroes}
             botEnabled={botEnabled}
+            manualMode={manualMode}
             onHost={() => apiAction('/host', {})}
           />
 
-          {lobby.botInstanceId && (
+          {!manualMode && lobby.botInstanceId && (
             <LiveMatchView lobbyId={lobby.id} botStatus={lobby.botStatus} />
           )}
 
@@ -1734,7 +1744,7 @@ function BotHostingPanel({
 // ── Lobby Setup Assistant ──
 
 function LobbySetupAssistant({
-  lobby, hostInfo, currentUserId, isPugAdmin, selectedMap, players, heroes, botEnabled, onHost,
+  lobby, hostInfo, currentUserId, isPugAdmin, selectedMap, players, heroes, botEnabled, manualMode, onHost,
 }: {
   lobby: any
   hostInfo: LobbyData['hostInfo']
@@ -1744,13 +1754,19 @@ function LobbySetupAssistant({
   players: Player[]
   heroes: Hero[]
   botEnabled: boolean
+  manualMode: boolean
   onHost: () => void
 }) {
   if (!hostInfo) return null
 
   const isHost = hostInfo.hostUserId === currentUserId
   const hasHost = hostInfo.hostUserId !== null
-  const isBotHosting = hostInfo.hostUserId === -1 || (botEnabled && !hasHost)
+  // In manual mode the bot is never hosting. Otherwise the bot hosts when the
+  // sentinel id (-1) is set or when no human host exists and the bot is on.
+  const isBotHosting = !manualMode && (hostInfo.hostUserId === -1 || (botEnabled && !hasHost))
+  // Allow a human to take over a lobby that has no host, or a bot/errored lobby
+  // (sentinel -1) while in manual mode.
+  const canVolunteer = hostInfo.hostUserId === null || (manualMode && hostInfo.hostUserId === -1)
   const isPlayer = players.some((p) => p.userId === currentUserId)
 
   // Get banned hero names from banState
@@ -1777,8 +1793,8 @@ function LobbySetupAssistant({
     )
   }
 
-  // No host yet — show volunteer button
-  if (!hasHost) {
+  // No host yet (or a bot/errored lobby in manual mode) — show volunteer button
+  if (canVolunteer) {
     return (
       <div className="border border-yellow-800/60 bg-yellow-950/20 rounded-lg p-5 text-center space-y-3">
         <div className="flex items-center justify-center gap-2 mb-1">

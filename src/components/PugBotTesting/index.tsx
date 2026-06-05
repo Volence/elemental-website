@@ -763,6 +763,49 @@ export function PugBotTestingPanel() {
   const [pausedInstances, setPausedInstances] = useState<Set<string>>(new Set())
   const [testTagsInput, setTestTagsInput] = useState('')
   const [testLobbyRunning, setTestLobbyRunning] = useState(false)
+  const [botHostingEnabled, setBotHostingEnabled] = useState<boolean | null>(null)
+  const [togglingBotHosting, setTogglingBotHosting] = useState(false)
+
+  const fetchBotHostingState = useCallback(async () => {
+    try {
+      const res = await fetch('/api/pug/bot-toggle', { credentials: 'include' })
+      const data = await res.json()
+      if (typeof data?.botEnabled === 'boolean') setBotHostingEnabled(data.botEnabled)
+    } catch { /* ignore */ }
+  }, [])
+
+  useEffect(() => { fetchBotHostingState() }, [fetchBotHostingState])
+
+  async function toggleBotHosting() {
+    if (botHostingEnabled === null) return
+    const next = !botHostingEnabled
+    const confirmed = await confirm({
+      message: next
+        ? 'Re-enable bot hosting?'
+        : 'Switch to manual hosting mode? New lobbies will require human hosts.',
+      variant: next ? 'default' : 'danger',
+    })
+    if (!confirmed) return
+    setTogglingBotHosting(true)
+    try {
+      const res = await fetch('/api/pug/bot-toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: next }),
+        credentials: 'include',
+      })
+      const data = await res.json()
+      if (!res.ok || data.error) {
+        await alert({ message: data.error || 'Failed to toggle bot hosting', variant: 'danger' })
+      } else if (typeof data?.botEnabled === 'boolean') {
+        setBotHostingEnabled(data.botEnabled)
+      }
+    } catch (err: any) {
+      await alert({ message: err.message, variant: 'danger' })
+    } finally {
+      setTogglingBotHosting(false)
+    }
+  }
 
   const checkHealth = useCallback(async () => {
     setHealthLoading(true)
@@ -914,6 +957,63 @@ export function PugBotTestingPanel() {
 
       <div className="ps-header">
         <h1 className="ps-title">Bot Management</h1>
+      </div>
+
+      {/* Bot Hosting Kill-Switch */}
+      <div className="ps-section">
+        <div style={{
+          padding: '14px 20px',
+          borderRadius: 12,
+          border: '1px solid',
+          borderColor: botHostingEnabled === null
+            ? 'rgba(255,255,255,0.07)'
+            : botHostingEnabled ? 'rgba(74,222,128,0.25)' : 'rgba(248,113,113,0.3)',
+          background: botHostingEnabled === null
+            ? 'rgba(255,255,255,0.02)'
+            : botHostingEnabled ? 'rgba(74,222,128,0.05)' : 'rgba(248,113,113,0.06)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {botHostingEnabled === null ? (
+              <Loader2 size={18} style={{ color: '#64748b' }} className="ps-spin" />
+            ) : botHostingEnabled ? (
+              <Bot size={18} style={{ color: '#4ade80' }} />
+            ) : (
+              <PowerOff size={18} style={{ color: '#f87171' }} />
+            )}
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#f1f5f9' }}>
+                {botHostingEnabled === null
+                  ? 'Bot hosting: …'
+                  : botHostingEnabled
+                    ? <span style={{ color: '#4ade80' }}>Bot hosting: ENABLED</span>
+                    : <span style={{ color: '#f87171' }}>Bot hosting: DISABLED — manual mode</span>}
+              </div>
+              <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
+                {botHostingEnabled === false
+                  ? 'New lobbies skip the bot and require a human host.'
+                  : 'New lobbies are hosted automatically by the bot.'}
+              </div>
+            </div>
+          </div>
+          <button
+            className={`ps-btn ${botHostingEnabled ? 'ps-btn-danger' : 'ps-btn-success'}`}
+            style={{ padding: '6px 16px', fontSize: 12, whiteSpace: 'nowrap' }}
+            onClick={toggleBotHosting}
+            disabled={botHostingEnabled === null || togglingBotHosting}
+          >
+            {togglingBotHosting ? (
+              <Loader2 size={12} className="ps-spin" />
+            ) : botHostingEnabled ? (
+              <><PowerOff size={12} /> Disable bot hosting</>
+            ) : (
+              <><Power size={12} /> Enable bot hosting</>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Connection Banner */}
