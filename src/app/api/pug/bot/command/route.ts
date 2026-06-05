@@ -3,7 +3,7 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
 
-const COMMANDS = ['pause', 'unpause', 'end_game'] as const
+const COMMANDS = ['pause', 'unpause', 'end_draw', 'end_team1', 'end_team2'] as const
 type BotCommand = (typeof COMMANDS)[number]
 
 async function requirePugAdmin(request: NextRequest) {
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (!pugLobbyId || !command || !COMMANDS.includes(command)) {
-    return NextResponse.json({ error: 'Invalid request: need pugLobbyId and command (pause, unpause, end_game)' }, { status: 400 })
+    return NextResponse.json({ error: 'Invalid request: need pugLobbyId and command (pause, unpause, end_draw, end_team1, end_team2)' }, { status: 400 })
   }
 
   const lobby = await prisma.pugLobby.findUnique({ where: { id: pugLobbyId } })

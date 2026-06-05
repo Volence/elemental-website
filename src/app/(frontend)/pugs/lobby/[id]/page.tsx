@@ -1794,11 +1794,25 @@ function BotHostingPanel({
                 {cmdLoading === 'unpause' ? 'Sending...' : 'Unpause'}
               </button>
               <button
-                onClick={() => sendBotCommand('end_game')}
+                onClick={() => sendBotCommand('end_team1')}
                 disabled={cmdLoading !== null}
-                className="px-3 py-1.5 text-xs font-medium bg-red-600/15 border border-red-500/30 text-red-300 rounded-lg hover:bg-red-600/25 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="px-3 py-1.5 text-xs font-medium bg-blue-600/15 border border-blue-500/30 text-blue-300 rounded-lg hover:bg-blue-600/25 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
-                {cmdLoading === 'end_game' ? 'Sending...' : 'End Game'}
+                {cmdLoading === 'end_team1' ? 'Sending...' : 'End: T1 Wins'}
+              </button>
+              <button
+                onClick={() => sendBotCommand('end_team2')}
+                disabled={cmdLoading !== null}
+                className="px-3 py-1.5 text-xs font-medium bg-orange-600/15 border border-orange-500/30 text-orange-300 rounded-lg hover:bg-orange-600/25 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                {cmdLoading === 'end_team2' ? 'Sending...' : 'End: T2 Wins'}
+              </button>
+              <button
+                onClick={() => sendBotCommand('end_draw')}
+                disabled={cmdLoading !== null}
+                className="px-3 py-1.5 text-xs font-medium bg-gray-600/15 border border-gray-500/30 text-gray-300 rounded-lg hover:bg-gray-600/25 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                {cmdLoading === 'end_draw' ? 'Sending...' : 'End: Draw'}
               </button>
             </div>
             {cmdError && <p className="text-xs text-red-400 mt-2">{cmdError}</p>}
