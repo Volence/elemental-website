@@ -174,8 +174,8 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
     }
   }
 
-  const openLobbies = lobbies.filter((l) => l.status === 'OPEN')
-  const activeLobbies = lobbies.filter((l) => l.status !== 'OPEN')
+  const openLobbies = lobbies.filter((l) => l.status === 'OPEN' && l.region === selectedRegion)
+  const activeLobbies = lobbies.filter((l) => l.status !== 'OPEN' && l.region === selectedRegion)
   const myLobbyId = lobbies.find((l) => {
     if (!l.players.some((p) => p.userId === currentUser?.id)) return false
     if (l.status === 'REPORTING') {
@@ -191,29 +191,12 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
 
   return (
     <>
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex items-start justify-between mb-4">
         <div>
           <h1 className="text-2xl font-bold">Open Tier PUGs</h1>
           {seasonName && <p className="text-sm text-gray-500 mt-0.5">{seasonName}</p>}
         </div>
         <div className="flex items-center gap-2">
-          {currentUser && isRegistered && seasonId && (
-            <div className="flex items-center gap-1 mr-1">
-              {REGIONS.map((r) => (
-                <button
-                  key={r.value}
-                  onClick={() => setSelectedRegion(r.value)}
-                  className={`px-2.5 py-2 text-xs font-semibold rounded-lg border transition-colors ${
-                    selectedRegion === r.value
-                      ? 'bg-blue-600 border-blue-500 text-white'
-                      : 'bg-transparent border-gray-600 text-gray-400 hover:border-gray-400'
-                  }`}
-                >
-                  {r.label}
-                </button>
-              ))}
-            </div>
-          )}
           {currentUser && isRegistered && seasonId && hasJoinableLobbies && !myLobbyId && (
             <button
               onClick={() => { setQuickJoinOpen(!quickJoinOpen); setQuickJoinRoles([]); setActionError(null) }}
@@ -236,6 +219,23 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
             </button>
           )}
         </div>
+      </div>
+
+      {/* Region tabs - always visible */}
+      <div className="flex gap-1 mb-6 p-1 bg-gray-900/50 border border-gray-800 rounded-xl w-fit">
+        {REGIONS.map((r) => (
+          <button
+            key={r.value}
+            onClick={() => setSelectedRegion(r.value)}
+            className={`px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+              selectedRegion === r.value
+                ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'
+            }`}
+          >
+            {r.label}
+          </button>
+        ))}
       </div>
 
       {/* Quick Join role picker */}
