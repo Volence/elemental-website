@@ -548,29 +548,36 @@ class LobbyController:
         await self.navigate_to(Screen.LOBBY)
 
     async def show_lobby_during_game(self) -> bool:
-        """From a live match, open the pause menu and click SHOW LOBBY to reach
-        the lobby roster (where INVITE is available). Returns True on success.
+        """From a live match, open the lobby roster (where INVITE is available)
+        via OW's native "Custom Game Lobby" keybind (L) - one keypress, no menu
+        navigation or OCR. Falls back to the old ESC -> SHOW LOBBY path if the
+        keybind doesn't register.
 
         The bot is a spectator, so this only moves the bot's own client - the
         match keeps running for everyone else.
         """
         await self._focus()
-        await press_key("escape")
-        await asyncio.sleep(T.NAV_AFTER_ESC)
-        if self.detector.detect_screen(retries=2) != Screen.PAUSE_MENU:
-            log.warning("[%s] Pause menu not detected after ESC", self.instance.id)
-            await press_key("escape")
-            await asyncio.sleep(T.NAV_AFTER_ESC)
-            return False
-        if not await click_text("SHOW LOBBY", self.detector, retries=3):
-            log.warning("[%s] SHOW LOBBY not found in pause menu", self.instance.id)
-            await press_key("escape")
-            await asyncio.sleep(T.NAV_AFTER_ESC)
-            return False
+        await press_key("l")
         await asyncio.sleep(T.NAV_AFTER_EXIT)
-        if not self.detector.wait_for_text("INVITE", timeout=8.0, poll=1.0):
-            log.warning("[%s] Lobby roster not visible after SHOW LOBBY", self.instance.id)
-            return False
+        if not self.detector.wait_for_text("INVITE", timeout=6.0, poll=1.0):
+            # Fallback: the keybind may not have registered - use the menu path.
+            log.info("[%s] Custom Game Lobby key didn't reach roster, trying pause menu", self.instance.id)
+            await press_key("escape")
+            await asyncio.sleep(T.NAV_AFTER_ESC)
+            if self.detector.detect_screen(retries=2) != Screen.PAUSE_MENU:
+                log.warning("[%s] Pause menu not detected after ESC", self.instance.id)
+                await press_key("escape")
+                await asyncio.sleep(T.NAV_AFTER_ESC)
+                return False
+            if not await click_text("SHOW LOBBY", self.detector, retries=3):
+                log.warning("[%s] SHOW LOBBY not found in pause menu", self.instance.id)
+                await press_key("escape")
+                await asyncio.sleep(T.NAV_AFTER_ESC)
+                return False
+            await asyncio.sleep(T.NAV_AFTER_EXIT)
+            if not self.detector.wait_for_text("INVITE", timeout=8.0, poll=1.0):
+                log.warning("[%s] Lobby roster not visible after SHOW LOBBY", self.instance.id)
+                return False
         # Reaching the lobby proves OW is responsive. Reset the health watchdog's
         # failure counter so the UNKNOWN frames of the pause menu / roster do not
         # push it toward the 10-failure kill (the focus_lock held by /step already

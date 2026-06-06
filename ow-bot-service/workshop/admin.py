@@ -5,9 +5,12 @@ from automation.window_manager import window_manager
 
 log = logging.getLogger("ow-bot.workshop.admin")
 
+# pause/unpause use OW's native "Moderator - Pause Game" keybind (set to P on
+# the bot account) - a real full freeze, no workshop rule needed. It toggles,
+# so pause and unpause send the same key.
 COMMAND_KEYS = {
-    "pause": "e",
-    "unpause": "e",
+    "pause": "p",
+    "unpause": "p",
     "end_draw": "z",
     "end_team1": "q",
     "end_team2": None,
