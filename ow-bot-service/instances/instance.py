@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import time
 from datetime import datetime
 from enum import Enum
 
@@ -41,6 +42,18 @@ class OWInstance:
         # Set while a post-match navigation/free is in progress so the admin
         # result path and the workshop-log match-end path don't both run it.
         self._finalizing: bool = False
+
+    @property
+    def state(self) -> InstanceState:
+        return self._state
+
+    @state.setter
+    def state(self, value: InstanceState) -> None:
+        # Track when the state last changed so the scheduler can detect an
+        # instance stuck in a transitional state (e.g. a hung warmup).
+        if getattr(self, "_state", None) != value:
+            self._state_changed_at = time.time()
+        self._state = value
 
     @property
     def account_email(self) -> str:

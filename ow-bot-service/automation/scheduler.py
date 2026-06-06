@@ -25,6 +25,11 @@ from automation import timing as T
 
 logger = logging.getLogger("ow-bot.scheduler")
 
+# A warmup normally finishes well under WarmupTask.timeout (180s). If an
+# instance is still WARMING_UP this long after entering that state, the warmup
+# hung and never completed - the 60s reconcile pass resets it to AVAILABLE.
+STUCK_WARMUP_SECONDS = 300
+
 
 # ── Task types ────────────────────────────────────────────────────────
 
@@ -305,6 +310,27 @@ class Scheduler:
         from instances.instance import InstanceState
 
         for inst in instance_manager.instances:
+            # Self-heal a warmup that never completed (hung future, or a warmup
+            # task that never got picked up) - the instance sits in WARMING_UP
+            # with no live match. Strictly scoped: only an UNCLAIMED warmup
+            # stuck far past the normal warmup time. This never touches an
+            # in-game / waiting-for-players / ready instance or one tied to a
+            # live lobby, and recover() only closes THIS instance's own OW
+            # process, so other instances are never affected.
+            if (
+                inst.state == InstanceState.WARMING_UP
+                and inst.pug_lobby_id is None
+                and time.time() - getattr(inst, "_state_changed_at", time.time())
+                > STUCK_WARMUP_SECONDS
+            ):
+                logger.warning(
+                    f"[{inst.id}] Warmup stuck for "
+                    f"{int(time.time() - inst._state_changed_at)}s - resetting to available"
+                )
+                self._warmup_tasks.pop(inst.id, None)
+                await inst.recover()
+                continue
+
             if inst.state == InstanceState.ERROR:
                 # Only auto-recover if OW is actually running - otherwise
                 # recover() just resets to AVAILABLE and health check
