@@ -90,6 +90,10 @@ class LobbyController:
         OCR region from the live window rect after focusing.
         """
         win = window_manager.get_window(self.instance.id)
+        # Already foreground (e.g. between invites in a loop)? Skip the re-focus
+        # and the FOCUS_AFTER settle - it's wasted time when nothing stole focus.
+        if win and win.is_valid and win.is_foreground:
+            return True
         if not win or not win.is_valid:
             self.instance._ensure_window_tracked()
             self._detector = None  # region likely changed; rebuild lazily
@@ -1522,31 +1526,26 @@ class LobbyController:
         else:
             if not await click_text("INVITE", self.detector, retries=2):
                 raise NavigationError(f"[{self.instance.id}] INVITE not found")
-        await self._wait_for_any_text(
-            ["ADD PLAYER", "VIA", "NO PLAYER"],
-            timeout=T.INVITE_PANEL_TIMEOUT, floor=T.INVITE_PANEL_FLOOR,
-            poll=T.INVITE_PANEL_POLL,
-        )
+        # Panel opens near-instantly; a short fixed render wait beats OCR-
+        # confirming it (which hit the 4s timeout every invite). The post-send
+        # close-check + the final join-wait remain as the integrity net.
+        await asyncio.sleep(T.INVITE_FAST_PANEL_SLEEP)
 
         # 2) Switch to BattleTag view (panel always opens in friends view)
         via_pos = cache.get("via_battletag_pos")
         if via_pos:
             await click(*via_pos)
-            await self._wait_for_any_text(
-                ["BOTH", "ROTH", "BATTLE"],
-                timeout=T.INVITE_PANEL_TIMEOUT, floor=T.INVITE_PANEL_FLOOR,
-                poll=T.INVITE_PANEL_POLL,
-            )
+            await asyncio.sleep(T.INVITE_FAST_VIEW_SLEEP)
 
         # 3) Team selector - re-select every invite (panel resets to BOTH on each reopen)
         both_pos = cache.get("both_pos")
         if both_pos:  # always re-select team; invite panel resets to BOTH each reopen
             await click(*both_pos)
-            await asyncio.sleep(0.2)
+            await asyncio.sleep(0.1)
             target_pos = {0: cache["spec_pos"], 1: cache["team1_pos"], 2: cache["team2_pos"]}.get(team)
             if target_pos:
                 await click(*target_pos)
-                await asyncio.sleep(0.2)
+                await asyncio.sleep(0.1)
             cache["last_team"] = team
 
         # 4) Paste and send
