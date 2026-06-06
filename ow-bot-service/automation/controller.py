@@ -664,17 +664,10 @@ class LobbyController:
                             result.failed_invites.append(user_id)
                         continue
 
-                    # Clear an invite-refused pop-up (e.g. the player disabled
-                    # invites from non-friends) so it does not block the next
-                    # invite. Such a dialog means this invite did not land.
-                    dialog = await self._dismiss_blocking_dialog()
-                    if dialog and "invit" in dialog:
-                        log.warning(
-                            "[%s] Invite to %s appears refused (%s)",
-                            self.instance.id, battle_tag, dialog,
-                        )
-                        if user_id not in result.failed_invites:
-                            result.failed_invites.append(user_id)
+                    # (No per-invite dialog scan: the "invite refused" pop-up
+                    # doesn't occur in practice and the OCR scan cost ~0.5-1.5s
+                    # every invite. Players who don't land are caught by the
+                    # join-wait below.)
 
                 # A live-match spectator invite does not register as a filled team
                 # slot, so skip the join-wait and do a single round.
@@ -1541,11 +1534,10 @@ class LobbyController:
         both_pos = cache.get("both_pos")
         if both_pos:  # always re-select team; invite panel resets to BOTH each reopen
             await click(*both_pos)
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.1)  # let the dropdown expand before clicking a team
             target_pos = {0: cache["spec_pos"], 1: cache["team1_pos"], 2: cache["team2_pos"]}.get(team)
             if target_pos:
                 await click(*target_pos)
-                await asyncio.sleep(0.1)
             cache["last_team"] = team
 
         # 4) Paste and send
@@ -1559,28 +1551,25 @@ class LobbyController:
             await click(*input_pos)
         else:
             await press_key("tab")
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0.05)
 
         # Select all + paste
         await hotkey("ctrl", "a")
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0.05)
         await paste_text(battle_tag)
         log.info("[%s] Pasted BattleTag: %s", self.instance.id, battle_tag)
         await asyncio.sleep(T.INVITE_AFTER_PASTE)
 
-        # Click INVITE send. The panel closes and returns to the lobby, so
-        # wait for its distinctive text to disappear instead of blind-sleeping;
-        # the next invite then starts as soon as we are actually back.
+        # Click INVITE send. The panel auto-closes back to the lobby; a short
+        # fixed sleep lets it close before the next invite reopens it - far
+        # faster than OCR-polling for the panel text to disappear (that poll was
+        # hitting its timeout). The final join-wait is the integrity net.
         send_pos = cache.get("send_pos")
         if send_pos:
             await click(*send_pos)
         else:
             await press_key("enter")
-        await self._wait_until_text_gone(
-            ["ADD PLAYER", "BOTH", "ROTH", "VIA"],
-            timeout=T.INVITE_SEND_TIMEOUT, floor=T.INVITE_PANEL_FLOOR,
-            poll=T.INVITE_PANEL_POLL,
-        )
+        await asyncio.sleep(T.INVITE_FAST_CLOSE_SLEEP)
 
     async def _count_lobby_players(self) -> int:
         """OCR the lobby screen and count filled team slots."""

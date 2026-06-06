@@ -94,8 +94,10 @@ INVITE_SEND_TIMEOUT = 1.5   # max wait for the panel to close (back to lobby);
 # instantly, but OCR-confirming them was unreliable and hit the 4s timeout
 # every invite (~8s wasted per invite). With cached click positions we don't
 # need OCR confirmation - just a brief wait for the UI to render. Tunable.
-INVITE_FAST_PANEL_SLEEP = 0.35   # after clicking INVITE to open the panel
-INVITE_FAST_VIEW_SLEEP = 0.35    # after switching to the BattleTag view
+INVITE_FAST_PANEL_SLEEP = 0.20   # after clicking INVITE to open the panel
+INVITE_FAST_VIEW_SLEEP = 0.10    # after switching to the BattleTag view (instant)
+INVITE_FAST_CLOSE_SLEEP = 0.25   # after clicking send, let the panel close before
+                                 # the next invite reopens it (replaces an OCR poll)
 
 # ── Start game ──────────────────────────────────────────────────────
 START_AFTER_CLICK = 3.0          # after clicking START
