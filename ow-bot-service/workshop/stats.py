@@ -49,6 +49,11 @@ class MatchStats:
         self.match_result: str | None = None
         self.match_ended: bool = False
         self.players: dict[str, PlayerStats] = {}
+        # Authoritative per-(player, hero) stat dumps. OW dumps one player_stat
+        # row per hero a player used, so we keep them separately and sum across
+        # a player's heroes - otherwise a freshly-swapped hero's 0-row would
+        # overwrite (zero) the player's totals.
+        self._hero_dumps: dict[tuple[str, str], dict] = {}
         self._event_count: int = 0
 
     def process_event(self, event: dict) -> None:
@@ -147,21 +152,52 @@ class MatchStats:
         if name:
             self._player(name, e.get("player_team", ""), e.get("player_hero", "")).ultimates_used += 1
 
+    _DUMP_FIELDS = (
+        "eliminations", "final_blows", "deaths", "damage_dealt", "hero_damage",
+        "barrier_damage", "healing_dealt", "ultimates_earned", "ultimates_used",
+    )
+
     def _handle_player_stat(self, e: dict):
-        """Authoritative stat dump at end of round/match — overrides live counts."""
+        """Authoritative per-hero stat dump. OW emits one row per hero a player
+        used, so store per (player, hero) and SUM across the player's heroes -
+        otherwise a just-swapped hero's 0-row would zero the player's totals.
+        Leaves ps.hero alone so the current hero (from hero_spawn/hero_swap)
+        keeps showing."""
         name = e.get("player_name")
         if not name:
             return
-        ps = self._player(name, e.get("player_team", ""), e.get("player_hero", ""))
-        ps.eliminations = int(e.get("eliminations", 0))
-        ps.final_blows = int(e.get("final_blows", 0))
-        ps.deaths = int(e.get("deaths", 0))
-        ps.damage_dealt = float(e.get("all_damage_dealt", 0))
-        ps.hero_damage = float(e.get("hero_damage_dealt", 0))
-        ps.barrier_damage = float(e.get("barrier_damage_dealt", 0))
-        ps.healing_dealt = float(e.get("healing_dealt", 0))
-        ps.ultimates_earned = int(e.get("ultimates_earned", 0))
-        ps.ultimates_used = int(e.get("ultimates_used", 0))
+        hero = e.get("player_hero", "")
+        self._hero_dumps[(name, hero)] = {
+            "eliminations": int(e.get("eliminations", 0)),
+            "final_blows": int(e.get("final_blows", 0)),
+            "deaths": int(e.get("deaths", 0)),
+            "damage_dealt": float(e.get("all_damage_dealt", 0)),
+            "hero_damage": float(e.get("hero_damage_dealt", 0)),
+            "barrier_damage": float(e.get("barrier_damage_dealt", 0)),
+            "healing_dealt": float(e.get("healing_dealt", 0)),
+            "ultimates_earned": int(e.get("ultimates_earned", 0)),
+            "ultimates_used": int(e.get("ultimates_used", 0)),
+        }
+        ps = self._player(name, e.get("player_team", ""))
+        agg = {f: 0 for f in self._DUMP_FIELDS}
+        for (n, _h), d in self._hero_dumps.items():
+            if n == name:
+                for f in self._DUMP_FIELDS:
+                    agg[f] += d[f]
+        for f in self._DUMP_FIELDS:
+            setattr(ps, f, agg[f])
+
+    def _handle_objective_captured(self, e: dict):
+        """Flashpoint scores by points captured and never fires round_end per
+        point, so the live score must count captures. Other modes capture
+        checkpoints that are NOT score, so only count for Flashpoint."""
+        if "flashpoint" not in (self.map_type or "").strip().lower():
+            return
+        team = e.get("capturing_team", "")
+        if team == self.team_1_name:
+            self.team_1_score += 1
+        elif team == self.team_2_name:
+            self.team_2_score += 1
 
     def snapshot(self) -> dict:
         team1 = {}
