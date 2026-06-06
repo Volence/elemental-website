@@ -634,6 +634,15 @@ export async function castMapVote(lobbyId: number, userId: number, mapId: number
   const votes = mapVote.votes as Record<string, number>
   votes[String(userId)] = mapId
   await prisma.pugMapVote.update({ where: { lobbyId }, data: { votes } })
+
+  // Early-advance: once every player has voted, resolve immediately instead of
+  // waiting out the full countdown. finalizeMapVote re-checks status so a late
+  // timer firing is a harmless no-op.
+  const playerCount = await prisma.pugLobbyPlayer.count({ where: { lobbyId } })
+  if (Object.keys(votes).length >= playerCount) {
+    cancelTimer(timerKey(lobbyId, 'mapvote'))
+    await finalizeMapVote(lobbyId)
+  }
 }
 
 export async function finalizeMapVote(lobbyId: number): Promise<void> {

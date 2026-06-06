@@ -200,13 +200,37 @@ async function handleCancelBotLobby(pugLobbyId: number) {
   return NextResponse.json(await res.json().catch(() => ({ ok: true })))
 }
 
-// Not a real bot endpoint - handle invite via lobby/create flow
-async function handleInviteToLobby(pugLobbyId: number, battleTag: string, team: string) {
-  // The bot doesn't have a standalone invite endpoint;
-  // invites happen as part of lobby/create. Return a helpful message.
-  return NextResponse.json({
-    error: 'Direct invites not supported. Players are invited as part of lobby creation.',
-  }, { status: 400 })
+// Invite (or re-invite) a single player to a bot-hosted lobby - e.g. someone
+// disconnected mid-match. Uses the bot's invite_players step against the
+// lobby's instance with a one-player list.
+async function handleInviteToLobby(pugLobbyId: number, battleTag: string, team: number | string) {
+  if (!battleTag || !battleTag.includes('#')) {
+    return NextResponse.json({ error: 'A valid BattleTag (Name#1234) is required' }, { status: 400 })
+  }
+  const lobby = await prisma.pugLobby.findUnique({
+    where: { id: pugLobbyId },
+    select: { botInstanceId: true },
+  })
+  if (!lobby?.botInstanceId) {
+    return NextResponse.json(
+      { error: 'Lobby is not bot-hosted - no instance to invite from' },
+      { status: 400 },
+    )
+  }
+  const teamNum = typeof team === 'number' ? team : parseInt(team, 10)
+  const t = [0, 1, 2].includes(teamNum) ? teamNum : 0
+  const res = await botFetch(`/instance/${lobby.botInstanceId}/step`, {
+    command: 'invite_players',
+    players: [{ userId: 0, battleTag, team: t }],
+  })
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    return NextResponse.json(
+      { error: (data as any)?.detail || (data as any)?.error || `Invite failed (${res.status})` },
+      { status: res.status },
+    )
+  }
+  return NextResponse.json({ ok: true, ...data })
 }
 
 // POST /instance/{instance_id}/step  { command, code? }
