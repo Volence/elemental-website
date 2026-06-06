@@ -782,9 +782,12 @@ class LobbyController:
         return False
 
     async def send_admin_command(self, command: str):
+        # pause/unpause use OW's native "Moderator - Pause Game" keybind (set to
+        # P on the bot account) - a real freeze, no workshop rule. It toggles,
+        # so pause and unpause send the same key. Must match workshop/admin.py.
         key_map = {
-            "pause": "e",
-            "unpause": "e",
+            "pause": "p",
+            "unpause": "p",
             "end_draw": "z",
             "end_team1": "q",
             "end_team2": None,
