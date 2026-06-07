@@ -8,22 +8,33 @@ export async function register() {
     // Set up global error handlers for unhandled errors
     setupGlobalErrorHandlers()
 
-    // Auto-trigger Payload initialization in dev mode
-    // Without this, the Discord bot won't start until someone visits a page
-    if (process.env.NODE_ENV === 'development') {
-      setTimeout(async () => {
-        try {
-          const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
-          console.log('[Instrumentation] Triggering Payload init via self-ping...')
-          await fetch(`${serverUrl}/api/people/me`, {
-            headers: { 'Content-Type': 'application/json' },
-          }).catch(() => {})
-          console.log('[Instrumentation] Payload init triggered')
-        } catch {
-          // Silent fail - Payload will init on next real request
-        }
-      }, 3000) // Wait 3s for Next.js to be ready
-    }
+    // Auto-trigger Payload initialization on startup (all server envs).
+    // Payload's onInit is what registers the Discord slash commands, connects
+    // the bot gateway, and recovers PUG timers - but it only fires on the first
+    // getPayload() call. Without this warm-up none of that runs until a real
+    // request boots Payload, so after every prod deploy the bot stays dark and
+    // slash commands read as "unknown command" until someone happens to hit a
+    // Payload-backed route. Target 127.0.0.1 (not NEXT_PUBLIC_SERVER_URL) so the
+    // ping can't race a load balancer still pointing at the old container.
+    // Keep this a self-ping rather than importing payload directly here: that
+    // pulls discord -> busboy -> stream into the bundle and breaks the build
+    // with "Can't resolve 'stream'".
+    setTimeout(async () => {
+      try {
+        const port = process.env.PORT || '3000'
+        const serverUrl =
+          process.env.NODE_ENV === 'development'
+            ? process.env.NEXT_PUBLIC_SERVER_URL || `http://127.0.0.1:${port}`
+            : `http://127.0.0.1:${port}`
+        console.log('[Instrumentation] Triggering Payload init via self-ping...')
+        await fetch(`${serverUrl}/api/people/me`, {
+          headers: { 'Content-Type': 'application/json' },
+        }).catch(() => {})
+        console.log('[Instrumentation] Payload init triggered')
+      } catch {
+        // Silent fail - Payload will init on next real request
+      }
+    }, 3000) // Wait 3s for Next.js to be ready
   }
 }
 
