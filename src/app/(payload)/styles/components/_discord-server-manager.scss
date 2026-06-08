@@ -4230,3 +4230,29 @@
     }
   }
 }
+
+.discord-server-manager__server-picker {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+  select {
+    background: rgba($admin-bg-base, 0.8);
+    color: $admin-text-primary;
+    border: 1px solid rgba($admin-accent-info, 0.3);
+    border-radius: $radius-sm;
+    padding: $spacing-xs $spacing-sm;
+  }
+}
+.servers-tab {
+  padding: $spacing-lg;
+  &__row { display: flex; justify-content: space-between; align-items: center; gap: $spacing-md; padding: $spacing-sm 0; }
+  &__name { font-weight: $font-weight-semibold; }
+  &__meta { color: $admin-text-secondary; font-size: $font-size-sm; }
+  &__badge { margin-left: $spacing-sm; font-size: $font-size-xs; color: $admin-accent-success; }
+  &__status { color: $admin-text-secondary; }
+  &__register { display: flex; gap: $spacing-sm; }
+  &__register input { background: rgba($admin-bg-base, 0.8); color: $admin-text-primary; border: 1px solid rgba($admin-accent-info, 0.3); border-radius: $radius-sm; padding: $spacing-xs $spacing-sm; }
+  &__register button { @include glow-button($admin-accent-info); padding: $spacing-xs $spacing-sm; }
+  &__error { color: $admin-accent-error; }
+}
