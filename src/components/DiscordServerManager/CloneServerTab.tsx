@@ -12,6 +12,16 @@ interface Source {
   stickers: { id: string; name: string }[]
 }
 
+const channelGlyph = (type: number): string => {
+  switch (type) {
+    case 2: return '🔊'
+    case 5: return '📣'
+    case 13: return '🎙'
+    case 15: return '🗂'
+    default: return '#'
+  }
+}
+
 const CloneServerTab = () => {
   const [targetGuildId, setTargetGuildId] = useState('')
   const [source, setSource] = useState<Source | null>(null)
@@ -165,13 +175,15 @@ const CloneServerTab = () => {
           <div className="clone-server-tab__columns">
             <div className="clone-server-tab__col">
               <h4>Roles</h4>
-              {source.roles
-                .filter((r) => !r.isEveryone && !r.managed)
-                .map((r) => (
-                  <label key={r.id} className="clone-server-tab__check-label">
-                    <input type="checkbox" checked={roleIds.has(r.id)} onChange={() => toggle(roleIds, r.id, setRoleIds)} /> {r.name}
-                  </label>
-                ))}
+              <div className="clone-server-tab__roles-list">
+                {source.roles
+                  .filter((r) => !r.isEveryone && !r.managed)
+                  .map((r) => (
+                    <label key={r.id} className="clone-server-tab__role-row">
+                      <input type="checkbox" checked={roleIds.has(r.id)} onChange={() => toggle(roleIds, r.id, setRoleIds)} /> {r.name}
+                    </label>
+                  ))}
+              </div>
             </div>
             <div className="clone-server-tab__col">
               <h4>Categories &amp; channels</h4>
@@ -190,10 +202,6 @@ const CloneServerTab = () => {
               </div>
               {source.categories.map((c) => {
                 const isExpanded = expanded.has(c.id)
-                const channelGlyph = (type: number): string => {
-                  if (type === 2 || type === 13) return '🔊'
-                  return '#'
-                }
                 return (
                   <div key={c.id} className="clone-server-tab__category">
                     <div className="clone-server-tab__category-row">
