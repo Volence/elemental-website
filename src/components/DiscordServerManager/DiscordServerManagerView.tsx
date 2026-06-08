@@ -187,7 +187,10 @@ const DiscordServerManagerView = () => {
   }
 
   const isPrimarySelected = selectedServerId === '' || servers.find((s) => String(s.id) === selectedServerId)?.isPrimary === true
-  const selectedGuildId = selectedServerId === '' ? undefined : servers.find((s) => String(s.id) === selectedServerId)?.guildId
+  const selectedGuildId =
+    selectedServerId === ''
+      ? servers.find((s) => s.isPrimary)?.guildId
+      : servers.find((s) => String(s.id) === selectedServerId)?.guildId
 
   const loadServerStructure = async () => {
     try {
