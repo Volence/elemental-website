@@ -145,51 +145,51 @@ const CloneServerTab = () => {
   }
 
   return (
-    <div style={{ padding: '1rem' }}>
+    <div className="clone-server-tab">
       <h3>Clone Server</h3>
-      <p>One-shot copy of the primary server&apos;s roles, channels, emojis, and settings into a target server the bot has already joined.</p>
-      <p style={{ fontSize: '0.85em', opacity: 0.8 }}>
+      <p className="clone-server-tab__intro">One-shot copy of the primary server&apos;s roles, channels, emojis, and settings into a target server the bot has already joined.</p>
+      <p className="clone-server-tab__caveat">
         Best run against a freshly-created, empty server. Items that already exist by name are skipped, and re-running will not re-sync later permission or structure changes.
       </p>
 
-      <div style={{ margin: '1rem 0' }}>
+      <div className="clone-server-tab__target-row">
         <input
           type="text"
           placeholder="Target server (guild) ID"
           value={targetGuildId}
           onChange={(e) => setTargetGuildId(e.target.value)}
-          style={{ width: 320, marginRight: 8 }}
+          className="clone-server-tab__target-input"
         />
-        <button onClick={loadSource} disabled={loading}>
+        <button className="clone-server-tab__load-btn" onClick={loadSource} disabled={loading}>
           {loading ? 'Loading…' : 'Load source structure'}
         </button>
       </div>
 
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p className="clone-server-tab__error">{error}</p>}
 
       {source && (
         <div>
-          <div style={{ display: 'flex', gap: '2rem' }}>
-            <div>
+          <div className="clone-server-tab__columns">
+            <div className="clone-server-tab__col">
               <h4>Roles</h4>
               {source.roles
                 .filter((r) => !r.isEveryone && !r.managed)
                 .map((r) => (
-                  <label key={r.id} style={{ display: 'block' }}>
+                  <label key={r.id} className="clone-server-tab__check-label">
                     <input type="checkbox" checked={roleIds.has(r.id)} onChange={() => toggle(roleIds, r.id, setRoleIds)} /> {r.name}
                   </label>
                 ))}
             </div>
-            <div>
+            <div className="clone-server-tab__col">
               <h4>Categories &amp; channels</h4>
               {source.categories.map((c) => (
-                <div key={c.id} style={{ marginBottom: 8 }}>
-                  <label style={{ fontWeight: 600 }}>
+                <div key={c.id} className="clone-server-tab__category">
+                  <label className="clone-server-tab__category-label">
                     <input type="checkbox" checked={categoryIds.has(c.id)} onChange={() => toggleCategory(c)} /> {c.name}
                   </label>
-                  <div style={{ paddingLeft: 16 }}>
+                  <div className="clone-server-tab__channels">
                     {c.channels.map((ch) => (
-                      <label key={ch.id} style={{ display: 'block' }}>
+                      <label key={ch.id} className="clone-server-tab__check-label">
                         <input type="checkbox" checked={channelIds.has(ch.id)} onChange={() => toggleChannel(c, ch)} /> {ch.name}
                       </label>
                     ))}
@@ -199,33 +199,37 @@ const CloneServerTab = () => {
             </div>
           </div>
 
-          <div style={{ marginTop: 12 }}>
-            <label style={{ marginRight: 12 }}>
+          <div className="clone-server-tab__toggles">
+            <label className="clone-server-tab__check-label">
               <input type="checkbox" checked={includeEmojis} onChange={(e) => setIncludeEmojis(e.target.checked)} /> Emojis ({source.emojis.length})
             </label>
-            <label style={{ marginRight: 12 }}>
+            <label className="clone-server-tab__check-label">
               <input type="checkbox" checked={includeStickers} onChange={(e) => setIncludeStickers(e.target.checked)} /> Stickers ({source.stickers.length})
             </label>
-            <label>
+            <label className="clone-server-tab__check-label">
               <input type="checkbox" checked={includeSettings} onChange={(e) => setIncludeSettings(e.target.checked)} /> Server settings
             </label>
           </div>
 
-          <button onClick={startClone} disabled={!targetGuildId || status === 'running' || status === 'pending'} style={{ marginTop: 16 }}>
+          <button
+            className="clone-server-tab__start-btn"
+            onClick={startClone}
+            disabled={!targetGuildId || status === 'running' || status === 'pending'}
+          >
             Start clone
           </button>
         </div>
       )}
 
       {jobId && (
-        <div style={{ marginTop: 16 }}>
+        <div className="clone-server-tab__progress">
           <p>
             <strong>Status:</strong> {status} {progress?.phase ? `(${progress.phase})` : ''}
           </p>
           {progress?.rolesTotal != null && <p>Roles: {progress.rolesDone}/{progress.rolesTotal}</p>}
           {progress?.channelsTotal != null && <p>Channels: {progress.channelsDone}/{progress.channelsTotal}</p>}
           {report.length > 0 && (
-            <details>
+            <details className="clone-server-tab__report">
               <summary>Report ({report.length} items)</summary>
               <ul>
                 {report.map((item, i) => (
