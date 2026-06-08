@@ -11,7 +11,7 @@ export const DiscordCloneJobs: CollectionConfig = {
     group: 'Data',
     useAsTitle: 'targetGuildId',
     defaultColumns: ['targetGuildId', 'status', 'createdAt'],
-    hidden: ({ user }) => (user as Person)?.role !== 'admin',
+    hidden: ({ user }) => (user as unknown as Person)?.role !== 'admin',
   },
   access: {
     create: adminOnly,
