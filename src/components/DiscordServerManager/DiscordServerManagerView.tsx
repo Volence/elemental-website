@@ -140,7 +140,7 @@ const DiscordServerManagerView = () => {
     categoryName: ''
   })
 
-  const [servers, setServers] = useState<Array<{ id: number; label: string; guildId: string; isPrimary: boolean }>>([])
+  const [servers, setServers] = useState<Array<{ id: number; label: string; guildId: string; isPrimary: boolean; region?: string | null }>>([])
   const [selectedServerId, setSelectedServerId] = useState<string>('')
   const serverIdMounted = useRef(false)
 
@@ -164,7 +164,7 @@ const DiscordServerManagerView = () => {
       serverIdMounted.current = true
       return
     }
-    // Server changed after mount — refetch scoped data
+    // Server changed after mount - refetch scoped data
     setStructure(null)
     setStats(null)
     setHealth(null)
@@ -821,7 +821,7 @@ const DiscordServerManagerView = () => {
           >
             {servers.map((s) => (
               <option key={s.id} value={s.isPrimary ? '' : String(s.id)}>
-                {s.label}{s.isPrimary ? ' (primary)' : ''}
+                {s.label}{s.isPrimary ? ' (primary)' : s.region ? ` - ${s.region}` : ''}
               </option>
             ))}
           </select>

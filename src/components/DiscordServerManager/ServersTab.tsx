@@ -19,6 +19,7 @@ const ServersTab = ({ onChange }: { onChange?: () => void }) => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [drafts, setDrafts] = useState<Record<string, { label: string; region: string }>>({})
+  const [submitting, setSubmitting] = useState<string | null>(null)
 
   const load = async () => {
     setLoading(true)
@@ -41,6 +42,7 @@ const ServersTab = ({ onChange }: { onChange?: () => void }) => {
 
   const register = async (g: BotGuild) => {
     const draft = drafts[g.guildId] || { label: g.label || g.name, region: g.region || '' }
+    setSubmitting(g.guildId)
     try {
       const res = await fetch('/api/discord/servers/register', {
         method: 'POST',
@@ -53,6 +55,8 @@ const ServersTab = ({ onChange }: { onChange?: () => void }) => {
       onChange?.()
     } catch (e: any) {
       setError(e.message)
+    } finally {
+      setSubmitting(null)
     }
   }
 
@@ -72,7 +76,7 @@ const ServersTab = ({ onChange }: { onChange?: () => void }) => {
                 {g.isPrimary && <span className="servers-tab__badge">primary</span>}
               </div>
               {g.registered ? (
-                <span className="servers-tab__status">Registered{g.region ? ` — ${g.region}` : ''}</span>
+                <span className="servers-tab__status">Registered{g.region ? ` - ${g.region}` : ''}</span>
               ) : (
                 <div className="servers-tab__register">
                   <input
@@ -85,7 +89,9 @@ const ServersTab = ({ onChange }: { onChange?: () => void }) => {
                     value={(drafts[g.guildId]?.region) ?? ''}
                     onChange={(e) => setDrafts((d) => ({ ...d, [g.guildId]: { label: d[g.guildId]?.label ?? g.name, region: e.target.value } }))}
                   />
-                  <button onClick={() => register(g)}>Register</button>
+                  <button onClick={() => register(g)} disabled={submitting === g.guildId}>
+                    {submitting === g.guildId ? 'Registering…' : 'Register'}
+                  </button>
                 </div>
               )}
             </div>
