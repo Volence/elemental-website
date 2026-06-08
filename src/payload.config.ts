@@ -56,6 +56,7 @@ import { ErrorHarvesterState } from './globals/ErrorHarvesterState'
 import { SystemHealth } from './globals/SystemHealth'
 import { DiscordServerManager } from './globals/DiscordServerManager'
 import { DiscordCategoryTemplates } from './collections/DiscordCategoryTemplates'
+import { DiscordCloneJobs } from './collections/DiscordCloneJobs'
 import { TwitchStreamers } from './collections/TwitchStreamers'
 import { Tasks } from './collections/Tasks'
 import { GraphicsAssets } from './collections/GraphicsAssets'
@@ -290,6 +291,7 @@ const config = buildConfig({
     // ── HIDDEN: Internal/bot-managed ──
     Tasks,               // Accessed via workboard dashboards
     DiscordCategoryTemplates,
+    DiscordCloneJobs,
     WatchedThreads,
     TwitchStreamers,
     
