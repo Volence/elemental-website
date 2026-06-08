@@ -99,6 +99,7 @@ export interface Config {
     tasks: Task;
     'discord-category-templates': DiscordCategoryTemplate;
     'discord-clone-jobs': DiscordCloneJob;
+    'discord-servers': DiscordServer;
     'watched-threads': WatchedThread;
     'twitch-streamers': TwitchStreamer;
     'audit-logs': AuditLog;
@@ -154,6 +155,7 @@ export interface Config {
     tasks: TasksSelect<false> | TasksSelect<true>;
     'discord-category-templates': DiscordCategoryTemplatesSelect<false> | DiscordCategoryTemplatesSelect<true>;
     'discord-clone-jobs': DiscordCloneJobsSelect<false> | DiscordCloneJobsSelect<true>;
+    'discord-servers': DiscordServersSelect<false> | DiscordServersSelect<true>;
     'watched-threads': WatchedThreadsSelect<false> | WatchedThreadsSelect<true>;
     'twitch-streamers': TwitchStreamersSelect<false> | TwitchStreamersSelect<true>;
     'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
@@ -2766,6 +2768,28 @@ export interface DiscordCloneJob {
   createdAt: string;
 }
 /**
+ * Registered Discord servers the bot manages. The primary (main hub) is seeded from DISCORD_GUILD_ID.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discord-servers".
+ */
+export interface DiscordServer {
+  id: number;
+  label: string;
+  guildId: string;
+  /**
+   * Optional tag, e.g. NA / EMEA / SA. Metadata only for now.
+   */
+  region?: string | null;
+  /**
+   * The main hub. Exactly one row should be primary; seeded from DISCORD_GUILD_ID.
+   */
+  isPrimary?: boolean | null;
+  active?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Forum threads that are automatically kept active
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3426,6 +3450,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'discord-clone-jobs';
         value: number | DiscordCloneJob;
+      } | null)
+    | ({
+        relationTo: 'discord-servers';
+        value: number | DiscordServer;
       } | null)
     | ({
         relationTo: 'watched-threads';
@@ -4548,6 +4576,19 @@ export interface DiscordCloneJobsSelect<T extends boolean = true> {
   report?: T;
   selection?: T;
   error?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discord-servers_select".
+ */
+export interface DiscordServersSelect<T extends boolean = true> {
+  label?: T;
+  guildId?: T;
+  region?: T;
+  isPrimary?: T;
+  active?: T;
   updatedAt?: T;
   createdAt?: T;
 }

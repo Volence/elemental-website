@@ -57,6 +57,7 @@ import { SystemHealth } from './globals/SystemHealth'
 import { DiscordServerManager } from './globals/DiscordServerManager'
 import { DiscordCategoryTemplates } from './collections/DiscordCategoryTemplates'
 import { DiscordCloneJobs } from './collections/DiscordCloneJobs'
+import { DiscordServers } from './collections/DiscordServers'
 import { TwitchStreamers } from './collections/TwitchStreamers'
 import { Tasks } from './collections/Tasks'
 import { GraphicsAssets } from './collections/GraphicsAssets'
@@ -292,6 +293,7 @@ const config = buildConfig({
     Tasks,               // Accessed via workboard dashboards
     DiscordCategoryTemplates,
     DiscordCloneJobs,
+    DiscordServers,
     WatchedThreads,
     TwitchStreamers,
     
@@ -417,6 +419,27 @@ const config = buildConfig({
       payload.logger.info('[PUG] Timer recovery complete')
     } catch (err) {
       payload.logger.error({ err }, '[PUG] Timer recovery failed')
+    }
+
+    // Seed the primary Discord server row from DISCORD_GUILD_ID (idempotent).
+    try {
+      const envGuild = process.env.DISCORD_GUILD_ID
+      if (envGuild) {
+        const existing = await payload.find({
+          collection: 'discord-servers',
+          where: { guildId: { equals: envGuild } },
+          limit: 1,
+        })
+        if (existing.docs.length === 0) {
+          await payload.create({
+            collection: 'discord-servers',
+            data: { label: 'Primary (main hub)', guildId: envGuild, isPrimary: true, active: true },
+          })
+          console.log('[DiscordServers] Seeded primary server row')
+        }
+      }
+    } catch (e) {
+      console.warn('[DiscordServers] Primary seed skipped (table may not be migrated yet):', (e as Error).message)
     }
   },
 })
