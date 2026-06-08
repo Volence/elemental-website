@@ -98,6 +98,7 @@ export interface Config {
     'events-anchor': EventsAnchor;
     tasks: Task;
     'discord-category-templates': DiscordCategoryTemplate;
+    'discord-clone-jobs': DiscordCloneJob;
     'watched-threads': WatchedThread;
     'twitch-streamers': TwitchStreamer;
     'audit-logs': AuditLog;
@@ -152,6 +153,7 @@ export interface Config {
     'events-anchor': EventsAnchorSelect<false> | EventsAnchorSelect<true>;
     tasks: TasksSelect<false> | TasksSelect<true>;
     'discord-category-templates': DiscordCategoryTemplatesSelect<false> | DiscordCategoryTemplatesSelect<true>;
+    'discord-clone-jobs': DiscordCloneJobsSelect<false> | DiscordCloneJobsSelect<true>;
     'watched-threads': WatchedThreadsSelect<false> | WatchedThreadsSelect<true>;
     'twitch-streamers': TwitchStreamersSelect<false> | TwitchStreamersSelect<true>;
     'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
@@ -2711,6 +2713,59 @@ export interface DiscordCategoryTemplate {
   createdAt: string;
 }
 /**
+ * Background jobs that clone the primary Discord server into a target server.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discord-clone-jobs".
+ */
+export interface DiscordCloneJob {
+  id: number;
+  targetGuildId: string;
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  /**
+   * Live counters, e.g. { rolesDone, rolesTotal, channelsDone, channelsTotal, phase }
+   */
+  progress?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Per-item outcome list: { kind, name, outcome: created|skipped|failed, detail? }
+   */
+  report?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * The CloneSelection the admin submitted.
+   */
+  selection?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Top-level failure message if the job aborted.
+   */
+  error?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Forum threads that are automatically kept active
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3367,6 +3422,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'discord-category-templates';
         value: number | DiscordCategoryTemplate;
+      } | null)
+    | ({
+        relationTo: 'discord-clone-jobs';
+        value: number | DiscordCloneJob;
       } | null)
     | ({
         relationTo: 'watched-threads';
@@ -4475,6 +4534,20 @@ export interface DiscordCategoryTemplatesSelect<T extends boolean = true> {
   sourceCategory?: T;
   channelCount?: T;
   templateData?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discord-clone-jobs_select".
+ */
+export interface DiscordCloneJobsSelect<T extends boolean = true> {
+  targetGuildId?: T;
+  status?: T;
+  progress?: T;
+  report?: T;
+  selection?: T;
+  error?: T;
   updatedAt?: T;
   createdAt?: T;
 }
