@@ -25,6 +25,8 @@ const CloneServerTab = () => {
   const [includeStickers, setIncludeStickers] = useState(true)
   const [includeSettings, setIncludeSettings] = useState(true)
 
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
+
   const [jobId, setJobId] = useState<string | null>(null)
   const [status, setStatus] = useState<string | null>(null)
   const [progress, setProgress] = useState<any>(null)
@@ -78,20 +80,11 @@ const CloneServerTab = () => {
     setChannelIds(nextCh)
   }
 
-  const toggleChannel = (cat: SourceCategory, ch: SourceChannel) => {
-    const nextCh = new Set(channelIds)
-    if (nextCh.has(ch.id)) {
-      nextCh.delete(ch.id)
-    } else {
-      nextCh.add(ch.id)
-      // A channel only clones if its category is also selected, so ensure it is.
-      if (!categoryIds.has(cat.id)) {
-        const nextCat = new Set(categoryIds)
-        nextCat.add(cat.id)
-        setCategoryIds(nextCat)
-      }
-    }
-    setChannelIds(nextCh)
+  const toggleExpanded = (catId: string) => {
+    const next = new Set(expanded)
+    if (next.has(catId)) next.delete(catId)
+    else next.add(catId)
+    setExpanded(next)
   }
 
   const startClone = async () => {
@@ -182,20 +175,62 @@ const CloneServerTab = () => {
             </div>
             <div className="clone-server-tab__col">
               <h4>Categories &amp; channels</h4>
-              {source.categories.map((c) => (
-                <div key={c.id} className="clone-server-tab__category">
-                  <label className="clone-server-tab__category-label">
-                    <input type="checkbox" checked={categoryIds.has(c.id)} onChange={() => toggleCategory(c)} /> {c.name}
-                  </label>
-                  <div className="clone-server-tab__channels">
-                    {c.channels.map((ch) => (
-                      <label key={ch.id} className="clone-server-tab__check-label">
-                        <input type="checkbox" checked={channelIds.has(ch.id)} onChange={() => toggleChannel(c, ch)} /> {ch.name}
-                      </label>
-                    ))}
+              <div className="clone-server-tab__expand-all-row">
+                <button
+                  type="button"
+                  className="clone-server-tab__expand-all"
+                  onClick={() => {
+                    const allIds = source.categories.map((c) => c.id)
+                    const allExpanded = allIds.every((id) => expanded.has(id))
+                    setExpanded(allExpanded ? new Set() : new Set(allIds))
+                  }}
+                >
+                  {source.categories.every((c) => expanded.has(c.id)) ? 'Collapse all' : 'Expand all'}
+                </button>
+              </div>
+              {source.categories.map((c) => {
+                const isExpanded = expanded.has(c.id)
+                const channelGlyph = (type: number): string => {
+                  if (type === 2 || type === 13) return '🔊'
+                  return '#'
+                }
+                return (
+                  <div key={c.id} className="clone-server-tab__category">
+                    <div className="clone-server-tab__category-row">
+                      <input
+                        type="checkbox"
+                        checked={categoryIds.has(c.id)}
+                        onChange={() => toggleCategory(c)}
+                        className="clone-server-tab__category-checkbox"
+                      />
+                      <span
+                        className="clone-server-tab__category-name"
+                        onClick={() => toggleExpanded(c.id)}
+                      >
+                        {c.name}
+                      </span>
+                      <span className="clone-server-tab__count">({c.channels.length})</span>
+                      <span
+                        className="clone-server-tab__caret"
+                        onClick={() => toggleExpanded(c.id)}
+                        aria-label={isExpanded ? 'Collapse' : 'Expand'}
+                      >
+                        {isExpanded ? '▾' : '▸'}
+                      </span>
+                    </div>
+                    {isExpanded && (
+                      <div className="clone-server-tab__channels">
+                        {c.channels.map((ch) => (
+                          <div key={ch.id} className="clone-server-tab__channel-row">
+                            <span className="clone-server-tab__channel-glyph">{channelGlyph(ch.type)}</span>
+                            <span className="clone-server-tab__channel-name">{ch.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
 

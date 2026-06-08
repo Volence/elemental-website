@@ -4026,23 +4026,99 @@
     min-width: 220px;
   }
 
-  &__category {
-    margin-bottom: $spacing-md;
+  &__expand-all-row {
+    margin-bottom: $spacing-sm;
   }
 
-  &__category-label {
+  &__expand-all {
+    background: none;
+    border: 1px solid rgba($admin-accent-primary, 0.25);
+    border-radius: $radius-sm;
+    color: $admin-text-secondary;
+    font-size: $font-size-xs;
+    padding: $spacing-xs $spacing-sm;
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease;
+
+    &:hover {
+      color: $admin-text-primary;
+      border-color: rgba($admin-accent-primary, 0.5);
+    }
+  }
+
+  &__category {
+    margin-bottom: $spacing-sm;
+  }
+
+  &__category-row {
     display: flex;
     align-items: center;
     gap: $spacing-sm;
+  }
+
+  &__category-checkbox {
+    cursor: pointer;
+    accent-color: $admin-accent-primary;
+    flex-shrink: 0;
+  }
+
+  &__category-name {
     font-weight: $font-weight-semibold;
     color: $admin-text-primary;
-    cursor: pointer;
     font-size: $font-size-sm;
+    cursor: pointer;
+    flex: 1;
+
+    &:hover {
+      color: $admin-accent-primary;
+    }
+  }
+
+  &__count {
+    color: $admin-text-secondary;
+    font-size: $font-size-xs;
+    flex-shrink: 0;
+  }
+
+  &__caret {
+    color: $admin-text-secondary;
+    font-size: $font-size-xs;
+    cursor: pointer;
+    flex-shrink: 0;
+    user-select: none;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: $admin-text-primary;
+    }
   }
 
   &__channels {
     padding-left: $spacing-lg;
     margin-top: $spacing-xs;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__channel-row {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: 1px 0;
+  }
+
+  &__channel-glyph {
+    color: $admin-text-secondary;
+    font-size: $font-size-xs;
+    flex-shrink: 0;
+    width: 14px;
+    text-align: center;
+  }
+
+  &__channel-name {
+    color: $admin-text-secondary;
+    font-size: $font-size-xs;
   }
 
   &__check-label {
