@@ -30,6 +30,14 @@ const CloneServerTab = () => {
   const [progress, setProgress] = useState<any>(null)
   const [report, setReport] = useState<any[]>([])
 
+  const intervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null)
+
+  React.useEffect(() => {
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current)
+    }
+  }, [])
+
   const loadSource = async () => {
     setLoading(true)
     setError(null)
@@ -97,7 +105,7 @@ const CloneServerTab = () => {
   }
 
   const pollStatus = (id: string) => {
-    const interval = setInterval(async () => {
+    intervalRef.current = setInterval(async () => {
       try {
         const res = await fetch(`/api/discord/server/clone-status?jobId=${id}`)
         const data = await res.json()
@@ -105,7 +113,10 @@ const CloneServerTab = () => {
         setStatus(data.status)
         setProgress(data.progress)
         setReport(data.report || [])
-        if (data.status === 'completed' || data.status === 'failed') clearInterval(interval)
+        if (data.status === 'completed' || data.status === 'failed') {
+          if (intervalRef.current) clearInterval(intervalRef.current)
+          intervalRef.current = null
+        }
       } catch {
         /* keep polling */
       }

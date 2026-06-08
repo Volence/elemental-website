@@ -13,7 +13,7 @@ import WatchedThreadsTab from './WatchedThreadsTab'
 import ProvisionTeamTab from './ProvisionTeamTab'
 import FaceitUpdatesTab from './FaceitUpdatesTab'
 import CloneServerTab from './CloneServerTab'
-import { AlertTriangle, BarChart3, Bot, CheckCircle, Circle, Drama, Edit, FileText, Folder, Heart, Info, LayoutList, Lightbulb, Megaphone, MessageCircle, MessageSquare, Rocket, Save, Spade, Trash2, Trophy, User, Volume2 } from 'lucide-react'
+import { AlertTriangle, BarChart3, Bot, CheckCircle, Circle, Copy, Drama, Edit, FileText, Folder, Heart, Info, LayoutList, Lightbulb, Megaphone, MessageCircle, MessageSquare, Rocket, Save, Spade, Trash2, Trophy, User, Volume2 } from 'lucide-react'
 
 interface DiscordChannel {
   id: string
@@ -847,7 +847,7 @@ const DiscordServerManagerView = () => {
           className={`discord-server-manager__tab ${activeTab === 'clone-server' ? 'discord-server-manager__tab--active' : ''}`}
           onClick={() => setActiveTab('clone-server')}
         >
-          <Rocket size={14} />
+          <Copy size={14} />
           <span>Clone Server</span>
         </button>
       </div>
