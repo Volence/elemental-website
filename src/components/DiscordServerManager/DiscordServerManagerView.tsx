@@ -187,6 +187,7 @@ const DiscordServerManagerView = () => {
   }
 
   const isPrimarySelected = selectedServerId === '' || servers.find((s) => String(s.id) === selectedServerId)?.isPrimary === true
+  const selectedGuildId = selectedServerId === '' ? undefined : servers.find((s) => String(s.id) === selectedServerId)?.guildId
 
   const loadServerStructure = async () => {
     try {
@@ -1321,7 +1322,7 @@ const DiscordServerManagerView = () => {
         )}
 
         {activeTab === 'watched-threads' && (
-          <WatchedThreadsTab />
+          <WatchedThreadsTab serverId={selectedServerId || undefined} guildId={selectedGuildId} />
         )}
 
         {activeTab === 'faceit-updates' && (

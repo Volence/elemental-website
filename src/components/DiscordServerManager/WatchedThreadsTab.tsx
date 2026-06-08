@@ -13,7 +13,12 @@ interface WatchedThread {
   createdAt?: string
 }
 
-const WatchedThreadsTab: React.FC = () => {
+interface WatchedThreadsTabProps {
+  serverId?: string
+  guildId?: string
+}
+
+const WatchedThreadsTab: React.FC<WatchedThreadsTabProps> = ({ guildId }) => {
   const [threads, setThreads] = useState<WatchedThread[]>([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
@@ -26,6 +31,7 @@ const WatchedThreadsTab: React.FC = () => {
     try {
       const params = new URLSearchParams({ limit: '20', page: String(page), sort: '-lastKeptAliveAt', depth: '0' })
       if (search) params.set('where[threadName][contains]', search)
+      if (guildId) params.set('where[guildId][equals]', guildId)
       const res = await fetch(`/api/watched-threads?${params}`)
       const data = await res.json()
       setThreads(data.docs || [])
@@ -33,7 +39,7 @@ const WatchedThreadsTab: React.FC = () => {
       setTotalDocs(data.totalDocs || 0)
     } catch (err) { console.error('Failed to fetch watched threads:', err) }
     finally { setLoading(false) }
-  }, [page, search])
+  }, [page, search, guildId])
 
   useEffect(() => { fetchData() }, [fetchData])
   useEffect(() => { setPage(1) }, [search])
