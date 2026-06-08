@@ -1336,6 +1336,7 @@ const DiscordServerManagerView = () => {
 
         {activeTab === 'provision-team' && (
           <ProvisionTeamTab
+            serverId={selectedServerId || undefined}
             onAlert={(title, message, type) => setAlertModal({ isOpen: true, title, message, type })}
           />
         )}
