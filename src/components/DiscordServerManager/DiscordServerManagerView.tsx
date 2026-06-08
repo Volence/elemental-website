@@ -12,6 +12,7 @@ import TwitchLiveTab from './TwitchLiveTab'
 import WatchedThreadsTab from './WatchedThreadsTab'
 import ProvisionTeamTab from './ProvisionTeamTab'
 import FaceitUpdatesTab from './FaceitUpdatesTab'
+import CloneServerTab from './CloneServerTab'
 import { AlertTriangle, BarChart3, Bot, CheckCircle, Circle, Drama, Edit, FileText, Folder, Heart, Info, LayoutList, Lightbulb, Megaphone, MessageCircle, MessageSquare, Rocket, Save, Spade, Trash2, Trophy, User, Volume2 } from 'lucide-react'
 
 interface DiscordChannel {
@@ -98,7 +99,7 @@ const DiscordServerManagerView = () => {
   const [templates, setTemplates] = useState<Template[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'structure' | 'stats' | 'health' | 'templates' | 'team-cards' | 'announcements' | 'twitch-live' | 'watched-threads' | 'provision-team' | 'faceit-updates'>('structure')
+  const [activeTab, setActiveTab] = useState<'structure' | 'stats' | 'health' | 'templates' | 'team-cards' | 'announcements' | 'twitch-live' | 'watched-threads' | 'provision-team' | 'faceit-updates' | 'clone-server'>('structure')
   
   // Template form state
   const [selectedCategoryId, setSelectedCategoryId] = useState('')
@@ -842,6 +843,13 @@ const DiscordServerManagerView = () => {
           <Rocket size={14} />
           <span>Provision Team</span>
         </button>
+        <button
+          className={`discord-server-manager__tab ${activeTab === 'clone-server' ? 'discord-server-manager__tab--active' : ''}`}
+          onClick={() => setActiveTab('clone-server')}
+        >
+          <Rocket size={14} />
+          <span>Clone Server</span>
+        </button>
       </div>
 
       <div className="tab-content">
@@ -1249,6 +1257,10 @@ const DiscordServerManagerView = () => {
           <ProvisionTeamTab
             onAlert={(title, message, type) => setAlertModal({ isOpen: true, title, message, type })}
           />
+        )}
+
+        {activeTab === 'clone-server' && (
+          <CloneServerTab />
         )}
         </>
         )}
