@@ -137,7 +137,7 @@ export async function runCloneJob(jobId: string, targetGuildId: string, selectio
           continue
         }
         const existingCh = findByName(
-          targetChannelsByType(channel.type),
+          targetChannelsByType(channel.type).filter((c: any) => (c.parentId ?? null) === parentId),
           channel.name,
         )
         if (existingCh) {

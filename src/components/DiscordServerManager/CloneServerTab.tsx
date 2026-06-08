@@ -78,6 +78,22 @@ const CloneServerTab = () => {
     setChannelIds(nextCh)
   }
 
+  const toggleChannel = (cat: SourceCategory, ch: SourceChannel) => {
+    const nextCh = new Set(channelIds)
+    if (nextCh.has(ch.id)) {
+      nextCh.delete(ch.id)
+    } else {
+      nextCh.add(ch.id)
+      // A channel only clones if its category is also selected, so ensure it is.
+      if (!categoryIds.has(cat.id)) {
+        const nextCat = new Set(categoryIds)
+        nextCat.add(cat.id)
+        setCategoryIds(nextCat)
+      }
+    }
+    setChannelIds(nextCh)
+  }
+
   const startClone = async () => {
     setError(null)
     try {
@@ -109,7 +125,12 @@ const CloneServerTab = () => {
       try {
         const res = await fetch(`/api/discord/server/clone-status?jobId=${id}`)
         const data = await res.json()
-        if (!data.success) return
+        if (!data.success) {
+          setError(data.error || 'Lost track of the clone job')
+          if (intervalRef.current) clearInterval(intervalRef.current)
+          intervalRef.current = null
+          return
+        }
         setStatus(data.status)
         setProgress(data.progress)
         setReport(data.report || [])
@@ -127,6 +148,9 @@ const CloneServerTab = () => {
     <div style={{ padding: '1rem' }}>
       <h3>Clone Server</h3>
       <p>One-shot copy of the primary server&apos;s roles, channels, emojis, and settings into a target server the bot has already joined.</p>
+      <p style={{ fontSize: '0.85em', opacity: 0.8 }}>
+        Best run against a freshly-created, empty server. Items that already exist by name are skipped, and re-running will not re-sync later permission or structure changes.
+      </p>
 
       <div style={{ margin: '1rem 0' }}>
         <input
@@ -166,7 +190,7 @@ const CloneServerTab = () => {
                   <div style={{ paddingLeft: 16 }}>
                     {c.channels.map((ch) => (
                       <label key={ch.id} style={{ display: 'block' }}>
-                        <input type="checkbox" checked={channelIds.has(ch.id)} onChange={() => toggle(channelIds, ch.id, setChannelIds)} /> {ch.name}
+                        <input type="checkbox" checked={channelIds.has(ch.id)} onChange={() => toggleChannel(c, ch)} /> {ch.name}
                       </label>
                     ))}
                   </div>
