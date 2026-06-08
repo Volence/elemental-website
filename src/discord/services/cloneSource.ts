@@ -1,4 +1,4 @@
-import { ChannelType, OverwriteType, type Guild, type GuildBasedChannel, type NonThreadGuildBasedChannel } from 'discord.js'
+import { ChannelType, OverwriteType, type Guild, type NonThreadGuildBasedChannel } from 'discord.js'
 import { ensureDiscordClient } from '@/discord/bot'
 import type {
   CloneSource,
@@ -19,7 +19,7 @@ const COPYABLE_CHANNEL_TYPES = [
 /** Extract role-typed permission overwrites from a channel as plain CloneOverwrite objects. */
 function readOverwrites(channel: NonThreadGuildBasedChannel): CloneOverwrite[] {
   const out: CloneOverwrite[] = []
-  channel.permissionOverwrites?.cache?.forEach((ow: any) => {
+  channel.permissionOverwrites.cache.forEach((ow: any) => {
     if (ow.type !== OverwriteType.Role) return // skip member overwrites; members are not copied
     out.push({ roleId: ow.id, allow: ow.allow.bitfield.toString(), deny: ow.deny.bitfield.toString() })
   })
@@ -97,7 +97,7 @@ export async function readCloneSource(): Promise<CloneSource> {
 
   const emojis = Array.from(guild.emojis.cache.values()).map((e) => ({
     id: e.id,
-    name: e.name ?? 'emoji',
+    name: e.name,
     url: e.imageURL({ size: 256 }),
   }))
 
