@@ -56,6 +56,7 @@ describe('filterSource', () => {
     const filtered = filterSource(source, selection)
     expect(filtered.roles.map((r) => r.id)).toEqual(['staff'])
     expect(filtered.categories.map((c) => c.id)).toEqual(['cat-staff'])
+    expect(filtered.categories).toHaveLength(1)
     expect(filtered.categories[0].channels.map((c) => c.id)).toEqual(['ch-mod'])
     expect(filtered.emojis).toEqual([])
   })

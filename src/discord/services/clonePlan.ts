@@ -78,7 +78,13 @@ export interface CloneSelection {
   includeSettings: boolean
 }
 
-/** A filtered source: same shape minus settings, which may be nulled out by the selection. */
+/**
+ * A filtered source: same shape minus settings, which may be nulled out by the selection.
+ *
+ * NOTE: the `overwrites` arrays carried on `categories` and their `channels` still
+ * contain SOURCE guild role ids. They must be passed through `buildOverwrites(...)` with a
+ * source-to-target role id map before being applied against the target guild.
+ */
 export interface FilteredSource extends Omit<CloneSource, 'settings'> {
   settings: CloneSettings | null
 }
@@ -93,7 +99,11 @@ export function orderRolesForStamp(roles: CloneRole[]): CloneRole[] {
     .sort((a, b) => b.position - a.position)
 }
 
-/** Apply the admin's checkbox selection, producing a source containing only chosen items. */
+/**
+ * Apply the admin's checkbox selection, producing a source containing only chosen items.
+ * The returned categories/channels carry their original overwrite arrays unchanged — role ids
+ * in those overwrites are still SOURCE ids and must be remapped via `buildOverwrites(...)`.
+ */
 export function filterSource(source: CloneSource, selection: CloneSelection): FilteredSource {
   const roleSet = new Set(selection.roleIds)
   const categorySet = new Set(selection.categoryIds)
