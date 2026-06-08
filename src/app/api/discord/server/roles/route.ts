@@ -1,12 +1,13 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { ensureDiscordClient } from '@/discord/bot'
 import { authenticateRequest, requireAdmin } from '@/utilities/apiAuth'
+import { resolveGuildId, ServerResolutionError } from '@/discord/serverRegistry'
 
 /**
  * GET /api/discord/server/roles
  * Get Discord server roles only (lightweight endpoint)
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   const auth = await authenticateRequest()
   if (!auth.success) return auth.response
   const adminCheck = requireAdmin(auth.data.user)
@@ -21,12 +22,15 @@ export async function GET() {
       )
     }
 
-    const guildId = process.env.DISCORD_GUILD_ID
-    if (!guildId) {
-      return NextResponse.json(
-        { error: 'DISCORD_GUILD_ID not configured' },
-        { status: 500 },
-      )
+    const serverId = new URL(request.url).searchParams.get('serverId')
+    let guildId: string
+    try {
+      guildId = await resolveGuildId(serverId)
+    } catch (e) {
+      if (e instanceof ServerResolutionError) {
+        return NextResponse.json({ error: e.message }, { status: 400 })
+      }
+      throw e
     }
 
     // Fetch the guild with all data (this ensures cache is populated)
