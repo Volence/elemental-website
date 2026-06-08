@@ -41,14 +41,12 @@ Existing patterns you will mirror:
 | `src/discord/services/clonePlan.ts` (create) | Pure types + pure functions: role ordering, selection filtering, overwrite remapping/dropping, skip-by-name matching. No discord.js, no I/O. |
 | `tests/int/discord-clone-plan.int.spec.ts` (create) | Unit tests for `clonePlan.ts`. |
 | `src/collections/DiscordCloneJobs.ts` (create) | Payload collection holding job status, progress counters, selection, and the final report. |
-| `tests/int/discord-clone-jobs-config.int.spec.ts` (create) | Asserts the collection config shape (slug, admin gating, fields). |
 | `src/payload.config.ts` (modify) | Register `DiscordCloneJobs`. |
 | `src/discord/services/cloneSource.ts` (create) | Reads the primary guild into a `CloneSource` (roles, categories/channels with role overwrites, emojis, stickers, settings). |
 | `src/discord/services/cloneWorker.ts` (create) | Stamps a filtered `CloneSource` into the target guild; updates the job doc; skip-by-name + resilient. |
 | `src/app/api/discord/server/clone-source/route.ts` (create) | GET: returns the `CloneSource` for the selection tree. |
 | `src/app/api/discord/server/clone-start/route.ts` (create) | POST: validates target, creates the job doc, fires the worker, returns `jobId`. |
 | `src/app/api/discord/server/clone-status/route.ts` (create) | GET `?jobId=`: returns the job doc. |
-| `tests/int/discord-clone-routes-auth.int.spec.ts` (create) | Asserts the three routes reject unauthenticated requests. |
 | `src/components/DiscordServerManager/CloneServerTab.tsx` (create) | The admin UI: target input, selection tree, start button, progress/report. |
 | `src/components/DiscordServerManager/DiscordServerManagerView.tsx` (modify) | Wire in the new tab. |
 
@@ -334,45 +332,11 @@ Holds one document per clone run: status, live progress counters, the selection 
 
 **Files:**
 - Create: `src/collections/DiscordCloneJobs.ts`
-- Test: `tests/int/discord-clone-jobs-config.int.spec.ts`
 - Modify: `src/payload.config.ts`
 
-- [ ] **Step 1: Write the failing test**
+> No automated test for this task — it is framework wiring (a Payload collection config), verified by `generate:types` and the manual check below. Same for Task 5's routes.
 
-Create `tests/int/discord-clone-jobs-config.int.spec.ts`:
-
-```typescript
-import { describe, it, expect } from 'vitest'
-import { DiscordCloneJobs } from '@/collections/DiscordCloneJobs'
-
-describe('DiscordCloneJobs collection config', () => {
-  it('has the expected slug', () => {
-    expect(DiscordCloneJobs.slug).toBe('discord-clone-jobs')
-  })
-
-  it('gates all access to admins', () => {
-    const adminUser = { role: 'admin' } as any
-    const normalUser = { role: 'member' } as any
-    const access = DiscordCloneJobs.access!
-    expect(access.read!({ req: { user: adminUser } } as any)).toBe(true)
-    expect(access.read!({ req: { user: normalUser } } as any)).toBe(false)
-  })
-
-  it('defines the core fields', () => {
-    const names = (DiscordCloneJobs.fields as any[]).map((f) => f.name)
-    for (const n of ['targetGuildId', 'status', 'progress', 'report', 'selection', 'error']) {
-      expect(names).toContain(n)
-    }
-  })
-})
-```
-
-- [ ] **Step 2: Run test to verify it fails**
-
-Run: `npm run test:int -- discord-clone-jobs-config`
-Expected: FAIL with "Cannot find module '@/collections/DiscordCloneJobs'".
-
-- [ ] **Step 3: Write minimal implementation**
+- [ ] **Step 1: Write the collection**
 
 Create `src/collections/DiscordCloneJobs.ts`:
 
@@ -427,7 +391,7 @@ export const DiscordCloneJobs: CollectionConfig = {
 }
 ```
 
-- [ ] **Step 4: Register the collection**
+- [ ] **Step 2: Register the collection**
 
 In `src/payload.config.ts`, add the import next to the other Discord collection imports (near line 58):
 
@@ -442,18 +406,15 @@ Then add it to the `collections: [...]` array next to `DiscordCategoryTemplates`
     DiscordCloneJobs,
 ```
 
-- [ ] **Step 5: Run the test and generate types**
-
-Run: `npm run test:int -- discord-clone-jobs-config`
-Expected: PASS.
+- [ ] **Step 3: Generate types**
 
 Run: `npm run payload generate:types`
-Expected: regenerates `src/payload-types.ts` with a `DiscordCloneJob` type (no errors).
+Expected: regenerates `src/payload-types.ts` with a `DiscordCloneJob` type (no errors). This both confirms the collection is wired in and gives you the generated type.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
-git add src/collections/DiscordCloneJobs.ts src/payload.config.ts src/payload-types.ts tests/int/discord-clone-jobs-config.int.spec.ts
+git add src/collections/DiscordCloneJobs.ts src/payload.config.ts src/payload-types.ts
 git commit -m "feat(discord): DiscordCloneJobs collection for clone job state"
 ```
 
@@ -900,43 +861,10 @@ git commit -m "feat(discord): clone worker stamps filtered source into target gu
 **Files:**
 - Create: `src/app/api/discord/server/clone-start/route.ts`
 - Create: `src/app/api/discord/server/clone-status/route.ts`
-- Test: `tests/int/discord-clone-routes-auth.int.spec.ts`
 
-- [ ] **Step 1: Write the auth test**
+> No automated test — these routes use the same `authenticateRequest` + `requireAdmin` guard as every other route in this directory. Auth is verified by the manual check in Step 3.
 
-Create `tests/int/discord-clone-routes-auth.int.spec.ts`:
-
-```typescript
-import { describe, it, expect } from 'vitest'
-
-const BASE = 'http://localhost:3000'
-
-const ROUTES = [
-  { method: 'GET', path: '/api/discord/server/clone-source' },
-  { method: 'POST', path: '/api/discord/server/clone-start' },
-  { method: 'GET', path: '/api/discord/server/clone-status?jobId=x' },
-]
-
-describe('Discord clone routes — require auth', () => {
-  for (const route of ROUTES) {
-    it(`${route.method} ${route.path} — rejects unauthenticated`, async () => {
-      const res = await fetch(`${BASE}${route.path}`, {
-        method: route.method,
-        headers: { 'Content-Type': 'application/json' },
-        ...(route.method === 'POST' ? { body: JSON.stringify({}) } : {}),
-      })
-      expect([401, 403]).toContain(res.status)
-    })
-  }
-})
-```
-
-- [ ] **Step 2: Run test to verify it fails**
-
-Run (dev server must be up): `npm run test:int -- discord-clone-routes-auth`
-Expected: FAIL — the routes return 404 (not yet created), so the status is not in `[401, 403]`.
-
-- [ ] **Step 3: Write the start route**
+- [ ] **Step 1: Write the start route**
 
 Create `src/app/api/discord/server/clone-start/route.ts`:
 
@@ -1012,7 +940,7 @@ export async function POST(request: NextRequest) {
 }
 ```
 
-- [ ] **Step 4: Write the status route**
+- [ ] **Step 2: Write the status route**
 
 Create `src/app/api/discord/server/clone-status/route.ts`:
 
@@ -1048,15 +976,24 @@ export async function GET(request: NextRequest) {
 }
 ```
 
-- [ ] **Step 5: Run the auth test to verify it passes**
+- [ ] **Step 3: Typecheck and manually verify auth**
 
-Run: `npm run test:int -- discord-clone-routes-auth`
-Expected: PASS (all three routes now return 401/403 without auth).
+Run: `npx tsc --noEmit`
+Expected: no errors.
 
-- [ ] **Step 6: Commit**
+With the dev server up, confirm both routes reject an unauthenticated request:
 
 ```bash
-git add src/app/api/discord/server/clone-start/route.ts src/app/api/discord/server/clone-status/route.ts tests/int/discord-clone-routes-auth.int.spec.ts
+curl -s -o /dev/null -w "%{http_code}\n" -X POST http://localhost:3000/api/discord/server/clone-start -H 'Content-Type: application/json' -d '{}'
+curl -s -o /dev/null -w "%{http_code}\n" "http://localhost:3000/api/discord/server/clone-status?jobId=x"
+```
+
+Expected: each prints `401` or `403`.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add src/app/api/discord/server/clone-start/route.ts src/app/api/discord/server/clone-status/route.ts
 git commit -m "feat(discord): clone-start and clone-status routes"
 ```
 
@@ -1354,7 +1291,7 @@ git commit -m "feat(discord): Clone Server admin tab with selection tree and pro
 - [ ] **Step 1: Run the full integration test suite**
 
 Run: `npm run test:int`
-Expected: all tests pass, including the three new spec files.
+Expected: all tests pass, including the new `discord-clone-plan` spec.
 
 - [ ] **Step 2: Typecheck and build**
 
