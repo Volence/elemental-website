@@ -14,7 +14,7 @@ import {
 interface ReportItem {
   kind: 'role' | 'category' | 'channel' | 'emoji' | 'sticker' | 'settings'
   name: string
-  outcome: 'created' | 'skipped' | 'failed'
+  outcome: 'created' | 'applied' | 'skipped' | 'failed'
   detail?: string
 }
 
@@ -47,9 +47,18 @@ export async function runCloneJob(jobId: string, targetGuildId: string, selectio
     const source = await readCloneSource()
     const filtered = filterSource(source, selection)
 
+    const roleIdMap = new Map<string, string>()
+    // @everyone is never re-created, but channel overwrites that control default
+    // visibility (i.e. private channels deny View Channel for @everyone) reference it.
+    // Map the source @everyone id to the target's @everyone so those overwrites survive.
+    const sourceEveryone = source.roles.find((r) => r.isEveryone)
+    if (sourceEveryone) roleIdMap.set(sourceEveryone.id, target.roles.everyone.id)
+
+    const targetChannelsByType = (type: ChannelType) =>
+      Array.from(target.channels.cache.values()).filter((c) => c?.type === type) as any[]
+
     // ---- Roles (top-down, skip-by-name) ----
     const rolesToStamp = orderRolesForStamp(filtered.roles)
-    const roleIdMap = new Map<string, string>()
     progress.phase = 'roles'
     progress.rolesTotal = rolesToStamp.length
     progress.rolesDone = 0
@@ -89,9 +98,10 @@ export async function runCloneJob(jobId: string, targetGuildId: string, selectio
 
     for (const category of filtered.categories) {
       let parentId: string | null = null
+      let categoryFailed = false
       if (category.id !== '__uncategorized__') {
         const existingCat = findByName(
-          Array.from(target.channels.cache.values()).filter((c) => c?.type === ChannelType.GuildCategory) as any[],
+          targetChannelsByType(ChannelType.GuildCategory),
           category.name,
         )
         if (existingCat) {
@@ -114,15 +124,20 @@ export async function runCloneJob(jobId: string, targetGuildId: string, selectio
             report.push({ kind: 'category', name: category.name, outcome: 'created' })
           } catch (e: any) {
             report.push({ kind: 'category', name: category.name, outcome: 'failed', detail: e.message })
+            categoryFailed = true
           }
         }
       }
 
       for (const channel of category.channels) {
+        if (categoryFailed) {
+          report.push({ kind: 'channel', name: channel.name, outcome: 'failed', detail: 'parent category failed' })
+          progress.channelsDone = (progress.channelsDone as number) + 1
+          await save('running')
+          continue
+        }
         const existingCh = findByName(
-          Array.from(target.channels.cache.values()).filter(
-            (c) => c && c.type === channel.type,
-          ) as any[],
+          targetChannelsByType(channel.type),
           channel.name,
         )
         if (existingCh) {
@@ -201,12 +216,15 @@ export async function runCloneJob(jobId: string, targetGuildId: string, selectio
         await target.setExplicitContentFilter(s.explicitContentFilter as any)
         if (s.systemChannelName) {
           const sys = findByName(
-            Array.from(target.channels.cache.values()).filter((c) => c?.type === ChannelType.GuildText) as any[],
+            targetChannelsByType(ChannelType.GuildText),
             s.systemChannelName,
           )
           if (sys) await target.setSystemChannel(sys.id)
         }
-        report.push({ kind: 'settings', name: 'server settings', outcome: 'created' })
+        // Note: s.rulesChannelName is intentionally not applied. setRulesChannel only works on
+        // Community-enabled guilds and throws otherwise, which would produce a spurious 'failed'
+        // report on every clone to a normal server. Set the rules channel by hand during tidy-up.
+        report.push({ kind: 'settings', name: 'server settings', outcome: 'applied' })
       } catch (e: any) {
         report.push({ kind: 'settings', name: 'server settings', outcome: 'failed', detail: e.message })
       }
