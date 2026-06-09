@@ -14,6 +14,7 @@ import ProvisionTeamTab from './ProvisionTeamTab'
 import FaceitUpdatesTab from './FaceitUpdatesTab'
 import CloneServerTab from './CloneServerTab'
 import ServersTab from './ServersTab'
+import LoggingTab from './LoggingTab'
 import { AlertTriangle, BarChart3, Bot, CheckCircle, Circle, Copy, Drama, Edit, FileText, Folder, Heart, Info, LayoutList, Lightbulb, Megaphone, MessageCircle, MessageSquare, Rocket, Save, Server, Spade, Trash2, Trophy, User, Volume2 } from 'lucide-react'
 
 interface DiscordChannel {
@@ -100,7 +101,7 @@ const DiscordServerManagerView = () => {
   const [templates, setTemplates] = useState<Template[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'structure' | 'stats' | 'health' | 'templates' | 'team-cards' | 'announcements' | 'twitch-live' | 'watched-threads' | 'provision-team' | 'faceit-updates' | 'clone-server' | 'servers'>('structure')
+  const [activeTab, setActiveTab] = useState<'structure' | 'stats' | 'health' | 'templates' | 'team-cards' | 'announcements' | 'twitch-live' | 'watched-threads' | 'provision-team' | 'faceit-updates' | 'clone-server' | 'servers' | 'logging'>('structure')
   
   // Template form state
   const [selectedCategoryId, setSelectedCategoryId] = useState('')
@@ -931,6 +932,13 @@ const DiscordServerManagerView = () => {
           <Server size={14} />
           <span>Servers</span>
         </button>
+        <button
+          className={`discord-server-manager__tab ${activeTab === 'logging' ? 'discord-server-manager__tab--active' : ''}`}
+          onClick={() => setActiveTab('logging')}
+        >
+          <FileText size={14} />
+          <span>Logging</span>
+        </button>
       </div>
 
       <div className="tab-content">
@@ -1347,6 +1355,10 @@ const DiscordServerManagerView = () => {
 
         {activeTab === 'servers' && (
           <ServersTab onChange={loadServers} />
+        )}
+
+        {activeTab === 'logging' && (
+          <LoggingTab serverId={selectedServerId || null} />
         )}
         </>
         )}
