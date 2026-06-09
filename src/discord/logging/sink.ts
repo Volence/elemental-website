@@ -26,6 +26,14 @@ export async function postLog(
       // Stamp every log with the event time (Discord renders this localized per viewer).
       embed.setTimestamp(new Date())
       await (channel as any).send({ embeds: [embed] })
+    } else {
+      // Surface misconfiguration instead of silently dropping the log (e.g. a forum/voice
+      // channel was picked as a log target, or the channel was deleted).
+      await logError(payload, {
+        errorType: 'system',
+        message: `Discord logging: channel ${channelId} (${guildId}/${category}) is missing or not a sendable text channel - pick a text channel in the Logging tab`,
+        severity: 'low',
+      }).catch(() => {})
     }
   } catch (error: any) {
     await logError(payload, {

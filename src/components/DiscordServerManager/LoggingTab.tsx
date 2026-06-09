@@ -23,9 +23,12 @@ export default function LoggingTab({ serverId }: Props) {
     fetch(`/api/discord/server/structure${q}`)
       .then((r) => r.json())
       .then((d) => {
+        // Only text/announcement channels can receive log embeds. Forums (15), voice (2),
+        // categories (4), stages (13), etc. can't be posted to, so don't offer them.
+        const TEXT_TYPES = new Set([0, 5])
         const flat: ChannelOption[] = []
-        for (const cat of d.categories ?? []) for (const ch of cat.channels ?? []) flat.push({ id: ch.id, name: ch.name })
-        for (const ch of d.uncategorized ?? []) flat.push({ id: ch.id, name: ch.name })
+        for (const cat of d.categories ?? []) for (const ch of cat.channels ?? []) if (TEXT_TYPES.has(ch.type)) flat.push({ id: ch.id, name: ch.name })
+        for (const ch of d.uncategorized ?? []) if (TEXT_TYPES.has(ch.type)) flat.push({ id: ch.id, name: ch.name })
         setChannels(flat)
       })
       .catch(() => setChannels([]))
