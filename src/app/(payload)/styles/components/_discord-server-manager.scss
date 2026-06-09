@@ -4295,7 +4295,16 @@
     margin-bottom: $spacing-lg;
 
     input[type='checkbox'] {
-      width: auto;
+      // Payload's global input styles strip checkbox appearance and the flex row
+      // shrinks it to a sliver - restore native rendering and pin the size.
+      appearance: auto;
+      -webkit-appearance: checkbox;
+      flex: 0 0 auto;
+      width: 16px;
+      height: 16px;
+      min-width: 16px;
+      margin: 0;
+      accent-color: $admin-accent-primary;
       cursor: pointer;
     }
   }
