@@ -1,6 +1,14 @@
 import { REST, Routes } from 'discord.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
 
+/** Commands that only make sense on the primary hub and are NOT registered to region servers. */
+export const PRIMARY_ONLY_COMMANDS = ['pug', 'calendar']
+
+/** The region-server command set: the full set minus the primary-only commands. */
+export function regionCommandSet<T extends { name: string }>(fullCommands: T[]): T[] {
+  return fullCommands.filter((c) => !PRIMARY_ONLY_COMMANDS.includes(c.name))
+}
+
 // Define all slash commands here
 export function buildCommands() {
   return [
