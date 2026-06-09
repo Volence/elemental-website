@@ -1,7 +1,7 @@
 # Slash Commands in Region Servers (Sub-project C) - Design
 
 **Date:** 2026-06-08
-**Status:** Approved
+**Status:** Implemented and verified working (2026-06-08). Region commands register to active region servers; verified /availability appears in the test region server while /pug + /calendar stay primary-only. Fixed an onInit getPayload deadlock found in live boot. Code-only, no migration.
 **Parent:** [Multi-Server Discord Architecture](./2026-06-08-multi-server-discord-architecture-design.md)
 **Follows:** [Clone Tool (B)](./2026-06-08-discord-clone-tool-design.md) and [Multi-Server Registry (A)](./2026-06-08-multi-server-registry-design.md) - both built and deployed.
 
