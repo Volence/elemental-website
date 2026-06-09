@@ -53,7 +53,9 @@ export async function initializeDiscordBot(): Promise<Client | null> {
       // Keep more recent messages per channel so edit/delete "before" content is available
       // for longer. Memory is bounded by this per-channel cap x active channels.
       MessageManager: 500,
-      GuildMemberManager: 200,
+      // GuildMemberManager is left UNCAPPED on purpose: setupLogging fetches the full roster
+      // on connect so leave/kick embeds, member-update diffs, and profile fan-out have the
+      // member cached. Memory scales with total member count - revisit for very large guilds.
     }),
     sweepers: {
       ...Options.DefaultSweeperSettings,

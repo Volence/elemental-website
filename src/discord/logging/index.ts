@@ -45,6 +45,12 @@ export function setupLogging(client: Client, payload: Payload, now: () => number
 
   // Heartbeat + invite cache priming on (re)connect.
   client.on(Events.ClientReady, async () => {
+    // Best-effort: pre-load the full member roster so leave/kick embeds (roles, time in
+    // server), member-update diffs, and profile fan-out have members cached from the start.
+    // Fire-and-forget per guild so a slow/large fetch never blocks the heartbeat.
+    for (const guild of client.guilds.cache.values()) {
+      guild.members.fetch().catch(() => {})
+    }
     await primeInviteCache(client)
     await postHeartbeat(client, payload, now())
   })
