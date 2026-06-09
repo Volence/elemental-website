@@ -53,34 +53,56 @@ export default function LoggingTab({ serverId }: Props) {
 
   return (
     <div className="logging-tab">
-      <label>
-        <input type="checkbox" checked={!!settings.enableLogging} onChange={(e) => update('enableLogging', e.target.checked)} />
-        {' '}Enable logging for this server
-      </label>
-
-      {CATEGORIES.map(({ key, label }) => (
-        <div key={key} className="logging-row">
-          <label>{label}</label>
-          <select value={settings[key] ?? ''} onChange={(e) => update(key, e.target.value || null)}>
-            <option value="">- not logged -</option>
-            {channels.map((c) => (
-              <option key={c.id} value={c.id}>#{c.name}</option>
-            ))}
-          </select>
-        </div>
-      ))}
-
-      <div className="logging-row">
-        <label>Flag accounts newer than (days)</label>
-        <input type="number" value={settings.newAccountFlagDays ?? 7} onChange={(e) => update('newAccountFlagDays', Number(e.target.value))} />
+      <div className="logging-tab__header">
+        <h3>Server Logging</h3>
+        <p>Choose which Discord events get logged and where. Leave a channel as &ldquo;not logged&rdquo; to skip that category.</p>
       </div>
-      <label>
-        <input type="checkbox" checked={settings.attachProfileLink !== false} onChange={(e) => update('attachProfileLink', e.target.checked)} />
-        {' '}Append website profile link when available
+
+      <label className="logging-tab__toggle">
+        <input type="checkbox" checked={!!settings.enableLogging} onChange={(e) => update('enableLogging', e.target.checked)} />
+        <span>Enable logging for this server</span>
       </label>
 
-      <div>
-        <button onClick={save}>Save logging settings</button> <span>{status}</span>
+      <div className="logging-tab__grid">
+        {CATEGORIES.map(({ key, label }) => (
+          <div key={key} className="logging-tab__field">
+            <label>{label}</label>
+            <select
+              className="logging-tab__select"
+              value={settings[key] ?? ''}
+              onChange={(e) => update(key, e.target.value || null)}
+            >
+              <option value="">- not logged -</option>
+              {channels.map((c) => (
+                <option key={c.id} value={c.id}>
+                  #{c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        ))}
+
+        <div className="logging-tab__field">
+          <label>Flag accounts newer than (days)</label>
+          <input
+            type="number"
+            className="logging-tab__input"
+            value={settings.newAccountFlagDays ?? 7}
+            onChange={(e) => update('newAccountFlagDays', Number(e.target.value))}
+          />
+        </div>
+      </div>
+
+      <label className="logging-tab__toggle">
+        <input type="checkbox" checked={settings.attachProfileLink !== false} onChange={(e) => update('attachProfileLink', e.target.checked)} />
+        <span>Append website profile link when available</span>
+      </label>
+
+      <div className="logging-tab__actions">
+        <button className="logging-tab__save" onClick={save}>
+          Save logging settings
+        </button>
+        {status && <span className="logging-tab__status">{status}</span>}
       </div>
     </div>
   )

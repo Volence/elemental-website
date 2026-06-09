@@ -4264,3 +4264,97 @@
   &__cmd-fail { font-size: $font-size-xs; color: $admin-accent-error; }
   &__registered button { @include glow-button($admin-accent-info); padding: $spacing-xs $spacing-sm; font-size: $font-size-xs; }
 }
+
+.logging-tab {
+  max-width: 560px;
+
+  &__header {
+    margin-bottom: $spacing-lg;
+
+    h3 {
+      margin: 0 0 $spacing-xs 0;
+      color: $admin-text-primary;
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+    }
+
+    p {
+      margin: 0;
+      color: $admin-text-secondary;
+      font-size: $font-size-sm;
+    }
+  }
+
+  &__toggle {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    cursor: pointer;
+    color: $admin-text-primary;
+    font-size: $font-size-base;
+    margin-bottom: $spacing-lg;
+
+    input[type='checkbox'] {
+      width: auto;
+      cursor: pointer;
+    }
+  }
+
+  &__grid {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+    margin-bottom: $spacing-lg;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+
+    label {
+      color: $admin-text-secondary;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-semibold;
+    }
+  }
+
+  &__select,
+  &__input {
+    width: 100%;
+    padding: $spacing-md;
+    background: rgba($admin-bg-base, 0.8);
+    border: 1px solid rgba($admin-accent-primary, 0.3);
+    border-radius: $radius-sm;
+    color: $admin-text-primary;
+    font-size: $font-size-base;
+
+    &:focus {
+      outline: none;
+      border-color: $admin-accent-primary;
+      box-shadow: 0 0 0 2px rgba($admin-accent-primary, 0.1);
+    }
+
+    option {
+      background: $admin-bg-elevated;
+      color: $admin-text-primary;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    margin-top: $spacing-sm;
+  }
+
+  &__save {
+    @include glow-button($admin-accent-success);
+    padding: $spacing-md $spacing-xl;
+  }
+
+  &__status {
+    color: $admin-text-secondary;
+    font-size: $font-size-sm;
+  }
+}
