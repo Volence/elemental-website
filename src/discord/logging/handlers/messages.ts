@@ -16,10 +16,11 @@ export function attachMessageHandlers(client: Client, payload: Payload): void {
     const before = oldMsg.partial ? null : oldMsg.content
     const after = newMsg.content ?? ''
     if (before === after) return
+    const jumpUrl = `https://discord.com/channels/${guildId}/${newMsg.channelId}/${newMsg.id}`
     const embed = new EmbedBuilder()
       .setColor(0xf1c40f)
       .setTitle('Message edited')
-      .setDescription(`${userMention(newMsg.author?.id ?? '0')} in <#${newMsg.channelId}>`)
+      .setDescription(`${userMention(newMsg.author?.id ?? '0')} in <#${newMsg.channelId}> - [Jump to message](${jumpUrl})`)
       .addFields(
         { name: 'Before', value: before === null ? '_not cached_' : truncate(before || '_empty_', 1000) },
         { name: 'After', value: truncate(after || '_empty_', 1000) },
