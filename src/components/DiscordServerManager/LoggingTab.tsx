@@ -39,12 +39,16 @@ export default function LoggingTab({ serverId }: Props) {
 
   const save = async () => {
     setStatus('Saving...')
-    const res = await fetch('/api/discord/server/logging-settings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ serverId, ...settings }),
-    })
-    setStatus(res.ok ? 'Saved' : 'Save failed')
+    try {
+      const res = await fetch('/api/discord/server/logging-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ serverId, ...settings }),
+      })
+      setStatus(res.ok ? 'Saved' : 'Save failed')
+    } catch {
+      setStatus('Save failed')
+    }
   }
 
   return (
