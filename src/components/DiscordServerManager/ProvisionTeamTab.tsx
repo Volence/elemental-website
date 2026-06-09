@@ -36,9 +36,10 @@ interface ProvisionResult {
 
 interface ProvisionTeamTabProps {
   onAlert: (title: string, message: string, type: 'success' | 'error' | 'info' | 'warning') => void
+  serverId?: string
 }
 
-export default function ProvisionTeamTab({ onAlert }: ProvisionTeamTabProps) {
+export default function ProvisionTeamTab({ onAlert, serverId }: ProvisionTeamTabProps) {
   const [teams, setTeams] = useState<TeamInfo[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null)
@@ -128,7 +129,7 @@ export default function ProvisionTeamTab({ onAlert }: ProvisionTeamTabProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ teamId: selectedTeamId, emoji }),
+        body: JSON.stringify({ teamId: selectedTeamId, emoji, serverId: serverId || undefined }),
       })
 
       const data = await response.json()

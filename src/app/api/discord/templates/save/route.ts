@@ -4,6 +4,7 @@ import { ChannelType } from 'discord.js'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { authenticateRequest, requireAdmin } from '@/utilities/apiAuth'
+import { resolveGuildId, ServerResolutionError } from '@/discord/serverRegistry'
 
 /**
  * POST /api/discord/templates/save
@@ -24,16 +25,18 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const guildId = process.env.DISCORD_GUILD_ID
-    if (!guildId) {
-      return NextResponse.json(
-        { error: 'DISCORD_GUILD_ID not configured' },
-        { status: 500 },
-      )
-    }
-
     const body = await req.json()
-    const { categoryId, templateName, templateDescription } = body
+    const { categoryId, templateName, templateDescription, serverId } = body
+
+    let guildId: string
+    try {
+      guildId = await resolveGuildId(serverId)
+    } catch (e) {
+      if (e instanceof ServerResolutionError) {
+        return NextResponse.json({ error: e.message }, { status: 400 })
+      }
+      throw e
+    }
 
     if (!categoryId || !templateName) {
       return NextResponse.json(

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { AlertModal, ConfirmModal } from './Modal'
 import { EditTemplateModal } from './EditTemplateModal'
 import { ApplyTemplateModal } from './ApplyTemplateModal'
@@ -13,7 +13,8 @@ import WatchedThreadsTab from './WatchedThreadsTab'
 import ProvisionTeamTab from './ProvisionTeamTab'
 import FaceitUpdatesTab from './FaceitUpdatesTab'
 import CloneServerTab from './CloneServerTab'
-import { AlertTriangle, BarChart3, Bot, CheckCircle, Circle, Copy, Drama, Edit, FileText, Folder, Heart, Info, LayoutList, Lightbulb, Megaphone, MessageCircle, MessageSquare, Rocket, Save, Spade, Trash2, Trophy, User, Volume2 } from 'lucide-react'
+import ServersTab from './ServersTab'
+import { AlertTriangle, BarChart3, Bot, CheckCircle, Circle, Copy, Drama, Edit, FileText, Folder, Heart, Info, LayoutList, Lightbulb, Megaphone, MessageCircle, MessageSquare, Rocket, Save, Server, Spade, Trash2, Trophy, User, Volume2 } from 'lucide-react'
 
 interface DiscordChannel {
   id: string
@@ -99,7 +100,7 @@ const DiscordServerManagerView = () => {
   const [templates, setTemplates] = useState<Template[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'structure' | 'stats' | 'health' | 'templates' | 'team-cards' | 'announcements' | 'twitch-live' | 'watched-threads' | 'provision-team' | 'faceit-updates' | 'clone-server'>('structure')
+  const [activeTab, setActiveTab] = useState<'structure' | 'stats' | 'health' | 'templates' | 'team-cards' | 'announcements' | 'twitch-live' | 'watched-threads' | 'provision-team' | 'faceit-updates' | 'clone-server' | 'servers'>('structure')
   
   // Template form state
   const [selectedCategoryId, setSelectedCategoryId] = useState('')
@@ -139,8 +140,13 @@ const DiscordServerManagerView = () => {
     categoryName: ''
   })
 
+  const [servers, setServers] = useState<Array<{ id: number; label: string; guildId: string; isPrimary: boolean; region?: string | null }>>([])
+  const [selectedServerId, setSelectedServerId] = useState<string>('')
+  const serverIdMounted = useRef(false)
+
   useEffect(() => {
     loadServerStructure()
+    loadServers()
   }, [])
 
   useEffect(() => {
@@ -153,11 +159,44 @@ const DiscordServerManagerView = () => {
     }
   }, [activeTab])
 
+  useEffect(() => {
+    if (!serverIdMounted.current) {
+      serverIdMounted.current = true
+      return
+    }
+    // Server changed after mount - refetch scoped data
+    setStructure(null)
+    setStats(null)
+    setHealth(null)
+    loadServerStructure()
+    if (activeTab === 'stats') loadServerStats()
+    if (activeTab === 'health') loadServerHealth()
+  }, [selectedServerId])
+
+  const loadServers = async () => {
+    try {
+      const res = await fetch('/api/discord/servers')
+      const data = await res.json()
+      if (data.success) setServers(data.servers)
+    } catch { /* ignore */ }
+  }
+
+  const withServer = (url: string) => {
+    if (!selectedServerId) return url
+    return url + (url.includes('?') ? '&' : '?') + 'serverId=' + encodeURIComponent(selectedServerId)
+  }
+
+  const isPrimarySelected = selectedServerId === '' || servers.find((s) => String(s.id) === selectedServerId)?.isPrimary === true
+  const selectedGuildId =
+    selectedServerId === ''
+      ? servers.find((s) => s.isPrimary)?.guildId
+      : servers.find((s) => String(s.id) === selectedServerId)?.guildId
+
   const loadServerStructure = async () => {
     try {
       setLoading(true)
       setError(null)
-      const response = await fetch('/api/discord/server/structure')
+      const response = await fetch(withServer('/api/discord/server/structure'))
       if (!response.ok) {
         throw new Error('Failed to load server structure')
       }
@@ -174,7 +213,7 @@ const DiscordServerManagerView = () => {
     try {
       setLoading(true)
       setError(null)
-      const response = await fetch('/api/discord/server/stats')
+      const response = await fetch(withServer('/api/discord/server/stats'))
       if (!response.ok) {
         throw new Error('Failed to load server statistics')
       }
@@ -191,7 +230,7 @@ const DiscordServerManagerView = () => {
     try {
       setLoading(true)
       setError(null)
-      const response = await fetch('/api/discord/server/health')
+      const response = await fetch(withServer('/api/discord/server/health'))
       if (!response.ok) {
         throw new Error('Failed to load server health')
       }
@@ -241,6 +280,7 @@ const DiscordServerManagerView = () => {
           categoryId: selectedCategoryId,
           templateName,
           templateDescription,
+          serverId: selectedServerId || undefined,
         }),
       })
 
@@ -313,6 +353,7 @@ const DiscordServerManagerView = () => {
           categoryName: customizedData.categoryName,
           isPrivate: customizedData.isPrivate,
           customizedChannels: customizedData.channels, // Send customized channels
+          serverId: selectedServerId || undefined,
         }),
       })
 
@@ -438,7 +479,7 @@ const DiscordServerManagerView = () => {
       const response = await fetch('/api/discord/server/rename', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, name: newName, type: 'category' }),
+        body: JSON.stringify({ id, name: newName, type: 'category', serverId: selectedServerId || undefined }),
       })
 
       if (!response.ok) {
@@ -475,7 +516,7 @@ const DiscordServerManagerView = () => {
           const response = await fetch('/api/discord/server/delete', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id, type: 'category' }),
+            body: JSON.stringify({ id, type: 'category', serverId: selectedServerId || undefined }),
           })
 
           if (!response.ok) {
@@ -537,10 +578,11 @@ const DiscordServerManagerView = () => {
       const response = await fetch('/api/discord/server/create-channel', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          name: channelName, 
+        body: JSON.stringify({
+          name: channelName,
           type: channelType,
-          parentId: categoryId 
+          parentId: categoryId,
+          serverId: selectedServerId || undefined,
         }),
       })
 
@@ -572,7 +614,7 @@ const DiscordServerManagerView = () => {
       const response = await fetch('/api/discord/server/rename', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, name: newName, type: 'channel' }),
+        body: JSON.stringify({ id, name: newName, type: 'channel', serverId: selectedServerId || undefined }),
       })
 
       if (!response.ok) {
@@ -609,7 +651,7 @@ const DiscordServerManagerView = () => {
           const response = await fetch('/api/discord/server/delete', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id, type: 'channel' }),
+            body: JSON.stringify({ id, type: 'channel', serverId: selectedServerId || undefined }),
           })
 
           if (!response.ok) {
@@ -647,7 +689,7 @@ const DiscordServerManagerView = () => {
           const response = await fetch('/api/discord/server/clone-channel', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ channelId: id }),
+            body: JSON.stringify({ channelId: id, serverId: selectedServerId || undefined }),
           })
 
           if (!response.ok) {
@@ -686,10 +728,11 @@ const DiscordServerManagerView = () => {
       const response = await fetch('/api/discord/server/move', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          id: category.id, 
+        body: JSON.stringify({
+          id: category.id,
           position: newPosition,
-          type: 'category'
+          type: 'category',
+          serverId: selectedServerId || undefined,
         }),
       })
 
@@ -724,11 +767,12 @@ const DiscordServerManagerView = () => {
       const response = await fetch('/api/discord/server/move', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          id: channel.id, 
+        body: JSON.stringify({
+          id: channel.id,
           position: newPosition,
           parentId: categoryId,
-          type: 'channel'
+          type: 'channel',
+          serverId: selectedServerId || undefined,
         }),
       })
 
@@ -766,6 +810,28 @@ const DiscordServerManagerView = () => {
         </div>
       </div>
 
+      {servers.length > 0 && (
+        <div className="discord-server-manager__server-picker">
+          <label>Server: </label>
+          <select
+            value={selectedServerId}
+            onChange={(e) => {
+              setSelectedServerId(e.target.value)
+              const primaryNow = e.target.value === '' || servers.find((s) => String(s.id) === e.target.value)?.isPrimary
+              if (!primaryNow && ['team-cards', 'announcements', 'twitch-live', 'faceit-updates'].includes(activeTab)) {
+                setActiveTab('structure')
+              }
+            }}
+          >
+            {servers.map((s) => (
+              <option key={s.id} value={s.isPrimary ? '' : String(s.id)}>
+                {s.label}{!s.isPrimary && s.region ? ` - ${s.region}` : ''}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       <div className="discord-server-manager__tabs">
         <button
           className={`discord-server-manager__tab ${activeTab === 'structure' ? 'discord-server-manager__tab--active' : ''}`}
@@ -799,29 +865,35 @@ const DiscordServerManagerView = () => {
           <Folder size={14} />
           <span>Templates</span>
         </button>
-        <button
-          className={`discord-server-manager__tab ${activeTab === 'team-cards' ? 'discord-server-manager__tab--active' : ''}`}
-          onClick={() => setActiveTab('team-cards')}
-          disabled={loading}
-        >
-          <Spade size={14} />
-          <span>Team Cards</span>
-        </button>
-        <button
-          className={`discord-server-manager__tab ${activeTab === 'announcements' ? 'discord-server-manager__tab--active' : ''}`}
-          onClick={() => setActiveTab('announcements')}
-          disabled={loading}
-        >
-          <Megaphone size={14} />
-          <span>Announcements</span>
-        </button>
-        <button
-          className={`discord-server-manager__tab ${activeTab === 'twitch-live' ? 'discord-server-manager__tab--active' : ''}`}
-          onClick={() => setActiveTab('twitch-live')}
-        >
-          <Circle size={12} />
-          <span>Live Roster</span>
-        </button>
+        {isPrimarySelected && (
+          <button
+            className={`discord-server-manager__tab ${activeTab === 'team-cards' ? 'discord-server-manager__tab--active' : ''}`}
+            onClick={() => setActiveTab('team-cards')}
+            disabled={loading}
+          >
+            <Spade size={14} />
+            <span>Team Cards</span>
+          </button>
+        )}
+        {isPrimarySelected && (
+          <button
+            className={`discord-server-manager__tab ${activeTab === 'announcements' ? 'discord-server-manager__tab--active' : ''}`}
+            onClick={() => setActiveTab('announcements')}
+            disabled={loading}
+          >
+            <Megaphone size={14} />
+            <span>Announcements</span>
+          </button>
+        )}
+        {isPrimarySelected && (
+          <button
+            className={`discord-server-manager__tab ${activeTab === 'twitch-live' ? 'discord-server-manager__tab--active' : ''}`}
+            onClick={() => setActiveTab('twitch-live')}
+          >
+            <Circle size={12} />
+            <span>Live Roster</span>
+          </button>
+        )}
         <button
           className={`discord-server-manager__tab ${activeTab === 'watched-threads' ? 'discord-server-manager__tab--active' : ''}`}
           onClick={() => setActiveTab('watched-threads')}
@@ -829,13 +901,15 @@ const DiscordServerManagerView = () => {
           <MessageSquare size={14} />
           <span>Threads</span>
         </button>
-        <button
-          className={`discord-server-manager__tab ${activeTab === 'faceit-updates' ? 'discord-server-manager__tab--active' : ''}`}
-          onClick={() => setActiveTab('faceit-updates')}
-        >
-          <Trophy size={14} />
-          <span>FaceIt Updates</span>
-        </button>
+        {isPrimarySelected && (
+          <button
+            className={`discord-server-manager__tab ${activeTab === 'faceit-updates' ? 'discord-server-manager__tab--active' : ''}`}
+            onClick={() => setActiveTab('faceit-updates')}
+          >
+            <Trophy size={14} />
+            <span>FaceIt Updates</span>
+          </button>
+        )}
         <button
           className={`discord-server-manager__tab ${activeTab === 'provision-team' ? 'discord-server-manager__tab--active' : ''}`}
           onClick={() => setActiveTab('provision-team')}
@@ -849,6 +923,13 @@ const DiscordServerManagerView = () => {
         >
           <Copy size={14} />
           <span>Clone Server</span>
+        </button>
+        <button
+          className={`discord-server-manager__tab ${activeTab === 'servers' ? 'discord-server-manager__tab--active' : ''}`}
+          onClick={() => setActiveTab('servers')}
+        >
+          <Server size={14} />
+          <span>Servers</span>
         </button>
       </div>
 
@@ -1244,7 +1325,7 @@ const DiscordServerManagerView = () => {
         )}
 
         {activeTab === 'watched-threads' && (
-          <WatchedThreadsTab />
+          <WatchedThreadsTab serverId={selectedServerId || undefined} guildId={selectedGuildId} />
         )}
 
         {activeTab === 'faceit-updates' && (
@@ -1255,12 +1336,17 @@ const DiscordServerManagerView = () => {
 
         {activeTab === 'provision-team' && (
           <ProvisionTeamTab
+            serverId={selectedServerId || undefined}
             onAlert={(title, message, type) => setAlertModal({ isOpen: true, title, message, type })}
           />
         )}
 
         {activeTab === 'clone-server' && (
           <CloneServerTab />
+        )}
+
+        {activeTab === 'servers' && (
+          <ServersTab onChange={loadServers} />
         )}
         </>
         )}

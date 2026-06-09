@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { ensureDiscordClient } from '@/discord/bot'
 import { ChannelType } from 'discord.js'
 import { authenticateRequest, requireAdmin } from '@/utilities/apiAuth'
+import { resolveGuildId, ServerResolutionError } from '@/discord/serverRegistry'
 
 export async function POST(request: NextRequest) {
   const auth = await authenticateRequest()
@@ -10,7 +11,7 @@ export async function POST(request: NextRequest) {
   if (adminCheck) return adminCheck
 
   try {
-    const { name, type, parentId } = await request.json()
+    const { name, type, parentId, serverId } = await request.json()
 
     if (!name) {
       return NextResponse.json({ error: 'Channel name is required' }, { status: 400 })
@@ -21,7 +22,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Discord client not initialized' }, { status: 500 })
     }
 
-    const guild = client.guilds.cache.get(process.env.DISCORD_GUILD_ID || '')
+    let guildId: string
+    try {
+      guildId = await resolveGuildId(serverId)
+    } catch (e) {
+      if (e instanceof ServerResolutionError) return NextResponse.json({ error: e.message }, { status: 400 })
+      throw e
+    }
+    const guild = await client.guilds.fetch(guildId)
     if (!guild) {
       return NextResponse.json({ error: 'Guild not found' }, { status: 404 })
     }
