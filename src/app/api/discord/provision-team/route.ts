@@ -52,12 +52,12 @@ const CHANNEL_DEFS: Array<{
   forumPosts?: (n: string) => string[]
 }> = [
   {
-    nameTemplate: (n: string) => `${n.toLowerCase()}-chat`,
+    nameTemplate: (n: string) => `💬 • ${n.toLowerCase()}-chat`,
     type: ChannelType.GuildText,
     // No exceptions - inherits all category defaults
   },
   {
-    nameTemplate: (n: string) => `${n.toLowerCase()}-announcements`,
+    nameTemplate: (n: string) => `📣 • ${n.toLowerCase()}-announcements`,
     type: ChannelType.GuildText,
     // Exception: Team and Access can't send messages (read-only for regular members)
     // Managers/Coaches/Captains CAN send (inherited from category-level allow)
@@ -67,7 +67,7 @@ const CHANNEL_DEFS: Array<{
     },
   },
   {
-    nameTemplate: (n: string) => `${n.toLowerCase()}-team-info`,
+    nameTemplate: (n: string) => `📌 • ${n.toLowerCase()}-team-info`,
     type: ChannelType.GuildForum,
     // No exceptions - inherits all category defaults
     forumPosts: (n: string) => [
@@ -78,7 +78,7 @@ const CHANNEL_DEFS: Array<{
     ],
   },
   {
-    nameTemplate: (n: string) => `${n.toLowerCase()}-coaching`,
+    nameTemplate: (n: string) => `🎯 • ${n.toLowerCase()}-coaching`,
     type: ChannelType.GuildForum,
     // Exception: Access role can't see coaching
     exceptions: {
@@ -90,7 +90,7 @@ const CHANNEL_DEFS: Array<{
     ],
   },
   {
-    nameTemplate: (n: string) => `${n.toLowerCase()}-private-chat`,
+    nameTemplate: (n: string) => `🌀 • ${n.toLowerCase()}-private-chat`,
     type: ChannelType.GuildText,
     // Exception: Access role can't see private chat
     exceptions: {
@@ -98,12 +98,12 @@ const CHANNEL_DEFS: Array<{
     },
   },
   {
-    nameTemplate: (n: string) => `${n} VC`,
+    nameTemplate: (n: string) => `🎙 • ${n} VC`,
     type: ChannelType.GuildVoice,
     // No exceptions - inherits all category defaults
   },
   {
-    nameTemplate: (n: string) => `${n} Private`,
+    nameTemplate: (n: string) => `🎧 • ${n} Private`,
     type: ChannelType.GuildVoice,
     // Exception: Access can't see Private VC
     exceptions: {
