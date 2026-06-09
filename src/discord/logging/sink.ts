@@ -29,7 +29,7 @@ export async function postLog(
     await logError(payload, {
       errorType: 'system',
       message: `Discord logging postLog failed (${guildId}/${category}): ${error?.message}`,
-      severity: 'low',
+      severity: 'medium',
     }).catch(() => {})
   }
 }
