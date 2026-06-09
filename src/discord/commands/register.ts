@@ -1,5 +1,7 @@
 import { REST, Routes } from 'discord.js'
 import { SlashCommandBuilder } from '@discordjs/builders'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
 
 /** Commands that only make sense on the primary hub and are NOT registered to region servers. */
 export const PRIMARY_ONLY_COMMANDS = ['pug', 'calendar']
@@ -228,27 +230,70 @@ export function buildCommands() {
   ].map((command) => command.toJSON())
 }
 
+export interface GuildRegisterResult {
+  guildId: string
+  ok: boolean
+  error?: string
+}
+
+/**
+ * Register a command set to a single guild. `which` selects the full set (primary)
+ * or the region set (primary-only commands removed). Never throws - returns a result.
+ */
+export async function registerCommandsForGuild(
+  guildId: string,
+  which: 'primary' | 'region',
+): Promise<GuildRegisterResult> {
+  const token = process.env.DISCORD_BOT_TOKEN
+  const clientId = process.env.DISCORD_CLIENT_ID
+  if (!token || !clientId) {
+    return { guildId, ok: false, error: 'DISCORD_BOT_TOKEN/DISCORD_CLIENT_ID not configured' }
+  }
+  const rest = new REST({ version: '10' }).setToken(token)
+  const full = buildCommands()
+  const body = which === 'region' ? regionCommandSet(full as Array<{ name: string }>) : full
+  try {
+    await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body })
+    return { guildId, ok: true }
+  } catch (e: any) {
+    return { guildId, ok: false, error: e?.message || 'command registration failed' }
+  }
+}
+
 export async function registerCommands(): Promise<void> {
   const token = process.env.DISCORD_BOT_TOKEN
   const clientId = process.env.DISCORD_CLIENT_ID
-  const guildId = process.env.DISCORD_GUILD_ID
+  const primaryGuildId = process.env.DISCORD_GUILD_ID
 
-  if (!token || !clientId || !guildId) {
+  if (!token || !clientId || !primaryGuildId) {
     return
   }
 
-  const rest = new REST({ version: '10' }).setToken(token)
-  const commands = buildCommands()
+  // Primary hub: the full command set (unchanged behavior).
+  const primary = await registerCommandsForGuild(primaryGuildId, 'primary')
+  if (!primary.ok) {
+    console.error('❌ Failed to register primary commands:', primary.error)
+  }
 
+  // Region servers: the region set, each guild isolated so one failure (e.g. a guild
+  // missing the applications.commands scope) does not block the others.
   try {
-
-    // Register commands to guild (faster than global)
-    await rest.put(Routes.applicationGuildCommands(clientId, guildId), {
-      body: commands,
+    const payload = await getPayload({ config: configPromise })
+    const { docs } = await payload.find({
+      collection: 'discord-servers',
+      where: { active: { equals: true }, isPrimary: { equals: false } },
+      limit: 200,
+      depth: 0,
     })
-
-  } catch (error) {
-    console.error('❌ Failed to register commands:', error)
-    throw error
+    for (const s of docs as Array<{ guildId: string; label?: string }>) {
+      const r = await registerCommandsForGuild(s.guildId, 'region')
+      if (r.ok) {
+        console.log(`✅ Registered region commands to ${s.label ?? s.guildId} (${s.guildId})`)
+      } else {
+        console.error(`❌ Region command registration failed for ${s.label ?? s.guildId} (${s.guildId}):`, r.error)
+      }
+    }
+  } catch (e) {
+    console.warn('Region command registration skipped (registry unavailable):', (e as Error).message)
   }
 }
