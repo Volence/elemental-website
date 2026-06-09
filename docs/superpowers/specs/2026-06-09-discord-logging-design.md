@@ -29,47 +29,50 @@ cheap to do so. Voice activity logging is the only carlbot logging feature we do
 - Each server already has split log channels: `message-log`, `join-leave-log`, `member-log`,
   `server-log`, `voice-log`.
 
-Why this still is not good enough for logging: the bot's process restarts whenever the
+Coupling to the website is the reliability risk: the bot's process restarts whenever the
 *website* does - every deploy, every `uncaughtException` (instrumentation calls
 `process.exit(1)`), every OOM (1G shared cap), every event-loop stall that makes Discord
 drop the bot as a zombie. Each full restart starts a **new gateway session**, and Discord
-does NOT replay events missed across a new session - so each restart is a silent,
-unrecoverable hole in the audit trail. Brief network blips are fine (the client RESUMEs and
-Discord replays the buffer); the enemy is full process restarts. Decoupling the bot from the
-website is therefore the real cost of the project; the logging code itself is small.
+does NOT replay events missed across a new session - so each restart is a hole in the audit
+trail. Brief network blips are fine (the client RESUMEs and Discord replays the buffer); the
+enemy is full process restarts.
 
 ## Architecture
 
-### Dedicated always-on bot process (zero-gap goal)
+### In-process now, extractable later (decision 2026-06-09)
 
-Move the discord.js gateway client out of the Next/Payload web process into its own
-long-lived container in the same docker stack on elmt.gg, `restart: unless-stopped`, same
-repo and same push-to-main CI/CD (no new manual ops - it is a second service built from the
-same image with a different command). Decision (2026-06-09): the user wants near-zero-gap
-logging, so we pay for the split rather than accept per-deploy gaps.
+Logging is added to the **existing single bot** that already runs in the web process and
+boots via instrumentation self-ping -> `onInit`. No second token, no second container, no
+route migration. This matches the preference for one instance and is the simplest setup.
 
-- **One gateway, owned solely by the bot process.** A bot token supports only one unsharded
-  gateway connection, so the web process must STOP owning a gateway client. All gateway-
-  cache reads in web routes (~20 `ensureDiscordClient()` call sites) migrate to REST via
-  `@discordjs/rest` (already a dependency) or to the `DiscordServers` registry. This route
-  migration is the bulk of the infrastructure work and is in scope.
-- **The bot process owns:** gateway connection, slash-command interaction handling, per-guild
-  command registration, and all logging event handlers.
-- **Gap behaviour:** network blips are covered by gateway RESUME (Discord replays the buffer)
-  - gap-free. The only remaining gap is when the bot's OWN container restarts (i.e. a bot-code
-  deploy, which is rare). Per decision (2026-06-09) we ACCEPT that rare one-restart gap and do
-  NOT build a deploy-handoff/overlap now. A handoff (start new instance, let it connect, then
-  stop old) is a documented future option if zero-gap-across-bot-deploys is ever needed.
-- **Decoupling is the point:** website deploys, `uncaughtException` exits, OOM, and event-loop
-  stalls no longer restart the gateway, because the bot is a separate process with its own
-  memory budget and CPU.
+The investigation that drove this: the gateway client is not just logging + a thin command
+layer - it hosts the entire real-time Discord layer (slash + button interactions including
+the live PUG lobby, PUG feed/voice, polls, calendar, twitch roster, thread keep-alive,
+~40 call sites). A true split would have to move that whole layer (a single bot token allows
+only one gateway connection), touching live event tooling - too much risk for the benefit.
+A separate logging bot would need its own token (a second instance, which the user wants to
+avoid). So we run in-process now.
 
-Because this is a large, separable piece of work, the implementation is split into two
-plans (each independently shippable and testable):
-1. **Infrastructure plan:** stand up the dedicated bot process and migrate web routes off the
-   gateway cache to REST. Ships value alone (decoupled, self-healing bot; no logging yet).
-2. **Logging plan:** config fields, routing, event handlers, enhancements, persistence -
-   built on top of the dedicated process.
+Two design rules make this low-regret:
+- **Extractable module.** The logging code (event handlers, formatters, routing, sinks,
+  persistence) is identical regardless of where it runs. Build it as a self-contained module
+  with no coupling to the web request lifecycle, so a future move to its own process (second
+  token or full split) is lift-and-shift, not a rewrite.
+- **Gap visibility (heartbeat).** On every gateway connect/reconnect, post a heartbeat to
+  each server's `server-log` including the downtime when known ("logging resumed after 28s
+  offline"). This makes every coverage gap *visible* instead of silent - directly addressing
+  the "I'll miss things I won't notice" concern.
+
+**When to revisit a split:** run in-process and watch the heartbeat frequency. If it fires
+rarely (just deploys), in-process is fine indefinitely. If it fires constantly, that is the
+data-backed trigger to extract the module into its own process. Documented future option;
+not built now.
+
+### Intents and memory
+
+Adding `GuildMessages` + `MessageContent` means the client caches messages, which costs
+memory in the web container (1G cap). Keep the existing `cacheWithLimits` + sweeper settings
+in `bot.ts` tight so logging does not push the container toward OOM.
 
 ### Multi-server routing
 
@@ -90,9 +93,33 @@ Add per-row fields:
 - `profileLogChannelId` (text, optional) - cosmetic profile changes (avatar, username, global
   display name), split out so they never bury role changes in `member-log`. Blank = not logged.
 - `serverLogChannelId` (text)
+- `newAccountFlagDays` (number, default 7) - account-age threshold for the join flag
+- `attachProfileLink` (checkbox, default true) - append the website profile link line
 
 We deliberately do NOT add a voice log channel. Channels map to the server's existing
 taxonomy. A blank channel id for a category means "do not log that category for this server."
+The `discord-servers` collection stays `hidden: true`; these fields are edited through the
+admin UI below, not by browsing the collection.
+
+## Admin UI (Discord Server Manager)
+
+Logging is configured per server through a new **Logging** tab in the existing
+`DiscordServerManager` admin view (`src/components/DiscordServerManager/`), scoped to the
+server chosen in the manager's server picker (same `serverId` pattern as the other tabs).
+
+The tab shows, for the selected server:
+- An `enableLogging` toggle.
+- A channel dropdown per category (message, join/leave, member, profile, server), each
+  populated from `GET /api/discord/server/structure?serverId=<id>` (already returns that
+  server's channels). Blank = that category is not logged.
+- The other settings: `newAccountFlagDays`, `attachProfileLink`.
+- A read-only status line (logging on/off, which categories are configured, last heartbeat).
+
+Backed by a new route `GET/POST /api/discord/server/logging-settings?serverId=<id>` that
+reads/writes the resolved server's `DiscordServers` row (admin-gated, `serverId` resolved via
+`resolveGuildId`/the registry, fail-closed like the other server routes). New servers from
+the clone flow appear in the picker automatically and start logging once their channels are
+set - no code change.
 
 Migration: add columns to `discord-servers` (manual apply to dev + prod per project
 convention, `ssh ubuntu@elmt.gg`, container `elemental-website-postgres-1`).
@@ -196,13 +223,13 @@ tracking.
 
 ## Reliability
 
-- Dedicated bot container with `restart: unless-stopped`. Gateway RESUME covers brief
-  disconnects gap-free (Discord replays the buffered events on resume); discord.js handles
-  reconnect/resume automatically.
-- The only accepted gap is a full restart of the bot container (a bot-code deploy), which is
-  rare. No deploy-handoff in this phase (documented future option).
-- Decoupled from the website: website deploys, `uncaughtException` exits, OOM, and event-loop
-  stalls no longer restart the gateway.
+- In-process (shares the web container). Gateway RESUME covers brief disconnects gap-free
+  (Discord replays the buffered events on resume); discord.js handles reconnect/resume
+  automatically. Full process restarts (web deploys/crashes) start a new session and are the
+  only real gaps.
+- **Heartbeat for gap visibility:** on each connect/reconnect, post to every server's
+  `server-log` with downtime when known. Gaps are visible, not silent. Heartbeat frequency is
+  the trigger for deciding whether to extract the module into its own process later.
 - Posting failures (missing channel, lost permission) are caught per-event and logged to the
   existing error logger; one bad server never blocks others.
 - Audit-log correlation uses the realtime `guildAuditLogEntryCreate` event, not delayed
@@ -222,6 +249,7 @@ tracking.
 - Full searchable audit-feed DB sink and admin dashboard view (deferred; member-event table
   is the seed).
 - Per-server bot tokens (single token, multi-guild stays).
-- Deploy-handoff / overlap for zero-gap across bot-code deploys (accepted rare gap for now;
-  documented future option).
+- Extracting the logging module into its own process / second bot token (future option;
+  trigger is heartbeat frequency showing too-frequent gaps). Build the module extractable so
+  this stays cheap.
 - Region-aware anything beyond per-server channel config.
