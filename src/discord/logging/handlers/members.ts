@@ -139,12 +139,13 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
         await postLog(client, payload, guildId, 'member', embed, cfg)
       }
 
-      // Per-guild avatar change -> profile-log
+      // Per-guild avatar change -> profile-log (show the new avatar as a thumbnail)
       if (oldM.avatar !== newM.avatar) {
         const embed = new EmbedBuilder()
           .setColor(0x9b59b6)
-          .setTitle('Server avatar changed')
+          .setTitle(newM.avatar ? 'Server avatar changed' : 'Server avatar removed')
           .setDescription(`${userMention(newM.id)} (${newM.user.tag})`)
+          .setThumbnail(newM.displayAvatarURL({ size: 256 }))
         embed.setFooter({ text: `ID: ${newM.id}` })
         await postLog(client, payload, guildId, 'profile', embed, cfg)
       }
