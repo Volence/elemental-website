@@ -22,6 +22,7 @@ const ServersTab = ({ onChange }: { onChange?: () => void }) => {
   const [submitting, setSubmitting] = useState<string | null>(null)
   const [inviteUrl, setInviteUrl] = useState<string | null>(null)
   const [cmdStatus, setCmdStatus] = useState<Record<string, { ok: boolean; error?: string }>>({})
+  const [onboardStatus, setOnboardStatus] = useState<Record<string, { ok: boolean; error?: string }>>({})
 
   const load = async () => {
     setLoading(true)
@@ -61,6 +62,23 @@ const ServersTab = ({ onChange }: { onChange?: () => void }) => {
       onChange?.()
     } catch (e: any) {
       setError(e.message)
+    } finally {
+      setSubmitting(null)
+    }
+  }
+
+  const copyOnboarding = async (g: BotGuild) => {
+    setSubmitting(g.guildId)
+    try {
+      const res = await fetch('/api/discord/server/copy-onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetGuildId: g.guildId }),
+      })
+      const data = await res.json()
+      setOnboardStatus((m) => ({ ...m, [g.guildId]: { ok: !!data.success, error: data.error } }))
+    } catch (e: any) {
+      setOnboardStatus((m) => ({ ...m, [g.guildId]: { ok: false, error: e.message } }))
     } finally {
       setSubmitting(null)
     }
@@ -115,9 +133,19 @@ const ServersTab = ({ onChange }: { onChange?: () => void }) => {
                     </span>
                   )}
                   {!g.isPrimary && (
-                    <button onClick={() => reRegister(g)} disabled={submitting === g.guildId}>
-                      {submitting === g.guildId ? 'Registering...' : 'Re-register commands'}
-                    </button>
+                    <>
+                      <button onClick={() => reRegister(g)} disabled={submitting === g.guildId}>
+                        {submitting === g.guildId ? 'Registering...' : 'Re-register commands'}
+                      </button>
+                      <button onClick={() => copyOnboarding(g)} disabled={submitting === g.guildId}>
+                        {submitting === g.guildId ? 'Working...' : 'Copy onboarding'}
+                      </button>
+                      {onboardStatus[g.guildId] && (
+                        <span className={onboardStatus[g.guildId].ok ? 'servers-tab__cmd-ok' : 'servers-tab__cmd-fail'}>
+                          {onboardStatus[g.guildId].ok ? 'onboarding: copied' : `onboarding: ${onboardStatus[g.guildId].error || 'failed'}`}
+                        </span>
+                      )}
+                    </>
                   )}
                 </div>
               ) : (
