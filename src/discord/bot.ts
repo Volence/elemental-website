@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Events, ActivityType, Options } from 'discord.js'
+import { Client, GatewayIntentBits, Events, ActivityType, Options, Partials } from 'discord.js'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { logError } from '@/utilities/errorLogger'
@@ -42,18 +42,26 @@ export async function initializeDiscordBot(): Promise<Client | null> {
     intents: [
       GatewayIntentBits.Guilds,
       GatewayIntentBits.GuildMembers,
+      GatewayIntentBits.GuildMessages,
+      GatewayIntentBits.MessageContent,
+      GatewayIntentBits.GuildModeration,
+      GatewayIntentBits.GuildInvites,
     ],
+    partials: [Partials.Message, Partials.Channel, Partials.GuildMember, Partials.User],
     makeCache: Options.cacheWithLimits({
       ...Options.DefaultMakeCacheSettings,
-      MessageManager: 50,
-      GuildMemberManager: 200,
+      // Keep more recent messages per channel so edit/delete "before" content is available
+      // for longer. Memory is bounded by this per-channel cap x active channels.
+      MessageManager: 500,
+      // GuildMemberManager is left UNCAPPED on purpose: setupLogging fetches the full roster
+      // on connect so leave/kick embeds, member-update diffs, and profile fan-out have the
+      // member cached. Memory scales with total member count - revisit for very large guilds.
     }),
     sweepers: {
       ...Options.DefaultSweeperSettings,
-      messages: {
-        interval: 300,
-        lifetime: 600,
-      },
+      // Evict cached messages older than 6h (was 30m) so logging can show "before" content
+      // for most same-session edits. The 500-per-channel cap above still bounds memory.
+      messages: { interval: 600, lifetime: 21600 },
     },
   })
 

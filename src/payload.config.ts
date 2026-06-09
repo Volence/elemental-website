@@ -58,6 +58,7 @@ import { DiscordServerManager } from './globals/DiscordServerManager'
 import { DiscordCategoryTemplates } from './collections/DiscordCategoryTemplates'
 import { DiscordCloneJobs } from './collections/DiscordCloneJobs'
 import { DiscordServers } from './collections/DiscordServers'
+import { DiscordMemberEvents } from './collections/DiscordMemberEvents'
 import { TwitchStreamers } from './collections/TwitchStreamers'
 import { Tasks } from './collections/Tasks'
 import { GraphicsAssets } from './collections/GraphicsAssets'
@@ -294,6 +295,7 @@ const config = buildConfig({
     DiscordCategoryTemplates,
     DiscordCloneJobs,
     DiscordServers,
+    DiscordMemberEvents,
     WatchedThreads,
     TwitchStreamers,
     
@@ -383,6 +385,13 @@ const config = buildConfig({
         if (client) {
           await registerCommands(payload)
           setupInteractionHandlers()
+
+          // setupLogging attaches event handlers AND runs its ready logic immediately when
+          // the client is already connected (roster fetch + invite cache + heartbeat), so no
+          // separate backstop is needed here.
+          const { setupLogging } = await import('./discord/logging')
+          setupLogging(client, payload)
+
           startThreadKeepAlive()
           startTwitchLiveRoster()
 

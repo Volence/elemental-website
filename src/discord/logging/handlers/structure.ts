@@ -1,0 +1,85 @@
+import { EmbedBuilder, Events, AuditLogEvent, type Client, type GuildChannel } from 'discord.js'
+import type { Payload } from 'payload'
+import { postLog } from '../sink'
+import { fetchActorId, setActorAuthor } from '../attribution'
+import { Colors } from '../colors'
+
+export function attachStructureHandlers(client: Client, payload: Payload): void {
+  client.on(Events.ChannelCreate, async (channel) => {
+    const embed = new EmbedBuilder()
+      .setColor(Colors.create)
+      .setTitle('Channel created')
+      .setDescription(`<#${channel.id}> (${channel.name})`)
+      .addFields({ name: 'Category', value: channel.parent?.name ?? '_none_' })
+      .setFooter({ text: `ID: ${channel.id}` })
+    await setActorAuthor(client, embed, await fetchActorId(channel.guild, AuditLogEvent.ChannelCreate, channel.id))
+    await postLog(client, payload, channel.guild.id, 'server', embed)
+  })
+
+  client.on(Events.ChannelDelete, async (channel) => {
+    const gc = channel as GuildChannel
+    if (!('guild' in gc) || !gc.guild) return
+    const embed = new EmbedBuilder()
+      .setColor(Colors.delete)
+      .setTitle('Channel deleted')
+      .setDescription(`#${gc.name} (${gc.id})`)
+      .addFields({ name: 'Category', value: gc.parent?.name ?? '_none_' })
+      .setFooter({ text: `ID: ${gc.id}` })
+    await setActorAuthor(client, embed, await fetchActorId(gc.guild, AuditLogEvent.ChannelDelete, gc.id))
+    await postLog(client, payload, gc.guild.id, 'server', embed)
+  })
+
+  client.on(Events.ChannelUpdate, async (oldCh, newCh) => {
+    const o = oldCh as GuildChannel
+    const n = newCh as GuildChannel
+    if (!('guild' in n) || !n.guild) return
+    const changes: string[] = []
+    if (o.name !== n.name) changes.push(`Renamed: ${o.name} -> ${n.name}`)
+    if (o.parentId !== n.parentId) changes.push(`Moved category: ${o.parentId ?? 'none'} -> ${n.parentId ?? 'none'}`)
+    // Pure position reorders are intentionally NOT logged (noisy; see spec).
+    if (!changes.length) return
+    const embed = new EmbedBuilder()
+      .setColor(Colors.update)
+      .setTitle('Channel updated')
+      .setDescription(`<#${n.id}>`)
+      .addFields({ name: 'Changes', value: changes.join('\n') })
+      .setFooter({ text: `ID: ${n.id}` })
+    await setActorAuthor(client, embed, await fetchActorId(n.guild, AuditLogEvent.ChannelUpdate, n.id))
+    await postLog(client, payload, n.guild.id, 'server', embed)
+  })
+
+  client.on(Events.GuildRoleCreate, async (role) => {
+    const embed = new EmbedBuilder()
+      .setColor(Colors.create)
+      .setTitle('Role created')
+      .setDescription(`<@&${role.id}> (${role.name})`)
+      .setFooter({ text: `ID: ${role.id}` })
+    await setActorAuthor(client, embed, await fetchActorId(role.guild, AuditLogEvent.RoleCreate, role.id))
+    await postLog(client, payload, role.guild.id, 'server', embed)
+  })
+
+  client.on(Events.GuildRoleDelete, async (role) => {
+    const embed = new EmbedBuilder()
+      .setColor(Colors.delete)
+      .setTitle('Role deleted')
+      .setDescription(`${role.name} (${role.id})`)
+      .setFooter({ text: `ID: ${role.id}` })
+    await setActorAuthor(client, embed, await fetchActorId(role.guild, AuditLogEvent.RoleDelete, role.id))
+    await postLog(client, payload, role.guild.id, 'server', embed)
+  })
+
+  client.on(Events.GuildRoleUpdate, async (oldR, newR) => {
+    const changes: string[] = []
+    if (oldR.name !== newR.name) changes.push(`Renamed: ${oldR.name} -> ${newR.name}`)
+    if (oldR.permissions.bitfield !== newR.permissions.bitfield) changes.push('Permissions changed')
+    if (!changes.length) return
+    const embed = new EmbedBuilder()
+      .setColor(Colors.update)
+      .setTitle('Role updated')
+      .setDescription(`<@&${newR.id}>`)
+      .addFields({ name: 'Changes', value: changes.join('\n') })
+      .setFooter({ text: `ID: ${newR.id}` })
+    await setActorAuthor(client, embed, await fetchActorId(newR.guild, AuditLogEvent.RoleUpdate, newR.id))
+    await postLog(client, payload, newR.guild.id, 'server', embed)
+  })
+}
