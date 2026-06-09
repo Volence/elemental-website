@@ -61,7 +61,9 @@ Add per-row fields:
 - `enableLogging` (checkbox, default false)
 - `messageLogChannelId` (text)
 - `joinLeaveLogChannelId` (text)
-- `memberLogChannelId` (text)
+- `memberLogChannelId` (text) - moderation-relevant member changes only (roles, nickname, timeout)
+- `profileLogChannelId` (text, optional) - cosmetic profile changes (avatar, username, global
+  display name), split out so they never bury role changes in `member-log`. Blank = not logged.
 - `serverLogChannelId` (text)
 
 We deliberately do NOT add a voice log channel. Channels map to the server's existing
@@ -74,9 +76,10 @@ convention, `ssh ubuntu@elmt.gg`, container `elemental-website-postgres-1`).
 
 | Channel | Events |
 |---|---|
-| `message-log` | `messageUpdate` (edit), `messageDelete`, `messageDeleteBulk` (purge, grouped) |
+| `message-log` | `messageUpdate` (edit), `messageDelete`, `messageDeleteBulk` (purge, grouped); deleted-attachment **metadata** captured (see below), never the file |
 | `join-leave-log` | `guildMemberAdd`, `guildMemberRemove` |
-| `member-log` | `guildMemberUpdate` (role changes, nickname changes, timeout add/remove) |
+| `member-log` | `guildMemberUpdate` - role changes, nickname changes, timeout add/remove (moderation-relevant only; cosmetic profile changes are routed elsewhere) |
+| `profile-log` (optional) | avatar, username, and global display-name changes (`guildMemberUpdate` per-guild avatar + `userUpdate` global). Split out so they never bury role changes. Only logged when `profileLogChannelId` is set. |
 | `server-log` | `channelCreate`, `channelDelete`, `channelUpdate` (incl. category/parent moves), role create/update/delete, server-setting changes, the `guildAuditLogEntryCreate` who-did-what feed |
 | (none) | voice activity - deliberately skipped |
 
@@ -121,6 +124,19 @@ convention, `ssh ubuntu@elmt.gg`, container `elemental-website-postgres-1`).
   `+added / -removed`; nickname shows `old -> new`.
 - Bulk delete / purge collapsed into one grouped entry (count + channel + actor).
 - Timeout entries show duration and (via attribution) who applied it.
+
+### Deleted-attachment handling (metadata only - NO re-hosting)
+
+When a message with attachments is deleted, we capture **metadata only**: filename,
+content-type, size, dimensions (when available), the original (now-expired) CDN URL, who
+posted it, and who deleted it. We do NOT download or re-host the file.
+
+Rationale: re-hosting a deleted attachment would make our infrastructure the host of that
+content. For genuinely illegal material (e.g. CSAM), possessing, storing, or redistributing
+it is a crime regardless of intent, and re-posting it into a log channel could spread it
+further. Metadata preserves the moderation trail ("an image `x.png` was posted by @A and
+deleted by @B") with zero illegal-content exposure. Hash-based matching against known-bad
+lists is explicitly out of scope for this phase.
 
 ## Storage
 
