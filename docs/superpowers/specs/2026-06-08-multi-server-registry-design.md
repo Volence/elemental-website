@@ -1,7 +1,7 @@
 # Multi-Server Registry & Routing (Sub-project A) - Design
 
 **Date:** 2026-06-08
-**Status:** Approved
+**Status:** Implemented and verified working (2026-06-08). Live: server picker scopes Structure/Stats/Health/Templates/Threads/Provision Team to the selected registered server; primary-only feature tabs hide on non-primary; Provision Team targets the selected server; resolveGuildId is fail-closed. Merged to `main`; `discord_servers` migration applied manually to dev + prod.
 **Parent:** [Multi-Server Discord Architecture](./2026-06-08-multi-server-discord-architecture-design.md)
 **Follows:** [Discord Clone Tool (sub-project B)](./2026-06-08-discord-clone-tool-design.md) - built and deployed.
 

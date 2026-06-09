@@ -825,7 +825,7 @@ const DiscordServerManagerView = () => {
           >
             {servers.map((s) => (
               <option key={s.id} value={s.isPrimary ? '' : String(s.id)}>
-                {s.label}{s.isPrimary ? ' (primary)' : s.region ? ` - ${s.region}` : ''}
+                {s.label}{!s.isPrimary && s.region ? ` - ${s.region}` : ''}
               </option>
             ))}
           </select>
