@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { ordinal, humanizeDuration } from '@/discord/logging/format'
+import { ordinal, humanizeDuration, discordTimestamp } from '@/discord/logging/format'
 
 const D = (y: number, mo: number, d: number, h = 0, mi = 0, s = 0) =>
   Date.UTC(y, mo - 1, d, h, mi, s)
@@ -41,5 +41,17 @@ describe('humanizeDuration', () => {
   })
   it('is order-independent (from/to swapped)', () => {
     expect(humanizeDuration(D(2023, 4, 15), D(2020, 1, 1))).toBe('3 years, 3 months and 14 days')
+  })
+})
+
+describe('discordTimestamp', () => {
+  it('renders the relative-style markdown from an ISO string', () => {
+    expect(discordTimestamp('2023-11-14T22:13:20.000Z', 'R')).toBe('<t:1700000000:R>')
+  })
+  it('defaults to short date-time and accepts ms', () => {
+    expect(discordTimestamp(1700000000000)).toBe('<t:1700000000:f>')
+  })
+  it('passes through an unparseable value', () => {
+    expect(discordTimestamp('not-a-date', 'R')).toBe('not-a-date')
   })
 })

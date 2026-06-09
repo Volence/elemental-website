@@ -12,6 +12,19 @@ export function ordinal(n: number): string {
   return `${formatted}${suffix}`
 }
 
+/**
+ * Discord timestamp markdown (e.g. `<t:1700000000:R>`) - renders localized in every client.
+ * styles: t/T short-long time, d/D short-long date, f/F short-long date+time, R relative.
+ */
+export function discordTimestamp(
+  input: string | number | Date,
+  style: 't' | 'T' | 'd' | 'D' | 'f' | 'F' | 'R' = 'f',
+): string {
+  const ms = input instanceof Date ? input.getTime() : typeof input === 'number' ? input : new Date(input).getTime()
+  if (Number.isNaN(ms)) return String(input)
+  return `<t:${Math.floor(ms / 1000)}:${style}>`
+}
+
 interface Breakdown {
   years: number
   months: number

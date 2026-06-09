@@ -43,6 +43,38 @@ export async function fetchActorId(
   return entry?.executorId ?? null
 }
 
+export interface RoleChange {
+  added: string[]
+  removed: string[]
+  executorId: string | null
+}
+
+/**
+ * Read the recent MemberRoleUpdate audit entry for a member and return exactly which roles
+ * were added/removed plus who did it. Works even when the member isn't cached (so role
+ * changes log regardless of cache state). Returns null when no recent entry is found.
+ */
+export async function fetchRoleChange(guild: Guild, targetId: string): Promise<RoleChange | null> {
+  try {
+    const logs = await guild.fetchAuditLogs({ type: AuditLogEvent.MemberRoleUpdate, limit: 5 })
+    const entry = logs.entries.find((e) => String(e.targetId) === String(targetId))
+    if (!entry) return null
+    if (Date.now() - entry.createdTimestamp > 15000) return null
+    const added: string[] = []
+    const removed: string[] = []
+    for (const change of entry.changes) {
+      const ids = Array.isArray((change as any).new)
+        ? (change as any).new.map((r: any) => r.id).filter(Boolean)
+        : []
+      if (change.key === '$add') added.push(...ids)
+      else if (change.key === '$remove') removed.push(...ids)
+    }
+    return { added, removed, executorId: entry.executorId ?? null }
+  } catch {
+    return null
+  }
+}
+
 /** Append a "By @user" field to an embed when an actor was resolved (no-op otherwise). */
 export function addActorField(embed: EmbedBuilder, actorId: string | null): void {
   if (actorId) embed.addFields({ name: 'By', value: userMention(actorId) })

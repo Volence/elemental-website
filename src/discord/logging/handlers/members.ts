@@ -3,12 +3,12 @@ import type { Payload } from 'payload'
 import { postLog } from '../sink'
 import { userMention, accountCreatedAtMs, isNewAccount } from '../identity'
 import { diffRoles, diffNickname, truncate } from '../diff'
-import { ordinal, humanizeDuration } from '../format'
+import { ordinal, humanizeDuration, discordTimestamp } from '../format'
 import { loadLoggingConfig } from '../config'
 import { resolveProfile } from '../nameResolver'
 import { recordMemberEvent, getRejoinSummary } from '../memberEvents'
 import { resolveJoinInvite } from '../invites'
-import { fetchActorId, fetchAuditEntry, addActorField } from '../attribution'
+import { fetchActorId, fetchAuditEntry, fetchRoleChange, addActorField } from '../attribution'
 
 export function attachMemberHandlers(client: Client, payload: Payload, now: () => number): void {
   client.on(Events.GuildMemberAdd, async (member) => {
@@ -29,7 +29,7 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
         {
           name: 'History',
           value: summary.isRejoin
-            ? `Rejoin (#${summary.priorJoins + 1}); last left ${summary.lastLeftAt ?? 'unknown'}`
+            ? `Rejoin (#${summary.priorJoins + 1}); last left ${summary.lastLeftAt ? discordTimestamp(summary.lastLeftAt, 'R') : 'unknown'}`
             : 'First join',
           inline: true,
         },
@@ -85,48 +85,69 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
     const cfg = await loadLoggingConfig(payload, guildId)
     if (!cfg) return
 
-    // A partial oldMember has an incomplete role/nick cache; diffing it would falsely
-    // report every current role as "added". Skip when we can't trust the prior state.
-    if (oldM.partial) return
+    // Roles: prefer the audit log so role changes log even when the old member wasn't cached
+    // (the partial case). Fall back to a cache diff only when we have trustworthy prior state.
+    const roleChange = await fetchRoleChange(newM.guild, newM.id)
+    let added: string[] = []
+    let removed: string[] = []
+    let roleActorId: string | null = null
+    if (roleChange && (roleChange.added.length || roleChange.removed.length)) {
+      added = roleChange.added
+      removed = roleChange.removed
+      roleActorId = roleChange.executorId
+    } else if (!oldM.partial) {
+      const d = diffRoles([...oldM.roles.cache.keys()], [...newM.roles.cache.keys()])
+      added = d.added
+      removed = d.removed
+    }
 
-    // Roles + nickname -> member-log
-    const roleDiff = diffRoles([...oldM.roles.cache.keys()], [...newM.roles.cache.keys()])
-    const nickDiff = diffNickname(oldM.nickname ?? null, newM.nickname ?? null)
-    if (roleDiff.added.length || roleDiff.removed.length || nickDiff.changed) {
+    // Nickname compare needs the cached prior state; skip when the old member is partial.
+    const nickDiff = oldM.partial
+      ? { from: null as string | null, to: null as string | null, changed: false }
+      : diffNickname(oldM.nickname ?? null, newM.nickname ?? null)
+
+    if (added.length || removed.length || nickDiff.changed) {
       const embed = new EmbedBuilder()
         .setColor(0x3498db)
         .setTitle('Member updated')
         .setDescription(`${userMention(newM.id)} (${newM.user.tag})`)
-      if (roleDiff.added.length) embed.addFields({ name: 'Roles added', value: truncate(roleDiff.added.map((r) => `<@&${r}>`).join(' '), 1024) })
-      if (roleDiff.removed.length) embed.addFields({ name: 'Roles removed', value: truncate(roleDiff.removed.map((r) => `<@&${r}>`).join(' '), 1024) })
+      if (added.length) embed.addFields({ name: 'Roles added', value: truncate(added.map((r) => `<@&${r}>`).join(' '), 1024) })
+      if (removed.length) embed.addFields({ name: 'Roles removed', value: truncate(removed.map((r) => `<@&${r}>`).join(' '), 1024) })
       if (nickDiff.changed) embed.addFields({ name: 'Nickname', value: `${nickDiff.from ?? '_none_'} -> ${nickDiff.to ?? '_none_'}` })
-      const auditType = roleDiff.added.length || roleDiff.removed.length ? AuditLogEvent.MemberRoleUpdate : AuditLogEvent.MemberUpdate
-      addActorField(embed, await fetchActorId(newM.guild, auditType, newM.id))
+      const actorId =
+        roleActorId ??
+        (await fetchActorId(newM.guild, added.length || removed.length ? AuditLogEvent.MemberRoleUpdate : AuditLogEvent.MemberUpdate, newM.id))
+      addActorField(embed, actorId)
+      embed.setFooter({ text: `ID: ${newM.id}` })
       await postLog(client, payload, guildId, 'member', embed, cfg)
     }
 
-    // Timeout add/remove -> member-log
-    const oldTimeout = oldM.communicationDisabledUntilTimestamp ?? null
-    const newTimeout = newM.communicationDisabledUntilTimestamp ?? null
-    if (oldTimeout !== newTimeout) {
-      const embed = new EmbedBuilder()
-        .setColor(0xe67e22)
-        .setTitle(newTimeout ? 'Member timed out' : 'Member timeout removed')
-        .setDescription(`${userMention(newM.id)} (${newM.user.tag})`)
-      if (newTimeout) {
-        embed.addFields({ name: 'Until', value: `<t:${Math.floor(newTimeout / 1000)}:F>` })
+    // Timeout and avatar comparisons need the cached prior state.
+    if (!oldM.partial) {
+      const oldTimeout = oldM.communicationDisabledUntilTimestamp ?? null
+      const newTimeout = newM.communicationDisabledUntilTimestamp ?? null
+      if (oldTimeout !== newTimeout) {
+        const embed = new EmbedBuilder()
+          .setColor(0xe67e22)
+          .setTitle(newTimeout ? 'Member timed out' : 'Member timeout removed')
+          .setDescription(`${userMention(newM.id)} (${newM.user.tag})`)
+        if (newTimeout) {
+          embed.addFields({ name: 'Until', value: `<t:${Math.floor(newTimeout / 1000)}:F>` })
+        }
+        addActorField(embed, await fetchActorId(newM.guild, AuditLogEvent.MemberUpdate, newM.id))
+        embed.setFooter({ text: `ID: ${newM.id}` })
+        await postLog(client, payload, guildId, 'member', embed, cfg)
       }
-      addActorField(embed, await fetchActorId(newM.guild, AuditLogEvent.MemberUpdate, newM.id))
-      await postLog(client, payload, guildId, 'member', embed, cfg)
-    }
 
-    // Per-guild avatar change -> profile-log
-    if (oldM.avatar !== newM.avatar) {
-      const embed = new EmbedBuilder()
-        .setColor(0x9b59b6)
-        .setTitle('Server avatar changed')
-        .setDescription(`${userMention(newM.id)} (${newM.user.tag})`)
-      await postLog(client, payload, guildId, 'profile', embed, cfg)
+      // Per-guild avatar change -> profile-log
+      if (oldM.avatar !== newM.avatar) {
+        const embed = new EmbedBuilder()
+          .setColor(0x9b59b6)
+          .setTitle('Server avatar changed')
+          .setDescription(`${userMention(newM.id)} (${newM.user.tag})`)
+        embed.setFooter({ text: `ID: ${newM.id}` })
+        await postLog(client, payload, guildId, 'profile', embed, cfg)
+      }
     }
   })
 }
