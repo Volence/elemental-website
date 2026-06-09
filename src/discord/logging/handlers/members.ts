@@ -8,7 +8,7 @@ import { loadLoggingConfig } from '../config'
 import { resolveProfile } from '../nameResolver'
 import { recordMemberEvent, getRejoinSummary } from '../memberEvents'
 import { resolveJoinInvite } from '../invites'
-import { fetchActorId, fetchAuditEntry, fetchRoleChange, addActorField } from '../attribution'
+import { fetchActorId, fetchAuditEntry, fetchRoleChange, addActorField, setMemberAuthor, setUserAuthor } from '../attribution'
 
 export function attachMemberHandlers(client: Client, payload: Payload, now: () => number): void {
   client.on(Events.GuildMemberAdd, async (member) => {
@@ -39,6 +39,7 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
       embed.addFields({ name: '⚠️ New account', value: `Younger than ${cfg.newAccountFlagDays} days` })
     }
     if (profile.profileUrl) embed.addFields({ name: 'Profile', value: profile.profileUrl })
+    setMemberAuthor(embed, member)
     embed.setFooter({ text: `ID: ${member.id}` })
 
     await postLog(client, payload, guildId, 'joinLeave', embed, cfg)
@@ -74,6 +75,7 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
     if (roles.length) {
       embed.addFields({ name: 'Roles', value: truncate(roles.join(' '), 1024) })
     }
+    if (member.user) setUserAuthor(embed, member.user)
     embed.setFooter({ text: `ID: ${member.id}` })
 
     await postLog(client, payload, guildId, 'joinLeave', embed, cfg)
@@ -118,6 +120,7 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
         roleActorId ??
         (await fetchActorId(newM.guild, added.length || removed.length ? AuditLogEvent.MemberRoleUpdate : AuditLogEvent.MemberUpdate, newM.id))
       addActorField(embed, actorId)
+      setMemberAuthor(embed, newM)
       embed.setFooter({ text: `ID: ${newM.id}` })
       await postLog(client, payload, guildId, 'member', embed, cfg)
     }
@@ -135,6 +138,7 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
           embed.addFields({ name: 'Until', value: `<t:${Math.floor(newTimeout / 1000)}:F>` })
         }
         addActorField(embed, await fetchActorId(newM.guild, AuditLogEvent.MemberUpdate, newM.id))
+        setMemberAuthor(embed, newM)
         embed.setFooter({ text: `ID: ${newM.id}` })
         await postLog(client, payload, guildId, 'member', embed, cfg)
       }
@@ -146,6 +150,7 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
           .setTitle(newM.avatar ? 'Server avatar changed' : 'Server avatar removed')
           .setDescription(`${userMention(newM.id)} (${newM.user.tag})`)
           .setThumbnail(newM.displayAvatarURL({ size: 256 }))
+        setMemberAuthor(embed, newM)
         embed.setFooter({ text: `ID: ${newM.id}` })
         await postLog(client, payload, guildId, 'profile', embed, cfg)
       }

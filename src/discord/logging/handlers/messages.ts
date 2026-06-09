@@ -4,6 +4,7 @@ import { postLog } from '../sink'
 import { userMention } from '../identity'
 import { truncate } from '../diff'
 import { attachmentMetadata } from '../attachments'
+import { setUserAuthor } from '../attribution'
 
 function guildIdOf(msg: Message | PartialMessage): string | null {
   return msg.guild?.id ?? null
@@ -21,7 +22,8 @@ export function attachMessageHandlers(client: Client, payload: Payload): void {
       .setColor(0xf1c40f)
       .setTitle('Message edited')
       .setDescription(`${userMention(newMsg.author?.id ?? '0')} in <#${newMsg.channelId}> - [Jump to message](${jumpUrl})`)
-      .addFields(
+    if (newMsg.author) setUserAuthor(embed, newMsg.author)
+    embed.addFields(
         { name: 'Before', value: before === null ? '_not cached_' : truncate(before || '_empty_', 1000) },
         { name: 'After', value: truncate(after || '_empty_', 1000) },
       )
@@ -37,6 +39,7 @@ export function attachMessageHandlers(client: Client, payload: Payload): void {
       .setTitle('Message deleted')
       .setDescription(`${msg.author ? userMention(msg.author.id) : 'Unknown author'} in <#${msg.channelId}>`)
       .addFields({ name: 'Content', value: content === null ? '_not cached_' : truncate(content || '_empty_', 1000) })
+    if (msg.author) setUserAuthor(embed, msg.author)
     if (!msg.partial && msg.attachments?.size) {
       const metas = attachmentMetadata([...msg.attachments.values()] as any)
       embed.addFields({

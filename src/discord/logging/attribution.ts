@@ -1,5 +1,26 @@
-import { AuditLogEvent, type Guild, type EmbedBuilder } from 'discord.js'
+import { AuditLogEvent, type Client, type Guild, type GuildMember, type User, type EmbedBuilder } from 'discord.js'
 import { userMention } from './identity'
+
+/** Discord deep-link that opens a user's profile - makes the embed author clickable. */
+function profileUrl(id: string): string {
+  return `https://discord.com/users/${id}`
+}
+
+/** Put a user's avatar + clickable name at the top of the embed (carlbot-style, but linked). */
+export function setUserAuthor(embed: EmbedBuilder, user: User): void {
+  embed.setAuthor({ name: user.tag, iconURL: user.displayAvatarURL({ size: 128 }), url: profileUrl(user.id) })
+}
+
+export function setMemberAuthor(embed: EmbedBuilder, member: GuildMember): void {
+  embed.setAuthor({ name: member.user.tag, iconURL: member.displayAvatarURL({ size: 128 }), url: profileUrl(member.id) })
+}
+
+/** Resolve an actor id to a user and set them as the embed author. No-op if unresolved. */
+export async function setActorAuthor(client: Client, embed: EmbedBuilder, actorId: string | null): Promise<void> {
+  if (!actorId) return
+  const user = await client.users.fetch(actorId).catch(() => null)
+  if (user) setUserAuthor(embed, user)
+}
 
 /**
  * Best-effort lookup of WHO performed an action, via the guild audit log. Returns the
