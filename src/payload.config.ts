@@ -390,7 +390,11 @@ const config = buildConfig({
           setupLogging(client, payload)
 
           const { primeInviteCache } = await import('./discord/logging/invites')
-          if (client.isReady()) await primeInviteCache(client)
+          const { postHeartbeat } = await import('./discord/logging/heartbeat')
+          if (client.isReady()) {
+            await primeInviteCache(client)
+            await postHeartbeat(client, payload, Date.now())
+          }
 
           startThreadKeepAlive()
           startTwitchLiveRoster()

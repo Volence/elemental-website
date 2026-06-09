@@ -25,6 +25,9 @@ export function setupLogging(client: Client, payload: Payload, now: () => number
     const changes: string[] = []
     if (oldU.username !== newU.username) changes.push(`Username: ${oldU.username} -> ${newU.username}`)
     if (oldU.globalName !== newU.globalName) changes.push(`Display name: ${oldU.globalName ?? '_none_'} -> ${newU.globalName ?? '_none_'}`)
+    // Best-effort: only guilds where the member is cached are covered. The member cache is
+    // capped/swept, so profile changes for less-active members in large guilds may be missed.
+    // Fetching every guild's member on every UserUpdate would be too expensive.
     for (const guild of client.guilds.cache.values()) {
       if (!guild.members.cache.has(newU.id)) continue
       const embed = new EmbedBuilder().setColor(0x9b59b6).setTitle('Profile changed').setDescription(`${userMention(newU.id)}`).addFields({ name: 'Changes', value: changes.join('\n') })

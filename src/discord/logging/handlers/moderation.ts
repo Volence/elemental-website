@@ -2,6 +2,7 @@ import { EmbedBuilder, Events, AuditLogEvent, type Client } from 'discord.js'
 import type { Payload } from 'payload'
 import { postLog } from '../sink'
 import { userMention } from '../identity'
+import { truncate } from '../diff'
 
 export function attachModerationHandlers(client: Client, payload: Payload): void {
   client.on(Events.GuildBanAdd, async (ban) => {
@@ -9,7 +10,7 @@ export function attachModerationHandlers(client: Client, payload: Payload): void
       .setColor(0xc0392b)
       .setTitle('Member banned')
       .setDescription(`${userMention(ban.user.id)} (${ban.user.tag})`)
-      .addFields({ name: 'Reason', value: ban.reason ?? '_none provided_' })
+      .addFields({ name: 'Reason', value: truncate(ban.reason ?? '_none provided_', 1024) })
     await postLog(client, payload, ban.guild.id, 'member', embed)
   })
 
@@ -26,7 +27,7 @@ export function attachModerationHandlers(client: Client, payload: Payload): void
       .setColor(0x7f8c8d)
       .setTitle(`Audit: ${action}`)
       .setDescription(`By ${actor}${entry.targetId ? ` on target \`${entry.targetId}\`` : ''}`)
-    if (entry.reason) embed.addFields({ name: 'Reason', value: entry.reason })
+    if (entry.reason) embed.addFields({ name: 'Reason', value: truncate(entry.reason, 1024) })
     await postLog(client, payload, guild.id, 'server', embed)
   })
 }

@@ -2,7 +2,7 @@ import { EmbedBuilder, Events, type Client } from 'discord.js'
 import type { Payload } from 'payload'
 import { postLog } from '../sink'
 import { userMention, accountAgeDays, isNewAccount } from '../identity'
-import { diffRoles, diffNickname } from '../diff'
+import { diffRoles, diffNickname, truncate } from '../diff'
 import { loadLoggingConfig } from '../config'
 import { resolveProfile } from '../nameResolver'
 import { recordMemberEvent, getRejoinSummary } from '../memberEvents'
@@ -60,6 +60,10 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
     const cfg = await loadLoggingConfig(payload, guildId)
     if (!cfg) return
 
+    // A partial oldMember has an incomplete role/nick cache; diffing it would falsely
+    // report every current role as "added". Skip when we can't trust the prior state.
+    if (oldM.partial) return
+
     // Roles + nickname -> member-log
     const roleDiff = diffRoles([...oldM.roles.cache.keys()], [...newM.roles.cache.keys()])
     const nickDiff = diffNickname(oldM.nickname ?? null, newM.nickname ?? null)
@@ -68,8 +72,8 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
         .setColor(0x3498db)
         .setTitle('Member updated')
         .setDescription(`${userMention(newM.id)} (${newM.user.tag})`)
-      if (roleDiff.added.length) embed.addFields({ name: 'Roles added', value: roleDiff.added.map((r) => `<@&${r}>`).join(' ') })
-      if (roleDiff.removed.length) embed.addFields({ name: 'Roles removed', value: roleDiff.removed.map((r) => `<@&${r}>`).join(' ') })
+      if (roleDiff.added.length) embed.addFields({ name: 'Roles added', value: truncate(roleDiff.added.map((r) => `<@&${r}>`).join(' '), 1024) })
+      if (roleDiff.removed.length) embed.addFields({ name: 'Roles removed', value: truncate(roleDiff.removed.map((r) => `<@&${r}>`).join(' '), 1024) })
       if (nickDiff.changed) embed.addFields({ name: 'Nickname', value: `${nickDiff.from ?? '_none_'} -> ${nickDiff.to ?? '_none_'}` })
       await postLog(client, payload, guildId, 'member', embed, cfg)
     }
