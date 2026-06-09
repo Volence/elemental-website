@@ -221,6 +221,9 @@
   // Tabs — Unified underline pattern
   &__tabs {
     @include dashboard-tabs($admin-accent-primary);
+    // Many tabs now - wrap to multiple rows so none get clipped off the right edge
+    flex-wrap: wrap;
+    overflow-x: visible;
   }
 
   &__tab {
