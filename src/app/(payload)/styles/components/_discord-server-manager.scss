@@ -4295,17 +4295,49 @@
     margin-bottom: $spacing-lg;
 
     input[type='checkbox'] {
-      // Payload's global input styles strip checkbox appearance and the flex row
-      // shrinks it to a sliver - restore native rendering and pin the size.
-      appearance: auto;
-      -webkit-appearance: checkbox;
+      // Custom box-shaped checkbox in the admin's green style. appearance:none plus a
+      // pinned size (flex:0 0 auto + fixed w/h) avoids both the native look and the
+      // sliver-shaped collapse from Payload's global input styles.
+      appearance: none;
+      -webkit-appearance: none;
       flex: 0 0 auto;
-      width: 16px;
-      height: 16px;
-      min-width: 16px;
+      width: 18px;
+      height: 18px;
+      min-width: 18px;
       margin: 0;
-      accent-color: $admin-accent-primary;
+      padding: 0;
+      position: relative;
+      border: 1px solid rgba($admin-accent-success, 0.5);
+      border-radius: $radius-sm;
+      background: rgba($admin-bg-base, 0.8);
       cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease;
+
+      &:hover {
+        border-color: $admin-accent-success;
+      }
+
+      &:checked {
+        background: $admin-accent-success;
+        border-color: $admin-accent-success;
+
+        &::after {
+          content: '';
+          position: absolute;
+          left: 5px;
+          top: 1px;
+          width: 5px;
+          height: 9px;
+          border: solid #fff;
+          border-width: 0 2px 2px 0;
+          transform: rotate(45deg);
+        }
+      }
+
+      &:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba($admin-accent-success, 0.3);
+      }
     }
   }
 
