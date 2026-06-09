@@ -30,6 +30,7 @@ import * as migration_20260601_link_orphan_scrim_stats_to_people from "./2026060
 import * as migration_20260605_add_pug_season_bot_enabled from "./20260605_add_pug_season_bot_enabled";
 import * as migration_20260608_add_discord_clone_jobs from "./20260608_add_discord_clone_jobs";
 import * as migration_20260609_add_discord_servers from "./20260609_add_discord_servers";
+import * as migration_20260610_add_logging_settings from "./20260610_add_logging_settings";
 
 export const migrations = [
   {
@@ -191,5 +192,10 @@ export const migrations = [
     up: migration_20260609_add_discord_servers.up,
     down: migration_20260609_add_discord_servers.down,
     name: "20260609_add_discord_servers",
+  },
+  {
+    up: migration_20260610_add_logging_settings.up,
+    down: migration_20260610_add_logging_settings.down,
+    name: "20260610_add_logging_settings",
   },
 ];
