@@ -1,9 +1,12 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
-interface ChannelOption { id: string; name: string }
+interface RawChannel { id: string; name: string; type: number }
 interface Props { serverId: string | null }
+
+// Channel types that can actually receive a posted log embed.
+const TEXT_TYPES = new Set([0, 5]) // GUILD_TEXT, GUILD_ANNOUNCEMENT
 
 const CATEGORIES: Array<{ key: string; label: string }> = [
   { key: 'messageLogChannelId', label: 'Message log' },
@@ -14,29 +17,32 @@ const CATEGORIES: Array<{ key: string; label: string }> = [
 ]
 
 export default function LoggingTab({ serverId }: Props) {
-  const [channels, setChannels] = useState<ChannelOption[]>([])
+  const [allChannels, setAllChannels] = useState<RawChannel[]>([])
+  const [channelsLoaded, setChannelsLoaded] = useState(false)
   const [settings, setSettings] = useState<Record<string, any>>({})
   const [status, setStatus] = useState<string>('')
 
   useEffect(() => {
+    setChannelsLoaded(false)
     const q = serverId ? `?serverId=${serverId}` : ''
     fetch(`/api/discord/server/structure${q}`)
       .then((r) => r.json())
       .then((d) => {
-        // Only text/announcement channels can receive log embeds. Forums (15), voice (2),
-        // categories (4), stages (13), etc. can't be posted to, so don't offer them.
-        const TEXT_TYPES = new Set([0, 5])
-        const flat: ChannelOption[] = []
-        for (const cat of d.categories ?? []) for (const ch of cat.channels ?? []) if (TEXT_TYPES.has(ch.type)) flat.push({ id: ch.id, name: ch.name })
-        for (const ch of d.uncategorized ?? []) if (TEXT_TYPES.has(ch.type)) flat.push({ id: ch.id, name: ch.name })
-        setChannels(flat)
+        const flat: RawChannel[] = []
+        for (const cat of d.categories ?? []) for (const ch of cat.channels ?? []) flat.push({ id: ch.id, name: ch.name, type: ch.type })
+        for (const ch of d.uncategorized ?? []) flat.push({ id: ch.id, name: ch.name, type: ch.type })
+        setAllChannels(flat)
       })
-      .catch(() => setChannels([]))
+      .catch(() => setAllChannels([]))
+      .finally(() => setChannelsLoaded(true))
     fetch(`/api/discord/server/logging-settings${q}`)
       .then((r) => r.json())
       .then((d) => setSettings(d.settings ?? {}))
       .catch(() => setSettings({}))
   }, [serverId])
+
+  const textChannels = useMemo(() => allChannels.filter((c) => TEXT_TYPES.has(c.type)), [allChannels])
+  const byId = useMemo(() => new Map(allChannels.map((c) => [c.id, c])), [allChannels])
 
   const update = (k: string, v: any) => setSettings((s) => ({ ...s, [k]: v }))
 
@@ -67,23 +73,41 @@ export default function LoggingTab({ serverId }: Props) {
       </label>
 
       <div className="logging-tab__grid">
-        {CATEGORIES.map(({ key, label }) => (
-          <div key={key} className="logging-tab__field">
-            <label>{label}</label>
-            <select
-              className="logging-tab__select"
-              value={settings[key] ?? ''}
-              onChange={(e) => update(key, e.target.value || null)}
-            >
-              <option value="">- not logged -</option>
-              {channels.map((c) => (
-                <option key={c.id} value={c.id}>
-                  #{c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        ))}
+        {CATEGORIES.map(({ key, label }) => {
+          const current = settings[key] ? String(settings[key]) : ''
+          // If the saved channel isn't a selectable text channel (e.g. an older forum/voice
+          // pick, or a deleted channel), still show it - marked - so it never silently vanishes.
+          const savedInList = current && textChannels.some((c) => c.id === current)
+          const savedMeta = current ? byId.get(current) : undefined
+          return (
+            <div key={key} className="logging-tab__field">
+              <label>{label}</label>
+              {!channelsLoaded ? (
+                <select className="logging-tab__select" disabled value="">
+                  <option>Loading channels…</option>
+                </select>
+              ) : (
+                <select
+                  className="logging-tab__select"
+                  value={current}
+                  onChange={(e) => update(key, e.target.value || null)}
+                >
+                  <option value="">- not logged -</option>
+                  {current && !savedInList && (
+                    <option value={current}>
+                      {savedMeta ? `#${savedMeta.name} (not a text channel - change it)` : `current selection ${current} (unavailable)`}
+                    </option>
+                  )}
+                  {textChannels.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      #{c.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          )
+        })}
 
         <div className="logging-tab__field">
           <label>Flag accounts newer than (days)</label>
