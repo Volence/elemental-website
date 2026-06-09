@@ -260,7 +260,7 @@ export async function registerCommandsForGuild(
   }
 }
 
-export async function registerCommands(): Promise<void> {
+export async function registerCommands(payloadArg?: any): Promise<void> {
   const token = process.env.DISCORD_BOT_TOKEN
   const clientId = process.env.DISCORD_CLIENT_ID
   const primaryGuildId = process.env.DISCORD_GUILD_ID
@@ -278,7 +278,7 @@ export async function registerCommands(): Promise<void> {
   // Region servers: the region set, each guild isolated so one failure (e.g. a guild
   // missing the applications.commands scope) does not block the others.
   try {
-    const payload = await getPayload({ config: configPromise })
+    const payload = payloadArg ?? (await getPayload({ config: configPromise }))
     const { docs } = await payload.find({
       collection: 'discord-servers',
       where: { active: { equals: true }, isPrimary: { equals: false } },
