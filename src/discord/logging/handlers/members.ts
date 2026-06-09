@@ -1,13 +1,14 @@
 import { EmbedBuilder, Events, AuditLogEvent, type Client } from 'discord.js'
 import type { Payload } from 'payload'
 import { postLog } from '../sink'
-import { userMention, accountAgeDays, isNewAccount } from '../identity'
+import { userMention, accountCreatedAtMs, isNewAccount } from '../identity'
 import { diffRoles, diffNickname, truncate } from '../diff'
+import { ordinal, humanizeDuration } from '../format'
 import { loadLoggingConfig } from '../config'
 import { resolveProfile } from '../nameResolver'
 import { recordMemberEvent, getRejoinSummary } from '../memberEvents'
 import { resolveJoinInvite } from '../invites'
-import { fetchActorId, addActorField } from '../attribution'
+import { fetchActorId, fetchAuditEntry, addActorField } from '../attribution'
 
 export function attachMemberHandlers(client: Client, payload: Payload, now: () => number): void {
   client.on(Events.GuildMemberAdd, async (member) => {
@@ -22,9 +23,9 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
     const embed = new EmbedBuilder()
       .setColor(0x2ecc71)
       .setTitle('Member joined')
-      .setDescription(`${userMention(member.id)} (${member.user.tag})`)
+      .setDescription(`${userMention(member.id)} (${member.user.tag}) - ${ordinal(member.guild.memberCount)} to join`)
       .addFields(
-        { name: 'Account age', value: `${accountAgeDays(member.id, nowMs)} days`, inline: true },
+        { name: 'Account age', value: humanizeDuration(accountCreatedAtMs(member.id), nowMs), inline: true },
         {
           name: 'History',
           value: summary.isRejoin
@@ -38,6 +39,7 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
       embed.addFields({ name: '⚠️ New account', value: `Younger than ${cfg.newAccountFlagDays} days` })
     }
     if (profile.profileUrl) embed.addFields({ name: 'Profile', value: profile.profileUrl })
+    embed.setFooter({ text: `ID: ${member.id}` })
 
     await postLog(client, payload, guildId, 'joinLeave', embed, cfg)
     await recordMemberEvent(payload, guildId, member.id, 'join', new Date(nowMs).toISOString())
@@ -48,10 +50,32 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
     const cfg = await loadLoggingConfig(payload, guildId)
     if (!cfg) return
     const nowMs = now()
+
+    // A voluntary leave has no MemberKick audit entry; a kick does.
+    const kick = await fetchAuditEntry(member.guild, AuditLogEvent.MemberKick, member.id)
+    const roles = member.roles?.cache
+      ? [...member.roles.cache.values()].filter((r) => r.id !== guildId).map((r) => `<@&${r.id}>`)
+      : []
+    const joinedMs = member.joinedTimestamp ?? null
+
     const embed = new EmbedBuilder()
-      .setColor(0x95a5a6)
-      .setTitle('Member left')
-      .setDescription(`${userMention(member.id)} (${member.user?.tag ?? 'unknown'})`)
+      .setColor(kick ? 0xe67e22 : 0x95a5a6)
+      .setTitle(kick ? 'Member kicked' : 'Member left')
+      .setDescription(
+        `${userMention(member.id)} (${member.user?.tag ?? 'unknown'})` +
+          (joinedMs ? ` - was in the server ${humanizeDuration(joinedMs, nowMs)}` : ''),
+      )
+    if (kick) {
+      embed.addFields({
+        name: 'Kicked by',
+        value: `${kick.executorId ? userMention(kick.executorId) : 'unknown'}${kick.reason ? ` - ${truncate(kick.reason, 900)}` : ''}`,
+      })
+    }
+    if (roles.length) {
+      embed.addFields({ name: 'Roles', value: truncate(roles.join(' '), 1024) })
+    }
+    embed.setFooter({ text: `ID: ${member.id}` })
+
     await postLog(client, payload, guildId, 'joinLeave', embed, cfg)
     await recordMemberEvent(payload, guildId, member.id, 'leave', new Date(nowMs).toISOString())
   })

@@ -23,6 +23,8 @@ export async function postLog(
     if (!channelId) return
     const channel = await client.channels.fetch(channelId).catch(() => null)
     if (channel && channel.isTextBased() && 'send' in channel) {
+      // Stamp every log with the event time (Discord renders this localized per viewer).
+      embed.setTimestamp(new Date())
       await (channel as any).send({ embeds: [embed] })
     }
   } catch (error: any) {

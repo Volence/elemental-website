@@ -26,6 +26,7 @@ export async function postHeartbeat(client: Client, payload: Payload, nowMs: num
           ? `Logging resumed after ${downtime}s offline. Events during that window were not captured.`
           : 'Logging started.',
       )
+      .setTimestamp(new Date())
     const channel = await client.channels.fetch(channelId).catch(() => null)
     if (channel && channel.isTextBased() && 'send' in channel) {
       await (channel as any).send({ embeds: [embed] }).catch(() => {})
