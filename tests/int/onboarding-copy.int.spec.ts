@@ -29,6 +29,26 @@ const source: SourceOnboarding = {
           roleNames: ['Member'],
           channelNames: ['ghost-channel'],
         },
+        {
+          // every ref absent on target -> this option must be DROPPED
+          title: 'Empty',
+          description: null,
+          emojiName: null,
+          emojiId: null,
+          roleNames: ['Nonexistent'],
+          channelNames: ['nope-channel'],
+        },
+      ],
+    },
+    {
+      // all of this prompt's options lose their refs -> the whole prompt must be DROPPED
+      title: 'All Empty',
+      singleSelect: false,
+      required: false,
+      inOnboarding: true,
+      type: 0,
+      options: [
+        { title: 'X', description: null, emojiName: null, emojiId: null, roleNames: ['Nope'], channelNames: ['Nope'] },
       ],
     },
   ],
@@ -53,8 +73,7 @@ describe('remapOnboarding', () => {
   })
 
   it('remaps roles by name and drops names absent on target', () => {
-    const opt = out.prompts[0].options[0]
-    expect(opt.roles).toEqual(['r-sa']) // "Missing Role" dropped
+    expect(out.prompts[0].options[0].roles).toEqual(['r-sa']) // "Missing Role" dropped
   })
 
   it('remaps channels by name and drops absent ones (option + default)', () => {
@@ -65,10 +84,16 @@ describe('remapOnboarding', () => {
 
   it('passes a unicode emoji through and drops a custom emoji absent on target', () => {
     expect(out.prompts[0].options[0].emoji).toBe('🌎')
-    expect(out.prompts[0].options[1].emoji).toBeUndefined() // custom 'pog' not on target
+    expect(out.prompts[0].options[1].emoji).toBeUndefined() // custom 'pog' not on target, but option kept (has a role)
   })
 
-  it('keeps an option even if all its refs were dropped (still has a title)', () => {
-    expect(out.prompts[0].options[1].title).toBe('Brand')
+  it('drops an option whose roles AND channels were all dropped', () => {
+    const titles = out.prompts[0].options.map((o) => o.title)
+    expect(titles).toEqual(['SA', 'Brand']) // 'Empty' removed
+  })
+
+  it('drops a prompt whose options all became empty', () => {
+    const promptTitles = out.prompts.map((p) => p.title)
+    expect(promptTitles).toEqual(['Pick your region']) // 'All Empty' removed
   })
 })

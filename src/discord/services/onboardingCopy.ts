@@ -91,8 +91,14 @@ export function remapOnboarding(
           channels: mapNames(o.channelNames, channelNameToId),
           ...(emoji !== undefined ? { emoji } : {}),
         }
-      }),
-    })),
+      })
+        // Discord rejects an onboarding option with no roles AND no channels
+        // (ROLE_OR_CHANNEL_REQUIRED). After remapping, an option whose every ref was
+        // dropped (the source role/channel does not exist on the target) is removed.
+        .filter((o) => o.roles.length > 0 || o.channels.length > 0),
+    }))
+      // A prompt with no remaining options is invalid, so drop it too.
+      .filter((p) => p.options.length > 0),
   }
 }
 
