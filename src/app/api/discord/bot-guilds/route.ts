@@ -32,7 +32,11 @@ export async function GET() {
         active: reg ? !!reg.active : null,
       }
     })
-    return NextResponse.json({ success: true, guilds })
+    const clientId = process.env.DISCORD_CLIENT_ID
+    const inviteUrl = clientId
+      ? `https://discord.com/api/oauth2/authorize?client_id=${clientId}&scope=bot%20applications.commands&permissions=8`
+      : null
+    return NextResponse.json({ success: true, guilds, inviteUrl })
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message || 'Failed to list bot guilds' }, { status: 500 })
   }

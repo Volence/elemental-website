@@ -381,7 +381,7 @@ const config = buildConfig({
         const client = await ensureDiscordClient()
 
         if (client) {
-          await registerCommands()
+          await registerCommands(payload)
           setupInteractionHandlers()
           startThreadKeepAlive()
           startTwitchLiveRoster()

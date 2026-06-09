@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authenticateRequest, requireAdmin } from '@/utilities/apiAuth'
 import { ensureDiscordClient } from '@/discord/bot'
+import { registerCommandsForGuild } from '@/discord/commands/register'
 
 /** POST /api/discord/servers/register — upsert a registry row for a guild the bot is in. */
 export async function POST(request: NextRequest) {
@@ -44,7 +45,12 @@ export async function POST(request: NextRequest) {
         data: { label, guildId, region: region ?? null, isPrimary: false, active: true },
       })
     }
-    return NextResponse.json({ success: true, server: { id: doc.id, label: doc.label, guildId: doc.guildId } })
+    const commandStatus = await registerCommandsForGuild(guildId, 'region')
+    return NextResponse.json({
+      success: true,
+      server: { id: doc.id, label: doc.label, guildId: doc.guildId },
+      commandStatus,
+    })
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message || 'Failed to register server' }, { status: 500 })
   }
