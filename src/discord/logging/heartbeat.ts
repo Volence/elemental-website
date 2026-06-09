@@ -2,6 +2,7 @@ import { EmbedBuilder, type Client } from 'discord.js'
 import type { Payload } from 'payload'
 import { loadLoggingConfig } from './config'
 import { resolveLogChannelId } from './channels'
+import { Colors } from './colors'
 
 let lastDisconnectAtMs: number | null = null
 
@@ -19,7 +20,7 @@ export async function postHeartbeat(client: Client, payload: Payload, nowMs: num
     const channelId = resolveLogChannelId(cfg, 'server')
     if (!channelId) continue
     const embed = new EmbedBuilder()
-      .setColor(0x2ecc71)
+      .setColor(Colors.create)
       .setTitle('Logging online')
       .setDescription(
         downtime !== null

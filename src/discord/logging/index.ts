@@ -6,6 +6,8 @@ import { attachStructureHandlers } from './handlers/structure'
 import { attachModerationHandlers } from './handlers/moderation'
 import { postLog } from './sink'
 import { userMention } from './identity'
+import { setUserAuthor } from './attribution'
+import { Colors } from './colors'
 import { primeInviteCache, refreshInviteCache } from './invites'
 import { postHeartbeat, markDisconnected } from './heartbeat'
 
@@ -30,7 +32,13 @@ export function setupLogging(client: Client, payload: Payload, now: () => number
     // Fetching every guild's member on every UserUpdate would be too expensive.
     for (const guild of client.guilds.cache.values()) {
       if (!guild.members.cache.has(newU.id)) continue
-      const embed = new EmbedBuilder().setColor(0x9b59b6).setTitle('Profile changed').setDescription(`${userMention(newU.id)}`).addFields({ name: 'Changes', value: changes.join('\n') })
+      const embed = new EmbedBuilder()
+        .setColor(Colors.profile)
+        .setTitle('Profile changed')
+        .setDescription(`${userMention(newU.id)} (${newU.tag})`)
+        .addFields({ name: 'Changes', value: changes.join('\n') })
+        .setFooter({ text: `ID: ${newU.id}` })
+      setUserAuthor(embed, newU)
       await postLog(client, payload, guild.id, 'profile', embed)
     }
   })

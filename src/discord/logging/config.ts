@@ -1,15 +1,9 @@
 import type { Payload } from 'payload'
 import type { LoggingConfig } from './channels'
 
-/**
- * No-op retained so callers (the settings route) don't break. Config is read fresh from the
- * DB on every event now - there is no in-process cache to invalidate. A cache here caused
- * stale config after a save because the route and the long-running bot don't reliably share
- * the same in-memory state.
- */
-export function clearLoggingConfigCache(_guildId?: string): void {
-  // intentionally empty
-}
+// Config is read fresh from the DB on every event (no in-process cache): a cache here caused
+// stale config after a save, because the settings route and the long-running bot don't
+// reliably share in-memory state.
 
 /** Load logging config for a guild from the discord-servers registry. Returns null if not found. */
 export async function loadLoggingConfig(payload: Payload, guildId: string): Promise<LoggingConfig | null> {

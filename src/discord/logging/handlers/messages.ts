@@ -5,9 +5,15 @@ import { userMention } from '../identity'
 import { truncate } from '../diff'
 import { attachmentMetadata } from '../attachments'
 import { setUserAuthor } from '../attribution'
+import { Colors } from '../colors'
 
 function guildIdOf(msg: Message | PartialMessage): string | null {
   return msg.guild?.id ?? null
+}
+
+/** Who the message is from, for the description line. Avoids a broken `<@0>` when unresolved. */
+function authorLabel(msg: Message | PartialMessage): string {
+  return msg.author ? userMention(msg.author.id) : 'Unknown author'
 }
 
 export function attachMessageHandlers(client: Client, payload: Payload): void {
@@ -19,14 +25,15 @@ export function attachMessageHandlers(client: Client, payload: Payload): void {
     if (before === after) return
     const jumpUrl = `https://discord.com/channels/${guildId}/${newMsg.channelId}/${newMsg.id}`
     const embed = new EmbedBuilder()
-      .setColor(0xf1c40f)
+      .setColor(Colors.update)
       .setTitle('Message edited')
-      .setDescription(`${userMention(newMsg.author?.id ?? '0')} in <#${newMsg.channelId}> - [Jump to message](${jumpUrl})`)
+      .setDescription(`${authorLabel(newMsg)} in <#${newMsg.channelId}> - [Jump to message](${jumpUrl})`)
+      .setFooter({ text: `ID: ${newMsg.id}` })
     if (newMsg.author) setUserAuthor(embed, newMsg.author)
     embed.addFields(
-        { name: 'Before', value: before === null ? '_not cached_' : truncate(before || '_empty_', 1000) },
-        { name: 'After', value: truncate(after || '_empty_', 1000) },
-      )
+      { name: 'Before', value: before === null ? '_not cached_' : truncate(before || '_empty_', 1000) },
+      { name: 'After', value: truncate(after || '_empty_', 1000) },
+    )
     await postLog(client, payload, guildId, 'message', embed)
   })
 
@@ -35,10 +42,11 @@ export function attachMessageHandlers(client: Client, payload: Payload): void {
     if (!guildId || msg.author?.bot) return
     const content = msg.partial ? null : msg.content
     const embed = new EmbedBuilder()
-      .setColor(0xe74c3c)
+      .setColor(Colors.delete)
       .setTitle('Message deleted')
-      .setDescription(`${msg.author ? userMention(msg.author.id) : 'Unknown author'} in <#${msg.channelId}>`)
+      .setDescription(`${authorLabel(msg)} in <#${msg.channelId}>`)
       .addFields({ name: 'Content', value: content === null ? '_not cached_' : truncate(content || '_empty_', 1000) })
+      .setFooter({ text: `ID: ${msg.id}` })
     if (msg.author) setUserAuthor(embed, msg.author)
     if (!msg.partial && msg.attachments?.size) {
       const metas = attachmentMetadata([...msg.attachments.values()] as any)
@@ -55,9 +63,10 @@ export function attachMessageHandlers(client: Client, payload: Payload): void {
     const guildId = first?.guild?.id ?? null
     if (!guildId) return
     const embed = new EmbedBuilder()
-      .setColor(0xe74c3c)
+      .setColor(Colors.delete)
       .setTitle('Bulk message delete (purge)')
       .setDescription(`${messages.size} messages deleted in <#${first?.channelId}>`)
+      .setFooter({ text: `Channel ID: ${first?.channelId ?? 'unknown'}` })
     await postLog(client, payload, guildId, 'message', embed)
   })
 }

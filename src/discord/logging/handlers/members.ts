@@ -9,6 +9,7 @@ import { resolveProfile } from '../nameResolver'
 import { recordMemberEvent, getRejoinSummary } from '../memberEvents'
 import { resolveJoinInvite } from '../invites'
 import { fetchActorId, fetchAuditEntry, fetchRoleChange, setActorAuthorOrUser, setMemberAuthor, setUserAuthor } from '../attribution'
+import { Colors } from '../colors'
 
 export function attachMemberHandlers(client: Client, payload: Payload, now: () => number): void {
   client.on(Events.GuildMemberAdd, async (member) => {
@@ -21,7 +22,7 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
     const profile = cfg.attachProfileLink ? await resolveProfile(payload, member.id) : { profileUrl: null }
 
     const embed = new EmbedBuilder()
-      .setColor(0x2ecc71)
+      .setColor(Colors.create)
       .setTitle('Member joined')
       .setDescription(`${userMention(member.id)} (${member.user.tag}) - ${ordinal(member.guild.memberCount)} to join`)
       .addFields(
@@ -54,13 +55,14 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
 
     // A voluntary leave has no MemberKick audit entry; a kick does.
     const kick = await fetchAuditEntry(member.guild, AuditLogEvent.MemberKick, member.id)
+    // The @everyone role's id equals the guild id - drop it so we only list real roles.
     const roles = member.roles?.cache
       ? [...member.roles.cache.values()].filter((r) => r.id !== guildId).map((r) => `<@&${r.id}>`)
       : []
     const joinedMs = member.joinedTimestamp ?? null
 
     const embed = new EmbedBuilder()
-      .setColor(kick ? 0xe67e22 : 0x95a5a6)
+      .setColor(kick ? Colors.punitive : Colors.neutral)
       .setTitle(kick ? 'Member kicked' : 'Member left')
       .setDescription(
         `${userMention(member.id)} (${member.user?.tag ?? 'unknown'})` +
@@ -110,7 +112,7 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
 
     if (added.length || removed.length || nickDiff.changed) {
       const embed = new EmbedBuilder()
-        .setColor(0x3498db)
+        .setColor(Colors.memberUpdate)
         .setTitle('Member updated')
         .setDescription(`${userMention(newM.id)} (${newM.user.tag})`)
       if (added.length) embed.addFields({ name: 'Roles added', value: truncate(added.map((r) => `<@&${r}>`).join(' '), 1024) })
@@ -131,11 +133,11 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
       const newTimeout = newM.communicationDisabledUntilTimestamp ?? null
       if (oldTimeout !== newTimeout) {
         const embed = new EmbedBuilder()
-          .setColor(0xe67e22)
+          .setColor(Colors.punitive)
           .setTitle(newTimeout ? 'Member timed out' : 'Member timeout removed')
           .setDescription(`${userMention(newM.id)} (${newM.user.tag})`)
         if (newTimeout) {
-          embed.addFields({ name: 'Until', value: `<t:${Math.floor(newTimeout / 1000)}:F>` })
+          embed.addFields({ name: 'Until', value: discordTimestamp(newTimeout, 'F') })
         }
         embed.setThumbnail(newM.displayAvatarURL({ size: 256 }))
         await setActorAuthorOrUser(client, embed, await fetchActorId(newM.guild, AuditLogEvent.MemberUpdate, newM.id), newM.user)
@@ -146,7 +148,7 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
       // Per-guild avatar change -> profile-log (show the new avatar as a thumbnail)
       if (oldM.avatar !== newM.avatar) {
         const embed = new EmbedBuilder()
-          .setColor(0x9b59b6)
+          .setColor(Colors.profile)
           .setTitle(newM.avatar ? 'Server avatar changed' : 'Server avatar removed')
           .setDescription(`${userMention(newM.id)} (${newM.user.tag})`)
           .setThumbnail(newM.displayAvatarURL({ size: 256 }))

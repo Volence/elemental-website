@@ -3,7 +3,6 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { authenticateRequest, requireAdmin } from '@/utilities/apiAuth'
 import { resolveGuildId, ServerResolutionError } from '@/discord/serverRegistry'
-import { clearLoggingConfigCache } from '@/discord/logging/config'
 
 const FIELDS = [
   'enableLogging', 'messageLogChannelId', 'joinLeaveLogChannelId', 'memberLogChannelId',
@@ -43,12 +42,11 @@ export async function POST(request: NextRequest) {
   const body = await request.json()
   const serverId = body.serverId ?? null
   try {
-    const { payload, guildId, row } = await rowFor(serverId)
+    const { payload, row } = await rowFor(serverId)
     if (!row) return NextResponse.json({ error: 'Server not found' }, { status: 404 })
     const data: Record<string, unknown> = {}
     for (const f of FIELDS) if (f in body) data[f] = body[f]
     await payload.update({ collection: 'discord-servers' as any, id: row.id, data })
-    clearLoggingConfigCache(guildId)
     return NextResponse.json({ ok: true })
   } catch (e) {
     if (e instanceof ServerResolutionError) return NextResponse.json({ error: e.message }, { status: 400 })
