@@ -22,23 +22,25 @@ export async function setActorAuthor(client: Client, embed: EmbedBuilder, actorI
 }
 
 /**
- * Footer showing WHO did it (with their avatar) plus the subject id, for events where the
- * actor differs from the embed author. Falls back to just the id text if unresolved.
+ * Set the embed author to the ACTOR (clickable, with avatar) so "who did it" is prominent
+ * and links to their profile. Falls back to the affected member when the actor can't be
+ * resolved (e.g. a self-action or an audit miss). The footer is a Discord-imposed dead end -
+ * it can't be clickable - so the actor goes in the author slot instead.
  */
-export async function setActorFooter(
+export async function setActorAuthorOrUser(
   client: Client,
   embed: EmbedBuilder,
   actorId: string | null,
-  idText: string,
+  fallbackUser: User,
 ): Promise<void> {
   if (actorId) {
     const u = await client.users.fetch(actorId).catch(() => null)
     if (u) {
-      embed.setFooter({ text: `By ${u.tag} • ${idText}`, iconURL: u.displayAvatarURL({ size: 64 }) })
+      setUserAuthor(embed, u)
       return
     }
   }
-  embed.setFooter({ text: idText })
+  setUserAuthor(embed, fallbackUser)
 }
 
 /**

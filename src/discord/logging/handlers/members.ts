@@ -8,7 +8,7 @@ import { loadLoggingConfig } from '../config'
 import { resolveProfile } from '../nameResolver'
 import { recordMemberEvent, getRejoinSummary } from '../memberEvents'
 import { resolveJoinInvite } from '../invites'
-import { fetchActorId, fetchAuditEntry, fetchRoleChange, setActorFooter, setMemberAuthor, setUserAuthor } from '../attribution'
+import { fetchActorId, fetchAuditEntry, fetchRoleChange, setActorAuthorOrUser, setMemberAuthor, setUserAuthor } from '../attribution'
 
 export function attachMemberHandlers(client: Client, payload: Payload, now: () => number): void {
   client.on(Events.GuildMemberAdd, async (member) => {
@@ -119,8 +119,9 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
       const actorId =
         roleActorId ??
         (await fetchActorId(newM.guild, added.length || removed.length ? AuditLogEvent.MemberRoleUpdate : AuditLogEvent.MemberUpdate, newM.id))
-      setMemberAuthor(embed, newM)
-      await setActorFooter(client, embed, actorId, `ID: ${newM.id}`)
+      embed.setThumbnail(newM.displayAvatarURL({ size: 256 }))
+      await setActorAuthorOrUser(client, embed, actorId, newM.user)
+      embed.setFooter({ text: `ID: ${newM.id}` })
       await postLog(client, payload, guildId, 'member', embed, cfg)
     }
 
@@ -136,8 +137,9 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
         if (newTimeout) {
           embed.addFields({ name: 'Until', value: `<t:${Math.floor(newTimeout / 1000)}:F>` })
         }
-        setMemberAuthor(embed, newM)
-        await setActorFooter(client, embed, await fetchActorId(newM.guild, AuditLogEvent.MemberUpdate, newM.id), `ID: ${newM.id}`)
+        embed.setThumbnail(newM.displayAvatarURL({ size: 256 }))
+        await setActorAuthorOrUser(client, embed, await fetchActorId(newM.guild, AuditLogEvent.MemberUpdate, newM.id), newM.user)
+        embed.setFooter({ text: `ID: ${newM.id}` })
         await postLog(client, payload, guildId, 'member', embed, cfg)
       }
 
