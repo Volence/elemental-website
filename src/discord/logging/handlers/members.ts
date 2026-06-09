@@ -8,7 +8,7 @@ import { loadLoggingConfig } from '../config'
 import { resolveProfile } from '../nameResolver'
 import { recordMemberEvent, getRejoinSummary } from '../memberEvents'
 import { resolveJoinInvite } from '../invites'
-import { fetchActorId, fetchAuditEntry, fetchRoleChange, addActorField, setMemberAuthor, setUserAuthor } from '../attribution'
+import { fetchActorId, fetchAuditEntry, fetchRoleChange, setActorFooter, setMemberAuthor, setUserAuthor } from '../attribution'
 
 export function attachMemberHandlers(client: Client, payload: Payload, now: () => number): void {
   client.on(Events.GuildMemberAdd, async (member) => {
@@ -119,9 +119,8 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
       const actorId =
         roleActorId ??
         (await fetchActorId(newM.guild, added.length || removed.length ? AuditLogEvent.MemberRoleUpdate : AuditLogEvent.MemberUpdate, newM.id))
-      addActorField(embed, actorId)
       setMemberAuthor(embed, newM)
-      embed.setFooter({ text: `ID: ${newM.id}` })
+      await setActorFooter(client, embed, actorId, `ID: ${newM.id}`)
       await postLog(client, payload, guildId, 'member', embed, cfg)
     }
 
@@ -137,9 +136,8 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
         if (newTimeout) {
           embed.addFields({ name: 'Until', value: `<t:${Math.floor(newTimeout / 1000)}:F>` })
         }
-        addActorField(embed, await fetchActorId(newM.guild, AuditLogEvent.MemberUpdate, newM.id))
         setMemberAuthor(embed, newM)
-        embed.setFooter({ text: `ID: ${newM.id}` })
+        await setActorFooter(client, embed, await fetchActorId(newM.guild, AuditLogEvent.MemberUpdate, newM.id), `ID: ${newM.id}`)
         await postLog(client, payload, guildId, 'member', embed, cfg)
       }
 

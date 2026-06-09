@@ -1,5 +1,4 @@
 import { AuditLogEvent, type Client, type Guild, type GuildMember, type User, type EmbedBuilder } from 'discord.js'
-import { userMention } from './identity'
 
 /** Discord deep-link that opens a user's profile - makes the embed author clickable. */
 function profileUrl(id: string): string {
@@ -20,6 +19,26 @@ export async function setActorAuthor(client: Client, embed: EmbedBuilder, actorI
   if (!actorId) return
   const user = await client.users.fetch(actorId).catch(() => null)
   if (user) setUserAuthor(embed, user)
+}
+
+/**
+ * Footer showing WHO did it (with their avatar) plus the subject id, for events where the
+ * actor differs from the embed author. Falls back to just the id text if unresolved.
+ */
+export async function setActorFooter(
+  client: Client,
+  embed: EmbedBuilder,
+  actorId: string | null,
+  idText: string,
+): Promise<void> {
+  if (actorId) {
+    const u = await client.users.fetch(actorId).catch(() => null)
+    if (u) {
+      embed.setFooter({ text: `By ${u.tag} • ${idText}`, iconURL: u.displayAvatarURL({ size: 64 }) })
+      return
+    }
+  }
+  embed.setFooter({ text: idText })
 }
 
 /**
@@ -94,9 +113,4 @@ export async function fetchRoleChange(guild: Guild, targetId: string): Promise<R
   } catch {
     return null
   }
-}
-
-/** Append a "By @user" field to an embed when an actor was resolved (no-op otherwise). */
-export function addActorField(embed: EmbedBuilder, actorId: string | null): void {
-  if (actorId) embed.addFields({ name: 'By', value: userMention(actorId) })
 }
