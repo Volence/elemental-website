@@ -20,6 +20,8 @@ const ServersTab = ({ onChange }: { onChange?: () => void }) => {
   const [error, setError] = useState<string | null>(null)
   const [drafts, setDrafts] = useState<Record<string, { label: string; region: string }>>({})
   const [submitting, setSubmitting] = useState<string | null>(null)
+  const [inviteUrl, setInviteUrl] = useState<string | null>(null)
+  const [cmdStatus, setCmdStatus] = useState<Record<string, { ok: boolean; error?: string }>>({})
 
   const load = async () => {
     setLoading(true)
@@ -29,6 +31,7 @@ const ServersTab = ({ onChange }: { onChange?: () => void }) => {
       const data = await res.json()
       if (!data.success) throw new Error(data.error)
       setGuilds(data.guilds)
+      setInviteUrl(data.inviteUrl ?? null)
     } catch (e: any) {
       setError(e.message)
     } finally {
@@ -51,8 +54,31 @@ const ServersTab = ({ onChange }: { onChange?: () => void }) => {
       })
       const data = await res.json()
       if (!data.success) throw new Error(data.error)
+      if (data.commandStatus) {
+        setCmdStatus((m) => ({ ...m, [g.guildId]: { ok: data.commandStatus.ok, error: data.commandStatus.error } }))
+      }
       await load()
       onChange?.()
+    } catch (e: any) {
+      setError(e.message)
+    } finally {
+      setSubmitting(null)
+    }
+  }
+
+  const reRegister = async (g: BotGuild) => {
+    setSubmitting(g.guildId)
+    try {
+      const res = await fetch('/api/discord/servers/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ guildId: g.guildId, label: g.label || g.name, region: g.region || '' }),
+      })
+      const data = await res.json()
+      if (!data.success) throw new Error(data.error)
+      if (data.commandStatus) {
+        setCmdStatus((m) => ({ ...m, [g.guildId]: { ok: data.commandStatus.ok, error: data.commandStatus.error } }))
+      }
     } catch (e: any) {
       setError(e.message)
     } finally {
@@ -64,6 +90,11 @@ const ServersTab = ({ onChange }: { onChange?: () => void }) => {
     <div className="servers-tab">
       <h3>Servers</h3>
       <p>Discord servers the bot is in. Register a server to manage it from the picker above.</p>
+      {inviteUrl && (
+        <p className="servers-tab__invite">
+          To add another server, <a href={inviteUrl} target="_blank" rel="noreferrer">invite the bot</a> (grants the applications.commands scope), then it appears below to register.
+        </p>
+      )}
       {error && <p className="servers-tab__error">{error}</p>}
       {loading ? (
         <p>Loading…</p>
@@ -76,7 +107,19 @@ const ServersTab = ({ onChange }: { onChange?: () => void }) => {
                 {g.isPrimary && <span className="servers-tab__badge">primary</span>}
               </div>
               {g.registered ? (
-                <span className="servers-tab__status">Registered{g.region ? ` - ${g.region}` : ''}</span>
+                <div className="servers-tab__registered">
+                  <span className="servers-tab__status">Registered{g.region ? ` - ${g.region}` : ''}</span>
+                  {cmdStatus[g.guildId] && (
+                    <span className={cmdStatus[g.guildId].ok ? 'servers-tab__cmd-ok' : 'servers-tab__cmd-fail'}>
+                      {cmdStatus[g.guildId].ok ? 'commands: ok' : `commands: failed - ${cmdStatus[g.guildId].error || 're-invite with applications.commands'}`}
+                    </span>
+                  )}
+                  {!g.isPrimary && (
+                    <button onClick={() => reRegister(g)} disabled={submitting === g.guildId}>
+                      {submitting === g.guildId ? 'Registering...' : 'Re-register commands'}
+                    </button>
+                  )}
+                </div>
               ) : (
                 <div className="servers-tab__register">
                   <input

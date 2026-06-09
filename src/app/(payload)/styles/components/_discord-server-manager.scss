@@ -4255,4 +4255,9 @@
   &__register input { background: rgba($admin-bg-base, 0.8); color: $admin-text-primary; border: 1px solid rgba($admin-accent-info, 0.3); border-radius: $radius-sm; padding: $spacing-xs $spacing-sm; }
   &__register button { @include glow-button($admin-accent-info); padding: $spacing-xs $spacing-sm; }
   &__error { color: $admin-accent-error; }
+  &__invite { font-size: $font-size-sm; color: $admin-text-secondary; a { color: $admin-accent-info; } }
+  &__registered { display: flex; align-items: center; gap: $spacing-sm; }
+  &__cmd-ok { font-size: $font-size-xs; color: $admin-accent-success; }
+  &__cmd-fail { font-size: $font-size-xs; color: $admin-accent-error; }
+  &__registered button { @include glow-button($admin-accent-info); padding: $spacing-xs $spacing-sm; font-size: $font-size-xs; }
 }
