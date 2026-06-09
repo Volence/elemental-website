@@ -17,4 +17,12 @@ describe('summarizeRejoin', () => {
     ])
     expect(summarizeRejoin(r)).toEqual({ priorJoins: 2, isRejoin: true, lastLeftAt: '2026-04-01T00:00:00Z' })
   })
+  it('finds the most recent leave even when rows are out of order', () => {
+    const r = rows([
+      ['leave', '2026-04-01T00:00:00Z'],
+      ['join', '2026-01-01T00:00:00Z'],
+      ['leave', '2026-02-01T00:00:00Z'],
+    ])
+    expect(summarizeRejoin(r).lastLeftAt).toBe('2026-04-01T00:00:00Z')
+  })
 })

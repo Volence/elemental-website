@@ -8,7 +8,7 @@ export function summarizeRejoin(history: MemberEventRow[]): RejoinSummary {
   const leaves = history
     .filter((r) => r.eventType === 'leave')
     .map((r) => r.occurredAt)
-    .sort()
+    .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
   return {
     priorJoins,
     isRejoin: priorJoins > 0,

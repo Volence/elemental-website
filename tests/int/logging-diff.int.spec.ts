@@ -16,4 +16,7 @@ describe('diff helpers', () => {
     expect(truncate('hello', 10)).toBe('hello')
     expect(truncate('abcdefghijkl', 5)).toBe('abcde...')
   })
+  it('does not truncate content exactly at the max length', () => {
+    expect(truncate('hello', 5)).toBe('hello')
+  })
 })

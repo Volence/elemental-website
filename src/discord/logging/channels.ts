@@ -11,7 +11,14 @@ export interface LoggingConfig {
   attachProfileLink: boolean
 }
 
-const FIELD: Record<LogCategory, keyof LoggingConfig> = {
+type ChannelIdField =
+  | 'messageLogChannelId'
+  | 'joinLeaveLogChannelId'
+  | 'memberLogChannelId'
+  | 'profileLogChannelId'
+  | 'serverLogChannelId'
+
+const FIELD: Record<LogCategory, ChannelIdField> = {
   message: 'messageLogChannelId',
   joinLeave: 'joinLeaveLogChannelId',
   member: 'memberLogChannelId',

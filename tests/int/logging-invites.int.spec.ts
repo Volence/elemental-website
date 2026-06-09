@@ -14,4 +14,7 @@ describe('diffInviteUses', () => {
   it('returns null when nothing increased', () => {
     expect(diffInviteUses({ A: 1 }, { A: 1 })).toBeNull()
   })
+  it('detects the used invite when the before map was empty (cold cache)', () => {
+    expect(diffInviteUses({}, { ABC: 1 })).toEqual({ code: 'ABC', uses: 1 })
+  })
 })
