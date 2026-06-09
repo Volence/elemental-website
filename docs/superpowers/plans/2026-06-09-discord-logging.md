@@ -1,5 +1,11 @@
 # Discord Server Logging Implementation Plan
 
+> **Status (2026-06-09):** IMPLEMENTED and tested locally on branch `feature/discord-logging`.
+> The build evolved past this plan during live testing - see the "As-built notes" section in
+> the design spec (`docs/superpowers/specs/2026-06-09-discord-logging-design.md`) for the
+> deltas (actor-as-clickable-author, roster fetch on connect, no config cache, admin-UI
+> hardening, richer embeds). This plan is kept as the original task breakdown.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Replace carlbot by adding per-server Discord audit logging to the existing in-process bot, routed to each server's existing log channels, with carlbot-beating enhancements.

@@ -1,7 +1,9 @@
 # Discord Server Logging (carlbot replacement) - Design
 
 Date: 2026-06-09
-Status: Approved (pending spec review)
+Status: Built + tested locally (in-process, on branch `feature/discord-logging`). See the
+"As-built notes" below for where the implementation evolved past this design during testing.
+Prod rollout not yet done (migrations, Message Content intent, member-cache bound).
 
 ## Goal
 
@@ -9,6 +11,40 @@ Replace carlbot, the last bot kept around purely for its logging features, with 
 built into our own discord.js bot. The result must work across every server the bot is
 in (hub + region spokes), be trustworthy (no silent gaps), and beat carlbot where it is
 cheap to do so. Voice activity logging is the only carlbot logging feature we do not need.
+
+## As-built notes (2026-06-09, after live testing)
+
+The sections below are the original design. These are the meaningful ways the shipped code
+differs, discovered while testing against a hub + a cloned spoke server:
+
+- **Identity / attribution presentation evolved.** Instead of a Discord-mention-primary line
+  plus a generic "who-did-what" audit feed, each embed now puts the relevant **user as a
+  clickable embed author** (avatar + name linking to `discord.com/users/<id>`). For events
+  with a distinct actor (role/nickname/timeout change, ban, channel/role create-delete-update)
+  the **actor** is the author and the affected subject is the thumbnail + a mention in the
+  body. The cryptic generic `guildAuditLogEntryCreate` feed was removed - attribution is
+  fetched per-handler from the audit log and merged into the readable embed.
+- **Member roster fetched on connect.** `setupLogging` fetches every guild's full member
+  roster on ready (member cache left uncapped) so leave/kick details (roles, time in server),
+  member-update diffs, and profile fan-out work without waiting to "see" each member. A
+  `client.isReady()` backstop runs this immediately because ClientReady may fire before the
+  listener is attached. **Prod caveat:** uncapped member cache scales with member count -
+  bound it for very large guilds before rollout.
+- **No config cache.** A short-TTL config cache was tried and removed - it served stale
+  channels after a save because the settings route and the long-running bot don't reliably
+  share in-memory state. Config is read fresh from the DB per event.
+- **Admin UI hardening.** The Logging-tab channel dropdowns list only text/announcement
+  channels (a forum/voice pick silently fails to receive posts), show a "Loading channels…"
+  state, and always render the saved selection (marked when it is no longer a valid text
+  channel). `postLog` logs a warning when a configured channel is missing/non-sendable
+  instead of dropping silently.
+- **Richer embeds than first specced:** message edits link "Jump to message"; joins show
+  Nth-to-join + account age as years/months/days; leaves show roles + time-in-server and
+  detect kicks (with actor + reason); channel create/delete show their category; avatar
+  changes show the new avatar as a thumbnail; every embed carries an `ID: … • timestamp`
+  footer; colors are centralized in `colors.ts`.
+- **Message "before" cache: 6h / 500 per channel** (not the tight default), so edit/delete
+  diffs cover normal same-session edits. Resets on restart (in-memory), like carlbot.
 
 ## Background / current state
 
