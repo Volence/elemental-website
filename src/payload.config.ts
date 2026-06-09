@@ -385,6 +385,13 @@ const config = buildConfig({
         if (client) {
           await registerCommands(payload)
           setupInteractionHandlers()
+
+          const { setupLogging } = await import('./discord/logging')
+          setupLogging(client, payload)
+
+          const { primeInviteCache } = await import('./discord/logging/invites')
+          if (client.isReady()) await primeInviteCache(client)
+
           startThreadKeepAlive()
           startTwitchLiveRoster()
 
