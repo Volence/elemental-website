@@ -34,5 +34,13 @@ export const DiscordServers: CollectionConfig = {
       admin: { description: 'The main hub. Exactly one row should be primary; seeded from DISCORD_GUILD_ID.' },
     },
     { name: 'active', type: 'checkbox', defaultValue: true },
+    { name: 'enableLogging', type: 'checkbox', defaultValue: false },
+    { name: 'messageLogChannelId', type: 'text' },
+    { name: 'joinLeaveLogChannelId', type: 'text' },
+    { name: 'memberLogChannelId', type: 'text' },
+    { name: 'profileLogChannelId', type: 'text' },
+    { name: 'serverLogChannelId', type: 'text' },
+    { name: 'newAccountFlagDays', type: 'number', defaultValue: 7 },
+    { name: 'attachProfileLink', type: 'checkbox', defaultValue: true },
   ],
 }

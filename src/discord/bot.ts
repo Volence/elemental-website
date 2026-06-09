@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Events, ActivityType, Options } from 'discord.js'
+import { Client, GatewayIntentBits, Events, ActivityType, Options, Partials } from 'discord.js'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { logError } from '@/utilities/errorLogger'
@@ -42,18 +42,20 @@ export async function initializeDiscordBot(): Promise<Client | null> {
     intents: [
       GatewayIntentBits.Guilds,
       GatewayIntentBits.GuildMembers,
+      GatewayIntentBits.GuildMessages,
+      GatewayIntentBits.MessageContent,
+      GatewayIntentBits.GuildModeration,
+      GatewayIntentBits.GuildInvites,
     ],
+    partials: [Partials.Message, Partials.Channel, Partials.GuildMember, Partials.User],
     makeCache: Options.cacheWithLimits({
       ...Options.DefaultMakeCacheSettings,
-      MessageManager: 50,
+      MessageManager: 200,
       GuildMemberManager: 200,
     }),
     sweepers: {
       ...Options.DefaultSweeperSettings,
-      messages: {
-        interval: 300,
-        lifetime: 600,
-      },
+      messages: { interval: 300, lifetime: 1800 },
     },
   })
 
