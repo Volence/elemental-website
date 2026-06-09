@@ -23,14 +23,14 @@ export async function up({ payload }: MigrateUpArgs): Promise<void> {
         ON DELETE cascade ON UPDATE no action;
     EXCEPTION WHEN duplicate_object THEN null;
     END $$;
-    CREATE INDEX IF NOT EXISTS "pld_rels_dme_id_idx" ON "payload_locked_documents_rels" ("discord_member_events_id");
+    CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_discord_member_events_id_idx" ON "payload_locked_documents_rels" ("discord_member_events_id");
   `)
 }
 
 export async function down({ payload }: MigrateDownArgs): Promise<void> {
   await payload.db.drizzle.execute(sql`
     ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_discord_member_events_fk";
-    DROP INDEX IF EXISTS "pld_rels_dme_id_idx";
+    DROP INDEX IF EXISTS "payload_locked_documents_rels_discord_member_events_id_idx";
     ALTER TABLE "payload_locked_documents_rels" DROP COLUMN IF EXISTS "discord_member_events_id";
     DROP TABLE IF EXISTS "discord_member_events";
   `)
