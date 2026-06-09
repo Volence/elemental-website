@@ -1,4 +1,4 @@
-import { Events, EmbedBuilder, type Client } from 'discord.js'
+import { Events, EmbedBuilder, Guild, type Client } from 'discord.js'
 import type { Payload } from 'payload'
 import { attachMessageHandlers } from './handlers/messages'
 import { attachMemberHandlers } from './handlers/members'
@@ -6,7 +6,7 @@ import { attachStructureHandlers } from './handlers/structure'
 import { attachModerationHandlers } from './handlers/moderation'
 import { postLog } from './sink'
 import { userMention } from './identity'
-import { primeInviteCache } from './invites'
+import { primeInviteCache, refreshInviteCache } from './invites'
 import { postHeartbeat, markDisconnected } from './heartbeat'
 
 /**
@@ -30,6 +30,14 @@ export function setupLogging(client: Client, payload: Payload, now: () => number
       const embed = new EmbedBuilder().setColor(0x9b59b6).setTitle('Profile changed').setDescription(`${userMention(newU.id)}`).addFields({ name: 'Changes', value: changes.join('\n') })
       await postLog(client, payload, guild.id, 'profile', embed)
     }
+  })
+
+  // Keep invite cache fresh so resolveJoinInvite stays accurate.
+  client.on(Events.InviteCreate, (invite) => {
+    if (invite.guild instanceof Guild) refreshInviteCache(invite.guild)
+  })
+  client.on(Events.InviteDelete, (invite) => {
+    if (invite.guild instanceof Guild) refreshInviteCache(invite.guild)
   })
 
   // Heartbeat + invite cache priming on (re)connect.

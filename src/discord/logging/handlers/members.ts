@@ -74,6 +74,20 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
       await postLog(client, payload, guildId, 'member', embed, cfg)
     }
 
+    // Timeout add/remove -> member-log (actor comes from the audit feed)
+    const oldTimeout = oldM.communicationDisabledUntilTimestamp ?? null
+    const newTimeout = newM.communicationDisabledUntilTimestamp ?? null
+    if (oldTimeout !== newTimeout) {
+      const embed = new EmbedBuilder()
+        .setColor(0xe67e22)
+        .setTitle(newTimeout ? 'Member timed out' : 'Member timeout removed')
+        .setDescription(`${userMention(newM.id)} (${newM.user.tag})`)
+      if (newTimeout) {
+        embed.addFields({ name: 'Until', value: `<t:${Math.floor(newTimeout / 1000)}:F>` })
+      }
+      await postLog(client, payload, guildId, 'member', embed, cfg)
+    }
+
     // Per-guild avatar change -> profile-log
     if (oldM.avatar !== newM.avatar) {
       const embed = new EmbedBuilder()
