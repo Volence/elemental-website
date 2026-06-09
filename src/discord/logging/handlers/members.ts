@@ -1,4 +1,4 @@
-import { EmbedBuilder, Events, type Client } from 'discord.js'
+import { EmbedBuilder, Events, AuditLogEvent, type Client } from 'discord.js'
 import type { Payload } from 'payload'
 import { postLog } from '../sink'
 import { userMention, accountAgeDays, isNewAccount } from '../identity'
@@ -7,6 +7,7 @@ import { loadLoggingConfig } from '../config'
 import { resolveProfile } from '../nameResolver'
 import { recordMemberEvent, getRejoinSummary } from '../memberEvents'
 import { resolveJoinInvite } from '../invites'
+import { fetchActorId, addActorField } from '../attribution'
 
 export function attachMemberHandlers(client: Client, payload: Payload, now: () => number): void {
   client.on(Events.GuildMemberAdd, async (member) => {
@@ -75,10 +76,12 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
       if (roleDiff.added.length) embed.addFields({ name: 'Roles added', value: truncate(roleDiff.added.map((r) => `<@&${r}>`).join(' '), 1024) })
       if (roleDiff.removed.length) embed.addFields({ name: 'Roles removed', value: truncate(roleDiff.removed.map((r) => `<@&${r}>`).join(' '), 1024) })
       if (nickDiff.changed) embed.addFields({ name: 'Nickname', value: `${nickDiff.from ?? '_none_'} -> ${nickDiff.to ?? '_none_'}` })
+      const auditType = roleDiff.added.length || roleDiff.removed.length ? AuditLogEvent.MemberRoleUpdate : AuditLogEvent.MemberUpdate
+      addActorField(embed, await fetchActorId(newM.guild, auditType, newM.id))
       await postLog(client, payload, guildId, 'member', embed, cfg)
     }
 
-    // Timeout add/remove -> member-log (actor comes from the audit feed)
+    // Timeout add/remove -> member-log
     const oldTimeout = oldM.communicationDisabledUntilTimestamp ?? null
     const newTimeout = newM.communicationDisabledUntilTimestamp ?? null
     if (oldTimeout !== newTimeout) {
@@ -89,6 +92,7 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
       if (newTimeout) {
         embed.addFields({ name: 'Until', value: `<t:${Math.floor(newTimeout / 1000)}:F>` })
       }
+      addActorField(embed, await fetchActorId(newM.guild, AuditLogEvent.MemberUpdate, newM.id))
       await postLog(client, payload, guildId, 'member', embed, cfg)
     }
 

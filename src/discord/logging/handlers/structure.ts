@@ -1,10 +1,12 @@
-import { EmbedBuilder, Events, type Client, type GuildChannel } from 'discord.js'
+import { EmbedBuilder, Events, AuditLogEvent, type Client, type GuildChannel } from 'discord.js'
 import type { Payload } from 'payload'
 import { postLog } from '../sink'
+import { fetchActorId, addActorField } from '../attribution'
 
 export function attachStructureHandlers(client: Client, payload: Payload): void {
   client.on(Events.ChannelCreate, async (channel) => {
     const embed = new EmbedBuilder().setColor(0x2ecc71).setTitle('Channel created').setDescription(`<#${channel.id}> (${channel.name})`)
+    addActorField(embed, await fetchActorId(channel.guild, AuditLogEvent.ChannelCreate, channel.id))
     await postLog(client, payload, channel.guild.id, 'server', embed)
   })
 
@@ -12,6 +14,7 @@ export function attachStructureHandlers(client: Client, payload: Payload): void 
     const gc = channel as GuildChannel
     if (!('guild' in gc) || !gc.guild) return
     const embed = new EmbedBuilder().setColor(0xe74c3c).setTitle('Channel deleted').setDescription(`#${gc.name} (${gc.id})`)
+    addActorField(embed, await fetchActorId(gc.guild, AuditLogEvent.ChannelDelete, gc.id))
     await postLog(client, payload, gc.guild.id, 'server', embed)
   })
 
@@ -25,16 +28,19 @@ export function attachStructureHandlers(client: Client, payload: Payload): void 
     // Pure position reorders are intentionally NOT logged (noisy; see spec).
     if (!changes.length) return
     const embed = new EmbedBuilder().setColor(0xf1c40f).setTitle('Channel updated').setDescription(`<#${n.id}>`).addFields({ name: 'Changes', value: changes.join('\n') })
+    addActorField(embed, await fetchActorId(n.guild, AuditLogEvent.ChannelUpdate, n.id))
     await postLog(client, payload, n.guild.id, 'server', embed)
   })
 
   client.on(Events.GuildRoleCreate, async (role) => {
     const embed = new EmbedBuilder().setColor(0x2ecc71).setTitle('Role created').setDescription(`<@&${role.id}> (${role.name})`)
+    addActorField(embed, await fetchActorId(role.guild, AuditLogEvent.RoleCreate, role.id))
     await postLog(client, payload, role.guild.id, 'server', embed)
   })
 
   client.on(Events.GuildRoleDelete, async (role) => {
     const embed = new EmbedBuilder().setColor(0xe74c3c).setTitle('Role deleted').setDescription(`${role.name} (${role.id})`)
+    addActorField(embed, await fetchActorId(role.guild, AuditLogEvent.RoleDelete, role.id))
     await postLog(client, payload, role.guild.id, 'server', embed)
   })
 
@@ -44,6 +50,7 @@ export function attachStructureHandlers(client: Client, payload: Payload): void 
     if (oldR.permissions.bitfield !== newR.permissions.bitfield) changes.push('Permissions changed')
     if (!changes.length) return
     const embed = new EmbedBuilder().setColor(0xf1c40f).setTitle('Role updated').setDescription(`<@&${newR.id}>`).addFields({ name: 'Changes', value: changes.join('\n') })
+    addActorField(embed, await fetchActorId(newR.guild, AuditLogEvent.RoleUpdate, newR.id))
     await postLog(client, payload, newR.guild.id, 'server', embed)
   })
 }
