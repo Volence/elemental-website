@@ -6,6 +6,7 @@ import { fetchActorId, addActorField } from '../attribution'
 export function attachStructureHandlers(client: Client, payload: Payload): void {
   client.on(Events.ChannelCreate, async (channel) => {
     const embed = new EmbedBuilder().setColor(0x2ecc71).setTitle('Channel created').setDescription(`<#${channel.id}> (${channel.name})`)
+    embed.addFields({ name: 'Category', value: channel.parent?.name ?? '_none_' })
     addActorField(embed, await fetchActorId(channel.guild, AuditLogEvent.ChannelCreate, channel.id))
     await postLog(client, payload, channel.guild.id, 'server', embed)
   })
@@ -14,6 +15,7 @@ export function attachStructureHandlers(client: Client, payload: Payload): void 
     const gc = channel as GuildChannel
     if (!('guild' in gc) || !gc.guild) return
     const embed = new EmbedBuilder().setColor(0xe74c3c).setTitle('Channel deleted').setDescription(`#${gc.name} (${gc.id})`)
+    embed.addFields({ name: 'Category', value: gc.parent?.name ?? '_none_' })
     addActorField(embed, await fetchActorId(gc.guild, AuditLogEvent.ChannelDelete, gc.id))
     await postLog(client, payload, gc.guild.id, 'server', embed)
   })
