@@ -43,17 +43,23 @@ export function setupLogging(client: Client, payload: Payload, now: () => number
     if (invite.guild instanceof Guild) refreshInviteCache(invite.guild)
   })
 
-  // Heartbeat + invite cache priming on (re)connect.
-  client.on(Events.ClientReady, async () => {
-    // Best-effort: pre-load the full member roster so leave/kick embeds (roles, time in
-    // server), member-update diffs, and profile fan-out have members cached from the start.
-    // Fire-and-forget per guild so a slow/large fetch never blocks the heartbeat.
+  // Work to do once the gateway is ready: cache the full member roster (so leave/kick
+  // embeds, member-update diffs, and profile fan-out have members cached), prime the invite
+  // cache, and post the startup heartbeat.
+  const onReady = async () => {
     for (const guild of client.guilds.cache.values()) {
+      // Fire-and-forget per guild so a slow/large fetch never blocks startup.
       guild.members.fetch().catch(() => {})
     }
     await primeInviteCache(client)
     await postHeartbeat(client, payload, now())
-  })
+  }
+
+  client.on(Events.ClientReady, onReady)
+  // ClientReady may have ALREADY fired before setupLogging registered the listener above
+  // (the client connects during onInit, before this runs) - so run it now if so.
+  if (client.isReady()) void onReady()
+
   client.on(Events.ShardDisconnect, () => markDisconnected(now()))
   client.on(Events.ShardResume, async () => {
     await postHeartbeat(client, payload, now())

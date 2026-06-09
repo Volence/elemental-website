@@ -386,15 +386,11 @@ const config = buildConfig({
           await registerCommands(payload)
           setupInteractionHandlers()
 
+          // setupLogging attaches event handlers AND runs its ready logic immediately when
+          // the client is already connected (roster fetch + invite cache + heartbeat), so no
+          // separate backstop is needed here.
           const { setupLogging } = await import('./discord/logging')
           setupLogging(client, payload)
-
-          const { primeInviteCache } = await import('./discord/logging/invites')
-          const { postHeartbeat } = await import('./discord/logging/heartbeat')
-          if (client.isReady()) {
-            await primeInviteCache(client)
-            await postHeartbeat(client, payload, Date.now())
-          }
 
           startThreadKeepAlive()
           startTwitchLiveRoster()
