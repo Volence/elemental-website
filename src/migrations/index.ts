@@ -31,6 +31,7 @@ import * as migration_20260605_add_pug_season_bot_enabled from "./20260605_add_p
 import * as migration_20260608_add_discord_clone_jobs from "./20260608_add_discord_clone_jobs";
 import * as migration_20260609_add_discord_servers from "./20260609_add_discord_servers";
 import * as migration_20260610_add_logging_settings from "./20260610_add_logging_settings";
+import * as migration_20260610_add_discord_member_events from "./20260610_add_discord_member_events";
 
 export const migrations = [
   {
@@ -197,5 +198,10 @@ export const migrations = [
     up: migration_20260610_add_logging_settings.up,
     down: migration_20260610_add_logging_settings.down,
     name: "20260610_add_logging_settings",
+  },
+  {
+    up: migration_20260610_add_discord_member_events.up,
+    down: migration_20260610_add_discord_member_events.down,
+    name: "20260610_add_discord_member_events",
   },
 ];
