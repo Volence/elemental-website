@@ -11,7 +11,7 @@ export const DiscordServers: CollectionConfig = {
     group: 'Data',
     useAsTitle: 'label',
     defaultColumns: ['label', 'region', 'isPrimary', 'active', 'guildId'],
-    hidden: ({ user }) => (user as unknown as Person)?.role !== 'admin',
+    hidden: true, // backing data for the Servers tab/picker; not browsed directly from the nav
   },
   access: {
     create: adminOnly,
