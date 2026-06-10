@@ -34,7 +34,13 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
             : 'First join',
           inline: true,
         },
-        { name: 'Invite', value: invite ? `\`${invite.code}\` (${invite.uses} uses)` : 'unknown', inline: true },
+        {
+          name: 'Invite',
+          value: invite
+            ? `\`${invite.code}\`${invite.inviterId ? ` by ${userMention(invite.inviterId)}` : ''} (${invite.uses} uses)`
+            : 'unknown',
+          inline: true,
+        },
       )
     if (isNewAccount(member.id, cfg.newAccountFlagDays, nowMs)) {
       embed.addFields({ name: '⚠️ New account', value: `Younger than ${cfg.newAccountFlagDays} days` })

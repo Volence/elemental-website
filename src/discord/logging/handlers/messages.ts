@@ -24,16 +24,17 @@ export function attachMessageHandlers(client: Client, payload: Payload): void {
     const after = newMsg.content ?? ''
     if (before === after) return
     const jumpUrl = `https://discord.com/channels/${guildId}/${newMsg.channelId}/${newMsg.id}`
+    const beforeText = before === null ? '_not cached_' : truncate(before || '_empty_', 900)
+    const afterText = truncate(after || '_empty_', 900)
     const embed = new EmbedBuilder()
       .setColor(Colors.update)
       .setTitle('Message edited')
-      .setDescription(`${authorLabel(newMsg)} in <#${newMsg.channelId}> - [Jump to message](${jumpUrl})`)
+      .setDescription(
+        `${authorLabel(newMsg)} in <#${newMsg.channelId}> - [Jump to message](${jumpUrl})\n\n` +
+          `**Before:** ${beforeText}\n**After:** ${afterText}`,
+      )
       .setFooter({ text: `ID: ${newMsg.id}` })
     if (newMsg.author) setUserAuthor(embed, newMsg.author)
-    embed.addFields(
-      { name: 'Before', value: before === null ? '_not cached_' : truncate(before || '_empty_', 1000) },
-      { name: 'After', value: truncate(after || '_empty_', 1000) },
-    )
     await postLog(client, payload, guildId, 'message', embed)
   })
 
@@ -44,8 +45,10 @@ export function attachMessageHandlers(client: Client, payload: Payload): void {
     const embed = new EmbedBuilder()
       .setColor(Colors.delete)
       .setTitle('Message deleted')
-      .setDescription(`${authorLabel(msg)} in <#${msg.channelId}>`)
-      .addFields({ name: 'Content', value: content === null ? '_not cached_' : truncate(content || '_empty_', 1000) })
+      .setDescription(
+        `${authorLabel(msg)} in <#${msg.channelId}>\n\n` +
+          `**Content:** ${content === null ? '_not cached_' : truncate(content || '_empty_', 900)}`,
+      )
       .setFooter({ text: `ID: ${msg.id}` })
     if (msg.author) setUserAuthor(embed, msg.author)
     if (!msg.partial && msg.attachments?.size) {

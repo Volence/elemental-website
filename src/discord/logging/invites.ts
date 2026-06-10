@@ -40,10 +40,29 @@ export async function refreshInviteCache(guild: Guild): Promise<void> {
   cache.set(guild.id, await fetchUses(guild))
 }
 
-/** Resolve which invite a new member used, updating the cache. Returns null if unknown. */
-export async function resolveJoinInvite(guild: Guild): Promise<InviteMatch | null> {
+export interface JoinInvite { code: string; uses: number; inviterId: string | null }
+
+/**
+ * Resolve which invite a new member used, updating the cache. Fetches full invite objects so
+ * we can also report WHO created the invite. Returns null when the source can't be determined.
+ */
+export async function resolveJoinInvite(guild: Guild): Promise<JoinInvite | null> {
   const before = cache.get(guild.id) ?? {}
-  const after = await fetchUses(guild)
+  const after: InviteUseMap = {}
+  const inviterByCode = new Map<string, string | null>()
+  try {
+    const invites = await guild.invites.fetch()
+    for (const inv of invites.values()) {
+      after[inv.code] = inv.uses ?? 0
+      inviterByCode.set(inv.code, inv.inviterId ?? null)
+    }
+    const vanity = await guild.fetchVanityData().catch(() => null)
+    if (vanity?.code) after[vanity.code] = vanity.uses ?? 0
+  } catch {
+    // Missing Manage Server perm - leave empty; the join will log "invite source unknown".
+  }
   cache.set(guild.id, after)
-  return diffInviteUses(before, after)
+  const match = diffInviteUses(before, after)
+  if (!match) return null
+  return { code: match.code, uses: match.uses, inviterId: inviterByCode.get(match.code) ?? null }
 }
