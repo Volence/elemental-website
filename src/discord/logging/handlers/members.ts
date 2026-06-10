@@ -24,7 +24,9 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
     const embed = new EmbedBuilder()
       .setColor(Colors.create)
       .setTitle('Member joined')
-      .setDescription(`${userMention(member.id)} (${member.user.tag}) - ${ordinal(member.guild.memberCount)} to join`)
+      // The joining member often isn't cached by the viewer's client yet, so a `<@id>` mention
+      // here renders as raw text. The clickable identity is the embed author (set below).
+      .setDescription(`**${member.user.tag}** - ${ordinal(member.guild.memberCount)} to join`)
       .addFields(
         { name: 'Account age', value: humanizeDuration(accountCreatedAtMs(member.id), nowMs), inline: true },
         {
