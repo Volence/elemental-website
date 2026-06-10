@@ -21,12 +21,14 @@ export function setupLogging(client: Client, payload: Payload, now: () => number
   attachStructureHandlers(client, payload)
   attachModerationHandlers(client, payload)
 
-  // Global username / display-name changes -> each shared guild's profile channel.
+  // Global username / display-name / avatar changes -> each shared guild's profile channel.
   client.on(Events.UserUpdate, async (oldU, newU) => {
-    if (oldU.username === newU.username && oldU.globalName === newU.globalName) return
+    const avatarChanged = oldU.avatar !== newU.avatar
+    if (oldU.username === newU.username && oldU.globalName === newU.globalName && !avatarChanged) return
     const changes: string[] = []
     if (oldU.username !== newU.username) changes.push(`Username: ${oldU.username} -> ${newU.username}`)
     if (oldU.globalName !== newU.globalName) changes.push(`Display name: ${oldU.globalName ?? '_none_'} -> ${newU.globalName ?? '_none_'}`)
+    if (avatarChanged) changes.push('Avatar changed')
     // Best-effort: only guilds where the member is cached are covered. The member cache is
     // capped/swept, so profile changes for less-active members in large guilds may be missed.
     // Fetching every guild's member on every UserUpdate would be too expensive.
@@ -39,6 +41,7 @@ export function setupLogging(client: Client, payload: Payload, now: () => number
         .addFields({ name: 'Changes', value: changes.join('\n') })
         .setFooter({ text: `ID: ${newU.id}` })
       setUserAuthor(embed, newU)
+      if (avatarChanged) embed.setThumbnail(newU.displayAvatarURL({ size: 256 }))
       await postLog(client, payload, guild.id, 'profile', embed)
     }
   })
