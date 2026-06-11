@@ -98,6 +98,15 @@ export function attachMessageHandlers(client: Client, payload: Payload): void {
       before = stored?.content ?? null
     }
     if (before === after) return
+    // Discord fires MESSAGE_UPDATE for non-edits too - link-embed refreshes (often in
+    // batches over months-old messages), pins, suppressed embeds. A real content edit
+    // always stamps a FRESH editedTimestamp. When we have no prior content to compare
+    // (null `before`), only trust the event if the edit just happened; otherwise it's
+    // an embed refresh and logging it would invent a phantom edit.
+    if (before === null) {
+      const editedAtMs = newMsg.editedTimestamp ?? null
+      if (!editedAtMs || Date.now() - editedAtMs > 5 * 60000) return
+    }
     // Keep the store current so a later delete shows the latest text.
     void updateStoredMessage(payload, newMsg.id, after)
     const jumpUrl = `https://discord.com/channels/${guildId}/${newMsg.channelId}/${newMsg.id}`
