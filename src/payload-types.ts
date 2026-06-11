@@ -100,6 +100,7 @@ export interface Config {
     'discord-category-templates': DiscordCategoryTemplate;
     'discord-clone-jobs': DiscordCloneJob;
     'discord-servers': DiscordServer;
+    'discord-member-events': DiscordMemberEvent;
     'watched-threads': WatchedThread;
     'twitch-streamers': TwitchStreamer;
     'audit-logs': AuditLog;
@@ -156,6 +157,7 @@ export interface Config {
     'discord-category-templates': DiscordCategoryTemplatesSelect<false> | DiscordCategoryTemplatesSelect<true>;
     'discord-clone-jobs': DiscordCloneJobsSelect<false> | DiscordCloneJobsSelect<true>;
     'discord-servers': DiscordServersSelect<false> | DiscordServersSelect<true>;
+    'discord-member-events': DiscordMemberEventsSelect<false> | DiscordMemberEventsSelect<true>;
     'watched-threads': WatchedThreadsSelect<false> | WatchedThreadsSelect<true>;
     'twitch-streamers': TwitchStreamersSelect<false> | TwitchStreamersSelect<true>;
     'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
@@ -2786,6 +2788,27 @@ export interface DiscordServer {
    */
   isPrimary?: boolean | null;
   active?: boolean | null;
+  enableLogging?: boolean | null;
+  messageLogChannelId?: string | null;
+  joinLeaveLogChannelId?: string | null;
+  memberLogChannelId?: string | null;
+  profileLogChannelId?: string | null;
+  serverLogChannelId?: string | null;
+  newAccountFlagDays?: number | null;
+  attachProfileLink?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discord-member-events".
+ */
+export interface DiscordMemberEvent {
+  id: number;
+  guildId: string;
+  discordUserId: string;
+  eventType: 'join' | 'leave';
+  occurredAt: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -3454,6 +3477,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'discord-servers';
         value: number | DiscordServer;
+      } | null)
+    | ({
+        relationTo: 'discord-member-events';
+        value: number | DiscordMemberEvent;
       } | null)
     | ({
         relationTo: 'watched-threads';
@@ -4589,6 +4616,26 @@ export interface DiscordServersSelect<T extends boolean = true> {
   region?: T;
   isPrimary?: T;
   active?: T;
+  enableLogging?: T;
+  messageLogChannelId?: T;
+  joinLeaveLogChannelId?: T;
+  memberLogChannelId?: T;
+  profileLogChannelId?: T;
+  serverLogChannelId?: T;
+  newAccountFlagDays?: T;
+  attachProfileLink?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discord-member-events_select".
+ */
+export interface DiscordMemberEventsSelect<T extends boolean = true> {
+  guildId?: T;
+  discordUserId?: T;
+  eventType?: T;
+  occurredAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

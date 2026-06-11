@@ -9,7 +9,7 @@ import { userMention } from './identity'
 import { setUserAuthor } from './attribution'
 import { Colors } from './colors'
 import { primeInviteCache, refreshInviteCache } from './invites'
-import { postHeartbeat, markDisconnected } from './heartbeat'
+import { postHeartbeat, markDisconnected, clearDisconnected } from './heartbeat'
 
 /**
  * Self-contained logging module entry point. Designed to be extractable: the only
@@ -37,12 +37,14 @@ export function setupLogging(client: Client, payload: Payload, now: () => number
       const embed = new EmbedBuilder()
         .setColor(Colors.profile)
         .setTitle('Profile changed')
-        .setDescription(`${userMention(newU.id)} (${newU.tag})`)
+        // Plain-text name: `<@id>` mentions inside embeds render only when the viewer's
+        // client has the user cached. The clickable mention goes in the message content.
+        .setDescription(`**${newU.tag}**`)
         .addFields({ name: 'Changes', value: changes.join('\n') })
         .setFooter({ text: `ID: ${newU.id}` })
       setUserAuthor(embed, newU)
       if (avatarChanged) embed.setThumbnail(newU.displayAvatarURL({ size: 256 }))
-      await postLog(client, payload, guild.id, 'profile', embed)
+      await postLog(client, payload, guild.id, 'profile', embed, { content: userMention(newU.id) })
     }
   })
 
@@ -55,15 +57,15 @@ export function setupLogging(client: Client, payload: Payload, now: () => number
   })
 
   // Work to do once the gateway is ready: cache the full member roster (so leave/kick
-  // embeds, member-update diffs, and profile fan-out have members cached), prime the invite
-  // cache, and post the startup heartbeat.
+  // embeds, member-update diffs, and profile fan-out have members cached) and prime the
+  // invite cache. Deliberately NO channel post here: announcing every boot meant a
+  // "Logging started." embed on every deploy/restart, which was pure spam.
   const onReady = async () => {
     for (const guild of client.guilds.cache.values()) {
       // Fire-and-forget per guild so a slow/large fetch never blocks startup.
       guild.members.fetch().catch(() => {})
     }
     await primeInviteCache(client)
-    await postHeartbeat(client, payload, now())
   }
 
   client.on(Events.ClientReady, onReady)
@@ -72,7 +74,13 @@ export function setupLogging(client: Client, payload: Payload, now: () => number
   if (client.isReady()) void onReady()
 
   client.on(Events.ShardDisconnect, () => markDisconnected(now()))
-  client.on(Events.ShardResume, async () => {
+  client.on(Events.ShardReconnecting, () => markDisconnected(now()))
+  // A successful RESUME replays every missed event - no coverage gap, nothing to announce.
+  client.on(Events.ShardResume, () => clearDisconnected())
+  // A re-IDENTIFY after a disconnect is the one case where events were truly lost.
+  // postHeartbeat announces it only when the gap was meaningful (>60s); on a fresh boot
+  // no disconnect was recorded, so this stays silent.
+  client.on(Events.ShardReady, async () => {
     await postHeartbeat(client, payload, now())
   })
 }
