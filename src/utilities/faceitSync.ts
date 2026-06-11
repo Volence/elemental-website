@@ -368,7 +368,9 @@ async function syncTeamPlayoffMatches(
       limit: 1,
     })
 
-    const division = seasonRecord?.division || 'Advanced'
+    // Playoff sync iterates real season records, so this fallback is near-unreachable;
+    // 'Open' matches the convention (no named division in the rating = Open team).
+    const division = seasonRecord?.division || 'Open'
     const matchData: any = {
       team: teamId,
       team1Type: 'internal',
@@ -835,7 +837,9 @@ export async function syncTeamData(
         const didWin = isFinished && faceitMatch.winner === faceitTeamId
 
         // Division priority: season record -> team's linked league template ->
-        // derive from team.rating -> 'Advanced' as the last resort.
+        // derive from team.rating -> 'Open' as the last resort. A numeric rating
+        // (e.g. "4.2K") with no division keyword means an Open-division team -
+        // named divisions (Masters/Expert/Advanced) always appear in the rating.
         let division = seasonRecord?.division || fallbackLeague?.division || ''
 
         if (!division) {
@@ -844,10 +848,9 @@ export async function syncTeamData(
             const ratingStr = String(team.rating)
             if (ratingStr.includes('Masters')) division = 'Masters'
             else if (ratingStr.includes('Expert')) division = 'Expert'
-            else if (ratingStr.includes('Open')) division = 'Open'
             else if (ratingStr.includes('Advanced')) division = 'Advanced'
           }
-          if (!division) division = 'Advanced'
+          if (!division) division = 'Open'
           console.warn(`[FaceIt Sync] No season/league division for team ${teamId}, using derived division: ${division}`)
         }
 
