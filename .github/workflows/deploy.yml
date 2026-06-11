@@ -153,6 +153,14 @@ jobs:
             for i in {1..6}; do
               if curl -s -f http://localhost:3000/api/health > /dev/null 2>&1; then
                 echo "✅ Health check passed!"
+                # Wake Payload + the Discord bot NOW. /api/health never calls getPayload,
+                # so without this the bot (and slash commands) stays dark until the first
+                # organic Payload-backed request ("unknown command" reports after deploys).
+                if curl -s -f -m 120 http://localhost:3000/api/health/ready > /dev/null 2>&1; then
+                  echo "✅ Payload + Discord bot booted"
+                else
+                  echo "⚠️ Readiness wake-up failed (bot will boot on first organic request)"
+                fi
                 docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}' | head -5
                 exit 0
               fi
