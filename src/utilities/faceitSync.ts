@@ -634,10 +634,24 @@ export async function syncTeamData(
 
     const existingSeason = existingSeasons.docs[0]
     let seasonRecord = existingSeason || null
-    
-    if (existingSeason) {
-    } else {
+
+    // Fallback identity when no season record exists (standings unavailable -> the
+    // season auto-create below never runs): the team's linked league template knows
+    // the real division/season name. Without this, match creation guessed the
+    // division from the rating string ("4.2K" matches nothing) and silently
+    // defaulted to 'Advanced' - mislabeling e.g. Open-division matches.
+    let fallbackLeague: any = null
+    if (!existingSeason) {
       console.warn(`[FaceIt Sync] No existing season found for team ${teamId}`)
+      if (team.currentFaceitLeague) {
+        const leagueId =
+          typeof team.currentFaceitLeague === 'object'
+            ? (team.currentFaceitLeague as any).id
+            : team.currentFaceitLeague
+        fallbackLeague = await payload
+          .findByID({ collection: 'faceit-leagues' as any, id: leagueId, depth: 0 })
+          .catch(() => null)
+      }
     }
     
     // 4. Create or update season record
@@ -820,10 +834,11 @@ export async function syncTeamData(
         const isFinished = faceitMatch.status === 'finished'
         const didWin = isFinished && faceitMatch.winner === faceitTeamId
 
-        // Get division from season record, fallback to team.rating
-        let division = seasonRecord?.division || 'Advanced'
-        
-        if (!seasonRecord) {
+        // Division priority: season record -> team's linked league template ->
+        // derive from team.rating -> 'Advanced' as the last resort.
+        let division = seasonRecord?.division || fallbackLeague?.division || ''
+
+        if (!division) {
           // Derive division from team.rating (e.g., 'FACEIT Masters' -> 'Masters')
           if (team.rating) {
             const ratingStr = String(team.rating)
@@ -832,9 +847,10 @@ export async function syncTeamData(
             else if (ratingStr.includes('Open')) division = 'Open'
             else if (ratingStr.includes('Advanced')) division = 'Advanced'
           }
-          console.warn(`[FaceIt Sync] No season record found for team ${teamId}, using derived division: ${division}`)
+          if (!division) division = 'Advanced'
+          console.warn(`[FaceIt Sync] No season/league division for team ${teamId}, using derived division: ${division}`)
         }
-        
+
         const matchData: any = {
           // Legacy field (for backwards compatibility)
           team: teamId,
@@ -848,7 +864,7 @@ export async function syncTeamData(
           date: matchDate.toISOString(),
           region: team.region || 'NA',
           league: division, // Use division from season (Masters, Expert, Advanced, Open)
-          season: seasonRecord?.seasonName || 'Season 7', // Use season name from record
+          season: seasonRecord?.seasonName || fallbackLeague?.name || 'Season 7', // Season name: record -> league template -> legacy default
           status: isFinished ? ('complete' as const) : ('scheduled' as const),
           matchType: 'team-match' as const,
           faceitMatchId: faceitMatch.origin.id,
