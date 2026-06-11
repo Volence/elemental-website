@@ -1,9 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { userMention, accountCreatedAtMs, accountAgeDays, isNewAccount } from '@/discord/logging/identity'
+import { userMention, subjectLabel, accountCreatedAtMs, accountAgeDays, isNewAccount } from '@/discord/logging/identity'
 
 describe('identity helpers', () => {
   it('builds a clickable mention', () => {
     expect(userMention('123')).toBe('<@123>')
+  })
+  it('builds the embed identity line: readable name first, mention second', () => {
+    expect(subjectLabel('ameliah', '123')).toBe('**ameliah** (<@123>)')
   })
   it('derives account creation time from the snowflake', () => {
     const created = 1700000000000

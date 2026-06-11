@@ -5,7 +5,7 @@ import { attachMemberHandlers } from './handlers/members'
 import { attachStructureHandlers } from './handlers/structure'
 import { attachModerationHandlers } from './handlers/moderation'
 import { postLog } from './sink'
-import { userMention } from './identity'
+import { subjectLabel } from './identity'
 import { setUserAuthor } from './attribution'
 import { Colors } from './colors'
 import { primeInviteCache, refreshInviteCache } from './invites'
@@ -37,14 +37,12 @@ export function setupLogging(client: Client, payload: Payload, now: () => number
       const embed = new EmbedBuilder()
         .setColor(Colors.profile)
         .setTitle('Profile changed')
-        // Plain-text name: `<@id>` mentions inside embeds render only when the viewer's
-        // client has the user cached. The clickable mention goes in the message content.
-        .setDescription(`**${newU.tag}**`)
+        .setDescription(subjectLabel(newU.tag, newU.id))
         .addFields({ name: 'Changes', value: changes.join('\n') })
         .setFooter({ text: `ID: ${newU.id}` })
       setUserAuthor(embed, newU)
       if (avatarChanged) embed.setThumbnail(newU.displayAvatarURL({ size: 256 }))
-      await postLog(client, payload, guild.id, 'profile', embed, { content: userMention(newU.id) })
+      await postLog(client, payload, guild.id, 'profile', embed)
     }
   })
 

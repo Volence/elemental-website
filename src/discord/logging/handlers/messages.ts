@@ -9,7 +9,7 @@ import {
 } from 'discord.js'
 import type { Payload } from 'payload'
 import { postLog } from '../sink'
-import { userMention } from '../identity'
+import { userMention, subjectLabel } from '../identity'
 import { truncate } from '../diff'
 import { attachmentMetadata } from '../attachments'
 import { setUserAuthor } from '../attribution'
@@ -19,14 +19,9 @@ function guildIdOf(msg: Message | PartialMessage): string | null {
   return msg.guild?.id ?? null
 }
 
-/**
- * Readable author for the embed body. Plain text on purpose: `<@id>` mentions inside
- * embeds only render when the viewer's client has the user cached, so they frequently
- * show as raw `<@123...>`. The clickable mention goes in the message CONTENT instead
- * (see postLog's `content` option), where Discord always renders it.
- */
+/** Readable author for the embed body: bold name first, mention (popout link) second. */
 function authorLabel(author: User | null): string {
-  return author ? `**${author.tag}**` : 'Unknown author'
+  return author ? subjectLabel(author.tag, author.id) : 'Unknown author'
 }
 
 /**
@@ -85,9 +80,7 @@ export function attachMessageHandlers(client: Client, payload: Payload): void {
       )
       .setFooter({ text: `ID: ${newMsg.id}` })
     if (newMsg.author) setUserAuthor(embed, newMsg.author)
-    await postLog(client, payload, guildId, 'message', embed, {
-      content: newMsg.author ? userMention(newMsg.author.id) : undefined,
-    })
+    await postLog(client, payload, guildId, 'message', embed)
   })
 
   client.on(Events.MessageDelete, async (msg) => {
@@ -115,9 +108,7 @@ export function attachMessageHandlers(client: Client, payload: Payload): void {
         value: truncate(metas.map((m) => `${m.name} (${m.contentType ?? '?'}, ${m.size}b)`).join('\n'), 1000),
       })
     }
-    await postLog(client, payload, guildId, 'message', embed, {
-      content: author ? userMention(author.id) : undefined,
-    })
+    await postLog(client, payload, guildId, 'message', embed)
   })
 
   client.on(Events.MessageBulkDelete, async (messages) => {
