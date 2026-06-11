@@ -32,6 +32,7 @@ import * as migration_20260608_add_discord_clone_jobs from "./20260608_add_disco
 import * as migration_20260609_add_discord_servers from "./20260609_add_discord_servers";
 import * as migration_20260610_add_logging_settings from "./20260610_add_logging_settings";
 import * as migration_20260610_add_discord_member_events from "./20260610_add_discord_member_events";
+import * as migration_20260611_add_discord_logged_messages from "./20260611_add_discord_logged_messages";
 
 export const migrations = [
   {
@@ -203,5 +204,10 @@ export const migrations = [
     up: migration_20260610_add_discord_member_events.up,
     down: migration_20260610_add_discord_member_events.down,
     name: "20260610_add_discord_member_events",
+  },
+  {
+    up: migration_20260611_add_discord_logged_messages.up,
+    down: migration_20260611_add_discord_logged_messages.down,
+    name: "20260611_add_discord_logged_messages",
   },
 ];

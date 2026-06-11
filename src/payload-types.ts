@@ -101,6 +101,7 @@ export interface Config {
     'discord-clone-jobs': DiscordCloneJob;
     'discord-servers': DiscordServer;
     'discord-member-events': DiscordMemberEvent;
+    'discord-logged-messages': DiscordLoggedMessage;
     'watched-threads': WatchedThread;
     'twitch-streamers': TwitchStreamer;
     'audit-logs': AuditLog;
@@ -158,6 +159,7 @@ export interface Config {
     'discord-clone-jobs': DiscordCloneJobsSelect<false> | DiscordCloneJobsSelect<true>;
     'discord-servers': DiscordServersSelect<false> | DiscordServersSelect<true>;
     'discord-member-events': DiscordMemberEventsSelect<false> | DiscordMemberEventsSelect<true>;
+    'discord-logged-messages': DiscordLoggedMessagesSelect<false> | DiscordLoggedMessagesSelect<true>;
     'watched-threads': WatchedThreadsSelect<false> | WatchedThreadsSelect<true>;
     'twitch-streamers': TwitchStreamersSelect<false> | TwitchStreamersSelect<true>;
     'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
@@ -2813,6 +2815,31 @@ export interface DiscordMemberEvent {
   createdAt: string;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discord-logged-messages".
+ */
+export interface DiscordLoggedMessage {
+  id: number;
+  messageId: string;
+  guildId: string;
+  channelId: string;
+  authorId: string;
+  authorTag: string;
+  content?: string | null;
+  attachments?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  sentAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Forum threads that are automatically kept active
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3481,6 +3508,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'discord-member-events';
         value: number | DiscordMemberEvent;
+      } | null)
+    | ({
+        relationTo: 'discord-logged-messages';
+        value: number | DiscordLoggedMessage;
       } | null)
     | ({
         relationTo: 'watched-threads';
@@ -4636,6 +4667,22 @@ export interface DiscordMemberEventsSelect<T extends boolean = true> {
   discordUserId?: T;
   eventType?: T;
   occurredAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discord-logged-messages_select".
+ */
+export interface DiscordLoggedMessagesSelect<T extends boolean = true> {
+  messageId?: T;
+  guildId?: T;
+  channelId?: T;
+  authorId?: T;
+  authorTag?: T;
+  content?: T;
+  attachments?: T;
+  sentAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

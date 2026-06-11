@@ -10,6 +10,7 @@ import { setUserAuthor } from './attribution'
 import { Colors } from './colors'
 import { primeInviteCache, refreshInviteCache } from './invites'
 import { postHeartbeat, markDisconnected, clearDisconnected } from './heartbeat'
+import { pruneStoredMessages } from './messageStore'
 
 /**
  * Self-contained logging module entry point. Designed to be extractable: the only
@@ -20,6 +21,11 @@ export function setupLogging(client: Client, payload: Payload, now: () => number
   attachMemberHandlers(client, payload, now)
   attachStructureHandlers(client, payload)
   attachModerationHandlers(client, payload)
+
+  // Retention sweep for the DB message store (see messageStore.ts) - shortly after
+  // boot, then every 6 hours. setupLogging runs once per process.
+  setTimeout(() => void pruneStoredMessages(payload, now()), 60_000)
+  setInterval(() => void pruneStoredMessages(payload, now()), 6 * 3600_000)
 
   // Global username / display-name / avatar changes -> each shared guild's profile channel.
   client.on(Events.UserUpdate, async (oldU, newU) => {

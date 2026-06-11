@@ -59,6 +59,7 @@ import { DiscordCategoryTemplates } from './collections/DiscordCategoryTemplates
 import { DiscordCloneJobs } from './collections/DiscordCloneJobs'
 import { DiscordServers } from './collections/DiscordServers'
 import { DiscordMemberEvents } from './collections/DiscordMemberEvents'
+import { DiscordLoggedMessages } from './collections/DiscordLoggedMessages'
 import { TwitchStreamers } from './collections/TwitchStreamers'
 import { Tasks } from './collections/Tasks'
 import { GraphicsAssets } from './collections/GraphicsAssets'
@@ -296,6 +297,7 @@ const config = buildConfig({
     DiscordCloneJobs,
     DiscordServers,
     DiscordMemberEvents,
+    DiscordLoggedMessages,
     WatchedThreads,
     TwitchStreamers,
     
