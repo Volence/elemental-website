@@ -8,7 +8,7 @@ import { loadLoggingConfig } from '../config'
 import { resolveProfile } from '../nameResolver'
 import { recordMemberEvent, getRejoinSummary } from '../memberEvents'
 import { resolveJoinInvite } from '../invites'
-import { fetchActorId, fetchAuditEntry, fetchRoleChange, setActorAuthorOrUser, setMemberAuthor, setUserAuthor } from '../attribution'
+import { fetchActorId, fetchAuditEntryWithRetry, fetchRoleChange, setActorAuthorOrUser, setMemberAuthor, setUserAuthor } from '../attribution'
 import { Colors } from '../colors'
 
 export function attachMemberHandlers(client: Client, payload: Payload, now: () => number): void {
@@ -59,8 +59,9 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
     if (!cfg) return
     const nowMs = now()
 
-    // A voluntary leave has no MemberKick audit entry; a kick does.
-    const kick = await fetchAuditEntry(member.guild, AuditLogEvent.MemberKick, member.id)
+    // A voluntary leave has no MemberKick audit entry; a kick does. Retried because the
+    // audit entry can lag the gateway event (otherwise kicks mislabel as leaves).
+    const kick = await fetchAuditEntryWithRetry(member.guild, AuditLogEvent.MemberKick, member.id)
     // The @everyone role's id equals the guild id - drop it so we only list real roles.
     const roles = member.roles?.cache
       ? [...member.roles.cache.values()].filter((r) => r.id !== guildId).map((r) => `<@&${r.id}>`)

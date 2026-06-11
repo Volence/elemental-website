@@ -85,6 +85,28 @@ export async function fetchActorId(
   return entry?.executorId ?? null
 }
 
+/**
+ * fetchAuditEntry with retries: gateway events (ban/kick) often fire BEFORE Discord
+ * finishes writing the audit-log entry, so an immediate fetch misses and the log
+ * can't attribute who did it. A couple of short retries close that race. Worst case
+ * (entry never appears, e.g. a voluntary leave checked for a kick) costs
+ * (attempts-1) * delayMs of latency on the log post.
+ */
+export async function fetchAuditEntryWithRetry(
+  guild: Guild,
+  type: AuditLogEvent,
+  targetId?: string,
+  attempts: number = 3,
+  delayMs: number = 1500,
+): Promise<AuditMatch | null> {
+  for (let i = 0; i < attempts; i++) {
+    const match = await fetchAuditEntry(guild, type, targetId)
+    if (match) return match
+    if (i < attempts - 1) await new Promise((r) => setTimeout(r, delayMs))
+  }
+  return null
+}
+
 export interface RoleChange {
   added: string[]
   removed: string[]
