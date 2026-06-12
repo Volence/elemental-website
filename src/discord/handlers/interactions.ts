@@ -40,6 +40,24 @@ export function setupInteractionHandlers(): void {
   startPollNotificationPolling()
 
   client.on('interactionCreate', async (interaction: Interaction) => {
+    // Diagnostic: how old is the interaction when WE first see it? Discord's ACK
+    // deadline is 3s from creation - if `ageMs` is already large here, the delay is
+    // upstream (gateway delivery / ws read backlog), not in our handlers. Chasing
+    // intermittent 10062 Unknown-interaction failures (2026-06-12).
+    const ageMs = Date.now() - interaction.createdTimestamp
+    const label = interaction.isChatInputCommand()
+      ? `/${interaction.commandName}`
+      : interaction.isAutocomplete()
+        ? `autocomplete:${interaction.commandName}`
+        : interaction.isButton()
+          ? `button:${interaction.customId}`
+          : interaction.type
+    if (ageMs > 1000) {
+      console.warn(`[Interactions] ${label} arrived ${ageMs}ms old - gateway/event-loop lag`)
+    }
+    if (interaction.isChatInputCommand()) {
+      console.log(`[Interactions] ${label} age=${ageMs}ms`)
+    }
     try {
       if (interaction.isChatInputCommand()) {
         await handleChatCommand(interaction)
