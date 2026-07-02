@@ -17,6 +17,8 @@
 
 import { NextResponse } from 'next/server'
 import { parseScrimLog, validateScrimLog, createScrimFromParsedData } from '@/lib/scrim-parser'
+import { mapSignatureFromParsedData } from '@/lib/scrim-analytics/duplicate-detection'
+import prisma from '@/lib/prisma'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 
@@ -132,6 +134,49 @@ export async function POST(request: Request) {
             error: `Failed to parse file "${file.name}": ${parseError instanceof Error ? parseError.message : 'Unknown error'}`,
           },
           { status: 400 },
+        )
+      }
+    }
+
+    // Duplicate detection: a map whose name, kill count, and first/last kill
+    // timestamps all match an existing map is almost certainly a re-upload of
+    // the same log, which would silently double-count every stat.
+    const allowDuplicates = formData.get('allowDuplicates') === 'true'
+    if (!allowDuplicates) {
+      const duplicates: Array<{ fileName: string; mapName: string; existing: Array<{ scrimId: number; scrimName: string; date: string }> }> = []
+      for (const map of parsedMaps) {
+        const sig = mapSignatureFromParsedData(map.parsedData)
+        if (!sig || sig.kills === 0) continue
+        const existing = await prisma.$queryRaw<Array<{ scrimId: number; scrimName: string; date: Date }>>`
+          SELECT s.id as "scrimId", s.name as "scrimName", s.date
+          FROM scrim_map_data md
+          JOIN scrim_maps m ON m.id = md."mapId"
+          JOIN scrim_scrims s ON s.id = m."scrimId"
+          WHERE m.name = ${sig.mapName}
+            AND (SELECT count(*) FROM scrim_kills k WHERE k."mapDataId" = md.id) = ${sig.kills}
+            AND (SELECT min(k.match_time) FROM scrim_kills k WHERE k."mapDataId" = md.id) = ${sig.firstKillTime}
+            AND (SELECT max(k.match_time) FROM scrim_kills k WHERE k."mapDataId" = md.id) = ${sig.lastKillTime}
+          LIMIT 3
+        `
+        if (existing.length > 0) {
+          duplicates.push({
+            fileName: map.fileName,
+            mapName: sig.mapName,
+            existing: existing.map(e => ({ scrimId: e.scrimId, scrimName: e.scrimName, date: e.date.toISOString() })),
+          })
+        }
+      }
+      if (duplicates.length > 0) {
+        return NextResponse.json(
+          {
+            error: 'duplicate_maps',
+            message:
+              `${duplicates.length} of ${parsedMaps.length} file(s) appear to already be uploaded: ` +
+              duplicates.map(d => `"${d.fileName}" matches ${d.mapName} in scrim "${d.existing[0].scrimName}"`).join('; ') +
+              '. Re-uploading would double-count these maps in all stats.',
+            duplicates,
+          },
+          { status: 409 },
         )
       }
     }

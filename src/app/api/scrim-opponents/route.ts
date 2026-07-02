@@ -61,13 +61,15 @@ export async function GET(req: NextRequest) {
       `
     }
 
-    // 3. Merge and deduplicate
+    // 3. Merge and deduplicate. Generic workshop side names carry no
+    // information about who the opponent was, so never suggest them.
+    const GENERIC_SIDE_NAME = /^team [12]$/i
     const allNames = new Set<string>()
     for (const o of overrides) {
       if (o.opponentName) allNames.add(o.opponentName)
     }
     for (const r of rawNames) {
-      if (r.name) allNames.add(r.name)
+      if (r.name && !GENERIC_SIDE_NAME.test(r.name)) allNames.add(r.name)
     }
 
     // 4. Filter by query and sort

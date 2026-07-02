@@ -5,6 +5,8 @@ import { heroRoleMapping } from '@/lib/scrim-parser/heroes'
 import { assessConfidence } from '@/lib/scrim-parser/confidence'
 import { computeUltEconomy, type UltEconomyMapInput } from '@/lib/scrim-parser/ult-economy'
 import { processFightStats, type FightStatsAnalysis } from '@/lib/scrim-parser/fight-stats'
+import { resolveOpponentName } from '@/lib/scrim-analytics/opponent'
+import { buildSideLookup, resolveOurSide } from '@/lib/scrim-analytics/our-side'
 import { getUserScope } from '@/access/scrimScope'
 
 /**
@@ -13,6 +15,16 @@ import { getUserScope } from '@/access/scrimScope'
  * Enhanced with Parsertime-inspired features: trends, heroes, teamfights,
  * role performance, player×map matrix, and strengths/weaknesses.
  */
+
+/** ISO-8601 week key (YYYY-WNN); weeks start Monday, week 1 contains Jan 4. */
+function isoWeekKey(d: Date): string {
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
+  const day = date.getUTCDay() || 7
+  date.setUTCDate(date.getUTCDate() + 4 - day)
+  const yearStart = Date.UTC(date.getUTCFullYear(), 0, 1)
+  const week = Math.ceil(((date.getTime() - yearStart) / 86400000 + 1) / 7)
+  return `${date.getUTCFullYear()}-W${String(week).padStart(2, '0')}`
+}
 
 /** Shape the fight-stats analysis into the `teamfights` response (rounded for display). */
 function buildTeamfights(fs: FightStatsAnalysis) {
@@ -166,22 +178,24 @@ export async function GET(req: NextRequest) {
     }
 
     // ── 5. Identify "our" team raw name per mapDataId ──
-    // Use roster membership to correctly identify our team, especially for dual-team scrims
-    // where both teams may have players with personId set.
-    const ourTeamRows = await prisma.$queryRaw<Array<{ mapDataId: number; player_team: string }>>`
-      SELECT DISTINCT ps."mapDataId" as "mapDataId", ps.player_team
+    // Majority vote over roster membership per (map, linked team): resilient to
+    // cross-rostered players, and lets dual-team scrims resolve the viewed team
+    // by inverting the other linked team's side when only one side was mapped.
+    const rosterTeamIds = [...new Set([
+      teamId,
+      ...scrims.flatMap(s => [s.payloadTeamId, s.payloadTeamId2]).filter((id): id is number => id != null),
+    ])]
+    const sideRows = await prisma.$queryRaw<Array<{ mapDataId: number; teamId: number; side: string; players: number }>>`
+      SELECT ps."mapDataId" as "mapDataId", tr."_parent_id" as "teamId", ps.player_team as side,
+             COUNT(DISTINCT ps."personId")::int as players
       FROM scrim_player_stats ps
       JOIN teams_roster tr ON tr.person_id = ps."personId"
       WHERE ps."mapDataId" = ANY(${allMapDataIds}::int[])
         AND ps."personId" IS NOT NULL
-        AND tr."_parent_id" = ${teamId}
+        AND tr."_parent_id" = ANY(${rosterTeamIds}::int[])
+      GROUP BY ps."mapDataId", tr."_parent_id", ps.player_team
     `
-    const ourTeamByMap = new Map<number, string>()
-    for (const r of ourTeamRows) {
-      if (r.mapDataId && !ourTeamByMap.has(r.mapDataId)) {
-        ourTeamByMap.set(r.mapDataId, r.player_team)
-      }
-    }
+    const sideLookup = buildSideLookup(sideRows)
 
     // ── 6. Compute per-map results ──
     type MapResult = {
@@ -205,24 +219,59 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Build scrim-level opponent name override lookup
-    const scrimOpponentOverride = new Map<number, string>()
-    for (const s of scrims) {
-      if (s.opponentName) {
-        scrimOpponentOverride.set(s.id, s.opponentName)
-      }
+    // Resolve names for all Payload teams linked to these scrims, so a linked
+    // opponent shows its real team name instead of the raw log side name
+    // (which is often the generic "Team 1"/"Team 2").
+    const linkedTeamIds = [...new Set(
+      scrims.flatMap(s => [s.payloadTeamId, s.payloadTeamId2]).filter((id): id is number => id != null),
+    )]
+    const linkedTeamNames = new Map<number, string>()
+    if (linkedTeamIds.length > 0) {
+      const rows = await prisma.$queryRaw<Array<{ id: number; name: string }>>`
+        SELECT id, name FROM teams WHERE id = ANY(${linkedTeamIds}::int[])
+      `
+      for (const r of rows) linkedTeamNames.set(r.id, r.name)
+    }
+    const scrimById = new Map(scrims.map(s => [s.id, s]))
+
+    /** The viewed team's raw log side on a map, or null when unknowable. */
+    const sideForMap = (mapDataId: number): string | null => {
+      const info = mapInfoMap.get(mapDataId)
+      if (!info) return null
+      const scrimInfo = mapDataToScrim.get(mapDataId)
+      const scrim = scrimInfo ? scrimById.get(scrimInfo.id) : undefined
+      const otherTeamId = scrim
+        ? (scrim.payloadTeamId === teamId ? (scrim.payloadTeamId2 ?? null) : scrim.payloadTeamId)
+        : null
+      return resolveOurSide({
+        mapDataId,
+        viewTeamId: teamId,
+        otherTeamId,
+        sides: sideLookup,
+        rawTeam1: info.team1,
+        rawTeam2: info.team2,
+      })
     }
 
     const mapResults: MapResult[] = []
     for (const [mapDataId, info] of mapInfoMap) {
-      const ourTeam = ourTeamByMap.get(mapDataId) ?? info.team1
-      let opponent = ourTeam === info.team1 ? info.team2 : info.team1
+      const resolvedSide = sideForMap(mapDataId)
+      const ourTeam = resolvedSide ?? info.team1
 
-      // Prefer scrim-level opponent name override
       const scrimInfo = mapDataToScrim.get(mapDataId)
-      if (scrimInfo && scrimOpponentOverride.has(scrimInfo.id)) {
-        opponent = scrimOpponentOverride.get(scrimInfo.id)!
-      }
+      const scrim = scrimInfo ? scrimById.get(scrimInfo.id) : undefined
+      const opponent = scrim
+        ? resolveOpponentName({
+            viewTeamId: teamId,
+            payloadTeamId: scrim.payloadTeamId,
+            payloadTeamId2: scrim.payloadTeamId2,
+            opponentName: scrim.opponentName,
+            linkedTeamNames,
+            rawTeam1: info.team1,
+            rawTeam2: info.team2,
+            rawOurTeam: resolvedSide,
+          })
+        : (ourTeam === info.team1 ? info.team2 : info.team1)
 
       const t1 = info.team1Score ?? info.re_team1Score
       const t2 = info.team2Score ?? info.re_team2Score
@@ -253,6 +302,9 @@ export async function GET(req: NextRequest) {
 
     // ── 6b. Apply range filter to mapResults ──
     mapResults.sort((a, b) => b.scrimDate.getTime() - a.scrimDate.getTime())
+    // Keep the unfiltered results for the recent-scrims list and all-time
+    // counts, so scrims outside the range window don't render as 0-0-0.
+    const allMapResults = [...mapResults]
     if (range === 'last20') {
       mapResults.splice(20)
     } else if (range === 'last50') {
@@ -465,9 +517,12 @@ export async function GET(req: NextRequest) {
       .sort((a, b) => b.totalMaps - a.totalMaps)
 
     // ── 11. Recent scrims ──
+    // Built from the UNfiltered results: a scrim older than the range window
+    // should still show its real record, not 0-0-0.
+    const resultByMapDataId = new Map(allMapResults.map(mr => [mr.mapDataId, mr]))
     const recentScrims = scrims.slice(0, 10).map(s => {
       const scrimMapResults = s.maps.flatMap(m =>
-        m.mapData.map(md => mapResults.find(r => r.mapDataId === md.id))
+        m.mapData.map(md => resultByMapDataId.get(md.id))
       ).filter(Boolean) as MapResult[]
 
       const scrimRecord = { wins: 0, losses: 0, draws: 0 }
@@ -505,11 +560,7 @@ export async function GET(req: NextRequest) {
     // Weekly win rates
     const weeklyMap = new Map<string, { wins: number; losses: number; draws: number }>()
     for (const mr of sortedByDate) {
-      const d = mr.scrimDate
-      // ISO week key: YYYY-WNN
-      const oneJan = new Date(d.getFullYear(), 0, 1)
-      const weekNum = Math.ceil(((d.getTime() - oneJan.getTime()) / 86400000 + oneJan.getDay() + 1) / 7)
-      const key = `${d.getFullYear()}-W${String(weekNum).padStart(2, '0')}`
+      const key = isoWeekKey(mr.scrimDate)
       if (!weeklyMap.has(key)) weeklyMap.set(key, { wins: 0, losses: 0, draws: 0 })
       const w = weeklyMap.get(key)!
       if (mr.result === 'win') w.wins++
@@ -532,30 +583,41 @@ export async function GET(req: NextRequest) {
       date: mr.scrimDate.toISOString(),
     }))
 
-    // Streaks
+    // Streaks. Draws break a streak - both the current one and longest runs.
     let currentStreak = 0
     let currentType: 'win' | 'loss' | null = null
+    let currentEnded = false
     let longestWin = 0
     let longestLoss = 0
     let tempWin = 0
     let tempLoss = 0
     for (const mr of [...sortedByDate].reverse()) {
+      // Longest runs (order of iteration doesn't matter for these)
       if (mr.result === 'win') {
         tempWin++
         tempLoss = 0
-        if (currentType === null) { currentType = 'win'; currentStreak = 1 }
-        else if (currentType === 'win') currentStreak++
         longestWin = Math.max(longestWin, tempWin)
       } else if (mr.result === 'loss') {
         tempLoss++
         tempWin = 0
-        if (currentType === null) { currentType = 'loss'; currentStreak = 1 }
-        else if (currentType === 'loss') currentStreak++
         longestLoss = Math.max(longestLoss, tempLoss)
       } else {
         tempWin = 0
         tempLoss = 0
-        if (currentType === null) currentType = null
+      }
+
+      // Current streak: consecutive same results counted from the newest map
+      if (!currentEnded) {
+        if (mr.result !== 'win' && mr.result !== 'loss') {
+          currentEnded = true
+        } else if (currentType === null) {
+          currentType = mr.result
+          currentStreak = 1
+        } else if (currentType === mr.result) {
+          currentStreak++
+        } else {
+          currentEnded = true
+        }
       }
     }
 
@@ -566,21 +628,25 @@ export async function GET(req: NextRequest) {
     }
 
     // ── 14. Heroes: Hero pool overview + diversity + role breakdown ──
-    const heroAgg = new Map<string, { hero: string; time: number; maps: Set<number>; wins: number; losses: number; draws: number }>()
+    const heroAgg = new Map<string, { hero: string; time: number; maps: Set<number>; counted: Set<number>; wins: number; losses: number; draws: number }>()
     for (const ps of playerStats) {
       if (!ps.personId) continue
       const hero = ps.player_hero
       if (!heroAgg.has(hero)) {
-        heroAgg.set(hero, { hero, time: 0, maps: new Set(), wins: 0, losses: 0, draws: 0 })
+        heroAgg.set(hero, { hero, time: 0, maps: new Set(), counted: new Set(), wins: 0, losses: 0, draws: 0 })
       }
       const h = heroAgg.get(hero)!
       h.time += Number(ps.hero_time_played) || 0
       h.maps.add(ps.mapDataId)
-      // Get result for this map
-      const mr = mapResults.find(r => r.mapDataId === ps.mapDataId)
-      if (mr?.result === 'win') h.wins++
-      else if (mr?.result === 'loss') h.losses++
-      else if (mr?.result === 'draw') h.draws++
+      // Count each map's result once per hero, even if several of our players
+      // played that hero on the map.
+      if (!h.counted.has(ps.mapDataId)) {
+        h.counted.add(ps.mapDataId)
+        const mr = resultByMapDataId.get(ps.mapDataId)
+        if (mr?.result === 'win') h.wins++
+        else if (mr?.result === 'loss') h.losses++
+        else if (mr?.result === 'draw') h.draws++
+      }
     }
 
     const heroPool = Array.from(heroAgg.values())
@@ -677,7 +743,7 @@ export async function GET(req: NextRequest) {
     // scrim_kills are rez markers; the real rezzes come from scrim_mercy_rezs.
     const perMapInputs: UltEconomyMapInput[] = []
     for (const mapDataId of filteredMapDataIds) {
-      const ourTeam = ourTeamByMap.get(mapDataId)
+      const ourTeam = sideForMap(mapDataId)
       if (!ourTeam) continue
       perMapInputs.push({
         mapDataId,
@@ -689,8 +755,10 @@ export async function GET(req: NextRequest) {
       })
     }
 
-    const teamfights = buildTeamfights(processFightStats(perMapInputs, mapResults.length))
-    const ultEconomy = computeUltEconomy(perMapInputs, mapResults.length)
+    // Per-map averages must divide by the maps actually analyzed - maps whose
+    // side could not be resolved are skipped above, not counted as zeroes.
+    const teamfights = buildTeamfights(processFightStats(perMapInputs, perMapInputs.length))
+    const ultEconomy = computeUltEconomy(perMapInputs, perMapInputs.length)
 
     // ── 16. Role Performance ──
     type RoleAgg = {
@@ -744,34 +812,15 @@ export async function GET(req: NextRequest) {
     })
 
     // ── 17. Player × Map Performance Matrix ──
-    // For each player+map combo, compute W/L/D
-    const playerMapAgg = new Map<string, { personId: number; playerName: string; mapName: string; wins: number; losses: number; draws: number }>()
-    for (const ps of playerStats) {
-      if (!ps.personId) continue
-      const mr = mapResults.find(r => r.mapDataId === ps.mapDataId)
-      if (!mr || !mr.result) continue
-      const key = `${ps.personId}__${mr.mapName}`
-      if (!playerMapAgg.has(key)) {
-        playerMapAgg.set(key, {
-          personId: ps.personId,
-          playerName: personNameMap.get(ps.personId) ?? ps.player_name,
-          mapName: mr.mapName,
-          wins: 0, losses: 0, draws: 0,
-        })
-      }
-      const agg = playerMapAgg.get(key)!
-      // Avoid double-counting (multiple hero rows per map for same player)
-      // Use a dedup set per key-mapDataId
-    }
-    // Rebuild with dedup
+    // For each player+map combo, compute W/L/D. Multiple hero rows for the
+    // same player on the same map count once (dedup on mapDataId).
     const playerMapDedup = new Map<string, Set<number>>()
     const playerMapResult = new Map<string, { personId: number; playerName: string; mapName: string; wins: number; losses: number; draws: number }>()
     for (const ps of playerStats) {
       if (!ps.personId) continue
-      const mr = mapResults.find(r => r.mapDataId === ps.mapDataId)
+      const mr = resultByMapDataId.get(ps.mapDataId)
       if (!mr || !mr.result) continue
       const key = `${ps.personId}__${mr.mapName}`
-      const dedupKey = `${key}__${ps.mapDataId}`
 
       if (!playerMapDedup.has(key)) playerMapDedup.set(key, new Set())
       if (playerMapDedup.get(key)!.has(ps.mapDataId)) continue
@@ -820,8 +869,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       teamId,
       teamName,
+      // Header counts are all-time; confidence reflects the analyzed range.
       totalScrims: scrims.length,
-      totalMaps: mapResults.length,
+      totalMaps: allMapResults.length,
       confidence: assessConfidence(mapResults.length),
       record,
       winRate,

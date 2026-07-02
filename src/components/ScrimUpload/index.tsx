@@ -13,7 +13,7 @@ import {
   FolderOpen,
 } from 'lucide-react'
 import ScrimAnalyticsTabs from '@/components/ScrimAnalyticsTabs'
-import { useAlert } from '@/components/ConfirmDialog'
+import { useAlert, useConfirm } from '@/components/ConfirmDialog'
 
 type UploadState = 'idle' | 'uploading' | 'success' | 'error'
 
@@ -60,6 +60,7 @@ type Step = 'form' | 'mapping'
  */
 export default function ScrimUploadView() {
   const alert = useAlert()
+  const confirm = useConfirm()
   // ── Step 1 state ──
   const [files, setFiles] = useState<File[]>([])
   const [scrimName, setScrimName] = useState('')
@@ -327,7 +328,8 @@ export default function ScrimUploadView() {
   const handleUpload = useCallback(async () => {
     if (!preview || !ourTeam || files.length === 0 || !teamId) return
     setState('uploading')
-    try {
+
+    const buildFormData = (allowDuplicates: boolean) => {
       const formData = new FormData()
       files.forEach((f) => formData.append('files', f))
       formData.append('teamId', teamId)
@@ -341,20 +343,43 @@ export default function ScrimUploadView() {
         formData.append('teamId2', teamId2)
         formData.append('mappings2', JSON.stringify(playerMappings2))
       }
-      const res = await fetch('/api/scrim-upload', { method: 'POST', body: formData })
-      const data = await res.json()
+      if (allowDuplicates) formData.append('allowDuplicates', 'true')
+      return formData
+    }
+
+    try {
+      let res = await fetch('/api/scrim-upload', { method: 'POST', body: buildFormData(false) })
+      let data = await res.json()
+
+      // Server flagged files that match already-uploaded maps. Uploading them
+      // again double-counts stats, so make the user opt in explicitly.
+      if (res.status === 409 && data.error === 'duplicate_maps') {
+        const proceed = await confirm({
+          title: 'Possible duplicate upload',
+          message: `${data.message}\n\nUpload anyway?`,
+          confirmLabel: 'Upload anyway',
+          variant: 'danger',
+        })
+        if (!proceed) {
+          setState('idle')
+          return
+        }
+        res = await fetch('/api/scrim-upload', { method: 'POST', body: buildFormData(true) })
+        data = await res.json()
+      }
+
       if (res.ok) {
         setState('success')
         setResult(data)
       } else {
         setState('error')
-        setResult({ message: data.error || 'Upload failed', error: data.error } as UploadResult)
+        setResult({ message: data.message || data.error || 'Upload failed', error: data.error } as UploadResult)
       }
     } catch {
       setState('error')
       setResult({ message: 'Network error - could not reach the server', error: 'Network error' } as UploadResult)
     }
-  }, [files, scrimName, teamId, playerMappings, opponentNameOverride, opponentTeamName, dualTeam, teamId2, playerMappings2])
+  }, [files, scrimName, teamId, playerMappings, opponentNameOverride, opponentTeamName, dualTeam, teamId2, playerMappings2, confirm, ourTeam, preview])
 
   // ── Helper: render a player mapping row (reused for team 1 and team 2) ──
   const renderMappingRow = (

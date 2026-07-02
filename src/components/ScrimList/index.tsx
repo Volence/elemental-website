@@ -335,7 +335,7 @@ export default function ScrimListView() {
     }
     const effectiveOpponent = viewingAsTeam2
       ? (scrim.teamName ?? scrim.maps[0]?.opponent ?? 'Unknown')
-      : (scrim.opponentName ?? scrim.maps[0]?.opponent ?? 'Unknown')
+      : (scrim.teamName2 ?? scrim.opponentName ?? scrim.maps[0]?.opponent ?? 'Unknown')
 
     const record = scrim.maps.reduce(
       (acc, m) => {

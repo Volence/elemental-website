@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import { resolveOpponentName } from '@/lib/scrim-analytics/opponent'
+import { buildSideLookup, resolveOurSide } from '@/lib/scrim-analytics/our-side'
 import { getUserScope } from '@/access/scrimScope'
 
 /**
@@ -97,10 +99,10 @@ export async function GET(req: NextRequest) {
     team1Score: number | null; team2Score: number | null;
     re_team1Score: number | null; re_team2Score: number | null;
   }
-  let mapInfoMap = new Map<number, MapInfo>()
+  const mapInfoMap = new Map<number, MapInfo>()
   const estimatedMapIds = new Set<number>()
   let scoreOverrideMap = new Map<number, string>()
-  const ourTeamByMap = new Map<number, string>()
+  let sideLookup = new Map<string, string>()
 
   if (allMapDataIds.length > 0) {
     const mapInfoRows = await prisma.$queryRaw<MapInfo[]>`
@@ -169,23 +171,23 @@ export async function GET(req: NextRequest) {
       scoreOverrideMap.set(row.id, row.score_override)
     }
 
-    // Build roster-based "our team" lookup per map
-    // For each mapDataId, find the raw team name that contains players from the scrim's primary team roster
-    const ourTeamRows = await prisma.$queryRaw<Array<{ mapDataId: number; player_team: string; payload_team_id: number }>>`
-      SELECT DISTINCT ps."mapDataId" as "mapDataId", ps.player_team, s."payloadTeamId" as payload_team_id
+    // Build roster-based "our team" lookup per map: majority vote per
+    // (map, linked team), so cross-rostered ringers can't flip the side, and
+    // dual-team scrims can resolve via the second team when only its players
+    // were mapped at upload.
+    const sideRows = await prisma.$queryRaw<Array<{ mapDataId: number; teamId: number; side: string; players: number }>>`
+      SELECT ps."mapDataId" as "mapDataId", tr."_parent_id" as "teamId", ps.player_team as side,
+             COUNT(DISTINCT ps."personId")::int as players
       FROM scrim_player_stats ps
       JOIN scrim_map_data md ON md.id = ps."mapDataId"
       JOIN scrim_scrims s ON s.id = md."scrimId"
-      JOIN teams_roster tr ON tr.person_id = ps."personId" AND tr."_parent_id" = s."payloadTeamId"
+      JOIN teams_roster tr ON tr.person_id = ps."personId"
+        AND (tr."_parent_id" = s."payloadTeamId" OR tr."_parent_id" = s."payloadTeamId2")
       WHERE ps."mapDataId" = ANY(${allMapDataIds}::int[])
         AND ps."personId" IS NOT NULL
-        AND s."payloadTeamId" IS NOT NULL
+      GROUP BY ps."mapDataId", tr."_parent_id", ps.player_team
     `
-    for (const r of ourTeamRows) {
-      if (!ourTeamByMap.has(r.mapDataId)) {
-        ourTeamByMap.set(r.mapDataId, r.player_team)
-      }
-    }
+    sideLookup = buildSideLookup(sideRows)
   }
 
   return NextResponse.json({
@@ -215,14 +217,29 @@ export async function GET(req: NextRequest) {
           let result: 'win' | 'loss' | 'draw' | null = null
           let estimated = false
           if (info) {
-            // Use roster-based lookup to determine which raw team is "ours"
-            const ourTeamRaw = (mapDataId ? ourTeamByMap.get(mapDataId) : null) ?? info.team1
-            opponent = ourTeamRaw === info.team1 ? info.team2 : info.team1
-
-            // Prefer scrim-level opponent name override
-            if (s.opponentName) {
-              opponent = s.opponentName
-            }
+            // Roster-based lookup (majority vote, dual-team inversion) to
+            // determine which raw side is the primary team's
+            const resolvedSide = mapDataId && s.payloadTeamId != null
+              ? resolveOurSide({
+                  mapDataId,
+                  viewTeamId: s.payloadTeamId,
+                  otherTeamId: s.payloadTeamId2 ?? null,
+                  sides: sideLookup,
+                  rawTeam1: info.team1,
+                  rawTeam2: info.team2,
+                })
+              : null
+            const ourTeamRaw = resolvedSide ?? info.team1
+            opponent = resolveOpponentName({
+              viewTeamId: null,
+              payloadTeamId: s.payloadTeamId ?? null,
+              payloadTeamId2: s.payloadTeamId2 ?? null,
+              opponentName: s.opponentName ?? null,
+              linkedTeamNames: teamNameMap,
+              rawTeam1: info.team1,
+              rawTeam2: info.team2,
+              rawOurTeam: resolvedSide,
+            })
 
             // Use match_end scores first, then round_end as fallback
             let t1 = info.team1Score ?? info.re_team1Score
