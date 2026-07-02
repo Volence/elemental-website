@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { SchedulePage } from './components/SchedulePage'
 import type { SchedulePageData, ScheduleTab } from '@/components/scheduling/types'
+import { isNextWeekReleased } from '@/utilities/scheduleReleaseDay'
 
 export const dynamic = 'force-dynamic'
 
@@ -198,11 +199,11 @@ export default async function SchedulePageRoute({ params, searchParams }: PagePr
   // Ensure current week calendar exists
   const currentWeekCalendar = await ensureCalendar(monday, sunday)
 
-  // On Friday or later, also ensure next week's calendar exists
-  // dayOfWeek: 0=Sun, 5=Fri, 6=Sat
-  const isFridayOrLater = dayOfWeek === 5 || dayOfWeek === 6 || dayOfWeek === 0
+  // On the team's release day or later (default Friday), also ensure next
+  // week's calendar exists. A missed release day still releases on the next
+  // visit that week.
   let nextWeekCalendar: any = null
-  if (isFridayOrLater) {
+  if (isNextWeekReleased(now, team.nextWeekReleaseDay)) {
     const nextMonday = new Date(monday)
     nextMonday.setDate(monday.getDate() + 7)
     const nextSunday = new Date(nextMonday)

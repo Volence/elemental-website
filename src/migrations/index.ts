@@ -33,6 +33,7 @@ import * as migration_20260609_add_discord_servers from "./20260609_add_discord_
 import * as migration_20260610_add_logging_settings from "./20260610_add_logging_settings";
 import * as migration_20260610_add_discord_member_events from "./20260610_add_discord_member_events";
 import * as migration_20260611_add_discord_logged_messages from "./20260611_add_discord_logged_messages";
+import * as migration_20260702_add_next_week_release_day from "./20260702_add_next_week_release_day";
 
 export const migrations = [
   {
@@ -209,5 +210,10 @@ export const migrations = [
     up: migration_20260611_add_discord_logged_messages.up,
     down: migration_20260611_add_discord_logged_messages.down,
     name: "20260611_add_discord_logged_messages",
+  },
+  {
+    up: migration_20260702_add_next_week_release_day.up,
+    down: migration_20260702_add_next_week_release_day.down,
+    name: "20260702_add_next_week_release_day",
   },
 ];

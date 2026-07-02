@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { EDITOR_CSS, styles as editorStyles } from '@/components/PersonEditor'
 import { useConfirm } from '@/components/ConfirmDialog'
+import { RELEASE_DAY_OPTIONS } from '@/utilities/scheduleReleaseDay'
 
 // ── Types ──
 
@@ -41,6 +42,7 @@ type Team = {
   rolePreset: string
   customRoles: string
   scheduleTimezone: string
+  nextWeekReleaseDay: string
   scheduleBlocks: Array<{ label: string; startTime: string; endTime: string; id?: string }>
   discordThreads: {
     availabilityThreadId?: string
@@ -355,6 +357,7 @@ export default function TeamEditor() {
   const [rolePreset, setRolePreset] = useState('specific')
   const [customRoles, setCustomRoles] = useState('')
   const [scheduleTimezone, setScheduleTimezone] = useState('')
+  const [nextWeekReleaseDay, setNextWeekReleaseDay] = useState('friday')
   const [scheduleBlocks, setScheduleBlocks] = useState<Array<{ label: string; startTime: string; endTime: string }>>([])
   const [discordThreads, setDiscordThreads] = useState<Record<string, string>>({})
 
@@ -432,6 +435,7 @@ export default function TeamEditor() {
       setRolePreset(t.rolePreset ?? 'specific')
       setCustomRoles(t.customRoles ?? '')
       setScheduleTimezone(t.scheduleTimezone ?? '')
+      setNextWeekReleaseDay(t.nextWeekReleaseDay ?? 'friday')
       setScheduleBlocks((t.scheduleBlocks ?? []).map(b => ({ label: b.label, startTime: b.startTime, endTime: b.endTime })))
       setDiscordThreads(t.discordThreads ?? {})
     } catch (err) {
@@ -460,7 +464,7 @@ export default function TeamEditor() {
         logo: logoId,
         faceitEnabled, faceitTeamId, faceitShowCompetitiveSection: faceitShowCompetitive,
         currentFaceitLeague: currentFaceitLeague,
-        rolePreset, customRoles, scheduleTimezone,
+        rolePreset, customRoles, scheduleTimezone, nextWeekReleaseDay,
         scheduleBlocks: scheduleBlocks.filter(b => b.label.trim()),
         discordThreads,
       }
@@ -863,6 +867,13 @@ export default function TeamEditor() {
                 <option value="">Select timezone...</option>
                 {TIMEZONES.map(tz => <option key={tz.value} value={tz.value}>{tz.label} ({tz.value})</option>)}
               </select>
+            </div>
+            <div style={editorStyles.editableField}>
+              <label style={editorStyles.fieldLabel}>Next Week&apos;s Availability Opens</label>
+              <select className="profile-input" value={nextWeekReleaseDay} onChange={e => setNextWeekReleaseDay(e.target.value)} style={{ fontSize: 13 }}>
+                {RELEASE_DAY_OPTIONS.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+              </select>
+              <p style={editorStyles.fieldHint}>Day of the week when next week&apos;s availability calendar opens for voting. If missed, it releases on the next visit that week.</p>
             </div>
           </div>
 

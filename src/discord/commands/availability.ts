@@ -1,10 +1,12 @@
 import type { ChatInputCommandInteraction } from 'discord.js'
 import { EmbedBuilder, MessageFlags } from 'discord.js'
+import { releaseDayLabel } from '@/utilities/scheduleReleaseDay'
 
 /**
  * /availability command
  * Posts the link to the team's schedule page so players can fill in availability.
- * Calendars are auto-created on Fridays, so this just finds the active one.
+ * Calendars are auto-created on the team's release day (default Friday), so
+ * this just finds the active one.
  */
 export async function handleAvailability(
   interaction: ChatInputCommandInteraction,
@@ -62,7 +64,7 @@ export async function handleAvailability(
     const monStr = mon.toISOString().split('T')[0]
     const sunStr = sun.toISOString().split('T')[0]
 
-    // Check for next week's calendar first (if it's Friday+)
+    // Check for next week's calendar first (exists once the team's release day has passed)
     const nextMon = new Date(mon)
     nextMon.setDate(mon.getDate() + 7)
     const nextSun = new Date(nextMon)
@@ -107,7 +109,7 @@ export async function handleAvailability(
 
     if (!calendar) {
       await interaction.editReply({
-        content: `No active availability calendar found for **${team.name}**. One will be created automatically on Friday, or a manager can create one from the website.\n\n${calendarUrl}`,
+        content: `No active availability calendar found for **${team.name}**. One will be created automatically on ${releaseDayLabel(team.nextWeekReleaseDay)}, or a manager can create one from the website.\n\n${calendarUrl}`,
       })
       return
     }

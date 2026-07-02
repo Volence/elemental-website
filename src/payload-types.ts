@@ -935,6 +935,10 @@ export interface Team {
       )
     | null;
   /**
+   * Day of the week when next week's availability calendar opens for voting. If the day is missed, it releases on the next visit that week.
+   */
+  nextWeekReleaseDay?: ('monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday') | null;
+  /**
    * Time blocks for availability calendars. Default: 3 blocks covering 6 PM to midnight in the team's timezone.
    */
   scheduleBlocks?:
@@ -3858,6 +3862,7 @@ export interface TeamsSelect<T extends boolean = true> {
         scrimCodesThreadId?: T;
       };
   scheduleTimezone?: T;
+  nextWeekReleaseDay?: T;
   scheduleBlocks?:
     | T
     | {

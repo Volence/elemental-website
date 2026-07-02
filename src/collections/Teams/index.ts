@@ -614,6 +614,24 @@ export const Teams: CollectionConfig = {
               ],
             },
             {
+              name: 'nextWeekReleaseDay',
+              type: 'select',
+              defaultValue: 'friday',
+              admin: {
+                description:
+                  "Day of the week when next week's availability calendar opens for voting. If the day is missed, it releases on the next visit that week.",
+              },
+              options: [
+                { label: 'Monday (full week ahead)', value: 'monday' },
+                { label: 'Tuesday', value: 'tuesday' },
+                { label: 'Wednesday', value: 'wednesday' },
+                { label: 'Thursday', value: 'thursday' },
+                { label: 'Friday (default)', value: 'friday' },
+                { label: 'Saturday', value: 'saturday' },
+                { label: 'Sunday', value: 'sunday' },
+              ],
+            },
+            {
               name: 'scheduleBlocks',
               type: 'array',
               label: 'Availability Time Blocks',
