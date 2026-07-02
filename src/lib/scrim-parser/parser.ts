@@ -28,6 +28,48 @@ const VALID_MAP_TYPES = new Set([
 const CENSORED_KILL_TOKEN = '****'
 
 /**
+ * Split a log line on commas, but not on commas nested inside parentheses.
+ * The Workshop's Custom String renders a Vector as "(x, y, z)", so a naive
+ * split(',') shreds position fields into unparseable fragments like "(x".
+ */
+function splitLogLine(line: string): string[] {
+  const tokens: string[] = []
+  let current = ''
+  let depth = 0
+  for (const ch of line) {
+    if (ch === '(') depth++
+    else if (ch === ')') depth = Math.max(0, depth - 1)
+    if (ch === ',' && depth === 0) {
+      tokens.push(current)
+      current = ''
+    } else {
+      current += ch
+    }
+  }
+  tokens.push(current)
+  return tokens
+}
+
+/** Matches a Workshop-rendered vector string: "(12.3, 4.5, -6.7)". */
+const VECTOR_TOKEN = /^\s*\(\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\)\s*$/
+
+/**
+ * Expand any vector-string tokens into three plain numeric columns, so a log
+ * that emits `Position Of(...)` directly produces the same flat column layout
+ * as one that emits X/Y/Z components separately.
+ */
+function expandVectorTokens(tokens: string[]): string[] {
+  if (!tokens.some((t) => t.includes('('))) return tokens
+  const out: string[] = []
+  for (const token of tokens) {
+    const m = VECTOR_TOKEN.exec(token)
+    if (m) out.push(m[1], m[2], m[3])
+    else out.push(token)
+  }
+  return out
+}
+
+/**
  * Validate that a file's content looks like a ScrimTime log.
  * Checks multiple signatures unique to dkeeh's workshop code output:
  *  1. A meaningful percentage of lines have recognized event types
@@ -46,7 +88,7 @@ export function validateScrimLog(fileContent: string): string | null {
 
   // Split into CSV and shift off the timestamp column (column 0)
   const lines = rawLines.map((l) => {
-    const cols = l.split(',')
+    const cols = expandVectorTokens(splitLogLine(l))
     cols.shift() // remove timestamp
     return cols
   })
@@ -120,7 +162,7 @@ export function validateScrimLog(fileContent: string): string | null {
  * @returns Structured ParserData object with events categorized by type
  */
 export function parseScrimLog(fileContent: string): ParserData {
-  const lines = fileContent.split('\n').map((line) => line.split(','))
+  const lines = fileContent.split('\n').map((line) => expandVectorTokens(splitLogLine(line)))
 
   // Remove first element of each array (the timestamp column)
   lines.forEach((line) => line.shift())

@@ -234,26 +234,35 @@ async function insertHeroSwaps(data: ParserData, scrimId: number, mapDataId: num
   })
 }
 
+/** Parse a coordinate; null when the value is missing or not a finite number.
+ * Guards against malformed position fields (e.g. fragments of a vector string
+ * like "(12.3") ever landing in the database as NaN. */
+function coord(value: unknown): number | null {
+  if (value == null || value === '') return null
+  const n = Number(value)
+  return Number.isFinite(n) ? n : null
+}
+
+/** A position triple, only if every component is a finite number. */
+function coordTriple(x: unknown, y: unknown, z: unknown): { x: number; y: number; z: number } | null {
+  const cx = coord(x), cy = coord(y), cz = coord(z)
+  if (cx == null || cy == null || cz == null) return null
+  return { x: cx, y: cy, z: cz }
+}
+
 async function insertKills(data: ParserData, scrimId: number, mapDataId: number) {
   if (!data.kill?.length) return
-  // Check if kill rows have inline position data (columns 12-17: attacker x,y,z + victim x,y,z)
-  // These extra columns come from the enhanced ScrimTime fork and aren't part of the base KillRow type
-  const hasInlinePositions = data.kill[0] && data.kill[0].length > 12
 
   // Build a lookup of kill_position events by timestamp for matching
   // kill_position events are separate log lines output alongside kill events at the same timestamp
-  const killPosMap = new Map<string, { ax: number; ay: number; az: number; vx: number; vy: number; vz: number }>()
+  const killPosMap = new Map<string, { attacker: { x: number; y: number; z: number } | null; victim: { x: number; y: number; z: number } | null }>()
   if (data.kill_position?.length) {
     for (const kp of data.kill_position) {
       // Key by match_time rounded to 2 decimal places for reliable matching
       const key = Number(kp[1]).toFixed(2)
       killPosMap.set(key, {
-        ax: Number(kp[2]),
-        ay: Number(kp[3]),
-        az: Number(kp[4]),
-        vx: Number(kp[5]),
-        vy: Number(kp[6]),
-        vz: Number(kp[7]),
+        attacker: coordTriple(kp[2], kp[3], kp[4]),
+        victim: coordTriple(kp[5], kp[6], kp[7]),
       })
     }
   }
@@ -264,6 +273,11 @@ async function insertKills(data: ParserData, scrimId: number, mapDataId: number)
       const r = row as (string | number | null)[]
       const matchTimeKey = Number(r[1]).toFixed(2)
       const killPos = killPosMap.get(matchTimeKey)
+
+      // Inline position columns (12-17) from the enhanced ScrimTime fork;
+      // fall back to a kill_position companion event at the same timestamp.
+      const attackerPos = coordTriple(r[12], r[13], r[14]) ?? killPos?.attacker ?? null
+      const victimPos = coordTriple(r[15], r[16], r[17]) ?? killPos?.victim ?? null
 
       return {
         scrimId,
@@ -278,22 +292,8 @@ async function insertKills(data: ParserData, scrimId: number, mapDataId: number)
         event_damage: Number(r[9]),
         is_critical_hit: String(r[10]),
         is_environmental: String(r[11]),
-        // Position data - prefer inline columns, fall back to kill_position companion event
-        ...(hasInlinePositions && r[12] != null ? {
-          attacker_x: Number(r[12]),
-          attacker_y: Number(r[13]),
-          attacker_z: Number(r[14]),
-          victim_x: Number(r[15]),
-          victim_y: Number(r[16]),
-          victim_z: Number(r[17]),
-        } : killPos ? {
-          attacker_x: killPos.ax,
-          attacker_y: killPos.ay,
-          attacker_z: killPos.az,
-          victim_x: killPos.vx,
-          victim_y: killPos.vy,
-          victim_z: killPos.vz,
-        } : {}),
+        ...(attackerPos ? { attacker_x: attackerPos.x, attacker_y: attackerPos.y, attacker_z: attackerPos.z } : {}),
+        ...(victimPos ? { victim_x: victimPos.x, victim_y: victimPos.y, victim_z: victimPos.z } : {}),
         mapDataId,
       }
     }),
@@ -304,32 +304,36 @@ async function insertPlayerPositions(data: ParserData, scrimId: number, mapDataI
   if (!data.player_position?.length) return
   // Position data can be large (~14k rows per map) - batch insert in chunks of 5000
   const BATCH_SIZE = 5000
-  const allData = data.player_position.map((row) => ({
-    scrimId,
-    match_time: Number(row[1]),
-    player_team: String(row[2]),
-    player_name: String(row[3]),
-    player_hero: String(row[4]),
-    pos_x: Number(row[5]),
-    pos_y: Number(row[6]),
-    pos_z: Number(row[7]),
-    ult_charge: Number(row[8]) || 0,
-    is_alive: String(row[9]).toLowerCase() === 'true' || String(row[9]) === '1' || Number(row[9]) === 1,
-    facing_x: row[10] != null ? Number(row[10]) : null,
-    facing_z: row[11] != null ? Number(row[11]) : null,
-    health: row[12] != null ? Number(row[12]) : null,
-    in_spawn: row[13] != null ? (String(row[13]).toLowerCase() === 'true' || String(row[13]) === '1') : null,
-    on_ground: row[14] != null ? (String(row[14]).toLowerCase() === 'true' || String(row[14]) === '1') : null,
-    // New per-tick stat fields (indices 15-21) - nullable for backward compat with old log format
-    hero_damage_dealt: row[15] != null && String(row[15]).trim() !== '' ? Number(row[15]) : null,
-    healing_dealt: row[16] != null && String(row[16]).trim() !== '' ? Number(row[16]) : null,
-    damage_taken: row[17] != null && String(row[17]).trim() !== '' ? Number(row[17]) : null,
-    damage_blocked: row[18] != null && String(row[18]).trim() !== '' ? Number(row[18]) : null,
-    eliminations_cum: row[19] != null && String(row[19]).trim() !== '' ? Math.round(Number(row[19])) : null,
-    is_using_ult: row[20] != null && String(row[20]).trim() !== '' ? (String(row[20]).toLowerCase() === 'true' || String(row[20]) === '1') : null,
-    is_alive_actual: row[21] != null && String(row[21]).trim() !== '' ? (String(row[21]).toLowerCase() === 'true' || String(row[21]) === '1') : null,
-    mapDataId,
-  }))
+  const allData = data.player_position.flatMap((row) => {
+    const pos = coordTriple(row[5], row[6], row[7])
+    if (!pos) return [] // drop snapshots with malformed coordinates
+    return [{
+      scrimId,
+      match_time: Number(row[1]),
+      player_team: String(row[2]),
+      player_name: String(row[3]),
+      player_hero: String(row[4]),
+      pos_x: pos.x,
+      pos_y: pos.y,
+      pos_z: pos.z,
+      ult_charge: Number(row[8]) || 0,
+      is_alive: String(row[9]).toLowerCase() === 'true' || String(row[9]) === '1' || Number(row[9]) === 1,
+      facing_x: row[10] != null ? Number(row[10]) : null,
+      facing_z: row[11] != null ? Number(row[11]) : null,
+      health: row[12] != null ? Number(row[12]) : null,
+      in_spawn: row[13] != null ? (String(row[13]).toLowerCase() === 'true' || String(row[13]) === '1') : null,
+      on_ground: row[14] != null ? (String(row[14]).toLowerCase() === 'true' || String(row[14]) === '1') : null,
+      // New per-tick stat fields (indices 15-21) - nullable for backward compat with old log format
+      hero_damage_dealt: row[15] != null && String(row[15]).trim() !== '' ? Number(row[15]) : null,
+      healing_dealt: row[16] != null && String(row[16]).trim() !== '' ? Number(row[16]) : null,
+      damage_taken: row[17] != null && String(row[17]).trim() !== '' ? Number(row[17]) : null,
+      damage_blocked: row[18] != null && String(row[18]).trim() !== '' ? Number(row[18]) : null,
+      eliminations_cum: row[19] != null && String(row[19]).trim() !== '' ? Math.round(Number(row[19])) : null,
+      is_using_ult: row[20] != null && String(row[20]).trim() !== '' ? (String(row[20]).toLowerCase() === 'true' || String(row[20]) === '1') : null,
+      is_alive_actual: row[21] != null && String(row[21]).trim() !== '' ? (String(row[21]).toLowerCase() === 'true' || String(row[21]) === '1') : null,
+      mapDataId,
+    }]
+  })
 
   for (let i = 0; i < allData.length; i += BATCH_SIZE) {
     await prisma.scrimPlayerPosition.createMany({
