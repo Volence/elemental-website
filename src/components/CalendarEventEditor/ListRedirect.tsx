@@ -9,8 +9,12 @@ import React, { useEffect } from 'react'
 const CalendarEventsListRedirect: React.FC = () => {
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
+      // Respect new-tab/window intent - never hijack modified clicks.
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return
+
       const link = (e.target as HTMLElement).closest('a[href*="/admin/collections/global-calendar-events/"]')
       if (!link) return
+      if ((link as HTMLAnchorElement).target === '_blank') return
       const href = link.getAttribute('href') ?? ''
       const match = href.match(/\/admin\/collections\/global-calendar-events\/(\d+)/)
       if (match) {

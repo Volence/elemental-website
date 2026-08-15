@@ -18,9 +18,13 @@ const PeopleListRedirect: React.FC = () => {
 
     // Intercept clicks on table rows to redirect to custom editor
     const handleClick = (e: MouseEvent) => {
+      // Respect new-tab/window intent - never hijack modified clicks.
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return
+
       const target = e.target as HTMLElement
       const link = target.closest('a[href*="/admin/collections/people/"]')
       if (!link) return
+      if ((link as HTMLAnchorElement).target === '_blank') return
 
       const href = link.getAttribute('href') ?? ''
       const match = href.match(/\/admin\/collections\/people\/(\d+)/)
