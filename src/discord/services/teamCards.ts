@@ -4,7 +4,7 @@ import { buildEnhancedTeamEmbed, buildStaffEmbed } from '../utils/embeds'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import type { Team } from '@/payload-types'
-import { ORG_ROLE_ORDER } from '@/utilities/orgRoles'
+import { ORG_ROLE_ORDER, ORG_ROLE_GROUP_LABELS } from '@/utilities/orgRoles'
 
 let isRefreshing = false
 const REFRESH_TIMEOUT_MS = 5 * 60 * 1000
@@ -297,24 +297,10 @@ async function postStaffCards(channel: TextChannel, payload: any): Promise<void>
       }
     }
 
-    // Role labels matching the staff page
-    const roleLabels: Record<string, string> = {
-      owner: 'Owner',
-      'co-owner': 'Co-Owner',
-      administration: 'Administration',
-      hr: 'HR Staff',
-      'region-lead': 'Region Leads',
-      'event-manager': 'Event Manager',
-      'social-manager': 'Social Manager',
-      marketing: 'Marketing',
-      graphics: 'Graphics Staff',
-      'media-editor': 'Media Editor Staff',
-    }
-
     // Post each role group as a separate card (only if non-empty)
     for (const [role, staffMembers] of Object.entries(roleGroups)) {
       if (staffMembers.length > 0) {
-        const embed = buildStaffEmbed(roleLabels[role] || role, staffMembers)
+        const embed = buildStaffEmbed(ORG_ROLE_GROUP_LABELS[role] || role, staffMembers)
         await channel.send({ embeds: [embed] })
         
         // Small delay to avoid rate limiting

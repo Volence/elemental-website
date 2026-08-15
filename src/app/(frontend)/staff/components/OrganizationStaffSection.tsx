@@ -9,21 +9,16 @@ import {
 } from '@/utilities/personHelpers'
 import { getOrgRoleIcon } from '@/utilities/roleIcons'
 import { formatPlayerSlug } from '@/utilities/getPlayer'
-import { ORG_ROLES } from '@/utilities/orgRoles'
+import { ORG_ROLES, ORG_REGIONS } from '@/utilities/orgRoles'
 
 interface OrganizationStaffSectionProps {
   groupedOrgStaff: Record<string, any[]>
   getStaffName: (staff: any) => string
 }
 
-const REGION_LABELS: Record<string, string> = {
-  na: 'NA',
-  emea: 'EMEA',
-  sa: 'SA',
-  oce: 'OCE',
-  apac: 'APAC',
-  sea: 'SEA',
-}
+const REGION_LABELS: Record<string, string> = Object.fromEntries(
+  ORG_REGIONS.map((r) => [r.value, r.label]),
+)
 
 const roleOrder = ORG_ROLES.map((r) => r.label)
 
@@ -130,16 +125,7 @@ export function OrganizationStaffSection({
         if (!staff || staff.length === 0) return null
 
         const Icon = getOrgRoleIcon(role, 'md')
-        const displayName =
-          role === 'Graphics'
-            ? 'Graphics Staff'
-            : role === 'Media Editor'
-              ? 'Media Editor Staff'
-              : role === 'HR'
-                ? 'HR Staff'
-                : role === 'Region Lead'
-                  ? 'Region Leads'
-                  : role
+        const displayName = ORG_ROLES.find((r) => r.label === role)?.groupLabel ?? role
 
         const underlineColor = colorMap[role] || 'bg-primary'
         const avatarColors = avatarColorMap[role] || {

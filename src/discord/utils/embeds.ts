@@ -300,7 +300,7 @@ export async function buildTeamEmbed(team: any): Promise<EmbedBuilder> {
 /**
  * Get color for staff department (matching website)
  */
-function getStaffDepartmentColor(departmentName: string): number {
+export function getStaffDepartmentColor(departmentName: string): number {
   const colorMap: Record<string, number> = {
     'Owner': 0xFBBF24,           // Yellow-500
     'Co-Owner': 0xF97316,        // Orange-500
@@ -326,7 +326,7 @@ function getStaffDepartmentColor(departmentName: string): number {
 /**
  * Get role icon for staff department
  */
-function getStaffRoleIcon(departmentName: string): string {
+export function getStaffRoleIcon(departmentName: string): string {
   const iconMap: Record<string, string> = {
     'Owner': '👑',
     'Co-Owner': '⭐',
