@@ -16,6 +16,7 @@ import { getMediaUrl } from '@/utilities/getMediaUrl'
 import { getOrgRoleIcon, getOrgRoleLabel } from '@/utilities/roleIcons'
 import { getRoleColors, getTierFromRating } from '@/utilities/tierColors'
 import { ParticleBackground } from '@/components/ParticleBackground'
+import { ORG_ROLE_LABELS } from '@/utilities/orgRoles'
 
 type Args = {
   params: Promise<{
@@ -25,14 +26,7 @@ type Args = {
 
 const getRoleLabel = (role: string) => {
   const roleMap: Record<string, string> = {
-    'owner': 'Owner',
-    'co-owner': 'Co-Owner',
-    'hr': 'HR',
-    'moderator': 'Moderator',
-    'event-manager': 'Event Manager',
-    'social-manager': 'Social Manager',
-    'graphics': 'Graphics',
-    'media-editor': 'Media Editor',
+    ...ORG_ROLE_LABELS,
     'caster': 'Caster',
     'observer': 'Observer',
     'producer': 'Producer',
