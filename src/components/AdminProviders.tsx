@@ -58,12 +58,12 @@ export default function AdminProviders({ children }: { children: React.ReactNode
     if (!user?.id) return
 
     const detailRoutes: Array<{ pattern: RegExp; to: (id: string) => string }> = [
-      { pattern: /\/admin\/collections\/invite-links\/(\d+)/, to: (id) => `/admin/edit-invite?id=${id}` },
-      { pattern: /\/admin\/collections\/people\/(\d+)/, to: (id) => `/admin/edit-person?id=${id}` },
-      { pattern: /\/admin\/collections\/teams\/(\d+)/, to: (id) => `/admin/edit-team?id=${id}` },
-      { pattern: /\/admin\/collections\/organization-staff\/(\d+)/, to: (id) => `/admin/edit-staff?type=org&id=${id}` },
-      { pattern: /\/admin\/collections\/production\/(\d+)/, to: (id) => `/admin/edit-staff?type=production&id=${id}` },
-      { pattern: /\/admin\/collections\/global-calendar-events\/(\d+)/, to: (id) => `/admin/edit-event?id=${id}` },
+      { pattern: /\/admin\/collections\/invite-links\/(\d+)(?:$|[?#])/, to: (id) => `/admin/edit-invite?id=${id}` },
+      { pattern: /\/admin\/collections\/people\/(\d+)(?:$|[?#])/, to: (id) => `/admin/edit-person?id=${id}` },
+      { pattern: /\/admin\/collections\/teams\/(\d+)(?:$|[?#])/, to: (id) => `/admin/edit-team?id=${id}` },
+      { pattern: /\/admin\/collections\/organization-staff\/(\d+)(?:$|[?#])/, to: (id) => `/admin/edit-staff?type=org&id=${id}` },
+      { pattern: /\/admin\/collections\/production\/(\d+)(?:$|[?#])/, to: (id) => `/admin/edit-staff?type=production&id=${id}` },
+      { pattern: /\/admin\/collections\/global-calendar-events\/(\d+)(?:$|[?#])/, to: (id) => `/admin/edit-event?id=${id}` },
     ]
 
     const handleClick = (e: MouseEvent) => {
@@ -120,6 +120,9 @@ export default function AdminProviders({ children }: { children: React.ReactNode
       '/admin/edit-pug-player': '/collections/people',
       '/admin/edit-pug-match': '/collections/pug-matches',
       '/admin/edit-pug-leaderboard': '/collections/pug-leaderboard',
+      '/admin/edit-team': '/collections/teams',
+      '/admin/edit-staff': '/collections/organization-staff',
+      '/admin/staff-directory': '/collections/organization-staff',
     }
     const target = routeToCollection[pathname]
     if (!target) return

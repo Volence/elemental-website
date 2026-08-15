@@ -8,27 +8,36 @@ const routeToSectionMap: Record<string, string> = {
   // People & Teams
   '/admin/collections/people': 'people',
   '/admin/collections/teams': 'teams',
-  
+
   // Production
   '/admin/globals/production-dashboard': 'production',
   '/admin/collections/matches': 'matches',
   '/admin/collections/tournament-templates': 'matches',
-  
+
   // Staff
   '/admin/collections/organization-staff': 'staff',
-  '/admin/collections/production-staff': 'staff',
-  
+  '/admin/collections/production': 'staff',
+
   // System
   '/admin/collections/ignored-duplicates': 'system',
   '/admin/collections/invite-links': 'system',
-  
+
   // Recruitment
   '/admin/collections/recruitment-listings': 'recruitment',
   '/admin/collections/recruitment-applications': 'recruitment',
-  
+
   // Tools
   '/admin/globals/data-consistency': 'tools',
   '/admin/globals/schedule-generator': 'tools',
+
+  // Custom editor routes (mirror their collection counterparts above)
+  '/admin/edit-team': 'teams',
+  '/admin/edit-person': 'people',
+  '/admin/edit-staff': 'staff',
+  '/admin/staff-directory': 'staff',
+  '/admin/edit-invite': 'system',
+  '/admin/manage-users': 'people',
+  '/admin/edit-user': 'people',
 }
 
 /**

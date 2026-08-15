@@ -3,9 +3,9 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import {
-  Save, Check, AlertCircle, Loader2, ArrowLeft, Plus, Trash2,
+  Save, Check, AlertCircle, Loader2, ArrowLeft, Trash2,
   Link as LinkIcon, Copy, Shield, Users, Clock, Mail, User,
-  ChevronRight, Search, CheckCircle, XCircle, Gamepad2,
+  ChevronRight, CheckCircle, XCircle, Gamepad2,
 } from 'lucide-react'
 import { EDITOR_CSS, styles as editorStyles } from '@/components/PersonEditor'
 import { useConfirm } from '@/components/ConfirmDialog'
@@ -69,138 +69,6 @@ const getInviteStatus = (invite: InviteLink) => {
   if (invite.usedAt) return { label: 'Used', color: '#6b7280', icon: CheckCircle }
   if (new Date(invite.expiresAt) < new Date()) return { label: 'Expired', color: '#ef4444', icon: XCircle }
   return { label: 'Active', color: '#34d399', icon: CheckCircle }
-}
-
-// ── Invite List ──
-
-export function InviteListView() {
-  const [invites, setInvites] = useState<InviteLink[]>([])
-  const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'used' | 'expired'>('all')
-
-  const fetchInvites = useCallback(async () => {
-    try {
-      const res = await fetch('/api/invite-links?limit=200&sort=-createdAt&depth=1')
-      if (!res.ok) throw new Error('Failed to load')
-      const data = await res.json()
-      setInvites(data.docs ?? [])
-    } catch (err) {
-      console.error('Invites load error:', err)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => { fetchInvites() }, [fetchInvites])
-
-  // Highlight sidebar nav for Invite Links
-  useEffect(() => {
-    const links = document.querySelectorAll('aside nav a')
-    links.forEach(link => {
-      const href = link.getAttribute('href') ?? ''
-      if (href.includes('/collections/invite-links')) {
-        link.closest('[class*="nav-"]')?.classList.add('active')
-        ;(link as HTMLElement).style.opacity = '1'
-        ;(link as HTMLElement).style.color = '#34d399'
-      }
-    })
-  }, [])
-
-  const filtered = invites.filter(inv => {
-    const status = getInviteStatus(inv)
-    if (statusFilter === 'active' && status.label !== 'Active') return false
-    if (statusFilter === 'used' && status.label !== 'Used') return false
-    if (statusFilter === 'expired' && status.label !== 'Expired') return false
-    if (search) {
-      const s = search.toLowerCase()
-      return inv.token?.toLowerCase().includes(s) ||
-        inv.email?.toLowerCase().includes(s) ||
-        inv.role?.toLowerCase().includes(s)
-    }
-    return true
-  })
-
-  const formatDate = (d: string) => {
-    try { return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }
-    catch { return d }
-  }
-
-  const activeCount = invites.filter(i => getInviteStatus(i).label === 'Active').length
-  const usedCount = invites.filter(i => getInviteStatus(i).label === 'Used').length
-  const expiredCount = invites.filter(i => getInviteStatus(i).label === 'Expired').length
-
-  return (
-    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 20px 60px' }}>
-      <style>{EDITOR_CSS + `
-        .inv-row { display: flex; align-items: center; gap: 10px; padding: 7px 12px; cursor: pointer; transition: background 0.1s; text-decoration: none; color: inherit; border-bottom: 1px solid rgba(255,255,255,0.04); }
-        .inv-row:hover { background: rgba(255,255,255,0.03); }
-        .inv-row:first-child { border-top: 1px solid rgba(255,255,255,0.04); }
-        .inv-status { display: inline-flex; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 500; flex-shrink: 0; }
-        .inv-token { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 11px; color: rgba(255,255,255,0.3); }
-        .inv-date { font-size: 11px; color: rgba(255,255,255,0.3); white-space: nowrap; }
-        .filter-pill { background: none; border: 1px solid rgba(255,255,255,0.08); color: rgba(255,255,255,0.5); padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; transition: all 0.1s; }
-        .filter-pill:hover { background: rgba(255,255,255,0.04); }
-        .filter-pill.active { background: rgba(52, 211, 153, 0.08); border-color: rgba(52, 211, 153, 0.3); color: #34d399; }
-      `}</style>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#e2e8f0', margin: 0 }}>
-          Invite Links
-          <span style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.35)', marginLeft: 6 }}>({invites.length})</span>
-        </h1>
-        <a href="/admin/edit-invite" className="profile-save-btn" style={{ fontSize: 12, padding: '6px 14px', textDecoration: 'none' }}>
-          <Plus size={13} /> New Invite
-        </a>
-      </div>
-
-      <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
-        <button className={`filter-pill ${statusFilter === 'all' ? 'active' : ''}`} onClick={() => setStatusFilter('all')}>All ({invites.length})</button>
-        <button className={`filter-pill ${statusFilter === 'active' ? 'active' : ''}`} onClick={() => setStatusFilter('active')}>Active ({activeCount})</button>
-        <button className={`filter-pill ${statusFilter === 'used' ? 'active' : ''}`} onClick={() => setStatusFilter('used')}>Used ({usedCount})</button>
-        <button className={`filter-pill ${statusFilter === 'expired' ? 'active' : ''}`} onClick={() => setStatusFilter('expired')}>Expired ({expiredCount})</button>
-      </div>
-
-      <div style={{ position: 'relative', maxWidth: 360, marginBottom: 12 }}>
-        <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', opacity: 0.3 }} />
-        <input className="profile-input" style={{ paddingLeft: 32, fontSize: 13, padding: '6px 10px 6px 32px' }} placeholder="Search by token, email, or role..." value={search} onChange={(e) => setSearch(e.target.value)} />
-      </div>
-
-      {/* Table header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 12px', fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-        <span style={{ width: 80 }}>Role</span>
-        <span style={{ flex: 1 }}>Token</span>
-        <span style={{ width: 160 }}>Email</span>
-        <span style={{ width: 50, textAlign: 'center' }}>Status</span>
-        <span style={{ width: 120, textAlign: 'right' }}>Date</span>
-      </div>
-
-      {loading ? (
-        <div style={editorStyles.emptyState}><Loader2 size={24} style={{ animation: 'spin 1s linear infinite' }} /></div>
-      ) : (
-        <div>
-          {filtered.map(inv => {
-            const role = getRoleConfig(inv.role)
-            const status = getInviteStatus(inv)
-            return (
-              <a key={inv.id} href={`/admin/edit-invite?id=${inv.id}`} className="inv-row">
-                <span style={{ width: 80, fontWeight: 500, color: role.color, fontSize: 12 }}>{role.label}</span>
-                <span className="inv-token" style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{inv.token.slice(0, 12)}…</span>
-                <span style={{ width: 160, fontSize: 12, color: 'rgba(255,255,255,0.5)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{inv.email || '-'}</span>
-                <span style={{ width: 50, textAlign: 'center' }}>
-                  <span className="inv-status" style={{ background: `${status.color}15`, color: status.color }}>{status.label}</span>
-                </span>
-                <span className="inv-date" style={{ width: 120, textAlign: 'right' }}>
-                  {status.label === 'Used' ? formatDate(inv.usedAt!) : formatDate(inv.expiresAt)}
-                </span>
-              </a>
-            )
-          })}
-          {filtered.length === 0 && <div style={{ padding: 40, textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>No invite links found.</div>}
-        </div>
-      )}
-    </div>
-  )
 }
 
 // ── Invite Editor ──
