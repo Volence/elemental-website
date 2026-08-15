@@ -87,7 +87,7 @@ const FaceitLeaguesNotifications: React.FC = () => {
                 {warning.teams.map((team: any) => (
                   <a
                     key={team.id}
-                    href={`/admin/collections/teams/${team.id}`}
+                    href={`/admin/edit-team?id=${team.id}`}
                     className="faceit-notifications__team-link"
                   >
                     <span>→</span>

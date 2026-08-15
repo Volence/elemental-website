@@ -209,7 +209,7 @@ const PersonRelationshipsSidebar: React.FC = () => {
           {relationships.teams.map((team, idx) => (
             <div key={idx} className="person-relationships__team-card">
               <a
-                href={`/admin/collections/teams/${team.teamId}`}
+                href={`/admin/edit-team?id=${team.teamId}`}
                 className="person-relationships__team-link"
               >
                 {team.teamName} →

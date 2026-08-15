@@ -33,7 +33,7 @@ export const TeamsWithIssuesList: React.FC<TeamsWithIssuesListProps> = ({ teams 
               <strong>{team.teamName}</strong>
               <span className="dc-check__slug">({team.teamSlug})</span>
               <a
-                href={`/admin/collections/teams/${team.teamId}`}
+                href={`/admin/edit-team?id=${team.teamId}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="notification-btn notification-btn--view dc-check__view-link"

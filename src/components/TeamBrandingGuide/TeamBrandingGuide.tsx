@@ -476,7 +476,7 @@ function TeamCard({
             {saveStatus === 'saving' ? '…' : saveStatus === 'saved' ? '✓' : '!'}
           </span>
         )}
-        <a href={`/admin/collections/teams/${team.id}`} className="tc__edit" title="Edit team">✎</a>
+        <a href={`/admin/edit-team?id=${team.id}`} className="tc__edit" title="Edit team">✎</a>
       </div>
 
       {/* Preview boxes row */}

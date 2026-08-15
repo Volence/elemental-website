@@ -56,7 +56,7 @@ const PersonRelationships: React.FC = () => {
             {relationships.teams.map((team) => (
               <div key={team.id} className="person-relationships__item">
                 <a
-                  href={`/admin/collections/teams/${team.id}`}
+                  href={`/admin/edit-team?id=${team.id}`}
                   className="person-relationships__link"
                 >
                   {team.name}
