@@ -76,7 +76,7 @@ const QuickStats: React.FC = () => {
       {
         label: 'Org Staff',
         value: stats.orgStaff,
-        link: '/admin/collections/organization-staff',
+        link: '/admin/staff-directory',
         icon: <Building2 size={18} />,
         description: 'View organization staff',
         variant: 'org-staff',
@@ -84,7 +84,7 @@ const QuickStats: React.FC = () => {
       {
         label: 'Production',
         value: stats.production,
-        link: '/admin/collections/production',
+        link: '/admin/staff-directory',
         icon: <Clapperboard size={18} />,
         description: 'View production staff',
         variant: 'production',
