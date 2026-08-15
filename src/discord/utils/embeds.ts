@@ -304,10 +304,12 @@ function getStaffDepartmentColor(departmentName: string): number {
   const colorMap: Record<string, number> = {
     'Owner': 0xFBBF24,           // Yellow-500
     'Co-Owner': 0xF97316,        // Orange-500
+    'Administration': 0x8B5CF6,  // Violet-500
     'HR Staff': 0x22C55E,        // Green-500
     'Region Leads': 0x14B8A6,    // Teal-500
     'Event Manager': 0xA855F7,   // Purple-500
     'Social Manager': 0x06B6D4,  // Cyan-500
+    'Marketing': 0xD946EF,       // Fuchsia-500
     'Graphics Staff': 0xF97316,  // Orange-500
     'Media Editor Staff': 0xEF4444, // Red-500
     // Production staff
@@ -328,10 +330,12 @@ function getStaffRoleIcon(departmentName: string): string {
   const iconMap: Record<string, string> = {
     'Owner': '👑',
     'Co-Owner': '⭐',
+    'Administration': '📋',
     'HR Staff': '🤝',
     'Region Leads': '🌍',
     'Event Manager': '📅',
     'Social Manager': '📱',
+    'Marketing': '📣',
     'Graphics Staff': '🎨',
     'Media Editor Staff': '🎬',
     'Caster': '🎙️',

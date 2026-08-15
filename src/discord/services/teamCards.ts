@@ -4,6 +4,7 @@ import { buildEnhancedTeamEmbed, buildStaffEmbed } from '../utils/embeds'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import type { Team } from '@/payload-types'
+import { ORG_ROLE_ORDER } from '@/utilities/orgRoles'
 
 let isRefreshing = false
 const REFRESH_TIMEOUT_MS = 5 * 60 * 1000
@@ -280,24 +281,17 @@ async function postStaffCards(channel: TextChannel, payload: any): Promise<void>
       depth: 1,
     })
 
-    // Group staff by role (similar to the staff page)
-    const roleGroups = {
-      owner: [] as any[],
-      'co-owner': [] as any[],
-      hr: [] as any[],
-      'region-lead': [] as any[],
-      graphics: [] as any[],
-      'social-manager': [] as any[],
-      'event-manager': [] as any[],
-      'media-editor': [] as any[],
-    }
+    // Group staff by role (canonical order from shared constants)
+    const roleGroups: Record<string, any[]> = Object.fromEntries(
+      ORG_ROLE_ORDER.map((r) => [r, []]),
+    )
 
     // Group staff members by their roles
     for (const staff of orgStaff.docs) {
       if (staff.roles && Array.isArray(staff.roles)) {
         for (const role of staff.roles) {
           if (role in roleGroups) {
-            roleGroups[role as keyof typeof roleGroups].push(staff)
+            roleGroups[role].push(staff)
           }
         }
       }
@@ -307,12 +301,14 @@ async function postStaffCards(channel: TextChannel, payload: any): Promise<void>
     const roleLabels: Record<string, string> = {
       owner: 'Owner',
       'co-owner': 'Co-Owner',
+      administration: 'Administration',
       hr: 'HR Staff',
       'region-lead': 'Region Leads',
-      graphics: 'Graphics Staff',
-      'social-manager': 'Social Manager',
       'event-manager': 'Event Manager',
-      'media-editor': 'Media Editor',
+      'social-manager': 'Social Manager',
+      marketing: 'Marketing',
+      graphics: 'Graphics Staff',
+      'media-editor': 'Media Editor Staff',
     }
 
     // Post each role group as a separate card (only if non-empty)
