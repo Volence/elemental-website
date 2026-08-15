@@ -28,7 +28,7 @@ const AssignedTeamsBanner: React.FC = () => {
       {assignedTeams.map((team) => (
         <a
           key={team.id}
-          href={`/admin/collections/teams/${team.id}`}
+          href={`/admin/edit-team?id=${team.id}`}
           className="assigned-teams-banner__team-link"
         >
           <div className="assigned-teams-banner__team-logo-wrapper">

@@ -31,7 +31,7 @@ export const DuplicatePeopleList: React.FC<DuplicatePeopleListProps> = ({ duplic
                 <strong>{dup.person1.name}</strong>
                 <span className="dc-check__slug">({dup.person1.slug})</span>
                 <a
-                  href={`/admin/collections/people/${dup.person1.id}`}
+                  href={`/admin/edit-person?id=${dup.person1.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="notification-btn notification-btn--view dc-check__view-link"
@@ -43,7 +43,7 @@ export const DuplicatePeopleList: React.FC<DuplicatePeopleListProps> = ({ duplic
                 <strong>{dup.person2.name}</strong>
                 <span className="dc-check__slug">({dup.person2.slug})</span>
                 <a
-                  href={`/admin/collections/people/${dup.person2.id}`}
+                  href={`/admin/edit-person?id=${dup.person2.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="notification-btn notification-btn--view dc-check__view-link"

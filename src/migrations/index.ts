@@ -34,6 +34,7 @@ import * as migration_20260610_add_logging_settings from "./20260610_add_logging
 import * as migration_20260610_add_discord_member_events from "./20260610_add_discord_member_events";
 import * as migration_20260611_add_discord_logged_messages from "./20260611_add_discord_logged_messages";
 import * as migration_20260702_add_next_week_release_day from "./20260702_add_next_week_release_day";
+import * as migration_20260815_add_staff_roles_and_regions from "./20260815_add_staff_roles_and_regions";
 
 export const migrations = [
   {
@@ -215,5 +216,10 @@ export const migrations = [
     up: migration_20260702_add_next_week_release_day.up,
     down: migration_20260702_add_next_week_release_day.down,
     name: "20260702_add_next_week_release_day",
+  },
+  {
+    up: migration_20260815_add_staff_roles_and_regions.up,
+    down: migration_20260815_add_staff_roles_and_regions.down,
+    name: "20260815_add_staff_roles_and_regions",
   },
 ];

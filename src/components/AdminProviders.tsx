@@ -13,7 +13,7 @@ import ChunkReloadGuard from '@/components/ChunkReloadGuard'
  * Currently provides:
  * - Sidebar scroll position preservation across navigation
  * - Doc-controls popup position fix (Payload sets wrong position via JS)
- * - Global account avatar → custom user editor redirect
+ * - Global interception of raw collection links -> custom card editors (teams, people, staff, events, invites)
  */
 export default function AdminProviders({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -51,17 +51,33 @@ export default function AdminProviders({ children }: { children: React.ReactNode
     }
   }, [pathname])
 
-  // Global: intercept navigation to custom admin views
+  // Global: intercept navigation to custom admin views.
+  // Safety net for any Payload-rendered link that still points at the raw
+  // collection edit forms - primary links are rewritten at the source.
   useEffect(() => {
     if (!user?.id) return
+
+    const detailRoutes: Array<{ pattern: RegExp; to: (id: string) => string }> = [
+      { pattern: /\/admin\/collections\/invite-links\/(\d+)(?:$|[?#])/, to: (id) => `/admin/edit-invite?id=${id}` },
+      { pattern: /\/admin\/collections\/people\/(\d+)(?:$|[?#])/, to: (id) => `/admin/edit-person?id=${id}` },
+      { pattern: /\/admin\/collections\/teams\/(\d+)(?:$|[?#])/, to: (id) => `/admin/edit-team?id=${id}` },
+      { pattern: /\/admin\/collections\/organization-staff\/(\d+)(?:$|[?#])/, to: (id) => `/admin/edit-staff?type=org&id=${id}` },
+      { pattern: /\/admin\/collections\/production\/(\d+)(?:$|[?#])/, to: (id) => `/admin/edit-staff?type=production&id=${id}` },
+      { pattern: /\/admin\/collections\/global-calendar-events\/(\d+)(?:$|[?#])/, to: (id) => `/admin/edit-event?id=${id}` },
+    ]
 
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement
       const link = target.closest('a') as HTMLAnchorElement | null
       if (!link) return
+
+      // Respect new-tab/window intent - never hijack modified clicks.
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return
+      if (link.target === '_blank') return
+
       const href = link.getAttribute('href') ?? ''
 
-      // Account avatar → custom person editor
+      // Account avatar -> custom person editor
       if (href === '/admin/account') {
         e.preventDefault()
         e.stopPropagation()
@@ -69,7 +85,7 @@ export default function AdminProviders({ children }: { children: React.ReactNode
         return
       }
 
-      // Invite Links: create → custom editor
+      // Invite Links: create -> custom editor
       if (href === '/admin/collections/invite-links/create') {
         e.preventDefault()
         e.stopPropagation()
@@ -77,22 +93,14 @@ export default function AdminProviders({ children }: { children: React.ReactNode
         return
       }
 
-      // Invite Links: edit → custom editor
-      const inviteMatch = href.match(/\/admin\/collections\/invite-links\/(\d+)/)
-      if (inviteMatch) {
-        e.preventDefault()
-        e.stopPropagation()
-        window.location.href = `/admin/edit-invite?id=${inviteMatch[1]}`
-        return
-      }
-
-      // People: edit → custom editor
-      const personMatch = href.match(/\/admin\/collections\/people\/(\d+)/)
-      if (personMatch) {
-        e.preventDefault()
-        e.stopPropagation()
-        window.location.href = `/admin/edit-person?id=${personMatch[1]}`
-        return
+      for (const route of detailRoutes) {
+        const match = href.match(route.pattern)
+        if (match) {
+          e.preventDefault()
+          e.stopPropagation()
+          window.location.href = route.to(match[1])
+          return
+        }
       }
     }
 
@@ -107,14 +115,14 @@ export default function AdminProviders({ children }: { children: React.ReactNode
       '/admin/edit-invite': '/collections/invite-links',
       '/admin/edit-person': '/collections/people',
       '/admin/my-profile': '/collections/people',
-      '/admin/pug-seasons': '/collections/pug-seasons',
+      '/admin/pug-dashboard': '/collections/pug-seasons',
       '/admin/edit-pug-season': '/collections/pug-seasons',
-      '/admin/pug-players': '/collections/people',
       '/admin/edit-pug-player': '/collections/people',
-      '/admin/pug-matches': '/collections/pug-matches',
       '/admin/edit-pug-match': '/collections/pug-matches',
-      '/admin/pug-leaderboard': '/collections/pug-leaderboard',
       '/admin/edit-pug-leaderboard': '/collections/pug-leaderboard',
+      '/admin/edit-team': '/collections/teams',
+      '/admin/edit-staff': '/collections/organization-staff',
+      '/admin/staff-directory': '/collections/organization-staff',
     }
     const target = routeToCollection[pathname]
     if (!target) return

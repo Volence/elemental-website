@@ -3,6 +3,7 @@
 import React from 'react'
 import { useDocumentInfo } from '@payloadcms/ui'
 import { Swords, Briefcase, Clapperboard } from 'lucide-react'
+import { ORG_ROLE_LABELS } from '@/utilities/orgRoles'
 
 /**
  * Sidebar component showing a person's team and staff positions
@@ -135,18 +136,7 @@ const PersonRelationshipsSidebar: React.FC = () => {
 
         // Helper function to format organization role labels
         const formatOrgRole = (role: string): string => {
-          const roleMap: Record<string, string> = {
-            'owner': 'Owner',
-            'co-owner': 'Co-Owner',
-            'hr': 'HR',
-            'moderator': 'Moderator',
-            'manager': 'Manager',
-            'staff': 'Staff',
-            'event-manager': 'Event Manager',
-            'tournament-organizer': 'Tournament Organizer',
-            'community-manager': 'Community Manager',
-          }
-          return roleMap[role] || role
+          return ORG_ROLE_LABELS[role] || role
         }
 
         // Process organization staff roles
@@ -219,7 +209,7 @@ const PersonRelationshipsSidebar: React.FC = () => {
           {relationships.teams.map((team, idx) => (
             <div key={idx} className="person-relationships__team-card">
               <a
-                href={`/admin/collections/teams/${team.teamId}`}
+                href={`/admin/edit-team?id=${team.teamId}`}
                 className="person-relationships__team-link"
               >
                 {team.teamName} →

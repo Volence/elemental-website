@@ -4,6 +4,7 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { getAllTeams } from '@/utilities/getTeams'
 import { getPersonNameFromRelationship } from '@/utilities/personHelpers'
+import { ORG_ROLES } from '@/utilities/orgRoles'
 import { StaffHeader } from './components/StaffHeader'
 import { OrganizationStaffSection } from './components/OrganizationStaffSection'
 import { ProductionStaffSection } from './components/ProductionStaffSection'
@@ -104,27 +105,13 @@ function groupProductionStaff(productionStaff: any[]) {
 
 // Group organization staff by role
 function groupOrganizationStaff(orgStaff: any[]) {
-  const grouped: Record<string, any[]> = {
-    Owner: [],
-    'Co-Owner': [],
-    HR: [],
-    'Region Lead': [],
-    'Event Manager': [],
-    'Social Manager': [],
-    Graphics: [],
-    'Media Editor': [],
-  }
+  const grouped: Record<string, any[]> = Object.fromEntries(
+    ORG_ROLES.map((r) => [r.label, []]),
+  )
 
-  const roleLabels: Record<string, string> = {
-    owner: 'Owner',
-    'co-owner': 'Co-Owner',
-    hr: 'HR',
-    'region-lead': 'Region Lead',
-    'event-manager': 'Event Manager',
-    'social-manager': 'Social Manager',
-    graphics: 'Graphics',
-    'media-editor': 'Media Editor',
-  }
+  const roleLabels: Record<string, string> = Object.fromEntries(
+    ORG_ROLES.map((r) => [r.value, r.label]),
+  )
 
   orgStaff.forEach((staff) => {
     // Handle both single role (old data) and multiple roles (new data)

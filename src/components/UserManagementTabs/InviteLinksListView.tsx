@@ -186,7 +186,7 @@ export default function InviteLinksListView() {
         <div className="invite-links-list__header-left">
           <h1 className="invite-links-list__title">Invite Links</h1>
           {canCreate && (
-            <Link href="/admin/collections/invite-links/create" className="invite-links-list__create-btn">
+            <Link href="/admin/edit-invite" className="invite-links-list__create-btn">
               Create New
             </Link>
           )}
@@ -237,7 +237,7 @@ export default function InviteLinksListView() {
                   <tr key={invite.id}>
                     <td>
                       <Link
-                        href={`/admin/collections/invite-links/${invite.id}`}
+                        href={`/admin/edit-invite?id=${invite.id}`}
                         className="invite-links-list__token-link"
                       >
                         {invite.token.substring(0, 8)}...

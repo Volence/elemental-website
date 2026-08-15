@@ -253,7 +253,7 @@ export function CalendarEventEditorView() {
     if (!eventId || !await confirm({ message: 'Delete this event?', variant: 'danger' })) return
     try {
       await fetch(`/api/global-calendar-events/${eventId}`, { method: 'DELETE' })
-      window.location.href = '/admin/collections/global-calendar-events'
+      window.location.href = '/admin/calendar'
     } catch (err) {
       console.error('Delete error:', err)
     }
@@ -287,7 +287,7 @@ export function CalendarEventEditorView() {
         .region-chip.selected { background: rgba(52, 211, 153, 0.08); border-color: rgba(52, 211, 153, 0.3); color: #34d399; }
       `}</style>
 
-      <a href="/admin/collections/global-calendar-events" className="back-link"><ArrowLeft size={14} /> Back to Events</a>
+      <a href="/admin/calendar" className="back-link"><ArrowLeft size={14} /> Back to Calendar</a>
 
       {/* Header */}
       <div style={editorStyles.header}>

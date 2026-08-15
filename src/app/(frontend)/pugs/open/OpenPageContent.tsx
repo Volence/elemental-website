@@ -282,7 +282,7 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
             <span>
               {' '}
               <a
-                href="/admin/collections/pug-seasons/create"
+                href="/admin/edit-pug-season"
                 className="underline hover:text-yellow-200"
               >
                 Create a season

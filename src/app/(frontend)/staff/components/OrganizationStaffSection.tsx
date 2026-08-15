@@ -9,39 +9,28 @@ import {
 } from '@/utilities/personHelpers'
 import { getOrgRoleIcon } from '@/utilities/roleIcons'
 import { formatPlayerSlug } from '@/utilities/getPlayer'
+import { ORG_ROLES, ORG_REGIONS } from '@/utilities/orgRoles'
 
 interface OrganizationStaffSectionProps {
   groupedOrgStaff: Record<string, any[]>
   getStaffName: (staff: any) => string
 }
 
-const REGION_LABELS: Record<string, string> = {
-  na: 'NA',
-  emea: 'EMEA',
-  sa: 'SA',
-  oce: 'OCE',
-  apac: 'APAC',
-  sea: 'SEA',
-}
+const REGION_LABELS: Record<string, string> = Object.fromEntries(
+  ORG_REGIONS.map((r) => [r.value, r.label]),
+)
 
-const roleOrder = [
-  'Owner',
-  'Co-Owner',
-  'HR',
-  'Region Lead',
-  'Graphics',
-  'Event Manager',
-  'Social Manager',
-  'Media Editor',
-]
+const roleOrder = ORG_ROLES.map((r) => r.label)
 
 const colorMap: Record<string, string> = {
   Owner: 'bg-gradient-to-r from-[hsl(var(--accent-gold))] to-yellow-500',
   'Co-Owner': 'bg-gradient-to-r from-red-500 to-orange-500',
+  Administration: 'bg-gradient-to-r from-violet-500 to-purple-500',
   HR: 'bg-gradient-to-r from-[hsl(var(--accent-green))] to-green-500',
   'Region Lead': 'bg-gradient-to-r from-teal-500 to-emerald-500',
   'Event Manager': 'bg-gradient-to-r from-purple-500 to-pink-500',
   'Social Manager': 'bg-gradient-to-r from-cyan-500 to-blue-500',
+  Marketing: 'bg-gradient-to-r from-fuchsia-500 to-pink-500',
   Graphics: 'bg-gradient-to-r from-orange-500 to-red-500',
   'Media Editor': 'bg-gradient-to-r from-red-500 to-pink-500',
 }
@@ -61,6 +50,12 @@ const avatarColorMap: Record<
     to: 'to-orange-600/10',
     text: 'text-red-500',
     ring: 'ring-red-500/20',
+  },
+  Administration: {
+    from: 'from-violet-500/20',
+    to: 'to-purple-600/10',
+    text: 'text-violet-500',
+    ring: 'ring-violet-500/20',
   },
   HR: {
     from: 'from-green-500/20',
@@ -86,6 +81,12 @@ const avatarColorMap: Record<
     text: 'text-cyan-500',
     ring: 'ring-cyan-500/20',
   },
+  Marketing: {
+    from: 'from-fuchsia-500/20',
+    to: 'to-pink-600/10',
+    text: 'text-fuchsia-500',
+    ring: 'ring-fuchsia-500/20',
+  },
   Graphics: {
     from: 'from-orange-500/20',
     to: 'to-red-600/10',
@@ -103,10 +104,12 @@ const avatarColorMap: Record<
 const sectionBgMap: Record<string, string> = {
   Owner: 'bg-yellow-500/5',
   'Co-Owner': 'bg-red-500/5',
+  Administration: 'bg-violet-500/5',
   HR: 'bg-green-500/5',
   'Region Lead': 'bg-teal-500/5',
   'Event Manager': 'bg-purple-500/5',
   'Social Manager': 'bg-cyan-500/5',
+  Marketing: 'bg-fuchsia-500/5',
   Graphics: 'bg-orange-500/5',
   'Media Editor': 'bg-red-500/5',
 }
@@ -122,16 +125,7 @@ export function OrganizationStaffSection({
         if (!staff || staff.length === 0) return null
 
         const Icon = getOrgRoleIcon(role, 'md')
-        const displayName =
-          role === 'Graphics'
-            ? 'Graphics Staff'
-            : role === 'Media Editor'
-              ? 'Media Editor Staff'
-              : role === 'HR'
-                ? 'HR Staff'
-                : role === 'Region Lead'
-                  ? 'Region Leads'
-                  : role
+        const displayName = ORG_ROLES.find((r) => r.label === role)?.groupLabel ?? role
 
         const underlineColor = colorMap[role] || 'bg-primary'
         const avatarColors = avatarColorMap[role] || {

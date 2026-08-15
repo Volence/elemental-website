@@ -41,7 +41,7 @@ export const OrganizationStaff: CollectionConfig = {
   admin: {
     useAsTitle: 'displayName',
     defaultColumns: ['displayName', 'roles', 'updatedAt'],
-    description: 'Manage organization staff members (owners, HR, region leads, managers, etc.). Staff can have multiple roles.',
+    description: 'Manage organization staff members (owners, administration, HR, region leads, marketing, managers, etc.). Staff can have multiple roles.',
     group: 'Organization',
     hidden: ({ user }) => {
       if (!user) return true
@@ -180,10 +180,12 @@ export const OrganizationStaff: CollectionConfig = {
       options: [
         { label: 'Owner', value: 'owner' },
         { label: 'Co-Owner', value: 'co-owner' },
+        { label: 'Administration', value: 'administration' },
         { label: 'HR', value: 'hr' },
         { label: 'Region Lead', value: 'region-lead' },
         { label: 'Event Manager', value: 'event-manager' },
         { label: 'Social Manager', value: 'social-manager' },
+        { label: 'Marketing', value: 'marketing' },
         { label: 'Graphics', value: 'graphics' },
         { label: 'Media Editor', value: 'media-editor' },
       ],

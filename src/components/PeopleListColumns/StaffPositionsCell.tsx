@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { getPeopleListData } from '@/utilities/peopleListDataCache'
 import { formatRole, formatProductionType } from '@/utilities/formatters'
 import { AdminBadgeGroupSkeleton } from '@/components/AdminSkeletonLoader'
+import { ORG_ROLE_LABELS } from '@/utilities/orgRoles'
 
 /**
  * Custom cell component that displays all staff positions a person holds
@@ -33,7 +34,7 @@ const StaffPositionsCell: React.FC<{ rowData: any }> = ({ rowData }) => {
           const pid = typeof staff.person === 'number' ? staff.person : staff.person?.id
           if (pid === personId && staff.roles?.length > 0) {
             staff.roles.forEach((role: string) => {
-              foundPositions.push(formatRole(role))
+              foundPositions.push(ORG_ROLE_LABELS[role] || formatRole(role))
             })
           }
         })

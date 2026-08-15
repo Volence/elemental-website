@@ -76,17 +76,17 @@ const QuickStats: React.FC = () => {
       {
         label: 'Org Staff',
         value: stats.orgStaff,
-        link: '/admin/collections/organization-staff',
+        link: '/admin/staff-directory',
         icon: <Building2 size={18} />,
-        description: 'View organization staff',
+        description: 'View staff directory',
         variant: 'org-staff',
       },
       {
         label: 'Production',
         value: stats.production,
-        link: '/admin/collections/production',
+        link: '/admin/staff-directory',
         icon: <Clapperboard size={18} />,
-        description: 'View production staff',
+        description: 'View staff directory',
         variant: 'production',
       }
     )

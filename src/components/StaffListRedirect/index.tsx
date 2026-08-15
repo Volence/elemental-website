@@ -9,9 +9,13 @@ import React, { useEffect } from 'react'
 const StaffListRedirect: React.FC = () => {
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
+      // Respect new-tab/window intent - never hijack modified clicks.
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return
+
       const target = e.target as HTMLElement
       const link = target.closest('a[href*="/admin/collections/organization-staff/"], a[href*="/admin/collections/production/"]')
       if (!link) return
+      if ((link as HTMLAnchorElement).target === '_blank') return
 
       const href = link.getAttribute('href') ?? ''
       const orgMatch = href.match(/\/admin\/collections\/organization-staff\/(\d+)/)

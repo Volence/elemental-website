@@ -4,7 +4,7 @@ import React, { useEffect } from 'react'
 
 const PugSeasonsListRedirect: React.FC = () => {
   useEffect(() => {
-    window.location.replace('/admin/pug-seasons')
+    window.location.replace('/admin/pug-dashboard')
   }, [])
   return null
 }

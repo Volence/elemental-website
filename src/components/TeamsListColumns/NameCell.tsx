@@ -33,7 +33,7 @@ const NameCell: React.FC<{ rowData: any }> = ({ rowData }) => {
       }}
     >
       <Link
-        href={`/admin/collections/teams/${teamId}`}
+        href={`/admin/edit-team?id=${teamId}`}
         style={{
           color: 'var(--theme-text)',
           textDecoration: 'none',

@@ -142,7 +142,7 @@ export function IssueCard({ type, category, message, items, autoFixable, onRefre
                     <td className="issue-card__table-cell--id">{item.id}</td>
                     <td className="issue-card__table-cell--name">
                       <a
-                        href={`/admin/collections/people/${item.id}`}
+                        href={`/admin/edit-person?id=${item.id}`}
                         className="issue-card__name-link"
                         target="_blank"
                         rel="noopener noreferrer"

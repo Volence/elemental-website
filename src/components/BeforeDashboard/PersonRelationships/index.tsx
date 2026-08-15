@@ -56,7 +56,7 @@ const PersonRelationships: React.FC = () => {
             {relationships.teams.map((team) => (
               <div key={team.id} className="person-relationships__item">
                 <a
-                  href={`/admin/collections/teams/${team.id}`}
+                  href={`/admin/edit-team?id=${team.id}`}
                   className="person-relationships__link"
                 >
                   {team.name}
@@ -79,7 +79,7 @@ const PersonRelationships: React.FC = () => {
             {relationships.orgStaff.map((staff) => (
               <div key={staff.id} className="person-relationships__staff-item">
                 <a
-                  href={`/admin/collections/organization-staff/${staff.id}`}
+                  href={`/admin/edit-staff?type=org&id=${staff.id}`}
                   className="person-relationships__staff-link"
                 >
                   Staff Entry #{staff.id}
@@ -102,7 +102,7 @@ const PersonRelationships: React.FC = () => {
             {relationships.production.map((prod) => (
               <div key={prod.id} className="person-relationships__staff-item">
                 <a
-                  href={`/admin/collections/production/${prod.id}`}
+                  href={`/admin/edit-staff?type=production&id=${prod.id}`}
                   className="person-relationships__staff-link"
                 >
                   {formatProductionType(prod.type)}
