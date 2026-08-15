@@ -11,7 +11,11 @@ import {
   Film,
   Users,
   Globe,
+  ClipboardList,
+  Megaphone,
 } from 'lucide-react'
+import type { OrgRoleSlug } from '@/utilities/orgRoles'
+import { ORG_ROLE_LABELS } from '@/utilities/orgRoles'
 
 /**
  * Centralized role icon utilities for both game roles and organization roles
@@ -19,7 +23,7 @@ import {
  */
 
 export type GameRole = 'tank' | 'dps' | 'support'
-export type OrgRole = 'owner' | 'co-owner' | 'hr' | 'region-lead' | 'event-manager' | 'social-manager' | 'graphics' | 'media-editor'
+export type OrgRole = OrgRoleSlug
 export type IconSize = 'sm' | 'md' | 'lg'
 
 const sizeClasses: Record<IconSize, string> = {
@@ -48,26 +52,28 @@ export function getGameRoleIcon(role: string, size: IconSize = 'sm'): React.Reac
 }
 
 /**
- * Get icon for organization roles (Owner, HR, Moderator, etc.)
+ * Get icon for organization roles (Owner, HR, Region Lead, etc.)
  * Used in staff pages and organization staff pages
  */
 export function getOrgRoleIcon(role: string, size: IconSize = 'sm'): React.ReactNode {
   const sizeClass = sizeClasses[size]
-  
+
   // Normalize role string (handle both "Event Manager" and "event-manager")
   const roleLower = role.toLowerCase().replace(/\s+/g, '-')
-  
+
   const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
     'owner': Crown,
     'co-owner': Crown,
+    'administration': ClipboardList,
     'hr': UserCheck,
     'region-lead': Globe,
     'event-manager': Calendar,
     'social-manager': Share2,
+    'marketing': Megaphone,
     'graphics': Image,
     'media-editor': Film,
   }
-  
+
   const Icon = iconMap[roleLower] || Users
   return <Icon className={sizeClass} />
 }
@@ -110,18 +116,7 @@ export function getGameRoleBgColor(role: string): string {
  * Converts kebab-case to Title Case
  */
 export function getOrgRoleLabel(role: string): string {
-  const labelMap: Record<string, string> = {
-    'owner': 'Owner',
-    'co-owner': 'Co-Owner',
-    'hr': 'HR',
-    'region-lead': 'Region Lead',
-    'event-manager': 'Event Manager',
-    'social-manager': 'Social Manager',
-    'graphics': 'Graphics',
-    'media-editor': 'Media Editor',
-  }
-  
   const roleLower = role.toLowerCase().replace(/\s+/g, '-')
-  return labelMap[roleLower] || role
+  return ORG_ROLE_LABELS[roleLower] || role
 }
 
