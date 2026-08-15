@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { EDITOR_CSS, styles as editorStyles } from '@/components/PersonEditor'
 import { useConfirm } from '@/components/ConfirmDialog'
+import { ORG_ROLES, ORG_REGIONS } from '@/utilities/orgRoles'
 
 // ── Types ──
 
@@ -25,17 +26,6 @@ type PersonOption = { id: number; name: string }
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
 // ── Role configs ──
-
-const ORG_ROLES = [
-  { value: 'owner', label: 'Owner', color: '#f59e0b' },
-  { value: 'co-owner', label: 'Co-Owner', color: '#f59e0b' },
-  { value: 'hr', label: 'HR', color: '#ec4899' },
-  { value: 'moderator', label: 'Moderator', color: '#8b5cf6' },
-  { value: 'event-manager', label: 'Event Manager', color: '#06b6d4' },
-  { value: 'social-manager', label: 'Social Manager', color: '#3b82f6' },
-  { value: 'graphics', label: 'Graphics', color: '#f97316' },
-  { value: 'media-editor', label: 'Media Editor', color: '#ef4444' },
-]
 
 const PROD_TYPES = [
   { value: 'caster', label: 'Caster', color: '#34d399' },
@@ -203,6 +193,7 @@ export function StaffEditorView() {
 
   const [personId, setPersonId] = useState<number | null>(null)
   const [roles, setRoles] = useState<string[]>([])
+  const [regions, setRegions] = useState<string[]>([])
   const [prodType, setProdType] = useState<string>('caster')
   const [allPeople, setAllPeople] = useState<PersonOption[]>([])
   const [existingName, setExistingName] = useState('')
@@ -223,6 +214,7 @@ export function StaffEditorView() {
           const doc = await res.json()
           setPersonId(typeof doc.person === 'object' ? doc.person?.id : doc.person)
           setRoles(doc.roles ?? [])
+          setRegions(doc.regions ?? [])
           setProdType(doc.type ?? 'caster')
           setExistingName(doc.displayName ?? '')
         }
@@ -242,13 +234,19 @@ export function StaffEditorView() {
       setSaveStatus('error')
       return
     }
+    if (collection === 'organization-staff' && roles.length === 0) {
+      setErrorMsg('Select at least one role')
+      setSaveStatus('error')
+      return
+    }
     setSaveStatus('saving')
     setErrorMsg('')
 
     try {
       const payload: Record<string, any> = { person: personId }
       if (collection === 'organization-staff') {
-        payload.roles = roles.length > 0 ? roles : ['moderator']
+        payload.roles = roles
+        payload.regions = roles.includes('region-lead') ? regions : []
       } else {
         payload.type = prodType
       }
@@ -289,14 +287,16 @@ export function StaffEditorView() {
     if (!confirmed) return
     try {
       await fetch(`/api/${collection}/${staffId}`, { method: 'DELETE' })
-      window.location.href = '/admin/collections/organization-staff'
+      window.location.href = '/admin/staff-directory'
     } catch (err) {
       console.error('Delete error:', err)
     }
   }
 
   const toggleRole = (roleVal: string) => {
+    const isRemovingRegionLead = roleVal === 'region-lead' && roles.includes(roleVal)
     setRoles(prev => prev.includes(roleVal) ? prev.filter(r => r !== roleVal) : [...prev, roleVal])
+    if (isRemovingRegionLead) setRegions([])
   }
 
   const selectedPersonName = allPeople.find(p => p.id === personId)?.name ?? existingName
@@ -323,7 +323,7 @@ export function StaffEditorView() {
         .person-select option { background: #1e293b; color: #e2e8f0; }
       `}</style>
 
-      <a href="/admin/collections/organization-staff" className="back-link"><ArrowLeft size={14} /> Back to Staff Directory</a>
+      <a href="/admin/staff-directory" className="back-link"><ArrowLeft size={14} /> Back to Staff Directory</a>
 
       {/* Header */}
       <div style={editorStyles.header}>
@@ -390,6 +390,24 @@ export function StaffEditorView() {
                   </button>
                 ))}
               </div>
+              {roles.includes('region-lead') && (
+                <div style={{ marginTop: 16 }}>
+                  <p style={editorStyles.fieldHint}>Which region(s) does this Region Lead cover?</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+                    {ORG_REGIONS.map(reg => (
+                      <button
+                        key={reg.value}
+                        className={`role-chip ${regions.includes(reg.value) ? 'selected' : ''}`}
+                        style={{ color: '#14b8a6', borderColor: regions.includes(reg.value) ? '#14b8a6' : undefined, background: regions.includes(reg.value) ? '#14b8a615' : undefined }}
+                        onClick={() => setRegions(prev => prev.includes(reg.value) ? prev.filter(r => r !== reg.value) : [...prev, reg.value])}
+                      >
+                        {regions.includes(reg.value) && <Check size={12} />}
+                        {reg.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="profile-card" style={editorStyles.card}>
