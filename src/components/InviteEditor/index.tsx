@@ -330,7 +330,7 @@ export function InviteEditorView() {
     if (!confirmed) return
     try {
       await fetch(`/api/invite-links/${inviteId}`, { method: 'DELETE' })
-      window.location.href = '/admin/collections/invite-links'
+      window.location.href = '/admin/edit-invite'
     } catch {}
   }
 
@@ -378,7 +378,7 @@ export function InviteEditorView() {
         .team-chip.selected { background: rgba(139, 92, 246, 0.08); border-color: rgba(139, 92, 246, 0.3); color: #a78bfa; }
       `}</style>
 
-      <a href="/admin/collections/invite-links" className="back-link"><ArrowLeft size={14} /> Back to Invites</a>
+      <a href="/admin/edit-invite" className="back-link"><ArrowLeft size={14} /> Back to Invites</a>
 
       {/* Header */}
       <div style={editorStyles.header}>

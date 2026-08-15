@@ -177,7 +177,7 @@ export function useUnifiedCalendarData({
             dateEnd: event.dateEnd ? new Date(event.dateEnd) : undefined,
             department: 'competitive',
             status: undefined,
-            href: `/admin/collections/global-calendar-events/${event.id}`,
+            href: `/admin/edit-event?id=${event.id}`,
             meta: {
               eventType: event.eventType,
               internalEventType: event.internalEventType,

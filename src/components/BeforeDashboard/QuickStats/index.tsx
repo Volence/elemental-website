@@ -78,7 +78,7 @@ const QuickStats: React.FC = () => {
         value: stats.orgStaff,
         link: '/admin/staff-directory',
         icon: <Building2 size={18} />,
-        description: 'View organization staff',
+        description: 'View staff directory',
         variant: 'org-staff',
       },
       {
@@ -86,7 +86,7 @@ const QuickStats: React.FC = () => {
         value: stats.production,
         link: '/admin/staff-directory',
         icon: <Clapperboard size={18} />,
-        description: 'View production staff',
+        description: 'View staff directory',
         variant: 'production',
       }
     )
