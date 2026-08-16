@@ -5,11 +5,19 @@ import { userMention, subjectLabel, accountCreatedAtMs, isNewAccount } from '../
 import { diffRoles, diffNickname, truncate } from '../diff'
 import { ordinal, humanizeDuration, discordTimestamp } from '../format'
 import { loadLoggingConfig } from '../config'
+import { resolveLogChannelId } from '../channels'
 import { resolveProfile } from '../nameResolver'
 import { recordMemberEvent, getRejoinSummary } from '../memberEvents'
 import { resolveJoinInvite } from '../invites'
 import { fetchActorId, fetchAuditEntryWithRetry, fetchRoleChange, setActorAuthorOrUser, setMemberAuthor, setUserAuthor } from '../attribution'
 import { Colors } from '../colors'
+
+// Last audit-log MemberRoleUpdate entry id we've already posted a role change for, keyed by
+// `${guildId}:${memberId}`. Only consulted in the partial-old-member fallback path (see
+// GuildMemberUpdate below) - it stops repeated gateway packets landing inside the audit
+// entry's matching window from re-posting the same cumulative "Roles added/removed" list.
+// Capped so a busy server can't grow it unbounded.
+const lastRoleAuditEntryId = new Map<string, string>()
 
 export function attachMemberHandlers(client: Client, payload: Payload, now: () => number): void {
   client.on(Events.GuildMemberAdd, async (member) => {
@@ -49,7 +57,7 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
     setMemberAuthor(embed, member)
     embed.setFooter({ text: `ID: ${member.id}` })
 
-    await postLog(client, payload, guildId, 'joinLeave', embed, { cfg })
+    await postLog(client, payload, guildId, 'joinLeave', embed, { cfg, content: userMention(member.id) })
     await recordMemberEvent(payload, guildId, member.id, 'join', new Date(nowMs).toISOString())
   })
 
@@ -87,7 +95,7 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
     if (member.user) setUserAuthor(embed, member.user)
     embed.setFooter({ text: `ID: ${member.id}` })
 
-    await postLog(client, payload, guildId, 'joinLeave', embed, { cfg })
+    await postLog(client, payload, guildId, 'joinLeave', embed, { cfg, content: userMention(member.id) })
     await recordMemberEvent(payload, guildId, member.id, 'leave', new Date(nowMs).toISOString())
   })
 
@@ -95,21 +103,39 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
     const guildId = newM.guild.id
     const cfg = await loadLoggingConfig(payload, guildId)
     if (!cfg) return
+    // Cheap up-front gate: don't burn audit-log API calls (fetchRoleChange/fetchActorId)
+    // for a guild whose member-log channel isn't configured, mirroring the check
+    // messages.ts does for the message log before doing any work.
+    const memberLogEnabled = !!resolveLogChannelId(cfg, 'member')
 
-    // Roles: prefer the audit log so role changes log even when the old member wasn't cached
-    // (the partial case). Fall back to a cache diff only when we have trustworthy prior state.
-    const roleChange = await fetchRoleChange(newM.guild, newM.id)
+    // Roles: PREFER the gateway cache diff - it reflects exactly what changed in THIS
+    // update, so unlike the audit log it can't re-post a stale cumulative list when
+    // multiple gateway packets land close together. The audit log is only used to
+    // attribute WHO made the change (via the fetchActorId fallback below), and, when the
+    // old member wasn't cached (partial - no reliable prior state to diff), as a fallback
+    // for the role list itself - deduped against the last audit entry id we already
+    // logged so repeated gateway packets inside that entry's matching window don't repost.
     let added: string[] = []
     let removed: string[] = []
     let roleActorId: string | null = null
-    if (roleChange && (roleChange.added.length || roleChange.removed.length)) {
-      added = roleChange.added
-      removed = roleChange.removed
-      roleActorId = roleChange.executorId
-    } else if (!oldM.partial) {
-      const d = diffRoles([...oldM.roles.cache.keys()], [...newM.roles.cache.keys()])
-      added = d.added
-      removed = d.removed
+    if (memberLogEnabled) {
+      if (!oldM.partial) {
+        const d = diffRoles([...oldM.roles.cache.keys()], [...newM.roles.cache.keys()])
+        added = d.added
+        removed = d.removed
+      } else {
+        const roleChange = await fetchRoleChange(newM.guild, newM.id)
+        if (roleChange) {
+          const key = `${guildId}:${newM.id}`
+          if (lastRoleAuditEntryId.get(key) !== roleChange.entryId) {
+            added = roleChange.added
+            removed = roleChange.removed
+            roleActorId = roleChange.executorId
+            if (lastRoleAuditEntryId.size > 1000) lastRoleAuditEntryId.clear()
+            lastRoleAuditEntryId.set(key, roleChange.entryId)
+          }
+        }
+      }
     }
 
     // Nickname compare needs the cached prior state; skip when the old member is partial.
@@ -117,7 +143,7 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
       ? { from: null as string | null, to: null as string | null, changed: false }
       : diffNickname(oldM.nickname ?? null, newM.nickname ?? null)
 
-    if (added.length || removed.length || nickDiff.changed) {
+    if (memberLogEnabled && (added.length || removed.length || nickDiff.changed)) {
       const embed = new EmbedBuilder()
         .setColor(Colors.memberUpdate)
         .setTitle('Member updated')
@@ -131,14 +157,14 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
       embed.setThumbnail(newM.displayAvatarURL({ size: 256 }))
       await setActorAuthorOrUser(client, embed, actorId, newM.user)
       embed.setFooter({ text: `ID: ${newM.id}` })
-      await postLog(client, payload, guildId, 'member', embed, { cfg })
+      await postLog(client, payload, guildId, 'member', embed, { cfg, content: userMention(newM.id) })
     }
 
     // Timeout and avatar comparisons need the cached prior state.
     if (!oldM.partial) {
       const oldTimeout = oldM.communicationDisabledUntilTimestamp ?? null
       const newTimeout = newM.communicationDisabledUntilTimestamp ?? null
-      if (oldTimeout !== newTimeout) {
+      if (memberLogEnabled && oldTimeout !== newTimeout) {
         const embed = new EmbedBuilder()
           .setColor(Colors.punitive)
           .setTitle(newTimeout ? 'Member timed out' : 'Member timeout removed')

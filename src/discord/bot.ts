@@ -91,6 +91,10 @@ export async function initializeDiscordBot(): Promise<Client | null> {
     await client.login(token)
   } catch (error) {
     console.error('❌ Failed to login to Discord:', error)
+    // Reset module state so a later call retries cleanly instead of being stuck on a
+    // zombie client (never logged in) or a stale in-flight promise that already rejected.
+    client = null
+    initializationPromise = null
     throw error
   }
 

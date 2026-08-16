@@ -65,9 +65,13 @@ export async function fetchAuditEntry(
 ): Promise<AuditMatch | null> {
   try {
     const logs = await guild.fetchAuditLogs({ type, limit: 5 })
-    const entry =
-      (targetId ? logs.entries.find((e) => String(e.targetId) === String(targetId)) : null) ??
-      logs.entries.first()
+    // When a targetId is given, only a matching entry counts - falling back to .first() here
+    // would attribute an unrelated audit entry (e.g. labeling a voluntary leave as a kick by
+    // whoever most recently did something else in the guild). The .first() fallback is only
+    // for callers that didn't ask for a specific target.
+    const entry = targetId
+      ? logs.entries.find((e) => String(e.targetId) === String(targetId))
+      : logs.entries.first()
     if (!entry) return null
     if (Date.now() - entry.createdTimestamp > 15000) return null
     return { executorId: entry.executorId ?? null, reason: entry.reason ?? null }
@@ -111,6 +115,9 @@ export interface RoleChange {
   added: string[]
   removed: string[]
   executorId: string | null
+  /** Audit-log entry id this was read from - lets callers dedupe repeated reads of the
+   * same entry (e.g. multiple gateway packets landing inside the entry's matching window). */
+  entryId: string
 }
 
 /**
@@ -133,7 +140,7 @@ export async function fetchRoleChange(guild: Guild, targetId: string): Promise<R
       if (change.key === '$add') added.push(...ids)
       else if (change.key === '$remove') removed.push(...ids)
     }
-    return { added, removed, executorId: entry.executorId ?? null }
+    return { added, removed, executorId: entry.executorId ?? null, entryId: String(entry.id) }
   } catch {
     return null
   }

@@ -42,6 +42,12 @@ export async function postLog(
         ...(opts.content ? { content: opts.content } : {}),
         embeds: [embed],
         allowedMentions: { parse: [] },
+        // Discord dedupes same-nonce sends for a few minutes. The REST layer retries
+        // POST /channels/:id/messages up to 3x on timeout/ECONNRESET/5xx and reuses the
+        // same serialized body on retry, so a lost response no longer produces a literal
+        // duplicate post - the retry becomes a no-op server-side.
+        nonce: `${Date.now()}${Math.floor(Math.random() * 1e6)}`.slice(0, 24),
+        enforceNonce: true,
       })
     } else {
       // Surface misconfiguration instead of silently dropping the log (e.g. a forum/voice
