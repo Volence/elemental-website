@@ -1,5 +1,6 @@
 import type { Client, EmbedBuilder } from 'discord.js'
 import type { Payload } from 'payload'
+import { randomUUID } from 'crypto'
 import { loadLoggingConfig } from './config'
 import { resolveLogChannelId, type LogCategory, type LoggingConfig } from './channels'
 import { logError } from '@/utilities/errorLogger'
@@ -46,7 +47,7 @@ export async function postLog(
         // POST /channels/:id/messages up to 3x on timeout/ECONNRESET/5xx and reuses the
         // same serialized body on retry, so a lost response no longer produces a literal
         // duplicate post - the retry becomes a no-op server-side.
-        nonce: `${Date.now()}${Math.floor(Math.random() * 1e6)}`.slice(0, 24),
+        nonce: randomUUID().slice(0, 25),
         enforceNonce: true,
       })
     } else {

@@ -16,7 +16,7 @@ const DISABLED_CONFIG: LoggingConfig = {
   profileLogChannelId: null,
   serverLogChannelId: null,
   newAccountFlagDays: 7,
-  attachProfileLink: true,
+  attachProfileLink: false,
 }
 
 /** Load logging config for a guild from the discord-servers registry. Returns null if not found. */

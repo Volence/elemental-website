@@ -84,10 +84,14 @@ jobs:
             # its own bot ~3s after start. Without this, both bots are connected during the
             # ~15s+ health-check window and every gateway event gets logged twice. Tolerates
             # failure - the old image may predate this route, or the container may already
-            # be down - the deploy must never block on it (no downtime requirement).
+            # be down - the deploy must never block on it (no downtime requirement). This
+            # deliberately accepts a ~35-50s window with NO bot connected (old shut down,
+            # new not up yet) in exchange for never having two bots connected at once.
             PAYLOAD_SECRET=$(grep '^PAYLOAD_SECRET=' .env | cut -d= -f2-)
-            curl -fsS -X POST -H "Authorization: Bearer ${PAYLOAD_SECRET}" --max-time 10 \
-              http://localhost:3000/api/discord/shutdown || echo "⚠️ Old bot shutdown call failed/skipped (continuing)"
+            SHUTDOWN_CODE=$(curl -sS -o /dev/null -w '%{http_code}' -X POST \
+              -H "Authorization: Bearer ${PAYLOAD_SECRET}" --max-time 10 \
+              http://localhost:3000/api/discord/shutdown || echo "000")
+            echo "Old bot shutdown -> HTTP ${SHUTDOWN_CODE} (200=ok, 404=old image predates route, 401=secret extraction broken, 000=unreachable)"
 
             # Start new container with a temporary name first
             echo "🚀 Starting new container..."

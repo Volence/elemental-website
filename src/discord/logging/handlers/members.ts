@@ -151,9 +151,25 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
       if (added.length) embed.addFields({ name: 'Roles added', value: truncate(added.map((r) => `<@&${r}>`).join(' '), 1024) })
       if (removed.length) embed.addFields({ name: 'Roles removed', value: truncate(removed.map((r) => `<@&${r}>`).join(' '), 1024) })
       if (nickDiff.changed) embed.addFields({ name: 'Nickname', value: `${nickDiff.from ?? '_none_'} -> ${nickDiff.to ?? '_none_'}` })
-      const actorId =
-        roleActorId ??
-        (await fetchActorId(newM.guild, added.length || removed.length ? AuditLogEvent.MemberRoleUpdate : AuditLogEvent.MemberUpdate, newM.id))
+      let actorId = roleActorId
+      if (actorId === null) {
+        if (added.length || removed.length) {
+          // Same single audit-log query fetchActorId(MemberRoleUpdate, ...) would have made -
+          // fetchRoleChange also hands back the entry id, so we record it here too. Otherwise
+          // a later GuildMemberUpdate for this member with a partial (uncached) oldM could
+          // read this SAME audit entry via the fallback path above and, having never seen
+          // its id, re-post it as if it were a new role change.
+          const rc = await fetchRoleChange(newM.guild, newM.id)
+          if (rc) {
+            actorId = rc.executorId
+            const key = `${guildId}:${newM.id}`
+            if (lastRoleAuditEntryId.size > 1000) lastRoleAuditEntryId.clear()
+            lastRoleAuditEntryId.set(key, rc.entryId)
+          }
+        } else {
+          actorId = await fetchActorId(newM.guild, AuditLogEvent.MemberUpdate, newM.id)
+        }
+      }
       embed.setThumbnail(newM.displayAvatarURL({ size: 256 }))
       await setActorAuthorOrUser(client, embed, actorId, newM.user)
       embed.setFooter({ text: `ID: ${newM.id}` })
@@ -175,7 +191,7 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
         embed.setThumbnail(newM.displayAvatarURL({ size: 256 }))
         await setActorAuthorOrUser(client, embed, await fetchActorId(newM.guild, AuditLogEvent.MemberUpdate, newM.id), newM.user)
         embed.setFooter({ text: `ID: ${newM.id}` })
-        await postLog(client, payload, guildId, 'member', embed, { cfg })
+        await postLog(client, payload, guildId, 'member', embed, { cfg, content: userMention(newM.id) })
       }
 
       // Per-guild avatar change -> profile-log (show the new avatar as a thumbnail)
@@ -187,7 +203,7 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
           .setThumbnail(newM.displayAvatarURL({ size: 256 }))
         setMemberAuthor(embed, newM)
         embed.setFooter({ text: `ID: ${newM.id}` })
-        await postLog(client, payload, guildId, 'profile', embed, { cfg })
+        await postLog(client, payload, guildId, 'profile', embed, { cfg, content: userMention(newM.id) })
       }
     }
   })

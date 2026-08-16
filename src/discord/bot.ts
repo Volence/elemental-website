@@ -5,6 +5,10 @@ import { logError } from '@/utilities/errorLogger'
 
 let client: Client | null = null
 let initializationPromise: Promise<Client | null> | null = null
+// Set by shutdownDiscordBot (the deploy-handoff route) - while true, ensureDiscordClient
+// deliberately returns null instead of reusing a stale initializationPromise that still
+// resolves to the now-destroyed client. Cleared by allowDiscordRestart.
+let shutdownRequested = false
 
 export function getDiscordClient(): Client | null {
   return client
@@ -14,9 +18,10 @@ export function getDiscordClient(): Client | null {
  * Get or initialize the Discord client (lazy loading)
  */
 export async function ensureDiscordClient(): Promise<Client | null> {
+  if (shutdownRequested) return null // deliberate: deploy handoff in progress
   if (client) return client
   if (initializationPromise) return initializationPromise
-  
+
   // Start initialization
   initializationPromise = initializeDiscordBot()
   return initializationPromise
@@ -101,9 +106,32 @@ export async function initializeDiscordBot(): Promise<Client | null> {
   return client
 }
 
+/**
+ * Graceful shutdown for the deploy handoff: disconnects the bot from the gateway and marks
+ * the module as deliberately down, so ensureDiscordClient() stops handing out (or trying to
+ * reconnect) a client until allowDiscordRestart() is called. Also resets the interaction
+ * handler and poll-notification-polling guards so a subsequent re-init (via
+ * allowDiscordRestart + ensureDiscordClient) can fully re-attach instead of being a no-op
+ * because those modules still think they're already set up.
+ */
 export async function shutdownDiscordBot(): Promise<void> {
+  shutdownRequested = true
+  initializationPromise = null
+  // Dynamic import (not a static one) to avoid a module-load-time circular import with
+  // ./handlers/interactions, which itself imports getDiscordClient from this file.
+  const { resetInteractionHandlers } = await import('./handlers/interactions')
+  resetInteractionHandlers()
+  const { stopPollNotificationPolling } = await import('./handlers/poll-handlers')
+  stopPollNotificationPolling()
   if (client) {
     await client.destroy()
     client = null
   }
+}
+
+/** Undo a handoff shutdown so the bot can be re-initialized. Called by /api/discord/init
+ * before ensureDiscordClient() - without this, a bot shut down for a deploy handoff would
+ * stay deliberately dark forever, since ensureDiscordClient short-circuits on the flag. */
+export function allowDiscordRestart(): void {
+  shutdownRequested = false
 }

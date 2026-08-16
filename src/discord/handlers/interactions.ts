@@ -36,6 +36,12 @@ import {
 // attaching the interactionCreate listener (and starting poll notification polling) twice.
 let handlersAttached = false
 
+/** Undo the attached-guard so a fresh setupInteractionHandlers() call after a bot restart
+ * (see shutdownDiscordBot in ../bot) actually re-attaches instead of silently no-oping. */
+export function resetInteractionHandlers(): void {
+  handlersAttached = false
+}
+
 export function setupInteractionHandlers(): void {
   const client = getDiscordClient()
   if (!client) return
