@@ -117,16 +117,19 @@ export async function initializeDiscordBot(): Promise<Client | null> {
 export async function shutdownDiscordBot(): Promise<void> {
   shutdownRequested = true
   initializationPromise = null
+  // Disconnect from the gateway FIRST and unconditionally - this is the one thing the
+  // deploy handoff must not fail at. It runs before the dynamic imports below so an
+  // import ever rejecting can't leave the old bot still connected.
+  if (client) {
+    await client.destroy()
+    client = null
+  }
   // Dynamic import (not a static one) to avoid a module-load-time circular import with
   // ./handlers/interactions, which itself imports getDiscordClient from this file.
   const { resetInteractionHandlers } = await import('./handlers/interactions')
   resetInteractionHandlers()
   const { stopPollNotificationPolling } = await import('./handlers/poll-handlers')
   stopPollNotificationPolling()
-  if (client) {
-    await client.destroy()
-    client = null
-  }
 }
 
 /** Undo a handoff shutdown so the bot can be re-initialized. Called by /api/discord/init

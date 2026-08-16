@@ -87,10 +87,14 @@ jobs:
             # be down - the deploy must never block on it (no downtime requirement). This
             # deliberately accepts a ~35-50s window with NO bot connected (old shut down,
             # new not up yet) in exchange for never having two bots connected at once.
+            # Recovery note: if a deploy aborts after this shutdown, the surviving old
+            # container's bot stays down (slash commands can be revived via POST
+            # /api/discord/init as an admin, but logging/rosters are not re-initialized);
+            # `docker restart elemental-website-payload-1` is the full recovery.
             PAYLOAD_SECRET=$(grep '^PAYLOAD_SECRET=' .env | cut -d= -f2-)
             SHUTDOWN_CODE=$(curl -sS -o /dev/null -w '%{http_code}' -X POST \
               -H "Authorization: Bearer ${PAYLOAD_SECRET}" --max-time 10 \
-              http://localhost:3000/api/discord/shutdown || echo "000")
+              http://localhost:3000/api/discord/shutdown || true)
             echo "Old bot shutdown -> HTTP ${SHUTDOWN_CODE} (200=ok, 404=old image predates route, 401=secret extraction broken, 000=unreachable)"
 
             # Start new container with a temporary name first
