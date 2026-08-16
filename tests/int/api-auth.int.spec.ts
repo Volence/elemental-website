@@ -32,6 +32,9 @@ const NEWLY_PROTECTED_ROUTES = [
   { method: 'POST', path: '/api/backfill-person-ids' },
   { method: 'GET', path: '/api/discord/guilds' },
   { method: 'GET', path: '/api/data-consistency-check' },
+  // Machine auth (bearer token vs PAYLOAD_SECRET), not a Payload admin session - but a
+  // request with no Authorization header must still 401 like the rest of this tier.
+  { method: 'POST', path: '/api/discord/shutdown' },
 ]
 
 // ── Routes that should stay public ──
@@ -65,6 +68,16 @@ describe('Auth — newly protected routes (Tier 2)', () => {
       expect(res.status).toBe(401)
     })
   }
+})
+
+describe('Auth — /api/discord/shutdown wrong bearer token', () => {
+  it('POST /api/discord/shutdown — returns 401 with an incorrect bearer token', async () => {
+    const res = await fetch(`${BASE}/api/discord/shutdown`, {
+      method: 'POST',
+      headers: { Authorization: 'Bearer definitely-not-the-payload-secret' },
+    })
+    expect(res.status).toBe(401)
+  })
 })
 
 describe('Auth — already protected routes', () => {

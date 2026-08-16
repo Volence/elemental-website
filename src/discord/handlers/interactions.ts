@@ -32,9 +32,21 @@ import {
   startPollNotificationPolling,
 } from './poll-handlers'
 
+// Reachable from both payload.config.ts and the /api/discord/init route - guard against
+// attaching the interactionCreate listener (and starting poll notification polling) twice.
+let handlersAttached = false
+
+/** Undo the attached-guard so a fresh setupInteractionHandlers() call after a bot restart
+ * (see shutdownDiscordBot in ../bot) actually re-attaches instead of silently no-oping. */
+export function resetInteractionHandlers(): void {
+  handlersAttached = false
+}
+
 export function setupInteractionHandlers(): void {
   const client = getDiscordClient()
   if (!client) return
+  if (handlersAttached) return
+  handlersAttached = true
 
   // Start the poll notification polling when handlers are set up
   startPollNotificationPolling()

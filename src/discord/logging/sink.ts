@@ -1,5 +1,6 @@
 import type { Client, EmbedBuilder } from 'discord.js'
 import type { Payload } from 'payload'
+import { randomUUID } from 'crypto'
 import { loadLoggingConfig } from './config'
 import { resolveLogChannelId, type LogCategory, type LoggingConfig } from './channels'
 import { logError } from '@/utilities/errorLogger'
@@ -42,6 +43,12 @@ export async function postLog(
         ...(opts.content ? { content: opts.content } : {}),
         embeds: [embed],
         allowedMentions: { parse: [] },
+        // Discord dedupes same-nonce sends for a few minutes. The REST layer retries
+        // POST /channels/:id/messages up to 3x on timeout/ECONNRESET/5xx and reuses the
+        // same serialized body on retry, so a lost response no longer produces a literal
+        // duplicate post - the retry becomes a no-op server-side.
+        nonce: randomUUID().slice(0, 25),
+        enforceNonce: true,
       })
     } else {
       // Surface misconfiguration instead of silently dropping the log (e.g. a forum/voice

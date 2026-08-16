@@ -21,16 +21,25 @@ export async function GET() {
     }
 
     // Dynamic import to avoid build-time bundling
-    const { ensureDiscordClient } = await import('@/discord/bot')
+    const { ensureDiscordClient, allowDiscordRestart } = await import('@/discord/bot')
     const { registerCommands } = await import('@/discord/commands/register')
     const { setupInteractionHandlers } = await import('@/discord/handlers/interactions')
 
+    // Undo a deploy-handoff shutdown (if any) - otherwise ensureDiscordClient deliberately
+    // returns null forever, since that's exactly what it's designed to do while shut down.
+    allowDiscordRestart()
+
     const client = await ensureDiscordClient()
-    
-    if (!client) {
+
+    // Be honest about the outcome: a client that exists but hasn't received the gateway
+    // READY dispatch yet isn't actually usable (commands/handlers would attach to a client
+    // that can't yet send/receive), so that's not "success" either.
+    if (!client || !client.isReady()) {
       return NextResponse.json({
         success: false,
-        message: 'Failed to initialize Discord client',
+        message: client
+          ? 'Discord client connected but not ready yet - try again shortly'
+          : 'Failed to initialize Discord client',
       })
     }
 

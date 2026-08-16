@@ -30,14 +30,24 @@ export async function getRejoinSummary(
   guildId: string,
   discordUserId: string,
 ): Promise<RejoinSummary> {
-  const { docs } = await payload.find({
-    collection: 'discord-member-events' as any,
-    where: { and: [{ guildId: { equals: guildId } }, { discordUserId: { equals: discordUserId } }] },
-    sort: 'occurredAt',
-    limit: 500,
-    depth: 0,
-  })
-  return summarizeRejoin(
-    (docs as any[]).map((d) => ({ eventType: d.eventType, occurredAt: d.occurredAt })),
-  )
+  // A lookup failure shouldn't block the join embed - fall back to "no history known".
+  try {
+    const { docs } = await payload.find({
+      collection: 'discord-member-events' as any,
+      where: { and: [{ guildId: { equals: guildId } }, { discordUserId: { equals: discordUserId } }] },
+      sort: 'occurredAt',
+      limit: 500,
+      depth: 0,
+    })
+    return summarizeRejoin(
+      (docs as any[]).map((d) => ({ eventType: d.eventType, occurredAt: d.occurredAt })),
+    )
+  } catch (error: any) {
+    await logError(payload, {
+      errorType: 'system',
+      message: `Discord logging getRejoinSummary failed (${guildId}/${discordUserId}): ${error?.message}`,
+      severity: 'medium',
+    }).catch(() => {})
+    return summarizeRejoin([])
+  }
 }

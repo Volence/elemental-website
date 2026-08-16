@@ -59,20 +59,44 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /home/ubuntu/elemental-website
-            
+
+            # Idempotent cleanup of any "-new" container orphaned by a previously aborted
+            # deploy (e.g. the runner/SSH connection dropped mid-script, before the
+            # in-script failure path below got a chance to remove it) - otherwise the
+            # `docker run --name elemental-website-payload-new` step fails on a name clash.
+            docker rm -f elemental-website-payload-new 2>/dev/null || true
+
             # Log in to GitHub Container Registry (using PAT)
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
-            
+
             # Pull the latest image first (fail fast if image doesn't exist)
             echo "📦 Pulling latest image..."
             if ! docker pull ghcr.io/volence/elemental-website:latest; then
               echo "❌ Failed to pull image, aborting deploy"
               exit 1
             fi
-            
+
             # Get postgres password from env file
             POSTGRES_PASS=$(grep POSTGRES_PASSWORD .env | cut -d= -f2)
-            
+
+            # Graceful bot handoff: tell the OLD container (still on port 3000 at this point)
+            # to disconnect its Discord bot from the gateway BEFORE the new container boots
+            # its own bot ~3s after start. Without this, both bots are connected during the
+            # ~15s+ health-check window and every gateway event gets logged twice. Tolerates
+            # failure - the old image may predate this route, or the container may already
+            # be down - the deploy must never block on it (no downtime requirement). This
+            # deliberately accepts a ~35-50s window with NO bot connected (old shut down,
+            # new not up yet) in exchange for never having two bots connected at once.
+            # Recovery note: if a deploy aborts after this shutdown, the surviving old
+            # container's bot stays down (slash commands can be revived via POST
+            # /api/discord/init as an admin, but logging/rosters are not re-initialized);
+            # `docker restart elemental-website-payload-1` is the full recovery.
+            PAYLOAD_SECRET=$(grep '^PAYLOAD_SECRET=' .env | cut -d= -f2-)
+            SHUTDOWN_CODE=$(curl -sS -o /dev/null -w '%{http_code}' -X POST \
+              -H "Authorization: Bearer ${PAYLOAD_SECRET}" --max-time 10 \
+              http://localhost:3000/api/discord/shutdown || true)
+            echo "Old bot shutdown -> HTTP ${SHUTDOWN_CODE} (200=ok, 404=old image predates route, 401=secret extraction broken, 000=unreachable)"
+
             # Start new container with a temporary name first
             echo "🚀 Starting new container..."
             docker run -d \
