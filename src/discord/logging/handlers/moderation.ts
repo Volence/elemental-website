@@ -23,7 +23,7 @@ export function attachModerationHandlers(client: Client, payload: Payload): void
       .setThumbnail(ban.user.displayAvatarURL({ size: 256 }))
       .setFooter({ text: `ID: ${ban.user.id}` })
     setUserAuthor(embed, ban.user)
-    await postLog(client, payload, ban.guild.id, 'member', embed, { content: userMention(ban.user.id) })
+    await postLog(client, payload, ban.guild.id, 'member', embed)
   })
 
   client.on(Events.GuildBanRemove, async (ban) => {
@@ -39,6 +39,6 @@ export function attachModerationHandlers(client: Client, payload: Payload): void
       .setThumbnail(ban.user.displayAvatarURL({ size: 256 }))
       .setFooter({ text: `ID: ${ban.user.id}` })
     setUserAuthor(embed, ban.user)
-    await postLog(client, payload, ban.guild.id, 'member', embed, { content: userMention(ban.user.id) })
+    await postLog(client, payload, ban.guild.id, 'member', embed)
   })
 }

@@ -5,7 +5,7 @@ import { attachMemberHandlers } from './handlers/members'
 import { attachStructureHandlers } from './handlers/structure'
 import { attachModerationHandlers } from './handlers/moderation'
 import { postLog } from './sink'
-import { subjectLabel, userMention } from './identity'
+import { subjectLabel } from './identity'
 import { setUserAuthor } from './attribution'
 import { Colors } from './colors'
 import { primeInviteCache, refreshInviteCache } from './invites'
@@ -48,7 +48,7 @@ export function setupLogging(client: Client, payload: Payload, now: () => number
         .setFooter({ text: `ID: ${newU.id}` })
       setUserAuthor(embed, newU)
       if (avatarChanged) embed.setThumbnail(newU.displayAvatarURL({ size: 256 }))
-      await postLog(client, payload, guild.id, 'profile', embed, { content: userMention(newU.id) })
+      await postLog(client, payload, guild.id, 'profile', embed)
     }
   })
 

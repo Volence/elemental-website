@@ -9,7 +9,13 @@ import { resolveLogChannelId } from '../channels'
 import { resolveProfile } from '../nameResolver'
 import { recordMemberEvent, getRejoinSummary } from '../memberEvents'
 import { resolveJoinInvite } from '../invites'
-import { fetchActorId, fetchAuditEntryWithRetry, fetchRoleChange, setActorAuthorOrUser, setMemberAuthor, setUserAuthor } from '../attribution'
+import {
+  fetchAuditEntryWithRetry,
+  fetchRoleChangeWithRetry,
+  setActorAuthorOrUnknown,
+  setMemberAuthor,
+  setUserAuthor,
+} from '../attribution'
 import { Colors } from '../colors'
 
 // Last audit-log MemberRoleUpdate entry id we've already posted a role change for, keyed by
@@ -57,7 +63,7 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
     setMemberAuthor(embed, member)
     embed.setFooter({ text: `ID: ${member.id}` })
 
-    await postLog(client, payload, guildId, 'joinLeave', embed, { cfg, content: userMention(member.id) })
+    await postLog(client, payload, guildId, 'joinLeave', embed, { cfg })
     await recordMemberEvent(payload, guildId, member.id, 'join', new Date(nowMs).toISOString())
   })
 
@@ -95,7 +101,7 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
     if (member.user) setUserAuthor(embed, member.user)
     embed.setFooter({ text: `ID: ${member.id}` })
 
-    await postLog(client, payload, guildId, 'joinLeave', embed, { cfg, content: userMention(member.id) })
+    await postLog(client, payload, guildId, 'joinLeave', embed, { cfg })
     await recordMemberEvent(payload, guildId, member.id, 'leave', new Date(nowMs).toISOString())
   })
 
@@ -103,7 +109,7 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
     const guildId = newM.guild.id
     const cfg = await loadLoggingConfig(payload, guildId)
     if (!cfg) return
-    // Cheap up-front gate: don't burn audit-log API calls (fetchRoleChange/fetchActorId)
+    // Cheap up-front gate: don't burn audit-log API calls (the audit-log lookups below)
     // for a guild whose member-log channel isn't configured, mirroring the check
     // messages.ts does for the message log before doing any work.
     const memberLogEnabled = !!resolveLogChannelId(cfg, 'member')
@@ -111,7 +117,7 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
     // Roles: PREFER the gateway cache diff - it reflects exactly what changed in THIS
     // update, so unlike the audit log it can't re-post a stale cumulative list when
     // multiple gateway packets land close together. The audit log is only used to
-    // attribute WHO made the change (via the fetchActorId fallback below), and, when the
+    // attribute WHO made the change (via the audit lookup below), and, when the
     // old member wasn't cached (partial - no reliable prior state to diff), as a fallback
     // for the role list itself - deduped against the last audit entry id we already
     // logged so repeated gateway packets inside that entry's matching window don't repost.
@@ -124,7 +130,7 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
         added = d.added
         removed = d.removed
       } else {
-        const roleChange = await fetchRoleChange(newM.guild, newM.id)
+        const roleChange = await fetchRoleChangeWithRetry(newM.guild, newM.id)
         if (roleChange) {
           const key = `${guildId}:${newM.id}`
           if (lastRoleAuditEntryId.get(key) !== roleChange.entryId) {
@@ -154,12 +160,13 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
       let actorId = roleActorId
       if (actorId === null) {
         if (added.length || removed.length) {
-          // Same single audit-log query fetchActorId(MemberRoleUpdate, ...) would have made -
-          // fetchRoleChange also hands back the entry id, so we record it here too. Otherwise
-          // a later GuildMemberUpdate for this member with a partial (uncached) oldM could
-          // read this SAME audit entry via the fallback path above and, having never seen
-          // its id, re-post it as if it were a new role change.
-          const rc = await fetchRoleChange(newM.guild, newM.id)
+          // Retried: the gateway packet routinely beats Discord writing the audit entry,
+          // and a single immediate lookup missing it is exactly why role edits used to
+          // show the subject as the author instead of whoever made the change.
+          // We also record the entry id here: otherwise a later GuildMemberUpdate for this
+          // member with a partial (uncached) oldM could read this SAME audit entry via the
+          // fallback path above and, having never seen its id, re-post it as a new change.
+          const rc = await fetchRoleChangeWithRetry(newM.guild, newM.id)
           if (rc) {
             actorId = rc.executorId
             const key = `${guildId}:${newM.id}`
@@ -167,13 +174,15 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
             lastRoleAuditEntryId.set(key, rc.entryId)
           }
         } else {
-          actorId = await fetchActorId(newM.guild, AuditLogEvent.MemberUpdate, newM.id)
+          // Nickname-only change: retried for the same reason - the audit entry can lag
+          // the gateway packet, and an unattributed nickname edit is useless.
+          actorId = (await fetchAuditEntryWithRetry(newM.guild, AuditLogEvent.MemberUpdate, newM.id))?.executorId ?? null
         }
       }
       embed.setThumbnail(newM.displayAvatarURL({ size: 256 }))
-      await setActorAuthorOrUser(client, embed, actorId, newM.user)
+      await setActorAuthorOrUnknown(client, embed, actorId)
       embed.setFooter({ text: `ID: ${newM.id}` })
-      await postLog(client, payload, guildId, 'member', embed, { cfg, content: userMention(newM.id) })
+      await postLog(client, payload, guildId, 'member', embed, { cfg })
     }
 
     // Timeout and avatar comparisons need the cached prior state.
@@ -189,9 +198,11 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
           embed.addFields({ name: 'Until', value: discordTimestamp(newTimeout, 'F') })
         }
         embed.setThumbnail(newM.displayAvatarURL({ size: 256 }))
-        await setActorAuthorOrUser(client, embed, await fetchActorId(newM.guild, AuditLogEvent.MemberUpdate, newM.id), newM.user)
+        const timeoutActorId =
+          (await fetchAuditEntryWithRetry(newM.guild, AuditLogEvent.MemberUpdate, newM.id))?.executorId ?? null
+        await setActorAuthorOrUnknown(client, embed, timeoutActorId)
         embed.setFooter({ text: `ID: ${newM.id}` })
-        await postLog(client, payload, guildId, 'member', embed, { cfg, content: userMention(newM.id) })
+        await postLog(client, payload, guildId, 'member', embed, { cfg })
       }
 
       // Per-guild avatar change -> profile-log (show the new avatar as a thumbnail)
@@ -203,7 +214,7 @@ export function attachMemberHandlers(client: Client, payload: Payload, now: () =
           .setThumbnail(newM.displayAvatarURL({ size: 256 }))
         setMemberAuthor(embed, newM)
         embed.setFooter({ text: `ID: ${newM.id}` })
-        await postLog(client, payload, guildId, 'profile', embed, { cfg, content: userMention(newM.id) })
+        await postLog(client, payload, guildId, 'profile', embed, { cfg })
       }
     }
   })

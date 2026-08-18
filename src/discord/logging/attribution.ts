@@ -23,15 +23,16 @@ export async function setActorAuthor(client: Client, embed: EmbedBuilder, actorI
 
 /**
  * Set the embed author to the ACTOR (clickable, with avatar) so "who did it" is prominent
- * and links to their profile. Falls back to the affected member when the actor can't be
- * resolved (e.g. a self-action or an audit miss). The footer is a Discord-imposed dead end -
- * it can't be clickable - so the actor goes in the author slot instead.
+ * and links to their profile. When the actor can't be resolved (audit miss / missing View
+ * Audit Log permission) the author reads "unknown actor" rather than falling back to the
+ * affected member - that slot reads as "who did this", so putting the subject there
+ * claimed they had edited themselves. The footer is a Discord-imposed dead end (never
+ * clickable), so the actor goes in the author slot instead.
  */
-export async function setActorAuthorOrUser(
+export async function setActorAuthorOrUnknown(
   client: Client,
   embed: EmbedBuilder,
   actorId: string | null,
-  fallbackUser: User,
 ): Promise<void> {
   if (actorId) {
     const u = await client.users.fetch(actorId).catch(() => null)
@@ -40,7 +41,7 @@ export async function setActorAuthorOrUser(
       return
     }
   }
-  setUserAuthor(embed, fallbackUser)
+  embed.setAuthor({ name: 'unknown actor' })
 }
 
 /**
@@ -144,4 +145,24 @@ export async function fetchRoleChange(guild: Guild, targetId: string): Promise<R
   } catch {
     return null
   }
+}
+
+/**
+ * fetchRoleChange with retries. GuildMemberUpdate gateway packets routinely arrive BEFORE
+ * Discord has written the matching MemberRoleUpdate audit entry, so a single immediate
+ * lookup often misses and the change ends up unattributed (previously: mislabeled as the
+ * subject editing themselves). Same race fetchAuditEntryWithRetry solves for kicks/bans.
+ */
+export async function fetchRoleChangeWithRetry(
+  guild: Guild,
+  targetId: string,
+  attempts: number = 3,
+  delayMs: number = 1200,
+): Promise<RoleChange | null> {
+  for (let i = 0; i < attempts; i++) {
+    const change = await fetchRoleChange(guild, targetId)
+    if (change) return change
+    if (i < attempts - 1) await new Promise((r) => setTimeout(r, delayMs))
+  }
+  return null
 }
