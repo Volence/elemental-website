@@ -68,7 +68,10 @@ export async function GET(req: NextRequest) {
 
   // Scope check: non-full-access users can only view their assigned teams
   const scope = await getUserScope()
-  if (scope && !scope.isFullAccess) {
+  if (!scope) {
+    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+  }
+  if (!scope.isFullAccess) {
     if (!scope.assignedTeamIds.includes(teamId)) {
       return NextResponse.json({ error: 'Access denied - you can only view your own team stats' }, { status: 403 })
     }
@@ -250,6 +253,8 @@ export async function GET(req: NextRequest) {
         sides: sideLookup,
         rawTeam1: info.team1,
         rawTeam2: info.team2,
+        uploaderSideRaw: scrim?.ourSideRaw ?? null,
+        uploaderTeamId: scrim?.payloadTeamId ?? null,
       })
     }
 

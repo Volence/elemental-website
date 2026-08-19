@@ -2,6 +2,7 @@ import { DefaultTemplate } from '@payloadcms/next/templates'
 import type { AdminViewServerProps } from 'payload'
 import React from 'react'
 import { redirect } from 'next/navigation'
+import { hasScrimAccess } from '@/access/scrimScope'
 
 import ScrimHeroDetailView from '@/components/ScrimHeroDetail'
 
@@ -11,9 +12,7 @@ const ScrimHeroDetailRoute: React.FC<AdminViewServerProps> = ({
   searchParams,
 }) => {
   const user = initPageResult.req.user
-  const role = (user as any)?.role as string | undefined
-  const scrimRoles = ['admin', 'staff-manager', 'team-manager', 'player']
-  if (!user || !role || !scrimRoles.includes(role)) redirect('/admin')
+  if (!user || !hasScrimAccess(user as any)) redirect('/admin')
 
   return (
     <DefaultTemplate

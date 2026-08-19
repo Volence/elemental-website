@@ -18,6 +18,10 @@ export interface CreateScrimOptions {
   creatorEmail: string
   /** Optional override for opponent team name */
   opponentName?: string | null
+  /** Raw log side the uploader declared as theirs (side-resolution fallback) */
+  ourSideRaw?: string | null
+  /** Free-text team name for external (non-org) team uploads */
+  externalTeamName?: string | null
   maps: {
     fileContent: string
     parsedData: ParserData
@@ -42,6 +46,8 @@ export async function createScrimFromParsedData(options: CreateScrimOptions) {
       payloadTeamId2: options.payloadTeamId2 || null,
       creatorEmail: options.creatorEmail,
       opponentName: options.opponentName || null,
+      ourSideRaw: options.ourSideRaw || null,
+      externalTeamName: options.externalTeamName || null,
     },
   })
 
@@ -106,6 +112,9 @@ async function createMapFromParsedData(options: CreateMapOptions) {
 
   // Insert all event types in parallel for performance
   await Promise.all([
+    insertAbilityUses(parsedData, scrimId, mapData.id),
+    insertDamageEvents(parsedData, scrimId, mapData.id),
+    insertHealingEvents(parsedData, scrimId, mapData.id),
     insertDefensiveAssists(parsedData, scrimId, mapData.id),
     insertDvaRemechs(parsedData, scrimId, mapData.id),
     insertEchoDuplicateEnds(parsedData, scrimId, mapData.id),
@@ -140,6 +149,73 @@ async function createMapFromParsedData(options: CreateMapOptions) {
 // Bulk insert functions for each event type
 // Each follows the same pattern: check if data exists → map to DB shape → createMany
 // ============================================================================
+
+const EVENT_BATCH_SIZE = 5000
+
+async function insertAbilityUses(data: ParserData, scrimId: number, mapDataId: number) {
+  const rows = [
+    ...(data.ability_1_used ?? []).map((row) => ({ row, ability_number: 1 })),
+    ...(data.ability_2_used ?? []).map((row) => ({ row, ability_number: 2 })),
+  ]
+  if (!rows.length) return
+  const allData = rows.map(({ row, ability_number }) => ({
+    scrimId,
+    event_type: row[0],
+    ability_number,
+    match_time: Number(row[1]),
+    player_team: String(row[2]),
+    player_name: String(row[3]),
+    player_hero: String(row[4]),
+    hero_duplicated: String(row[5]),
+    mapDataId,
+  }))
+  for (let i = 0; i < allData.length; i += EVENT_BATCH_SIZE) {
+    await prisma.scrimAbilityUse.createMany({ data: allData.slice(i, i + EVENT_BATCH_SIZE) })
+  }
+}
+
+async function insertDamageEvents(data: ParserData, scrimId: number, mapDataId: number) {
+  if (!data.damage?.length) return
+  const allData = data.damage.map((row) => ({
+    scrimId,
+    match_time: Number(row[1]),
+    attacker_team: String(row[2]),
+    attacker_name: String(row[3]),
+    attacker_hero: String(row[4]),
+    victim_team: String(row[5]),
+    victim_name: String(row[6]),
+    victim_hero: String(row[7]),
+    event_ability: String(row[8]),
+    event_damage: Number(row[9]),
+    is_critical_hit: String(row[10]),
+    is_environmental: String(row[11]),
+    mapDataId,
+  }))
+  for (let i = 0; i < allData.length; i += EVENT_BATCH_SIZE) {
+    await prisma.scrimDamage.createMany({ data: allData.slice(i, i + EVENT_BATCH_SIZE) })
+  }
+}
+
+async function insertHealingEvents(data: ParserData, scrimId: number, mapDataId: number) {
+  if (!data.healing?.length) return
+  const allData = data.healing.map((row) => ({
+    scrimId,
+    match_time: Number(row[1]),
+    healer_team: String(row[2]),
+    healer_name: String(row[3]),
+    healer_hero: String(row[4]),
+    healee_team: String(row[5]),
+    healee_name: String(row[6]),
+    healee_hero: String(row[7]),
+    event_ability: String(row[8]),
+    event_healing: Number(row[9]),
+    is_health_pack: String(row[10]),
+    mapDataId,
+  }))
+  for (let i = 0; i < allData.length; i += EVENT_BATCH_SIZE) {
+    await prisma.scrimHealing.createMany({ data: allData.slice(i, i + EVENT_BATCH_SIZE) })
+  }
+}
 
 async function insertDefensiveAssists(data: ParserData, scrimId: number, mapDataId: number) {
   if (!data.defensive_assist?.length) return
@@ -358,8 +434,11 @@ async function insertObjectivePositions(data: ParserData, scrimId: number, mapDa
     const payloadX = Number(row[2]), payloadY = Number(row[3]), payloadZ = Number(row[4])
     const objX = Number(row[5]), objY = Number(row[6]), objZ = Number(row[7])
 
-    // Store payload position (for Escort/Hybrid)
-    if (!isNaN(payloadX) && payloadX !== 0) {
+    // Store payload position (for Escort/Hybrid).
+    // Absent markers log as an all-zero triple; a lone X=0 is a legitimate
+    // world coordinate and must be kept.
+    const payloadAbsent = payloadX === 0 && payloadY === 0 && payloadZ === 0
+    if (!isNaN(payloadX) && !payloadAbsent) {
       allData.push({
         scrimId, match_time: matchTime, player_team: '__OBJ__', player_name: '__PAYLOAD__',
         player_hero: 'Payload', pos_x: payloadX, pos_y: payloadY, pos_z: payloadZ,
@@ -367,7 +446,8 @@ async function insertObjectivePositions(data: ParserData, scrimId: number, mapDa
       })
     }
     // Store objective marker position (for Push/Control/Clash)
-    if (!isNaN(objX) && objX !== 0 && (objX !== payloadX || objZ !== payloadZ)) {
+    const objAbsent = objX === 0 && objY === 0 && objZ === 0
+    if (!isNaN(objX) && !objAbsent && (objX !== payloadX || objZ !== payloadZ)) {
       allData.push({
         scrimId, match_time: matchTime, player_team: '__OBJ__', player_name: '__OBJECTIVE__',
         player_hero: 'Objective', pos_x: objX, pos_y: objY, pos_z: objZ,

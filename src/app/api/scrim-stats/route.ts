@@ -140,6 +140,11 @@ async function resolveMapDisplayNames(mapId: number): Promise<DisplayNames> {
  *  - calculated: advanced per-player stats from calculateStatsForMap()
  */
 export async function GET(req: NextRequest) {
+  const authScope = await getUserScope()
+  if (!authScope) {
+    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+  }
+
   const url = new URL(req.url)
   const mapIdStr = url.searchParams.get('mapId')
 

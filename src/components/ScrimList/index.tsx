@@ -31,6 +31,7 @@ interface Scrim {
 
 interface TeamSummary {
   teamId: number | null
+  externalTeamName?: string | null
   name: string
   count: number
   lastPlayed: string
@@ -45,7 +46,14 @@ const RESULT_INFO: Record<string, { cls: string; label: string }> = {
   draw: { cls: 'scrim-map-row__result--draw', label: 'D' },
 }
 
-const teamKeyOf = (t: TeamSummary) => (t.teamId != null ? `t${t.teamId}` : 'other')
+const teamKeyOf = (t: TeamSummary) =>
+  t.teamId != null ? `t${t.teamId}` : t.externalTeamName ? `x${t.externalTeamName}` : 'other'
+
+/** URL for the scrims of a team row (org team or external team). */
+const teamScrimsUrl = (t: TeamSummary) =>
+  t.teamId != null
+    ? `/api/scrims?teamId=${t.teamId}&limit=10`
+    : `/api/scrims?externalTeam=${encodeURIComponent(t.externalTeamName ?? '')}&limit=10`
 
 // Apply an opponent rename to a scrim (mirrors the server-side override).
 const applyOpponentRename = (s: Scrim, name: string): Scrim => ({
@@ -221,12 +229,12 @@ export default function ScrimListView() {
 
   // Lazily fetch a team's most recent scrims on first expand.
   const loadTeam = useCallback(async (t: TeamSummary) => {
-    if (t.teamId == null) return
+    if (t.teamId == null && !t.externalTeamName) return
     const key = teamKeyOf(t)
-    const teamId = t.teamId
+    const teamId = t.teamId ?? -1
     setLoadingTeamKeys((prev) => new Set(prev).add(key))
     try {
-      const res = await fetch(`/api/scrims?teamId=${teamId}&limit=10`)
+      const res = await fetch(teamScrimsUrl(t))
       const data = await res.json()
       setTeamScrims((prev) => ({ ...prev, [key]: toEntries(data.scrims as Scrim[], teamId) }))
     } catch {
@@ -249,7 +257,7 @@ export default function ScrimListView() {
       else next.add(key)
       return next
     })
-    if (!wasOpen && !teamScrims[key] && t.teamId != null) {
+    if (!wasOpen && !teamScrims[key] && (t.teamId != null || t.externalTeamName)) {
       loadTeam(t)
     }
   }, [expandedTeams, teamScrims, loadTeam])
@@ -269,10 +277,10 @@ export default function ScrimListView() {
       await Promise.all(
         keptExpanded.map(async (key) => {
           const t = newTeams.find((tt) => teamKeyOf(tt) === key)
-          if (t && t.teamId != null) {
-            const r = await fetch(`/api/scrims?teamId=${t.teamId}&limit=10`)
+          if (t && (t.teamId != null || t.externalTeamName)) {
+            const r = await fetch(teamScrimsUrl(t))
             const d = await r.json()
-            cache[key] = toEntries(d.scrims as Scrim[], t.teamId)
+            cache[key] = toEntries(d.scrims as Scrim[], t.teamId ?? -1)
           }
         }),
       )
@@ -365,7 +373,16 @@ export default function ScrimListView() {
               className={`scrim-card__expand-icon ${isExpanded ? 'scrim-card__expand-icon--open' : ''}`}
             />
             <div>
-              <div className="scrim-card__title">{scrim.name}</div>
+              <div className="scrim-card__title">
+                {scrim.name}{' '}
+                <a
+                  href={`/admin/scrim?scrimId=${scrim.id}`}
+                  onClick={(e) => e.stopPropagation()}
+                  style={{ fontSize: 11, fontWeight: 500, color: '#67e8f9', textDecoration: 'none', marginLeft: 6 }}
+                >
+                  open →
+                </a>
+              </div>
               <div className="scrim-card__meta">
                 <span>{formatDate(scrim.date)}</span>
                 <span className="scrim-dot" />

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { resolveOpponentName } from '@/lib/scrim-analytics/opponent'
 import { buildSideLookup, resolveOurSide } from '@/lib/scrim-analytics/our-side'
-import { getUserScope } from '@/access/scrimScope'
+import { getUserScope, externalScrimWhere } from '@/access/scrimScope'
 
 /**
  * GET /api/scrims
@@ -20,31 +20,53 @@ export async function GET(req: NextRequest) {
   const search = url.searchParams.get('search')?.trim() || ''
   const teamIdStr = url.searchParams.get('teamId')
   const teamId = teamIdStr ? parseInt(teamIdStr) : null
+  const externalTeam = url.searchParams.get('externalTeam')?.trim() || null
+  const scrimIdParam = url.searchParams.get('scrimId')
+  const scrimId = scrimIdParam ? parseInt(scrimIdParam) : null
 
   // Get user scope for data filtering
   const scope = await getUserScope()
+  if (!scope) {
+    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+  }
 
   // Build where clause
   const where: Record<string, unknown> = {}
   if (search) {
     where.name = { contains: search, mode: 'insensitive' }
   }
+  if (scrimId && !isNaN(scrimId)) {
+    where.id = scrimId
+  }
 
-  // Team scoping: for non-full-access users, limit to their assigned teams.
+  // Team scoping: for non-full-access users, limit to their assigned teams
+  // plus any external-team scrims they uploaded (flagged coaches).
   if (scope && !scope.isFullAccess) {
-    if (scope.assignedTeamIds.length === 0) {
-      // No assigned teams - return empty
-      return NextResponse.json({ scrims: [], pagination: { page, limit, total: 0, totalPages: 0 } })
+    const external = externalScrimWhere(scope)
+    if (externalTeam) {
+      // Explicit external-team filter
+      if (!external) {
+        return NextResponse.json({ scrims: [], pagination: { page, limit, total: 0, totalPages: 0 } })
+      }
+      Object.assign(where, external, { externalTeamName: externalTeam })
+    } else {
+      const or: Record<string, unknown>[] = []
+      if (scope.assignedTeamIds.length > 0) {
+        // If a specific (allowed) team is requested, narrow to it; else show all assigned.
+        const ids =
+          teamId && !isNaN(teamId) && scope.assignedTeamIds.includes(teamId)
+            ? [teamId]
+            : scope.assignedTeamIds
+        or.push({ payloadTeamId: { in: ids } }, { payloadTeamId2: { in: ids } })
+      }
+      if (external && !(teamId && !isNaN(teamId))) or.push(external)
+      if (or.length === 0) {
+        return NextResponse.json({ scrims: [], pagination: { page, limit, total: 0, totalPages: 0 } })
+      }
+      where.OR = or
     }
-    // If a specific (allowed) team is requested, narrow to it; else show all assigned.
-    const ids =
-      teamId && !isNaN(teamId) && scope.assignedTeamIds.includes(teamId)
-        ? [teamId]
-        : scope.assignedTeamIds
-    where.OR = [
-      { payloadTeamId: { in: ids } },
-      { payloadTeamId2: { in: ids } },
-    ]
+  } else if (externalTeam) {
+    where.externalTeamName = externalTeam
   } else if (teamId && !isNaN(teamId)) {
     // Admin/staff-manager explicit team filter
     where.OR = [
@@ -194,6 +216,7 @@ export async function GET(req: NextRequest) {
     scrims: scrims.map((s) => {
       const teamName = s.payloadTeamId ? teamNameMap.get(s.payloadTeamId) ?? null : null
       const teamName2 = s.payloadTeamId2 ? teamNameMap.get(s.payloadTeamId2) ?? null : null
+      const externalTeamName = s.externalTeamName ?? null
 
       return {
         id: s.id,
@@ -201,10 +224,11 @@ export async function GET(req: NextRequest) {
         date: s.date.toISOString(),
         createdAt: s.createdAt.toISOString(),
         creatorEmail: s.creatorEmail,
-        teamName,
+        teamName: teamName ?? externalTeamName,
         teamName2,
         payloadTeamId: s.payloadTeamId ?? null,
         payloadTeamId2: s.payloadTeamId2 ?? null,
+        externalTeamName,
         opponentName: s.opponentName ?? null,
         mapCount: s._count.maps,
         maps: s.maps.map((m) => {
@@ -227,9 +251,17 @@ export async function GET(req: NextRequest) {
                   sides: sideLookup,
                   rawTeam1: info.team1,
                   rawTeam2: info.team2,
+                  uploaderSideRaw: s.ourSideRaw ?? null,
+                  uploaderTeamId: s.payloadTeamId,
                 })
               : null
-            const ourTeamRaw = resolvedSide ?? info.team1
+            // External scrims have no roster to vote with - the uploader's
+            // declared side is the only anchor.
+            const uploaderSide =
+              s.ourSideRaw && (s.ourSideRaw === info.team1 || s.ourSideRaw === info.team2)
+                ? s.ourSideRaw
+                : null
+            const ourTeamRaw = resolvedSide ?? uploaderSide ?? info.team1
             opponent = resolveOpponentName({
               viewTeamId: null,
               payloadTeamId: s.payloadTeamId ?? null,
@@ -238,7 +270,7 @@ export async function GET(req: NextRequest) {
               linkedTeamNames: teamNameMap,
               rawTeam1: info.team1,
               rawTeam2: info.team2,
-              rawOurTeam: resolvedSide,
+              rawOurTeam: resolvedSide ?? uploaderSide,
             })
 
             // Use match_end scores first, then round_end as fallback

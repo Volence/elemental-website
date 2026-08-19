@@ -58,12 +58,21 @@ type Step = 'form' | 'mapping'
  *   Step 1: Select team, name, and files
  *   Step 2: Preview parsed data & map player names to People
  */
-export default function ScrimUploadView() {
+export default function ScrimUploadView({
+  allowOrgUpload = true,
+  forceExternal = false,
+}: {
+  /** Manager roles can upload for org teams */
+  allowOrgUpload?: boolean
+  /** Flag-only coaches may ONLY upload external-team scrims */
+  forceExternal?: boolean
+} = {}) {
   const alert = useAlert()
   const confirm = useConfirm()
   // ── Step 1 state ──
   const [files, setFiles] = useState<File[]>([])
   const [scrimName, setScrimName] = useState('')
+  const [scrimDate, setScrimDate] = useState('')
   const [teamId, setTeamId] = useState<string>('')
   const [teams, setTeams] = useState<TeamOption[]>([])
   const [teamsLoading, setTeamsLoading] = useState(true)
@@ -90,6 +99,8 @@ export default function ScrimUploadView() {
 
   // ── Dual team (internal scrims) ──
   const [dualTeam, setDualTeam] = useState(false)
+  const [externalMode, setExternalMode] = useState(forceExternal)
+  const [externalTeamName, setExternalTeamName] = useState('')
   const [teamId2, setTeamId2] = useState<string>('')
   const [teamId2DropdownOpen, setTeamId2DropdownOpen] = useState(false)
   const [teamSearch2, setTeamSearch2] = useState('')
@@ -284,9 +295,9 @@ export default function ScrimUploadView() {
     }
     opponentDebounce.current = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/opponent-teams?q=${encodeURIComponent(q)}`)
+        const res = await fetch(`/api/scrim-opponents?q=${encodeURIComponent(q)}`)
         const data = await res.json()
-        setOpponentSuggestions(data.teams || [])
+        setOpponentSuggestions(data.opponents || [])
       } catch {
         setOpponentSuggestions([])
       }
@@ -300,12 +311,13 @@ export default function ScrimUploadView() {
   }, [fetchOpponentSuggestions])
 
   const handlePreview = useCallback(async () => {
-    if (files.length === 0 || !teamId) return
+    if (files.length === 0) return
+    if (externalMode ? !externalTeamName.trim() : !teamId) return
     setPreviewLoading(true)
     try {
       const formData = new FormData()
       files.forEach((f) => formData.append('files', f))
-      formData.append('teamId', teamId)
+      if (!externalMode && teamId) formData.append('teamId', teamId)
       const res = await fetch('/api/scrim-preview', { method: 'POST', body: formData })
       const data = await res.json()
       if (data.error) {
@@ -323,23 +335,29 @@ export default function ScrimUploadView() {
     } finally {
       setPreviewLoading(false)
     }
-  }, [files, teamId, alert])
+  }, [files, teamId, externalMode, externalTeamName, alert])
 
   const handleUpload = useCallback(async () => {
-    if (!preview || !ourTeam || files.length === 0 || !teamId) return
+    if (!preview || !ourTeam || files.length === 0) return
+    if (externalMode ? !externalTeamName.trim() : !teamId) return
     setState('uploading')
 
     const buildFormData = (allowDuplicates: boolean) => {
       const formData = new FormData()
       files.forEach((f) => formData.append('files', f))
-      formData.append('teamId', teamId)
+      if (externalMode) {
+        formData.append('externalTeamName', externalTeamName.trim())
+      } else {
+        formData.append('teamId', teamId)
+      }
       if (scrimName) formData.append('name', scrimName)
+      if (scrimDate) formData.append('date', scrimDate)
       formData.append('ourTeam', ourTeam)
       formData.append('mappings', JSON.stringify(playerMappings))
       if (opponentNameOverride.trim() && opponentNameOverride.trim() !== opponentTeamName) {
         formData.append('opponentName', opponentNameOverride.trim())
       }
-      if (dualTeam && teamId2) {
+      if (!externalMode && dualTeam && teamId2) {
         formData.append('teamId2', teamId2)
         formData.append('mappings2', JSON.stringify(playerMappings2))
       }
@@ -379,7 +397,7 @@ export default function ScrimUploadView() {
       setState('error')
       setResult({ message: 'Network error - could not reach the server', error: 'Network error' } as UploadResult)
     }
-  }, [files, scrimName, teamId, playerMappings, opponentNameOverride, opponentTeamName, dualTeam, teamId2, playerMappings2, confirm, ourTeam, preview])
+  }, [files, scrimName, scrimDate, teamId, externalMode, externalTeamName, playerMappings, opponentNameOverride, opponentTeamName, dualTeam, teamId2, playerMappings2, confirm, ourTeam, preview])
 
   // ── Helper: render a player mapping row (reused for team 1 and team 2) ──
   const renderMappingRow = (
@@ -554,7 +572,59 @@ export default function ScrimUploadView() {
               </p>
             </div>
 
+            {/* Scrim Date */}
+            <div className="scrim-upload__field">
+              <label htmlFor="scrimDate" className="scrim-upload__label">
+                Scrim Date{' '}
+                <span className="scrim-upload__label-optional">(optional, defaults to today)</span>
+              </label>
+              <input
+                id="scrimDate"
+                type="date"
+                value={scrimDate}
+                onChange={(e) => setScrimDate(e.target.value)}
+                className="scrim-upload__input"
+              />
+              <p className="scrim-upload__hint">
+                When the scrim was actually played - date filters on the analytics pages use this
+              </p>
+            </div>
+
+            {/* External-team toggle (managers with the option; coaches are locked in) */}
+            {allowOrgUpload && !forceExternal && (
+              <div className="scrim-upload__field">
+                <label className="scrim-upload__checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={externalMode}
+                    onChange={(e) => setExternalMode(e.target.checked)}
+                  />{' '}
+                  Scrim for a team outside the org
+                </label>
+              </div>
+            )}
+
+            {externalMode && (
+              <div className="scrim-upload__field">
+                <label htmlFor="externalTeamName" className="scrim-upload__label">
+                  External Team <span className="scrim-upload__required">*</span>
+                </label>
+                <input
+                  id="externalTeamName"
+                  type="text"
+                  value={externalTeamName}
+                  onChange={(e) => setExternalTeamName(e.target.value)}
+                  placeholder="e.g. Team Neon"
+                  className="scrim-upload__input"
+                />
+                <p className="scrim-upload__hint">
+                  The team you&apos;re coaching - it won&apos;t be linked to an org roster
+                </p>
+              </div>
+            )}
+
             {/* Team Selection - Custom dropdown */}
+            {!externalMode && (
             <div className="scrim-upload__field scrim-upload__relative">
               <label className="scrim-upload__label">
                 Team <span className="scrim-upload__required">*</span>
@@ -613,6 +683,7 @@ export default function ScrimUploadView() {
                 Which team does this scrim belong to?
               </p>
             </div>
+            )}
 
             {/* Drop Zone */}
             <div
@@ -669,7 +740,7 @@ export default function ScrimUploadView() {
             {/* Preview & Continue Button */}
             <button
               onClick={handlePreview}
-              disabled={files.length === 0 || !teamId || previewLoading}
+              disabled={files.length === 0 || (externalMode ? !externalTeamName.trim() : !teamId) || previewLoading}
               className={`scrim-upload__submit-btn ${previewLoading ? 'scrim-upload__submit-btn--loading' : files.length > 0 && teamId ? 'scrim-upload__submit-btn--preview' : ''}`}
             >
               {previewLoading ? (
@@ -773,6 +844,7 @@ export default function ScrimUploadView() {
             </div>
 
             {/* ═══ Dual Team Section ═══ */}
+            {!externalMode && (
             <div className="scrim-upload__section">
               <label className="scrim-upload__checkbox-label">
                 <input
@@ -874,6 +946,7 @@ export default function ScrimUploadView() {
                 </div>
               )}
             </div>
+            )}
 
             {/* Opponent team info - editable with autocomplete (hidden when dual-team with team selected) */}
             {!dualTeam && opponentTeamName && preview.players[opponentTeamName] && (

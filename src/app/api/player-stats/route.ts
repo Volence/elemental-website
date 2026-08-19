@@ -85,16 +85,29 @@ export async function GET(req: NextRequest) {
 
   // Get user scope for data filtering
   const scope = await getUserScope()
+  if (!scope) {
+    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+  }
 
   // Pre-compute scoped scrim IDs (parameterized, no string interpolation)
   let scopedScrimIds: number[] | null = null
-  if (scope && !scope.isFullAccess && scope.assignedTeamIds.length > 0) {
-    scopedScrimIds = await getScopedScrimIds(scope.assignedTeamIds)
-  } else if (scope && !scope.isFullAccess) {
-    // No assigned teams - return empty
-    return NextResponse.json({ players: [] })
+  if (!scope.isFullAccess) {
+    const teamScrimIds =
+      scope.assignedTeamIds.length > 0 ? await getScopedScrimIds(scope.assignedTeamIds) : []
+    // Flagged coaches also see the external-team scrims they uploaded
+    const externalIds = scope.canUploadExternalScrims
+      ? (
+          await prisma.$queryRaw<Array<{ id: number }>>`
+            SELECT id FROM scrim_scrims
+            WHERE "externalTeamName" IS NOT NULL AND "creatorEmail" = ${scope.email}
+          `
+        ).map((r) => r.id)
+      : []
+    scopedScrimIds = [...new Set([...teamScrimIds, ...externalIds])]
+    if (scopedScrimIds.length === 0) {
+      return NextResponse.json({ players: [] })
+    }
   }
-
   // For non-full-access users, restrict to teammates only (competitive integrity)
   let allowedPersonIds: Set<number> | null = null
   if (scope && !scope.isFullAccess && scope.assignedTeamIds.length > 0) {

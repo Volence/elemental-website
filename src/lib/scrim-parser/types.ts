@@ -16,6 +16,44 @@ type EventAbility =
   | 'Ultimate'
   | 'Melee'
 
+export type AbilityUsedRow = [
+  event_type: 'ability_1_used' | 'ability_2_used',
+  match_time: number,
+  player_team: PlayerTeam,
+  player_name: string,
+  player_hero: HeroName,
+  hero_duplicated: string,
+]
+
+export type DamageRow = [
+  event_type: 'damage',
+  match_time: number,
+  attacker_team: PlayerTeam,
+  attacker_name: string,
+  attacker_hero: HeroName,
+  victim_team: PlayerTeam,
+  victim_name: string,
+  victim_hero: HeroName,
+  event_ability: EventAbility,
+  event_damage: number,
+  is_critical_hit: string,
+  is_environmental: number | string,
+]
+
+export type HealingRow = [
+  event_type: 'healing',
+  match_time: number,
+  healer_team: PlayerTeam,
+  healer_name: string,
+  healer_hero: HeroName,
+  healee_team: PlayerTeam,
+  healee_name: string,
+  healee_hero: HeroName,
+  event_ability: EventAbility,
+  event_healing: number,
+  is_health_pack: string,
+]
+
 export type DefensiveAssistRow = [
   event_type: 'defensive_assist',
   match_time: number,
@@ -324,6 +362,10 @@ export type ObjectivePositionRow = [
 
 /** Structured container for all parsed event data from a single map log. */
 export type ParserData = {
+  ability_1_used?: AbilityUsedRow[]
+  ability_2_used?: AbilityUsedRow[]
+  damage?: DamageRow[]
+  healing?: HealingRow[]
   defensive_assist: DefensiveAssistRow[]
   dva_remech?: DvaRemechRow[]
   echo_duplicate_end?: EchoDuplicateEndRow[]

@@ -69,6 +69,15 @@ export function resolveOurSide(opts: {
   sides: Map<string, string>
   rawTeam1: string
   rawTeam2: string
+  /**
+   * The raw side the uploader declared as theirs (Scrim.ourSideRaw), which is
+   * the perspective of uploaderTeamId (the scrim's primary team). Weakest
+   * signal: used only when roster evidence resolves nothing, and only if it
+   * matches one of the map's side labels. Viewers of the second linked team
+   * get the inverse; viewers unrelated to the uploader team get nothing.
+   */
+  uploaderSideRaw?: string | null
+  uploaderTeamId?: number | null
 }): string | null {
   const direct = opts.sides.get(key(opts.mapDataId, opts.viewTeamId))
   if (direct != null) return direct
@@ -77,6 +86,17 @@ export function resolveOurSide(opts: {
     const theirs = opts.sides.get(key(opts.mapDataId, opts.otherTeamId))
     if (theirs === opts.rawTeam1) return opts.rawTeam2
     if (theirs === opts.rawTeam2) return opts.rawTeam1
+  }
+
+  if (
+    opts.uploaderSideRaw != null &&
+    opts.uploaderTeamId != null &&
+    (opts.uploaderSideRaw === opts.rawTeam1 || opts.uploaderSideRaw === opts.rawTeam2)
+  ) {
+    if (opts.viewTeamId === opts.uploaderTeamId) return opts.uploaderSideRaw
+    if (opts.otherTeamId === opts.uploaderTeamId) {
+      return opts.uploaderSideRaw === opts.rawTeam1 ? opts.rawTeam2 : opts.rawTeam1
+    }
   }
   return null
 }

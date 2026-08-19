@@ -651,6 +651,10 @@ export interface Person {
      * Grants access to PUG management
      */
     isPugAdmin?: boolean | null;
+    /**
+     * Can upload and view scrim logs for teams outside the org (e.g. coaching another team)
+     */
+    canUploadExternalScrims?: boolean | null;
   };
   /**
    * OW BattleTag (e.g., Player#1234). Shown to the match host for in-game invites.
@@ -3760,6 +3764,7 @@ export interface PeopleSelect<T extends boolean = true> {
         isScoutingStaff?: T;
         isContentCreator?: T;
         isPugAdmin?: T;
+        canUploadExternalScrims?: T;
       };
   pugBattleTag?: T;
   pugTiers?: T;

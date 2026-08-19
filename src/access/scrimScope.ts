@@ -11,9 +11,12 @@ import type { Person, Team } from '@/payload-types'
 export type UserScope = {
   role: UserRole
   userId: number
+  email: string
   assignedTeamIds: number[]
   linkedPersonId: number | null
   isFullAccess: boolean // admin or staff-manager - no scoping
+  /** departments.canUploadExternalScrims - may upload/view external-team scrims they created */
+  canUploadExternalScrims: boolean
 }
 
 /**
@@ -48,12 +51,16 @@ export async function getUserScope(): Promise<UserScope | null> {
 
     const linkedPersonId: number = user.id
 
+    const departments = (user as { departments?: { canUploadExternalScrims?: boolean | null } | null }).departments
+
     return {
       role,
       userId: user.id,
+      email: user.email ?? '',
       assignedTeamIds,
       linkedPersonId,
       isFullAccess,
+      canUploadExternalScrims: departments?.canUploadExternalScrims === true,
     }
   } catch {
     return null
@@ -72,4 +79,31 @@ export function isScrimViewerRole(role: UserRole): boolean {
  */
 export function canUploadScrims(role: UserRole): boolean {
   return [UserRole.ADMIN, UserRole.STAFF_MANAGER, UserRole.TEAM_MANAGER].includes(role)
+}
+
+/**
+ * Whether a user may view the scrim analytics pages: the standard scrim
+ * roles, plus flagged external-scrim coaches (whatever their role).
+ * Takes the raw Payload user doc so server components can call it directly.
+ */
+export function hasScrimAccess(
+  user:
+    | { role?: string | null; departments?: { canUploadExternalScrims?: boolean | null } | null }
+    | null
+    | undefined,
+): boolean {
+  if (!user?.role) return false
+  if (['admin', 'staff-manager', 'team-manager', 'player'].includes(user.role)) return true
+  return user.departments?.canUploadExternalScrims === true
+}
+
+/**
+ * Prisma where-fragment for the external-team scrims this user may see:
+ * full access sees all of them, flagged coaches see the ones they uploaded,
+ * everyone else sees none (returns null).
+ */
+export function externalScrimWhere(scope: UserScope): Record<string, unknown> | null {
+  if (scope.isFullAccess) return { externalTeamName: { not: null } }
+  if (!scope.canUploadExternalScrims) return null
+  return { externalTeamName: { not: null }, creatorEmail: scope.email }
 }

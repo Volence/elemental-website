@@ -18,6 +18,7 @@
 import { NextResponse } from 'next/server'
 import { parseScrimLog, validateScrimLog, createScrimFromParsedData } from '@/lib/scrim-parser'
 import { mapSignatureFromParsedData } from '@/lib/scrim-analytics/duplicate-detection'
+import { parsePlayerMappings, teamIdsOutsideScope, validateUploadTarget } from '@/lib/scrim-analytics/upload-guards'
 import prisma from '@/lib/prisma'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
@@ -32,24 +33,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check role - admin, staff-manager, and team-manager can upload
+    // Role/flag gating happens in validateUploadTarget below, once we know
+    // whether this is an org-team or external-team upload.
     const userRole = (user as { role?: string }).role
-    const canUpload = userRole === 'admin' || userRole === 'staff-manager' || userRole === 'team-manager'
-    if (!canUpload) {
-      return NextResponse.json(
-        { error: 'Insufficient permissions. Only admins, staff managers, and team managers can upload scrims.' },
-        { status: 403 },
-      )
-    }
+    const canUploadExternal =
+      (user as { departments?: { canUploadExternalScrims?: boolean | null } | null }).departments
+        ?.canUploadExternalScrims === true
 
     const formData = await request.formData()
     const files = formData.getAll('files') as File[]
     const name = (formData.get('name') as string) || (formData.get('scrimName') as string) || `Scrim ${new Date().toLocaleDateString()}`
     const dateStr = formData.get('date') as string
     let teamIdStr = formData.get('teamId') as string | null
+    const externalTeamName = (formData.get('externalTeamName') as string | null)?.trim() || null
 
     // For team-managers: auto-set team to their first assigned team if not specified
-    if (!teamIdStr && userRole === 'team-manager') {
+    // (not for external uploads - those must stay unlinked)
+    if (!teamIdStr && !externalTeamName && userRole === 'team-manager') {
       const typedUser = user as { assignedTeams?: Array<number | { id: number }> }
       if (typedUser.assignedTeams?.length) {
         const firstTeam = typedUser.assignedTeams[0]
@@ -65,31 +65,42 @@ export async function POST(request: Request) {
     const playerMappings2Str = formData.get('mappings2') as string | null
     const opponentNameOverride = (formData.get('opponentName') as string | null)?.trim() || null
     const teamId2Str = formData.get('teamId2') as string | null
-    const playerMappings: Record<string, number> = {}
-    if (playerMappingsStr) {
-      try {
-        const parsed = JSON.parse(playerMappingsStr)
-        for (const [name, id] of Object.entries(parsed)) {
-          if (id && !isNaN(Number(id))) {
-            playerMappings[name] = Number(id)
-          }
-        }
-      } catch {
-        // Ignore invalid JSON - proceed without mappings
-      }
+
+    const targetError = validateUploadTarget({
+      role: userRole,
+      canUploadExternalScrims: canUploadExternal,
+      teamId: teamIdStr ? parseInt(teamIdStr, 10) : null,
+      externalTeamName,
+    })
+    if (targetError) {
+      return NextResponse.json({ error: targetError }, { status: 403 })
     }
-    const playerMappings2: Record<string, number> = {}
-    if (playerMappings2Str) {
-      try {
-        const parsed = JSON.parse(playerMappings2Str)
-        for (const [name, id] of Object.entries(parsed)) {
-          if (id && !isNaN(Number(id))) {
-            playerMappings2[name] = Number(id)
-          }
-        }
-      } catch {
-        // Ignore invalid JSON - proceed without mappings
-      }
+
+    // Malformed mappings are a hard error: proceeding without them silently
+    // produces a scrim with zero person linkage.
+    const playerMappings = parsePlayerMappings(playerMappingsStr)
+    if (playerMappings === null) {
+      return NextResponse.json({ error: 'Invalid player mappings payload' }, { status: 400 })
+    }
+    const playerMappings2 = parsePlayerMappings(playerMappings2Str)
+    if (playerMappings2 === null) {
+      return NextResponse.json({ error: 'Invalid player mappings payload (team 2)' }, { status: 400 })
+    }
+
+    // Team-managers may only attribute scrims to their assigned teams
+    // (same rule scrim-rename and scrim-score-override already enforce).
+    const assignedTeamIds = ((user as { assignedTeams?: Array<number | { id: number }> }).assignedTeams ?? [])
+      .map((t) => (typeof t === 'number' ? t : t.id))
+    const requestedTeamIds = [teamIdStr, teamId2Str]
+      .filter((s): s is string => Boolean(s))
+      .map((s) => parseInt(s, 10))
+      .filter((n) => !isNaN(n))
+    const outOfScope = teamIdsOutsideScope(userRole, assignedTeamIds, requestedTeamIds)
+    if (outOfScope.length > 0) {
+      return NextResponse.json(
+        { error: 'You can only upload scrims for your assigned teams.' },
+        { status: 403 },
+      )
     }
 
     if (!files.length) {
@@ -189,6 +200,8 @@ export async function POST(request: Request) {
       payloadTeamId2: teamId2Str ? parseInt(teamId2Str, 10) : null,
       creatorEmail: user.email,
       opponentName: opponentNameOverride,
+      ourSideRaw: (formData.get('ourTeam') as string | null)?.trim() || null,
+      externalTeamName,
       maps: parsedMaps,
       playerMappings,
       playerMappings2: Object.keys(playerMappings2).length > 0 ? playerMappings2 : undefined,

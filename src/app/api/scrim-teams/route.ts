@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { getUserScope } from '@/access/scrimScope'
+import { getUserScope, externalScrimWhere } from '@/access/scrimScope'
 
 /**
  * GET /api/scrim-teams
@@ -16,26 +16,45 @@ export async function GET(req: NextRequest) {
   const search = url.searchParams.get('search')?.trim() || ''
 
   const scope = await getUserScope()
+  if (!scope) {
+    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+  }
 
   const where: Record<string, unknown> = {}
   if (search) {
     where.name = { contains: search, mode: 'insensitive' }
   }
 
-  // Team scoping: non-full-access users only see their assigned teams as rows.
+  // Team scoping: non-full-access users only see their assigned teams as rows,
+  // plus external-team groups for the scrims they uploaded (flagged coaches).
   let restrictTeamIds: number[] | null = null
+  const external = scope ? externalScrimWhere(scope) : null
   if (scope && !scope.isFullAccess) {
-    if (scope.assignedTeamIds.length === 0) {
+    if (scope.assignedTeamIds.length === 0 && !external) {
       return NextResponse.json({ teams: [], total: 0 })
     }
     restrictTeamIds = scope.assignedTeamIds
-    where.OR = [
-      { payloadTeamId: { in: scope.assignedTeamIds } },
-      { payloadTeamId2: { in: scope.assignedTeamIds } },
-    ]
+    const or: Record<string, unknown>[] = []
+    if (scope.assignedTeamIds.length > 0) {
+      or.push(
+        { payloadTeamId: { in: scope.assignedTeamIds } },
+        { payloadTeamId2: { in: scope.assignedTeamIds } },
+      )
+    }
+    if (external) or.push(external)
+    where.OR = or
   }
 
-  const [total, byTeam1, byTeam2] = await Promise.all([
+  // External-team groups: scoped separately since the main where's OR already
+  // limits visibility; full-access users see all external scrims.
+  const externalGroupWhere =
+    scope && !scope.isFullAccess
+      ? external
+      : scope
+        ? { externalTeamName: { not: null } }
+        : null
+
+  const [total, byTeam1, byTeam2, byExternal] = await Promise.all([
     prisma.scrim.count({ where }),
     prisma.scrim.groupBy({
       by: ['payloadTeamId'],
@@ -49,6 +68,14 @@ export async function GET(req: NextRequest) {
       _count: true,
       _max: { date: true },
     }),
+    externalGroupWhere
+      ? prisma.scrim.groupBy({
+          by: ['externalTeamName'],
+          where: { ...where, ...externalGroupWhere },
+          _count: true,
+          _max: { date: true },
+        })
+      : Promise.resolve([]),
   ])
 
   // Merge primary + secondary appearances by team id: sum counts, keep latest date.
@@ -81,14 +108,24 @@ export async function GET(req: NextRequest) {
     for (const r of rows) nameMap.set(r.id, r.name)
   }
 
-  const teams = teamIds
-    .map((id) => ({
-      teamId: id,
+  const teams = [
+    ...teamIds.map((id) => ({
+      teamId: id as number | null,
+      externalTeamName: null as string | null,
       name: nameMap.get(id) ?? 'Unknown Team',
       count: agg.get(id)!.count,
       lastPlayed: agg.get(id)!.lastPlayed.toISOString(),
-    }))
-    .sort((a, b) => b.lastPlayed.localeCompare(a.lastPlayed))
+    })),
+    ...byExternal
+      .filter((r) => r.externalTeamName != null)
+      .map((r) => ({
+        teamId: null as number | null,
+        externalTeamName: r.externalTeamName as string | null,
+        name: `${r.externalTeamName} (external)`,
+        count: r._count as number,
+        lastPlayed: (r._max.date ?? new Date(0)).toISOString(),
+      })),
+  ].sort((a, b) => b.lastPlayed.localeCompare(a.lastPlayed))
 
   return NextResponse.json({ teams, total })
 }

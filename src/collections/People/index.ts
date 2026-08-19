@@ -278,13 +278,15 @@ export const People: CollectionConfig = {
               label: 'Department Access',
               admin: {
                 description: 'Grant access to department-specific tools and dashboards',
-                condition: (data) => data.role !== UserRole.ADMIN && data.role !== UserRole.PLAYER,
+                // Shown for players too: coaches (often role=player) can hold
+                // department capabilities like canUploadExternalScrims.
+                condition: (data) => data.role !== UserRole.ADMIN,
               },
               access: {
-                read: ({ req: { user } }) => {
-                  if (!user) return false
-                  return user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER
-                },
+                // Readable by any authenticated user: these are capability
+                // flags that client UI (tab bars, nav) must gate on for the
+                // logged-in user themself. Updates stay admin-only.
+                read: ({ req: { user } }) => Boolean(user),
                 update: ({ req }) => req.user?.role === UserRole.ADMIN,
               },
               fields: [
@@ -296,6 +298,7 @@ export const People: CollectionConfig = {
                 { name: 'isScoutingStaff', type: 'checkbox', label: 'Scouting Staff', defaultValue: false, admin: { description: 'Grants access to Scouting Dashboard' } },
                 { name: 'isContentCreator', type: 'checkbox', label: 'Content Creator', defaultValue: false, admin: { description: 'Streams appear in Creator Live channel instead of Player Live' } },
                 { name: 'isPugAdmin', type: 'checkbox', label: 'PUG Administrator', defaultValue: false, admin: { description: 'Grants access to PUG management' } },
+                { name: 'canUploadExternalScrims', type: 'checkbox', label: 'External Scrim Uploader', defaultValue: false, admin: { description: 'Can upload and view scrim logs for teams outside the org (e.g. coaching another team)' } },
               ],
             },
           ],

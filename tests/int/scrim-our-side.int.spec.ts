@@ -67,3 +67,61 @@ describe('resolveOurSide', () => {
     ).toBeNull()
   })
 })
+
+describe('resolveOurSide uploader-side fallback', () => {
+  const emptySides = buildSideLookup([])
+
+  it('falls back to the persisted uploader side when the viewer IS the uploading team', () => {
+    expect(
+      resolveOurSide({
+        mapDataId: MAP, viewTeamId: SHADE, otherTeamId: null, sides: emptySides,
+        rawTeam1: 'Team 1', rawTeam2: 'Team 2',
+        uploaderSideRaw: 'Team 2', uploaderTeamId: SHADE,
+      }),
+    ).toBe('Team 2')
+  })
+
+  it('inverts the uploader side when the viewer is the second linked team', () => {
+    // ourSideRaw is uploader-perspective; POISON (team2) is on the other side
+    expect(
+      resolveOurSide({
+        mapDataId: MAP, viewTeamId: POISON, otherTeamId: SHADE, sides: emptySides,
+        rawTeam1: 'Team 1', rawTeam2: 'Team 2',
+        uploaderSideRaw: 'Team 2', uploaderTeamId: SHADE,
+      }),
+    ).toBe('Team 1')
+  })
+
+  it('ignores the uploader side when the viewer is not linked to the uploader', () => {
+    expect(
+      resolveOurSide({
+        mapDataId: MAP, viewTeamId: POISON, otherTeamId: null, sides: emptySides,
+        rawTeam1: 'Team 1', rawTeam2: 'Team 2',
+        uploaderSideRaw: 'Team 2', uploaderTeamId: SHADE,
+      }),
+    ).toBeNull()
+  })
+
+  it('ignores an uploader side that matches neither raw side label', () => {
+    expect(
+      resolveOurSide({
+        mapDataId: MAP, viewTeamId: SHADE, otherTeamId: null, sides: emptySides,
+        rawTeam1: 'Team 1', rawTeam2: 'Team 2',
+        uploaderSideRaw: 'Cats', uploaderTeamId: SHADE,
+      }),
+    ).toBeNull()
+  })
+
+  it('prefers roster resolution over the uploader side', () => {
+    const withDirect = buildSideLookup([
+      { mapDataId: MAP, teamId: SHADE, side: 'Team 1', players: 5 },
+    ])
+    expect(
+      resolveOurSide({
+        mapDataId: MAP, viewTeamId: SHADE, otherTeamId: null, sides: withDirect,
+        rawTeam1: 'Team 1', rawTeam2: 'Team 2',
+        uploaderSideRaw: 'Team 2', uploaderTeamId: SHADE,
+      }),
+    ).toBe('Team 1')
+  })
+})

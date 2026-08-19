@@ -13,9 +13,11 @@ const ScrimUploadRoute: React.FC<AdminViewServerProps> = ({
   const user = initPageResult.req.user
   const role = (user as any)?.role as string | undefined
 
-  // Only admin, staff-manager, and team-manager can access upload
+  // Admin, staff-manager, team-manager - or a flagged external-scrim coach
   const canUpload = role === 'admin' || role === 'staff-manager' || role === 'team-manager'
-  if (!user || !canUpload) {
+  const canUploadExternal =
+    (user as any)?.departments?.canUploadExternalScrims === true
+  if (!user || (!canUpload && !canUploadExternal)) {
     redirect('/admin')
   }
 
@@ -32,7 +34,7 @@ const ScrimUploadRoute: React.FC<AdminViewServerProps> = ({
       viewActions={[]}
       visibleEntities={initPageResult.visibleEntities}
     >
-      <ScrimUploadView />
+      <ScrimUploadView allowOrgUpload={canUpload} forceExternal={!canUpload && canUploadExternal} />
     </DefaultTemplate>
   )
 }

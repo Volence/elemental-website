@@ -28,12 +28,19 @@ model Scrim {
   creatorEmail  String
   // Optional override for opponent team name (used when lobby names are wrong)
   opponentName  String?
+  // Raw log side the uploader declared as theirs (e.g. "Team 1" or a lobby team name).
+  // Fallback anchor for side resolution when no mapped player is on the roster.
+  ourSideRaw    String?
+  // Free-text team name for scrims uploaded on behalf of a team outside the org
+  // (coach uploads). Mutually exclusive with payloadTeamId; scoped by creatorEmail.
+  externalTeamName String?
   pugLobbyId    Int?       @unique
   maps      ScrimMap[]
 
   @@map("scrim_scrims")
   @@index([payloadTeamId])
   @@index([payloadTeamId2])
+  @@index([externalTeamName])
 }
 
 model ScrimMap {
@@ -61,7 +68,10 @@ model ScrimMapData {
   mapId Int
 
   // Event relations
+  abilityUses       ScrimAbilityUse[]
+  damageEvents      ScrimDamage[]
   defensiveAssists  ScrimDefensiveAssist[]
+  healingEvents     ScrimHealing[]
   dvaRemechs        ScrimDvaRemech[]
   echoDuplicateEnds ScrimEchoDuplicateEnd[]
   echoDuplicateStarts ScrimEchoDuplicateStart[]
@@ -97,8 +107,12 @@ model ScrimMapData {
 // ============================================================================
 
 enum ScrimEventType {
+  ability_1_used
+  ability_2_used
+  damage
   defensive_assist
   dva_remech
+  healing
   echo_duplicate_end
   echo_duplicate_start
   hero_spawn
@@ -290,6 +304,70 @@ model ScrimHeroSwap {
   mapDataId        Int?
 
   @@map("scrim_hero_swaps")
+  @@index([scrimId])
+  @@index([mapDataId])
+}
+
+model ScrimDamage {
+  id               Int            @id @default(autoincrement())
+  scrimId          Int
+  event_type       ScrimEventType @default(damage)
+  match_time       Float
+  attacker_team    String
+  attacker_name    String
+  attacker_hero    String
+  victim_team      String
+  victim_name      String
+  victim_hero      String
+  event_ability    String
+  event_damage     Float
+  is_critical_hit  String
+  is_environmental String
+  mapData          ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId        Int?
+
+  @@map("scrim_damage_events")
+  @@index([scrimId])
+  @@index([mapDataId])
+}
+
+model ScrimHealing {
+  id             Int            @id @default(autoincrement())
+  scrimId        Int
+  event_type     ScrimEventType @default(healing)
+  match_time     Float
+  healer_team    String
+  healer_name    String
+  healer_hero    String
+  healee_team    String
+  healee_name    String
+  healee_hero    String
+  event_ability  String
+  event_healing  Float
+  is_health_pack String
+  mapData        ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId      Int?
+
+  @@map("scrim_healing_events")
+  @@index([scrimId])
+  @@index([mapDataId])
+}
+
+model ScrimAbilityUse {
+  id              Int            @id @default(autoincrement())
+  scrimId         Int
+  event_type      ScrimEventType @default(ability_1_used)
+  // 1 or 2 - which ability slot was used
+  ability_number  Int
+  match_time      Float
+  player_team     String
+  player_name     String
+  player_hero     String
+  hero_duplicated String
+  mapData         ScrimMapData?  @relation(fields: [mapDataId], references: [id], onDelete: Cascade)
+  mapDataId       Int?
+
+  @@map("scrim_ability_uses")
   @@index([scrimId])
   @@index([mapDataId])
 }
