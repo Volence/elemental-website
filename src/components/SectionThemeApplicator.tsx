@@ -38,6 +38,7 @@ const routeToSectionMap: Record<string, string> = {
   '/admin/edit-invite': 'system',
   '/admin/manage-users': 'people',
   '/admin/edit-user': 'people',
+  '/admin/access-review': 'people',
 }
 
 /**

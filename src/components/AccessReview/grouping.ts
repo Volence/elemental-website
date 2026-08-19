@@ -6,16 +6,22 @@ import {
   type AccessFlag,
   type AccessPerson,
   type AccessReport,
+  type DepartmentKey,
+  type RoleValue,
 } from '@/accessReview/types'
 
 export type GroupBand = 'role' | 'department' | 'team'
 
-export interface AccessGroup {
+interface AccessGroupBase {
   key: string
-  band: GroupBand
   label: string
   people: AccessPerson[]
 }
+
+export type AccessGroup =
+  | (AccessGroupBase & { band: 'role'; role: RoleValue })
+  | (AccessGroupBase & { band: 'department'; departmentKey: DepartmentKey })
+  | (AccessGroupBase & { band: 'team'; teamId: number })
 
 export interface GroupFilter {
   search: string
@@ -59,7 +65,7 @@ export function buildGroups(report: AccessReport, filter: GroupFilter): AccessGr
     if (role === 'user') continue
     const members = people.filter((person) => person.role === role)
     if (members.length) {
-      groups.push({ key: `role:${role}`, band: 'role', label: ROLE_LABELS[role], people: members })
+      groups.push({ key: `role:${role}`, band: 'role', role, label: ROLE_LABELS[role], people: members })
     }
   }
 
@@ -69,6 +75,7 @@ export function buildGroups(report: AccessReport, filter: GroupFilter): AccessGr
       groups.push({
         key: `department:${key}`,
         band: 'department',
+        departmentKey: key,
         label: DEPARTMENT_LABELS[key],
         people: members,
       })
@@ -88,6 +95,7 @@ export function buildGroups(report: AccessReport, filter: GroupFilter): AccessGr
       groups.push({
         key: `team:${teamId}`,
         band: 'team',
+        teamId,
         label: teamNames.get(teamId) ?? `Team #${teamId}`,
         people: members,
       })

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useAuth } from '@payloadcms/ui'
 import {
   AlertCircle, Check, ChevronDown, ChevronRight, Loader2, RefreshCw, Search,
   ShieldAlert, User as UserIcon, X,
@@ -13,7 +14,8 @@ import { applyDelta, fetchReport, invertDelta, type AccessDelta } from './api'
 
 const VIEW_CSS = `
   .ar-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; margin-bottom: 12px; }
-  .ar-group-head { display: flex; align-items: center; gap: 10px; width: 100%; padding: 14px 16px; background: none; border: none; color: #e2e8f0; font-size: 14px; font-weight: 600; cursor: pointer; text-align: left; }
+  .ar-group-head { display: flex; align-items: center; gap: 10px; width: 100%; padding: 14px 16px; }
+  .ar-group-toggle { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; padding: 0; background: none; border: none; color: #e2e8f0; font-size: 14px; font-weight: 600; cursor: pointer; text-align: left; }
   .ar-band { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(255,255,255,0.35); margin: 22px 0 8px; }
   .ar-row { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-top: 1px solid rgba(255,255,255,0.05); }
   .ar-chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 20px; font-size: 11px; border: 1px solid; }
@@ -26,6 +28,7 @@ const VIEW_CSS = `
   .ar-revoke:hover { background: rgba(239,68,68,0.2); }
   .ar-revoke:disabled { opacity: 0.4; cursor: not-allowed; }
   .ar-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #0f172a; border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 14px; z-index: 60; }
+  .ar-error-toast { position: fixed; top: 24px; left: 50%; transform: translateX(-50%); background: #0f172a; border: 1px solid rgba(239,68,68,0.35); border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 14px; z-index: 65; max-width: 640px; }
   .ar-modal-back { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 70; }
   .ar-modal { background: #0f172a; border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 22px; max-width: 460px; width: 90%; }
   .ar-check { width: 15px; height: 15px; accent-color: #34d399; cursor: pointer; }
@@ -52,9 +55,9 @@ function relativeDays(iso: string | null, now: number): string {
 function revokeDelta(group: AccessGroup, person: AccessPerson): AccessDelta {
   if (group.band === 'role') return { personId: person.id, kind: 'role', value: 'user' }
   if (group.band === 'department') {
-    return { personId: person.id, kind: 'department', key: group.key.slice('department:'.length) as never, value: false }
+    return { personId: person.id, kind: 'department', key: group.departmentKey, value: false }
   }
-  return { personId: person.id, kind: 'team', teamId: Number(group.key.slice('team:'.length)), value: false }
+  return { personId: person.id, kind: 'team', teamId: group.teamId, value: false }
 }
 
 function revokeLabel(group: AccessGroup): string {
@@ -63,7 +66,15 @@ function revokeLabel(group: AccessGroup): string {
   return 'Remove team'
 }
 
+/** The people in this group who are currently selected. The single source of truth for both
+ * the header badge and the confirm modal, so they can never disagree. */
+function selectedPeopleFor(group: AccessGroup, selection: Record<string, number[]>): AccessPerson[] {
+  const ids = selection[group.key] ?? []
+  return group.people.filter((person) => ids.includes(person.id))
+}
+
 export function AccessReviewView() {
+  const { user: currentUser } = useAuth() as { user: any }
   const [report, setReport] = useState<AccessReport | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -89,6 +100,15 @@ export function AccessReviewView() {
 
   useEffect(() => { load() }, [load])
 
+  useEffect(() => {
+    if (!confirming) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setConfirming(null)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [confirming])
+
   const now = report ? Date.parse(report.generatedAt) : Date.now()
   const counts = useMemo(() => (report ? countFlags(report) : null), [report])
   const groups = useMemo(
@@ -97,12 +117,13 @@ export function AccessReviewView() {
   )
 
   const runDelta = async (
+    groupKey: string,
     delta: AccessDelta,
     undoText: string,
     previousRole: string | null,
     offerUndo = true,
   ) => {
-    setBusy(`${delta.personId}:${delta.kind}`)
+    setBusy(`${groupKey}:${delta.personId}`)
     setError(null)
     try {
       await applyDelta(delta)
@@ -118,9 +139,9 @@ export function AccessReviewView() {
   }
 
   const runBulk = async (group: AccessGroup) => {
-    const ids = selection[group.key] ?? []
-    const people = group.people.filter((person) => ids.includes(person.id))
+    const people = selectedPeopleFor(group, selection)
     setConfirming(null)
+    setUndo(null)
     setBusy(`bulk:${group.key}`)
     const failures: string[] = []
     for (const person of people) {
@@ -132,8 +153,10 @@ export function AccessReviewView() {
     }
     setSelection((prev) => ({ ...prev, [group.key]: [] }))
     setBusy(null)
-    setError(failures.length ? failures.join(' | ') : null)
+    // Refresh first, then surface the failure text - otherwise load()'s own setError(null)
+    // wipes it before it ever renders.
     await load(true)
+    setError(failures.length ? failures.join(' | ') : null)
   }
 
   const toggleSelected = (groupKey: string, personId: number) => {
@@ -147,6 +170,8 @@ export function AccessReviewView() {
       }
     })
   }
+
+  const confirmingSelectedPeople = confirming ? selectedPeopleFor(confirming, selection) : []
 
   return (
     <div style={{ maxWidth: 1150, margin: '0 auto', padding: '24px 20px 80px' }}>
@@ -171,19 +196,13 @@ export function AccessReviewView() {
         </div>
       )}
 
-      {error && (
-        <div className="ar-card" style={{ padding: '12px 16px', color: '#f87171', fontSize: 13 }}>
-          <AlertCircle size={14} style={{ verticalAlign: 'middle', marginRight: 8 }} />
-          {error}
-        </div>
-      )}
-
       {counts && (
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 18 }}>
           {ALL_FLAGS.map((f) => (
             <button
               key={f}
               className={`ar-stat ${flag === f ? 'active' : ''}`}
+              aria-pressed={flag === f}
               onClick={() => setFlag(flag === f ? null : f)}
             >
               <span style={{ fontSize: 20, fontWeight: 700 }}>{counts[f]}</span>
@@ -217,38 +236,47 @@ export function AccessReviewView() {
               <div className="ar-band">{band === 'role' ? 'Roles' : band === 'department' ? 'Departments' : 'Team data access'}</div>
               {bandGroups.map((group) => {
                 const isCollapsed = collapsed[group.key]
-                const selected = selection[group.key] ?? []
+                const selectedPeople = selectedPeopleFor(group, selection)
+                const bulkBusy = busy === `bulk:${group.key}`
                 return (
                   <div className="ar-card" key={group.key}>
-                    <button
-                      className="ar-group-head"
-                      onClick={() => setCollapsed((prev) => ({ ...prev, [group.key]: !prev[group.key] }))}
-                    >
-                      {isCollapsed ? <ChevronRight size={15} /> : <ChevronDown size={15} />}
-                      {group.label}
-                      <span style={{ color: 'rgba(255,255,255,0.35)', fontWeight: 400 }}>({group.people.length})</span>
-                      {selected.length > 0 && (
-                        <span
+                    <div className="ar-group-head">
+                      <button
+                        type="button"
+                        className="ar-group-toggle"
+                        onClick={() => setCollapsed((prev) => ({ ...prev, [group.key]: !prev[group.key] }))}
+                      >
+                        {isCollapsed ? <ChevronRight size={15} /> : <ChevronDown size={15} />}
+                        {group.label}
+                        <span style={{ color: 'rgba(255,255,255,0.35)', fontWeight: 400 }}>({group.people.length})</span>
+                      </button>
+                      {selectedPeople.length > 0 && (
+                        <button
+                          type="button"
                           className="ar-revoke"
                           style={{ marginLeft: 'auto' }}
-                          onClick={(event) => { event.stopPropagation(); setConfirming(group) }}
+                          disabled={bulkBusy}
+                          onClick={() => setConfirming(group)}
                         >
-                          Revoke {selected.length} selected
-                        </span>
+                          Revoke {selectedPeople.length} selected
+                        </button>
                       )}
-                    </button>
+                    </div>
 
                     {!isCollapsed && group.people.map((person) => {
                       const team = group.band === 'team'
-                        ? person.teams.find((entry) => entry.teamId === Number(group.key.slice(5)))
+                        ? person.teams.find((entry) => entry.teamId === group.teamId)
                         : null
-                      const rowBusy = busy === `${person.id}:${revokeDelta(group, person).kind}` || busy === `bulk:${group.key}`
+                      const rowBusy = busy === `${group.key}:${person.id}` || bulkBusy
+                      const isSelfRoleChange = group.band === 'role' && currentUser?.id != null
+                        && String(currentUser.id) === String(person.id)
                       return (
                         <div className="ar-row" key={person.id}>
                           <input
                             type="checkbox"
                             className="ar-check"
-                            checked={selected.includes(person.id)}
+                            aria-label={`Select ${person.name}`}
+                            checked={selection[group.key]?.includes(person.id) ?? false}
                             onChange={() => toggleSelected(group.key, person.id)}
                           />
                           {person.avatarUrl
@@ -280,8 +308,10 @@ export function AccessReviewView() {
 
                           <button
                             className="ar-revoke"
-                            disabled={rowBusy}
+                            disabled={rowBusy || isSelfRoleChange}
+                            title={isSelfRoleChange ? 'You cannot change your own role here' : undefined}
                             onClick={() => runDelta(
+                              group.key,
                               revokeDelta(group, person),
                               `${revokeLabel(group)} applied to ${person.name}`,
                               person.role,
@@ -304,6 +334,16 @@ export function AccessReviewView() {
         <div style={{ padding: 50, textAlign: 'center', opacity: 0.4 }}>Nothing matches this filter.</div>
       )}
 
+      {error && (
+        <div className="ar-error-toast" role="alert">
+          <AlertCircle size={15} style={{ color: '#f87171', flexShrink: 0 }} />
+          <span style={{ fontSize: 13, color: '#e2e8f0' }}>{error}</span>
+          <button className="remove-btn" style={{ width: 26, height: 26, flexShrink: 0 }} onClick={() => setError(null)}>
+            <X size={13} />
+          </button>
+        </div>
+      )}
+
       {undo && (
         <div className="ar-toast">
           <Check size={15} style={{ color: '#34d399' }} />
@@ -311,7 +351,11 @@ export function AccessReviewView() {
           <button
             className="add-link-btn"
             style={{ width: 'auto', padding: '4px 12px' }}
-            onClick={async () => { const delta = undo.delta; setUndo(null); await runDelta(delta, 'Change undone', null, false) }}
+            onClick={async () => {
+              const delta = undo.delta
+              setUndo(null)
+              await runDelta('undo', delta, 'Change undone', null, false)
+            }}
           >
             Undo
           </button>
@@ -323,17 +367,21 @@ export function AccessReviewView() {
 
       {confirming && (
         <div className="ar-modal-back" onClick={() => setConfirming(null)}>
-          <div className="ar-modal" onClick={(event) => event.stopPropagation()}>
-            <h3 style={{ margin: '0 0 10px', color: '#e2e8f0', fontSize: 16 }}>
-              {revokeLabel(confirming)} for {(selection[confirming.key] ?? []).length} people
+          <div
+            className="ar-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="ar-confirm-heading"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h3 id="ar-confirm-heading" style={{ margin: '0 0 10px', color: '#e2e8f0', fontSize: 16 }}>
+              {revokeLabel(confirming)} for {confirmingSelectedPeople.length} people
             </h3>
             <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, margin: '0 0 14px' }}>
               {confirming.label}. This applies one change per person and cannot be undone in bulk.
             </p>
             <ul style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13, maxHeight: 180, overflowY: 'auto', margin: '0 0 18px', paddingLeft: 18 }}>
-              {confirming.people
-                .filter((person) => (selection[confirming.key] ?? []).includes(person.id))
-                .map((person) => <li key={person.id}>{person.name}</li>)}
+              {confirmingSelectedPeople.map((person) => <li key={person.id}>{person.name}</li>)}
             </ul>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
               <button className="add-link-btn" style={{ width: 'auto' }} onClick={() => setConfirming(null)}>Cancel</button>

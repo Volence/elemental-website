@@ -44,6 +44,16 @@ describe('buildGroups', () => {
     expect(keys).toContain('role:staff-manager')
     expect(keys).toContain('department:isGraphicsStaff')
     expect(keys).toContain('team:10')
+
+    const roleGroup = groups.find((g) => g.key === 'role:staff-manager')
+    const deptGroup = groups.find((g) => g.key === 'department:isGraphicsStaff')
+    const teamGroup = groups.find((g) => g.key === 'team:10')
+    expect(roleGroup?.band).toBe('role')
+    if (roleGroup?.band === 'role') expect(roleGroup.role).toBe('staff-manager')
+    expect(deptGroup?.band).toBe('department')
+    if (deptGroup?.band === 'department') expect(deptGroup.departmentKey).toBe('isGraphicsStaff')
+    expect(teamGroup?.band).toBe('team')
+    if (teamGroup?.band === 'team') expect(teamGroup.teamId).toBe(10)
   })
 
   it('omits empty groups', () => {
