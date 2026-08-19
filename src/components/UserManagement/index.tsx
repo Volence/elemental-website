@@ -6,7 +6,7 @@ import { useAuth } from '@payloadcms/ui'
 import {
   Users, Search, Shield, ShieldCheck, Crown, Gamepad2, User as UserIcon,
   Save, Check, AlertCircle, Loader2, ArrowLeft, Plus, Link2, Trash2,
-  Monitor, ChevronRight, KeyRound,
+  Monitor, ChevronRight, KeyRound, ShieldAlert,
 } from 'lucide-react'
 import { EDITOR_CSS, styles as editorStyles } from '@/components/PersonEditor'
 
@@ -130,6 +130,14 @@ export function UsersListView() {
           Users
           <span style={{ fontSize: 14, fontWeight: 400, color: 'rgba(255,255,255,0.4)', marginLeft: 8 }}>({users.length})</span>
         </h1>
+        <a
+          href="/admin/access-review"
+          className="add-link-btn"
+          style={{ width: 'auto', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+        >
+          <ShieldAlert size={14} />
+          Access Review
+        </a>
       </div>
 
       {/* Role stats */}
