@@ -1305,7 +1305,10 @@ const CACHE_TTL_MS = 60_000
 
 let cached: { at: number; report: AccessReport } | null = null
 
-export function invalidateAccessReviewCache(): void {
+// Not exported: Next.js route modules only permit HTTP method handlers and a small fixed
+// set of config exports, so any other export fails the generated route type check. PATCH is
+// appended to this same file in Task 8 and calls this directly via shared module scope.
+function invalidateAccessReviewCache(): void {
   cached = null
 }
 
