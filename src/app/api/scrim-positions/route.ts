@@ -122,23 +122,14 @@ export async function GET(req: NextRequest) {
       orderBy: { match_time: 'asc' },
       select: { match_time: true, round_number: true },
     }),
-    // Player stats - query separately since we need scrimId from mapData
-    // (mapDataId on player_stats is nullable and may not be set)
   ])
 
   if (!matchStart) {
     return NextResponse.json({ error: 'Map not found' }, { status: 404 })
   }
 
-  // Get scrimId to find player_stats for this scrim
-  // (mapDataId is not stored on player_stat rows - they only have scrimId)
-  const mapData = await prisma.scrimMapData.findUnique({
-    where: { id: mapId },
-    select: { scrimId: true },
-  })
-
-  const playerStatRows = mapData ? await prisma.scrimPlayerStat.findMany({
-    where: { scrimId: mapData.scrimId },
+  const playerStatRows = await prisma.scrimPlayerStat.findMany({
+    where: { mapDataId: mapId },
     select: {
       player_name: true,
       player_team: true,
@@ -156,7 +147,7 @@ export async function GET(req: NextRequest) {
       damage_blocked: true,
       objective_kills: true,
     },
-  }) : []
+  })
 
   // Check if we have position data
   const hasPositions = positions.length > 0
@@ -188,9 +179,20 @@ export async function GET(req: NextRequest) {
     isUlting: boolean | null
   }
 
+  // Payload/objective markers are stored as sentinel player_position rows
+  // (team __OBJ__, names __PAYLOAD__/__OBJECTIVE__); they are served in a
+  // dedicated field so clients never see them as players.
+  type ObjectiveSnapshot = {
+    name: string
+    x: number
+    y: number
+    z: number
+  }
+
   type TimelineFrame = {
     t: number
     players: PlayerSnapshot[]
+    objectives: ObjectiveSnapshot[]
   }
 
   const timeline: TimelineFrame[] = []
@@ -321,8 +323,14 @@ export async function GET(req: NextRequest) {
         }
       }
 
-      if (players.length > 0) {
-        timeline.push({ t, players })
+      const objectives: ObjectiveSnapshot[] = []
+      const realPlayers: PlayerSnapshot[] = []
+      for (const p of players) {
+        if (p.team === '__OBJ__') objectives.push({ name: p.name, x: p.x, y: p.y, z: p.z })
+        else realPlayers.push(p)
+      }
+      if (realPlayers.length > 0 || objectives.length > 0) {
+        timeline.push({ t, players: realPlayers, objectives })
       }
     }
   }

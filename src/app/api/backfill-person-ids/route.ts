@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { getPayload } from 'payload'
-import config from '@payload-config'
 import { requireAuth } from '@/access/requireAuth'
+import {
+  buildAliasMaps,
+  resolveBackfillTarget,
+  type BackfillPerson,
+} from '@/lib/scrim-analytics/backfill-person-ids'
 
 /**
  * POST /api/backfill-person-ids
  * Backfills personId on scrim_player_stats rows that are missing it.
- * Matches player_name against gameAliases from People records.
+ *
+ * Curated gameAliases match any row; bare Person.name matches only stamp
+ * rows whose scrim is linked to a team the person is rostered on, so an
+ * opponent sharing a name with one of our People is never claimed.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -15,29 +21,13 @@ export async function POST(request: NextRequest) {
     if (auth instanceof NextResponse) return auth
     const { payload } = auth
 
-    // Get all People records with gameAliases
     const { docs: people } = await payload.find({
       collection: 'people',
-      limit: 500,
+      pagination: false,
       depth: 0,
     })
 
-    // Build alias → personId map
-    const aliasToPersonId = new Map<string, number>()
-    for (const person of people) {
-      const aliases = person.gameAliases as Array<{ alias?: string }> | undefined
-      if (aliases && Array.isArray(aliases)) {
-        for (const entry of aliases) {
-          if (entry.alias) {
-            aliasToPersonId.set(entry.alias.toLowerCase(), person.id as number)
-          }
-        }
-      }
-      // Also match by person name itself
-      if (person.name) {
-        aliasToPersonId.set((person.name as string).toLowerCase(), person.id as number)
-      }
-    }
+    const maps = buildAliasMaps(people as unknown as BackfillPerson[])
 
     // Get distinct player names that are missing personId
     const missingRows = await prisma.$queryRaw<Array<{ player_name: string }>>`
@@ -45,11 +35,26 @@ export async function POST(request: NextRequest) {
     `
 
     let updated = 0
+    let skippedNoRosterLink = 0
     for (const row of missingRows) {
-      const personId = aliasToPersonId.get(row.player_name.toLowerCase())
-      if (personId) {
+      const target = resolveBackfillTarget(row.player_name, maps)
+      if (!target) continue
+
+      if (target.requiresRosterCheck) {
         const result = await prisma.$executeRaw`
-          UPDATE scrim_player_stats SET "personId" = ${personId}
+          UPDATE scrim_player_stats SET "personId" = ${target.personId}
+          WHERE player_name = ${row.player_name} AND "personId" IS NULL
+            AND "scrimId" IN (
+              SELECT s.id FROM scrim_scrims s
+              JOIN teams_roster tr ON tr.person_id = ${target.personId}
+               AND (tr."_parent_id" = s."payloadTeamId" OR tr."_parent_id" = s."payloadTeamId2")
+            )
+        `
+        updated += result
+        if (result === 0) skippedNoRosterLink++
+      } else {
+        const result = await prisma.$executeRaw`
+          UPDATE scrim_player_stats SET "personId" = ${target.personId}
           WHERE player_name = ${row.player_name} AND "personId" IS NULL
         `
         updated += result
@@ -58,9 +63,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      peopleWithAliases: aliasToPersonId.size,
+      peopleWithAliases: maps.aliasMap.size + maps.nameMap.size,
       missingPlayerNames: missingRows.length,
       rowsUpdated: updated,
+      skippedNoRosterLink,
     })
   } catch (error: any) {
     console.error('[backfill-person-ids] Error:', error)

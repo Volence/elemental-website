@@ -37,9 +37,17 @@ type PlayerFrame = {
   isUlting: boolean | null
 }
 
+type ObjectiveFrame = {
+  name: string // '__PAYLOAD__' | '__OBJECTIVE__'
+  x: number
+  y: number
+  z: number
+}
+
 type TimelineFrame = {
   t: number
   players: PlayerFrame[]
+  objectives?: ObjectiveFrame[]
 }
 
 type TimelineEvent = {
@@ -378,14 +386,13 @@ export default function ReplayTab({ mapId }: { mapId: string }) {
       const roundStart = roundStarts[i].t
       const roundEnd = i < roundStarts.length - 1 ? roundStarts[i + 1].t : Infinity
 
-      // Find first frame after round start with non-objective players
+      // Find first frame after round start with players
       const sampleFrame = data.timeline.find(f =>
-        f.t >= roundStart + 1 && f.t < roundEnd &&
-        f.players.some(p => p.team !== '__OBJ__'),
+        f.t >= roundStart + 1 && f.t < roundEnd && f.players.length > 0,
       )
 
       if (sampleFrame) {
-        const player = sampleFrame.players.find(p => p.team !== '__OBJ__')
+        const player = sampleFrame.players[0]
         if (player) {
           const detected = detectSubMap(data.mapName, player.x, player.z)
           if (detected) {
@@ -539,7 +546,6 @@ export default function ReplayTab({ mapId }: { mapId: string }) {
     const firstFrame = data.timeline[0]
     const t1 = data.team1
     for (const p of firstFrame.players) {
-      if (p.team === '__OBJ__') continue
       if (p.team === t1) team1Set.add(p.name)
       else team2Set.add(p.name)
     }
@@ -621,7 +627,6 @@ export default function ReplayTab({ mapId }: { mapId: string }) {
     const playerSet = new Map<string, { team: string }>()
     for (const frame of data.timeline.slice(0, 5)) {
       for (const p of frame.players) {
-        if (p.team === '__OBJ__') continue
         if (!playerSet.has(p.name)) playerSet.set(p.name, { team: p.team })
       }
     }
@@ -793,9 +798,17 @@ export default function ReplayTab({ mapId }: { mapId: string }) {
       })
     }
 
-    // Separate objective markers from real players
-    const objectiveMarkers = playerPositions.filter(p => p.name === '__PAYLOAD__' || p.name === '__OBJECTIVE__')
-    const realPlayers = playerPositions.filter(p => p.team !== '__OBJ__')
+    // Objective markers come from the frame's dedicated objectives field
+    let objFrame: TimelineFrame | undefined
+    for (const f of data.timeline) {
+      if (f.t <= currentTime) objFrame = f
+      else break
+    }
+    const objectiveMarkers = (objFrame?.objectives ?? []).map((o) => {
+      const { px, py } = worldToCanvas(o.x, o.z, activeTransform, viewport, fallbackBounds, w, h)
+      return { name: o.name, px, py }
+    })
+    const realPlayers = playerPositions
 
     // Draw objective markers (payload/push bot) as distinctive icons
     for (const obj of objectiveMarkers) {
@@ -1235,9 +1248,7 @@ export default function ReplayTab({ mapId }: { mapId: string }) {
     // Find closest player (excluding objective markers)
     const allPlayers = new Set<string>()
     for (const frame of data.timeline) {
-      for (const p of frame.players) {
-        if (p.team !== '__OBJ__') allPlayers.add(p.name)
-      }
+      for (const p of frame.players) allPlayers.add(p.name)
     }
 
     let closest: string | null = null
@@ -1491,7 +1502,7 @@ export default function ReplayTab({ mapId }: { mapId: string }) {
               {data.timeline.length > 0 && (() => {
                 const frameIdx = data.timeline.findIndex(f => f.t >= currentTime)
                 const frame = data.timeline[Math.max(0, frameIdx > 0 ? frameIdx - 1 : 0)]
-                return frame?.players.filter(p => p.team !== '__OBJ__').map(p => {
+                return frame?.players.map(p => {
                   const mapped = activeTransform ? worldToImage(p.x, p.z, activeTransform) : null
                   return (
                     <div key={p.name} style={{ color: p.team === data.team1 ? '#67e8f9' : '#f87171' }}>
