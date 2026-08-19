@@ -1,7 +1,10 @@
 import {
   DEPARTMENT_KEYS,
+  type AccessChangeRecord,
   type DepartmentKey,
+  type RawAccessAudit,
   type RawPerson,
+  type RawSession,
   type RawTeam,
   type Relationship,
   type TeamStanding,
@@ -73,4 +76,65 @@ export function buildTeamStandingIndex(teams: RawTeam[]): Map<number, Map<number
   }
 
   return index
+}
+
+export interface SessionSummary {
+  lastLoginAt: string | null
+  lastActivityAt: string | null
+}
+
+/**
+ * Newest login and newest activity per person. ActiveSessions rows are flipped to
+ * isActive:false on logout rather than deleted, so this covers historical sessions too.
+ * Payload stores dates as ISO UTC strings, which compare correctly with `>`.
+ */
+export function latestSessionByPerson(sessions: RawSession[]): Map<number, SessionSummary> {
+  const map = new Map<number, SessionSummary>()
+
+  for (const session of sessions) {
+    const personId = relId(session.user)
+    if (personId === null) continue
+
+    const current = map.get(personId) ?? { lastLoginAt: null, lastActivityAt: null }
+    if (session.loginTime && (!current.lastLoginAt || session.loginTime > current.lastLoginAt)) {
+      current.lastLoginAt = session.loginTime
+    }
+    if (
+      session.lastActivity &&
+      (!current.lastActivityAt || session.lastActivity > current.lastActivityAt)
+    ) {
+      current.lastActivityAt = session.lastActivity
+    }
+    map.set(personId, current)
+  }
+
+  return map
+}
+
+/**
+ * Newest access-field change per person, from audit entries written by the People audit hook.
+ * Entries whose metadata lists no access field are skipped - a bio edit is not a review.
+ */
+export function latestAccessChangeByPerson(
+  audits: RawAccessAudit[],
+): Map<number, AccessChangeRecord> {
+  const map = new Map<number, AccessChangeRecord>()
+
+  for (const entry of audits) {
+    const fields = entry.metadata?.accessFields ?? []
+    if (!fields.length) continue
+
+    const personId = Number(entry.documentId)
+    if (!Number.isFinite(personId)) continue
+
+    const existing = map.get(personId)
+    if (existing && existing.at >= entry.createdAt) continue
+
+    const byName =
+      entry.user && typeof entry.user === 'object' ? ((entry.user.name as string) ?? null) : null
+
+    map.set(personId, { at: entry.createdAt, byName, fields })
+  }
+
+  return map
 }

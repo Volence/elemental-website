@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { relId, activeDepartments, isElevated, buildTeamStandingIndex } from '@/accessReview/compute'
+import { relId, activeDepartments, isElevated, buildTeamStandingIndex, latestSessionByPerson, latestAccessChangeByPerson } from '@/accessReview/compute'
 
 describe('relId', () => {
   it('reads an id from a number, an object, or neither', () => {
@@ -77,5 +77,54 @@ describe('buildTeamStandingIndex', () => {
       { id: 10, name: 'Hydrus', coaches: [{ person: { id: 1 } }], roster: [{ person: { id: 1 } }] },
     ])
     expect(index.get(10)!.get(1)).toBe('coach')
+  })
+})
+
+describe('latestSessionByPerson', () => {
+  it('keeps the newest login and the newest activity per person', () => {
+    const map = latestSessionByPerson([
+      { user: 1, loginTime: '2026-01-01T00:00:00.000Z', lastActivity: '2026-01-01T02:00:00.000Z' },
+      { user: { id: 1 }, loginTime: '2026-03-01T00:00:00.000Z', lastActivity: '2026-02-01T00:00:00.000Z' },
+    ])
+    expect(map.get(1)).toEqual({
+      lastLoginAt: '2026-03-01T00:00:00.000Z',
+      lastActivityAt: '2026-02-01T00:00:00.000Z',
+    })
+  })
+
+  it('ignores rows with no user', () => {
+    expect(latestSessionByPerson([{ user: null, loginTime: '2026-01-01T00:00:00.000Z' }]).size).toBe(0)
+  })
+})
+
+describe('latestAccessChangeByPerson', () => {
+  it('keeps the newest entry and names who made it', () => {
+    const map = latestAccessChangeByPerson([
+      {
+        documentId: '5',
+        createdAt: '2026-02-01T00:00:00.000Z',
+        user: { name: 'Volence' },
+        metadata: { accessFields: ['departments.isGraphicsStaff'] },
+      },
+      {
+        documentId: 5,
+        createdAt: '2026-01-01T00:00:00.000Z',
+        user: { name: 'Someone Else' },
+        metadata: { accessFields: ['role'] },
+      },
+    ])
+    expect(map.get(5)).toEqual({
+      at: '2026-02-01T00:00:00.000Z',
+      byName: 'Volence',
+      fields: ['departments.isGraphicsStaff'],
+    })
+  })
+
+  it('ignores audit entries that touched no access field', () => {
+    const map = latestAccessChangeByPerson([
+      { documentId: '5', createdAt: '2026-02-01T00:00:00.000Z', metadata: {} },
+      { documentId: '5', createdAt: '2026-02-02T00:00:00.000Z', metadata: null },
+    ])
+    expect(map.size).toBe(0)
   })
 })
