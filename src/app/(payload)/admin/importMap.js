@@ -115,6 +115,7 @@ import { default as default_cb688d169ef5bf1426eea8968f0b9a29 } from '@/component
 import { default as default_564fb21592d27251bcff7c5e897d4dbc } from '@/components/BeforeDashboard/CalendarNavLink'
 import { default as default_85f2bde977b3b3772c025a1849dec0ef } from '@/components/BeforeDashboard/PugLobbiesNavLink'
 import { default as default_ab6e10b6b3865462fbf89efa35889b3d } from '@/components/BeforeDashboard/ScrimAnalyticsNavLinks'
+import { default as default_4ab6606ef060448849151fa1bba1ef7d } from '@/components/BeforeDashboard/AccessReviewNavLink'
 import { default as default_e99c5e0ebd6260b49d63c1e6ece7ec9d } from '@/components/BeforeDashboard/MyProfileNavLink'
 import { default as default_75e49641b1d841f24cd53ee63100b3ae } from '@/components/BeforeDashboard/SidebarScrollPreserver'
 import { default as default_aeef0123fea1af819397817664b7330c } from '@/components/AdminProviders'
@@ -262,6 +263,7 @@ export const importMap = {
   "@/components/BeforeDashboard/CalendarNavLink#default": default_564fb21592d27251bcff7c5e897d4dbc,
   "@/components/BeforeDashboard/PugLobbiesNavLink#default": default_85f2bde977b3b3772c025a1849dec0ef,
   "@/components/BeforeDashboard/ScrimAnalyticsNavLinks#default": default_ab6e10b6b3865462fbf89efa35889b3d,
+  "@/components/BeforeDashboard/AccessReviewNavLink#default": default_4ab6606ef060448849151fa1bba1ef7d,
   "@/components/BeforeDashboard/MyProfileNavLink#default": default_e99c5e0ebd6260b49d63c1e6ece7ec9d,
   "@/components/BeforeDashboard/SidebarScrollPreserver#default": default_75e49641b1d841f24cd53ee63100b3ae,
   "@/components/AdminProviders#default": default_aeef0123fea1af819397817664b7330c,
