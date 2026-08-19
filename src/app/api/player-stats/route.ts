@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma'
 import { round } from '@/lib/scrim-parser/utils'
 import { batchCalculateStats } from '@/lib/scrim-parser/batch-stats'
 import { playedMeaningfully } from '@/lib/scrim-parser/player-maps'
+import { resolvePlayerStatsTarget } from '@/lib/scrim-parser/player-identity'
 import { loadHeroPortraits, heroNameToSlug } from '@/lib/scrim-parser/heroIcons'
 import { heroRoleMapping } from '@/lib/scrim-parser/heroes'
 import { getUserScope, type UserScope } from '@/access/scrimScope'
@@ -122,13 +123,34 @@ export async function GET(req: NextRequest) {
     const personLookup = await prisma.$queryRaw<Array<{ id: number }>>`
       SELECT id FROM people WHERE name = ${playerName} LIMIT 1
     `
-    if (personLookup?.[0]?.id) {
-      const personId = personLookup[0].id
+    const matchedPersonId = personLookup?.[0]?.id ?? null
+    if (matchedPersonId !== null) {
       // Teammate check
-      if (allowedPersonIds && !allowedPersonIds.has(personId)) {
+      if (allowedPersonIds && !allowedPersonIds.has(matchedPersonId)) {
         return NextResponse.json({ error: 'Access denied - you can only view stats for your teammates' }, { status: 403 })
       }
-      return getPlayerDetailByPerson(personId, range, null)
+    }
+
+    // A name match is not proof the Person owns the stat rows. Unlinked rows
+    // keep personId NULL and are only reachable by raw player_name, so a
+    // Person with no linked rows must fall through to the name lookup below.
+    let personHasLinkedStats = false
+    if (matchedPersonId !== null) {
+      const linkedCheck = await prisma.$queryRaw<Array<{ has_stats: boolean }>>`
+        SELECT EXISTS (
+          SELECT 1 FROM scrim_player_stats WHERE "personId" = ${matchedPersonId}
+        ) as has_stats
+      `
+      personHasLinkedStats = linkedCheck?.[0]?.has_stats === true
+    }
+
+    const target = resolvePlayerStatsTarget({
+      playerName,
+      personId: matchedPersonId,
+      personHasLinkedStats,
+    })
+    if (target.kind === 'person') {
+      return getPlayerDetailByPerson(target.personId, range, null)
     }
 
     // Fallback: try raw player_name match (for unlinked players)
