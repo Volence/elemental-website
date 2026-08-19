@@ -11,6 +11,7 @@ import { EDITOR_CSS } from '@/components/PersonEditor'
 import type { AccessFlag, AccessPerson, AccessReport, TeamStanding } from '@/accessReview/types'
 import { ALL_FLAGS, FLAG_LABELS, buildGroups, countFlags, type AccessGroup } from './grouping'
 import { applyDelta, fetchReport, invertDelta, type AccessDelta } from './api'
+import { GrantControl } from './GrantControl'
 
 const VIEW_CSS = `
   .ar-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; margin-bottom: 12px; }
@@ -250,7 +251,7 @@ export function AccessReviewView() {
                         {group.label}
                         <span style={{ color: 'rgba(255,255,255,0.35)', fontWeight: 400 }}>({group.people.length})</span>
                       </button>
-                      {selectedPeople.length > 0 && (
+                      {selectedPeople.length > 0 ? (
                         <button
                           type="button"
                           className="ar-revoke"
@@ -260,6 +261,16 @@ export function AccessReviewView() {
                         >
                           Revoke {selectedPeople.length} selected
                         </button>
+                      ) : (
+                        <GrantControl
+                          group={group}
+                          onGrant={(delta, personName) => runDelta(
+                            group.key,
+                            delta,
+                            `${group.label} granted to ${personName}`,
+                            null,
+                          )}
+                        />
                       )}
                     </div>
 
