@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
+import { LoadingCard } from '@/components/ScrimShared'
 import { getHeroIconUrl, loadHeroPortraits } from '@/lib/scrim-parser/heroIcons'
 
 // ── Clean Glow Design Tokens ──
@@ -493,7 +494,7 @@ export default function CompareTab({ mapId }: { mapId: string }) {
   const t1Groups = useMemo(() => data ? groupByPlayer(data.team1Players) : [], [data])
   const t2Groups = useMemo(() => data ? groupByPlayer(data.team2Players) : [], [data])
 
-  if (loading) return <div style={{ padding: '40px', textAlign: 'center', color: TEXT_SECONDARY }}>Loading comparison…</div>
+  if (loading) return <LoadingCard message="Loading comparison…" />
   if (!data) return <div style={{ padding: '40px', textAlign: 'center', color: RED }}>Failed to load compare data</div>
 
   return (

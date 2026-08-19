@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
+import { LoadingCard } from '@/components/ScrimShared'
 
 // Shared tokens
 const CYAN = '#06b6d4'
@@ -98,7 +99,7 @@ export default function ChartsTab({ mapId }: { mapId: string }) {
     return { buckets, minTime, maxTime }
   }, [data])
 
-  if (loading) return <div style={{ padding: '40px', textAlign: 'center', color: TEXT_SECONDARY }}>Loading charts…</div>
+  if (loading) return <LoadingCard message="Loading charts…" />
   // Only show the empty state when neither the kill-derived chart nor the
   // role/damage charts have data. (Previously this bailed whenever the kill
   // chart alone was empty, which hid the role/damage charts too.)

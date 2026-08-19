@@ -8,6 +8,7 @@ import EventsTab from './EventsTab'
 import CompareTab from './CompareTab'
 import ReplayTab from './ReplayTab'
 import ScrimAnalyticsTabs from '@/components/ScrimAnalyticsTabs'
+import { useUrlParamState, ScrimBreadcrumbs } from '@/components/ScrimShared'
 import { PlayerStatsTable } from '@/components/MatchStats/PlayerStatsTable'
 import type { PlayerRow } from '@/components/MatchStats/types'
 
@@ -129,7 +130,10 @@ export default function ScrimMapDetailView() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<TabId>('overview')
+  // Sub-tab lives in the URL so Back works and tabs are linkable
+  const [tabParam, setTabParam] = useUrlParamState('tab', 'overview')
+  const activeTab = (TABS.some((t) => t.id === tabParam) ? tabParam : 'overview') as TabId
+  const setActiveTab = (t: TabId) => setTabParam(t)
   const [mapId, setMapId] = useState<string>('')
   const [editingScore, setEditingScore] = useState(false)
   const [scoreInput1, setScoreInput1] = useState('')
@@ -224,8 +228,13 @@ export default function ScrimMapDetailView() {
     <div className="scrim-detail__content" style={{ background: BG, minHeight: '100%' }}>
       {/* Header */}
       <div className="scrim-detail__header">
+        <ScrimBreadcrumbs items={[
+          { label: 'Scrim Analytics', href: '/admin/scrims' },
+          { label: 'Scrims', href: '/admin/scrims' },
+          { label: data.mapName },
+        ]} />
         <a href="/admin/scrims" className="scrim-detail__back-link">
-          <ArrowLeft size={12} /> Back to scrims
+          <ArrowLeft size={12} /> Back to Scrims
         </a>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: '16px', marginTop: '12px' }}>
           <h1 className="scrim-detail__player-name">
@@ -537,6 +546,17 @@ export default function ScrimMapDetailView() {
               <div style={{ fontWeight: 800, fontSize: '20px', color: TEXT_PRIMARY }}>{selectedCalcStat.playerName}</div>
               <div style={{ fontSize: '13px', color: TEXT_SECONDARY, marginTop: '2px' }}>
                 {selectedCalcStat.hero} · {selectedCalcStat.role}
+                {(() => {
+                  const personId = data.players.find((p) => p.name === selectedCalcStat.playerName)?.personId
+                  return personId != null ? (
+                    <>
+                      {' · '}
+                      <a href={`/admin/scrim-player-detail?personId=${personId}`} style={{ color: CYAN, textDecoration: 'none' }}>
+                        View full profile →
+                      </a>
+                    </>
+                  ) : null
+                })()}
               </div>
             </div>
             <button

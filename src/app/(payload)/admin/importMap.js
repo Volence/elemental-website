@@ -122,6 +122,8 @@ import { default as default_aeef0123fea1af819397817664b7330c } from '@/component
 import { default as default_d27bcf9be933ec5d939f574ab307facf } from '@/components/UnifiedCalendar/Route'
 import { default as default_5f96af94fd29a7fa1e87fa3501f9e389 } from '@/components/ScrimUpload/Route'
 import { default as default_32b53b290bff18166c7f0c6cf1c91a06 } from '@/components/ScrimList/Route'
+import { default as default_3d20d54d38619b94c02c49ced0751dd0 } from '@/components/ScrimDetail/Route'
+import { default as default_46ad49341373b9fb7b8fee2ca29c0edd } from '@/components/ScrimTeamList/Route'
 import { default as default_bdff09751c710a3004781be3d6039e13 } from '@/components/ScrimMapDetail/Route'
 import { default as default_efcd8c569eb014794fe2ff123537efbf } from '@/components/ScrimPlayerList/Route'
 import { default as default_b71ffd6e4c02fc236b7c4ff5b8c745c1 } from '@/components/ScrimPlayerDetail/Route'
@@ -270,6 +272,8 @@ export const importMap = {
   "@/components/UnifiedCalendar/Route#default": default_d27bcf9be933ec5d939f574ab307facf,
   "@/components/ScrimUpload/Route#default": default_5f96af94fd29a7fa1e87fa3501f9e389,
   "@/components/ScrimList/Route#default": default_32b53b290bff18166c7f0c6cf1c91a06,
+  "@/components/ScrimDetail/Route#default": default_3d20d54d38619b94c02c49ced0751dd0,
+  "@/components/ScrimTeamList/Route#default": default_46ad49341373b9fb7b8fee2ca29c0edd,
   "@/components/ScrimMapDetail/Route#default": default_bdff09751c710a3004781be3d6039e13,
   "@/components/ScrimPlayerList/Route#default": default_efcd8c569eb014794fe2ff123537efbf,
   "@/components/ScrimPlayerDetail/Route#default": default_b71ffd6e4c02fc236b7c4ff5b8c745c1,

@@ -41,7 +41,8 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
   // Build personalized links (My Stats only)
   const personalLinks: { href: string; label: string; match: (p: string) => boolean }[] = []
 
-  if (!isFullAccess) {
+  // Everyone with a linked person gets My Stats - admins/staff included
+  {
     const myStatsHref = `/admin/scrim-player-detail?personId=${user.id}`
     personalLinks.push({
       href: myStatsHref,
@@ -90,7 +91,10 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
     pathname === '/admin/scrim-upload' ||
     pathname === '/admin/scrim-players' ||
     pathname === '/admin/scrim-heroes' ||
+    pathname === '/admin/scrim-teams' ||
     pathname.startsWith('/admin/scrim-map') ||
+    pathname.startsWith('/admin/scrim?') ||
+    pathname === '/admin/scrim' ||
     pathname.startsWith('/admin/scrim-player-detail')
   ) : false
 

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { LoadingCard } from '@/components/ScrimShared'
 import { getHeroIconUrl, formatAbility, loadHeroPortraits } from '@/lib/scrim-parser/heroIcons'
 
 // ── Clean Glow Design Tokens ──
@@ -161,7 +162,7 @@ export default function KillfeedTab({ mapId }: { mapId: string }) {
       .finally(() => setLoading(false))
   }, [mapId])
 
-  if (loading) return <div style={{ padding: '40px', textAlign: 'center', color: TEXT_SECONDARY }}>Loading killfeed…</div>
+  if (loading) return <LoadingCard message="Loading killfeed…" />
   if (!data) return <div style={{ padding: '40px', textAlign: 'center', color: RED }}>Failed to load killfeed</div>
 
   const BORDER_SUBTLE = 'rgba(148, 163, 184, 0.06)'

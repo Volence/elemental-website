@@ -4,13 +4,9 @@ import React from 'react'
 import { redirect } from 'next/navigation'
 import { hasScrimAccess } from '@/access/scrimScope'
 
-import ScrimAnalyticsDashboard from '@/components/ScrimAnalyticsDashboard'
+import ScrimDetailView from '@/components/ScrimDetail'
 
-/**
- * Server component wrapper for the consolidated Scrim Analytics Dashboard.
- * Renders inside Payload's DefaultTemplate to preserve admin sidebar/nav.
- */
-const ScrimAnalyticsDashboardRoute: React.FC<AdminViewServerProps> = ({
+const ScrimDetailRoute: React.FC<AdminViewServerProps> = ({
   initPageResult,
   params,
   searchParams,
@@ -27,11 +23,13 @@ const ScrimAnalyticsDashboardRoute: React.FC<AdminViewServerProps> = ({
       permissions={initPageResult.permissions}
       req={initPageResult.req}
       searchParams={searchParams}
+      user={user}
+      viewActions={[]}
       visibleEntities={initPageResult.visibleEntities}
     >
-      <ScrimAnalyticsDashboard />
+      <ScrimDetailView />
     </DefaultTemplate>
   )
 }
 
-export default ScrimAnalyticsDashboardRoute
+export default ScrimDetailRoute

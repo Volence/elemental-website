@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { LoadingCard } from '@/components/ScrimShared'
 import { getHeroIconUrl, loadHeroPortraits } from '@/lib/scrim-parser/heroIcons'
 import { Zap, Play, Square, Circle, Sparkles, Plus, X, Minus } from 'lucide-react'
 
@@ -174,7 +175,7 @@ export default function EventsTab({ mapId }: { mapId: string }) {
       .finally(() => setLoading(false))
   }, [mapId])
 
-  if (loading) return <div style={{ padding: '40px', textAlign: 'center', color: TEXT_SECONDARY }}>Loading events…</div>
+  if (loading) return <LoadingCard message="Loading events…" />
   if (!data) return <div style={{ padding: '40px', textAlign: 'center', color: RED }}>Failed to load events</div>
 
   const BORDER_SUBTLE = 'rgba(148, 163, 184, 0.06)'

@@ -151,6 +151,14 @@ const config = buildConfig({
           Component: '@/components/ScrimList/Route#default',
           path: '/scrims',
         },
+        scrimDetail: {
+          Component: '@/components/ScrimDetail/Route#default',
+          path: '/scrim',
+        },
+        scrimTeamList: {
+          Component: '@/components/ScrimTeamList/Route#default',
+          path: '/scrim-teams',
+        },
         scrimMapDetail: {
           Component: '@/components/ScrimMapDetail/Route#default',
           path: '/scrim-map',

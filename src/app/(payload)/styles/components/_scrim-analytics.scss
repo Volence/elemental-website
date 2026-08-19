@@ -4170,3 +4170,42 @@
     line-height: 1.5;
   }
 }
+
+// ============================================
+// SHARED: BREADCRUMBS (ScrimShared)
+// ============================================
+.scrim-breadcrumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: $font-size-xs;
+  color: $admin-text-muted;
+  margin-bottom: $spacing-sm;
+
+  &__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  &__sep {
+    opacity: 0.5;
+    margin: 0 2px;
+  }
+
+  &__link {
+    color: $admin-text-muted;
+    text-decoration: none;
+    transition: color 0.15s;
+
+    &:hover {
+      color: $admin-text-primary;
+    }
+  }
+
+  &__current {
+    color: $admin-text-primary;
+    font-weight: 600;
+  }
+}

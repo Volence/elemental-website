@@ -3,10 +3,10 @@
 import React from 'react'
 import Link from 'next/link'
 import { useAuth } from '@payloadcms/ui'
-import { BarChart3, Upload, Users, Shield } from 'lucide-react'
+import { BarChart3, Upload, Users, Shield, Flag } from 'lucide-react'
 import type { Person } from '@/payload-types'
 
-export type ScrimTab = 'scrims' | 'upload' | 'players' | 'heroes'
+export type ScrimTab = 'scrims' | 'teams' | 'upload' | 'players' | 'heroes'
 
 interface ScrimAnalyticsTabsProps {
   activeTab: ScrimTab
@@ -20,10 +20,15 @@ interface ScrimAnalyticsTabsProps {
 export default function ScrimAnalyticsTabs({ activeTab }: ScrimAnalyticsTabsProps) {
   const { user } = useAuth<Person>()
   const role = (user?.role as string) ?? ''
-  const canUpload = ['admin', 'staff-manager', 'team-manager', 'player'].includes(role)
+  // Must match ScrimUpload/Route.tsx's guard - a tab that redirects away is worse than none
+  const canUpload =
+    ['admin', 'staff-manager', 'team-manager'].includes(role) ||
+    (user as { departments?: { canUploadExternalScrims?: boolean | null } | null } | null)
+      ?.departments?.canUploadExternalScrims === true
 
   const tabs: { id: ScrimTab; label: string; icon: React.ReactNode; href: string; show: boolean }[] = [
     { id: 'scrims', label: 'Scrims', icon: <BarChart3 size={14} />, href: '/admin/scrims', show: true },
+    { id: 'teams', label: 'Teams', icon: <Flag size={14} />, href: '/admin/scrim-teams', show: true },
     { id: 'upload', label: 'Upload', icon: <Upload size={14} />, href: '/admin/scrim-upload', show: canUpload },
     { id: 'players', label: 'Players', icon: <Users size={14} />, href: '/admin/scrim-players', show: true },
     { id: 'heroes', label: 'Heroes', icon: <Shield size={14} />, href: '/admin/scrim-heroes', show: true },

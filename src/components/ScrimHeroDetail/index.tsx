@@ -146,14 +146,28 @@ export default function ScrimHeroDetailView() {
   }, [teams, teamSearch])
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const hero = params.get('hero')
-    if (hero) {
-      setSelectedHero(hero)
-      loadHeroDetail(hero)
-    } else {
-      loadHeroList()
+    // Sync view from the URL on mount AND on Back/Forward - pushState without
+    // a popstate listener previously left Back changing the URL but not the view.
+    const syncFromUrl = () => {
+      const params = new URLSearchParams(window.location.search)
+      const hero = params.get('hero')
+      const team = params.get('team') ?? 'all'
+      const range = params.get('range') ?? 'all'
+      setTeamFilter(team)
+      setRangeFilter(range)
+      if (hero) {
+        setSelectedHero(hero)
+        loadHeroDetail(hero, team, range)
+      } else {
+        setSelectedHero(null)
+        setHeroDetail(null)
+        loadHeroList(team, range)
+      }
     }
+    syncFromUrl()
+    window.addEventListener('popstate', syncFromUrl)
+    return () => window.removeEventListener('popstate', syncFromUrl)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Close dropdown when clicking outside
@@ -211,23 +225,45 @@ export default function ScrimHeroDetailView() {
     }
   }
 
+  function heroPageUrl(hero: string | null) {
+    const params = new URLSearchParams()
+    if (hero) params.set('hero', hero)
+    if (teamFilter !== 'all') params.set('team', teamFilter)
+    if (rangeFilter !== 'all') params.set('range', rangeFilter)
+    const qs = params.toString()
+    return `/admin/scrim-heroes${qs ? `?${qs}` : ''}`
+  }
+
   function navigateToHero(hero: string) {
-    window.history.pushState({}, '', `/admin/scrim-heroes?hero=${encodeURIComponent(hero)}`)
+    window.history.pushState({}, '', heroPageUrl(hero))
     setSelectedHero(hero)
     loadHeroDetail(hero)
   }
 
   function navigateBack() {
-    window.history.pushState({}, '', '/admin/scrim-heroes')
+    window.history.pushState({}, '', heroPageUrl(null))
     setSelectedHero(null)
     setHeroDetail(null)
     loadHeroList()
+  }
+
+  // Keep filters in the URL (replace, not push) so reload/share preserves them
+  function syncFilterUrl(overrides: { team?: string; range?: string }) {
+    const params = new URLSearchParams()
+    if (selectedHero) params.set('hero', selectedHero)
+    const t = overrides.team ?? teamFilter
+    const r = overrides.range ?? rangeFilter
+    if (t !== 'all') params.set('team', t)
+    if (r !== 'all') params.set('range', r)
+    const qs = params.toString()
+    window.history.replaceState({}, '', `/admin/scrim-heroes${qs ? `?${qs}` : ''}`)
   }
 
   function selectTeam(displayName: string) {
     setTeamFilter(displayName)
     setTeamDropdownOpen(false)
     setTeamSearch('')
+    syncFilterUrl({ team: displayName })
     if (selectedHero) {
       loadHeroDetail(selectedHero, displayName)
     } else {
@@ -237,6 +273,7 @@ export default function ScrimHeroDetailView() {
 
   function selectRange(range: string) {
     setRangeFilter(range)
+    syncFilterUrl({ range })
     if (selectedHero) {
       loadHeroDetail(selectedHero, undefined, range)
     } else {
@@ -404,7 +441,7 @@ export default function ScrimHeroDetailView() {
       <ScrimAnalyticsTabs activeTab="heroes" />
       <div className="scrim-players__loading">
         <div className="scrim-players__loading-icon"><Loader2 size={32} /></div>
-        <div className="scrim-players__loading-text">Loading hero stats...</div>
+        <div className="scrim-players__loading-text">Loading hero stats…</div>
       </div>
       </>
     )
@@ -667,7 +704,7 @@ export default function ScrimHeroDetailView() {
               color: PURPLE,
             },
             {
-              label: 'Ult Efficiency',
+              label: 'Ult Usage %',
               value: career.ultsEarned > 0 ? `${career.ultEfficiency}%` : 'N/A',
               sub: career.ultsEarned > 0 ? `${formatNumber(career.ultsUsed)} of ${formatNumber(career.ultsEarned)} used` : 'no ults earned',
               color: GREEN,

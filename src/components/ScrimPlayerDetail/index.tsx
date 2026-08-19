@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Loader2, AlertCircle, ArrowLeft, ChevronDown, Swords, Heart, Crosshair, Zap, Clock, Skull, Trophy, MapPin, TrendingUp, Flame } from 'lucide-react'
 import RangeFilter, { type RangeValue } from '@/components/RangeFilter'
 import ScrimAnalyticsTabs from '@/components/ScrimAnalyticsTabs'
+import { useUrlParamState, ScrimBreadcrumbs } from '@/components/ScrimShared'
 
 // ── Types ──
 
@@ -180,12 +181,23 @@ export default function ScrimPlayerDetailView({ apiBase, readOnly = false }: Scr
   const [mapSortKey, setMapSortKey] = useState<MapSortKey>('scrimDate')
   const [mapSortDir, setMapSortDir] = useState<SortDir>('desc')
   const [expandedHero, setExpandedHero] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<TabKey>('overview')
+  // In the admin view, tab + range live in the URL (Back-safe, linkable).
+  // readOnly embeds (public PUG profile) keep plain local state so the host
+  // page's URL isn't rewritten.
+  const [tabParam, setTabParam] = useUrlParamState('tab', 'overview')
+  const [localTab, setLocalTab] = useState<TabKey>('overview')
+  const activeTab: TabKey = readOnly
+    ? localTab
+    : ((['overview', 'analytics', 'charts'] as string[]).includes(tabParam) ? tabParam : 'overview') as TabKey
+  const setActiveTab = readOnly ? setLocalTab : (t: TabKey) => setTabParam(t)
   const [analyticsHero, setAnalyticsHero] = useState<string | null>(null)
   const [chartsHero, setChartsHero] = useState<string | null>(null)
   const [chartsMap, setChartsMap] = useState<string>('all')
   const [trendStat, setTrendStat] = useState<string>('damagePer10')
-  const [range, setRange] = useState<RangeValue>('last20')
+  const [rangeParam, setRangeParam] = useUrlParamState('range', 'last20')
+  const [localRange, setLocalRange] = useState<RangeValue>('last20')
+  const range: RangeValue = readOnly ? localRange : (rangeParam as RangeValue)
+  const setRange = readOnly ? setLocalRange : (r: RangeValue) => setRangeParam(r)
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -285,9 +297,16 @@ export default function ScrimPlayerDetailView({ apiBase, readOnly = false }: Scr
       {/* Header */}
       <div className="scrim-detail__header">
         {!readOnly && (
-          <a href="/admin/scrim-players" className="scrim-detail__back-link">
-            <ArrowLeft size={12} /> Back to players
-          </a>
+          <>
+            <ScrimBreadcrumbs items={[
+              { label: 'Scrim Analytics', href: '/admin/scrims' },
+              { label: 'Players', href: '/admin/scrim-players' },
+              { label: data.player.name },
+            ]} />
+            <a href="/admin/scrim-players" className="scrim-detail__back-link">
+              <ArrowLeft size={12} /> Back to Players
+            </a>
+          </>
         )}
         <div className="scrim-detail__header-row">
           <div>

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Loader2, AlertCircle, ArrowLeft } from 'lucide-react'
 import RangeFilter, { type RangeValue } from '@/components/RangeFilter'
 import ScrimAnalyticsTabs from '@/components/ScrimAnalyticsTabs'
+import { useUrlParamState, ScrimBreadcrumbs, LoadingCard, ErrorCard } from '@/components/ScrimShared'
 import { type ConfidenceMetadata } from '@/lib/scrim-parser/confidence'
 import { type UltEconomyAnalysis } from '@/lib/scrim-parser/ult-economy'
 
@@ -140,8 +141,13 @@ export default function ScrimTeamDetailView() {
   const [data, setData] = useState<TeamData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [tab, setTab] = useState<TabId>('overview')
-  const [range, setRange] = useState<RangeValue>('last20')
+  // Sub-tab and range live in the URL so Back works and views are linkable
+  const [tabParam, setTabParam] = useUrlParamState('tab', 'overview')
+  const tab = (TABS.some((t) => t.id === tabParam) ? tabParam : 'overview') as TabId
+  const setTab = (t: TabId) => setTabParam(t)
+  const [rangeParam, setRangeParam] = useUrlParamState('range', 'last20')
+  const range = rangeParam as RangeValue
+  const setRange = (r: RangeValue) => setRangeParam(r)
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -155,19 +161,24 @@ export default function ScrimTeamDetailView() {
       .finally(() => setLoading(false))
   }, [range])
 
-  if (loading) return <><ScrimAnalyticsTabs activeTab="scrims" /><div className="scrim-players__loading"><div className="scrim-players__loading-icon"><Loader2 size={32} /></div><div className="scrim-players__loading-text">Loading team stats…</div></div></>
-  if (error) return <><ScrimAnalyticsTabs activeTab="scrims" /><div className="scrim-players__error"><p><AlertCircle size={16} style={{ verticalAlign: 'middle', marginRight: '6px' }} />{error}</p></div></>
+  if (loading) return <><ScrimAnalyticsTabs activeTab="teams" /><LoadingCard message="Loading team stats…" /></>
+  if (error) return <><ScrimAnalyticsTabs activeTab="teams" /><ErrorCard message={error} backHref="/admin/scrim-teams" backLabel="Back to Teams" /></>
   if (!data) return null
 
   return (
     <>
-    <ScrimAnalyticsTabs activeTab="scrims" />
+    <ScrimAnalyticsTabs activeTab="teams" />
     <div className="scrim-detail__content" style={{ maxWidth: '1200px' }}>
       {/* Header */}
       <div className="scrim-detail__header">
+        <ScrimBreadcrumbs items={[
+          { label: 'Scrim Analytics', href: '/admin/scrims' },
+          { label: 'Teams', href: '/admin/scrim-teams' },
+          { label: data.teamName },
+        ]} />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <a href="/admin/scrims" className="scrim-detail__back-link"><ArrowLeft size={12} /> Back to Scrims</a>
+            <a href="/admin/scrim-teams" className="scrim-detail__back-link"><ArrowLeft size={12} /> Back to Teams</a>
             <h1 className="scrim-detail__player-name" style={{ fontSize: '28px' }}>{data.teamName}</h1>
             <p className="scrim-detail__player-meta">
               {data.totalScrims} scrim{data.totalScrims !== 1 ? 's' : ''} · {data.totalMaps} map{data.totalMaps !== 1 ? 's' : ''}
@@ -257,8 +268,7 @@ function OverviewTab({ data }: { data: TeamData }) {
         <h3 className="scrim-detail__card-title">Recent Scrims</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {recentScrims.map(s => {
-            const firstMapId = s.maps[0]?.mapDataId
-            const href = firstMapId ? `/admin/scrim-map?mapId=${firstMapId}` : '/admin/scrims'
+            const href = `/admin/scrim?scrimId=${s.id}`
             return (
               <a key={s.id} href={href} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', background: BG_BASE, borderRadius: '8px', textDecoration: 'none', cursor: 'pointer', transition: 'background 0.15s' }} onMouseEnter={e => (e.currentTarget.style.background = BG_CARD_HOVER)} onMouseLeave={e => (e.currentTarget.style.background = BG_BASE)}>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -502,7 +512,7 @@ function RosterTab({ data }: { data: TeamData }) {
                 <MiniStat label="Deaths/10" value={String(r.deathsPer10)} color={r.deathsPer10 <= 5 ? GREEN : AMBER} />
                 <MiniStat label="Dmg/10" value={r.damagePer10.toLocaleString()} color={PURPLE} />
                 <MiniStat label="Heal/10" value={r.healingPer10.toLocaleString()} color={GREEN} />
-                <MiniStat label="Ult Eff" value={String(r.ultEfficiency)} color={BLUE} />
+                <MiniStat label="Kills/Ult" value={String(r.ultEfficiency)} color={BLUE} />
               </div>
             </div>
           ))}
@@ -716,7 +726,7 @@ function HeroesTab({ data }: { data: TeamData }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {roleHeroes.map(h => (
               <div key={h.hero} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '100px', color: TEXT_PRIMARY, fontSize: '13px', fontWeight: 600, flexShrink: 0 }}>{h.hero}</div>
+                <a href={`/admin/scrim-heroes?hero=${encodeURIComponent(h.hero)}`} style={{ width: '100px', color: TEXT_PRIMARY, fontSize: '13px', fontWeight: 600, flexShrink: 0, textDecoration: 'none' }}>{h.hero}</a>
                 <div style={{ flex: 1, position: 'relative', height: '20px', background: `${BORDER}44`, borderRadius: '4px', overflow: 'hidden' }}>
                   <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: `${(h.totalTime / maxTime) * 100}%`, background: `${ROLE_COLORS[role]}33`, borderRadius: '4px', transition: 'width 0.3s' }} />
                   <span style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', fontSize: '10px', color: TEXT_SECONDARY, fontWeight: 500 }}>{formatTime(h.totalTime)}</span>
