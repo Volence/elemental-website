@@ -186,6 +186,10 @@ const config = buildConfig({
           Component: '@/components/UserManagement/ListRoute#default',
           path: '/manage-users',
         },
+        accessReview: {
+          Component: '@/components/AccessReview/ListRoute#default',
+          path: '/access-review',
+        },
         editUser: {
           Component: '@/components/UserManagement/EditRoute#default',
           path: '/edit-user',

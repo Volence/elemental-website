@@ -123,6 +123,7 @@ export default function AdminProviders({ children }: { children: React.ReactNode
       '/admin/edit-team': '/collections/teams',
       '/admin/edit-staff': '/collections/organization-staff',
       '/admin/staff-directory': '/collections/organization-staff',
+      '/admin/access-review': '/collections/people',
     }
     const target = routeToCollection[pathname]
     if (!target) return

@@ -130,6 +130,7 @@ import { default as default_98b6712c58ca2e7b5e536cb59bfe5bea } from '@/component
 import { default as default_c0e212a6fc0613f2da7f153f1882a461 } from '@/components/MyProfile/Route'
 import { default as default_80cc054fdf7fed9b9d2ce8c632d827c8 } from '@/components/EditPerson/Route'
 import { default as default_2b59f5602e11928e4ba9ab4b4faab23a } from '@/components/UserManagement/ListRoute'
+import { default as default_ea389f9e3de40ca350dbffeb0d1a4a49 } from '@/components/AccessReview/ListRoute'
 import { default as default_2bd04aa544deac47292ec60664483beb } from '@/components/UserManagement/EditRoute'
 import { default as default_f66a68d26cd90abc625019a0b46b5772 } from '@/components/StaffDirectory/ListRoute'
 import { default as default_98e73b390f55261a691b577a74429de2 } from '@/components/StaffDirectory/EditRoute'
@@ -276,6 +277,7 @@ export const importMap = {
   "@/components/MyProfile/Route#default": default_c0e212a6fc0613f2da7f153f1882a461,
   "@/components/EditPerson/Route#default": default_80cc054fdf7fed9b9d2ce8c632d827c8,
   "@/components/UserManagement/ListRoute#default": default_2b59f5602e11928e4ba9ab4b4faab23a,
+  "@/components/AccessReview/ListRoute#default": default_ea389f9e3de40ca350dbffeb0d1a4a49,
   "@/components/UserManagement/EditRoute#default": default_2bd04aa544deac47292ec60664483beb,
   "@/components/StaffDirectory/ListRoute#default": default_f66a68d26cd90abc625019a0b46b5772,
   "@/components/StaffDirectory/EditRoute#default": default_98e73b390f55261a691b577a74429de2,
