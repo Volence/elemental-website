@@ -256,7 +256,7 @@ describe('relId', () => {
     expect(relId(7)).toBe(7)
     expect(relId({ id: 7 })).toBe(7)
     expect(relId(null)).toBe(null)
-    expect(relId({ nope: true })).toBe(null)
+    expect(relId({ nope: true } as never)).toBe(null)
   })
 })
 
