@@ -1,12 +1,17 @@
 import {
   DEPARTMENT_KEYS,
   type AccessChangeRecord,
+  type AccessFlag,
+  type AccessPerson,
+  type AccessReport,
+  type BuildReportInput,
   type DepartmentKey,
   type RawAccessAudit,
   type RawPerson,
   type RawSession,
   type RawTeam,
   type Relationship,
+  type TeamAccess,
   type TeamStanding,
 } from './types'
 
@@ -137,4 +142,88 @@ export function latestAccessChangeByPerson(
   }
 
   return map
+}
+
+const DAY_MS = 86_400_000
+const DEFAULT_DORMANT_DAYS = 90
+const DEFAULT_REVIEW_DAYS = 180
+
+function olderThan(iso: string | null, days: number, now: number): boolean {
+  if (!iso) return true
+  const at = Date.parse(iso)
+  if (!Number.isFinite(at)) return true
+  return now - at > days * DAY_MS
+}
+
+/**
+ * Turn raw collection data into the access report. Pure: no Payload, no network, no clock.
+ * Everything the page shows or flags is decided here.
+ */
+export function buildReport(input: BuildReportInput): AccessReport {
+  const dormantDays = input.dormantDays ?? DEFAULT_DORMANT_DAYS
+  const reviewDays = input.reviewDays ?? DEFAULT_REVIEW_DAYS
+
+  const standingIndex = buildTeamStandingIndex(input.teams)
+  const teamNames = new Map(input.teams.map((team) => [team.id, team.name ?? `Team #${team.id}`]))
+  const sessionIndex = latestSessionByPerson(input.sessions)
+  const auditIndex = latestAccessChangeByPerson(input.accessAudits)
+
+  const people: AccessPerson[] = []
+
+  for (const person of input.people) {
+    if (!isElevated(person)) continue
+
+    const teams: TeamAccess[] = []
+    for (const entry of person.assignedTeams ?? []) {
+      const teamId = relId(entry)
+      if (teamId === null) continue
+      const embeddedName =
+        entry && typeof entry === 'object' ? ((entry.name as string | undefined) ?? null) : null
+      teams.push({
+        teamId,
+        teamName: embeddedName ?? teamNames.get(teamId) ?? `Team #${teamId}`,
+        standing: standingIndex.get(teamId)?.get(person.id) ?? null,
+      })
+    }
+
+    const session = sessionIndex.get(person.id) ?? { lastLoginAt: null, lastActivityAt: null }
+    const lastAccessChange = auditIndex.get(person.id) ?? null
+
+    const inDiscord =
+      input.discordMemberIds === null || !person.discordId
+        ? null
+        : input.discordMemberIds.has(person.discordId)
+
+    const flags: AccessFlag[] = []
+    if (teams.some((team) => team.standing === null)) flags.push('team-without-roster')
+    if (inDiscord === false) flags.push('not-in-discord')
+    if (olderThan(session.lastLoginAt, dormantDays, input.now)) flags.push('dormant')
+    if (olderThan(lastAccessChange?.at ?? null, reviewDays, input.now)) flags.push('no-review-record')
+
+    people.push({
+      id: person.id,
+      name: person.name ?? `Person #${person.id}`,
+      email: person.email ?? null,
+      avatarUrl:
+        person.avatar && typeof person.avatar === 'object' ? (person.avatar.url ?? null) : null,
+      discordId: person.discordId ?? null,
+      role: person.role ?? null,
+      departments: activeDepartments(person),
+      teams,
+      lastLoginAt: session.lastLoginAt,
+      lastActivityAt: session.lastActivityAt,
+      updatedAt: person.updatedAt ?? null,
+      lastAccessChange,
+      inDiscord,
+      flags,
+    })
+  }
+
+  people.sort((a, b) => a.name.localeCompare(b.name))
+
+  return {
+    generatedAt: new Date(input.now).toISOString(),
+    discord: { available: input.discordMemberIds !== null, guildId: input.guildId },
+    people,
+  }
 }
