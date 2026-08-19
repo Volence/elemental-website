@@ -4,7 +4,8 @@ import { authenticated } from '../../access/authenticated'
 import { anyone } from '../../access/anyone'
 import { UserRole, adminOnly, isAdmin, isPugAdmin } from '../../access/roles'
 import { autoCloseRecruitment } from './hooks/autoCloseRecruitment'
-import { createAuditLogHook, createAuditLogDeleteHook } from '../../utilities/auditLogger'
+import { auditPeopleChanges } from './hooks/auditAccessChanges'
+import { createAuditLogDeleteHook } from '../../utilities/auditLogger'
 import { trackLogin, trackLogout } from '../../utilities/sessionTracker'
 
 const isAdminOrManager = (user: any): boolean => {
@@ -460,7 +461,7 @@ export const People: CollectionConfig = {
     },
   ],
   hooks: {
-    afterChange: [autoCloseRecruitment, createAuditLogHook('people')],
+    afterChange: [autoCloseRecruitment, auditPeopleChanges],
     afterDelete: [createAuditLogDeleteHook('people')],
     afterLogin: [
       async ({ req, user }) => {
