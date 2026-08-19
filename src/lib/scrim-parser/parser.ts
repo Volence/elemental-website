@@ -218,9 +218,22 @@ export function parseScrimLog(fileContent: string): ParserData {
 }
 
 /**
+ * Columns whose header names mark them as text (names, teams, heroes,
+ * abilities, maps). The OW profanity filter can censor these with asterisks;
+ * they must survive as-is rather than be scrubbed to "0".
+ */
+function isTextColumn(eventType: string, index: number): boolean {
+  const columnName = headers[eventType]?.[index]
+  // Suffix match so numeric columns like 'Team 1 Score' or 'Hero Time Played'
+  // aren't mistaken for text ('Hero Duplicated' holds an Echo-copied hero name)
+  return columnName ? /(Name|Hero|Team|Ability|Type|Duplicated)$/.test(columnName) : false
+}
+
+/**
  * Cleans invalid lines from the parsed data:
  * - Removes mercy_rez lines with null/empty fields
- * - Replaces asterisk values with "0"
+ * - Replaces asterisk values in numeric columns with "0" (censored text
+ *   columns keep their asterisks so player/team identity isn't destroyed)
  */
 function cleanInvalidLines(lines: string[][]): string[][] {
   return lines
@@ -231,8 +244,8 @@ function cleanInvalidLines(lines: string[][]): string[][] {
       return true
     })
     .map((line) => {
-      return line.map((field) => {
-        if (field.includes('*')) {
+      return line.map((field, index) => {
+        if (field.includes('*') && !isTextColumn(line[0], index)) {
           return '0'
         }
         return field
@@ -248,6 +261,12 @@ function cleanInvalidLines(lines: string[][]): string[][] {
 const stringFieldIndexes: Record<string, number[]> = {
   // attacker name, attacker hero, victim name, victim hero, ability, crit, env
   kill: [3, 4, 6, 7, 8, 10, 11],
+  damage: [3, 4, 6, 7, 8, 10, 11],
+  // healer name/hero, healee name/hero, ability, health-pack flag
+  healing: [3, 4, 6, 7, 8, 10],
+  // player name, hero, hero duplicated
+  ability_1_used: [3, 4, 5],
+  ability_2_used: [3, 4, 5],
   // player name, hero (the team column is a teamNameField)
   player_stat: [4, 5],
 }
@@ -257,6 +276,10 @@ const stringFieldIndexes: Record<string, number[]> = {
  * (which should NOT be converted to numbers even if they look numeric).
  */
 const teamNameFields: Record<string, number[]> = {
+  ability_1_used: [2],
+  ability_2_used: [2],
+  damage: [2, 5],
+  healing: [2, 5],
   defensive_assist: [2],
   dva_remech: [2],
   echo_duplicate_end: [2],

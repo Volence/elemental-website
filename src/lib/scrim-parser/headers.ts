@@ -23,7 +23,7 @@ export const headers: Record<string, string[]> = {
   ],
   dva_remech: [
     'event_type', 'Match Time', 'Player Team', 'Player Name',
-    'Player Hero', 'Hero Duplicated',
+    'Player Hero', 'Ultimate ID',
   ],
   echo_duplicate_end: [
     'event_type', 'Match Time', 'Player Team', 'Player Name',
@@ -128,6 +128,9 @@ export const headers: Record<string, string[]> = {
     'event_type', 'Match Time', 'Player Team', 'Player Name',
     'Player Hero', 'Pos X', 'Pos Y', 'Pos Z', 'Ult Charge', 'Is Alive',
     'Facing X', 'Facing Z', 'Health', 'In Spawn', 'On Ground',
+    // Per-tick stat fields (optional - absent in old log data)
+    'Hero Damage Dealt', 'Healing Dealt', 'Damage Taken', 'Damage Blocked',
+    'Eliminations', 'Is Using Ult', 'Is Alive Actual',
   ],
   kill_position: [
     'event_type', 'Match Time', 'Attacker X', 'Attacker Y', 'Attacker Z',

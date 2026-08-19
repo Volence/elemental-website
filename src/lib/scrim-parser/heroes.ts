@@ -5,12 +5,12 @@
 
 export type HeroName =
   | 'Ana' | 'Anran' | 'Ashe' | 'Baptiste' | 'Bastion' | 'Brigitte'
-  | 'Cassidy' | 'D.Va' | 'Domina' | 'Doomfist' | 'Echo' | 'Emre'
+  | 'Cassidy' | 'D.Mon' | 'D.Va' | 'Domina' | 'Doomfist' | 'Echo' | 'Emre'
   | 'Freja' | 'Genji' | 'Hanzo' | 'Hazard' | 'Illari' | 'Jetpack Cat'
   | 'Junker Queen' | 'Junkrat' | 'Juno' | 'Kiriko' | 'Lifeweaver'
   | 'Lúcio' | 'Mauga' | 'Mei' | 'Mercy' | 'Mizuki' | 'Moira'
   | 'Orisa' | 'Pharah' | 'Ramattra' | 'Reaper' | 'Reinhardt'
-  | 'Roadhog' | 'Sierra' | 'Sigma' | 'Sojourn' | 'Soldier: 76' | 'Sombra'
+  | 'Roadhog' | 'Shion' | 'Sierra' | 'Sigma' | 'Sojourn' | 'Soldier: 76' | 'Sombra'
   | 'Symmetra' | 'Torbjörn' | 'Tracer' | 'Vendetta' | 'Venture'
   | 'Widowmaker' | 'Winston' | 'Wrecking Ball' | 'Wuyang'
   | 'Zarya' | 'Zenyatta'
@@ -25,6 +25,7 @@ export const heroRoleMapping: Record<string, HeroRole> = {
   'Bastion': 'Damage',
   'Brigitte': 'Support',
   'Cassidy': 'Damage',
+  'D.Mon': 'Tank',
   'Domina': 'Tank',
   'Doomfist': 'Tank',
   'D.Va': 'Tank',
@@ -53,6 +54,7 @@ export const heroRoleMapping: Record<string, HeroRole> = {
   'Reaper': 'Damage',
   'Reinhardt': 'Tank',
   'Roadhog': 'Tank',
+  'Shion': 'Damage',
   'Sierra': 'Damage',
   'Sigma': 'Tank',
   'Sojourn': 'Damage',
