@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createLocalReq } from 'payload'
 
 import { authenticateRequest, requireAdmin } from '@/utilities/apiAuth'
 import { buildReport } from '@/accessReview/compute'
 import type { AccessReport } from '@/accessReview/types'
+import { resolveMutation } from '@/accessReview/mutate'
 import { getDiscordClient } from '@/discord/bot'
 import { resolveGuildId } from '@/discord/serverRegistry'
 
@@ -89,6 +91,86 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: `Failed to build access report: ${error?.message}` },
+      { status: 500 },
+    )
+  }
+}
+
+/**
+ * Apply exactly one access delta. One field per call rather than PATCHing the whole person
+ * document from the client, so a concurrent edit elsewhere is not clobbered and each change
+ * produces one precise audit entry.
+ */
+export async function PATCH(request: NextRequest) {
+  const auth = await authenticateRequest()
+  if (!auth.success) return auth.response
+  const adminCheck = requireAdmin(auth.data.user)
+  if (adminCheck) return adminCheck
+
+  const { payload, user } = auth.data
+
+  let body: Record<string, unknown>
+  try {
+    body = (await request.json()) as Record<string, unknown>
+  } catch {
+    return NextResponse.json({ success: false, error: 'Invalid JSON body' }, { status: 400 })
+  }
+
+  const personId = Number(body.personId)
+  if (!Number.isFinite(personId)) {
+    return NextResponse.json({ success: false, error: 'personId must be a number' }, { status: 400 })
+  }
+
+  const person = await payload
+    .findByID({ collection: 'people', id: personId, depth: 0, overrideAccess: true })
+    .catch(() => null)
+  if (!person) {
+    return NextResponse.json({ success: false, error: 'Person not found' }, { status: 404 })
+  }
+
+  // Only counted when a role change could remove an admin, to keep the common path cheap.
+  let adminCount = Number.POSITIVE_INFINITY
+  if (body.kind === 'role' && person.role === 'admin' && body.value !== 'admin') {
+    const counted = await payload.count({
+      collection: 'people',
+      where: { role: { equals: 'admin' } },
+      overrideAccess: true,
+    })
+    adminCount = counted.totalDocs
+  }
+
+  const resolved = resolveMutation({ person: person as never, body, actorId: user.id, adminCount })
+  if (!resolved.ok) {
+    return NextResponse.json({ success: false, error: resolved.error }, { status: resolved.status })
+  }
+
+  try {
+    // A req carrying the acting admin is what makes the People audit hook record who did this.
+    const req = await createLocalReq({ user: user as never }, payload)
+    const updated = await payload.update({
+      collection: 'people',
+      id: personId,
+      data: resolved.data,
+      req,
+      overrideAccess: true,
+    })
+
+    invalidateAccessReviewCache()
+
+    return NextResponse.json({
+      success: true,
+      person: {
+        id: updated.id,
+        role: updated.role ?? null,
+        departments: updated.departments ?? {},
+        assignedTeams: (updated.assignedTeams ?? []).map((entry: any) =>
+          typeof entry === 'number' ? entry : entry?.id,
+        ),
+      },
+    })
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, error: `Update failed: ${error?.message}` },
       { status: 500 },
     )
   }
