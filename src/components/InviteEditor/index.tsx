@@ -47,6 +47,7 @@ const DEPARTMENTS = [
   { key: 'isScoutingStaff', label: 'Scouting', icon: '🔍' },
   { key: 'isContentCreator', label: 'Content Creator', icon: '📺' },
   { key: 'isPugAdmin', label: 'PUG Admin', icon: '🎮' },
+  { key: 'canUploadExternalScrims', label: 'External Scrims', icon: '📤' },
 ]
 
 const PUG_ROLES = [

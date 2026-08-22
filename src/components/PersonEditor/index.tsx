@@ -37,6 +37,7 @@ const DEPARTMENTS = [
   { key: 'isScoutingStaff', label: 'Scouting' },
   { key: 'isContentCreator', label: 'Content Creator' },
   { key: 'isPugAdmin', label: 'PUG Admin' },
+  { key: 'canUploadExternalScrims', label: 'External Scrim Uploader' },
 ] as const
 
 const PUG_ROLES = [
@@ -244,6 +245,7 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
         isScoutingStaff: data.departments?.isScoutingStaff ?? false,
         isContentCreator: data.departments?.isContentCreator ?? false,
         isPugAdmin: data.departments?.isPugAdmin ?? false,
+        canUploadExternalScrims: data.departments?.canUploadExternalScrims ?? false,
       })
 
       // PUG fields
@@ -990,7 +992,8 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
 
           {/* Department Access */}
           {(() => {
-            const showDepts = role !== 'admin' && role !== 'player'
+            // matches People.departments condition: players (coaches) can hold dept flags
+            const showDepts = role !== 'admin'
             if (!showDepts) return null
             if (isAdmin) {
               return (

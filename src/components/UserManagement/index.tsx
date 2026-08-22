@@ -29,6 +29,7 @@ type UserData = {
     isScoutingStaff?: boolean
     isContentCreator?: boolean
     isPugAdmin?: boolean
+    canUploadExternalScrims?: boolean
   } | null
   avatar?: { url: string } | number | null
   createdAt?: string
@@ -55,6 +56,7 @@ const DEPARTMENTS = [
   { key: 'isScoutingStaff', label: 'Scouting' },
   { key: 'isContentCreator', label: 'Content Creator' },
   { key: 'isPugAdmin', label: 'PUG Admin' },
+  { key: 'canUploadExternalScrims', label: 'External Scrim Uploader' },
 ] as const
 
 const PUG_ROLES = [
@@ -278,6 +280,7 @@ export function UserEditorView() {
           isScoutingStaff: u.departments?.isScoutingStaff ?? false,
           isContentCreator: u.departments?.isContentCreator ?? false,
           isPugAdmin: u.departments?.isPugAdmin ?? false,
+          canUploadExternalScrims: u.departments?.canUploadExternalScrims ?? false,
         })
       }
       if (teamsRes.ok) {
@@ -474,7 +477,7 @@ export function UserEditorView() {
   }
 
   const roleConf = getRoleConfig(role)
-  const showDepts = role !== 'admin' && role !== 'player'
+  const showDepts = role !== 'admin' // matches People.departments condition: players (coaches) can hold dept flags
   const linkedPersonName = user?.name ?? null
 
   return (
