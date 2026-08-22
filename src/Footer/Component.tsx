@@ -20,6 +20,8 @@ const TikTokIcon: React.FC<{ className?: string }> = ({ className }) => (
   </svg>
 )
 
+const STORE_URL = 'https://elmt-shop.fourthwall.com'
+
 const socialLinks = [
   { name: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/elmt_gg/', gradient: 'linear-gradient(to bottom right, rgb(168 85 247), rgb(236 72 153))' },
   { name: 'TikTok', icon: TikTokIcon, href: 'https://www.tiktok.com/@elmt_gg', gradient: 'linear-gradient(to bottom right, rgb(34 211 238), rgb(236 72 153))' },
@@ -52,6 +54,7 @@ export async function Footer() {
                 <Link href="/seminars" className="text-muted-foreground hover:text-primary transition-colors font-medium">Seminars</Link>
                 <Link href="/staff" className="text-muted-foreground hover:text-primary transition-colors font-medium">Staff</Link>
                 <Link href="/recruitment" className="text-muted-foreground hover:text-primary transition-colors font-medium">Join Us</Link>
+                <a href={STORE_URL} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors font-medium">Shop</a>
               </nav>
             </div>
             <div className="flex flex-col gap-4">
@@ -127,6 +130,14 @@ export async function Footer() {
               <Link href="/recruitment" className="text-muted-foreground hover:text-primary transition-colors font-medium">
                 Join Us
               </Link>
+              <a
+                href={STORE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-primary transition-colors font-medium"
+              >
+                Shop
+              </a>
               {navItems.map(({ link }, i) => {
                 return <CMSLink className="text-muted-foreground hover:text-primary transition-colors font-medium" key={i} {...link} />
               })}
@@ -190,6 +201,7 @@ export async function Footer() {
                 <Link href="/seminars" className="text-muted-foreground hover:text-primary transition-colors font-medium">Seminars</Link>
                 <Link href="/staff" className="text-muted-foreground hover:text-primary transition-colors font-medium">Staff</Link>
                 <Link href="/recruitment" className="text-muted-foreground hover:text-primary transition-colors font-medium">Join Us</Link>
+                <a href={STORE_URL} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors font-medium">Shop</a>
               </nav>
             </div>
             <div className="flex flex-col gap-4">

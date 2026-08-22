@@ -8,6 +8,9 @@ import type { NavUser } from '../Component'
 
 import { CMSLink } from '@/components/Link'
 import Link from 'next/link'
+import { ShoppingBag } from 'lucide-react'
+
+const STORE_URL = 'https://elmt-shop.fourthwall.com'
 
 export const HeaderNav: React.FC<{ data: HeaderType; user: NavUser | null }> = ({ data, user }) => {
   const router = useRouter()
@@ -81,6 +84,15 @@ export const HeaderNav: React.FC<{ data: HeaderType; user: NavUser | null }> = (
             </Link>
           )
         })}
+        <a
+          href={STORE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm font-medium transition-all relative py-1 px-2 rounded-sm inline-flex items-center gap-1.5 text-foreground hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+        >
+          <ShoppingBag className="w-4 h-4" aria-hidden="true" />
+          Shop
+        </a>
         {filteredNavItems.map(({ link }, i) => {
           return <CMSLink key={i} {...link} appearance="link" />
         })}
@@ -164,6 +176,16 @@ export const HeaderNav: React.FC<{ data: HeaderType; user: NavUser | null }> = (
                 </Link>
               )
             })}
+            <a
+              href={STORE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-base font-medium py-3 px-4 rounded-lg transition-colors text-foreground hover:bg-muted flex items-center gap-2"
+              onClick={() => setMobileOpen(false)}
+            >
+              <ShoppingBag className="w-4 h-4" aria-hidden="true" />
+              Shop
+            </a>
             {filteredNavItems.map(({ link }, i) => {
               return (
                 <div key={i} className="py-3 px-4" onClick={() => setMobileOpen(false)}>
