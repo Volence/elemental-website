@@ -1,4 +1,5 @@
 import type { RosterEntry } from './types'
+import { rolePrimaryMatch } from './lineup-roles'
 
 interface PlayerSlot {
   role: string
@@ -24,13 +25,15 @@ interface DaySchedule {
   blocks: TimeBlock[]
 }
 
+type PlayerStatus = 'main' | 'sub' | 'trial'
+
 interface AvailablePlayer {
   personId: string
   discordId: string
   name: string
   scheduleRole: string
   rosterRole: string
-  status: 'main' | 'sub' | 'trial'
+  status: PlayerStatus
   availableBlocks: number
   blockStatus: 'available' | 'maybe'
 }
@@ -41,26 +44,13 @@ const ROSTER_ROLE_MAP: Record<string, string> = {
   support: 'Support',
 }
 
-const ROLE_FAMILY: Record<string, string[]> = {
-  tank: ['tank'],
-  dps: ['dps', 'hitscan', 'flex dps'],
-  support: ['support', 'main support', 'flex support'],
+/** The manager's per-week status wins over roster membership. */
+function resolveStatus(scheduleStatus: string | undefined, fallback: PlayerStatus): PlayerStatus {
+  if (scheduleStatus === 'tryout') return 'trial'
+  if (scheduleStatus === 'sub') return 'sub'
+  if (scheduleStatus === 'main') return 'main'
+  return fallback
 }
-
-const BROAD_ROLES = new Set(['tank', 'dps', 'support'])
-
-function rolePrimaryMatch(playerRole: string, slotRole: string): boolean {
-  const pr = playerRole.toLowerCase()
-  const sr = slotRole.toLowerCase()
-  if (pr === sr) return true
-  if (BROAD_ROLES.has(pr)) {
-    for (const family of Object.values(ROLE_FAMILY)) {
-      if (family.includes(pr) && family.includes(sr)) return true
-    }
-  }
-  return false
-}
-
 
 export function suggestLineup(
   days: DaySchedule[],
@@ -68,7 +58,7 @@ export function suggestLineup(
   subs: RosterEntry[],
   calendarResponses: any[],
 ): DaySchedule[] {
-  const playerMap = new Map<string, { personId: string; name: string; rosterRole: string; lastScheduleRole?: string; status: 'main' | 'sub' | 'trial' }>()
+  const playerMap = new Map<string, { personId: string; name: string; rosterRole: string; lastScheduleRole?: string; status: PlayerStatus }>()
   for (const entry of roster) {
     if (entry.person?.discordId) {
       playerMap.set(entry.person.discordId, {
@@ -131,7 +121,7 @@ export function suggestLineup(
             name: playerInfo?.name || response.discordUsername || 'Unknown',
             scheduleRole,
             rosterRole: playerInfo?.rosterRole || '',
-            status: playerInfo?.status || 'trial',
+            status: resolveStatus(response.scheduleStatus, playerInfo?.status || 'trial'),
             availableBlocks: totalBlocksAvailable,
             blockStatus,
           })
@@ -151,13 +141,18 @@ export function suggestLineup(
         return b.availableBlocks - a.availableBlocks
       })
 
+      // Count main and trial slots separately: a Hitscan trial row does not
+      // make the main Hitscan slot a "duplicate" role.
       const roleCounts: Record<string, number> = {}
-      for (const s of block.slots) roleCounts[s.role] = (roleCounts[s.role] || 0) + 1
+      for (const s of block.slots) {
+        const key = `${s.isTrial ? 'trial:' : ''}${s.role}`
+        roleCounts[key] = (roleCounts[key] || 0) + 1
+      }
 
       const assignedIds = new Set<string>()
       const newSlots: PlayerSlot[] = [...block.slots]
 
-      // First pass: exact role matches only
+      // Exact role matches only. Trial slots take trial players, main slots take everyone else.
       for (let i = 0; i < newSlots.length; i++) {
         const slot = newSlots[i]
         const confirmed = availablePlayers.filter(
@@ -165,14 +160,15 @@ export function suggestLineup(
             && (slot.isTrial ? p.status === 'trial' : p.status !== 'trial')
         )
         if (confirmed.length > 0) {
-          const isUniqueRole = (roleCounts[slot.role] || 0) <= 1
+          const key = `${slot.isTrial ? 'trial:' : ''}${slot.role}`
+          const isUniqueRole = (roleCounts[key] || 0) <= 1
           if (isUniqueRole) {
             for (const m of confirmed) assignedIds.add(m.personId)
             const ids = confirmed.map(m => m.personId)
             newSlots[i] = { ...slot, playerId: ids[0], playerIds: ids }
           } else {
             assignedIds.add(confirmed[0].personId)
-            newSlots[i] = { ...slot, playerId: confirmed[0].personId }
+            newSlots[i] = { ...slot, playerId: confirmed[0].personId, playerIds: [confirmed[0].personId] }
           }
         }
       }

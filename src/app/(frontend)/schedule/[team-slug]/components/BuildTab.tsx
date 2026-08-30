@@ -6,6 +6,16 @@ import { useSchedule } from '@/components/scheduling/ScheduleContext'
 import { suggestLineup } from '@/components/scheduling/AutoLineup'
 import type { RosterEntry } from '@/components/scheduling/types'
 import { ACTIVITY_TYPES, OPPONENT_ACTIVITIES, getBlockActivity } from '@/components/ScheduleEditor/types'
+import {
+  rolePrimaryMatch,
+  roleMatchesFamily,
+  getSlotPlayerIds,
+  computeTrialRoles,
+  withTrialSlots,
+  scheduleHasContent,
+  setSlotPlayers as setBlockSlotPlayers,
+  toggleSlotPlayer as toggleBlockSlotPlayer,
+} from '@/components/scheduling/lineup-roles'
 import './BuildTab.css'
 
 interface PlayerSlot {
@@ -15,12 +25,6 @@ interface PlayerSlot {
   isRinger?: boolean
   ringerName?: string
   isTrial?: boolean
-}
-
-function getSlotPlayerIds(slot: PlayerSlot): string[] {
-  if (slot.playerIds?.length) return slot.playerIds
-  if (slot.playerId) return [slot.playerId]
-  return []
 }
 
 interface BlockOutcome {
@@ -56,36 +60,6 @@ interface DaySchedule {
   isoDate?: string
   enabled: boolean
   blocks: TimeBlock[]
-}
-
-const ROLE_FAMILY: Record<string, string[]> = {
-  tank: ['tank'],
-  dps: ['dps', 'hitscan', 'flex dps'],
-  support: ['support', 'main support', 'flex support'],
-}
-
-const BROAD_ROLES = new Set(['tank', 'dps', 'support'])
-
-function rolePrimaryMatch(playerRole: string, slotRole: string): boolean {
-  const pr = playerRole.toLowerCase()
-  const sr = slotRole.toLowerCase()
-  if (pr === sr) return true
-  if (BROAD_ROLES.has(pr)) {
-    for (const family of Object.values(ROLE_FAMILY)) {
-      if (family.includes(pr) && family.includes(sr)) return true
-    }
-  }
-  return false
-}
-
-function roleMatchesFamily(playerRole: string, slotRole: string): boolean {
-  if (rolePrimaryMatch(playerRole, slotRole)) return true
-  const pr = playerRole.toLowerCase()
-  const sr = slotRole.toLowerCase()
-  for (const family of Object.values(ROLE_FAMILY)) {
-    if (family.includes(pr) && family.includes(sr)) return true
-  }
-  return false
 }
 
 interface RoleOption {
@@ -152,7 +126,7 @@ interface DropdownState {
 }
 
 export function BuildTab() {
-  const { data, refreshData, viewedCalendar } = useSchedule()
+  const { data, refreshData, viewedCalendar, setBuildDirty } = useSchedule()
   const { team } = data
 
   const [days, setDays] = useState<DaySchedule[]>([])
@@ -162,7 +136,15 @@ export function BuildTab() {
   const [publishing, setPublishing] = useState(false)
   const [published, setPublished] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [dragData, setDragData] = useState<{ dayIdx: number; blockIdx: number; slotIdx: number; playerId: string } | null>(null)
+  const [dirty, setDirtyState] = useState(false)
+  const dirtyRef = useRef(false)
+  const loadedCalendarRef = useRef<string | number | null>(null)
+  const setDirty = useCallback((value: boolean) => {
+    dirtyRef.current = value
+    setDirtyState(value)
+    setBuildDirty(value)
+  }, [setBuildDirty])
+  const [dragData, setDragData] = useState<{ playerId: string } | null>(null)
   const [dragOverCell, setDragOverCell] = useState<string | null>(null)
   const [openDropdown, setOpenDropdown] = useState<DropdownState | null>(null)
   const [scrimModal, setScrimModal] = useState<{ dayIdx: number; blockIdx: number } | null>(null)
@@ -187,7 +169,8 @@ export function BuildTab() {
     return ROLE_PRESETS[preset] || ROLE_PRESETS.specific
   }, [team.rolePreset, team.customRoles])
 
-  const responses = viewedCalendar?.responses || []
+  // Memoised so derived maps (and the effects keyed on them) stay stable when a calendar has no responses yet.
+  const responses: any[] = useMemo(() => viewedCalendar?.responses || [], [viewedCalendar])
 
   const playerMap = useMemo(() => {
     const map: Record<string, string> = {}
@@ -274,15 +257,10 @@ export function BuildTab() {
     return map
   }, [responses, discordToPersonId, rosterPlayers])
 
-  const trialRoles = useMemo(() => {
-    const rolesWithTrials = new Set<string>()
-    for (const entries of Object.values(availabilityMap)) {
-      for (const e of entries) {
-        if (e.scheduleStatus === 'tryout') rolesWithTrials.add(e.role)
-      }
-    }
-    return rolesWithTrials
-  }, [availabilityMap])
+  const trialRoles = useMemo(
+    () => computeTrialRoles(Object.values(availabilityMap).flat(), roles),
+    [availabilityMap, roles],
+  )
 
   const assignedPlayerIds = useMemo(() => {
     const ids = new Set<string>()
@@ -380,6 +358,9 @@ export function BuildTab() {
 
   useEffect(() => {
     if (!viewedCalendar) return
+    // A refresh (role change, save, reminder) must not clobber edits in progress on this same calendar.
+    if (dirtyRef.current && loadedCalendarRef.current === viewedCalendar.id) return
+    loadedCalendarRef.current = viewedCalendar.id
 
     const parseDate = (s: string) => {
       const [y, m, d] = s.split('T')[0].split('-').map(Number)
@@ -398,11 +379,9 @@ export function BuildTab() {
         const d = parseDate(day.isoDate)
         return { ...day, date: formatDayLabel(d) }
       })
-      const hasAssignments = fixed.some((day: DaySchedule) =>
-        day.blocks?.some(block => block.slots?.some(slot => slot.playerId))
-      )
-      if (hasAssignments) {
+      if (scheduleHasContent(fixed)) {
         setDays(fixed)
+        setDirty(false)
         return
       }
     }
@@ -425,42 +404,37 @@ export function BuildTab() {
       current.setDate(current.getDate() + 1)
     }
 
+    const seeded = withTrialSlots(newDays, trialRoles).days
     if (viewedCalendar.responses?.length) {
-      setDays(suggestLineup(newDays, team.roster as RosterEntry[], team.subs as RosterEntry[], viewedCalendar.responses))
+      setDays(suggestLineup(seeded, team.roster as RosterEntry[], team.subs as RosterEntry[], viewedCalendar.responses))
     } else {
-      setDays(newDays)
+      setDays(seeded)
     }
-  }, [viewedCalendar, team.scheduleBlocks, createDefaultBlock, team.roster, team.subs])
+    setDirty(false)
+  }, [viewedCalendar, team.scheduleBlocks, createDefaultBlock, team.roster, team.subs, trialRoles])
+
+  // Keep a trial slot present for every trial role (also covers blocks added later).
+  useEffect(() => {
+    const result = withTrialSlots(days, trialRoles)
+    if (result.changed) setDays(result.days)
+  }, [trialRoles, days])
+
+  useEffect(() => () => setBuildDirty(false), [setBuildDirty])
 
   useEffect(() => {
-    if (trialRoles.size === 0 || days.length === 0) return
-    let needsUpdate = false
-    const updated = days.map(day => ({
-      ...day,
-      blocks: day.blocks.map(block => {
-        const missingTrialSlots: PlayerSlot[] = []
-        for (const role of trialRoles) {
-          if (!block.slots.some(s => s.role === role && s.isTrial)) {
-            missingTrialSlots.push({ role, playerId: null, isTrial: true })
-          }
-        }
-        if (missingTrialSlots.length === 0) return block
-        needsUpdate = true
-        const mainSlots: PlayerSlot[] = []
-        for (const s of block.slots) {
-          mainSlots.push(s)
-          if (!s.isTrial) {
-            const trialForRole = missingTrialSlots.filter(ts => ts.role === s.role)
-            mainSlots.push(...trialForRole)
-            trialForRole.forEach(ts => missingTrialSlots.splice(missingTrialSlots.indexOf(ts), 1))
-          }
-        }
-        mainSlots.push(...missingTrialSlots)
-        return { ...block, slots: mainSlots }
-      }),
-    }))
-    if (needsUpdate) setDays(updated)
-  }, [trialRoles, days.length])
+    if (!dirty) return
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [dirty])
+
+  const markDirty = () => {
+    setSaved(false)
+    setDirty(true)
+  }
 
   useEffect(() => {
     fetch('/api/opponent-teams?limit=100&sort=name')
@@ -496,7 +470,7 @@ export function BuildTab() {
         }),
       }
     }))
-    setSaved(false)
+    markDirty()
     setRingerInput(null)
     setOpenDropdown(null)
   }
@@ -508,21 +482,11 @@ export function BuildTab() {
         ...day,
         blocks: day.blocks.map((block, bi) => {
           if (bi !== blockIdx) return block
-          return {
-            ...block,
-            slots: block.slots.map((slot, si) => {
-              if (si !== slotIdx) return slot
-              const current = getSlotPlayerIds(slot)
-              const newIds = current.includes(playerId)
-                ? current.filter(id => id !== playerId)
-                : [...current, playerId]
-              return { ...slot, playerIds: newIds, playerId: newIds[0] || null }
-            }),
-          }
+          return toggleBlockSlotPlayer(block, slotIdx, playerId)
         }),
       }
     }))
-    setSaved(false)
+    markDirty()
   }
 
   const createSlotAndToggle = (dayIdx: number, blockIdx: number, role: string, isTrial: boolean, playerId: string) => {
@@ -533,23 +497,13 @@ export function BuildTab() {
         blocks: day.blocks.map((block, bi) => {
           if (bi !== blockIdx) return block
           const existingIdx = block.slots.findIndex(s => s.role === role && !!s.isTrial === isTrial)
-          if (existingIdx >= 0) {
-            const slot = block.slots[existingIdx]
-            const current = getSlotPlayerIds(slot)
-            const newIds = current.includes(playerId) ? current.filter(id => id !== playerId) : [...current, playerId]
-            return {
-              ...block,
-              slots: block.slots.map((s, si) => si === existingIdx ? { ...s, playerIds: newIds, playerId: newIds[0] || null } : s),
-            }
-          }
-          return {
-            ...block,
-            slots: [...block.slots, { role, playerId, playerIds: [playerId], isTrial }],
-          }
+          if (existingIdx >= 0) return toggleBlockSlotPlayer(block, existingIdx, playerId)
+          const withSlot = { ...block, slots: [...block.slots, { role, playerId: null, playerIds: [], isTrial }] }
+          return setBlockSlotPlayers(withSlot, withSlot.slots.length - 1, [playerId])
         }),
       }
     }))
-    setSaved(false)
+    markDirty()
   }
 
   const setSlotRinger = (dayIdx: number, blockIdx: number, slotIdx: number, name: string) => {
@@ -561,12 +515,12 @@ export function BuildTab() {
           if (bi !== blockIdx) return block
           return {
             ...block,
-            slots: block.slots.map((slot, si) => si === slotIdx ? { ...slot, playerId: null, isRinger: true, ringerName: name } : slot),
+            slots: block.slots.map((slot, si) => si === slotIdx ? { ...slot, playerId: null, playerIds: [], isRinger: true, ringerName: name } : slot),
           }
         }),
       }
     }))
-    setSaved(false)
+    markDirty()
     setRingerInput(null)
     setOpenDropdown(null)
   }
@@ -585,7 +539,7 @@ export function BuildTab() {
         }),
       }
     }))
-    setSaved(false)
+    markDirty()
     setEditingRinger(null)
   }
 
@@ -603,7 +557,7 @@ export function BuildTab() {
         }),
       }
     }))
-    setSaved(false)
+    markDirty()
   }
 
   const updateScrimOpponent = (dayIdx: number, blockIdx: number, opponentId: number | null) => {
@@ -626,7 +580,7 @@ export function BuildTab() {
         }),
       }
     }))
-    setSaved(false)
+    markDirty()
     setOpenDropdown(null)
   }
 
@@ -647,7 +601,7 @@ export function BuildTab() {
         }),
       }
     }))
-    setSaved(false)
+    markDirty()
   }
 
   const updateOutcome = (dayIdx: number, blockIdx: number, data: Partial<BlockOutcome>) => {
@@ -661,7 +615,7 @@ export function BuildTab() {
         }),
       }
     }))
-    setSaved(false)
+    markDirty()
   }
 
   const updateActivity = (dayIdx: number, blockIdx: number, activity: string) => {
@@ -684,7 +638,7 @@ export function BuildTab() {
         }),
       }
     }))
-    setSaved(false)
+    markDirty()
     setOpenDropdown(null)
   }
 
@@ -696,7 +650,7 @@ export function BuildTab() {
         blocks: day.blocks.map((block, bi) => bi === blockIdx ? { ...block, time } : block),
       }
     }))
-    setSaved(false)
+    markDirty()
   }
 
   const addBlock = (dayIdx: number, position: 'start' | 'end' = 'end') => {
@@ -708,7 +662,35 @@ export function BuildTab() {
         blocks: position === 'start' ? [newBlock, ...day.blocks] : [...day.blocks, newBlock],
       }
     }))
-    setSaved(false)
+    markDirty()
+  }
+
+  const slotDefs: { label: string; startTime: string }[] = useMemo(() => {
+    const src = viewedCalendar?.timeSlots?.length ? viewedCalendar.timeSlots : (team.scheduleBlocks || [])
+    return src
+      .filter((s: any) => s?.startTime)
+      .map((s: any) => ({ label: s.label || s.startTime, startTime: s.startTime }))
+  }, [viewedCalendar?.timeSlots, team.scheduleBlocks])
+
+  const missingSlotDefs = (dayIdx: number) => {
+    const present = new Set((days[dayIdx]?.blocks || []).map(b => b.startTime).filter(Boolean))
+    return slotDefs.filter(sd => !present.has(sd.startTime))
+  }
+
+  // Insert a known time slot in start-time order so the grid reads left to right.
+  const addBlockFromSlot = (dayIdx: number, slot: { label: string; startTime: string }) => {
+    setDays(prev => prev.map((day, di) => {
+      if (di !== dayIdx) return day
+      const newBlock = createDefaultBlock(slot.label, slot.startTime)
+      const blocks = [...day.blocks]
+      let insertAt = blocks.length
+      for (let i = 0; i < blocks.length; i++) {
+        if (blocks[i].startTime && blocks[i].startTime! > slot.startTime) { insertAt = i; break }
+      }
+      blocks.splice(insertAt, 0, newBlock)
+      return { ...day, blocks }
+    }))
+    markDirty()
   }
 
   const removeBlock = (dayIdx: number, blockIdx: number) => {
@@ -717,16 +699,11 @@ export function BuildTab() {
       if (day.blocks.length <= 1) return day
       return { ...day, blocks: day.blocks.filter((_, bi) => bi !== blockIdx) }
     }))
-    setSaved(false)
-  }
-
-  const handleDragStart = (e: React.DragEvent, dayIdx: number, blockIdx: number, slotIdx: number, playerId: string) => {
-    setDragData({ dayIdx, blockIdx, slotIdx, playerId })
-    e.dataTransfer.effectAllowed = 'move'
+    markDirty()
   }
 
   const handlePoolDragStart = (e: React.DragEvent, playerId: string) => {
-    setDragData({ dayIdx: -1, blockIdx: -1, slotIdx: -1, playerId })
+    setDragData({ playerId })
     e.dataTransfer.effectAllowed = 'move'
   }
 
@@ -745,28 +722,24 @@ export function BuildTab() {
     setDragOverCell(null)
     if (!dragData) return
 
-    const { dayIdx: srcDay, blockIdx: srcBlock, slotIdx: srcSlot, playerId } = dragData
+    const { playerId } = dragData
 
-    setDays(prev => {
-      const next = prev.map(d => ({ ...d, blocks: d.blocks.map(b => ({ ...b, slots: [...b.slots] })) }))
-
-      const targetSlot = next[targetDayIdx].blocks[targetBlockIdx].slots[targetSlotIdx]
-      const existingPlayerId = targetSlot.playerId
-
-      next[targetDayIdx].blocks[targetBlockIdx].slots[targetSlotIdx] = { ...targetSlot, playerId }
-
-      if (srcDay >= 0) {
-        next[srcDay].blocks[srcBlock].slots[srcSlot] = {
-          ...next[srcDay].blocks[srcBlock].slots[srcSlot],
-          playerId: existingPlayerId,
-        }
+    setDays(prev => prev.map((day, di) => {
+      if (di !== targetDayIdx) return day
+      return {
+        ...day,
+        blocks: day.blocks.map((block, bi) => {
+          if (bi !== targetBlockIdx) return block
+          const slot = block.slots[targetSlotIdx]
+          if (!slot) return block
+          const ids = getSlotPlayerIds(slot)
+          return setBlockSlotPlayers(block, targetSlotIdx, ids.includes(playerId) ? ids : [...ids, playerId])
+        }),
       }
-
-      return next
-    })
+    }))
 
     setDragData(null)
-    setSaved(false)
+    markDirty()
   }
 
   const handleDragEnd = () => {
@@ -787,7 +760,7 @@ export function BuildTab() {
   const handleSuggest = () => {
     const suggested = runSuggest(days)
     setDays(suggested)
-    setSaved(false)
+    markDirty()
   }
 
   const handleRecalculate = () => {
@@ -799,11 +772,11 @@ export function BuildTab() {
       })),
     }))
     setDays(runSuggest(cleared))
-    setSaved(false)
+    markDirty()
   }
 
-  const handleSave = async () => {
-    if (!viewedCalendar) return
+  const saveSchedule = async (): Promise<boolean> => {
+    if (!viewedCalendar) return false
     setSaving(true)
     setError(null)
     try {
@@ -820,21 +793,32 @@ export function BuildTab() {
         const errData = await res.json().catch(() => ({}))
         throw new Error(errData.error || 'Failed to save schedule')
       }
+      setDirty(false)
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
-      await refreshData()
+      return true
     } catch (err: any) {
       setError(err.message || 'Failed to save')
+      return false
     } finally {
       setSaving(false)
     }
   }
 
+  const handleSave = async () => {
+    if (await saveSchedule()) await refreshData()
+  }
+
+  // Discord gets what is on screen: save first, then post the saved schedule.
   const handlePublish = async () => {
     if (!viewedCalendar) return
     setPublishing(true)
     setError(null)
     try {
+      if (dirty || !viewedCalendar.schedule?.days?.length) {
+        const ok = await saveSchedule()
+        if (!ok) return
+      }
       const { publishScheduleAction } = await import('@/actions/publish-schedule')
       const result = await publishScheduleAction(Number(viewedCalendar.id))
       if (result?.error) throw new Error(result.error)
@@ -878,17 +862,6 @@ export function BuildTab() {
     return parts.slice(1).join(' ') || ''
   }
 
-  if (!viewedCalendar) {
-    return (
-      <div className="build-tab build-tab--empty">
-        <Wrench size={32} />
-        <p>No active calendar to build a schedule for.</p>
-      </div>
-    )
-  }
-
-  const hasChanges = viewedCalendar.availabilityChangedAfterSchedule
-
   const rowDefs = useMemo(() => {
     const defs: { role: string; isTrial: boolean; occurrence: number }[] = []
     const occCounts: Record<string, number> = {}
@@ -903,6 +876,18 @@ export function BuildTab() {
     defs.push({ role: 'Sub', isTrial: false, occurrence: 0 })
     return defs
   }, [roles, trialRoles])
+
+  if (!viewedCalendar) {
+    return (
+      <div className="build-tab build-tab--empty">
+        <Wrench size={32} />
+        <p>No active calendar to build a schedule for.</p>
+      </div>
+    )
+  }
+
+  const hasChanges = viewedCalendar.availabilityChangedAfterSchedule
+
   return (
     <div className="build-tab">
       <div className="build-tab__header">
@@ -923,10 +908,10 @@ export function BuildTab() {
           <button className="build-tab__recalc-btn" onClick={handleRecalculate}>
             <RefreshCw size={14} /> Recalculate
           </button>
-          <button className="build-tab__save-btn" onClick={handleSave} disabled={saving}>
+          <button className={`build-tab__save-btn ${dirty ? 'build-tab__save-btn--dirty' : ''}`} onClick={handleSave} disabled={saving} title={dirty ? 'You have unsaved changes' : undefined}>
             {saving ? <><Loader2 size={14} className="build-tab__spinner" /> Saving...</> :
              saved ? <><CheckCircle size={14} /> Saved!</> :
-             <><Save size={14} /> Save</>}
+             <><Save size={14} /> Save{dirty ? ' *' : ''}</>}
           </button>
           <button className="build-tab__publish-btn" onClick={handlePublish} disabled={publishing || saving}>
             {publishing ? <><Loader2 size={14} className="build-tab__spinner" /> Publishing...</> :
@@ -983,8 +968,14 @@ export function BuildTab() {
                       <>
                         <div className="build-tab__add-block-backdrop" onClick={() => setAddBlockMenu(null)} />
                         <div className="build-tab__add-block-menu">
-                          <button onClick={() => { addBlock(group.dayIdx, 'start'); setAddBlockMenu(null) }}>Add before</button>
-                          <button onClick={() => { addBlock(group.dayIdx, 'end'); setAddBlockMenu(null) }}>Add after</button>
+                          {missingSlotDefs(group.dayIdx).map(sd => (
+                            <button key={sd.startTime} onClick={() => { addBlockFromSlot(group.dayIdx, sd); setAddBlockMenu(null) }}>
+                              {sd.label}
+                            </button>
+                          ))}
+                          {missingSlotDefs(group.dayIdx).length > 0 && <div className="build-tab__add-block-divider" />}
+                          <button onClick={() => { addBlock(group.dayIdx, 'start'); setAddBlockMenu(null) }}>Custom before</button>
+                          <button onClick={() => { addBlock(group.dayIdx, 'end'); setAddBlockMenu(null) }}>Custom after</button>
                         </div>
                       </>
                     )}

@@ -13,6 +13,8 @@ interface ScheduleContextValue {
   setWeekView: (view: WeekView) => void
   viewedCalendar: any | null
   refreshData: () => Promise<void>
+  buildDirty: boolean
+  setBuildDirty: (dirty: boolean) => void
 }
 
 const ScheduleContext = createContext<ScheduleContextValue | null>(null)
@@ -33,6 +35,7 @@ export function ScheduleProvider({ initialData, initialTab, children }: Schedule
   const [data, setData] = useState<SchedulePageData>(initialData)
   const [activeTab, setActiveTab] = useState<ScheduleTab>(initialTab)
   const [weekView, setWeekView] = useState<WeekView>(initialData.nextWeekCalendar ? 'next' : 'current')
+  const [buildDirty, setBuildDirty] = useState(false)
 
   const viewedCalendar = weekView === 'next' && data.nextWeekCalendar
     ? data.nextWeekCalendar
@@ -51,7 +54,7 @@ export function ScheduleProvider({ initialData, initialTab, children }: Schedule
   }, [data.team.slug])
 
   return (
-    <ScheduleContext.Provider value={{ data, activeTab, setActiveTab, weekView, setWeekView, viewedCalendar, refreshData }}>
+    <ScheduleContext.Provider value={{ data, activeTab, setActiveTab, weekView, setWeekView, viewedCalendar, refreshData, buildDirty, setBuildDirty }}>
       {children}
     </ScheduleContext.Provider>
   )

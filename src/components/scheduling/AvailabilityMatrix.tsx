@@ -155,7 +155,9 @@ export function AvailabilityMatrix() {
           scheduleStatus: response?.scheduleStatus || defaultStatus,
           isOnRoster: !isSub,
           isSub,
-          responded: !!response,
+          // A manager setting a role creates a bare response record; only
+          // count the player as responded once they have actually submitted.
+          responded: !!response && (!!response.respondedAt || Object.keys(response.selections || {}).length > 0),
           selections: response?.selections || {},
         })
       }

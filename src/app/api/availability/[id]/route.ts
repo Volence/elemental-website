@@ -2,14 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 
-interface AvailabilityResponse {
-  discordId: string
-  discordUsername: string
-  discordAvatar?: string
-  respondedAt: string
-  selections: Record<string, Record<string, 'available' | 'maybe'>>
-  notes?: string
-}
+import { mergeAvailabilityResponse, type AvailabilityResponseRecord } from '@/lib/availability/merge-response'
+
+type AvailabilityResponse = AvailabilityResponseRecord
 
 /**
  * GET /api/availability/[id]
@@ -172,7 +167,9 @@ export async function PATCH(
     }
 
     if (existingIndex >= 0) {
-      responses[existingIndex] = newResponse
+      // Keep the manager-set role/status; a player re-submitting their
+      // availability must not reset what the manager configured for them.
+      responses[existingIndex] = mergeAvailabilityResponse(responses[existingIndex], newResponse)
     } else {
       responses.push(newResponse)
     }

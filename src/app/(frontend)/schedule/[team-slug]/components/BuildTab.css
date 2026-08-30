@@ -117,6 +117,10 @@
   cursor: not-allowed;
 }
 
+.build-tab__save-btn--dirty {
+  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.55);
+}
+
 .build-tab__publish-btn {
   display: flex;
   align-items: center;
@@ -347,6 +351,12 @@
 .build-tab__add-block-menu button:hover {
   background: rgba(255, 255, 255, 0.08);
   color: #f1f5f9;
+}
+
+.build-tab__add-block-divider {
+  height: 1px;
+  margin: 3px 0;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .build-tab__remove-block-btn {

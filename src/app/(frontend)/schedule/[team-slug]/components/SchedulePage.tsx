@@ -37,14 +37,20 @@ function getWeekLabel(calendar: any): string {
 }
 
 function WeekSwitcher() {
-  const { data, weekView, setWeekView } = useSchedule()
+  const { data, weekView, setWeekView, buildDirty } = useSchedule()
   if (!data.nextWeekCalendar) return null
+
+  const switchWeek = (view: WeekView) => {
+    if (view === weekView) return
+    if (buildDirty && !window.confirm('You have unsaved lineup changes. Switch week and discard them?')) return
+    setWeekView(view)
+  }
 
   return (
     <div className="schedule-page__week-switcher">
       <button
         className={`schedule-page__week-btn ${weekView === 'current' ? 'schedule-page__week-btn--active' : ''}`}
-        onClick={() => setWeekView('current')}
+        onClick={() => switchWeek('current')}
       >
         <ChevronLeft size={14} />
         This Week
@@ -52,7 +58,7 @@ function WeekSwitcher() {
       </button>
       <button
         className={`schedule-page__week-btn ${weekView === 'next' ? 'schedule-page__week-btn--active' : ''}`}
-        onClick={() => setWeekView('next')}
+        onClick={() => switchWeek('next')}
       >
         Next Week
         <span className="schedule-page__week-dates">{getWeekLabel(data.nextWeekCalendar)}</span>
@@ -245,8 +251,9 @@ function SchedulePageInner() {
             <AbsenceManager />
           </div>
         )}
-        {activeTab === 'build' && data.authState.isManager && (
-          <div className="schedule-page__tab-panel" key={`build-${calendarKey}`}>
+        {data.authState.isManager && (
+          // Stays mounted while other tabs are shown so unsaved lineup edits survive a tab switch.
+          <div className="schedule-page__tab-panel" key={`build-${calendarKey}`} hidden={activeTab !== 'build'}>
             <BuildTab />
           </div>
         )}

@@ -1,53 +1,8 @@
 import { ensureDiscordClient } from '../bot'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import type { TextChannel, ThreadChannel } from 'discord.js'
-
-interface PlayerSlot {
-  role: string
-  playerId: string | null
-  playerIds?: string[]
-  isRinger?: boolean
-  ringerName?: string
-  isTrial?: boolean
-}
-
-interface ScrimDetails {
-  isScrim?: boolean
-  opponentTeamId?: number | null
-  opponent: string
-  opponentRoster: string
-  contact: string
-  host: 'us' | 'them' | ''
-  mapPool: string
-  heroBans: boolean
-  staggers: boolean
-  notes: string
-}
-
-interface TimeBlock {
-  id: string
-  time: string
-  activity?: string
-  slots: PlayerSlot[]
-  scrim?: ScrimDetails
-  reminderPosted?: boolean
-}
-
-interface DaySchedule {
-  date: string
-  enabled: boolean
-  useAllMembers?: boolean
-  blocks: TimeBlock[]
-  // Legacy fields for backward compatibility
-  slots?: PlayerSlot[]
-  scrim?: ScrimDetails & { time?: string }
-}
-
-interface ScheduleData {
-  days: DaySchedule[]
-  lastUpdated?: string
-}
+import type { Message, TextChannel, ThreadChannel } from 'discord.js'
+import { formatScheduleMessages, type ScheduleData } from './schedule-format'
 
 interface VoteData {
   date: string
@@ -58,174 +13,47 @@ interface VoteData {
   }>
 }
 
+/** Message IDs are stored comma-separated in the single calendarMessageId text field. */
+export function parseMessageIds(raw: string | null | undefined): string[] {
+  return (raw || '').split(',').map(s => s.trim()).filter(Boolean)
+}
+
 /**
- * Format a schedule for Discord posting with code blocks per day
- * @param schedule - The schedule data
- * @param playerMap - Pre-built map of player IDs to display names (from votes and/or People records)
- * @param pollName - Name of the poll/schedule
- * @param timeSlot - Default time slot for legacy format
+ * Bring the thread's set of schedule messages in line with `contents`:
+ * edit the ones we already own in order, send extras, delete leftovers.
+ * Returns the IDs now backing the post.
  */
-function formatScheduleMessageWithMap(
-  schedule: ScheduleData,
-  playerMap: Map<string, string>,
-  pollName: string,
-  timeSlot: string,
-): string {
-  const enabledDays = schedule.days.filter((d) => d.enabled)
-
-  const ACTIVITY_LABELS: Record<string, string> = {
-    scrim: 'Scrim',
-    match: 'Match',
-    warmup: 'Warmup',
-    vod: 'VOD Review',
-    scouting: 'Scouting',
-    other: 'Other',
-  }
-
-  const ACTIVITY_ICONS: Record<string, string> = {
-    scrim: '',
-    match: '',
-    warmup: '',
-    vod: '',
-    scouting: '',
-    other: '',
-  }
-
-  function getActivity(block: TimeBlock): string {
-    if (block.activity && block.activity !== 'free') return block.activity
-    if (block.scrim?.isScrim || block.scrim?.opponent || block.scrim?.opponentTeamId) return 'scrim'
-    return 'free'
-  }
-
-  let message = `**${pollName}**\n`
-  let hasAnyActivity = false
-
-  for (const day of enabledDays) {
-    let blocks: TimeBlock[] = []
-
-    if (day.blocks && day.blocks.length > 0) {
-      blocks = day.blocks
-    } else if (day.slots) {
-      blocks = [{
-        id: 'legacy',
-        time: day.scrim?.time || timeSlot,
-        slots: day.slots,
-        scrim: day.scrim ? {
-          opponentTeamId: null,
-          opponent: day.scrim.opponent,
-          opponentRoster: day.scrim.opponentRoster,
-          contact: day.scrim.contact,
-          host: day.scrim.host,
-          mapPool: day.scrim.mapPool,
-          heroBans: day.scrim.heroBans,
-          staggers: day.scrim.staggers,
-          notes: day.scrim.notes,
-        } : undefined,
-      }]
+export async function syncScheduleMessages(
+  thread: TextChannel | ThreadChannel,
+  existingIds: string[],
+  contents: string[],
+): Promise<string[]> {
+  const ids: string[] = []
+  for (let i = 0; i < contents.length; i++) {
+    const existingId = existingIds[i]
+    let message: Message | null = null
+    if (existingId) {
+      try {
+        const existing = await thread.messages.fetch(existingId)
+        message = await existing.edit(contents[i])
+      } catch {
+        message = null
+      }
     }
-
-    blocks = blocks.filter(b => getActivity(b) !== 'free')
-    if (blocks.length === 0) continue
-    hasAnyActivity = true
-
-    for (let i = 0; i < blocks.length; i++) {
-      const block = blocks[i]
-      const activity = getActivity(block)
-      const isScrimLike = activity === 'scrim' || activity === 'match'
-
-      // === HEADER ===
-      if (blocks.length > 1) {
-        message += `\n**${day.date}** - Block ${i + 1} - ${block.time}\n`
-      } else {
-        message += `\n**${day.date}** - ${block.time}\n`
-      }
-
-      message += '```\n'
-
-      // === STATUS LINE ===
-      if (isScrimLike && block.scrim?.opponent) {
-        const hostText = block.scrim.host === 'us' ? 'We host' : block.scrim.host === 'them' ? 'They host' : ''
-        message += `vs ${block.scrim.opponent}${hostText ? ` - ${hostText}` : ''}\n\n`
-      } else if (isScrimLike) {
-        message += `Looking for ${ACTIVITY_LABELS[activity] || 'Scrim'}\n\n`
-      } else {
-        message += `${ACTIVITY_ICONS[activity] || ''} ${ACTIVITY_LABELS[activity] || activity}\n\n`
-      }
-
-      // === ROSTER ===
-      const mainSlots = block.slots.filter(s => !s.isTrial)
-      const trialSlots = block.slots.filter(s => s.isTrial)
-      const getPlayerIds = (s: PlayerSlot) => s.playerIds?.length ? s.playerIds : s.playerId ? [s.playerId] : []
-      const filledSlots = mainSlots.filter(s => getPlayerIds(s).length > 0 || (s.isRinger && s.ringerName))
-      const totalSlots = mainSlots.length
-
-      const maxRoleLen = Math.max(...mainSlots.map(s => (s.role || 'Role').length), 10)
-
-      for (const slot of mainSlots) {
-        let playerName = '-'
-        if (slot.isRinger && slot.ringerName) {
-          playerName = slot.ringerName === 'Ringer Needed' ? 'Ringer Needed' : `${slot.ringerName} (R)`
-        } else {
-          const ids = getPlayerIds(slot)
-          if (ids.length > 0) {
-            playerName = ids.map(id => playerMap.get(id) || '?').join(', ')
-          }
-        }
-        const role = (slot.role || 'Role').padEnd(maxRoleLen)
-        message += `${role}  ${playerName}\n`
-      }
-
-      const filledTrials = trialSlots.filter(s => getPlayerIds(s).length > 0)
-      if (filledTrials.length > 0) {
-        message += `\n--- Trials ---\n`
-        for (const slot of filledTrials) {
-          const ids = getPlayerIds(slot)
-          const playerName = ids.map(id => playerMap.get(id) || '?').join(', ')
-          const role = (slot.role || 'Role').padEnd(maxRoleLen)
-          message += `${role}  ${playerName}\n`
-        }
-      }
-
-      if (filledSlots.length === totalSlots && totalSlots > 0) {
-        message += `\nRoster confirmed\n`
-      } else if (filledSlots.length > 0) {
-        message += `\n${filledSlots.length}/${totalSlots} slots filled\n`
-      }
-
-      // === SCRIM DETAILS (only for scrim/match) ===
-      if (isScrimLike) {
-        const settings: string[] = []
-        if (block.scrim?.heroBans) settings.push('Hero Bans')
-        if (block.scrim?.staggers) settings.push('Staggers')
-        if (block.scrim?.mapPool) settings.push(`Maps: ${block.scrim.mapPool}`)
-        if (settings.length > 0) {
-          message += `${settings.join(' | ')}\n`
-        }
-
-        if (block.scrim?.contact) {
-          message += `Contact: ${block.scrim.contact}\n`
-        }
-
-        if (block.scrim?.opponentRoster) {
-          message += `\n--- Their Roster ---\n${block.scrim.opponentRoster}\n`
-        }
-      }
-
-      if (block.scrim?.notes) {
-        message += `\n${block.scrim.notes}\n`
-      }
-
-      message += '```'
+    if (!message) {
+      message = await thread.send(contents[i])
     }
-
-    message += '\n'
+    ids.push(message.id)
   }
-
-  if (!hasAnyActivity) {
-    return `**${pollName}**\n\nNothing scheduled this week.`
+  for (const leftover of existingIds.slice(contents.length)) {
+    try {
+      const msg = await thread.messages.fetch(leftover)
+      await msg.delete()
+    } catch {
+      // already gone
+    }
   }
-
-  return message.trim()
+  return ids
 }
 
 /**
@@ -271,8 +99,7 @@ export async function publishScheduleToDiscord(pollId: number): Promise<{ succes
     const votes = poll.votes as VoteData[] | null
     const timeSlot = (poll.timeSlot as string) || '8-10 EST'
     const pollName = poll.pollName as string
-    const existingMessageId = poll.calendarMessageId as string | null
-    
+    const existingIds = parseMessageIds(poll.calendarMessageId as string | null)
 
     // Collect all player IDs from the schedule that need name resolution
     const playerIdsToResolve = new Set<string>()
@@ -348,32 +175,16 @@ export async function publishScheduleToDiscord(pollId: number): Promise<{ succes
       }
     }
 
-    // Format the message (pass pre-built playerMap)
-    const formattedMessage = formatScheduleMessageWithMap(schedule, playerMap, pollName, timeSlot)
+    // Long weeks do not fit in one Discord message (2000 char cap), so the
+    // schedule is split at block boundaries across as many as needed.
+    const contents = formatScheduleMessages(schedule, playerMap, pollName, timeSlot)
 
-    // Get the thread
     const thread = await client.channels.fetch(calendarThreadId) as TextChannel | ThreadChannel | null
     if (!thread || !('send' in thread)) {
       return { success: false, error: 'Could not find Calendar thread' }
     }
 
-    let messageId = existingMessageId
-
-    // Try to edit existing message, or create new one
-    if (existingMessageId) {
-      try {
-        const existingMessage = await thread.messages.fetch(existingMessageId)
-        await existingMessage.edit(formattedMessage)
-      } catch (fetchError) {
-        // Message was deleted or not found, create a new one
-        const newMessage = await thread.send(formattedMessage)
-        messageId = newMessage.id
-      }
-    } else {
-      // First publish - create new message
-      const newMessage = await thread.send(formattedMessage)
-      messageId = newMessage.id
-    }
+    const messageIds = await syncScheduleMessages(thread, existingIds, contents)
 
     // Update poll with message ID and published flag
     await payload.update({
@@ -381,7 +192,7 @@ export async function publishScheduleToDiscord(pollId: number): Promise<{ succes
       id: pollId,
       data: {
         publishedToCalendar: true,
-        calendarMessageId: messageId,
+        calendarMessageId: messageIds.join(','),
       },
       overrideAccess: true, // Bypass field validation in server context
     })

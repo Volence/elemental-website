@@ -246,3 +246,7 @@
     font-size: 13px;
   }
 }
+
+.schedule-page__tab-panel[hidden] {
+  display: none;
+}
