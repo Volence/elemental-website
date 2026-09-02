@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { APIError } from 'payload'
 
 import { authenticated } from '../../access/authenticated'
 import { anyone } from '../../access/anyone'
@@ -519,6 +520,16 @@ export const People: CollectionConfig = {
             })
           }, 100)
         }
+      },
+    ],
+    beforeLogin: [
+      ({ user }) => {
+        // A merged or deactivated row keeps its credentials so history stays readable, but it
+        // must never mint a session: the live person is whoever it was merged into.
+        if ((user as any).isInactive || (user as any).mergedInto) {
+          throw new APIError('This account has been archived', 403, undefined, true)
+        }
+        return user
       },
     ],
     afterLogout: [
