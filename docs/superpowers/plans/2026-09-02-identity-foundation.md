@@ -2863,7 +2863,7 @@ export async function mergePeople(
 
 Deviation from the spec, recorded here: the spec asks for an automated merge test seeded across every related table. The vitest suite has no database fixture, so the automated guarantee is the relation coverage test above plus the manual dev check in Step 6. If a DB-backed test harness is added later, the seeded merge test belongs in it.
 
-Note: the transaction wraps the raw repointing. The Payload-level field merge in step 1 runs before it because Payload operations cannot join a drizzle transaction. The 42P01 branch keeps the merge working on databases where an optional table (for example `merge_suggestions`) does not exist.
+Note (updated in the final fix wave): one transaction now wraps the whole merge, not just the raw repointing. `payload.db.beginTransaction()` returns a transaction id; `payload.db.sessions[id].db` is the drizzle handle bound to it, and `{ transactionID: id }` passed as `req` makes Payload's own `update` join the same transaction instead of opening its own. So the field merge, the repointing, the archive and the pending-claim sweep all commit together or roll back together, and the old "restore the source's unique values" compensation step is gone. The `merge_suggestions` bookkeeping and the audit log stay outside the transaction on purpose: they are best-effort and a missing optional table must not poison the merge. The 42P01 branch keeps the merge working on databases where such a table does not exist.
 
 - [ ] **Step 4: Fill in COVERED_PEOPLE_FIELDS**
 

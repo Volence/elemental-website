@@ -211,7 +211,7 @@ function pgErrorIsUnique(e: any): boolean {
  * row's attempt (not the whole transaction) and lets us delete only the one truly-duplicate row.
  * Never deletes from `people` itself; a collision there is rethrown instead.
  */
-async function repointColumn(
+export async function repointColumn(
   tx: any,
   table: string,
   column: string,
@@ -280,6 +280,10 @@ async function repointColumnRowByRow(
 /**
  * Merge source into target. Target keeps its id. Nothing is deleted except the source's
  * sessions and junction rows that would duplicate ones the target already has.
+ *
+ * The field merge, the reference repointing, the archive and the pending-claim sweep all run
+ * inside one Payload-managed transaction, so a failure anywhere leaves the source and target
+ * exactly as they were.
  */
 export async function mergePeople(
   payload: Payload,
@@ -319,28 +323,36 @@ export async function mergePeople(
   // username follows discordId (Payload login identifier)
   if (data.discordId) data.username = data.discordId
 
-  if (Object.keys(data).length > 0) {
-    // The source must release unique values (discord_id, username, email) before the target takes them.
-    // Save them first so a failed target update can be undone rather than left half-applied.
-    const drizzle0 = (payload as any).db.drizzle
-    const savedDiscordId = s.discordId ?? null
-    const savedUsername = s.username ?? null
-    const savedEmail = s.email ?? null
-    await drizzle0.execute(sql`UPDATE people SET discord_id = NULL, username = NULL, email = NULL WHERE id = ${sourceId}`)
-    try {
-      await payload.update({ collection: 'people', id: targetId, data: stripRowIds(data) as any, overrideAccess: true })
-    } catch (err) {
-      await drizzle0.execute(
-        sql`UPDATE people SET discord_id = ${savedDiscordId}, username = ${savedUsername}, email = ${savedEmail} WHERE id = ${sourceId}`,
-      )
-      throw err
-    }
-    log.push(`Merged fields into target: ${Object.keys(data).join(', ')}`)
+  // The source's unique values that the target may take over. Recorded in the audit log so a
+  // merge never drops an identifier without a trace of where it went.
+  const sourceIdentity = {
+    discordId: s.discordId ?? null,
+    discordUsername: s.discordUsername ?? null,
+    email: s.email ?? null,
+    username: s.username ?? null,
   }
 
-  // 2. Repoint references and archive the source, in one transaction.
-  const drizzle = (payload as any).db.drizzle
-  await drizzle.transaction(async (tx: any) => {
+  // Everything below runs in one Payload-managed transaction: the field merge, the repointing,
+  // the archive and the claim sweep either all land or none do. `tx` is the drizzle handle bound
+  // to that transaction; `req` carries the same transaction into Payload's own operations.
+  const db = (payload as any).db
+  const tid = await db.beginTransaction()
+  const req = { transactionID: tid } as any
+  const tx = db.sessions?.[String(tid)]?.db ?? db.drizzle
+
+  try {
+    if (Object.keys(data).length > 0) {
+      // The source must release the unique values the target is about to take (a unique index
+      // covers discord_id, username and email). Only those - anything the target is not taking
+      // stays on the archived row. discord_id/username go regardless: the archive step below
+      // clears them anyway.
+      const released = ['discord_id = NULL', 'username = NULL']
+      if (data.email) released.push('email = NULL')
+      await tx.execute(sql.raw(`UPDATE people SET ${released.join(', ')} WHERE id = ${sourceId}`))
+      await payload.update({ collection: 'people', id: targetId, data: stripRowIds(data) as any, overrideAccess: true, req })
+      log.push(`Merged fields into target: ${Object.keys(data).join(', ')}`)
+    }
+
     for (const { table, column } of PEOPLE_FK_COLUMNS) {
       if (table === 'people' && column === 'merged_into_id') continue // handled below
       // Claims are history: a claim's claimant and target must keep pointing at the rows the
@@ -368,8 +380,14 @@ export async function mergePeople(
     `)
     const declinedCount = (declined as any)?.rowCount ?? (declined as any)?.rows?.length ?? 0
     if (declinedCount > 0) log.push(`Declined ${declinedCount} pending claim(s) superseded by the merge`)
-  })
 
+    await db.commitTransaction(tid)
+  } catch (err) {
+    await db.rollbackTransaction(tid)
+    throw err
+  }
+
+  const drizzle = db.drizzle
   try {
     await drizzle.execute(sql.raw(
       `UPDATE merge_suggestions SET status = 'merged', updated_at = now() WHERE status = 'pending' AND (new_person_id IN (${sourceId}, ${targetId}) OR existing_person_id IN (${sourceId}, ${targetId}))`,
@@ -383,7 +401,7 @@ export async function mergePeople(
       collection: 'people',
       documentId: targetId,
       documentTitle: t.name,
-      metadata: { identity: 'merge', sourceId, targetId, conflicts, note: args.note ?? null, log },
+      metadata: { identity: 'merge', sourceId, targetId, conflicts, sourceIdentity, note: args.note ?? null, log },
     })
   } catch (e) {
     console.error('[mergePeople] audit log failed:', e)
