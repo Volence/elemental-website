@@ -58,6 +58,13 @@ S3_SECRET_ACCESS_KEY=your-secret-key
 - **S3_ACCESS_KEY_ID**: AWS IAM access key
 - **S3_SECRET_ACCESS_KEY**: AWS IAM secret key
 
+### Discord OAuth (Optional)
+```bash
+NEXT_PUBLIC_DISCORD_INVITE_URL=https://discord.gg/elemental
+```
+- **NEXT_PUBLIC_DISCORD_INVITE_URL**: Invite link shown to non-members on the "join the Discord first" page
+  - Defaults to `https://discord.gg/elemental` if unset
+
 ## Local Development Setup
 
 1. Copy the environment template:

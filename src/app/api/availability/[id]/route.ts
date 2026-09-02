@@ -199,27 +199,16 @@ export async function PATCH(
   }
 }
 
-async function getDiscordIdentity(request: NextRequest): Promise<{
-  id: string
-  username: string
-  global_name?: string
-  avatar?: string | null
-} | null> {
-  const payloadToken = request.cookies.get('payload-token')?.value
-  if (!payloadToken) return null
-
+async function getDiscordIdentity(request: NextRequest): Promise<{ id: string; username: string; global_name?: string; avatar?: string } | null> {
+  const token = request.cookies.get('payload-token')?.value
+  if (!token) return null
   try {
     const payload = await getPayload({ config: configPromise })
-    const { user } = await payload.auth({ headers: new Headers({ Authorization: `JWT ${payloadToken}` }) })
-    if (user && (user as any).discordId) {
-      return {
-        id: (user as any).discordId,
-        username: (user as any).name || (user as any).email,
-        global_name: (user as any).name,
-        avatar: null,
-      }
-    }
-  } catch {}
-
-  return null
+    const { user } = await payload.auth({ headers: new Headers({ Authorization: `JWT ${token}` }) })
+    const u = user as any
+    if (!u?.discordId) return null
+    return { id: u.discordId, username: u.discordUsername || u.name, global_name: u.name, avatar: u.discordAvatar || undefined }
+  } catch {
+    return null
+  }
 }

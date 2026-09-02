@@ -70,7 +70,7 @@ export default async function SignupPage({
       )}
 
       <a
-        href="/api/auth/discord?signup=true&returnUrl=/admin"
+        href="/api/auth/discord?returnUrl=/admin"
         className="flex items-center justify-center gap-3 w-full px-4 py-3 bg-[#5865F2] text-white rounded-lg hover:bg-[#4752c4] font-medium transition-colors text-lg"
       >
         {discordIcon}

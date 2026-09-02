@@ -117,7 +117,7 @@ export const HeaderNav: React.FC<{ data: HeaderType; user: NavUser | null }> = (
             </div>
           ) : (
             <Link
-              href={`/api/auth/discord?signup=true&returnUrl=${encodeURIComponent(pathname)}`}
+              href={`/api/auth/discord?returnUrl=${encodeURIComponent(pathname)}`}
               className="text-sm font-medium px-3 py-1.5 rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-foreground/40 transition-colors"
             >
               Sign in
@@ -213,7 +213,7 @@ export const HeaderNav: React.FC<{ data: HeaderType; user: NavUser | null }> = (
                 </div>
               ) : (
                 <Link
-                  href={`/api/auth/discord?signup=true&returnUrl=${encodeURIComponent(pathname)}`}
+                  href={`/api/auth/discord?returnUrl=${encodeURIComponent(pathname)}`}
                   className="block text-sm font-medium py-2 text-muted-foreground hover:text-foreground transition-colors"
                   onClick={() => setMobileOpen(false)}
                 >

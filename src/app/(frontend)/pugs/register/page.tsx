@@ -101,7 +101,7 @@ export default async function PugRegisterPage() {
           <RegisterOpenButton />
         ) : (
           <a
-            href="/api/auth/discord?link=true&pugSignup=true&returnUrl=/pugs/register"
+            href="/api/auth/discord?link=true&returnUrl=/pugs/register"
             className="flex items-center justify-center gap-3 w-full px-4 py-3 bg-[#5865F2] text-white rounded-lg hover:bg-[#4752c4] font-medium transition-colors"
           >
             {discordIcon}
@@ -122,7 +122,7 @@ export default async function PugRegisterPage() {
       </p>
 
       <a
-        href="/api/auth/discord?pugSignup=true&returnUrl=/pugs/register"
+        href="/api/auth/discord?returnUrl=/pugs/register"
         className="flex items-center justify-center gap-3 w-full px-4 py-3 bg-[#5865F2] text-white rounded-lg hover:bg-[#4752c4] font-medium transition-colors"
       >
         {discordIcon}

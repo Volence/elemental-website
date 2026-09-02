@@ -92,7 +92,7 @@ export default async function PugsPage() {
 
       {!currentUser && (
         <a
-          href="/api/auth/discord?pugSignup=true&returnUrl=/pugs/register"
+          href="/api/auth/discord?returnUrl=/pugs/register"
           className="flex items-center gap-3 mb-6 px-5 py-3.5 border border-gray-800 rounded-xl bg-gray-900/50 hover:border-gray-700 hover:bg-gray-900/80 transition-all duration-200 group"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="text-[#5865F2] shrink-0">
