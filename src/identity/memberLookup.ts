@@ -9,7 +9,9 @@ export async function attachPeople<T extends { id: string }>(payload: Payload, h
   const people = await payload.find({
     collection: 'people',
     where: { discordId: { in: hits.map((h) => h.id) } },
-    limit: hits.length,
+    // Headroom: until the unique index on discord_id is live, one Discord ID can still be on
+    // more than one row, and a truncated page would silently drop a hit's person.
+    limit: hits.length * 2,
     depth: 0,
     overrideAccess: true,
     select: { name: true, discordId: true },
@@ -20,7 +22,9 @@ export async function attachPeople<T extends { id: string }>(payload: Payload, h
   const teamsByPerson = new Map<number, string[]>()
   if (byDiscordId.size > 0) {
     const ids = [...byDiscordId.values()].map((p) => p.id)
-    const teams = await payload.find({ collection: 'teams', limit: 500, depth: 0, overrideAccess: true, select: { name: true, roster: true, subs: true, manager: true, coaches: true, captain: true } })
+    // limit 0 is "no limit" in Payload: every team has to be scanned or a person's team list
+    // comes back short.
+    const teams = await payload.find({ collection: 'teams', limit: 0, depth: 0, overrideAccess: true, select: { name: true, roster: true, subs: true, manager: true, coaches: true, captain: true } })
     for (const t of teams.docs as any[]) {
       const entries = [...(t.roster ?? []), ...(t.subs ?? []), ...(t.manager ?? []), ...(t.coaches ?? []), ...(t.captain ?? [])]
       for (const e of entries) {

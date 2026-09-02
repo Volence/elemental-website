@@ -57,6 +57,13 @@ export async function createPersonFromDiscord(payload: Payload, profile: Discord
     const doc = await payload.create({ collection: 'people', data: data as any, overrideAccess: true, context: { identityCreate: true } })
     return toRow(doc)
   } catch (err: any) {
+    // Two simultaneous first logins race here: whoever loses gets a unique violation on
+    // discord_id or username. The winner's row is the right answer, so take it.
+    if ((err?.code ?? err?.cause?.code) === '23505') {
+      const existing = await findPersonByDiscordId(payload, profile.id)
+      if (existing) return existing
+      throw err
+    }
     if (!err?.message?.includes('slug')) throw err
     const slug = `${profile.displayName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${profile.id.slice(-4)}`
     const doc = await payload.create({ collection: 'people', data: { ...data, slug } as any, overrideAccess: true, context: { identityCreate: true } })
@@ -71,8 +78,10 @@ export async function refreshDiscordProfile(payload: Payload, personId: number, 
 }
 
 export async function setDiscordIdentity(payload: Payload, personId: number, profile: DiscordProfile): Promise<void> {
+  // username is the Discord row's login identifier, so a person with none takes the Discord ID
+  // in the same statement - never as a second write that could leave the row half-linked.
   await db(payload).execute(
-    sql`UPDATE people SET discord_id = ${profile.id}, discord_username = ${profile.username}, discord_avatar = ${profile.avatar} WHERE id = ${personId}`,
+    sql`UPDATE people SET discord_id = ${profile.id}, discord_username = ${profile.username}, discord_avatar = ${profile.avatar}, username = COALESCE(username, ${profile.id}) WHERE id = ${personId}`,
   )
 }
 

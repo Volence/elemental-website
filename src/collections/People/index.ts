@@ -541,6 +541,12 @@ export const People: CollectionConfig = {
     ],
     beforeChange: [
       async ({ data, operation, req, originalDoc }) => {
+        // username mirrors discordId (it is what Payload logs Discord rows in with), so
+        // unlinking Discord has to release the username too. A stale one would keep the unique
+        // index busy and block the real owner of that Discord ID from ever signing in.
+        if (data && operation === 'update' && 'discordId' in data && !data.discordId && originalDoc?.discordId) {
+          data.username = null
+        }
         if (data) {
           if (!data.name || data.name === null || data.name === undefined || String(data.name).trim() === '') {
             if (operation === 'update' && originalDoc?.id) {

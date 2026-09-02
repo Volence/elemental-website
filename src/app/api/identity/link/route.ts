@@ -29,7 +29,6 @@ export async function POST(request: NextRequest) {
   if (!profile) return NextResponse.json({ error: 'Not a member of any Elemental server' }, { status: 404 })
 
   await setDiscordIdentity(payload, personId, profile)
-  await (payload as any).db.drizzle.execute((await import('drizzle-orm')).sql`UPDATE people SET username = ${discordId} WHERE id = ${personId} AND username IS NULL`)
   const person: any = await payload.findByID({ collection: 'people', id: personId, depth: 0, overrideAccess: true })
   await createAuditLog(payload, {
     user: user.id,

@@ -24,3 +24,11 @@ Scrim ownership is still keyed by email; Discord-only accounts use discord_<id>@
 2. Work the Unlinked tab; announce the link deadline.
 3. Merge duplicate Discord IDs until the report is clean.
 4. Migration 3 on prod, set `IDENTITY_REQUIRE_DISCORD_ID=true`, deploy.
+
+Migration 3 is the unique index. `CREATE INDEX CONCURRENTLY` cannot run inside a transaction, so on prod run it by hand in psql (see `docs/guides/` prod DB access) once step 3 reports no duplicates:
+
+```sql
+CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS people_discord_id_unique ON people (discord_id) WHERE discord_id IS NOT NULL;
+```
+
+Also remove `/api/availability/discord-callback` from the Discord application's redirect URIs: `/api/auth/discord/callback` is the only callback the site uses now, and a leftover redirect URI is a second way in.
