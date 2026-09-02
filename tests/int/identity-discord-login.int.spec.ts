@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { resolveDiscordLogin, resolveDiscordLink, type LoginDeps, type LinkDeps } from '@/identity/discordLogin'
+import { resolveDiscordLogin, resolveDiscordLink, isSyntheticIdentity, type LoginDeps, type LinkDeps } from '@/identity/discordLogin'
 
 const profile = { id: '111111111111111111', username: 'volence', displayName: 'Volence', avatar: 'abc' }
 const person = { id: 7, name: 'Volence', email: null, discordId: profile.id, role: 'user', isInactive: false }
@@ -65,8 +65,8 @@ describe('resolveDiscordLink', () => {
     const out = await resolveDiscordLink(linkDeps({ findByDiscordId: async () => ({ ...person, id: 5 }) }), 5, profile)
     expect(out).toEqual({ kind: 'already_linked_here' })
   })
-  it('absorbs a stray self-signup row: no password, no references', async () => {
-    const stray = { ...person, id: 9, hash: null }
+  it('absorbs a stray self-signup row: no email, no references (even though it has a hash)', async () => {
+    const stray = { ...person, id: 9, hash: 'x', email: null }
     const clear = vi.fn(async () => {}), inactive = vi.fn(async () => {}), set = vi.fn(async () => {})
     const out = await resolveDiscordLink(linkDeps({ findByDiscordId: async () => stray, clearDiscordId: clear, markInactive: inactive, setIdentity: set }), 5, profile)
     expect(out).toEqual({ kind: 'linked' })
@@ -74,12 +74,28 @@ describe('resolveDiscordLink', () => {
     expect(inactive).toHaveBeenCalledWith(9, 5)
     expect(set).toHaveBeenCalledWith(5, profile)
   })
-  it('refuses when the other row has a password', async () => {
-    const other = { ...person, id: 9, hash: 'x' }
+  it('absorbs a row with a synthetic placeholder email', async () => {
+    const stray = { ...person, id: 9, hash: 'x', email: 'old_discord_123@elmt.placeholder' }
+    const inactive = vi.fn(async () => {})
+    const out = await resolveDiscordLink(linkDeps({ findByDiscordId: async () => stray, markInactive: inactive }), 5, profile)
+    expect(out).toEqual({ kind: 'linked' })
+    expect(inactive).toHaveBeenCalledWith(9, 5)
+  })
+  it('refuses when the other row has a real email', async () => {
+    const other = { ...person, id: 9, hash: 'x', email: 'real@example.com' }
     expect(await resolveDiscordLink(linkDeps({ findByDiscordId: async () => other }), 5, profile)).toEqual({ kind: 'conflict', otherId: 9 })
   })
   it('refuses when the other row has team or staff references', async () => {
-    const other = { ...person, id: 9, hash: null }
+    const other = { ...person, id: 9, hash: null, email: null }
     expect(await resolveDiscordLink(linkDeps({ findByDiscordId: async () => other, hasReferences: async () => true }), 5, profile)).toEqual({ kind: 'conflict', otherId: 9 })
+  })
+})
+
+describe('isSyntheticIdentity', () => {
+  it('treats a missing email and an @elmt.placeholder address as synthetic', () => {
+    expect(isSyntheticIdentity({ email: null })).toBe(true)
+    expect(isSyntheticIdentity({ email: '' })).toBe(true)
+    expect(isSyntheticIdentity({ email: 'x@elmt.placeholder' })).toBe(true)
+    expect(isSyntheticIdentity({ email: 'real@example.com' })).toBe(false)
   })
 })

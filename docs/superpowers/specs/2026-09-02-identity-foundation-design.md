@@ -57,7 +57,7 @@ State stays base64url JSON plus the short-lived CSRF cookie, as today. Scope sta
 `GET /api/auth/discord/callback` has two flows.
 
 **Link.** Requires a valid `payload-token`. If the Discord ID is already on another row:
-- If that row has no password hash and no team or staff references, it is a stray self-signup. Move the Discord ID to the current row and mark the stray row inactive with `mergedInto` set. This replaces today's `@elmt.placeholder` email heuristic.
+- If that row has no real email (null or an @elmt.placeholder address) and no team or staff references, it is a stray self-signup. Move the Discord ID to the current row and mark the stray row inactive with `mergedInto` set. This replaces today's `@elmt.placeholder` email heuristic.
 - Otherwise fail with `discord_already_linked` and point the user at the Identity page merge tool.
 
 **Login.**

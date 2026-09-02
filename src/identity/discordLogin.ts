@@ -47,15 +47,25 @@ export type LinkOutcome =
   | { kind: 'conflict'; otherId: number }
 
 /**
- * Link flow. A "stray" row (Discord self-signup with no password and no team/staff references)
- * is absorbed: its Discord ID moves to the current person and the stray is archived.
+ * A row nobody has ever claimed as a real account: either no email at all (the Discord
+ * self-signup shape, which uses username = discordId and no email) or a synthetic
+ * `@elmt.placeholder` address left over from the old import. Password hashes are useless as a
+ * signal because every row carries one - Discord self-signups get a random unusable password.
+ */
+export function isSyntheticIdentity(row: { email?: string | null }): boolean {
+  return !row.email || row.email.endsWith('@elmt.placeholder')
+}
+
+/**
+ * Link flow. A "stray" row (a synthetic identity with no team/staff references) is absorbed:
+ * its Discord ID moves to the current person and the stray is archived.
  */
 export async function resolveDiscordLink(deps: LinkDeps, currentPersonId: number, profile: DiscordProfile): Promise<LinkOutcome> {
   const other = await deps.findByDiscordId(profile.id)
   if (other && other.id === currentPersonId) return { kind: 'already_linked_here' }
 
   if (other) {
-    const stray = !other.hash && !(await deps.hasReferences(other.id))
+    const stray = isSyntheticIdentity(other) && !(await deps.hasReferences(other.id))
     if (!stray) return { kind: 'conflict', otherId: other.id }
     await deps.clearDiscordId(other.id)
     await deps.markInactive(other.id, currentPersonId)
