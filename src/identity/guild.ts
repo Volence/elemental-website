@@ -104,7 +104,9 @@ export function createGuildGateway(deps: GuildGatewayDeps): GuildGateway {
           const m = await g.fetchMember(discordId)
           profile = profile ?? toProfile(m)
           servers.push(g.label)
-        } catch {}
+        } catch (e: any) {
+          if (e?.code !== UNKNOWN_MEMBER) throw e
+        }
       }
       return profile ? { ...profile, servers } : null
     },
@@ -115,7 +117,9 @@ export function createGuildGateway(deps: GuildGatewayDeps): GuildGateway {
         try {
           const m = await g.fetchMember(discordId)
           out.push({ guildId: g.id, label: g.label, joinedAt: m.joinedAt })
-        } catch {}
+        } catch (e: any) {
+          if (e?.code !== UNKNOWN_MEMBER) throw e
+        }
       }
       return out
     },
@@ -169,9 +173,15 @@ export async function getGuildGateway(): Promise<GuildGateway> {
       ])
       const client = await ensureDiscordClient()
       if (!client) return []
-      const payload = await getPayload({ config })
-      const servers = await payload.find({ collection: 'discord-servers', where: { active: { equals: true } }, limit: 50, overrideAccess: true })
-      const registered = servers.docs.map((s: any) => ({ guildId: String(s.guildId), label: String(s.label) }))
+      let registered: Array<{ guildId: string; label: string }>
+      try {
+        const payload = await getPayload({ config })
+        const servers = await payload.find({ collection: 'discord-servers', where: { active: { equals: true } }, limit: 50, overrideAccess: true })
+        registered = servers.docs.map((s: any) => ({ guildId: String(s.guildId), label: String(s.label) }))
+      } catch (err) {
+        console.error('[identity] discord-servers registry unavailable:', err)
+        return []
+      }
       if (registered.length === 0 && process.env.DISCORD_GUILD_ID) {
         registered.push({ guildId: process.env.DISCORD_GUILD_ID, label: 'Elemental' })
       }

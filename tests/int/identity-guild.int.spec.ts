@@ -64,6 +64,25 @@ describe('createGuildGateway', () => {
       { guildId: 'g2', label: 'NA', joinedAt: '2024-06-01T00:00:00.000Z' },
     ])
   })
+  it('fetchProfile rethrows a non-Unknown-Member error', async () => {
+    const broken: GuildLike = { ...hub, fetchMember: async () => { throw new Error('boom') } }
+    const gw = createGuildGateway({ guilds: async () => [broken] })
+    await expect(gw.fetchProfile('111111111111111111')).rejects.toThrow('boom')
+  })
+  it('fetchProfile ignores Unknown Member on one guild and still returns servers from another', async () => {
+    const brokenUnknownMember: GuildLike = {
+      ...hub,
+      fetchMember: async () => { const e: any = new Error('Unknown Member'); e.code = 10007; throw e },
+    }
+    const gw = createGuildGateway({ guilds: async () => [brokenUnknownMember, na] })
+    const profile = await gw.fetchProfile('111111111111111111')
+    expect(profile?.servers).toEqual(['NA'])
+  })
+  it('joinDates rethrows a non-Unknown-Member error', async () => {
+    const broken: GuildLike = { ...hub, fetchMember: async () => { throw new Error('boom') } }
+    const gw = createGuildGateway({ guilds: async () => [broken] })
+    await expect(gw.joinDates('111111111111111111')).rejects.toThrow('boom')
+  })
 })
 
 describe('snowflakeCreatedAt', () => {
