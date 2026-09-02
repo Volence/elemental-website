@@ -30,7 +30,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
   const tier = claimTier(target, org.totalDocs > 0 || prod.totalDocs > 0)
   if (!canReviewClaim({ reviewer: { id: user.id as number, role: (user as any).role }, tier, targetTeamManagerIds: [...managerIds] })) {
-    return NextResponse.json({ error: tier === 'admin' ? 'Only an admin can approve this claim' : 'Only this team\'s manager or staff can approve' }, { status: 403 })
+    return NextResponse.json({ error: tier === 'admin' ? `Only an admin can ${action} this claim` : `Only this team's manager or staff can ${action}` }, { status: 403 })
   }
 
   let log: string[] | undefined

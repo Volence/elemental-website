@@ -5,26 +5,38 @@ import { claimTier, canReviewClaim } from '@/identity/claims'
 import { getGuildGateway, snowflakeCreatedAt } from '@/identity/guild'
 import { notifyNewClaim } from '@/identity/notify'
 
-async function staffRowExists(payload: any, personId: number): Promise<boolean> {
-  const [org, prod] = await Promise.all([
-    payload.count({ collection: 'organization-staff', where: { person: { equals: personId } }, overrideAccess: true }),
-    payload.count({ collection: 'production', where: { person: { equals: personId } }, overrideAccess: true }),
-  ])
-  return org.totalDocs > 0 || prod.totalDocs > 0
-}
+const pid = (e: any) => (typeof e?.person === 'object' ? e.person?.id : e?.person)
 
-async function teamsOf(payload: any, personId: number): Promise<{ names: string[]; managerIds: number[] }> {
-  const teams = await payload.find({ collection: 'teams', limit: 500, depth: 0, overrideAccess: true, select: { name: true, roster: true, subs: true, manager: true } })
+/** In-memory lookup built once per request from a preloaded teams list (see loadTeams). */
+function teamsOfPerson(teams: any[], personId: number): { names: string[]; managerIds: number[] } {
   const names: string[] = []
   const managerIds = new Set<number>()
-  const pid = (e: any) => (typeof e?.person === 'object' ? e.person?.id : e?.person)
-  for (const t of teams.docs) {
+  for (const t of teams) {
     const onTeam = [...(t.roster ?? []), ...(t.subs ?? [])].some((e: any) => pid(e) === personId)
     if (!onTeam) continue
     names.push(t.name)
     for (const m of t.manager ?? []) if (pid(m)) managerIds.add(pid(m))
   }
   return { names, managerIds: [...managerIds] }
+}
+
+async function loadTeams(payload: any): Promise<any[]> {
+  const teams = await payload.find({ collection: 'teams', limit: 500, depth: 0, overrideAccess: true, select: { name: true, roster: true, subs: true, manager: true } })
+  return teams.docs
+}
+
+/** Person ids with any organization-staff or production row, loaded once per request. */
+async function loadStaffPersonIds(payload: any): Promise<Set<number>> {
+  const [org, prod] = await Promise.all([
+    payload.find({ collection: 'organization-staff', limit: 2000, depth: 0, overrideAccess: true, select: { person: true } }),
+    payload.find({ collection: 'production', limit: 2000, depth: 0, overrideAccess: true, select: { person: true } }),
+  ])
+  const ids = new Set<number>()
+  for (const d of [...org.docs, ...prod.docs] as any[]) {
+    const id = pid(d)
+    if (id) ids.add(id)
+  }
+  return ids
 }
 
 /** File a claim: "the logged-in person is really <target>". Target must be a current candidate. */
@@ -74,15 +86,20 @@ export async function GET(request: NextRequest) {
   const { payload, user } = auth.data
   const status = request.nextUrl.searchParams.get('status') ?? 'pending'
 
-  const res = await payload.find({ collection: 'identity-claims', where: { status: { equals: status } }, sort: '-createdAt', limit: 200, depth: 1, overrideAccess: true })
+  const [res, teams, staffPersonIds] = await Promise.all([
+    payload.find({ collection: 'identity-claims', where: { status: { equals: status } }, sort: '-createdAt', limit: 200, depth: 1, overrideAccess: true }),
+    loadTeams(payload),
+    loadStaffPersonIds(payload),
+  ])
   const claims = []
   for (const c of res.docs as any[]) {
     const target = c.target
     const claimant = c.claimant
     if (!target || !claimant) continue
-    const [hasStaff, teams] = await Promise.all([staffRowExists(payload, target.id), teamsOf(payload, target.id)])
+    const hasStaff = staffPersonIds.has(target.id)
+    const teamsInfo = teamsOfPerson(teams, target.id)
     const tier = claimTier(target, hasStaff)
-    const canReview = canReviewClaim({ reviewer: { id: user.id as number, role: (user as any).role }, tier, targetTeamManagerIds: teams.managerIds })
+    const canReview = canReviewClaim({ reviewer: { id: user.id as number, role: (user as any).role }, tier, targetTeamManagerIds: teamsInfo.managerIds })
     if (!canReview && (user as any).role !== 'admin' && (user as any).role !== 'staff-manager') continue
     claims.push({
       id: c.id,
@@ -92,7 +109,7 @@ export async function GET(request: NextRequest) {
       tier,
       canReview,
       claimant: { id: claimant.id, name: claimant.name, discordId: claimant.discordId, discordUsername: claimant.discordUsername, ...(c.discordSnapshot ?? {}) },
-      target: { id: target.id, name: target.name, role: target.role, departments: target.departments ?? {}, teams: teams.names },
+      target: { id: target.id, name: target.name, role: target.role, departments: target.departments ?? {}, teams: teamsInfo.names },
     })
   }
   return NextResponse.json({ claims })
