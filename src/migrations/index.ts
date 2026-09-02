@@ -37,6 +37,7 @@ import * as migration_20260702_add_next_week_release_day from "./20260702_add_ne
 import * as migration_20260815_add_staff_roles_and_regions from "./20260815_add_staff_roles_and_regions";
 import * as migration_20260902_social_media_tasks_merge from "./20260902_social_media_tasks_merge";
 import * as migration_20260902_social_media_digest_records_daily_ping from "./20260902_social_media_digest_records_daily_ping";
+import * as migration_20260902_identity_foundation_fields from './20260902_identity_foundation_fields';
 
 export const migrations = [
   {
@@ -233,5 +234,10 @@ export const migrations = [
     up: migration_20260902_social_media_digest_records_daily_ping.up,
     down: migration_20260902_social_media_digest_records_daily_ping.down,
     name: "20260902_social_media_digest_records_daily_ping",
+  },
+  {
+    up: migration_20260902_identity_foundation_fields.up,
+    down: migration_20260902_identity_foundation_fields.down,
+    name: "20260902_identity_foundation_fields",
   },
 ];

@@ -51,7 +51,14 @@ export const People: CollectionConfig = {
     plural: 'People',
   },
   auth: {
-    tokenExpiration: 28800, // 8 hours
+    tokenExpiration: 28800,
+    // Discord-created rows have no email. username = discordId satisfies Payload's
+    // "username or email" rule. Email login stays for break-glass admins.
+    loginWithUsername: {
+      allowEmailLogin: true,
+      requireEmail: false,
+      requireUsername: false,
+    },
   },
   access: {
     admin: authenticated,
@@ -440,6 +447,41 @@ export const People: CollectionConfig = {
           return 'Discord ID must be 17-19 digits'
         }
         return true
+      },
+    },
+    {
+      name: 'discordUsername',
+      type: 'text',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Discord username, refreshed on every Discord login.',
+      },
+    },
+    {
+      name: 'discordAvatar',
+      type: 'text',
+      admin: { hidden: true, description: 'Discord avatar hash, refreshed on login.' },
+    },
+    {
+      name: 'isInactive',
+      type: 'checkbox',
+      defaultValue: false,
+      index: true,
+      access: { update: managerOnly },
+      admin: {
+        position: 'sidebar',
+        description: 'Hidden from pickers and the unlinked list. Historical rosters still show this person.',
+      },
+    },
+    {
+      name: 'mergedInto',
+      type: 'relationship',
+      relationTo: 'people',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: 'Set when this row was merged into another person.',
       },
     },
     {

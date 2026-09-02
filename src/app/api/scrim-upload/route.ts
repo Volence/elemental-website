@@ -32,6 +32,9 @@ export async function POST(request: Request) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+    if (!user.email) {
+      return NextResponse.json({ error: 'An email on your account is required to upload scrims' }, { status: 400 })
+    }
 
     // Role/flag gating happens in validateUploadTarget below, once we know
     // whether this is an org-team or external-team upload.

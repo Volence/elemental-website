@@ -42,5 +42,10 @@ export const DiscordServers: CollectionConfig = {
     { name: 'serverLogChannelId', type: 'text' },
     { name: 'newAccountFlagDays', type: 'number', defaultValue: 7 },
     { name: 'attachProfileLink', type: 'checkbox', defaultValue: true },
+    {
+      name: 'identityClaimsChannelId',
+      type: 'text',
+      admin: { description: 'Channel that receives a message when someone files an identity claim. Leave blank to disable.' },
+    },
   ],
 }

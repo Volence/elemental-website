@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     pages: Page;
     people: Person;
+    'identity-claims': IdentityClaim;
     teams: Team;
     'faceit-leagues': FaceitLeague;
     'global-calendar-events': GlobalCalendarEvent;
@@ -127,6 +128,7 @@ export interface Config {
   collectionsSelect: {
     pages: PagesSelect<false> | PagesSelect<true>;
     people: PeopleSelect<false> | PeopleSelect<true>;
+    'identity-claims': IdentityClaimsSelect<false> | IdentityClaimsSelect<true>;
     teams: TeamsSelect<false> | TeamsSelect<true>;
     'faceit-leagues': FaceitLeaguesSelect<false> | FaceitLeaguesSelect<true>;
     'global-calendar-events': GlobalCalendarEventsSelect<false> | GlobalCalendarEventsSelect<true>;
@@ -241,22 +243,34 @@ export interface Config {
   };
 }
 export interface PersonAuthOperations {
-  forgotPassword: {
-    email: string;
-    password: string;
-  };
-  login: {
-    email: string;
-    password: string;
-  };
+  forgotPassword:
+    | {
+        email: string;
+      }
+    | {
+        username: string;
+      };
+  login:
+    | {
+        email: string;
+        password: string;
+      }
+    | {
+        password: string;
+        username: string;
+      };
   registerFirstUser: {
-    email: string;
     password: string;
+    username?: string;
+    email?: string;
   };
-  unlock: {
-    email: string;
-    password: string;
-  };
+  unlock:
+    | {
+        email: string;
+      }
+    | {
+        username: string;
+      };
 }
 /**
  * Create and edit website pages with rich content, blocks, and SEO settings.
@@ -704,12 +718,29 @@ export interface Person {
    */
   discordId?: string | null;
   /**
+   * Discord username, refreshed on every Discord login.
+   */
+  discordUsername?: string | null;
+  /**
+   * Discord avatar hash, refreshed on login.
+   */
+  discordAvatar?: string | null;
+  /**
+   * Hidden from pickers and the unlinked list. Historical rosters still show this person.
+   */
+  isInactive?: boolean | null;
+  /**
+   * Set when this row was merged into another person.
+   */
+  mergedInto?: (number | null) | Person;
+  /**
    * Show this person in the Live Streamers section when streaming.
    */
   showInLiveStreamers?: boolean | null;
   updatedAt: string;
   createdAt: string;
-  email: string;
+  email?: string | null;
+  username?: string | null;
   resetPasswordToken?: string | null;
   resetPasswordExpiration?: string | null;
   salt?: string | null;
@@ -1299,6 +1330,35 @@ export interface TournamentTemplate {
           | null;
         id?: string | null;
       }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Requests from Discord-created accounts to take over a legacy person row. Reviewed on /admin/identity.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "identity-claims".
+ */
+export interface IdentityClaim {
+  id: number;
+  claimant: number | Person;
+  target: number | Person;
+  status: 'pending' | 'approved' | 'declined';
+  reviewer?: (number | null) | Person;
+  reviewedAt?: string | null;
+  note?: string | null;
+  /**
+   * Claimant Discord identity at claim time: username, displayName, accountCreatedAt, joinDates.
+   */
+  discordSnapshot?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
     | null;
   updatedAt: string;
   createdAt: string;
@@ -2816,6 +2876,10 @@ export interface DiscordServer {
   serverLogChannelId?: string | null;
   newAccountFlagDays?: number | null;
   attachProfileLink?: boolean | null;
+  /**
+   * Channel that receives a message when someone files an identity claim. Leave blank to disable.
+   */
+  identityClaimsChannelId?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -3404,6 +3468,10 @@ export interface PayloadLockedDocument {
         value: number | Person;
       } | null)
     | ({
+        relationTo: 'identity-claims';
+        value: number | IdentityClaim;
+      } | null)
+    | ({
         relationTo: 'teams';
         value: number | Team;
       } | null)
@@ -3789,10 +3857,15 @@ export interface PeopleSelect<T extends boolean = true> {
   pugBanOffenseCount?: T;
   slug?: T;
   discordId?: T;
+  discordUsername?: T;
+  discordAvatar?: T;
+  isInactive?: T;
+  mergedInto?: T;
   showInLiveStreamers?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
+  username?: T;
   resetPasswordToken?: T;
   resetPasswordExpiration?: T;
   salt?: T;
@@ -3806,6 +3879,21 @@ export interface PeopleSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "identity-claims_select".
+ */
+export interface IdentityClaimsSelect<T extends boolean = true> {
+  claimant?: T;
+  target?: T;
+  status?: T;
+  reviewer?: T;
+  reviewedAt?: T;
+  note?: T;
+  discordSnapshot?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -4677,6 +4765,7 @@ export interface DiscordServersSelect<T extends boolean = true> {
   serverLogChannelId?: T;
   newAccountFlagDays?: T;
   attachProfileLink?: T;
+  identityClaimsChannelId?: T;
   updatedAt?: T;
   createdAt?: T;
 }

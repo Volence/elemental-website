@@ -12,6 +12,7 @@ import { Matches } from './collections/Matches'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { People } from './collections/People'
+import { IdentityClaims } from './collections/IdentityClaims'
 import { Teams } from './collections/Teams'
 // Users collection merged into People - see People/index.ts
 import { IgnoredDuplicates } from './collections/IgnoredDuplicates'
@@ -271,6 +272,7 @@ const config = buildConfig({
     
     // ── ORGANIZATION: People & teams ──
     People,
+    IdentityClaims,
     Teams,
     FaceitLeagues,
     GlobalCalendarEvents,
