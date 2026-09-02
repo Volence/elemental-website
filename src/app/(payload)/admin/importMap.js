@@ -104,6 +104,7 @@ import { default as default_302448b4a495c30b527c2bd82b32d2c0 } from '@/component
 import { default as default_a1087e454b1b74ceaf1bf3fd38ecfc7a } from '@/components/DataConsistencyView'
 import { default as default_66dcba8625c994af6076586cb15c754f } from '@/components/UserAvatar'
 import { default as default_aa0a2d19d38a4839dbd373417e210b89 } from '@/components/AdminLogo'
+import { default as default_4a966b4b6647403eb02e9dcfa6c73e27 } from '@/components/BeforeDashboard/LinkDiscordBanner'
 import { default as default_1a7510af427896d367a49dbf838d2de6 } from '@/components/BeforeDashboard'
 import { default as default_c665fb14b647600ee6fac862e3d3aeb2 } from '@/components/FixDatePickerIcons'
 import { SectionThemeApplicator as SectionThemeApplicator_b4f71752b0da9dddb562ddd527781822 } from '@/components/SectionThemeApplicator'
@@ -251,6 +252,7 @@ export const importMap = {
   "@/components/DataConsistencyView#default": default_a1087e454b1b74ceaf1bf3fd38ecfc7a,
   "@/components/UserAvatar#default": default_66dcba8625c994af6076586cb15c754f,
   "@/components/AdminLogo#default": default_aa0a2d19d38a4839dbd373417e210b89,
+  "@/components/BeforeDashboard/LinkDiscordBanner#default": default_4a966b4b6647403eb02e9dcfa6c73e27,
   "@/components/BeforeDashboard#default": default_1a7510af427896d367a49dbf838d2de6,
   "@/components/FixDatePickerIcons#default": default_c665fb14b647600ee6fac862e3d3aeb2,
   "@/components/SectionThemeApplicator#SectionThemeApplicator": SectionThemeApplicator_b4f71752b0da9dddb562ddd527781822,
