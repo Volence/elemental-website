@@ -72,65 +72,67 @@ export const PRISMA_FK_COLUMNS: Array<{ table: string; column: string }> = [
 ]
 
 /**
- * "<collection>.<field path>" for every relationship to people in the registered collections.
- * Populate by running the coverage test once and pasting its `missing` output, then verify each
- * path has a matching table.column above (Payload naming: top-level -> <table>.<field>_id,
- * array/nested -> <table>_<array>.<field>_id, hasMany or polymorphic -> <table>_rels.people_id).
+ * "<collection>.<field path>" -> "<table>.<column>" for every relationship to people in the
+ * registered collections. Populate by running the coverage test once and pasting its `missing`
+ * output (as keys), then filling in the matching table.column value using Payload naming
+ * (top-level -> <table>.<field>_id, array/nested -> <table>_<array>.<field>_id, hasMany or
+ * polymorphic -> <table>_rels.people_id). A dedicated test asserts every value here is present
+ * in PEOPLE_FK_COLUMNS.
  */
-export const COVERED_PEOPLE_FIELDS: string[] = [
-  'people.pugInvitedBy',
-  'people.mergedInto',
-  'identity-claims.claimant',
-  'identity-claims.target',
-  'identity-claims.reviewer',
-  'teams.manager.person',
-  'teams.coaches.person',
-  'teams.captain.person',
-  'teams.coCaptain',
-  'teams.roster.person',
-  'teams.subs.person',
-  'organization-staff.person',
-  'opponent-teams.currentRoster.person',
-  'opponent-teams.previousRoster.person',
-  'scout-reports.reportedBy',
-  'scout-reports.rosterSnapshot.person',
-  'matches.productionWorkflow.observerSignups',
-  'matches.productionWorkflow.producerSignups',
-  'matches.productionWorkflow.casterSignups.user',
-  'matches.productionWorkflow.assignedObserver',
-  'matches.productionWorkflow.assignedProducer',
-  'matches.productionWorkflow.assignedCasters.user',
-  'pug-matches.team1Players.player',
-  'pug-matches.team2Players.player',
-  'pug-matches.reportedBy',
-  'pug-matches.confirmedBy',
-  'pug-matches.disputeResolution.resolvedBy',
-  'pug-leaderboard.player',
-  'social-posts.assignedTo',
-  'social-posts.approvedBy',
-  'production.person',
-  'recruitment-listings.filledBy',
-  'recruitment-listings.createdBy',
-  'discord-polls.createdBy',
-  'availability-calendars.createdBy',
-  'absences.person',
-  'tasks.assignedTo',
-  'tasks.requestedBy',
-  'tasks.comments.author',
-  'watched-threads.addedBy',
-  'twitch-streamers.person',
-  'audit-logs.user',
-  'error-logs.user',
-  'active-sessions.user',
-  'ignored-duplicates.person1',
-  'ignored-duplicates.person2',
-  'invite-links.linkedPerson',
-  'invite-links.usedBy',
-  'invite-links.createdBy',
-  'payload-locked-documents.document',
-  'payload-locked-documents.user',
-  'payload-preferences.user',
-]
+export const COVERED_PEOPLE_FIELDS: Record<string, string> = {
+  'people.pugInvitedBy': 'people.pug_invited_by_id',
+  'people.mergedInto': 'people.merged_into_id',
+  'identity-claims.claimant': 'identity_claims.claimant_id',
+  'identity-claims.target': 'identity_claims.target_id',
+  'identity-claims.reviewer': 'identity_claims.reviewer_id',
+  'teams.manager.person': 'teams_manager.person_id',
+  'teams.coaches.person': 'teams_coaches.person_id',
+  'teams.captain.person': 'teams_captain.person_id',
+  'teams.coCaptain': 'teams.co_captain_id',
+  'teams.roster.person': 'teams_roster.person_id',
+  'teams.subs.person': 'teams_subs.person_id',
+  'organization-staff.person': 'organization_staff.person_id',
+  'opponent-teams.currentRoster.person': 'opponent_teams_current_roster.person_id',
+  'opponent-teams.previousRoster.person': 'opponent_teams_previous_roster.person_id',
+  'scout-reports.reportedBy': 'scout_reports.reported_by_id',
+  'scout-reports.rosterSnapshot.person': 'scout_reports_roster_snapshot.person_id',
+  'matches.productionWorkflow.observerSignups': 'matches_rels.people_id',
+  'matches.productionWorkflow.producerSignups': 'matches_rels.people_id',
+  'matches.productionWorkflow.casterSignups.user': 'caster_su.user_id',
+  'matches.productionWorkflow.assignedObserver': 'matches.production_workflow_assigned_observer_id',
+  'matches.productionWorkflow.assignedProducer': 'matches.production_workflow_assigned_producer_id',
+  'matches.productionWorkflow.assignedCasters.user': 'assigned_c.user_id',
+  'pug-matches.team1Players.player': 'pug_matches_team1_players.player_id',
+  'pug-matches.team2Players.player': 'pug_matches_team2_players.player_id',
+  'pug-matches.reportedBy': 'pug_matches.reported_by_id',
+  'pug-matches.confirmedBy': 'pug_matches.confirmed_by_id',
+  'pug-matches.disputeResolution.resolvedBy': 'pug_matches.dispute_resolution_resolved_by_id',
+  'pug-leaderboard.player': 'pug_leaderboard.player_id',
+  'social-posts.assignedTo': 'social_posts.assigned_to_id',
+  'social-posts.approvedBy': 'social_posts.approved_by_id',
+  'production.person': 'production.person_id',
+  'recruitment-listings.filledBy': 'recruitment_listings.filled_by_id',
+  'recruitment-listings.createdBy': 'recruitment_listings.created_by_id',
+  'discord-polls.createdBy': 'discord_polls.created_by_id',
+  'availability-calendars.createdBy': 'availability_calendars.created_by_id',
+  'absences.person': 'absences.person_id',
+  'tasks.assignedTo': 'tasks_rels.people_id',
+  'tasks.requestedBy': 'tasks.requested_by_id',
+  'tasks.comments.author': 'tasks_comments.author_id',
+  'watched-threads.addedBy': 'watched_threads.added_by_id',
+  'twitch-streamers.person': 'twitch_streamers.person_id',
+  'audit-logs.user': 'audit_logs.user_id',
+  'error-logs.user': 'error_logs.user_id',
+  'active-sessions.user': 'active_sessions.user_id',
+  'ignored-duplicates.person1': 'ignored_duplicates.person1_id',
+  'ignored-duplicates.person2': 'ignored_duplicates.person2_id',
+  'invite-links.linkedPerson': 'invite_links.linked_person_id',
+  'invite-links.usedBy': 'invite_links.used_by_id',
+  'invite-links.createdBy': 'invite_links.created_by_id',
+  'payload-locked-documents.document': 'payload_locked_documents_rels.people_id',
+  'payload-locked-documents.user': 'payload_locked_documents_rels.people_id',
+  'payload-preferences.user': 'payload_preferences_rels.people_id',
+}
 
 function walk(fields: Field[], prefix: string, out: string[]): void {
   for (const f of fields as any[]) {
@@ -181,6 +183,100 @@ const PROFILE_FIELDS = ['discordId', 'discordUsername', 'discordAvatar', 'email'
 const PUG_FIELDS = ['pugTiers', 'pugApprovedRoles', 'pugInviteRegions', 'pugBattleTag', 'pugRegisteredDate', 'pugBanOffenseCount', 'pugInvitedBy']
 const ROLE_PRIORITY = ['admin', 'staff-manager', 'team-manager', 'player', 'user']
 
+// A row's `id` column is either a Postgres integer or a Payload-generated varchar (hex) id.
+// Render it as a safe SQL literal for interpolation into a raw statement.
+function idLiteral(id: unknown): string {
+  if (typeof id === 'number') return String(id)
+  return `'${String(id).replace(/'/g, "''")}'`
+}
+
+// drizzle-orm's node-postgres driver wraps the raw pg error in a DrizzleQueryError whose own
+// `.code`/`.message` don't carry the Postgres error code - that lives on `.cause`. Check both so
+// unique-violation (23505) and undefined-table (42P01) detection works regardless of wrapping.
+function pgErrorCode(e: any): string | undefined {
+  return e?.code ?? e?.cause?.code
+}
+function pgErrorIsUnique(e: any): boolean {
+  return pgErrorCode(e) === '23505' || Boolean(e?.message?.includes('unique')) || Boolean(e?.cause?.message?.includes('unique'))
+}
+
+/**
+ * Repoint every row in `table.column` (or `quotedColumn`, already-quoted for Prisma-style
+ * camelCase columns) from sourceId to targetId, inside transaction `tx`. Tries a single
+ * set-based UPDATE first. If that trips a unique-constraint violation (a composite unique
+ * spanning this column, e.g. identity_claims' (claimant_id, target_id)), a set-based UPDATE
+ * would be all-or-nothing, and a blind `DELETE ... WHERE column = source` would destroy every
+ * source row in the table, not just the colliding one. So on 23505 we fall back to repointing
+ * row by row, wrapping each row in its own savepoint so a single collision only rolls back that
+ * row's attempt (not the whole transaction) and lets us delete only the one truly-duplicate row.
+ * Never deletes from `people` itself; a collision there is rethrown instead.
+ */
+async function repointColumn(
+  tx: any,
+  table: string,
+  column: string,
+  quotedColumn: string,
+  sourceId: number,
+  targetId: number,
+  log: string[],
+): Promise<void> {
+  // A failed statement poisons the rest of the transaction in Postgres unless it ran inside a
+  // savepoint, so the initial set-based attempt needs one too, not just the per-row fallback -
+  // otherwise the fallback's own SELECT would immediately fail with "transaction is aborted".
+  await tx.execute(sql.raw(`SAVEPOINT sp_col`))
+  try {
+    await tx.execute(sql.raw(`UPDATE "${table}" SET ${quotedColumn} = ${targetId} WHERE ${quotedColumn} = ${sourceId}`))
+    await tx.execute(sql.raw(`RELEASE SAVEPOINT sp_col`))
+    log.push(`Repointed ${table}.${column}`)
+  } catch (e: any) {
+    await tx.execute(sql.raw(`ROLLBACK TO SAVEPOINT sp_col`))
+    await tx.execute(sql.raw(`RELEASE SAVEPOINT sp_col`))
+    if (pgErrorIsUnique(e)) {
+      await repointColumnRowByRow(tx, table, column, quotedColumn, sourceId, targetId, log)
+    } else if (pgErrorCode(e) === '42P01') {
+      log.push(`Skipped ${table}.${column}: table missing`)
+    } else {
+      throw e
+    }
+  }
+}
+
+async function repointColumnRowByRow(
+  tx: any,
+  table: string,
+  column: string,
+  quotedColumn: string,
+  sourceId: number,
+  targetId: number,
+  log: string[],
+): Promise<void> {
+  const result = await tx.execute(sql.raw(`SELECT id FROM "${table}" WHERE ${quotedColumn} = ${sourceId}`))
+  const rows: any[] = (result as any).rows ?? result
+  let repointed = 0
+  let deduped = 0
+  for (const row of rows) {
+    const rowId = idLiteral(row.id)
+    await tx.execute(sql.raw(`SAVEPOINT sp_row`))
+    try {
+      await tx.execute(sql.raw(`UPDATE "${table}" SET ${quotedColumn} = ${targetId} WHERE id = ${rowId}`))
+      await tx.execute(sql.raw(`RELEASE SAVEPOINT sp_row`))
+      repointed++
+    } catch (e: any) {
+      await tx.execute(sql.raw(`ROLLBACK TO SAVEPOINT sp_row`))
+      await tx.execute(sql.raw(`RELEASE SAVEPOINT sp_row`))
+      if (pgErrorIsUnique(e)) {
+        if (table === 'people') throw e // never delete from people, even a single row
+        await tx.execute(sql.raw(`DELETE FROM "${table}" WHERE id = ${rowId}`))
+        deduped++
+      } else {
+        throw e
+      }
+    }
+  }
+  if (repointed > 0) log.push(`Repointed ${table}.${column} (${repointed} row(s), per-row fallback)`)
+  if (deduped > 0) log.push(`Deduplicated ${table}.${column} (${deduped} true duplicate row(s))`)
+}
+
 /**
  * Merge source into target. Target keeps its id. Nothing is deleted except the source's
  * sessions and junction rows that would duplicate ones the target already has.
@@ -198,6 +294,7 @@ export async function mergePeople(
     payload.findByID({ collection: 'people', id: sourceId, depth: 0, overrideAccess: true, showHiddenFields: true }) as Promise<any>,
   ])
   if (!t || !s) throw new Error('One or both people not found')
+  if (t.mergedInto) throw new Error(`Target #${targetId} was already merged into #${t.mergedInto}`)
   if (s.mergedInto) throw new Error(`Source #${sourceId} was already merged into #${s.mergedInto}`)
 
   // 1. Field merge onto target (empty target fields take the source's value).
@@ -224,9 +321,20 @@ export async function mergePeople(
 
   if (Object.keys(data).length > 0) {
     // The source must release unique values (discord_id, username, email) before the target takes them.
+    // Save them first so a failed target update can be undone rather than left half-applied.
     const drizzle0 = (payload as any).db.drizzle
+    const savedDiscordId = s.discordId ?? null
+    const savedUsername = s.username ?? null
+    const savedEmail = s.email ?? null
     await drizzle0.execute(sql`UPDATE people SET discord_id = NULL, username = NULL, email = NULL WHERE id = ${sourceId}`)
-    await payload.update({ collection: 'people', id: targetId, data: stripRowIds(data) as any, overrideAccess: true })
+    try {
+      await payload.update({ collection: 'people', id: targetId, data: stripRowIds(data) as any, overrideAccess: true })
+    } catch (err) {
+      await drizzle0.execute(
+        sql`UPDATE people SET discord_id = ${savedDiscordId}, username = ${savedUsername}, email = ${savedEmail} WHERE id = ${sourceId}`,
+      )
+      throw err
+    }
     log.push(`Merged fields into target: ${Object.keys(data).join(', ')}`)
   }
 
@@ -235,34 +343,10 @@ export async function mergePeople(
   await drizzle.transaction(async (tx: any) => {
     for (const { table, column } of PEOPLE_FK_COLUMNS) {
       if (table === 'people' && column === 'merged_into_id') continue // handled below
-      try {
-        await tx.execute(sql.raw(`UPDATE "${table}" SET "${column}" = ${targetId} WHERE "${column}" = ${sourceId}`))
-        log.push(`Repointed ${table}.${column}`)
-      } catch (e: any) {
-        if (e.code === '23505' || e.message?.includes('unique')) {
-          await tx.execute(sql.raw(`DELETE FROM "${table}" WHERE "${column}" = ${sourceId}`))
-          log.push(`Deduplicated ${table}.${column}`)
-        } else if (e.code === '42P01') {
-          log.push(`Skipped ${table}.${column}: table missing`)
-        } else {
-          throw e
-        }
-      }
+      await repointColumn(tx, table, column, `"${column}"`, sourceId, targetId, log)
     }
     for (const { table, column } of PRISMA_FK_COLUMNS) {
-      try {
-        await tx.execute(sql.raw(`UPDATE "${table}" SET ${column} = ${targetId} WHERE ${column} = ${sourceId}`))
-        log.push(`Repointed ${table}.${column}`)
-      } catch (e: any) {
-        if (e.code === '23505' || e.message?.includes('unique')) {
-          await tx.execute(sql.raw(`DELETE FROM "${table}" WHERE ${column} = ${sourceId}`))
-          log.push(`Deduplicated ${table}.${column}`)
-        } else if (e.code === '42P01') {
-          log.push(`Skipped ${table}.${column}: table missing`)
-        } else {
-          throw e
-        }
-      }
+      await repointColumn(tx, table, column, column, sourceId, targetId, log)
     }
     // Anyone previously merged into the source now points at the target.
     await tx.execute(sql`UPDATE people SET merged_into_id = ${targetId} WHERE merged_into_id = ${sourceId}`)
@@ -278,14 +362,18 @@ export async function mergePeople(
     ))
   } catch {}
 
-  await createAuditLog(payload, {
-    user: actorId,
-    action: 'update',
-    collection: 'people',
-    documentId: targetId,
-    documentTitle: t.name,
-    metadata: { identity: 'merge', sourceId, targetId, conflicts, note: args.note ?? null, log },
-  })
+  try {
+    await createAuditLog(payload, {
+      user: actorId,
+      action: 'update',
+      collection: 'people',
+      documentId: targetId,
+      documentTitle: t.name,
+      metadata: { identity: 'merge', sourceId, targetId, conflicts, note: args.note ?? null, log },
+    })
+  } catch (e) {
+    console.error('[mergePeople] audit log failed:', e)
+  }
 
   return { log }
 }

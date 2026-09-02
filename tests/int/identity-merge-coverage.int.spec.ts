@@ -6,14 +6,28 @@ describe('merge coverage', () => {
   it('every relationTo:people field in the registered collections is listed in COVERED_PEOPLE_FIELDS', async () => {
     const resolved = await config
     const found = collectPeopleRelationPaths(resolved.collections as any)
-    const missing = found.filter((p) => !COVERED_PEOPLE_FIELDS.includes(p))
-    const stale = COVERED_PEOPLE_FIELDS.filter((p) => !found.includes(p))
+    const coveredPaths = Object.keys(COVERED_PEOPLE_FIELDS)
+    const missing = found.filter((p) => !coveredPaths.includes(p))
+    const stale = coveredPaths.filter((p) => !found.includes(p))
     expect({ missing, stale }).toEqual({ missing: [], stale: [] })
   })
 
   it('lists no duplicate FK columns', () => {
     const keys = PEOPLE_FK_COLUMNS.map((c) => `${c.table}.${c.column}`)
     expect(new Set(keys).size).toBe(keys.length)
+  })
+
+  it('every covered path maps to a listed FK column', () => {
+    const strip = (col: string) => col.replace(/^"|"$/g, '')
+    const known = new Set(PEOPLE_FK_COLUMNS.map((c) => `${c.table}.${strip(c.column)}`))
+    const unmapped = Object.entries(COVERED_PEOPLE_FIELDS)
+      .filter(([, target]) => {
+        const [table, ...rest] = target.split('.')
+        const column = strip(rest.join('.'))
+        return !known.has(`${table}.${column}`)
+      })
+      .map(([path, target]) => `${path} -> ${target}`)
+    expect(unmapped).toEqual([])
   })
 
   it('walks nested tabs, groups, arrays and hasMany relationships', () => {
