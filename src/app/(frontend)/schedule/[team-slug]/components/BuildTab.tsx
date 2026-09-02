@@ -1687,7 +1687,7 @@ export function BuildTab() {
                   <span className="build-tab__scrim-field-label">Notes</span>
                   <textarea
                     className="build-tab__scrim-textarea"
-                    placeholder={modalActivity === 'vod' ? 'VOD link, what we are reviewing...' : modalActivity === 'warmup' ? 'What to warm up, lobby code, focus...' : 'Any additional notes...'}
+                    placeholder={modalActivity === 'vod' ? 'VOD link, what we are reviewing...' : 'Any additional notes...'}
                     rows={3}
                     value={scrim.notes}
                     onChange={e => updateScrimDetails(scrimModal.dayIdx, scrimModal.blockIdx, { notes: e.target.value })}

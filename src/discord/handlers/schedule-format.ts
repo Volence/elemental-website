@@ -70,7 +70,7 @@ function getPlayerIds(s: PlayerSlot): string[] {
 
 function formatBlock(day: DaySchedule, block: TimeBlock, index: number, blockCount: number, playerMap: Map<string, string>): string {
   const activity = getBlockActivity(block)
-  const isScrimLike = activity === 'scrim' || activity === 'match'
+  const isScrimLike = activity === 'scrim' || activity === 'match' || activity === 'warmup'
 
   let text = blockCount > 1
     ? `**${day.date}** - Block ${index + 1} - ${block.time}\n`

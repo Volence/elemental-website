@@ -22,7 +22,8 @@ export const ACTIVITY_TYPES: { value: ActivityType; label: string }[] = [
   { value: 'other', label: 'Other' },
 ]
 
-export const OPPONENT_ACTIVITIES = new Set<string>(['scrim', 'match'])
+/** Activities played against an opponent, so they carry the full scrim detail set */
+export const OPPONENT_ACTIVITIES = new Set<string>(['scrim', 'match', 'warmup'])
 
 /** Activities that can be announced to Discord and carry per-block details/notes */
 export const ANNOUNCEABLE_ACTIVITIES = new Set<string>(['scrim', 'match', 'warmup', 'vod', 'scouting', 'other'])

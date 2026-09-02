@@ -60,7 +60,7 @@ interface VoteData {
   }>
 }
 
-const OPPONENT_ACTIVITIES = new Set<string>(['scrim', 'match'])
+const OPPONENT_ACTIVITIES = new Set<string>(['scrim', 'match', 'warmup'])
 
 /** Title/colour per activity type for the reminder embed */
 const ACTIVITY_PRESETS: Record<string, { title: string; color: number }> = {
