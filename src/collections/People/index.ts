@@ -5,6 +5,7 @@ import { anyone } from '../../access/anyone'
 import { UserRole, adminOnly, isAdmin, isPugAdmin } from '../../access/roles'
 import { autoCloseRecruitment } from './hooks/autoCloseRecruitment'
 import { auditPeopleChanges } from './hooks/auditAccessChanges'
+import { createAccessAllowsData, enforceDiscordIdOnCreate } from './hooks/enforceDiscordId'
 import { createAuditLogDeleteHook } from '../../utilities/auditLogger'
 import { trackLogin, trackLogout } from '../../utilities/sessionTracker'
 
@@ -62,12 +63,11 @@ export const People: CollectionConfig = {
   },
   access: {
     admin: authenticated,
-    create: ({ req: { user } }) => {
+    create: ({ req: { user }, data }) => {
       if (!user) return false
-      if (user.role === UserRole.ADMIN) return true
-      if (user.role === UserRole.STAFF_MANAGER) return true
-      if (user.role === UserRole.TEAM_MANAGER) return true
-      return false
+      const allowedRole = user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER || user.role === UserRole.TEAM_MANAGER
+      if (!allowedRole) return false
+      return createAccessAllowsData(data as any)
     },
     delete: adminOnly,
     read: anyone,
@@ -552,6 +552,13 @@ export const People: CollectionConfig = {
     ],
     beforeValidate: [
       async ({ data, operation, req, originalDoc }) => {
+        await enforceDiscordIdOnCreate({
+          operation,
+          data,
+          context: req.context as any,
+          countPeople: async () => (await req.payload.count({ collection: 'people', overrideAccess: true })).totalDocs,
+        })
+
         if (operation === 'create') {
           if (data && !data.name) {
             throw new Error('Name is required when creating a person')
