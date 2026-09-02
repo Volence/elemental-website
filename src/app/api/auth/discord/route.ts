@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
+import { safeReturnPath } from '@/auth/safeReturnPath'
 
 /**
  * The only Discord OAuth entry point.
@@ -9,11 +10,10 @@ import { cookies } from 'next/headers'
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const { searchParams } = new URL(request.url)
   const link = searchParams.get('link') === 'true'
-  const rawReturnUrl = searchParams.get('returnUrl') || '/admin'
-  const returnUrl = rawReturnUrl.startsWith('/') && !rawReturnUrl.startsWith('//') ? rawReturnUrl : '/admin'
+  const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+  const returnUrl = safeReturnPath(searchParams.get('returnUrl'), serverUrl)
 
   const clientId = process.env.DISCORD_CLIENT_ID
-  const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
   if (!clientId) {
     return NextResponse.json({ error: 'Discord OAuth is not configured (missing DISCORD_CLIENT_ID)' }, { status: 500 })
   }

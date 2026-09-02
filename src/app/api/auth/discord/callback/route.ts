@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 import config from '@payload-config'
 import { cookies } from 'next/headers'
 import { exchangeCodeForProfile, DiscordApiError } from '@/auth/discordApi'
+import { safeReturnPath } from '@/auth/safeReturnPath'
 import { issueSession } from '@/auth/session'
 import { getGuildGateway } from '@/identity/guild'
 import { resolveDiscordLogin, resolveDiscordLink } from '@/identity/discordLogin'
@@ -22,10 +23,6 @@ interface OAuthState {
   link: boolean
   returnUrl: string
   nonce: string
-}
-
-function safePath(p: string | undefined, fallback = '/admin'): string {
-  return p && p.startsWith('/') && !p.startsWith('//') ? p : fallback
 }
 
 /**
@@ -53,7 +50,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   } catch {
     return fail('invalid_state')
   }
-  const returnUrl = safePath(state.returnUrl)
+  const returnUrl = safeReturnPath(state.returnUrl, serverUrl)
 
   let profile
   try {
@@ -75,6 +72,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     const member = await gateway.isMember(profile.id)
     if (member === false) return NextResponse.redirect(new URL('/auth/not-a-member', serverUrl))
+    if (member === null) return fail('membership_unavailable')
 
     const outcome = await resolveDiscordLink(
       {
