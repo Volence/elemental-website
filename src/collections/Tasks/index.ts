@@ -13,6 +13,7 @@ import {
   isSocialMediaStaff,
 } from '../../access/roles'
 import type { Person } from '@/payload-types'
+import { SOCIAL_POST_TYPES, SOCIAL_PLATFORMS } from '@/utilities/socialPostTypes'
 
 // Task types per department
 const TASK_TYPES = {
@@ -185,6 +186,34 @@ export const Tasks: CollectionConfig = {
           options: ALL_TASK_TYPES,
           admin: {
             description: 'Type of work (depends on department)',
+            width: '50%',
+          },
+        },
+      ],
+    },
+    // Social media only: what kind of post this task produces and where it goes.
+    // Drives calendar colour-coding and the weekly Discord digest.
+    {
+      type: 'row',
+      admin: {
+        condition: (data: any) => data?.department === 'social-media',
+      },
+      fields: [
+        {
+          name: 'postType',
+          type: 'select',
+          options: [...SOCIAL_POST_TYPES],
+          admin: {
+            description: 'Category of the post (colour-codes the content calendar)',
+            width: '50%',
+          },
+        },
+        {
+          name: 'platform',
+          type: 'select',
+          options: [...SOCIAL_PLATFORMS],
+          admin: {
+            description: 'Where this post will be published',
             width: '50%',
           },
         },

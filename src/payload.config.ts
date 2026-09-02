@@ -46,7 +46,6 @@ import { Header } from './Header/config'
 import { DataConsistency } from './globals/DataConsistency'
 import { ProductionDashboard } from './globals/ProductionDashboard'
 import { SocialMediaSettings } from './globals/SocialMediaSettings'
-import { SocialMediaConfig } from './globals/SocialMediaConfig'
 import { AuditLogViewer } from './globals/AuditLogViewer'
 import { CronMonitor } from './globals/CronMonitor'
 import { ErrorDashboard } from './globals/ErrorDashboard'
@@ -335,7 +334,6 @@ const config = buildConfig({
     DiscordServerManager,   // Departments group
     
     // Social Media Config (settings page, accessed standalone)
-    SocialMediaConfig,      // Social Media group
     
     // ── ORGANIZATION ──
     OrganizationCalendar,   // Organization group

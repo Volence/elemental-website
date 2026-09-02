@@ -6,6 +6,8 @@ import { toast } from '@payloadcms/ui'
 import { ConfirmModal } from './ConfirmModal'
 import type { Task, Person, Media } from '@/payload-types'
 import { Calendar, Download, Paperclip, Save, Send, Trash2, Upload, X } from 'lucide-react'
+import { dueDateInputValue } from '@/utilities/taskDueDate'
+import { SOCIAL_POST_TYPES, SOCIAL_PLATFORMS } from '@/utilities/socialPostTypes'
 
 interface TaskModalProps {
   task: Task | null
@@ -15,6 +17,8 @@ interface TaskModalProps {
   onSave: () => void
   isRequest?: boolean
   requestedByDepartment?: string
+  /** Pre-fill the due date (YYYY-MM-DD) when creating from a calendar day */
+  initialDueDate?: string
 }
 
 interface AttachmentItem {
@@ -55,6 +59,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   onSave,
   isRequest = false,
   requestedByDepartment,
+  initialDueDate,
 }) => {
   const { config } = useConfig()
   const serverURL = config?.serverURL || ''
@@ -68,6 +73,8 @@ export const TaskModal: React.FC<TaskModalProps> = ({
     taskType: '',
     dueDate: '',
     addToGlobalCalendar: false,
+    postType: '',
+    platform: '',
   })
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -76,7 +83,9 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   const [attachments, setAttachments] = useState<AttachmentItem[]>([])
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   
+  // Reset the form whenever the modal opens or its subject changes
   useEffect(() => {
+    if (!isOpen) return
     if (task) {
       setFormData({
         title: task.title || '',
@@ -84,8 +93,10 @@ export const TaskModal: React.FC<TaskModalProps> = ({
         status: task.status || 'backlog',
         priority: task.priority || 'medium',
         taskType: task.taskType || '',
-        dueDate: task.dueDate ? task.dueDate.split('T')[0] : '',
+        dueDate: dueDateInputValue(task.dueDate),
         addToGlobalCalendar: task.addToGlobalCalendar || false,
+        postType: task.postType || '',
+        platform: task.platform || '',
       })
       setSelectedAssignees(
         (task.assignedTo || []).map((u: any) => (typeof u === 'number' ? u : u.id))
@@ -107,13 +118,15 @@ export const TaskModal: React.FC<TaskModalProps> = ({
         status: 'backlog',
         priority: 'medium',
         taskType: '',
-        dueDate: '',
+        dueDate: initialDueDate || '',
         addToGlobalCalendar: false,
+        postType: '',
+        platform: '',
       })
       setSelectedAssignees([])
       setAttachments([])
     }
-  }, [task])
+  }, [task, initialDueDate, isOpen])
   
   useEffect(() => {
     // Fetch users for assignment - filtered by department
@@ -251,6 +264,10 @@ export const TaskModal: React.FC<TaskModalProps> = ({
     return null
   }
   
+  // Existing tasks keep their own department; new ones take it from the board
+  const effectiveDepartment = task ? (task.department as string) : department
+  const isSocialMedia = effectiveDepartment === 'social-media'
+  
   const handleSubmit = async () => {
     
     if (!formData.title.trim()) {
@@ -292,6 +309,12 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       // Only include taskType if it has a value
       if (formData.taskType) {
         payload.taskType = formData.taskType
+      }
+      
+      // Social media tasks carry post type + platform for the content calendar
+      if (isSocialMedia) {
+        payload.postType = formData.postType || null
+        payload.platform = formData.platform || null
       }
       
       const url = task
@@ -467,6 +490,41 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               />
             </div>
           </div>
+          
+          {/* Post details - only for Social Media department */}
+          {isSocialMedia && (
+            <div className="workboard-modal__row">
+              <div className="workboard-modal__field">
+                <label>Post Type</label>
+                <select
+                  value={formData.postType}
+                  onChange={(e) => setFormData({ ...formData, postType: e.target.value })}
+                >
+                  <option value="">Not set</option>
+                  {SOCIAL_POST_TYPES.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="workboard-modal__field">
+                <label>Platform</label>
+                <select
+                  value={formData.platform}
+                  onChange={(e) => setFormData({ ...formData, platform: e.target.value })}
+                >
+                  <option value="">Not set</option>
+                  {SOCIAL_PLATFORMS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
           
           {/* Show on Public Calendar - only for Events department */}
           {department === 'events' && (

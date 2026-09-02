@@ -1,178 +1,265 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import Link from 'next/link'
-import type { SocialPost } from '@/payload-types'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import { useConfig, toast } from '@payloadcms/ui'
+import { Plus, Send, CalendarClock } from 'lucide-react'
+import type { Task } from '@/payload-types'
+import { TaskModal } from '../WorkboardKanban/TaskModal'
+import { DigestModal } from './DigestModal'
+import { getPostTypeColor, SOCIAL_POST_TYPES } from '@/utilities/socialPostTypes'
+import {
+  addDays,
+  dueDateKey,
+  localDateKey,
+  monthBoundsFor,
+  weekBoundsFor,
+} from '@/utilities/taskDueDate'
+
+type ViewMode = 'week' | 'month'
+
+const VIEW_MODE_KEY = 'sm-calendar-view-mode'
+const DEPARTMENT = 'social-media'
+
+const STATUS_LABELS: Record<string, string> = {
+  backlog: 'Backlog',
+  'in-progress': 'In Progress',
+  review: 'Review',
+  complete: 'Complete',
+}
+
+function readStoredViewMode(): ViewMode {
+  try {
+    const v = window.localStorage.getItem(VIEW_MODE_KEY)
+    return v === 'month' ? 'month' : 'week'
+  } catch {
+    return 'week'
+  }
+}
+
+function assigneeName(user: any): string {
+  if (typeof user === 'object' && user !== null) return user.name || user.email || 'Unknown'
+  return 'Unknown'
+}
 
 export function CalendarView() {
-  const [posts, setPosts] = useState<SocialPost[]>([])
+  const { config } = useConfig()
+  const serverURL = config?.serverURL || ''
+
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [unscheduled, setUnscheduled] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
-  const [currentDate, setCurrentDate] = useState(new Date())
-  const [viewMode, setViewMode] = useState<'week' | 'month'>('week')
+  const [currentDate, setCurrentDate] = useState(() => new Date())
+  // Start as 'week' for SSR, then adopt the remembered choice on mount
+  const [viewMode, setViewModeState] = useState<ViewMode>('week')
+  const [hydrated, setHydrated] = useState(false)
+
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+  const [initialDueDate, setInitialDueDate] = useState<string | undefined>(undefined)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isDigestOpen, setIsDigestOpen] = useState(false)
 
   useEffect(() => {
-    fetchPosts()
-  }, [currentDate, viewMode])
+    setViewModeState(readStoredViewMode())
+    setHydrated(true)
+  }, [])
 
-  const fetchPosts = async () => {
+  const setViewMode = (mode: ViewMode) => {
+    setViewModeState(mode)
+    try {
+      window.localStorage.setItem(VIEW_MODE_KEY, mode)
+    } catch {
+      /* private mode etc. - remembering is best effort */
+    }
+  }
+
+  const bounds = useMemo(
+    () => (viewMode === 'week' ? weekBoundsFor(currentDate) : monthBoundsFor(currentDate)),
+    [currentDate, viewMode],
+  )
+
+  const fetchTasks = useCallback(async () => {
     setLoading(true)
     try {
-      // Fetch posts for the current view period
-      const startDate = getStartDate()
-      const endDate = getEndDate()
-
-      const query = {
-        scheduledDate: {
-          greater_than_equal: startDate.toISOString(),
-          less_than: endDate.toISOString(),
-        },
-      }
-
-      const queryString = new URLSearchParams({
-        where: JSON.stringify(query),
-        sort: 'scheduledDate',
-        limit: '100',
+      // Fetch a day either side: date-only due dates live at UTC midnight and
+      // are bucketed client-side by calendar day (see dueDateKey).
+      const from = addDays(bounds.start, -1).toISOString()
+      const to = addDays(bounds.end, 1).toISOString()
+      const params = new URLSearchParams({
+        'where[department][equals]': DEPARTMENT,
+        'where[archived][not_equals]': 'true',
+        'where[dueDate][greater_than_equal]': from,
+        'where[dueDate][less_than_equal]': to,
+        limit: '300',
         depth: '1',
-      }).toString()
-
-      const response = await fetch(`/api/social-posts?${queryString}`)
-      const data = await response.json()
-      
-      setPosts(data.docs || [])
-    } catch (error) {
-      console.error('Error fetching posts:', error)
-      setPosts([])
+        sort: 'dueDate',
+      })
+      const res = await fetch(`${serverURL}/api/tasks?${params}`, { credentials: 'include' })
+      const data = await res.json()
+      setTasks(data.docs || [])
+    } catch (err) {
+      console.error('Error fetching calendar tasks:', err)
+      toast.error('Failed to load calendar')
+      setTasks([])
     } finally {
       setLoading(false)
     }
-  }
+  }, [bounds, serverURL])
 
-  const getStartDate = () => {
-    if (viewMode === 'week') {
-      const start = new Date(currentDate)
-      start.setDate(currentDate.getDate() - currentDate.getDay()) // Start of week (Sunday)
-      start.setHours(0, 0, 0, 0)
-      return start
-    } else {
-      const start = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
-      return start
+  const fetchUnscheduled = useCallback(async () => {
+    try {
+      const params = new URLSearchParams({
+        'where[department][equals]': DEPARTMENT,
+        'where[archived][not_equals]': 'true',
+        'where[status][not_equals]': 'complete',
+        'where[dueDate][exists]': 'false',
+        limit: '50',
+        depth: '1',
+        sort: '-createdAt',
+      })
+      const res = await fetch(`${serverURL}/api/tasks?${params}`, { credentials: 'include' })
+      const data = await res.json()
+      setUnscheduled(data.docs || [])
+    } catch {
+      setUnscheduled([])
     }
-  }
+  }, [serverURL])
 
-  const getEndDate = () => {
-    if (viewMode === 'week') {
-      const end = new Date(currentDate)
-      end.setDate(currentDate.getDate() + (6 - currentDate.getDay())) // End of week (Saturday)
-      end.setHours(23, 59, 59, 999)
-      return end
-    } else {
-      const end = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0)
-      end.setHours(23, 59, 59, 999)
-      return end
+  useEffect(() => {
+    if (!hydrated) return
+    fetchTasks()
+    fetchUnscheduled()
+  }, [hydrated, fetchTasks, fetchUnscheduled])
+
+  const tasksByDay = useMemo(() => {
+    const map = new Map<string, Task[]>()
+    for (const t of tasks) {
+      const key = dueDateKey(t.dueDate)
+      if (!key) continue
+      if (!map.has(key)) map.set(key, [])
+      map.get(key)!.push(t)
     }
-  }
+    return map
+  }, [tasks])
 
-  const getPostsForDay = (date: Date) => {
-    return posts.filter(post => {
-      if (!post.scheduledDate) return false
-      const postDate = new Date(post.scheduledDate)
-      return postDate.toDateString() === date.toDateString()
-    })
-  }
+  const getTasksForDay = (date: Date) => tasksByDay.get(localDateKey(date)) || []
 
-  const getPostTypeColor = (postType: string) => {
-    const colors: Record<string, string> = {
-      'Match Promo': '#3b82f6',
-      'Stream Announcement': '#8b5cf6',
-      'Community Engagement': '#10b981',
-      'Original Content': '#f59e0b',
-      'Repost/Share': '#6b7280',
-      'Other': '#64748b',
-    }
-    return colors[postType] || '#64748b'
-  }
-
+  // --- navigation ---
   const navigatePrevious = () => {
-    if (viewMode === 'week') {
-      const newDate = new Date(currentDate)
-      newDate.setDate(currentDate.getDate() - 7)
-      setCurrentDate(newDate)
-    } else {
-      const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
-      setCurrentDate(newDate)
-    }
+    setCurrentDate(
+      viewMode === 'week'
+        ? addDays(currentDate, -7)
+        : new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1),
+    )
   }
-
   const navigateNext = () => {
-    if (viewMode === 'week') {
-      const newDate = new Date(currentDate)
-      newDate.setDate(currentDate.getDate() + 7)
-      setCurrentDate(newDate)
-    } else {
-      const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
-      setCurrentDate(newDate)
-    }
+    setCurrentDate(
+      viewMode === 'week'
+        ? addDays(currentDate, 7)
+        : new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1),
+    )
+  }
+  const navigateToday = () => setCurrentDate(new Date())
+
+  // --- modal ---
+  const openTask = (task: Task) => {
+    setSelectedTask(task)
+    setInitialDueDate(undefined)
+    setIsModalOpen(true)
+  }
+  const openNewTask = (date?: Date) => {
+    setSelectedTask(null)
+    setInitialDueDate(date ? localDateKey(date) : undefined)
+    setIsModalOpen(true)
+  }
+  const closeModal = () => {
+    setIsModalOpen(false)
+    setSelectedTask(null)
+    setInitialDueDate(undefined)
+  }
+  const afterSave = () => {
+    fetchTasks()
+    fetchUnscheduled()
   }
 
-  const navigateToday = () => {
-    setCurrentDate(new Date())
+  const todayKey = localDateKey(new Date())
+
+  const renderTaskCard = (task: Task, compact = false) => {
+    const color = getPostTypeColor(task.postType)
+    const assignees = (task.assignedTo || []) as any[]
+    const isComplete = task.status === 'complete'
+    return (
+      <button
+        type="button"
+        key={task.id}
+        className={`calendar-post-card ${isComplete ? 'calendar-post-card--complete' : ''} ${compact ? 'calendar-post-card--compact' : ''}`}
+        style={{ borderLeft: `4px solid ${color}` }}
+        onClick={() => openTask(task)}
+        title={`${task.title}${task.postType ? ` (${task.postType})` : ''}`}
+      >
+        <div className="calendar-post-card__title">{task.title}</div>
+        {!compact && (
+          <>
+            <div className="calendar-post-card__type" style={{ color }}>
+              {task.postType || 'No post type'}
+              {task.platform ? ` • ${task.platform}` : ''}
+            </div>
+            <div className="calendar-post-card__footer">
+              <span className={`calendar-post-card__status calendar-post-card__status--${task.status}`}>
+                {STATUS_LABELS[task.status] || task.status}
+              </span>
+              {assignees.length > 0 && (
+                <span className="calendar-post-card__assignees">
+                  {assignees.slice(0, 3).map((u, i) => (
+                    <span key={i} className="calendar-post-card__avatar" title={assigneeName(u)}>
+                      {assigneeName(u).charAt(0).toUpperCase()}
+                    </span>
+                  ))}
+                  {assignees.length > 3 && (
+                    <span className="calendar-post-card__avatar calendar-post-card__avatar--more">
+                      +{assignees.length - 3}
+                    </span>
+                  )}
+                </span>
+              )}
+            </div>
+          </>
+        )}
+      </button>
+    )
   }
 
   const renderWeekView = () => {
-    const days = []
-    const startDate = getStartDate()
-
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(startDate)
-      date.setDate(startDate.getDate() + i)
-      days.push(date)
-    }
-
+    const days = Array.from({ length: 7 }, (_, i) => addDays(bounds.start, i))
     return (
       <div className="calendar-view__week">
-        {days.map((date, index) => {
-          const dayPosts = getPostsForDay(date)
-          const isToday = date.toDateString() === new Date().toDateString()
-          
+        {days.map((date) => {
+          const dayTasks = getTasksForDay(date)
+          const isToday = localDateKey(date) === todayKey
           return (
-            <div 
-              key={index} 
-              className={`calendar-day ${isToday ? 'calendar-day--today' : ''}`}
-            >
+            <div key={localDateKey(date)} className={`calendar-day ${isToday ? 'calendar-day--today' : ''}`}>
               <div className="calendar-day__header">
-                <div className="calendar-day__date">
-                  {date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                <div>
+                  <div className="calendar-day__date">
+                    {date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                  </div>
+                  <div className="calendar-day__count">
+                    {dayTasks.length} post{dayTasks.length !== 1 ? 's' : ''}
+                  </div>
                 </div>
-                <div className="calendar-day__count">
-                  {dayPosts.length} post{dayPosts.length !== 1 ? 's' : ''}
-                </div>
+                <button
+                  type="button"
+                  className="calendar-day__add"
+                  onClick={() => openNewTask(date)}
+                  title="Schedule a post on this day"
+                >
+                  <Plus size={14} />
+                </button>
               </div>
               <div className="calendar-day__posts">
-                {dayPosts.length === 0 ? (
-                  <div className="calendar-day__empty">No posts scheduled</div>
+                {dayTasks.length === 0 ? (
+                  <div className="calendar-day__empty">Nothing scheduled</div>
                 ) : (
-                  dayPosts.map(post => (
-                    <Link 
-                      key={post.id}
-                      href={`/admin/collections/social-posts/${post.id}`}
-                      className="calendar-post-card"
-                      style={{ borderLeft: `4px solid ${getPostTypeColor(post.postType)}` }}
-                    >
-                      <div className="calendar-post-card__time">
-                        {post.scheduledDate && new Date(post.scheduledDate).toLocaleTimeString('en-US', { 
-                          hour: 'numeric', 
-                          minute: '2-digit' 
-                        })}
-                      </div>
-                      <div className="calendar-post-card__type">{post.postType}</div>
-                      <div className="calendar-post-card__content">
-                        {post.content ? `${post.content.substring(0, 60)}${post.content.length > 60 ? '...' : ''}` : 'No content'}
-                      </div>
-                      <div className="calendar-post-card__status">
-                        {post.status}
-                      </div>
-                    </Link>
-                  ))
+                  dayTasks.map((t) => renderTaskCard(t))
                 )}
               </div>
             </div>
@@ -183,74 +270,54 @@ export function CalendarView() {
   }
 
   const renderMonthView = () => {
-    const startDate = getStartDate()
-    const endDate = getEndDate()
-    
-    // Get the first day of the month and adjust to start on Sunday
     const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
-    const startDayOfWeek = firstDayOfMonth.getDay()
-    
-    // Calculate how many days to show from previous month
-    const calendarStartDate = new Date(firstDayOfMonth)
-    calendarStartDate.setDate(firstDayOfMonth.getDate() - startDayOfWeek)
-    
-    // Generate 6 weeks (42 days) for the calendar grid
-    const days = []
-    for (let i = 0; i < 42; i++) {
-      const date = new Date(calendarStartDate)
-      date.setDate(calendarStartDate.getDate() + i)
-      days.push(date)
-    }
+    const gridStart = addDays(firstDayOfMonth, -firstDayOfMonth.getDay())
+    const days = Array.from({ length: 42 }, (_, i) => addDays(gridStart, i))
 
     return (
       <div className="calendar-view__month">
         <div className="calendar-month-header">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
             <div key={day} className="calendar-month-header__day">{day}</div>
           ))}
         </div>
         <div className="calendar-month-grid">
-          {days.map((date, index) => {
-            const dayPosts = getPostsForDay(date)
-            const isToday = date.toDateString() === new Date().toDateString()
+          {days.map((date) => {
+            const dayTasks = getTasksForDay(date)
+            const isToday = localDateKey(date) === todayKey
             const isCurrentMonth = date.getMonth() === currentDate.getMonth()
             const isWeekend = date.getDay() === 0 || date.getDay() === 6
-            
             return (
-              <div 
-                key={index} 
+              <div
+                key={localDateKey(date)}
                 className={`calendar-month-day ${isToday ? 'calendar-month-day--today' : ''} ${!isCurrentMonth ? 'calendar-month-day--other-month' : ''} ${isWeekend ? 'calendar-month-day--weekend' : ''}`}
               >
                 <div className="calendar-month-day__header">
                   <span className="calendar-month-day__date">{date.getDate()}</span>
-                  {dayPosts.length > 0 && (
-                    <span className="calendar-month-day__count">{dayPosts.length}</span>
-                  )}
+                  <button
+                    type="button"
+                    className="calendar-month-day__add"
+                    onClick={() => openNewTask(date)}
+                    title="Schedule a post on this day"
+                  >
+                    <Plus size={12} />
+                  </button>
                 </div>
                 <div className="calendar-month-day__posts">
-                  {dayPosts.slice(0, 3).map(post => (
-                    <Link 
-                      key={post.id}
-                      href={`/admin/collections/social-posts/${post.id}`}
-                      className="calendar-month-post"
-                      style={{ borderLeft: `3px solid ${getPostTypeColor(post.postType)}` }}
-                      title={`${post.postType}: ${post.content}`}
+                  {dayTasks.slice(0, 3).map((task) => (
+                    <button
+                      type="button"
+                      key={task.id}
+                      className={`calendar-month-post ${task.status === 'complete' ? 'calendar-month-post--complete' : ''}`}
+                      style={{ borderLeft: `3px solid ${getPostTypeColor(task.postType)}` }}
+                      title={`${task.title}${task.postType ? ` (${task.postType})` : ''}`}
+                      onClick={() => openTask(task)}
                     >
-                      <span className="calendar-month-post__time">
-                        {post.scheduledDate && new Date(post.scheduledDate).toLocaleTimeString('en-US', { 
-                          hour: 'numeric', 
-                          minute: '2-digit' 
-                        })}
-                      </span>
-                      <span className="calendar-month-post__title">
-                        {post.title}
-                      </span>
-                    </Link>
+                      <span className="calendar-month-post__title">{task.title}</span>
+                    </button>
                   ))}
-                  {dayPosts.length > 3 && (
-                    <div className="calendar-month-day__more">
-                      +{dayPosts.length - 3} more
-                    </div>
+                  {dayTasks.length > 3 && (
+                    <div className="calendar-month-day__more">+{dayTasks.length - 3} more</div>
                   )}
                 </div>
               </div>
@@ -261,23 +328,29 @@ export function CalendarView() {
     )
   }
 
-  if (loading) {
-    return <div className="loading-spinner">Loading calendar...</div>
-  }
+  const periodLabel =
+    viewMode === 'week'
+      ? `Week of ${bounds.start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${bounds.end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+      : currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 
   return (
     <div className="calendar-view">
       <div className="calendar-view__header">
-        <h2>Content Calendar</h2>
+        <div>
+          <h2>Content Calendar</h2>
+          <p className="calendar-view__subtitle">
+            Social media workboard tasks by due date. Click a card to edit it, or use + to schedule a new post.
+          </p>
+        </div>
         <div className="calendar-view__controls">
           <div className="view-mode-toggle">
-            <button 
+            <button
               className={`btn btn--small ${viewMode === 'week' ? 'btn--primary' : 'btn--secondary'}`}
               onClick={() => setViewMode('week')}
             >
               Week
             </button>
-            <button 
+            <button
               className={`btn btn--small ${viewMode === 'month' ? 'btn--primary' : 'btn--secondary'}`}
               onClick={() => setViewMode('month')}
             >
@@ -286,47 +359,79 @@ export function CalendarView() {
           </div>
           <div className="calendar-navigation">
             <button className="btn btn--small btn--secondary" onClick={navigatePrevious}>
-              ← Previous
+              &larr; Previous
             </button>
             <button className="btn btn--small btn--secondary" onClick={navigateToday}>
               Today
             </button>
             <button className="btn btn--small btn--secondary" onClick={navigateNext}>
-              Next →
+              Next &rarr;
+            </button>
+          </div>
+          <div className="calendar-actions">
+            <button className="btn btn--small btn--secondary" onClick={() => setIsDigestOpen(true)}>
+              <Send size={12} /> Post Week to Discord
+            </button>
+            <button className="btn btn--small btn--primary" onClick={() => openNewTask()}>
+              <Plus size={12} /> New Post
             </button>
           </div>
         </div>
       </div>
 
-      <div className="calendar-view__period">
-        {viewMode === 'week' ? (
-          <>
-            {getStartDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-            {' - '}
-            {getEndDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-          </>
-        ) : (
-          currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-        )}
-      </div>
+      <div className="calendar-view__period">{periodLabel}</div>
 
-      {viewMode === 'week' ? renderWeekView() : renderMonthView()}
+      {loading && tasks.length === 0 ? (
+        <div className="loading-spinner">Loading calendar...</div>
+      ) : viewMode === 'week' ? (
+        renderWeekView()
+      ) : (
+        renderMonthView()
+      )}
+
+      {unscheduled.length > 0 && (
+        <div className="calendar-view__unscheduled">
+          <h4>
+            <CalendarClock size={14} /> Unscheduled ({unscheduled.length})
+          </h4>
+          <p>Workboard tasks without a due date. Open one and set a date to put it on the calendar.</p>
+          <div className="calendar-view__unscheduled-list">
+            {unscheduled.map((t) => renderTaskCard(t, true))}
+          </div>
+        </div>
+      )}
 
       <div className="calendar-view__legend">
         <h4>Post Types</h4>
         <div className="legend-items">
-          {['Match Promo', 'Stream Announcement', 'Community Engagement', 'Original Content', 'Repost/Share', 'Other'].map(type => (
-            <div key={type} className="legend-item">
-              <span 
-                className="legend-color" 
-                style={{ backgroundColor: getPostTypeColor(type) }}
-              />
-              <span>{type}</span>
+          {SOCIAL_POST_TYPES.map((type) => (
+            <div key={type.value} className="legend-item">
+              <span className="legend-color" style={{ backgroundColor: getPostTypeColor(type.value) }} />
+              <span>{type.label}</span>
             </div>
           ))}
+          <div className="legend-item">
+            <span className="legend-color" style={{ backgroundColor: getPostTypeColor(null) }} />
+            <span>No post type</span>
+          </div>
         </div>
       </div>
+
+      <TaskModal
+        task={selectedTask}
+        department={DEPARTMENT}
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onSave={afterSave}
+        initialDueDate={initialDueDate}
+      />
+
+      <DigestModal
+        isOpen={isDigestOpen}
+        onClose={() => setIsDigestOpen(false)}
+        start={weekBoundsFor(currentDate).start}
+        end={weekBoundsFor(currentDate).end}
+      />
     </div>
   )
 }
-

@@ -54,7 +54,6 @@ import { default as default_a0a75307cc614f0f86e3337b3d2de124 } from '@/component
 import { default as default_b58160abd94784e8a5a25ad97c0af14b } from '@/components/PugMatches/ListRedirect'
 import { default as default_3880bf5eeeb5562af6ac7848ea6ba687 } from '@/components/PugLeaderboard/ListRedirect'
 import { default as default_048c297467b6adbf2ab886ee3bbecc66 } from '@/components/SocialPostColumns/ContentPreviewCell'
-import { default as default_cbd62d152faae83563323bc6e1990a3d } from '@/components/SocialPostFields/ContentWithTemplate'
 import { default as default_f52f291ae9aadfb75185249ec10b563b } from '@/components/SocialPostColumns/StatusCell'
 import { default as default_6b7ab1bcf3858d76397d35f4ac810b8c } from '@/components/SocialPostColumns/QuickFilters'
 import { default as default_ed1e8d66015b6bb359c4bd3a3c1c4e16 } from '@/components/RecruitmentFields/CategorySelectField'
@@ -90,8 +89,6 @@ import { default as default_c68ab0b1bbf77fcff4337c949e1b628c } from '@/component
 import { default as default_9696e71ab6d0b177b492c0a63e1b5e83 } from '@/components/SocialMediaDashboard'
 import { default as default_c9a191054eb8563c26468c56f515abad } from '@/components/CompetitiveHub'
 import { default as default_3da8454779e867d95ca2718c7ead313d } from '@/components/DiscordServerManager/DiscordServerManagerView'
-import { default as default_f76c92028911e3d433af128d3a307d36 } from '@/components/SocialMediaConfig/TemplateInstructions'
-import { default as default_8e4d4e3438d12585a6d66d71f450349a } from '@/components/SocialMediaConfig/TemplateRowLabel'
 import { default as default_69378a60ec387dcf194ebba1e8e4b127 } from '@/components/UnifiedCalendar/UnifiedCalendarView'
 import { default as default_7f9e3cd549c4b514317a78b827ef89f7 } from '@/components/GraphicsDashboardView'
 import { default as default_556abb975c19a689444f28829e3cfd07 } from '@/components/VideoEditingDashboardView'
@@ -204,7 +201,6 @@ export const importMap = {
   "@/components/PugMatches/ListRedirect#default": default_b58160abd94784e8a5a25ad97c0af14b,
   "@/components/PugLeaderboard/ListRedirect#default": default_3880bf5eeeb5562af6ac7848ea6ba687,
   "@/components/SocialPostColumns/ContentPreviewCell#default": default_048c297467b6adbf2ab886ee3bbecc66,
-  "@/components/SocialPostFields/ContentWithTemplate#default": default_cbd62d152faae83563323bc6e1990a3d,
   "@/components/SocialPostColumns/StatusCell#default": default_f52f291ae9aadfb75185249ec10b563b,
   "@/components/SocialPostColumns/QuickFilters#default": default_6b7ab1bcf3858d76397d35f4ac810b8c,
   "@/components/RecruitmentFields/CategorySelectField#default": default_ed1e8d66015b6bb359c4bd3a3c1c4e16,
@@ -240,8 +236,6 @@ export const importMap = {
   "@/components/SocialMediaDashboard#default": default_9696e71ab6d0b177b492c0a63e1b5e83,
   "@/components/CompetitiveHub#default": default_c9a191054eb8563c26468c56f515abad,
   "@/components/DiscordServerManager/DiscordServerManagerView#default": default_3da8454779e867d95ca2718c7ead313d,
-  "@/components/SocialMediaConfig/TemplateInstructions#default": default_f76c92028911e3d433af128d3a307d36,
-  "@/components/SocialMediaConfig/TemplateRowLabel#default": default_8e4d4e3438d12585a6d66d71f450349a,
   "@/components/UnifiedCalendar/UnifiedCalendarView#default": default_69378a60ec387dcf194ebba1e8e4b127,
   "@/components/GraphicsDashboardView#default": default_7f9e3cd549c4b514317a78b827ef89f7,
   "@/components/VideoEditingDashboardView#default": default_556abb975c19a689444f28829e3cfd07,

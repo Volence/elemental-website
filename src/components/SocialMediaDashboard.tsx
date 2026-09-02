@@ -1,80 +1,74 @@
 'use client'
 
-import React, { useState } from 'react'
-import { Calendar, LayoutList, Target, FileText, MessageSquare, Settings } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { useAuth } from '@payloadcms/ui'
+import { Calendar, LayoutList, Archive, Settings } from 'lucide-react'
 import { CalendarView } from './SocialMediaDashboard/CalendarView'
-import { WeeklyGoals } from './SocialMediaDashboard/WeeklyGoals'
-import { TemplatesView } from './SocialMediaDashboard/TemplatesView'
 import { SocialPostsTab } from './SocialMediaDashboard/SocialPostsTab'
+import { SettingsTab } from './SocialMediaDashboard/SettingsTab'
 import { KanbanBoard } from './WorkboardKanban'
 
+type Tab = 'calendar' | 'workboard' | 'posts' | 'settings'
+
+const TAB_KEY = 'sm-dashboard-tab'
+const TABS: Tab[] = ['calendar', 'workboard', 'posts', 'settings']
+
 export default function SocialMediaDashboard() {
-  const [activeTab, setActiveTab] = useState('calendar')
-  
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'admin' || user?.role === 'staff-manager'
+  const [activeTab, setActiveTabState] = useState<Tab>('calendar')
+
+  // Remember the last tab per browser
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(TAB_KEY) as Tab | null
+      if (stored && TABS.includes(stored)) setActiveTabState(stored)
+    } catch {
+      /* best effort */
+    }
+  }, [])
+
+  const setActiveTab = (tab: Tab) => {
+    setActiveTabState(tab)
+    try {
+      window.localStorage.setItem(TAB_KEY, tab)
+    } catch {
+      /* best effort */
+    }
+  }
+
+  const tabClass = (tab: Tab) =>
+    `social-media-dashboard__tab ${activeTab === tab ? 'social-media-dashboard__tab--active' : ''}`
+
   return (
     <div className="social-media-dashboard" data-section="social-media">
       <nav className="social-media-dashboard__tabs">
-        <button 
-          className={`social-media-dashboard__tab ${activeTab === 'calendar' ? 'social-media-dashboard__tab--active' : ''}`}
-          onClick={() => setActiveTab('calendar')}
-        >
+        <button className={tabClass('calendar')} onClick={() => setActiveTab('calendar')}>
           <Calendar size={14} /> Calendar
         </button>
-        
-        <button 
-          className={`social-media-dashboard__tab ${activeTab === 'workboard' ? 'social-media-dashboard__tab--active' : ''}`}
-          onClick={() => setActiveTab('workboard')}
-        >
+
+        <button className={tabClass('workboard')} onClick={() => setActiveTab('workboard')}>
           <LayoutList size={14} /> Workboard
-        </button>
-        
-        <button 
-          className={`social-media-dashboard__tab ${activeTab === 'goals' ? 'social-media-dashboard__tab--active' : ''}`}
-          onClick={() => setActiveTab('goals')}
-        >
-          <Target size={14} /> Weekly Goals
-        </button>
-        
-        <button 
-          className={`social-media-dashboard__tab ${activeTab === 'templates' ? 'social-media-dashboard__tab--active' : ''}`}
-          onClick={() => setActiveTab('templates')}
-        >
-          <FileText size={14} /> Templates
         </button>
 
         <span className="social-media-dashboard__tab-divider" />
 
-        <button 
-          className={`social-media-dashboard__tab ${activeTab === 'posts' ? 'social-media-dashboard__tab--active' : ''}`}
-          onClick={() => setActiveTab('posts')}
-        >
-          <MessageSquare size={14} /> Posts
+        <button className={tabClass('posts')} onClick={() => setActiveTab('posts')}>
+          <Archive size={14} /> Past Posts
         </button>
 
-        <button 
-          className={`social-media-dashboard__tab ${activeTab === 'settings' ? 'social-media-dashboard__tab--active' : ''}`}
-          onClick={() => setActiveTab('settings')}
-        >
-          <Settings size={14} /> Settings
-        </button>
+        {isAdmin && (
+          <button className={tabClass('settings')} onClick={() => setActiveTab('settings')}>
+            <Settings size={14} /> Settings
+          </button>
+        )}
       </nav>
-      
+
       <div className="social-media-dashboard__content">
         {activeTab === 'calendar' && <CalendarView />}
         {activeTab === 'workboard' && <KanbanBoard department="social-media" title="Social Media Workboard" />}
-        {activeTab === 'goals' && <WeeklyGoals />}
-        {activeTab === 'templates' && <TemplatesView />}
         {activeTab === 'posts' && <SocialPostsTab />}
-        {activeTab === 'settings' && (
-          <div className="collection-list-tab" style={{ textAlign: 'center', padding: '2rem' }}>
-            <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '1rem' }}>
-              Configure templates, goals, and content guidelines for the social media department.
-            </p>
-            <a href="/admin/globals/social-media-config" className="collection-list-tab__btn collection-list-tab__btn--primary">
-              <Settings size={14} /> <span>Open Social Media Settings</span>
-            </a>
-          </div>
-        )}
+        {activeTab === 'settings' && (isAdmin ? <SettingsTab /> : <CalendarView />)}
       </div>
     </div>
   )

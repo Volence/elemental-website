@@ -423,6 +423,28 @@
     }
   }
   
+  // Social media: post type / platform tags
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-top: 0.35rem;
+  }
+  
+  &__tag {
+    font-size: 0.6rem;
+    font-weight: 600;
+    padding: 0.08rem 0.4rem;
+    border-radius: 10px;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+    
+    &--muted {
+      color: rgba(255, 255, 255, 0.5);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+  }
+  
   // Footer: Date + Assignees
   &__footer {
     display: flex;

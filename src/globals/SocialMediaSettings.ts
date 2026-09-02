@@ -24,7 +24,35 @@ export const SocialMediaSettings: GlobalConfig = {
       },
     },
   },
-  fields: [],
+  fields: [
+    // Weekly Discord digest target. Edited from the dashboard Settings tab (admins only).
+    {
+      name: 'digestChannelId',
+      type: 'text',
+      label: 'Weekly Digest Channel ID',
+      admin: {
+        description: 'Discord channel that receives the weekly post schedule. Right-click a channel in Discord and choose Copy Channel ID.',
+      },
+      validate: (value: any) => {
+        if (!value) return true
+        if (!/^\d{17,20}$/.test(value)) return 'Must be a valid Discord Channel ID (17-20 digits)'
+        return true
+      },
+    },
+    {
+      name: 'digestRoleId',
+      type: 'text',
+      label: 'Weekly Digest Role ID',
+      admin: {
+        description: 'Discord role to ping in the weekly digest (e.g. Social Manager). Leave blank for no ping.',
+      },
+      validate: (value: any) => {
+        if (!value) return true
+        if (!/^\d{17,20}$/.test(value)) return 'Must be a valid Discord Role ID (17-20 digits)'
+        return true
+      },
+    },
+  ],
   access: {
     read: isSocialMediaStaff,
     update: ({ req: { user } }) => {

@@ -188,7 +188,6 @@ export interface Config {
     'social-media-settings': SocialMediaSetting;
     'competitive-hub': CompetitiveHub;
     'discord-server-manager': DiscordServerManager;
-    'social-media-config': SocialMediaConfig;
     'organization-calendar': OrganizationCalendar;
     'graphics-dashboard': GraphicsDashboard;
     'video-editing-dashboard': VideoEditingDashboard;
@@ -211,7 +210,6 @@ export interface Config {
     'social-media-settings': SocialMediaSettingsSelect<false> | SocialMediaSettingsSelect<true>;
     'competitive-hub': CompetitiveHubSelect<false> | CompetitiveHubSelect<true>;
     'discord-server-manager': DiscordServerManagerSelect<false> | DiscordServerManagerSelect<true>;
-    'social-media-config': SocialMediaConfigSelect<false> | SocialMediaConfigSelect<true>;
     'organization-calendar': OrganizationCalendarSelect<false> | OrganizationCalendarSelect<true>;
     'graphics-dashboard': GraphicsDashboardSelect<false> | GraphicsDashboardSelect<true>;
     'video-editing-dashboard': VideoEditingDashboardSelect<false> | VideoEditingDashboardSelect<true>;
@@ -1423,6 +1421,16 @@ export interface Task {
       )
     | null;
   /**
+   * Category of the post (colour-codes the content calendar)
+   */
+  postType?:
+    | ('Match Promo' | 'Stream Announcement' | 'Community Engagement' | 'Original Content' | 'Repost/Share' | 'Other')
+    | null;
+  /**
+   * Where this post will be published
+   */
+  platform?: ('Twitter/X' | 'Instagram' | 'TikTok' | 'YouTube' | 'Discord' | 'Other') | null;
+  /**
    * Current status
    */
   status: 'backlog' | 'in-progress' | 'review' | 'complete';
@@ -1723,7 +1731,7 @@ export interface Match {
   createdAt: string;
 }
 /**
- * Manage social media posts and content calendar.
+ * Archive of social posts created before the content calendar moved to workboard tasks.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "social-posts".
@@ -4583,6 +4591,8 @@ export interface TasksSelect<T extends boolean = true> {
   description?: T;
   department?: T;
   taskType?: T;
+  postType?: T;
+  platform?: T;
   status?: T;
   priority?: T;
   dueDate?: T;
@@ -5122,6 +5132,14 @@ export interface ProductionDashboard {
  */
 export interface SocialMediaSetting {
   id: number;
+  /**
+   * Discord channel that receives the weekly post schedule. Right-click a channel in Discord and choose Copy Channel ID.
+   */
+  digestChannelId?: string | null;
+  /**
+   * Discord role to ping in the weekly digest (e.g. Social Manager). Leave blank for no ping.
+   */
+  digestRoleId?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -5144,90 +5162,6 @@ export interface CompetitiveHub {
  */
 export interface DiscordServerManager {
   id: number;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
- * Configure templates, goals, and content guidelines for social media posts
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "social-media-config".
- */
-export interface SocialMediaConfig {
-  id: number;
-  /**
-   * Create reusable templates for your social media team
-   */
-  postTemplates?:
-    | {
-        /**
-         * Template name (e.g., "Match Day Announcement")
-         */
-        name: string;
-        /**
-         * Associated post type
-         */
-        postType:
-          | 'Match Promo'
-          | 'Stream Announcement'
-          | 'Community Engagement'
-          | 'Original Content'
-          | 'Repost/Share'
-          | 'Other';
-        /**
-         * Template text with placeholders. Use {{placeholderName}} for any dynamic value (e.g., {{team_1}}, {{team_2}}, {{matchTime}}, {{url}})
-         */
-        templateText: string;
-        /**
-         * Recommended graphics or media type (e.g., "Team banner", "Stream overlay")
-         */
-        suggestedMedia?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Set weekly posting targets to encourage consistent output
-   */
-  weeklyGoals?: {
-    /**
-     * Target number of posts per week
-     */
-    totalPostsPerWeek?: number | null;
-    /**
-     * Target match promotion posts
-     */
-    matchPromos?: number | null;
-    /**
-     * Target stream announcement posts
-     */
-    streamAnnouncements?: number | null;
-    /**
-     * Target community engagement posts
-     */
-    communityEngagement?: number | null;
-    /**
-     * Target original content posts
-     */
-    originalContent?: number | null;
-  };
-  /**
-   * Best practices, brand voice, and posting guidelines for the team
-   */
-  contentGuidelines?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -5462,6 +5396,8 @@ export interface ProductionDashboardSelect<T extends boolean = true> {
  * via the `definition` "social-media-settings_select".
  */
 export interface SocialMediaSettingsSelect<T extends boolean = true> {
+  digestChannelId?: T;
+  digestRoleId?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -5480,34 +5416,6 @@ export interface CompetitiveHubSelect<T extends boolean = true> {
  * via the `definition` "discord-server-manager_select".
  */
 export interface DiscordServerManagerSelect<T extends boolean = true> {
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "social-media-config_select".
- */
-export interface SocialMediaConfigSelect<T extends boolean = true> {
-  postTemplates?:
-    | T
-    | {
-        name?: T;
-        postType?: T;
-        templateText?: T;
-        suggestedMedia?: T;
-        id?: T;
-      };
-  weeklyGoals?:
-    | T
-    | {
-        totalPostsPerWeek?: T;
-        matchPromos?: T;
-        streamAnnouncements?: T;
-        communityEngagement?: T;
-        originalContent?: T;
-      };
-  contentGuidelines?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

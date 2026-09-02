@@ -18,11 +18,12 @@ export const SocialPosts: CollectionConfig = {
       // SM staff see all posts (to view calendar and collaborate)
       return typedUser.departments?.isSocialMediaStaff === true
     },
+    // Posts are now planned as workboard tasks (see the Social Media Dashboard calendar).
+    // This collection is kept as a read-only archive; only admins can add to it.
     create: ({ req: { user } }) => {
       if (!user) return false
       const typedUser = user as Person
-      if (typedUser.role === 'admin' || typedUser.role === 'staff-manager') return true
-      return typedUser.departments?.isSocialMediaStaff === true
+      return typedUser.role === 'admin' || typedUser.role === 'staff-manager'
     },
     update: ({ req: { user } }) => {
       if (!user) return false
@@ -46,7 +47,7 @@ export const SocialPosts: CollectionConfig = {
   admin: {
     defaultColumns: ['title', 'postType', 'platform', 'scheduledDate', 'status', 'assignedTo'],
     useAsTitle: 'title',
-    description: 'Manage social media posts and content calendar.',
+    description: 'Archive of social posts created before the content calendar moved to workboard tasks.',
     group: 'Data',
     listSearchableFields: ['title', 'content', 'postType', 'platform'],
     components: {
@@ -71,7 +72,6 @@ export const SocialPosts: CollectionConfig = {
         description: 'The text content of the post (can be drafted later)',
         rows: 5,
         components: {
-          Field: '@/components/SocialPostFields/ContentWithTemplate#default',
           Cell: '@/components/SocialPostColumns/ContentPreviewCell#default',
         },
       },

@@ -3,6 +3,8 @@
 import React from 'react'
 import type { Task } from '@/payload-types'
 import { Calendar, Paperclip, Send } from 'lucide-react'
+import { dueDateKey, formatDueDate, localDateKey } from '@/utilities/taskDueDate'
+import { getPostTypeColor } from '@/utilities/socialPostTypes'
 
 interface TaskCardProps {
   task: Task
@@ -29,8 +31,11 @@ const DEPT_NAMES: Record<string, string> = {
 export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
   const assignees = task.assignedTo || []
   const attachments = task.attachments || []
-  const dueDate = task.dueDate ? new Date(task.dueDate) : null
-  const isOverdue = dueDate && dueDate < new Date() && task.status !== 'complete'
+  // Compare calendar days, not instants: date-only due dates are stored at UTC midnight
+  const dueKey = dueDateKey(task.dueDate)
+  const isOverdue = !!dueKey && dueKey < localDateKey(new Date()) && task.status !== 'complete'
+  const postType = task.postType || null
+  const platform = task.platform || null
   const priority = task.priority || 'medium'
   const isRequest = task.isRequest === true
   const requestedByDept = task.requestedByDepartment
@@ -42,13 +47,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
     return 'Unknown'
   }
 
-  // Format date nicely
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-  }
-
   // Check if we have any footer content
-  const hasFooterContent = dueDate || attachments.length > 0 || assignees.length > 0
+  const hasFooterContent = dueKey || attachments.length > 0 || assignees.length > 0
 
   return (
     <div
@@ -70,13 +70,28 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
         </span>
       </div>
       
+      {/* Social media: post type / platform tags */}
+      {(postType || platform) && (
+        <div className="task-item__tags">
+          {postType && (
+            <span
+              className="task-item__tag"
+              style={{ color: getPostTypeColor(postType), borderColor: getPostTypeColor(postType) }}
+            >
+              {postType}
+            </span>
+          )}
+          {platform && <span className="task-item__tag task-item__tag--muted">{platform}</span>}
+        </div>
+      )}
+      
       {/* Footer: Metadata + Assignees */}
       {hasFooterContent && (
         <div className="task-item__footer">
           <div className="task-item__meta">
-            {dueDate && (
+            {dueKey && (
               <span className={`task-item__date ${isOverdue ? 'task-item__date--overdue' : ''}`}>
-                <Calendar size={14} /> {formatDate(dueDate)}
+                <Calendar size={14} /> {formatDueDate(task.dueDate)}
               </span>
             )}
             
