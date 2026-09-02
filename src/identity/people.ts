@@ -40,6 +40,21 @@ export async function findPersonByDiscordId(payload: Payload, discordId: string)
 }
 
 /**
+ * A unique-constraint violation on the identity columns. Postgres reports 23505, but Payload's
+ * drizzle adapter converts that into a ValidationError before it reaches a caller, so both
+ * shapes have to be recognised.
+ */
+function isIdentityUniqueViolation(err: any): boolean {
+  if ((err?.code ?? err?.cause?.code) === '23505') return true
+  const errors = err?.data?.errors
+  if (!Array.isArray(errors)) return false
+  return errors.some((e: any) => {
+    const path = String(e?.path ?? '')
+    return path.includes('discord') || path.includes('username')
+  })
+}
+
+/**
  * Discord-created rows: username = discordId (Payload needs username or email), a random
  * unusable password (Payload requires one), no email, role user.
  */
@@ -59,10 +74,9 @@ export async function createPersonFromDiscord(payload: Payload, profile: Discord
   } catch (err: any) {
     // Two simultaneous first logins race here: whoever loses gets a unique violation on
     // discord_id or username. The winner's row is the right answer, so take it.
-    if ((err?.code ?? err?.cause?.code) === '23505') {
+    if (isIdentityUniqueViolation(err)) {
       const existing = await findPersonByDiscordId(payload, profile.id)
       if (existing) return existing
-      throw err
     }
     if (!err?.message?.includes('slug')) throw err
     const slug = `${profile.displayName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${profile.id.slice(-4)}`

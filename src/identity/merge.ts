@@ -383,7 +383,8 @@ export async function mergePeople(
 
     await db.commitTransaction(tid)
   } catch (err) {
-    await db.rollbackTransaction(tid)
+    // Never let a rollback failure mask what actually went wrong.
+    await db.rollbackTransaction(tid).catch((e: unknown) => console.error('[mergePeople] rollback failed:', e))
     throw err
   }
 
