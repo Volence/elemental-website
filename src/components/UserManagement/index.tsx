@@ -326,12 +326,20 @@ export function UserEditorView() {
     try {
       const payload: Record<string, any> = {
         name,
-        email,
         role,
         discordId: discordId || null,
         assignedTeams: assignedTeams.length > 0 ? assignedTeams : null,
         departments,
       }
+      // Payload runs ensureUsernameOrEmail before any hook: an update carrying an empty email
+      // for a row with no username fails with "Username or email is required". Send the key
+      // only when it has a value, or when clearing a stored email on a row that still has a
+      // username to log in with.
+      const trimmedEmail = email.trim()
+      const storedEmail = String((user as any)?.email ?? '').trim()
+      const hasUsername = Boolean((user as any)?.username)
+      if (trimmedEmail) payload.email = trimmedEmail
+      else if (storedEmail && hasUsername) payload.email = null
 
       const res = await fetch(`/api/people/${userId}`, {
         method: 'PATCH',
