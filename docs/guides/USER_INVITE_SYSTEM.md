@@ -1,5 +1,7 @@
 # User Invite System Guide
 
+> Deprecated 2026-09: invite links are being retired. New people are created from Discord members (see IDENTITY.md). The password signup form still works until IDENTITY_REQUIRE_DISCORD_ID is enabled.
+
 ## Overview
 
 The Elemental website now has a comprehensive invite-based user onboarding system that allows admins to generate secure invite links with pre-configured permissions. Users can sign up using these links and manage their own passwords.

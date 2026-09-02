@@ -61,9 +61,12 @@ S3_SECRET_ACCESS_KEY=your-secret-key
 ### Discord OAuth (Optional)
 ```bash
 NEXT_PUBLIC_DISCORD_INVITE_URL=https://discord.gg/elemental
+IDENTITY_REQUIRE_DISCORD_ID=true
 ```
 - **NEXT_PUBLIC_DISCORD_INVITE_URL**: Invite link shown to non-members on the "join the Discord first" page
   - Defaults to `https://discord.gg/elemental` if unset
+- **IDENTITY_REQUIRE_DISCORD_ID**: When `true`, rejects every people-creation path except Discord (see [IDENTITY.md](./guides/IDENTITY.md))
+  - Default: unset/false. Set `true` after migration 3 (`20260903_identity_discord_id_unique`) has been applied and duplicate Discord IDs are merged.
 
 ## Local Development Setup
 

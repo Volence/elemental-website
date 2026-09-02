@@ -38,6 +38,8 @@ import * as migration_20260815_add_staff_roles_and_regions from "./20260815_add_
 import * as migration_20260902_social_media_tasks_merge from "./20260902_social_media_tasks_merge";
 import * as migration_20260902_social_media_digest_records_daily_ping from "./20260902_social_media_digest_records_daily_ping";
 import * as migration_20260902_identity_foundation_fields from "./20260902_identity_foundation_fields";
+import * as migration_20260902_identity_duplicate_report from "./20260902_identity_duplicate_report";
+import * as migration_20260903_identity_discord_id_unique from "./20260903_identity_discord_id_unique";
 
 export const migrations = [
   {
@@ -239,5 +241,15 @@ export const migrations = [
     up: migration_20260902_identity_foundation_fields.up,
     down: migration_20260902_identity_foundation_fields.down,
     name: "20260902_identity_foundation_fields",
+  },
+  {
+    up: migration_20260902_identity_duplicate_report.up,
+    down: migration_20260902_identity_duplicate_report.down,
+    name: "20260902_identity_duplicate_report",
+  },
+  {
+    up: migration_20260903_identity_discord_id_unique.up,
+    down: migration_20260903_identity_discord_id_unique.down,
+    name: "20260903_identity_discord_id_unique",
   },
 ];
