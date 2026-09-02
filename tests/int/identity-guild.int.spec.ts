@@ -78,6 +78,16 @@ describe('createGuildGateway', () => {
     const profile = await gw.fetchProfile('111111111111111111')
     expect(profile?.servers).toEqual(['NA'])
   })
+  it('treats Unknown User (10013) like Unknown Member, not like an outage', async () => {
+    const unknownUser: GuildLike = {
+      ...hub,
+      fetchMember: async () => { const e: any = new Error('Unknown User'); e.code = 10013; throw e },
+    }
+    const gw = createGuildGateway({ guilds: async () => [unknownUser] })
+    expect(await gw.fetchProfile('444444444444444444')).toBeNull()
+    expect(await gw.isMember('444444444444444444')).toBe(false)
+    expect(await gw.joinDates('444444444444444444')).toEqual([])
+  })
   it('joinDates rethrows a non-Unknown-Member error', async () => {
     const broken: GuildLike = { ...hub, fetchMember: async () => { throw new Error('boom') } }
     const gw = createGuildGateway({ guilds: async () => [broken] })

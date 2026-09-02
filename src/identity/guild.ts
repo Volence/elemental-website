@@ -44,6 +44,16 @@ export interface GuildGateway {
 }
 
 const UNKNOWN_MEMBER = 10007
+const UNKNOWN_USER = 10013
+
+/**
+ * Discord answers a member fetch with 10007 (Unknown Member) when the user exists but is not in
+ * the guild, and 10013 (Unknown User) when the account itself is gone. Both mean "not a member
+ * here" - neither is an outage, so neither should make membership unknown.
+ */
+function isNotAMember(e: any): boolean {
+  return e?.code === UNKNOWN_MEMBER || e?.code === UNKNOWN_USER
+}
 
 function toProfile(m: RawMember): DiscordProfile {
   return { id: m.id, username: m.username, displayName: m.globalName || m.username, avatar: m.avatar }
@@ -76,7 +86,7 @@ export function createGuildGateway(deps: GuildGatewayDeps): GuildGateway {
           await g.fetchMember(discordId)
           return true
         } catch (e: any) {
-          if (e?.code !== UNKNOWN_MEMBER) sawError = true
+          if (!isNotAMember(e)) sawError = true
         }
       }
       return sawError ? null : false
@@ -105,7 +115,7 @@ export function createGuildGateway(deps: GuildGatewayDeps): GuildGateway {
           profile = profile ?? toProfile(m)
           servers.push(g.label)
         } catch (e: any) {
-          if (e?.code !== UNKNOWN_MEMBER) throw e
+          if (!isNotAMember(e)) throw e
         }
       }
       return profile ? { ...profile, servers } : null
@@ -118,7 +128,7 @@ export function createGuildGateway(deps: GuildGatewayDeps): GuildGateway {
           const m = await g.fetchMember(discordId)
           out.push({ guildId: g.id, label: g.label, joinedAt: m.joinedAt })
         } catch (e: any) {
-          if (e?.code !== UNKNOWN_MEMBER) throw e
+          if (!isNotAMember(e)) throw e
         }
       }
       return out
