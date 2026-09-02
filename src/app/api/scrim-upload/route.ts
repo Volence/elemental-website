@@ -19,6 +19,7 @@ import { NextResponse } from 'next/server'
 import { parseScrimLog, validateScrimLog, createScrimFromParsedData } from '@/lib/scrim-parser'
 import { mapSignatureFromParsedData } from '@/lib/scrim-analytics/duplicate-detection'
 import { parsePlayerMappings, teamIdsOutsideScope, validateUploadTarget } from '@/lib/scrim-analytics/upload-guards'
+import { scrimOwnerKey } from '@/lib/scrim-analytics/ownerKey'
 import prisma from '@/lib/prisma'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
@@ -32,8 +33,10 @@ export async function POST(request: Request) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    if (!user.email) {
-      return NextResponse.json({ error: 'An email on your account is required to upload scrims' }, { status: 400 })
+    // Scrims are still owned by an email string; Discord-only accounts get a synthetic key.
+    const creatorEmail = scrimOwnerKey(user as { email?: string | null; discordId?: string | null })
+    if (!creatorEmail) {
+      return NextResponse.json({ error: 'An email or a linked Discord account is required to upload scrims' }, { status: 400 })
     }
 
     // Role/flag gating happens in validateUploadTarget below, once we know
@@ -201,7 +204,7 @@ export async function POST(request: Request) {
       date: dateStr ? new Date(dateStr) : new Date(),
       payloadTeamId: teamIdStr ? parseInt(teamIdStr, 10) : null,
       payloadTeamId2: teamId2Str ? parseInt(teamId2Str, 10) : null,
-      creatorEmail: user.email,
+      creatorEmail,
       opponentName: opponentNameOverride,
       ourSideRaw: (formData.get('ourTeam') as string | null)?.trim() || null,
       externalTeamName,

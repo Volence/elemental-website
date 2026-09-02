@@ -17,6 +17,8 @@ One People row per human. Discord ID is the identity key. Discord is the only wa
 - Dashboard banner asks password users to link their own Discord.
 - First Discord login with a name match shows `/claim`; an approved claim merges the new row into the legacy one (`src/identity/merge.ts`). Nothing is deleted; the source gets `isInactive` and `mergedInto`.
 
+Scrim ownership is still keyed by email; Discord-only accounts use discord_<id>@elmt.placeholder as the key. Step 2 moves this to person id.
+
 ## Rollout order (step 1)
 1. Migration 1 + 2 on prod, deploy.
 2. Work the Unlinked tab; announce the link deadline.

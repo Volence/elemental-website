@@ -7,11 +7,15 @@ import config from '@payload-config'
 import { headers as nextHeaders } from 'next/headers'
 import { UserRole } from '@/access/roles'
 import type { Person, Team } from '@/payload-types'
+import { scrimOwnerKey } from '@/lib/scrim-analytics/ownerKey'
 
 export type UserScope = {
   role: UserRole
   userId: number
   email: string
+  /** How this user's uploads are keyed in scrim_scrims.creatorEmail (null when neither an
+   * email nor a Discord ID is on the account). Always compare against this, not `email`. */
+  ownerKey: string | null
   assignedTeamIds: number[]
   linkedPersonId: number | null
   isFullAccess: boolean // admin or staff-manager - no scoping
@@ -57,6 +61,7 @@ export async function getUserScope(): Promise<UserScope | null> {
       role,
       userId: user.id,
       email: user.email ?? '',
+      ownerKey: scrimOwnerKey(user as { email?: string | null; discordId?: string | null }),
       assignedTeamIds,
       linkedPersonId,
       isFullAccess,
@@ -104,6 +109,6 @@ export function hasScrimAccess(
  */
 export function externalScrimWhere(scope: UserScope): Record<string, unknown> | null {
   if (scope.isFullAccess) return { externalTeamName: { not: null } }
-  if (!scope.canUploadExternalScrims) return null
-  return { externalTeamName: { not: null }, creatorEmail: scope.email }
+  if (!scope.canUploadExternalScrims || !scope.ownerKey) return null
+  return { externalTeamName: { not: null }, creatorEmail: scope.ownerKey }
 }

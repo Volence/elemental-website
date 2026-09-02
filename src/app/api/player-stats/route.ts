@@ -99,7 +99,7 @@ export async function GET(req: NextRequest) {
       ? (
           await prisma.$queryRaw<Array<{ id: number }>>`
             SELECT id FROM scrim_scrims
-            WHERE "externalTeamName" IS NOT NULL AND "creatorEmail" = ${scope.email}
+            WHERE "externalTeamName" IS NOT NULL AND "creatorEmail" = ${scope.ownerKey}
           `
         ).map((r) => r.id)
       : []
