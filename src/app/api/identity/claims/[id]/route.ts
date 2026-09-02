@@ -33,15 +33,41 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ error: tier === 'admin' ? `Only an admin can ${action} this claim` : `Only this team's manager or staff can ${action}` }, { status: 403 })
   }
 
-  let log: string[] | undefined
-  if (action === 'approve') {
-    ;({ log } = await mergePeople(payload, { targetId: target.id, sourceId: claimant.id, actorId: user.id as number, note: `identity claim #${claim.id}` }))
+  const decide = (status: 'approved' | 'declined' | 'pending') =>
+    payload.update({
+      collection: 'identity-claims',
+      id: claim.id,
+      data:
+        status === 'pending'
+          ? { status, reviewer: null, reviewedAt: null }
+          : { status, reviewer: user.id, reviewedAt: new Date().toISOString(), note: body?.note ?? claim.note ?? null },
+      overrideAccess: true,
+    })
+
+  if (action === 'decline') {
+    try {
+      await decide('declined')
+    } catch (err: any) {
+      console.error('[identity/claims] decline failed:', err)
+      return NextResponse.json({ error: err?.message ?? 'Failed to decline the claim' }, { status: 500 })
+    }
+    return NextResponse.json({ ok: true })
   }
-  await payload.update({
-    collection: 'identity-claims',
-    id: claim.id,
-    data: { status: action === 'approve' ? 'approved' : 'declined', reviewer: user.id, reviewedAt: new Date().toISOString(), note: body?.note ?? claim.note ?? null },
-    overrideAccess: true,
-  })
-  return NextResponse.json({ ok: true, log })
+
+  // Approve: settle the claim first so mergePeople's sweep of pending claims on the archived
+  // row cannot decline the very claim being approved. Roll it back if the merge fails.
+  try {
+    await decide('approved')
+  } catch (err: any) {
+    console.error('[identity/claims] approve failed:', err)
+    return NextResponse.json({ error: err?.message ?? 'Failed to approve the claim' }, { status: 500 })
+  }
+  try {
+    const { log } = await mergePeople(payload, { targetId: target.id, sourceId: claimant.id, actorId: user.id as number, note: `identity claim #${claim.id}` })
+    return NextResponse.json({ ok: true, log })
+  } catch (err: any) {
+    console.error('[identity/claims] merge failed, reverting claim to pending:', err)
+    await decide('pending').catch((e: unknown) => console.error('[identity/claims] could not revert the claim to pending:', e))
+    return NextResponse.json({ error: err?.message ?? 'Merge failed' }, { status: 500 })
+  }
 }

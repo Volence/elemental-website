@@ -343,6 +343,10 @@ export async function mergePeople(
   await drizzle.transaction(async (tx: any) => {
     for (const { table, column } of PEOPLE_FK_COLUMNS) {
       if (table === 'people' && column === 'merged_into_id') continue // handled below
+      // Claims are history: a claim's claimant and target must keep pointing at the rows the
+      // person actually filed it about. Repointing them would collapse a sibling claim's two
+      // sides onto the same person and rewrite what was reviewed. Only reviewer_id moves.
+      if (table === 'identity_claims' && (column === 'claimant_id' || column === 'target_id')) continue
       await repointColumn(tx, table, column, `"${column}"`, sourceId, targetId, log)
     }
     for (const { table, column } of PRISMA_FK_COLUMNS) {
@@ -354,6 +358,16 @@ export async function mergePeople(
     await tx.execute(sql`UPDATE people SET is_inactive = true, merged_into_id = ${targetId}, discord_id = NULL, username = NULL WHERE id = ${sourceId}`)
     await tx.execute(sql`DELETE FROM people_sessions WHERE _parent_id = ${sourceId}`)
     log.push(`Archived source #${sourceId} (${s.name}) into #${targetId}`)
+    // Any other claim still waiting on the archived row can never be acted on now.
+    const declined = await tx.execute(sql`
+      UPDATE identity_claims
+      SET status = 'declined',
+          note = COALESCE(note, '') || ${` superseded by merge into #${targetId}`},
+          reviewed_at = now()
+      WHERE status = 'pending' AND (claimant_id = ${sourceId} OR target_id = ${sourceId})
+    `)
+    const declinedCount = (declined as any)?.rowCount ?? (declined as any)?.rows?.length ?? 0
+    if (declinedCount > 0) log.push(`Declined ${declinedCount} pending claim(s) superseded by the merge`)
   })
 
   try {
