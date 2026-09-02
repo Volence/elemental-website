@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { toast } from '@payloadcms/ui'
-import { Copy, Send, X, RefreshCw, AlertCircle } from 'lucide-react'
+import { Copy, Send, X, RefreshCw, AlertCircle, Pencil } from 'lucide-react'
 import { localDateKey } from '@/utilities/taskDueDate'
 
 interface DigestModalProps {
@@ -17,20 +17,25 @@ interface DigestResponse {
   channelConfigured: boolean
   roleConfigured: boolean
   taskCount: number
+  existingMessage: { messageId: string; sentAt: string; updatedAt: string | null } | null
 }
 
 const DEFAULT_FOOTER = 'If anyone wants to take over a post, say so in the thread. Thanks!'
 
+const fmt = (iso: string) =>
+  new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+
 /**
  * Preview + send the weekly post schedule to Discord in the format the team
- * already writes by hand ("Week from 08.31 - 09.06 @Social Manager ...").
+ * already writes by hand. If this week was already posted, the default action
+ * edits that message in place instead of sending a duplicate.
  */
 export const DigestModal: React.FC<DigestModalProps> = ({ isOpen, onClose, start, end }) => {
   const [text, setText] = useState('')
   const [footer, setFooter] = useState(DEFAULT_FOOTER)
   const [info, setInfo] = useState<DigestResponse | null>(null)
   const [loading, setLoading] = useState(false)
-  const [sending, setSending] = useState(false)
+  const [sending, setSending] = useState<'update' | 'new' | null>(null)
 
   const startKey = localDateKey(start)
   const endKey = localDateKey(end)
@@ -72,28 +77,31 @@ export const DigestModal: React.FC<DigestModalProps> = ({ isOpen, onClose, start
     }
   }
 
-  const handleSend = async () => {
+  const handleSend = async (mode: 'update' | 'new') => {
     if (!text.trim()) return
-    setSending(true)
+    setSending(mode)
     try {
       const res = await fetch('/api/social-media/weekly-digest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ start: startKey, end: endKey, send: true, text }),
+        body: JSON.stringify({ start: startKey, end: endKey, send: true, text, footer, mode }),
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.message || 'Failed to send')
-      toast.success('Posted to Discord')
+      toast.success(data.updated ? 'Discord message updated' : 'Posted to Discord')
       onClose()
     } catch (err: any) {
       toast.error(err.message || 'Failed to send')
     } finally {
-      setSending(false)
+      setSending(null)
     }
   }
 
   if (!isOpen) return null
+
+  const existing = info?.existingMessage ?? null
+  const canSend = !loading && !sending && !!text && !!info?.channelConfigured
 
   return (
     <div className="workboard-modal-overlay" onClick={onClose}>
@@ -111,6 +119,16 @@ export const DigestModal: React.FC<DigestModalProps> = ({ isOpen, onClose, start
         </div>
 
         <div className="workboard-modal__form">
+          {existing && (
+            <div className="digest-modal__note digest-modal__note--info">
+              <Pencil size={14} />
+              <span>
+                This week is already in Discord (posted {fmt(existing.sentAt)}
+                {existing.updatedAt ? `, last updated ${fmt(existing.updatedAt)}` : ''}). <strong>Update</strong> edits that message in place; reassignments and completed check marks also sync automatically when tasks change.
+              </span>
+            </div>
+          )}
+
           <div className="workboard-modal__field">
             <label>Closing line</label>
             <input
@@ -174,15 +192,38 @@ export const DigestModal: React.FC<DigestModalProps> = ({ isOpen, onClose, start
               >
                 <Copy size={14} /> Copy
               </button>
-              <button
-                type="button"
-                className="workboard-modal__btn workboard-modal__btn--primary"
-                onClick={handleSend}
-                disabled={loading || sending || !text || !info?.channelConfigured}
-                title={info && !info.channelConfigured ? 'Configure a channel in Settings first' : 'Send to the configured Discord channel'}
-              >
-                <Send size={14} /> {sending ? 'Sending...' : 'Send to Discord'}
-              </button>
+              {existing ? (
+                <>
+                  <button
+                    type="button"
+                    className="workboard-modal__btn workboard-modal__btn--secondary"
+                    onClick={() => handleSend('new')}
+                    disabled={!canSend}
+                    title="Post a fresh message (re-pings the role); the new one becomes the tracked message"
+                  >
+                    <Send size={14} /> {sending === 'new' ? 'Sending...' : 'Send as new'}
+                  </button>
+                  <button
+                    type="button"
+                    className="workboard-modal__btn workboard-modal__btn--primary"
+                    onClick={() => handleSend('update')}
+                    disabled={!canSend}
+                    title="Edit the existing Discord message in place"
+                  >
+                    <Pencil size={14} /> {sending === 'update' ? 'Updating...' : 'Update Discord message'}
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className="workboard-modal__btn workboard-modal__btn--primary"
+                  onClick={() => handleSend('new')}
+                  disabled={!canSend}
+                  title={info && !info.channelConfigured ? 'Configure a channel in Settings first' : 'Send to the configured Discord channel'}
+                >
+                  <Send size={14} /> {sending ? 'Sending...' : 'Send to Discord'}
+                </button>
+              )}
             </div>
           </div>
         </div>

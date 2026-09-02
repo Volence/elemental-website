@@ -1,11 +1,12 @@
 'use client'
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
-import { useConfig, toast } from '@payloadcms/ui'
-import { Plus, Send, CalendarClock } from 'lucide-react'
+import { useAuth, useConfig, toast } from '@payloadcms/ui'
+import { Plus, Send, CalendarClock, Users } from 'lucide-react'
 import type { Task } from '@/payload-types'
 import { TaskModal } from '../WorkboardKanban/TaskModal'
 import { DigestModal } from './DigestModal'
+import { UpcomingStrip, type PromoPrefill } from './UpcomingStrip'
 import { getPostTypeColor, SOCIAL_POST_TYPES } from '@/utilities/socialPostTypes'
 import {
   addDays,
@@ -18,6 +19,7 @@ import {
 type ViewMode = 'week' | 'month'
 
 const VIEW_MODE_KEY = 'sm-calendar-view-mode'
+const ASSIGNEE_KEY = 'sm-calendar-assignee'
 const DEPARTMENT = 'social-media'
 
 const STATUS_LABELS: Record<string, string> = {
@@ -43,6 +45,7 @@ function assigneeName(user: any): string {
 
 export function CalendarView() {
   const { config } = useConfig()
+  const { user } = useAuth()
   const serverURL = config?.serverURL || ''
 
   const [tasks, setTasks] = useState<Task[]>([])
@@ -55,13 +58,31 @@ export function CalendarView() {
 
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [initialDueDate, setInitialDueDate] = useState<string | undefined>(undefined)
+  const [initialValues, setInitialValues] = useState<PromoPrefill | undefined>(undefined)
+  // 'all' | 'me' | person id as string
+  const [assigneeFilter, setAssigneeFilterState] = useState<string>('all')
+  const [dragOverKey, setDragOverKey] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDigestOpen, setIsDigestOpen] = useState(false)
 
   useEffect(() => {
     setViewModeState(readStoredViewMode())
+    try {
+      setAssigneeFilterState(window.localStorage.getItem(ASSIGNEE_KEY) || 'all')
+    } catch {
+      /* best effort */
+    }
     setHydrated(true)
   }, [])
+
+  const setAssigneeFilter = (value: string) => {
+    setAssigneeFilterState(value)
+    try {
+      window.localStorage.setItem(ASSIGNEE_KEY, value)
+    } catch {
+      /* best effort */
+    }
+  }
 
   const setViewMode = (mode: ViewMode) => {
     setViewModeState(mode)
@@ -130,16 +151,56 @@ export function CalendarView() {
     fetchUnscheduled()
   }, [hydrated, fetchTasks, fetchUnscheduled])
 
+  const assigneeIds = (t: Task): number[] =>
+    ((t.assignedTo || []) as any[]).map((a) => (typeof a === 'object' && a ? a.id : a)).filter((v) => v != null)
+
+  // Tasks inside the visible range (the fetch is padded by a day either side)
+  const rangeTasks = useMemo(() => {
+    const startKey = localDateKey(bounds.start)
+    const endKey = localDateKey(bounds.end)
+    return tasks.filter((t) => {
+      const k = dueDateKey(t.dueDate)
+      return !!k && k >= startKey && k <= endKey
+    })
+  }, [tasks, bounds])
+
+  // People who have posts in this range, with counts, for the filter dropdown
+  const people = useMemo(() => {
+    const map = new Map<number, { id: number; name: string; count: number }>()
+    for (const t of rangeTasks) {
+      for (const a of (t.assignedTo || []) as any[]) {
+        if (typeof a !== 'object' || !a) continue
+        const entry = map.get(a.id) || { id: a.id, name: a.name || a.email || 'Unknown', count: 0 }
+        entry.count++
+        map.set(a.id, entry)
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+  }, [rangeTasks])
+
+  const matchesFilter = (t: Task): boolean => {
+    if (assigneeFilter === 'all') return true
+    if (assigneeFilter === 'me') return !!user && assigneeIds(t).includes(user.id as number)
+    return assigneeIds(t).includes(Number(assigneeFilter))
+  }
+
+  const myCount = user ? rangeTasks.filter((t) => assigneeIds(t).includes(user.id as number)).length : 0
+  const unassignedCount = rangeTasks.filter((t) => assigneeIds(t).length === 0).length
+
   const tasksByDay = useMemo(() => {
     const map = new Map<string, Task[]>()
     for (const t of tasks) {
+      if (assigneeFilter === 'me' && !(user && assigneeIds(t).includes(user.id as number))) continue
+      if (assigneeFilter === 'unassigned' && assigneeIds(t).length > 0) continue
+      if (assigneeFilter !== 'all' && assigneeFilter !== 'me' && assigneeFilter !== 'unassigned' && !assigneeIds(t).includes(Number(assigneeFilter))) continue
       const key = dueDateKey(t.dueDate)
       if (!key) continue
       if (!map.has(key)) map.set(key, [])
       map.get(key)!.push(t)
     }
     return map
-  }, [tasks])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tasks, assigneeFilter, user?.id])
 
   const getTasksForDay = (date: Date) => tasksByDay.get(localDateKey(date)) || []
 
@@ -164,17 +225,68 @@ export function CalendarView() {
   const openTask = (task: Task) => {
     setSelectedTask(task)
     setInitialDueDate(undefined)
+    setInitialValues(undefined)
     setIsModalOpen(true)
   }
   const openNewTask = (date?: Date) => {
     setSelectedTask(null)
     setInitialDueDate(date ? localDateKey(date) : undefined)
+    setInitialValues(undefined)
+    setIsModalOpen(true)
+  }
+  const openPromoTask = (prefill: PromoPrefill) => {
+    setSelectedTask(null)
+    setInitialDueDate(prefill.dueDate)
+    setInitialValues(prefill)
     setIsModalOpen(true)
   }
   const closeModal = () => {
     setIsModalOpen(false)
     setSelectedTask(null)
     setInitialDueDate(undefined)
+    setInitialValues(undefined)
+  }
+
+  // --- drag to reschedule ---
+  const handleDragStart = (e: React.DragEvent, task: Task) => {
+    e.dataTransfer.setData('taskId', String(task.id))
+    e.dataTransfer.effectAllowed = 'move'
+  }
+  const handleDragOver = (e: React.DragEvent, key: string) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    if (dragOverKey !== key) setDragOverKey(key)
+  }
+  const handleDrop = async (e: React.DragEvent, key: string) => {
+    e.preventDefault()
+    setDragOverKey(null)
+    const id = Number(e.dataTransfer.getData('taskId'))
+    if (!id) return
+    const task = tasks.find((t) => t.id === id) || unscheduled.find((t) => t.id === id)
+    if (!task || dueDateKey(task.dueDate) === key) return
+
+    // Optimistic move (date-only due dates are stored at UTC midnight)
+    const newDueDate = `${key}T00:00:00.000Z`
+    setTasks((prev) => (prev.some((t) => t.id === id) ? prev.map((t) => (t.id === id ? { ...t, dueDate: newDueDate } : t)) : [...prev, { ...task, dueDate: newDueDate }]))
+    setUnscheduled((prev) => prev.filter((t) => t.id !== id))
+    try {
+      const res = await fetch(`${serverURL}/api/tasks/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ dueDate: key }),
+      })
+      if (!res.ok) throw new Error('Failed to move task')
+      toast.success(`Moved to ${parseKeyLabel(key)}`)
+    } catch {
+      toast.error('Failed to move task')
+      fetchTasks()
+      fetchUnscheduled()
+    }
+  }
+  const parseKeyLabel = (key: string) => {
+    const [y, m, d] = key.split('-').map(Number)
+    return new Date(y, m - 1, d, 12).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
   }
   const afterSave = () => {
     fetchTasks()
@@ -193,6 +305,8 @@ export function CalendarView() {
         key={task.id}
         className={`calendar-post-card ${isComplete ? 'calendar-post-card--complete' : ''} ${compact ? 'calendar-post-card--compact' : ''}`}
         style={{ borderLeft: `4px solid ${color}` }}
+        draggable
+        onDragStart={(e) => handleDragStart(e, task)}
         onClick={() => openTask(task)}
         title={`${task.title}${task.postType ? ` (${task.postType})` : ''}`}
       >
@@ -234,9 +348,16 @@ export function CalendarView() {
       <div className="calendar-view__week">
         {days.map((date) => {
           const dayTasks = getTasksForDay(date)
-          const isToday = localDateKey(date) === todayKey
+          const key = localDateKey(date)
+          const isToday = key === todayKey
           return (
-            <div key={localDateKey(date)} className={`calendar-day ${isToday ? 'calendar-day--today' : ''}`}>
+            <div
+              key={key}
+              className={`calendar-day ${isToday ? 'calendar-day--today' : ''} ${dragOverKey === key ? 'calendar-day--drag-over' : ''}`}
+              onDragOver={(e) => handleDragOver(e, key)}
+              onDragLeave={() => setDragOverKey((k) => (k === key ? null : k))}
+              onDrop={(e) => handleDrop(e, key)}
+            >
               <div className="calendar-day__header">
                 <div>
                   <div className="calendar-day__date">
@@ -284,13 +405,17 @@ export function CalendarView() {
         <div className="calendar-month-grid">
           {days.map((date) => {
             const dayTasks = getTasksForDay(date)
-            const isToday = localDateKey(date) === todayKey
+            const key = localDateKey(date)
+            const isToday = key === todayKey
             const isCurrentMonth = date.getMonth() === currentDate.getMonth()
             const isWeekend = date.getDay() === 0 || date.getDay() === 6
             return (
               <div
-                key={localDateKey(date)}
-                className={`calendar-month-day ${isToday ? 'calendar-month-day--today' : ''} ${!isCurrentMonth ? 'calendar-month-day--other-month' : ''} ${isWeekend ? 'calendar-month-day--weekend' : ''}`}
+                key={key}
+                className={`calendar-month-day ${isToday ? 'calendar-month-day--today' : ''} ${!isCurrentMonth ? 'calendar-month-day--other-month' : ''} ${isWeekend ? 'calendar-month-day--weekend' : ''} ${dragOverKey === key ? 'calendar-month-day--drag-over' : ''}`}
+                onDragOver={(e) => handleDragOver(e, key)}
+                onDragLeave={() => setDragOverKey((k) => (k === key ? null : k))}
+                onDrop={(e) => handleDrop(e, key)}
               >
                 <div className="calendar-month-day__header">
                   <span className="calendar-month-day__date">{date.getDate()}</span>
@@ -311,6 +436,8 @@ export function CalendarView() {
                       className={`calendar-month-post ${task.status === 'complete' ? 'calendar-month-post--complete' : ''}`}
                       style={{ borderLeft: `3px solid ${getPostTypeColor(task.postType)}` }}
                       title={`${task.title}${task.postType ? ` (${task.postType})` : ''}`}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, task)}
                       onClick={() => openTask(task)}
                     >
                       <span className="calendar-month-post__title">{task.title}</span>
@@ -339,10 +466,21 @@ export function CalendarView() {
         <div>
           <h2>Content Calendar</h2>
           <p className="calendar-view__subtitle">
-            Social media workboard tasks by due date. Click a card to edit it, or use + to schedule a new post.
+            Social media workboard tasks by due date. Click a card to edit it, drag it to another day to reschedule, or use + to schedule a new post.
           </p>
         </div>
         <div className="calendar-view__controls">
+          <label className="calendar-filter" title="Filter by assignee">
+            <Users size={13} />
+            <select value={assigneeFilter} onChange={(e) => setAssigneeFilter(e.target.value)}>
+              <option value="all">Everyone ({rangeTasks.length})</option>
+              {user && <option value="me">My posts ({myCount})</option>}
+              {unassignedCount > 0 && <option value="unassigned">Unassigned ({unassignedCount})</option>}
+              {people.filter((p) => !user || p.id !== user.id).map((p) => (
+                <option key={p.id} value={String(p.id)}>{p.name} ({p.count})</option>
+              ))}
+            </select>
+          </label>
           <div className="view-mode-toggle">
             <button
               className={`btn btn--small ${viewMode === 'week' ? 'btn--primary' : 'btn--secondary'}`}
@@ -401,6 +539,8 @@ export function CalendarView() {
         </div>
       )}
 
+      <UpcomingStrip onCreatePromo={openPromoTask} />
+
       <div className="calendar-view__legend">
         <h4>Post Types</h4>
         <div className="legend-items">
@@ -424,6 +564,7 @@ export function CalendarView() {
         onClose={closeModal}
         onSave={afterSave}
         initialDueDate={initialDueDate}
+        initialValues={initialValues}
       />
 
       <DigestModal

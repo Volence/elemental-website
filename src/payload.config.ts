@@ -408,18 +408,25 @@ const config = buildConfig({
           startThreadKeepAlive()
           startTwitchLiveRoster()
 
+          const { startSocialDailyPing } = await import('./discord/services/socialDailyPing')
+          startSocialDailyPing()
+
           const { serviceHealth } = await import('./discord/serviceHealth')
           serviceHealth.register('twitch-roster', 3 * 60 * 1000)
           serviceHealth.register('thread-keepalive', 2 * 60 * 60 * 1000)
+          // Daily ping fires at most once a day; a 26h window flags a missed morning.
+          serviceHealth.register('social-daily-ping', 26 * 60 * 60 * 1000)
           serviceHealth.startStalenessChecker()
 
           const { stopThreadKeepAlive } = await import('./discord/services/threadKeepAlive')
           const { stopTwitchLiveRoster } = await import('./discord/services/twitchLiveRoster')
+          const { stopSocialDailyPing } = await import('./discord/services/socialDailyPing')
           const { stopPollNotificationPolling } = await import('./discord/handlers/poll-handlers')
           const { shutdownDiscordBot } = await import('./discord/bot')
           ;(globalThis as any).__shutdownCleanups = [
             stopTwitchLiveRoster,
             stopThreadKeepAlive,
+            stopSocialDailyPing,
             stopPollNotificationPolling,
             serviceHealth.stopStalenessChecker,
             shutdownDiscordBot,

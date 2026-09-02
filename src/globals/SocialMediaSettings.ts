@@ -52,6 +52,57 @@ export const SocialMediaSettings: GlobalConfig = {
         return true
       },
     },
+    // Weekly digest messages the bot has sent, one per week, so a re-post edits in place.
+    {
+      name: 'digestPosts',
+      type: 'json',
+      admin: {
+        description: 'Managed automatically: which Discord message holds each week\'s digest.',
+        readOnly: true,
+      },
+    },
+    // Morning-of reminder for posts due today.
+    {
+      name: 'dailyPingEnabled',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Daily "posts due today" ping',
+    },
+    {
+      name: 'dailyPingChannelId',
+      type: 'text',
+      label: 'Daily Ping Channel ID',
+      validate: (value: any) => {
+        if (!value) return true
+        if (!/^\d{17,20}$/.test(value)) return 'Must be a valid Discord Channel ID (17-20 digits)'
+        return true
+      },
+    },
+    {
+      name: 'dailyPingTime',
+      type: 'text',
+      label: 'Daily Ping Time (HH:mm, 24h)',
+      defaultValue: '09:00',
+      validate: (value: any) => {
+        if (!value) return true
+        if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(value)) return 'Use 24h HH:mm, e.g. 09:00'
+        return true
+      },
+    },
+    {
+      name: 'dailyPingTimezone',
+      type: 'text',
+      label: 'Daily Ping Timezone',
+      defaultValue: 'America/New_York',
+    },
+    {
+      name: 'dailyPingLastSent',
+      type: 'text',
+      admin: {
+        description: 'Managed automatically: last day (YYYY-MM-DD) the daily ping ran.',
+        readOnly: true,
+      },
+    },
   ],
   access: {
     read: isSocialMediaStaff,

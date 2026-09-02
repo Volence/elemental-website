@@ -102,3 +102,95 @@ export function chunkMessage(rawText: string, max = DISCORD_MESSAGE_MAX): string
   if (current) chunks.push(current)
   return chunks
 }
+
+// ---------------------------------------------------------------------------
+// Sent-digest records (stored as JSON on the Social Media Dashboard global)
+// ---------------------------------------------------------------------------
+
+export interface DigestRecord {
+  /** Sunday of the week, "YYYY-MM-DD" (local) */
+  weekStart: string
+  channelId: string
+  messageId: string
+  sentAt: string
+  updatedAt?: string
+  /** Closing line used when the digest was sent, reused for automatic edits */
+  footer?: string | null
+}
+
+const MAX_DIGEST_RECORDS = 26
+
+export function findDigestRecord(records: DigestRecord[] | null | undefined, weekStart: string): DigestRecord | null {
+  if (!Array.isArray(records)) return null
+  return records.find((r) => r && r.weekStart === weekStart) || null
+}
+
+/** Replace the record for the same week (or append), keeping roughly half a year. */
+export function upsertDigestRecord(records: DigestRecord[] | null | undefined, record: DigestRecord): DigestRecord[] {
+  const base = Array.isArray(records) ? records.filter((r) => r && r.weekStart !== record.weekStart) : []
+  base.push(record)
+  base.sort((a, b) => (a.weekStart < b.weekStart ? -1 : a.weekStart > b.weekStart ? 1 : 0))
+  return base.slice(-MAX_DIGEST_RECORDS)
+}
+
+// ---------------------------------------------------------------------------
+// Daily "posts due today" ping
+// ---------------------------------------------------------------------------
+
+export interface DailyPingOptions {
+  /** "YYYY-MM-DD" of the day being pinged (in the team's timezone) */
+  dateKey: string
+  tasks: DigestTask[]
+}
+
+/** Message for the morning-of reminder, or null when nothing is due (no spam). */
+export function buildDailyPing({ dateKey, tasks }: DailyPingOptions): string | null {
+  const due = tasks
+    .filter((t) => t.status !== 'complete' && dueDateKey(t.dueDate) === dateKey)
+    .sort((a, b) => a.title.localeCompare(b.title))
+  if (due.length === 0) return null
+
+  const [y, m, d] = dateKey.split('-').map(Number)
+  const label = new Date(y, m - 1, d, 12).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+
+  const lines = [`**Posts due today (${label})**`, '']
+  for (const t of due) {
+    const who = t.assignees.length > 0 ? t.assignees.map(mention).join(', ') : '_unassigned_'
+    lines.push(`- **${t.title}** - ${who}`)
+  }
+  return lines.join('\n')
+}
+
+export interface DailyPingDecision {
+  enabled: boolean
+  channelId: string | null | undefined
+  /** "HH:mm" 24h in the team's timezone */
+  time: string
+  /** "YYYY-MM-DD" of the last day a ping ran (sent or skipped as empty) */
+  lastSentDate: string | null | undefined
+  nowLocal: { dateKey: string; hhmm: string }
+}
+
+/** True when the ping is on, has a channel, the time has passed, and today has not run yet. */
+export function shouldSendDailyPing({ enabled, channelId, time, lastSentDate, nowLocal }: DailyPingDecision): boolean {
+  if (!enabled || !channelId) return false
+  if (lastSentDate === nowLocal.dateKey) return false
+  const target = /^\d{2}:\d{2}$/.test(time) ? time : '09:00'
+  return nowLocal.hhmm >= target
+}
+
+/** Current wall-clock date/time in an IANA timezone, as sortable strings. */
+export function nowInTimezone(timeZone: string, now: Date = new Date()): { dateKey: string; hhmm: string } {
+  let parts: Intl.DateTimeFormatPart[]
+  try {
+    parts = new Intl.DateTimeFormat('en-US', {
+      timeZone, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
+    }).formatToParts(now)
+  } catch {
+    parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York', hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
+    }).formatToParts(now)
+  }
+  const get = (type: string) => parts.find((p) => p.type === type)?.value || '00'
+  return { dateKey: `${get('year')}-${get('month')}-${get('day')}`, hhmm: `${get('hour')}:${get('minute')}` }
+}

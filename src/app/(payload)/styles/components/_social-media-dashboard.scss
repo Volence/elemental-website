@@ -1961,3 +1961,214 @@ button.dropdown-indicator.dropdown-indicator,
     line-height: 1.45;
   }
 }
+
+// Drag-to-reschedule, assignee filter, "Coming up" strip
+[data-section="social-media"] {
+  .calendar-day--drag-over,
+  .calendar-month-day--drag-over {
+    outline: 2px dashed rgba(var(--admin-accent-rgb, 59, 130, 246), 0.8);
+    outline-offset: -2px;
+    background: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.12) !important;
+  }
+
+  .calendar-post-card,
+  .calendar-month-post {
+    cursor: grab;
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  .calendar-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0 0.6rem;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.7);
+
+    select {
+      background: transparent;
+      border: none;
+      color: var(--theme-text);
+      font-size: 0.85rem;
+      padding: 0.45rem 0.25rem;
+      cursor: pointer;
+      max-width: 220px;
+
+      option {
+        background: #14161d;
+        color: white;
+      }
+    }
+  }
+
+  .upcoming-strip {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.02);
+
+    &__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+
+      h4 {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.9rem;
+        color: var(--theme-text);
+      }
+    }
+
+    &__header-right {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      color: var(--theme-elevation-500);
+    }
+
+    &__refresh {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: transparent;
+      color: rgba(255, 255, 255, 0.6);
+      cursor: pointer;
+
+      &:hover {
+        color: white;
+      }
+    }
+
+    &__empty {
+      padding: 0.75rem;
+      font-size: 0.8rem;
+      color: var(--theme-elevation-500);
+      font-style: italic;
+    }
+
+    &__list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 0.4rem;
+    }
+  }
+
+  .upcoming-item {
+    display: grid;
+    grid-template-columns: 24px 110px 1fr auto;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-left: 3px solid #8b5cf6;
+
+    &--match {
+      border-left-color: #3b82f6;
+    }
+
+    &__icon {
+      display: flex;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    &__when {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.6);
+
+      strong {
+        color: var(--theme-text);
+        font-size: 0.8rem;
+      }
+    }
+
+    &__body {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    &__title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--theme-text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    &__subtitle {
+      font-size: 0.72rem;
+      color: var(--theme-elevation-500);
+    }
+
+    &__promo {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.35rem 0.6rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border-radius: 6px;
+      border: 1px solid rgba(var(--admin-accent-rgb, 59, 130, 246), 0.4);
+      background: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.12);
+      color: white;
+      cursor: pointer;
+      white-space: nowrap;
+
+      &:hover {
+        background: rgba(var(--admin-accent-rgb, 59, 130, 246), 0.3);
+      }
+    }
+  }
+
+  @media (max-width: 760px) {
+    .upcoming-item {
+      grid-template-columns: 24px 1fr auto;
+
+      &__when {
+        display: none;
+      }
+    }
+  }
+}
+
+.digest-modal__note--info {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.35);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+// Digest modal has up to five actions - let them wrap instead of clipping
+.workboard-modal--digest .workboard-modal__actions {
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  .workboard-modal__primary-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+}

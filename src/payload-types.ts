@@ -5140,6 +5140,26 @@ export interface SocialMediaSetting {
    * Discord role to ping in the weekly digest (e.g. Social Manager). Leave blank for no ping.
    */
   digestRoleId?: string | null;
+  /**
+   * Managed automatically: which Discord message holds each week's digest.
+   */
+  digestPosts?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  dailyPingEnabled?: boolean | null;
+  dailyPingChannelId?: string | null;
+  dailyPingTime?: string | null;
+  dailyPingTimezone?: string | null;
+  /**
+   * Managed automatically: last day (YYYY-MM-DD) the daily ping ran.
+   */
+  dailyPingLastSent?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -5398,6 +5418,12 @@ export interface ProductionDashboardSelect<T extends boolean = true> {
 export interface SocialMediaSettingsSelect<T extends boolean = true> {
   digestChannelId?: T;
   digestRoleId?: T;
+  digestPosts?: T;
+  dailyPingEnabled?: T;
+  dailyPingChannelId?: T;
+  dailyPingTime?: T;
+  dailyPingTimezone?: T;
+  dailyPingLastSent?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

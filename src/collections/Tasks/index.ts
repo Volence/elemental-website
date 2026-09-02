@@ -14,6 +14,23 @@ import {
 } from '../../access/roles'
 import type { Person } from '@/payload-types'
 import { SOCIAL_POST_TYPES, SOCIAL_PLATFORMS } from '@/utilities/socialPostTypes'
+import { dueDateKey, localDateKey, weekBoundsFor } from '@/utilities/taskDueDate'
+
+/** Sunday "YYYY-MM-DD" of the week containing a day key (local time). */
+function weekStartFor(dateKey: string): string {
+  const [y, m, d] = dateKey.split('-').map(Number)
+  return localDateKey(weekBoundsFor(new Date(y, m - 1, d, 12)).start)
+}
+
+/** Relationship values as a sorted list of ids, whatever depth they came in at. */
+function normalizeIds(value: unknown): number[] {
+  if (!Array.isArray(value)) return []
+  return value
+    .map((v: any) => (typeof v === 'object' && v !== null ? v.id : v))
+    .filter((v) => v !== null && v !== undefined)
+    .map(Number)
+    .sort((a, b) => a - b)
+}
 
 // Task types per department
 const TASK_TYPES = {
@@ -521,6 +538,36 @@ export const Tasks: CollectionConfig = {
       },
     ],
     afterChange: [
+      // Social media: if a weekly digest was already posted to Discord for the
+      // week this task falls in, re-render and edit that message.
+      async ({ doc, previousDoc, operation }) => {
+        if (!doc || doc.department !== 'social-media') return
+        const changed =
+          operation === 'create' ||
+          !previousDoc ||
+          doc.title !== previousDoc.title ||
+          doc.dueDate !== previousDoc.dueDate ||
+          doc.status !== previousDoc.status ||
+          doc.archived !== previousDoc.archived ||
+          JSON.stringify(normalizeIds(doc.assignedTo)) !== JSON.stringify(normalizeIds(previousDoc.assignedTo))
+        if (!changed) return
+
+        const keys = new Set<string>()
+        for (const iso of [doc.dueDate, previousDoc?.dueDate]) {
+          const k = dueDateKey(iso)
+          if (k) keys.add(weekStartFor(k))
+        }
+        if (keys.size === 0) return
+
+        setImmediate(async () => {
+          try {
+            const { refreshWeeklyDigestForDate } = await import('@/discord/services/socialDigest')
+            for (const weekStart of keys) await refreshWeeklyDigestForDate(weekStart)
+          } catch (error) {
+            console.error('[Tasks] Failed to refresh weekly social digest:', error)
+          }
+        })
+      },
       async ({ doc, previousDoc, req, operation, context }) => {
         // Skip if this update was triggered by our own sync to avoid infinite loop
         if (context?.skipCalendarSync) return

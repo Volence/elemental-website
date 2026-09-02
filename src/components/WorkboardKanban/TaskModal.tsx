@@ -19,6 +19,14 @@ interface TaskModalProps {
   requestedByDepartment?: string
   /** Pre-fill the due date (YYYY-MM-DD) when creating from a calendar day */
   initialDueDate?: string
+  /** Pre-fill other fields when creating (e.g. a promo post for an upcoming match) */
+  initialValues?: Partial<{
+    title: string
+    description: string
+    priority: string
+    postType: string
+    platform: string
+  }>
 }
 
 interface AttachmentItem {
@@ -60,6 +68,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   isRequest = false,
   requestedByDepartment,
   initialDueDate,
+  initialValues,
 }) => {
   const { config } = useConfig()
   const serverURL = config?.serverURL || ''
@@ -113,20 +122,20 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       )
     } else {
       setFormData({
-        title: '',
-        description: '',
+        title: initialValues?.title || '',
+        description: initialValues?.description || '',
         status: 'backlog',
-        priority: 'medium',
+        priority: initialValues?.priority || 'medium',
         taskType: '',
         dueDate: initialDueDate || '',
         addToGlobalCalendar: false,
-        postType: '',
-        platform: '',
+        postType: initialValues?.postType || '',
+        platform: initialValues?.platform || '',
       })
       setSelectedAssignees([])
       setAttachments([])
     }
-  }, [task, initialDueDate, isOpen])
+  }, [task, initialDueDate, initialValues, isOpen])
   
   useEffect(() => {
     // Fetch users for assignment - filtered by department
