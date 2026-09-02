@@ -2,13 +2,15 @@
 
 import React, { lazy, Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { useAuth } from '@payloadcms/ui'
+import type { Person } from '@/payload-types'
 import UnlinkedTab from './UnlinkedTab'
 import ClaimsTab from './ClaimsTab'
 
 const MergePeopleView = lazy(() => import('@/components/SystemHealthHub/MergePeopleView'))
 
 type TabId = 'unlinked' | 'claims' | 'merge'
-const TABS: Array<{ id: TabId; label: string }> = [
+const ALL_TABS: Array<{ id: TabId; label: string }> = [
   { id: 'unlinked', label: 'Unlinked people' },
   { id: 'claims', label: 'Claims' },
   { id: 'merge', label: 'Merge' },
@@ -16,6 +18,9 @@ const TABS: Array<{ id: TabId; label: string }> = [
 
 export const IdentityView: React.FC = () => {
   const params = useSearchParams()
+  const { user } = useAuth<Person>()
+  const isAdmin = (user as any)?.role === 'admin'
+  const TABS = isAdmin ? ALL_TABS : ALL_TABS.filter((t) => t.id !== 'merge')
   const [tab, setTab] = useState<TabId>('unlinked')
   const [merge, setMerge] = useState<{ targetId?: number; sourceId?: number }>({})
 
@@ -24,9 +29,10 @@ export const IdentityView: React.FC = () => {
     if (t && TABS.some((x) => x.id === t)) setTab(t)
     const targetId = params?.get('targetId'), sourceId = params?.get('sourceId')
     if (targetId || sourceId) setMerge({ targetId: targetId ? Number(targetId) : undefined, sourceId: sourceId ? Number(sourceId) : undefined })
-  }, [params])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params, isAdmin])
 
-  const openMerge = (targetId: number, sourceId: number) => { setMerge({ targetId, sourceId }); setTab('merge') }
+  const openMerge = isAdmin ? (targetId: number, sourceId: number) => { setMerge({ targetId, sourceId }); setTab('merge') } : undefined
 
   return (
     <div style={{ padding: '0 24px 40px' }}>
@@ -41,7 +47,7 @@ export const IdentityView: React.FC = () => {
       </div>
       {tab === 'unlinked' && <UnlinkedTab onMerge={openMerge} />}
       {tab === 'claims' && <ClaimsTab />}
-      {tab === 'merge' && (
+      {tab === 'merge' && isAdmin && (
         <Suspense fallback={<p>Loading...</p>}>
           <MergePeopleView initialTargetId={merge.targetId} initialSourceId={merge.sourceId} />
         </Suspense>

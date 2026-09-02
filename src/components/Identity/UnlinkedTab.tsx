@@ -7,7 +7,7 @@ interface Suggestion { discordId: string; username: string; displayName: string;
 interface Row { id: number; name: string; role: string; teams: string[]; hasPassword: boolean; lastLogin: string | null; suggestions: Suggestion[] }
 interface Data { counts: { linked: number; unlinked: number; unlinkedWithLogin: number; unlinkedNoLogin: number }; rows: Row[] }
 
-export default function UnlinkedTab({ onMerge }: { onMerge: (targetId: number, sourceId: number) => void }) {
+export default function UnlinkedTab({ onMerge }: { onMerge?: (targetId: number, sourceId: number) => void }) {
   const [data, setData] = useState<Data | null>(null)
   const [error, setError] = useState('')
   const [busyId, setBusyId] = useState<number | null>(null)
@@ -28,7 +28,11 @@ export default function UnlinkedTab({ onMerge }: { onMerge: (targetId: number, s
       const res = await fetch('/api/identity/link', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ personId, discordId }) })
       const body = await res.json()
       if (res.status === 409) {
-        if (confirm(`${body.otherName} (#${body.otherId}) already has that Discord ID. Open the merge tool?`)) onMerge(personId, body.otherId)
+        if (onMerge) {
+          if (confirm(`${body.otherName} (#${body.otherId}) already has that Discord ID. Open the merge tool?`)) onMerge(personId, body.otherId)
+        } else {
+          setError(`${body.otherName} (#${body.otherId}) already has that Discord ID. Ask an admin to merge the two records on the Identity page.`)
+        }
         return
       }
       if (!res.ok) throw new Error(body.error ?? 'Link failed')
