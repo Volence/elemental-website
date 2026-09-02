@@ -5,7 +5,7 @@ import { X } from 'lucide-react'
 import { ReminderButton } from './ReminderButton'
 import { ScrimOutcomeButton } from './ScrimOutcomeButton'
 import type { ScheduleData, TimeBlock, TimeBlockOutcome, VoteData, ActivityType } from './types'
-import { ACTIVITY_TYPES, OPPONENT_ACTIVITIES, getBlockActivity } from './types'
+import { ACTIVITY_TYPES, OPPONENT_ACTIVITIES, ANNOUNCEABLE_ACTIVITIES, getActivityLabel, getBlockActivity } from './types'
 import './GridView.scss'
 
 const ROLE_COLORS: Record<string, string> = {
@@ -222,24 +222,28 @@ export function GridView({
             </tr>
 
             <tr className="se-grid__meta-row">
-              <td className="se-grid__role-label se-grid__role-label--meta"><span>Opponent</span></td>
+              <td className="se-grid__role-label se-grid__role-label--meta"><span>Details</span></td>
               {columns.map((col, ci) => {
                 const block = schedule.days[col.dayIdx].blocks[col.blockIdx]
-                const isOpponentBlock = OPPONENT_ACTIVITIES.has(getBlockActivity(block))
-                if (!isOpponentBlock) {
+                const activity = getBlockActivity(block)
+                if (!ANNOUNCEABLE_ACTIVITIES.has(activity)) {
                   return <td key={ci} className={`se-grid__cell se-grid__cell--meta ${col.isFirstOfDay && ci > 0 ? 'se-grid__cell--day-start' : ''}`} />
                 }
-                const opponentName = block.scrim?.opponent || ''
+                const isOpponentBlock = OPPONENT_ACTIVITIES.has(activity)
+                // Opponent blocks lead with the opponent name; everything else leads with its notes
+                const label = isOpponentBlock ? (block.scrim?.opponent || '') : (block.scrim?.notes || '')
                 return (
                   <td
                     key={ci}
                     className={`se-grid__cell se-grid__cell--meta se-grid__cell--clickable ${col.isFirstOfDay && ci > 0 ? 'se-grid__cell--day-start' : ''}`}
                     onClick={() => setScrimModal({ dayIdx: col.dayIdx, blockIdx: col.blockIdx })}
                   >
-                    {opponentName ? (
-                      <span className="se-grid__opponent">{opponentName}</span>
-                    ) : (
+                    {label ? (
+                      <span className="se-grid__opponent" title={label}>{label}</span>
+                    ) : isOpponentBlock ? (
                       <span className="se-grid__empty-cell se-grid__empty-cell--tbd">TBD</span>
+                    ) : (
+                      <span className="se-grid__empty-cell se-grid__empty-cell--clickable">+ notes</span>
                     )}
                   </td>
                 )
@@ -353,81 +357,87 @@ export function GridView({
         if (!block) return null
         const scrim = block.scrim || { opponent: '', opponentRoster: '', contact: '', host: '' as const, mapPool: '', heroBans: true, staggers: false, notes: '' }
         const dayName = (day.date.split(' ')[0]) || day.date
+        const modalActivity = getBlockActivity(block)
+        const isOpponentActivity = OPPONENT_ACTIVITIES.has(modalActivity)
 
         return (
           <div className="se-grid__modal-overlay" onClick={() => setScrimModal(null)}>
             <div className="se-grid__scrim-modal" onClick={e => e.stopPropagation()}>
               <div className="se-grid__scrim-modal-header">
-                <h3>Scrim Details</h3>
+                <h3>{getActivityLabel(modalActivity)} Details</h3>
                 <span>{dayName} {block.time}</span>
                 <button type="button" onClick={() => setScrimModal(null)}><X size={16} /></button>
               </div>
               <div className="se-grid__scrim-modal-body">
-                <div className="se-grid__scrim-field">
-                  <label>Opponent:</label>
-                  <div className="se-grid__autocomplete">
-                    <input
-                      type="text"
-                      placeholder="Search or type team name..."
-                      value={scrim.opponent || ''}
-                      onChange={e => {
-                        onUpdateBlockScrim(scrimModal.dayIdx, scrimModal.blockIdx, 'opponent', e.target.value)
-                        if (scrim.opponentTeamId) {
-                          const t = opponentTeams.find(t => t.id === scrim.opponentTeamId)
-                          if (t && t.name !== e.target.value) {
-                            onUpdateBlockScrim(scrimModal.dayIdx, scrimModal.blockIdx, 'opponentTeamId', null)
+                {isOpponentActivity && (
+                  <>
+                  <div className="se-grid__scrim-field">
+                    <label>Opponent:</label>
+                    <div className="se-grid__autocomplete">
+                      <input
+                        type="text"
+                        placeholder="Search or type team name..."
+                        value={scrim.opponent || ''}
+                        onChange={e => {
+                          onUpdateBlockScrim(scrimModal.dayIdx, scrimModal.blockIdx, 'opponent', e.target.value)
+                          if (scrim.opponentTeamId) {
+                            const t = opponentTeams.find(t => t.id === scrim.opponentTeamId)
+                            if (t && t.name !== e.target.value) {
+                              onUpdateBlockScrim(scrimModal.dayIdx, scrimModal.blockIdx, 'opponentTeamId', null)
+                            }
                           }
-                        }
-                      }}
-                    />
-                    {scrim.opponent && !scrim.opponentTeamId && opponentTeams.filter(t =>
-                      t.name.toLowerCase().includes((scrim.opponent || '').toLowerCase())
-                    ).length > 0 && (
-                      <div className="se-grid__autocomplete-list">
-                        {opponentTeams
-                          .filter(t => t.name.toLowerCase().includes((scrim.opponent || '').toLowerCase()))
-                          .slice(0, 8)
-                          .map(team => (
-                            <button
-                              key={team.id}
-                              type="button"
-                              onClick={() => {
-                                onUpdateBlockScrim(scrimModal.dayIdx, scrimModal.blockIdx, 'opponentTeamId', team.id)
-                                onUpdateBlockScrim(scrimModal.dayIdx, scrimModal.blockIdx, 'opponent', team.name)
-                              }}
-                            >{team.name}</button>
-                          ))}
-                      </div>
-                    )}
-                    {scrim.opponentTeamId && <span className="se-grid__linked">Linked</span>}
+                        }}
+                      />
+                      {scrim.opponent && !scrim.opponentTeamId && opponentTeams.filter(t =>
+                        t.name.toLowerCase().includes((scrim.opponent || '').toLowerCase())
+                      ).length > 0 && (
+                        <div className="se-grid__autocomplete-list">
+                          {opponentTeams
+                            .filter(t => t.name.toLowerCase().includes((scrim.opponent || '').toLowerCase()))
+                            .slice(0, 8)
+                            .map(team => (
+                              <button
+                                key={team.id}
+                                type="button"
+                                onClick={() => {
+                                  onUpdateBlockScrim(scrimModal.dayIdx, scrimModal.blockIdx, 'opponentTeamId', team.id)
+                                  onUpdateBlockScrim(scrimModal.dayIdx, scrimModal.blockIdx, 'opponent', team.name)
+                                }}
+                              >{team.name}</button>
+                            ))}
+                        </div>
+                      )}
+                      {scrim.opponentTeamId && <span className="se-grid__linked">Linked</span>}
+                    </div>
                   </div>
-                </div>
-                <div className="se-grid__scrim-field">
-                  <label>Contact:</label>
-                  <input type="text" placeholder="e.g., Username#1234" value={scrim.contact || ''} onChange={e => onUpdateBlockScrim(scrimModal.dayIdx, scrimModal.blockIdx, 'contact', e.target.value)} />
-                </div>
-                <div className="se-grid__scrim-field">
-                  <label>Host:</label>
-                  <div className="se-grid__toggle-row">
-                    <button type="button" className={`se-grid__toggle ${scrim.host === 'us' ? 'se-grid__toggle--active' : ''}`} onClick={() => onUpdateBlockScrim(scrimModal.dayIdx, scrimModal.blockIdx, 'host', scrim.host === 'us' ? '' : 'us')}>Us</button>
-                    <button type="button" className={`se-grid__toggle ${scrim.host === 'them' ? 'se-grid__toggle--active' : ''}`} onClick={() => onUpdateBlockScrim(scrimModal.dayIdx, scrimModal.blockIdx, 'host', scrim.host === 'them' ? '' : 'them')}>Them</button>
+                  <div className="se-grid__scrim-field">
+                    <label>Contact:</label>
+                    <input type="text" placeholder="e.g., Username#1234" value={scrim.contact || ''} onChange={e => onUpdateBlockScrim(scrimModal.dayIdx, scrimModal.blockIdx, 'contact', e.target.value)} />
                   </div>
-                </div>
-                <div className="se-grid__scrim-field">
-                  <label>Map Pool:</label>
-                  <input type="text" placeholder="e.g., Faceit" value={scrim.mapPool || ''} onChange={e => onUpdateBlockScrim(scrimModal.dayIdx, scrimModal.blockIdx, 'mapPool', e.target.value)} />
-                </div>
-                <div className="se-grid__scrim-field">
-                  <label>Rules:</label>
-                  <div className="se-grid__toggle-row">
-                    <button type="button" className={`se-grid__toggle ${(scrim.heroBans ?? true) ? 'se-grid__toggle--active' : ''}`} onClick={() => onUpdateBlockScrim(scrimModal.dayIdx, scrimModal.blockIdx, 'heroBans', !(scrim.heroBans ?? true))}>Hero Bans</button>
-                    <button type="button" className={`se-grid__toggle ${scrim.staggers ? 'se-grid__toggle--active' : ''}`} onClick={() => onUpdateBlockScrim(scrimModal.dayIdx, scrimModal.blockIdx, 'staggers', !scrim.staggers)}>Staggers</button>
+                  <div className="se-grid__scrim-field">
+                    <label>Host:</label>
+                    <div className="se-grid__toggle-row">
+                      <button type="button" className={`se-grid__toggle ${scrim.host === 'us' ? 'se-grid__toggle--active' : ''}`} onClick={() => onUpdateBlockScrim(scrimModal.dayIdx, scrimModal.blockIdx, 'host', scrim.host === 'us' ? '' : 'us')}>Us</button>
+                      <button type="button" className={`se-grid__toggle ${scrim.host === 'them' ? 'se-grid__toggle--active' : ''}`} onClick={() => onUpdateBlockScrim(scrimModal.dayIdx, scrimModal.blockIdx, 'host', scrim.host === 'them' ? '' : 'them')}>Them</button>
+                    </div>
                   </div>
-                </div>
-                <div className="se-grid__scrim-field se-grid__scrim-field--full">
-                  <label>Opponent Roster:</label>
-                  <textarea placeholder="Paste opponent roster here..." rows={3} value={scrim.opponentRoster || ''} onChange={e => onUpdateBlockScrim(scrimModal.dayIdx, scrimModal.blockIdx, 'opponentRoster', e.target.value)} />
-                </div>
+                  <div className="se-grid__scrim-field">
+                    <label>Map Pool:</label>
+                    <input type="text" placeholder="e.g., Faceit" value={scrim.mapPool || ''} onChange={e => onUpdateBlockScrim(scrimModal.dayIdx, scrimModal.blockIdx, 'mapPool', e.target.value)} />
+                  </div>
+                  <div className="se-grid__scrim-field">
+                    <label>Rules:</label>
+                    <div className="se-grid__toggle-row">
+                      <button type="button" className={`se-grid__toggle ${(scrim.heroBans ?? true) ? 'se-grid__toggle--active' : ''}`} onClick={() => onUpdateBlockScrim(scrimModal.dayIdx, scrimModal.blockIdx, 'heroBans', !(scrim.heroBans ?? true))}>Hero Bans</button>
+                      <button type="button" className={`se-grid__toggle ${scrim.staggers ? 'se-grid__toggle--active' : ''}`} onClick={() => onUpdateBlockScrim(scrimModal.dayIdx, scrimModal.blockIdx, 'staggers', !scrim.staggers)}>Staggers</button>
+                    </div>
+                  </div>
+                  <div className="se-grid__scrim-field se-grid__scrim-field--full">
+                    <label>Opponent Roster:</label>
+                    <textarea placeholder="Paste opponent roster here..." rows={3} value={scrim.opponentRoster || ''} onChange={e => onUpdateBlockScrim(scrimModal.dayIdx, scrimModal.blockIdx, 'opponentRoster', e.target.value)} />
+                  </div>
+                  </>
+                )}
                 <div className="se-grid__scrim-field se-grid__scrim-field--full">
                   <label>Notes:</label>
                   <input type="text" placeholder="Any additional notes..." value={scrim.notes || ''} onChange={e => onUpdateBlockScrim(scrimModal.dayIdx, scrimModal.blockIdx, 'notes', e.target.value)} />
@@ -436,16 +446,19 @@ export function GridView({
                   <ReminderButton
                     dayDate={day.date}
                     blockTime={block.time}
-                    hasOpponent={Boolean(scrim.opponent)}
+                    activityLabel={getActivityLabel(modalActivity)}
+                    hasOpponent={!isOpponentActivity || Boolean(scrim.opponent)}
                     reminderPosted={block.reminderPosted}
                     onReminderPosted={() => onMarkBlockReminderPosted(scrimModal.dayIdx, scrimModal.blockIdx)}
                   />
-                  <ScrimOutcomeButton
-                    opponentName={scrim.opponent || ''}
-                    outcome={block.outcome}
-                    onSaveOutcome={outcome => onUpdateBlockOutcome(scrimModal.dayIdx, scrimModal.blockIdx, outcome)}
-                    availableMaps={maps}
-                  />
+                  {isOpponentActivity && (
+                    <ScrimOutcomeButton
+                      opponentName={scrim.opponent || ''}
+                      outcome={block.outcome}
+                      onSaveOutcome={outcome => onUpdateBlockOutcome(scrimModal.dayIdx, scrimModal.blockIdx, outcome)}
+                      availableMaps={maps}
+                    />
+                  )}
                 </div>
               </div>
               <div className="se-grid__scrim-modal-footer">

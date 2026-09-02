@@ -24,6 +24,14 @@ export const ACTIVITY_TYPES: { value: ActivityType; label: string }[] = [
 
 export const OPPONENT_ACTIVITIES = new Set<string>(['scrim', 'match'])
 
+/** Activities that can be announced to Discord and carry per-block details/notes */
+export const ANNOUNCEABLE_ACTIVITIES = new Set<string>(['scrim', 'match', 'warmup', 'vod', 'scouting', 'other'])
+
+/** Label used for the details modal / Discord announcement of a given activity */
+export function getActivityLabel(activity: string): string {
+  return ACTIVITY_TYPES.find(a => a.value === activity)?.label || 'Session'
+}
+
 export function getBlockActivity(block: { activity?: string; scrim?: { isScrim?: boolean; opponent?: string; opponentTeamId?: number | null } }): string {
   if (block.activity) return block.activity
   if (block.scrim?.isScrim || block.scrim?.opponent || block.scrim?.opponentTeamId) return 'scrim'

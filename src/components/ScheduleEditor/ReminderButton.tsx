@@ -8,6 +8,8 @@ import { postScrimReminderAction } from '@/actions/post-scrim-reminder'
 interface ReminderButtonProps {
   dayDate: string
   blockTime?: string
+  /** Activity name shown in the button/modal copy, e.g. "Scrim", "Warmup", "VOD Review" */
+  activityLabel?: string
   hasOpponent: boolean
   reminderPosted?: boolean
   onReminderPosted: () => void
@@ -20,6 +22,7 @@ interface ReminderButtonProps {
 export const ReminderButton: React.FC<ReminderButtonProps> = ({ 
   dayDate, 
   blockTime,
+  activityLabel = 'Scrim',
   hasOpponent, 
   reminderPosted,
   onReminderPosted 
@@ -37,7 +40,7 @@ export const ReminderButton: React.FC<ReminderButtonProps> = ({
     try {
       const result = await postScrimReminderAction(Number(id), dayDate, blockTime)
       if (result.success) {
-        toast.success('Scrim reminder posted!')
+        toast.success(`${activityLabel} reminder posted!`)
         onReminderPosted()
       } else {
         toast.error(result.error || 'Failed to post reminder')
@@ -79,7 +82,7 @@ export const ReminderButton: React.FC<ReminderButtonProps> = ({
           <div className="schedule-editor__modal schedule-editor__modal--reminder" onClick={(e) => e.stopPropagation()}>
             <div className="schedule-editor__modal-header">
               <span className="schedule-editor__modal-icon"><Megaphone size={16} /></span>
-              <h3>Post Scrim Reminder</h3>
+              <h3>Post {activityLabel} Reminder</h3>
             </div>
             <div className="schedule-editor__modal-body">
               {isModified && (

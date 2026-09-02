@@ -15,6 +15,7 @@ interface PlayerSlot {
 }
 
 interface ScrimDetails {
+  isScrim?: boolean
   opponentTeamId?: number | null
   opponent: string
   opponentRoster: string
@@ -29,6 +30,7 @@ interface ScrimDetails {
 interface TimeBlock {
   id: string
   time: string
+  activity?: string
   slots: PlayerSlot[]
   scrim?: ScrimDetails
   reminderPosted?: boolean
@@ -58,36 +60,57 @@ interface VoteData {
   }>
 }
 
+const OPPONENT_ACTIVITIES = new Set<string>(['scrim', 'match'])
+
+/** Title/colour per activity type for the reminder embed */
+const ACTIVITY_PRESETS: Record<string, { title: string; color: number }> = {
+  scrim: { title: 'Scrim Reminder', color: 0xf59e0b },
+  match: { title: 'Match Reminder', color: 0xef4444 },
+  warmup: { title: 'Warmup Reminder', color: 0x3b82f6 },
+  vod: { title: 'VOD Review Reminder', color: 0x8b5cf6 },
+  scouting: { title: 'Scouting Reminder', color: 0x06b6d4 },
+  other: { title: 'Session Reminder', color: 0x94a3b8 },
+}
+
+/** Mirrors getBlockActivity in the schedule editor: fall back to scrim when legacy data has an opponent */
+function resolveActivity(block: TimeBlock): string {
+  if (block.activity) return block.activity
+  if (block.scrim?.isScrim || block.scrim?.opponent || block.scrim?.opponentTeamId) return 'scrim'
+  return 'other'
+}
+
 /**
- * Create a Discord embed for a scrim reminder
+ * Create a Discord embed for a block reminder (scrim, match, warmup, VOD review, ...)
  */
-function createScrimEmbed(
+function createBlockEmbed(
   day: DaySchedule,
   block: TimeBlock,
   playerMap: Map<string, string>,
 ): EmbedBuilder {
-  const scrimTime = block.time
-  
+  const activity = resolveActivity(block)
+  const isOpponentActivity = OPPONENT_ACTIVITIES.has(activity)
+  const preset = ACTIVITY_PRESETS[activity] || ACTIVITY_PRESETS.other
+
   const embed = new EmbedBuilder()
-    .setColor(0xf59e0b) // Amber/orange color
-    .setTitle(`Scrim Reminder • ${day.date}`)
-  
+    .setColor(preset.color)
+    .setTitle(`${preset.title} \u2022 ${day.date}`)
+
   // Build a clean description with all key info
   let description = ''
-  
+
   // Time and opponent
-  description += `**${scrimTime}**`
-  if (block.scrim?.opponent) {
+  description += `**${block.time}**`
+  if (isOpponentActivity && block.scrim?.opponent) {
     description += ` vs **${block.scrim.opponent}**`
     if (block.scrim.host) {
-      description += ` • ${block.scrim.host === 'us' ? 'We host' : 'They host'}`
+      description += ` \u2022 ${block.scrim.host === 'us' ? 'We host' : 'They host'}`
     }
   }
   description += '\n'
-  
+
   // Separator
-  description += '───────────────────────\n'
-  
+  description += '\u2500'.repeat(23) + '\n'
+
   const mainSlots = block.slots.filter(s => !s.isTrial)
   const trialSlots = block.slots.filter(s => s.isTrial)
   const getIds = (s: PlayerSlot) => s.playerIds?.length ? s.playerIds : s.playerId ? [s.playerId] : []
@@ -115,35 +138,36 @@ function createScrimEmbed(
       description += `${slot.role}: ${playerName}\n`
     }
   }
-  
-  // Separator before match details
-  description += '───────────────────────\n'
-  
-  // Match details
-  const details: string[] = []
-  if (block.scrim?.contact) details.push(`Contact: ${block.scrim.contact}`)
-  if (block.scrim?.mapPool) details.push(`Maps: ${block.scrim.mapPool}`)
-  details.push(`Hero Bans: ${block.scrim?.heroBans ? 'On' : 'Off'}`)
-  details.push(`Staggers: ${block.scrim?.staggers ? 'On' : 'Off'}`)
-  
-  description += details.join('\n') + '\n'
-  
+
+  // Match details only make sense against an opponent
+  if (isOpponentActivity) {
+    description += '\u2500'.repeat(23) + '\n'
+
+    const details: string[] = []
+    if (block.scrim?.contact) details.push(`Contact: ${block.scrim.contact}`)
+    if (block.scrim?.mapPool) details.push(`Maps: ${block.scrim.mapPool}`)
+    details.push(`Hero Bans: ${block.scrim?.heroBans ? 'On' : 'Off'}`)
+    details.push(`Staggers: ${block.scrim?.staggers ? 'On' : 'Off'}`)
+
+    description += details.join('\n') + '\n'
+  }
+
   embed.setDescription(description)
-  
+
   // Their Roster (only if provided, as a separate field)
-  if (block.scrim?.opponentRoster) {
+  if (isOpponentActivity && block.scrim?.opponentRoster) {
     embed.addFields({
       name: 'Their Roster',
       value: block.scrim.opponentRoster.substring(0, 1024),
       inline: false,
     })
   }
-  
+
   // Notes in footer
   if (block.scrim?.notes) {
     embed.setFooter({ text: block.scrim.notes })
   }
-  
+
   return embed
 }
 
@@ -303,7 +327,7 @@ export async function postScrimReminder(
     }
 
     // Create the embed
-    const embed = createScrimEmbed(day, block, playerMap)
+    const embed = createBlockEmbed(day, block, playerMap)
 
     // Fetch the Schedule thread
     const thread = await client.channels.fetch(scheduleThreadId) as TextChannel | ThreadChannel | null

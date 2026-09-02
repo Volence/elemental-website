@@ -5,7 +5,7 @@ import { Wrench, Lightbulb, RefreshCw, Save, Send, Loader2, CheckCircle, AlertTr
 import { useSchedule } from '@/components/scheduling/ScheduleContext'
 import { suggestLineup } from '@/components/scheduling/AutoLineup'
 import type { RosterEntry } from '@/components/scheduling/types'
-import { ACTIVITY_TYPES, OPPONENT_ACTIVITIES, getBlockActivity } from '@/components/ScheduleEditor/types'
+import { ACTIVITY_TYPES, OPPONENT_ACTIVITIES, ANNOUNCEABLE_ACTIVITIES, getActivityLabel, getBlockActivity } from '@/components/ScheduleEditor/types'
 import {
   rolePrimaryMatch,
   roleMatchesFamily,
@@ -1266,15 +1266,21 @@ export function BuildTab() {
 
             <tr className="build-tab__meta-row">
               <td className="build-tab__role-label build-tab__role-label--meta">
-                <span className="build-tab__role-label-text build-tab__role-label-text--meta">Opponent</span>
+                <span className="build-tab__role-label-text build-tab__role-label-text--meta">Details</span>
               </td>
               {columns.map((col, ci) => {
                 const block = days[col.dayIdx]?.blocks[col.blockIdx]
                 if (!block) return <td key={ci} className="build-tab__cell build-tab__cell--empty" />
-                const isOpponentBlock = OPPONENT_ACTIVITIES.has(getBlockActivity(block))
-                if (!isOpponentBlock) return <td key={ci} className={`build-tab__cell build-tab__cell--meta ${col.isFirstOfDay && ci > 0 ? 'build-tab__cell--day-start' : ''}`} />
+                const activity = getBlockActivity(block)
+                if (!ANNOUNCEABLE_ACTIVITIES.has(activity)) return <td key={ci} className={`build-tab__cell build-tab__cell--meta ${col.isFirstOfDay && ci > 0 ? 'build-tab__cell--day-start' : ''}`} />
+                const isOpponentBlock = OPPONENT_ACTIVITIES.has(activity)
                 const opponentName = block.scrim?.opponent || ''
-                const hasScrimDetails = !!(block.scrim?.contact || block.scrim?.opponentRoster || block.scrim?.notes)
+                const notes = block.scrim?.notes || ''
+                const hasScrimDetails = !!(block.scrim?.contact || block.scrim?.opponentRoster || notes)
+
+                // Opponent blocks lead with the opponent name; everything else leads with its notes
+                const label = isOpponentBlock ? opponentName : notes
+                const emptyLabel = isOpponentBlock ? 'TBD' : '+ notes'
 
                 return (
                   <td
@@ -1282,13 +1288,13 @@ export function BuildTab() {
                     className={`build-tab__cell build-tab__cell--meta build-tab__cell--clickable ${col.isFirstOfDay && ci > 0 ? 'build-tab__cell--day-start' : ''}`}
                     onClick={() => setScrimModal({ dayIdx: col.dayIdx, blockIdx: col.blockIdx })}
                   >
-                    {opponentName ? (
-                      <span className="build-tab__opponent-name">
-                        {opponentName}
-                        {hasScrimDetails && <span className="build-tab__scrim-details-dot" />}
+                    {label ? (
+                      <span className="build-tab__opponent-name" title={label}>
+                        {label}
+                        {isOpponentBlock && hasScrimDetails && <span className="build-tab__scrim-details-dot" />}
                       </span>
                     ) : (
-                      <span className="build-tab__cell-empty build-tab__cell-empty--clickable build-tab__cell-empty--tbd">TBD</span>
+                      <span className={`build-tab__cell-empty build-tab__cell-empty--clickable ${isOpponentBlock ? 'build-tab__cell-empty--tbd' : ''}`}>{emptyLabel}</span>
                     )}
                   </td>
                 )
@@ -1302,7 +1308,7 @@ export function BuildTab() {
               {columns.map((col, ci) => {
                 const block = days[col.dayIdx]?.blocks[col.blockIdx]
                 if (!block) return <td key={ci} className="build-tab__cell build-tab__cell--empty" />
-                if (!OPPONENT_ACTIVITIES.has(getBlockActivity(block))) return <td key={ci} className={`build-tab__cell build-tab__cell--meta ${col.isFirstOfDay && ci > 0 ? 'build-tab__cell--day-start' : ''}`} />
+                if (!ANNOUNCEABLE_ACTIVITIES.has(getBlockActivity(block))) return <td key={ci} className={`build-tab__cell build-tab__cell--meta ${col.isFirstOfDay && ci > 0 ? 'build-tab__cell--day-start' : ''}`} />
                 const day = days[col.dayIdx]
                 const remKey = `${day.date}|${block.time}`
                 const isSending = reminderSending === remKey
@@ -1532,12 +1538,14 @@ export function BuildTab() {
         const day = days[scrimModal.dayIdx]
         const dayLabel = getDayLabel(day.date)
         const timeLabel = block.time
+        const modalActivity = getBlockActivity(block)
+        const isOpponentActivity = OPPONENT_ACTIVITIES.has(modalActivity)
 
         return (
           <div className="build-tab__scrim-overlay" onClick={() => setScrimModal(null)}>
             <div className="build-tab__scrim-modal" onClick={e => e.stopPropagation()}>
               <div className="build-tab__scrim-modal-header">
-                <h3 className="build-tab__scrim-modal-title">Scrim Details</h3>
+                <h3 className="build-tab__scrim-modal-title">{getActivityLabel(modalActivity)} Details</h3>
                 <span className="build-tab__scrim-modal-subtitle">{dayLabel} {timeLabel}</span>
                 <button className="build-tab__scrim-modal-close" onClick={() => setScrimModal(null)}>
                   <X size={16} />
@@ -1545,137 +1553,141 @@ export function BuildTab() {
               </div>
 
               <div className="build-tab__scrim-modal-body">
-                <div className="build-tab__scrim-field">
-                  <span className="build-tab__scrim-field-label">Opponent</span>
-                  <div className="build-tab__scrim-opponent-row">
-                    <div className="build-tab__scrim-picker">
-                      <button
-                        type="button"
-                        className="build-tab__scrim-picker-btn"
-                        onClick={() => setOpponentPickerOpen(v => !v)}
-                      >
-                        {scrim.opponentTeamId
-                          ? opponentTeams.find(t => t.id === scrim.opponentTeamId)?.name || scrim.opponent
-                          : 'Select team...'}
-                      </button>
-                      {opponentPickerOpen && (
-                        <>
-                          <div className="build-tab__scrim-picker-backdrop" onClick={() => setOpponentPickerOpen(false)} />
-                          <div className="build-tab__scrim-picker-list">
-                            {scrim.opponentTeamId && (
-                              <button
-                                type="button"
-                                className="build-tab__scrim-picker-item build-tab__scrim-picker-item--clear"
-                                onClick={() => {
-                                  updateScrimDetails(scrimModal.dayIdx, scrimModal.blockIdx, { opponentTeamId: null, opponent: '' })
-                                  setOpponentPickerOpen(false)
-                                }}
-                              >
-                                Clear
-                              </button>
-                            )}
-                            {opponentTeams.map(t => (
-                              <button
-                                key={t.id}
-                                type="button"
-                                className={`build-tab__scrim-picker-item ${scrim.opponentTeamId === t.id ? 'build-tab__scrim-picker-item--active' : ''}`}
-                                onClick={() => {
-                                  updateScrimDetails(scrimModal.dayIdx, scrimModal.blockIdx, { opponentTeamId: t.id, opponent: t.name })
-                                  setOpponentPickerOpen(false)
-                                }}
-                              >
-                                {t.name}
-                              </button>
-                            ))}
-                          </div>
-                        </>
-                      )}
+                {isOpponentActivity && (
+                  <>
+                  <div className="build-tab__scrim-field">
+                    <span className="build-tab__scrim-field-label">Opponent</span>
+                    <div className="build-tab__scrim-opponent-row">
+                      <div className="build-tab__scrim-picker">
+                        <button
+                          type="button"
+                          className="build-tab__scrim-picker-btn"
+                          onClick={() => setOpponentPickerOpen(v => !v)}
+                        >
+                          {scrim.opponentTeamId
+                            ? opponentTeams.find(t => t.id === scrim.opponentTeamId)?.name || scrim.opponent
+                            : 'Select team...'}
+                        </button>
+                        {opponentPickerOpen && (
+                          <>
+                            <div className="build-tab__scrim-picker-backdrop" onClick={() => setOpponentPickerOpen(false)} />
+                            <div className="build-tab__scrim-picker-list">
+                              {scrim.opponentTeamId && (
+                                <button
+                                  type="button"
+                                  className="build-tab__scrim-picker-item build-tab__scrim-picker-item--clear"
+                                  onClick={() => {
+                                    updateScrimDetails(scrimModal.dayIdx, scrimModal.blockIdx, { opponentTeamId: null, opponent: '' })
+                                    setOpponentPickerOpen(false)
+                                  }}
+                                >
+                                  Clear
+                                </button>
+                              )}
+                              {opponentTeams.map(t => (
+                                <button
+                                  key={t.id}
+                                  type="button"
+                                  className={`build-tab__scrim-picker-item ${scrim.opponentTeamId === t.id ? 'build-tab__scrim-picker-item--active' : ''}`}
+                                  onClick={() => {
+                                    updateScrimDetails(scrimModal.dayIdx, scrimModal.blockIdx, { opponentTeamId: t.id, opponent: t.name })
+                                    setOpponentPickerOpen(false)
+                                  }}
+                                >
+                                  {t.name}
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                      <span className="build-tab__scrim-or">or</span>
+                      <input
+                        className="build-tab__scrim-input"
+                        type="text"
+                        placeholder="Type team name"
+                        value={!scrim.opponentTeamId ? scrim.opponent : ''}
+                        onChange={e => updateScrimDetails(scrimModal.dayIdx, scrimModal.blockIdx, { opponentTeamId: null, opponent: e.target.value })}
+                      />
                     </div>
-                    <span className="build-tab__scrim-or">or</span>
+                  </div>
+
+                  <label className="build-tab__scrim-field">
+                    <span className="build-tab__scrim-field-label">Contact</span>
                     <input
                       className="build-tab__scrim-input"
                       type="text"
-                      placeholder="Type team name"
-                      value={!scrim.opponentTeamId ? scrim.opponent : ''}
-                      onChange={e => updateScrimDetails(scrimModal.dayIdx, scrimModal.blockIdx, { opponentTeamId: null, opponent: e.target.value })}
+                      placeholder="Discord username or tag"
+                      value={scrim.contact}
+                      onChange={e => updateScrimDetails(scrimModal.dayIdx, scrimModal.blockIdx, { contact: e.target.value })}
                     />
+                  </label>
+
+                  <label className="build-tab__scrim-field">
+                    <span className="build-tab__scrim-field-label">Their Roster</span>
+                    <input
+                      className="build-tab__scrim-input"
+                      type="text"
+                      placeholder="e.g. 4200 avg, OWCS team"
+                      value={scrim.opponentRoster}
+                      onChange={e => updateScrimDetails(scrimModal.dayIdx, scrimModal.blockIdx, { opponentRoster: e.target.value })}
+                    />
+                  </label>
+
+                  <div className="build-tab__scrim-field">
+                    <span className="build-tab__scrim-field-label">Host</span>
+                    <div className="build-tab__scrim-toggle-row">
+                      <button
+                        className={`build-tab__scrim-toggle ${scrim.host === 'us' ? 'build-tab__scrim-toggle--active' : ''}`}
+                        onClick={() => updateScrimDetails(scrimModal.dayIdx, scrimModal.blockIdx, { host: scrim.host === 'us' ? '' : 'us' })}
+                      >
+                        Us
+                      </button>
+                      <button
+                        className={`build-tab__scrim-toggle ${scrim.host === 'them' ? 'build-tab__scrim-toggle--active' : ''}`}
+                        onClick={() => updateScrimDetails(scrimModal.dayIdx, scrimModal.blockIdx, { host: scrim.host === 'them' ? '' : 'them' })}
+                      >
+                        Them
+                      </button>
+                    </div>
                   </div>
-                </div>
 
-                <label className="build-tab__scrim-field">
-                  <span className="build-tab__scrim-field-label">Contact</span>
-                  <input
-                    className="build-tab__scrim-input"
-                    type="text"
-                    placeholder="Discord username or tag"
-                    value={scrim.contact}
-                    onChange={e => updateScrimDetails(scrimModal.dayIdx, scrimModal.blockIdx, { contact: e.target.value })}
-                  />
-                </label>
+                  <label className="build-tab__scrim-field">
+                    <span className="build-tab__scrim-field-label">Map Pool</span>
+                    <input
+                      className="build-tab__scrim-input"
+                      type="text"
+                      placeholder="e.g. Comp maps, all maps, specific maps"
+                      value={scrim.mapPool}
+                      onChange={e => updateScrimDetails(scrimModal.dayIdx, scrimModal.blockIdx, { mapPool: e.target.value })}
+                    />
+                  </label>
 
-                <label className="build-tab__scrim-field">
-                  <span className="build-tab__scrim-field-label">Their Roster</span>
-                  <input
-                    className="build-tab__scrim-input"
-                    type="text"
-                    placeholder="e.g. 4200 avg, OWCS team"
-                    value={scrim.opponentRoster}
-                    onChange={e => updateScrimDetails(scrimModal.dayIdx, scrimModal.blockIdx, { opponentRoster: e.target.value })}
-                  />
-                </label>
-
-                <div className="build-tab__scrim-field">
-                  <span className="build-tab__scrim-field-label">Host</span>
-                  <div className="build-tab__scrim-toggle-row">
-                    <button
-                      className={`build-tab__scrim-toggle ${scrim.host === 'us' ? 'build-tab__scrim-toggle--active' : ''}`}
-                      onClick={() => updateScrimDetails(scrimModal.dayIdx, scrimModal.blockIdx, { host: scrim.host === 'us' ? '' : 'us' })}
-                    >
-                      Us
-                    </button>
-                    <button
-                      className={`build-tab__scrim-toggle ${scrim.host === 'them' ? 'build-tab__scrim-toggle--active' : ''}`}
-                      onClick={() => updateScrimDetails(scrimModal.dayIdx, scrimModal.blockIdx, { host: scrim.host === 'them' ? '' : 'them' })}
-                    >
-                      Them
-                    </button>
+                  <div className="build-tab__scrim-field">
+                    <span className="build-tab__scrim-field-label">Rules</span>
+                    <div className="build-tab__scrim-toggle-row">
+                      <button
+                        className={`build-tab__scrim-toggle ${scrim.heroBans ? 'build-tab__scrim-toggle--active' : ''}`}
+                        onClick={() => updateScrimDetails(scrimModal.dayIdx, scrimModal.blockIdx, { heroBans: !scrim.heroBans })}
+                      >
+                        Hero Bans
+                      </button>
+                      <button
+                        className={`build-tab__scrim-toggle ${scrim.staggers ? 'build-tab__scrim-toggle--active' : ''}`}
+                        onClick={() => updateScrimDetails(scrimModal.dayIdx, scrimModal.blockIdx, { staggers: !scrim.staggers })}
+                      >
+                        Staggers
+                      </button>
+                    </div>
                   </div>
-                </div>
-
-                <label className="build-tab__scrim-field">
-                  <span className="build-tab__scrim-field-label">Map Pool</span>
-                  <input
-                    className="build-tab__scrim-input"
-                    type="text"
-                    placeholder="e.g. Comp maps, all maps, specific maps"
-                    value={scrim.mapPool}
-                    onChange={e => updateScrimDetails(scrimModal.dayIdx, scrimModal.blockIdx, { mapPool: e.target.value })}
-                  />
-                </label>
-
-                <div className="build-tab__scrim-field">
-                  <span className="build-tab__scrim-field-label">Rules</span>
-                  <div className="build-tab__scrim-toggle-row">
-                    <button
-                      className={`build-tab__scrim-toggle ${scrim.heroBans ? 'build-tab__scrim-toggle--active' : ''}`}
-                      onClick={() => updateScrimDetails(scrimModal.dayIdx, scrimModal.blockIdx, { heroBans: !scrim.heroBans })}
-                    >
-                      Hero Bans
-                    </button>
-                    <button
-                      className={`build-tab__scrim-toggle ${scrim.staggers ? 'build-tab__scrim-toggle--active' : ''}`}
-                      onClick={() => updateScrimDetails(scrimModal.dayIdx, scrimModal.blockIdx, { staggers: !scrim.staggers })}
-                    >
-                      Staggers
-                    </button>
-                  </div>
-                </div>
+                  </>
+                )}
 
                 <label className="build-tab__scrim-field">
                   <span className="build-tab__scrim-field-label">Notes</span>
                   <textarea
                     className="build-tab__scrim-textarea"
-                    placeholder="Any additional notes..."
+                    placeholder={modalActivity === 'vod' ? 'VOD link, what we are reviewing...' : modalActivity === 'warmup' ? 'What to warm up, lobby code, focus...' : 'Any additional notes...'}
                     rows={3}
                     value={scrim.notes}
                     onChange={e => updateScrimDetails(scrimModal.dayIdx, scrimModal.blockIdx, { notes: e.target.value })}
