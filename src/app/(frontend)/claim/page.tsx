@@ -4,18 +4,15 @@ import { redirect } from 'next/navigation'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { findClaimCandidates, discordNamesOf } from '@/identity/people'
+import { safeReturnPath } from '@/auth/safeReturnPath'
 import ClaimChoices from './ClaimChoices'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'Is this you? | Elemental' }
 
-function safePath(p?: string) {
-  return p && p.startsWith('/') && !p.startsWith('//') ? p : '/admin'
-}
-
 export default async function ClaimPage({ searchParams }: { searchParams: Promise<{ returnUrl?: string }> }) {
   const { returnUrl: raw } = await searchParams
-  const returnUrl = safePath(raw)
+  const returnUrl = safeReturnPath(raw, process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000')
   const token = (await cookies()).get('payload-token')?.value
   if (!token) redirect(`/api/auth/discord?returnUrl=${encodeURIComponent(`/claim?returnUrl=${returnUrl}`)}`)
 
