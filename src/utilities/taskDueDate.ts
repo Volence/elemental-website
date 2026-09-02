@@ -74,3 +74,18 @@ export function monthBoundsFor(date: Date): { start: Date; end: Date } {
   const end = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999)
   return { start, end }
 }
+
+const PRIORITY_RANK: Record<string, number> = { urgent: 0, high: 1, medium: 2, low: 3 }
+
+/** Board ordering: soonest due date first, undated last, higher priority breaks ties. */
+export function compareTasksByDueDate(
+  a: { dueDate?: string | null; priority?: string | null },
+  b: { dueDate?: string | null; priority?: string | null },
+): number {
+  const ka = dueDateKey(a.dueDate)
+  const kb = dueDateKey(b.dueDate)
+  if (ka && kb && ka !== kb) return ka < kb ? -1 : 1
+  if (ka && !kb) return -1
+  if (!ka && kb) return 1
+  return (PRIORITY_RANK[a.priority || 'medium'] ?? 2) - (PRIORITY_RANK[b.priority || 'medium'] ?? 2)
+}

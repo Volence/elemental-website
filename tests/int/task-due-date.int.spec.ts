@@ -61,3 +61,17 @@ describe('localDateKey / addDays / weekBoundsFor', () => {
     expect(end.getHours()).toBe(23)
   })
 })
+
+describe('compareTasksByDueDate', () => {
+  it('sorts soonest first, undated last, priority as tiebreaker', async () => {
+    const { compareTasksByDueDate } = await import('@/utilities/taskDueDate')
+    const tasks = [
+      { id: 1, dueDate: null, priority: 'urgent' },
+      { id: 2, dueDate: '2026-09-06T00:00:00.000Z', priority: 'low' },
+      { id: 3, dueDate: '2026-09-02T00:00:00.000Z', priority: 'medium' },
+      { id: 4, dueDate: '2026-09-02T00:00:00.000Z', priority: 'urgent' },
+      { id: 5, dueDate: undefined, priority: 'low' },
+    ]
+    expect([...tasks].sort(compareTasksByDueDate).map((t) => t.id)).toEqual([4, 3, 2, 1, 5])
+  })
+})

@@ -7,6 +7,7 @@ import { ClipboardList, RefreshCw, Eye, CheckCircle, Send, ArrowUpRight, Chevron
 import { KanbanColumn } from './KanbanColumn'
 import { TaskModal } from './TaskModal'
 import type { Task } from '@/payload-types'
+import { compareTasksByDueDate } from '@/utilities/taskDueDate'
 
 // Request matrix: which departments can request from which
 const REQUEST_MATRIX: Record<string, string[]> = {
@@ -181,7 +182,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ department, title }) =
       // Hide archived tasks unless showArchived is enabled
       if (!filter.showArchived && task.archived) return false
       return true
-    })
+    }).sort(compareTasksByDueDate) // soonest due first, undated last
   }
   
   const getTaskCounts = () => {
