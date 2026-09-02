@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import {
-  Save, Check, AlertCircle, Loader2, ArrowLeft, Plus, Trash2,
+  Save, Check, AlertCircle, Loader2, ArrowLeft, Trash2,
   Shield, Users, Gamepad2, Trophy, Palette, Calendar,
   Globe, Star, Eye, ExternalLink, Hash, MessageSquare, Clock,
   ChevronUp, ChevronDown, Image, X,
@@ -11,6 +11,7 @@ import {
 import { EDITOR_CSS, styles as editorStyles } from '@/components/PersonEditor'
 import { useConfirm } from '@/components/ConfirmDialog'
 import { RELEASE_DAY_OPTIONS } from '@/utilities/scheduleReleaseDay'
+import DiscordMemberPicker from '@/components/DiscordMemberPicker'
 
 // ── Types ──
 
@@ -99,139 +100,6 @@ const getPersonId = (p: Person | number | null | undefined): number | null => {
   return p
 }
 
-// ── Create Person Modal ──
-
-function CreatePersonModal({ onCreated, onClose }: { onCreated: (id: number, name: string) => void; onClose: () => void }) {
-  const [newName, setNewName] = useState('')
-  const [creating, setCreating] = useState(false)
-  const [error, setError] = useState('')
-
-  const handleCreate = async () => {
-    if (!newName.trim()) return
-    setCreating(true)
-    setError('')
-    try {
-      const slug = newName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-      const placeholder = `${slug}-${Date.now()}@noreply.elemental.local`
-      const tempPassword = crypto.randomUUID()
-      const res = await fetch('/api/people', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newName.trim(), email: placeholder, password: tempPassword }),
-      })
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err.errors?.[0]?.message ?? 'Failed to create')
-      }
-      const doc = await res.json()
-      const id = doc.doc?.id ?? doc.id
-      onCreated(id, newName.trim())
-    } catch (err: any) {
-      setError(err.message)
-      setCreating(false)
-    }
-  }
-
-  return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={onClose}>
-      <div style={{ background: '#1a1f2e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: 24, width: 380, maxWidth: '90%' }} onClick={e => e.stopPropagation()}>
-        <h3 style={{ margin: '0 0 16px', fontSize: 16, fontWeight: 600, color: '#e2e8f0' }}>Create New Person</h3>
-        <input
-          className="profile-input"
-          value={newName}
-          onChange={e => setNewName(e.target.value)}
-          placeholder="Enter name..."
-          autoFocus
-          onKeyDown={e => e.key === 'Enter' && handleCreate()}
-        />
-        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: '6px 0 16px' }}>Creates a minimal person record. You can add more details later.</p>
-        {error && <p style={{ color: '#f87171', fontSize: 12, margin: '0 0 8px' }}>{error}</p>}
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-          <button onClick={onClose} style={{ padding: '6px 14px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#e2e8f0', cursor: 'pointer', fontSize: 13 }}>Cancel</button>
-          <button className="profile-save-btn" style={{ padding: '6px 14px', fontSize: 13 }} onClick={handleCreate} disabled={creating || !newName.trim()}>
-            {creating ? 'Creating...' : 'Create & Assign'}
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ── Person Search Component ──
-
-function PersonSearch({ value, onChange, placeholder, onRequestCreate }: { value: number | null; onChange: (id: number | null, name: string) => void; placeholder?: string; onRequestCreate?: () => void }) {
-  const [search, setSearch] = useState('')
-  const [results, setResults] = useState<Person[]>([])
-  const [displayName, setDisplayName] = useState('')
-  const [showDropdown, setShowDropdown] = useState(false)
-
-  useEffect(() => {
-    if (value && !displayName) {
-      fetch(`/api/people/${value}?depth=0`).then(r => r.json()).then(d => setDisplayName(d.name ?? '')).catch(() => {})
-    }
-  }, [value, displayName])
-
-  const doSearch = useCallback(async (q: string) => {
-    if (q.length < 2) { setResults([]); return }
-    try {
-      const res = await fetch(`/api/people?where[name][contains]=${encodeURIComponent(q)}&limit=10&depth=0`)
-      if (res.ok) {
-        const data = await res.json()
-        setResults(data.docs ?? [])
-      }
-    } catch {}
-  }, [])
-
-  useEffect(() => {
-    const t = setTimeout(() => doSearch(search), 250)
-    return () => clearTimeout(t)
-  }, [search, doSearch])
-
-  // When a value is set, show just the name (no ✕ - parent handles removal)
-  if (value && displayName) {
-    return <span style={{ fontSize: 13, color: '#e2e8f0' }}>{displayName}</span>
-  }
-
-  return (
-    <div style={{ position: 'relative' }}>
-      <input
-        className="profile-input"
-        style={{ fontSize: 13, padding: '6px 10px' }}
-        value={search}
-        onChange={e => { setSearch(e.target.value); setShowDropdown(true) }}
-        onFocus={() => setShowDropdown(true)}
-        onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
-        placeholder={placeholder ?? 'Search people...'}
-      />
-      {showDropdown && (
-        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, maxHeight: 220, overflowY: 'auto', zIndex: 50 }}>
-          {results.map(p => (
-            <div
-              key={p.id}
-              style={{ padding: '8px 12px', fontSize: 13, color: '#e2e8f0', cursor: 'pointer', borderBottom: '1px solid rgba(255,255,255,0.04)', transition: 'background 0.1s' }}
-              onMouseDown={e => { e.preventDefault(); onChange(p.id, p.name); setDisplayName(p.name); setSearch(''); setShowDropdown(false) }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.06)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-            >
-              {p.name}
-            </div>
-          ))}
-          {onRequestCreate && (
-            <div
-              style={{ padding: '8px 12px', fontSize: 13, color: '#34d399', cursor: 'pointer', borderTop: results.length ? '1px solid rgba(255,255,255,0.08)' : 'none', display: 'flex', alignItems: 'center', gap: 6 }}
-              onMouseDown={e => { e.preventDefault(); onRequestCreate(); setShowDropdown(false); setSearch('') }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(52,211,153,0.08)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-            >
-              <Plus size={13} /> Create new person{search ? `: "${search}"` : ''}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
 // ── Logo Search ──
 
 function LogoSearch({ value, currentUrl, currentFilename, onChange }: { value: number | null; currentUrl: string; currentFilename: string; onChange: (id: number | null, url: string, filename: string) => void }) {
@@ -314,13 +182,6 @@ export default function TeamEditor() {
   const [loading, setLoading] = useState(!isNew)
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [errorMsg, setErrorMsg] = useState('')
-  const [showCreateModal, setShowCreateModal] = useState(false)
-  const [createModalCallback, setCreateModalCallback] = useState<((id: number, name: string) => void) | null>(null)
-
-  const openCreateModal = (callback: (id: number, name: string) => void) => {
-    setCreateModalCallback(() => callback)
-    setShowCreateModal(true)
-  }
 
   // Basic Info
   const [name, setName] = useState('')
@@ -530,14 +391,6 @@ export default function TeamEditor() {
 
   return (
     <div style={editorStyles.container}>
-      {/* Create person modal */}
-      {showCreateModal && (
-        <CreatePersonModal
-          onClose={() => setShowCreateModal(false)}
-          onCreated={(id, name) => { createModalCallback?.(id, name); setShowCreateModal(false) }}
-        />
-      )}
-
       <style>{EDITOR_CSS + `
         .toggle-switch { position: relative; width: 36px !important; height: 20px !important; min-height: 20px !important; max-height: 20px !important; border-radius: 10px; cursor: pointer; transition: background 0.2s; border: none; padding: 0; display: block; line-height: 0; font-size: 0; flex-shrink: 0; box-sizing: border-box; overflow: hidden; }
         .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: white; transition: transform 0.2s; display: block; box-sizing: border-box; }
@@ -655,7 +508,7 @@ export default function TeamEditor() {
             {managers.map((m, i) => (
               <div className="person-row" key={m.personId ?? `new-${i}`}>
                 <div style={{ flex: 1 }}>
-                  <PersonSearch value={m.personId} onChange={(id, n) => setManagers(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x))} onRequestCreate={() => openCreateModal((id, n) => setManagers(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x)))} />
+                  <DiscordMemberPicker value={m.personId} onChange={(id, n) => setManagers(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x))} />
                 </div>
                 {managers.length > 1 && (
                   <div className="reorder-btns">
@@ -672,7 +525,7 @@ export default function TeamEditor() {
             {coaches.map((c, i) => (
               <div className="person-row" key={c.personId ?? `new-${i}`}>
                 <div style={{ flex: 1 }}>
-                  <PersonSearch value={c.personId} onChange={(id, n) => setCoaches(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x))} onRequestCreate={() => openCreateModal((id, n) => setCoaches(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x)))} />
+                  <DiscordMemberPicker value={c.personId} onChange={(id, n) => setCoaches(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x))} />
                 </div>
                 {coaches.length > 1 && (
                   <div className="reorder-btns">
@@ -689,7 +542,7 @@ export default function TeamEditor() {
             {captains.map((c, i) => (
               <div className="person-row" key={c.personId ?? `new-${i}`}>
                 <div style={{ flex: 1 }}>
-                  <PersonSearch value={c.personId} onChange={(id, n) => setCaptains(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x))} onRequestCreate={() => openCreateModal((id, n) => setCaptains(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x)))} />
+                  <DiscordMemberPicker value={c.personId} onChange={(id, n) => setCaptains(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x))} />
                 </div>
                 {captains.length > 1 && (
                   <div className="reorder-btns">
@@ -711,7 +564,7 @@ export default function TeamEditor() {
             {roster.map((r, i) => (
               <div className="person-row" key={r.personId ?? `new-${i}`}>
                 <div style={{ flex: 1 }}>
-                  <PersonSearch value={r.personId} onChange={(id, n) => setRoster(p => p.map((x, j) => j === i ? { ...x, personId: id, personName: n } : x))} onRequestCreate={() => openCreateModal((id, n) => setRoster(p => p.map((x, j) => j === i ? { ...x, personId: id, personName: n } : x)))} />
+                  <DiscordMemberPicker value={r.personId} onChange={(id, n) => setRoster(p => p.map((x, j) => j === i ? { ...x, personId: id, personName: n } : x))} />
                 </div>
                 <select className="role-select" value={r.role} onChange={e => setRoster(p => p.map((x, j) => j === i ? { ...x, role: e.target.value } : x))}>
                   {ROLES.map(rl => <option key={rl.value} value={rl.value}>{rl.label}</option>)}
@@ -731,7 +584,7 @@ export default function TeamEditor() {
             {subs.map((s, i) => (
               <div className="person-row" key={s.personId ?? `new-${i}`}>
                 <div style={{ flex: 1 }}>
-                  <PersonSearch value={s.personId} onChange={(id, n) => setSubs(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x))} onRequestCreate={() => openCreateModal((id, n) => setSubs(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x)))} />
+                  <DiscordMemberPicker value={s.personId} onChange={(id, n) => setSubs(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x))} />
                 </div>
                 {subs.length > 1 && (
                   <div className="reorder-btns">

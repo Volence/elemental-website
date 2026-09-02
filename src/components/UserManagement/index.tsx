@@ -9,6 +9,8 @@ import {
   Monitor, ChevronRight, KeyRound, ShieldAlert,
 } from 'lucide-react'
 import { EDITOR_CSS, styles as editorStyles } from '@/components/PersonEditor'
+import DiscordMemberPicker from '@/components/DiscordMemberPicker'
+import { canPickMembers } from '@/identity/permissions'
 
 // ── Types ──
 
@@ -80,6 +82,7 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 // ── Users List View ──
 
 export function UsersListView() {
+  const { user: currentUser } = useAuth() as { user: any }
   const [users, setUsers] = useState<UserData[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -132,6 +135,11 @@ export function UsersListView() {
           Users
           <span style={{ fontSize: 14, fontWeight: 400, color: 'rgba(255,255,255,0.4)', marginLeft: 8 }}>({users.length})</span>
         </h1>
+        {canPickMembers(currentUser) && (
+          <div style={{ marginLeft: 'auto', minWidth: 320 }}>
+            <DiscordMemberPicker value={null} onChange={(id) => { if (id) window.location.href = `/admin/edit-person?id=${id}` }} placeholder="New person: search Discord..." />
+          </div>
+        )}
         <a
           href="/admin/access-review"
           className="add-link-btn"
