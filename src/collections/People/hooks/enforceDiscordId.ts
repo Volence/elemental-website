@@ -1,3 +1,4 @@
+import { APIError } from 'payload'
 import { requireDiscordIdOnCreate, DISCORD_ID_RE } from '@/identity/config'
 
 /**
@@ -25,6 +26,6 @@ export async function enforceDiscordIdOnCreate(args: {
   // First-run bootstrap: /api/create-admin on an empty table.
   if (args.data?.role === 'admin' && (await args.countPeople()) === 0) return
 
-  if (id) throw new Error('Discord ID must be 17-19 digits')
-  throw new Error('New people must be created from a Discord member (Discord ID is required)')
+  if (id) throw new APIError('Discord ID must be 17-19 digits', 400, undefined, true)
+  throw new APIError('New people must be created from a Discord member (Discord ID is required)', 400, undefined, true)
 }
