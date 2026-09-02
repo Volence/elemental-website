@@ -65,11 +65,11 @@ export async function up({ payload }: MigrateUpArgs): Promise<void> {
   await payload.db.drizzle.execute(sql`
     DO $$ BEGIN
       ALTER TABLE "identity_claims" ADD CONSTRAINT "identity_claims_claimant_id_people_id_fk"
-        FOREIGN KEY ("claimant_id") REFERENCES "public"."people"("id") ON DELETE set null ON UPDATE no action;
+        FOREIGN KEY ("claimant_id") REFERENCES "public"."people"("id") ON DELETE cascade ON UPDATE no action;
     EXCEPTION WHEN duplicate_object THEN null; END $$;
     DO $$ BEGIN
       ALTER TABLE "identity_claims" ADD CONSTRAINT "identity_claims_target_id_people_id_fk"
-        FOREIGN KEY ("target_id") REFERENCES "public"."people"("id") ON DELETE set null ON UPDATE no action;
+        FOREIGN KEY ("target_id") REFERENCES "public"."people"("id") ON DELETE cascade ON UPDATE no action;
     EXCEPTION WHEN duplicate_object THEN null; END $$;
     DO $$ BEGIN
       ALTER TABLE "identity_claims" ADD CONSTRAINT "identity_claims_reviewer_id_people_id_fk"
