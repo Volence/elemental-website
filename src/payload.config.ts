@@ -127,6 +127,7 @@ const config = buildConfig({
         '@/components/BeforeDashboard/PugLobbiesNavLink#default',
         '@/components/BeforeDashboard/ScrimAnalyticsNavLinks#default',
         '@/components/BeforeDashboard/AccessReviewNavLink#default',
+        '@/components/BeforeDashboard/IdentityNavLink#default',
         '@/components/BeforeDashboard/MyProfileNavLink#default',
         '@/components/BeforeDashboard/SidebarScrollPreserver#default',
       ],
@@ -199,6 +200,10 @@ const config = buildConfig({
         accessReview: {
           Component: '@/components/AccessReview/ListRoute#default',
           path: '/access-review',
+        },
+        identity: {
+          Component: '@/components/Identity/ListRoute#default',
+          path: '/identity',
         },
         editUser: {
           Component: '@/components/UserManagement/EditRoute#default',

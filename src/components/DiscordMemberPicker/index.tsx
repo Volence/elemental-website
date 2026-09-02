@@ -17,6 +17,8 @@ interface Props {
   value: number | null
   onChange: (id: number | null, name: string) => void
   placeholder?: string
+  /** When set, picking a Discord member calls this instead of creating a person via from-discord, and the People group is hidden. */
+  onPickDiscord?: (discordId: string) => void
 }
 
 const avatarUrl = (m: MemberHit) =>
@@ -27,7 +29,7 @@ const avatarUrl = (m: MemberHit) =>
  * Discord members are searched across every registered server. Picking a Discord member with
  * no row creates one (Discord ID set server-side).
  */
-export default function DiscordMemberPicker({ value, onChange, placeholder }: Props) {
+export default function DiscordMemberPicker({ value, onChange, placeholder, onPickDiscord }: Props) {
   const [search, setSearch] = useState('')
   const [people, setPeople] = useState<PersonHit[]>([])
   const [members, setMembers] = useState<MemberHit[]>([])
@@ -49,7 +51,7 @@ export default function DiscordMemberPicker({ value, onChange, placeholder }: Pr
     const isId = /^\d{17,19}$/.test(q)
     try {
       const [p, m] = await Promise.all([
-        isId ? Promise.resolve(null) : fetch(`/api/people?where[name][contains]=${encodeURIComponent(q)}&where[isInactive][not_equals]=true&limit=8&depth=0`).then((r) => (r.ok ? r.json() : { docs: [] })),
+        onPickDiscord || isId ? Promise.resolve(null) : fetch(`/api/people?where[name][contains]=${encodeURIComponent(q)}&where[isInactive][not_equals]=true&limit=8&depth=0`).then((r) => (r.ok ? r.json() : { docs: [] })),
         isId
           ? fetch(`/api/discord/members/${q}`).then(async (r) => {
               if (!r.ok) return { results: [] }
@@ -62,7 +64,7 @@ export default function DiscordMemberPicker({ value, onChange, placeholder }: Pr
       setPeople(p?.docs ?? [])
       setMembers(m?.results ?? [])
     } catch {}
-  }, [])
+  }, [onPickDiscord])
 
   useEffect(() => {
     const t = setTimeout(() => doSearch(search), 250)
@@ -77,6 +79,12 @@ export default function DiscordMemberPicker({ value, onChange, placeholder }: Pr
   }
 
   const pickMember = async (m: MemberHit) => {
+    if (onPickDiscord) {
+      onPickDiscord(m.id)
+      setSearch('')
+      setOpen(false)
+      return
+    }
     if (m.person) return pickPerson(m.person.id, m.person.name)
     setBusy(true)
     setError('')
@@ -116,8 +124,8 @@ export default function DiscordMemberPicker({ value, onChange, placeholder }: Pr
       {error && <div style={{ color: '#f87171', fontSize: 12, marginTop: 4 }}>{error}</div>}
       {open && (people.length > 0 || members.length > 0) && (
         <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, maxHeight: 320, overflowY: 'auto', zIndex: 50 }}>
-          {people.length > 0 && <div style={heading}>People</div>}
-          {people.map((p) => (
+          {!onPickDiscord && people.length > 0 && <div style={heading}>People</div>}
+          {!onPickDiscord && people.map((p) => (
             <div key={`p-${p.id}`} style={row} onMouseDown={(e) => { e.preventDefault(); pickPerson(p.id, p.name) }}>
               {p.name}
             </div>

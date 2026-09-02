@@ -41,7 +41,7 @@ const TABS: Tab[] = [
   { id: 'consistency', label: 'Data Integrity', icon: <FileSearch size={16} />, description: 'Check & fix data issues' },
   { id: 'duplicates', label: 'Ignored Dups', icon: <Users size={16} />, description: 'View ignored merge pairs' },
   { id: 'suggestions', label: 'Merge Flags', icon: <AlertTriangle size={16} />, description: 'Flagged signup duplicates' },
-  { id: 'merge', label: 'Merge People', icon: <GitMerge size={16} />, description: 'Merge duplicate person records' },
+  { id: 'merge', label: 'Merge People', icon: <GitMerge size={16} />, description: 'Merge duplicate person records (also on /admin/identity)' },
 ]
 
 function TabLoadingSpinner() {
