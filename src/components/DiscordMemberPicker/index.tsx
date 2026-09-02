@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 interface PersonHit { id: number; name: string; isInactive?: boolean }
 interface MemberHit {
@@ -35,6 +35,7 @@ export default function DiscordMemberPicker({ value, onChange, placeholder }: Pr
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const seq = useRef(0)
 
   useEffect(() => {
     if (value && !displayName) {
@@ -43,15 +44,21 @@ export default function DiscordMemberPicker({ value, onChange, placeholder }: Pr
   }, [value, displayName])
 
   const doSearch = useCallback(async (q: string) => {
-    if (q.length < 2) { setPeople([]); setMembers([]); return }
+    if (q.length < 2) { seq.current += 1; setPeople([]); setMembers([]); return }
+    const mine = ++seq.current
     const isId = /^\d{17,19}$/.test(q)
     try {
       const [p, m] = await Promise.all([
         isId ? Promise.resolve(null) : fetch(`/api/people?where[name][contains]=${encodeURIComponent(q)}&where[isInactive][not_equals]=true&limit=8&depth=0`).then((r) => (r.ok ? r.json() : { docs: [] })),
         isId
-          ? fetch(`/api/discord/members/${q}`).then(async (r) => (r.ok ? { results: [ { ...(await r.json()).profile, nickname: null, person: null } ] } : { results: [] }))
+          ? fetch(`/api/discord/members/${q}`).then(async (r) => {
+              if (!r.ok) return { results: [] }
+              const body = await r.json()
+              return { results: [{ ...body.profile, nickname: null, person: body.person ?? null }] }
+            })
           : fetch(`/api/discord/members?q=${encodeURIComponent(q)}`).then((r) => (r.ok ? r.json() : { results: [] })),
       ])
+      if (mine !== seq.current) return
       setPeople(p?.docs ?? [])
       setMembers(m?.results ?? [])
     } catch {}
@@ -79,7 +86,7 @@ export default function DiscordMemberPicker({ value, onChange, placeholder }: Pr
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ discordId: m.id }),
       })
-      const data = await res.json()
+      const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error ?? 'Failed to create person')
       pickPerson(data.person.id, data.person.name)
     } catch (e: any) {
