@@ -1,37 +1,13 @@
 // ═══════════════════════════════════════════════════════
-// PUG Dashboard — Unified PUG management hub
+// PUG Dashboard shell. Tabs, header and width come from the admin kit
+// (AdminPage / AdminPageHeader / AdminTabs); this only sets the content area.
 // ═══════════════════════════════════════════════════════
 
 @import '../variables';
-@import '../mixins';
 
 .pug-dashboard {
-  padding: 0 1rem 2rem;
-
-  // ── Tab Bar ──
-  &__tabs {
-    @include dashboard-tabs($admin-accent-info);
-    flex-wrap: wrap;
-  }
-
-  &__tab {
-    @include dashboard-tab($admin-accent-info);
-
-    &--active {
-      @include dashboard-tab-active($admin-accent-info);
-    }
-  }
-
-  &__tab-divider {
-    width: 1px;
-    height: 20px;
-    background: rgba(255, 255, 255, 0.12);
-    margin: 0 0.25rem;
-    align-self: center;
-  }
-
-  // ── Content ──
   &__content {
     min-height: 400px;
+    outline: none;
   }
 }

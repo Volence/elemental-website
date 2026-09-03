@@ -7,7 +7,6 @@ import {
   Square, Monitor, Bot, UserPlus, Users, Gamepad2, Code, Send,
   RotateCcw, ServerCrash, Camera, X, RefreshCcw, ScanLine,
 } from 'lucide-react'
-import { PUG_ADMIN_CSS } from '@/components/pugAdminStyles'
 import { useAlert, useConfirm } from '@/components/ConfirmDialog'
 
 type BotHealth = {
@@ -953,7 +952,6 @@ export function PugBotTestingPanel() {
 
   return (
     <div className="ps-wrap">
-      <style>{PUG_ADMIN_CSS}</style>
 
       <div className="ps-header">
         <h1 className="ps-title">Bot Management</h1>

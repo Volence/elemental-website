@@ -128,7 +128,10 @@ export function PugModerationPanel() {
   }
 
   return (
-    <div style={{ maxWidth: 800 }}>
+    <div className="ps-wrap">
+      <div className="ps-header">
+        <h2 className="ps-title">Moderation</h2>
+      </div>
       {error && (
         <div style={{ padding: '0.75rem 1rem', marginBottom: '1rem', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, color: '#f87171', fontSize: 14 }}>
           {error}

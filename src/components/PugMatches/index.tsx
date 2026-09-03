@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Swords, ChevronRight, ArrowLeft, Check, AlertCircle, Loader2, Calendar, AlertTriangle } from 'lucide-react'
-import { PUG_ADMIN_CSS, formatDate } from '@/components/pugAdminStyles'
+import { formatDate } from '@/components/pugAdminStyles'
+import { pugTabHref } from '@/components/PugDashboard/tabs'
 
 type TeamPlayer = {
   player: { id: number; user?: { name?: string } | number } | number
@@ -94,7 +95,6 @@ export function PugMatchesListView() {
 
   return (
     <div className="ps-wrap">
-      <style>{PUG_ADMIN_CSS}</style>
       <div className="ps-header">
         <h1 className="ps-title">PUG Matches</h1>
       </div>
@@ -192,7 +192,6 @@ export function PugMatchesEditView() {
   if (loading) {
     return (
       <div className="ps-wrap">
-        <style>{PUG_ADMIN_CSS}</style>
         <div style={{ color: '#475569', fontSize: 14 }}>Loading...</div>
       </div>
     )
@@ -201,7 +200,6 @@ export function PugMatchesEditView() {
   if (!match) {
     return (
       <div className="ps-wrap">
-        <style>{PUG_ADMIN_CSS}</style>
         <p style={{ color: '#64748b' }}>Match not found.</p>
       </div>
     )
@@ -231,9 +229,8 @@ export function PugMatchesEditView() {
 
   return (
     <div className="ps-wrap">
-      <style>{PUG_ADMIN_CSS}</style>
 
-      <button className="ps-back" onClick={() => router.push('/admin/pug-matches')}>
+      <button className="ps-back" onClick={() => router.push(pugTabHref('matches'))}>
         <ArrowLeft size={14} /> Back to Matches
       </button>
 

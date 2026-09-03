@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { BarChart3, ChevronRight, ArrowLeft, Check, AlertCircle, Loader2 } from 'lucide-react'
-import { PUG_ADMIN_CSS } from '@/components/pugAdminStyles'
+import { pugTabHref } from '@/components/PugDashboard/tabs'
 
 type LeaderboardEntry = {
   id: number
@@ -57,7 +57,6 @@ export function PugLeaderboardListView() {
 
   return (
     <div className="ps-wrap">
-      <style>{PUG_ADMIN_CSS}</style>
       <div className="ps-header">
         <h1 className="ps-title">PUG Leaderboard</h1>
       </div>
@@ -190,7 +189,6 @@ export function PugLeaderboardEditView() {
   if (loading) {
     return (
       <div className="ps-wrap">
-        <style>{PUG_ADMIN_CSS}</style>
         <div style={{ color: '#475569', fontSize: 14 }}>Loading...</div>
       </div>
     )
@@ -198,9 +196,8 @@ export function PugLeaderboardEditView() {
 
   return (
     <div className="ps-wrap">
-      <style>{PUG_ADMIN_CSS}</style>
 
-      <button className="ps-back" onClick={() => router.push('/admin/pug-leaderboard')}>
+      <button className="ps-back" onClick={() => router.push(pugTabHref('leaderboard'))}>
         <ArrowLeft size={14} /> Back to Leaderboard
       </button>
 

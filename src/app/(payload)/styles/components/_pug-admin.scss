@@ -1,0 +1,174 @@
+// ============================================
+// PUG ADMIN (.ps-*) - formerly the PUG_ADMIN_CSS template string injected as a
+// <style> tag by six components. Now one stylesheet on the shared tokens, loaded
+// once. The dashboard shell (AdminPage / AdminPageHeader / AdminTabs) owns page
+// width and the page title, so .ps-wrap and .ps-title are section-level here.
+// ============================================
+@import '../variables';
+@import '../mixins';
+
+.ps-wrap { max-width: $container-md; margin: 0 auto; padding: $spacing-lg $spacing-lg $spacing-3xl; }
+.pug-dashboard .ps-wrap { max-width: none; margin: 0; padding: 0 0 $spacing-xl; }
+// Players tab
+.pug-players__count { font-weight: $font-weight-normal; color: $admin-text-muted; font-size: $font-size-sm; }
+.pug-players__toolbar { display: flex; flex-wrap: wrap; gap: $gap-sm; align-items: center; margin-bottom: $spacing-md; .ps-tabs { margin-bottom: 0; } }
+.pug-players__name { display: flex; flex-direction: column; gap: 2px; }
+.pug-players__battletag { font-size: $font-size-2xs; color: $admin-text-muted; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.pug-players__badges { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+.pug-players__muted { color: $admin-text-muted; }
+.ps-header { display: flex; align-items: center; justify-content: space-between; gap: $gap-md; margin-bottom: $spacing-md; flex-wrap: wrap; }
+
+// Section title inside a tab. The page-level h1 lives in AdminPageHeader.
+h1.ps-title, h2.ps-title, .ps-title {
+  display: block;
+  margin: 0;
+  padding: 0;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  letter-spacing: $letter-spacing-tight;
+  color: $admin-text-primary;
+  &::after { display: none; }
+}
+.ps-form-title { font-size: $font-size-xl; font-weight: $font-weight-bold; color: $admin-text-primary; margin: 0 0 $spacing-lg; }
+
+// Buttons
+.ps-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px;
+  border-radius: $radius-md;
+  font-size: $font-size-sm; font-weight: $font-weight-medium;
+  cursor: pointer; border: 1px solid transparent;
+  transition: $transition-all-fast;
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+  &:focus-visible { outline: none; box-shadow: $glow-accent; }
+}
+.ps-btn-primary { background: $admin-accent-primary; color: #fff; &:hover { background: darken($admin-accent-primary, 6%); } }
+.ps-btn-ghost { background: $admin-bg-surface; color: $admin-text-secondary; border-color: $admin-border-default; &:hover { background: $admin-bg-hover; color: $admin-text-primary; } }
+.ps-btn-danger { background: rgba($admin-accent-error, 0.12); color: $admin-accent-error; border-color: rgba($admin-accent-error, 0.3); &:hover { background: rgba($admin-accent-error, 0.2); } }
+.ps-btn-success { background: rgba($admin-accent-success, 0.14); color: $admin-accent-success; border-color: rgba($admin-accent-success, 0.3); &:hover { background: rgba($admin-accent-success, 0.24); } }
+.ps-btn-warning { background: rgba($admin-accent-warning, 0.14); color: $admin-accent-warning; border-color: rgba($admin-accent-warning, 0.3); &:hover { background: rgba($admin-accent-warning, 0.24); } }
+
+.ps-empty { text-align: center; padding: $spacing-2xl $spacing-lg; color: $admin-text-muted; p { margin: 8px 0 0; font-size: $font-size-sm; } }
+
+// Cards
+.ps-card {
+  @include modern-card(true);
+  display: flex; align-items: center; gap: $gap-lg;
+  padding: 18px 22px; margin-bottom: 10px;
+  text-decoration: none; color: inherit;
+}
+.ps-card-icon { width: 44px; height: 44px; border-radius: $radius-md; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ps-card-icon-open { background: rgba($admin-accent-info, 0.14); color: $admin-accent-info; }
+.ps-card-icon-invite { background: rgba($admin-accent-primary, 0.14); color: $admin-accent-primary; }
+.ps-card-icon-default { background: $admin-bg-hover; color: $admin-text-secondary; }
+.ps-card-body { flex: 1; min-width: 0; }
+.ps-card-name { font-size: $font-size-base; font-weight: $font-weight-semibold; color: $admin-text-primary; margin: 0 0 4px; }
+.ps-card-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.ps-card-detail { font-size: $font-size-xs; color: $admin-text-muted; }
+.ps-card-arrow { color: $admin-text-disabled; transition: color $transition-fast; }
+.ps-card:hover .ps-card-arrow { color: $admin-text-secondary; }
+
+// Badges. Semantic tones: info = accepting input / open tier, accent = invite tier,
+// success = terminal success, danger = banned / disputed, warning = attention.
+// Regions are neutral: colour is reserved for status.
+.ps-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: $radius-full;
+  font-size: $font-size-2xs; font-weight: $font-weight-semibold;
+  text-transform: uppercase; letter-spacing: $letter-spacing-wide;
+  border: 1px solid $admin-border-default;
+  background: $admin-bg-surface; color: $admin-text-secondary;
+}
+@mixin ps-badge-tone($color) { color: $color; border-color: rgba($color, 0.45); background: rgba($color, 0.08); }
+.ps-badge-open { @include ps-badge-tone($admin-accent-info); }
+.ps-badge-invite { @include ps-badge-tone($admin-accent-primary); }
+.ps-badge-active { @include ps-badge-tone($admin-accent-success); }
+.ps-badge-inactive { color: $admin-text-muted; }
+.ps-badge-danger { @include ps-badge-tone($admin-accent-error); }
+.ps-badge-warning { @include ps-badge-tone($admin-accent-warning); }
+.ps-badge-na, .ps-badge-emea, .ps-badge-pacific { color: $admin-text-secondary; }
+
+// Lobby status. Open/ready = accepting input (info/warning), in progress = accent,
+// disputed = danger, reporting = neutral.
+.ps-status-open { @include ps-badge-tone($admin-accent-info); }
+.ps-status-ready { @include ps-badge-tone($admin-accent-warning); }
+.ps-status-drafting { @include ps-badge-tone($admin-accent-primary); }
+.ps-status-map_vote { @include ps-badge-tone($admin-accent-primary); }
+.ps-status-banning { @include ps-badge-tone($admin-accent-warning); }
+.ps-status-in_progress { @include ps-badge-tone($admin-accent-primary); }
+.ps-status-reporting { color: $admin-text-secondary; }
+.ps-status-disputed { @include ps-badge-tone($admin-accent-error); }
+.ps-status-completed { @include ps-badge-tone($admin-accent-success); }
+.ps-status-cancelled { color: $admin-text-muted; }
+
+// Edit forms
+.ps-back { display: inline-flex; align-items: center; gap: 6px; color: $admin-text-muted; font-size: $font-size-sm; cursor: pointer; background: none; border: none; padding: 0; margin-bottom: $spacing-lg; transition: color $transition-fast; &:hover { color: $admin-text-secondary; } }
+.ps-section { @include modern-card; padding: $padding-lg; margin-bottom: $spacing-md; }
+.ps-section-title { font-size: $font-size-xs; font-weight: $font-weight-semibold; text-transform: uppercase; letter-spacing: $letter-spacing-wider; color: $admin-text-muted; margin: 0 0 $spacing-md; }
+.ps-field { margin-bottom: $spacing-md; &:last-child { margin-bottom: 0; } }
+.ps-label { display: block; font-size: $font-size-xs; font-weight: $font-weight-medium; color: $admin-text-muted; margin-bottom: 6px; }
+.ps-input { @include modern-input; box-sizing: border-box; }
+.ps-select { cursor: pointer; option { background: $admin-bg-elevated; color: $admin-text-primary; } }
+.ps-row { display: grid; gap: $gap-md; }
+.ps-row-2 { grid-template-columns: 1fr 1fr; }
+.ps-row-3 { grid-template-columns: 1fr 1fr 1fr; }
+.ps-check-row { display: flex; align-items: center; gap: 10px; }
+.ps-check-row input[type=checkbox] { width: 16px; height: 16px; accent-color: $admin-accent-primary; cursor: pointer; }
+.ps-check-label { font-size: $font-size-sm; color: $admin-text-secondary; cursor: pointer; }
+
+// Pill toggles
+.ps-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.ps-pill { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: $radius-full; font-size: $font-size-xs; font-weight: $font-weight-medium; cursor: pointer; border: 1px solid $admin-border-default; background: $admin-bg-surface; color: $admin-text-secondary; transition: $transition-all-fast; user-select: none; &:hover { border-color: $admin-border-strong; } }
+.ps-pill-active { background: rgba($admin-accent-primary, 0.15); border-color: rgba($admin-accent-primary, 0.4); color: lighten($admin-accent-primary, 12%); }
+
+// Filter chips (segmented control)
+.ps-tabs { display: inline-flex; gap: 2px; margin-bottom: $spacing-md; padding: 2px; background: $admin-bg-surface; border: 1px solid $admin-border-default; border-radius: $radius-md; }
+.ps-tab { padding: 6px 14px; border-radius: $radius-sm; font-size: $font-size-sm; font-weight: $font-weight-medium; cursor: pointer; border: none; background: transparent; color: $admin-text-muted; transition: $transition-all-fast; &:hover { color: $admin-text-secondary; } &:focus-visible { outline: none; box-shadow: $glow-accent; } }
+.ps-tab-active { background: $admin-accent-primary; color: #fff; }
+
+// Save bar
+.ps-save-bar { display: flex; align-items: center; gap: 12px; margin-top: $spacing-lg; }
+.ps-save-msg { font-size: $font-size-sm; display: flex; align-items: center; gap: 6px; }
+.ps-save-ok { color: $admin-accent-success; }
+.ps-save-err { color: $admin-accent-error; }
+
+.ps-spin { animation: ps-spin 1s linear infinite; }
+@keyframes ps-spin { to { transform: rotate(360deg); } }
+
+// Region control cards
+.ps-region-card { @include modern-card; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; }
+.ps-region-card-open { border-color: rgba($admin-accent-success, 0.35); }
+.ps-region-card-closing { border-color: rgba($admin-accent-warning, 0.35); }
+
+// Map pool
+.ps-map-grid { display: grid; grid-template-columns: 1fr 1fr; gap: $gap-md; margin-bottom: $spacing-md; }
+.ps-map-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: $gap-md; }
+@media (max-width: 768px) { .ps-map-grid, .ps-map-grid-3, .ps-row-2, .ps-row-3 { grid-template-columns: 1fr; } }
+.ps-map-type { background: $admin-bg-surface; border: 1px solid $admin-border-subtle; border-radius: $radius-md; padding: 14px 16px; }
+.ps-map-type-title { font-size: $font-size-2xs; font-weight: $font-weight-bold; text-transform: uppercase; letter-spacing: $letter-spacing-wider; color: $admin-text-muted; margin: 0 0 12px; }
+.ps-map-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; }
+.ps-map-item input[type=checkbox] { width: 14px; height: 14px; accent-color: $admin-accent-primary; cursor: pointer; flex-shrink: 0; }
+.ps-map-item label { font-size: $font-size-sm; color: $admin-text-secondary; cursor: pointer; transition: color 0.1s; user-select: none; }
+.ps-map-item:has(input:checked) label { color: $admin-text-primary; }
+.ps-map-empty { font-size: $font-size-xs; color: $admin-text-disabled; font-style: italic; }
+
+// Time windows
+.ps-tw { background: $admin-bg-surface; border: 1px solid $admin-border-subtle; border-radius: $radius-md; padding: 14px 16px; margin-bottom: 10px; }
+.ps-tw-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.ps-tw-title { font-size: $font-size-xs; font-weight: $font-weight-semibold; color: $admin-text-muted; }
+
+// Settings Generator + Invites share .settings-gen. Width and title now come from
+// the dashboard shell; make their local header match the other tabs.
+.pug-dashboard .settings-gen {
+  padding: 0;
+  max-width: none;
+  &__title {
+    margin: 0 0 4px;
+    padding: 0;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $admin-text-primary;
+    &::after { display: none; }
+  }
+  &__desc { color: $admin-text-muted; }
+}

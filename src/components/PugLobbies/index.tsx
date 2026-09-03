@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Gamepad2, Power, PowerOff, ExternalLink, XCircle, Loader2, Users, Clock, Trophy, SkipForward, AlertTriangle, ChevronDown, ChevronUp, UserMinus, ArrowRightLeft, Shield } from 'lucide-react'
-import { PUG_ADMIN_CSS, timeAgo } from '@/components/pugAdminStyles'
+import { timeAgo } from '@/components/pugAdminStyles'
 import { useConfirm, useAlert } from '@/components/ConfirmDialog'
 
 const ROLE_LABELS: Record<string, string> = {
@@ -284,7 +284,7 @@ function LobbyExpanded({ lobby, onAction, acting, onSpectatorsChange }: {
         <div style={{ marginTop: 16, padding: 12, background: 'rgba(59,130,246,0.06)', borderRadius: 8, border: '1px solid rgba(59,130,246,0.15)' }}>
           <div style={{ fontSize: 12, color: '#60a5fa', fontWeight: 600, marginBottom: 4 }}>Draft Phase</div>
           <div style={{ fontSize: 12, color: '#94a3b8' }}>
-            Pick #{lobby.draftState.pickNumber + 1} - Team {lobby.draftState.currentPickTeam}'s turn
+            Pick #{lobby.draftState.pickNumber + 1} - Team {lobby.draftState.currentPickTeam}&apos;s turn
           </div>
         </div>
       )}
@@ -293,7 +293,7 @@ function LobbyExpanded({ lobby, onAction, acting, onSpectatorsChange }: {
         <div style={{ marginTop: 16, padding: 12, background: 'rgba(249,115,22,0.06)', borderRadius: 8, border: '1px solid rgba(249,115,22,0.15)' }}>
           <div style={{ fontSize: 12, color: '#fb923c', fontWeight: 600, marginBottom: 4 }}>Ban Phase</div>
           <div style={{ fontSize: 12, color: '#94a3b8' }}>
-            Ban #{lobby.banState.banNumber} - Team {lobby.banState.currentBanTeam}'s turn - {(lobby.banState.bans ?? []).length} ban(s) so far
+            Ban #{lobby.banState.banNumber} - Team {lobby.banState.currentBanTeam}&apos;s turn - {(lobby.banState.bans ?? []).length} ban(s) so far
           </div>
         </div>
       )}
@@ -516,7 +516,6 @@ export function PugLobbiesDashboard() {
 
   return (
     <div className="ps-wrap">
-      <style>{PUG_ADMIN_CSS}</style>
 
       <div className="ps-header">
         <h1 className="ps-title">PUG Lobbies</h1>

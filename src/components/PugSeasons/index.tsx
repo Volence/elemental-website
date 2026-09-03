@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Plus, ChevronRight, Check, AlertCircle, Loader2, ArrowLeft, Calendar, Trophy, Map, RotateCcw } from 'lucide-react'
-import { PUG_ADMIN_CSS, formatDate } from '@/components/pugAdminStyles'
+import { formatDate } from '@/components/pugAdminStyles'
+import { pugTabHref } from '@/components/PugDashboard/tabs'
 import { useConfirm } from '@/components/ConfirmDialog'
 
 // ── Types ──
@@ -100,7 +101,6 @@ export function PugSeasonsListView() {
 
   return (
     <div className="ps-wrap">
-      <style>{PUG_ADMIN_CSS}</style>
       <div className="ps-header">
         <h1 className="ps-title">PUG Seasons</h1>
         <button className="ps-btn ps-btn-primary" onClick={() => router.push('/admin/edit-pug-season')}>
@@ -288,7 +288,6 @@ export function PugSeasonsEditView() {
   if (loading) {
     return (
       <div className="ps-wrap">
-        <style>{PUG_ADMIN_CSS}</style>
         <div style={{ color: '#475569', fontSize: 14 }}>Loading…</div>
       </div>
     )
@@ -301,9 +300,8 @@ export function PugSeasonsEditView() {
 
   return (
     <div className="ps-wrap">
-      <style>{PUG_ADMIN_CSS}</style>
 
-      <button className="ps-back" onClick={() => router.push('/admin/pug-seasons')}>
+      <button className="ps-back" onClick={() => router.push(pugTabHref('seasons'))}>
         <ArrowLeft size={14} /> Back to Seasons
       </button>
 

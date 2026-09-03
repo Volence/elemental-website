@@ -1,35 +1,45 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { User, ChevronRight, ArrowLeft, Check, AlertCircle, Loader2, ShieldAlert, Calendar } from 'lucide-react'
-import { PUG_ADMIN_CSS, formatDate } from '@/components/pugAdminStyles'
-
-type PugPerson = {
-  id: number
-  name?: string
-  email?: string
-  pugTiers?: string[]
-  pugApprovedRoles?: string[]
-  pugInviteRegions?: string[]
-  pugRegisteredDate?: string | null
-  pugInvitedBy?: { id: number; name?: string } | number | null
-  pugActiveBan?: { bannedUntil?: string | null; reason?: string | null }
-  pugBanOffenseCount?: number
-}
+import { ArrowLeft, Check, AlertCircle, Loader2, ShieldAlert, Users } from 'lucide-react'
+import {
+  AdminPagination,
+  AdminTable,
+  Badge,
+  ErrorState,
+  SearchInput,
+  formatDate,
+  formatNumber,
+  formatRecord,
+  getPersonLabel,
+  EMPTY,
+  useUrlParamState,
+} from '@/admin-kit'
+import type { AdminTableColumn, SortDirection } from '@/admin-kit'
+import { pugTabHref } from '@/components/PugDashboard/tabs'
+import {
+  DEFAULT_PLAYER_FILTERS,
+  filterPlayers,
+  isBanned,
+  joinRatings,
+  sortPlayers,
+  type LeaderboardRow,
+  type PlayerFilters,
+  type PlayerSortKey,
+  type PugPlayerRow,
+  type RatingSummary,
+} from './filters'
 
 const ROLE_LABELS: Record<string, string> = {
-  tank: 'Tank', 'flex-dps': 'Flex DPS', 'hitscan-dps': 'Hitscan DPS',
-  'flex-support': 'Flex Support', 'main-support': 'Main Support',
+  tank: 'Tank',
+  'flex-dps': 'Flex DPS',
+  'hitscan-dps': 'Hitscan DPS',
+  'flex-support': 'Flex Support',
+  'main-support': 'Main Support',
 }
 
-const ROLE_OPTIONS = [
-  { value: 'tank', label: 'Tank' },
-  { value: 'flex-dps', label: 'Flex DPS' },
-  { value: 'hitscan-dps', label: 'Hitscan DPS' },
-  { value: 'flex-support', label: 'Flex Support' },
-  { value: 'main-support', label: 'Main Support' },
-]
+const ROLE_OPTIONS = Object.entries(ROLE_LABELS).map(([value, label]) => ({ value, label }))
 
 const REGION_OPTIONS = [
   { value: 'na', label: 'NA' },
@@ -42,83 +52,253 @@ const TIER_OPTIONS = [
   { value: 'invite', label: 'Invite' },
 ]
 
-function isBanned(ban?: PugPerson['pugActiveBan']): boolean {
-  if (!ban?.bannedUntil) return false
-  return new Date(ban.bannedUntil) > new Date()
-}
+const PAGE_SIZE = 25
 
 // ---- List View ----
 
 export function PugPlayersListView() {
-  const router = useRouter()
-  const [players, setPlayers] = useState<PugPerson[]>([])
+  const [players, setPlayers] = useState<PugPlayerRow[]>([])
+  const [ratings, setRatings] = useState<Map<number, RatingSummary>>(new Map())
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const fetchPlayers = useCallback(async () => {
+  // Filters live in the URL so a filtered view is shareable and survives reload.
+  const [search, setSearch] = useUrlParamState('q', '')
+  const [tier, setTier] = useUrlParamState('tier', 'all')
+  const [region, setRegion] = useUrlParamState('region', 'all')
+  const [status, setStatus] = useUrlParamState('status', 'all')
+  const [sortKey, setSortKey] = useUrlParamState('sort', 'name')
+  const [sortDir, setSortDir] = useUrlParamState('dir', 'asc')
+  const [pageParam, setPage] = useUrlParamState('page', '1')
+  const page = Math.max(1, parseInt(pageParam, 10) || 1)
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    setError(null)
     try {
-      const res = await fetch('/api/people?limit=200&sort=-updatedAt&depth=0&where[pugTiers][exists]=true')
-      if (res.ok) {
-        const data = await res.json()
-        setPlayers((data.docs ?? []).filter((p: any) => p.pugTiers?.length > 0))
+      const [peopleRes, seasonsRes] = await Promise.all([
+        fetch('/api/people?limit=1000&sort=name&depth=0&where[pugTiers][exists]=true', { credentials: 'include' }),
+        fetch('/api/pug-seasons?limit=10&depth=0&where[active][equals]=true', { credentials: 'include' }),
+      ])
+      if (!peopleRes.ok) throw new Error(`Could not load players (HTTP ${peopleRes.status})`)
+      const peopleData = await peopleRes.json()
+      const docs: PugPlayerRow[] = (peopleData.docs ?? []).filter((p: PugPlayerRow) => (p.pugTiers ?? []).length > 0)
+      setPlayers(docs)
+
+      // Ratings for the active season(s). Failure here degrades to "no rating", not an error.
+      if (seasonsRes.ok) {
+        const seasons = await seasonsRes.json()
+        const ids: number[] = (seasons.docs ?? []).map((s: { id: number }) => s.id)
+        if (ids.length > 0) {
+          const where = ids.map((id, i) => `where[season][in][${i}]=${id}`).join('&')
+          const lbRes = await fetch(`/api/pug-leaderboard?limit=2000&depth=0&${where}`, { credentials: 'include' })
+          if (lbRes.ok) {
+            const lb = await lbRes.json()
+            setRatings(joinRatings((lb.docs ?? []) as LeaderboardRow[]))
+          }
+        }
       }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not load players')
     } finally {
       setLoading(false)
     }
   }, [])
 
-  useEffect(() => { fetchPlayers() }, [fetchPlayers])
+  useEffect(() => {
+    void load()
+  }, [load])
+
+  const filters: PlayerFilters = useMemo(
+    () => ({
+      search,
+      tier: (tier as PlayerFilters['tier']) ?? 'all',
+      region: (region as PlayerFilters['region']) ?? 'all',
+      status: (status as PlayerFilters['status']) ?? 'all',
+    }),
+    [search, tier, region, status],
+  )
+
+  const visible = useMemo(() => {
+    const filtered = filterPlayers(players, filters)
+    return sortPlayers(filtered, ratings, sortKey as PlayerSortKey, sortDir as SortDirection)
+  }, [players, filters, ratings, sortKey, sortDir])
+
+  const pageRows = visible.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
+  const onSort = (key: string, direction: SortDirection) => {
+    setSortKey(key)
+    setSortDir(direction)
+    setPage('1')
+  }
+
+  const setFilter = (setter: (v: string) => void) => (v: string) => {
+    setter(v)
+    setPage('1')
+  }
+
+  const columns: AdminTableColumn<PugPlayerRow>[] = [
+    {
+      key: 'name',
+      header: 'Player',
+      sortable: true,
+      render: (p) => (
+        <div className="pug-players__name">
+          <span>{getPersonLabel(p)}</span>
+          {p.pugBattleTag && <span className="pug-players__battletag">{p.pugBattleTag}</span>}
+        </div>
+      ),
+    },
+    {
+      key: 'tiers',
+      header: 'Tier',
+      render: (p) => (
+        <span className="pug-players__badges">
+          {(p.pugTiers ?? []).map((t) => (
+            <Badge key={t} tone={t === 'invite' ? 'accent' : 'info'} uppercase>
+              {t}
+            </Badge>
+          ))}
+        </span>
+      ),
+    },
+    {
+      key: 'regions',
+      header: 'Regions',
+      hideOnMobile: true,
+      render: (p) =>
+        (p.pugInviteRegions ?? []).length ? (
+          <span className="pug-players__badges">
+            {(p.pugInviteRegions ?? []).map((r) => (
+              <Badge key={r} uppercase>
+                {r}
+              </Badge>
+            ))}
+          </span>
+        ) : (
+          <span className="pug-players__muted">{EMPTY}</span>
+        ),
+    },
+    {
+      key: 'roles',
+      header: 'Roles',
+      hideOnMobile: true,
+      render: (p) =>
+        (p.pugApprovedRoles ?? []).length ? (
+          (p.pugApprovedRoles ?? []).map((r) => ROLE_LABELS[r] ?? r).join(', ')
+        ) : (
+          <span className="pug-players__muted">{EMPTY}</span>
+        ),
+    },
+    {
+      key: 'rating',
+      header: 'Rating',
+      align: 'right',
+      sortable: true,
+      render: (p) => {
+        const r = ratings.get(p.id)
+        return r ? formatNumber(r.rating) : <span className="pug-players__muted">{EMPTY}</span>
+      },
+    },
+    {
+      key: 'games',
+      header: 'Record',
+      align: 'right',
+      sortable: true,
+      hideOnMobile: true,
+      render: (p) => {
+        const r = ratings.get(p.id)
+        return r && r.gamesPlayed > 0 ? (
+          <span title={`${r.gamesPlayed} games`}>{formatRecord({ w: r.wins, l: r.losses, d: r.draws })}</span>
+        ) : (
+          <span className="pug-players__muted">{EMPTY}</span>
+        )
+      },
+    },
+    {
+      key: 'registered',
+      header: 'Registered',
+      sortable: true,
+      hideOnMobile: true,
+      render: (p) => formatDate(p.pugRegisteredDate),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      render: (p) =>
+        isBanned(p.pugActiveBan) ? (
+          <Badge tone="danger" dot title={p.pugActiveBan?.reason ?? undefined}>
+            Banned
+          </Badge>
+        ) : !p.discordId ? (
+          <Badge tone="warning">No Discord</Badge>
+        ) : (
+          <Badge tone="success" dot>
+            Active
+          </Badge>
+        ),
+    },
+  ]
 
   return (
-    <div className="ps-wrap">
-      <style>{PUG_ADMIN_CSS}</style>
+    <div className="ps-wrap pug-players">
       <div className="ps-header">
-        <h1 className="ps-title">PUG Players</h1>
+        <h2 className="ps-title">
+          Players <span className="pug-players__count">({formatNumber(visible.length)})</span>
+        </h2>
       </div>
 
-      {loading && <div style={{ color: '#475569', fontSize: 14 }}>Loading players...</div>}
-
-      {!loading && players.length === 0 && (
-        <div className="ps-empty">
-          <User size={40} strokeWidth={1.5} />
-          <p>No registered PUG players yet.</p>
+      <div className="pug-players__toolbar">
+        <SearchInput
+          value={search}
+          onChange={setFilter(setSearch)}
+          placeholder="Search name, email or battletag"
+          aria-label="Search players"
+        />
+        <div className="ps-tabs" role="group" aria-label="Tier">
+          {(['all', 'open', 'invite'] as const).map((t) => (
+            <button key={t} type="button" className={`ps-tab${tier === t ? ' ps-tab-active' : ''}`} onClick={() => setFilter(setTier)(t)} aria-pressed={tier === t}>
+              {t === 'all' ? 'All tiers' : t === 'open' ? 'Open' : 'Invite'}
+            </button>
+          ))}
         </div>
-      )}
+        <div className="ps-tabs" role="group" aria-label="Region">
+          {(['all', 'na', 'emea', 'pacific'] as const).map((r) => (
+            <button key={r} type="button" className={`ps-tab${region === r ? ' ps-tab-active' : ''}`} onClick={() => setFilter(setRegion)(r)} aria-pressed={region === r}>
+              {r === 'all' ? 'All regions' : r.toUpperCase()}
+            </button>
+          ))}
+        </div>
+        <div className="ps-tabs" role="group" aria-label="Status">
+          {(['all', 'banned', 'unlinked'] as const).map((s) => (
+            <button key={s} type="button" className={`ps-tab${status === s ? ' ps-tab-active' : ''}`} onClick={() => setFilter(setStatus)(s)} aria-pressed={status === s}>
+              {s === 'all' ? 'Any status' : s === 'banned' ? 'Banned' : 'No Discord'}
+            </button>
+          ))}
+        </div>
+      </div>
 
-      {!loading && players.map((p) => {
-        const name = p.name ?? p.email ?? `Person #${p.id}`
-        const banned = isBanned(p.pugActiveBan)
-        return (
-          <div key={p.id} className="ps-card" onClick={() => router.push(`/admin/edit-pug-player?id=${p.id}`)}>
-            <div className="ps-card-icon ps-card-icon-default">
-              <User size={20} />
-            </div>
-            <div className="ps-card-body">
-              <p className="ps-card-name">{name}</p>
-              <div className="ps-card-meta">
-                {p.pugTiers?.map((t) => (
-                  <span key={t} className={`ps-badge ps-badge-${t}`}>{t}</span>
-                ))}
-                {p.pugInviteRegions?.map((r) => (
-                  <span key={r} className={`ps-badge ps-badge-${r}`}>{r.toUpperCase()}</span>
-                ))}
-                {banned && <span className="ps-badge ps-badge-danger">BANNED</span>}
-                {p.pugApprovedRoles && p.pugApprovedRoles.length > 0 && (
-                  <span className="ps-card-detail">
-                    {p.pugApprovedRoles.map((r) => ROLE_LABELS[r] ?? r).join(', ')}
-                  </span>
-                )}
-                {p.pugRegisteredDate && (
-                  <span className="ps-card-detail">
-                    <Calendar size={11} style={{ display: 'inline', marginRight: 4 }} />
-                    {formatDate(p.pugRegisteredDate)}
-                  </span>
-                )}
-              </div>
-            </div>
-            <ChevronRight size={16} className="ps-card-arrow" />
-          </div>
-        )
-      })}
+      {error ? (
+        <ErrorState message={error} onRetry={() => void load()} />
+      ) : (
+        <>
+          <AdminTable
+            aria-label="PUG players"
+            columns={columns}
+            rows={pageRows}
+            rowKey={(p) => p.id}
+            loading={loading}
+            sort={{ key: sortKey, direction: sortDir as SortDirection }}
+            onSort={onSort}
+            rowHref={(p) => `/admin/edit-pug-player?id=${p.id}`}
+            emptyTitle={players.length === 0 ? 'No registered PUG players yet' : 'No players match these filters'}
+            emptyHint={players.length === 0 ? 'Players appear here after they register through /pugs.' : undefined}
+          />
+          {visible.length > PAGE_SIZE && (
+            <AdminPagination page={page} pageSize={PAGE_SIZE} total={visible.length} onPage={(p) => setPage(String(p))} />
+          )}
+        </>
+      )}
     </div>
   )
 }
@@ -135,6 +315,7 @@ export function PugPlayersEditView() {
   const [saveMsg, setSaveMsg] = useState('')
   const [form, setForm] = useState({
     userName: '',
+    battleTag: '',
     tiers: [] as string[],
     approvedRoles: [] as string[],
     inviteRegions: [] as string[],
@@ -146,16 +327,18 @@ export function PugPlayersEditView() {
   })
 
   useEffect(() => {
-    if (!id) { setLoading(false); return }
-    fetch(`/api/people/${id}?depth=1`)
+    if (!id) {
+      setLoading(false)
+      return
+    }
+    fetch(`/api/people/${id}?depth=1`, { credentials: 'include' })
       .then((r) => r.json())
       .then((data: any) => {
-        const userName = data.name ?? data.email ?? `Person #${id}`
-        const invitedByName = typeof data.pugInvitedBy === 'object' && data.pugInvitedBy
-          ? (data.pugInvitedBy.name ?? `Person #${data.pugInvitedBy.id}`)
-          : ''
+        const invitedByName =
+          typeof data.pugInvitedBy === 'object' && data.pugInvitedBy ? getPersonLabel(data.pugInvitedBy) : ''
         setForm({
-          userName,
+          userName: getPersonLabel(data),
+          battleTag: data.pugBattleTag ?? '',
           tiers: data.pugTiers ?? [],
           approvedRoles: data.pugApprovedRoles ?? [],
           inviteRegions: data.pugInviteRegions ?? [],
@@ -183,7 +366,7 @@ export function PugPlayersEditView() {
     setSaveStatus('saving')
     setSaveMsg('')
     try {
-      const body: any = {
+      const body = {
         pugTiers: form.tiers,
         pugApprovedRoles: form.approvedRoles,
         pugInviteRegions: form.inviteRegions,
@@ -212,11 +395,12 @@ export function PugPlayersEditView() {
     }
   }
 
+  const backHref = pugTabHref('players')
+
   if (loading) {
     return (
       <div className="ps-wrap">
-        <style>{PUG_ADMIN_CSS}</style>
-        <div style={{ color: '#475569', fontSize: 14 }}>Loading...</div>
+        <div className="pug-players__muted">Loading player...</div>
       </div>
     )
   }
@@ -225,38 +409,45 @@ export function PugPlayersEditView() {
 
   return (
     <div className="ps-wrap">
-      <style>{PUG_ADMIN_CSS}</style>
-
-      <button className="ps-back" onClick={() => router.push('/admin/pug-players')}>
+      <button type="button" className="ps-back" onClick={() => router.push(backHref)}>
         <ArrowLeft size={14} /> Back to Players
       </button>
 
-      <p className="ps-form-title">{form.userName || 'PUG Player'}</p>
+      <p className="ps-form-title">
+        <Users size={18} style={{ display: 'inline', marginRight: 8, verticalAlign: '-3px' }} />
+        {form.userName || 'PUG Player'}
+      </p>
 
       {/* Details */}
       <div className="ps-section">
         <p className="ps-section-title">Details</p>
-        <div className="ps-row ps-row-2" style={{ marginBottom: 16 }}>
+        <div className="ps-row ps-row-3" style={{ marginBottom: 16 }}>
           <div className="ps-field" style={{ margin: 0 }}>
             <label className="ps-label">Name</label>
             <div className="ps-input" style={{ cursor: 'default', opacity: 0.7 }}>{form.userName}</div>
           </div>
           <div className="ps-field" style={{ margin: 0 }}>
+            <label className="ps-label">BattleTag</label>
+            <div className="ps-input" style={{ cursor: 'default', opacity: 0.7 }}>{form.battleTag || EMPTY}</div>
+          </div>
+          <div className="ps-field" style={{ margin: 0 }}>
             <label className="ps-label">Registered</label>
-            <div className="ps-input" style={{ cursor: 'default', opacity: 0.7 }}>{form.registeredDate || 'N/A'}</div>
+            <div className="ps-input" style={{ cursor: 'default', opacity: 0.7 }}>{form.registeredDate || EMPTY}</div>
           </div>
         </div>
         <div className="ps-field">
           <label className="ps-label">Tiers</label>
           <div className="ps-pills">
             {TIER_OPTIONS.map((t) => (
-              <span
+              <button
+                type="button"
                 key={t.value}
                 className={`ps-pill ${form.tiers.includes(t.value) ? 'ps-pill-active' : ''}`}
                 onClick={() => toggleArrayItem('tiers', t.value)}
+                aria-pressed={form.tiers.includes(t.value)}
               >
                 {t.label}
-              </span>
+              </button>
             ))}
           </div>
         </div>
@@ -270,13 +461,15 @@ export function PugPlayersEditView() {
             <label className="ps-label">Regions</label>
             <div className="ps-pills">
               {REGION_OPTIONS.map((r) => (
-                <span
+                <button
+                  type="button"
                   key={r.value}
                   className={`ps-pill ${form.inviteRegions.includes(r.value) ? 'ps-pill-active' : ''}`}
                   onClick={() => toggleArrayItem('inviteRegions', r.value)}
+                  aria-pressed={form.inviteRegions.includes(r.value)}
                 >
                   {r.label}
-                </span>
+                </button>
               ))}
             </div>
           </div>
@@ -284,13 +477,15 @@ export function PugPlayersEditView() {
             <label className="ps-label">Approved Roles</label>
             <div className="ps-pills">
               {ROLE_OPTIONS.map((r) => (
-                <span
+                <button
+                  type="button"
                   key={r.value}
                   className={`ps-pill ${form.approvedRoles.includes(r.value) ? 'ps-pill-active' : ''}`}
                   onClick={() => toggleArrayItem('approvedRoles', r.value)}
+                  aria-pressed={form.approvedRoles.includes(r.value)}
                 >
                   {r.label}
-                </span>
+                </button>
               ))}
             </div>
           </div>
@@ -311,12 +506,16 @@ export function PugPlayersEditView() {
         </p>
         <div className="ps-row ps-row-2" style={{ marginBottom: 16 }}>
           <div className="ps-field" style={{ margin: 0 }}>
-            <label className="ps-label">Banned Until</label>
+            <label className="ps-label" htmlFor="pug-banned-until">Banned Until</label>
             <input
+              id="pug-banned-until"
               type="date"
               className="ps-input"
               value={form.bannedUntil}
-              onChange={(e) => { setForm((f) => ({ ...f, bannedUntil: e.target.value })); setSaveStatus('idle') }}
+              onChange={(e) => {
+                setForm((f) => ({ ...f, bannedUntil: e.target.value }))
+                setSaveStatus('idle')
+              }}
             />
           </div>
           <div className="ps-field" style={{ margin: 0 }}>
@@ -325,26 +524,43 @@ export function PugPlayersEditView() {
           </div>
         </div>
         <div className="ps-field">
-          <label className="ps-label">Reason</label>
+          <label className="ps-label" htmlFor="pug-ban-reason">Reason</label>
           <input
+            id="pug-ban-reason"
             className="ps-input"
             value={form.banReason}
-            onChange={(e) => { setForm((f) => ({ ...f, banReason: e.target.value })); setSaveStatus('idle') }}
+            onChange={(e) => {
+              setForm((f) => ({ ...f, banReason: e.target.value }))
+              setSaveStatus('idle')
+            }}
             placeholder="Ban reason"
           />
         </div>
+        <p className="pug-players__muted" style={{ margin: '10px 0 0', fontSize: 12 }}>
+          Bans set here do not increase the offense count. Use the Moderation tab for escalating bans.
+        </p>
       </div>
 
       {/* Save */}
       <div className="ps-save-bar">
-        <button className="ps-btn ps-btn-primary" onClick={save} disabled={saveStatus === 'saving'}>
-          {saveStatus === 'saving' ? <><Loader2 size={14} className="ps-spin" /> Saving...</> : 'Save Player'}
+        <button type="button" className="ps-btn ps-btn-primary" onClick={save} disabled={saveStatus === 'saving'}>
+          {saveStatus === 'saving' ? (
+            <>
+              <Loader2 size={14} className="ps-spin" /> Saving...
+            </>
+          ) : (
+            'Save Player'
+          )}
         </button>
         {saveStatus === 'saved' && (
-          <span className="ps-save-msg ps-save-ok"><Check size={14} /> {saveMsg}</span>
+          <span className="ps-save-msg ps-save-ok" role="status">
+            <Check size={14} /> {saveMsg}
+          </span>
         )}
         {saveStatus === 'error' && (
-          <span className="ps-save-msg ps-save-err"><AlertCircle size={14} /> {saveMsg}</span>
+          <span className="ps-save-msg ps-save-err" role="alert">
+            <AlertCircle size={14} /> {saveMsg}
+          </span>
         )}
       </div>
     </div>
