@@ -92,7 +92,7 @@ export async function trackLogin(
 export async function updateActivity(
   payload: Payload,
   userId: string | number,
-): Promise<void> {
+): Promise<boolean> {
   try {
     // Find active session for this user
     const sessions = await payload.find({
@@ -116,9 +116,31 @@ export async function updateActivity(
         },
         overrideAccess: true,
       })
+      return true
     }
+    return false
   } catch (error) {
     console.error('[Session Tracker] Failed to update activity:', error)
+    return false
+  }
+}
+
+/**
+ * Record that a signed-in person is using the admin right now.
+ *
+ * Refreshes lastActivity on their active session. People whose session predates
+ * login tracking (or whose token was silently refreshed for days) have no active
+ * row, so fall back to creating one via trackLogin: its loginTime then means
+ * "first seen since tracking began", which is the honest value we have.
+ */
+export async function touchActivity(
+  payload: Payload,
+  user: Person,
+  req?: PayloadRequest,
+): Promise<void> {
+  const touched = await updateActivity(payload, user.id)
+  if (!touched) {
+    await trackLogin(payload, user, req)
   }
 }
 

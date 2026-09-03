@@ -109,6 +109,7 @@ export interface Config {
     'error-logs': ErrorLog;
     'cron-job-runs': CronJobRun;
     'active-sessions': ActiveSession;
+    'admin-page-views': AdminPageView;
     'ignored-duplicates': IgnoredDuplicate;
     'invite-links': InviteLink;
     media: Media;
@@ -168,6 +169,7 @@ export interface Config {
     'error-logs': ErrorLogsSelect<false> | ErrorLogsSelect<true>;
     'cron-job-runs': CronJobRunsSelect<false> | CronJobRunsSelect<true>;
     'active-sessions': ActiveSessionsSelect<false> | ActiveSessionsSelect<true>;
+    'admin-page-views': AdminPageViewsSelect<false> | AdminPageViewsSelect<true>;
     'ignored-duplicates': IgnoredDuplicatesSelect<false> | IgnoredDuplicatesSelect<true>;
     'invite-links': InviteLinksSelect<false> | InviteLinksSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
@@ -228,9 +230,10 @@ export interface Config {
     'error-harvester-state': ErrorHarvesterStateSelect<false> | ErrorHarvesterStateSelect<true>;
   };
   locale: null;
-  user: Person & {
-    collection: 'people';
+  widgets: {
+    collections: CollectionsWidget;
   };
+  user: Person;
   jobs: {
     tasks: {
       schedulePublish: TaskSchedulePublish;
@@ -755,6 +758,7 @@ export interface Person {
       }[]
     | null;
   password?: string | null;
+  collection: 'people';
 }
 /**
  * Manage all Elemental teams, including rosters, staff, and achievements.
@@ -3195,6 +3199,29 @@ export interface ActiveSession {
   createdAt: string;
 }
 /**
+ * System-generated record of admin panel page views.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "admin-page-views".
+ */
+export interface AdminPageView {
+  id: number;
+  /**
+   * Who viewed the page
+   */
+  person?: (number | null) | Person;
+  /**
+   * Normalized admin path (query string dropped, numeric ids replaced with :id)
+   */
+  path: string;
+  /**
+   * Role of the viewer at the time of the view
+   */
+  role?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Pairs of people with similar names that are actually different people
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -3622,6 +3649,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'active-sessions';
         value: number | ActiveSession;
+      } | null)
+    | ({
+        relationTo: 'admin-page-views';
+        value: number | AdminPageView;
       } | null)
     | ({
         relationTo: 'ignored-duplicates';
@@ -4900,6 +4931,17 @@ export interface ActiveSessionsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "admin-page-views_select".
+ */
+export interface AdminPageViewsSelect<T extends boolean = true> {
+  person?: T;
+  path?: T;
+  role?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "ignored-duplicates_select".
  */
 export interface IgnoredDuplicatesSelect<T extends boolean = true> {
@@ -5663,6 +5705,16 @@ export interface ErrorHarvesterStateSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "collections_widget".
+ */
+export interface CollectionsWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'full';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

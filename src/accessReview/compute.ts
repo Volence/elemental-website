@@ -148,6 +148,13 @@ const DAY_MS = 86_400_000
 const DEFAULT_DORMANT_DAYS = 90
 const DEFAULT_REVIEW_DAYS = 180
 
+/** Newest of two ISO timestamps (Payload stores UTC ISO, so string compare is safe). */
+function latestIso(a: string | null, b: string | null): string | null {
+  if (!a) return b
+  if (!b) return a
+  return a > b ? a : b
+}
+
 function olderThan(iso: string | null, days: number, now: number): boolean {
   if (!iso) return true
   const at = Date.parse(iso)
@@ -197,7 +204,10 @@ export function buildReport(input: BuildReportInput): AccessReport {
     const flags: AccessFlag[] = []
     if (teams.some((team) => team.standing === null)) flags.push('team-without-roster')
     if (inDiscord === false) flags.push('not-in-discord')
-    if (olderThan(session.lastLoginAt, dormantDays, input.now)) flags.push('dormant')
+    // Logins are only recorded at sign-in and tokens refresh silently, so a person can work
+    // daily without a new login event. Admin page views touch lastActivity; use the newer.
+    const lastSeenAt = latestIso(session.lastLoginAt, session.lastActivityAt)
+    if (olderThan(lastSeenAt, dormantDays, input.now)) flags.push('dormant')
     if (olderThan(lastAccessChange?.at ?? null, reviewDays, input.now)) flags.push('no-review-record')
 
     people.push({

@@ -95,6 +95,14 @@ describe('buildReport flags', () => {
     expect(buildReport(healthyInput()).people[0].flags).not.toContain('dormant')
   })
 
+  it('does not flag dormant when activity is recent even if the last login is old', () => {
+    const recent = new Date(NOW - 2 * 86_400_000).toISOString()
+    const flags = buildReport(
+      healthyInput({ sessions: [{ user: 1, loginTime: ANCIENT, lastActivity: recent }] }),
+    ).people[0].flags
+    expect(flags).not.toContain('dormant')
+  })
+
   it('flags a person who has never logged in as dormant', () => {
     expect(buildReport(healthyInput({ sessions: [] })).people[0].flags).toContain('dormant')
   })

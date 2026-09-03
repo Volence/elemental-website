@@ -7,6 +7,7 @@ import type { AccessReport } from '@/accessReview/types'
 import { resolveMutation } from '@/accessReview/mutate'
 import { getDiscordClient } from '@/discord/bot'
 import { resolveGuildId } from '@/discord/serverRegistry'
+import { isRosterComplete } from '@/accessReview/discordRoster'
 
 const CACHE_TTL_MS = 60_000
 
@@ -32,8 +33,11 @@ async function fetchGuildMemberIds(): Promise<{ ids: Set<string> | null; guildId
 
     const guildId = await resolveGuildId()
     const guild = await client.guilds.fetch(guildId)
-    // The logging module fetches the full roster on ready, so the cache is normally warm.
-    const members = guild.members.cache.size > 0 ? guild.members.cache : await guild.members.fetch()
+    // The logging module's roster fetch is fire-and-forget and GUILD_CREATE seeds a partial
+    // cache, so "non-empty" is not "complete". Only trust a cache that holds everyone.
+    const members = isRosterComplete(guild.members.cache.size, guild.memberCount)
+      ? guild.members.cache
+      : await guild.members.fetch()
 
     return { ids: new Set([...members.values()].map((member) => member.id)), guildId }
   } catch {

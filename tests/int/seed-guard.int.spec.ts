@@ -7,9 +7,7 @@ const staffManager = { id: 3, role: 'staff-manager' } as any
 
 describe('canRunSeed', () => {
   it('rejects unauthenticated requests with 403', () => {
-    const result = canRunSeed(null, { NODE_ENV: 'development' })
-    expect(result.ok).toBe(false)
-    expect(result.status).toBe(403)
+    expect(canRunSeed(null, { NODE_ENV: 'development' })).toMatchObject({ ok: false, status: 403 })
   })
 
   it('rejects any non-admin user, including staff-manager, with 403', () => {
@@ -23,9 +21,7 @@ describe('canRunSeed', () => {
   })
 
   it('refuses even admins in production unless ALLOW_DB_SEED=true', () => {
-    const blocked = canRunSeed(admin, { NODE_ENV: 'production' })
-    expect(blocked.ok).toBe(false)
-    expect(blocked.status).toBe(404)
+    expect(canRunSeed(admin, { NODE_ENV: 'production' })).toMatchObject({ ok: false, status: 404 })
 
     expect(canRunSeed(admin, { NODE_ENV: 'production', ALLOW_DB_SEED: 'true' })).toEqual({ ok: true })
   })

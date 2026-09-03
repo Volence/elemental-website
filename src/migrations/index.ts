@@ -40,6 +40,7 @@ import * as migration_20260902_social_media_digest_records_daily_ping from "./20
 import * as migration_20260902_identity_foundation_fields from "./20260902_identity_foundation_fields";
 import * as migration_20260902_identity_duplicate_report from "./20260902_identity_duplicate_report";
 import * as migration_20260903_identity_discord_id_unique from "./20260903_identity_discord_id_unique";
+import * as migration_20260903_admin_page_views from "./20260903_admin_page_views";
 
 export const migrations = [
   {
@@ -251,5 +252,10 @@ export const migrations = [
     up: migration_20260903_identity_discord_id_unique.up,
     down: migration_20260903_identity_discord_id_unique.down,
     name: "20260903_identity_discord_id_unique",
+  },
+  {
+    up: migration_20260903_admin_page_views.up,
+    down: migration_20260903_admin_page_views.down,
+    name: "20260903_admin_page_views",
   },
 ];

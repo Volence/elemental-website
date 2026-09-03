@@ -19,6 +19,24 @@ export default function AdminProviders({ children }: { children: React.ReactNode
   const pathname = usePathname()
   const isFirstRender = useRef(true)
   const { user } = useAuth<Person>()
+  const lastReportedPath = useRef<string | null>(null)
+
+  // Usage telemetry: one beacon per admin navigation (see /api/admin-telemetry/page-view).
+  // keepalive lets the request finish even if the user navigates away immediately.
+  useEffect(() => {
+    if (!user?.id || !pathname || !pathname.startsWith('/admin')) return
+    if (lastReportedPath.current === pathname) return
+    lastReportedPath.current = pathname
+    fetch('/api/admin-telemetry/page-view', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: pathname }),
+      credentials: 'include',
+      keepalive: true,
+    }).catch(() => {
+      // Telemetry must never surface as an admin error.
+    })
+  }, [pathname, user?.id])
   
   // Sidebar scroll preservation
   useEffect(() => {

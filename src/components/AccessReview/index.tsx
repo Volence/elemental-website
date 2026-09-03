@@ -307,7 +307,9 @@ export function AccessReviewView() {
                               {person.flags.filter((f) => !(group.band === 'team' && f === 'team-without-roster')).map((f) => (
                                 <span className="ar-chip ar-chip-warn" key={f}>{FLAG_LABELS[f]}</span>
                               ))}
-                              <span className="ar-chip ar-chip-mute">login {relativeDays(person.lastLoginAt, now)}</span>
+                              <span className="ar-chip ar-chip-mute">
+                                seen {relativeDays(person.lastActivityAt ?? person.lastLoginAt, now)}
+                              </span>
                               <span className="ar-chip ar-chip-mute">
                                 {person.lastAccessChange
                                   ? `reviewed ${relativeDays(person.lastAccessChange.at, now)}${person.lastAccessChange.byName ? ` by ${person.lastAccessChange.byName}` : ''}`

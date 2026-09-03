@@ -28,6 +28,7 @@ import { AuditLogs } from './collections/AuditLogs'
 import { ErrorLogs } from './collections/ErrorLogs'
 import { CronJobRuns } from './collections/CronJobRuns'
 import { ActiveSessions } from './collections/ActiveSessions'
+import { AdminPageViews } from './collections/AdminPageViews'
 import { DiscordPolls } from './collections/DiscordPolls'
 import { AvailabilityCalendars } from './collections/AvailabilityCalendars'
 import { Absences } from './collections/Absences'
@@ -326,6 +327,7 @@ const config = buildConfig({
     ErrorLogs,
     CronJobRuns,
     ActiveSessions,
+    AdminPageViews,
     IgnoredDuplicates,
     InviteLinks,
     Media,

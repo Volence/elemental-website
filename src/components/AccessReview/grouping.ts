@@ -38,7 +38,7 @@ export const ALL_FLAGS: AccessFlag[] = [
 export const FLAG_LABELS: Record<AccessFlag, string> = {
   'team-without-roster': 'Team access without roster spot',
   'not-in-discord': 'Not in the Discord server',
-  dormant: 'No login in 90 days',
+  dormant: 'No recorded activity in 90 days',
   'no-review-record': 'No access review on record',
 }
 

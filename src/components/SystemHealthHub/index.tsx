@@ -6,6 +6,7 @@ import { useEffect } from 'react'
 import {
   Activity,
   AlertTriangle,
+  BarChart3,
   Clock,
   Database,
   FileSearch,
@@ -24,6 +25,7 @@ const DataConsistencyView = lazy(() => import('@/components/DataConsistencyView'
 const IgnoredDuplicatesView = lazy(() => import('./IgnoredDuplicatesView'))
 const MergePeopleView = lazy(() => import('./MergePeopleView'))
 const MergeSuggestionsView = lazy(() => import('./MergeSuggestionsView'))
+const AdminUsageView = lazy(() => import('./AdminUsageView'))
 
 interface Tab {
   id: string
@@ -37,6 +39,7 @@ const TABS: Tab[] = [
   { id: 'cron', label: 'Cron Jobs', icon: <Clock size={16} />, description: 'Scheduled task monitoring' },
   { id: 'audit', label: 'Audit Log', icon: <Shield size={16} />, description: 'User action history' },
   { id: 'sessions', label: 'Sessions', icon: <Users size={16} />, description: 'Active user sessions' },
+  { id: 'usage', label: 'Usage', icon: <BarChart3 size={16} />, description: 'Which admin screens get used' },
   { id: 'database', label: 'Database', icon: <Database size={16} />, description: 'Collection health & stats' },
   { id: 'consistency', label: 'Data Integrity', icon: <FileSearch size={16} />, description: 'Check & fix data issues' },
   { id: 'duplicates', label: 'Ignored Dups', icon: <Users size={16} />, description: 'View ignored merge pairs' },
@@ -81,6 +84,7 @@ export default function SystemHealthHub() {
       case 'cron': return <CronMonitorView />
       case 'audit': return <AuditLogView />
       case 'sessions': return <ActiveSessionsView />
+      case 'usage': return <AdminUsageView />
       case 'database': return <DatabaseHealthView />
       case 'consistency': return <DataConsistencyView />
       case 'duplicates': return <IgnoredDuplicatesView />
