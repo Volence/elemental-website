@@ -76,8 +76,7 @@
 @import './components/read-only-items';
 
 // Dashboard & Stats
-@import './components/dashboard-stats';
-@import './components/dashboard-actions';
+@import './components/dashboard';        // Admin landing page (src/components/BeforeDashboard)
 @import './components/assigned-teams';
 
 // Special Features
@@ -106,7 +105,6 @@
 @import './components/file-browser';
 @import './components/scrim-analytics';
 @import './components/system-health';
-@import './components/player-dashboard';
 @import './components/competitive-hub';
 @import './components/pug-dashboard';
 @import './components/pug-admin';       // .ps-* classes shared by PUG views

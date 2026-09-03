@@ -8,7 +8,7 @@ import { extractPersonId } from './personHelpers'
  * Admin Data Fetching Hooks
  * 
  * Provides reusable hooks for fetching common data in admin components.
- * Reduces duplication across AssignedTeamsDashboard, AssignedTeamsBanner, etc.
+ * Reduces duplication across AssignedTeamsBanner and friends.
  */
 
 /**

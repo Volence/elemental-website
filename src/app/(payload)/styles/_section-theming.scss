@@ -152,15 +152,6 @@
     }
   }
   
-  // Dashboard stat cards
-  .dashboard-stats__card {
-    border-color: rgba(var(--section-color-rgb), 0.3);
-    
-    &:hover {
-      box-shadow: 0 0 20px rgba(var(--section-color-rgb), 0.2);
-    }
-  }
-  
   // --------------------------------------------
   // TABLES
   // --------------------------------------------
