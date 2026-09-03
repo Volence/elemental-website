@@ -114,6 +114,7 @@ export default function SchedulesListView() {
       key: 'dates',
       header: 'Dates',
       hideOnMobile: true,
+      nowrap: true,
       render: (r) =>
         r.dateRange?.start ? (
           <span>
@@ -128,6 +129,7 @@ export default function SchedulesListView() {
     {
       key: 'status',
       header: 'Status',
+      nowrap: true,
       render: (r) => (r.status ? <Badge tone={STATUS[r.status]?.tone ?? 'neutral'} dot>{STATUS[r.status]?.label ?? r.status}</Badge> : <span className="pug-list__muted">{EMPTY}</span>),
     },
     { key: 'responses', header: 'Responses', align: 'right', hideOnMobile: true, render: (r) => formatNumber(r.responseCount ?? 0) },
@@ -137,7 +139,7 @@ export default function SchedulesListView() {
       hideOnMobile: true,
       render: (r) => (r.publishedToCalendar ? <Badge tone="success" dot>Published</Badge> : <span className="pug-list__muted">Not published</span>),
     },
-    { key: 'created', header: 'Created', hideOnMobile: true, render: (r) => formatRelative(r.createdAt) },
+    { key: 'created', header: 'Created', hideOnMobile: true, nowrap: true, render: (r) => formatRelative(r.createdAt) },
   ]
 
   return (

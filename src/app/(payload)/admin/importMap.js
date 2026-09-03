@@ -91,11 +91,9 @@ import { default as default_a1087e454b1b74ceaf1bf3fd38ecfc7a } from '@/component
 import { default as default_66dcba8625c994af6076586cb15c754f } from '@/components/UserAvatar'
 import { default as default_a202ad21aea188adfad41087711ba85c } from '@/components/AdminNav'
 import { default as default_aa0a2d19d38a4839dbd373417e210b89 } from '@/components/AdminLogo'
-import { default as default_4a966b4b6647403eb02e9dcfa6c73e27 } from '@/components/BeforeDashboard/LinkDiscordBanner'
-import { default as default_1a7510af427896d367a49dbf838d2de6 } from '@/components/BeforeDashboard'
-import { SectionThemeApplicator as SectionThemeApplicator_b4f71752b0da9dddb562ddd527781822 } from '@/components/SectionThemeApplicator'
 import { default as default_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/components/BeforeLogin'
 import { default as default_aeef0123fea1af819397817664b7330c } from '@/components/AdminProviders'
+import { default as default_ea3ab93b6fd10d63ff69bcd5759845c3 } from '@/components/Dashboard/Route'
 import { default as default_d27bcf9be933ec5d939f574ab307facf } from '@/components/UnifiedCalendar/Route'
 import { default as default_5f96af94fd29a7fa1e87fa3501f9e389 } from '@/components/ScrimUpload/Route'
 import { default as default_32b53b290bff18166c7f0c6cf1c91a06 } from '@/components/ScrimList/Route'
@@ -223,11 +221,9 @@ export const importMap = {
   "@/components/UserAvatar#default": default_66dcba8625c994af6076586cb15c754f,
   "@/components/AdminNav#default": default_a202ad21aea188adfad41087711ba85c,
   "@/components/AdminLogo#default": default_aa0a2d19d38a4839dbd373417e210b89,
-  "@/components/BeforeDashboard/LinkDiscordBanner#default": default_4a966b4b6647403eb02e9dcfa6c73e27,
-  "@/components/BeforeDashboard#default": default_1a7510af427896d367a49dbf838d2de6,
-  "@/components/SectionThemeApplicator#SectionThemeApplicator": SectionThemeApplicator_b4f71752b0da9dddb562ddd527781822,
   "@/components/BeforeLogin#default": default_8a7ab0eb7ab5c511aba12e68480bfe5e,
   "@/components/AdminProviders#default": default_aeef0123fea1af819397817664b7330c,
+  "@/components/Dashboard/Route#default": default_ea3ab93b6fd10d63ff69bcd5759845c3,
   "@/components/UnifiedCalendar/Route#default": default_d27bcf9be933ec5d939f574ab307facf,
   "@/components/ScrimUpload/Route#default": default_5f96af94fd29a7fa1e87fa3501f9e389,
   "@/components/ScrimList/Route#default": default_32b53b290bff18166c7f0c6cf1c91a06,

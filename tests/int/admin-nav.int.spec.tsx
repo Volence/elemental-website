@@ -49,8 +49,10 @@ describe('buildNavAreas', () => {
     const areas = labels(buildNavAreas({ user: admin, collections: ALL_COLLECTIONS, globals: ALL_GLOBALS }))
     expect(Object.keys(areas)).toEqual(['me', 'people', 'competition', 'departments', 'organization', 'system'])
     expect(areas.me).toEqual(['My Profile', 'My Stats', 'Calendar'])
-    expect(areas.people).toContain('Invite Links')
-    expect(areas.competition).toEqual(['Scrim Analytics', 'Scrim Teams', 'PUG Dashboard', 'FaceIt Leagues', 'Heroes & Maps'])
+    expect(areas.people).toEqual(['People', 'Teams', 'Staff', 'Identity', 'Identity Claims'])
+    expect(Object.values(areas).flat()).not.toContain('Invite Links')
+    expect(Object.values(areas).flat()).not.toContain('Pages')
+    expect(areas.competition).toEqual(['Scrim Analytics', 'PUG Dashboard', 'FaceIt Leagues', 'Heroes & Maps'])
     expect(areas.departments).toEqual(['Production', 'Social Media', 'Graphics', 'Video', 'Events', 'Files'])
     expect(areas.system).toEqual(['System Health', 'Discord Server Manager'])
     const all = Object.values(areas).flat()
@@ -73,6 +75,7 @@ describe('buildNavAreas', () => {
   it('respects visibility: no entry for a collection Payload hides', () => {
     const areas = labels(buildNavAreas({ user: staffManager, collections: ['people'], globals: [] }))
     expect(areas.people).toEqual(['People', 'Identity'])
+    expect(buildNavAreas({ user: staffManager, collections: ['people'], globals: [] })[1].items[0].href).toBe('/admin/collections/people')
     expect(areas.system).toBeUndefined()
     expect(areas.departments).toBeUndefined()
   })
@@ -106,7 +109,9 @@ describe('resolveActiveItemId', () => {
   it('custom edit routes map to the entry that owns them', () => {
     expect(resolveActiveItemId(areas, '/admin/edit-team', q('id=3'))).toBe(idOf('Teams'))
     expect(resolveActiveItemId(areas, '/admin/edit-pug-season', q('id=1'))).toBe(idOf('PUG Dashboard'))
-    expect(resolveActiveItemId(areas, '/admin/staff-directory', null)).toBe(idOf('Organization Staff'))
+    expect(resolveActiveItemId(areas, '/admin/staff-directory', null)).toBe(idOf('Staff'))
+    expect(resolveActiveItemId(areas, '/admin/collections/production/3', null)).toBe(idOf('Staff'))
+    expect(resolveActiveItemId(areas, '/admin/edit-person', q('id=9'))).toBe(idOf('People'))
     expect(resolveActiveItemId(areas, '/admin/globals/system-health', q('tab=access'))).toBe(idOf('System Health'))
     expect(resolveActiveItemId(areas, '/admin/collections/heroes/4', null)).toBe(idOf('Heroes & Maps'))
     expect(resolveActiveItemId(areas, '/admin/game-data', q('tab=maps'))).toBe(idOf('Heroes & Maps'))
@@ -142,7 +147,7 @@ describe('AdminNavClient', () => {
 
   it('links carry stable ids so existing hooks and tests can find them', () => {
     render(<AdminNavClient areas={areas} groupPrefs={{}} logout={null} />)
-    expect(document.getElementById('nav-people')?.getAttribute('href')).toBe('/admin/collections/people')
+    expect(document.getElementById('nav-view-manage-users')?.getAttribute('href')).toBe('/admin/manage-users')
     expect(document.getElementById('nav-view-teams')?.getAttribute('href')).toBe('/admin/teams')
     expect(document.getElementById('nav-global-system-health')?.getAttribute('href')).toBe('/admin/globals/system-health')
     expect(document.getElementById('nav-dashboard')?.getAttribute('href')).toBe('/admin')

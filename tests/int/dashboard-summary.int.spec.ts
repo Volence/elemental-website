@@ -18,6 +18,7 @@ describe('greeting', () => {
     expect(greeting(14, null)).toBe('Good afternoon')
     expect(greeting(21, 'Sam')).toBe('Good evening, Sam')
     expect(greeting(2, 'Sam')).toBe('Up late, Sam')
+    expect(greeting(null, 'Sam')).toBe('Welcome back, Sam')
   })
 })
 

@@ -27,6 +27,8 @@ const ScrimAnalyticsDashboardRoute: React.FC<AdminViewServerProps> = ({
       permissions={initPageResult.permissions}
       req={initPageResult.req}
       searchParams={searchParams}
+      user={user}
+      viewActions={[]}
       visibleEntities={initPageResult.visibleEntities}
     >
       <ScrimAnalyticsDashboard />

@@ -19,7 +19,9 @@ type AdminNavProps = ServerProps & {
  * the same way Payload does, and hands both to the client renderer.
  */
 export default async function AdminNav(props: AdminNavProps) {
-  const { user, payload, permissions, req, visibleEntities } = props
+  const { payload, permissions, req, visibleEntities } = props
+  // Some custom routes render DefaultTemplate without `user`; the request always has it.
+  const user = props.user ?? (req?.user as typeof props.user | undefined)
   if (!user) return null
 
   // Payload passes visibleEntities to nav components; fall back to read permissions if it ever does not.

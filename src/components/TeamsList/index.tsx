@@ -106,6 +106,7 @@ export default function TeamsListView() {
       key: 'rating',
       header: 'Rating',
       sortable: true,
+      nowrap: true,
       render: (t) => {
         if (!t.rating) return <span className="pug-list__muted">{EMPTY}</span>
         const tier = getTierFromRating(t.rating)
@@ -152,9 +153,10 @@ export default function TeamsListView() {
     {
       key: 'active',
       header: 'Status',
+      nowrap: true,
       render: (t) => (t.active === false ? <Badge tone="warning">Inactive</Badge> : <Badge tone="success" dot>Active</Badge>),
     },
-    { key: 'updatedAt', header: 'Updated', sortable: true, hideOnMobile: true, render: (t) => formatRelative(t.updatedAt) },
+    { key: 'updatedAt', header: 'Updated', sortable: true, hideOnMobile: true, nowrap: true, render: (t) => formatRelative(t.updatedAt) },
   ]
 
   return (

@@ -19,6 +19,8 @@ export interface AdminTableColumn<Row> {
   sortable?: boolean
   /** Hide below 768px to keep the table usable on phones. */
   hideOnMobile?: boolean
+  /** Keep the cell on one line (dates, statuses, short codes). */
+  nowrap?: boolean
 }
 
 export interface AdminTableProps<Row> {
@@ -169,7 +171,7 @@ export function AdminTable<Row>({
                     <td
                       key={col.key}
                       style={{ textAlign: col.align ?? 'left' }}
-                      className={`kit-table__td${col.align === 'right' ? ' kit-table__td--num' : ''}${col.hideOnMobile ? ' kit-table__td--hide-mobile' : ''}`}
+                      className={`kit-table__td${col.align === 'right' ? ' kit-table__td--num' : ''}${col.nowrap ? ' kit-table__td--nowrap' : ''}${col.hideOnMobile ? ' kit-table__td--hide-mobile' : ''}`}
                     >
                       {cell}
                     </td>

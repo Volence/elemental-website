@@ -82,13 +82,14 @@ export default function CalendarEventsListView() {
       header: 'Type',
       render: (e) => (e.eventType ? <Badge tone={TYPE[e.eventType]?.tone ?? 'neutral'}>{TYPE[e.eventType]?.label ?? e.eventType}</Badge> : <span className="pug-list__muted">{EMPTY}</span>),
     },
-    { key: 'region', header: 'Region', hideOnMobile: true, render: (e) => (e.region ? <Badge uppercase>{e.region}</Badge> : <span className="pug-list__muted">{EMPTY}</span>) },
-    { key: 'start', header: 'Starts', render: (e) => formatDateTime(e.dateStart) },
-    { key: 'end', header: 'Ends', hideOnMobile: true, render: (e) => (e.dateEnd ? formatDateTime(e.dateEnd) : <span className="pug-list__muted">{EMPTY}</span>) },
+    { key: 'region', header: 'Region', hideOnMobile: true, nowrap: true, render: (e) => (e.region ? <Badge uppercase>{e.region}</Badge> : <span className="pug-list__muted">{EMPTY}</span>) },
+    { key: 'start', header: 'Starts', nowrap: true, render: (e) => formatDateTime(e.dateStart) },
+    { key: 'end', header: 'Ends', hideOnMobile: true, nowrap: true, render: (e) => (e.dateEnd ? formatDateTime(e.dateEnd) : <span className="pug-list__muted">{EMPTY}</span>) },
     {
       key: 'discord',
       header: 'Discord',
       hideOnMobile: true,
+      nowrap: true,
       render: (e) => (e.publishToDiscord ? <Badge tone="success" dot>Published</Badge> : <span className="pug-list__muted">Not posted</span>),
     },
   ]

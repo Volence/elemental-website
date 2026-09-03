@@ -335,6 +335,10 @@
 
 .kit-table {
   width: 100%;
+  // _payload-overrides gives every table min-width: max-content; with a percentage-width
+  // link inside a cell that resolved to a 1,000,000px first column. Kit tables size to their box.
+  min-width: 0;
+  table-layout: auto;
   border-collapse: separate;
   border-spacing: 0;
   font-size: $font-size-sm;
@@ -374,12 +378,13 @@
   th[aria-sort='ascending'] &__sort, th[aria-sort='descending'] &__sort { color: $admin-accent-info; }
 
   &__td--num { font-variant-numeric: tabular-nums; }
+  &__td--nowrap { white-space: nowrap; }
   &__th--right, &__td--num { text-align: right; }
 
   &--interactive tbody tr { cursor: pointer; transition: background $transition-fast; }
   &--interactive tbody tr:hover { background: $admin-bg-hover; }
   &--interactive tbody tr:focus-visible { outline: none; box-shadow: inset 0 0 0 2px rgba($admin-accent-info, 0.5); }
-  &__row-link { color: $admin-text-primary; text-decoration: none; font-weight: $font-weight-medium; &:hover { color: $admin-accent-info; } }
+  &__row-link { display: inline-flex; align-items: center; width: auto; max-width: 100%; color: $admin-text-primary; text-decoration: none; font-weight: $font-weight-medium; &:hover { color: $admin-accent-info; } }
 
   &__empty { padding: 0 !important; }
   &__skeleton-row td .kit-skeleton { width: 60%; }
@@ -410,4 +415,56 @@
   max-width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+// ============================================
+// HEADINGS INSIDE KIT SURFACES
+// ============================================
+// _typography.scss decorates every h2/h3 (gradient underline, orange or lime
+// colour, 3rem top margin). Kit headings are components, not page sections.
+// Doubled class selectors so these beat `.dashboard h2` / `main h3` (0,1,1) from _typography.
+.kit-card .kit-card__title,
+.kit-stat .kit-stat__label,
+.kit-page h2,
+.kit-page h3,
+.kit-card h2,
+.kit-card h3,
+.dash h2,
+.dash h3,
+.dash h4,
+.dash .dash__greeting,
+.dash .dash__area-title {
+  margin: 0;
+  padding: 0;
+  background: none;
+  -webkit-text-fill-color: currentColor;
+  text-shadow: none;
+
+  &::after,
+  &::before {
+    content: none;
+    display: none;
+  }
+}
+
+.kit-card .kit-card__title {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $admin-text-primary;
+  line-height: 1.3;
+}
+
+.dash .dash__greeting {
+  font-size: 1.5rem;
+  font-weight: $font-weight-bold;
+  color: $admin-text-primary;
+}
+
+.dash .dash__area-title {
+  font-size: $font-size-2xs;
+  font-weight: $font-weight-semibold;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: $admin-text-muted;
+  margin-bottom: 8px;
 }

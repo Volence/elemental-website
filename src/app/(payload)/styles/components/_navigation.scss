@@ -156,8 +156,8 @@ nav > .nav-group:first-child .nav-group__toggle {
 // NOTIFICATION BADGES
 // ============================================
 
-.nav__link [class*="badge"],
-.nav__link [class*="pill"] {
+.nav__link [class*="badge"]:not(svg),
+.nav__link [class*="pill"]:not(svg) {
   margin-left: auto;
   background: $admin-gradient-error;
   color: white;

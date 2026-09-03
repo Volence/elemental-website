@@ -5,7 +5,8 @@ import { usePathname, useSearchParams } from 'next/navigation'
 import { Hamburger, Link, NavGroup, useNav } from '@payloadcms/ui'
 import {
   Activity,
-  BadgeCheck,
+  Contact,
+  UserCheck,
   BarChart3,
   Calendar,
   CalendarDays,
@@ -46,7 +47,8 @@ const ICONS: Record<NavIconName, React.ComponentType<{ size?: number; 'aria-hidd
   clapperboard: Clapperboard,
   fingerprint: Fingerprint,
   link: LinkIcon,
-  'badge-check': BadgeCheck,
+  contact: Contact,
+  'user-check': UserCheck,
   swords: Swords,
   flag: Flag,
   gamepad: Gamepad2,

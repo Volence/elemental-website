@@ -100,9 +100,14 @@ export function departmentsFor(role: string | null | undefined, flags: Departmen
   return FLAG_TO_DEPARTMENT.filter(([flag]) => flags?.[flag] === true).map(([, dept]) => dept)
 }
 
-/** Time-of-day greeting. Hour is the viewer's local hour so the server does not guess a timezone. */
-export function greeting(hour: number, name: string | null | undefined): string {
-  const part = hour < 5 ? 'Up late' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
+/**
+ * Time-of-day greeting from the viewer's local hour. Pass null until the component has
+ * mounted: the server does not know the viewer's clock, and rendering a server guess
+ * caused a hydration mismatch.
+ */
+export function greeting(hour: number | null, name: string | null | undefined): string {
+  const part =
+    hour === null ? 'Welcome back' : hour < 5 ? 'Up late' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening'
   return name ? `${part}, ${name}` : part
 }
 

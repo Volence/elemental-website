@@ -112,11 +112,6 @@ const config = buildConfig({
       beforeLogin: ['@/components/BeforeLogin'],
       // The `BeforeDashboard` component renders the 'welcome' block that you see after logging into your admin panel.
       // Feel free to delete this at any time. Simply remove the line below.
-      beforeDashboard: [
-        '@/components/BeforeDashboard/LinkDiscordBanner#default',
-        '@/components/BeforeDashboard',
-        '@/components/SectionThemeApplicator#SectionThemeApplicator',
-      ],
       // The sidebar: curated areas built from what the user can see (src/components/AdminNav)
       Nav: '@/components/AdminNav#default',
       // Custom logo for admin panel breadcrumbs
@@ -128,6 +123,10 @@ const config = buildConfig({
       providers: ['@/components/AdminProviders#default'],
       // Custom admin views
       views: {
+        // The admin home page (src/components/Dashboard/Route)
+        dashboard: {
+          Component: '@/components/Dashboard/Route#default',
+        },
         calendar: {
           Component: '@/components/UnifiedCalendar/Route#default',
           path: '/calendar',

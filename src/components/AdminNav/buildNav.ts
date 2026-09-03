@@ -22,7 +22,8 @@ export type NavIconName =
   | 'clapperboard'
   | 'fingerprint'
   | 'link'
-  | 'badge-check'
+  | 'contact'
+  | 'user-check'
   | 'swords'
   | 'flag'
   | 'gamepad'
@@ -131,10 +132,8 @@ export function buildNavAreas({ user, collections, globals }: BuildNavInput): Na
 
   const teamLinks: NavItem[] = []
   if (isScrimViewer(user)) {
-    if (isFullAccess(user)) {
-      // One list page instead of one sidebar link per team (55 links and a fetch on every load).
-      teamLinks.push(view('/scrim-teams', 'Scrim Teams', 'users'))
-    } else {
+    // Managers reach every team from the Scrim Analytics dashboard itself.
+    if (!isFullAccess(user)) {
       for (const team of user.assignedTeams ?? []) {
         const id = typeof team === 'object' ? team.id : team
         const name = typeof team === 'object' && team.name ? team.name : `Team #${id}`
@@ -157,13 +156,15 @@ export function buildNavAreas({ user, collections, globals }: BuildNavInput): Na
       id: 'people',
       label: 'People',
       items: [
-        when(has('people'), collection('people', 'People', 'users')),
+        // Admins get the people manager view; others the collection list they already had.
+        when(has('people'), isAdmin(user) ? view('/manage-users', 'People', 'users') : collection('people', 'People', 'users')),
         when(has('teams'), view('/teams', 'Teams', 'shield')),
-        when(has('organization-staff'), collection('organization-staff', 'Organization Staff', 'badge-check')),
-        when(has('production'), collection('production', 'Production Staff', 'clapperboard')),
+        // The staff directory covers organization and production staff in one place.
+        when(isFullAccess(user) && (has('organization-staff') || has('production')), view('/staff-directory', 'Staff', 'contact')),
+        when(!isFullAccess(user) && has('organization-staff'), collection('organization-staff', 'Organization Staff', 'contact')),
+        when(!isFullAccess(user) && has('production'), collection('production', 'Production Staff', 'clapperboard')),
         when(isFullAccess(user), view('/identity', 'Identity', 'fingerprint')),
-        when(has('identity-claims'), collection('identity-claims', 'Identity Claims', 'badge-check')),
-        when(isAdmin(user) && has('invite-links'), collection('invite-links', 'Invite Links', 'link')),
+        when(has('identity-claims'), collection('identity-claims', 'Identity Claims', 'user-check')),
       ],
     },
     {
@@ -196,7 +197,6 @@ export function buildNavAreas({ user, collections, globals }: BuildNavInput): Na
       label: 'Organization',
       items: [
         when(has('global-calendar-events'), view('/calendar-events', 'Calendar Events', 'calendar-days')),
-        when(has('pages'), collection('pages', 'Pages', 'file-text')),
       ],
     },
     {
@@ -222,11 +222,12 @@ export function buildNavAreas({ user, collections, globals }: BuildNavInput): Na
 const ROUTE_ALIASES: Array<[prefix: string, canonical: string]> = [
   ['/admin/edit-team', '/admin/teams'],
   ['/admin/collections/teams', '/admin/teams'],
-  ['/admin/edit-person', '/admin/collections/people'],
-  ['/admin/edit-user', '/admin/collections/people'],
-  ['/admin/manage-users', '/admin/collections/people'],
-  ['/admin/edit-staff', '/admin/collections/organization-staff'],
-  ['/admin/staff-directory', '/admin/collections/organization-staff'],
+  ['/admin/edit-person', '/admin/manage-users'],
+  ['/admin/edit-user', '/admin/manage-users'],
+  ['/admin/collections/people', '/admin/manage-users'],
+  ['/admin/edit-staff', '/admin/staff-directory'],
+  ['/admin/collections/organization-staff', '/admin/staff-directory'],
+  ['/admin/collections/production', '/admin/staff-directory'],
   ['/admin/edit-event', '/admin/calendar-events'],
   ['/admin/collections/global-calendar-events', '/admin/calendar-events'],
   ['/admin/collections/discord-polls', '/admin/schedules'],
@@ -277,10 +278,12 @@ export function resolveActiveItemId(
   )
   if (byQuery) return byQuery.id
 
+  const hasPath = (p: string) => items.some((i) => !i.matchQuery && pathOf(i.href) === p)
   let canonical = pathname
   for (const [prefix, target] of ROUTE_ALIASES) {
     if (pathMatches(pathname, prefix)) {
-      canonical = target
+      // Only alias to an entry that exists for this viewer (e.g. /manage-users is admin-only).
+      if (hasPath(target)) canonical = target
       break
     }
   }

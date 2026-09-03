@@ -66,6 +66,11 @@ const BeforeDashboard: React.FC = () => {
   const { user, permissions } = useAuth<Person>()
   const [summary, setSummary] = useState<DashboardSummary | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // Viewer-local hour, known only after mount (see greeting()).
+  const [hour, setHour] = useState<number | null>(null)
+  useEffect(() => {
+    setHour(new Date().getHours())
+  }, [])
 
   const load = useCallback(async () => {
     setError(null)
@@ -99,7 +104,6 @@ const BeforeDashboard: React.FC = () => {
   if (!user) return null
 
   const upcoming = summary ? mergeUpcoming(summary.upcoming.matches, summary.upcoming.events) : []
-  const hour = new Date().getHours()
 
   return (
     <div className="dash">

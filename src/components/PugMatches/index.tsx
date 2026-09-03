@@ -141,7 +141,7 @@ export function PugMatchesListView() {
         </span>
       ),
     },
-    { key: 'playedAt', header: 'Played', render: (m) => formatDateTime(m.playedAt) },
+    { key: 'playedAt', header: 'Played', nowrap: true, render: (m) => formatDateTime(m.playedAt) },
     {
       key: 'result',
       header: 'Result',
