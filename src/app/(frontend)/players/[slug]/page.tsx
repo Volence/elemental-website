@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import type { Media } from '@/payload-types'
 import React from 'react'
 import { notFound } from 'next/navigation'
@@ -51,7 +52,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
   // Skip database operations during build
   if (process.env.NEXT_BUILD_SKIP_DB) {
     return {
-      title: 'Player | Elemental (ELMT)',
+      title: 'Player',
     }
   }
 
@@ -79,7 +80,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
     
     if (!playerName) {
       return {
-        title: 'Player Not Found | Elemental (ELMT)',
+        title: 'Player Not Found',
       }
     }
     
@@ -87,7 +88,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
     
     if (!player) {
       return {
-        title: 'Player Not Found | Elemental (ELMT)',
+        title: 'Player Not Found',
       }
     }
     
@@ -110,18 +111,18 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
     const imageUrl = photoUrl || '/logos/org.png'
     
     return {
-      title: `${player.name} | Players | Elemental (ELMT)`,
+      title: player.name,
       description: `Learn more about ${player.name}, ${roleDescription} for Elemental.`,
-      openGraph: {
-        title: `${player.name} | Elemental (ELMT)`,
+      openGraph: mergeOpenGraph({
+        title: `${player.name} - Elemental (ELMT)`,
         description: `${player.name} - ${roleDescription}`,
         images: [{ url: imageUrl }],
-      },
+      }),
     }
   } catch (error) {
     // During build, database may not be available
     return {
-      title: 'Player | Elemental (ELMT)',
+      title: 'Player',
     }
   }
 }

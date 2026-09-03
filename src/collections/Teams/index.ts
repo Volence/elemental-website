@@ -1,3 +1,4 @@
+import { revalidateTeamsAfterChange, revalidateTeamsAfterDelete } from './hooks/revalidateTeams'
 import type { CollectionConfig } from 'payload'
 
 import { authenticated } from '../../access/authenticated'
@@ -864,6 +865,7 @@ export const Teams: CollectionConfig = {
   hooks: {
     afterChange: [
       createAuditLogHook('teams'),
+      revalidateTeamsAfterChange,
       // Update Discord team card when roster, logo, or rating changes
       async ({ doc, operation, previousDoc, req }) => {
         // Skip if this update is from Discord card system (to prevent loops)
@@ -923,6 +925,7 @@ export const Teams: CollectionConfig = {
       },
     ],
     afterDelete: [
+      revalidateTeamsAfterDelete,
       createAuditLogDeleteHook('teams'),
       // Refresh all Discord cards when team is deleted to maintain sort order
       async ({ doc }) => {

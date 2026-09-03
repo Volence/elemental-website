@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import Link from 'next/link'
 import React from 'react'
 import { getAllTeams } from '@/utilities/getTeams'
@@ -10,14 +11,12 @@ export const dynamic = 'force-dynamic'
 export async function generateMetadata(): Promise<Metadata> {
   const allTeams = await getAllTeams()
   const teamCount = allTeams.length
-  
+  const description = `Explore ${teamCount} ELMT Overwatch esports teams competing in FACEIT Expert, Advanced, Master, and Open divisions across NA, EMEA, SA, OCE, SEA, APAC, and China regions.`
+
   return {
-    title: 'ELMT Teams - Overwatch Esports | Elemental',
-    description: `Explore ${teamCount} ELMT Overwatch esports teams competing in FACEIT Expert, Advanced, Master, and Open divisions across NA, EMEA, SA, OCE, SEA, APAC, and China regions.`,
-    openGraph: {
-      title: 'ELMT Teams - Overwatch Esports | Elemental',
-      description: `Explore ${teamCount} ELMT Overwatch esports teams competing in FACEIT Expert, Advanced, Master, and Open divisions across NA, EMEA, SA, OCE, SEA, APAC, and China regions.`,
-    },
+    title: 'Teams',
+    description,
+    openGraph: mergeOpenGraph({ title: 'ELMT Teams - Overwatch Esports', description }),
   }
 }
 
@@ -37,12 +36,12 @@ function groupTeamsByRegion(teams: Awaited<ReturnType<typeof getAllTeams>>) {
 
   teams.forEach((team) => {
     let region = team.region || 'Other'
-    
+
     // Map legacy EU to EMEA
     if (region === 'EU') {
       region = 'EMEA'
     }
-    
+
     if (grouped[region]) {
       grouped[region].push(team)
     } else {
@@ -99,7 +98,7 @@ export default async function TeamsPage() {
   return (
     <div className="relative pt-8 pb-24 min-h-[calc(100vh-200px)] overflow-hidden">
       <ParticleBackground particleCount={25} />
-      
+
       <div className="container mb-16 relative z-10">
         <div className="text-center mb-12">
           <h1 className="text-5xl md:text-6xl font-black mb-6 tracking-tight" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.3)' }}>
@@ -107,7 +106,7 @@ export default async function TeamsPage() {
           </h1>
           <div className="w-32 h-1.5 bg-gradient-to-r from-cyan-400 via-pink-500 to-purple-500 mx-auto mb-6 shadow-[0_0_30px_rgba(236,72,153,0.5)] rounded-full" />
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed font-medium">
-            Elemental is home to <strong className="text-foreground font-bold">{totalTeams} competitive Overwatch teams</strong>, each representing 
+            Elemental is home to <strong className="text-foreground font-bold">{totalTeams} competitive Overwatch teams</strong>, each representing
             different elements and playstyles. Explore our roster and follow our journey.
           </p>
         </div>

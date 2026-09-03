@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useConfirm } from '@/components/ConfirmDialog'
-import { PugNav } from '../../PugNav'
 import '@/styles/scrim-shared.scss'
 import { LiveMatchView } from '@/components/PugLiveMatch/LiveMatchView'
 
@@ -243,8 +242,7 @@ export default function LobbyPage() {
   }
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-3xl">
-      <PugNav active={lobby.tier === 'invite' ? 'invite' : 'open'} />
+    <main className="container mx-auto px-4 pb-8 max-w-3xl">
       <div className="mb-6">
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold text-white">PUG #{lobby.lobbyNumber}</h1>

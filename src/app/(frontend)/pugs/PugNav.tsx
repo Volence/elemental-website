@@ -1,24 +1,42 @@
-import Link from 'next/link'
+'use client'
 
-const NAV_ITEMS = [
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+
+export type PugNavItem = { href: string; label: string }
+
+export const PUG_NAV_ITEMS: PugNavItem[] = [
   { href: '/pugs', label: 'Home' },
   { href: '/pugs/open', label: 'Open' },
   { href: '/pugs/invite', label: 'Invite' },
   { href: '/pugs/leaderboard', label: 'Leaderboard' },
 ]
 
-export function PugNav({ active }: { active?: 'home' | 'open' | 'invite' | 'leaderboard' | 'profile' | 'register' }) {
+function isActive(pathname: string, href: string): boolean {
+  if (href === '/pugs') return pathname === '/pugs'
+  return pathname === href || pathname.startsWith(href + '/')
+}
+
+/**
+ * Section navigation for the public PUG pages. Rendered once by `pugs/layout.tsx`;
+ * the active item follows the URL so every page under /pugs agrees.
+ */
+export function PugNav({ items }: { items: PugNavItem[] }) {
+  const pathname = usePathname() || ''
   return (
-    <nav className="flex items-center gap-1 mb-6 p-1 bg-gray-900/50 border border-gray-800 rounded-xl w-fit">
-      {NAV_ITEMS.map((item) => {
-        const key = item.label.toLowerCase() as string
-        const isActive = active === key
+    <nav
+      aria-label="PUG sections"
+      className="flex items-center gap-1 mb-6 p-1 bg-gray-900/50 border border-gray-800 rounded-xl w-fit max-w-full overflow-x-auto"
+    >
+      {items.map((item) => {
+        const active = isActive(pathname, item.href)
         return (
           <Link
             key={item.href}
             href={item.href}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-              isActive
+            aria-current={active ? 'page' : undefined}
+            className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 ${
+              active
                 ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
                 : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'
             }`}

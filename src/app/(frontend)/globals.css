@@ -106,14 +106,8 @@
 }
 
 html {
-  opacity: 0;
   scroll-behavior: smooth;
   background-color: hsl(var(--background));
-}
-
-html[data-theme='dark'],
-html[data-theme='light'] {
-  opacity: initial;
 }
 
 @layer utilities {

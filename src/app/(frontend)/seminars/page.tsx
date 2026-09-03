@@ -1,15 +1,16 @@
 import type { Metadata } from 'next'
+import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import React from 'react'
 import { ParticleBackground } from '@/components/ParticleBackground'
 import { YouTubeFacade } from '@/components/YouTubeFacade'
 
 export const metadata: Metadata = {
-  title: 'Seminars | Elemental (ELMT)',
+  title: 'Seminars',
   description: 'Watch our educational seminars and learn from Elemental\'s competitive Overwatch insights.',
-  openGraph: {
-    title: 'Seminars | Elemental (ELMT)',
+  openGraph: mergeOpenGraph({
+    title: 'Elemental Seminars',
     description: 'Watch our educational seminars and learn from Elemental\'s competitive Overwatch insights.',
-  },
+  }),
 }
 
 const YOUTUBE_PLAYLIST_ID = 'PLGrawZhb1-1CzrYXs_iiWmtWzASAif2Lv'

@@ -34,7 +34,11 @@ const getPagesSitemap = unstable_cache(
     // Static core pages that always exist (not from CMS)
     const staticPages = [
       { loc: `${SITE_URL}/`, lastmod: dateFallback, changefreq: 'daily' as const, priority: 1.0 },
+      { loc: `${SITE_URL}/teams`, lastmod: dateFallback, changefreq: 'weekly' as const, priority: 0.9 },
       { loc: `${SITE_URL}/matches`, lastmod: dateFallback, changefreq: 'daily' as const, priority: 0.9 },
+      { loc: `${SITE_URL}/live`, lastmod: dateFallback, changefreq: 'daily' as const, priority: 0.7 },
+      { loc: `${SITE_URL}/pugs`, lastmod: dateFallback, changefreq: 'weekly' as const, priority: 0.7 },
+      { loc: `${SITE_URL}/pugs/leaderboard`, lastmod: dateFallback, changefreq: 'daily' as const, priority: 0.6 },
       { loc: `${SITE_URL}/calendar`, lastmod: dateFallback, changefreq: 'daily' as const, priority: 0.9 },
       { loc: `${SITE_URL}/seminars`, lastmod: dateFallback, changefreq: 'weekly' as const, priority: 0.8 },
       { loc: `${SITE_URL}/staff`, lastmod: dateFallback, changefreq: 'weekly' as const, priority: 0.8 },

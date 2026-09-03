@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { redirect } from 'next/navigation'
 import React from 'react'
 import { getPayload } from 'payload'
@@ -29,7 +30,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
   // Skip database operations during build
   if (process.env.NEXT_BUILD_SKIP_DB) {
     return {
-      title: 'Team | Elemental (ELMT)',
+      title: 'Team',
     }
   }
 
@@ -39,7 +40,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
 
     if (!team) {
       return {
-        title: 'Team Not Found | Elemental (ELMT)',
+        title: 'Team Not Found',
       }
     }
 
@@ -57,18 +58,18 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
     const tierDesc = tierKeyword ? ` competing in FACEIT ${tierKeyword}` : ''
     
     return {
-      title: `ELMT ${team.name} - ${region} Overwatch Team${tierSuffix} | Elemental`,
+      title: `${team.name} - ${region} Overwatch Team${tierSuffix}`,
       description: `ELMT ${team.name} is an Overwatch esports team in ${region}${tierDesc}. View roster, staff and match history.`,
-      openGraph: {
-        title: `ELMT ${team.name} - ${region} Overwatch Team | Elemental`,
+      openGraph: mergeOpenGraph({
+        title: `ELMT ${team.name} - ${region} Overwatch Team`,
         description: `ELMT ${team.name} is an Overwatch esports team in ${region}${tierDesc}. View roster, staff and match history.`,
         images: team.logo ? [{ url: team.logo }] : undefined,
-      },
+      }),
     }
   } catch (error) {
     // During build, database may not be available
     return {
-      title: 'Team | Elemental (ELMT)',
+      title: 'Team',
     }
   }
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
@@ -17,12 +18,12 @@ import { ParallaxHero } from '@/components/ParallaxHero'
 export const dynamic = 'force-dynamic' // Always render dynamically to fetch fresh data
 
 export const metadata: Metadata = {
-  title: 'Elemental | ELMT - Overwatch Organization',
+  title: { absolute: 'Elemental (ELMT) - Overwatch Esports Organization' },
   description: 'Welcome to Elemental (ELMT), a premier Overwatch organization competing at the highest levels.',
-  openGraph: {
-    title: 'Elemental | ELMT - Overwatch Organization',
+  openGraph: mergeOpenGraph({
+    title: 'Elemental (ELMT) - Overwatch Esports Organization',
     description: 'Welcome to Elemental (ELMT), a premier Overwatch organization competing at the highest levels.',
-  },
+  }),
 }
 
 // Fisher-Yates shuffle algorithm

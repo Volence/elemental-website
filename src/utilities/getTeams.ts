@@ -1,5 +1,6 @@
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
+import { unstable_cache } from 'next/cache'
 import { sortTeams } from './sortTeams'
 import { isPopulatedPerson, getPersonNameFromRelationship, getPersonSlugFromRelationship, getSocialLinksFromPerson, getPhotoUrlFromPerson } from './personHelpers'
 import { getLogoUrl } from './getLogoUrl'
@@ -88,7 +89,7 @@ function extractPersonData(entry: TeamEntry): { name: string; slug: string; phot
   // Person relationship is required - extract from populated person object
   const personName = getPersonNameFromRelationship(entry.person)
   const personSlug = getPersonSlugFromRelationship(entry.person)
-  
+
   if (personName) {
     // Person is populated, use it - social links and photo are only in the person relationship
     return {
@@ -98,7 +99,7 @@ function extractPersonData(entry: TeamEntry): { name: string; slug: string; phot
       socialLinks: getSocialLinksFromPerson(entry.person),
     }
   }
-  
+
   // Person not populated or missing - log details for debugging
   if (process.env.NODE_ENV === 'development') {
     if (entry.person) {
@@ -124,7 +125,7 @@ function extractPersonData(entry: TeamEntry): { name: string; slug: string; phot
       })
     }
   }
-  
+
   // Fallback: return empty name if person not populated
   // This will be filtered out later
   return {
@@ -237,15 +238,15 @@ function transformPayloadTeam(payloadTeam: PayloadTeam): Team | null {
 /**
  * Get all teams from Payload CMS
  */
-export async function getAllTeams(): Promise<Team[]> {
-  // Skip database operations during build
-  if (process.env.NEXT_BUILD_SKIP_DB) {
-    return []
-  }
-
-  try {
+/**
+ * Active teams, transformed and sorted. Cached for 60s and tagged `teams`;
+ * the Teams collection hooks revalidate the tag on every change.
+ * Home, /teams, /staff and every player page call this on each request.
+ */
+const loadAllTeams = unstable_cache(
+  async (): Promise<Team[]> => {
     const payload = await getPayload({ config: configPromise })
-    
+
     const result = await payload.find({
       collection: 'teams',
       where: {
@@ -261,10 +262,21 @@ export async function getAllTeams(): Promise<Team[]> {
     const teams = result.docs
       .map(transformPayloadTeam)
       .filter((team): team is Team => team !== null)
-    
-    // Only log errors or significant issues, not every successful fetch
-    
+
     return sortTeams(teams)
+  },
+  ['all-teams'],
+  { tags: ['teams'], revalidate: 60 },
+)
+
+export async function getAllTeams(): Promise<Team[]> {
+  // Skip database operations during build
+  if (process.env.NEXT_BUILD_SKIP_DB) {
+    return []
+  }
+
+  try {
+    return await loadAllTeams()
   } catch (error) {
     // Log error for debugging
     console.error('Error fetching teams:', error)
@@ -288,7 +300,7 @@ export async function getTeamBySlug(slug: string): Promise<Team | undefined> {
 
   try {
     const payload = await getPayload({ config: configPromise })
-    
+
     const result = await payload.find({
       collection: 'teams',
       where: {
@@ -307,7 +319,7 @@ export async function getTeamBySlug(slug: string): Promise<Team | undefined> {
     }
 
     const team = transformPayloadTeam(result.docs[0])
-    
+
     return team || undefined
   } catch (error) {
     // Log error for debugging

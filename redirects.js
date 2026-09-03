@@ -12,11 +12,16 @@ const redirects = async () => {
     source: '/:path((?!ie-incompatible.html$).*)', // all pages except the incompatibility page
   }
 
-  // Redirect for non-existent /casters page (was in sitemap by mistake)
+  // /casters was never a page; /casters/[slug] was an orphan copy of the player page (removed 2026-09)
   const castersRedirect = {
     source: '/casters',
     destination: '/staff',
     permanent: true, // 301
+  }
+  const casterProfileRedirect = {
+    source: '/casters/:slug',
+    destination: '/players/:slug',
+    permanent: true,
   }
 
   // Redirects for deleted player pages (reported in Google Search Console)
@@ -47,6 +52,7 @@ const redirects = async () => {
   const redirects = [
     internetExplorerRedirect,
     castersRedirect,
+    casterProfileRedirect,
     ...deletedPlayerRedirects,
     ...malformedRedirects,
     ...recruitmentRedirects,

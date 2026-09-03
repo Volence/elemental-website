@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation'
 import prisma from '@/lib/prisma'
 import { loadMatchStats } from '@/components/PugMatchStats/loadMatchStats'
 import { MatchAnalytics } from '@/components/PugMatchStats/MatchAnalytics'
-import { PugNav } from '../../../PugNav'
 import '@/styles/scrim-shared.scss'
 
 export default async function MatchStatsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -17,8 +16,7 @@ export default async function MatchStatsPage({ params }: { params: Promise<{ id:
 
   return (
     <div className="scrim-detail scrim-detail__bg">
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        <PugNav active={lobby.tier === 'invite' ? 'invite' : 'open'} />
+      <div className="max-w-4xl mx-auto px-4 pb-6">
         {data ? (
           <MatchAnalytics
             mapDataId={data.mapDataId}

@@ -2,10 +2,9 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { PugNav } from '../PugNav'
 
 export const dynamic = 'force-dynamic'
-export const metadata: Metadata = { title: 'PUG Leaderboard | Elemental' }
+export const metadata: Metadata = { title: 'PUG Leaderboard' }
 
 export default async function PugLeaderboardPage({
   searchParams,
@@ -51,8 +50,7 @@ export default async function PugLeaderboardPage({
   const currentSeason = (seasons.docs[0] as any)
 
   return (
-    <main className="container mx-auto px-4 py-8">
-      <PugNav active="leaderboard" />
+    <main className="container mx-auto px-4 pb-8">
       <h1 className="text-3xl font-bold mb-1">PUG Leaderboard</h1>
       {currentSeason && (
         <p className="text-gray-500 mb-4">{currentSeason.name}</p>

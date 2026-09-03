@@ -5,10 +5,9 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
 import RegisterOpenButton from './RegisterOpenButton'
-import { PugNav } from '../PugNav'
 
 export const dynamic = 'force-dynamic'
-export const metadata: Metadata = { title: 'Register for PUGs | Elemental' }
+export const metadata: Metadata = { title: 'Register for PUGs' }
 
 async function getAuthState() {
   const cookieStore = await cookies()
@@ -51,8 +50,7 @@ export default async function PugRegisterPage() {
 
   if (user && isRegistered) {
     return (
-      <main className="container mx-auto px-4 py-8 max-w-md">
-        <PugNav active="register" />
+      <main className="container mx-auto px-4 pb-8 max-w-md">
         <h1 className="text-2xl font-bold mb-2">You&apos;re Registered!</h1>
         <p className="text-gray-400 mb-4">
           Signed in as <span className="text-white font-medium">{user.name || user.email}</span>
@@ -88,8 +86,7 @@ export default async function PugRegisterPage() {
 
   if (user && !isRegistered) {
     return (
-      <main className="container mx-auto px-4 py-8 max-w-md">
-        <PugNav active="register" />
+      <main className="container mx-auto px-4 pb-8 max-w-md">
         <h1 className="text-2xl font-bold mb-2">Register for Open-Tier PUGs</h1>
         <p className="text-gray-400 mb-6">
           Signed in as{' '}
@@ -114,8 +111,7 @@ export default async function PugRegisterPage() {
   }
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-md">
-      <PugNav active="register" />
+    <main className="container mx-auto px-4 pb-8 max-w-md">
       <h1 className="text-2xl font-bold mb-2">Play Open-Tier PUGs</h1>
       <p className="text-gray-400 mb-6">
         Free and open to everyone. Connect your Discord to get started.

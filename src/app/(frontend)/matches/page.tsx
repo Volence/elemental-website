@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import React from 'react'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
@@ -13,12 +14,12 @@ import { ParticleBackground } from '@/components/ParticleBackground'
 export const dynamic = 'force-dynamic' // Always render dynamically to fetch fresh data
 
 export const metadata: Metadata = {
-  title: 'ELMT Match Schedule & Results - Overwatch Esports | Elemental',
+  title: 'Matches',
   description: 'Live scores, upcoming match schedule, and past results for all ELMT Overwatch teams. Follow our FACEIT league progress across Expert, Advanced, and Open divisions.',
-  openGraph: {
-    title: 'ELMT Match Schedule & Results - Overwatch Esports | Elemental',
+  openGraph: mergeOpenGraph({
+    title: 'ELMT Match Schedule & Results - Overwatch Esports',
     description: 'Live scores, upcoming match schedule, and past results for all ELMT Overwatch teams. Follow our FACEIT league progress across Expert, Advanced, and Open divisions.',
-  },
+  }),
 }
 
 const PAST_MATCHES_PER_PAGE = 12

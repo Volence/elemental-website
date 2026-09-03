@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import React from 'react'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
@@ -14,13 +15,12 @@ import { ParticleBackground } from '@/components/ParticleBackground'
 export const dynamic = 'force-dynamic' // Always render dynamically to fetch fresh data
 
 export const metadata: Metadata = {
-  title: 'Staff | Elemental (ELMT)',
+  title: 'Staff',
   description: 'Meet the staff behind Elemental - managers, coaches, captains, and production team.',
-  openGraph: {
-    title: 'Staff | Elemental (ELMT)',
-    description:
-      'Meet the staff behind Elemental - managers, coaches, captains, and production team.',
-  },
+  openGraph: mergeOpenGraph({
+    title: 'Elemental Staff',
+    description: 'Meet the staff behind Elemental - managers, coaches, captains, and production team.',
+  }),
 }
 
 interface StaffMember {

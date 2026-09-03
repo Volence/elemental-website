@@ -1,9 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { PugNav } from '../../PugNav'
 
 export const dynamic = 'force-dynamic'
-export const metadata: Metadata = { title: 'PUG Invite Registration | Elemental' }
+export const metadata: Metadata = { title: 'PUG Invite Registration' }
 
 export default async function PugInviteRegisterPage({
   searchParams,
@@ -14,8 +13,7 @@ export default async function PugInviteRegisterPage({
 
   if (!token) {
     return (
-      <main className="container mx-auto px-4 py-8 max-w-md">
-        <PugNav active="invite" />
+      <main className="container mx-auto px-4 pb-8 max-w-md">
         <div className="border border-gray-800 rounded-xl bg-gray-900/30 p-6 text-center">
           <h1 className="text-xl font-bold mb-2">Invalid Invite</h1>
           <p className="text-gray-500 text-sm">No invite token provided. Ask an admin for a valid invite link.</p>
@@ -25,8 +23,7 @@ export default async function PugInviteRegisterPage({
   }
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-md">
-      <PugNav active="invite" />
+    <main className="container mx-auto px-4 pb-8 max-w-md">
       <div className="border border-gray-800 rounded-xl bg-gray-900/30 overflow-hidden">
         <div className="p-6">
           <h1 className="text-xl font-bold mb-2">Register for Invite-Tier PUGs</h1>

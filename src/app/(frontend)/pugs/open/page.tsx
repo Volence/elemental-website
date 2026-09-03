@@ -3,10 +3,9 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import type { Metadata } from 'next'
 import OpenPageContent from './OpenPageContent'
-import { PugNav } from '../PugNav'
 
 export const dynamic = 'force-dynamic'
-export const metadata: Metadata = { title: 'Open Tier PUGs | Elemental' }
+export const metadata: Metadata = { title: 'Open Tier PUGs' }
 
 async function getPageState() {
   const cookieStore = await cookies()
@@ -52,8 +51,7 @@ export default async function PugOpenPage() {
   const { currentUser, isRegistered, isPugAdmin, seasonId, seasonName } = await getPageState()
 
   return (
-    <main className="container mx-auto px-4 py-8">
-      <PugNav active="open" />
+    <main className="container mx-auto px-4 pb-8">
       <OpenPageContent
         currentUser={currentUser}
         isRegistered={isRegistered}

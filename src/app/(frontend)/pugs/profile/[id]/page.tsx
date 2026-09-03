@@ -3,12 +3,11 @@ import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { PugNav } from '../../PugNav'
 import '@/styles/scrim-shared.scss'
 import ScrimPlayerDetail from '@/components/ScrimPlayerDetail'
 
 export const dynamic = 'force-dynamic'
-export const metadata: Metadata = { title: 'PUG Profile | Elemental' }
+export const metadata: Metadata = { title: 'PUG Profile' }
 
 const ROLE_LABELS: Record<string, string> = {
   tank: 'Tank',
@@ -48,8 +47,7 @@ export default async function PugProfilePage({
 
   if (!person || !person.pugTiers?.length) {
     return (
-      <main className="container mx-auto px-4 py-8">
-        <PugNav active="profile" />
+      <main className="container mx-auto px-4 pb-8">
         <div className="text-center py-16 border border-gray-800 rounded-xl bg-gray-900/30">
           <p className="text-lg font-medium text-gray-400">Player not found</p>
           <p className="text-sm text-gray-500 mt-1">This player may not be registered for PUGs.</p>
@@ -143,8 +141,7 @@ export default async function PugProfilePage({
   const topRoles = Object.entries(roleCounts).sort((a, b) => b[1] - a[1])
 
   return (
-    <main className="container mx-auto px-4 py-8">
-      <PugNav active="profile" />
+    <main className="container mx-auto px-4 pb-8">
 
       <div className="border border-gray-800 rounded-xl bg-gray-900/30 overflow-hidden mb-6">
         <div className="px-6 py-5">

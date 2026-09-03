@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import React from 'react'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
@@ -10,12 +11,12 @@ import { PublicCalendarMonth } from './components/PublicCalendarMonth'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Calendar | Elemental (ELMT)',
+  title: 'Calendar',
   description: 'View upcoming competitive esports events, tournaments, and community activities.',
-  openGraph: {
-    title: 'Calendar | Elemental (ELMT)',
+  openGraph: mergeOpenGraph({
+    title: 'Elemental Calendar',
     description: 'View upcoming competitive esports events, tournaments, and community activities.',
-  },
+  }),
 }
 
 export default async function CalendarPage() {

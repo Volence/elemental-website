@@ -3,7 +3,7 @@ import Link from 'next/link'
 import React from 'react'
 import { Twitter, Youtube, Instagram, MessageCircle } from 'lucide-react'
 
-import type { Footer } from '@/payload-types'
+import type { Footer as FooterGlobal } from '@/payload-types'
 
 import { CMSLink } from '@/components/Link'
 import { Logo } from '@/components/Logo/Logo'
@@ -22,6 +22,16 @@ const TikTokIcon: React.FC<{ className?: string }> = ({ className }) => (
 
 const STORE_URL = 'https://elmt-shop.fourthwall.com'
 
+/** Mirrors the header's primary navigation so the two agree. */
+const quickLinks = [
+  { label: 'Teams', href: '/teams' },
+  { label: 'Matches', href: '/matches' },
+  { label: 'Live', href: '/live' },
+  { label: 'Seminars', href: '/seminars' },
+  { label: 'Calendar', href: '/calendar' },
+  { label: 'Staff', href: '/staff' },
+]
+
 const socialLinks = [
   { name: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/elmt_gg/', gradient: 'linear-gradient(to bottom right, rgb(168 85 247), rgb(236 72 153))' },
   { name: 'TikTok', icon: TikTokIcon, href: 'https://www.tiktok.com/@elmt_gg', gradient: 'linear-gradient(to bottom right, rgb(34 211 238), rgb(236 72 153))' },
@@ -30,74 +40,16 @@ const socialLinks = [
   { name: 'Discord', icon: MessageCircle, href: 'https://discord.gg/elmt', gradient: 'linear-gradient(to bottom right, rgb(99 102 241), rgb(79 70 229))' },
 ]
 
-export async function Footer() {
-  // Skip database operations during build
-  if (process.env.NEXT_BUILD_SKIP_DB) {
-    return (
-      <footer className="mt-auto border-t border-border bg-black dark:bg-card text-white">
-        <div className="h-1 bg-gradient-to-r from-[hsl(var(--accent-blue))] via-[hsl(var(--accent-green))] to-[hsl(var(--accent-gold))] shadow-[0_0_20px_rgba(56,189,248,0.4)]" />
-        <div className="container py-16">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
-            <div className="flex flex-col gap-4">
-              <Link className="flex items-center" href="/">
-                <Logo className="scale-110" />
-              </Link>
-              <p className="text-base text-muted-foreground max-w-xs leading-relaxed">
-                Elemental (ELMT) - A premier Overwatch organization competing at the highest levels.
-              </p>
-            </div>
-            <div className="flex flex-col gap-4">
-              <h3 className="text-lg font-bold text-white uppercase tracking-wider">Quick Links</h3>
-              <nav className="flex flex-col gap-3">
-                <Link href="/teams" className="text-muted-foreground hover:text-primary transition-colors font-medium">Teams</Link>
-                <Link href="/matches" className="text-muted-foreground hover:text-primary transition-colors font-medium">Matches</Link>
-                <Link href="/seminars" className="text-muted-foreground hover:text-primary transition-colors font-medium">Seminars</Link>
-                <Link href="/staff" className="text-muted-foreground hover:text-primary transition-colors font-medium">Staff</Link>
-                <a href={STORE_URL} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors font-medium">Shop</a>
-              </nav>
-            </div>
-            <div className="flex flex-col gap-4">
-              <h3 className="text-lg font-bold text-white uppercase tracking-wider">Follow Us</h3>
-              <div className="flex flex-wrap gap-4">
-                {socialLinks.map(({ name, icon: Icon, href, gradient }) => (
-                  <Link
-                    key={name}
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group flex items-center justify-center w-12 h-12 rounded-lg text-white transition-all hover:scale-110 relative overflow-hidden"
-                    aria-label={name}
-                  >
-                    <div 
-                      className="absolute inset-0 bg-white/10 transition-opacity duration-300"
-                    />
-                    <div 
-                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                      style={{ background: gradient }}
-                    />
-                    <Icon className="w-6 h-6 relative z-10" />
-                  </Link>
-                ))}
-              </div>
-              </div>
-          </div>
-          <div className="pt-8 border-t border-border text-center text-sm text-muted-foreground">
-            <p>&copy; {new Date().getFullYear()} Elemental (ELMT). All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
-    )
-  }
+const linkClass = 'text-muted-foreground hover:text-primary transition-colors font-medium'
 
-  try {
-    const footerData: Footer = await getCachedGlobal('footer', 1)()
-    const navItems = footerData?.navItems || []
+type NavItems = NonNullable<FooterGlobal['navItems']>
 
+function FooterBody({ navItems }: { navItems: NavItems }) {
   return (
     <footer className="mt-auto border-t border-border bg-black dark:bg-card text-white">
       {/* Gradient accent line */}
       <div className="h-1 bg-gradient-to-r from-[hsl(var(--accent-blue))] via-[hsl(var(--accent-green))] to-[hsl(var(--accent-gold))] shadow-[0_0_20px_rgba(56,189,248,0.4)]" />
-      
+
       <div className="container py-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
           {/* Column 1: Logo + Description */}
@@ -113,30 +65,18 @@ export async function Footer() {
           {/* Column 2: Quick Links */}
           <div className="flex flex-col gap-4">
             <h3 className="text-lg font-bold text-white uppercase tracking-wider">Quick Links</h3>
-            <nav className="flex flex-col gap-3">
-              <Link href="/teams" className="text-muted-foreground hover:text-primary transition-colors font-medium">
-                Teams
-              </Link>
-              <Link href="/matches" className="text-muted-foreground hover:text-primary transition-colors font-medium">
-                Matches
-              </Link>
-              <Link href="/seminars" className="text-muted-foreground hover:text-primary transition-colors font-medium">
-                Seminars
-              </Link>
-              <Link href="/staff" className="text-muted-foreground hover:text-primary transition-colors font-medium">
-                Staff
-              </Link>
-              <a
-                href={STORE_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-primary transition-colors font-medium"
-              >
+            <nav aria-label="Footer" className="flex flex-col gap-3">
+              {quickLinks.map(({ label, href }) => (
+                <Link key={href} href={href} className={linkClass}>
+                  {label}
+                </Link>
+              ))}
+              <a href={STORE_URL} target="_blank" rel="noopener noreferrer" className={linkClass}>
                 Shop
               </a>
-              {navItems.map(({ link }, i) => {
-                return <CMSLink className="text-muted-foreground hover:text-primary transition-colors font-medium" key={i} {...link} />
-              })}
+              {navItems.map(({ link }, i) => (
+                <CMSLink className={linkClass} key={i} {...link} />
+              ))}
             </nav>
           </div>
 
@@ -153,10 +93,8 @@ export async function Footer() {
                   className="group flex items-center justify-center w-12 h-12 rounded-lg text-white transition-all hover:scale-110 relative overflow-hidden"
                   aria-label={name}
                 >
-                  <div 
-                    className="absolute inset-0 bg-white/10 transition-opacity duration-300"
-                  />
-                  <div 
+                  <div className="absolute inset-0 bg-white/10 transition-opacity duration-300" />
+                  <div
                     className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                     style={{ background: gradient }}
                   />
@@ -166,69 +104,28 @@ export async function Footer() {
             </div>
           </div>
         </div>
-        
+
         <div className="pt-8 border-t border-border text-center text-sm text-muted-foreground">
           <p>&copy; {new Date().getFullYear()} Elemental (ELMT). All rights reserved.</p>
         </div>
       </div>
     </footer>
-    )
-  } catch (_error) {
-    // During build, database may not be available or tables may not exist
-    // Return footer with default content
-    return (
-      <footer className="mt-auto border-t border-border bg-black dark:bg-card text-white">
-        <div className="h-1 bg-gradient-to-r from-[hsl(var(--accent-blue))] via-[hsl(var(--accent-green))] to-[hsl(var(--accent-gold))] shadow-[0_0_20px_rgba(56,189,248,0.4)]" />
-        <div className="container py-16">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
-            <div className="flex flex-col gap-4">
-              <Link className="flex items-center" href="/">
-                <Logo className="scale-110" />
-              </Link>
-              <p className="text-base text-muted-foreground max-w-xs leading-relaxed">
-                Elemental (ELMT) - A premier Overwatch organization competing at the highest levels.
-              </p>
-            </div>
-            <div className="flex flex-col gap-4">
-              <h3 className="text-lg font-bold text-white uppercase tracking-wider">Quick Links</h3>
-              <nav className="flex flex-col gap-3">
-                <Link href="/teams" className="text-muted-foreground hover:text-primary transition-colors font-medium">Teams</Link>
-                <Link href="/matches" className="text-muted-foreground hover:text-primary transition-colors font-medium">Matches</Link>
-                <Link href="/seminars" className="text-muted-foreground hover:text-primary transition-colors font-medium">Seminars</Link>
-                <Link href="/staff" className="text-muted-foreground hover:text-primary transition-colors font-medium">Staff</Link>
-                <a href={STORE_URL} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors font-medium">Shop</a>
-              </nav>
-            </div>
-            <div className="flex flex-col gap-4">
-              <h3 className="text-lg font-bold text-white uppercase tracking-wider">Follow Us</h3>
-              <div className="flex flex-wrap gap-4">
-                {socialLinks.map(({ name, icon: Icon, href, gradient }) => (
-                  <Link
-                    key={name}
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group flex items-center justify-center w-12 h-12 rounded-lg text-white transition-all hover:scale-110 relative overflow-hidden"
-                    aria-label={name}
-                  >
-                    <div 
-                      className="absolute inset-0 bg-white/10 transition-opacity duration-300"
-                    />
-                    <div 
-                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                      style={{ background: gradient }}
-                    />
-                    <Icon className="w-6 h-6 relative z-10" />
-                  </Link>
-                ))}
-              </div>
-              </div>
-          </div>
-          <div className="pt-8 border-t border-border text-center text-sm text-muted-foreground">
-            <p>&copy; {new Date().getFullYear()} Elemental (ELMT). All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
-    )
+  )
+}
+
+export async function Footer() {
+  // Skip database operations during build
+  if (process.env.NEXT_BUILD_SKIP_DB) {
+    return <FooterBody navItems={[]} />
   }
+
+  let navItems: NavItems = []
+  try {
+    const footerData: FooterGlobal = await getCachedGlobal('footer', 1)()
+    navItems = footerData?.navItems || []
+  } catch (_error) {
+    // Database unavailable (build, cold start): render the static footer
+  }
+
+  return <FooterBody navItems={navItems} />
 }

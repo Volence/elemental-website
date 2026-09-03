@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import React from 'react'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
@@ -8,14 +9,13 @@ import LiveChannelsClient from '@/components/LiveChannelsClient'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Live Channels - Watch ELMT Streamers | Elemental',
+  title: 'Live Channels',
   description:
     'Watch Elemental players and content creators streaming live on Twitch. Browse who\'s currently live, what they\'re playing, and join the stream.',
-  openGraph: {
-    title: 'Live Channels - Watch ELMT Streamers | Elemental',
-    description:
-      'Watch Elemental players and content creators streaming live on Twitch.',
-  },
+  openGraph: mergeOpenGraph({
+    title: 'Live Channels - Watch ELMT Streamers',
+    description: 'Watch Elemental players and content creators streaming live on Twitch.',
+  }),
 }
 
 export default async function LivePage() {

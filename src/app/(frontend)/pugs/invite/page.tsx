@@ -3,10 +3,9 @@ import configPromise from '@payload-config'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { InviteQueuePanel } from './InviteQueuePanel'
-import { PugNav } from '../PugNav'
 
 export const dynamic = 'force-dynamic'
-export const metadata: Metadata = { title: 'Invite Tier PUGs | Elemental' }
+export const metadata: Metadata = { title: 'Invite Tier PUGs' }
 
 const REGIONS = [
   { value: 'na', label: 'NA' },
@@ -33,8 +32,7 @@ export default async function PugInvitePage({
   const queueActive = season?.regionQueueStatus?.[regionKey] === true
 
   return (
-    <main className="container mx-auto px-4 py-8">
-      <PugNav active="invite" />
+    <main className="container mx-auto px-4 pb-8">
       <h1 className="text-2xl font-bold mb-2">Invite Tier PUGs</h1>
 
       {/* Region tabs */}

@@ -5,10 +5,9 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { cookies } from 'next/headers'
 import { BattleTagForm } from './BattleTagForm'
-import { PugNav } from './PugNav'
 
 export const dynamic = 'force-dynamic'
-export const metadata: Metadata = { title: 'PUGs | Elemental' }
+export const metadata: Metadata = { title: 'PUGs' }
 
 export default async function PugsPage() {
   const payload = await getPayload({ config: configPromise })
@@ -67,13 +66,12 @@ export default async function PugsPage() {
   }
 
   return (
-    <main className="container mx-auto px-4 py-8">
+    <main className="container mx-auto px-4 pb-8">
       <h1 className="text-3xl font-bold mb-1">PUGs</h1>
       <p className="text-gray-500 mb-6">
         Pick-Up Games - 5v5 Overwatch with draft, map voting, hero bans, and MMR tracking.
       </p>
 
-      <PugNav active="home" />
 
       {myActiveLobby && (
         <Link
