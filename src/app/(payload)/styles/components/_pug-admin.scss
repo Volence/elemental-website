@@ -10,12 +10,18 @@
 .ps-wrap { max-width: $container-md; margin: 0 auto; padding: $spacing-lg $spacing-lg $spacing-3xl; }
 .pug-dashboard .ps-wrap { max-width: none; margin: 0; padding: 0 0 $spacing-xl; }
 // Players tab
-.pug-players__count { font-weight: $font-weight-normal; color: $admin-text-muted; font-size: $font-size-sm; }
-.pug-players__toolbar { display: flex; flex-wrap: wrap; gap: $gap-sm; align-items: center; margin-bottom: $spacing-md; .ps-tabs { margin-bottom: 0; } }
+.pug-players__count, .pug-list__count { font-weight: $font-weight-normal; color: $admin-text-muted; font-size: $font-size-sm; }
+.pug-players__toolbar, .pug-list__toolbar { display: flex; flex-wrap: wrap; gap: $gap-sm; align-items: center; margin-bottom: $spacing-md; .ps-tabs { margin-bottom: 0; } }
 .pug-players__name { display: flex; flex-direction: column; gap: 2px; }
 .pug-players__battletag { font-size: $font-size-2xs; color: $admin-text-muted; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-.pug-players__badges { display: inline-flex; gap: 4px; flex-wrap: wrap; }
-.pug-players__muted { color: $admin-text-muted; }
+.pug-players__badges, .pug-list__badges { display: inline-flex; gap: 4px; flex-wrap: wrap; }
+.pug-players__muted, .pug-list__muted { color: $admin-text-muted; }
+.pug-list__check { display: inline-flex; align-items: center; gap: 6px; font-size: $font-size-sm; color: $admin-text-secondary; margin: 0; }
+.pug-list__toolbar .ps-select { width: auto; min-width: 180px; }
+.pug-matches__lobby { display: inline-flex; align-items: center; gap: 8px; }
+.pug-matches__team { display: flex; flex-wrap: wrap; gap: 2px 8px; font-size: $font-size-sm; }
+.pug-matches__captain { color: $admin-accent-warning; font-weight: $font-weight-semibold; }
+.pug-matches__links { display: inline-flex; gap: 10px; white-space: nowrap; a { color: $admin-accent-primary; font-size: $font-size-sm; &:hover { text-decoration: underline; } } }
 .ps-header { display: flex; align-items: center; justify-content: space-between; gap: $gap-md; margin-bottom: $spacing-md; flex-wrap: wrap; }
 
 // Section title inside a tab. The page-level h1 lives in AdminPageHeader.

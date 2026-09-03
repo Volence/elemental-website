@@ -20,6 +20,7 @@ import { AdminTable, AdminPagination } from '@/admin-kit/AdminTable'
 import { Badge } from '@/admin-kit/Badge'
 import { SearchInput } from '@/admin-kit/SearchInput'
 import { Avatar } from '@/admin-kit/Avatar'
+import { useUrlParamState } from '@/admin-kit/hooks'
 
 afterEach(() => {
   cleanup()
@@ -71,16 +72,44 @@ describe('AdminTabs', () => {
     expect(lobbies.getAttribute('aria-selected')).toBe('true')
   })
 
-  it('url mode reads ?tab= and writes it back with router.replace', () => {
+  // URL writes are flushed in a microtask so same-tick writes merge.
+  const flush = () => act(() => Promise.resolve())
+
+  it('url mode reads ?tab= and writes it back with router.replace', async () => {
     search = 'tab=seasons'
     render(<AdminTabs mode="url" tabs={TABS} defaultTab="lobbies" />)
     const tabs = screen.getAllByRole('tab')
     expect(tabs[2].getAttribute('aria-selected')).toBe('true')
     fireEvent.click(tabs[1])
+    await flush()
     expect(replace).toHaveBeenCalledWith('/admin/pug-dashboard?tab=players', { scroll: false })
     // Selecting the default removes the param so the canonical URL stays clean.
     fireEvent.click(tabs[0])
+    await flush()
     expect(replace).toHaveBeenLastCalledWith('/admin/pug-dashboard', { scroll: false })
+  })
+
+  it('merges URL writes made in the same tick into one replace', async () => {
+    function Harness() {
+      const [, setTier] = useUrlParamState('tier', 'all')
+      const [, setPage] = useUrlParamState('page', '1')
+      return (
+        <button
+          type="button"
+          onClick={() => {
+            setTier('invite')
+            setPage('1') // a filter change resets paging; this used to clobber the tier write
+          }}
+        >
+          go
+        </button>
+      )
+    }
+    render(<Harness />)
+    fireEvent.click(screen.getByText('go'))
+    await flush()
+    expect(replace).toHaveBeenCalledTimes(1)
+    expect(replace).toHaveBeenCalledWith('/admin/pug-dashboard?tier=invite', { scroll: false })
   })
 
   it('tabPanelProps links a panel back to its tab', () => {

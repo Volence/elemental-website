@@ -138,7 +138,6 @@ import { default as default_02977a9d4ed0ed77a8d36ceed61c4d84 } from '@/component
 import { default as default_a02c70ab9a91821a7f3d60a5827e5794 } from '@/components/PugDashboard/Route'
 import { default as default_e25f49fb258f9f3dd8ba59b20d07fcd8 } from '@/components/PugSeasons/EditRoute'
 import { default as default_b65d43645901504026837c862ab8790f } from '@/components/PugPlayers/EditRoute'
-import { default as default_3f9f6e11684f60398762aa444496e6bb } from '@/components/PugMatches/EditRoute'
 import { default as default_74fb30a58c92ffc48c7a2fbce0628372 } from '@/components/PugLeaderboard/EditRoute'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
@@ -284,7 +283,6 @@ export const importMap = {
   "@/components/PugDashboard/Route#default": default_a02c70ab9a91821a7f3d60a5827e5794,
   "@/components/PugSeasons/EditRoute#default": default_e25f49fb258f9f3dd8ba59b20d07fcd8,
   "@/components/PugPlayers/EditRoute#default": default_b65d43645901504026837c862ab8790f,
-  "@/components/PugMatches/EditRoute#default": default_3f9f6e11684f60398762aa444496e6bb,
   "@/components/PugLeaderboard/EditRoute#default": default_74fb30a58c92ffc48c7a2fbce0628372,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

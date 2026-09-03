@@ -41,8 +41,8 @@ export const PUG_TABS: { id: PugTabId; label: string; icon: React.ReactNode; des
   { id: 'bot', label: 'Bot Control', icon: <Bot size={14} />, description: 'Overwatch bot hosting' },
   { id: 'seasons', label: 'Seasons', icon: <Calendar size={14} />, description: 'Season configuration' },
   { id: 'players', label: 'Players', icon: <Users size={14} />, description: 'Registered PUG players' },
-  { id: 'matches', label: 'Matches', icon: <Swords size={14} />, description: 'Completed matches' },
-  { id: 'leaderboard', label: 'Leaderboard', icon: <Trophy size={14} />, description: 'Ratings by season' },
+  { id: 'matches', label: 'Matches', icon: <Swords size={14} />, description: 'Match history from finished lobbies' },
+  { id: 'leaderboard', label: 'Leaderboard', icon: <Trophy size={14} />, description: 'Ratings by season, tier and region' },
 ]
 
 const TABS_ID = 'pug'

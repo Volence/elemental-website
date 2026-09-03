@@ -238,10 +238,6 @@ const config = buildConfig({
           Component: '@/components/PugPlayers/EditRoute#default',
           path: '/edit-pug-player',
         },
-        editPugMatch: {
-          Component: '@/components/PugMatches/EditRoute#default',
-          path: '/edit-pug-match',
-        },
         editPugLeaderboard: {
           Component: '@/components/PugLeaderboard/EditRoute#default',
           path: '/edit-pug-leaderboard',
