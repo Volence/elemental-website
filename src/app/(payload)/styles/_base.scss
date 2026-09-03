@@ -99,7 +99,7 @@ main,
 [class*="render"] {
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden; // Prevent horizontal scroll
+  overflow-x: auto; // Wide tables and grids scroll here instead of being cut off
   box-sizing: border-box;
 }
 
@@ -109,7 +109,7 @@ main,
 form {
   max-width: 100%;
   box-sizing: border-box;
-  overflow-x: hidden;
+  overflow-x: auto;
 }
 
 // ============================================

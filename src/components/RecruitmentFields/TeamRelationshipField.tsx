@@ -60,7 +60,14 @@ export const TeamRelationshipField: React.FC<any> = (props) => {
         value={value as string || ''}
         onChange={(e) => setValue(e.target.value ? Number(e.target.value) : null)}
         required={props.field.required}
-        className="w-full rounded border border-gray-600 bg-gray-700 px-4 py-2 text-white"
+        style={{
+          width: '100%',
+          padding: '0.5rem 1rem',
+          borderRadius: 'var(--elmt-radius-sm)',
+          border: '1px solid var(--elmt-border-default)',
+          background: 'var(--elmt-bg-elevated)',
+          color: 'var(--elmt-text-primary)',
+        }}
       >
         <option value="">Select a team</option>
         {teams.map((team) => (

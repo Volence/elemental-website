@@ -1,0 +1,99 @@
+// ============================================
+// DESIGN TOKENS AS CSS CUSTOM PROPERTIES
+// ============================================
+// _variables.scss is the source of truth for SCSS. This partial mirrors every
+// token onto :root as --elmt-* so TSX (inline styles, chart fills, kit
+// components) can reference the same values instead of hard-coding hex.
+// Keep the two files in sync; tests/int/admin-tokens.int.spec.ts checks it.
+
+@import './variables';
+
+:root {
+  // Accents
+  --elmt-accent-primary: #{$admin-accent-primary};
+  --elmt-accent-success: #{$admin-accent-success};
+  --elmt-accent-warning: #{$admin-accent-warning};
+  --elmt-accent-error: #{$admin-accent-error};
+  --elmt-accent-info: #{$admin-accent-info};
+
+  // Team tiers (rating bands). Never use these for status.
+  --elmt-tier-masters: #{$tier-masters};
+  --elmt-tier-expert: #{$tier-expert};
+  --elmt-tier-advanced: #{$tier-advanced};
+  --elmt-tier-4k: #{$tier-4k};
+  --elmt-tier-35k: #{$tier-35k};
+  --elmt-tier-30k: #{$tier-30k};
+  --elmt-tier-below: #{$tier-below};
+
+  --elmt-gradient-primary: #{$admin-gradient-primary};
+
+  // Surfaces
+  --elmt-bg-base: #{$admin-bg-base};
+  --elmt-bg-elevated: #{$admin-bg-elevated};
+  --elmt-bg-surface: #{$admin-bg-surface};
+  --elmt-bg-card: #{$admin-bg-card};
+  --elmt-bg-hover: #{$admin-bg-hover};
+
+  // Borders
+  --elmt-border-subtle: #{$admin-border-subtle};
+  --elmt-border-default: #{$admin-border-default};
+  --elmt-border-strong: #{$admin-border-strong};
+
+  // Text
+  --elmt-text-primary: #{$admin-text-primary};
+  --elmt-text-secondary: #{$admin-text-secondary};
+  --elmt-text-muted: #{$admin-text-muted};
+  --elmt-text-disabled: #{$admin-text-disabled};
+
+  // Spacing
+  --elmt-space-xs: #{$spacing-xs};
+  --elmt-space-sm: #{$spacing-sm};
+  --elmt-space-md: #{$spacing-md};
+  --elmt-space-lg: #{$spacing-lg};
+  --elmt-space-xl: #{$spacing-xl};
+  --elmt-space-2xl: #{$spacing-2xl};
+  --elmt-space-3xl: #{$spacing-3xl};
+
+  // Type
+  --elmt-font-2xs: #{$font-size-2xs};
+  --elmt-font-xs: #{$font-size-xs};
+  --elmt-font-sm: #{$font-size-sm};
+  --elmt-font-base: #{$font-size-base};
+  --elmt-font-md: #{$font-size-md};
+  --elmt-font-lg: #{$font-size-lg};
+  --elmt-font-xl: #{$font-size-xl};
+  --elmt-font-2xl: #{$font-size-2xl};
+  --elmt-font-3xl: #{$font-size-3xl};
+
+  // Radius
+  --elmt-radius-xs: #{$radius-xs};
+  --elmt-radius-sm: #{$radius-sm};
+  --elmt-radius-md: #{$radius-md};
+  --elmt-radius-lg: #{$radius-lg};
+  --elmt-radius-xl: #{$radius-xl};
+  --elmt-radius-full: #{$radius-full};
+
+  // Elevation
+  --elmt-elevation-1: #{$elevation-1};
+  --elmt-elevation-2: #{$elevation-2};
+  --elmt-elevation-3: #{$elevation-3};
+  --elmt-glow-accent: #{$glow-accent};
+
+  // Layout
+  --elmt-container-xs: #{$container-xs};
+  --elmt-container-sm: #{$container-sm};
+  --elmt-container-md: #{$container-md};
+  --elmt-container-lg: #{$container-lg};
+  --elmt-container-xl: #{$container-xl};
+  --elmt-container-2xl: #{$container-2xl};
+
+  // Stacking
+  --elmt-z-dropdown: #{$z-dropdown};
+  --elmt-z-sticky: #{$z-sticky};
+  --elmt-z-modal: #{$z-modal};
+  --elmt-z-tooltip: #{$z-tooltip};
+
+  // Motion
+  --elmt-transition-fast: #{$transition-fast};
+  --elmt-transition-normal: #{$transition-normal};
+}
