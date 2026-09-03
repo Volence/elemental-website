@@ -264,6 +264,7 @@ export function UserEditorView() {
   const fetchData = useCallback(async () => {
     if (!userId) return
     try {
+      let userDoc: any = null
       const [userRes, teamsRes, allPeople] = await Promise.all([
         fetch(`/api/people/${userId}?depth=1`),
         fetch('/api/teams?limit=100&sort=name&depth=0'),
@@ -272,6 +273,7 @@ export function UserEditorView() {
 
       if (userRes.ok) {
         const u = await userRes.json()
+        userDoc = u
         setUser(u)
         setName(u.name ?? '')
         setEmail(u.email ?? '')
@@ -295,21 +297,19 @@ export function UserEditorView() {
         setAllTeams((t.docs ?? []).map((doc: any) => ({ id: doc.id, name: doc.name })))
       }
       setAllPeople(allPeople.map((doc: any) => ({ id: doc.id, name: doc.name })))
-      // Extract PUG data from person record
-      if (userRes.ok) {
-        const u = await userRes.clone().json()
-        if (u.pugTiers?.length) {
-          setPugPlayer(u)
-          setPugTiers(u.pugTiers ?? [])
-          setPugRegions(u.pugInviteRegions ?? [])
-          setPugApprovedRoles(u.pugApprovedRoles ?? [])
-        }
+      // PUG data lives on the person record. (This used to re-read the response body with
+      // clone() after it had been consumed, which threw and left the card on "Loading...".)
+      if (userDoc?.pugTiers?.length) {
+        setPugPlayer(userDoc)
+        setPugTiers(userDoc.pugTiers ?? [])
+        setPugRegions(userDoc.pugInviteRegions ?? [])
+        setPugApprovedRoles(userDoc.pugApprovedRoles ?? [])
       }
-      setPugLoading(false)
     } catch (err) {
       console.error('User load error:', err)
     } finally {
       setLoading(false)
+      setPugLoading(false)
     }
   }, [userId])
 
