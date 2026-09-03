@@ -23,6 +23,7 @@ export interface PromoPrefill {
 
 interface UpcomingStripProps {
   onCreatePromo: (prefill: PromoPrefill) => void
+  /** Cap the window to N days. Omit to show everything upcoming. */
   days?: number
 }
 
@@ -30,7 +31,7 @@ interface UpcomingStripProps {
  * "Coming up" list under the content calendar: org calendar events plus matches
  * on the broadcast schedule, so the social team can see what needs a post.
  */
-export function UpcomingStrip({ onCreatePromo, days = 14 }: UpcomingStripProps) {
+export function UpcomingStrip({ onCreatePromo, days }: UpcomingStripProps) {
   const [items, setItems] = useState<UpcomingItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -39,7 +40,7 @@ export function UpcomingStrip({ onCreatePromo, days = 14 }: UpcomingStripProps) 
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/api/social-media/upcoming?days=${days}`, { credentials: 'include' })
+      const res = await fetch(`/api/social-media/upcoming${days ? `?days=${days}` : ''}`, { credentials: 'include' })
       if (!res.ok) throw new Error('Failed to load upcoming events')
       const data = await res.json()
       setItems(data.items || [])
@@ -65,7 +66,7 @@ export function UpcomingStrip({ onCreatePromo, days = 14 }: UpcomingStripProps) 
   return (
     <div className="upcoming-strip">
       <div className="upcoming-strip__header">
-        <h4><CalendarDays size={14} /> Coming up (next {days} days)</h4>
+        <h4><CalendarDays size={14} /> Coming up{days ? ` (next ${days} days)` : ''}</h4>
         <div className="upcoming-strip__header-right">
           <span>Org calendar events and matches on the broadcast schedule</span>
           <button type="button" className="upcoming-strip__refresh" onClick={load} title="Refresh">
@@ -78,7 +79,7 @@ export function UpcomingStrip({ onCreatePromo, days = 14 }: UpcomingStripProps) 
       ) : error ? (
         <div className="upcoming-strip__empty">{error}</div>
       ) : items.length === 0 ? (
-        <div className="upcoming-strip__empty">Nothing on the org calendar or broadcast schedule in the next {days} days.</div>
+        <div className="upcoming-strip__empty">Nothing upcoming on the org calendar or broadcast schedule{days ? ` in the next ${days} days` : ''}.</div>
       ) : (
         <ul className="upcoming-strip__list">
           {items.map((item) => {

@@ -189,342 +189,60 @@ nav button[type="button"]:last-child {
 }
 
 // ============================================
-// SECTION-BASED NAV COLORING
+// SECTION COLOURS - BY AREA
 // ============================================
-// Ultra-specific approach: Target by nth-child of nav container
-// Index 1 = Dashboard link, groups start at index 2
-// VIBRANT NEON GLOW - matching badge intensity
+// The sidebar is src/components/AdminNav. Each group is wrapped in
+// .elmt-nav__area[data-area] so colour follows meaning, not DOM position.
 
-// PEOPLE Section (Vibrant Pink) - nth-child(2)
-html body aside nav > div:nth-child(2) .nav__link {
-  &:hover,
-  &:hover:not(:has(.nav__link-indicator)) {
-    background: transparent !important;
-    color: $tier-masters !important;
-    box-shadow: 0 0 20px rgba($tier-masters, 0.6) !important;
-    border: 1px solid rgba($tier-masters, 0.4) !important;
-    border-left: 3px solid $tier-masters !important;
+$nav-area-colors: (
+  'me': $admin-accent-primary,
+  'people': #f472b6,
+  'competition': $admin-accent-info,
+  'departments': #a78bfa,
+  'organization': $admin-accent-success,
+  'system': $admin-accent-warning,
+);
+
+.elmt-nav__top {
+  margin-bottom: 0.25rem;
+}
+
+.elmt-nav__link {
+  svg {
+    color: $admin-text-muted;
+    transition: color $transition-fast;
   }
-  
-  &:has(.nav__link-indicator) {
-    background: transparent !important;
-    
-    .nav__link-indicator {
-      background: $tier-masters !important;
-      box-shadow: 0 0 16px rgba($tier-masters, 0.8) !important;
-    }
-    
-    .nav__link-label {
-      color: $tier-masters !important;
-    }
+
+  &:hover svg {
+    color: $admin-text-primary;
   }
 }
 
-// STAFF Section (Vibrant Purple) - nth-child(3)
-html body aside nav > div:nth-child(3) .nav__link {
-  &:hover,
-  &:hover:not(:has(.nav__link-indicator)) {
-    background: transparent !important;
-    color: $tier-expert !important;
-    box-shadow: 0 0 20px rgba($tier-expert, 0.6) !important;
-    border: 1px solid rgba($tier-expert, 0.4) !important;
-    border-left: 3px solid $tier-expert !important;
-  }
-  
-  &:has(.nav__link-indicator) {
-    background: transparent !important;
-    
-    .nav__link-indicator {
-      background: $tier-expert !important;
-      box-shadow: 0 0 16px rgba($tier-expert, 0.8) !important;
-    }
-    
-    .nav__link-label {
-      color: $tier-expert !important;
-    }
-  }
-}
-
-// PRODUCTION Section (Vibrant Cyan) - nth-child(4)
-html body aside nav > div:nth-child(4) .nav__link {
-  &:hover,
-  &:hover:not(:has(.nav__link-indicator)) {
-    background: transparent !important;
-    color: $tier-4k !important;
-    box-shadow: 0 0 20px rgba($tier-4k, 0.6) !important;
-    border: 1px solid rgba($tier-4k, 0.4) !important;
-    border-left: 3px solid $tier-4k !important;
-  }
-  
-  &:has(.nav__link-indicator) {
-    background: transparent !important;
-    
-    .nav__link-indicator {
-      background: $tier-4k !important;
-      box-shadow: 0 0 16px rgba($tier-4k, 0.8) !important;
-    }
-    
-    .nav__link-label {
-      color: $tier-4k !important;
-    }
-  }
-}
-
-// SOCIAL MEDIA Section (Vibrant Blue) - nth-child(5)
-html body aside nav > div:nth-child(5) .nav__link {
-  &:hover,
-  &:hover:not(:has(.nav__link-indicator)) {
-    background: transparent !important;
-    color: $tier-advanced !important;
-    box-shadow: 0 0 20px rgba($tier-advanced, 0.6) !important;
-    border: 1px solid rgba($tier-advanced, 0.4) !important;
-    border-left: 3px solid $tier-advanced !important;
-  }
-  
-  &:has(.nav__link-indicator) {
-    background: transparent !important;
-    
-    .nav__link-indicator {
-      background: $tier-advanced !important;
-      box-shadow: 0 0 16px rgba($tier-advanced, 0.8) !important;
-    }
-    
-    .nav__link-label {
-      color: $tier-advanced !important;
-    }
-  }
-}
-
-// RECRUITMENT Section (Vibrant Green) - nth-child(6)
-html body aside nav > div:nth-child(6) .nav__link {
-  &:hover,
-  &:hover:not(:has(.nav__link-indicator)) {
-    background: transparent !important;
-    color: $tier-35k !important;
-    box-shadow: 0 0 20px rgba($tier-35k, 0.6) !important;
-    border: 1px solid rgba($tier-35k, 0.4) !important;
-    border-left: 3px solid $tier-35k !important;
-  }
-  
-  &:has(.nav__link-indicator) {
-    background: transparent !important;
-    
-    .nav__link-indicator {
-      background: $tier-35k !important;
-      box-shadow: 0 0 16px rgba($tier-35k, 0.8) !important;
-    }
-    
-    .nav__link-label {
-      color: $tier-35k !important;
-    }
-  }
-}
-
-// DISCORD Section (Vibrant Orange) - nth-child(7)
-html body aside nav > div:nth-child(7) .nav__link {
-  &:hover,
-  &:hover:not(:has(.nav__link-indicator)) {
-    background: transparent !important;
-    color: $tier-below !important;
-    box-shadow: 0 0 20px rgba($tier-below, 0.6) !important;
-    border: 1px solid rgba($tier-below, 0.4) !important;
-    border-left: 3px solid $tier-below !important;
-  }
-  
-  &:has(.nav__link-indicator) {
-    background: transparent !important;
-    
-    .nav__link-indicator {
-      background: $tier-below !important;
-      box-shadow: 0 0 16px rgba($tier-below, 0.8) !important;
-    }
-    
-    .nav__link-label {
-      color: $tier-below !important;
-    }
-  }
-}
-
-// MONITORING Section (Vibrant Yellow) - nth-child(8)
-html body aside nav > div:nth-child(8) .nav__link {
-  &:hover,
-  &:hover:not(:has(.nav__link-indicator)) {
-    background: transparent !important;
-    color: lighten($tier-30k, 5%) !important;
-    box-shadow: 0 0 20px rgba($tier-30k, 0.6) !important;
-    border: 1px solid rgba($tier-30k, 0.4) !important;
-    border-left: 3px solid $tier-30k !important;
-  }
-  
-  &:has(.nav__link-indicator) {
-    background: transparent !important;
-    
-    .nav__link-indicator {
-      background: $tier-30k !important;
-      box-shadow: 0 0 16px rgba($tier-30k, 0.8) !important;
-    }
-    
-    .nav__link-label {
-      color: lighten($tier-30k, 5%) !important;
-    }
-  }
-}
-
-// SYSTEM Section (Vibrant Pink - cycling back to start) - nth-child(9)
-html body aside nav > div:nth-child(9) .nav__link {
-  &:hover,
-  &:hover:not(:has(.nav__link-indicator)) {
-    background: transparent !important;
-    color: $tier-masters !important;
-    box-shadow: 0 0 20px rgba($tier-masters, 0.6) !important;
-    border: 1px solid rgba($tier-masters, 0.4) !important;
-    border-left: 3px solid $tier-masters !important;
-  }
-  
-  &:has(.nav__link-indicator) {
-    background: transparent !important;
-    
-    .nav__link-indicator {
-      background: $tier-masters !important;
-      box-shadow: 0 0 16px rgba($tier-masters, 0.8) !important;
-    }
-    
-    .nav__link-label {
-      color: $tier-masters !important;
-    }
-  }
-}
-
-// DEPARTMENTS Section (Vibrant Purple - cycling) - nth-child(10)
-html body aside nav > div:nth-child(10) .nav__link {
-  &:hover,
-  &:hover:not(:has(.nav__link-indicator)) {
-    background: transparent !important;
-    color: $tier-expert !important;
-    box-shadow: 0 0 20px rgba($tier-expert, 0.6) !important;
-    border: 1px solid rgba($tier-expert, 0.4) !important;
-    border-left: 3px solid $tier-expert !important;
-  }
-  
-  &:has(.nav__link-indicator) {
-    background: transparent !important;
-    
-    .nav__link-indicator {
-      background: $tier-expert !important;
-      box-shadow: 0 0 16px rgba($tier-expert, 0.8) !important;
-    }
-    
-    .nav__link-label {
-      color: $tier-expert !important;
-    }
-  }
-}
-
-// Extra Section (Vibrant Cyan - cycling) - nth-child(11)
-html body aside nav > div:nth-child(11) .nav__link {
-  &:hover,
-  &:hover:not(:has(.nav__link-indicator)) {
-    background: transparent !important;
-    color: $tier-4k !important;
-    box-shadow: 0 0 20px rgba($tier-4k, 0.6) !important;
-    border: 1px solid rgba($tier-4k, 0.4) !important;
-    border-left: 3px solid $tier-4k !important;
-  }
-  
-  &:has(.nav__link-indicator) {
-    background: transparent !important;
-    
-    .nav__link-indicator {
-      background: $tier-4k !important;
-      box-shadow: 0 0 16px rgba($tier-4k, 0.8) !important;
-    }
-    
-    .nav__link-label {
-      color: $tier-4k !important;
-    }
-  }
-}
-
-// Extra Section (Vibrant Blue - cycling) - nth-child(12)
-html body aside nav > div:nth-child(12) .nav__link {
-  &:hover,
-  &:hover:not(:has(.nav__link-indicator)) {
-    background: transparent !important;
-    color: $tier-advanced !important;
-    box-shadow: 0 0 20px rgba($tier-advanced, 0.6) !important;
-    border: 1px solid rgba($tier-advanced, 0.4) !important;
-    border-left: 3px solid $tier-advanced !important;
-  }
-  
-  &:has(.nav__link-indicator) {
-    background: transparent !important;
-    
-    .nav__link-indicator {
-      background: $tier-advanced !important;
-      box-shadow: 0 0 16px rgba($tier-advanced, 0.8) !important;
-    }
-    
-    .nav__link-label {
-      color: $tier-advanced !important;
-    }
-  }
-}
-
-// ============================================
-// CATCH-ALL: Any nav group beyond nth-child(12)
-// ============================================
-// Uses the default accent (cyan) so future sections are never unstyled.
-
-@for $i from 13 through 20 {
-  html body aside nav > div:nth-child(#{$i}) .nav__link {
-    &:hover,
-    &:hover:not(:has(.nav__link-indicator)) {
-      background: transparent !important;
-      color: $admin-accent-primary !important;
-      box-shadow: 0 0 20px rgba($admin-accent-primary, 0.6) !important;
-      border: 1px solid rgba($admin-accent-primary, 0.4) !important;
-      border-left: 3px solid $admin-accent-primary !important;
+@each $area, $color in $nav-area-colors {
+  .elmt-nav__area[data-area='#{$area}'] {
+    .nav-group__toggle,
+    button.nav-group__toggle {
+      color: rgba($color, 0.85);
     }
 
-    &:has(.nav__link-indicator) {
-      background: transparent !important;
+    .nav__link:hover:not([aria-current='page']) {
+      background: rgba($color, 0.08);
+    }
+
+    .nav__link[aria-current='page'] {
+      background: rgba($color, 0.14);
 
       .nav__link-indicator {
-        background: $admin-accent-primary !important;
-        box-shadow: 0 0 16px rgba($admin-accent-primary, 0.8) !important;
+        background: $color;
+      }
+
+      svg {
+        color: $color;
       }
 
       .nav__link-label {
-        color: $admin-accent-primary !important;
+        color: rgba(255, 255, 255, 0.95);
       }
     }
   }
 }
-
-// ============================================
-// HIDDEN LINKS
-// ============================================
-// Payload renders nav links with id="nav-{slug}" — target those directly.
-// IMPORTANT: Never use Payload's `admin.hidden: true` on collections —
-// it blocks edit page routes entirely, causing "Nothing found" errors.
-// CSS hide keeps routes accessible while hiding from sidebar navigation.
-#nav-ignored-duplicates,
-#nav-invite-links,
-#nav-recruitment-applications,
-#nav-recruitment-listings,
-#nav-social-posts,
-#nav-watched-threads,
-#nav-scout-reports,
-#nav-twitch-streamers,
-#nav-pages,
-#nav-scrim-outcomes,
-#nav-availability-calendars,
-#nav-opponent-teams,
-#nav-tournament-templates,
-#nav-faceit-seasons,
-#nav-discord-category-templates,
-#nav-matches {
-  display: none !important;
-}
-
-

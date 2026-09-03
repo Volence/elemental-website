@@ -7,7 +7,7 @@ export const OrganizationCalendar: GlobalConfig = {
   admin: {
     description: 'View all scheduled tasks, matches, and social posts across departments',
     group: 'Organization',
-    // Hidden from sidebar - accessed via CalendarNavLink at top of sidebar
+    // Hidden from the sidebar; the Calendar entry in the Me area points at /admin/calendar
     hidden: true,
     hideAPIURL: true,
     components: {

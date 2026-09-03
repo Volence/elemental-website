@@ -11,13 +11,11 @@ import ChunkReloadGuard from '@/components/ChunkReloadGuard'
  * AdminProviders - Wraps all admin pages and provides shared functionality
  * 
  * Currently provides:
- * - Sidebar scroll position preservation across navigation
  * - Doc-controls popup position fix (Payload sets wrong position via JS)
  * - Global interception of raw collection links -> custom card editors (teams, people, staff, events, invites)
  */
 export default function AdminProviders({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const isFirstRender = useRef(true)
   const { user } = useAuth<Person>()
   const lastReportedPath = useRef<string | null>(null)
 
@@ -38,37 +36,6 @@ export default function AdminProviders({ children }: { children: React.ReactNode
     })
   }, [pathname, user?.id])
   
-  // Sidebar scroll preservation
-  useEffect(() => {
-    const aside = document.querySelector('aside')
-    if (!aside) return
-    
-    const storageKey = 'elemental-sidebar-scroll'
-    
-    // On first render, restore the saved scroll position
-    if (isFirstRender.current) {
-      isFirstRender.current = false
-      const savedPosition = sessionStorage.getItem(storageKey)
-      if (savedPosition) {
-        // Use setTimeout to ensure the sidebar is fully rendered
-        setTimeout(() => {
-          aside.scrollTop = parseInt(savedPosition, 10)
-        }, 50)
-      }
-    }
-    
-    // Save scroll position when it changes
-    const handleScroll = () => {
-      sessionStorage.setItem(storageKey, aside.scrollTop.toString())
-    }
-    
-    aside.addEventListener('scroll', handleScroll, { passive: true })
-    
-    return () => {
-      aside.removeEventListener('scroll', handleScroll)
-    }
-  }, [pathname])
-
   // Global: intercept navigation to custom admin views.
   // Safety net for any Payload-rendered link that still points at the raw
   // collection edit forms - primary links are rewritten at the source.
@@ -126,39 +93,6 @@ export default function AdminProviders({ children }: { children: React.ReactNode
     return () => document.removeEventListener('click', handleClick, true)
   }, [user?.id])
 
-  // Global: highlight sidebar nav item for custom edit views
-  useEffect(() => {
-    const routeToCollection: Record<string, string> = {
-      '/admin/edit-event': '/collections/global-calendar-events',
-      '/admin/edit-invite': '/collections/invite-links',
-      '/admin/edit-person': '/collections/people',
-      '/admin/my-profile': '/collections/people',
-      '/admin/pug-dashboard': '/collections/pug-seasons',
-      '/admin/edit-pug-season': '/collections/pug-seasons',
-      '/admin/edit-pug-player': '/collections/people',
-      '/admin/edit-pug-match': '/collections/pug-matches',
-      '/admin/edit-pug-leaderboard': '/collections/pug-leaderboard',
-      '/admin/edit-team': '/collections/teams',
-      '/admin/edit-staff': '/collections/organization-staff',
-      '/admin/staff-directory': '/collections/organization-staff',
-      '/admin/access-review': '/collections/people',
-    }
-    const target = routeToCollection[pathname]
-    if (!target) return
-
-    // Highlight the matching sidebar nav link
-    setTimeout(() => {
-      const links = document.querySelectorAll('aside nav a')
-      links.forEach(link => {
-        const href = link.getAttribute('href') ?? ''
-        if (href.includes(target)) {
-          ;(link as HTMLElement).style.opacity = '1'
-          ;(link as HTMLElement).style.color = '#34d399'
-        }
-      })
-    }, 100)
-  }, [pathname])
-  
   // Note: Popup positioning is handled by Payload's built-in JS.
   // Do NOT override popup positions - Payload calculates them from trigger button coordinates.
   

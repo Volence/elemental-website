@@ -117,18 +117,8 @@ const config = buildConfig({
         '@/components/BeforeDashboard',
         '@/components/SectionThemeApplicator#SectionThemeApplicator',
       ],
-      // Custom navigation links in the sidebar
-      beforeNavLinks: [
-        '@/components/BeforeDashboard/DashboardNavLink',
-        '@/components/BeforeDashboard/CalendarNavLink#default',
-        '@/components/BeforeDashboard/PugLobbiesNavLink#default',
-        '@/components/BeforeDashboard/ScrimAnalyticsNavLinks#default',
-        '@/components/BeforeDashboard/AccessReviewNavLink#default',
-        '@/components/BeforeDashboard/IdentityNavLink#default',
-        '@/components/BeforeDashboard/MyProfileNavLink#default',
-        '@/components/BeforeDashboard/SidebarScrollPreserver#default',
-      ],
-      // No custom afterNavLinks - Payload provides its own logout button
+      // The sidebar: curated areas built from what the user can see (src/components/AdminNav)
+      Nav: '@/components/AdminNav#default',
       // Custom logo for admin panel breadcrumbs
       graphics: {
         Logo: '@/components/AdminLogo#default',
@@ -229,6 +219,10 @@ const config = buildConfig({
         pugDashboard: {
           Component: '@/components/PugDashboard/Route#default',
           path: '/pug-dashboard',
+        },
+        gameData: {
+          Component: '@/components/GameData/Route#default',
+          path: '/game-data',
         },
         editPugSeason: {
           Component: '@/components/PugSeasons/EditRoute#default',

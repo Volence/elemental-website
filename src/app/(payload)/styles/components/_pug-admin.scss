@@ -178,3 +178,10 @@ h1.ps-title, h2.ps-title, .ps-title {
   }
   &__desc { color: $admin-text-muted; }
 }
+
+// Heroes & Maps reference page (src/components/GameData)
+.game-data__name { display: inline-flex; align-items: center; gap: 10px; }
+.game-data__thumb { width: 28px; height: 28px; border-radius: $radius-sm; object-fit: cover; background: $admin-bg-elevated; flex-shrink: 0; }
+.game-data__thumb--empty { display: inline-block; border: 1px dashed $admin-border-normal; }
+.game-data__code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: $font-size-2xs; color: $admin-text-secondary; }
+.game-data__add { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; }

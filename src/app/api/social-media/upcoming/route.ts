@@ -22,9 +22,10 @@ function matchTitle(m: any): string {
 }
 
 /**
- * GET /api/social-media/upcoming?days=14
+ * GET /api/social-media/upcoming[?days=N]
  * Org calendar events plus matches flagged for the broadcast schedule (or with
- * a stream URL) in the next N days, so the social team can plan promo posts.
+ * a stream URL), everything upcoming by default or the next N days, so the
+ * social team can plan promo posts.
  */
 export async function GET(request: NextRequest): Promise<Response> {
   try {
@@ -35,35 +36,38 @@ export async function GET(request: NextRequest): Promise<Response> {
     const allowed = u.role === 'admin' || u.role === 'staff-manager' || u.departments?.isSocialMediaStaff === true
     if (!allowed) return NextResponse.json({ message: 'Forbidden' }, { status: 403 })
 
-    const days = Math.min(60, Math.max(1, Number(request.nextUrl.searchParams.get('days')) || 14))
+    // No ?days= means everything upcoming; the social team plans further out than two weeks.
+    const daysParam = request.nextUrl.searchParams.get('days')
+    const days = daysParam ? Math.min(365, Math.max(1, Number(daysParam) || 14)) : null
     const now = new Date()
     const from = new Date(now.getTime() - 6 * 60 * 60 * 1000) // still show things happening right now
-    const to = new Date(now.getTime() + days * 24 * 60 * 60 * 1000)
+    const to = days ? new Date(now.getTime() + days * 24 * 60 * 60 * 1000) : null
+    const upTo = (field: string) => (to ? [{ [field]: { less_than_equal: to.toISOString() } }] : [])
 
     const [events, matches] = await Promise.all([
       payload.find({
         collection: 'global-calendar-events',
         depth: 0,
-        limit: 100,
+        limit: 300,
         sort: 'dateStart',
         overrideAccess: true,
         where: {
           and: [
             { dateStart: { greater_than_equal: from.toISOString() } },
-            { dateStart: { less_than_equal: to.toISOString() } },
+            ...upTo('dateStart'),
           ],
         },
       }),
       payload.find({
         collection: 'matches',
         depth: 1,
-        limit: 100,
+        limit: 300,
         sort: 'date',
         overrideAccess: true,
         where: {
           and: [
             { date: { greater_than_equal: from.toISOString() } },
-            { date: { less_than_equal: to.toISOString() } },
+            ...upTo('date'),
             { status: { equals: 'scheduled' } },
             {
               or: [

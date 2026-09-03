@@ -99,19 +99,12 @@ import { default as default_cf367b0cfa20983ada2328388cb1d9d3 } from '@/component
 import { default as default_302448b4a495c30b527c2bd82b32d2c0 } from '@/components/DatabaseHealthView'
 import { default as default_a1087e454b1b74ceaf1bf3fd38ecfc7a } from '@/components/DataConsistencyView'
 import { default as default_66dcba8625c994af6076586cb15c754f } from '@/components/UserAvatar'
+import { default as default_a202ad21aea188adfad41087711ba85c } from '@/components/AdminNav'
 import { default as default_aa0a2d19d38a4839dbd373417e210b89 } from '@/components/AdminLogo'
 import { default as default_4a966b4b6647403eb02e9dcfa6c73e27 } from '@/components/BeforeDashboard/LinkDiscordBanner'
 import { default as default_1a7510af427896d367a49dbf838d2de6 } from '@/components/BeforeDashboard'
 import { SectionThemeApplicator as SectionThemeApplicator_b4f71752b0da9dddb562ddd527781822 } from '@/components/SectionThemeApplicator'
 import { default as default_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/components/BeforeLogin'
-import { default as default_cb688d169ef5bf1426eea8968f0b9a29 } from '@/components/BeforeDashboard/DashboardNavLink'
-import { default as default_564fb21592d27251bcff7c5e897d4dbc } from '@/components/BeforeDashboard/CalendarNavLink'
-import { default as default_85f2bde977b3b3772c025a1849dec0ef } from '@/components/BeforeDashboard/PugLobbiesNavLink'
-import { default as default_ab6e10b6b3865462fbf89efa35889b3d } from '@/components/BeforeDashboard/ScrimAnalyticsNavLinks'
-import { default as default_4ab6606ef060448849151fa1bba1ef7d } from '@/components/BeforeDashboard/AccessReviewNavLink'
-import { default as default_386d075c246fb4f2f1c6a6a412370648 } from '@/components/BeforeDashboard/IdentityNavLink'
-import { default as default_e99c5e0ebd6260b49d63c1e6ece7ec9d } from '@/components/BeforeDashboard/MyProfileNavLink'
-import { default as default_75e49641b1d841f24cd53ee63100b3ae } from '@/components/BeforeDashboard/SidebarScrollPreserver'
 import { default as default_aeef0123fea1af819397817664b7330c } from '@/components/AdminProviders'
 import { default as default_d27bcf9be933ec5d939f574ab307facf } from '@/components/UnifiedCalendar/Route'
 import { default as default_5f96af94fd29a7fa1e87fa3501f9e389 } from '@/components/ScrimUpload/Route'
@@ -136,6 +129,7 @@ import { default as default_b0e989da30c56b386c2f4c651df2df39 } from '@/component
 import { default as default_34a33320fd53659dd9841f20569ef2d8 } from '@/components/InviteEditor/EditRoute'
 import { default as default_02977a9d4ed0ed77a8d36ceed61c4d84 } from '@/components/TeamEditor/EditRoute'
 import { default as default_a02c70ab9a91821a7f3d60a5827e5794 } from '@/components/PugDashboard/Route'
+import { default as default_e4acc2b71bfc4277b96b47632688412b } from '@/components/GameData/Route'
 import { default as default_e25f49fb258f9f3dd8ba59b20d07fcd8 } from '@/components/PugSeasons/EditRoute'
 import { default as default_b65d43645901504026837c862ab8790f } from '@/components/PugPlayers/EditRoute'
 import { default as default_74fb30a58c92ffc48c7a2fbce0628372 } from '@/components/PugLeaderboard/EditRoute'
@@ -244,19 +238,12 @@ export const importMap = {
   "@/components/DatabaseHealthView#default": default_302448b4a495c30b527c2bd82b32d2c0,
   "@/components/DataConsistencyView#default": default_a1087e454b1b74ceaf1bf3fd38ecfc7a,
   "@/components/UserAvatar#default": default_66dcba8625c994af6076586cb15c754f,
+  "@/components/AdminNav#default": default_a202ad21aea188adfad41087711ba85c,
   "@/components/AdminLogo#default": default_aa0a2d19d38a4839dbd373417e210b89,
   "@/components/BeforeDashboard/LinkDiscordBanner#default": default_4a966b4b6647403eb02e9dcfa6c73e27,
   "@/components/BeforeDashboard#default": default_1a7510af427896d367a49dbf838d2de6,
   "@/components/SectionThemeApplicator#SectionThemeApplicator": SectionThemeApplicator_b4f71752b0da9dddb562ddd527781822,
   "@/components/BeforeLogin#default": default_8a7ab0eb7ab5c511aba12e68480bfe5e,
-  "@/components/BeforeDashboard/DashboardNavLink#default": default_cb688d169ef5bf1426eea8968f0b9a29,
-  "@/components/BeforeDashboard/CalendarNavLink#default": default_564fb21592d27251bcff7c5e897d4dbc,
-  "@/components/BeforeDashboard/PugLobbiesNavLink#default": default_85f2bde977b3b3772c025a1849dec0ef,
-  "@/components/BeforeDashboard/ScrimAnalyticsNavLinks#default": default_ab6e10b6b3865462fbf89efa35889b3d,
-  "@/components/BeforeDashboard/AccessReviewNavLink#default": default_4ab6606ef060448849151fa1bba1ef7d,
-  "@/components/BeforeDashboard/IdentityNavLink#default": default_386d075c246fb4f2f1c6a6a412370648,
-  "@/components/BeforeDashboard/MyProfileNavLink#default": default_e99c5e0ebd6260b49d63c1e6ece7ec9d,
-  "@/components/BeforeDashboard/SidebarScrollPreserver#default": default_75e49641b1d841f24cd53ee63100b3ae,
   "@/components/AdminProviders#default": default_aeef0123fea1af819397817664b7330c,
   "@/components/UnifiedCalendar/Route#default": default_d27bcf9be933ec5d939f574ab307facf,
   "@/components/ScrimUpload/Route#default": default_5f96af94fd29a7fa1e87fa3501f9e389,
@@ -281,6 +268,7 @@ export const importMap = {
   "@/components/InviteEditor/EditRoute#default": default_34a33320fd53659dd9841f20569ef2d8,
   "@/components/TeamEditor/EditRoute#default": default_02977a9d4ed0ed77a8d36ceed61c4d84,
   "@/components/PugDashboard/Route#default": default_a02c70ab9a91821a7f3d60a5827e5794,
+  "@/components/GameData/Route#default": default_e4acc2b71bfc4277b96b47632688412b,
   "@/components/PugSeasons/EditRoute#default": default_e25f49fb258f9f3dd8ba59b20d07fcd8,
   "@/components/PugPlayers/EditRoute#default": default_b65d43645901504026837c862ab8790f,
   "@/components/PugLeaderboard/EditRoute#default": default_74fb30a58c92ffc48c7a2fbce0628372,
