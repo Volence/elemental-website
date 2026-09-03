@@ -173,6 +173,7 @@ export function buildNavAreas({ user, collections, globals }: BuildNavInput): Na
         when(isScrimViewer(user), view('/scrim-dashboard', 'Scrim Analytics', 'swords')),
         ...teamLinks,
         when(isPugAdmin(user), view('/pug-dashboard', 'PUG Dashboard', 'gamepad')),
+        when(has('discord-polls'), view('/schedules', 'Schedules', 'calendar-days')),
         when(has('faceit-leagues'), collection('faceit-leagues', 'FaceIt Leagues', 'trophy')),
         // Heroes and Maps share one tabbed reference page (/admin/game-data) instead of two entries.
         when(has('heroes') || has('maps'), view('/game-data', 'Heroes & Maps', 'sparkles')),
@@ -194,7 +195,7 @@ export function buildNavAreas({ user, collections, globals }: BuildNavInput): Na
       id: 'organization',
       label: 'Organization',
       items: [
-        when(has('global-calendar-events'), collection('global-calendar-events', 'Calendar Events', 'calendar-days')),
+        when(has('global-calendar-events'), view('/calendar-events', 'Calendar Events', 'calendar-days')),
         when(has('pages'), collection('pages', 'Pages', 'file-text')),
       ],
     },
@@ -226,7 +227,9 @@ const ROUTE_ALIASES: Array<[prefix: string, canonical: string]> = [
   ['/admin/manage-users', '/admin/collections/people'],
   ['/admin/edit-staff', '/admin/collections/organization-staff'],
   ['/admin/staff-directory', '/admin/collections/organization-staff'],
-  ['/admin/edit-event', '/admin/collections/global-calendar-events'],
+  ['/admin/edit-event', '/admin/calendar-events'],
+  ['/admin/collections/global-calendar-events', '/admin/calendar-events'],
+  ['/admin/collections/discord-polls', '/admin/schedules'],
   ['/admin/edit-invite', '/admin/collections/invite-links'],
   ['/admin/edit-pug-season', '/admin/pug-dashboard'],
   ['/admin/edit-pug-player', '/admin/pug-dashboard'],

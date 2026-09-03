@@ -228,6 +228,14 @@ const config = buildConfig({
           Component: '@/components/TeamsList/Route#default',
           path: '/teams',
         },
+        calendarEventsList: {
+          Component: '@/components/CalendarEventsList/Route#default',
+          path: '/calendar-events',
+        },
+        schedulesList: {
+          Component: '@/components/SchedulesList/Route#default',
+          path: '/schedules',
+        },
         editPugSeason: {
           Component: '@/components/PugSeasons/EditRoute#default',
           path: '/edit-pug-season',

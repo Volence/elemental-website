@@ -82,7 +82,8 @@ export const DiscordPolls: CollectionConfig = {
     description: 'Create and manage team schedules - from polls, calendars, or manually. Supports multi-block days, ringers, and Discord posting.',
     group: 'Data',
     components: {
-      beforeList: ['@/components/PollScopeToggle#default'],
+      // The list lives at /admin/schedules (src/components/SchedulesList)
+      beforeList: ['@/components/SchedulesList/ListRedirect#default'],
     },
   },
   fields: [

@@ -31,7 +31,7 @@ import { default as default_6bf23cb42f8cd662b9483def3bfe5de8 } from '@/component
 import { default as default_85ada37c2f018121deec10a5bc7b166d } from '@/components/TeamsList/ListRedirect'
 import { default as default_d3aadc8f7d1aa70ce78ff0cfa164a82b } from '@/components/FaceitUrlHelper'
 import { default as default_e937f5e9aab757c7fd786055646bb001 } from '@/components/FaceitLeaguesHeader'
-import { default as default_767d1573376a915d5269211110132c41 } from '@/components/CalendarEventEditor/ListRedirect'
+import { default as default_2c8416f4e7f33bd98807404c20406eb2 } from '@/components/CalendarEventsList/ListRedirect'
 import { default as default_74d7ce4a5764079f398d62cb46e87ed7 } from '@/components/StaffListRedirect'
 import { default as default_dc2c323b20f6177c2131d5b0800696bc } from '@/components/PopulateRosterButton'
 import { default as default_c23ccc3f844b47249d0225373601d9d0 } from '@/components/MatchActions'
@@ -56,7 +56,7 @@ import { default as default_46b3ed67e65478b5cdaa83f2b09fc358 } from '@/component
 import { default as default_91b673ad90a59e578cd7d9f0fa7f0d19 } from '@/components/RecruitmentApplicationColumns/ActionsCell'
 import { default as default_7c520a493bba693939ee544b7090b356 } from '@/components/ScheduleEditor'
 import { default as default_d11a66a204e3df3a186a3bc326f6d7e4 } from '@/components/VotesDisplay'
-import { default as default_187be048b128856df5138905b5a2ba07 } from '@/components/PollScopeToggle'
+import { default as default_1d380ef27a3ce5ece5add57d199673fe } from '@/components/SchedulesList/ListRedirect'
 import { default as default_0a8046206052a3b56c63d934ab686c00 } from '@/components/AvailabilityHeatmapView'
 import { default as default_c768ad956bb88923e7aa7b8670a7f64a } from '@/components/GraphicsDashboardTabs'
 import { default as default_8a2500a4e3906ab75bb39c8e12630e9a } from '@/components/TeamBrandingGuide'
@@ -121,6 +121,8 @@ import { default as default_02977a9d4ed0ed77a8d36ceed61c4d84 } from '@/component
 import { default as default_a02c70ab9a91821a7f3d60a5827e5794 } from '@/components/PugDashboard/Route'
 import { default as default_e4acc2b71bfc4277b96b47632688412b } from '@/components/GameData/Route'
 import { default as default_efdf247abaad73f6306196aca7670b9b } from '@/components/TeamsList/Route'
+import { default as default_ef6162cba91b7e6a3421b1c31127895a } from '@/components/CalendarEventsList/Route'
+import { default as default_1f075b7efbf9739d96d0e1056c4c6bea } from '@/components/SchedulesList/Route'
 import { default as default_e25f49fb258f9f3dd8ba59b20d07fcd8 } from '@/components/PugSeasons/EditRoute'
 import { default as default_b65d43645901504026837c862ab8790f } from '@/components/PugPlayers/EditRoute'
 import { default as default_74fb30a58c92ffc48c7a2fbce0628372 } from '@/components/PugLeaderboard/EditRoute'
@@ -161,7 +163,7 @@ export const importMap = {
   "@/components/TeamsList/ListRedirect#default": default_85ada37c2f018121deec10a5bc7b166d,
   "@/components/FaceitUrlHelper#default": default_d3aadc8f7d1aa70ce78ff0cfa164a82b,
   "@/components/FaceitLeaguesHeader#default": default_e937f5e9aab757c7fd786055646bb001,
-  "@/components/CalendarEventEditor/ListRedirect#default": default_767d1573376a915d5269211110132c41,
+  "@/components/CalendarEventsList/ListRedirect#default": default_2c8416f4e7f33bd98807404c20406eb2,
   "@/components/StaffListRedirect#default": default_74d7ce4a5764079f398d62cb46e87ed7,
   "@/components/PopulateRosterButton#default": default_dc2c323b20f6177c2131d5b0800696bc,
   "@/components/MatchActions#default": default_c23ccc3f844b47249d0225373601d9d0,
@@ -186,7 +188,7 @@ export const importMap = {
   "@/components/RecruitmentApplicationColumns/ActionsCell#default": default_91b673ad90a59e578cd7d9f0fa7f0d19,
   "@/components/ScheduleEditor#default": default_7c520a493bba693939ee544b7090b356,
   "@/components/VotesDisplay#default": default_d11a66a204e3df3a186a3bc326f6d7e4,
-  "@/components/PollScopeToggle#default": default_187be048b128856df5138905b5a2ba07,
+  "@/components/SchedulesList/ListRedirect#default": default_1d380ef27a3ce5ece5add57d199673fe,
   "@/components/AvailabilityHeatmapView#default": default_0a8046206052a3b56c63d934ab686c00,
   "@/components/GraphicsDashboardTabs#default": default_c768ad956bb88923e7aa7b8670a7f64a,
   "@/components/TeamBrandingGuide#default": default_8a2500a4e3906ab75bb39c8e12630e9a,
@@ -251,6 +253,8 @@ export const importMap = {
   "@/components/PugDashboard/Route#default": default_a02c70ab9a91821a7f3d60a5827e5794,
   "@/components/GameData/Route#default": default_e4acc2b71bfc4277b96b47632688412b,
   "@/components/TeamsList/Route#default": default_efdf247abaad73f6306196aca7670b9b,
+  "@/components/CalendarEventsList/Route#default": default_ef6162cba91b7e6a3421b1c31127895a,
+  "@/components/SchedulesList/Route#default": default_1f075b7efbf9739d96d0e1056c4c6bea,
   "@/components/PugSeasons/EditRoute#default": default_e25f49fb258f9f3dd8ba59b20d07fcd8,
   "@/components/PugPlayers/EditRoute#default": default_b65d43645901504026837c862ab8790f,
   "@/components/PugLeaderboard/EditRoute#default": default_74fb30a58c92ffc48c7a2fbce0628372,

@@ -60,7 +60,8 @@ export const GlobalCalendarEvents: CollectionConfig = {
     hidden: hideFromPlayers,
     listSearchableFields: ['title', 'description'],
     components: {
-      beforeList: ['@/components/CalendarEventEditor/ListRedirect#default'],
+      // The list lives at /admin/calendar-events (src/components/CalendarEventsList)
+      beforeList: ['@/components/CalendarEventsList/ListRedirect#default'],
     },
   },
   // Disable document locking to avoid ObjectId type mismatch with Postgres
