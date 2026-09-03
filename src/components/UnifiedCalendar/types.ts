@@ -60,15 +60,15 @@ export function getDepartmentColors(department: Department): {
   }
 }
 
-// Department board URLs (no query string). Tasks deep-link with ?task= via range.taskHref().
+// Department board URLs. Dashboards with tabs carry ?tab=workboard; range.taskHref() appends the task id.
 export function getDepartmentDashboardUrl(department: Department): string {
   const dashboardMap: Record<Department, string> = {
     graphics: '/admin/collections/graphics-anchor',
     video: '/admin/collections/video-anchor',
     events: '/admin/collections/events-anchor',
     scouting: '/admin/collections/tasks',
-    production: '/admin/globals/production-dashboard',
-    'social-media': '/admin/globals/social-media-settings',
+    production: '/admin/globals/production-dashboard?tab=workboard',
+    'social-media': '/admin/globals/social-media-settings?tab=workboard',
     competitive: '/admin/collections/global-calendar-events',
   }
   return dashboardMap[department] ?? '/admin'

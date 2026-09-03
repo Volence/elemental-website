@@ -113,9 +113,10 @@ export function taskHref(department: Department | string | null | undefined, tas
     graphics: '/admin/collections/graphics-anchor',
     video: '/admin/collections/video-anchor',
     events: '/admin/collections/events-anchor',
-    'social-media': '/admin/globals/social-media-settings',
+    'social-media': '/admin/globals/social-media-settings?tab=workboard',
+    production: '/admin/globals/production-dashboard?tab=workboard',
   }
   const base = department ? boards[department] : undefined
   if (!base) return `/admin/collections/tasks/${taskId}`
-  return `${base}?task=${taskId}`
+  return `${base}${base.includes('?') ? '&' : '?'}task=${taskId}`
 }

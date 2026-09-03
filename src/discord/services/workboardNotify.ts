@@ -28,14 +28,16 @@ const BOARD_URLS: Record<string, string> = {
   graphics: '/admin/collections/graphics-anchor',
   video: '/admin/collections/video-anchor',
   events: '/admin/collections/events-anchor',
-  'social-media': '/admin/globals/social-media-settings',
-  production: '/admin/globals/production-dashboard',
+  'social-media': '/admin/globals/social-media-settings?tab=workboard',
+  production: '/admin/globals/production-dashboard?tab=workboard',
 }
 
 export function taskBoardUrl(task: TaskLike): string {
   const base = process.env.NEXT_PUBLIC_SERVER_URL || ''
   const board = task.department ? BOARD_URLS[task.department] : undefined
-  return board ? `${base}${board}?task=${task.id}` : `${base}/admin/collections/tasks/${task.id}`
+  return board
+    ? `${base}${board}${board.includes('?') ? '&' : '?'}task=${task.id}`
+    : `${base}/admin/collections/tasks/${task.id}`
 }
 
 export function departmentLabel(dept: string | null | undefined): string {

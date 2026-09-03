@@ -12,26 +12,6 @@
     padding: $spacing-2xl;
     min-height: 600px;
     
-    &__tabs {
-      @include dashboard-tabs($admin-accent-primary);
-    }
-    
-    &__tab {
-      @include dashboard-tab($admin-accent-primary);
-      
-      &--active {
-        @include dashboard-tab-active($admin-accent-primary);
-      }
-    }
-
-    &__tab-divider {
-      width: 1px;
-      height: 20px;
-      background: rgba(255, 255, 255, 0.12);
-      margin: 0 0.25rem;
-      align-self: center;
-    }
-    
     &__content {
       min-height: 400px;
       @include glow-card($admin-accent-primary);
@@ -1059,18 +1039,6 @@
   @media (max-width: 768px) {
     .social-media-dashboard {
       padding: $spacing-lg;
-      
-      &__tabs {
-        flex-direction: column;
-        gap: 0;
-      }
-      
-      &__tab {
-        width: 100%;
-        text-align: left;
-        border-bottom: 1px solid var(--theme-elevation-200);
-        border-radius: 0;
-      }
       
       &__content {
         padding: $spacing-md;

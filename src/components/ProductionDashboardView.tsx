@@ -1,7 +1,8 @@
 'use client'
 
-import React, { lazy, Suspense, useState } from 'react'
-import { LoadingState } from '@/admin-kit'
+import React, { lazy, Suspense } from 'react'
+import { AdminTabs, LoadingState, tabPanelProps, useUrlParamState } from '@/admin-kit'
+import type { AdminTab } from '@/admin-kit'
 import { useAuth } from '@payloadcms/ui'
 import { Calendar, PlusSquare, Users, ClipboardList, Building, BarChart3, Swords, FileText, Tv, Settings, KanbanSquare } from 'lucide-react'
 
@@ -18,6 +19,8 @@ const StreamTrackerView = lazy(() => import('./ProductionDashboard/StreamTracker
 const SettingsView = lazy(() => import('./ProductionDashboard/SettingsView').then((m) => ({ default: m.SettingsView })))
 const KanbanBoard = lazy(() => import('./WorkboardKanban').then((m) => ({ default: m.KanbanBoard })))
 
+const TABS_ID = 'production'
+
 export default function ProductionDashboardView() {
   const { user } = useAuth()
 
@@ -25,113 +28,33 @@ export default function ProductionDashboardView() {
   const isProductionManager = user?.role === 'admin' || user?.role === 'staff-manager'
   const isAdmin = user?.role === 'admin'
 
-  // Default tab: 'signups' for regular staff, 'weekly' for managers
-  const [activeTab, setActiveTab] = useState(isProductionManager ? 'weekly' : 'signups')
+  // Default tab: 'signups' for regular staff, 'weekly' for managers. The active tab lives in ?tab=
+  // so it survives reloads and can be deep-linked (workboard task pings use ?tab=workboard&task=).
+  const defaultTab = isProductionManager ? 'weekly' : 'signups'
+  const [activeTabParam, setActiveTab] = useUrlParamState('tab', defaultTab)
+
+  const tabs: AdminTab[] = [
+    { id: 'weekly', label: 'Weekly View', icon: <Calendar size={14} />, hidden: !isProductionManager },
+    { id: 'bulk', label: 'Bulk Create', icon: <PlusSquare size={14} />, hidden: !isProductionManager },
+    { id: 'signups', label: 'Staff Signups', icon: <Users size={14} /> },
+    { id: 'workboard', label: 'Workboard', icon: <KanbanSquare size={14} /> },
+    { id: 'assignment', label: 'Assignment', icon: <ClipboardList size={14} />, hidden: !isProductionManager },
+    { id: 'schedule', label: 'Schedule Builder', icon: <Building size={14} />, hidden: !isProductionManager },
+    { id: 'summary', label: 'Summary', icon: <BarChart3 size={14} />, hidden: !isProductionManager },
+    { id: 'streams', label: 'Stream Tracker', icon: <Tv size={14} />, hidden: !isProductionManager },
+    { id: 'matches', label: 'Matches', icon: <Swords size={14} />, hidden: !isProductionManager },
+    { id: 'templates', label: 'Templates', icon: <FileText size={14} />, hidden: !isProductionManager },
+    { id: 'settings', label: 'Settings', icon: <Settings size={14} />, hidden: !isAdmin },
+  ]
+  const activeTab = tabs.some((t) => t.id === activeTabParam && !t.hidden) ? activeTabParam : defaultTab
 
   return (
     <div className="production-dashboard" data-section="production">
-      <nav className="production-dashboard__tabs">
-        {/* Only show management tabs to production managers */}
-        {isProductionManager && (
-          <>
-            <button
-              className={`production-dashboard__tab ${activeTab === 'weekly' ? 'production-dashboard__tab--active' : ''}`}
-              onClick={() => setActiveTab('weekly')}
-            >
-              <Calendar size={14} />
-              <span>Weekly View</span>
-            </button>
-            <button
-              className={`production-dashboard__tab ${activeTab === 'bulk' ? 'production-dashboard__tab--active' : ''}`}
-              onClick={() => setActiveTab('bulk')}
-            >
-              <PlusSquare size={14} />
-              <span>Bulk Create</span>
-            </button>
-          </>
-        )}
+      <div className="production-dashboard__nav">
+        <AdminTabs mode="url" id={TABS_ID} tabs={tabs} defaultTab={defaultTab} accent="info" label="Production dashboard sections" />
+      </div>
 
-        {/* Staff Signups - visible to everyone */}
-        <button
-          className={`production-dashboard__tab ${activeTab === 'signups' ? 'production-dashboard__tab--active' : ''}`}
-          onClick={() => setActiveTab('signups')}
-        >
-          <Users size={14} />
-          <span>Staff Signups</span>
-        </button>
-        <button
-          className={`production-dashboard__tab ${activeTab === 'workboard' ? 'production-dashboard__tab--active' : ''}`}
-          onClick={() => setActiveTab('workboard')}
-        >
-          <KanbanSquare size={14} />
-          <span>Workboard</span>
-        </button>
-
-        {/* Only show management tabs to production managers */}
-        {isProductionManager && (
-          <>
-            <button
-              className={`production-dashboard__tab ${activeTab === 'assignment' ? 'production-dashboard__tab--active' : ''}`}
-              onClick={() => setActiveTab('assignment')}
-            >
-              <ClipboardList size={14} />
-              <span>Assignment</span>
-            </button>
-            <button
-              className={`production-dashboard__tab ${activeTab === 'schedule' ? 'production-dashboard__tab--active' : ''}`}
-              onClick={() => setActiveTab('schedule')}
-            >
-              <Building size={14} />
-              <span>Schedule Builder</span>
-            </button>
-            <button
-              className={`production-dashboard__tab ${activeTab === 'summary' ? 'production-dashboard__tab--active' : ''}`}
-              onClick={() => setActiveTab('summary')}
-            >
-              <BarChart3 size={14} />
-              <span>Summary</span>
-            </button>
-            <button
-              className={`production-dashboard__tab ${activeTab === 'streams' ? 'production-dashboard__tab--active' : ''}`}
-              onClick={() => setActiveTab('streams')}
-            >
-              <Tv size={14} />
-              <span>Stream Tracker</span>
-            </button>
-
-            {/* Data tabs - embedded collection views */}
-            <span className="production-dashboard__tab-divider" />
-            <button
-              className={`production-dashboard__tab ${activeTab === 'matches' ? 'production-dashboard__tab--active' : ''}`}
-              onClick={() => setActiveTab('matches')}
-            >
-              <Swords size={14} />
-              <span>Matches</span>
-            </button>
-            <button
-              className={`production-dashboard__tab ${activeTab === 'templates' ? 'production-dashboard__tab--active' : ''}`}
-              onClick={() => setActiveTab('templates')}
-            >
-              <FileText size={14} />
-              <span>Templates</span>
-            </button>
-          </>
-        )}
-        {isAdmin && (
-          <>
-            <span className="production-dashboard__tab-divider" />
-            <button
-              className={`production-dashboard__tab ${activeTab === 'settings' ? 'production-dashboard__tab--active' : ''}`}
-              onClick={() => setActiveTab('settings')}
-            >
-              <Settings size={14} />
-              <span>Settings</span>
-            </button>
-          </>
-        )}
-      </nav>
-
-      <div className="production-dashboard__content">
+      <div className="production-dashboard__content" {...tabPanelProps(TABS_ID, activeTab)}>
         <Suspense fallback={<LoadingState rows={0} label="Loading tab" />}>
         {activeTab === 'weekly' && isProductionManager && <WeeklyView />}
         {activeTab === 'bulk' && isProductionManager && <BulkTournamentCreator onSuccess={() => setActiveTab('signups')} />}

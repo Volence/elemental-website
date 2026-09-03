@@ -14,7 +14,7 @@ describe('workboard request messages', () => {
 
   it('deep-links to the owning board with ?task=', () => {
     expect(taskBoardUrl(task)).toMatch(/\/admin\/collections\/graphics-anchor\?task=42$/)
-    expect(taskBoardUrl({ ...task, department: 'production' })).toMatch(/production-dashboard\?task=42$/)
+    expect(taskBoardUrl({ ...task, department: 'production' })).toMatch(/production-dashboard\?tab=workboard&task=42$/)
     expect(taskBoardUrl({ ...task, department: null })).toMatch(/\/admin\/collections\/tasks\/42$/)
   })
 

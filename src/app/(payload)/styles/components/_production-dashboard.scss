@@ -386,29 +386,9 @@
 .production-dashboard {
   padding: 0;
   
-  // ============================================
-  // NAVIGATION TABS — Unified underline pattern
-  // ============================================
-  
-  &__tabs {
-    @include dashboard-tabs($admin-accent-info);
+  // Tabs are the kit AdminTabs; this only aligns them with the padded content below.
+  &__nav {
     padding: 0 2rem;
-  }
-  
-  &__tab {
-    @include dashboard-tab($admin-accent-info);
-    
-    &--active {
-      @include dashboard-tab-active($admin-accent-info);
-    }
-  }
-  
-  &__tab-divider {
-    width: 1px;
-    height: 20px;
-    background: rgba(255, 255, 255, 0.12);
-    margin: 0 0.25rem;
-    align-self: center;
   }
   
   // ============================================
@@ -2081,10 +2061,6 @@
 
 @media (max-width: 768px) {
   .production-dashboard {
-    &__tabs {
-      flex-direction: column;
-    }
-    
     &__content {
       padding: 0 1rem 1rem;
     }

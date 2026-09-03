@@ -59,10 +59,11 @@ describe('url params', () => {
 describe('taskHref', () => {
   it('opens the department board with ?task= when a board exists', () => {
     expect(taskHref('graphics', 12)).toBe('/admin/collections/graphics-anchor?task=12')
-    expect(taskHref('social-media', '7')).toBe('/admin/globals/social-media-settings?task=7')
+    // Tabbed dashboards open on the workboard tab, then the task.
+    expect(taskHref('social-media', '7')).toBe('/admin/globals/social-media-settings?tab=workboard&task=7')
+    expect(taskHref('production', 3)).toBe('/admin/globals/production-dashboard?tab=workboard&task=3')
   })
   it('falls back to the raw task record for departments without a board', () => {
-    expect(taskHref('production', 3)).toBe('/admin/collections/tasks/3')
     expect(taskHref(undefined, 3)).toBe('/admin/collections/tasks/3')
   })
 })

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
+import { AdminTabs, tabPanelProps, useUrlParamState } from '@/admin-kit'
 import { AlertModal, ConfirmModal } from './Modal'
 import { EditTemplateModal } from './EditTemplateModal'
 import { ApplyTemplateModal } from './ApplyTemplateModal'
@@ -16,6 +17,9 @@ import CloneServerTab from './CloneServerTab'
 import ServersTab from './ServersTab'
 import LoggingTab from './LoggingTab'
 import { AlertTriangle, BarChart3, Bot, CheckCircle, Circle, Copy, Drama, Edit, FileText, Folder, Heart, Info, LayoutList, Lightbulb, Megaphone, MessageCircle, MessageSquare, Rocket, Save, Server, Spade, Trash2, Trophy, User, Volume2 } from 'lucide-react'
+
+type DsmTab = 'structure' | 'stats' | 'health' | 'templates' | 'team-cards' | 'announcements' | 'twitch-live' | 'watched-threads' | 'provision-team' | 'faceit-updates' | 'clone-server' | 'servers' | 'logging'
+const TABS_ID = 'dsm'
 
 interface DiscordChannel {
   id: string
@@ -101,7 +105,8 @@ const DiscordServerManagerView = () => {
   const [templates, setTemplates] = useState<Template[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'structure' | 'stats' | 'health' | 'templates' | 'team-cards' | 'announcements' | 'twitch-live' | 'watched-threads' | 'provision-team' | 'faceit-updates' | 'clone-server' | 'servers' | 'logging'>('structure')
+  const [activeTabParam, setActiveTab] = useUrlParamState('tab', 'structure')
+  const activeTab = activeTabParam as DsmTab
   
   // Template form state
   const [selectedCategoryId, setSelectedCategoryId] = useState('')
@@ -833,115 +838,30 @@ const DiscordServerManagerView = () => {
         </div>
       )}
 
-      <div className="discord-server-manager__tabs">
-        <button
-          className={`discord-server-manager__tab ${activeTab === 'structure' ? 'discord-server-manager__tab--active' : ''}`}
-          onClick={() => setActiveTab('structure')}
-          disabled={loading}
-        >
-          <LayoutList size={14} />
-          <span>Structure</span>
-        </button>
-        <button
-          className={`discord-server-manager__tab ${activeTab === 'stats' ? 'discord-server-manager__tab--active' : ''}`}
-          onClick={() => setActiveTab('stats')}
-          disabled={loading}
-        >
-          <BarChart3 size={14} />
-          <span>Statistics</span>
-        </button>
-        <button
-          className={`discord-server-manager__tab ${activeTab === 'health' ? 'discord-server-manager__tab--active' : ''}`}
-          onClick={() => setActiveTab('health')}
-          disabled={loading}
-        >
-          <Heart size={14} />
-          <span>Health Check</span>
-        </button>
-        <button
-          className={`discord-server-manager__tab ${activeTab === 'templates' ? 'discord-server-manager__tab--active' : ''}`}
-          onClick={() => setActiveTab('templates')}
-          disabled={loading}
-        >
-          <Folder size={14} />
-          <span>Templates</span>
-        </button>
-        {isPrimarySelected && (
-          <button
-            className={`discord-server-manager__tab ${activeTab === 'team-cards' ? 'discord-server-manager__tab--active' : ''}`}
-            onClick={() => setActiveTab('team-cards')}
-            disabled={loading}
-          >
-            <Spade size={14} />
-            <span>Team Cards</span>
-          </button>
-        )}
-        {isPrimarySelected && (
-          <button
-            className={`discord-server-manager__tab ${activeTab === 'announcements' ? 'discord-server-manager__tab--active' : ''}`}
-            onClick={() => setActiveTab('announcements')}
-            disabled={loading}
-          >
-            <Megaphone size={14} />
-            <span>Announcements</span>
-          </button>
-        )}
-        {isPrimarySelected && (
-          <button
-            className={`discord-server-manager__tab ${activeTab === 'twitch-live' ? 'discord-server-manager__tab--active' : ''}`}
-            onClick={() => setActiveTab('twitch-live')}
-          >
-            <Circle size={12} />
-            <span>Live Roster</span>
-          </button>
-        )}
-        <button
-          className={`discord-server-manager__tab ${activeTab === 'watched-threads' ? 'discord-server-manager__tab--active' : ''}`}
-          onClick={() => setActiveTab('watched-threads')}
-        >
-          <MessageSquare size={14} />
-          <span>Threads</span>
-        </button>
-        {isPrimarySelected && (
-          <button
-            className={`discord-server-manager__tab ${activeTab === 'faceit-updates' ? 'discord-server-manager__tab--active' : ''}`}
-            onClick={() => setActiveTab('faceit-updates')}
-          >
-            <Trophy size={14} />
-            <span>FaceIt Updates</span>
-          </button>
-        )}
-        <button
-          className={`discord-server-manager__tab ${activeTab === 'provision-team' ? 'discord-server-manager__tab--active' : ''}`}
-          onClick={() => setActiveTab('provision-team')}
-        >
-          <Rocket size={14} />
-          <span>Provision Team</span>
-        </button>
-        <button
-          className={`discord-server-manager__tab ${activeTab === 'clone-server' ? 'discord-server-manager__tab--active' : ''}`}
-          onClick={() => setActiveTab('clone-server')}
-        >
-          <Copy size={14} />
-          <span>Clone Server</span>
-        </button>
-        <button
-          className={`discord-server-manager__tab ${activeTab === 'servers' ? 'discord-server-manager__tab--active' : ''}`}
-          onClick={() => setActiveTab('servers')}
-        >
-          <Server size={14} />
-          <span>Servers</span>
-        </button>
-        <button
-          className={`discord-server-manager__tab ${activeTab === 'logging' ? 'discord-server-manager__tab--active' : ''}`}
-          onClick={() => setActiveTab('logging')}
-        >
-          <FileText size={14} />
-          <span>Logging</span>
-        </button>
-      </div>
+      <AdminTabs
+        mode="url"
+        id={TABS_ID}
+        defaultTab="structure"
+        accent="primary"
+        label="Discord server sections"
+        tabs={[
+          { id: 'structure', label: 'Structure', icon: <LayoutList size={14} /> },
+          { id: 'stats', label: 'Statistics', icon: <BarChart3 size={14} /> },
+          { id: 'health', label: 'Health Check', icon: <Heart size={14} /> },
+          { id: 'templates', label: 'Templates', icon: <Folder size={14} /> },
+          { id: 'team-cards', label: 'Team Cards', icon: <Spade size={14} />, hidden: !isPrimarySelected },
+          { id: 'announcements', label: 'Announcements', icon: <Megaphone size={14} />, hidden: !isPrimarySelected },
+          { id: 'twitch-live', label: 'Live Roster', icon: <Circle size={12} />, hidden: !isPrimarySelected },
+          { id: 'watched-threads', label: 'Threads', icon: <MessageSquare size={14} /> },
+          { id: 'faceit-updates', label: 'FaceIt Updates', icon: <Trophy size={14} />, hidden: !isPrimarySelected },
+          { id: 'provision-team', label: 'Provision Team', icon: <Rocket size={14} /> },
+          { id: 'clone-server', label: 'Clone Server', icon: <Copy size={14} /> },
+          { id: 'servers', label: 'Servers', icon: <Server size={14} /> },
+          { id: 'logging', label: 'Logging', icon: <FileText size={14} /> },
+        ]}
+      />
 
-      <div className="tab-content">
+      <div className="tab-content" {...tabPanelProps(TABS_ID, activeTab)}>
         {loading && (
           <div className="loading-overlay">
             <div className="spinner"></div>
