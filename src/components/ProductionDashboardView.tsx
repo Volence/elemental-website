@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { useAuth } from '@payloadcms/ui'
-import { Calendar, PlusSquare, Users, ClipboardList, Building, BarChart3, Swords, FileText, Tv, Settings } from 'lucide-react'
+import { Calendar, PlusSquare, Users, ClipboardList, Building, BarChart3, Swords, FileText, Tv, Settings, KanbanSquare } from 'lucide-react'
 import { WeeklyView } from './ProductionDashboard/WeeklyView'
 import { StaffSignupsView } from './ProductionDashboard/StaffSignupsView'
 import { AssignmentView } from './ProductionDashboard/AssignmentView'
@@ -13,31 +13,32 @@ import { MatchesListTab } from './ProductionDashboard/MatchesListTab'
 import { TemplatesListTab } from './ProductionDashboard/TemplatesListTab'
 import { StreamTrackerView } from './ProductionDashboard/StreamTrackerView'
 import { SettingsView } from './ProductionDashboard/SettingsView'
+import { KanbanBoard } from './WorkboardKanban'
 
 export default function ProductionDashboardView() {
   const { user } = useAuth()
-  
+
   // Check if user is a production manager (admin or staff-manager)
   const isProductionManager = user?.role === 'admin' || user?.role === 'staff-manager'
   const isAdmin = user?.role === 'admin'
-  
+
   // Default tab: 'signups' for regular staff, 'weekly' for managers
   const [activeTab, setActiveTab] = useState(isProductionManager ? 'weekly' : 'signups')
-  
+
   return (
     <div className="production-dashboard" data-section="production">
       <nav className="production-dashboard__tabs">
         {/* Only show management tabs to production managers */}
         {isProductionManager && (
           <>
-            <button 
+            <button
               className={`production-dashboard__tab ${activeTab === 'weekly' ? 'production-dashboard__tab--active' : ''}`}
               onClick={() => setActiveTab('weekly')}
             >
               <Calendar size={14} />
               <span>Weekly View</span>
             </button>
-            <button 
+            <button
               className={`production-dashboard__tab ${activeTab === 'bulk' ? 'production-dashboard__tab--active' : ''}`}
               onClick={() => setActiveTab('bulk')}
             >
@@ -46,41 +47,48 @@ export default function ProductionDashboardView() {
             </button>
           </>
         )}
-        
+
         {/* Staff Signups - visible to everyone */}
-        <button 
+        <button
           className={`production-dashboard__tab ${activeTab === 'signups' ? 'production-dashboard__tab--active' : ''}`}
           onClick={() => setActiveTab('signups')}
         >
           <Users size={14} />
           <span>Staff Signups</span>
         </button>
-        
+        <button
+          className={`production-dashboard__tab ${activeTab === 'workboard' ? 'production-dashboard__tab--active' : ''}`}
+          onClick={() => setActiveTab('workboard')}
+        >
+          <KanbanSquare size={14} />
+          <span>Workboard</span>
+        </button>
+
         {/* Only show management tabs to production managers */}
         {isProductionManager && (
           <>
-            <button 
+            <button
               className={`production-dashboard__tab ${activeTab === 'assignment' ? 'production-dashboard__tab--active' : ''}`}
               onClick={() => setActiveTab('assignment')}
             >
               <ClipboardList size={14} />
               <span>Assignment</span>
             </button>
-            <button 
+            <button
               className={`production-dashboard__tab ${activeTab === 'schedule' ? 'production-dashboard__tab--active' : ''}`}
               onClick={() => setActiveTab('schedule')}
             >
               <Building size={14} />
               <span>Schedule Builder</span>
             </button>
-            <button 
+            <button
               className={`production-dashboard__tab ${activeTab === 'summary' ? 'production-dashboard__tab--active' : ''}`}
               onClick={() => setActiveTab('summary')}
             >
               <BarChart3 size={14} />
               <span>Summary</span>
             </button>
-            <button 
+            <button
               className={`production-dashboard__tab ${activeTab === 'streams' ? 'production-dashboard__tab--active' : ''}`}
               onClick={() => setActiveTab('streams')}
             >
@@ -90,14 +98,14 @@ export default function ProductionDashboardView() {
 
             {/* Data tabs - embedded collection views */}
             <span className="production-dashboard__tab-divider" />
-            <button 
+            <button
               className={`production-dashboard__tab ${activeTab === 'matches' ? 'production-dashboard__tab--active' : ''}`}
               onClick={() => setActiveTab('matches')}
             >
               <Swords size={14} />
               <span>Matches</span>
             </button>
-            <button 
+            <button
               className={`production-dashboard__tab ${activeTab === 'templates' ? 'production-dashboard__tab--active' : ''}`}
               onClick={() => setActiveTab('templates')}
             >
@@ -109,7 +117,7 @@ export default function ProductionDashboardView() {
         {isAdmin && (
           <>
             <span className="production-dashboard__tab-divider" />
-            <button 
+            <button
               className={`production-dashboard__tab ${activeTab === 'settings' ? 'production-dashboard__tab--active' : ''}`}
               onClick={() => setActiveTab('settings')}
             >
@@ -119,11 +127,12 @@ export default function ProductionDashboardView() {
           </>
         )}
       </nav>
-      
+
       <div className="production-dashboard__content">
         {activeTab === 'weekly' && isProductionManager && <WeeklyView />}
         {activeTab === 'bulk' && isProductionManager && <BulkTournamentCreator onSuccess={() => setActiveTab('signups')} />}
         {activeTab === 'signups' && <StaffSignupsView />}
+        {activeTab === 'workboard' && <KanbanBoard department="production" />}
         {activeTab === 'assignment' && isProductionManager && <AssignmentView />}
         {activeTab === 'schedule' && isProductionManager && <ScheduleBuilderView />}
         {activeTab === 'summary' && isProductionManager && <SummaryView />}

@@ -2884,6 +2884,18 @@ export interface DiscordServer {
    * Channel that receives a message when someone files an identity claim. Leave blank to disable.
    */
   identityClaimsChannelId?: string | null;
+  /**
+   * Per-department channels for cross-department requests: a new request pings the target department, a completed request pings the requester. Blank = silent. Fallback is used when a department has no channel.
+   */
+  workboardChannels?: {
+    graphics?: string | null;
+    video?: string | null;
+    events?: string | null;
+    scouting?: string | null;
+    production?: string | null;
+    socialMedia?: string | null;
+    fallback?: string | null;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -4797,6 +4809,17 @@ export interface DiscordServersSelect<T extends boolean = true> {
   newAccountFlagDays?: T;
   attachProfileLink?: T;
   identityClaimsChannelId?: T;
+  workboardChannels?:
+    | T
+    | {
+        graphics?: T;
+        video?: T;
+        events?: T;
+        scouting?: T;
+        production?: T;
+        socialMedia?: T;
+        fallback?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

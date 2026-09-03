@@ -47,5 +47,23 @@ export const DiscordServers: CollectionConfig = {
       type: 'text',
       admin: { description: 'Channel that receives a message when someone files an identity claim. Leave blank to disable.' },
     },
+    {
+      name: 'workboardChannels',
+      type: 'group',
+      label: 'Workboard request channels',
+      admin: {
+        description:
+          'Per-department channels for cross-department requests: a new request pings the target department, a completed request pings the requester. Blank = silent. Fallback is used when a department has no channel.',
+      },
+      fields: [
+        { name: 'graphics', type: 'text', label: 'Graphics channel ID' },
+        { name: 'video', type: 'text', label: 'Video channel ID' },
+        { name: 'events', type: 'text', label: 'Events channel ID' },
+        { name: 'scouting', type: 'text', label: 'Scouting channel ID' },
+        { name: 'production', type: 'text', label: 'Production channel ID' },
+        { name: 'socialMedia', type: 'text', label: 'Social Media channel ID' },
+        { name: 'fallback', type: 'text', label: 'Fallback channel ID' },
+      ],
+    },
   ],
 }

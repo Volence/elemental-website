@@ -139,12 +139,15 @@ export const Tasks: CollectionConfig = {
       if (u.departments?.isSocialMediaStaff) departments.push('social-media')
       
       if (departments.length === 0) return false
-      
+
+      // Own department's tasks, plus requests this department raised elsewhere
+      // (mirrors read; without this a requester got a 403 editing their own request).
       return {
-        department: {
-          in: departments,
-        },
-      }
+        or: [
+          { department: { in: departments } },
+          { and: [{ isRequest: { equals: true } }, { requestedByDepartment: { in: departments } }] },
+        ],
+      } as any
     },
     // Only admins/staff managers can delete
     delete: ({ req: { user } }) => {
@@ -538,6 +541,25 @@ export const Tasks: CollectionConfig = {
       },
     ],
     afterChange: [
+      // Cross-department requests: ping the target board on create, the requester on completion.
+      async ({ doc, previousDoc, operation }) => {
+        if (!doc?.isRequest || !doc.requestedByDepartment) return
+        const created = operation === 'create'
+        const completed = doc.status === 'complete' && previousDoc?.status !== 'complete'
+        if (!created && !completed) return
+        setImmediate(async () => {
+          try {
+            const { notifyRequestCreated, notifyRequestCompleted } = await import('@/discord/services/workboardNotify')
+            const { getPayload } = await import('payload')
+            const configPromise = (await import('@payload-config')).default
+            const payload = await getPayload({ config: configPromise })
+            if (created) await notifyRequestCreated(payload, doc)
+            else await notifyRequestCompleted(payload, doc)
+          } catch (error) {
+            console.error('[Tasks] request notification failed:', error)
+          }
+        })
+      },
       // Social media: if a weekly digest was already posted to Discord for the
       // week this task falls in, re-render and edit that message.
       async ({ doc, previousDoc, operation }) => {

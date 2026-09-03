@@ -1,12 +1,15 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { useConfig } from '@payloadcms/ui'
+import { useConfig, useAuth } from '@payloadcms/ui'
 import { toast } from '@payloadcms/ui'
 import { ConfirmModal } from './ConfirmModal'
 import type { Task, Person, Media } from '@/payload-types'
 import { Calendar, Download, Paperclip, Save, Send, Trash2, Upload, X } from 'lucide-react'
-import { dueDateInputValue } from '@/utilities/taskDueDate'
+import { dueDateInputValue, dueTimeInputValue, composeDueDate } from '@/utilities/taskDueDate'
+import { lexicalToPlainText, plainTextToLexical } from '@/utilities/lexicalText'
+import { formatRelative, getPersonLabel } from '@/admin-kit'
+import { DEPT_NAMES, STATUS_OPTIONS, PRIORITY_OPTIONS } from './constants'
 import { SOCIAL_POST_TYPES, SOCIAL_PLATFORMS } from '@/utilities/socialPostTypes'
 
 interface TaskModalProps {
@@ -35,30 +38,6 @@ interface AttachmentItem {
   id?: string | null
 }
 
-// Department display names
-const DEPT_NAMES: Record<string, string> = {
-  'graphics': 'Graphics',
-  'video': 'Video',
-  'events': 'Events',
-  'scouting': 'Scouting',
-  'production': 'Production',
-  'social-media': 'Social Media',
-}
-
-const STATUS_OPTIONS = [
-  { label: 'Backlog', value: 'backlog' },
-  { label: 'In Progress', value: 'in-progress' },
-  { label: 'Review', value: 'review' },
-  { label: 'Complete', value: 'complete' },
-]
-
-const PRIORITY_OPTIONS = [
-  { label: 'Low', value: 'low' },
-  { label: 'Medium', value: 'medium' },
-  { label: 'High', value: 'high' },
-  { label: 'Urgent', value: 'urgent' },
-]
-
 export const TaskModal: React.FC<TaskModalProps> = ({
   task,
   department,
@@ -71,9 +50,14 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   initialValues,
 }) => {
   const { config } = useConfig()
+  const { user: currentUser } = useAuth()
   const serverURL = config?.serverURL || ''
   const fileInputRef = useRef<HTMLInputElement>(null)
-  
+  const canDelete = currentUser?.role === 'admin' || currentUser?.role === 'staff-manager'
+  const [comments, setComments] = useState<NonNullable<Task['comments']>>([])
+  const [newComment, setNewComment] = useState('')
+  const [postingComment, setPostingComment] = useState(false)
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -81,9 +65,11 @@ export const TaskModal: React.FC<TaskModalProps> = ({
     priority: 'medium',
     taskType: '',
     dueDate: '',
+    dueTime: '',
     addToGlobalCalendar: false,
     postType: '',
     platform: '',
+    requestNotes: '',
   })
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -91,22 +77,26 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   const [selectedAssignees, setSelectedAssignees] = useState<number[]>([])
   const [attachments, setAttachments] = useState<AttachmentItem[]>([])
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
-  
+
   // Reset the form whenever the modal opens or its subject changes
   useEffect(() => {
     if (!isOpen) return
     if (task) {
       setFormData({
         title: task.title || '',
-        description: typeof task.description === 'string' ? task.description : '',
+        description: lexicalToPlainText(task.description),
         status: task.status || 'backlog',
         priority: task.priority || 'medium',
         taskType: task.taskType || '',
         dueDate: dueDateInputValue(task.dueDate),
+        dueTime: dueTimeInputValue(task.dueDate),
         addToGlobalCalendar: task.addToGlobalCalendar || false,
         postType: task.postType || '',
         platform: task.platform || '',
+        requestNotes: task.requestNotes || '',
       })
+      setComments(task.comments || [])
+      setNewComment('')
       setSelectedAssignees(
         (task.assignedTo || []).map((u: any) => (typeof u === 'number' ? u : u.id))
       )
@@ -128,15 +118,19 @@ export const TaskModal: React.FC<TaskModalProps> = ({
         priority: initialValues?.priority || 'medium',
         taskType: '',
         dueDate: initialDueDate || '',
+        dueTime: '',
         addToGlobalCalendar: false,
         postType: initialValues?.postType || '',
         platform: initialValues?.platform || '',
+        requestNotes: '',
       })
       setSelectedAssignees([])
       setAttachments([])
+      setComments([])
+      setNewComment('')
     }
   }, [task, initialDueDate, initialValues, isOpen])
-  
+
   useEffect(() => {
     // Fetch users for assignment - filtered by department
     const fetchUsers = async () => {
@@ -150,15 +144,17 @@ export const TaskModal: React.FC<TaskModalProps> = ({
           'production': 'departments.isProductionStaff',
           'social-media': 'departments.isSocialMediaStaff',
         }
-        
-        const staffField = departmentFieldMap[department]
+
+        // An existing task keeps its owning department even when opened from the requester's board.
+        const assigneeDepartment = task ? (task.department as string) : department
+        const staffField = departmentFieldMap[assigneeDepartment]
         let url = `${serverURL}/api/people?limit=100`
-        
+
         // Add department filter if we have a mapping
         if (staffField) {
           url += `&where[${encodeURIComponent(staffField)}][equals]=true`
         }
-        
+
         const res = await fetch(url, {
           credentials: 'include',
         })
@@ -168,31 +164,31 @@ export const TaskModal: React.FC<TaskModalProps> = ({
         console.error('Failed to fetch users:', err)
       }
     }
-    
+
     if (isOpen) {
       fetchUsers()
     }
-  }, [isOpen, serverURL, department])
-  
+  }, [isOpen, serverURL, department, task])
+
   // Upload file to Media collection
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files || files.length === 0) return
-    
+
     setUploading(true)
-    
+
     try {
       for (const file of Array.from(files)) {
         const formData = new FormData()
         formData.append('file', file)
         formData.append('alt', file.name)
-        
+
         const res = await fetch(`${serverURL}/api/media`, {
           method: 'POST',
           credentials: 'include',
           body: formData,
         })
-        
+
         if (res.ok) {
           const mediaDoc = await res.json()
           // Add to attachments list
@@ -216,19 +212,19 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       }
     }
   }
-  
+
   // Remove attachment
   const handleRemoveAttachment = (index: number) => {
     setAttachments(prev => prev.filter((_, i) => i !== index))
   }
-  
+
   // Update attachment label/description
   const handleUpdateAttachmentLabel = (index: number, label: string) => {
-    setAttachments(prev => prev.map((att, i) => 
+    setAttachments(prev => prev.map((att, i) =>
       i === index ? { ...att, label } : att
     ))
   }
-  
+
   // Get filename from attachment (uses filename, not label - label is for description)
   const getAttachmentFilename = (attachment: AttachmentItem): string => {
     if (typeof attachment.file === 'object' && attachment.file) {
@@ -236,12 +232,12 @@ export const TaskModal: React.FC<TaskModalProps> = ({
     }
     return 'Attachment'
   }
-  
+
   // Get label/description from attachment
   const getAttachmentLabel = (attachment: AttachmentItem): string => {
     return attachment.label || ''
   }
-  
+
   // Get URL for attachment download/view
   const getAttachmentUrl = (attachment: AttachmentItem): string | null => {
     if (typeof attachment.file === 'object' && attachment.file) {
@@ -249,7 +245,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
     }
     return null
   }
-  
+
   // Check if attachment is an image
   const isImageAttachment = (attachment: AttachmentItem): boolean => {
     if (typeof attachment.file === 'object' && attachment.file) {
@@ -258,7 +254,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
     }
     return false
   }
-  
+
   // Get thumbnail URL (use smaller size if available)
   const getThumbnailUrl = (attachment: AttachmentItem): string | null => {
     if (typeof attachment.file === 'object' && attachment.file) {
@@ -272,30 +268,31 @@ export const TaskModal: React.FC<TaskModalProps> = ({
     }
     return null
   }
-  
+
   // Existing tasks keep their own department; new ones take it from the board
   const effectiveDepartment = task ? (task.department as string) : department
   const isSocialMedia = effectiveDepartment === 'social-media'
-  
+
   const handleSubmit = async () => {
-    
+
     if (!formData.title.trim()) {
       toast.error('Title is required')
       return
     }
-    
+
     setSaving(true)
-    
+
     try {
       // Build payload, excluding empty optional fields
       const payload: Record<string, any> = {
         title: formData.title,
-        description: formData.description || undefined,
+        // The collection field is richText; round-trip through a minimal Lexical doc.
+        description: plainTextToLexical(formData.description),
         status: formData.status,
         priority: formData.priority,
         department,
         assignedTo: selectedAssignees,
-        dueDate: formData.dueDate || null,
+        dueDate: composeDueDate(formData.dueDate, formData.dueTime),
         // Calendar visibility
         addToGlobalCalendar: formData.addToGlobalCalendar,
         // Include attachments - extract just the file ID
@@ -306,37 +303,38 @@ export const TaskModal: React.FC<TaskModalProps> = ({
         // Request tracking fields
         isRequest: isRequest || undefined,
         requestedByDepartment: requestedByDepartment || undefined,
+        requestNotes: (isRequest || task?.isRequest) ? (formData.requestNotes || null) : undefined,
       }
-      
+
       // When editing an existing task, preserve its original department
       // Only set department from prop when creating a new task
       if (task) {
         // For existing tasks, use the task's current department
         payload.department = task.department
       }
-      
+
       // Only include taskType if it has a value
       if (formData.taskType) {
         payload.taskType = formData.taskType
       }
-      
+
       // Social media tasks carry post type + platform for the content calendar
       if (isSocialMedia) {
         payload.postType = formData.postType || null
         payload.platform = formData.platform || null
       }
-      
+
       const url = task
         ? `${serverURL}/api/tasks/${task.id}`
         : `${serverURL}/api/tasks`
-      
+
       const res = await fetch(url, {
         method: task ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify(payload),
       })
-      
+
       if (res.ok) {
         toast.success(task ? 'Task updated!' : 'Task created!')
         onSave()
@@ -351,15 +349,15 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       setSaving(false)
     }
   }
-  
+
   // Delete task
   const handleDeleteClick = () => {
     setShowDeleteConfirm(true)
   }
-  
+
   const handleDeleteConfirm = async () => {
     if (!task) return
-    
+
     setShowDeleteConfirm(false)
     setSaving(true)
     try {
@@ -367,7 +365,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
         method: 'DELETE',
         credentials: 'include',
       })
-      
+
       if (res.ok) {
         toast.success('Task deleted')
         onSave()
@@ -381,13 +379,13 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       setSaving(false)
     }
   }
-  
+
   // Archive/Unarchive task
   const handleArchive = async () => {
     if (!task) return
-    
+
     const isArchiving = !task.archived
-    
+
     setSaving(true)
     try {
       const res = await fetch(`${serverURL}/api/tasks/${task.id}`, {
@@ -396,7 +394,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
         credentials: 'include',
         body: JSON.stringify({ archived: isArchiving }),
       })
-      
+
       if (res.ok) {
         toast.success(isArchiving ? 'Task archived' : 'Task unarchived')
         onSave()
@@ -410,7 +408,38 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       setSaving(false)
     }
   }
-  
+
+  const postComment = async () => {
+    if (!task || !currentUser || !newComment.trim()) return
+    setPostingComment(true)
+    try {
+      const existing = comments.map((c) => ({
+        author: typeof c.author === 'object' && c.author ? c.author.id : c.author,
+        content: c.content,
+        createdAt: c.createdAt,
+      }))
+      const res = await fetch(`${serverURL}/api/tasks/${task.id}?depth=1`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ comments: [...existing, { author: currentUser.id, content: newComment.trim() }] }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        toast.error(err?.errors?.[0]?.message || err?.message || 'Could not post comment')
+        return
+      }
+      const data = await res.json()
+      setComments(data?.doc?.comments || [])
+      setNewComment('')
+      onSave()
+    } catch {
+      toast.error('Could not post comment')
+    } finally {
+      setPostingComment(false)
+    }
+  }
+
   const handleAssigneeToggle = (userId: number) => {
     setSelectedAssignees((prev) =>
       prev.includes(userId)
@@ -418,9 +447,9 @@ export const TaskModal: React.FC<TaskModalProps> = ({
         : [...prev, userId]
     )
   }
-  
+
   if (!isOpen) return null
-  
+
   return (
     <div className="workboard-modal-overlay" onClick={onClose}>
       <div className="workboard-modal" onClick={(e) => e.stopPropagation()}>
@@ -437,7 +466,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
             <X size={16} />
           </button>
         </div>
-        
+
         {/* Using div instead of form to avoid nested form error with Payload */}
         <div className="workboard-modal__form">
           <div className="workboard-modal__field">
@@ -450,7 +479,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               autoFocus
             />
           </div>
-          
+
           <div className="workboard-modal__field">
             <label>Description</label>
             <textarea
@@ -460,7 +489,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               rows={4}
             />
           </div>
-          
+
           <div className="workboard-modal__row">
             <div className="workboard-modal__field">
               <label>Status</label>
@@ -475,7 +504,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                 ))}
               </select>
             </div>
-            
+
             <div className="workboard-modal__field">
               <label>Priority</label>
               <select
@@ -489,17 +518,28 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                 ))}
               </select>
             </div>
-            
+
             <div className="workboard-modal__field">
-              <label>Due Date</label>
-              <input
-                type="date"
-                value={formData.dueDate}
-                onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-              />
+              <label>Due date</label>
+              <div className="workboard-modal__due">
+                <input
+                  type="date"
+                  value={formData.dueDate}
+                  onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                  aria-label="Due date"
+                />
+                <input
+                  type="time"
+                  value={formData.dueTime}
+                  onChange={(e) => setFormData({ ...formData, dueTime: e.target.value })}
+                  aria-label="Due time (optional)"
+                  disabled={!formData.dueDate}
+                  title={formData.dueDate ? 'Optional time of day' : 'Pick a date first'}
+                />
+              </div>
             </div>
           </div>
-          
+
           {/* Post details - only for Social Media department */}
           {isSocialMedia && (
             <div className="workboard-modal__row">
@@ -517,7 +557,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                   ))}
                 </select>
               </div>
-              
+
               <div className="workboard-modal__field">
                 <label>Platform</label>
                 <select
@@ -534,9 +574,9 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               </div>
             </div>
           )}
-          
+
           {/* Show on Public Calendar - only for Events department */}
-          {department === 'events' && (
+          {effectiveDepartment === 'events' && (
             <div className="workboard-modal__field workboard-modal__field--calendar-toggle">
               <label className="workboard-modal__calendar-toggle">
                 <input
@@ -549,7 +589,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               <small>When enabled, this event will appear on the public calendar and Discord</small>
             </div>
           )}
-          
+
           <div className="workboard-modal__field">
             <label>Assigned To</label>
             <div className="workboard-modal__assignees">
@@ -565,7 +605,54 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               ))}
             </div>
           </div>
-          
+
+          {(isRequest || task?.isRequest) && (
+            <div className="workboard-modal__field">
+              <label>Notes for the other department</label>
+              <textarea
+                value={formData.requestNotes}
+                onChange={(e) => setFormData({ ...formData, requestNotes: e.target.value })}
+                placeholder="Context, references, deadlines, who to contact..."
+                rows={3}
+              />
+            </div>
+          )}
+
+          {task && (
+            <div className="workboard-modal__field">
+              <label>Comments {comments.length > 0 && `(${comments.length})`}</label>
+              <div className="workboard-modal__comments">
+                {comments.length === 0 && <p className="workboard-modal__comments-empty">No comments yet.</p>}
+                {comments.map((c, idx) => (
+                  <div key={c.id ?? idx} className="workboard-modal__comment">
+                    <div className="workboard-modal__comment-meta">
+                      <span className="workboard-modal__comment-author">{getPersonLabel(c.author as any)}</span>
+                      <span className="workboard-modal__comment-time">{formatRelative(c.createdAt)}</span>
+                    </div>
+                    <p className="workboard-modal__comment-body">{c.content}</p>
+                  </div>
+                ))}
+                <div className="workboard-modal__comment-form">
+                  <textarea
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="Add a comment..."
+                    rows={2}
+                    aria-label="New comment"
+                  />
+                  <button
+                    type="button"
+                    className="workboard-modal__btn workboard-modal__btn--secondary"
+                    disabled={postingComment || !newComment.trim()}
+                    onClick={postComment}
+                  >
+                    {postingComment ? 'Posting...' : 'Post comment'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Attachments Section */}
           <div className="workboard-modal__field">
             <label>Attachments</label>
@@ -577,7 +664,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                     const url = getAttachmentUrl(att)
                     const isImage = isImageAttachment(att)
                     const thumbUrl = getThumbnailUrl(att)
-                    
+
                     return (
                       <div key={att.id || idx} className="workboard-modal__attachment-item">
                         {/* Image thumbnail or file icon */}
@@ -593,7 +680,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                         ) : (
                           <span className="workboard-modal__attachment-icon"><Paperclip size={12} /></span>
                         )}
-                        
+
                         {/* File info section */}
                         <div className="workboard-modal__attachment-info">
                           {/* Filename row with Save button */}
@@ -612,7 +699,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                               </a>
                             )}
                           </div>
-                          
+
                           {/* Description input */}
                           <input
                             type="text"
@@ -622,7 +709,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                             className="workboard-modal__attachment-desc"
                           />
                         </div>
-                        
+
                         {/* Remove button */}
                         <button
                           type="button"
@@ -637,7 +724,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                   })}
                 </div>
               )}
-              
+
               {/* Upload button */}
               <div className="workboard-modal__upload-area">
                 <input
@@ -657,20 +744,22 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               </div>
             </div>
           </div>
-          
+
           <div className="workboard-modal__actions">
             {/* Left side: Danger actions (only for existing tasks) */}
             {task && (
               <div className="workboard-modal__danger-actions">
-                <button
-                  type="button"
-                  className="workboard-modal__btn workboard-modal__btn--danger"
-                  disabled={saving}
-                  onClick={handleDeleteClick}
-                  title="Delete this task permanently"
-                >
-                  <Trash2 size={14} /> Delete
-                </button>
+                {canDelete && (
+                  <button
+                    type="button"
+                    className="workboard-modal__btn workboard-modal__btn--danger"
+                    disabled={saving}
+                    onClick={handleDeleteClick}
+                    title="Delete this task permanently (admins and staff managers)"
+                  >
+                    <Trash2 size={14} /> Delete
+                  </button>
+                )}
                 <button
                   type="button"
                   className="workboard-modal__btn workboard-modal__btn--archive"
@@ -682,7 +771,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                 </button>
               </div>
             )}
-            
+
             {/* Right side: Primary actions */}
             <div className="workboard-modal__primary-actions">
               <button
@@ -704,7 +793,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
           </div>
         </div>
       </div>
-      
+
       {/* Delete Confirmation Modal */}
       <ConfirmModal
         isOpen={showDeleteConfirm}

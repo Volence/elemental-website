@@ -34,6 +34,37 @@ export function dueDateInputValue(iso: string | null | undefined): string {
   return dueDateKey(iso) ?? ''
 }
 
+/** "HH:MM" (local) when the due date carries a time, else "" for date-only values. */
+export function dueTimeInputValue(iso: string | null | undefined): string {
+  if (!iso || isDateOnly(iso)) return ''
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+/**
+ * Build the value to save from the modal's date and time inputs.
+ * No time: keep the date-only "YYYY-MM-DD" convention (stored as UTC midnight).
+ * With a time: a real local instant, so the calendar and Discord show it correctly.
+ */
+export function composeDueDate(dateKey: string, time: string): string | null {
+  if (!dateKey) return null
+  if (!time) return dateKey
+  const [y, m, d] = dateKey.split('-').map(Number)
+  const [hh, mm] = time.split(':').map(Number)
+  const local = new Date(y, m - 1, d, hh || 0, mm || 0, 0, 0)
+  return Number.isNaN(local.getTime()) ? dateKey : local.toISOString()
+}
+
+/** "Sep 6" for date-only values, "Sep 6, 3:30 PM EDT" when a time was set. */
+export function formatDueDateTime(iso: string | null | undefined): string {
+  if (!iso) return ''
+  if (isDateOnly(iso)) return formatDueDate(iso)
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })
+}
+
 /** A local Date at noon on the due date's calendar day (safe for formatting). */
 export function dueDateAsLocalDate(iso: string | null | undefined): Date | null {
   const key = dueDateKey(iso)

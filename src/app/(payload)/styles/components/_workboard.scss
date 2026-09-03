@@ -1,6 +1,6 @@
 /**
  * WORKBOARD KANBAN STYLES
- * 
+ *
  * Styles for the universal workboard/kanban system
  * Uses the Clean Glow design system for consistent styling
  * Used by Graphics, Video, Events, Scouting, Social Media dashboards
@@ -16,7 +16,7 @@
 .workboard {
   padding: var(--base-gap);
   min-height: 80vh;
-  
+
   &__header {
     display: flex;
     justify-content: space-between;
@@ -27,20 +27,20 @@
     padding-bottom: 1rem;
     border-bottom: 1px solid rgba($admin-accent-info, 0.2);
   }
-  
+
   &__title-section {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   &__title {
     margin: 0;
     font-size: 1.75rem;
     font-weight: 700;
     color: white;
   }
-  
+
   &__stats {
     display: flex;
     flex-wrap: wrap;
@@ -48,26 +48,26 @@
     font-size: 0.875rem;
     color: rgba(255, 255, 255, 0.6);
   }
-  
+
   &__stat {
     display: flex;
     align-items: center;
     gap: 0.35rem;
-    
+
     // Add glow badge style to stat numbers
     span:last-child {
       color: $admin-accent-info;
       font-weight: 600;
     }
   }
-  
+
   &__actions {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     gap: 0.75rem;
   }
-  
+
   &__filter {
     @include glow-select($admin-accent-info);
     padding: 0.5rem 0.75rem;
@@ -75,14 +75,14 @@
     min-width: 120px;
     color-scheme: dark;
     background-color: rgba(15, 18, 25, 0.95);
-    
+
     option {
       background-color: rgb(25, 30, 40);
       color: white;
       padding: 0.5rem;
     }
   }
-  
+
   &__toggle {
     display: flex;
     align-items: center;
@@ -90,44 +90,39 @@
     font-size: 0.875rem;
     color: rgba(255, 255, 255, 0.7);
     cursor: pointer;
-    
+
     input {
       @include glow-checkbox($admin-accent-success);
       cursor: pointer;
     }
   }
-  
+
   &__btn {
     @include glow-button($admin-accent-success);
     padding: 0.5rem 1rem;
     font-size: 0.875rem;
     font-weight: 500;
-    
+
     &--primary {
       @include glow-button($admin-accent-success);
     }
-    
+
     &--refresh {
       @include glow-button($admin-accent-info);
     }
-    
+
     &--request {
       @include glow-button($admin-accent-warning);
     }
   }
-  
+
   // Request dropdown
   &__request-dropdown {
     position: relative;
-    
-    &:hover .workboard__request-menu,
-    &:focus-within .workboard__request-menu {
-      display: flex;
-    }
   }
-  
+
   &__request-menu {
-    display: none;
+    display: flex;
     position: absolute;
     top: calc(100% - 2px); // Overlap slightly to prevent gap
     left: 0;
@@ -141,7 +136,7 @@
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   }
-  
+
   &__request-option {
     padding: 0.6rem 1rem;
     background: none;
@@ -151,18 +146,18 @@
     font-size: 0.875rem;
     cursor: pointer;
     transition: all 0.2s ease;
-    
+
     &:hover {
       background: rgba($admin-accent-warning, 0.2);
       color: $admin-accent-warning;
     }
   }
-  
+
   // Outgoing Requests Section
   &__outgoing-header {
     margin: 1rem 0;
   }
-  
+
   &__outgoing-toggle {
     @include glow-button($admin-accent-info);
     padding: 0.5rem 1rem;
@@ -175,7 +170,7 @@
     align-items: center;
     gap: 0.5rem;
   }
-  
+
   &__outgoing-list {
     display: flex;
     flex-direction: column;
@@ -186,7 +181,7 @@
     border-radius: 8px;
     margin-bottom: 1rem;
   }
-  
+
   &__outgoing-item {
     display: flex;
     justify-content: space-between;
@@ -196,70 +191,70 @@
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s ease;
-    
+
     &:hover {
       background: rgba(35, 40, 55, 0.95);
       transform: translateX(4px);
     }
   }
-  
+
   &__outgoing-info {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
   }
-  
+
   &__outgoing-title {
     font-weight: 500;
     color: white;
   }
-  
+
   &__outgoing-dept {
     font-size: 0.75rem;
     color: rgba(255, 255, 255, 0.5);
   }
-  
+
   &__outgoing-status {
     flex-shrink: 0;
   }
-  
+
   &__status-badge {
     padding: 0.25rem 0.5rem;
     border-radius: 12px;
     font-size: 0.7rem;
     font-weight: 500;
-    
+
     &--backlog {
       background: rgba($admin-accent-info, 0.2);
       color: $admin-accent-info;
     }
-    
+
     &--in-progress {
       background: rgba($admin-accent-warning, 0.2);
       color: $admin-accent-warning;
     }
-    
+
     &--review {
       background: rgba(#8b5cf6, 0.2);
       color: #a78bfa;
     }
-    
+
     &--complete {
       background: rgba($admin-accent-success, 0.2);
       color: $admin-accent-success;
     }
   }
-  
+
   &__board {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 1.25rem;
     min-height: 60vh;
-    
+
     @media (max-width: 1200px) {
       grid-template-columns: repeat(2, 1fr);
     }
-    
+
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
     }
@@ -279,16 +274,16 @@
   max-height: 70vh;
   transition: all 0.3s ease;
   backdrop-filter: blur(8px);
-  
+
   // Subtle column glow
   box-shadow: 0 0 15px rgba($admin-accent-primary, 0.05);
-  
+
   &--drag-over {
     border-color: rgba($admin-accent-success, 0.7);
     box-shadow: 0 0 25px rgba($admin-accent-success, 0.2);
     background: rgba($admin-accent-success, 0.05);
   }
-  
+
   &__header {
     display: flex;
     align-items: center;
@@ -298,19 +293,19 @@
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent);
     border-radius: 12px 12px 0 0;
   }
-  
+
   &__icon {
     font-size: 1.25rem;
     filter: drop-shadow(0 0 4px rgba($admin-accent-info, 0.5));
   }
-  
+
   &__title {
     font-weight: 600;
     flex: 1;
     color: white;
     font-size: 0.95rem;
   }
-  
+
   &__count {
     @include glow-badge($admin-accent-info);
     padding: 0.25rem 0.625rem;
@@ -319,7 +314,7 @@
     min-width: 24px;
     text-align: center;
   }
-  
+
   &__tasks {
     flex: 1;
     overflow-y: auto;
@@ -329,7 +324,7 @@
     gap: 0.625rem;
     @include custom-scrollbar;
   }
-  
+
   &__empty {
     text-align: center;
     color: rgba(255, 255, 255, 0.4);
@@ -352,23 +347,23 @@
   cursor: pointer;
   transition: all 0.15s ease;
   border-radius: 4px;
-  
+
   &:hover {
     background: rgba(35, 40, 50, 0.98);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   }
-  
+
   // Request card styling - orange/yellow border
   &--request {
     border-left-color: $admin-accent-warning;
     background: rgba(30, 28, 25, 0.95);
-    
+
     &:hover {
       box-shadow: 0 4px 12px rgba($admin-accent-warning, 0.2);
     }
   }
-  
+
   // Request badge
   &__request-badge {
     font-size: 0.65rem;
@@ -379,7 +374,7 @@
     margin-bottom: 0.5rem;
     width: fit-content;
   }
-  
+
   // Header: Title + Priority
   &__header {
     display: flex;
@@ -387,7 +382,7 @@
     align-items: flex-start;
     gap: 0.5rem;
   }
-  
+
   &__title {
     font-weight: 500;
     font-size: 0.875rem;
@@ -395,7 +390,7 @@
     color: white;
     flex: 1;
   }
-  
+
   // Priority badge - small pill in corner
   &__priority {
     padding: 0.1rem 0.35rem;
@@ -406,23 +401,23 @@
     letter-spacing: 0.02em;
     white-space: nowrap;
     flex-shrink: 0;
-    
+
     &--high, &--urgent {
       background: rgba($admin-accent-error, 0.2);
       color: $admin-accent-error;
     }
-    
+
     &--medium {
       background: rgba($admin-accent-warning, 0.2);
       color: $admin-accent-warning;
     }
-    
+
     &--low {
       background: rgba($admin-accent-success, 0.2);
       color: $admin-accent-success;
     }
   }
-  
+
   // Social media: post type / platform tags
   &__tags {
     display: flex;
@@ -430,7 +425,7 @@
     gap: 0.3rem;
     margin-top: 0.35rem;
   }
-  
+
   &__tag {
     font-size: 0.6rem;
     font-weight: 600;
@@ -438,13 +433,13 @@
     border-radius: 10px;
     border: 1px solid currentColor;
     white-space: nowrap;
-    
+
     &--muted {
       color: rgba(255, 255, 255, 0.5);
       border-color: rgba(255, 255, 255, 0.2);
     }
   }
-  
+
   // Footer: Date + Assignees
   &__footer {
     display: flex;
@@ -452,32 +447,32 @@
     align-items: center;
     margin-top: 0.375rem;
   }
-  
+
   // Meta info container (date, attachments, comments)
   &__meta {
     display: flex;
     align-items: center;
     gap: 0.5rem;
   }
-  
+
   &__date,
   &__attachments,
   &__comments {
     font-size: 0.7rem;
     color: rgba(255, 255, 255, 0.45);
   }
-  
+
   &__date--overdue {
     color: $admin-accent-error;
     font-weight: 600;
   }
-  
+
   // Assignee avatars - circular initials
   &__assignees {
     display: flex;
     margin-left: auto;
   }
-  
+
   &__avatar {
     width: 22px;
     height: 22px;
@@ -490,11 +485,11 @@
     align-items: center;
     justify-content: center;
     margin-left: -6px;
-    
+
     &:first-child {
       margin-left: 0;
     }
-    
+
     &--more {
       background: rgba(255, 255, 255, 0.15);
       color: rgba(255, 255, 255, 0.7);
@@ -547,11 +542,11 @@
   max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 
+  box-shadow:
     0 0 40px rgba($admin-accent-info, 0.15),
     0 20px 60px rgba(0, 0, 0, 0.5);
   @include custom-scrollbar;
-  
+
   &__header {
     display: flex;
     justify-content: space-between;
@@ -559,7 +554,7 @@
     padding: 1.25rem 1.5rem;
     border-bottom: 1px solid rgba($admin-accent-info, 0.2);
     background: linear-gradient(180deg, rgba($admin-accent-info, 0.05), transparent);
-    
+
     h2 {
       margin: 0;
       font-size: 1.25rem;
@@ -567,12 +562,12 @@
       font-weight: 700;
     }
   }
-  
+
   &__header-title {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-    
+
     h2 {
       margin: 0;
       font-size: 1.25rem;
@@ -580,7 +575,7 @@
       font-weight: 700;
     }
   }
-  
+
   &__request-badge {
     font-size: 0.75rem;
     color: $admin-accent-warning;
@@ -590,7 +585,7 @@
     border: 1px solid rgba($admin-accent-warning, 0.3);
     width: fit-content;
   }
-  
+
   &__close {
     @include glow-button($admin-accent-error);
     background: transparent !important;
@@ -600,82 +595,82 @@
     padding: 0.25rem 0.5rem;
     line-height: 1;
     color: rgba(255, 255, 255, 0.6);
-    
+
     &:hover {
       color: $admin-accent-error;
       background: rgba($admin-accent-error, 0.1) !important;
       transform: none;
     }
   }
-  
+
   &__form {
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
   }
-  
+
   &__field {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    
+
     label {
       font-weight: 600;
       font-size: 0.875rem;
       color: rgba(255, 255, 255, 0.85);
     }
-    
+
     input[type="text"],
     input[type="date"],
     textarea,
     select {
       @include glow-input($admin-accent-info);
       width: 100%;
-      
+
       &::placeholder {
         color: rgba(255, 255, 255, 0.35);
       }
     }
-    
+
     // Style select dropdowns for dark theme
     select {
       color-scheme: dark;
       background-color: rgba(15, 18, 25, 0.95);
-      
+
       option {
         background-color: rgb(25, 30, 40);
         color: white;
         padding: 0.5rem;
-        
+
         &:hover,
         &:checked {
           background-color: rgba($admin-accent-info, 0.3);
         }
       }
     }
-    
+
     textarea {
       resize: vertical;
       min-height: 90px;
     }
-    
+
     // Fix date input to use native picker styling
     input[type="date"] {
       color-scheme: dark;
     }
   }
-  
+
   &__row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
-    
+
     @media (max-width: 600px) {
       grid-template-columns: 1fr;
     }
   }
-  
+
   &__assignees {
     display: flex;
     flex-wrap: wrap;
@@ -688,7 +683,7 @@
     border: 1px solid rgba($admin-accent-info, 0.2);
     @include custom-scrollbar;
   }
-  
+
   &__assignee-option {
     display: flex;
     align-items: center;
@@ -699,25 +694,25 @@
     cursor: pointer;
     font-size: 0.8rem;
     transition: all 0.2s ease;
-    
+
     &:hover {
       background: rgba(255, 255, 255, 0.08);
     }
-    
+
     input[type="checkbox"] {
       @include glow-checkbox($admin-accent-success, 16px);
     }
-    
+
     &:has(input:checked) {
       background: rgba($admin-accent-success, 0.1);
-      
+
       span {
         color: white;
         font-weight: 600;
       }
     }
   }
-  
+
   // Inline attachments section
   &__attachments {
     @include transparent-bg(0.05);
@@ -725,14 +720,14 @@
     border: 1px solid rgba($admin-accent-info, 0.2);
     padding: 0.75rem;
   }
-  
+
   &__attachment-list {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
     margin-bottom: 0.75rem;
   }
-  
+
   &__attachment-item {
     display: flex;
     align-items: center;
@@ -742,7 +737,7 @@
     border-radius: 4px;
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
-  
+
   // Thumbnail for image attachments
   &__attachment-thumb {
     width: 48px;
@@ -754,14 +749,14 @@
     align-items: center;
     justify-content: center;
     background: rgba(0, 0, 0, 0.2);
-    
+
     img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
   }
-  
+
   // Icon for non-image attachments
   &__attachment-icon {
     width: 48px;
@@ -774,7 +769,7 @@
     background: rgba(255, 255, 255, 0.05);
     border-radius: 4px;
   }
-  
+
   // Info section (name + actions + description)
   &__attachment-info {
     flex: 1;
@@ -784,14 +779,14 @@
     gap: 0.375rem;
     padding-left: 0.75rem;
   }
-  
+
   // Row for filename + save button
   &__attachment-row {
     display: flex;
     align-items: center;
     gap: 0.5rem;
   }
-  
+
   &__attachment-name {
     font-size: 0.8rem;
     color: rgba(255, 255, 255, 0.8);
@@ -800,7 +795,7 @@
     white-space: nowrap;
     flex: 1;
   }
-  
+
   // Description input
   &__attachment-desc {
     width: 100%;
@@ -812,22 +807,22 @@
     border-radius: 4px;
     outline: none;
     transition: all 0.2s ease;
-    
+
     &::placeholder {
       color: rgba(255, 255, 255, 0.35);
     }
-    
+
     &:focus {
       border-color: rgba($admin-accent-info, 0.4);
       background: rgba(255, 255, 255, 0.08);
     }
   }
-  
+
   &__attachment-actions {
     display: flex;
     gap: 0.5rem;
   }
-  
+
   &__attachment-download {
     display: inline-flex;
     align-items: center;
@@ -839,13 +834,13 @@
     border-radius: 4px;
     text-decoration: none;
     transition: all 0.2s ease;
-    
+
     &:hover {
       background: rgba($admin-accent-success, 0.25);
       color: lighten($admin-accent-success, 10%);
     }
   }
-  
+
   &__attachment-remove {
     background: rgba($admin-accent-error, 0.2);
     color: $admin-accent-error;
@@ -861,21 +856,21 @@
     transition: all 0.2s ease;
     flex-shrink: 0;
     margin-left: 0.5rem;
-    
+
     &:hover {
       background: rgba($admin-accent-error, 0.4);
     }
   }
-  
+
   &__upload-area {
     display: flex;
     align-items: center;
   }
-  
+
   &__file-input {
     display: none;
   }
-  
+
   &__upload-btn {
     display: inline-flex;
     align-items: center;
@@ -889,13 +884,13 @@
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
-    
+
     &:hover {
       background: rgba($admin-accent-info, 0.25);
       border-color: rgba($admin-accent-info, 0.6);
     }
   }
-  
+
   &__actions {
     display: flex;
     justify-content: space-between;
@@ -905,18 +900,18 @@
     padding-top: 1.25rem;
     border-top: 1px solid rgba($admin-accent-info, 0.15);
   }
-  
+
   &__danger-actions {
     display: flex;
     gap: 0.5rem;
   }
-  
+
   &__primary-actions {
     display: flex;
     gap: 0.5rem;
     margin-left: auto;
   }
-  
+
   &__btn {
     padding: 0.6rem 1rem;
     border: none;
@@ -925,15 +920,15 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
-    
+
     &--secondary {
       @include glow-button($admin-accent-info);
       background: transparent !important;
     }
-    
+
     &--primary {
       @include glow-button($admin-accent-success);
-      
+
       &:disabled {
         opacity: 0.5;
         cursor: not-allowed;
@@ -941,47 +936,47 @@
         box-shadow: none;
       }
     }
-    
+
     &--danger {
       background: rgba($admin-accent-error, 0.15);
       color: $admin-accent-error;
       border: 1px solid rgba($admin-accent-error, 0.3);
-      
+
       &:hover:not(:disabled) {
         background: rgba($admin-accent-error, 0.25);
         border-color: rgba($admin-accent-error, 0.5);
       }
-      
+
       &:disabled {
         opacity: 0.5;
         cursor: not-allowed;
       }
     }
-    
+
     &--archive {
       background: rgba($admin-accent-warning, 0.15);
       color: $admin-accent-warning;
       border: 1px solid rgba($admin-accent-warning, 0.3);
-      
+
       &:hover:not(:disabled) {
         background: rgba($admin-accent-warning, 0.25);
         border-color: rgba($admin-accent-warning, 0.5);
       }
-      
+
       &:disabled {
         opacity: 0.5;
         cursor: not-allowed;
       }
     }
   }
-  
+
   // Calendar toggle field styling
   &__field--calendar-toggle {
     padding: 0.75rem 1rem;
     background: rgba(#06b6d4, 0.08);
     border-radius: 8px;
     border: 1px solid rgba(#06b6d4, 0.25);
-    
+
     small {
       display: block;
       margin-top: 0.375rem;
@@ -989,7 +984,7 @@
       color: rgba(255, 255, 255, 0.5);
     }
   }
-  
+
   &__calendar-toggle {
     display: flex;
     align-items: center;
@@ -997,15 +992,15 @@
     cursor: pointer;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.9);
-    
+
     input[type="checkbox"] {
       @include glow-checkbox(#06b6d4, 18px);
     }
-    
+
     span {
       font-size: 0.9rem;
     }
-    
+
     &:has(input:checked) span {
       color: #22d3ee;
     }
@@ -1023,7 +1018,7 @@
   min-height: 50vh;
   gap: 1.25rem;
   color: rgba(255, 255, 255, 0.6);
-  
+
   &__spinner {
     width: 48px;
     height: 48px;
@@ -1106,18 +1101,18 @@
   max-width: 420px;
   width: 90%;
   text-align: center;
-  box-shadow: 
+  box-shadow:
     0 0 30px rgba(0, 0, 0, 0.5),
     0 0 60px rgba($admin-accent-info, 0.1);
   animation: slideUp 0.2s ease;
-  
+
   &__title {
     color: white;
     font-size: 1.3rem;
     font-weight: 600;
     margin: 0 0 1rem 0;
   }
-  
+
   &__message {
     color: rgba(255, 255, 255, 0.7);
     font-size: 0.95rem;
@@ -1130,7 +1125,7 @@
     background: none !important;
     box-shadow: none !important;
     outline: none !important;
-    
+
     // Reset pseudo-elements
     &::before,
     &::after {
@@ -1138,13 +1133,13 @@
       content: none !important;
     }
   }
-  
+
   &__actions {
     display: flex;
     gap: 0.75rem;
     justify-content: center;
   }
-  
+
   &__btn {
     padding: 0.6rem 1.25rem;
     border: none;
@@ -1154,54 +1149,54 @@
     cursor: pointer;
     transition: all 0.2s ease;
     min-width: 100px;
-    
+
     &--cancel {
       background: rgba(255, 255, 255, 0.1);
       color: rgba(255, 255, 255, 0.8);
       border: 1px solid rgba(255, 255, 255, 0.2);
-      
+
       &:hover {
         background: rgba(255, 255, 255, 0.15);
       }
     }
-    
+
     &--danger {
       background: rgba($admin-accent-error, 0.9);
       color: white;
-      
+
       &:hover {
         background: $admin-accent-error;
         box-shadow: 0 0 15px rgba($admin-accent-error, 0.5);
       }
     }
-    
+
     &--warning {
       background: rgba($admin-accent-warning, 0.9);
       color: white;
-      
+
       &:hover {
         background: $admin-accent-warning;
         box-shadow: 0 0 15px rgba($admin-accent-warning, 0.5);
       }
     }
-    
+
     &--info {
       background: rgba($admin-accent-info, 0.9);
       color: white;
-      
+
       &:hover {
         background: $admin-accent-info;
         box-shadow: 0 0 15px rgba($admin-accent-info, 0.5);
       }
     }
   }
-  
+
   // Wide variant for more complex modals
   &--wide {
     max-width: 520px;
     text-align: left;
   }
-  
+
   // Content container
   &__content {
     display: flex;
@@ -1209,31 +1204,31 @@
     gap: 1rem;
     margin-bottom: 1.5rem;
   }
-  
+
   // Section cards
   &__section {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 8px;
     padding: 1rem;
-    
+
     &--actions {
       background: rgba($admin-accent-info, 0.05);
       border-color: rgba($admin-accent-info, 0.15);
     }
   }
-  
+
   &__section-header {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     margin-bottom: 0.75rem;
   }
-  
+
   &__section-icon {
     font-size: 1.1rem;
   }
-  
+
   &__section-title {
     font-size: 0.85rem;
     font-weight: 600;
@@ -1241,14 +1236,14 @@
     text-transform: uppercase;
     letter-spacing: 0.03em;
   }
-  
+
   // Tags for league names
   &__tags {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
   }
-  
+
   &__tag {
     display: inline-block;
     padding: 0.35rem 0.75rem;
@@ -1258,7 +1253,7 @@
     font-size: 0.8rem;
     font-weight: 500;
     color: $admin-accent-warning;
-    
+
     &--more {
       background: rgba(255, 255, 255, 0.08);
       border-color: rgba(255, 255, 255, 0.15);
@@ -1266,14 +1261,14 @@
       font-style: italic;
     }
   }
-  
+
   // Action list with icons
   &__action-list {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   &__action-item {
     display: flex;
     align-items: center;
@@ -1284,12 +1279,12 @@
     font-size: 0.875rem;
     color: rgba(255, 255, 255, 0.85);
   }
-  
+
   &__action-icon {
     font-size: 1rem;
     flex-shrink: 0;
   }
-  
+
   // Notice/warning boxes
   &__notice {
     display: flex;
@@ -1298,24 +1293,24 @@
     padding: 0.75rem 1rem;
     border-radius: 8px;
     font-size: 0.875rem;
-    
+
     &--warning {
       background: rgba($admin-accent-warning, 0.1);
       border: 1px solid rgba($admin-accent-warning, 0.25);
       color: rgba(255, 255, 255, 0.9);
-      
+
       strong {
         color: $admin-accent-warning;
       }
     }
-    
+
     &--info {
       background: rgba($admin-accent-info, 0.1);
       border: 1px solid rgba($admin-accent-info, 0.25);
       color: rgba(255, 255, 255, 0.9);
     }
   }
-  
+
   &__notice-icon {
     font-size: 1.25rem;
     flex-shrink: 0;
@@ -1333,3 +1328,35 @@
   }
 }
 
+// Comments thread and due date row in the task modal
+.workboard-modal {
+  &__due {
+    display: flex;
+    gap: 0.5rem;
+    input[type='date'] { flex: 1; }
+    input[type='time'] { width: 8.5rem; }
+  }
+
+  &__comments {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  &__comments-empty { margin: 0; font-size: 0.8rem; color: rgba(255, 255, 255, 0.5); }
+  &__comment {
+    padding: 0.6rem 0.75rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  &__comment-meta { display: flex; justify-content: space-between; gap: 0.5rem; font-size: 0.72rem; margin-bottom: 0.25rem; }
+  &__comment-author { font-weight: 600; color: rgba(255, 255, 255, 0.9); }
+  &__comment-time { color: rgba(255, 255, 255, 0.5); }
+  &__comment-body { margin: 0; font-size: 0.85rem; white-space: pre-wrap; color: rgba(255, 255, 255, 0.8); }
+  &__comment-form {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    textarea { flex: 1; }
+  }
+}
