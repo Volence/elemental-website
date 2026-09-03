@@ -1,12 +1,12 @@
 import React from 'react'
 import type { LiveSnapshot } from './types'
 
-// ── Color tokens (mirrored from PlayerStatsTable / ScrimMapDetail) ──
+// ── Color tokens: site theme variables for neutrals, fixed hues for team and status colours ──
 const CYAN = '#06b6d4'
-const TEXT_PRIMARY = '#f0f0f5'
-const TEXT_SECONDARY = '#71717a'
-const TEXT_DIM = '#52525b'
-const BORDER = 'rgba(255, 255, 255, 0.06)'
+const TEXT_PRIMARY = 'hsl(var(--foreground))'
+const TEXT_SECONDARY = 'hsl(var(--muted-foreground))'
+const TEXT_DIM = 'hsl(var(--muted-foreground) / 0.7)'
+const BORDER = 'hsla(var(--border))'
 
 // Team palette: team1 = blue/cyan, team2 = orange/red (matches inline scoreboard)
 const T1_COLOR = '#60a5fa' // blue-400
@@ -24,7 +24,7 @@ export function LiveSummary({
 }) {
   return (
     <div
-      className="scrim-detail__card"
+      className="rounded-xl border border-border bg-card/60 backdrop-blur-md"
       style={{
         padding: '16px 20px',
         marginBottom: '20px',

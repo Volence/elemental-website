@@ -54,7 +54,7 @@ export function LiveMatchView({ lobbyId, botStatus }: { lobbyId: number; botStat
   if (empty) return null
 
   return (
-    <div className="scrim-detail">
+    <div className="pug-live space-y-0">
       <LiveSummary snapshot={snapshot} displayMatchTime={displayTime} />
       <LiveScoreboard snapshot={snapshot} changed={changed} leaders={leaders} />
       <LiveActivityTicker events={activity} />

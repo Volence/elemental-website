@@ -1,8 +1,8 @@
 import React from 'react'
 import type { LiveActivityEvent } from './types'
 
-// ── Color tokens ──
-const TEXT_DIM = '#52525b'
+// ── Color tokens (site theme variables so the panel follows light and dark) ──
+const TEXT_DIM = 'hsl(var(--muted-foreground) / 0.7)'
 
 // Team palette: team1 = blue/cyan, team2 = orange/red
 const TEAM_COLOR: Record<1 | 2, string> = {
@@ -14,7 +14,7 @@ export function LiveActivityTicker({ events }: { events: LiveActivityEvent[] }) 
   if (events.length === 0) return null
 
   return (
-    <div className="scrim-detail__card" style={{ padding: '12px 16px' }}>
+    <div className="rounded-xl border border-border bg-card/60 backdrop-blur-md" style={{ padding: '12px 16px' }}>
       <div
         style={{
           fontSize: '12px',

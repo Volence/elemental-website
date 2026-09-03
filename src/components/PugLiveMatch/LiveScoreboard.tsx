@@ -1,15 +1,15 @@
 import React from 'react'
 import type { LiveSnapshot, LiveLeaders, TeamKey } from './types'
 
-// ── Color tokens ──
+// ── Color tokens: site theme variables for neutrals, fixed hues for team and status colours ──
 const CYAN = '#06b6d4'
 const CYAN_DIM = 'rgba(6, 182, 212, 0.12)'
 const GREEN = '#22c55e'
 const RED = '#ef4444'
-const TEXT_PRIMARY = '#f0f0f5'
-const TEXT_SECONDARY = '#71717a'
-const TEXT_DIM = '#52525b'
-const BORDER = 'rgba(255, 255, 255, 0.06)'
+const TEXT_PRIMARY = 'hsl(var(--foreground))'
+const TEXT_SECONDARY = 'hsl(var(--muted-foreground))'
+const TEXT_DIM = 'hsl(var(--muted-foreground) / 0.7)'
+const BORDER = 'hsla(var(--border))'
 
 // Team palette: team1 = blue/cyan, team2 = orange/red
 const TEAM_COLOR: Record<TeamKey, string> = {
@@ -50,7 +50,7 @@ export function LiveScoreboard({
       color: TEXT_DIM,
       textAlign: 'right',
       borderBottom: `1px solid ${BORDER}`,
-      background: 'rgba(255,255,255,0.02)',
+      background: 'hsl(var(--muted) / 0.35)',
       whiteSpace: 'nowrap',
     }
 
@@ -228,8 +228,8 @@ export function LiveScoreboard({
   }
 
   return (
-    <div className="scrim-detail__map-table-card" style={{ marginBottom: '20px' }}>
-      <div className="scrim-detail__map-table-header">Live Scoreboard</div>
+    <div className="rounded-xl border border-border bg-card/60 overflow-hidden" style={{ marginBottom: '20px' }}>
+      <div className="px-5 pt-4 pb-2.5 text-[15px] font-bold border-b border-border flex items-center gap-2.5">Live Scoreboard</div>
       <div style={{ padding: '16px 16px 4px' }}>
         {renderTeam(1)}
         {renderTeam(2)}

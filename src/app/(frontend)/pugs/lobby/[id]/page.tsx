@@ -5,7 +5,6 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useConfirm } from '@/components/ConfirmDialog'
-import '@/styles/scrim-shared.scss'
 import { LiveMatchView } from '@/components/PugLiveMatch/LiveMatchView'
 
 const ROLE_LABELS: Record<string, string> = {
