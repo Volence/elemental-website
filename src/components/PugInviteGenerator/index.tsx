@@ -142,10 +142,11 @@ export const PugInviteGenerator: React.FC = () => {
     )
   }
 
-  function getStatus(invite: InviteData): { label: string; color: string } {
-    if (invite.usedAt) return { label: 'Used', color: 'text-green-400 bg-green-950/40 border-green-800' }
-    if (new Date(invite.expiresAt) < new Date()) return { label: 'Expired', color: 'text-red-400 bg-red-950/40 border-red-800' }
-    return { label: 'Active', color: 'text-cyan-400 bg-cyan-950/40 border-cyan-800' }
+  // Tone is semantic: used = success (terminal), expired = error, active = info (accepting input).
+  function getStatus(invite: InviteData): { label: string; tone: 'success' | 'error' | 'info' } {
+    if (invite.usedAt) return { label: 'Used', tone: 'success' }
+    if (new Date(invite.expiresAt) < new Date()) return { label: 'Expired', tone: 'error' }
+    return { label: 'Active', tone: 'info' }
   }
 
   if (loading) {
@@ -258,7 +259,18 @@ export const PugInviteGenerator: React.FC = () => {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', flex: 1, minWidth: 0 }}>
-                    <span className={`settings-gen__chip ${status.color}`} style={{ fontSize: '0.7rem', padding: '0.15rem 0.5rem', borderRadius: '4px', border: '1px solid' }}>
+                    <span
+                      className="settings-gen__chip"
+                      style={{
+                        fontSize: 'var(--elmt-font-2xs)',
+                        padding: '0.15rem 0.5rem',
+                        borderRadius: 'var(--elmt-radius-xs)',
+                        border: '1px solid',
+                        color: `var(--elmt-accent-${status.tone})`,
+                        borderColor: `var(--elmt-accent-${status.tone})`,
+                        background: 'var(--elmt-bg-surface)',
+                      }}
+                    >
                       {status.label}
                     </span>
                     <span style={{ color: 'var(--theme-elevation-600)', fontWeight: 500 }}>{region}</span>

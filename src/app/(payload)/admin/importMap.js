@@ -14,7 +14,7 @@ import { MetaTitleComponent as MetaTitleComponent_a8a977ebc872c5d5ea7ee689724c08
 import { MetaImageComponent as MetaImageComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { MetaDescriptionComponent as MetaDescriptionComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
-import { SlugField as SlugField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
+import { SlugField as SlugField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
 import { default as default_a57c6a823b3afaaec2d5debdf135e084 } from '@/components/ViewOnSiteButton'
 import { default as default_e8f7b16e4c51b9728b46c9a499df8586 } from '@/components/LinkDiscordButton'
 import { default as default_890f375c2e64cfbf8289c4ab4ee8f2a1 } from '@/components/PeopleListColumns/StaffPositionsCell'
@@ -71,8 +71,8 @@ import { default as default_187be048b128856df5138905b5a2ba07 } from '@/component
 import { default as default_0a8046206052a3b56c63d934ab686c00 } from '@/components/AvailabilityHeatmapView'
 import { default as default_c768ad956bb88923e7aa7b8670a7f64a } from '@/components/GraphicsDashboardTabs'
 import { default as default_8a2500a4e3906ab75bb39c8e12630e9a } from '@/components/TeamBrandingGuide'
-import { FolderTableCell as FolderTableCell_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
-import { FolderField as FolderField_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
+import { FolderTableCell as FolderTableCell_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
+import { FolderField as FolderField_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 import { default as default_84d1cf001f7124d9b07380704ce8cd26 } from '@/components/FileBrowser/FileBrowserView'
 import { VideoWorkboard as VideoWorkboard_f4dd7e7806bf98c1c8970f346133cd5f } from '@/components/DepartmentWorkboard'
 import { EventsWorkboard as EventsWorkboard_f4dd7e7806bf98c1c8970f346133cd5f } from '@/components/DepartmentWorkboard'
@@ -82,7 +82,7 @@ import { default as default_c88412ef156346181b651c19a855fdb0 } from '@/component
 import { default as default_83b754ffb26a9a06f67ecd0cafa4ac31 } from '@/components/InviteLinkColumns/StatusCell'
 import { default as default_d058b284e2b00dd29e97a53109152108 } from '@/components/InviteEditor/ListRedirect'
 import { default as default_bce59de6346bf033e20674529a62668c } from '@/components/InviteEditor/EditRedirect'
-import { FolderTypeField as FolderTypeField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
+import { FolderTypeField as FolderTypeField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
 import { RowLabel as RowLabel_ec255a65fa6fa8d1faeb09cf35284224 } from '@/Header/RowLabel'
 import { RowLabel as RowLabel_1f6ff6ff633e3695d348f4f3c58f1466 } from '@/Footer/RowLabel'
 import { default as default_c68ab0b1bbf77fcff4337c949e1b628c } from '@/components/ProductionDashboardView'
@@ -106,7 +106,6 @@ import { default as default_66dcba8625c994af6076586cb15c754f } from '@/component
 import { default as default_aa0a2d19d38a4839dbd373417e210b89 } from '@/components/AdminLogo'
 import { default as default_4a966b4b6647403eb02e9dcfa6c73e27 } from '@/components/BeforeDashboard/LinkDiscordBanner'
 import { default as default_1a7510af427896d367a49dbf838d2de6 } from '@/components/BeforeDashboard'
-import { default as default_c665fb14b647600ee6fac862e3d3aeb2 } from '@/components/FixDatePickerIcons'
 import { SectionThemeApplicator as SectionThemeApplicator_b4f71752b0da9dddb562ddd527781822 } from '@/components/SectionThemeApplicator'
 import { default as default_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/components/BeforeLogin'
 import { default as default_cb688d169ef5bf1426eea8968f0b9a29 } from '@/components/BeforeDashboard/DashboardNavLink'
@@ -145,8 +144,9 @@ import { default as default_e25f49fb258f9f3dd8ba59b20d07fcd8 } from '@/component
 import { default as default_b65d43645901504026837c862ab8790f } from '@/components/PugPlayers/EditRoute'
 import { default as default_3f9f6e11684f60398762aa444496e6bb } from '@/components/PugMatches/EditRoute'
 import { default as default_74fb30a58c92ffc48c7a2fbce0628372 } from '@/components/PugLeaderboard/EditRoute'
-import { CollectionCards as CollectionCards_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
+import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
+/** @type import('payload').ImportMap */
 export const importMap = {
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
@@ -164,7 +164,7 @@ export const importMap = {
   "@payloadcms/plugin-seo/client#MetaImageComponent": MetaImageComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#MetaDescriptionComponent": MetaDescriptionComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#PreviewComponent": PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
-  "@payloadcms/ui#SlugField": SlugField_3817bf644402e67bfe6577f60ef982de,
+  "@payloadcms/next/client#SlugField": SlugField_2b8867833a34864a02ddf429b0728a40,
   "@/components/ViewOnSiteButton#default": default_a57c6a823b3afaaec2d5debdf135e084,
   "@/components/LinkDiscordButton#default": default_e8f7b16e4c51b9728b46c9a499df8586,
   "@/components/PeopleListColumns/StaffPositionsCell#default": default_890f375c2e64cfbf8289c4ab4ee8f2a1,
@@ -221,8 +221,8 @@ export const importMap = {
   "@/components/AvailabilityHeatmapView#default": default_0a8046206052a3b56c63d934ab686c00,
   "@/components/GraphicsDashboardTabs#default": default_c768ad956bb88923e7aa7b8670a7f64a,
   "@/components/TeamBrandingGuide#default": default_8a2500a4e3906ab75bb39c8e12630e9a,
-  "@payloadcms/ui/rsc#FolderTableCell": FolderTableCell_ab83ff7e88da8d3530831f296ec4756a,
-  "@payloadcms/ui/rsc#FolderField": FolderField_ab83ff7e88da8d3530831f296ec4756a,
+  "@payloadcms/next/rsc#FolderTableCell": FolderTableCell_f9c02e79a4aed9a3924487c0cd4cafb1,
+  "@payloadcms/next/rsc#FolderField": FolderField_f9c02e79a4aed9a3924487c0cd4cafb1,
   "@/components/FileBrowser/FileBrowserView#default": default_84d1cf001f7124d9b07380704ce8cd26,
   "@/components/DepartmentWorkboard#VideoWorkboard": VideoWorkboard_f4dd7e7806bf98c1c8970f346133cd5f,
   "@/components/DepartmentWorkboard#EventsWorkboard": EventsWorkboard_f4dd7e7806bf98c1c8970f346133cd5f,
@@ -232,7 +232,7 @@ export const importMap = {
   "@/components/InviteLinkColumns/StatusCell#default": default_83b754ffb26a9a06f67ecd0cafa4ac31,
   "@/components/InviteEditor/ListRedirect#default": default_d058b284e2b00dd29e97a53109152108,
   "@/components/InviteEditor/EditRedirect#default": default_bce59de6346bf033e20674529a62668c,
-  "@payloadcms/ui#FolderTypeField": FolderTypeField_3817bf644402e67bfe6577f60ef982de,
+  "@payloadcms/next/client#FolderTypeField": FolderTypeField_2b8867833a34864a02ddf429b0728a40,
   "@/Header/RowLabel#RowLabel": RowLabel_ec255a65fa6fa8d1faeb09cf35284224,
   "@/Footer/RowLabel#RowLabel": RowLabel_1f6ff6ff633e3695d348f4f3c58f1466,
   "@/components/ProductionDashboardView#default": default_c68ab0b1bbf77fcff4337c949e1b628c,
@@ -256,7 +256,6 @@ export const importMap = {
   "@/components/AdminLogo#default": default_aa0a2d19d38a4839dbd373417e210b89,
   "@/components/BeforeDashboard/LinkDiscordBanner#default": default_4a966b4b6647403eb02e9dcfa6c73e27,
   "@/components/BeforeDashboard#default": default_1a7510af427896d367a49dbf838d2de6,
-  "@/components/FixDatePickerIcons#default": default_c665fb14b647600ee6fac862e3d3aeb2,
   "@/components/SectionThemeApplicator#SectionThemeApplicator": SectionThemeApplicator_b4f71752b0da9dddb562ddd527781822,
   "@/components/BeforeLogin#default": default_8a7ab0eb7ab5c511aba12e68480bfe5e,
   "@/components/BeforeDashboard/DashboardNavLink#default": default_cb688d169ef5bf1426eea8968f0b9a29,
@@ -295,5 +294,5 @@ export const importMap = {
   "@/components/PugPlayers/EditRoute#default": default_b65d43645901504026837c862ab8790f,
   "@/components/PugMatches/EditRoute#default": default_3f9f6e11684f60398762aa444496e6bb,
   "@/components/PugLeaderboard/EditRoute#default": default_74fb30a58c92ffc48c7a2fbce0628372,
-  "@payloadcms/ui/rsc#CollectionCards": CollectionCards_ab83ff7e88da8d3530831f296ec4756a
+  "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

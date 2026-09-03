@@ -27,7 +27,7 @@
 .date-time-picker__icon-wrap {
   position: absolute;
   right: 0.75rem;
-  top: 3px; // Align closer to top of input
+  top: 3px !important; // Align closer to top of input
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -48,11 +48,14 @@
   color: $admin-text-muted;
   transition: all $transition-fast;
   border-radius: $radius-sm;
-  width: 16px;
-  height: 16px;
-  min-height: unset;
-  position: relative;
-  top: 2px;
+  // !important: Payload sets these inline-ish via its own button base styles.
+  // Previously enforced by a MutationObserver in FixDatePickerIcons (removed).
+  width: 16px !important;
+  height: 16px !important;
+  min-height: unset !important;
+  padding: 0 !important;
+  position: relative !important;
+  top: 2px !important;
   
   &:hover {
     background: rgba(255, 255, 255, 0.1);

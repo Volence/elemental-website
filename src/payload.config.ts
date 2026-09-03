@@ -118,7 +118,6 @@ const config = buildConfig({
       beforeDashboard: [
         '@/components/BeforeDashboard/LinkDiscordBanner#default',
         '@/components/BeforeDashboard',
-        '@/components/FixDatePickerIcons#default',
         '@/components/SectionThemeApplicator#SectionThemeApplicator',
       ],
       // Custom navigation links in the sidebar

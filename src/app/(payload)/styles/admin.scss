@@ -32,6 +32,7 @@
 
 @import './variables';      // Theme tokens, colors, spacing
 @import './mixins';          // Reusable patterns (glow-button, glow-card, etc.)
+@import './tokens-css';     // Same tokens as --elmt-* CSS custom properties for TSX
 @import './base';            // Foundation styles, resets
 
 // ============================================
@@ -94,7 +95,7 @@
 @import './components/template-modal';
 @import './components/template-instructions';
 @import './components/admin-utilities';
-@import './components/utility-classes';
+@import './components/utility-classes';  // placeholder selectors (%flex-row-center etc.) used via @extend
 @import './components/monitoring';
 @import './components/discord-server-manager';
 @import './components/match-actions';
