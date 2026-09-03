@@ -453,11 +453,13 @@ label:has(input[type="radio"]) {
 // BADGES & PILLS - Clean Glow as Default
 // ============================================
 
+// Kit badges (.kit-badge, .kit-badge__dot) style themselves; the attribute catch-all used to
+// give the 6px status dot 0.75rem of padding and squash it into an oval.
 .badge,
 .pill,
 .tag,
-[class*="badge"],
-[class*="pill"] {
+[class*="badge"]:not([class*="kit-badge"]):not(svg),
+[class*="pill"]:not(svg) {
   @include glow-badge($admin-accent-primary);
   padding: 0.25rem 0.75rem;
   font-size: 0.875rem;

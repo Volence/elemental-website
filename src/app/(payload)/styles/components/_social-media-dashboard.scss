@@ -14,7 +14,8 @@
     
     &__content {
       min-height: 400px;
-      @include glow-card($admin-accent-primary);
+      // Not interactive: the whole tab used to light up and lift on hover.
+      @include glow-card($admin-accent-primary, $interactive: false);
       padding: $spacing-xl;
     }
   }
@@ -1956,6 +1957,8 @@ button.dropdown-indicator.dropdown-indicator,
     align-items: center;
     gap: 0.4rem;
     padding: 0 0.6rem;
+    height: 34px; // the global select sizing made this a 90px box
+    align-self: center;
     border-radius: 6px;
     border: 1px solid rgba(255, 255, 255, 0.12);
     background: rgba(255, 255, 255, 0.04);
@@ -1966,6 +1969,11 @@ button.dropdown-indicator.dropdown-indicator,
       border: none;
       color: var(--theme-text);
       font-size: 0.85rem;
+      min-height: 0;
+      height: 32px;
+      padding: 0 0.25rem;
+      margin: 0;
+      box-shadow: none;
       padding: 0.45rem 0.25rem;
       cursor: pointer;
       max-width: 220px;
