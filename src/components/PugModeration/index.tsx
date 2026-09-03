@@ -189,11 +189,11 @@ export function PugModerationPanel() {
                   <span>{p.name}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     {isBanned && (
-                      <span style={{ fontSize: 11, padding: '2px 8px', background: 'rgba(239,68,68,0.2)', color: '#f87171', borderRadius: 20 }}>
+                      <span style={{ fontSize: 12, padding: '2px 8px', background: 'rgba(239,68,68,0.2)', color: '#f87171', borderRadius: 20 }}>
                         BANNED
                       </span>
                     )}
-                    <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>
+                    <span style={{ fontSize: 12, color: 'var(--elmt-text-disabled)' }}>
                       {p.pugBanOffenseCount} offense{p.pugBanOffenseCount !== 1 ? 's' : ''}
                     </span>
                   </div>
@@ -212,7 +212,7 @@ export function PugModerationPanel() {
               </span>
               <button
                 onClick={() => setSelectedPlayer(null)}
-                style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: 12 }}
+                style={{ background: 'transparent', border: 'none', color: 'var(--elmt-text-disabled)', cursor: 'pointer', fontSize: 12 }}
               >
                 Cancel
               </button>
@@ -283,18 +283,18 @@ export function PugModerationPanel() {
           Active Bans ({bans.length})
         </h3>
         {loading ? (
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14 }}>Loading...</p>
+          <p style={{ color: 'var(--elmt-text-disabled)', fontSize: 14 }}>Loading...</p>
         ) : bans.length === 0 ? (
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14 }}>No active bans.</p>
+          <p style={{ color: 'var(--elmt-text-disabled)', fontSize: 14 }}>No active bans.</p>
         ) : (
-          <div style={{ border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, overflow: 'hidden' }}>
+          <div style={{ border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-                  <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: 'rgba(255,255,255,0.4)', fontWeight: 500, fontSize: 12 }}>Player</th>
-                  <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: 'rgba(255,255,255,0.4)', fontWeight: 500, fontSize: 12 }}>Reason</th>
-                  <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: 'rgba(255,255,255,0.4)', fontWeight: 500, fontSize: 12 }}>Expires</th>
-                  <th style={{ textAlign: 'center', padding: '0.5rem 0.75rem', color: 'rgba(255,255,255,0.4)', fontWeight: 500, fontSize: 12 }}>Offenses</th>
+                  <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: 'var(--elmt-text-disabled)', fontWeight: 500, fontSize: 12 }}>Player</th>
+                  <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: 'var(--elmt-text-disabled)', fontWeight: 500, fontSize: 12 }}>Reason</th>
+                  <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: 'var(--elmt-text-disabled)', fontWeight: 500, fontSize: 12 }}>Expires</th>
+                  <th style={{ textAlign: 'center', padding: '0.5rem 0.75rem', color: 'var(--elmt-text-disabled)', fontWeight: 500, fontSize: 12 }}>Offenses</th>
                   <th style={{ textAlign: 'right', padding: '0.5rem 0.75rem' }}></th>
                 </tr>
               </thead>

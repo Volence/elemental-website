@@ -442,7 +442,7 @@ export function PugSeasonsEditView() {
       {!isNew && (
         <div className="ps-section">
           <p className="ps-section-title">Leaderboard</p>
-          <p style={{ fontSize: 13, color: '#64748b', marginBottom: 12 }}>
+          <p style={{ fontSize: 13, color: 'var(--elmt-text-muted)', marginBottom: 12 }}>
             Reset all ratings for this season back to 1500. Win/loss records will be cleared.
           </p>
           <button

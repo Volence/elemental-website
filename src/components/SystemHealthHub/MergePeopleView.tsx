@@ -36,10 +36,10 @@ function PersonSearchBox({ label, selected, onSelect }: {
   if (selected) {
     return (
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>{label}</div>
+        <div style={{ fontSize: 12, color: 'var(--elmt-text-disabled)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>{label}</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(52, 211, 153, 0.3)', background: 'rgba(52, 211, 153, 0.05)' }}>
           {selected.photoUrl ? (
-            <img src={selected.photoUrl} alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
+            <img loading="lazy" decoding="async" src={selected.photoUrl} alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
           ) : (
             <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <User size={14} style={{ opacity: 0.4 }} />
@@ -47,14 +47,14 @@ function PersonSearchBox({ label, selected, onSelect }: {
           )}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 14, fontWeight: 600, color: '#e2e8f0' }}>{selected.name}</div>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>
+            <div style={{ fontSize: 12, color: 'var(--elmt-text-disabled)' }}>
               #{selected.id} {selected.email && `- ${selected.email}`} {selected.role && `- ${selected.role}`}
               {selected.discordId && ` - Discord: ${selected.discordId}`}
             </div>
           </div>
           <button
             onClick={() => { onSelect(null); setQuery(''); setResults([]) }}
-            style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: 4 }}
+            style={{ background: 'none', border: 'none', color: 'var(--elmt-text-disabled)', cursor: 'pointer', padding: 4 }}
           >
             <Trash2 size={14} />
           </button>
@@ -65,7 +65,7 @@ function PersonSearchBox({ label, selected, onSelect }: {
 
   return (
     <div style={{ flex: 1, position: 'relative' }}>
-      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>{label}</div>
+      <div style={{ fontSize: 12, color: 'var(--elmt-text-disabled)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>{label}</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)' }}>
         <Search size={14} style={{ opacity: 0.4, flexShrink: 0 }} />
         <input
@@ -85,14 +85,14 @@ function PersonSearchBox({ label, selected, onSelect }: {
               style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 12px', background: 'none', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.04)', color: '#e2e8f0', cursor: 'pointer', textAlign: 'left', fontSize: 13 }}
             >
               {p.photoUrl ? (
-                <img src={p.photoUrl} alt="" style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover' }} />
+                <img loading="lazy" decoding="async" src={p.photoUrl} alt="" style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover' }} />
               ) : (
                 <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <User size={10} style={{ opacity: 0.4 }} />
                 </div>
               )}
               <span style={{ flex: 1 }}>{p.name}</span>
-              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>#{p.id} {p.role}</span>
+              <span style={{ fontSize: 12, color: 'var(--elmt-text-disabled)' }}>#{p.id} {p.role}</span>
             </button>
           ))}
         </div>
@@ -210,33 +210,33 @@ export default function MergePeopleView({ initialTargetId, initialSourceId }: { 
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
             <div style={{ padding: '10px 14px', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
-              <div style={{ fontSize: 11, color: '#34d399', fontWeight: 600, marginBottom: 6 }}>Target - {preview.target.name}</div>
+              <div style={{ fontSize: 12, color: '#34d399', fontWeight: 600, marginBottom: 6 }}>Target - {preview.target.name}</div>
               {preview.targetTeamRefs.length === 0 ? (
-                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>No team connections</div>
+                <div style={{ fontSize: 12, color: 'var(--elmt-text-disabled)' }}>No team connections</div>
               ) : (
                 preview.targetTeamRefs.map((ref) => (
                   <div key={ref.teamId} style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginBottom: 3 }}>
                     <span style={{ color: '#e2e8f0' }}>{ref.teamName}</span>
-                    <span style={{ color: 'rgba(255,255,255,0.3)' }}> - {ref.roles.join(', ')}</span>
+                    <span style={{ color: 'var(--elmt-text-disabled)' }}> - {ref.roles.join(', ')}</span>
                   </div>
                 ))
               )}
             </div>
             <div style={{ padding: '10px 14px' }}>
-              <div style={{ fontSize: 11, color: '#f87171', fontWeight: 600, marginBottom: 6 }}>Source - {preview.source.name}</div>
+              <div style={{ fontSize: 12, color: '#f87171', fontWeight: 600, marginBottom: 6 }}>Source - {preview.source.name}</div>
               {preview.sourceTeamRefs.length === 0 ? (
-                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>No team connections</div>
+                <div style={{ fontSize: 12, color: 'var(--elmt-text-disabled)' }}>No team connections</div>
               ) : (
                 preview.sourceTeamRefs.map((ref) => (
                   <div key={ref.teamId} style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginBottom: 3 }}>
                     <span style={{ color: '#e2e8f0' }}>{ref.teamName}</span>
-                    <span style={{ color: 'rgba(255,255,255,0.3)' }}> - {ref.roles.join(', ')}</span>
+                    <span style={{ color: 'var(--elmt-text-disabled)' }}> - {ref.roles.join(', ')}</span>
                   </div>
                 ))
               )}
             </div>
           </div>
-          <div style={{ padding: '8px 14px', borderTop: '1px solid rgba(255,255,255,0.06)', fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>
+          <div style={{ padding: '8px 14px', borderTop: '1px solid rgba(255,255,255,0.06)', fontSize: 12, color: 'var(--elmt-text-disabled)' }}>
             All source team connections will be repointed to the target after merge.
           </div>
         </div>
@@ -248,40 +248,42 @@ export default function MergePeopleView({ initialTargetId, initialSourceId }: { 
             Field merge preview
           </div>
           {preview.fieldsToMerge.length === 0 ? (
-            <div style={{ padding: '16px 14px', fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>
+            <div style={{ padding: '16px 14px', fontSize: 13, color: 'var(--elmt-text-disabled)' }}>
               No fields to merge - source has no data the target is missing.
             </div>
           ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-              <thead>
-                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                  <th style={{ padding: '8px 14px', textAlign: 'left', color: 'rgba(255,255,255,0.4)', fontWeight: 500 }}>Field</th>
-                  <th style={{ padding: '8px 14px', textAlign: 'left', color: '#34d399', fontWeight: 500 }}>Target</th>
-                  <th style={{ padding: '8px 14px', textAlign: 'left', color: '#f87171', fontWeight: 500 }}>Source</th>
-                  <th style={{ padding: '8px 14px', textAlign: 'center', color: 'rgba(255,255,255,0.4)', fontWeight: 500 }}>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {preview.fieldsToMerge.map((f) => (
-                  <tr key={f.field} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                    <td style={{ padding: '6px 14px', color: '#e2e8f0', fontWeight: 500 }}>{f.field}</td>
-                    <td style={{ padding: '6px 14px', color: 'rgba(255,255,255,0.5)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{formatValue(f.targetValue)}</td>
-                    <td style={{ padding: '6px 14px', color: 'rgba(255,255,255,0.5)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{formatValue(f.sourceValue)}</td>
-                    <td style={{ padding: '6px 14px', textAlign: 'center' }}>
-                      {f.willCopy ? (
-                        <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'rgba(52, 211, 153, 0.1)', border: '1px solid rgba(52, 211, 153, 0.3)', color: '#34d399' }}>Copy</span>
-                      ) : (
-                        <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 4, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.3)' }}>Keep target</span>
-                      )}
-                    </td>
+            <div className="kit-table-scroll">
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                    <th style={{ padding: '8px 14px', textAlign: 'left', color: 'var(--elmt-text-disabled)', fontWeight: 500 }}>Field</th>
+                    <th style={{ padding: '8px 14px', textAlign: 'left', color: '#34d399', fontWeight: 500 }}>Target</th>
+                    <th style={{ padding: '8px 14px', textAlign: 'left', color: '#f87171', fontWeight: 500 }}>Source</th>
+                    <th style={{ padding: '8px 14px', textAlign: 'center', color: 'var(--elmt-text-disabled)', fontWeight: 500 }}>Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {preview.fieldsToMerge.map((f) => (
+                    <tr key={f.field} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                      <td style={{ padding: '6px 14px', color: '#e2e8f0', fontWeight: 500 }}>{f.field}</td>
+                      <td style={{ padding: '6px 14px', color: 'rgba(255,255,255,0.5)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{formatValue(f.targetValue)}</td>
+                      <td style={{ padding: '6px 14px', color: 'rgba(255,255,255,0.5)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{formatValue(f.sourceValue)}</td>
+                      <td style={{ padding: '6px 14px', textAlign: 'center' }}>
+                        {f.willCopy ? (
+                          <span style={{ fontSize: 12, padding: '2px 8px', borderRadius: 4, background: 'rgba(52, 211, 153, 0.1)', border: '1px solid rgba(52, 211, 153, 0.3)', color: '#34d399' }}>Copy</span>
+                        ) : (
+                          <span style={{ fontSize: 12, padding: '2px 8px', borderRadius: 4, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--elmt-text-disabled)' }}>Keep target</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
 
           <div style={{ padding: '12px 14px', background: 'rgba(239, 68, 68, 0.03)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>
+            <div style={{ fontSize: 12, color: 'var(--elmt-text-disabled)' }}>
               All references to <strong style={{ color: '#f87171' }}>#{source?.id}</strong> will be repointed to <strong style={{ color: '#34d399' }}>#{target?.id}</strong>, then <strong style={{ color: '#f87171' }}>#{source?.id}</strong> will be deleted.
             </div>
             <button
@@ -308,8 +310,8 @@ export default function MergePeopleView({ initialTargetId, initialSourceId }: { 
           </div>
           {mergeResult.log && (
             <details style={{ marginTop: 4 }}>
-              <summary style={{ cursor: 'pointer', fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Operation log ({mergeResult.log.length} steps)</summary>
-              <pre style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 4, maxHeight: 200, overflow: 'auto', whiteSpace: 'pre-wrap' }}>
+              <summary style={{ cursor: 'pointer', fontSize: 12, color: 'var(--elmt-text-disabled)' }}>Operation log ({mergeResult.log.length} steps)</summary>
+              <pre style={{ fontSize: 12, color: 'var(--elmt-text-disabled)', marginTop: 4, maxHeight: 200, overflow: 'auto', whiteSpace: 'pre-wrap' }}>
                 {mergeResult.log.join('\n')}
               </pre>
             </details>

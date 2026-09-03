@@ -133,7 +133,7 @@ export function UsersListView() {
         <h1 style={{ fontSize: 24, fontWeight: 700, color: '#e2e8f0', margin: 0 }}>
           <Users size={24} style={{ verticalAlign: 'middle', marginRight: 10 }} />
           Users
-          <span style={{ fontSize: 14, fontWeight: 400, color: 'rgba(255,255,255,0.4)', marginLeft: 8 }}>({users.length})</span>
+          <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--elmt-text-disabled)', marginLeft: 8 }}>({users.length})</span>
         </h1>
         {canPickMembers(currentUser) && (
           <div style={{ marginLeft: 'auto', minWidth: 320 }}>
@@ -196,7 +196,7 @@ export function UsersListView() {
             return (
               <a key={u.id} href={`/admin/edit-user?id=${u.id}`} className="user-card">
                 {avatarUrl ? (
-                  <img src={avatarUrl} className="user-avatar" alt="" />
+                  <img loading="lazy" decoding="async" src={avatarUrl} className="user-avatar" alt="" />
                 ) : (
                   <div className="user-avatar-placeholder"><UserIcon size={18} style={{ opacity: 0.3 }} /></div>
                 )}
@@ -207,7 +207,7 @@ export function UsersListView() {
                       <roleConf.icon size={11} /> {roleConf.label}
                     </span>
                   </div>
-                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>
+                  <div style={{ fontSize: 12, color: 'var(--elmt-text-disabled)', marginTop: 2 }}>
                     {u.email}
                     {linkedName && <span style={{ marginLeft: 8, color: 'rgba(99,102,241,0.7)' }}>→ {linkedName}</span>}
                     {teamCount > 0 && <span style={{ marginLeft: 8, color: 'rgba(52,211,153,0.6)' }}>{teamCount} team{teamCount !== 1 ? 's' : ''}</span>}
@@ -522,7 +522,7 @@ export function UserEditorView() {
           </div>
           <div>
             <input className="profile-input" style={{ ...editorStyles.nameInput, fontSize: 22 }} value={name} onChange={(e) => setName(e.target.value)} placeholder="User name" />
-            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>{email}</p>
+            <p style={{ fontSize: 12, color: 'var(--elmt-text-disabled)', marginTop: 4 }}>{email}</p>
           </div>
         </div>
         <div style={editorStyles.headerRight}>
@@ -544,7 +544,7 @@ export function UserEditorView() {
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, color: '#e2e8f0', fontSize: 14 }}>Edit {linkedPersonName}'s Profile</div>
-            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: '2px 0 0' }}>Edit bio, social links, game aliases, and photo</p>
+            <p style={{ fontSize: 12, color: 'var(--elmt-text-disabled)', margin: '2px 0 0' }}>Edit bio, social links, game aliases, and photo</p>
           </div>
           <ChevronRight size={16} style={{ opacity: 0.3, flexShrink: 0 }} />
         </a>
@@ -612,10 +612,10 @@ export function UserEditorView() {
             <div className="profile-card" style={editorStyles.card}>
               <h3 style={editorStyles.cardTitle}><Gamepad2 size={16} /> PUG Status</h3>
               {pugLoading ? (
-                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>Loading...</p>
+                <p style={{ fontSize: 13, color: 'var(--elmt-text-disabled)' }}>Loading...</p>
               ) : !pugPlayer ? (
                 <div>
-                  <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginBottom: 10 }}>Not registered for PUGs</p>
+                  <p style={{ fontSize: 13, color: 'var(--elmt-text-disabled)', marginBottom: 10 }}>Not registered for PUGs</p>
                   <button
                     className="profile-save-btn"
                     onClick={handlePugRegister}
@@ -697,7 +697,7 @@ export function UserEditorView() {
                         Banned until {new Date(pugPlayer.activeBan.bannedUntil).toLocaleString()}
                       </p>
                       {pugPlayer.activeBan.reason && (
-                        <p style={{ fontSize: 11, color: 'rgba(248, 113, 113, 0.7)', marginTop: 2 }}>{pugPlayer.activeBan.reason}</p>
+                        <p style={{ fontSize: 12, color: 'rgba(248, 113, 113, 0.7)', marginTop: 2 }}>{pugPlayer.activeBan.reason}</p>
                       )}
                     </div>
                   )}
@@ -813,7 +813,7 @@ export function UserEditorView() {
                 </div>
               ))}
               {DEPARTMENTS.filter(d => departments[d.key]).length === 0 && (
-                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)' }}>No department access assigned</p>
+                <p style={{ fontSize: 13, color: 'var(--elmt-text-disabled)' }}>No department access assigned</p>
               )}
             </div>
           )}

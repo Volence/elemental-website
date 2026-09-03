@@ -1,5 +1,6 @@
 'use client'
 
+import { startPolling } from '@/utilities/polling'
 import React, { useState, useEffect } from 'react'
 import { formatLocalDateTime } from '@/utilities/formatDateTime'
 
@@ -40,8 +41,7 @@ export default function DatabaseHealthView() {
 
     fetchData()
 
-    const interval = setInterval(() => fetchHealthStats(false), 60000)
-    return () => clearInterval(interval)
+    return startPolling(() => fetchHealthStats(false), 60000)
   }, [])
 
   const fetchHealthStats = async (showLoadingState = true) => {

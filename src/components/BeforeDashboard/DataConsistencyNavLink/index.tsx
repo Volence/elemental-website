@@ -1,5 +1,6 @@
 'use client'
 
+import { startPolling } from '@/utilities/polling'
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '@payloadcms/ui'
 import type { Person } from '@/payload-types'
@@ -43,8 +44,7 @@ const DataConsistencyNavLink: React.FC = () => {
     fetchIssueCount()
     
     // Refresh count every 5 minutes
-    const interval = setInterval(fetchIssueCount, 5 * 60 * 1000)
-    return () => clearInterval(interval)
+    return startPolling(fetchIssueCount, 5 * 60 * 1000)
   }, [user])
 
   // Only show for admins

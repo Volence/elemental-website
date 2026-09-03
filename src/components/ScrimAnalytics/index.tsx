@@ -261,30 +261,32 @@ export const ScrimAnalytics: React.FC<ScrimAnalyticsProps> = ({ teamId, teamName
           {data.mapStats.length === 0 ? (
             <div className="scrim-analytics__no-results">No map data yet</div>
           ) : (
-            <table className="scrim-analytics__map-table">
-              <thead>
-                <tr>
-                  <th>Map</th>
-                  <th>W</th>
-                  <th>L</th>
-                  <th>D</th>
-                  <th>Win Rate</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.mapStats.map((map) => (
-                  <tr key={map.mapName} className={map.winRate < 50 ? 'scrim-analytics__row--weak' : ''}>
-                    <td className="scrim-analytics__map-cell">{map.mapName}</td>
-                    <td className="scrim-analytics__win-cell">{map.wins}</td>
-                    <td className="scrim-analytics__loss-cell">{map.losses}</td>
-                    <td className="scrim-analytics__draw-cell">{map.draws}</td>
-                    <td className={`scrim-analytics__rate-cell ${map.winRate >= 50 ? 'scrim-analytics__rate-cell--good' : 'scrim-analytics__rate-cell--bad'}`}>
-                      {map.winRate}%
-                    </td>
+            <div className="kit-table-scroll">
+              <table className="scrim-analytics__map-table">
+                <thead>
+                  <tr>
+                    <th>Map</th>
+                    <th>W</th>
+                    <th>L</th>
+                    <th>D</th>
+                    <th>Win Rate</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {data.mapStats.map((map) => (
+                    <tr key={map.mapName} className={map.winRate < 50 ? 'scrim-analytics__row--weak' : ''}>
+                      <td className="scrim-analytics__map-cell">{map.mapName}</td>
+                      <td className="scrim-analytics__win-cell">{map.wins}</td>
+                      <td className="scrim-analytics__loss-cell">{map.losses}</td>
+                      <td className="scrim-analytics__draw-cell">{map.draws}</td>
+                      <td className={`scrim-analytics__rate-cell ${map.winRate >= 50 ? 'scrim-analytics__rate-cell--good' : 'scrim-analytics__rate-cell--bad'}`}>
+                        {map.winRate}%
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       )}

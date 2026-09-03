@@ -43,7 +43,7 @@ export function LiveScoreboard({
 
     const headerCell: React.CSSProperties = {
       padding: '8px 10px',
-      fontSize: '10px',
+      fontSize: '12px',
       fontWeight: 600,
       textTransform: 'uppercase',
       letterSpacing: '0.5px',
@@ -60,7 +60,7 @@ export function LiveScoreboard({
         <div
           style={{
             padding: '8px 12px 6px',
-            fontSize: '11px',
+            fontSize: '12px',
             fontWeight: 700,
             textTransform: 'uppercase',
             letterSpacing: '1px',
@@ -148,7 +148,7 @@ export function LiveScoreboard({
                     >
                       {p.eliminations}
                       {leaders.elims === name && (
-                        <span style={{ marginLeft: '4px', color: '#facc15', fontSize: '10px' }}>★</span>
+                        <span style={{ marginLeft: '4px', color: '#facc15', fontSize: '12px' }}>★</span>
                       )}
                     </td>
 
@@ -178,7 +178,7 @@ export function LiveScoreboard({
                     >
                       {n(p.heroDamage)}
                       {leaders.damage === name && (
-                        <span style={{ marginLeft: '4px', color: '#facc15', fontSize: '10px' }}>★</span>
+                        <span style={{ marginLeft: '4px', color: '#facc15', fontSize: '12px' }}>★</span>
                       )}
                     </td>
 
@@ -190,7 +190,7 @@ export function LiveScoreboard({
                     >
                       {n(p.healingDealt)}
                       {leaders.healing === name && (
-                        <span style={{ marginLeft: '4px', color: '#facc15', fontSize: '10px' }}>★</span>
+                        <span style={{ marginLeft: '4px', color: '#facc15', fontSize: '12px' }}>★</span>
                       )}
                     </td>
 

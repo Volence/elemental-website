@@ -489,7 +489,7 @@ export default function ScrimPlayerDetailView({ apiBase, readOnly = false }: Scr
                 className={`scrim-detail__hero-pill ${isActive ? 'scrim-detail__hero-pill--active' : ''}`}
                 style={isActive ? { borderColor: col + '66', color: col, background: `linear-gradient(135deg, ${col}22, ${col}11)`, boxShadow: `0 0 16px ${col}22` } : undefined}
               >
-                {h.portrait && <img src={h.portrait} alt={h.hero} />}
+                {h.portrait && <img loading="lazy" decoding="async" src={h.portrait} alt={h.hero} />}
                 {h.hero}
               </button>
             )
@@ -620,7 +620,7 @@ export default function ScrimPlayerDetailView({ apiBase, readOnly = false }: Scr
                     <div key={m.map} className="scrim-detail__bar-row">
                       <div className="scrim-detail__bar-label-row">
                         <span className="scrim-detail__bar-name">{m.map}</span>
-                        <span style={{ fontSize: '11px', color: m.winrate >= 50 ? GREEN : RED, fontWeight: 600 }}>
+                        <span style={{ fontSize: '12px', color: m.winrate >= 50 ? GREEN : RED, fontWeight: 600 }}>
                           {m.winrate}% <span className="scrim-detail__bar-detail">({m.wins}W {m.losses}L{m.draws > 0 ? ` ${m.draws}D` : ''})</span>
                         </span>
                       </div>
@@ -640,7 +640,7 @@ export default function ScrimPlayerDetailView({ apiBase, readOnly = false }: Scr
                     <div key={m.mapType} className="scrim-detail__bar-row">
                       <div className="scrim-detail__bar-label-row">
                         <span className="scrim-detail__bar-name">{m.mapType}</span>
-                        <span style={{ fontSize: '11px', color: m.winrate >= 50 ? GREEN : RED, fontWeight: 600 }}>
+                        <span style={{ fontSize: '12px', color: m.winrate >= 50 ? GREEN : RED, fontWeight: 600 }}>
                           {m.winrate}% <span className="scrim-detail__bar-detail">({m.wins}W {m.losses}L{m.draws > 0 ? ` ${m.draws}D` : ''})</span>
                         </span>
                       </div>
@@ -712,7 +712,7 @@ export default function ScrimPlayerDetailView({ apiBase, readOnly = false }: Scr
                     <div className="scrim-detail__progress-fill" style={{ width: `${(m.count / maxCount) * 100}%`, background: `linear-gradient(90deg, ${BAR_COLORS[i % BAR_COLORS.length]}88, ${BAR_COLORS[i % BAR_COLORS.length]}44)` }} />
                   </div>
                   <span className="scrim-detail__matchup-count" style={{ color: BAR_COLORS[i % BAR_COLORS.length], minWidth: '40px' }}>{m.count}</span>
-                  <span style={{ fontSize: '10px', color: TEXT_DIM, minWidth: '36px' }}>({total > 0 ? ((m.count / total) * 100).toFixed(1) : 0}%)</span>
+                  <span style={{ fontSize: '12px', color: TEXT_DIM, minWidth: '36px' }}>({total > 0 ? ((m.count / total) * 100).toFixed(1) : 0}%)</span>
                 </div>
               ))
             })()}
@@ -786,7 +786,7 @@ export default function ScrimPlayerDetailView({ apiBase, readOnly = false }: Scr
                 className={`scrim-detail__hero-pill ${isActive ? 'scrim-detail__hero-pill--active' : ''}`}
                 style={isActive ? { borderColor: col + '66', color: col, background: `linear-gradient(135deg, ${col}22, ${col}11)`, boxShadow: `0 0 16px ${col}22` } : undefined}
               >
-                {h.portrait && <img src={h.portrait} alt={h.hero} />}
+                {h.portrait && <img loading="lazy" decoding="async" src={h.portrait} alt={h.hero} />}
                 {h.hero}
               </button>
             )
@@ -850,7 +850,7 @@ export default function ScrimPlayerDetailView({ apiBase, readOnly = false }: Scr
         )}
 
         {chartData.length > 0 && (
-          <p style={{ color: TEXT_DIM, fontSize: '11px', marginTop: '12px', textAlign: 'center' }}>
+          <p style={{ color: TEXT_DIM, fontSize: '12px', marginTop: '12px', textAlign: 'center' }}>
             {isFiltered
               ? `Showing ${selHero.hero} on ${chartsMap} across ${chartData.length} scrim${chartData.length !== 1 ? 's' : ''}, sorted by date.`
               : `Showing ${selHero.hero}'s stats across ${chartData.length} map${chartData.length !== 1 ? 's' : ''}.`}
@@ -903,7 +903,7 @@ export default function ScrimPlayerDetailView({ apiBase, readOnly = false }: Scr
                 data={trendChartData}
                 formatter={trendStat.includes('damage') || trendStat.includes('healing') || trendStat.includes('Damage') || trendStat.includes('Healing') ? formatNumber : undefined}
               />
-              <p style={{ color: TEXT_DIM, fontSize: '11px', marginTop: '8px', textAlign: 'center' }}>
+              <p style={{ color: TEXT_DIM, fontSize: '12px', marginTop: '8px', textAlign: 'center' }}>
                 Showing {selectedStat.label.toLowerCase()} across {data.trendData.length} scrim{data.trendData.length !== 1 ? 's' : ''}, sorted chronologically.
               </p>
             </div>
@@ -987,7 +987,7 @@ function HeroAvatar({ portrait, heroName, size = 52, color }: { portrait: string
     }}>
       {portrait ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <img loading="lazy" decoding="async"
           src={portrait}
           alt={heroName}
           style={{
@@ -1096,7 +1096,7 @@ function HeroDetailSection({ hero: h, color, isExpanded, onToggle }: {
                 <div style={{ fontSize: '20px', fontWeight: 700, color: kd_color(kd), textShadow: `0 0 12px ${kd_color(kd)}44` }}>
                   {kd} K/D
                 </div>
-                <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '2px' }}>
+                <div style={{ fontSize: '12px', color: TEXT_DIM, marginTop: '2px' }}>
                   {formatDecimal(timeMins, 1)} min played
                 </div>
               </div>
@@ -1226,7 +1226,7 @@ function StatGroupCard({ title, color, stats }: { title: string; color: string; 
             <span style={{ fontSize: '12px', color: TEXT_SECONDARY, fontWeight: 500 }}>{s.label}</span>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
               <span style={{ fontSize: '13px', fontWeight: 700, color: TEXT_PRIMARY, fontVariantNumeric: 'tabular-nums' }}>{s.value}</span>
-              {s.sub && <span style={{ fontSize: '10px', color: TEXT_DIM, fontVariantNumeric: 'tabular-nums' }}>{s.sub}</span>}
+              {s.sub && <span style={{ fontSize: '12px', color: TEXT_DIM, fontVariantNumeric: 'tabular-nums' }}>{s.sub}</span>}
             </div>
           </div>
         ))}
@@ -1239,7 +1239,7 @@ function StatGroupCard({ title, color, stats }: { title: string; color: string; 
 function QuickStat({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
     <div style={{ textAlign: 'center' }}>
-      <div style={{ fontSize: '10px', color: TEXT_DIM, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>{label}</div>
+      <div style={{ fontSize: '12px', color: TEXT_DIM, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>{label}</div>
       <div style={{ fontSize: '14px', fontWeight: 700, color: color ?? TEXT_PRIMARY, fontVariantNumeric: 'tabular-nums' }}>{value}</div>
     </div>
   )
@@ -1264,13 +1264,13 @@ function MiniStatCard({ label, value, sub, color }: { label: string; value: stri
         background: `radial-gradient(circle, ${color}0a 0%, transparent 70%)`,
         pointerEvents: 'none',
       }} />
-      <div style={{ fontSize: '11px', color: TEXT_SECONDARY, textTransform: 'uppercase', letterSpacing: '0.8px', fontWeight: 600, marginBottom: '6px', position: 'relative' }}>
+      <div style={{ fontSize: '12px', color: TEXT_SECONDARY, textTransform: 'uppercase', letterSpacing: '0.8px', fontWeight: 600, marginBottom: '6px', position: 'relative' }}>
         {label}
       </div>
       <div style={{ fontSize: '22px', fontWeight: 700, color, letterSpacing: '-0.5px', textShadow: `0 0 16px ${color}44`, position: 'relative' }}>
         {value}
       </div>
-      <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '4px', position: 'relative' }}>{sub}</div>
+      <div style={{ fontSize: '12px', color: TEXT_DIM, marginTop: '4px', position: 'relative' }}>{sub}</div>
     </div>
   )
 }

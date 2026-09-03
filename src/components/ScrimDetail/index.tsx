@@ -164,7 +164,7 @@ export default function ScrimDetailView() {
             >
               <span style={{ display: 'flex', alignItems: 'center', gap: 10, color: SCRIM_COLORS.textPrimary, fontWeight: 600 }}>
                 <MapIcon size={14} color={SCRIM_COLORS.cyan} />
-                <span style={{ color: SCRIM_COLORS.textFaint, fontSize: 11 }}>Map {i + 1}</span>
+                <span style={{ color: SCRIM_COLORS.textFaint, fontSize: 12 }}>Map {i + 1}</span>
                 {m.name}
               </span>
               <span style={{ display: 'flex', alignItems: 'center', gap: 14, fontSize: 12 }}>

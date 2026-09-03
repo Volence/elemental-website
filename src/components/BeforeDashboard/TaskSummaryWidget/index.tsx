@@ -51,7 +51,7 @@ export default function TaskSummaryWidget() {
   if (!loading && counts && counts.backlog === 0 && counts.inProgress === 0 && counts.review === 0 && counts.myTasks === 0) return null
 
   const pills = counts ? [
-    { label: 'Backlog', count: counts.backlog, color: '#64748b' },
+    { label: 'Backlog', count: counts.backlog, color: 'var(--elmt-text-muted)' },
     { label: 'In Progress', count: counts.inProgress, color: '#3b82f6' },
     { label: 'Review', count: counts.review, color: '#a855f7' },
     { label: 'My Tasks', count: counts.myTasks, color: '#06b6d4' },

@@ -108,7 +108,7 @@ const RosterReorder: React.FC = () => {
     <div style={{ marginBottom: '1rem' }}>
       <div style={{
         fontSize: '0.6875rem',
-        color: 'rgba(255,255,255,0.35)',
+        color: 'var(--elmt-text-disabled)',
         textTransform: 'uppercase',
         letterSpacing: '0.05em',
         fontWeight: 600,

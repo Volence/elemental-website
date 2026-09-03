@@ -1,4 +1,5 @@
 'use client'
+import { startPolling } from '@/utilities/polling'
 import { useEffect, useRef, useState } from 'react'
 import type { LiveSnapshot, LiveActivityEvent, LiveLeaders } from './types'
 import { diffSnapshots } from './diffSnapshots'
@@ -38,8 +39,8 @@ export function LiveMatchView({ lobbyId, botStatus }: { lobbyId: number; botStat
       } catch { /* keep last snapshot */ }
     }
     poll()
-    const id = setInterval(poll, POLL_MS)
-    return () => { active = false; clearInterval(id) }
+    const stop = startPolling(poll, POLL_MS)
+    return () => { active = false; stop() }
   }, [lobbyId, live])
 
   useEffect(() => {

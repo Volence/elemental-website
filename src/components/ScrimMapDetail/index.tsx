@@ -389,7 +389,7 @@ export default function ScrimMapDetailView() {
                   }}
                   style={{
                     padding: '4px 12px', borderRadius: '6px', border: 'none',
-                    background: CYAN, color: '#000', fontSize: '11px', fontWeight: 700,
+                    background: CYAN, color: '#000', fontSize: '12px', fontWeight: 700,
                     cursor: scoreSaving ? 'not-allowed' : 'pointer', opacity: scoreSaving ? 0.5 : 1,
                   }}
                 >
@@ -400,7 +400,7 @@ export default function ScrimMapDetailView() {
                   style={{
                     padding: '4px 12px', borderRadius: '6px',
                     border: `1px solid ${BORDER}`, background: 'transparent',
-                    color: TEXT_SECONDARY, fontSize: '11px', fontWeight: 600, cursor: 'pointer',
+                    color: TEXT_SECONDARY, fontSize: '12px', fontWeight: 600, cursor: 'pointer',
                   }}
                 >
                   Cancel
@@ -425,7 +425,7 @@ export default function ScrimMapDetailView() {
                     style={{
                       padding: '4px 12px', borderRadius: '6px',
                       border: `1px solid ${RED}33`, background: 'transparent',
-                      color: RED, fontSize: '11px', fontWeight: 600,
+                      color: RED, fontSize: '12px', fontWeight: 600,
                       cursor: scoreSaving ? 'not-allowed' : 'pointer',
                     }}
                   >
@@ -440,7 +440,7 @@ export default function ScrimMapDetailView() {
               <div className="scrim-detail__summary-sub">
                 {team1Won ? `Winner: ${data.teams.team1}` : team2Won ? `Winner: ${data.teams.team2}` : 'Draw'}
                 {data.summary.scoreOverride && (
-                  <span style={{ marginLeft: '8px', fontSize: '10px', color: AMBER, fontWeight: 600 }}>✓ manual</span>
+                  <span style={{ marginLeft: '8px', fontSize: '12px', color: AMBER, fontWeight: 600 }}>✓ manual</span>
                 )}
               </div>
             </>
@@ -489,7 +489,7 @@ export default function ScrimMapDetailView() {
               <div style={{ fontSize: '22px', fontWeight: 700, color: data.analysis.team1FirstDeathPct > 50 ? RED : GREEN, textShadow: `0 0 12px ${data.analysis.team1FirstDeathPct > 50 ? RED : GREEN}44` }}>
                 {data.analysis.team1FirstDeathPct}%
               </div>
-              <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '4px' }}>
+              <div style={{ fontSize: '12px', color: TEXT_DIM, marginTop: '4px' }}>
                 {data.teams.team1} ({data.analysis.team1FirstDeaths})
               </div>
             </div>
@@ -497,7 +497,7 @@ export default function ScrimMapDetailView() {
               <div style={{ fontSize: '22px', fontWeight: 700, color: data.analysis.team2FirstDeathPct > 50 ? RED : GREEN, textShadow: `0 0 12px ${data.analysis.team2FirstDeathPct > 50 ? RED : GREEN}44` }}>
                 {data.analysis.team2FirstDeathPct}%
               </div>
-              <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '4px' }}>
+              <div style={{ fontSize: '12px', color: TEXT_DIM, marginTop: '4px' }}>
                 {data.teams.team2} ({data.analysis.team2FirstDeaths})
               </div>
             </div>
@@ -510,7 +510,7 @@ export default function ScrimMapDetailView() {
               <div style={{ fontSize: '22px', fontWeight: 700, color: PURPLE, textShadow: `0 0 12px ${PURPLE}44` }}>
                 {data.analysis.team1UltKills}
               </div>
-              <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '4px' }}>
+              <div style={{ fontSize: '12px', color: TEXT_DIM, marginTop: '4px' }}>
                 {data.teams.team1}
               </div>
             </div>
@@ -518,7 +518,7 @@ export default function ScrimMapDetailView() {
               <div style={{ fontSize: '22px', fontWeight: 700, color: PURPLE, textShadow: `0 0 12px ${PURPLE}44` }}>
                 {data.analysis.team2UltKills}
               </div>
-              <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '4px' }}>
+              <div style={{ fontSize: '12px', color: TEXT_DIM, marginTop: '4px' }}>
                 {data.teams.team2}
               </div>
             </div>
@@ -533,8 +533,8 @@ export default function ScrimMapDetailView() {
               {data.analysis.ajaxes.map((ajax, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', borderRadius: '8px', background: `${AMBER}0a`, border: `1px solid ${AMBER}20` }}>
                   <span style={{ fontSize: '14px', fontWeight: 700, color: AMBER, textShadow: `0 0 8px ${AMBER}44` }}>{ajax.player}</span>
-                  <span style={{ fontSize: '11px', color: TEXT_DIM }}>at {toTimestamp(ajax.time)}</span>
-                  <span style={{ fontSize: '10px', padding: '1px 6px', borderRadius: '3px', background: ajax.team === data.teams.team1 ? TEAM1_DIM : TEAM2_DIM, color: ajax.team === data.teams.team1 ? TEAM1_COLOR : TEAM2_COLOR, fontWeight: 600 }}>{ajax.team}</span>
+                  <span style={{ fontSize: '12px', color: TEXT_DIM }}>at {toTimestamp(ajax.time)}</span>
+                  <span style={{ fontSize: '12px', padding: '1px 6px', borderRadius: '3px', background: ajax.team === data.teams.team1 ? TEAM1_DIM : TEAM2_DIM, color: ajax.team === data.teams.team1 ? TEAM1_COLOR : TEAM2_COLOR, fontWeight: 600 }}>{ajax.team}</span>
                 </div>
               ))}
             </div>
@@ -724,7 +724,7 @@ function ColumnKeyToggle() {
       <button
         onClick={() => setOpen(!open)}
         className="scrim-list__action-btn"
-        style={{ gap: '4px', display: 'flex', alignItems: 'center', padding: '5px 12px', fontSize: '11px' }}
+        style={{ gap: '4px', display: 'flex', alignItems: 'center', padding: '5px 12px', fontSize: '12px' }}
         title="Show column definitions"
       >
         <Info size={12} /> Key
@@ -765,11 +765,11 @@ function StatMini({ label, value, sub, color }: { label: string; value: string; 
       background: 'rgba(255,255,255,0.03)',
       border: `1px solid ${BORDER}`,
     }}>
-      <div style={{ fontSize: '10px', color: TEXT_SECONDARY, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', fontWeight: 600 }}>
+      <div style={{ fontSize: '12px', color: TEXT_SECONDARY, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px', fontWeight: 600 }}>
         {label}
       </div>
       <div style={{ fontSize: '20px', fontWeight: 800, color: color ?? TEXT_PRIMARY }}>{value}</div>
-      {sub && <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '3px' }}>{sub}</div>}
+      {sub && <div style={{ fontSize: '12px', color: TEXT_DIM, marginTop: '3px' }}>{sub}</div>}
     </div>
   )
 }

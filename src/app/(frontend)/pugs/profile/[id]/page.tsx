@@ -261,7 +261,7 @@ export default async function PugProfilePage({
                   </span>
 
                   {m.mapImageUrl && (
-                    <img src={m.mapImageUrl} alt="" className="w-12 h-8 rounded object-cover shrink-0 opacity-70 group-hover:opacity-100 transition-opacity" />
+                    <img loading="lazy" decoding="async" src={m.mapImageUrl} alt="" className="w-12 h-8 rounded object-cover shrink-0 opacity-70 group-hover:opacity-100 transition-opacity" />
                   )}
 
                   <div className="flex-1 min-w-0">

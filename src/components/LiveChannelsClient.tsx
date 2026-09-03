@@ -1,5 +1,6 @@
 'use client'
 
+import { startPolling } from '@/utilities/polling'
 import React, { useState, useEffect, useCallback } from 'react'
 import {
   Radio, Users, Tv, Eye, Clock, Gamepad2, ExternalLink,
@@ -80,8 +81,7 @@ export default function LiveChannelsClient({
   }, [])
 
   useEffect(() => {
-    const interval = setInterval(refreshData, 60_000)
-    return () => clearInterval(interval)
+    return startPolling(refreshData, 60_000)
   }, [refreshData])
 
   // Filter streamers

@@ -1,5 +1,6 @@
 'use client'
 
+import { startPolling } from '@/utilities/polling'
 import React, { useState, useEffect } from 'react'
 import { formatLocalDateTime } from '@/utilities/formatDateTime'
 
@@ -29,8 +30,7 @@ export default function ActiveSessionsView() {
 
     fetchData()
 
-    const interval = setInterval(() => fetchSessions(false), 30000)
-    return () => clearInterval(interval)
+    return startPolling(() => fetchSessions(false), 30000)
   }, [filter])
 
   const fetchSessions = async (showLoadingState = true) => {

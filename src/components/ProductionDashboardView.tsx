@@ -1,19 +1,22 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { lazy, Suspense, useState } from 'react'
+import { LoadingState } from '@/admin-kit'
 import { useAuth } from '@payloadcms/ui'
 import { Calendar, PlusSquare, Users, ClipboardList, Building, BarChart3, Swords, FileText, Tv, Settings, KanbanSquare } from 'lucide-react'
-import { WeeklyView } from './ProductionDashboard/WeeklyView'
-import { StaffSignupsView } from './ProductionDashboard/StaffSignupsView'
-import { AssignmentView } from './ProductionDashboard/AssignmentView'
-import { ScheduleBuilderView } from './ProductionDashboard/ScheduleBuilderView'
-import { SummaryView } from './ProductionDashboard/SummaryView'
-import { BulkTournamentCreator } from './ProductionDashboard/BulkTournamentCreator'
-import { MatchesListTab } from './ProductionDashboard/MatchesListTab'
-import { TemplatesListTab } from './ProductionDashboard/TemplatesListTab'
-import { StreamTrackerView } from './ProductionDashboard/StreamTrackerView'
-import { SettingsView } from './ProductionDashboard/SettingsView'
-import { KanbanBoard } from './WorkboardKanban'
+
+// Each tab is its own chunk; the dashboard used to ship all eleven views to open one.
+const WeeklyView = lazy(() => import('./ProductionDashboard/WeeklyView').then((m) => ({ default: m.WeeklyView })))
+const StaffSignupsView = lazy(() => import('./ProductionDashboard/StaffSignupsView').then((m) => ({ default: m.StaffSignupsView })))
+const AssignmentView = lazy(() => import('./ProductionDashboard/AssignmentView').then((m) => ({ default: m.AssignmentView })))
+const ScheduleBuilderView = lazy(() => import('./ProductionDashboard/ScheduleBuilderView').then((m) => ({ default: m.ScheduleBuilderView })))
+const SummaryView = lazy(() => import('./ProductionDashboard/SummaryView').then((m) => ({ default: m.SummaryView })))
+const BulkTournamentCreator = lazy(() => import('./ProductionDashboard/BulkTournamentCreator').then((m) => ({ default: m.BulkTournamentCreator })))
+const MatchesListTab = lazy(() => import('./ProductionDashboard/MatchesListTab').then((m) => ({ default: m.MatchesListTab })))
+const TemplatesListTab = lazy(() => import('./ProductionDashboard/TemplatesListTab').then((m) => ({ default: m.TemplatesListTab })))
+const StreamTrackerView = lazy(() => import('./ProductionDashboard/StreamTrackerView').then((m) => ({ default: m.StreamTrackerView })))
+const SettingsView = lazy(() => import('./ProductionDashboard/SettingsView').then((m) => ({ default: m.SettingsView })))
+const KanbanBoard = lazy(() => import('./WorkboardKanban').then((m) => ({ default: m.KanbanBoard })))
 
 export default function ProductionDashboardView() {
   const { user } = useAuth()
@@ -129,6 +132,7 @@ export default function ProductionDashboardView() {
       </nav>
 
       <div className="production-dashboard__content">
+        <Suspense fallback={<LoadingState rows={0} label="Loading tab" />}>
         {activeTab === 'weekly' && isProductionManager && <WeeklyView />}
         {activeTab === 'bulk' && isProductionManager && <BulkTournamentCreator onSuccess={() => setActiveTab('signups')} />}
         {activeTab === 'signups' && <StaffSignupsView />}
@@ -140,6 +144,7 @@ export default function ProductionDashboardView() {
         {activeTab === 'matches' && isProductionManager && <MatchesListTab />}
         {activeTab === 'templates' && isProductionManager && <TemplatesListTab />}
         {activeTab === 'settings' && isAdmin && <SettingsView />}
+        </Suspense>
       </div>
     </div>
   )

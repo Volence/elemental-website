@@ -39,7 +39,7 @@ export function Matchups({ matchups, unpaired }: { matchups: RoleMatchup[]; unpa
               <div style={{ fontSize: '14px', fontWeight: 600, color: TEXT_PRIMARY, marginBottom: '3px' }}>
                 {m.team1?.name ?? '—'}
               </div>
-              <div style={{ fontSize: '11px', color: TEXT_DIM }}>{stat(m.team1)}</div>
+              <div style={{ fontSize: '12px', color: TEXT_DIM }}>{stat(m.team1)}</div>
             </div>
 
             {/* Center divider */}
@@ -57,14 +57,14 @@ export function Matchups({ matchups, unpaired }: { matchups: RoleMatchup[]; unpa
               <div style={{ fontSize: '14px', fontWeight: 600, color: TEXT_PRIMARY, marginBottom: '3px' }}>
                 {m.team2?.name ?? '—'}
               </div>
-              <div style={{ fontSize: '11px', color: TEXT_DIM }}>{stat(m.team2)}</div>
+              <div style={{ fontSize: '12px', color: TEXT_DIM }}>{stat(m.team2)}</div>
             </div>
           </div>
         </div>
       ))}
 
       {unpaired.length > 0 && (
-        <div style={{ fontSize: '11px', color: TEXT_SECONDARY, marginTop: '4px', paddingLeft: '4px' }}>
+        <div style={{ fontSize: '12px', color: TEXT_SECONDARY, marginTop: '4px', paddingLeft: '4px' }}>
           Unpaired: {unpaired.map((p) => p.name).join(', ')}
         </div>
       )}

@@ -51,7 +51,7 @@ export function MatchSummary({
         <div style={{ textAlign: 'right' }}>
           <div
             style={{
-              fontSize: '11px',
+              fontSize: '12px',
               color: TEXT_SECONDARY,
               textTransform: 'uppercase',
               letterSpacing: '1px',
@@ -80,7 +80,7 @@ export function MatchSummary({
         <div style={{ textAlign: 'left' }}>
           <div
             style={{
-              fontSize: '11px',
+              fontSize: '12px',
               color: TEXT_SECONDARY,
               textTransform: 'uppercase',
               letterSpacing: '1px',

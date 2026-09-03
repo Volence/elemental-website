@@ -207,7 +207,7 @@ function KillsByFightCharts({ data, chartData }: { data: KillfeedData; chartData
           </div>
         </div>
 
-        <p style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '12px', lineHeight: 1.5 }}>
+        <p style={{ fontSize: '12px', color: TEXT_DIM, marginTop: '12px', lineHeight: 1.5 }}>
           Kills are grouped by 15 second intervals. The x-axis represents the time in seconds,
           and the y-axis represents the cumulative kills. {data.teams.team1} is represented with
           positive numbers, while {data.teams.team2} is represented with negative numbers.
@@ -265,7 +265,7 @@ function KillsByFightCharts({ data, chartData }: { data: KillfeedData; chartData
                       minWidth: 0,
                     }}
                   >
-                    <div style={{ fontSize: '10px', color: TEXT_DIM, lineHeight: 1 }}>{fight.fightNumber}</div>
+                    <div style={{ fontSize: '12px', color: TEXT_DIM, lineHeight: 1 }}>{fight.fightNumber}</div>
                     <div style={{ fontSize: '13px', fontWeight: 700, color: textColor, lineHeight: 1.3 }}>
                       {t1K}–{t2K}
                     </div>
@@ -275,7 +275,7 @@ function KillsByFightCharts({ data, chartData }: { data: KillfeedData; chartData
             </div>
 
             {/* Legend */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '10px', fontSize: '11px' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '10px', fontSize: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                 <div style={{ width: '14px', height: '4px', background: GREEN, borderRadius: '2px' }} />
                 <span style={{ color: TEXT_SECONDARY }}>{team1} Win</span>
@@ -391,7 +391,7 @@ function FinalBlowsByRoleChart({ data }: { data: ChartsAPIData }) {
         </div>
       </div>
 
-      <p style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '8px', lineHeight: 1.5 }}>
+      <p style={{ fontSize: '12px', color: TEXT_DIM, marginTop: '8px', lineHeight: 1.5 }}>
         This chart shows the number of final blows by role for each team. The roles are split into Tank, Damage, and Support.
         The x-axis represents the role, and the y-axis represents the number of final blows.
       </p>
@@ -501,7 +501,7 @@ function CumulativeDamageChart({ data }: { data: ChartsAPIData }) {
         </div>
       </div>
 
-      <p style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '8px', lineHeight: 1.5 }}>
+      <p style={{ fontSize: '12px', color: TEXT_DIM, marginTop: '8px', lineHeight: 1.5 }}>
         This chart shows the running total of hero damage by round for each team. The x-axis represents
         the round, and the y-axis represents the cumulative damage done through that round.
       </p>
@@ -585,7 +585,7 @@ function DamageByRoundChart({ data }: { data: ChartsAPIData }) {
         </div>
       </div>
 
-      <p style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '8px', lineHeight: 1.5 }}>
+      <p style={{ fontSize: '12px', color: TEXT_DIM, marginTop: '8px', lineHeight: 1.5 }}>
         Hero damage dealt within each round alone (not cumulative). The x-axis represents the round,
         and the y-axis represents the damage done in that round.
       </p>

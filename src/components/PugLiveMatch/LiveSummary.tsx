@@ -66,7 +66,7 @@ export function LiveSummary({
           </span>
           <span
             style={{
-              fontSize: '11px',
+              fontSize: '12px',
               fontWeight: 700,
               letterSpacing: '1.5px',
               textTransform: 'uppercase',

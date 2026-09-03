@@ -109,7 +109,7 @@ export function StaffDirectoryView() {
         <h1 style={{ fontSize: 24, fontWeight: 700, color: '#e2e8f0', margin: 0 }}>
           <Users size={24} style={{ verticalAlign: 'middle', marginRight: 10 }} />
           Staff Directory
-          <span style={{ fontSize: 14, fontWeight: 400, color: 'rgba(255,255,255,0.4)', marginLeft: 8 }}>({allStaff.length})</span>
+          <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--elmt-text-disabled)', marginLeft: 8 }}>({allStaff.length})</span>
         </h1>
         <div style={{ display: 'flex', gap: 6 }}>
           <a href="/admin/edit-staff?type=org" className="profile-save-btn" style={{ fontSize: 13, padding: '8px 16px' }}>
@@ -151,7 +151,7 @@ export function StaffDirectoryView() {
             return (
               <a key={`${s.collection}-${s.id}`} href={editUrl} className="staff-card">
                 {avatarUrl ? (
-                  <img src={avatarUrl} className="staff-avatar" alt="" />
+                  <img loading="lazy" decoding="async" src={avatarUrl} className="staff-avatar" alt="" />
                 ) : (
                   <div className="staff-avatar-placeholder"><UserIcon size={18} style={{ opacity: 0.3 }} /></div>
                 )}
@@ -337,7 +337,7 @@ export function StaffEditorView() {
             <h1 style={{ ...editorStyles.name, fontSize: 22 }}>
               {isNew ? `New ${collection === 'production' ? 'Production' : 'Organization'} Staff` : selectedPersonName}
             </h1>
-            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>
+            <p style={{ fontSize: 12, color: 'var(--elmt-text-disabled)', marginTop: 2 }}>
               {collection === 'production' ? 'Production Staff' : 'Organization Staff'}
             </p>
           </div>

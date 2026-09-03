@@ -165,7 +165,7 @@ function StatCard({
           boxShadow: `0 0 6px ${accentColor}44`,
         }}
       />
-      <div style={{ fontSize: '11px', color: TEXT_DIM, textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600, marginBottom: '8px' }}>
+      <div style={{ fontSize: '12px', color: TEXT_DIM, textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600, marginBottom: '8px' }}>
         {label}
       </div>
       <div
@@ -179,7 +179,7 @@ function StatCard({
       >
         {value}
       </div>
-      <div style={{ fontSize: '11px', color: TEXT_DIM }}>{sub}</div>
+      <div style={{ fontSize: '12px', color: TEXT_DIM }}>{sub}</div>
     </div>
   )
 }
@@ -219,7 +219,7 @@ function PlayerTab({
     >
       {name}
       {heroCount > 1 && (
-        <span style={{ fontSize: '9px', opacity: 0.6 }}>({heroCount})</span>
+        <span style={{ fontSize: '12px', opacity: 0.6 }}>({heroCount})</span>
       )}
     </button>
   )
@@ -262,7 +262,7 @@ function HeroSelector({
         >
           <HeroMiniIcon hero={h.hero} teamColor={teamColor} />
           {h.hero}
-          <span style={{ fontSize: '10px', color: TEXT_DIM }}>
+          <span style={{ fontSize: '12px', color: TEXT_DIM }}>
             {formatMinutes(h.timePlayed)}m
           </span>
         </button>
@@ -288,7 +288,7 @@ function HeroMiniIcon({ hero, teamColor }: { hero: string; teamColor: string }) 
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: '9px',
+          fontSize: '12px',
           fontWeight: 700,
           color: teamColor,
         }}

@@ -1,5 +1,6 @@
 'use client'
 
+import { startPolling } from '@/utilities/polling'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -59,7 +60,7 @@ type Player = {
 function PlayerAvatar({ player, size = 24 }: { player: Player; size?: number }) {
   if (player.avatarUrl) {
     return (
-      <img
+      <img loading="lazy" decoding="async"
         src={player.avatarUrl}
         alt=""
         className="rounded-full object-cover shrink-0"
@@ -180,8 +181,7 @@ export default function LobbyPage() {
 
   useEffect(() => {
     fetchState()
-    const interval = setInterval(fetchState, 3000)
-    return () => clearInterval(interval)
+    return startPolling(fetchState, 3000)
   }, [fetchState])
 
   useEffect(() => {
@@ -517,7 +517,7 @@ export default function LobbyPage() {
                   >
                     {m.imageUrl ? (
                       <div className="relative h-24">
-                        <img src={m.imageUrl} alt={m.name} className="w-full h-full object-cover" />
+                        <img loading="lazy" decoding="async" src={m.imageUrl} alt={m.name} className="w-full h-full object-cover" />
                         <div className={`absolute inset-0 ${voted ? 'bg-blue-900/60' : 'bg-black/40 group-hover:bg-black/30'} transition-colors`} />
                       </div>
                     ) : (
@@ -688,7 +688,7 @@ export default function LobbyPage() {
               {pending && <p className="text-2xl font-bold text-white mb-2">{resultLabel}</p>}
               {selectedMap && (
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-900/60 border border-gray-800/60">
-                  {selectedMap.imageUrl && <img src={selectedMap.imageUrl} alt="" className="w-6 h-6 rounded object-cover" />}
+                  {selectedMap.imageUrl && <img loading="lazy" decoding="async" src={selectedMap.imageUrl} alt="" className="w-6 h-6 rounded object-cover" />}
                   <span className="text-sm text-gray-300">{selectedMap.name}</span>
                 </div>
               )}
@@ -1083,7 +1083,7 @@ function BanUI({
                 const hero = heroes.find((h) => h.id === b.heroId)
                 return (
                   <span key={b.heroId} className="inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-lg bg-red-950/40 border border-red-900/50 text-red-400">
-                    {hero?.imageUrl && <img src={hero.imageUrl} alt="" className="w-5 h-5 rounded-full object-cover ring-1 ring-red-900/50" />}
+                    {hero?.imageUrl && <img loading="lazy" decoding="async" src={hero.imageUrl} alt="" className="w-5 h-5 rounded-full object-cover ring-1 ring-red-900/50" />}
                     <span className="line-through">{hero?.name ?? `#${b.heroId}`}</span>
                   </span>
                 )
@@ -1100,7 +1100,7 @@ function BanUI({
       {selectedMap && (
         <div className="border border-gray-800/60 rounded-xl overflow-hidden flex items-center bg-gray-900/40">
           {selectedMap.imageUrl && (
-            <img src={selectedMap.imageUrl} alt={selectedMap.name} className="w-20 h-14 object-cover shrink-0" />
+            <img loading="lazy" decoding="async" src={selectedMap.imageUrl} alt={selectedMap.name} className="w-20 h-14 object-cover shrink-0" />
           )}
           <div className="px-4 py-2.5">
             <span className="text-sm font-medium text-gray-200">{selectedMap.name}</span>
@@ -1140,7 +1140,7 @@ function BanUI({
                         onClick={() => onBan(h.id)}
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm border rounded-lg hover:scale-[1.03] active:scale-[0.97] transition-all duration-150 ${style}`}
                       >
-                        {h.imageUrl && <img src={h.imageUrl} alt="" className="w-6 h-6 rounded-full object-cover" />}
+                        {h.imageUrl && <img loading="lazy" decoding="async" src={h.imageUrl} alt="" className="w-6 h-6 rounded-full object-cover" />}
                         {h.name}
                       </button>
                     ))}
@@ -1210,7 +1210,7 @@ function TeamsDisplay({ players, currentUserId, heroes, banState }: { players: P
                   return (
                     <span key={b.heroId} className="inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-lg bg-red-950/40 border border-red-900/50 text-red-400">
                       {hero?.imageUrl ? (
-                        <img src={hero.imageUrl} alt="" className="w-5 h-5 rounded-full object-cover ring-1 ring-red-900/50" />
+                        <img loading="lazy" decoding="async" src={hero.imageUrl} alt="" className="w-5 h-5 rounded-full object-cover ring-1 ring-red-900/50" />
                       ) : (
                         <span className="w-5 h-5 rounded-full bg-red-900/40 flex items-center justify-center text-[9px] font-bold">X</span>
                       )}
@@ -1780,7 +1780,7 @@ function BotHostingPanel({
           )}
           {selectedMap && (
             <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded border border-gray-700 text-gray-300">
-              {selectedMap.imageUrl && <img src={selectedMap.imageUrl} alt="" className="w-5 h-5 rounded object-cover" />}
+              {selectedMap.imageUrl && <img loading="lazy" decoding="async" src={selectedMap.imageUrl} alt="" className="w-5 h-5 rounded object-cover" />}
               Map: {selectedMap.name}
             </span>
           )}
@@ -1791,7 +1791,7 @@ function BotHostingPanel({
             <span className="text-xs text-gray-500 shrink-0">Bans:</span>
             {bannedHeroObjects.map((h) => (
               <span key={h.id} title={`Banned by Team ${h.banTeam}`} className={`inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded border ${banChipClasses(h.banTeam)}`}>
-                {h.imageUrl && <img src={h.imageUrl} alt="" className="w-5 h-5 rounded-full object-cover" />}
+                {h.imageUrl && <img loading="lazy" decoding="async" src={h.imageUrl} alt="" className="w-5 h-5 rounded-full object-cover" />}
                 {h.name}
               </span>
             ))}
@@ -1962,7 +1962,7 @@ function LobbySetupAssistant({
           <div className="flex flex-wrap gap-3">
             {selectedMap && (
               <div className="flex items-center gap-2 px-3 py-2 bg-gray-900/60 border border-gray-800 rounded-lg overflow-hidden">
-                {selectedMap.imageUrl && <img src={selectedMap.imageUrl} alt="" className="w-8 h-8 rounded object-cover" />}
+                {selectedMap.imageUrl && <img loading="lazy" decoding="async" src={selectedMap.imageUrl} alt="" className="w-8 h-8 rounded object-cover" />}
                 <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Map</span>
                 <span className="text-white font-semibold text-sm">{selectedMap.name}</span>
               </div>
@@ -1972,7 +1972,7 @@ function LobbySetupAssistant({
                 <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold shrink-0">Bans</span>
                 {bannedHeroObjects.map((h) => (
                   <span key={h.id} title={`Banned by Team ${h.banTeam}`} className={`inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded border ${banChipClasses(h.banTeam)}`}>
-                    {h.imageUrl && <img src={h.imageUrl} alt="" className="w-5 h-5 rounded-full object-cover" />}
+                    {h.imageUrl && <img loading="lazy" decoding="async" src={h.imageUrl} alt="" className="w-5 h-5 rounded-full object-cover" />}
                     {h.name}
                   </span>
                 ))}
@@ -2071,7 +2071,7 @@ function LobbySetupAssistant({
         )}
         {selectedMap && (
           <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded border border-gray-700 text-gray-300">
-            {selectedMap.imageUrl && <img src={selectedMap.imageUrl} alt="" className="w-5 h-5 rounded object-cover" />}
+            {selectedMap.imageUrl && <img loading="lazy" decoding="async" src={selectedMap.imageUrl} alt="" className="w-5 h-5 rounded object-cover" />}
             Map: {selectedMap.name}
           </span>
         )}
@@ -2081,7 +2081,7 @@ function LobbySetupAssistant({
           <span className="text-xs text-gray-500 shrink-0">Bans:</span>
           {bannedHeroObjects.map((h) => (
             <span key={h.id} title={`Banned by Team ${h.banTeam}`} className={`inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded border ${banChipClasses(h.banTeam)}`}>
-              {h.imageUrl && <img src={h.imageUrl} alt="" className="w-5 h-5 rounded-full object-cover" />}
+              {h.imageUrl && <img loading="lazy" decoding="async" src={h.imageUrl} alt="" className="w-5 h-5 rounded-full object-cover" />}
               {h.name}
             </span>
           ))}

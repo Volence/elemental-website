@@ -1,5 +1,6 @@
 'use client'
 
+import { startPolling } from '@/utilities/polling'
 import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Gamepad2, Power, PowerOff, ExternalLink, XCircle, Loader2, Users, Clock, Trophy, SkipForward, AlertTriangle, ChevronDown, ChevronUp, UserMinus, ArrowRightLeft, Shield } from 'lucide-react'
@@ -93,7 +94,7 @@ function GraceCountdown({ timeoutAt }: { timeoutAt: string }) {
 
 function SpectatorStatusBadge({ status, note }: { status: string; note: string | null }) {
   const color = status === 'INVITED' ? '#4ade80' : status === 'FAILED' ? '#f87171' : '#fbbf24'
-  return <span title={note ?? undefined} style={{ fontSize: 10, color, border: `1px solid ${color}`, borderRadius: 4, padding: '1px 5px' }}>{status}</span>
+  return <span title={note ?? undefined} style={{ fontSize: 12, color, border: `1px solid ${color}`, borderRadius: 4, padding: '1px 5px' }}>{status}</span>
 }
 
 function SpectatorPanel({
@@ -142,14 +143,14 @@ function SpectatorPanel({
 
   return (
     <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 12, marginTop: 16 }}>
-      <p style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Spectators</p>
+      <p style={{ fontSize: 12, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Spectators</p>
       {spectators.length === 0 && <p style={{ fontSize: 12, color: '#475569', marginBottom: 6 }}>None yet.</p>}
       {spectators.map((s) => (
         <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, marginBottom: 4 }}>
           <span style={{ flex: 1, color: '#e2e8f0', minWidth: 0 }}>{s.displayName}{s.displayName !== s.battleTag && ` (${s.battleTag})`}</span>
           <SpectatorStatusBadge status={s.status} note={s.note} />
-          <button className="ps-btn ps-btn-ghost" style={{ padding: '2px 8px', fontSize: 11 }} disabled={busy} onClick={() => inviteNow(s.id)} title="Invite (or re-invite) this spectator to the OW lobby now - works mid-match">{s.status === 'INVITED' ? 'Re-invite' : 'Invite now'}</button>
-          <button className="ps-btn ps-btn-ghost" style={{ padding: '2px 8px', fontSize: 11 }} disabled={busy} onClick={() => mutate('DELETE', { id: s.id })} title="Remove from list (does not kick from the live OW lobby)">x</button>
+          <button className="ps-btn ps-btn-ghost" style={{ padding: '2px 8px', fontSize: 12 }} disabled={busy} onClick={() => inviteNow(s.id)} title="Invite (or re-invite) this spectator to the OW lobby now - works mid-match">{s.status === 'INVITED' ? 'Re-invite' : 'Invite now'}</button>
+          <button className="ps-btn ps-btn-ghost" style={{ padding: '2px 8px', fontSize: 12 }} disabled={busy} onClick={() => mutate('DELETE', { id: s.id })} title="Remove from list (does not kick from the live OW lobby)">x</button>
         </div>
       ))}
       <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
@@ -184,18 +185,18 @@ function LobbyExpanded({ lobby, onAction, acting, onSpectatorsChange }: {
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
         {p.avatarUrl ? (
-          <img src={p.avatarUrl} alt="" style={{ width: 20, height: 20, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+          <img loading="lazy" decoding="async" src={p.avatarUrl} alt="" style={{ width: 20, height: 20, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
         ) : (
-          <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 9, color: 'rgba(255,255,255,0.3)' }}>
+          <div style={{ width: 20, height: 20, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 12, color: 'var(--elmt-text-disabled)' }}>
             {(p.name ?? '?').charAt(0).toUpperCase()}
           </div>
         )}
         <span style={{ flex: 1, fontSize: 13, color: '#e2e8f0', minWidth: 0 }}>
           {p.name ?? `Player #${p.userId}`}
-          {p.isCaptain && <span style={{ marginLeft: 6, fontSize: 10, color: '#facc15' }}>(C)</span>}
+          {p.isCaptain && <span style={{ marginLeft: 6, fontSize: 12, color: '#facc15' }}>(C)</span>}
         </span>
         {p.assignedRole && (
-          <span style={{ fontSize: 11, color: ROLE_COLORS[p.assignedRole] ?? '#94a3b8', flexShrink: 0 }}>
+          <span style={{ fontSize: 12, color: ROLE_COLORS[p.assignedRole] ?? '#94a3b8', flexShrink: 0 }}>
             {ROLE_LABELS[p.assignedRole] ?? p.assignedRole}
           </span>
         )}
@@ -203,7 +204,7 @@ function LobbyExpanded({ lobby, onAction, acting, onSpectatorsChange }: {
           {p.team !== 1 && (
             <button
               className="ps-btn ps-btn-ghost"
-              style={{ padding: '2px 6px', fontSize: 10 }}
+              style={{ padding: '2px 6px', fontSize: 12 }}
               onClick={() => adminAction('swapTeam', { userId: p.userId, team: 1 })}
               title="Move to Team 1"
             >
@@ -213,7 +214,7 @@ function LobbyExpanded({ lobby, onAction, acting, onSpectatorsChange }: {
           {p.team !== 2 && (
             <button
               className="ps-btn ps-btn-ghost"
-              style={{ padding: '2px 6px', fontSize: 10 }}
+              style={{ padding: '2px 6px', fontSize: 12 }}
               onClick={() => adminAction('swapTeam', { userId: p.userId, team: 2 })}
               title="Move to Team 2"
             >
@@ -222,14 +223,14 @@ function LobbyExpanded({ lobby, onAction, acting, onSpectatorsChange }: {
           )}
           <button
             className="ps-btn ps-btn-ghost"
-            style={{ padding: '2px 6px', fontSize: 10, color: p.isCaptain ? '#facc15' : undefined }}
+            style={{ padding: '2px 6px', fontSize: 12, color: p.isCaptain ? '#facc15' : undefined }}
             onClick={() => adminAction('setCaptain', { userId: p.userId, isCaptain: !p.isCaptain })}
             title={p.isCaptain ? 'Remove captain' : 'Make captain'}
           >
             <Shield size={10} />
           </button>
           <select
-            style={{ padding: '1px 4px', fontSize: 10, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4, color: '#94a3b8', cursor: 'pointer' }}
+            style={{ padding: '1px 4px', fontSize: 12, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4, color: '#94a3b8', cursor: 'pointer' }}
             value={p.assignedRole ?? ''}
             onChange={(e) => adminAction('setRole', { userId: p.userId, assignedRole: e.target.value || null })}
           >
@@ -240,7 +241,7 @@ function LobbyExpanded({ lobby, onAction, acting, onSpectatorsChange }: {
           </select>
           <button
             className="ps-btn ps-btn-danger"
-            style={{ padding: '2px 6px', fontSize: 10 }}
+            style={{ padding: '2px 6px', fontSize: 12 }}
             onClick={async () => { if (await confirm({ message: `Kick ${p.name}?`, variant: 'danger' })) adminAction('kick', { userId: p.userId }) }}
             title="Kick player"
           >
@@ -256,14 +257,14 @@ function LobbyExpanded({ lobby, onAction, acting, onSpectatorsChange }: {
       {/* Players */}
       <div style={{ display: 'grid', gridTemplateColumns: unassigned.length > 0 ? '1fr 1fr 1fr' : '1fr 1fr', gap: 16, marginTop: 16 }}>
         <div>
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
             Team 1 ({team1.length})
           </div>
           {team1.length === 0 && <div style={{ fontSize: 12, color: '#334155' }}>No players</div>}
           {team1.map((p) => <PlayerRow key={p.userId} p={p} />)}
         </div>
         <div>
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
             Team 2 ({team2.length})
           </div>
           {team2.length === 0 && <div style={{ fontSize: 12, color: '#334155' }}>No players</div>}
@@ -271,7 +272,7 @@ function LobbyExpanded({ lobby, onAction, acting, onSpectatorsChange }: {
         </div>
         {unassigned.length > 0 && (
           <div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--elmt-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
               Unassigned ({unassigned.length})
             </div>
             {unassigned.map((p) => <PlayerRow key={p.userId} p={p} />)}
@@ -312,7 +313,7 @@ function LobbyExpanded({ lobby, onAction, acting, onSpectatorsChange }: {
           <div style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600, marginBottom: 4 }}>Pending Result</div>
           <div style={{ fontSize: 12, color: '#e2e8f0' }}>
             {lobby.pendingResult.result === 'team1' ? 'Team 1 Won' : lobby.pendingResult.result === 'team2' ? 'Team 2 Won' : 'Draw'}
-            {' '}<span style={{ color: '#64748b' }}>
+            {' '}<span style={{ color: 'var(--elmt-text-muted)' }}>
               (reported by {lobby.players.find((p) => p.userId === lobby.pendingResult!.reportedBy)?.name ?? 'unknown'})
             </span>
           </div>
@@ -321,24 +322,24 @@ function LobbyExpanded({ lobby, onAction, acting, onSpectatorsChange }: {
 
       {/* Admin controls */}
       <div style={{ marginTop: 16, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-        <span style={{ fontSize: 11, color: '#475569', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: 4 }}>Actions:</span>
+        <span style={{ fontSize: 12, color: '#475569', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: 4 }}>Actions:</span>
 
         {/* Result buttons for IN_PROGRESS, REPORTING, DISPUTED */}
         {['IN_PROGRESS', 'REPORTING', 'DISPUTED'].includes(lobby.status) && (
           <>
-            <button className="ps-btn ps-btn-success" style={{ padding: '4px 10px', fontSize: 11 }}
+            <button className="ps-btn ps-btn-success" style={{ padding: '4px 10px', fontSize: 12 }}
               onClick={() => onAction(lobby.id, '/resolve', { result: 'team1' })}
               disabled={acting === `${lobby.id}-/resolve`}
             >
               <Trophy size={11} /> T1 Won
             </button>
-            <button className="ps-btn ps-btn-warning" style={{ padding: '4px 10px', fontSize: 11 }}
+            <button className="ps-btn ps-btn-warning" style={{ padding: '4px 10px', fontSize: 12 }}
               onClick={() => onAction(lobby.id, '/resolve', { result: 'team2' })}
               disabled={acting === `${lobby.id}-/resolve`}
             >
               <Trophy size={11} /> T2 Won
             </button>
-            <button className="ps-btn ps-btn-ghost" style={{ padding: '4px 10px', fontSize: 11 }}
+            <button className="ps-btn ps-btn-ghost" style={{ padding: '4px 10px', fontSize: 12 }}
               onClick={() => onAction(lobby.id, '/resolve', { result: 'draw' })}
               disabled={acting === `${lobby.id}-/resolve`}
             >
@@ -350,7 +351,7 @@ function LobbyExpanded({ lobby, onAction, acting, onSpectatorsChange }: {
         {/* Force map for MAP_VOTE */}
         {lobby.status === 'MAP_VOTE' && lobby.mapVote?.candidates && (
           <select
-            style={{ padding: '4px 8px', fontSize: 11, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#94a3b8', cursor: 'pointer' }}
+            style={{ padding: '4px 8px', fontSize: 12, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#94a3b8', cursor: 'pointer' }}
             defaultValue=""
             onChange={(e) => {
               if (e.target.value) onAction(lobby.id, '/map-vote', { mapId: parseInt(e.target.value) })
@@ -365,7 +366,7 @@ function LobbyExpanded({ lobby, onAction, acting, onSpectatorsChange }: {
 
         {/* Status override */}
         <select
-          style={{ padding: '4px 8px', fontSize: 11, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#94a3b8', cursor: 'pointer', marginLeft: 'auto' }}
+          style={{ padding: '4px 8px', fontSize: 12, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#94a3b8', cursor: 'pointer', marginLeft: 'auto' }}
           value=""
           onChange={async (e) => {
             if (e.target.value && await confirm({ message: `Force status to ${e.target.value}? This bypasses normal flow.`, variant: 'default' })) {
@@ -379,7 +380,7 @@ function LobbyExpanded({ lobby, onAction, acting, onSpectatorsChange }: {
           ))}
         </select>
 
-        <button className="ps-btn ps-btn-danger" style={{ padding: '4px 10px', fontSize: 11 }}
+        <button className="ps-btn ps-btn-danger" style={{ padding: '4px 10px', fontSize: 12 }}
           onClick={async () => {
             if (await confirm({ message: 'Cancel this lobby?', variant: 'danger' })) onAction(lobby.id, '/resolve', { result: 'cancel' })
           }}
@@ -434,8 +435,7 @@ export function PugLobbiesDashboard() {
   useEffect(() => { fetchData() }, [fetchData])
 
   useEffect(() => {
-    const interval = setInterval(fetchData, 10000)
-    return () => clearInterval(interval)
+    return startPolling(fetchData, 10000)
   }, [fetchData])
 
   async function toggleRegion(region: string) {
@@ -542,7 +542,7 @@ export function PugLobbiesDashboard() {
               <div key={r.value} className={cardClass} style={{ flex: 1 }}>
                 <div>
                   <div style={{ fontSize: 15, fontWeight: 600, color: '#f1f5f9', marginBottom: 4 }}>{r.label}</div>
-                  <div style={{ fontSize: 12, color: '#64748b' }}>
+                  <div style={{ fontSize: 12, color: 'var(--elmt-text-muted)' }}>
                     {isOpen ? (
                       <span style={{ color: '#4ade80' }}>Open - {regionLobbies.length} lobby(s)</span>
                     ) : gracePeriodLobbies.length > 0 ? (
@@ -662,7 +662,7 @@ export function PugLobbiesDashboard() {
                 >
                   <ExternalLink size={12} /> View
                 </button>
-                {isExpanded ? <ChevronUp size={16} style={{ color: '#64748b' }} /> : <ChevronDown size={16} style={{ color: '#334155' }} />}
+                {isExpanded ? <ChevronUp size={16} style={{ color: 'var(--elmt-text-muted)' }} /> : <ChevronDown size={16} style={{ color: '#334155' }} />}
               </div>
             </div>
 

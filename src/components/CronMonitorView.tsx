@@ -1,5 +1,6 @@
 'use client'
 
+import { startPolling } from '@/utilities/polling'
 import React, { useState, useEffect } from 'react'
 import { formatLocalDateTime } from '@/utilities/formatDateTime'
 
@@ -28,8 +29,7 @@ export default function CronMonitorView() {
 
     fetchData()
 
-    const interval = setInterval(() => fetchRuns(false), 30000)
-    return () => clearInterval(interval)
+    return startPolling(() => fetchRuns(false), 30000)
   }, [filter, statusFilter])
 
   const fetchRuns = async (showLoadingState = true) => {

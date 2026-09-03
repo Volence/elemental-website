@@ -263,7 +263,7 @@ export function InviteEditorView() {
             <h1 style={{ fontSize: 22, fontWeight: 700, color: '#e2e8f0', margin: 0 }}>
               {isNew ? 'New Invite Link' : `${roleConf.label} Invite`}
             </h1>
-            {token && <span style={{ fontFamily: "'SF Mono','Fira Code',monospace", fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>{token}</span>}
+            {token && <span style={{ fontFamily: "'SF Mono','Fira Code',monospace", fontSize: 12, color: 'var(--elmt-text-disabled)' }}>{token}</span>}
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -312,7 +312,7 @@ export function InviteEditorView() {
                   <span style={{ fontSize: 18 }}>{r.icon}</span>
                   <div>
                     <span style={{ fontWeight: role === r.value ? 600 : 400 }}>{r.label}</span>
-                    <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', margin: '1px 0 0' }}>{r.desc}</p>
+                    <p style={{ fontSize: 12, color: 'var(--elmt-text-disabled)', margin: '1px 0 0' }}>{r.desc}</p>
                   </div>
                 </div>
               ))}
@@ -349,7 +349,7 @@ export function InviteEditorView() {
               placeholder="Optional: email@example.com"
               readOnly={isUsed}
             />
-            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 4 }}>User must sign up with this email address</p>
+            <p style={{ fontSize: 12, color: 'var(--elmt-text-disabled)', marginTop: 4 }}>User must sign up with this email address</p>
           </div>
 
           {/* Expiry */}

@@ -200,7 +200,7 @@ export function PugMatchesEditView() {
   if (!match) {
     return (
       <div className="ps-wrap">
-        <p style={{ color: '#64748b' }}>Match not found.</p>
+        <p style={{ color: 'var(--elmt-text-muted)' }}>Match not found.</p>
       </div>
     )
   }
@@ -219,7 +219,7 @@ export function PugMatchesEditView() {
               <span style={{ fontWeight: tp.isCaptain ? 700 : 400 }}>
                 {tp.isCaptain ? 'C ' : ''}{name}
               </span>
-              <span style={{ color: '#64748b', fontSize: 11 }}>{ROLE_LABELS[tp.assignedRole] ?? tp.assignedRole}</span>
+              <span style={{ color: 'var(--elmt-text-muted)', fontSize: 12 }}>{ROLE_LABELS[tp.assignedRole] ?? tp.assignedRole}</span>
             </div>
           )
         })}

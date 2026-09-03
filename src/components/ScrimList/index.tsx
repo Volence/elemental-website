@@ -384,7 +384,7 @@ export default function ScrimListView() {
                 <a
                   href={`/admin/scrim?scrimId=${scrim.id}`}
                   onClick={(e) => e.stopPropagation()}
-                  style={{ fontSize: 11, fontWeight: 500, color: '#67e8f9', textDecoration: 'none', marginLeft: 6 }}
+                  style={{ fontSize: 12, fontWeight: 500, color: '#67e8f9', textDecoration: 'none', marginLeft: 6 }}
                 >
                   open →
                 </a>

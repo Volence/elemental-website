@@ -127,7 +127,7 @@ function ConfidenceBadge({ meta }: { meta: ConfidenceMetadata }) {
         display: 'inline-flex', alignItems: 'center', gap: '5px',
         padding: '2px 9px', borderRadius: '999px',
         background: `${color}14`, border: `1px solid ${color}33`,
-        color, fontSize: '11px', fontWeight: 600, textTransform: 'capitalize',
+        color, fontSize: '12px', fontWeight: 600, textTransform: 'capitalize',
       }}
     >
       <span style={{ width: '6px', height: '6px', borderRadius: '999px', background: color }} />
@@ -273,13 +273,13 @@ function OverviewTab({ data }: { data: TeamData }) {
               <a key={s.id} href={href} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', background: BG_BASE, borderRadius: '8px', textDecoration: 'none', cursor: 'pointer', transition: 'background 0.15s' }} onMouseEnter={e => (e.currentTarget.style.background = BG_CARD_HOVER)} onMouseLeave={e => (e.currentTarget.style.background = BG_BASE)}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ color: TEXT_PRIMARY, fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.name}</div>
-                  <div style={{ color: TEXT_DIM, fontSize: '11px' }}>{formatDate(s.date)}</div>
+                  <div style={{ color: TEXT_DIM, fontSize: '12px' }}>{formatDate(s.date)}</div>
                 </div>
                 <div style={{ color: TEXT_SECONDARY, fontSize: '13px', fontWeight: 600 }}>{s.record.wins}-{s.record.losses}-{s.record.draws}</div>
                 <div style={{ display: 'flex', gap: '3px' }}>
                   {s.maps.map((m, i) => {
                     const c = m.result ? RESULT_COLORS[m.result] : null
-                    return <span key={i} title={`${m.mapName}: ${m.score ?? '?'}`} style={{ width: '20px', height: '20px', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 700, background: c?.bg ?? `${TEXT_DIM}22`, color: c?.text ?? TEXT_DIM }}>{c?.label ?? '?'}</span>
+                    return <span key={i} title={`${m.mapName}: ${m.score ?? '?'}`} style={{ width: '20px', height: '20px', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700, background: c?.bg ?? `${TEXT_DIM}22`, color: c?.text ?? TEXT_DIM }}>{c?.label ?? '?'}</span>
                   })}
                 </div>
               </a>
@@ -465,7 +465,7 @@ function MapsTab({ data }: { data: TeamData }) {
             <thead>
               <tr style={{ borderBottom: `1px solid ${BORDER}` }}>
                 <th style={{ padding: '6px 10px', textAlign: 'left', color: TEXT_SECONDARY, fontWeight: 600, position: 'sticky', left: 0, background: BG_CARD }}>Player</th>
-                {mapNames.map(mn => <th key={mn} style={{ padding: '6px 8px', textAlign: 'center', color: TEXT_SECONDARY, fontWeight: 500, whiteSpace: 'nowrap', fontSize: '11px' }}>{mn}</th>)}
+                {mapNames.map(mn => <th key={mn} style={{ padding: '6px 8px', textAlign: 'center', color: TEXT_SECONDARY, fontWeight: 500, whiteSpace: 'nowrap', fontSize: '12px' }}>{mn}</th>)}
               </tr>
             </thead>
             <tbody>
@@ -504,7 +504,7 @@ function RosterTab({ data }: { data: TeamData }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
                 <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: ROLE_COLORS[r.role] ?? CYAN }} />
                 <span style={{ color: TEXT_PRIMARY, fontSize: '15px', fontWeight: 700 }}>{r.role}</span>
-                <span style={{ color: TEXT_DIM, fontSize: '11px', marginLeft: 'auto' }}>{r.mapsPlayed} maps</span>
+                <span style={{ color: TEXT_DIM, fontSize: '12px', marginLeft: 'auto' }}>{r.mapsPlayed} maps</span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <MiniStat label="K/D" value={String(r.kd)} color={r.kd >= 1.5 ? GREEN : r.kd >= 1 ? AMBER : RED} />
@@ -526,7 +526,7 @@ function RosterTab({ data }: { data: TeamData }) {
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
               <span style={{ color: TEXT_PRIMARY, fontSize: '15px', fontWeight: 700 }}>{p.name}</span>
-              <span style={{ color: TEXT_DIM, fontSize: '11px' }}>{p.mapsPlayed} maps</span>
+              <span style={{ color: TEXT_DIM, fontSize: '12px' }}>{p.mapsPlayed} maps</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', marginBottom: '10px' }}>
               <MiniStat label="K/D" value={String(p.kd)} color={p.kd >= 1.5 ? GREEN : AMBER} />
@@ -538,7 +538,7 @@ function RosterTab({ data }: { data: TeamData }) {
             </div>
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
               {p.topHeroes.map(h => (
-                <span key={h.hero} style={{ padding: '2px 8px', background: `${CYAN}12`, borderRadius: '4px', color: CYAN, fontSize: '11px', fontWeight: 500 }}>{h.hero}</span>
+                <span key={h.hero} style={{ padding: '2px 8px', background: `${CYAN}12`, borderRadius: '4px', color: CYAN, fontSize: '12px', fontWeight: 500 }}>{h.hero}</span>
               ))}
             </div>
           </a>
@@ -568,7 +568,7 @@ function OpponentsTab({ data }: { data: TeamData }) {
   })
 
   return (
-    <div className="scrim-detail__card">
+    <div className="scrim-detail__card scrim-detail__scroll-x">
       <h3 className="scrim-detail__card-title">Opponent History</h3>
       <table className="scrim-detail__map-table">
         <thead>
@@ -627,7 +627,7 @@ function TrendsTab({ data }: { data: TeamData }) {
         <h3 className="scrim-detail__card-title" style={{ margin: 0 }}>Recent Form</h3>
         <div style={{ display: 'flex', gap: '4px' }}>
           {[5, 10, 20].map(n => (
-            <button key={n} onClick={() => setFormCount(n)} style={{ padding: '4px 10px', fontSize: '11px', fontWeight: 600, background: formCount === n ? `${CYAN}22` : 'transparent', color: formCount === n ? CYAN : TEXT_DIM, border: `1px solid ${formCount === n ? CYAN + '44' : BORDER}`, borderRadius: '6px', cursor: 'pointer' }}>Last {n}</button>
+            <button key={n} onClick={() => setFormCount(n)} style={{ padding: '4px 10px', fontSize: '12px', fontWeight: 600, background: formCount === n ? `${CYAN}22` : 'transparent', color: formCount === n ? CYAN : TEXT_DIM, border: `1px solid ${formCount === n ? CYAN + '44' : BORDER}`, borderRadius: '6px', cursor: 'pointer' }}>Last {n}</button>
           ))}
         </div>
       </div>
@@ -635,7 +635,7 @@ function TrendsTab({ data }: { data: TeamData }) {
       <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '12px' }}>
         {trends.recentForm.slice(0, formCount).map((f, i) => {
           const c = f.result ? RESULT_COLORS[f.result] : null
-          return <span key={i} title={`${f.mapName} vs ${f.opponent}: ${f.score ?? '?'} (${formatDate(f.date)})`} style={{ width: '28px', height: '28px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, background: c?.bg ?? `${TEXT_DIM}22`, color: c?.text ?? TEXT_DIM, cursor: 'default' }}>{c?.label ?? '?'}</span>
+          return <span key={i} title={`${f.mapName} vs ${f.opponent}: ${f.score ?? '?'} (${formatDate(f.date)})`} style={{ width: '28px', height: '28px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700, background: c?.bg ?? `${TEXT_DIM}22`, color: c?.text ?? TEXT_DIM, cursor: 'default' }}>{c?.label ?? '?'}</span>
         })}
       </div>
       {/* Form summary */}
@@ -729,10 +729,10 @@ function HeroesTab({ data }: { data: TeamData }) {
                 <a href={`/admin/scrim-heroes?hero=${encodeURIComponent(h.hero)}`} style={{ width: '100px', color: TEXT_PRIMARY, fontSize: '13px', fontWeight: 600, flexShrink: 0, textDecoration: 'none' }}>{h.hero}</a>
                 <div style={{ flex: 1, position: 'relative', height: '20px', background: `${BORDER}44`, borderRadius: '4px', overflow: 'hidden' }}>
                   <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: `${(h.totalTime / maxTime) * 100}%`, background: `${ROLE_COLORS[role]}33`, borderRadius: '4px', transition: 'width 0.3s' }} />
-                  <span style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', fontSize: '10px', color: TEXT_SECONDARY, fontWeight: 500 }}>{formatTime(h.totalTime)}</span>
+                  <span style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', fontSize: '12px', color: TEXT_SECONDARY, fontWeight: 500 }}>{formatTime(h.totalTime)}</span>
                 </div>
                 <div style={{ width: '50px', textAlign: 'center', color: h.winRate >= 50 ? GREEN : RED, fontSize: '12px', fontWeight: 600 }}>{h.winRate}%</div>
-                <div style={{ width: '40px', textAlign: 'center', color: TEXT_DIM, fontSize: '11px' }}>{h.mapsPlayed}m</div>
+                <div style={{ width: '40px', textAlign: 'center', color: TEXT_DIM, fontSize: '12px' }}>{h.mapsPlayed}m</div>
               </div>
             ))}
           </div>
@@ -809,7 +809,7 @@ function InsightBar({ label, value, total, color }: { label: string; value: numb
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
         <span className="scrim-detail__text-secondary">{label}</span>
-        <span style={{ color, fontSize: '13px', fontWeight: 700 }}>{value}% <span style={{ color: TEXT_DIM, fontWeight: 400, fontSize: '11px' }}>({total})</span></span>
+        <span style={{ color, fontSize: '13px', fontWeight: 700 }}>{value}% <span style={{ color: TEXT_DIM, fontWeight: 400, fontSize: '12px' }}>({total})</span></span>
       </div>
       <div style={{ height: '8px', background: `${BORDER}66`, borderRadius: '4px', overflow: 'hidden' }}>
         <div style={{ height: '100%', width: `${value}%`, background: color, borderRadius: '4px', transition: 'width 0.4s ease' }} />
@@ -876,7 +876,7 @@ function UltAdvantageCard({ ult }: { ult: UltEconomyAnalysis }) {
               <div style={{ flex: 1, height: '10px', background: `${BORDER}66`, borderRadius: '5px', overflow: 'hidden' }}>
                 <div style={{ height: '100%', width: `${b.fights > 0 ? b.winrate : 0}%`, background: meta.color, borderRadius: '5px', transition: 'width 0.4s ease', opacity: b.fights > 0 ? 1 : 0.3 }} />
               </div>
-              <span style={{ width: '132px', flexShrink: 0, textAlign: 'right', color: TEXT_DIM, fontSize: '11px' }}>
+              <span style={{ width: '132px', flexShrink: 0, textAlign: 'right', color: TEXT_DIM, fontSize: '12px' }}>
                 {b.fights > 0 ? `${Math.round(b.winrate)}% WR` : '—'} · {Math.round(b.share)}% ({b.fights})
               </span>
             </div>
@@ -944,7 +944,7 @@ function SummaryCard({ label, value, sub, color }: { label: string; value: strin
 function MiniStat({ label, value, color }: { label: string; value: string; color: string }) {
   return (
     <div>
-      <div style={{ color: TEXT_DIM, fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.3px' }}>{label}</div>
+      <div style={{ color: TEXT_DIM, fontSize: '12px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.3px' }}>{label}</div>
       <div style={{ color, fontSize: '14px', fontWeight: 700 }}>{value}</div>
     </div>
   )

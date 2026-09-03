@@ -21,7 +21,7 @@ const InviteEditRedirect: React.FC = () => {
   return (
     <>
       <style>{`[class*="edit-view"], [class*="document-fields"], .render-fields { visibility: hidden !important; }`}</style>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 300, color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 300, color: 'var(--elmt-text-disabled)', fontSize: 13 }}>
         Redirecting...
       </div>
     </>

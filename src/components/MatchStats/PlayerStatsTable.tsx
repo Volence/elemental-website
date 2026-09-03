@@ -52,7 +52,7 @@ function TeamHeader({ name, color, bgColor, won }: { name: string; color: string
     <tr>
       <td colSpan={COLUMN_DEFS.length} style={{
         padding: '12px 14px 6px',
-        fontSize: '11px',
+        fontSize: '12px',
         fontWeight: 700,
         textTransform: 'uppercase',
         letterSpacing: '1px',
@@ -60,7 +60,7 @@ function TeamHeader({ name, color, bgColor, won }: { name: string; color: string
         background: bgColor,
         borderLeft: `3px solid ${color}`,
       }}>
-        {name} {won && <span style={{ fontSize: '10px', opacity: 0.7, marginLeft: '6px', color: GREEN }}>WIN</span>}
+        {name} {won && <span style={{ fontSize: '12px', opacity: 0.7, marginLeft: '6px', color: GREEN }}>WIN</span>}
       </td>
     </tr>
   )
@@ -83,7 +83,7 @@ function TeamTotalRow({ players, color }: { players: PlayerRow[]; color: string 
   const totalAssists = sumStat(players, 'assists')
   return (
     <tr style={{ borderBottom: `2px solid ${borderColor}`, background: bgColor }}>
-      <td style={{ ...cellStyle, textAlign: 'left', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }} colSpan={3}>
+      <td style={{ ...cellStyle, textAlign: 'left', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }} colSpan={3}>
         Team Total
       </td>
       <td style={cellStyle}></td>

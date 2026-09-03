@@ -226,15 +226,15 @@ export default function KillfeedTab({ mapId }: { mapId: string }) {
         >
           Killfeed
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', color: TEXT_DIM }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: TEXT_DIM }}>
               <span style={{ ...tagStyle, background: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.25)' }}>CRIT</span>
               Critical Hit
             </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', color: TEXT_DIM }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: TEXT_DIM }}>
               <span style={{ ...tagStyle, background: 'rgba(6, 182, 212, 0.12)', color: CYAN, border: '1px solid rgba(6, 182, 212, 0.25)' }}>ENV</span>
               Environmental
             </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', color: TEXT_DIM }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: TEXT_DIM }}>
               <span style={{ ...tagStyle, background: 'rgba(34, 197, 94, 0.12)', color: GREEN, border: '1px solid rgba(34, 197, 94, 0.25)' }}>RES</span>
               Resurrect
             </span>
@@ -243,84 +243,86 @@ export default function KillfeedTab({ mapId }: { mapId: string }) {
 
         {data.fights.map((fight) => (
           <div key={fight.fightNumber}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
-              <thead>
-                <tr style={{ borderBottom: `1px solid ${BORDER_SUBTLE}` }}>
-                  <th style={{ ...thStyle, textAlign: 'left', width: '100px' }}>Time</th>
-                  <th style={{ ...thStyle, textAlign: 'left' }}>Kill</th>
-                  <th style={{ ...thStyle, textAlign: 'left', width: '140px' }}>Method</th>
-                  <th style={{ ...thStyle, textAlign: 'right', width: '80px' }}>Start</th>
-                  <th style={{ ...thStyle, textAlign: 'right', width: '80px' }}>End</th>
-                  <th style={{ ...thStyle, textAlign: 'right', width: '100px' }}>Fight Winner</th>
-                </tr>
-              </thead>
-              <tbody>
-                {fight.kills.map((kill, ki) => {
-                  const attackerColor = kill.attackerTeam === data.teams.team1 ? GREEN : RED
-                  const victimColor = kill.victimTeam === data.teams.team1 ? GREEN : RED
+            <div className="kit-table-scroll">
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                <thead>
+                  <tr style={{ borderBottom: `1px solid ${BORDER_SUBTLE}` }}>
+                    <th style={{ ...thStyle, textAlign: 'left', width: '100px' }}>Time</th>
+                    <th style={{ ...thStyle, textAlign: 'left' }}>Kill</th>
+                    <th style={{ ...thStyle, textAlign: 'left', width: '140px' }}>Method</th>
+                    <th style={{ ...thStyle, textAlign: 'right', width: '80px' }}>Start</th>
+                    <th style={{ ...thStyle, textAlign: 'right', width: '80px' }}>End</th>
+                    <th style={{ ...thStyle, textAlign: 'right', width: '100px' }}>Fight Winner</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {fight.kills.map((kill, ki) => {
+                    const attackerColor = kill.attackerTeam === data.teams.team1 ? GREEN : RED
+                    const victimColor = kill.victimTeam === data.teams.team1 ? GREEN : RED
 
-                  return (
-                    <tr
-                      key={ki}
-                      style={{
-                        borderBottom: `1px solid ${BORDER_SUBTLE}`,
-                        transition: 'background 0.15s',
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(6, 182, 212, 0.04)')}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                    >
-                      <td style={{ padding: '10px 14px', fontFamily: 'monospace', fontSize: '12px', color: TEXT_DIM }}>
-                        {kill.time.toFixed(2)} ({toTimestamp(kill.time)})
-                      </td>
-                      <td style={{ padding: '10px 14px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'nowrap' }}>
-                          <HeroIcon hero={kill.attackerHero} teamColor={attackerColor} />
-                          <span style={{ fontWeight: 600, color: attackerColor, textShadow: `0 0 8px ${attackerColor}33` }}>
-                            {kill.attackerName}
-                          </span>
-                          <span style={{ color: TEXT_DIM, margin: '0 2px', fontSize: '14px' }}>→</span>
-                          <HeroIcon hero={kill.victimHero} teamColor={victimColor} />
-                          <span style={{ fontWeight: 600, color: victimColor, textShadow: `0 0 8px ${victimColor}33` }}>
-                            {kill.victimName}
-                          </span>
-                        </div>
-                      </td>
-                      <td style={{ padding: '10px 14px', color: TEXT_SECONDARY, fontSize: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                          {formatAbility(kill.ability)}
-                          {kill.isCritical && <span style={{ ...tagStyle, background: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.25)' }}>CRIT</span>}
-                          {kill.isEnvironmental && <span style={{ ...tagStyle, background: 'rgba(6, 182, 212, 0.12)', color: CYAN, border: '1px solid rgba(6, 182, 212, 0.25)' }}>ENV</span>}
-                          {kill.ability === 'Resurrect' && <span style={{ ...tagStyle, background: 'rgba(34, 197, 94, 0.12)', color: GREEN, border: '1px solid rgba(34, 197, 94, 0.25)' }}>RES</span>}
-                        </div>
-                      </td>
-                      <td style={{ padding: '10px 14px', textAlign: 'right', color: TEXT_DIM, fontSize: '12px' }}>
-                        {ki === 0 ? toTimestamp(fight.start) : ''}
-                      </td>
-                      <td style={{ padding: '10px 14px', textAlign: 'right', color: TEXT_DIM, fontSize: '12px' }}>
-                        {ki === 0 ? toTimestamp(fight.end) : ''}
-                      </td>
-                      <td
+                    return (
+                      <tr
+                        key={ki}
                         style={{
-                          padding: '10px 14px',
-                          textAlign: 'right',
-                          fontWeight: 600,
-                          fontSize: '12px',
-                          color: fight.winner === data.teams.team1 ? GREEN : fight.winner === data.teams.team2 ? RED : TEXT_DIM,
+                          borderBottom: `1px solid ${BORDER_SUBTLE}`,
+                          transition: 'background 0.15s',
                         }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(6, 182, 212, 0.04)')}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                       >
-                        {ki === 0 ? fight.winner : ''}
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+                        <td style={{ padding: '10px 14px', fontFamily: 'monospace', fontSize: '12px', color: TEXT_DIM }}>
+                          {kill.time.toFixed(2)} ({toTimestamp(kill.time)})
+                        </td>
+                        <td style={{ padding: '10px 14px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'nowrap' }}>
+                            <HeroIcon hero={kill.attackerHero} teamColor={attackerColor} />
+                            <span style={{ fontWeight: 600, color: attackerColor, textShadow: `0 0 8px ${attackerColor}33` }}>
+                              {kill.attackerName}
+                            </span>
+                            <span style={{ color: TEXT_DIM, margin: '0 2px', fontSize: '14px' }}>→</span>
+                            <HeroIcon hero={kill.victimHero} teamColor={victimColor} />
+                            <span style={{ fontWeight: 600, color: victimColor, textShadow: `0 0 8px ${victimColor}33` }}>
+                              {kill.victimName}
+                            </span>
+                          </div>
+                        </td>
+                        <td style={{ padding: '10px 14px', color: TEXT_SECONDARY, fontSize: '12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                            {formatAbility(kill.ability)}
+                            {kill.isCritical && <span style={{ ...tagStyle, background: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.25)' }}>CRIT</span>}
+                            {kill.isEnvironmental && <span style={{ ...tagStyle, background: 'rgba(6, 182, 212, 0.12)', color: CYAN, border: '1px solid rgba(6, 182, 212, 0.25)' }}>ENV</span>}
+                            {kill.ability === 'Resurrect' && <span style={{ ...tagStyle, background: 'rgba(34, 197, 94, 0.12)', color: GREEN, border: '1px solid rgba(34, 197, 94, 0.25)' }}>RES</span>}
+                          </div>
+                        </td>
+                        <td style={{ padding: '10px 14px', textAlign: 'right', color: TEXT_DIM, fontSize: '12px' }}>
+                          {ki === 0 ? toTimestamp(fight.start) : ''}
+                        </td>
+                        <td style={{ padding: '10px 14px', textAlign: 'right', color: TEXT_DIM, fontSize: '12px' }}>
+                          {ki === 0 ? toTimestamp(fight.end) : ''}
+                        </td>
+                        <td
+                          style={{
+                            padding: '10px 14px',
+                            textAlign: 'right',
+                            fontWeight: 600,
+                            fontSize: '12px',
+                            color: fight.winner === data.teams.team1 ? GREEN : fight.winner === data.teams.team2 ? RED : TEXT_DIM,
+                          }}
+                        >
+                          {ki === 0 ? fight.winner : ''}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
             {/* Fight separator with subtle glow */}
             <div
               style={{
                 textAlign: 'center',
                 padding: '8px 0',
-                fontSize: '11px',
+                fontSize: '12px',
                 fontWeight: 600,
                 letterSpacing: '0.5px',
                 color: CYAN,
@@ -342,13 +344,13 @@ const thStyle: React.CSSProperties = {
   padding: '10px 14px',
   fontWeight: 600,
   color: TEXT_SECONDARY,
-  fontSize: '10px',
+  fontSize: '12px',
   textTransform: 'uppercase',
   letterSpacing: '0.5px',
 }
 
 const tagStyle: React.CSSProperties = {
-  fontSize: '9px',
+  fontSize: '12px',
   fontWeight: 700,
   letterSpacing: '0.5px',
   padding: '2px 5px',

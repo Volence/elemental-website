@@ -351,7 +351,7 @@ export function AvailabilityMatrix() {
                   <td className="avail-matrix__player-cell">
                     <div className="avail-matrix__player-info">
                       {player.avatar && (
-                        <img src={player.avatar} alt="" className="avail-matrix__player-avatar" width={20} height={20} />
+                        <img loading="lazy" decoding="async" src={player.avatar} alt="" className="avail-matrix__player-avatar" width={20} height={20} />
                       )}
                       <span className="avail-matrix__player-name">{player.name}</span>
                       {canEditRole ? (
@@ -404,7 +404,7 @@ export function AvailabilityMatrix() {
           <div className="avail-matrix__modal" onClick={e => e.stopPropagation()}>
             <div className="avail-matrix__modal-header">
               {roleModal.avatar && (
-                <img src={roleModal.avatar} alt="" className="avail-matrix__modal-avatar" width={32} height={32} />
+                <img loading="lazy" decoding="async" src={roleModal.avatar} alt="" className="avail-matrix__modal-avatar" width={32} height={32} />
               )}
               <span className="avail-matrix__modal-name">{roleModal.name}</span>
             </div>

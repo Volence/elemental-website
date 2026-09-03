@@ -116,7 +116,7 @@ export function CalendarEventsListView() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <h1 style={{ fontSize: 20, fontWeight: 700, color: '#e2e8f0', margin: 0 }}>
           Calendar Events
-          <span style={{ fontSize: 13, fontWeight: 400, color: 'rgba(255,255,255,0.35)', marginLeft: 6 }}>({events.length})</span>
+          <span style={{ fontSize: 13, fontWeight: 400, color: 'var(--elmt-text-disabled)', marginLeft: 6 }}>({events.length})</span>
         </h1>
         <a href="/admin/edit-event" className="profile-save-btn" style={{ fontSize: 12, padding: '6px 14px', textDecoration: 'none' }}>
           <Plus size={13} /> New Event
@@ -152,7 +152,7 @@ export function CalendarEventsListView() {
               </a>
             )
           })}
-          {filtered.length === 0 && <div style={{ padding: 40, textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>No events found.</div>}
+          {filtered.length === 0 && <div style={{ padding: 40, textAlign: 'center', color: 'var(--elmt-text-disabled)', fontSize: 13 }}>No events found.</div>}
         </div>
       )}
     </div>
@@ -328,7 +328,7 @@ export function CalendarEventEditorView() {
             </div>
             {eventType === 'internal' && (
               <div style={{ marginTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 12 }}>
-                <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginBottom: 8 }}>Internal Event Type</p>
+                <p style={{ fontSize: 12, color: 'var(--elmt-text-disabled)', marginBottom: 8 }}>Internal Event Type</p>
                 {INTERNAL_TYPES.map(t => (
                   <div key={t.value} className={`type-option ${internalEventType === t.value ? 'selected' : ''}`} style={{ color: '#06b6d4', padding: '6px 10px' }} onClick={() => setInternalEventType(t.value)}>
                     <span>{t.icon}</span><span>{t.label}</span>
@@ -393,7 +393,7 @@ export function CalendarEventEditorView() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>Publish to Discord Calendar</span>
-                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', margin: '2px 0 0' }}>Show this event in the Discord calendar channel</p>
+                <p style={{ fontSize: 12, color: 'var(--elmt-text-disabled)', margin: '2px 0 0' }}>Show this event in the Discord calendar channel</p>
               </div>
               <button className={`toggle-switch ${publishToDiscord ? 'on' : 'off'}`} onClick={() => setPublishToDiscord(!publishToDiscord)} type="button" />
             </div>

@@ -121,66 +121,72 @@ export default function AdminUsageView() {
               </div>
 
               <h4 style={{ margin: '20px 0 8px' }}>Most used screens</h4>
-              <table className="monitoring-table">
-                <thead>
-                  <tr>
-                    <th>Path</th>
-                    <th style={{ textAlign: 'right' }}>Views</th>
-                    <th style={{ textAlign: 'right' }}>People</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {summary.topPaths.map((row) => (
-                    <tr key={row.path}>
-                      <td>
-                        <code>{row.path}</code>
-                      </td>
-                      <td style={{ textAlign: 'right' }}>{row.views.toLocaleString()}</td>
-                      <td style={{ textAlign: 'right' }}>{row.people.toLocaleString()}</td>
+              <div className="monitoring-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Path</th>
+                      <th style={{ textAlign: 'right' }}>Views</th>
+                      <th style={{ textAlign: 'right' }}>People</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {summary.topPaths.map((row) => (
+                      <tr key={row.path}>
+                        <td>
+                          <code>{row.path}</code>
+                        </td>
+                        <td style={{ textAlign: 'right' }}>{row.views.toLocaleString()}</td>
+                        <td style={{ textAlign: 'right' }}>{row.people.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
               <h4 style={{ margin: '20px 0 8px' }}>By role</h4>
-              <table className="monitoring-table">
-                <thead>
-                  <tr>
-                    <th>Role</th>
-                    <th style={{ textAlign: 'right' }}>Views</th>
-                    <th style={{ textAlign: 'right' }}>People</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {summary.byRole.map((row) => (
-                    <tr key={row.role}>
-                      <td>{row.role}</td>
-                      <td style={{ textAlign: 'right' }}>{row.views.toLocaleString()}</td>
-                      <td style={{ textAlign: 'right' }}>{row.people.toLocaleString()}</td>
+              <div className="monitoring-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Role</th>
+                      <th style={{ textAlign: 'right' }}>Views</th>
+                      <th style={{ textAlign: 'right' }}>People</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {summary.byRole.map((row) => (
+                      <tr key={row.role}>
+                        <td>{row.role}</td>
+                        <td style={{ textAlign: 'right' }}>{row.views.toLocaleString()}</td>
+                        <td style={{ textAlign: 'right' }}>{row.people.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
               <h4 style={{ margin: '20px 0 8px' }}>Most active people</h4>
-              <table className="monitoring-table">
-                <thead>
-                  <tr>
-                    <th>Person</th>
-                    <th style={{ textAlign: 'right' }}>Views</th>
-                    <th>Last seen</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {summary.topPeople.map((row) => (
-                    <tr key={row.personId ?? 'unknown'}>
-                      <td>{row.name ?? (row.personId ? `Person #${row.personId}` : 'Unknown')}</td>
-                      <td style={{ textAlign: 'right' }}>{row.views.toLocaleString()}</td>
-                      <td>{formatLocalDateTime(row.lastSeen)}</td>
+              <div className="monitoring-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Person</th>
+                      <th style={{ textAlign: 'right' }}>Views</th>
+                      <th>Last seen</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {summary.topPeople.map((row) => (
+                      <tr key={row.personId ?? 'unknown'}>
+                        <td>{row.name ?? (row.personId ? `Person #${row.personId}` : 'Unknown')}</td>
+                        <td style={{ textAlign: 'right' }}>{row.views.toLocaleString()}</td>
+                        <td>{formatLocalDateTime(row.lastSeen)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </>
           )}
         </>

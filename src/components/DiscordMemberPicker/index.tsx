@@ -17,6 +17,8 @@ interface Props {
   value: number | null
   onChange: (id: number | null, name: string) => void
   placeholder?: string
+  /** Name the caller already has for `value`; saves a /api/people/:id round trip per picker. */
+  initialName?: string | null
   /** When set, picking a Discord member calls this instead of creating a person via from-discord, and the People group is hidden. */
   onPickDiscord?: (discordId: string) => void
 }
@@ -29,11 +31,11 @@ const avatarUrl = (m: MemberHit) =>
  * Discord members are searched across every registered server. Picking a Discord member with
  * no row creates one (Discord ID set server-side).
  */
-export default function DiscordMemberPicker({ value, onChange, placeholder, onPickDiscord }: Props) {
+export default function DiscordMemberPicker({ value, onChange, placeholder, onPickDiscord, initialName }: Props) {
   const [search, setSearch] = useState('')
   const [people, setPeople] = useState<PersonHit[]>([])
   const [members, setMembers] = useState<MemberHit[]>([])
-  const [displayName, setDisplayName] = useState('')
+  const [displayName, setDisplayName] = useState(initialName ?? '')
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -107,7 +109,7 @@ export default function DiscordMemberPicker({ value, onChange, placeholder, onPi
   if (value && displayName) return <span style={{ fontSize: 13, color: '#e2e8f0' }}>{displayName}</span>
 
   const row: React.CSSProperties = { padding: '8px 12px', fontSize: 13, color: '#e2e8f0', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid rgba(255,255,255,0.04)' }
-  const heading: React.CSSProperties = { padding: '6px 12px', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, color: 'rgba(255,255,255,0.4)' }
+  const heading: React.CSSProperties = { padding: '6px 12px', fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--elmt-text-disabled)' }
 
   return (
     <div style={{ position: 'relative' }}>
@@ -133,12 +135,12 @@ export default function DiscordMemberPicker({ value, onChange, placeholder, onPi
           {members.length > 0 && <div style={heading}>Discord members</div>}
           {members.map((m) => (
             <div key={`m-${m.id}`} style={row} onMouseDown={(e) => { e.preventDefault(); void pickMember(m) }}>
-              <img src={avatarUrl(m)} alt="" width={20} height={20} style={{ borderRadius: '50%' }} />
+              <img loading="lazy" decoding="async" src={avatarUrl(m)} alt="" width={20} height={20} style={{ borderRadius: '50%' }} />
               <span style={{ flex: 1 }}>
                 {m.displayName} <span style={{ opacity: 0.5 }}>@{m.username}</span>
                 {m.nickname && <span style={{ opacity: 0.5 }}> ({m.nickname})</span>}
               </span>
-              <span style={{ fontSize: 11, color: m.person ? '#34d399' : 'rgba(255,255,255,0.5)' }}>
+              <span style={{ fontSize: 12, color: m.person ? '#34d399' : 'rgba(255,255,255,0.5)' }}>
                 {m.person ? `In system: ${m.person.name}${m.person.teams.length ? ` (${m.person.teams.join(', ')})` : ''}` : 'New'}
               </span>
             </div>

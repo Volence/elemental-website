@@ -17,7 +17,7 @@ export function LiveActivityTicker({ events }: { events: LiveActivityEvent[] }) 
     <div className="scrim-detail__card" style={{ padding: '12px 16px' }}>
       <div
         style={{
-          fontSize: '10px',
+          fontSize: '12px',
           fontWeight: 700,
           textTransform: 'uppercase',
           letterSpacing: '1px',
@@ -32,7 +32,7 @@ export function LiveActivityTicker({ events }: { events: LiveActivityEvent[] }) 
           <li
             key={i}
             style={{
-              fontSize: '11px',
+              fontSize: '12px',
               color: ev.kind === 'kill' ? TEAM_COLOR[ev.team] : TEXT_DIM,
               fontVariantNumeric: 'tabular-nums',
             }}

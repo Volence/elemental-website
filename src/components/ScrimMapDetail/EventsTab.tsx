@@ -41,7 +41,7 @@ function HeroIcon({ hero, teamColor, size = 26 }: { hero: string; teamColor: str
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontSize: '11px',
+          fontSize: '12px',
           fontWeight: 700,
           color: teamColor,
         }}
@@ -144,7 +144,7 @@ function Tag({ children, color }: { children: React.ReactNode; color: string }) 
   return (
     <span
       style={{
-        fontSize: '9px',
+        fontSize: '12px',
         fontWeight: 700,
         letterSpacing: '0.5px',
         padding: '2px 5px',
@@ -252,7 +252,7 @@ export default function EventsTab({ mapId }: { mapId: string }) {
                   <div style={{ fontSize: '13px', color: TEXT_PRIMARY, fontWeight: 500, lineHeight: '1.3' }}>
                     {event.description}
                   </div>
-                  <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '2px', fontFamily: 'monospace' }}>
+                  <div style={{ fontSize: '12px', color: TEXT_DIM, marginTop: '2px', fontFamily: 'monospace' }}>
                     {toTimestamp(event.time)}
                   </div>
                 </div>
@@ -260,7 +260,7 @@ export default function EventsTab({ mapId }: { mapId: string }) {
                 {event.team && (
                   <div
                     style={{
-                      fontSize: '10px',
+                      fontSize: '12px',
                       fontWeight: 600,
                       padding: '2px 8px',
                       borderRadius: '4px',
@@ -333,7 +333,7 @@ export default function EventsTab({ mapId }: { mapId: string }) {
                   style={{
                     textAlign: 'center',
                     padding: '8px 0 4px',
-                    fontSize: '11px',
+                    fontSize: '12px',
                     fontWeight: 600,
                     letterSpacing: '0.5px',
                     color: PURPLE,
@@ -403,7 +403,7 @@ export default function EventsTab({ mapId }: { mapId: string }) {
                           >
                             {ult.player}
                           </span>
-                          <span style={{ color: TEXT_DIM, fontSize: '11px' }}>
+                          <span style={{ color: TEXT_DIM, fontSize: '12px' }}>
                             ({ult.hero})
                           </span>
                           {/* Kills tag */}
@@ -423,7 +423,7 @@ export default function EventsTab({ mapId }: { mapId: string }) {
 
                       <div
                         style={{
-                          fontSize: '11px',
+                          fontSize: '12px',
                           fontFamily: 'monospace',
                           color: PURPLE,
                           flexShrink: 0,

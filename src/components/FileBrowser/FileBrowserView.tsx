@@ -764,6 +764,14 @@ export function FileBrowserView() {
             }}
             onDoubleClick={() => navigateToFolder(folder.id)}
             onContextMenu={(e) => handleContextMenu(e, 'folder', folder.id, folder.name)}
+            role="button"
+            tabIndex={0}
+            aria-label={`Folder ${folder.name}`}
+            aria-pressed={selectedItems.has(`folder-${folder.id}`)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') { e.preventDefault(); navigateToFolder(folder.id) }
+              else if (e.key === ' ') { e.preventDefault(); toggleSelection(String(folder.id), 'folder') }
+            }}
             draggable={false}
           >
             <div className="file-browser__item-icon"><Folder size={14} /></div>
@@ -787,11 +795,19 @@ export function FileBrowserView() {
                 }
               }}
               onContextMenu={(e) => handleContextMenu(e, 'file', file.id, file.filename)}
+              role="button"
+              tabIndex={0}
+              aria-label={file.filename}
+              aria-pressed={selectedItems.has(`file-${file.id}`)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') { e.preventDefault(); window.location.href = `/admin/collections/graphics-assets/${file.id}` }
+                else if (e.key === ' ') { e.preventDefault(); toggleSelection(String(file.id), 'file') }
+              }}
               draggable={false}
             >
               <div className="file-browser__item-preview">
                 {thumbnail ? (
-                  <img src={thumbnail} alt={file.filename} />
+                  <img loading="lazy" decoding="async" src={thumbnail} alt={file.filename} />
                 ) : (
                   <span className="file-browser__item-icon file-browser__item-icon--large">
                     {getFileIcon(file.mimeType)}

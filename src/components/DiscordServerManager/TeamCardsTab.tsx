@@ -253,7 +253,7 @@ export default function TeamCardsTab({ onAlert }: TeamCardsTabProps) {
                 <td>
                   <div className="team-cell">
                     {team.logo && (
-                      <img 
+                      <img loading="lazy" decoding="async" 
                         src={team.logo} 
                         alt="" 
                         className="team-logo"

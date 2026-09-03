@@ -404,3 +404,10 @@
   &__controls { display: flex; align-items: center; gap: $gap-sm; }
   &__page { color: $admin-text-secondary; }
 }
+
+// Horizontal scroll container for tables that are not an AdminTable
+.kit-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}

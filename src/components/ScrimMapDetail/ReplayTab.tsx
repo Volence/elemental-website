@@ -1496,7 +1496,7 @@ export default function ReplayTab({ mapId }: { mapId: string }) {
 
           {/* Calibration overlay */}
           {CALIBRATION_ENABLED && calibrateMode && data && (
-            <div style={{ background: 'rgba(0,0,0,0.85)', color: '#fff', padding: '12px 16px', fontFamily: 'monospace', fontSize: '11px', borderRadius: 8, marginTop: 8, maxHeight: 300, overflowY: 'auto' }}>
+            <div style={{ background: 'rgba(0,0,0,0.85)', color: '#fff', padding: '12px 16px', fontFamily: 'monospace', fontSize: '12px', borderRadius: 8, marginTop: 8, maxHeight: 300, overflowY: 'auto' }}>
               <div style={{ marginBottom: 8, color: '#f59e0b', fontWeight: 'bold' }}>🎯 CALIBRATION MODE - Click map to add reference points</div>
               <div style={{ marginBottom: 8, color: '#94a3b8' }}>Player world coords at t={formatTime(currentTime)}:</div>
               {data.timeline.length > 0 && (() => {
@@ -1520,7 +1520,7 @@ export default function ReplayTab({ mapId }: { mapId: string }) {
                   ))}
                   <button
                     onClick={() => setCalibratePoints([])}
-                    style={{ marginTop: 8, background: '#374151', border: 'none', color: '#fff', padding: '4px 12px', borderRadius: 4, cursor: 'pointer', fontSize: 11 }}
+                    style={{ marginTop: 8, background: '#374151', border: 'none', color: '#fff', padding: '4px 12px', borderRadius: 4, cursor: 'pointer', fontSize: 12 }}
                   >
                     Clear points
                   </button>

@@ -1,5 +1,6 @@
 'use client'
 
+import { startPolling } from '@/utilities/polling'
 import React, { useState, useEffect, useCallback } from 'react'
 import {
   Loader2, Wifi, WifiOff, Zap, Play, CheckCircle2, AlertTriangle,
@@ -100,7 +101,7 @@ function getDisplayName(instance: BotInstance): string {
 }
 
 function getStateConfig(state: string) {
-  return STATE_CONFIG[state] ?? { color: '#64748b', bg: 'rgba(100,116,139,0.1)', label: state }
+  return STATE_CONFIG[state] ?? { color: 'var(--elmt-text-muted)', bg: 'rgba(100,116,139,0.1)', label: state }
 }
 
 function TimeAgo({ date }: { date: Date | null }) {
@@ -242,11 +243,11 @@ function CodeImportPanel({
     })
   }
 
-  if (loading) return <div style={{ fontSize: 12, color: '#64748b', padding: '12px 0' }}>Loading maps & heroes...</div>
+  if (loading) return <div style={{ fontSize: 12, color: 'var(--elmt-text-muted)', padding: '12px 0' }}>Loading maps & heroes...</div>
 
   const chipStyle = (active: boolean, color?: string) => ({
     padding: '3px 8px',
-    fontSize: 10,
+    fontSize: 12,
     borderRadius: 4,
     border: `1px solid ${active ? (color ?? '#60a5fa') : 'rgba(255,255,255,0.08)'}`,
     background: active ? `${color ?? '#60a5fa'}22` : 'rgba(0,0,0,0.2)',
@@ -264,14 +265,14 @@ function CodeImportPanel({
         <div style={{ display: 'flex', gap: 6 }}>
           <button
             className="ps-btn ps-btn-ghost"
-            style={{ padding: '2px 8px', fontSize: 10 }}
+            style={{ padding: '2px 8px', fontSize: 12 }}
             onClick={() => setManualMode(!manualMode)}
           >
             {manualMode ? 'Use Generator' : 'Paste Manually'}
           </button>
           <button
             className="ps-btn ps-btn-ghost"
-            style={{ padding: '2px 8px', fontSize: 10 }}
+            style={{ padding: '2px 8px', fontSize: 12 }}
             onClick={onCancel}
           >
             Cancel
@@ -287,7 +288,7 @@ function CodeImportPanel({
             placeholder="Paste workshop settings code..."
             style={{
               width: '100%', minHeight: 80, maxHeight: 160, padding: '8px 10px',
-              fontSize: 11, fontFamily: 'monospace', background: 'rgba(0,0,0,0.3)',
+              fontSize: 12, fontFamily: 'monospace', background: 'rgba(0,0,0,0.3)',
               border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6,
               color: '#e2e8f0', outline: 'none', resize: 'vertical',
             }}
@@ -295,7 +296,7 @@ function CodeImportPanel({
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 6 }}>
             <button
               className="ps-btn ps-btn-primary"
-              style={{ padding: '4px 12px', fontSize: 11 }}
+              style={{ padding: '4px 12px', fontSize: 12 }}
               onClick={() => { if (manualCode.trim()) onImport(manualCode.trim()) }}
               disabled={!manualCode.trim() || disabled}
             >
@@ -307,7 +308,7 @@ function CodeImportPanel({
         <>
           {/* Map picker */}
           <div style={{ marginBottom: 8 }}>
-            <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4, fontWeight: 500 }}>Map</div>
+            <div style={{ fontSize: 12, color: 'var(--elmt-text-muted)', marginBottom: 4, fontWeight: 500 }}>Map</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
               {maps.map((m) => (
                 <button
@@ -323,12 +324,12 @@ function CodeImportPanel({
 
           {/* Hero bans */}
           <div style={{ marginBottom: 8 }}>
-            <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4, fontWeight: 500 }}>
+            <div style={{ fontSize: 12, color: 'var(--elmt-text-muted)', marginBottom: 4, fontWeight: 500 }}>
               Hero Bans {bannedHeroIds.length > 0 && <span style={{ color: '#f87171' }}>({bannedHeroIds.length})</span>}
             </div>
             {(['tank', 'dps', 'support'] as const).map((role) => (
               <div key={role} style={{ marginBottom: 4 }}>
-                <div style={{ fontSize: 9, color: roleColors[role], fontWeight: 600, marginBottom: 2, textTransform: 'uppercase' }}>{role}</div>
+                <div style={{ fontSize: 12, color: roleColors[role], fontWeight: 600, marginBottom: 2, textTransform: 'uppercase' }}>{role}</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
                   {groupedHeroes[role].map((h) => {
                     const banned = bannedHeroIds.includes(h.id)
@@ -351,7 +352,7 @@ function CodeImportPanel({
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <button
               className="ps-btn ps-btn-primary"
-              style={{ padding: '5px 14px', fontSize: 11 }}
+              style={{ padding: '5px 14px', fontSize: 12 }}
               onClick={handleGenerate}
               disabled={!selectedMap || disabled}
             >
@@ -415,7 +416,7 @@ function InviteInput({ onInvite, disabled }: { onInvite: (tag: string, team: num
       </select>
       <button
         className="ps-btn ps-btn-primary"
-        style={{ padding: '5px 10px', fontSize: 11, whiteSpace: 'nowrap' }}
+        style={{ padding: '5px 10px', fontSize: 12, whiteSpace: 'nowrap' }}
         onClick={() => { if (tag.trim()) { onInvite(tag.trim(), team); setTag('') } }}
         disabled={disabled || !tag.trim()}
       >
@@ -461,12 +462,12 @@ function PlayerRosterView({
           flexShrink: 0,
         }} />
         <span style={{ color: '#e2e8f0' }}>{p.battleTag ?? `User ${p.userId}`}</span>
-        <span style={{ color: '#475569', fontSize: 10 }}>{p.status}</span>
+        <span style={{ color: '#475569', fontSize: 12 }}>{p.status}</span>
       </div>
       {onReinvite && p.battleTag && p.status !== 'joined' && (
         <button
           className="ps-btn ps-btn-ghost"
-          style={{ padding: '1px 6px', fontSize: 10 }}
+          style={{ padding: '1px 6px', fontSize: 12 }}
           onClick={() => onReinvite(p.battleTag!, p.team ?? 1)}
           disabled={acting}
         >
@@ -483,18 +484,18 @@ function PlayerRosterView({
       borderRadius: 6,
       marginTop: 4,
     }}>
-      <div style={{ fontSize: 11, fontWeight: 600, color: '#94a3b8', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color: '#94a3b8', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
         <Users size={11} /> Players ({players.filter((p) => p.status === 'joined').length}/{players.length})
       </div>
       {t1.length > 0 && (
         <div style={{ marginBottom: 4 }}>
-          <div style={{ fontSize: 10, color: '#60a5fa', fontWeight: 500, marginBottom: 2 }}>Team 1</div>
+          <div style={{ fontSize: 12, color: '#60a5fa', fontWeight: 500, marginBottom: 2 }}>Team 1</div>
           {t1.map(renderPlayer)}
         </div>
       )}
       {t2.length > 0 && (
         <div style={{ marginBottom: 4 }}>
-          <div style={{ fontSize: 10, color: '#f87171', fontWeight: 500, marginBottom: 2 }}>Team 2</div>
+          <div style={{ fontSize: 12, color: '#f87171', fontWeight: 500, marginBottom: 2 }}>Team 2</div>
           {t2.map(renderPlayer)}
         </div>
       )}
@@ -521,22 +522,22 @@ function LiveStatsPanel({ stats }: { stats: LiveStats }) {
   const hasPlayers = t1Players.length > 0 || t2Players.length > 0
 
   const headerStyle: React.CSSProperties = {
-    fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em',
+    fontSize: 12, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em',
     padding: '4px 0', borderBottom: '1px solid rgba(255,255,255,0.06)',
   }
 
   const colStyle: React.CSSProperties = {
-    fontSize: 11, padding: '3px 0', display: 'flex', alignItems: 'center',
+    fontSize: 12, padding: '3px 0', display: 'flex', alignItems: 'center',
   }
 
   const renderPlayer = ([name, p]: [string, LivePlayerStats]) => (
     <div key={name} style={{ display: 'grid', gridTemplateColumns: '1fr 70px 28px 28px 44px 44px', gap: 4, ...colStyle }}>
       <span style={{ color: '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
-      <span style={{ color: '#94a3b8', fontSize: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.hero}</span>
+      <span style={{ color: '#94a3b8', fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.hero}</span>
       <span style={{ color: '#4ade80', textAlign: 'right' }}>{p.finalBlows}</span>
       <span style={{ color: '#f87171', textAlign: 'right' }}>{p.deaths}</span>
-      <span style={{ color: '#fbbf24', textAlign: 'right', fontSize: 10 }}>{fmtStat(p.damageDelt)}</span>
-      <span style={{ color: '#34d399', textAlign: 'right', fontSize: 10 }}>{fmtStat(p.healingDealt)}</span>
+      <span style={{ color: '#fbbf24', textAlign: 'right', fontSize: 12 }}>{fmtStat(p.damageDelt)}</span>
+      <span style={{ color: '#34d399', textAlign: 'right', fontSize: 12 }}>{fmtStat(p.healingDealt)}</span>
     </div>
   )
 
@@ -555,17 +556,17 @@ function LiveStatsPanel({ stats }: { stats: LiveStats }) {
             {stats.map ?? 'Unknown Map'}
           </span>
           {stats.mapType && (
-            <span style={{ fontSize: 10, color: '#64748b', padding: '1px 6px', background: 'rgba(255,255,255,0.05)', borderRadius: 3 }}>
+            <span style={{ fontSize: 12, color: 'var(--elmt-text-muted)', padding: '1px 6px', background: 'rgba(255,255,255,0.05)', borderRadius: 3 }}>
               {stats.mapType}
             </span>
           )}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#64748b' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'var(--elmt-text-muted)' }}>
           {stats.round > 0 && <span>R{stats.round}</span>}
           <span>{fmtTime(stats.matchTime)}</span>
           {stats.matchEnded && (
             <span style={{
-              fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 3,
+              fontSize: 12, fontWeight: 600, padding: '1px 6px', borderRadius: 3,
               color: stats.matchResult === 'team1' ? '#60a5fa' : stats.matchResult === 'team2' ? '#f87171' : '#facc15',
               background: stats.matchResult === 'team1' ? 'rgba(96,165,250,0.15)' : stats.matchResult === 'team2' ? 'rgba(248,113,113,0.15)' : 'rgba(250,204,21,0.15)',
             }}>
@@ -604,7 +605,7 @@ function LiveStatsPanel({ stats }: { stats: LiveStats }) {
           {/* Team 1 */}
           {t1Players.length > 0 && (
             <div style={{ marginTop: 6 }}>
-              <div style={{ fontSize: 9, fontWeight: 600, color: '#60a5fa', marginBottom: 2, textTransform: 'uppercase' }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#60a5fa', marginBottom: 2, textTransform: 'uppercase' }}>
                 {stats.team1.name}
               </div>
               {t1Players.map(renderPlayer)}
@@ -614,7 +615,7 @@ function LiveStatsPanel({ stats }: { stats: LiveStats }) {
           {/* Team 2 */}
           {t2Players.length > 0 && (
             <div style={{ marginTop: 6 }}>
-              <div style={{ fontSize: 9, fontWeight: 600, color: '#f87171', marginBottom: 2, textTransform: 'uppercase' }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#f87171', marginBottom: 2, textTransform: 'uppercase' }}>
                 {stats.team2.name}
               </div>
               {t2Players.map(renderPlayer)}
@@ -624,7 +625,7 @@ function LiveStatsPanel({ stats }: { stats: LiveStats }) {
       )}
 
       {!hasPlayers && stats.eventCount > 0 && (
-        <div style={{ fontSize: 11, color: '#475569', textAlign: 'center', padding: '8px 0' }}>
+        <div style={{ fontSize: 12, color: '#475569', textAlign: 'center', padding: '8px 0' }}>
           {stats.eventCount} events tracked — waiting for player data...
         </div>
       )}
@@ -670,8 +671,7 @@ function ScreenshotViewer({
 
   useEffect(() => {
     if (!autoRefresh) return
-    const interval = setInterval(fetchScreenshot, 5000)
-    return () => clearInterval(interval)
+    return startPolling(fetchScreenshot, 5000)
   }, [autoRefresh, fetchScreenshot])
 
   return (
@@ -687,7 +687,7 @@ function ScreenshotViewer({
           <Camera size={12} /> Desktop Screenshot
         </span>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: '#64748b', cursor: 'pointer' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--elmt-text-muted)', cursor: 'pointer' }}>
             <input
               type="checkbox"
               checked={autoRefresh}
@@ -698,7 +698,7 @@ function ScreenshotViewer({
           </label>
           <button
             className="ps-btn ps-btn-ghost"
-            style={{ padding: '2px 6px', fontSize: 10 }}
+            style={{ padding: '2px 6px', fontSize: 12 }}
             onClick={fetchScreenshot}
             disabled={loading}
           >
@@ -706,7 +706,7 @@ function ScreenshotViewer({
           </button>
           <button
             className="ps-btn ps-btn-ghost"
-            style={{ padding: '2px 6px', fontSize: 10 }}
+            style={{ padding: '2px 6px', fontSize: 12 }}
             onClick={onClose}
           >
             <X size={10} />
@@ -714,7 +714,7 @@ function ScreenshotViewer({
         </div>
       </div>
       {loading && !imageUrl && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px 0', color: '#64748b', fontSize: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px 0', color: 'var(--elmt-text-muted)', fontSize: 12 }}>
           <Loader2 size={14} className="ps-spin" style={{ marginRight: 6 }} /> Loading screenshot...
         </div>
       )}
@@ -976,7 +976,7 @@ export function PugBotTestingPanel() {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             {botHostingEnabled === null ? (
-              <Loader2 size={18} style={{ color: '#64748b' }} className="ps-spin" />
+              <Loader2 size={18} style={{ color: 'var(--elmt-text-muted)' }} className="ps-spin" />
             ) : botHostingEnabled ? (
               <Bot size={18} style={{ color: '#4ade80' }} />
             ) : (
@@ -990,7 +990,7 @@ export function PugBotTestingPanel() {
                     ? <span style={{ color: '#4ade80' }}>Bot hosting: ENABLED</span>
                     : <span style={{ color: '#f87171' }}>Bot hosting: DISABLED — manual mode</span>}
               </div>
-              <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
+              <div style={{ fontSize: 12, color: 'var(--elmt-text-muted)', marginTop: 2 }}>
                 {botHostingEnabled === false
                   ? 'New lobbies skip the bot and require a human host.'
                   : 'New lobbies are hosted automatically by the bot.'}
@@ -1032,7 +1032,7 @@ export function PugBotTestingPanel() {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             {health === null ? (
-              <Loader2 size={18} style={{ color: '#64748b' }} className="ps-spin" />
+              <Loader2 size={18} style={{ color: 'var(--elmt-text-muted)' }} className="ps-spin" />
             ) : isConnected ? (
               <Wifi size={18} style={{ color: '#4ade80' }} />
             ) : health.reachable ? (
@@ -1071,7 +1071,7 @@ export function PugBotTestingPanel() {
               <span style={{ fontSize: 12, color: '#f87171', marginLeft: 8 }}>{health.error}</span>
             )}
           </div>
-          <span style={{ fontSize: 11, color: '#475569', whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: 12, color: '#475569', whiteSpace: 'nowrap' }}>
             {healthLoading ? '...' : lastChecked ? <TimeAgo date={lastChecked} /> : ''}
           </span>
         </div>
@@ -1085,7 +1085,7 @@ export function PugBotTestingPanel() {
             {isConnected && instances.some((i) => i.state === 'available' || i.state === 'ready') && (
               <button
                 className="ps-btn ps-btn-ghost"
-                style={{ padding: '4px 12px', fontSize: 11 }}
+                style={{ padding: '4px 12px', fontSize: 12 }}
                 onClick={() => botAction({ action: 'shutdownIdle' }, 'shutdownIdle')}
                 disabled={acting !== null}
               >
@@ -1095,7 +1095,7 @@ export function PugBotTestingPanel() {
             {isConnected && (
               <button
                 className="ps-btn ps-btn-danger"
-                style={{ padding: '4px 12px', fontSize: 11 }}
+                style={{ padding: '4px 12px', fontSize: 12 }}
                 onClick={async () => {
                   const confirmed = await confirm({ message: 'Kill all OW processes and reset all instances to Available?', variant: 'danger' })
                   if (confirmed) botAction({ action: 'forceResetAll' }, 'forceResetAll')
@@ -1108,7 +1108,7 @@ export function PugBotTestingPanel() {
             {isConnected && (
               <button
                 className="ps-btn ps-btn-ghost"
-                style={{ padding: '4px 12px', fontSize: 11 }}
+                style={{ padding: '4px 12px', fontSize: 12 }}
                 onClick={async () => {
                   const confirmed = await confirm({ message: 'Restart the bot service? It will be unavailable for a few seconds.', variant: 'danger' })
                   if (confirmed) botAction({ action: 'restartService' }, 'restartService')
@@ -1168,7 +1168,7 @@ export function PugBotTestingPanel() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <button
                         className="ps-btn ps-btn-ghost"
-                        style={{ padding: '3px 6px', fontSize: 10, opacity: 0.6 }}
+                        style={{ padding: '3px 6px', fontSize: 12, opacity: 0.6 }}
                         onClick={async (e) => {
                           e.stopPropagation()
                           setSyncingInstanceId(inst.id)
@@ -1198,7 +1198,7 @@ export function PugBotTestingPanel() {
                       </button>
                       <button
                         className="ps-btn ps-btn-ghost"
-                        style={{ padding: '3px 6px', fontSize: 10, opacity: 0.6 }}
+                        style={{ padding: '3px 6px', fontSize: 12, opacity: 0.6 }}
                         onClick={(e) => {
                           e.stopPropagation()
                           setScreenshotInstanceId(screenshotInstanceId === inst.id ? null : inst.id)
@@ -1208,7 +1208,7 @@ export function PugBotTestingPanel() {
                         <Camera size={12} />
                       </button>
                       <span style={{
-                        fontSize: 11, fontWeight: 500, color: stateConf.color,
+                        fontSize: 12, fontWeight: 500, color: stateConf.color,
                         padding: '3px 10px', background: `${stateConf.color}18`, borderRadius: 6,
                         display: 'flex', alignItems: 'center', gap: 5,
                       }}>
@@ -1265,7 +1265,7 @@ export function PugBotTestingPanel() {
                       <Monitor size={12} />
                       <span>PUG #{inst.lobbyNumber ?? inst.pugLobbyId}</span>
                       {inst.playerCount !== undefined && inst.playerCount > 0 && (
-                        <span style={{ marginLeft: 'auto', color: '#64748b' }}>
+                        <span style={{ marginLeft: 'auto', color: 'var(--elmt-text-muted)' }}>
                           <Users size={10} style={{ display: 'inline', marginRight: 3 }} />
                           {inst.playerCount} players
                         </span>
@@ -1287,7 +1287,7 @@ export function PugBotTestingPanel() {
                       </span>
                       <button
                         className="ps-btn ps-btn-warning"
-                        style={{ padding: '4px 10px', fontSize: 11, whiteSpace: 'nowrap' }}
+                        style={{ padding: '4px 10px', fontSize: 12, whiteSpace: 'nowrap' }}
                         onClick={(e) => {
                           e.stopPropagation()
                           botAction({ action: 'recoverInstance', instanceId: inst.id }, undefined, { instanceId: inst.id, state: 'available' })
@@ -1310,7 +1310,7 @@ export function PugBotTestingPanel() {
                     {isIdle && (
                       <button
                         className="ps-btn ps-btn-primary"
-                        style={{ padding: '5px 12px', fontSize: 11 }}
+                        style={{ padding: '5px 12px', fontSize: 12 }}
                         onClick={(e) => {
                           e.stopPropagation()
                           botAction({ action: 'warmup' }, `warmup-${inst.id}`, { instanceId: inst.id, state: 'warming_up' })
@@ -1325,7 +1325,7 @@ export function PugBotTestingPanel() {
                     {isReady && (
                       <button
                         className="ps-btn ps-btn-primary"
-                        style={{ padding: '5px 12px', fontSize: 11 }}
+                        style={{ padding: '5px 12px', fontSize: 12 }}
                         onClick={(e) => { e.stopPropagation(); botAction({ action: 'instanceStep', instanceId: inst.id, command: 'create_custom_game' }) }}
                         disabled={acting !== null}
                       >
@@ -1338,7 +1338,7 @@ export function PugBotTestingPanel() {
                       <>
                         <button
                           className="ps-btn ps-btn-ghost"
-                          style={{ padding: '5px 12px', fontSize: 11 }}
+                          style={{ padding: '5px 12px', fontSize: 12 }}
                           onClick={(e) => {
                             e.stopPropagation()
                             setCodeImport(codeImport?.instanceId === inst.id ? null : { instanceId: inst.id })
@@ -1349,7 +1349,7 @@ export function PugBotTestingPanel() {
                         </button>
                         <button
                           className="ps-btn ps-btn-success"
-                          style={{ padding: '5px 12px', fontSize: 11 }}
+                          style={{ padding: '5px 12px', fontSize: 12 }}
                           onClick={(e) => { e.stopPropagation(); botAction({ action: 'instanceStep', instanceId: inst.id, command: 'start_game' }) }}
                           disabled={acting !== null}
                         >
@@ -1363,7 +1363,7 @@ export function PugBotTestingPanel() {
                       <>
                         <button
                           className={pausedInstances.has(inst.id) ? 'ps-btn ps-btn-success' : 'ps-btn ps-btn-warning'}
-                          style={{ padding: '5px 12px', fontSize: 11 }}
+                          style={{ padding: '5px 12px', fontSize: 12 }}
                           onClick={async (e) => {
                             e.stopPropagation()
                             const cmd = pausedInstances.has(inst.id) ? 'unpause' : 'pause'
@@ -1385,7 +1385,7 @@ export function PugBotTestingPanel() {
                         </button>
                         <button
                           className="ps-btn"
-                          style={{ padding: '5px 12px', fontSize: 11, background: '#2563eb', color: '#fff' }}
+                          style={{ padding: '5px 12px', fontSize: 12, background: '#2563eb', color: '#fff' }}
                           onClick={(e) => {
                             e.stopPropagation()
                             botAction({ action: 'instanceStep', instanceId: inst.id, command: 'end_team1' })
@@ -1396,7 +1396,7 @@ export function PugBotTestingPanel() {
                         </button>
                         <button
                           className="ps-btn"
-                          style={{ padding: '5px 12px', fontSize: 11, background: '#dc2626', color: '#fff' }}
+                          style={{ padding: '5px 12px', fontSize: 12, background: '#dc2626', color: '#fff' }}
                           onClick={(e) => {
                             e.stopPropagation()
                             botAction({ action: 'instanceStep', instanceId: inst.id, command: 'end_team2' })
@@ -1407,7 +1407,7 @@ export function PugBotTestingPanel() {
                         </button>
                         <button
                           className="ps-btn ps-btn-ghost"
-                          style={{ padding: '5px 12px', fontSize: 11 }}
+                          style={{ padding: '5px 12px', fontSize: 12 }}
                           onClick={(e) => {
                             e.stopPropagation()
                             botAction({ action: 'instanceStep', instanceId: inst.id, command: 'end_draw' })
@@ -1423,7 +1423,7 @@ export function PugBotTestingPanel() {
                     {isInLobby && inst.pugLobbyId && (
                       <button
                         className="ps-btn ps-btn-ghost"
-                        style={{ padding: '5px 12px', fontSize: 11 }}
+                        style={{ padding: '5px 12px', fontSize: 12 }}
                         onClick={(e) => { e.stopPropagation(); botAction({ action: 'cancelBotLobby', pugLobbyId: inst.pugLobbyId }) }}
                         disabled={acting !== null}
                       >
@@ -1435,7 +1435,7 @@ export function PugBotTestingPanel() {
                     {(isInLobby || inst.state === 'in_game' || inst.state === 'post_game') && !inst.pugLobbyId && (
                       <button
                         className="ps-btn ps-btn-ghost"
-                        style={{ padding: '5px 12px', fontSize: 11 }}
+                        style={{ padding: '5px 12px', fontSize: 12 }}
                         onClick={(e) => {
                           e.stopPropagation()
                           botAction({ action: 'recoverInstance', instanceId: inst.id }, undefined, { instanceId: inst.id, state: 'available' })
@@ -1450,7 +1450,7 @@ export function PugBotTestingPanel() {
                     {isError && (
                       <button
                         className="ps-btn ps-btn-warning"
-                        style={{ padding: '5px 12px', fontSize: 11 }}
+                        style={{ padding: '5px 12px', fontSize: 12 }}
                         onClick={(e) => {
                           e.stopPropagation()
                           botAction({ action: 'recoverInstance', instanceId: inst.id }, undefined, { instanceId: inst.id, state: 'available' })
@@ -1465,7 +1465,7 @@ export function PugBotTestingPanel() {
                     {(isIdle || isReady) && (
                       <button
                         className="ps-btn ps-btn-ghost"
-                        style={{ padding: '5px 12px', fontSize: 11 }}
+                        style={{ padding: '5px 12px', fontSize: 12 }}
                         onClick={(e) => { e.stopPropagation(); botAction({ action: 'shutdownInstance', instanceId: inst.id }) }}
                         disabled={acting !== null}
                       >
@@ -1545,7 +1545,7 @@ export function PugBotTestingPanel() {
                   {/* Expanded: extra details */}
                   {expanded && (
                     <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 8 }}>
-                      <div style={{ fontSize: 11, color: '#475569' }}>
+                      <div style={{ fontSize: 12, color: '#475569' }}>
                         {inst.id} &middot; {inst.account}
                         {inst.workshopCode && <span> &middot; Code loaded</span>}
                       </div>
@@ -1568,7 +1568,7 @@ export function PugBotTestingPanel() {
           }}
         >
           <p className="ps-section-title" style={{ margin: 0 }}>Testing Tools</p>
-          {testToolsOpen ? <ChevronDown size={14} style={{ color: '#64748b' }} /> : <ChevronRight size={14} style={{ color: '#64748b' }} />}
+          {testToolsOpen ? <ChevronDown size={14} style={{ color: 'var(--elmt-text-muted)' }} /> : <ChevronRight size={14} style={{ color: 'var(--elmt-text-muted)' }} />}
         </button>
 
         {testToolsOpen && (
@@ -1587,7 +1587,7 @@ export function PugBotTestingPanel() {
                     <><Zap size={14} /> Fill &amp; Advance to IN_PROGRESS</>
                   )}
                 </button>
-                <span style={{ fontSize: 12, color: '#64748b' }}>
+                <span style={{ fontSize: 12, color: 'var(--elmt-text-muted)' }}>
                   Creates a lobby, fills with 10 dummies, advances through all phases.
                 </span>
               </div>
@@ -1598,7 +1598,7 @@ export function PugBotTestingPanel() {
               <p style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
                 <Gamepad2 size={14} /> Start Test Lobby
               </p>
-              <p style={{ fontSize: 11, color: '#64748b', marginBottom: 10 }}>
+              <p style={{ fontSize: 12, color: 'var(--elmt-text-muted)', marginBottom: 10 }}>
                 Enter BattleTags (one per line). First half = Team 1, second half = Team 2. The bot will create a custom game, import settings, and invite everyone.
               </p>
               <textarea
@@ -1647,7 +1647,7 @@ export function PugBotTestingPanel() {
                     <><Play size={14} /> Start Test Lobby ({testTagsInput.trim().split('\n').filter(t => t.trim()).length} players)</>
                   )}
                 </button>
-                <span style={{ fontSize: 11, color: '#64748b' }}>
+                <span style={{ fontSize: 12, color: 'var(--elmt-text-muted)' }}>
                   {(() => {
                     const tags = testTagsInput.trim().split('\n').filter(t => t.trim())
                     const half = Math.ceil(tags.length / 2)
@@ -1668,27 +1668,27 @@ export function PugBotTestingPanel() {
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                         <span style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>PUG #{lobby.lobbyNumber}</span>
-                        <span style={{ fontSize: 11, color: '#94a3b8', padding: '2px 8px', background: 'rgba(255,255,255,0.06)', borderRadius: 4 }}>{lobby.status}</span>
+                        <span style={{ fontSize: 12, color: '#94a3b8', padding: '2px 8px', background: 'rgba(255,255,255,0.06)', borderRadius: 4 }}>{lobby.status}</span>
                         {lobby.botStatus && (
-                          <span style={{ fontSize: 11, color: '#a78bfa', padding: '2px 8px', background: 'rgba(139,92,246,0.1)', borderRadius: 4 }}>Bot: {lobby.botStatus}</span>
+                          <span style={{ fontSize: 12, color: '#a78bfa', padding: '2px 8px', background: 'rgba(139,92,246,0.1)', borderRadius: 4 }}>Bot: {lobby.botStatus}</span>
                         )}
                       </div>
                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                         {BOT_STATUSES.map((s) => (
-                          <button key={s} className={`ps-btn ${s === 'error' ? 'ps-btn-danger' : 'ps-btn-ghost'}`} style={{ padding: '3px 8px', fontSize: 11 }}
+                          <button key={s} className={`ps-btn ${s === 'error' ? 'ps-btn-danger' : 'ps-btn-ghost'}`} style={{ padding: '3px 8px', fontSize: 12 }}
                             onClick={() => botAction({ action: 'simulateStatus', pugLobbyId: lobby.id, status: s })} disabled={acting !== null}
                           >{s}</button>
                         ))}
                         {lobby.status === 'IN_PROGRESS' && (
                           <>
                             <span style={{ borderLeft: '1px solid rgba(255,255,255,0.1)', margin: '0 2px' }} />
-                            <button className="ps-btn ps-btn-success" style={{ padding: '3px 8px', fontSize: 11 }}
+                            <button className="ps-btn ps-btn-success" style={{ padding: '3px 8px', fontSize: 12 }}
                               onClick={() => botAction({ action: 'simulateStats', pugLobbyId: lobby.id, result: 'team1' })} disabled={acting !== null}
                             ><CheckCircle2 size={10} /> T1 Won</button>
-                            <button className="ps-btn ps-btn-warning" style={{ padding: '3px 8px', fontSize: 11 }}
+                            <button className="ps-btn ps-btn-warning" style={{ padding: '3px 8px', fontSize: 12 }}
                               onClick={() => botAction({ action: 'simulateStats', pugLobbyId: lobby.id, result: 'team2' })} disabled={acting !== null}
                             ><CheckCircle2 size={10} /> T2 Won</button>
-                            <button className="ps-btn ps-btn-ghost" style={{ padding: '3px 8px', fontSize: 11 }}
+                            <button className="ps-btn ps-btn-ghost" style={{ padding: '3px 8px', fontSize: 12 }}
                               onClick={() => botAction({ action: 'simulateStats', pugLobbyId: lobby.id, result: 'draw' })} disabled={acting !== null}
                             >Draw</button>
                           </>

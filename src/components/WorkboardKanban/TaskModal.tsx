@@ -675,7 +675,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
                             rel="noopener noreferrer"
                             className="workboard-modal__attachment-thumb"
                           >
-                            <img src={thumbUrl} alt={getAttachmentFilename(att)} />
+                            <img loading="lazy" decoding="async" src={thumbUrl} alt={getAttachmentFilename(att)} />
                           </a>
                         ) : (
                           <span className="workboard-modal__attachment-icon"><Paperclip size={12} /></span>

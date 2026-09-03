@@ -119,7 +119,7 @@ export function StatCard({
     >
       <div
         style={{
-          fontSize: 11,
+          fontSize: 12,
           textTransform: 'uppercase',
           letterSpacing: '0.06em',
           color: SCRIM_COLORS.textMuted,
@@ -132,7 +132,7 @@ export function StatCard({
         {value}
       </div>
       {sub != null && (
-        <div style={{ fontSize: 11, color: SCRIM_COLORS.textFaint, marginTop: 4 }}>{sub}</div>
+        <div style={{ fontSize: 12, color: SCRIM_COLORS.textFaint, marginTop: 4 }}>{sub}</div>
       )}
     </div>
   )

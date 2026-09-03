@@ -89,7 +89,7 @@ export function PugLeaderboardListView() {
                 <span className="ps-card-detail">
                   <span style={{ color: '#4ade80' }}>{e.wins}W</span>{' '}
                   <span style={{ color: '#f87171' }}>{e.losses}L</span>{' '}
-                  <span style={{ color: '#64748b' }}>{e.draws}D</span>
+                  <span style={{ color: 'var(--elmt-text-muted)' }}>{e.draws}D</span>
                 </span>
                 <span className="ps-card-detail">{seasonName}</span>
               </div>

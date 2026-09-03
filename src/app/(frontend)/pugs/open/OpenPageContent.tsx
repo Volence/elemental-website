@@ -1,5 +1,6 @@
 'use client'
 
+import { startPolling } from '@/utilities/polling'
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -89,8 +90,7 @@ export default function OpenPageContent({ currentUser, isRegistered, isPugAdmin,
 
   useEffect(() => {
     fetchLobbies()
-    const interval = setInterval(fetchLobbies, 5000)
-    return () => clearInterval(interval)
+    return startPolling(fetchLobbies, 5000)
   }, [fetchLobbies])
 
   function openJoinQueue() {
@@ -437,7 +437,7 @@ function PlayerAvatarStack({ players, max = 10 }: { players: LobbyPlayer[]; max?
           className="w-7 h-7 rounded-full border-2 border-gray-900 bg-gray-700 flex items-center justify-center text-[10px] font-bold text-gray-300 uppercase overflow-hidden shrink-0"
         >
           {p.avatarUrl ? (
-            <img src={p.avatarUrl} alt="" className="w-full h-full object-cover" />
+            <img loading="lazy" decoding="async" src={p.avatarUrl} alt="" className="w-full h-full object-cover" />
           ) : (
             (p.name || '?')[0]
           )}
@@ -481,7 +481,7 @@ function MiniTeams({ players }: { players: LobbyPlayer[] }) {
               <div key={p.userId} className="flex items-center gap-1.5">
                 <div className="w-5 h-5 rounded-full bg-gray-700 overflow-hidden shrink-0">
                   {p.avatarUrl ? (
-                    <img src={p.avatarUrl} alt="" className="w-full h-full object-cover" />
+                    <img loading="lazy" decoding="async" src={p.avatarUrl} alt="" className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-[8px] text-gray-400 font-bold">{(p.name || '?')[0]}</div>
                   )}

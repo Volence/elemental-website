@@ -127,12 +127,12 @@ function LogoSearch({ value, currentUrl, currentFilename, onChange }: { value: n
   if (value) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        {currentUrl && <img src={currentUrl} alt="" style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 4, background: 'rgba(255,255,255,0.05)' }} />}
+        {currentUrl && <img loading="lazy" decoding="async" src={currentUrl} alt="" style={{ width: 32, height: 32, objectFit: 'contain', borderRadius: 4, background: 'rgba(255,255,255,0.05)' }} />}
         <span style={{ fontSize: 13, color: '#e2e8f0', flex: 1 }}>{currentFilename || `Asset #${value}`}</span>
         <button
           type="button"
           onClick={() => onChange(null, '', '')}
-          style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4, padding: '3px 6px', cursor: 'pointer', color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center' }}
+          style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 4, padding: '3px 6px', cursor: 'pointer', color: 'var(--elmt-text-disabled)', display: 'flex', alignItems: 'center' }}
           title="Remove logo"
         >
           <X size={12} />
@@ -162,7 +162,7 @@ function LogoSearch({ value, currentUrl, currentFilename, onChange }: { value: n
               onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.06)')}
               onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
             >
-              <img src={asset.thumbnailURL || asset.url} alt="" style={{ width: 28, height: 28, objectFit: 'contain', borderRadius: 3, background: 'rgba(255,255,255,0.05)', flexShrink: 0 }} />
+              <img loading="lazy" decoding="async" src={asset.thumbnailURL || asset.url} alt="" style={{ width: 28, height: 28, objectFit: 'contain', borderRadius: 3, background: 'rgba(255,255,255,0.05)', flexShrink: 0 }} />
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{asset.filename}</span>
             </div>
           ))}
@@ -426,7 +426,7 @@ export default function TeamEditor() {
         <div style={editorStyles.headerLeft}>
           <div style={{ width: 56, height: 56, borderRadius: 12, background: `linear-gradient(135deg, ${brandingPrimary}20, ${brandingSecondary}20)`, border: `2px solid ${brandingPrimary}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             {logoUrl ? (
-              <img src={logoUrl} alt={name} style={{ width: 40, height: 40, objectFit: 'contain' }} />
+              <img loading="lazy" decoding="async" src={logoUrl} alt={name} style={{ width: 40, height: 40, objectFit: 'contain' }} />
             ) : (
               <Shield size={24} style={{ color: brandingPrimary, opacity: 0.5 }} />
             )}
@@ -508,11 +508,11 @@ export default function TeamEditor() {
           <div className="profile-card" style={editorStyles.card}>
             <h3 style={editorStyles.cardTitle}><Users size={16} /> Staff</h3>
 
-            <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Managers</p>
+            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--elmt-text-disabled)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Managers</p>
             {managers.map((m, i) => (
               <div className="person-row" key={m.personId ?? `new-${i}`}>
                 <div style={{ flex: 1 }}>
-                  <DiscordMemberPicker value={m.personId} onChange={(id, n) => setManagers(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x))} />
+                  <DiscordMemberPicker value={m.personId} initialName={m.personName} onChange={(id, n) => setManagers(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x))} />
                 </div>
                 {managers.length > 1 && (
                   <div className="reorder-btns">
@@ -523,13 +523,13 @@ export default function TeamEditor() {
                 <button className="remove-btn" style={{ width: 20, height: 20 }} onClick={() => setManagers(p => p.filter((_, j) => j !== i))} title="Remove"><Trash2 size={11} /></button>
               </div>
             ))}
-            <button className="add-link-btn" style={{ marginTop: 2, fontSize: 11 }} onClick={addManager}>+ Add Manager</button>
+            <button className="add-link-btn" style={{ marginTop: 2, fontSize: 12 }} onClick={addManager}>+ Add Manager</button>
 
-            <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', margin: '10px 0 4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Coaches</p>
+            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--elmt-text-disabled)', margin: '10px 0 4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Coaches</p>
             {coaches.map((c, i) => (
               <div className="person-row" key={c.personId ?? `new-${i}`}>
                 <div style={{ flex: 1 }}>
-                  <DiscordMemberPicker value={c.personId} onChange={(id, n) => setCoaches(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x))} />
+                  <DiscordMemberPicker value={c.personId} initialName={c.personName} onChange={(id, n) => setCoaches(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x))} />
                 </div>
                 {coaches.length > 1 && (
                   <div className="reorder-btns">
@@ -540,13 +540,13 @@ export default function TeamEditor() {
                 <button className="remove-btn" style={{ width: 20, height: 20 }} onClick={() => setCoaches(p => p.filter((_, j) => j !== i))} title="Remove"><Trash2 size={11} /></button>
               </div>
             ))}
-            <button className="add-link-btn" style={{ marginTop: 2, fontSize: 11 }} onClick={addCoach}>+ Add Coach</button>
+            <button className="add-link-btn" style={{ marginTop: 2, fontSize: 12 }} onClick={addCoach}>+ Add Coach</button>
 
-            <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', margin: '10px 0 4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Captains</p>
+            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--elmt-text-disabled)', margin: '10px 0 4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Captains</p>
             {captains.map((c, i) => (
               <div className="person-row" key={c.personId ?? `new-${i}`}>
                 <div style={{ flex: 1 }}>
-                  <DiscordMemberPicker value={c.personId} onChange={(id, n) => setCaptains(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x))} />
+                  <DiscordMemberPicker value={c.personId} initialName={c.personName} onChange={(id, n) => setCaptains(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x))} />
                 </div>
                 {captains.length > 1 && (
                   <div className="reorder-btns">
@@ -557,18 +557,18 @@ export default function TeamEditor() {
                 <button className="remove-btn" style={{ width: 20, height: 20 }} onClick={() => setCaptains(p => p.filter((_, j) => j !== i))} title="Remove"><Trash2 size={11} /></button>
               </div>
             ))}
-            <button className="add-link-btn" style={{ marginTop: 2, fontSize: 11 }} onClick={addCaptain}>+ Add Captain</button>
+            <button className="add-link-btn" style={{ marginTop: 2, fontSize: 12 }} onClick={addCaptain}>+ Add Captain</button>
           </div>
 
           {/* Roster */}
           <div className="profile-card" style={editorStyles.card}>
             <h3 style={editorStyles.cardTitle}><Gamepad2 size={16} /> Roster</h3>
 
-            <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Active Players</p>
+            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--elmt-text-disabled)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Active Players</p>
             {roster.map((r, i) => (
               <div className="person-row" key={r.personId ?? `new-${i}`}>
                 <div style={{ flex: 1 }}>
-                  <DiscordMemberPicker value={r.personId} onChange={(id, n) => setRoster(p => p.map((x, j) => j === i ? { ...x, personId: id, personName: n } : x))} />
+                  <DiscordMemberPicker value={r.personId} initialName={r.personName} onChange={(id, n) => setRoster(p => p.map((x, j) => j === i ? { ...x, personId: id, personName: n } : x))} />
                 </div>
                 <select className="role-select" value={r.role} onChange={e => setRoster(p => p.map((x, j) => j === i ? { ...x, role: e.target.value } : x))}>
                   {ROLES.map(rl => <option key={rl.value} value={rl.value}>{rl.label}</option>)}
@@ -582,13 +582,13 @@ export default function TeamEditor() {
                 <button className="remove-btn" style={{ width: 20, height: 20 }} onClick={() => setRoster(p => p.filter((_, j) => j !== i))} title="Remove"><Trash2 size={11} /></button>
               </div>
             ))}
-            <button className="add-link-btn" style={{ marginTop: 2, fontSize: 11 }} onClick={addRoster}>+ Add Player</button>
+            <button className="add-link-btn" style={{ marginTop: 2, fontSize: 12 }} onClick={addRoster}>+ Add Player</button>
 
-            <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.4)', margin: '10px 0 4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Substitutes</p>
+            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--elmt-text-disabled)', margin: '10px 0 4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Substitutes</p>
             {subs.map((s, i) => (
               <div className="person-row" key={s.personId ?? `new-${i}`}>
                 <div style={{ flex: 1 }}>
-                  <DiscordMemberPicker value={s.personId} onChange={(id, n) => setSubs(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x))} />
+                  <DiscordMemberPicker value={s.personId} initialName={s.personName} onChange={(id, n) => setSubs(p => p.map((x, j) => j === i ? { personId: id, personName: n } : x))} />
                 </div>
                 {subs.length > 1 && (
                   <div className="reorder-btns">
@@ -599,7 +599,7 @@ export default function TeamEditor() {
                 <button className="remove-btn" style={{ width: 20, height: 20 }} onClick={() => setSubs(p => p.filter((_, j) => j !== i))} title="Remove"><Trash2 size={11} /></button>
               </div>
             ))}
-            <button className="add-link-btn" style={{ marginTop: 2, fontSize: 11 }} onClick={addSub}>+ Add Sub</button>
+            <button className="add-link-btn" style={{ marginTop: 2, fontSize: 12 }} onClick={addSub}>+ Add Sub</button>
           </div>
 
           {/* Achievements */}
@@ -642,7 +642,7 @@ export default function TeamEditor() {
             </div>
             {/* Preview */}
             <div style={{ padding: 12, borderRadius: 8, background: `linear-gradient(135deg, ${brandingPrimary}15, ${brandingSecondary}15)`, border: `1px solid ${brandingPrimary}30`, textAlign: 'center' }}>
-              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Preview</span>
+              <span style={{ fontSize: 12, color: 'var(--elmt-text-disabled)' }}>Preview</span>
               <div style={{ fontSize: 16, fontWeight: 700, background: `linear-gradient(135deg, ${brandingPrimary}, ${brandingSecondary})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', marginTop: 4 }}>{name || 'Team Name'}</div>
             </div>
           </div>
@@ -756,9 +756,9 @@ export default function TeamEditor() {
             <p style={editorStyles.fieldHint}>Time slots shown on availability calendars. The label is what players see, start/end are 24-hour times (e.g., 18:00 = 6 PM).</p>
             {scheduleBlocks.length > 0 && (
               <div className="block-row" style={{ padding: '0 0 4px', borderBottom: '1px solid rgba(255,255,255,0.06)', marginBottom: 4 }}>
-                <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Display Label</span>
-                <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Start (24h)</span>
-                <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>End (24h)</span>
+                <span style={{ fontSize: 12, color: 'var(--elmt-text-disabled)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Display Label</span>
+                <span style={{ fontSize: 12, color: 'var(--elmt-text-disabled)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Start (24h)</span>
+                <span style={{ fontSize: 12, color: 'var(--elmt-text-disabled)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>End (24h)</span>
                 <span></span>
               </div>
             )}

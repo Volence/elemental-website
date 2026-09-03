@@ -74,7 +74,7 @@ export function WeeklyView() {
 
   const fetchTeams = async () => {
     try {
-      const response = await fetch('/api/teams?limit=500&sort=name')
+      const response = await fetch('/api/teams?limit=500&sort=name&depth=0')
       const data = await response.json()
       setTeams(data.docs || [])
     } catch (error) {

@@ -257,7 +257,7 @@ export function AccessReviewView({ embedded = false }: { embedded?: boolean } = 
                       >
                         {isCollapsed ? <ChevronRight size={15} /> : <ChevronDown size={15} />}
                         {group.label}
-                        <span style={{ color: 'rgba(255,255,255,0.35)', fontWeight: 400 }}>({group.people.length})</span>
+                        <span style={{ color: 'var(--elmt-text-disabled)', fontWeight: 400 }}>({group.people.length})</span>
                       </button>
                       {selectedPeople.length > 0 ? (
                         <button
@@ -299,7 +299,7 @@ export function AccessReviewView({ embedded = false }: { embedded?: boolean } = 
                             onChange={() => toggleSelected(group.key, person.id)}
                           />
                           {person.avatarUrl
-                            ? <img src={person.avatarUrl} alt="" style={{ width: 30, height: 30, borderRadius: '50%', objectFit: 'cover' }} />
+                            ? <img loading="lazy" decoding="async" src={person.avatarUrl} alt="" style={{ width: 30, height: 30, borderRadius: '50%', objectFit: 'cover' }} />
                             : <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><UserIcon size={14} style={{ opacity: 0.3 }} /></div>}
 
                           <div style={{ flex: 1, minWidth: 0 }}>

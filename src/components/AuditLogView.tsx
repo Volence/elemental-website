@@ -1,5 +1,6 @@
 'use client'
 
+import { startPolling } from '@/utilities/polling'
 import React, { useState, useEffect } from 'react'
 import { formatLocalDateTime } from '@/utilities/formatDateTime'
 
@@ -33,8 +34,7 @@ export default function AuditLogView() {
 
     fetchData()
 
-    const interval = setInterval(() => fetchLogs(false), 30000)
-    return () => clearInterval(interval)
+    return startPolling(() => fetchLogs(false), 30000)
   }, [filter, page])
 
   const fetchLogs = async (showLoadingState = true) => {

@@ -1,5 +1,6 @@
 'use client'
 
+import { startPolling } from '@/utilities/polling'
 import React, { useState, useEffect } from 'react'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { formatLocalDateTime } from '@/utilities/formatDateTime'
@@ -51,8 +52,7 @@ export default function ErrorDashboardView() {
 
     fetchData()
 
-    const interval = setInterval(() => fetchErrors(false), 30000)
-    return () => clearInterval(interval)
+    return startPolling(() => fetchErrors(false), 30000)
   }, [typeFilter, severityFilter, resolvedFilter])
 
   const fetchErrors = async (showLoadingState = true) => {

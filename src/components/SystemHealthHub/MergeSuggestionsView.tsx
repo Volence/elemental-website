@@ -213,7 +213,7 @@ export default function MergeSuggestionsView() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 20, color: 'rgba(255,255,255,0.4)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 20, color: 'var(--elmt-text-disabled)' }}>
         <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Scanning for duplicates...
       </div>
     )
@@ -229,7 +229,7 @@ export default function MergeSuggestionsView() {
 
   if (groups.length === 0) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 20, color: 'rgba(255,255,255,0.4)', fontSize: 13 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 20, color: 'var(--elmt-text-disabled)', fontSize: 13 }}>
         <Check size={16} style={{ color: '#34d399' }} /> No potential duplicates found.
       </div>
     )
@@ -264,8 +264,8 @@ export default function MergeSuggestionsView() {
                 >
                   {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                   <span style={{ fontWeight: 600 }}>{group.anchor.name}</span>
-                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>#{group.anchor.id}</span>
-                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginLeft: 'auto' }}>{group.matches.length} potential matches</span>
+                  <span style={{ fontSize: 12, color: 'var(--elmt-text-disabled)' }}>#{group.anchor.id}</span>
+                  <span style={{ fontSize: 12, color: 'var(--elmt-text-disabled)', marginLeft: 'auto' }}>{group.matches.length} potential matches</span>
                 </button>
               )}
 
@@ -289,7 +289,7 @@ export default function MergeSuggestionsView() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         {target.photoUrl ? (
-                          <img src={target.photoUrl} alt="" style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover' }} />
+                          <img loading="lazy" decoding="async" src={target.photoUrl} alt="" style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover' }} />
                         ) : (
                           <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <User size={10} style={{ opacity: 0.4 }} />
@@ -297,17 +297,17 @@ export default function MergeSuggestionsView() {
                         )}
                         <div>
                           <div style={{ fontSize: 13, fontWeight: 600, color: '#34d399' }}>{target.name}</div>
-                          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>#{target.id} {target.role} - keep</div>
+                          <div style={{ fontSize: 12, color: 'var(--elmt-text-disabled)' }}>#{target.id} {target.role} - keep</div>
                         </div>
                       </div>
 
-                      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', padding: '0 4px' }}>
+                      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', padding: '0 4px' }}>
                         {match.similarity}%
                       </div>
 
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         {source.photoUrl ? (
-                          <img src={source.photoUrl} alt="" style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover' }} />
+                          <img loading="lazy" decoding="async" src={source.photoUrl} alt="" style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover' }} />
                         ) : (
                           <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <User size={10} style={{ opacity: 0.4 }} />
@@ -315,13 +315,13 @@ export default function MergeSuggestionsView() {
                         )}
                         <div>
                           <div style={{ fontSize: 13, fontWeight: 500, color: '#f87171' }}>{source.name}</div>
-                          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)' }}>#{source.id} {source.role} - delete</div>
+                          <div style={{ fontSize: 12, color: 'var(--elmt-text-disabled)' }}>#{source.id} {source.role} - delete</div>
                         </div>
                       </div>
                     </div>
 
                     {result && !result.success && (
-                      <div style={{ fontSize: 11, color: '#f87171', maxWidth: 250 }} title={result.message}>
+                      <div style={{ fontSize: 12, color: '#f87171', maxWidth: 250 }} title={result.message}>
                         {result.message}
                       </div>
                     )}
@@ -337,7 +337,7 @@ export default function MergeSuggestionsView() {
                     <button
                       onClick={() => ignorePair(group.anchor, match)}
                       disabled={isMerging || isIgnoring}
-                      style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 12px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)', color: 'rgba(255,255,255,0.4)', cursor: isIgnoring ? 'wait' : 'pointer', fontSize: 12, whiteSpace: 'nowrap', opacity: isIgnoring ? 0.6 : 1 }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 12px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)', color: 'var(--elmt-text-disabled)', cursor: isIgnoring ? 'wait' : 'pointer', fontSize: 12, whiteSpace: 'nowrap', opacity: isIgnoring ? 0.6 : 1 }}
                     >
                       {isIgnoring ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> : <X size={12} />} Ignore
                     </button>

@@ -348,7 +348,7 @@ export default function ScrimHeroDetailView() {
               {/* Our Teams */}
               {filteredTeams.ourTeams.length > 0 && (
                 <>
-                  <div style={{ padding: '6px 14px', fontSize: '9px', fontWeight: 700, color: GREEN, textTransform: 'uppercase', letterSpacing: '1.2px', borderTop: `1px solid ${BORDER}` }}>
+                  <div style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 700, color: GREEN, textTransform: 'uppercase', letterSpacing: '1.2px', borderTop: `1px solid ${BORDER}` }}>
                     Our Teams
                   </div>
                   {filteredTeams.ourTeams.map(t => (
@@ -374,7 +374,7 @@ export default function ScrimHeroDetailView() {
               {/* Enemy Teams */}
               {filteredTeams.enemyTeams.length > 0 && (
                 <>
-                  <div style={{ padding: '6px 14px', fontSize: '9px', fontWeight: 700, color: RED, textTransform: 'uppercase', letterSpacing: '1.2px', borderTop: `1px solid ${BORDER}` }}>
+                  <div style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 700, color: RED, textTransform: 'uppercase', letterSpacing: '1.2px', borderTop: `1px solid ${BORDER}` }}>
                     Opponents
                   </div>
                   {filteredTeams.enemyTeams.map(t => (
@@ -423,7 +423,7 @@ export default function ScrimHeroDetailView() {
                 background: isActive ? `linear-gradient(135deg, ${AMBER}22, ${AMBER}11)` : BG_CARD,
                 border: `1px solid ${isActive ? AMBER + '66' : BORDER}`,
                 borderRadius: '8px', padding: '6px 12px', cursor: 'pointer',
-                color: isActive ? AMBER : TEXT_SECONDARY, fontSize: '11px', fontWeight: isActive ? 700 : 500,
+                color: isActive ? AMBER : TEXT_SECONDARY, fontSize: '12px', fontWeight: isActive ? 700 : 500,
                 transition: 'all 0.2s', fontFamily: "'Inter', -apple-system, sans-serif",
               }}
             >
@@ -497,7 +497,7 @@ export default function ScrimHeroDetailView() {
         onClick={() => handleSort(field)}
         style={{
           padding: '10px 12px', textAlign: 'right', fontWeight: 500, color: sortKey === field ? CYAN : TEXT_SECONDARY,
-          fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.5px', cursor: 'pointer',
+          fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px', cursor: 'pointer',
           userSelect: 'none', whiteSpace: 'nowrap',
         }}
       >
@@ -546,7 +546,7 @@ export default function ScrimHeroDetailView() {
                   background: isActive ? `linear-gradient(135deg, ${col}22, ${col}11)` : BG_CARD,
                   border: `1px solid ${isActive ? col + '66' : BORDER}`,
                   borderRadius: '8px', padding: '6px 12px', cursor: 'pointer',
-                  color: isActive ? col : TEXT_SECONDARY, fontSize: '11px', fontWeight: isActive ? 700 : 500,
+                  color: isActive ? col : TEXT_SECONDARY, fontSize: '12px', fontWeight: isActive ? 700 : 500,
                   transition: 'all 0.2s', fontFamily: "'Inter', -apple-system, sans-serif",
                 }}
               >
@@ -581,11 +581,11 @@ export default function ScrimHeroDetailView() {
                     className="scrim-detail__map-row"
                   >
                     <td className="scrim-detail__map-td" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      {h.portrait && <img src={h.portrait} alt={h.hero} style={{ width: 28, height: 28, borderRadius: '50%', border: `2px solid ${ROLE_COLORS[h.role] ?? CYAN}33` }} />}
+                      {h.portrait && <img loading="lazy" decoding="async" src={h.portrait} alt={h.hero} style={{ width: 28, height: 28, borderRadius: '50%', border: `2px solid ${ROLE_COLORS[h.role] ?? CYAN}33` }} />}
                       <span className="scrim-detail__map-td--map" style={{ padding: 0 }}>{h.hero}</span>
                     </td>
                     <td className="scrim-detail__map-td">
-                      <span style={{ fontSize: '10px', fontWeight: 600, color: ROLE_COLORS[h.role] ?? TEXT_DIM, padding: '2px 8px', borderRadius: '4px', background: `${ROLE_COLORS[h.role] ?? TEXT_DIM}15` }}>
+                      <span style={{ fontSize: '12px', fontWeight: 600, color: ROLE_COLORS[h.role] ?? TEXT_DIM, padding: '2px 8px', borderRadius: '4px', background: `${ROLE_COLORS[h.role] ?? TEXT_DIM}15` }}>
                         {h.role}
                       </span>
                     </td>
@@ -640,16 +640,16 @@ export default function ScrimHeroDetailView() {
             <ArrowLeft size={12} /> Back to Heroes
           </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            {hero.portrait && <img src={hero.portrait} alt={hero.name} style={{ width: 56, height: 56, borderRadius: '50%', border: `3px solid ${ROLE_COLORS[hero.role] ?? CYAN}44` }} />}
+            {hero.portrait && <img loading="lazy" decoding="async" src={hero.portrait} alt={hero.name} style={{ width: 56, height: 56, borderRadius: '50%', border: `3px solid ${ROLE_COLORS[hero.role] ?? CYAN}44` }} />}
             <div>
               <h1 className="scrim-page__title">{hero.name}</h1>
               <div style={{ display: 'flex', gap: '10px', marginTop: '4px', alignItems: 'center', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '11px', fontWeight: 600, color: ROLE_COLORS[hero.role] ?? TEXT_DIM, padding: '2px 10px', borderRadius: '4px', background: `${ROLE_COLORS[hero.role] ?? TEXT_DIM}15` }}>
+                <span style={{ fontSize: '12px', fontWeight: 600, color: ROLE_COLORS[hero.role] ?? TEXT_DIM, padding: '2px 10px', borderRadius: '4px', background: `${ROLE_COLORS[hero.role] ?? TEXT_DIM}15` }}>
                   {hero.role}
                 </span>
                 <span style={{ fontSize: '12px', color: TEXT_DIM }}>{hero.mapsPlayed} maps • {formatTime(hero.totalTime)} played</span>
                 {badges.map(b => (
-                  <span key={b.label} style={{ fontSize: '10px', fontWeight: 600, color: b.color, padding: '2px 10px', borderRadius: '4px', background: `${b.color}15` }}>
+                  <span key={b.label} style={{ fontSize: '12px', fontWeight: 600, color: b.color, padding: '2px 10px', borderRadius: '4px', background: `${b.color}15` }}>
                     {b.label}
                   </span>
                 ))}
@@ -677,7 +677,7 @@ export default function ScrimHeroDetailView() {
             <div key={s.label} className="scrim-detail__summary-card" style={{ borderTop: `2px solid ${s.color}`, textAlign: 'center' }}>
               <div className="scrim-detail__label">{s.label}</div>
               <div style={{ fontSize: '22px', fontWeight: 800, color: s.color, textShadow: `0 0 16px ${s.color}33` }}>{s.value}</div>
-              <div style={{ fontSize: '10px', color: TEXT_DIM, marginTop: '4px' }}>{formatNumber(s.total)} total</div>
+              <div style={{ fontSize: '12px', color: TEXT_DIM, marginTop: '4px' }}>{formatNumber(s.total)} total</div>
             </div>
           ))}
         </div>
@@ -713,7 +713,7 @@ export default function ScrimHeroDetailView() {
             <div key={s.label} className="scrim-detail__summary-card" style={{ borderTop: `2px solid ${s.color}`, textAlign: 'center' }}>
               <div className="scrim-detail__label">{s.label}</div>
               <div style={{ fontSize: '22px', fontWeight: 800, color: s.color, textShadow: `0 0 16px ${s.color}33` }}>{s.value}</div>
-              <div style={{ fontSize: '10px', color: TEXT_DIM, marginTop: '4px' }}>{s.sub}</div>
+              <div style={{ fontSize: '12px', color: TEXT_DIM, marginTop: '4px' }}>{s.sub}</div>
             </div>
           ))}
         </div>
@@ -724,7 +724,7 @@ export default function ScrimHeroDetailView() {
             <div>
               <div className="scrim-detail__label"><Trophy size={14} className="scrim-detail__inline-icon" /> Best Performance</div>
               <div style={{ fontSize: '14px', color: TEXT_PRIMARY, fontWeight: 600 }}>{bestGame.player} on {bestGame.mapName}</div>
-              <div style={{ fontSize: '11px', color: TEXT_DIM, marginTop: '2px' }}>{bestGame.scrimName} · {formatDate(bestGame.scrimDate)}</div>
+              <div style={{ fontSize: '12px', color: TEXT_DIM, marginTop: '2px' }}>{bestGame.scrimName} · {formatDate(bestGame.scrimDate)}</div>
             </div>
             <div style={{ display: 'flex', gap: '20px' }}>
               {[
@@ -735,7 +735,7 @@ export default function ScrimHeroDetailView() {
               ].map(s => (
                 <div key={s.label} style={{ textAlign: 'center' }}>
                   <div style={{ fontSize: '18px', fontWeight: 800, color: s.color }}>{s.value}</div>
-                  <div style={{ fontSize: '9px', color: TEXT_DIM, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{s.label}</div>
+                  <div style={{ fontSize: '12px', color: TEXT_DIM, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{s.label}</div>
                 </div>
               ))}
             </div>
@@ -839,7 +839,7 @@ export default function ScrimHeroDetailView() {
                 </div>
               )
             })()}
-            <p style={{ color: TEXT_DIM, fontSize: '11px', marginTop: '8px', textAlign: 'center' }}>
+            <p style={{ color: TEXT_DIM, fontSize: '12px', marginTop: '8px', textAlign: 'center' }}>
               Across {trendData.length} scrim{trendData.length !== 1 ? 's' : ''}, sorted chronologically
             </p>
           </div>
@@ -854,17 +854,17 @@ export default function ScrimHeroDetailView() {
               {/* Killed Most */}
               {heroMatchups.killedMost.length > 0 && (
                 <div style={{ marginBottom: '16px' }}>
-                  <div style={{ fontSize: '11px', color: GREEN, marginBottom: '8px', fontWeight: 600, letterSpacing: '0.5px' }}>ELIMINATED MOST</div>
+                  <div style={{ fontSize: '12px', color: GREEN, marginBottom: '8px', fontWeight: 600, letterSpacing: '0.5px' }}>ELIMINATED MOST</div>
                   {heroMatchups.killedMost.map((m, i) => {
                     const maxCount = heroMatchups.killedMost[0]?.count ?? 1
                     return (
                       <div key={m.hero} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
-                        <span style={{ fontSize: '11px', color: TEXT_DIM, width: '14px', textAlign: 'right' }}>{i + 1}</span>
-                        <span style={{ fontSize: '11px', color: TEXT_PRIMARY, fontWeight: 500, minWidth: '90px' }}>{m.hero}</span>
+                        <span style={{ fontSize: '12px', color: TEXT_DIM, width: '14px', textAlign: 'right' }}>{i + 1}</span>
+                        <span style={{ fontSize: '12px', color: TEXT_PRIMARY, fontWeight: 500, minWidth: '90px' }}>{m.hero}</span>
                         <div style={{ flex: 1, height: '5px', background: BG_INNER, borderRadius: '3px', overflow: 'hidden' }}>
                           <div style={{ height: '100%', width: `${(m.count / maxCount) * 100}%`, borderRadius: '3px', background: `linear-gradient(90deg, ${GREEN}88, ${GREEN}44)` }} />
                         </div>
-                        <span style={{ fontSize: '11px', color: GREEN, fontWeight: 700, minWidth: '28px', textAlign: 'right' }}>{m.count}</span>
+                        <span style={{ fontSize: '12px', color: GREEN, fontWeight: 700, minWidth: '28px', textAlign: 'right' }}>{m.count}</span>
                       </div>
                     )
                   })}
@@ -873,17 +873,17 @@ export default function ScrimHeroDetailView() {
               {/* Died To Most */}
               {heroMatchups.diedToMost.length > 0 && (
                 <div>
-                  <div style={{ fontSize: '11px', color: RED, marginBottom: '8px', fontWeight: 600, letterSpacing: '0.5px' }}>DIED TO MOST</div>
+                  <div style={{ fontSize: '12px', color: RED, marginBottom: '8px', fontWeight: 600, letterSpacing: '0.5px' }}>DIED TO MOST</div>
                   {heroMatchups.diedToMost.map((m, i) => {
                     const maxCount = heroMatchups.diedToMost[0]?.count ?? 1
                     return (
                       <div key={m.hero} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
-                        <span style={{ fontSize: '11px', color: TEXT_DIM, width: '14px', textAlign: 'right' }}>{i + 1}</span>
-                        <span style={{ fontSize: '11px', color: TEXT_PRIMARY, fontWeight: 500, minWidth: '90px' }}>{m.hero}</span>
+                        <span style={{ fontSize: '12px', color: TEXT_DIM, width: '14px', textAlign: 'right' }}>{i + 1}</span>
+                        <span style={{ fontSize: '12px', color: TEXT_PRIMARY, fontWeight: 500, minWidth: '90px' }}>{m.hero}</span>
                         <div style={{ flex: 1, height: '5px', background: BG_INNER, borderRadius: '3px', overflow: 'hidden' }}>
                           <div style={{ height: '100%', width: `${(m.count / maxCount) * 100}%`, borderRadius: '3px', background: `linear-gradient(90deg, ${RED}88, ${RED}44)` }} />
                         </div>
-                        <span style={{ fontSize: '11px', color: RED, fontWeight: 700, minWidth: '28px', textAlign: 'right' }}>{m.count}</span>
+                        <span style={{ fontSize: '12px', color: RED, fontWeight: 700, minWidth: '28px', textAlign: 'right' }}>{m.count}</span>
                       </div>
                     )
                   })}
@@ -901,12 +901,12 @@ export default function ScrimHeroDetailView() {
                 const total = finalBlowsByMethod.reduce((a, m) => a + m.count, 0)
                 return finalBlowsByMethod.map((m, i) => (
                   <div key={m.method} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '7px' }}>
-                    <span style={{ fontSize: '11px', color: TEXT_PRIMARY, fontWeight: 500, minWidth: '120px' }}>{m.method}</span>
+                    <span style={{ fontSize: '12px', color: TEXT_PRIMARY, fontWeight: 500, minWidth: '120px' }}>{m.method}</span>
                     <div style={{ flex: 1, height: '7px', background: BG_INNER, borderRadius: '4px', overflow: 'hidden' }}>
                       <div style={{ height: '100%', width: `${(m.count / maxCount) * 100}%`, borderRadius: '4px', background: `linear-gradient(90deg, ${BAR_COLORS[i % BAR_COLORS.length]}88, ${BAR_COLORS[i % BAR_COLORS.length]}44)` }} />
                     </div>
-                    <span style={{ fontSize: '11px', color: BAR_COLORS[i % BAR_COLORS.length], fontWeight: 700, minWidth: '36px', textAlign: 'right' }}>{m.count}</span>
-                    <span style={{ fontSize: '10px', color: TEXT_DIM, minWidth: '34px' }}>({total > 0 ? ((m.count / total) * 100).toFixed(1) : 0}%)</span>
+                    <span style={{ fontSize: '12px', color: BAR_COLORS[i % BAR_COLORS.length], fontWeight: 700, minWidth: '36px', textAlign: 'right' }}>{m.count}</span>
+                    <span style={{ fontSize: '12px', color: TEXT_DIM, minWidth: '34px' }}>({total > 0 ? ((m.count / total) * 100).toFixed(1) : 0}%)</span>
                   </div>
                 ))
               })()}

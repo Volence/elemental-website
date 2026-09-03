@@ -142,7 +142,7 @@ export const styles: Record<string, React.CSSProperties> = {
   rightColumn: { display: 'flex', flexDirection: 'column' as const, gap: 20 },
   card: { background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, padding: 20 },
   cardTitle: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 15, fontWeight: 600, color: '#e2e8f0', margin: '0 0 14px 0' },
-  fieldHint: { fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: '8px 0 0 0', lineHeight: 1.4 },
+  fieldHint: { fontSize: 12, color: 'var(--elmt-text-disabled)', margin: '8px 0 0 0', lineHeight: 1.4 },
   readonlyField: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' },
   readonlyLabel: { fontSize: 13, color: 'rgba(255,255,255,0.5)' },
   readonlyValue: { fontSize: 13, color: '#e2e8f0', fontFamily: 'monospace' },
@@ -545,7 +545,7 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
         <div style={styles.headerLeft}>
           <div className="photo-wrapper" style={styles.photoWrapper}>
             {photoPreview ? (
-              <img src={photoPreview} alt={person.name} style={styles.photo} />
+              <img loading="lazy" decoding="async" src={photoPreview} alt={person.name} style={styles.photo} />
             ) : (
               <div style={styles.photoPlaceholder}>
                 <UserIcon size={40} style={{ opacity: 0.3 }} />
@@ -725,7 +725,7 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
               <h3 style={styles.cardTitle}><Gamepad2 size={16} /> PUG Status</h3>
               {!pugRegistered ? (
                 <div>
-                  <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginBottom: 10 }}>Not registered for PUGs</p>
+                  <p style={{ fontSize: 13, color: 'var(--elmt-text-disabled)', marginBottom: 10 }}>Not registered for PUGs</p>
                   {canEditPug && (
                     <button
                       className="profile-save-btn"
@@ -809,7 +809,7 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
                         Banned until {new Date(pugActiveBan.bannedUntil).toLocaleString()}
                       </p>
                       {pugActiveBan.reason && (
-                        <p style={{ fontSize: 11, color: 'rgba(248, 113, 113, 0.7)', marginTop: 2 }}>{pugActiveBan.reason}</p>
+                        <p style={{ fontSize: 12, color: 'rgba(248, 113, 113, 0.7)', marginTop: 2 }}>{pugActiveBan.reason}</p>
                       )}
                     </div>
                   )}
@@ -921,7 +921,7 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
                 <div style={{ ...styles.readonlyField, justifyContent: 'space-between' }}>
                   <div>
                     <span style={styles.fieldLabel}>Show in Live Streamers</span>
-                    <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', margin: '2px 0 0' }}>Requires a Twitch URL in Social Links</p>
+                    <p style={{ fontSize: 12, color: 'var(--elmt-text-disabled)', margin: '2px 0 0' }}>Requires a Twitch URL in Social Links</p>
                   </div>
                   <button
                     className={`toggle-switch ${showInLiveStreamers ? 'on' : 'off'}`}

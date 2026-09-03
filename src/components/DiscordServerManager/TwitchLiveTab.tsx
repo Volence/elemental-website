@@ -189,7 +189,7 @@ const TwitchLiveTab: React.FC = () => {
       <div key={streamer.id} className={cardClass}>
         <div className="streamer-avatar">
           {streamer.profileImageUrl ? (
-            <img src={streamer.profileImageUrl} alt={streamer.displayName || streamer.twitchUsername} />
+            <img loading="lazy" decoding="async" src={streamer.profileImageUrl} alt={streamer.displayName || streamer.twitchUsername} />
           ) : (
             <div className="avatar-placeholder"><Monitor size={14} /></div>
           )}

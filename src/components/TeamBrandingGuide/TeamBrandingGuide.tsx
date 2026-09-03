@@ -982,36 +982,38 @@ export default function TeamBrandingGuide() {
         {/* Quick color reference */}
         <section className="tbg__section">
           <h2 className="tbg__rg">Quick Color Reference</h2>
-          <table className="tbg__ref-table">
-            <thead>
-              <tr>
-                <th>Team</th>
-                <th>Primary</th>
-                <th>Secondary</th>
-              </tr>
-            </thead>
-            <tbody>
-              {teams.map((t) => (
-                <tr key={t.id}>
-                  <td className="tbg__ref-name">{t.name}</td>
-                  <td>
-                    {t.brandingPrimary ? (
-                      <CopyHex color={t.brandingPrimary} />
-                    ) : (
-                      <span className="tbg__ref-cell"><code>-</code></span>
-                    )}
-                  </td>
-                  <td>
-                    {t.brandingSecondary ? (
-                      <CopyHex color={t.brandingSecondary} />
-                    ) : (
-                      <span className="tbg__ref-cell"><code>-</code></span>
-                    )}
-                  </td>
+          <div className="kit-table-scroll">
+            <table className="tbg__ref-table">
+              <thead>
+                <tr>
+                  <th>Team</th>
+                  <th>Primary</th>
+                  <th>Secondary</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {teams.map((t) => (
+                  <tr key={t.id}>
+                    <td className="tbg__ref-name">{t.name}</td>
+                    <td>
+                      {t.brandingPrimary ? (
+                        <CopyHex color={t.brandingPrimary} />
+                      ) : (
+                        <span className="tbg__ref-cell"><code>-</code></span>
+                      )}
+                    </td>
+                    <td>
+                      {t.brandingSecondary ? (
+                        <CopyHex color={t.brandingSecondary} />
+                      ) : (
+                        <span className="tbg__ref-cell"><code>-</code></span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
       </div>
     </div>

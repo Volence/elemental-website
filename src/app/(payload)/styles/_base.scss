@@ -56,7 +56,6 @@ form > div:last-child {
 // ============================================
 
 html {
-  opacity: 0;
   scroll-behavior: smooth;
   background-color: $admin-bg-base;
   -webkit-font-smoothing: antialiased;
@@ -67,11 +66,6 @@ html {
 // Ensure compatibility with Next.js scroll behavior detection
 html[data-scroll-behavior="smooth"] {
   scroll-behavior: smooth;
-}
-
-html[data-theme='dark'],
-html[data-theme='light'] {
-  opacity: 1;
 }
 
 // ============================================
@@ -532,3 +526,13 @@ button[aria-label="Close"]:not(.hamburger__close) {
   }
 }
 
+
+// ============================================
+// KEYBOARD FOCUS
+// ============================================
+// One visible ring for keyboard users everywhere. :where() has zero specificity,
+// so components that draw their own focus-visible style (kit tabs, modal, PUG admin) win.
+:where(a, button, input, select, textarea, summary, [role='button'], [role='tab'], [role='link'], [tabindex]):focus-visible {
+  outline: 2px solid $admin-accent-primary;
+  outline-offset: 2px;
+}

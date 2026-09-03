@@ -1,5 +1,6 @@
 'use client'
 
+import { startPolling } from '@/utilities/polling'
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -82,8 +83,7 @@ export function InviteQueuePanel({ region, queueActive }: Props) {
 
   useEffect(() => {
     fetchState()
-    const interval = setInterval(fetchState, 5000)
-    return () => clearInterval(interval)
+    return startPolling(fetchState, 5000)
   }, [fetchState])
 
   const currentUserId = queueStatus?.currentUserId as number | undefined
@@ -299,7 +299,7 @@ export function InviteQueuePanel({ region, queueActive }: Props) {
                     className="w-6 h-6 rounded-full border-2 border-gray-900 bg-gray-700 flex items-center justify-center text-[9px] font-bold text-gray-300 uppercase overflow-hidden shrink-0"
                   >
                     {p.avatarUrl ? (
-                      <img src={p.avatarUrl} alt="" className="w-full h-full object-cover" />
+                      <img loading="lazy" decoding="async" src={p.avatarUrl} alt="" className="w-full h-full object-cover" />
                     ) : (
                       (p.name || '?')[0]
                     )}

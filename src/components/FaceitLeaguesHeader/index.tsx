@@ -14,26 +14,26 @@ const FaceitLeaguesHeader: React.FC = () => {
   const [progress, setProgress] = useState('')
   const [inactiveLeagueWarnings, setInactiveLeagueWarnings] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  
+
   // Finalize season state
   const [finalizing, setFinalizing] = useState(false)
   const [finalizeFilter, setFinalizeFilter] = useState('')
   const [finalizeResults, setFinalizeResults] = useState<any>(null)
   const [allActiveLeagues, setAllActiveLeagues] = useState<any[]>([])
-  
+
   // Confirmation modal state
   const [showSyncConfirm, setShowSyncConfirm] = useState(false)
   const [showFinalizeConfirm, setShowFinalizeConfirm] = useState(false)
   const [showRestoreConfirm, setShowRestoreConfirm] = useState<any>(null) // League to restore
   const [showRestoreSeasonConfirm, setShowRestoreSeasonConfirm] = useState<any>(null) // Team season to restore
   const [restoring, setRestoring] = useState(false)
-  
+
   // Finalized (inactive) leagues
   const [finalizedLeagues, setFinalizedLeagues] = useState<any[]>([])
-  
+
   // Compute matching leagues based on filter
   const matchingLeagues = finalizeFilter.trim()
-    ? allActiveLeagues.filter(league => 
+    ? allActiveLeagues.filter(league =>
         league.name.toLowerCase().includes(finalizeFilter.toLowerCase())
       )
     : []
@@ -45,29 +45,30 @@ const FaceitLeaguesHeader: React.FC = () => {
   const fetchWarnings = async () => {
     try {
       setLoading(true)
-      
+
       // Fetch all leagues
       const leaguesRes = await fetch('/api/faceit-leagues?limit=100')
       const leaguesData = await leaguesRes.json()
       const inactiveLeagues = leaguesData.docs.filter((l: any) => !l.isActive)
-      
-      // For each inactive league, check how many teams are using it
-      const warnings = []
-      for (const league of inactiveLeagues) {
-        const teamsRes = await fetch(`/api/teams?where[currentFaceitLeague][equals]=${league.id}&limit=100`)
+
+      // One query for every inactive league (this used to be one request per league)
+      const warnings: any[] = []
+      const inactiveIds = inactiveLeagues.map((l: any) => l.id)
+      if (inactiveIds.length > 0) {
+        const teamsRes = await fetch(`/api/teams?where[currentFaceitLeague][in]=${inactiveIds.join(',')}&limit=500&depth=0`)
         const teamsData = await teamsRes.json()
-        
-        if (teamsData.docs.length > 0) {
-          warnings.push({
-            league: league,
-            teamCount: teamsData.totalDocs,
-            teams: teamsData.docs,
-          })
+        const leagueIdOf = (t: any) =>
+          typeof t.currentFaceitLeague === 'object' ? t.currentFaceitLeague?.id : t.currentFaceitLeague
+        for (const league of inactiveLeagues) {
+          const teams = (teamsData.docs || []).filter((t: any) => leagueIdOf(t) === league.id)
+          if (teams.length > 0) {
+            warnings.push({ league, teamCount: teams.length, teams })
+          }
         }
       }
-      
+
       setInactiveLeagueWarnings(warnings)
-      
+
       // Store all finalized (inactive) leagues with their team seasons
       const finalizedWithSeasons = await Promise.all(
         inactiveLeagues.map(async (league: any) => {
@@ -80,7 +81,7 @@ const FaceitLeaguesHeader: React.FC = () => {
         })
       )
       setFinalizedLeagues(finalizedWithSeasons)
-      
+
       // Fetch all active leagues for finalize preview
       const activeLeagues = leaguesData.docs.filter((l: any) => l.isActive)
       setAllActiveLeagues(activeLeagues)
@@ -149,7 +150,7 @@ const FaceitLeaguesHeader: React.FC = () => {
 
       const data = await response.json()
       setFinalizeResults(data)
-      
+
       // Refresh data after finalization
       if (data.success) {
         fetchWarnings()
@@ -167,22 +168,22 @@ const FaceitLeaguesHeader: React.FC = () => {
 
   const handleRestoreLeague = async () => {
     if (!showRestoreConfirm || restoring) return
-    
+
     try {
       setRestoring(true)
       const leagueId = showRestoreConfirm.id
-      
+
       // Restore the league first
       await fetch(`/api/faceit-leagues/${leagueId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isActive: true }),
       })
-      
+
       // Restore all team seasons for this league
       const seasonsRes = await fetch(`/api/faceit-seasons?where[faceitLeague][equals]=${leagueId}&limit=100`)
       const seasonsData = await seasonsRes.json()
-      
+
       for (const season of seasonsData.docs) {
         await fetch(`/api/faceit-seasons/${season.id}`, {
           method: 'PATCH',
@@ -190,7 +191,7 @@ const FaceitLeaguesHeader: React.FC = () => {
           body: JSON.stringify({ isActive: true, archivedAt: null }),
         })
       }
-      
+
       // Refresh data
       setShowRestoreConfirm(null)
       fetchWarnings()
@@ -203,24 +204,24 @@ const FaceitLeaguesHeader: React.FC = () => {
 
   const handleRestoreTeamSeason = async () => {
     if (!showRestoreSeasonConfirm || restoring) return
-    
+
     try {
       setRestoring(true)
       const seasonId = showRestoreSeasonConfirm.id
-      const leagueId = typeof showRestoreSeasonConfirm.faceitLeague === 'object' 
-        ? showRestoreSeasonConfirm.faceitLeague?.id 
+      const leagueId = typeof showRestoreSeasonConfirm.faceitLeague === 'object'
+        ? showRestoreSeasonConfirm.faceitLeague?.id
         : showRestoreSeasonConfirm.faceitLeague
-      
+
       // Restore the team season
       await fetch(`/api/faceit-seasons/${seasonId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          isActive: true, 
+        body: JSON.stringify({
+          isActive: true,
           archivedAt: null,
         }),
       })
-      
+
       // Also restore the parent league so it moves out of finalized section
       if (leagueId) {
         await fetch(`/api/faceit-leagues/${leagueId}`, {
@@ -229,7 +230,7 @@ const FaceitLeaguesHeader: React.FC = () => {
           body: JSON.stringify({ isActive: true }),
         })
       }
-      
+
       // Refresh data
       setShowRestoreSeasonConfirm(null)
       fetchWarnings()
@@ -252,13 +253,13 @@ const FaceitLeaguesHeader: React.FC = () => {
           >
             {syncing ? 'Syncing...' : <><RefreshCw size={12} /> Sync All Active Leagues</>}
           </Button>
-          
+
           {progress && (
             <span className="faceit-leagues-header__progress">
               {progress}
             </span>
           )}
-          
+
           {/* Finalize Season */}
           <div className="faceit-leagues-header__finalize">
             <input
@@ -277,7 +278,7 @@ const FaceitLeaguesHeader: React.FC = () => {
               {finalizing ? 'Finalizing...' : <><Flag size={12} /> Finalize ({matchingLeagues.length})</>}
             </Button>
           </div>
-          
+
           {/* Live preview of matching leagues */}
           {matchingLeagues.length > 0 && (
             <div className="faceit-leagues-header__preview">
@@ -295,7 +296,7 @@ const FaceitLeaguesHeader: React.FC = () => {
             </div>
           )}
         </div>
-        
+
         {/* Status Badge */}
         {!loading && (
           <div className="faceit-leagues-header__status">
@@ -311,14 +312,14 @@ const FaceitLeaguesHeader: React.FC = () => {
           </div>
         )}
       </div>
-      
+
       {/* Finalize Results */}
       {finalizeResults && (
         <div className={`faceit-leagues-header__results ${finalizeResults.success && !(finalizeResults.errors?.length > 0) ? 'faceit-leagues-header__results--success' : 'faceit-leagues-header__results--error'}`}>
           <div className="faceit-leagues-header__results-header">
             <span>{finalizeResults.success && !(finalizeResults.errors?.length > 0) ? <Flag size={14} /> : <AlertTriangle size={14} />}</span>
-            <span>{finalizeResults.success && !(finalizeResults.errors?.length > 0) 
-              ? `Finalized ${finalizeResults.leaguesFinalized || 0} League(s)` 
+            <span>{finalizeResults.success && !(finalizeResults.errors?.length > 0)
+              ? `Finalized ${finalizeResults.leaguesFinalized || 0} League(s)`
               : 'Finalize Failed'}</span>
           </div>
 
@@ -344,7 +345,7 @@ const FaceitLeaguesHeader: React.FC = () => {
               {finalizeResults.error}
             </div>
           )}
-          
+
           {finalizeResults.errors?.length > 0 && (
             <div className="faceit-leagues-header__results-error">
               {finalizeResults.errors.join(', ')}
@@ -385,7 +386,7 @@ const FaceitLeaguesHeader: React.FC = () => {
           )}
         </div>
       )}
-      
+
       {/* Finalized Seasons Section */}
       {finalizedLeagues.length > 0 && (
         <div className="faceit-leagues-header__finalized">
@@ -456,7 +457,7 @@ const FaceitLeaguesHeader: React.FC = () => {
           </details>
         </div>
       )}
-      
+
       {/* Restore Confirmation Modal */}
       {showRestoreConfirm && (
         <div className="confirm-modal-overlay" onClick={() => setShowRestoreConfirm(null)}>
@@ -489,7 +490,7 @@ const FaceitLeaguesHeader: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       {/* Team Season Restore Confirmation Modal */}
       {showRestoreSeasonConfirm && (
         <div className="confirm-modal-overlay" onClick={() => setShowRestoreSeasonConfirm(null)}>
@@ -522,7 +523,7 @@ const FaceitLeaguesHeader: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       {/* Sync Confirmation Modal */}
       {showSyncConfirm && (
         <div className="confirm-modal-overlay" onClick={() => setShowSyncConfirm(false)}>
@@ -553,7 +554,7 @@ const FaceitLeaguesHeader: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       {/* Finalize Confirmation Modal */}
       {showFinalizeConfirm && (
         <div className="confirm-modal-overlay" onClick={() => setShowFinalizeConfirm(false)}>

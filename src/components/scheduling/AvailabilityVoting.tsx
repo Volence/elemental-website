@@ -273,7 +273,7 @@ function AvailabilityVotingGrid({
 
       <div className="avail-voting__user">
         {authState.discordUser?.avatar && (
-          <img src={authState.discordUser.avatar} alt="" className="avail-voting__user-avatar" width={24} height={24} />
+          <img loading="lazy" decoding="async" src={authState.discordUser.avatar} alt="" className="avail-voting__user-avatar" width={24} height={24} />
         )}
         <span>Filling in as <strong>{authState.discordUser?.username}</strong></span>
       </div>
