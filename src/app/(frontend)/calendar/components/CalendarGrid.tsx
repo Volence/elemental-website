@@ -46,10 +46,10 @@ export function CalendarGrid({ events }: CalendarGridProps) {
   if (!isMounted) {
     return (
       <div className="space-y-8">
-        <div className="h-8 w-40 bg-gray-800 rounded animate-pulse mb-4" />
+        <div className="h-8 w-40 bg-muted rounded animate-pulse mb-4" />
         <div className="grid gap-4 md:grid-cols-2">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="rounded-lg border border-gray-800 p-4 h-32 animate-pulse bg-gray-900/50" />
+            <div key={i} className="rounded-lg border border-border p-4 h-32 animate-pulse bg-card/50" />
           ))}
         </div>
       </div>
@@ -60,8 +60,8 @@ export function CalendarGrid({ events }: CalendarGridProps) {
     return (
       <div className="text-center py-16">
         <div className="text-6xl mb-4">📅</div>
-        <h2 className="text-xl font-medium text-gray-300 mb-2">No Upcoming Events</h2>
-        <p className="text-gray-500">Check back soon for new events and tournaments.</p>
+        <h2 className="text-xl font-medium text-foreground/90 mb-2">No Upcoming Events</h2>
+        <p className="text-muted-foreground">Check back soon for new events and tournaments.</p>
       </div>
     )
   }
@@ -71,7 +71,7 @@ export function CalendarGrid({ events }: CalendarGridProps) {
       {Object.entries(groupedEvents).map(([month, monthEvents]) => (
         <div key={month}>
           {/* Month Header */}
-          <h2 className="text-lg font-semibold text-gray-300 mb-4 pb-2 border-b border-gray-800">
+          <h2 className="text-lg font-semibold text-foreground/90 mb-4 pb-2 border-b border-border">
             {month}
           </h2>
           
@@ -113,20 +113,20 @@ function EventCard({ event }: { event: GlobalCalendarEvent }) {
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className={`font-semibold ${config.color}`}>{event.title}</h3>
             {event.region && event.region !== 'global' && (
-              <span className="px-1.5 py-0.5 text-xs font-medium bg-gray-700/50 text-gray-300 rounded">
+              <span className="px-1.5 py-0.5 text-xs font-medium bg-muted/50 text-foreground/90 rounded">
                 {event.region}
               </span>
             )}
           </div>
           
           {/* Date */}
-          <p className="text-sm text-gray-400 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             📆 {dateDisplay}
           </p>
           
           {/* Description */}
           {event.description && (
-            <p className="text-sm text-gray-500 mt-2 line-clamp-2">{event.description}</p>
+            <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{event.description}</p>
           )}
           
           {/* Links */}

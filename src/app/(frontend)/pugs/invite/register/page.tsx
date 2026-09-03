@@ -14,9 +14,9 @@ export default async function PugInviteRegisterPage({
   if (!token) {
     return (
       <main className="container mx-auto px-4 pb-8 max-w-md">
-        <div className="border border-gray-800 rounded-xl bg-gray-900/30 p-6 text-center">
+        <div className="border border-border rounded-xl bg-card/30 p-6 text-center">
           <h1 className="text-xl font-bold mb-2">Invalid Invite</h1>
-          <p className="text-gray-500 text-sm">No invite token provided. Ask an admin for a valid invite link.</p>
+          <p className="text-muted-foreground text-sm">No invite token provided. Ask an admin for a valid invite link.</p>
         </div>
       </main>
     )
@@ -24,10 +24,10 @@ export default async function PugInviteRegisterPage({
 
   return (
     <main className="container mx-auto px-4 pb-8 max-w-md">
-      <div className="border border-gray-800 rounded-xl bg-gray-900/30 overflow-hidden">
+      <div className="border border-border rounded-xl bg-card/30 overflow-hidden">
         <div className="p-6">
           <h1 className="text-xl font-bold mb-2">Register for Invite-Tier PUGs</h1>
-          <p className="text-gray-500 text-sm mb-6">
+          <p className="text-muted-foreground text-sm mb-6">
             You have been invited to the PUG invite tier. You must be logged in and have Discord linked.
           </p>
           <form action="/api/pug/invite/register" method="POST">

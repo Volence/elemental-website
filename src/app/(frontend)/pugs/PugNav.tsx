@@ -26,7 +26,7 @@ export function PugNav({ items }: { items: PugNavItem[] }) {
   return (
     <nav
       aria-label="PUG sections"
-      className="flex items-center gap-1 mb-6 p-1 bg-gray-900/50 border border-gray-800 rounded-xl w-fit max-w-full overflow-x-auto"
+      className="flex items-center gap-1 mb-6 p-1 bg-card/50 border border-border rounded-xl w-fit max-w-full overflow-x-auto"
     >
       {items.map((item) => {
         const active = isActive(pathname, item.href)
@@ -38,7 +38,7 @@ export function PugNav({ items }: { items: PugNavItem[] }) {
             className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 ${
               active
                 ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
-                : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
             }`}
           >
             {item.label}

@@ -36,7 +36,7 @@ export default async function PugInvitePage({
       <h1 className="text-2xl font-bold mb-2">Invite Tier PUGs</h1>
 
       {/* Region tabs */}
-      <div className="flex gap-1 mb-4 p-1 bg-gray-900/50 border border-gray-800 rounded-xl w-fit">
+      <div className="flex gap-1 mb-4 p-1 bg-card/50 border border-border rounded-xl w-fit">
         {REGIONS.map((r) => (
           <Link
             key={r.value}
@@ -44,7 +44,7 @@ export default async function PugInvitePage({
             className={`px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
               region === r.value
                 ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20'
-                : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
             }`}
           >
             {r.label}
@@ -53,14 +53,14 @@ export default async function PugInvitePage({
       </div>
 
       {!season ? (
-        <p className="text-gray-500">No active invite-tier season.</p>
+        <p className="text-muted-foreground">No active invite-tier season.</p>
       ) : (
         <>
-          <div className="mb-6 p-4 border border-gray-700/80 rounded-xl bg-gradient-to-b from-gray-900/80 to-gray-950/80">
+          <div className="mb-6 p-4 border border-border rounded-xl bg-gradient-to-b from-card/80 to-background/80">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-semibold text-gray-100">{season.name}</p>
-                {season.prizePool && <p className="text-sm text-gray-500 mt-0.5">{season.prizePool}</p>}
+                <p className="font-semibold text-foreground">{season.name}</p>
+                {season.prizePool && <p className="text-sm text-muted-foreground mt-0.5">{season.prizePool}</p>}
               </div>
               <div className="flex items-center gap-2">
                 <span className={`w-2 h-2 rounded-full ${queueActive ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`} />
@@ -72,9 +72,9 @@ export default async function PugInvitePage({
           </div>
 
           {!queueActive ? (
-            <div className="text-center py-16 text-gray-500">
+            <div className="text-center py-16 text-muted-foreground">
               <div className="text-4xl mb-3 opacity-30">🔒</div>
-              <p className="text-gray-400">Queuing is currently closed for this region.</p>
+              <p className="text-muted-foreground">Queuing is currently closed for this region.</p>
             </div>
           ) : (
             <InviteQueuePanel region={region} queueActive={queueActive} />

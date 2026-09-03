@@ -52,8 +52,8 @@ export default async function PugRegisterPage() {
     return (
       <main className="container mx-auto px-4 pb-8 max-w-md">
         <h1 className="text-2xl font-bold mb-2">You&apos;re Registered!</h1>
-        <p className="text-gray-400 mb-4">
-          Signed in as <span className="text-white font-medium">{user.name || user.email}</span>
+        <p className="text-muted-foreground mb-4">
+          Signed in as <span className="text-foreground font-medium">{user.name || user.email}</span>
         </p>
 
         {activeLobbyId && (
@@ -65,16 +65,16 @@ export default async function PugRegisterPage() {
           </div>
         )}
 
-        <div className="border border-gray-700 rounded-lg p-5 mb-6">
+        <div className="border border-border rounded-lg p-5 mb-6">
           <h2 className="font-semibold mb-3">How to queue for a PUG</h2>
-          <p className="text-sm text-gray-400 mb-4">
+          <p className="text-sm text-muted-foreground mb-4">
             Queueing happens in the Elemental Discord server. Use this slash command in any PUG
             channel:
           </p>
-          <div className="bg-gray-900 rounded px-3 py-2 font-mono text-blue-300 text-sm mb-1">
+          <div className="bg-card rounded px-3 py-2 font-mono text-blue-300 text-sm mb-1">
             /pug queue
           </div>
-          <p className="text-xs text-gray-500">Joins the queue for the next open-tier lobby</p>
+          <p className="text-xs text-muted-foreground">Joins the queue for the next open-tier lobby</p>
         </div>
 
         <Link href="/pugs/open" className="inline-block px-4 py-2 bg-blue-600 hover:bg-blue-500 hover:shadow-md hover:shadow-blue-600/20 text-white text-sm font-medium rounded-lg transition-all duration-200">
@@ -88,9 +88,9 @@ export default async function PugRegisterPage() {
     return (
       <main className="container mx-auto px-4 pb-8 max-w-md">
         <h1 className="text-2xl font-bold mb-2">Register for Open-Tier PUGs</h1>
-        <p className="text-gray-400 mb-6">
+        <p className="text-muted-foreground mb-6">
           Signed in as{' '}
-          <span className="text-white font-medium">{user.name || user.email}</span>
+          <span className="text-foreground font-medium">{user.name || user.email}</span>
           {!hasDiscord && ' - you\'ll need to connect Discord to queue.'}
         </p>
 
@@ -113,7 +113,7 @@ export default async function PugRegisterPage() {
   return (
     <main className="container mx-auto px-4 pb-8 max-w-md">
       <h1 className="text-2xl font-bold mb-2">Play Open-Tier PUGs</h1>
-      <p className="text-gray-400 mb-6">
+      <p className="text-muted-foreground mb-6">
         Free and open to everyone. Connect your Discord to get started.
       </p>
 
@@ -124,7 +124,7 @@ export default async function PugRegisterPage() {
         {discordIcon}
         Continue with Discord
       </a>
-      <p className="text-xs text-gray-500 mt-3 text-center">
+      <p className="text-xs text-muted-foreground mt-3 text-center">
         Signs you in if you already have an account, or creates one automatically.
       </p>
 

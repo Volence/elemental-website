@@ -37,9 +37,9 @@ export function BattleTagForm({ playerId, initialTag }: { playerId: number; init
   const changed = tag !== (initialTag || '')
 
   return (
-    <div className="mb-6 border border-gray-800 rounded-xl bg-gray-900/50 overflow-hidden">
-      <div className="px-4 py-2.5 border-b border-gray-800/60">
-        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Overwatch BattleTag</span>
+    <div className="mb-6 border border-border rounded-xl bg-card/50 overflow-hidden">
+      <div className="px-4 py-2.5 border-b border-border">
+        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Overwatch BattleTag</span>
       </div>
       <div className="px-4 py-3 flex items-center gap-3">
         <input
@@ -47,7 +47,7 @@ export function BattleTagForm({ playerId, initialTag }: { playerId: number; init
           value={tag}
           onChange={e => setTag(e.target.value)}
           placeholder="e.g. Player#1234"
-          className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-100 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-all placeholder-gray-600 appearance-none"
+          className="flex-1 bg-card border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 focus:outline-none transition-all placeholder-muted-foreground appearance-none"
         />
         <button
           onClick={handleSave}

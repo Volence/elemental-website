@@ -48,9 +48,9 @@ export default async function PugProfilePage({
   if (!person || !person.pugTiers?.length) {
     return (
       <main className="container mx-auto px-4 pb-8">
-        <div className="text-center py-16 border border-gray-800 rounded-xl bg-gray-900/30">
-          <p className="text-lg font-medium text-gray-400">Player not found</p>
-          <p className="text-sm text-gray-500 mt-1">This player may not be registered for PUGs.</p>
+        <div className="text-center py-16 border border-border rounded-xl bg-card/30">
+          <p className="text-lg font-medium text-muted-foreground">Player not found</p>
+          <p className="text-sm text-muted-foreground mt-1">This player may not be registered for PUGs.</p>
         </div>
       </main>
     )
@@ -143,9 +143,9 @@ export default async function PugProfilePage({
   return (
     <main className="container mx-auto px-4 pb-8">
 
-      <div className="border border-gray-800 rounded-xl bg-gray-900/30 overflow-hidden mb-6">
+      <div className="border border-border rounded-xl bg-card/30 overflow-hidden mb-6">
         <div className="px-6 py-5">
-          <h1 className="text-2xl font-bold text-white">{displayName}</h1>
+          <h1 className="text-2xl font-bold text-foreground">{displayName}</h1>
           <div className="flex items-center gap-3 mt-2 flex-wrap">
             {tiers.map((t: string) => (
               <span
@@ -160,12 +160,12 @@ export default async function PugProfilePage({
               </span>
             ))}
             {regions.length > 0 && (
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-muted-foreground">
                 {regions.map((r: string) => r.toUpperCase()).join(', ')}
               </span>
             )}
             {regDate && (
-              <span className="text-xs text-gray-500">Since {regDate}</span>
+              <span className="text-xs text-muted-foreground">Since {regDate}</span>
             )}
           </div>
         </div>
@@ -174,9 +174,9 @@ export default async function PugProfilePage({
 
       {topRoles.length > 0 && (
         <div className="flex items-center gap-2 mb-6 flex-wrap">
-          <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Most played</span>
+          <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Most played</span>
           {topRoles.slice(0, 3).map(([role, count]) => (
-            <span key={role} className={`text-xs px-2.5 py-1 rounded-lg border font-medium ${ROLE_COLORS[role] ?? 'bg-gray-500/15 text-gray-300 border-gray-500/30'}`}>
+            <span key={role} className={`text-xs px-2.5 py-1 rounded-lg border font-medium ${ROLE_COLORS[role] ?? 'bg-muted/60 text-foreground/90 border-border'}`}>
               {ROLE_LABELS[role] ?? role} ({count})
             </span>
           ))}
@@ -189,8 +189,8 @@ export default async function PugProfilePage({
 
       <h2 className="text-lg font-semibold mb-3">Season Stats</h2>
       {leaderboardEntries.docs.length === 0 ? (
-        <div className="text-center py-12 border border-gray-800 rounded-xl bg-gray-900/30 mb-6">
-          <p className="text-gray-400">No ranked games played yet.</p>
+        <div className="text-center py-12 border border-border rounded-xl bg-card/30 mb-6">
+          <p className="text-muted-foreground">No ranked games played yet.</p>
         </div>
       ) : (
         <div className="space-y-3 mb-6">
@@ -199,10 +199,10 @@ export default async function PugProfilePage({
             const regionLabel = entry.region ? ` - ${entry.region.toUpperCase()}` : ''
             const winRate = entry.gamesPlayed > 0 ? Math.round((entry.wins / entry.gamesPlayed) * 100) : 0
             return (
-              <div key={entry.id} className="border border-gray-800 rounded-xl p-4 bg-gray-900/30 hover:bg-white/[0.03] transition-colors">
+              <div key={entry.id} className="border border-border rounded-xl p-4 bg-card/30 hover:bg-white/[0.03] transition-colors">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2.5">
-                    <span className="font-medium text-gray-100">{seasonName}{regionLabel}</span>
+                    <span className="font-medium text-foreground">{seasonName}{regionLabel}</span>
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                       entry.tier === 'invite'
                         ? 'bg-purple-500/15 border border-purple-500/30 text-purple-300'
@@ -216,12 +216,12 @@ export default async function PugProfilePage({
                 <div className="flex items-center gap-4 text-sm">
                   <span className="text-green-400 font-medium">{entry.wins}W</span>
                   <span className="text-red-400 font-medium">{entry.losses}L</span>
-                  <span className="text-gray-500">{entry.draws}D</span>
-                  <span className="text-gray-500">{entry.gamesPlayed} games</span>
+                  <span className="text-muted-foreground">{entry.draws}D</span>
+                  <span className="text-muted-foreground">{entry.gamesPlayed} games</span>
                   {entry.gamesPlayed > 0 && (
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
                       winRate >= 60 ? 'bg-green-500/15 text-green-400' :
-                      winRate >= 40 ? 'bg-gray-500/15 text-gray-400' :
+                      winRate >= 40 ? 'bg-muted/60 text-muted-foreground' :
                       'bg-red-500/15 text-red-400'
                     }`}>
                       {winRate}% WR
@@ -236,18 +236,18 @@ export default async function PugProfilePage({
 
       <h2 className="text-lg font-semibold mb-3">Match History</h2>
       {matches.length === 0 ? (
-        <div className="text-center py-12 border border-gray-800 rounded-xl bg-gray-900/30">
-          <p className="text-gray-400">No matches played yet.</p>
+        <div className="text-center py-12 border border-border rounded-xl bg-card/30">
+          <p className="text-muted-foreground">No matches played yet.</p>
         </div>
       ) : (
-        <div className="border border-gray-800 rounded-xl overflow-hidden bg-gray-900/30">
-          <div className="divide-y divide-gray-800/40">
+        <div className="border border-border rounded-xl overflow-hidden bg-card/30">
+          <div className="divide-y divide-border">
             {matches.map((m) => {
               const resultConfig = {
                 win: { label: 'W', color: 'text-green-400 bg-green-500/15 border-green-500/30' },
                 loss: { label: 'L', color: 'text-red-400 bg-red-500/15 border-red-500/30' },
-                draw: { label: 'D', color: 'text-gray-400 bg-gray-500/15 border-gray-500/30' },
-                cancelled: { label: '-', color: 'text-gray-500 bg-gray-500/10 border-gray-500/20' },
+                draw: { label: 'D', color: 'text-muted-foreground bg-muted/60 border-border' },
+                cancelled: { label: '-', color: 'text-muted-foreground bg-muted/60 border-border' },
               }[m.result]
 
               return (
@@ -266,22 +266,22 @@ export default async function PugProfilePage({
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-gray-200">PUG #{m.lobbyNumber}</span>
-                      {m.mapName && <span className="text-xs text-gray-500 truncate">{m.mapName}</span>}
+                      <span className="text-sm font-medium text-foreground">PUG #{m.lobbyNumber}</span>
+                      {m.mapName && <span className="text-xs text-muted-foreground truncate">{m.mapName}</span>}
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
                       {m.role && (
-                        <span className={`text-xs px-1.5 py-0 rounded border font-medium ${ROLE_COLORS[m.role] ?? 'bg-gray-500/15 text-gray-300 border-gray-500/30'}`}>
+                        <span className={`text-xs px-1.5 py-0 rounded border font-medium ${ROLE_COLORS[m.role] ?? 'bg-muted/60 text-foreground/90 border-border'}`}>
                           {ROLE_LABELS[m.role] ?? m.role}
                         </span>
                       )}
                       {m.isCaptain && <span className="text-xs text-yellow-500">Captain</span>}
-                      <span className="text-xs text-gray-600">Team {m.team}</span>
+                      <span className="text-xs text-muted-foreground/70">Team {m.team}</span>
                     </div>
                   </div>
 
                   {m.date && (
-                    <span className="text-xs text-gray-600 shrink-0">
+                    <span className="text-xs text-muted-foreground/70 shrink-0">
                       {new Date(m.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </span>
                   )}

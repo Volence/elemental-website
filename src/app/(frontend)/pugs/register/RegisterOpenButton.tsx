@@ -34,8 +34,8 @@ export default function RegisterOpenButton() {
   return (
     <div className="space-y-3">
       <div>
-        <label htmlFor="battle-tag" className="block text-sm font-medium text-gray-300 mb-1.5">
-          BattleTag <span className="text-gray-600 font-normal">(optional)</span>
+        <label htmlFor="battle-tag" className="block text-sm font-medium text-foreground/90 mb-1.5">
+          BattleTag <span className="text-muted-foreground/70 font-normal">(optional)</span>
         </label>
         <input
           id="battle-tag"
@@ -43,9 +43,9 @@ export default function RegisterOpenButton() {
           value={battleTag}
           onChange={(e) => setBattleTag(e.target.value)}
           placeholder="e.g., Player#1234"
-          className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white text-sm placeholder-gray-600 focus:outline-none focus:border-blue-600 transition-colors"
+          className="w-full px-3 py-2 bg-card border border-border rounded-lg text-foreground text-sm placeholder-muted-foreground focus:outline-none focus:border-blue-600 transition-colors"
         />
-        <p className="text-xs text-gray-600 mt-1">
+        <p className="text-xs text-muted-foreground/70 mt-1">
           Helps the match host invite you in-game. You can add it later in your profile.
         </p>
       </div>

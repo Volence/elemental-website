@@ -162,14 +162,14 @@ export function PublicCalendarMonth({ events }: PublicCalendarMonthProps) {
     return (
       <div className="public-calendar-month mb-8">
         <div className="flex items-center justify-between mb-4">
-          <div className="h-6 w-32 bg-gray-800 rounded animate-pulse" />
+          <div className="h-6 w-32 bg-muted rounded animate-pulse" />
           <div className="flex items-center gap-2">
-            <div className="h-8 w-16 bg-gray-800 rounded animate-pulse" />
-            <div className="h-8 w-16 bg-gray-800 rounded animate-pulse" />
-            <div className="h-8 w-16 bg-gray-800 rounded animate-pulse" />
+            <div className="h-8 w-16 bg-muted rounded animate-pulse" />
+            <div className="h-8 w-16 bg-muted rounded animate-pulse" />
+            <div className="h-8 w-16 bg-muted rounded animate-pulse" />
           </div>
         </div>
-        <div className="rounded-lg border border-gray-800 overflow-hidden bg-gray-900/50 h-80 animate-pulse" />
+        <div className="rounded-lg border border-border overflow-hidden bg-card/50 h-80 animate-pulse" />
       </div>
     )
   }
@@ -178,11 +178,11 @@ export function PublicCalendarMonth({ events }: PublicCalendarMonthProps) {
     <div className="public-calendar-month mb-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-200">{monthYear}</h2>
+        <h2 className="text-lg font-semibold text-foreground">{monthYear}</h2>
         <div className="flex items-center gap-2">
           <button
             onClick={goToPreviousMonth}
-            className="px-3 py-1.5 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded transition-colors"
+            className="px-3 py-1.5 text-sm bg-muted hover:bg-muted text-foreground/90 rounded transition-colors"
           >
             ← Prev
           </button>
@@ -194,7 +194,7 @@ export function PublicCalendarMonth({ events }: PublicCalendarMonthProps) {
           </button>
           <button
             onClick={goToNextMonth}
-            className="px-3 py-1.5 text-sm bg-gray-800 hover:bg-gray-700 text-gray-300 rounded transition-colors"
+            className="px-3 py-1.5 text-sm bg-muted hover:bg-muted text-foreground/90 rounded transition-colors"
           >
             Next →
           </button>
@@ -202,11 +202,11 @@ export function PublicCalendarMonth({ events }: PublicCalendarMonthProps) {
       </div>
 
       {/* Calendar Grid */}
-      <div className="rounded-lg border border-gray-800 overflow-hidden bg-gray-900/50 backdrop-blur-sm">
+      <div className="rounded-lg border border-border overflow-hidden bg-card/50 backdrop-blur-sm">
         {/* Day Headers */}
-        <div className="grid grid-cols-7 bg-gray-800/50">
+        <div className="grid grid-cols-7 bg-muted/50">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div key={day} className="py-2 text-center text-xs font-medium text-gray-400 uppercase">
+            <div key={day} className="py-2 text-center text-xs font-medium text-muted-foreground uppercase">
               {day}
             </div>
           ))}
@@ -217,7 +217,7 @@ export function PublicCalendarMonth({ events }: PublicCalendarMonthProps) {
           const spanningEvents = getSpanningEventsForWeek(weekDays)
           
           return (
-            <div key={weekIndex} className="border-t border-gray-800">
+            <div key={weekIndex} className="border-t border-border">
               {/* Date Numbers Row */}
               <div className="grid grid-cols-7">
                 {weekDays.map((date, dayIndex) => {
@@ -228,12 +228,12 @@ export function PublicCalendarMonth({ events }: PublicCalendarMonthProps) {
                     <div
                       key={dayIndex}
                       className={`
-                        py-1 px-1.5 text-sm font-medium border-r border-gray-800 last:border-r-0
+                        py-1 px-1.5 text-sm font-medium border-r border-border last:border-r-0
                         ${isCurrentMonth ? '' : 'opacity-40'}
                         ${isToday ? 'bg-yellow-500/10' : ''}
                       `}
                     >
-                      <span className={isToday ? 'text-yellow-400' : 'text-gray-300'}>
+                      <span className={isToday ? 'text-yellow-400' : 'text-foreground/90'}>
                         {date.getDate()}
                       </span>
                     </div>
@@ -367,7 +367,7 @@ export function PublicCalendarMonth({ events }: PublicCalendarMonthProps) {
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-4 mt-3 text-xs text-gray-400">
+      <div className="flex flex-wrap gap-4 mt-3 text-xs text-muted-foreground">
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded bg-orange-500" />
           <span>FACEIT</span>
@@ -432,17 +432,17 @@ export function PublicCalendarMonth({ events }: PublicCalendarMonthProps) {
                 >
                   {selectedEvent.title}
                 </h3>
-                <span className="text-xs text-gray-500 uppercase tracking-wide">
+                <span className="text-xs text-muted-foreground uppercase tracking-wide">
                   {selectedEvent.eventType}
                 </span>
               </div>
               
               {/* Content */}
-              <div className="relative px-5 py-4 space-y-3 border-t border-gray-800/50">
+              <div className="relative px-5 py-4 space-y-3 border-t border-border">
                 {/* Dates */}
                 <div className="flex items-center gap-2 text-sm">
-                  <span className="text-gray-500">📅</span>
-                  <span className="text-gray-300">
+                  <span className="text-muted-foreground">📅</span>
+                  <span className="text-foreground/90">
                     {new Date(selectedEvent.dateStart).toLocaleDateString('en-US', { 
                       weekday: 'short', 
                       month: 'short', 
@@ -462,7 +462,7 @@ export function PublicCalendarMonth({ events }: PublicCalendarMonthProps) {
                 
                 {/* Description - if available */}
                 {selectedEvent.description && (
-                  <div className="text-sm text-gray-400">
+                  <div className="text-sm text-muted-foreground">
                     <p>{typeof selectedEvent.description === 'string' ? selectedEvent.description : 'Event details available in admin.'}</p>
                   </div>
                 )}
@@ -470,14 +470,14 @@ export function PublicCalendarMonth({ events }: PublicCalendarMonthProps) {
                 {/* Region - if available */}
                 {selectedEvent.region && selectedEvent.region !== 'global' && (
                   <div className="flex items-center gap-2 text-sm">
-                    <span className="text-gray-500">🌍</span>
-                    <span className="text-gray-300 uppercase">{selectedEvent.region}</span>
+                    <span className="text-muted-foreground">🌍</span>
+                    <span className="text-foreground/90 uppercase">{selectedEvent.region}</span>
                   </div>
                 )}
               </div>
               
               {/* Footer */}
-              <div className="relative px-5 py-3 flex justify-end border-t border-gray-800/50">
+              <div className="relative px-5 py-3 flex justify-end border-t border-border">
                 <button 
                   className="px-4 py-2 text-sm rounded transition-colors"
                   style={{ 

@@ -32,14 +32,14 @@ const STATUS_BADGE: Record<string, string> = {
   BANNING: 'bg-orange-500/20 text-orange-400 border border-orange-500/30',
   IN_PROGRESS: 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30',
   REPORTING: 'bg-pink-500/20 text-pink-400 border border-pink-500/30',
-  COMPLETED: 'bg-gray-500/20 text-gray-400 border border-gray-500/30',
+  COMPLETED: 'bg-muted/60 text-muted-foreground border border-border',
   CANCELLED: 'bg-red-500/20 text-red-400 border border-red-500/30',
   DISPUTED: 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30',
 }
 
 function RoleBadge({ role }: { role: string }) {
   return (
-    <span className={`text-xs px-2 py-0.5 rounded border ${ROLE_COLORS[role] ?? 'bg-gray-800 text-gray-400 border-gray-700'}`}>
+    <span className={`text-xs px-2 py-0.5 rounded border ${ROLE_COLORS[role] ?? 'bg-muted text-muted-foreground border-border'}`}>
       {ROLE_LABELS[role] ?? role}
     </span>
   )
@@ -71,7 +71,7 @@ function PlayerAvatar({ player, size = 24 }: { player: Player; size?: number }) 
   const initials = (player.name ?? '?').charAt(0).toUpperCase()
   return (
     <div
-      className="rounded-full bg-gray-700 flex items-center justify-center shrink-0 text-gray-400 font-medium select-none"
+      className="rounded-full bg-muted flex items-center justify-center shrink-0 text-muted-foreground font-medium select-none"
       style={{ width: size, height: size, fontSize: size * 0.45 }}
     >
       {initials}
@@ -217,7 +217,7 @@ export default function LobbyPage() {
   }
 
   if (error) return <main className="container mx-auto p-8 text-red-400">{error}</main>
-  if (!data) return <main className="container mx-auto p-8 text-gray-500">Loading...</main>
+  if (!data) return <main className="container mx-auto p-8 text-muted-foreground">Loading...</main>
 
   const { lobby, selectedMap, mapCandidates, heroes, currentUserId, isPugAdmin, guildId, blockedRoles, neededSlots, spotsAvailable, approvedRoles, regionAllowed, hostInfo, botEnabled } = data
   // botEnabled is false when the admin kill-switch is on (or the bot service is
@@ -245,9 +245,9 @@ export default function LobbyPage() {
     <main className="container mx-auto px-4 pb-8 max-w-3xl">
       <div className="mb-6">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-white">PUG #{lobby.lobbyNumber}</h1>
+          <h1 className="text-2xl font-bold text-foreground">PUG #{lobby.lobbyNumber}</h1>
           <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-            (STATUS_BADGE[lobby.status] ?? 'bg-gray-500/20 text-gray-400 border border-gray-500/30')
+            (STATUS_BADGE[lobby.status] ?? 'bg-muted/60 text-muted-foreground border border-border')
           }`}>
             {statusLabel[lobby.status] ?? lobby.status}
           </span>
@@ -261,8 +261,8 @@ export default function LobbyPage() {
       )}
 
       {currentUserId === null && lobby.status === 'OPEN' && (
-        <div className="mb-4 flex items-center justify-between bg-gray-800/60 border border-gray-700 rounded-lg px-4 py-3">
-          <span className="text-sm text-gray-400">Sign in to join this lobby.</span>
+        <div className="mb-4 flex items-center justify-between bg-muted/60 border border-border rounded-lg px-4 py-3">
+          <span className="text-sm text-muted-foreground">Sign in to join this lobby.</span>
           <a
             href={`/api/auth/discord?returnUrl=/pugs/lobby/${id}`}
             className="text-sm font-semibold text-blue-400 hover:underline"
@@ -281,12 +281,12 @@ export default function LobbyPage() {
       {/* ── OPEN: queue ── */}
       {lobby.status === 'OPEN' && (
         <div className="space-y-4">
-          <div className="border border-gray-800 rounded-xl overflow-hidden bg-gray-950/50">
+          <div className="border border-border rounded-xl overflow-hidden bg-background/50">
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-900/80 to-gray-900/40 border-b border-gray-800">
+            <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-card/80 to-card/40 border-b border-border">
               <div className="flex items-center gap-2.5">
-                <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">Queue</h2>
-                <span className="text-sm font-bold text-white">{players.length}<span className="text-gray-600 font-normal">/10</span></span>
+                <h2 className="text-sm font-semibold text-foreground/90 uppercase tracking-wider">Queue</h2>
+                <span className="text-sm font-bold text-foreground">{players.length}<span className="text-muted-foreground/70 font-normal">/10</span></span>
               </div>
               {isPugAdmin && players.length > 0 && (
                 <button
@@ -304,7 +304,7 @@ export default function LobbyPage() {
 
             {/* Fill bar */}
             <div className="px-4 pt-3 pb-1">
-              <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${players.length >= 10 ? 'bg-green-500' : players.length >= 7 ? 'bg-yellow-500' : 'bg-blue-500/70'}`}
                   style={{ width: `${(players.length / 10) * 100}%` }}
@@ -317,16 +317,16 @@ export default function LobbyPage() {
               <SpotsNeeded neededSlots={neededSlots} spotsAvailable={spotsAvailable ?? {}} totalPlayers={players.length} />
             </div>
 
-            <div className="border-t border-gray-800/60">
+            <div className="border-t border-border">
               {/* Player rows */}
               {players.length === 0 ? (
-                <p className="px-4 py-6 text-gray-600 text-sm text-center">No one queued yet. Be the first!</p>
+                <p className="px-4 py-6 text-muted-foreground/70 text-sm text-center">No one queued yet. Be the first!</p>
               ) : (
-                <div className="divide-y divide-gray-800/50">
+                <div className="divide-y divide-border">
                   {players.map((p) => (
                     <div key={p.userId} className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-white/[0.03]">
                       <PlayerAvatar player={p} size={28} />
-                      <Link href={`/pugs/profile/${p.userId}`} className={`text-sm font-medium shrink-0 w-36 truncate hover:underline ${p.userId === currentUserId ? 'text-blue-300' : 'text-gray-200 hover:text-white'}`}>
+                      <Link href={`/pugs/profile/${p.userId}`} className={`text-sm font-medium shrink-0 w-36 truncate hover:underline ${p.userId === currentUserId ? 'text-blue-300' : 'text-foreground hover:text-foreground'}`}>
                         {p.name}{p.userId === currentUserId && <span className="text-blue-500 font-normal"> (you)</span>}
                       </Link>
                       <div className="flex gap-1.5 flex-wrap flex-1">
@@ -352,7 +352,7 @@ export default function LobbyPage() {
           </div>
 
           {inLobby ? (
-            <div className="flex items-center justify-between border border-green-800/40 rounded-xl p-4 bg-gradient-to-r from-green-950/20 to-gray-950/80">
+            <div className="flex items-center justify-between border border-green-800/40 rounded-xl p-4 bg-gradient-to-r from-green-950/20 to-background/80">
               <div className="flex items-center gap-3">
                 <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
                 <div>
@@ -370,8 +370,8 @@ export default function LobbyPage() {
               </button>
             </div>
           ) : !regionAllowed ? (
-            <div className="border border-gray-800 rounded-xl p-4 bg-gray-900/40">
-              <p className="text-sm text-gray-500">You don't have access to this region. Contact a PUG admin to get added.</p>
+            <div className="border border-border rounded-xl p-4 bg-card/40">
+              <p className="text-sm text-muted-foreground">You don't have access to this region. Contact a PUG admin to get added.</p>
             </div>
           ) : (
             <QueueForm onJoin={(roles) => apiAction('/queue', { roles })} blockedRoles={blockedRoles ?? []} approvedRoles={approvedRoles} />
@@ -388,15 +388,15 @@ export default function LobbyPage() {
         const readyCount = players.filter((p) => p.readyConfirmed).length
         return (
           <div className="space-y-4">
-            <div className="border border-green-800/40 rounded-xl overflow-hidden bg-gradient-to-b from-green-950/30 to-gray-950/80">
+            <div className="border border-green-800/40 rounded-xl overflow-hidden bg-gradient-to-b from-green-950/30 to-background/80">
               <div className="text-center py-8 px-4">
                 <div className="flex items-center justify-center gap-2 mb-3">
                   <span className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse" />
                   <p className="text-xs font-semibold uppercase tracking-wider text-green-400">Match Found</p>
                 </div>
-                <p className="text-gray-400 text-sm mb-2">All players must ready up to start the draft.</p>
+                <p className="text-muted-foreground text-sm mb-2">All players must ready up to start the draft.</p>
                 {lobby.readyAt && (
-                  <p className="text-sm mb-6 text-gray-500">
+                  <p className="text-sm mb-6 text-muted-foreground">
                     Time remaining: <Countdown deadline={new Date(new Date(lobby.readyAt).getTime() + 120000).toISOString()} />
                   </p>
                 )}
@@ -429,33 +429,33 @@ export default function LobbyPage() {
               </div>
               {/* Ready progress bar */}
               <div className="px-4 pb-3">
-                <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full bg-green-500 transition-all duration-500"
                     style={{ width: `${(readyCount / players.length) * 100}%` }}
                   />
                 </div>
-                <p className="text-xs text-gray-500 text-center mt-1.5">{readyCount}/{players.length} ready</p>
+                <p className="text-xs text-muted-foreground text-center mt-1.5">{readyCount}/{players.length} ready</p>
               </div>
             </div>
 
-            <div className="border border-gray-800 rounded-xl overflow-hidden bg-gray-950/50">
-              <div className="px-4 py-2.5 bg-gradient-to-r from-gray-900/80 to-gray-900/40 border-b border-gray-800">
-                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Players</span>
+            <div className="border border-border rounded-xl overflow-hidden bg-background/50">
+              <div className="px-4 py-2.5 bg-gradient-to-r from-card/80 to-card/40 border-b border-border">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Players</span>
               </div>
-              <div className="divide-y divide-gray-800/50">
+              <div className="divide-y divide-border">
                 {players.map((p) => (
                   <div key={p.userId} className={`flex items-center justify-between gap-3 px-4 py-2.5 transition-colors hover:bg-white/[0.03] ${p.readyConfirmed ? 'bg-green-950/10' : ''}`}>
                     <div className="flex items-center gap-2.5 min-w-0">
                       <PlayerAvatar player={p} size={28} />
-                      <Link href={`/pugs/profile/${p.userId}`} className={`text-sm truncate hover:underline ${p.userId === currentUserId ? 'text-blue-300 font-medium' : 'text-gray-200 hover:text-white'}`}>
+                      <Link href={`/pugs/profile/${p.userId}`} className={`text-sm truncate hover:underline ${p.userId === currentUserId ? 'text-blue-300 font-medium' : 'text-foreground hover:text-foreground'}`}>
                         {p.name}{p.userId === currentUserId && ' (you)'}
                       </Link>
                     </div>
                     <span className={`text-xs px-2.5 py-1 rounded-lg shrink-0 font-medium transition-colors ${
                       p.readyConfirmed
                         ? 'bg-green-900/40 text-green-400 border border-green-800/50'
-                        : 'bg-gray-800/50 text-gray-500 border border-gray-700/50'
+                        : 'bg-muted/50 text-muted-foreground border border-border'
                     }`}>
                       {p.readyConfirmed ? 'Ready' : 'Not ready'}
                     </span>
@@ -496,7 +496,7 @@ export default function LobbyPage() {
               <h2 className="font-semibold">Vote for a Map</h2>
               {lobby.mapVote?.voteDeadline && <Countdown deadline={lobby.mapVote.voteDeadline} />}
             </div>
-            {!inLobby && !isPugAdmin && <p className="text-gray-500 text-sm mb-4">Spectating - only players can vote.</p>}
+            {!inLobby && !isPugAdmin && <p className="text-muted-foreground text-sm mb-4">Spectating - only players can vote.</p>}
             {isPugAdmin && <p className="text-yellow-600 text-xs mb-4">Admin: clicking a map selects it for all players immediately.</p>}
             <div className="grid grid-cols-3 gap-3">
               {mapCandidates.map((m) => {
@@ -512,7 +512,7 @@ export default function LobbyPage() {
                     className={`relative overflow-hidden border rounded-xl transition-all duration-200 text-center group ${
                       voted
                         ? 'border-blue-500 ring-2 ring-blue-500/40 shadow-lg shadow-blue-500/10'
-                        : 'border-gray-700 hover:border-gray-500 hover:scale-[1.03] hover:shadow-lg hover:shadow-black/20 active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100'
+                        : 'border-border hover:border-primary/50 hover:scale-[1.03] hover:shadow-lg hover:shadow-black/20 active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100'
                     }`}
                   >
                     {m.imageUrl ? (
@@ -521,11 +521,11 @@ export default function LobbyPage() {
                         <div className={`absolute inset-0 ${voted ? 'bg-blue-900/60' : 'bg-black/40 group-hover:bg-black/30'} transition-colors`} />
                       </div>
                     ) : (
-                      <div className={`h-24 ${voted ? 'bg-blue-900/30' : 'bg-gray-800/50'}`} />
+                      <div className={`h-24 ${voted ? 'bg-blue-900/30' : 'bg-muted/50'}`} />
                     )}
-                    <div className={`px-3 py-2 ${voted ? 'bg-blue-950/80' : 'bg-gray-900/80'}`}>
-                      <p className={`font-medium text-sm ${voted ? 'text-blue-200' : 'text-gray-200'}`}>{m.name}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{count} vote{count !== 1 ? 's' : ''}</p>
+                    <div className={`px-3 py-2 ${voted ? 'bg-blue-950/80' : 'bg-card/80'}`}>
+                      <p className={`font-medium text-sm ${voted ? 'text-blue-200' : 'text-foreground'}`}>{m.name}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{count} vote{count !== 1 ? 's' : ''}</p>
                     </div>
                   </button>
                 )
@@ -579,16 +579,16 @@ export default function LobbyPage() {
             guildId={guildId}
           />
           {(isCaptain || isPugAdmin) && !lobby.botInstanceId && (
-            <div className="border border-gray-800/60 rounded-xl overflow-hidden bg-gray-900/40">
-              <div className="px-4 py-2.5 border-b border-gray-800/60">
-                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+            <div className="border border-border rounded-xl overflow-hidden bg-card/40">
+              <div className="px-4 py-2.5 border-b border-border">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   {isPugAdmin && !isCaptain ? 'Admin - Submit Result' : 'Submit Result (Captain Only)'}
                 </span>
               </div>
               <div className="px-4 py-3 grid grid-cols-3 gap-3">
                 <button onClick={() => apiAction(isPugAdmin && !isCaptain ? '/resolve' : '/report', { result: 'team1' })} className="px-4 py-2.5 bg-blue-600/15 border border-blue-500/30 text-blue-300 rounded-xl hover:bg-blue-600/25 hover:shadow-lg hover:shadow-blue-500/10 hover:scale-[1.02] active:scale-[0.98] text-sm transition-all duration-200 font-semibold">Team 1 Won</button>
                 <button onClick={() => apiAction(isPugAdmin && !isCaptain ? '/resolve' : '/report', { result: 'team2' })} className="px-4 py-2.5 bg-orange-600/15 border border-orange-500/30 text-orange-300 rounded-xl hover:bg-orange-600/25 hover:shadow-lg hover:shadow-orange-500/10 hover:scale-[1.02] active:scale-[0.98] text-sm transition-all duration-200 font-semibold">Team 2 Won</button>
-                <button onClick={() => apiAction(isPugAdmin && !isCaptain ? '/resolve' : '/report', { result: 'draw' })} className="px-4 py-2.5 border border-gray-700 text-gray-400 rounded-xl hover:bg-gray-800 hover:border-gray-600 hover:scale-[1.02] active:scale-[0.98] text-sm transition-all duration-200">Draw</button>
+                <button onClick={() => apiAction(isPugAdmin && !isCaptain ? '/resolve' : '/report', { result: 'draw' })} className="px-4 py-2.5 border border-border text-muted-foreground rounded-xl hover:bg-muted border-border hover:scale-[1.02] active:scale-[0.98] text-sm transition-all duration-200">Draw</button>
               </div>
             </div>
           )}
@@ -607,21 +607,21 @@ export default function LobbyPage() {
             const isOpposingCaptain = isCaptain && me?.team !== reporter?.team
             return pending ? (
               <div className={`border rounded-xl overflow-hidden ${
-                resultColor === 'blue' ? 'border-blue-800/60 bg-gradient-to-b from-blue-950/30 to-gray-950/80'
-                : resultColor === 'orange' ? 'border-orange-800/60 bg-gradient-to-b from-orange-950/30 to-gray-950/80'
-                : 'border-gray-700/60 bg-gradient-to-b from-gray-900/50 to-gray-950/80'
+                resultColor === 'blue' ? 'border-blue-800/60 bg-gradient-to-b from-blue-950/30 to-background/80'
+                : resultColor === 'orange' ? 'border-orange-800/60 bg-gradient-to-b from-orange-950/30 to-background/80'
+                : 'border-border bg-gradient-to-b from-card/50 to-background/80'
               }`}>
                 <div className="px-5 py-4 text-center space-y-3">
                   <div className="flex items-center justify-center gap-2">
                     <span className={`w-2.5 h-2.5 rounded-full animate-pulse ${
                       resultColor === 'blue' ? 'bg-blue-400' : resultColor === 'orange' ? 'bg-orange-400' : 'bg-gray-400'
                     }`} />
-                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Awaiting Confirmation</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Awaiting Confirmation</p>
                   </div>
-                  <p className="text-lg font-bold text-white">{resultLabel}</p>
-                  <div className="flex items-center justify-center gap-2 text-sm text-gray-400">
+                  <p className="text-lg font-bold text-foreground">{resultLabel}</p>
+                  <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                     <span>Reported by {reporter?.name ?? 'Unknown'}</span>
-                    <span className="text-gray-700">-</span>
+                    <span className="text-muted-foreground/60">-</span>
                     <span>auto-confirms in {lobby.reportingAt ? <Countdown deadline={new Date(new Date(lobby.reportingAt).getTime() + 120000).toISOString()} /> : '2 min'}</span>
                   </div>
                   {isOpposingCaptain && (
@@ -649,15 +649,15 @@ export default function LobbyPage() {
                     Report Result {isPugAdmin && !isCaptain ? '(Admin)' : '(Captain)'}
                   </span>
                 </div>
-                <p className="px-4 pt-3 text-xs text-gray-400">The match ended but no result was recorded automatically. Submit who won:</p>
+                <p className="px-4 pt-3 text-xs text-muted-foreground">The match ended but no result was recorded automatically. Submit who won:</p>
                 <div className="px-4 py-3 grid grid-cols-3 gap-3">
                   <button onClick={() => apiAction(isPugAdmin && !isCaptain ? '/resolve' : '/report', { result: 'team1' })} className="px-4 py-2.5 bg-blue-600/15 border border-blue-500/30 text-blue-300 rounded-xl hover:bg-blue-600/25 hover:scale-[1.02] active:scale-[0.98] text-sm transition-all duration-200 font-semibold">Team 1 Won</button>
                   <button onClick={() => apiAction(isPugAdmin && !isCaptain ? '/resolve' : '/report', { result: 'team2' })} className="px-4 py-2.5 bg-orange-600/15 border border-orange-500/30 text-orange-300 rounded-xl hover:bg-orange-600/25 hover:scale-[1.02] active:scale-[0.98] text-sm transition-all duration-200 font-semibold">Team 2 Won</button>
-                  <button onClick={() => apiAction(isPugAdmin && !isCaptain ? '/resolve' : '/report', { result: 'draw' })} className="px-4 py-2.5 border border-gray-700 text-gray-400 rounded-xl hover:bg-gray-800 hover:border-gray-600 hover:scale-[1.02] active:scale-[0.98] text-sm transition-all duration-200">Draw</button>
+                  <button onClick={() => apiAction(isPugAdmin && !isCaptain ? '/resolve' : '/report', { result: 'draw' })} className="px-4 py-2.5 border border-border text-muted-foreground rounded-xl hover:bg-muted border-border hover:scale-[1.02] active:scale-[0.98] text-sm transition-all duration-200">Draw</button>
                 </div>
               </div>
             ) : (
-              <div className="border border-gray-800/60 rounded-xl p-4 text-center text-sm text-gray-400">
+              <div className="border border-border rounded-xl p-4 text-center text-sm text-muted-foreground">
                 Waiting for the match result to be reported…
               </div>
             )
@@ -680,16 +680,16 @@ export default function LobbyPage() {
         return (
           <div className="space-y-4">
             <div className={`border rounded-xl overflow-hidden text-center py-8 ${
-              resultColor === 'blue' ? 'border-blue-800/40 bg-gradient-to-b from-blue-950/20 to-gray-950/80'
-              : resultColor === 'orange' ? 'border-orange-800/40 bg-gradient-to-b from-orange-950/20 to-gray-950/80'
-              : 'border-gray-700/40 bg-gradient-to-b from-gray-900/30 to-gray-950/80'
+              resultColor === 'blue' ? 'border-blue-800/40 bg-gradient-to-b from-blue-950/20 to-background/80'
+              : resultColor === 'orange' ? 'border-orange-800/40 bg-gradient-to-b from-orange-950/20 to-background/80'
+              : 'border-border bg-gradient-to-b from-card/30 to-background/80'
             }`}>
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Match Complete</p>
-              {pending && <p className="text-2xl font-bold text-white mb-2">{resultLabel}</p>}
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Match Complete</p>
+              {pending && <p className="text-2xl font-bold text-foreground mb-2">{resultLabel}</p>}
               {selectedMap && (
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-900/60 border border-gray-800/60">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card/60 border border-border">
                   {selectedMap.imageUrl && <img loading="lazy" decoding="async" src={selectedMap.imageUrl} alt="" className="w-6 h-6 rounded object-cover" />}
-                  <span className="text-sm text-gray-300">{selectedMap.name}</span>
+                  <span className="text-sm text-foreground/90">{selectedMap.name}</span>
                 </div>
               )}
             </div>
@@ -709,7 +709,7 @@ export default function LobbyPage() {
             )}
             {inLobby && me && <RequeueButton lobby={lobby} me={me} />}
             <div className="text-center pt-2">
-              <Link href={lobby.tier === 'invite' ? '/pugs/invite' : '/pugs/open'} className="text-sm text-gray-500 hover:text-gray-300 transition-colors">
+              <Link href={lobby.tier === 'invite' ? '/pugs/invite' : '/pugs/open'} className="text-sm text-muted-foreground hover:text-foreground/90 transition-colors">
                 Back to {lobby.tier === 'invite' ? 'Invite' : 'Open'} Tier
               </Link>
             </div>
@@ -719,12 +719,12 @@ export default function LobbyPage() {
 
       {lobby.status === 'CANCELLED' && (
         <div className="space-y-4">
-          <div className="border border-red-900/30 rounded-xl text-center py-10 bg-gradient-to-b from-red-950/10 to-gray-950/80">
-            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Match Cancelled</p>
-            <p className="text-lg text-gray-400">This lobby has been cancelled.</p>
+          <div className="border border-red-900/30 rounded-xl text-center py-10 bg-gradient-to-b from-red-950/10 to-background/80">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Match Cancelled</p>
+            <p className="text-lg text-muted-foreground">This lobby has been cancelled.</p>
           </div>
           <div className="text-center">
-            <Link href={lobby.tier === 'invite' ? '/pugs/invite' : '/pugs/open'} className="text-sm text-gray-500 hover:text-gray-300 transition-colors">
+            <Link href={lobby.tier === 'invite' ? '/pugs/invite' : '/pugs/open'} className="text-sm text-muted-foreground hover:text-foreground/90 transition-colors">
               Back to {lobby.tier === 'invite' ? 'Invite' : 'Open'} Tier
             </Link>
           </div>
@@ -733,25 +733,25 @@ export default function LobbyPage() {
 
       {lobby.status === 'DISPUTED' && (
         <div className="space-y-4">
-          <div className="border border-yellow-800/40 rounded-xl text-center py-8 bg-gradient-to-b from-yellow-950/20 to-gray-950/80">
+          <div className="border border-yellow-800/40 rounded-xl text-center py-8 bg-gradient-to-b from-yellow-950/20 to-background/80">
             <div className="flex items-center justify-center gap-2 mb-2">
               <span className="w-2.5 h-2.5 rounded-full bg-yellow-400 animate-pulse" />
               <p className="text-xs font-semibold uppercase tracking-wider text-yellow-500">Result Disputed</p>
             </div>
-            <p className="text-gray-400 text-sm mt-1">
+            <p className="text-muted-foreground text-sm mt-1">
               {isPugAdmin ? 'Resolve this dispute by selecting the correct result below.' : 'An admin will review and resolve this match.'}
             </p>
           </div>
           <TeamsDisplay players={players} currentUserId={currentUserId} heroes={heroes} banState={lobby.banState} />
           {isPugAdmin && (
-            <div className="border border-red-900/40 rounded-xl overflow-hidden bg-gray-900/40">
+            <div className="border border-red-900/40 rounded-xl overflow-hidden bg-card/40">
               <div className="px-4 py-2.5 bg-red-950/30 border-b border-red-900/40">
                 <span className="text-xs font-semibold text-red-400 uppercase tracking-wider">Admin - Resolve Dispute</span>
               </div>
               <div className="px-4 py-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <button onClick={() => apiAction('/resolve', { result: 'team1' })} className="px-4 py-2.5 bg-blue-600/15 border border-blue-500/30 text-blue-300 rounded-xl hover:bg-blue-600/25 hover:shadow-lg hover:shadow-blue-500/10 hover:scale-[1.02] active:scale-[0.98] text-sm transition-all duration-200 font-semibold">Team 1 Won</button>
                 <button onClick={() => apiAction('/resolve', { result: 'team2' })} className="px-4 py-2.5 bg-orange-600/15 border border-orange-500/30 text-orange-300 rounded-xl hover:bg-orange-600/25 hover:shadow-lg hover:shadow-orange-500/10 hover:scale-[1.02] active:scale-[0.98] text-sm transition-all duration-200 font-semibold">Team 2 Won</button>
-                <button onClick={() => apiAction('/resolve', { result: 'draw' })} className="px-4 py-2.5 border border-gray-700 text-gray-400 rounded-xl hover:bg-gray-800 hover:border-gray-600 hover:scale-[1.02] active:scale-[0.98] text-sm transition-all duration-200">Draw</button>
+                <button onClick={() => apiAction('/resolve', { result: 'draw' })} className="px-4 py-2.5 border border-border text-muted-foreground rounded-xl hover:bg-muted border-border hover:scale-[1.02] active:scale-[0.98] text-sm transition-all duration-200">Draw</button>
                 <button
                   onClick={async () => { if (await confirm({ message: 'Cancel this match? No rating changes will be applied.', variant: 'danger' })) apiAction('/resolve', { result: 'cancel' }) }}
                   className="px-4 py-2.5 border border-red-800 text-red-400 rounded-xl hover:bg-red-950 hover:border-red-700 hover:scale-[1.02] active:scale-[0.98] text-sm transition-all duration-200"
@@ -764,12 +764,12 @@ export default function LobbyPage() {
 
       {lobby.spectators && lobby.spectators.length > 0 && (
         <div className="mt-6">
-          <h3 className="text-sm font-bold text-gray-300 uppercase tracking-wider mb-2">Spectators</h3>
+          <h3 className="text-sm font-bold text-foreground/90 uppercase tracking-wider mb-2">Spectators</h3>
           <div className="flex flex-wrap gap-2">
             {lobby.spectators.map((s: any) => (
-              <span key={s.id} className="text-xs px-2 py-1 rounded border border-gray-700 bg-gray-800/50 text-gray-300">
+              <span key={s.id} className="text-xs px-2 py-1 rounded border border-border bg-muted/50 text-foreground/90">
                 {s.displayName}
-                {s.status !== 'INVITED' && <span className="ml-1 text-gray-500">({s.status.toLowerCase()})</span>}
+                {s.status !== 'INVITED' && <span className="ml-1 text-muted-foreground">({s.status.toLowerCase()})</span>}
               </span>
             ))}
           </div>
@@ -796,7 +796,7 @@ function SpotsNeeded({ neededSlots, spotsAvailable, totalPlayers }: { neededSlot
   const open = roles.filter((r) => (spotsAvailable[r] ?? 0) > 0)
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      <span className="text-xs text-gray-500 shrink-0">{spotsLeft} spot{spotsLeft !== 1 ? 's' : ''} needed:</span>
+      <span className="text-xs text-muted-foreground shrink-0">{spotsLeft} spot{spotsLeft !== 1 ? 's' : ''} needed:</span>
       {open.length === 0 ? (
         <span className="text-xs text-green-600">All roles filled</span>
       ) : (
@@ -824,15 +824,15 @@ function QueueForm({ onJoin, blockedRoles, approvedRoles }: { onJoin: (roles: st
 
   if (roles.length === 0) {
     return (
-      <div className="border border-gray-800 rounded-xl p-4 bg-gray-900/40">
-        <p className="text-sm text-gray-500">You have no approved roles for this lobby. Contact a PUG admin to get roles assigned.</p>
+      <div className="border border-border rounded-xl p-4 bg-card/40">
+        <p className="text-sm text-muted-foreground">You have no approved roles for this lobby. Contact a PUG admin to get roles assigned.</p>
       </div>
     )
   }
 
   return (
-    <div className="border border-gray-800 rounded-xl p-5 bg-gradient-to-b from-gray-900/60 to-gray-950/60">
-      <p className="text-sm font-medium text-gray-300 mb-3">Select your roles to queue:</p>
+    <div className="border border-border rounded-xl p-5 bg-gradient-to-b from-card/60 to-background/60">
+      <p className="text-sm font-medium text-foreground/90 mb-3">Select your roles to queue:</p>
       <div className="flex flex-wrap gap-2 mb-4">
         {roles.map((role) => {
           const blocked = blockedRoles.includes(role)
@@ -844,10 +844,10 @@ function QueueForm({ onJoin, blockedRoles, approvedRoles }: { onJoin: (roles: st
               title={blocked ? 'Role slots full' : undefined}
               className={`px-3 py-1.5 text-sm rounded-lg border transition-all duration-200 ${
                 blocked
-                  ? 'border-gray-800 text-gray-600 cursor-not-allowed'
+                  ? 'border-border text-muted-foreground/70 cursor-not-allowed'
                   : selected.includes(role)
                     ? ROLE_COLORS[role] + ' font-medium shadow-md'
-                    : 'border-gray-700 text-gray-400 hover:border-gray-500 hover:scale-[1.03] active:scale-[0.97]'
+                    : 'border-border text-muted-foreground hover:border-primary/50 hover:scale-[1.03] active:scale-[0.97]'
               }`}
             >
               {ROLE_LABELS[role]}{blocked ? ' (Full)' : ''}
@@ -898,7 +898,7 @@ function DraftUI({
       <div className={`flex items-center justify-between px-5 py-3.5 rounded-xl border ${
         isMyTurn
           ? 'bg-gradient-to-r from-blue-950/60 to-blue-950/30 border-blue-700/60 text-blue-200'
-          : 'bg-gray-900/60 border-gray-700/60 text-gray-400'
+          : 'bg-card/60 border-border text-muted-foreground'
       }`}>
         <div className="flex items-center gap-2.5">
           {(isCaptain && draftState.currentPickTeam === myTeam) && <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />}
@@ -910,7 +910,7 @@ function DraftUI({
                 : `Waiting for Team ${pickingTeam}...`}
           </span>
         </div>
-        <span className="flex items-center gap-2 text-xs text-gray-400">
+        <span className="flex items-center gap-2 text-xs text-muted-foreground">
           Pick {draftState.pickNumber + 1}/8
           {draftState.pickDeadline && <Countdown deadline={draftState.pickDeadline} />}
         </span>
@@ -923,21 +923,21 @@ function DraftUI({
           const cap = captains.find((c) => c.team === t)
           const isPicking = pickingTeam === t
           return (
-            <div key={t} className={`rounded-xl border overflow-hidden bg-gray-950/50 transition-all duration-200 ${TEAM_BORDER[t]} ${isPicking ? 'ring-1 ring-offset-1 ring-offset-black ' + (t === 1 ? 'ring-blue-600/50' : 'ring-orange-600/50') : ''}`}>
+            <div key={t} className={`rounded-xl border overflow-hidden bg-background/50 transition-all duration-200 ${TEAM_BORDER[t]} ${isPicking ? 'ring-1 ring-offset-1 ring-offset-black ' + (t === 1 ? 'ring-blue-600/50' : 'ring-orange-600/50') : ''}`}>
               <div className={`px-4 py-2.5 bg-gradient-to-r ${TEAM_HEADER[t]} border-b ${TEAM_BORDER[t]}`}>
                 <div className="flex items-center gap-2">
                   <span className={`w-2 h-2 rounded-full ${TEAM_ACCENT[t]} ${isPicking ? 'animate-pulse' : ''}`} />
                   <span className={`text-xs font-bold uppercase tracking-wider ${TEAM_TEXT[t]}`}>Team {t}</span>
-                  {cap && <span className="text-xs text-gray-500 ml-1">C: {cap.name}</span>}
+                  {cap && <span className="text-xs text-muted-foreground ml-1">C: {cap.name}</span>}
                   {isPicking && <span className={`ml-auto text-xs font-medium ${TEAM_TEXT[t]}`}>picking</span>}
                 </div>
               </div>
               <ul>
                 {teamPlayers.map((p, i) => (
-                  <li key={p.userId} className={`flex items-center justify-between gap-2 px-4 py-2.5 transition-colors hover:bg-white/[0.03] ${i < teamPlayers.length - 1 ? 'border-b border-gray-800/30' : ''}`}>
+                  <li key={p.userId} className={`flex items-center justify-between gap-2 px-4 py-2.5 transition-colors hover:bg-white/[0.03] ${i < teamPlayers.length - 1 ? 'border-b border-border' : ''}`}>
                     <div className="flex items-center gap-2.5 min-w-0">
                       <PlayerAvatar player={p} size={26} />
-                      <Link href={`/pugs/profile/${p.userId}`} className={`text-sm truncate min-w-0 hover:underline ${p.userId === currentUserId ? TEAM_TEXT[t] + ' font-semibold' : 'text-gray-200 hover:text-white'}`}>
+                      <Link href={`/pugs/profile/${p.userId}`} className={`text-sm truncate min-w-0 hover:underline ${p.userId === currentUserId ? TEAM_TEXT[t] + ' font-semibold' : 'text-foreground hover:text-foreground'}`}>
                         {p.name}{p.isCaptain && ' ★'}{p.userId === currentUserId && ' (you)'}
                       </Link>
                     </div>
@@ -945,7 +945,7 @@ function DraftUI({
                   </li>
                 ))}
                 {teamPlayers.length === 0 && (
-                  <li className="px-4 py-4 text-xs text-gray-600 text-center">No players yet</li>
+                  <li className="px-4 py-4 text-xs text-muted-foreground/70 text-center">No players yet</li>
                 )}
               </ul>
             </div>
@@ -954,11 +954,11 @@ function DraftUI({
       </div>
 
       {/* Available pool */}
-      <div className="border border-gray-800 rounded-xl overflow-hidden bg-gray-950/50">
-        <div className="px-4 py-2.5 bg-gradient-to-r from-gray-900/80 to-gray-900/40 border-b border-gray-800">
-          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Available players</span>
+      <div className="border border-border rounded-xl overflow-hidden bg-background/50">
+        <div className="px-4 py-2.5 bg-gradient-to-r from-card/80 to-card/40 border-b border-border">
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Available players</span>
         </div>
-        <div className="divide-y divide-gray-800/40">
+        <div className="divide-y divide-border">
           {undrafted.map((p) => {
             const teamPlayers = pickingTeam === 1 ? team1 : team2
             const takenRoles = new Set(teamPlayers.map((tp) => tp.assignedRole).filter(Boolean))
@@ -966,9 +966,9 @@ function DraftUI({
             return (
               <div key={p.userId} className={`flex items-center gap-3 px-4 py-3 transition-all duration-200 ${roleBlocked ? 'opacity-30' : 'hover:bg-white/[0.03]'}`}>
                 <PlayerAvatar player={p} size={28} />
-                <Link href={`/pugs/profile/${p.userId}`} className="text-sm text-gray-200 hover:text-white hover:underline flex-1 font-medium">{p.name}</Link>
+                <Link href={`/pugs/profile/${p.userId}`} className="text-sm text-foreground hover:text-foreground hover:underline flex-1 font-medium">{p.name}</Link>
                 {p.assignedRole && <RoleBadge role={p.assignedRole} />}
-                {roleBlocked && <span className="text-xs text-gray-600 italic">role taken</span>}
+                {roleBlocked && <span className="text-xs text-muted-foreground/70 italic">role taken</span>}
                 {isMyTurn && (
                   <button
                     onClick={() => !roleBlocked && onPick(p.userId)}
@@ -982,7 +982,7 @@ function DraftUI({
             )
           })}
           {undrafted.length === 0 && (
-            <p className="px-4 py-5 text-sm text-gray-600 text-center">All players drafted</p>
+            <p className="px-4 py-5 text-sm text-muted-foreground/70 text-center">All players drafted</p>
           )}
         </div>
       </div>
@@ -1052,7 +1052,7 @@ function BanUI({
       <div className={`flex items-center justify-between px-5 py-3.5 rounded-xl border ${
         isMyTurn
           ? 'bg-gradient-to-r from-blue-950/60 to-blue-950/30 border-blue-700/60 text-blue-200'
-          : 'bg-gray-900/60 border-gray-700/60 text-gray-400'
+          : 'bg-card/60 border-border text-muted-foreground'
       }`}>
         <div className="flex items-center gap-2.5">
           {isMyTurn && !isPugAdmin && <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />}
@@ -1064,7 +1064,7 @@ function BanUI({
               : `Team ${banState.currentBanTeam} is banning...`}
           </span>
         </div>
-        <span className="flex items-center gap-2 text-xs text-gray-400">
+        <span className="flex items-center gap-2 text-xs text-muted-foreground">
           Ban {banState.banNumber}/2
           {banState.banDeadline && <Countdown deadline={banState.banDeadline} />}
         </span>
@@ -1072,8 +1072,8 @@ function BanUI({
 
       {/* Bans so far */}
       {existingBans.length > 0 && (
-        <div className="border border-gray-800/60 rounded-xl p-4 bg-gray-900/40 space-y-2.5">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Bans</p>
+        <div className="border border-border rounded-xl p-4 bg-card/40 space-y-2.5">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Bans</p>
           {bansByTeam.map(({ team, bans }) => bans.length > 0 && (
             <div key={team} className="flex items-center gap-2 flex-wrap">
               <span className={`text-xs font-semibold px-2 py-0.5 rounded-lg border shrink-0 ${TEAM_BADGE[team as 1 | 2]}`}>
@@ -1098,27 +1098,27 @@ function BanUI({
         <TeamsDisplay players={players} currentUserId={currentUserId} heroes={heroes} />
       )}
       {selectedMap && (
-        <div className="border border-gray-800/60 rounded-xl overflow-hidden flex items-center bg-gray-900/40">
+        <div className="border border-border rounded-xl overflow-hidden flex items-center bg-card/40">
           {selectedMap.imageUrl && (
             <img loading="lazy" decoding="async" src={selectedMap.imageUrl} alt={selectedMap.name} className="w-20 h-14 object-cover shrink-0" />
           )}
           <div className="px-4 py-2.5">
-            <span className="text-sm font-medium text-gray-200">{selectedMap.name}</span>
-            <span className="text-xs text-gray-500 ml-2">({selectedMap.type})</span>
+            <span className="text-sm font-medium text-foreground">{selectedMap.name}</span>
+            <span className="text-xs text-muted-foreground ml-2">({selectedMap.type})</span>
           </div>
         </div>
       )}
 
       {/* Ban picker */}
       {isMyTurn ? (
-        <div className="border border-gray-800 rounded-xl overflow-hidden bg-gray-950/50">
-          <div className="px-4 py-3 bg-gradient-to-r from-gray-900/80 to-gray-900/40 border-b border-gray-800">
+        <div className="border border-border rounded-xl overflow-hidden bg-background/50">
+          <div className="px-4 py-3 bg-gradient-to-r from-card/80 to-card/40 border-b border-border">
             <input
               type="text"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
               placeholder="Search heroes..."
-              className="w-full bg-transparent text-sm text-gray-200 placeholder-gray-600 outline-none"
+              className="w-full bg-transparent text-sm text-foreground placeholder-muted-foreground outline-none"
             />
           </div>
           <div className="p-4 space-y-5">
@@ -1129,10 +1129,10 @@ function BanUI({
                 dps: 'border-orange-800/40 text-orange-300 hover:bg-orange-950/40 hover:border-orange-700/60',
                 support: 'border-green-800/40 text-green-300 hover:bg-green-950/40 hover:border-green-700/60',
               }
-              const style = roleStyle[role] ?? 'border-gray-700 text-gray-300 hover:bg-gray-800/40'
+              const style = roleStyle[role] ?? 'border-border text-foreground/90 hover:bg-muted/40'
               return (
                 <div key={role}>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-2.5">{role}</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-2.5">{role}</p>
                   <div className="flex flex-wrap gap-2">
                     {hs.map((h) => (
                       <button
@@ -1149,12 +1149,12 @@ function BanUI({
               )
             })}
             {Object.keys(grouped).length === 0 && (
-              <p className="text-sm text-gray-600 text-center py-2">No heroes match your search</p>
+              <p className="text-sm text-muted-foreground/70 text-center py-2">No heroes match your search</p>
             )}
           </div>
         </div>
       ) : (
-        <div className="border border-gray-800 rounded-xl px-4 py-8 text-center text-gray-500 text-sm bg-gray-950/50">
+        <div className="border border-border rounded-xl px-4 py-8 text-center text-muted-foreground text-sm bg-background/50">
           Waiting for Team {banState.currentBanTeam} to ban...
         </div>
       )}
@@ -1197,8 +1197,8 @@ function TeamsDisplay({ players, currentUserId, heroes, banState }: { players: P
   return (
     <div className="space-y-3">
       {bansByTeam.some((t) => t.bans.length > 0) && (
-        <div className="border border-gray-800/60 rounded-xl p-3 bg-gray-900/40 space-y-2">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Hero Bans</p>
+        <div className="border border-border rounded-xl p-3 bg-card/40 space-y-2">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Hero Bans</p>
           <div className="flex gap-4 flex-wrap">
             {bansByTeam.map(({ team, bans }) => bans.length > 0 && (
               <div key={team} className="flex items-center gap-2">
@@ -1228,21 +1228,21 @@ function TeamsDisplay({ players, currentUserId, heroes, banState }: { players: P
         {([{ label: 'Team 1', t: 1, list: team1 }, { label: 'Team 2', t: 2, list: team2 }] as const).map(({ label, t, list }) => {
           const cfg = TEAM_CONFIG[t]
           return (
-            <div key={label} className={`border rounded-xl overflow-hidden ${cfg.border} bg-gray-950/50`}>
+            <div key={label} className={`border rounded-xl overflow-hidden ${cfg.border} bg-background/50`}>
               <div className={`px-4 py-2.5 bg-gradient-to-r ${cfg.header} border-b ${cfg.border}`}>
                 <div className="flex items-center gap-2">
                   <span className={`w-2 h-2 rounded-full ${cfg.accent}`} />
                   <span className={`text-xs font-bold uppercase tracking-wider ${cfg.headerText}`}>{label}</span>
-                  <span className="text-xs text-gray-500 ml-auto">{list.length} players</span>
+                  <span className="text-xs text-muted-foreground ml-auto">{list.length} players</span>
                 </div>
               </div>
               <ul>
                 {list.map((p, i) => (
-                  <li key={p.userId} className={`flex items-center justify-between gap-2 px-4 py-2.5 transition-colors hover:bg-white/[0.03] ${i < list.length - 1 ? 'border-b border-gray-800/30' : ''}`}>
+                  <li key={p.userId} className={`flex items-center justify-between gap-2 px-4 py-2.5 transition-colors hover:bg-white/[0.03] ${i < list.length - 1 ? 'border-b border-border' : ''}`}>
                     <div className="flex items-center gap-2.5 min-w-0">
                       <PlayerAvatar player={p} size={28} />
                       <div className="min-w-0">
-                        <Link href={`/pugs/profile/${p.userId}`} className={`text-sm truncate block hover:underline ${p.userId === currentUserId ? cfg.highlight + ' font-semibold' : 'text-gray-200 hover:text-white'}`}>
+                        <Link href={`/pugs/profile/${p.userId}`} className={`text-sm truncate block hover:underline ${p.userId === currentUserId ? cfg.highlight + ' font-semibold' : 'text-foreground hover:text-foreground'}`}>
                           {p.name}{p.isCaptain && ' ★'}{p.userId === currentUserId && ' (you)'}
                         </Link>
                       </div>
@@ -1294,7 +1294,7 @@ function VoiceChannelLinks({
         <div
           aria-disabled="true"
           title="You can only join your own team's voice channel"
-          className={`${base} bg-gray-900/40 border border-gray-800 text-gray-600 cursor-not-allowed opacity-60`}
+          className={`${base} bg-card/40 border border-border text-muted-foreground/70 cursor-not-allowed opacity-60`}
         >
           {discordIcon}
           {label}
@@ -1306,7 +1306,7 @@ function VoiceChannelLinks({
       ? team === 1
         ? 'bg-blue-600/20 border-2 border-blue-500/50 text-blue-200 hover:bg-blue-600/30 hover:shadow-lg hover:shadow-blue-500/10'
         : 'bg-orange-600/20 border-2 border-orange-500/50 text-orange-200 hover:bg-orange-600/30 hover:shadow-lg hover:shadow-orange-500/10'
-      : 'bg-gray-800/50 border border-gray-700 text-gray-400 hover:border-gray-500 hover:text-gray-300'
+      : 'bg-muted/50 border border-border text-muted-foreground hover:border-primary/50 hover:text-foreground/90'
 
     return (
       <a href={channelUrl(id)} target="_blank" rel="noreferrer" className={`${base} hover:scale-[1.02] active:scale-[0.98] ${color}`}>
@@ -1317,8 +1317,8 @@ function VoiceChannelLinks({
   }
 
   return (
-    <div className="border border-gray-800/60 rounded-xl p-4 bg-gray-900/40">
-      <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-3">Voice Channels</p>
+    <div className="border border-border rounded-xl p-4 bg-card/40">
+      <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-3">Voice Channels</p>
       <div className="grid grid-cols-2 gap-3">
         {voiceChannel1Id && renderChannel(voiceChannel1Id, 1)}
         {voiceChannel2Id && renderChannel(voiceChannel2Id, 2)}
@@ -1363,8 +1363,8 @@ function TestAddDummy({ lobbyId, onAdded }: { lobbyId: string; onAdded: () => vo
   }
 
   return (
-    <div className="border border-dashed border-gray-700/60 rounded-xl p-4 mt-2 bg-gray-900/30">
-      <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-3">Admin - Add Dummy Player</p>
+    <div className="border border-dashed border-border rounded-xl p-4 mt-2 bg-card/30">
+      <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-3">Admin - Add Dummy Player</p>
       <div className="flex flex-wrap gap-2 mb-3">
         {roles.map((role) => (
           <button
@@ -1373,18 +1373,18 @@ function TestAddDummy({ lobbyId, onAdded }: { lobbyId: string; onAdded: () => vo
             className={`text-xs px-3 py-1.5 rounded-lg border transition-all duration-200 ${
               selected.includes(role)
                 ? ROLE_COLORS[role] + ' font-medium shadow-md'
-                : 'border-gray-700 text-gray-400 hover:border-gray-500 hover:scale-[1.03] active:scale-[0.97]'
+                : 'border-border text-muted-foreground hover:border-primary/50 hover:scale-[1.03] active:scale-[0.97]'
             }`}
           >
             {ROLE_LABELS[role]}
           </button>
         ))}
       </div>
-      {msg && <p className="text-xs text-gray-400 mb-2">{msg}</p>}
+      {msg && <p className="text-xs text-muted-foreground mb-2">{msg}</p>}
       <button
         onClick={add}
         disabled={loading || selected.length === 0}
-        className="px-3 py-1.5 text-xs bg-gray-700 hover:bg-gray-600 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:hover:scale-100 text-white rounded-lg transition-all duration-200"
+        className="px-3 py-1.5 text-xs bg-muted hover:bg-muted hover:scale-[1.02] active:scale-[0.98] disabled:opacity-40 disabled:hover:scale-100 text-foreground rounded-lg transition-all duration-200"
       >
         {loading ? 'Adding...' : 'Add Dummy'}
       </button>
@@ -1421,7 +1421,7 @@ function CopyButton({ text, label, className }: { text: string; label?: string; 
       className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded border transition-colors ${
         copied
           ? 'bg-green-900/50 border-green-700 text-green-400'
-          : 'border-gray-700 text-gray-400 hover:bg-gray-800 hover:border-gray-600'
+          : 'border-border text-muted-foreground hover:bg-muted border-border'
       } ${className ?? ''}`}
     >
       {copied ? '✓ Copied' : label ?? '📋 Copy'}
@@ -1502,7 +1502,7 @@ function RequeueButton({ lobby, me }: { lobby: any; me: Player }) {
 
   if (status === 'placed' && placedLobbyId) {
     return (
-      <div className="border border-green-700/50 rounded-xl p-4 bg-gradient-to-r from-green-950/30 to-gray-950/80">
+      <div className="border border-green-700/50 rounded-xl p-4 bg-gradient-to-r from-green-950/30 to-background/80">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <span className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse" />
@@ -1521,14 +1521,14 @@ function RequeueButton({ lobby, me }: { lobby: any; me: Player }) {
 
   if (status === 'queued') {
     return (
-      <div className="flex items-center justify-between border border-cyan-800/40 rounded-xl p-4 bg-gradient-to-r from-cyan-950/20 to-gray-950/80">
+      <div className="flex items-center justify-between border border-cyan-800/40 rounded-xl p-4 bg-gradient-to-r from-cyan-950/20 to-background/80">
         <div className="flex items-center gap-2.5">
           <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
           <span className="text-sm font-medium text-cyan-200">Queued for next game</span>
         </div>
         <button
           onClick={handleCancel}
-          className="px-3 py-1.5 text-sm border border-gray-700 text-gray-400 rounded-lg hover:bg-gray-800 hover:border-gray-600 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+          className="px-3 py-1.5 text-sm border border-border text-muted-foreground rounded-lg hover:bg-muted border-border hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
         >
           Cancel
         </button>
@@ -1615,7 +1615,7 @@ const BOT_STATUS_DISPLAY: Record<string, { label: string; color: string; pulse?:
   },
   game_ended: {
     label: 'Game Ended',
-    color: 'text-gray-400',
+    color: 'text-muted-foreground',
     step: 3,
     description: 'Match complete. Results are being processed...',
   },
@@ -1642,7 +1642,7 @@ function BotHostingPanel({
   const [switching, setSwitching] = useState(false)
 
   const botStatus = (lobby.botStatus as string) ?? 'warming_up'
-  const defaultStatus = { label: botStatus, color: 'text-gray-400', description: '' }
+  const defaultStatus = { label: botStatus, color: 'text-muted-foreground', description: '' }
   const statusInfo = BOT_STATUS_DISPLAY[botStatus] ?? defaultStatus
 
   async function sendBotCommand(command: string) {
@@ -1738,13 +1738,13 @@ function BotHostingPanel({
                     state === 'done' ? 'bg-cyan-500' :
                     state === 'active' ? 'bg-cyan-400 animate-pulse' :
                     state === 'error' ? 'bg-yellow-500 animate-pulse' :
-                    'bg-gray-700'
+                    'bg-muted'
                   }`} />
                   <span className={`text-[10px] mt-1 truncate ${
                     state === 'done' ? 'text-cyan-500' :
                     state === 'active' ? 'text-cyan-300 font-semibold' :
                     state === 'error' ? 'text-yellow-400' :
-                    'text-gray-600'
+                    'text-muted-foreground/70'
                   }`}>{step.label}</span>
                 </div>
               </div>
@@ -1752,7 +1752,7 @@ function BotHostingPanel({
           })}
         </div>
 
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-muted-foreground">
           {statusInfo.description}
         </p>
 
@@ -1765,7 +1765,7 @@ function BotHostingPanel({
             >
               {switching ? 'Switching…' : 'Switch to manual host'}
             </button>
-            <span className="text-[11px] text-gray-500">Skip the bot and let a player host the OW lobby.</span>
+            <span className="text-[11px] text-muted-foreground">Skip the bot and let a player host the OW lobby.</span>
             {cmdError && <span className="text-[11px] text-red-400">{cmdError}</span>}
           </div>
         )}
@@ -1779,7 +1779,7 @@ function BotHostingPanel({
             </span>
           )}
           {selectedMap && (
-            <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded border border-gray-700 text-gray-300">
+            <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded border border-border text-foreground/90">
               {selectedMap.imageUrl && <img loading="lazy" decoding="async" src={selectedMap.imageUrl} alt="" className="w-5 h-5 rounded object-cover" />}
               Map: {selectedMap.name}
             </span>
@@ -1788,7 +1788,7 @@ function BotHostingPanel({
 
         {bannedHeroObjects.length > 0 && (
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-gray-500 shrink-0">Bans:</span>
+            <span className="text-xs text-muted-foreground shrink-0">Bans:</span>
             {bannedHeroObjects.map((h) => (
               <span key={h.id} title={`Banned by Team ${h.banTeam}`} className={`inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded border ${banChipClasses(h.banTeam)}`}>
                 {h.imageUrl && <img loading="lazy" decoding="async" src={h.imageUrl} alt="" className="w-5 h-5 rounded-full object-cover" />}
@@ -1800,7 +1800,7 @@ function BotHostingPanel({
 
         {isPugAdmin && gameActive && (
           <div className="border-t border-cyan-800/30 pt-3 mt-3">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Admin Controls</p>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Admin Controls</p>
             <div className="flex gap-2">
               <button
                 onClick={() => sendBotCommand('pause')}
@@ -1833,7 +1833,7 @@ function BotHostingPanel({
               <button
                 onClick={() => sendBotCommand('end_draw')}
                 disabled={cmdLoading !== null}
-                className="px-3 py-1.5 text-xs font-medium bg-gray-600/15 border border-gray-500/30 text-gray-300 rounded-lg hover:bg-gray-600/25 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="px-3 py-1.5 text-xs font-medium bg-muted/15 border border-border text-foreground/90 rounded-lg hover:bg-muted/25 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 {cmdLoading === 'end_draw' ? 'Sending...' : 'End: Draw'}
               </button>
@@ -1913,7 +1913,7 @@ function LobbySetupAssistant({
           <span className="text-lg">⚙️</span>
           <h3 className="text-base font-semibold text-yellow-300">Lobby Setup Needed</h3>
         </div>
-        <p className="text-sm text-gray-400 max-w-md mx-auto">
+        <p className="text-sm text-muted-foreground max-w-md mx-auto">
           Someone needs to host this match in Overwatch — create the custom game, import settings, and invite all players.
         </p>
         {(isPlayer || isPugAdmin) && (
@@ -1942,18 +1942,18 @@ function LobbySetupAssistant({
         <div className="p-4 space-y-4">
           {/* Step 1-3: Create and import */}
           <div className="space-y-2">
-            <p className="text-sm text-gray-300">
+            <p className="text-sm text-foreground/90">
               <span className="text-cyan-400 font-semibold">1.</span> Create a <strong>Custom Game</strong> in Overwatch
             </p>
             <div className="flex items-center gap-3">
-              <p className="text-sm text-gray-300">
+              <p className="text-sm text-foreground/90">
                 <span className="text-cyan-400 font-semibold">2.</span> Copy the settings code:
               </p>
               {hostInfo.settingsText && (
                 <CopyButton text={hostInfo.settingsText} label="📋 Copy Settings" />
               )}
             </div>
-            <p className="text-sm text-gray-300">
+            <p className="text-sm text-foreground/90">
               <span className="text-cyan-400 font-semibold">3.</span> In Overwatch, go to <strong>Settings</strong> and click the orange <strong>Import Settings</strong> icon on the right
             </p>
           </div>
@@ -1961,15 +1961,15 @@ function LobbySetupAssistant({
           {/* Map & Bans summary */}
           <div className="flex flex-wrap gap-3">
             {selectedMap && (
-              <div className="flex items-center gap-2 px-3 py-2 bg-gray-900/60 border border-gray-800 rounded-lg overflow-hidden">
+              <div className="flex items-center gap-2 px-3 py-2 bg-card/60 border border-border rounded-lg overflow-hidden">
                 {selectedMap.imageUrl && <img loading="lazy" decoding="async" src={selectedMap.imageUrl} alt="" className="w-8 h-8 rounded object-cover" />}
-                <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold">Map</span>
-                <span className="text-white font-semibold text-sm">{selectedMap.name}</span>
+                <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Map</span>
+                <span className="text-foreground font-semibold text-sm">{selectedMap.name}</span>
               </div>
             )}
             {bannedHeroObjects.length > 0 && (
-              <div className="flex items-center gap-2 px-3 py-2 bg-gray-900/60 border border-gray-800 rounded-lg flex-wrap">
-                <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold shrink-0">Bans</span>
+              <div className="flex items-center gap-2 px-3 py-2 bg-card/60 border border-border rounded-lg flex-wrap">
+                <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold shrink-0">Bans</span>
                 {bannedHeroObjects.map((h) => (
                   <span key={h.id} title={`Banned by Team ${h.banTeam}`} className={`inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded border ${banChipClasses(h.banTeam)}`}>
                     {h.imageUrl && <img loading="lazy" decoding="async" src={h.imageUrl} alt="" className="w-5 h-5 rounded-full object-cover" />}
@@ -1983,7 +1983,7 @@ function LobbySetupAssistant({
           {/* Step 4: Invite players */}
           <div className="space-y-2">
             <div className="flex items-center gap-3">
-              <p className="text-sm text-gray-300">
+              <p className="text-sm text-foreground/90">
                 <span className="text-cyan-400 font-semibold">4.</span> Invite players &amp; assign teams:
               </p>
               {(() => {
@@ -2008,7 +2008,7 @@ function LobbySetupAssistant({
                     <div className={`px-3 py-1.5 border-b ${borderColor} ${headerBg}`}>
                       <span className={`text-xs font-bold uppercase tracking-wider ${textColor}`}>Team {t}</span>
                     </div>
-                    <ul className="divide-y divide-gray-800/50">
+                    <ul className="divide-y divide-border">
                       {teamPlayers.map((p) => {
                         const tag = hostInfo.battleTags[p.userId]
                         return (
@@ -2016,11 +2016,11 @@ function LobbySetupAssistant({
                             <div className="flex items-center gap-2 min-w-0">
                               <PlayerAvatar player={p} size={22} />
                               <div className="min-w-0">
-                                <Link href={`/pugs/profile/${p.userId}`} className="text-sm text-gray-200 hover:text-white hover:underline block truncate">{p.name}</Link>
+                                <Link href={`/pugs/profile/${p.userId}`} className="text-sm text-foreground hover:text-foreground hover:underline block truncate">{p.name}</Link>
                                 {tag ? (
-                                  <span className="text-xs text-gray-500">{tag}</span>
+                                  <span className="text-xs text-muted-foreground">{tag}</span>
                                 ) : (
-                                  <span className="text-xs text-gray-600 italic">No BattleTag set</span>
+                                  <span className="text-xs text-muted-foreground/70 italic">No BattleTag set</span>
                                 )}
                               </div>
                             </div>
@@ -2037,10 +2037,10 @@ function LobbySetupAssistant({
 
           {/* Steps 5-6 */}
           <div className="space-y-2">
-            <p className="text-sm text-gray-300">
+            <p className="text-sm text-foreground/90">
               <span className="text-cyan-400 font-semibold">5.</span> Move players to the correct teams in the lobby
             </p>
-            <p className="text-sm text-gray-300">
+            <p className="text-sm text-foreground/90">
               <span className="text-cyan-400 font-semibold">6.</span> Start the match!
             </p>
           </div>
@@ -2051,14 +2051,14 @@ function LobbySetupAssistant({
 
   // Other player view — someone else is hosting
   return (
-    <div className="border border-gray-800 bg-gray-900/30 rounded-lg p-5 space-y-3">
+    <div className="border border-border bg-card/30 rounded-lg p-5 space-y-3">
       <div className="flex items-center gap-2">
         <span className="text-base">⚙️</span>
-        <h3 className="text-sm font-semibold text-gray-200">
+        <h3 className="text-sm font-semibold text-foreground">
           {hostInfo.hostName ?? 'A player'} is setting up the lobby
         </h3>
       </div>
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-muted-foreground">
         Wait for an invite in Overwatch. Make sure you&apos;re online and ready.
       </p>
       <div className="flex flex-wrap gap-3">
@@ -2070,7 +2070,7 @@ function LobbySetupAssistant({
           </span>
         )}
         {selectedMap && (
-          <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded border border-gray-700 text-gray-300">
+          <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded border border-border text-foreground/90">
             {selectedMap.imageUrl && <img loading="lazy" decoding="async" src={selectedMap.imageUrl} alt="" className="w-5 h-5 rounded object-cover" />}
             Map: {selectedMap.name}
           </span>
@@ -2078,7 +2078,7 @@ function LobbySetupAssistant({
       </div>
       {bannedHeroObjects.length > 0 && (
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-gray-500 shrink-0">Bans:</span>
+          <span className="text-xs text-muted-foreground shrink-0">Bans:</span>
           {bannedHeroObjects.map((h) => (
             <span key={h.id} title={`Banned by Team ${h.banTeam}`} className={`inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded border ${banChipClasses(h.banTeam)}`}>
               {h.imageUrl && <img loading="lazy" decoding="async" src={h.imageUrl} alt="" className="w-5 h-5 rounded-full object-cover" />}

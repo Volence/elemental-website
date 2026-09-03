@@ -181,7 +181,7 @@ export function InviteQueuePanel({ region, queueActive }: Props) {
 
       {/* Queue interface */}
       {queueActive && !myLobbyId && canQueue && (
-        <div className="border border-gray-700/80 rounded-xl p-5 bg-gradient-to-b from-gray-900/80 to-gray-950/80">
+        <div className="border border-border rounded-xl p-5 bg-gradient-to-b from-card/80 to-background/80">
           {queueStatus?.inQueue ? (
             // In queue state
             <div className="text-center">
@@ -191,19 +191,19 @@ export function InviteQueuePanel({ region, queueActive }: Props) {
                   In Queue - Position #{queueStatus.position ?? '?'}
                 </span>
               </div>
-              <p className="text-xs text-gray-500 mb-1">
+              <p className="text-xs text-muted-foreground mb-1">
                 {(queueStatus.total ?? 1) > 1
                   ? `${queueStatus.total} players in queue`
                   : 'Waiting for more players...'}
               </p>
               {queueStatus.roles && (
-                <p className="text-xs text-gray-600 mb-4">
+                <p className="text-xs text-muted-foreground/70 mb-4">
                   Roles: {queueStatus.roles.map((r) => ROLES.find((rl) => rl.value === r)?.label ?? r).join(', ')}
                 </p>
               )}
               <button
                 onClick={handleLeaveQueue}
-                className="px-4 py-2 border border-gray-600 text-gray-400 hover:text-gray-200 hover:border-gray-400 text-sm rounded-lg transition-colors"
+                className="px-4 py-2 border border-border text-muted-foreground hover:text-foreground hover:border-primary/50 text-sm rounded-lg transition-colors"
               >
                 Leave Queue
               </button>
@@ -211,7 +211,7 @@ export function InviteQueuePanel({ region, queueActive }: Props) {
           ) : showRoles ? (
             // Role selection state
             <div>
-              <p className="text-sm text-gray-400 mb-3 font-medium">Select your roles (pick all you can play)</p>
+              <p className="text-sm text-muted-foreground mb-3 font-medium">Select your roles (pick all you can play)</p>
               <div className="flex flex-wrap gap-2 mb-4">
                 {ROLES.map((role) => {
                   const blocked = approvedRoles !== null && !approvedRoles.includes(role.value)
@@ -223,10 +223,10 @@ export function InviteQueuePanel({ region, queueActive }: Props) {
                       title={blocked ? 'Not approved for this role' : undefined}
                       className={`text-sm px-3 py-1.5 rounded-lg border transition-colors ${
                         blocked
-                          ? 'border-gray-800 text-gray-600 cursor-not-allowed'
+                          ? 'border-border text-muted-foreground/70 cursor-not-allowed'
                           : selectedRoles.includes(role.value)
                             ? 'bg-purple-600 border-purple-500 text-white'
-                            : 'bg-transparent border-gray-600 text-gray-400 hover:border-gray-400'
+                            : 'bg-transparent border-border text-muted-foreground hover:border-primary/50'
                       }`}
                     >
                       {role.label}{blocked ? ' (N/A)' : ''}
@@ -244,7 +244,7 @@ export function InviteQueuePanel({ region, queueActive }: Props) {
                 </button>
                 <button
                   onClick={() => { setShowRoles(false); setSelectedRoles([]) }}
-                  className="px-4 py-2.5 border border-gray-600 text-gray-400 hover:text-gray-200 hover:border-gray-400 text-sm rounded-lg transition-colors"
+                  className="px-4 py-2.5 border border-border text-muted-foreground hover:text-foreground hover:border-primary/50 text-sm rounded-lg transition-colors"
                 >
                   Cancel
                 </button>
@@ -253,7 +253,7 @@ export function InviteQueuePanel({ region, queueActive }: Props) {
           ) : (
             // Default state - show join button
             <div className="text-center">
-              <p className="text-gray-400 text-sm mb-3">
+              <p className="text-muted-foreground text-sm mb-3">
                 Join the queue and we will place you in a lobby automatically.
               </p>
               <button
@@ -269,19 +269,19 @@ export function InviteQueuePanel({ region, queueActive }: Props) {
 
       {/* Current lobby status */}
       {openLobby && (
-        <div className="border border-gray-700/80 rounded-xl p-4 bg-gradient-to-b from-gray-900/80 to-gray-950/80">
+        <div className="border border-border rounded-xl p-4 bg-gradient-to-b from-card/80 to-background/80">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2.5">
-              <span className="font-bold text-gray-100">PUG #{openLobby.lobbyNumber}</span>
+              <span className="font-bold text-foreground">PUG #{openLobby.lobbyNumber}</span>
               <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${STATUS_META.OPEN.color}`}>
                 Filling
               </span>
             </div>
-            <span className="text-xs text-gray-400 font-medium tabular-nums">
+            <span className="text-xs text-muted-foreground font-medium tabular-nums">
               {openLobby.players.length}/10
             </span>
           </div>
-          <div className="h-1 bg-gray-800 rounded-full overflow-hidden">
+          <div className="h-1 bg-muted rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ${
                 openLobby.players.length >= 10 ? 'bg-green-500' : 'bg-purple-500/70'
@@ -296,7 +296,7 @@ export function InviteQueuePanel({ region, queueActive }: Props) {
                   <div
                     key={p.userId}
                     title={p.name || `Player #${p.userId}`}
-                    className="w-6 h-6 rounded-full border-2 border-gray-900 bg-gray-700 flex items-center justify-center text-[9px] font-bold text-gray-300 uppercase overflow-hidden shrink-0"
+                    className="w-6 h-6 rounded-full border-2 border-border bg-muted flex items-center justify-center text-[9px] font-bold text-foreground/90 uppercase overflow-hidden shrink-0"
                   >
                     {p.avatarUrl ? (
                       <img loading="lazy" decoding="async" src={p.avatarUrl} alt="" className="w-full h-full object-cover" />
@@ -307,14 +307,14 @@ export function InviteQueuePanel({ region, queueActive }: Props) {
                 ))}
               </div>
               {openLobby.players.length < 10 && (
-                <span className="text-xs text-gray-500">{10 - openLobby.players.length} more needed</span>
+                <span className="text-xs text-muted-foreground">{10 - openLobby.players.length} more needed</span>
               )}
             </div>
           )}
           {openLobby.spotsAvailable && (
             <div className="flex flex-wrap gap-1.5 mt-2">
               {ROLES.filter((r) => (openLobby.spotsAvailable[r.value] ?? 0) > 0).map((r) => (
-                <span key={r.value} className="text-[11px] px-2 py-0.5 rounded-full border border-gray-600 text-gray-400">
+                <span key={r.value} className="text-[11px] px-2 py-0.5 rounded-full border border-border text-muted-foreground">
                   {openLobby.spotsAvailable[r.value]}x {r.label}
                 </span>
               ))}
@@ -326,22 +326,22 @@ export function InviteQueuePanel({ region, queueActive }: Props) {
       {/* Active lobbies (beyond OPEN) */}
       {activeLobbies.length > 0 && (
         <div>
-          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">In Progress</h3>
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">In Progress</h3>
           <div className="space-y-2">
             {activeLobbies.map((lobby) => {
-              const meta = STATUS_META[lobby.status] ?? { label: lobby.status, color: 'bg-gray-500/20 text-gray-400 border border-gray-500/30' }
+              const meta = STATUS_META[lobby.status] ?? { label: lobby.status, color: 'bg-muted/60 text-muted-foreground border border-border' }
               return (
                 <Link
                   key={lobby.id}
                   href={`/pugs/lobby/${lobby.id}`}
-                  className="block border border-gray-700/80 rounded-xl p-3 bg-gradient-to-b from-gray-900/80 to-gray-950/80 hover:border-gray-600 transition-all group"
+                  className="block border border-border rounded-xl p-3 bg-gradient-to-b from-card/80 to-background/80 border-border transition-all group"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-sm text-gray-100">PUG #{lobby.lobbyNumber}</span>
+                      <span className="font-bold text-sm text-foreground">PUG #{lobby.lobbyNumber}</span>
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${meta.color}`}>{meta.label}</span>
                     </div>
-                    <span className="text-xs text-gray-500 group-hover:text-gray-300 transition-colors">View &rarr;</span>
+                    <span className="text-xs text-muted-foreground group-hover:text-foreground/90 transition-colors">View &rarr;</span>
                   </div>
                 </Link>
               )
