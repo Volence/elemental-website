@@ -16,7 +16,7 @@
   color: $admin-text-primary;
 
   &__container {
-    max-width: 900px;
+    max-width: 1200px;
     margin: 0 auto;
   }
 
@@ -2143,8 +2143,8 @@
 // ============================================
 
 .scrim-players {
-  padding: 40px;
-  max-width: 1200px;
+  padding: $spacing-xl 40px;
+  max-width: calc(1200px + 80px);
   margin: 0 auto;
   min-height: 100%;
 
@@ -2446,7 +2446,7 @@
     position: relative;
     z-index: 1;
     padding: 40px;
-    max-width: 1600px;
+    max-width: 1200px;
     margin: 0 auto;
   }
 
@@ -3362,9 +3362,18 @@
 // SCRIM ANALYTICS DASHBOARD — Unified Tab Container
 // ============================================
 
-.scrim-analytics-dashboard {
-  padding: 0;
+// Tab bar (links styled as tabs, see ScrimAnalyticsTabs). Aligned with
+// .scrim-page__container whether it renders inside or outside .scrim-page.
+.scrim-analytics-tabs {
+  max-width: calc(1200px + 80px);
+  margin: 0 auto;
+  padding: $spacing-lg 40px 0;
+  .kit-tabs { margin-bottom: 0; }
+  .kit-tabs__tab { text-decoration: none; }
+}
+.scrim-page > .scrim-analytics-tabs { padding: 0; max-width: 1200px; }
 
+.scrim-analytics-dashboard {
   &__tabs {
     @include dashboard-tabs($admin-accent-info);
     padding: 0 2rem;

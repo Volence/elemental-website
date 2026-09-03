@@ -13,6 +13,7 @@ import {
   FolderOpen,
 } from 'lucide-react'
 import ScrimAnalyticsTabs from '@/components/ScrimAnalyticsTabs'
+import { ScrimBreadcrumbs } from '@/components/ScrimShared'
 import { useAlert, useConfirm } from '@/components/ConfirmDialog'
 
 type UploadState = 'idle' | 'uploading' | 'success' | 'error'
@@ -525,7 +526,8 @@ export default function ScrimUploadView({
               Back to scrims
             </a>
           </div>
-          <h1 className="scrim-upload__title">Scrim Log Upload</h1>
+          <ScrimBreadcrumbs items={[{ label: 'Scrim Analytics', href: '/admin/scrim-dashboard' }, { label: 'Upload' }]} />
+          <h1 className="scrim-upload__title">Upload scrim logs</h1>
           <div className="scrim-upload__accent-bar" />
 
           {/* Step indicator */}

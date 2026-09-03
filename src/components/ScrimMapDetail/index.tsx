@@ -1,12 +1,12 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, lazy, Suspense } from 'react'
 import { Loader2, AlertCircle, ArrowLeft, Pencil, X, Info, ChevronDown, Trophy, Ruler, Flame, Heart, Music, Clock } from 'lucide-react'
 import KillfeedTab from './KillfeedTab'
 import ChartsTab from './ChartsTab'
 import EventsTab from './EventsTab'
 import CompareTab from './CompareTab'
-import ReplayTab from './ReplayTab'
+const ReplayTab = lazy(() => import('./ReplayTab'))
 import ScrimAnalyticsTabs from '@/components/ScrimAnalyticsTabs'
 import { useUrlParamState, ScrimBreadcrumbs } from '@/components/ScrimShared'
 import { PlayerStatsTable } from '@/components/MatchStats/PlayerStatsTable'
@@ -229,7 +229,7 @@ export default function ScrimMapDetailView() {
       {/* Header */}
       <div className="scrim-detail__header">
         <ScrimBreadcrumbs items={[
-          { label: 'Scrim Analytics', href: '/admin/scrims' },
+          { label: 'Scrim Analytics', href: '/admin/scrim-dashboard' },
           { label: 'Scrims', href: '/admin/scrims' },
           { label: data.mapName },
         ]} />
@@ -305,7 +305,11 @@ export default function ScrimMapDetailView() {
       {activeTab === 'compare' && mapId && <CompareTab mapId={mapId} />}
 
       {/* Tab: Replay */}
-      {activeTab === 'replay' && mapId && <ReplayTab mapId={mapId} />}
+      {activeTab === 'replay' && mapId && (
+        <Suspense fallback={<div className="scrim-players__loading-text">Loading replay…</div>}>
+          <ReplayTab mapId={mapId} />
+        </Suspense>
+      )}
 
       {/* Tab: Overview (existing content) */}
       {activeTab === 'overview' && <>

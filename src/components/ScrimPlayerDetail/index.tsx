@@ -299,7 +299,7 @@ export default function ScrimPlayerDetailView({ apiBase, readOnly = false }: Scr
         {!readOnly && (
           <>
             <ScrimBreadcrumbs items={[
-              { label: 'Scrim Analytics', href: '/admin/scrims' },
+              { label: 'Scrim Analytics', href: '/admin/scrim-dashboard' },
               { label: 'Players', href: '/admin/scrim-players' },
               { label: data.player.name },
             ]} />

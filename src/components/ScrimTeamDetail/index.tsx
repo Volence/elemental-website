@@ -172,14 +172,14 @@ export default function ScrimTeamDetailView() {
       {/* Header */}
       <div className="scrim-detail__header">
         <ScrimBreadcrumbs items={[
-          { label: 'Scrim Analytics', href: '/admin/scrims' },
+          { label: 'Scrim Analytics', href: '/admin/scrim-dashboard' },
           { label: 'Teams', href: '/admin/scrim-teams' },
           { label: data.teamName },
         ]} />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <a href="/admin/scrim-teams" className="scrim-detail__back-link"><ArrowLeft size={12} /> Back to Teams</a>
-            <h1 className="scrim-detail__player-name" style={{ fontSize: '28px' }}>{data.teamName}</h1>
+            <h1 className="scrim-page__title">{data.teamName}</h1>
             <p className="scrim-detail__player-meta">
               {data.totalScrims} scrim{data.totalScrims !== 1 ? 's' : ''} · {data.totalMaps} map{data.totalMaps !== 1 ? 's' : ''}
             </p>

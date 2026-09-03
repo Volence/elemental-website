@@ -2,50 +2,61 @@
 
 import React from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useAuth } from '@payloadcms/ui'
-import { BarChart3, Upload, Users, Shield, Flag } from 'lucide-react'
+import { BarChart3, Upload, Users, Shield, Flag, LayoutDashboard } from 'lucide-react'
 import type { Person } from '@/payload-types'
+import { resolveScrimTab, SCRIM_TAB_HREFS, type ScrimTab } from './resolve'
 
-export type ScrimTab = 'scrims' | 'teams' | 'upload' | 'players' | 'heroes'
+export type { ScrimTab } from './resolve'
 
 interface ScrimAnalyticsTabsProps {
-  activeTab: ScrimTab
+  /** Ignored: the active tab is derived from the URL. Kept so existing call sites compile. */
+  activeTab?: ScrimTab
 }
 
 /**
- * Shared tab bar for all Scrim Analytics pages.
- * Uses Link navigation (each tab is its own route).
- * Reuses the same dashboard-tabs styling from the scrim SCSS.
+ * Shared tab bar for all Scrim Analytics pages. Each tab is its own route, so
+ * these are links styled as tabs; the active one is derived from the pathname.
  */
-export default function ScrimAnalyticsTabs({ activeTab }: ScrimAnalyticsTabsProps) {
+export default function ScrimAnalyticsTabs(_props: ScrimAnalyticsTabsProps) {
+  const pathname = usePathname()
   const { user } = useAuth<Person>()
   const role = (user?.role as string) ?? ''
   // Must match ScrimUpload/Route.tsx's guard - a tab that redirects away is worse than none
   const canUpload =
     ['admin', 'staff-manager', 'team-manager'].includes(role) ||
-    (user as { departments?: { canUploadExternalScrims?: boolean | null } | null } | null)
-      ?.departments?.canUploadExternalScrims === true
+    (user as { departments?: { canUploadExternalScrims?: boolean | null } | null } | null)?.departments
+      ?.canUploadExternalScrims === true
 
-  const tabs: { id: ScrimTab; label: string; icon: React.ReactNode; href: string; show: boolean }[] = [
-    { id: 'scrims', label: 'Scrims', icon: <BarChart3 size={14} />, href: '/admin/scrims', show: true },
-    { id: 'teams', label: 'Teams', icon: <Flag size={14} />, href: '/admin/scrim-teams', show: true },
-    { id: 'upload', label: 'Upload', icon: <Upload size={14} />, href: '/admin/scrim-upload', show: canUpload },
-    { id: 'players', label: 'Players', icon: <Users size={14} />, href: '/admin/scrim-players', show: true },
-    { id: 'heroes', label: 'Heroes', icon: <Shield size={14} />, href: '/admin/scrim-heroes', show: true },
+  const active = resolveScrimTab(pathname)
+
+  const tabs: { id: ScrimTab; label: string; icon: React.ReactNode; show: boolean }[] = [
+    { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={14} />, show: true },
+    { id: 'scrims', label: 'Scrims', icon: <BarChart3 size={14} />, show: true },
+    { id: 'teams', label: 'Teams', icon: <Flag size={14} />, show: true },
+    { id: 'players', label: 'Players', icon: <Users size={14} />, show: true },
+    { id: 'heroes', label: 'Heroes', icon: <Shield size={14} />, show: true },
+    { id: 'upload', label: 'Upload', icon: <Upload size={14} />, show: canUpload },
   ]
 
   return (
-    <div className="scrim-analytics-dashboard__tabs">
-      {tabs.filter(t => t.show).map((tab) => (
-        <Link
-          key={tab.id}
-          href={tab.href}
-          className={`scrim-analytics-dashboard__tab ${activeTab === tab.id ? 'scrim-analytics-dashboard__tab--active' : ''}`}
-        >
-          <span className="scrim-analytics-dashboard__tab-icon">{tab.icon}</span>
-          <span className="scrim-analytics-dashboard__tab-label">{tab.label}</span>
-        </Link>
-      ))}
-    </div>
+    <nav className="scrim-analytics-tabs" aria-label="Scrim analytics sections">
+      <div className="kit-tabs kit-tabs--info">
+        {tabs
+          .filter((t) => t.show)
+          .map((tab) => (
+            <Link
+              key={tab.id}
+              href={SCRIM_TAB_HREFS[tab.id]}
+              className={`kit-tabs__tab${active === tab.id ? ' kit-tabs__tab--active' : ''}`}
+              aria-current={active === tab.id ? 'page' : undefined}
+            >
+              <span className="kit-tabs__icon">{tab.icon}</span>
+              <span className="kit-tabs__label">{tab.label}</span>
+            </Link>
+          ))}
+      </div>
+    </nav>
   )
 }

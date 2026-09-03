@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import { Loader2, AlertCircle, ArrowLeft, Trophy, Crown, TrendingUp, Swords, Crosshair, ChevronUp, ChevronDown } from 'lucide-react'
 import ScrimAnalyticsTabs from '@/components/ScrimAnalyticsTabs'
+import { ScrimBreadcrumbs } from '@/components/ScrimShared'
 
 // ── Types ──
 
@@ -517,9 +518,8 @@ export default function ScrimHeroDetailView() {
       <div className="scrim-detail__content" style={{ maxWidth: '1200px' }}>
         {/* Header */}
         <div className="scrim-detail__header">
-          <h1 className="scrim-detail__player-name" style={{ fontSize: '28px' }}>
-            Hero Stats
-          </h1>
+          <ScrimBreadcrumbs items={[{ label: 'Scrim Analytics', href: '/admin/scrim-dashboard' }, { label: 'Heroes' }]} />
+          <h1 className="scrim-page__title">Heroes</h1>
           <p className="scrim-detail__player-meta" style={{ marginTop: '6px' }}>
             {subtitle}
           </p>
@@ -642,7 +642,7 @@ export default function ScrimHeroDetailView() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {hero.portrait && <img src={hero.portrait} alt={hero.name} style={{ width: 56, height: 56, borderRadius: '50%', border: `3px solid ${ROLE_COLORS[hero.role] ?? CYAN}44` }} />}
             <div>
-              <h1 style={{ fontSize: '28px', fontWeight: 800, color: TEXT_PRIMARY, margin: 0, letterSpacing: '-0.5px' }}>{hero.name}</h1>
+              <h1 className="scrim-page__title">{hero.name}</h1>
               <div style={{ display: 'flex', gap: '10px', marginTop: '4px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '11px', fontWeight: 600, color: ROLE_COLORS[hero.role] ?? TEXT_DIM, padding: '2px 10px', borderRadius: '4px', background: `${ROLE_COLORS[hero.role] ?? TEXT_DIM}15` }}>
                   {hero.role}

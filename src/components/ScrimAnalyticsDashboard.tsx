@@ -15,7 +15,8 @@ import { useAuth } from '@payloadcms/ui'
 import { BarChart3, Flag, Users, Shield, Swords } from 'lucide-react'
 import type { Person } from '@/payload-types'
 import ScrimAnalyticsTabs from '@/components/ScrimAnalyticsTabs'
-import { LoadingCard, EmptyCard, StatCard } from '@/components/ScrimShared'
+import { LoadingCard, EmptyCard, StatCard, ScrimBreadcrumbs } from '@/components/ScrimShared'
+import { canUploadScrims } from '@/components/ScrimAnalyticsTabs/access'
 import { SCRIM_COLORS } from '@/components/ScrimShared/tokens'
 
 interface TeamRow {
@@ -69,7 +70,9 @@ export default function ScrimAnalyticsDashboard() {
 
   return (
     <div className="scrim-page scrim-analytics-dashboard">
-      <ScrimAnalyticsTabs activeTab="scrims" />
+      <ScrimAnalyticsTabs />
+      <div className="scrim-page__container">
+      <ScrimBreadcrumbs items={[{ label: 'Scrim Analytics' }]} />
       <div className="scrim-page__header">
         <h1 className="scrim-page__title">Scrim Analytics{firstName ? ` · ${firstName}` : ''}</h1>
       </div>
@@ -82,7 +85,11 @@ export default function ScrimAnalyticsDashboard() {
           {teams.length === 0 ? (
             <EmptyCard
               message="No scrims in your scope yet"
-              hint="Upload a log from the Upload tab to get started"
+              hint={
+                canUploadScrims(user)
+                  ? 'Upload a log from the Upload tab to get started'
+                  : 'Scrims appear here once your team manager uploads a log'
+              }
             />
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 24 }}>
@@ -191,6 +198,7 @@ export default function ScrimAnalyticsDashboard() {
           </div>
         </>
       )}
+      </div>
     </div>
   )
 }

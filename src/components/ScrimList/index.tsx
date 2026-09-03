@@ -3,6 +3,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { Search, Trash2, ChevronRight, Edit3, Users, X, BarChart3 } from 'lucide-react'
 import ScrimAnalyticsTabs from '@/components/ScrimAnalyticsTabs'
+import { ScrimBreadcrumbs } from '@/components/ScrimShared'
+import { canUploadScrims } from '@/components/ScrimAnalyticsTabs/access'
+import { useAuth } from '@payloadcms/ui'
+import type { Person } from '@/payload-types'
 
 interface ScrimMap {
   id: number
@@ -75,6 +79,8 @@ const toEntries = (scrims: Scrim[], teamId: number): ScrimEntry[] =>
  * Accessible at /admin/scrims.
  */
 export default function ScrimListView() {
+  const { user: scrimListUser } = useAuth<Person>()
+  const canUpload = canUploadScrims(scrimListUser)
   // Browse mode: collapsed team rows + lazily-loaded scrims per team.
   const [teams, setTeams] = useState<TeamSummary[]>([])
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set())
@@ -665,24 +671,20 @@ export default function ScrimListView() {
     <ScrimAnalyticsTabs activeTab="scrims" />
     <div className="scrim-page">
       <div className="scrim-page__container">
+        <ScrimBreadcrumbs items={[{ label: 'Scrim Analytics', href: '/admin/scrim-dashboard' }, { label: 'Scrims' }]} />
         {/* Header */}
         <div className="scrim-page__header">
           <div>
-            <h1 className="scrim-page__title">Scrim Analytics</h1>
+            <h1 className="scrim-page__title">Scrims</h1>
             <p className="scrim-page__subtitle">
               {loading ? 'Loading…' : `${total} scrim${total !== 1 ? 's' : ''} uploaded`}
             </p>
           </div>
-          <a href="/admin/scrim-upload" className="scrim-upload-btn">
-            + Upload Scrim
-          </a>
-        </div>
-
-        {/* Navigation */}
-        <div className="scrim-nav">
-          <a href="/admin/scrim-players" className="scrim-nav__link">
-            <Users size={14} /> All Players
-          </a>
+          {canUpload && (
+            <a href="/admin/scrim-upload" className="scrim-upload-btn">
+              + Upload Scrim
+            </a>
+          )}
         </div>
 
         {/* Search Bar */}

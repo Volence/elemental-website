@@ -108,7 +108,7 @@ export default function ScrimDetailView() {
       <ScrimAnalyticsTabs activeTab="scrims" />
       <ScrimBreadcrumbs
         items={[
-          { label: 'Scrim Analytics', href: '/admin/scrims' },
+          { label: 'Scrim Analytics', href: '/admin/scrim-dashboard' },
           { label: 'Scrims', href: '/admin/scrims' },
           { label: scrim.name },
         ]}

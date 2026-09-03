@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { useAuth } from '@payloadcms/ui'
 import Link from 'next/link'
 import { ChevronRight, BarChart3, User } from 'lucide-react'
@@ -13,9 +13,19 @@ import type { Person } from '@/payload-types'
  */
 const ScrimAnalyticsNavLinks: React.FC = () => {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const { user } = useAuth<Person>()
   const [allTeams, setAllTeams] = React.useState<{ id: number; name: string }[] | null>(null)
-  const [teamsOpen, setTeamsOpen] = React.useState(false)
+  // Collapse state survives the full-page navigations most admin links still do.
+  const TEAMS_OPEN_KEY = 'elemental-sidebar-teams-open'
+  const [teamsOpen, setTeamsOpenState] = React.useState(() => {
+    if (typeof window === 'undefined') return false
+    try { return window.localStorage.getItem(TEAMS_OPEN_KEY) === '1' } catch { return false }
+  })
+  const setTeamsOpen = (open: boolean) => {
+    setTeamsOpenState(open)
+    try { window.localStorage.setItem(TEAMS_OPEN_KEY, open ? '1' : '0') } catch { /* ignore */ }
+  }
 
   const role = (user?.role as string) ?? ''
   const isFullAccess = ['admin', 'staff-manager'].includes(role)
@@ -39,7 +49,8 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
   if (!scrimViewerRoles.includes(role)) return null
 
   // Build personalized links (My Stats only)
-  const personalLinks: { href: string; label: string; match: (p: string) => boolean }[] = []
+  type Matcher = (p: string, sp: URLSearchParams | null) => boolean
+  const personalLinks: { href: string; label: string; match: Matcher }[] = []
 
   // Everyone with a linked person gets My Stats - admins/staff included
   {
@@ -47,12 +58,12 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
     personalLinks.push({
       href: myStatsHref,
       label: 'My Stats',
-      match: (p: string) => p === myStatsHref,
+      match: (p, sp) => p === '/admin/scrim-player-detail' && sp?.get('personId') === String(user.id),
     })
   }
 
   // Build team links separately
-  const teamLinks: { href: string; label: string; match: (p: string) => boolean }[] = []
+  const teamLinks: { href: string; label: string; match: Matcher }[] = []
 
   if (isFullAccess && allTeams) {
     for (const team of allTeams) {
@@ -60,7 +71,7 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
       teamLinks.push({
         href: teamHref,
         label: team.name,
-        match: (p: string) => p.startsWith('/admin/scrim-team') && p.includes(`teamId=${team.id}`),
+        match: (p, sp) => p === '/admin/scrim-team' && sp?.get('teamId') === String(team.id),
       })
     }
   } else if (!isFullAccess) {
@@ -73,19 +84,20 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
         teamLinks.push({
           href: teamHref,
           label: teamName,
-          match: (p: string) => p.startsWith('/admin/scrim-team') && p.includes(`teamId=${teamId}`),
+          match: (p, sp) => p === '/admin/scrim-team' && sp?.get('teamId') === String(teamId),
         })
       }
     }
   }
 
   // Auto-expand if the current page is a team page that matches one of the links
-  const hasActiveTeam = teamLinks.some(t => pathname ? t.match(pathname) : false)
+  const hasActiveTeam = teamLinks.some(t => pathname ? t.match(pathname, searchParams) : false)
+  const hasActivePersonal = personalLinks.some(l => pathname ? l.match(pathname, searchParams) : false)
   const isCollapsible = teamLinks.length > 1
   const showTeams = !isCollapsible || teamsOpen || hasActiveTeam
 
   // Dashboard link - active when on any scrim-related page
-  const isDashboardActive = pathname ? (
+  const isDashboardActive = !hasActiveTeam && !hasActivePersonal && pathname ? (
     pathname === '/admin/scrim-dashboard' ||
     pathname === '/admin/scrims' ||
     pathname === '/admin/scrim-upload' ||
@@ -117,7 +129,7 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
 
       {/* Personal quick link (My Stats) - players only */}
       {hasPersonalLinks && personalLinks.map((link) => {
-        const isActive = pathname ? link.match(pathname) : false
+        const isActive = pathname ? link.match(pathname, searchParams) : false
         return (
           <div className="calendar-nav-link" key={link.href}>
             <Link
@@ -146,7 +158,7 @@ const ScrimAnalyticsNavLinks: React.FC = () => {
             </button>
           ) : null}
           {showTeams && teamLinks.map((link) => {
-            const isActive = pathname ? link.match(pathname) : false
+            const isActive = pathname ? link.match(pathname, searchParams) : false
             return (
               <Link
                 key={link.href}

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { Loader2, AlertCircle, X } from 'lucide-react'
 import RangeFilter, { type RangeValue } from '@/components/RangeFilter'
 import ScrimAnalyticsTabs from '@/components/ScrimAnalyticsTabs'
+import { ScrimBreadcrumbs } from '@/components/ScrimShared'
 
 type PlayerSummary = {
   name: string
@@ -186,12 +187,13 @@ export default function ScrimPlayerListView() {
     <>
     <ScrimAnalyticsTabs activeTab="players" />
     <div className="scrim-players">
+      <ScrimBreadcrumbs items={[{ label: 'Scrim Analytics', href: '/admin/scrim-dashboard' }, { label: 'Players' }]} />
       {/* Header */}
       <div className="scrim-players__header">
         <div className="scrim-players__header-row">
           <div>
             <div className="scrim-players__title-row">
-              <h1 className="scrim-players__title">Player Stats</h1>
+              <h1 className="scrim-page__title">Players</h1>
               <span className="scrim-players__count">
                 {players.length} player{players.length !== 1 ? 's' : ''}
               </span>

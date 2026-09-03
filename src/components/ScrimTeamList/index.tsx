@@ -46,7 +46,7 @@ export default function ScrimTeamListView() {
   return (
     <div className="scrim-page">
       <ScrimAnalyticsTabs activeTab="teams" />
-      <ScrimBreadcrumbs items={[{ label: 'Scrim Analytics', href: '/admin/scrims' }, { label: 'Teams' }]} />
+      <ScrimBreadcrumbs items={[{ label: 'Scrim Analytics', href: '/admin/scrim-dashboard' }, { label: 'Teams' }]} />
       <div className="scrim-page__header">
         <h1 className="scrim-page__title">Teams</h1>
       </div>
