@@ -4,7 +4,7 @@ import Link from 'next/link'
 export const metadata: Metadata = { title: 'Join the Discord first | Elemental' }
 
 export default function NotAMemberPage() {
-  const invite = process.env.NEXT_PUBLIC_DISCORD_INVITE_URL || 'https://discord.gg/elemental'
+  const invite = process.env.NEXT_PUBLIC_DISCORD_INVITE_URL || 'https://discord.gg/elmt'
   return (
     <main className="container mx-auto px-4 py-16 max-w-md text-center space-y-4">
       <h1 className="text-2xl font-semibold">You need to be in the Elemental Discord</h1>

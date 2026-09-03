@@ -3,14 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-export type PugNavItem = { href: string; label: string }
-
-export const PUG_NAV_ITEMS: PugNavItem[] = [
-  { href: '/pugs', label: 'Home' },
-  { href: '/pugs/open', label: 'Open' },
-  { href: '/pugs/invite', label: 'Invite' },
-  { href: '/pugs/leaderboard', label: 'Leaderboard' },
-]
+import type { PugNavItem } from './navItems'
 
 function isActive(pathname: string, href: string): boolean {
   if (href === '/pugs') return pathname === '/pugs'

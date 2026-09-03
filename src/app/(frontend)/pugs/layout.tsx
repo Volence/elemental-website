@@ -2,7 +2,8 @@ import React from 'react'
 import { cookies } from 'next/headers'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-import { PugNav, PUG_NAV_ITEMS, type PugNavItem } from './PugNav'
+import { PugNav } from './PugNav'
+import { PUG_NAV_ITEMS, type PugNavItem } from './navItems'
 
 export const dynamic = 'force-dynamic'
 
