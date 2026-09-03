@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useCallback, useId, useRef, useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import { useUrlParamState } from './hooks'
 
 export interface AdminTab {
@@ -32,6 +33,8 @@ interface UrlModeProps extends CommonProps {
   param?: string
   defaultTab: string
   onChange?: (id: string) => void
+  /** Query params that survive a tab change (everything else is dropped). */
+  keepParams?: string[]
 }
 
 interface StateModeProps extends CommonProps {
@@ -57,13 +60,27 @@ export function tabPanelProps(prefix: string, id: string) {
 }
 
 function UrlTabs(props: UrlModeProps) {
-  const [active, setActive] = useUrlParamState(props.param ?? 'tab', props.defaultTab)
+  const param = props.param ?? 'tab'
+  const [active] = useUrlParamState(param, props.defaultTab)
+  const router = useRouter()
+  const pathname = usePathname()
+  const { onChange: onChangeProp, defaultTab, keepParams } = props
   const onChange = useCallback(
     (id: string) => {
-      setActive(id)
-      props.onChange?.(id)
+      // Tabs share one URL, so a tab change drops the other tabs' filters (?q=, ?page=, ...)
+      // instead of handing them to a tab that reads the same names.
+      const current = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
+      const next = new URLSearchParams()
+      for (const key of keepParams ?? []) {
+        const v = current.get(key)
+        if (v !== null) next.set(key, v)
+      }
+      if (id !== defaultTab) next.set(param, id)
+      const qs = next.toString()
+      router.replace(`${pathname}${qs ? `?${qs}` : ''}`, { scroll: false })
+      onChangeProp?.(id)
     },
-    [setActive, props],
+    [router, pathname, param, defaultTab, keepParams, onChangeProp],
   )
   return <TabList {...props} active={active} onChange={onChange} />
 }

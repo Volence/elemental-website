@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
         GROUP BY role ORDER BY views DESC
       `),
       db.execute(sql`
-        SELECT to_char(date_trunc('day', created_at), 'YYYY-MM-DD') AS day, COUNT(*)::int AS views
+        SELECT to_char(date_trunc('day', created_at AT TIME ZONE 'America/New_York'), 'YYYY-MM-DD') AS day, COUNT(*)::int AS views
         FROM admin_page_views WHERE created_at >= ${since}
         GROUP BY 1 ORDER BY 1
       `),

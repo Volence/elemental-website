@@ -149,6 +149,8 @@ export function AdminTable<Row>({
             if (interactive) {
               rowProps.onClick = (e) => {
                 if (isInteractiveTarget(e.target)) return
+                // Modified clicks (new tab, select) keep their browser meaning.
+                if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
                 activate(row)
               }
               if (!href && onRowClick) {

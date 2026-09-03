@@ -5,7 +5,7 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 
 export const dynamic = 'force-dynamic'
-export const metadata: Metadata = { title: 'Sign Up | Elemental' }
+export const metadata: Metadata = { title: 'Sign Up' }
 
 async function getUser() {
   const cookieStore = await cookies()

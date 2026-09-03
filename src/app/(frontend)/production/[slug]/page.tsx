@@ -21,7 +21,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
   // Skip database operations during build
   if (process.env.NEXT_BUILD_SKIP_DB) {
     return {
-      title: 'Production Staff | Elemental (ELMT)',
+      title: 'Production Staff',
     }
   }
 
@@ -42,7 +42,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
 
     if (!caster.docs[0]) {
       return {
-        title: 'Production Staff Not Found | Elemental (ELMT)',
+        title: 'Production Staff Not Found',
       }
     }
 
@@ -68,10 +68,10 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
     const avatarUrl = avatarMedia?.url || '/logos/org.png'
 
     return {
-      title: `${casterName} | Production Staff | Elemental (ELMT)`,
+      title: `${casterName}`,
       description: `Learn more about ${casterName}, ${getTypeDescription(casterData.type)} for Elemental.`,
       openGraph: {
-        title: `${casterName} | Elemental (ELMT)`,
+        title: `${casterName}`,
         description: `${casterName} - ${getTypeDescription(casterData.type)}`,
         images: [{ url: avatarUrl }],
       },
@@ -79,7 +79,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
   } catch (error) {
     // During build, database may not be available
     return {
-      title: 'Production Staff | Elemental (ELMT)',
+      title: 'Production Staff',
     }
   }
 }

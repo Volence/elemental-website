@@ -1,7 +1,8 @@
 import type { Payload } from 'payload'
+import { discordTimestamp } from '@/discord/logging/format'
+import { isDateOnly, formatDueDate } from '@/utilities/taskDueDate'
 import { ensureDiscordClient } from '@/discord/bot'
 import { DEPT_NAMES } from '@/components/WorkboardKanban/constants'
-import { formatDueDateTime } from '@/utilities/taskDueDate'
 
 /**
  * Cross-department request notifications.
@@ -40,12 +41,17 @@ export function taskBoardUrl(task: TaskLike): string {
     : `${base}/admin/collections/tasks/${task.id}`
 }
 
+/** Date-only due dates read as a date; timed ones become Discord timestamps, so every reader sees their own zone. */
+function dueForDiscord(iso: string): string {
+  return isDateOnly(iso) ? formatDueDate(iso) : discordTimestamp(iso, 'f')
+}
+
 export function departmentLabel(dept: string | null | undefined): string {
   return (dept && DEPT_NAMES[dept]) || dept || 'Unknown department'
 }
 
 export function buildRequestCreatedMessage(task: TaskLike): string {
-  const due = task.dueDate ? ` Due ${formatDueDateTime(task.dueDate)}.` : ''
+  const due = task.dueDate ? ` Due ${dueForDiscord(task.dueDate)}.` : ''
   const priority = task.priority && task.priority !== 'medium' ? ` Priority: ${task.priority}.` : ''
   return `New request from **${departmentLabel(task.requestedByDepartment)}** for ${departmentLabel(task.department)}: **${task.title ?? 'Untitled'}**.${due}${priority} ${taskBoardUrl(task)}`
 }

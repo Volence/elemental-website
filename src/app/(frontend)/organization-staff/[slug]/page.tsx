@@ -21,7 +21,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
   // Skip database operations during build
   if (process.env.NEXT_BUILD_SKIP_DB) {
     return {
-      title: 'Staff | Elemental (ELMT)',
+      title: 'Staff',
     }
   }
 
@@ -42,7 +42,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
 
     if (!staff.docs[0]) {
       return {
-        title: 'Staff Member Not Found | Elemental (ELMT)',
+        title: 'Staff Member Not Found',
       }
     }
 
@@ -63,10 +63,10 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
     const avatarUrl = avatarMedia?.url || '/logos/org.png'
 
     return {
-      title: `${staffName} | Staff | Elemental (ELMT)`,
+      title: `${staffName}`,
       description: `Learn more about ${staffName}, ${roleLabels} for Elemental.`,
       openGraph: {
-        title: `${staffName} | Elemental (ELMT)`,
+        title: `${staffName}`,
         description: `${staffName} - ${roleLabels}`,
         images: [{ url: avatarUrl }],
       },
@@ -74,7 +74,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
   } catch (error) {
     // During build, database may not be available
     return {
-      title: 'Staff | Elemental (ELMT)',
+      title: 'Staff',
     }
   }
 }

@@ -28,7 +28,7 @@ export default async function MatchStatsPage({ params }: { params: Promise<{ id:
         ) : (
           <div className="rounded-xl border border-border bg-card/40 p-8 text-center text-muted-foreground">
             Stats aren&apos;t available for this match
-            {lobby.status !== 'COMPLETED' ? ' until it completes.' : ' — the match log was not uploaded.'}
+            {lobby.status !== 'COMPLETED' ? ' until it completes.' : ' - the match log was not uploaded.'}
           </div>
         )}
       </div>

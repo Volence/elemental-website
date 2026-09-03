@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 
-export const metadata: Metadata = { title: 'Join the Discord first | Elemental' }
+export const metadata: Metadata = { title: 'Join the Discord first' }
 
 export default function NotAMemberPage() {
   const invite = process.env.NEXT_PUBLIC_DISCORD_INVITE_URL || 'https://discord.gg/elmt'
@@ -12,7 +11,8 @@ export default function NotAMemberPage() {
         Accounts are only available to members of the Elemental Discord servers. Join, then sign in again.
       </p>
       <a href={invite} className="inline-block px-4 py-2 rounded-md bg-[#5865F2] text-white font-medium">Join the Discord</a>
-      <p><Link href="/api/auth/discord" className="underline">Try signing in again</Link></p>
+      <p>{/* eslint-disable-next-line @next/next/no-html-link-for-pages -- route handler that redirects to Discord; a client-side Link would prefetch it */}
+      <a href="/api/auth/discord" className="underline">Try signing in again</a></p>
     </main>
   )
 }

@@ -64,7 +64,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
   // Skip database operations during build
   if (process.env.NEXT_BUILD_SKIP_DB) {
     return {
-      title: 'Page | Elemental (ELMT)',
+      title: 'Page',
     }
   }
 
@@ -80,7 +80,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
   } catch (_error) {
     // During build, database may not be available
     return {
-      title: 'Page | Elemental (ELMT)',
+      title: 'Page',
     }
   }
 }

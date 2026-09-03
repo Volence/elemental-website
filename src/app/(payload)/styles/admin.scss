@@ -73,11 +73,9 @@
 @import './components/list-columns';
 @import './components/search-enhancements';
 @import './components/empty-states';
-@import './components/read-only-items';
 
 // Dashboard & Stats
 @import './components/dashboard';        // Admin landing page (src/components/BeforeDashboard)
-@import './components/assigned-teams';
 
 // Special Features
 @import './components/data-consistency';

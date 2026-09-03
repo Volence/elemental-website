@@ -8,7 +8,7 @@ import { safeReturnPath } from '@/auth/safeReturnPath'
 import ClaimChoices from './ClaimChoices'
 
 export const dynamic = 'force-dynamic'
-export const metadata: Metadata = { title: 'Is this you? | Elemental' }
+export const metadata: Metadata = { title: 'Is this you?' }
 
 export default async function ClaimPage({ searchParams }: { searchParams: Promise<{ returnUrl?: string }> }) {
   const { returnUrl: raw } = await searchParams

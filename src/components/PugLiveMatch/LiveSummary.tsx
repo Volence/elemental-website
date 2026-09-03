@@ -122,7 +122,7 @@ export function LiveSummary({
           <span style={{ fontSize: '26px', fontWeight: 900, color: T1_COLOR, fontVariantNumeric: 'tabular-nums' }}>
             {snapshot.team1.score}
           </span>
-          <span style={{ fontSize: '18px', color: TEXT_DIM }}>—</span>
+          <span style={{ fontSize: '18px', color: TEXT_DIM }}>-</span>
           <span style={{ fontSize: '26px', fontWeight: 900, color: T2_COLOR, fontVariantNumeric: 'tabular-nums' }}>
             {snapshot.team2.score}
           </span>

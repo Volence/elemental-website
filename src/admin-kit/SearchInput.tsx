@@ -36,8 +36,12 @@ export function SearchInput({
   const inputRef = useRef<HTMLInputElement | null>(null)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Keep the draft in sync when the parent resets the value (e.g. "clear filters").
+  // Keep the draft in sync when the parent resets the value (e.g. "clear filters"), but not
+  // when the incoming value is just our own last emission echoing back through the URL.
+  const lastEmitted = useRef(value)
   useEffect(() => {
+    if (value === lastEmitted.current) return
+    lastEmitted.current = value
     setDraft(value)
   }, [value])
 
@@ -61,11 +65,15 @@ export function SearchInput({
 
   const emit = (next: string, immediate = false) => {
     if (timer.current) clearTimeout(timer.current)
-    if (immediate || debounceMs <= 0) {
+    const send = () => {
+      lastEmitted.current = next
       onChange(next)
+    }
+    if (immediate || debounceMs <= 0) {
+      send()
       return
     }
-    timer.current = setTimeout(() => onChange(next), debounceMs)
+    timer.current = setTimeout(send, debounceMs)
   }
 
   const clear = () => {

@@ -458,7 +458,7 @@ label:has(input[type="radio"]) {
 .badge,
 .pill,
 .tag,
-[class*="badge"]:not([class*="kit-badge"]):not(svg),
+[class*="badge"]:not([class*="kit-badge"]):not([class*="kit-tabs__badge"]):not(svg),
 [class*="pill"]:not(svg) {
   @include glow-badge($admin-accent-primary);
   padding: 0.25rem 0.75rem;

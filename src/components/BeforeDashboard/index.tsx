@@ -115,7 +115,9 @@ const BeforeDashboard: React.FC = () => {
               ? summary.tasks.mine.length === 0
                 ? 'Nothing is waiting on you right now.'
                 : `${summary.tasks.mine.length} open task${summary.tasks.mine.length === 1 ? '' : 's'}${summary.tasks.overdueMine ? `, ${summary.tasks.overdueMine} overdue` : ''}.`
-              : 'Loading what needs you…'}
+              : error
+                ? 'Could not load your dashboard.'
+                : 'Loading what needs you…'}
           </p>
         </div>
         <Link href="/admin/calendar" className="ps-btn ps-btn-ghost dash__header-action">

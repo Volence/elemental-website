@@ -382,6 +382,8 @@ export const Tasks: CollectionConfig = {
           type: 'relationship',
           relationTo: 'recruitment-listings',
           admin: {
+            // Scouting & Recruitment retired 2026-09; existing links are kept, no new ones.
+            hidden: true,
             description: 'Related recruitment listing (for scouting)',
           },
         },

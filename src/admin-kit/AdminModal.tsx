@@ -78,6 +78,10 @@ export function AdminModal({
   const titleId = useId()
 
   useEffect(() => setMounted(true), [])
+  // Consumers pass inline closures; re-running the focus effect on each render stole focus
+  // and forgot the opener. Read the latest handler through a ref instead.
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
 
   // Focus management + scroll lock + Escape, for the lifetime of an open modal.
   useEffect(() => {
@@ -98,7 +102,7 @@ export function AdminModal({
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.stopPropagation()
-        onClose()
+        onCloseRef.current()
         return
       }
       if (event.key !== 'Tab' || !panel) return
@@ -131,7 +135,7 @@ export function AdminModal({
         opener.focus()
       }
     }
-  }, [open, mounted, onClose])
+  }, [open, mounted])
 
   const onBackdropClick = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {

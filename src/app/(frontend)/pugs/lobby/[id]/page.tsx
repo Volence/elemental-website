@@ -255,7 +255,7 @@ export default function LobbyPage() {
 
       {manualMode && (
         <div className="mb-4 p-3 bg-red-950/60 border border-red-700 rounded-lg text-sm text-red-200 font-medium">
-          🔴 Manual hosting mode — the bot is disabled. A host sets up the OW lobby and captains report results.
+          🔴 Manual hosting mode - the bot is disabled. A host sets up the OW lobby and captains report results.
         </div>
       )}
 
@@ -1891,7 +1891,7 @@ function LobbySetupAssistant({
   const team2 = players.filter((p) => p.team === 2)
   const myTeam = players.find((p) => p.userId === currentUserId)?.team
 
-  // Bot is hosting — show automated status
+  // Bot is hosting - show automated status
   if (isBotHosting) {
     return (
       <BotHostingPanel
@@ -1904,7 +1904,7 @@ function LobbySetupAssistant({
     )
   }
 
-  // No host yet (or a bot/errored lobby in manual mode) — show volunteer button
+  // No host yet (or a bot/errored lobby in manual mode) - show volunteer button
   if (canVolunteer) {
     return (
       <div className="border border-yellow-800/60 bg-yellow-950/20 rounded-lg p-5 text-center space-y-3">
@@ -1913,7 +1913,7 @@ function LobbySetupAssistant({
           <h3 className="text-base font-semibold text-yellow-300">Lobby Setup Needed</h3>
         </div>
         <p className="text-sm text-muted-foreground max-w-md mx-auto">
-          Someone needs to host this match in Overwatch — create the custom game, import settings, and invite all players.
+          Someone needs to host this match in Overwatch - create the custom game, import settings, and invite all players.
         </p>
         {(isPlayer || isPugAdmin) && (
           <button
@@ -1927,14 +1927,14 @@ function LobbySetupAssistant({
     )
   }
 
-  // Current user is the host — show full setup guide
+  // Current user is the host - show full setup guide
   if (isHost) {
     return (
       <div className="border border-cyan-800/60 bg-cyan-950/15 rounded-lg overflow-hidden">
         <div className="px-4 py-3 bg-cyan-950/30 border-b border-cyan-800/40">
           <div className="flex items-center gap-2">
             <span className="text-base">⚙️</span>
-            <h3 className="text-sm font-bold text-cyan-300 uppercase tracking-wider">You&apos;re Hosting — Follow These Steps</h3>
+            <h3 className="text-sm font-bold text-cyan-300 uppercase tracking-wider">You&apos;re Hosting - Follow These Steps</h3>
           </div>
         </div>
 
@@ -2048,7 +2048,7 @@ function LobbySetupAssistant({
     )
   }
 
-  // Other player view — someone else is hosting
+  // Other player view - someone else is hosting
   return (
     <div className="border border-border bg-card/30 rounded-lg p-5 space-y-3">
       <div className="flex items-center gap-2">
