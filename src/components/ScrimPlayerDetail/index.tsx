@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
+import { AdminTabs } from '@/admin-kit'
 import { Loader2, AlertCircle, ArrowLeft, ChevronDown, Swords, Heart, Crosshair, Zap, Clock, Skull, Trophy, MapPin, TrendingUp, Flame } from 'lucide-react'
 import RangeFilter, { type RangeValue } from '@/components/RangeFilter'
 import ScrimAnalyticsTabs from '@/components/ScrimAnalyticsTabs'
@@ -129,6 +130,11 @@ type PlayerData = {
 type MapSortKey = keyof MapEntry
 type SortDir = 'asc' | 'desc'
 type TabKey = 'overview' | 'analytics' | 'charts'
+const PLAYER_TABS = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'analytics', label: 'Analytics' },
+  { id: 'charts', label: 'Charts' },
+]
 
 // ── Dynamic color tokens (kept for runtime-computed styles in SVG charts & sub-components) ──
 const CYAN = '#06b6d4'
@@ -331,18 +337,30 @@ export default function ScrimPlayerDetailView({ apiBase, readOnly = false }: Scr
         <div className="scrim-detail__accent-bar" />
       </div>
 
-      {/* Tab Bar */}
-      <div className="scrim-detail__tabs">
-        {(['overview', 'analytics', 'charts'] as TabKey[]).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`scrim-detail__tab ${activeTab === tab ? 'scrim-detail__tab--active' : ''}`}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
+      {readOnly ? (
+        // Public embed: the kit stylesheet is not loaded there, so the scrim strip stays.
+        <div className="scrim-detail__tabs">
+          {PLAYER_TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as TabKey)}
+              className={`scrim-detail__tab ${activeTab === tab.id ? 'scrim-detail__tab--active' : ''}`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      ) : (
+        <AdminTabs
+          mode="state"
+          id="scrim-player"
+          tabs={PLAYER_TABS}
+          active={activeTab}
+          onChange={(id) => setActiveTab(id as TabKey)}
+          accent="info"
+          label="Player sections"
+        />
+      )}
 
       {/* ═══════════ Overview Tab ═══════════ */}
       {activeTab === 'overview' && <>

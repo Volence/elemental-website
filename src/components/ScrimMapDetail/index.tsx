@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, lazy, Suspense } from 'react'
+import { AdminTabs } from '@/admin-kit'
 import { Loader2, AlertCircle, ArrowLeft, Pencil, X, Info, ChevronDown, Trophy, Ruler, Flame, Heart, Music, Clock } from 'lucide-react'
 import KillfeedTab from './KillfeedTab'
 import ChartsTab from './ChartsTab'
@@ -131,9 +132,8 @@ export default function ScrimMapDetailView() {
   const [error, setError] = useState<string | null>(null)
   const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null)
   // Sub-tab lives in the URL so Back works and tabs are linkable
-  const [tabParam, setTabParam] = useUrlParamState('tab', 'overview')
+  const [tabParam] = useUrlParamState('tab', 'overview')
   const activeTab = (TABS.some((t) => t.id === tabParam) ? tabParam : 'overview') as TabId
-  const setActiveTab = (t: TabId) => setTabParam(t)
   const [mapId, setMapId] = useState<string>('')
   const [editingScore, setEditingScore] = useState(false)
   const [scoreInput1, setScoreInput1] = useState('')
@@ -279,18 +279,7 @@ export default function ScrimMapDetailView() {
         </p>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="scrim-detail__tabs">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`scrim-detail__tab ${activeTab === tab.id ? 'scrim-detail__tab--active' : ''}`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <AdminTabs mode="url" id="scrim-map" tabs={TABS} defaultTab="overview" accent="info" label="Map sections" />
 
       {/* Tab: Killfeed */}
       {activeTab === 'killfeed' && mapId && <KillfeedTab mapId={mapId} />}

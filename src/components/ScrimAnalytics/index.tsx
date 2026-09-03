@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import { AdminTabs } from '@/admin-kit'
 import { BarChart3, Users, Map, TrendingUp, TrendingDown, Minus, Check, X, HelpCircle, ChevronDown, ChevronRight } from 'lucide-react'
 import RangeFilter, { type RangeValue } from '@/components/RangeFilter'
 import './ScrimAnalytics.scss'
@@ -130,20 +131,18 @@ export const ScrimAnalytics: React.FC<ScrimAnalyticsProps> = ({ teamId, teamName
         <RangeFilter value={range} onChange={setRange} />
       </div>
 
-      <div className="scrim-analytics__tabs">
-        <button
-          className={`scrim-analytics__tab ${activeTab === 'opponents' ? 'scrim-analytics__tab--active' : ''}`}
-          onClick={() => setActiveTab('opponents')}
-        >
-          <Users size={14} className="scrim-analytics__inline-icon" /> Opponent Lookup
-        </button>
-        <button
-          className={`scrim-analytics__tab ${activeTab === 'maps' ? 'scrim-analytics__tab--active' : ''}`}
-          onClick={() => setActiveTab('maps')}
-        >
-          <Map size={14} className="scrim-analytics__inline-icon" /> Map Performance
-        </button>
-      </div>
+      <AdminTabs
+        mode="state"
+        id="scrim-analytics"
+        active={activeTab}
+        onChange={(id) => setActiveTab(id as 'opponents' | 'maps')}
+        accent="info"
+        label="Analytics sections"
+        tabs={[
+          { id: 'opponents', label: 'Opponent Lookup', icon: <Users size={14} /> },
+          { id: 'maps', label: 'Map Performance', icon: <Map size={14} /> },
+        ]}
+      />
 
       {activeTab === 'opponents' && (
         <div className="scrim-analytics__opponents">

@@ -3358,27 +3358,6 @@
 .scrim-page > .scrim-analytics-tabs { padding: 0; max-width: 1200px; }
 
 .scrim-analytics-dashboard {
-  &__tabs {
-    @include dashboard-tabs($admin-accent-info);
-    padding: 0 2rem;
-  }
-
-  &__tab {
-    @include dashboard-tab($admin-accent-info);
-
-    &--active {
-      @include dashboard-tab-active($admin-accent-info);
-    }
-  }
-
-  &__tab-icon {
-    display: inline-flex;
-    align-items: center;
-  }
-
-  &__tab-label {
-    font-size: 0.82rem;
-  }
 }
 
 // Note: Breadcrumbs (.step-nav) are globally hidden in _navigation.scss

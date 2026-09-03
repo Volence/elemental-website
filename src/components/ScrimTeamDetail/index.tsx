@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { AdminTabs } from '@/admin-kit'
 import { Loader2, AlertCircle, ArrowLeft } from 'lucide-react'
 import RangeFilter, { type RangeValue } from '@/components/RangeFilter'
 import ScrimAnalyticsTabs from '@/components/ScrimAnalyticsTabs'
@@ -142,9 +143,8 @@ export default function ScrimTeamDetailView() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   // Sub-tab and range live in the URL so Back works and views are linkable
-  const [tabParam, setTabParam] = useUrlParamState('tab', 'overview')
+  const [tabParam] = useUrlParamState('tab', 'overview')
   const tab = (TABS.some((t) => t.id === tabParam) ? tabParam : 'overview') as TabId
-  const setTab = (t: TabId) => setTabParam(t)
   const [rangeParam, setRangeParam] = useUrlParamState('range', 'last20')
   const range = rangeParam as RangeValue
   const setRange = (r: RangeValue) => setRangeParam(r)
@@ -189,12 +189,7 @@ export default function ScrimTeamDetailView() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="scrim-detail__tabs">
-        {TABS.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)} className={`scrim-detail__tab ${tab === t.id ? 'scrim-detail__tab--active' : ''}`}>{t.label}</button>
-        ))}
-      </div>
+      <AdminTabs mode="url" id="scrim-team" tabs={TABS} defaultTab="overview" accent="info" label="Team sections" />
 
       {/* Tab Content */}
       {tab === 'overview' && <OverviewTab data={data} />}
