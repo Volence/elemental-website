@@ -4,7 +4,6 @@ import { APIError } from 'payload'
 import { authenticated } from '../../access/authenticated'
 import { anyone } from '../../access/anyone'
 import { UserRole, adminOnly, isAdmin, isPugAdmin } from '../../access/roles'
-import { autoCloseRecruitment } from './hooks/autoCloseRecruitment'
 import { auditPeopleChanges } from './hooks/auditAccessChanges'
 import { createAccessAllowsData, enforceDiscordIdOnCreate } from './hooks/enforceDiscordId'
 import { createAuditLogDeleteHook } from '../../utilities/auditLogger'
@@ -507,7 +506,7 @@ export const People: CollectionConfig = {
     },
   ],
   hooks: {
-    afterChange: [autoCloseRecruitment, auditPeopleChanges],
+    afterChange: [auditPeopleChanges],
     afterDelete: [createAuditLogDeleteHook('people')],
     afterLogin: [
       async ({ req, user }) => {

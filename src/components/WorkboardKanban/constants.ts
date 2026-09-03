@@ -64,6 +64,5 @@ export const REQUEST_MATRIX: Record<string, string[]> = {
   events: ['social-media', 'graphics', 'video'],
   video: ['graphics', 'social-media'],
   graphics: ['social-media'],
-  scouting: ['social-media', 'graphics'],
   production: ['graphics', 'video'],
 }

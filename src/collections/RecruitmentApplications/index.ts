@@ -88,6 +88,8 @@ export const RecruitmentApplications: CollectionConfig = {
     delete: adminOnly,
   },
   admin: {
+    // Scouting & Recruitment retired 2026-09 (data kept). Reachable by URL for admins only.
+    hidden: () => true,
     useAsTitle: 'discordHandle',
     defaultColumns: ['position', 'discordHandle', 'status', 'createdAt', 'actions'],
     description: 'Review and manage recruitment applications.',

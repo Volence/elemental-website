@@ -53,7 +53,6 @@ export async function Footer() {
                 <Link href="/matches" className="text-muted-foreground hover:text-primary transition-colors font-medium">Matches</Link>
                 <Link href="/seminars" className="text-muted-foreground hover:text-primary transition-colors font-medium">Seminars</Link>
                 <Link href="/staff" className="text-muted-foreground hover:text-primary transition-colors font-medium">Staff</Link>
-                <Link href="/recruitment" className="text-muted-foreground hover:text-primary transition-colors font-medium">Join Us</Link>
                 <a href={STORE_URL} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors font-medium">Shop</a>
               </nav>
             </div>
@@ -127,9 +126,6 @@ export async function Footer() {
               <Link href="/staff" className="text-muted-foreground hover:text-primary transition-colors font-medium">
                 Staff
               </Link>
-              <Link href="/recruitment" className="text-muted-foreground hover:text-primary transition-colors font-medium">
-                Join Us
-              </Link>
               <a
                 href={STORE_URL}
                 target="_blank"
@@ -200,7 +196,6 @@ export async function Footer() {
                 <Link href="/matches" className="text-muted-foreground hover:text-primary transition-colors font-medium">Matches</Link>
                 <Link href="/seminars" className="text-muted-foreground hover:text-primary transition-colors font-medium">Seminars</Link>
                 <Link href="/staff" className="text-muted-foreground hover:text-primary transition-colors font-medium">Staff</Link>
-                <Link href="/recruitment" className="text-muted-foreground hover:text-primary transition-colors font-medium">Join Us</Link>
                 <a href={STORE_URL} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors font-medium">Shop</a>
               </nav>
             </div>

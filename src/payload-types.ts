@@ -190,14 +190,11 @@ export interface Config {
     footer: Footer;
     'production-dashboard': ProductionDashboard;
     'social-media-settings': SocialMediaSetting;
-    'competitive-hub': CompetitiveHub;
     'discord-server-manager': DiscordServerManager;
     'organization-calendar': OrganizationCalendar;
     'graphics-dashboard': GraphicsDashboard;
     'video-editing-dashboard': VideoEditingDashboard;
     'events-dashboard': EventsDashboard;
-    'opponent-wiki': OpponentWiki;
-    'scouting-dashboard': ScoutingDashboard;
     'system-health': SystemHealth;
     'audit-log-viewer': AuditLogViewer;
     'cron-monitor': CronMonitor;
@@ -212,14 +209,11 @@ export interface Config {
     footer: FooterSelect<false> | FooterSelect<true>;
     'production-dashboard': ProductionDashboardSelect<false> | ProductionDashboardSelect<true>;
     'social-media-settings': SocialMediaSettingsSelect<false> | SocialMediaSettingsSelect<true>;
-    'competitive-hub': CompetitiveHubSelect<false> | CompetitiveHubSelect<true>;
     'discord-server-manager': DiscordServerManagerSelect<false> | DiscordServerManagerSelect<true>;
     'organization-calendar': OrganizationCalendarSelect<false> | OrganizationCalendarSelect<true>;
     'graphics-dashboard': GraphicsDashboardSelect<false> | GraphicsDashboardSelect<true>;
     'video-editing-dashboard': VideoEditingDashboardSelect<false> | VideoEditingDashboardSelect<true>;
     'events-dashboard': EventsDashboardSelect<false> | EventsDashboardSelect<true>;
-    'opponent-wiki': OpponentWikiSelect<false> | OpponentWikiSelect<true>;
-    'scouting-dashboard': ScoutingDashboardSelect<false> | ScoutingDashboardSelect<true>;
     'system-health': SystemHealthSelect<false> | SystemHealthSelect<true>;
     'audit-log-viewer': AuditLogViewerSelect<false> | AuditLogViewerSelect<true>;
     'cron-monitor': CronMonitorSelect<false> | CronMonitorSelect<true>;
@@ -5318,17 +5312,6 @@ export interface SocialMediaSetting {
   createdAt?: string | null;
 }
 /**
- * Opponent intelligence, scouting, recruitment, and competitive analysis.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "competitive-hub".
- */
-export interface CompetitiveHub {
-  id: number;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
  * Manage Discord server structure, channels, categories, roles, and members.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -5379,28 +5362,6 @@ export interface VideoEditingDashboard {
  * via the `definition` "events-dashboard".
  */
 export interface EventsDashboard {
-  id: number;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
- * Comprehensive intel profiles for opponent teams
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "opponent-wiki".
- */
-export interface OpponentWiki {
-  id: number;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-}
-/**
- * Manage enemy team research, player profiles, and match analysis
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "scouting-dashboard".
- */
-export interface ScoutingDashboard {
   id: number;
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -5584,15 +5545,6 @@ export interface SocialMediaSettingsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "competitive-hub_select".
- */
-export interface CompetitiveHubSelect<T extends boolean = true> {
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "discord-server-manager_select".
  */
 export interface DiscordServerManagerSelect<T extends boolean = true> {
@@ -5632,24 +5584,6 @@ export interface VideoEditingDashboardSelect<T extends boolean = true> {
  * via the `definition` "events-dashboard_select".
  */
 export interface EventsDashboardSelect<T extends boolean = true> {
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "opponent-wiki_select".
- */
-export interface OpponentWikiSelect<T extends boolean = true> {
-  updatedAt?: T;
-  createdAt?: T;
-  globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "scouting-dashboard_select".
- */
-export interface ScoutingDashboardSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

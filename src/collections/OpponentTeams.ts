@@ -8,6 +8,8 @@ export const OpponentTeams: CollectionConfig = {
     plural: 'Opponent Teams',
   },
   admin: {
+    // Scouting & Recruitment retired 2026-09 (data kept). Reachable by URL for admins only.
+    hidden: () => true,
     group: 'Data',
     useAsTitle: 'name',
     defaultColumns: ['name', 'rank', 'status', 'region'],
@@ -43,15 +45,6 @@ export const OpponentTeams: CollectionConfig = {
   },
   fields: [
     // Wiki link button
-    {
-      name: 'viewWikiButton',
-      type: 'ui',
-      admin: {
-        components: {
-          Field: '@/components/ViewWikiButton#default',
-        },
-      },
-    },
     // Basic Info
     {
       name: 'name',

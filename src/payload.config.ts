@@ -67,9 +67,6 @@ import { GraphicsAssets } from './collections/GraphicsAssets'
 import { GraphicsDashboard } from './globals/GraphicsDashboard'
 import { VideoEditingDashboard } from './globals/VideoEditingDashboard'
 import { EventsDashboard } from './globals/EventsDashboard'
-import { ScoutingDashboard } from './globals/ScoutingDashboard'
-import { OpponentWiki } from './globals/OpponentWiki'
-import { CompetitiveHub } from './globals/CompetitiveHub'
 import { OrganizationCalendar } from './globals/OrganizationCalendar'
 import { GlobalCalendarEvents } from './collections/GlobalCalendarEvents'
 
@@ -339,7 +336,6 @@ const config = buildConfig({
     // ── DEPARTMENTS: Multi-tab hub dashboards ──
     ProductionDashboard,    // Departments group
     SocialMediaSettings,    // Departments group - Social Media Dashboard
-    CompetitiveHub,         // Departments group - Opponent Wiki + Scouting
     DiscordServerManager,   // Departments group
     
     // Social Media Config (settings page, accessed standalone)
@@ -352,10 +348,6 @@ const config = buildConfig({
     VideoEditingDashboard,
     EventsDashboard,
     
-    // ── Hidden: Accessed via Competitive Hub tabs ──
-    OpponentWiki,           // Hidden - tab in Competitive Hub
-    ScoutingDashboard,      // Hidden - tab in Competitive Hub
-
     // ── SYSTEM & MONITORING (admin only) ──
     SystemHealth,           // Unified monitoring hub
     AuditLogViewer,

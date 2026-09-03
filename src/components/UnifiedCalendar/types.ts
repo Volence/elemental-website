@@ -66,7 +66,7 @@ export function getDepartmentDashboardUrl(department: Department): string {
     graphics: '/admin/collections/graphics-anchor',
     video: '/admin/collections/video-anchor',
     events: '/admin/collections/events-anchor',
-    scouting: '/admin/globals/scouting-dashboard',
+    scouting: '/admin/collections/tasks',
     production: '/admin/globals/production-dashboard',
     'social-media': '/admin/globals/social-media-settings',
     competitive: '/admin/collections/global-calendar-events',

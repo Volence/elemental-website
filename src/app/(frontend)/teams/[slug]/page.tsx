@@ -11,7 +11,6 @@ import { TeamStaffSection } from './components/TeamStaffSection'
 import { TeamRosterSection } from './components/TeamRosterSection'
 import { TeamSubstitutesSection } from './components/TeamSubstitutesSection'
 import { SeasonHistorySection } from './components/SeasonHistorySection'
-import { TeamRecruitmentSection } from './components/TeamRecruitmentSection'
 import CompetitiveSection from './components/CompetitiveSection'
 import { getRoleColor, getRegionColor, getTeamColor } from './utils/teamColors'
 import { ParticleBackground } from '@/components/ParticleBackground'
@@ -59,10 +58,10 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
     
     return {
       title: `ELMT ${team.name} - ${region} Overwatch Team${tierSuffix} | Elemental`,
-      description: `ELMT ${team.name} is an Overwatch esports team in ${region}${tierDesc}. View roster, staff, match history, and open recruitment positions.`,
+      description: `ELMT ${team.name} is an Overwatch esports team in ${region}${tierDesc}. View roster, staff and match history.`,
       openGraph: {
         title: `ELMT ${team.name} - ${region} Overwatch Team | Elemental`,
-        description: `ELMT ${team.name} is an Overwatch esports team in ${region}${tierDesc}. View roster, staff, match history, and open recruitment positions.`,
+        description: `ELMT ${team.name} is an Overwatch esports team in ${region}${tierDesc}. View roster, staff and match history.`,
         images: team.logo ? [{ url: team.logo }] : undefined,
       },
     }
@@ -85,27 +84,6 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
   const rosterCount = team.roster?.length || 0
   const subsCount = team.subs?.length || 0
 
-  // Fetch open recruitment listings for this team
-  const payload = await getPayload({ config })
-  const { docs: listings } = await payload.find({
-    collection: 'recruitment-listings',
-    where: {
-      and: [
-        {
-          team: {
-            equals: team.id,
-          },
-        },
-        {
-          status: {
-            equals: 'open',
-          },
-        },
-      ],
-    },
-    depth: 0,
-    limit: 10,
-  })
 
   // Check if team has custom branding color (prefer brandingPrimary over legacy themeColor)
   const heroColor = team.brandingPrimary || team.themeColor
@@ -178,9 +156,6 @@ export default async function TeamPage({ params: paramsPromise }: Args) {
 
           {/* Main Content */}
           <main className="space-y-8">
-            {/* Recruitment - Only show if there are open positions */}
-            <TeamRecruitmentSection listings={listings} team={team} />
-
             {/* FaceIt Competitive Section - Only show if team has FaceIt enabled */}
             {team.faceitEnabled && team.faceitShowCompetitiveSection && (
               <CompetitiveSection teamId={team.id} />

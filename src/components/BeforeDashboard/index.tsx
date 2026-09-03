@@ -9,7 +9,6 @@ import RecentScrimsWidget from './RecentScrimsWidget'
 import CalendarPreviewWidget from './CalendarPreviewWidget'
 import TaskSummaryWidget from './TaskSummaryWidget'
 import AssignedTeamsDashboard from './AssignedTeamsDashboard'
-import RecruitmentWidget from './RecruitmentWidget'
 import { useAuth } from '@payloadcms/ui'
 import type { Person } from '@/payload-types'
 import { Shield, BarChart3, Gamepad2, Zap } from 'lucide-react'
@@ -169,8 +168,6 @@ const BeforeDashboard: React.FC = () => {
           {/* Task Summary */}
           <TaskSummaryWidget />
 
-          {/* Recruitment */}
-          <RecruitmentWidget />
         </div>
       )}
     </div>

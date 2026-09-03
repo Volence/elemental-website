@@ -43,7 +43,6 @@ import { default as default_d3aadc8f7d1aa70ce78ff0cfa164a82b } from '@/component
 import { default as default_e937f5e9aab757c7fd786055646bb001 } from '@/components/FaceitLeaguesHeader'
 import { default as default_767d1573376a915d5269211110132c41 } from '@/components/CalendarEventEditor/ListRedirect'
 import { default as default_74d7ce4a5764079f398d62cb46e87ed7 } from '@/components/StaffListRedirect'
-import { default as default_d9817958d5724d91ec10855d6e9a32a2 } from '@/components/ViewWikiButton'
 import { default as default_dc2c323b20f6177c2131d5b0800696bc } from '@/components/PopulateRosterButton'
 import { default as default_c23ccc3f844b47249d0225373601d9d0 } from '@/components/MatchActions'
 import { default as default_3b0c933eeb58b8ba9e1fb354f07641f1 } from '@/components/MatchesListColumns/TitleCell'
@@ -87,14 +86,11 @@ import { RowLabel as RowLabel_ec255a65fa6fa8d1faeb09cf35284224 } from '@/Header/
 import { RowLabel as RowLabel_1f6ff6ff633e3695d348f4f3c58f1466 } from '@/Footer/RowLabel'
 import { default as default_c68ab0b1bbf77fcff4337c949e1b628c } from '@/components/ProductionDashboardView'
 import { default as default_9696e71ab6d0b177b492c0a63e1b5e83 } from '@/components/SocialMediaDashboard'
-import { default as default_c9a191054eb8563c26468c56f515abad } from '@/components/CompetitiveHub'
 import { default as default_3da8454779e867d95ca2718c7ead313d } from '@/components/DiscordServerManager/DiscordServerManagerView'
 import { default as default_69378a60ec387dcf194ebba1e8e4b127 } from '@/components/UnifiedCalendar/UnifiedCalendarView'
 import { default as default_7f9e3cd549c4b514317a78b827ef89f7 } from '@/components/GraphicsDashboardView'
 import { default as default_556abb975c19a689444f28829e3cfd07 } from '@/components/VideoEditingDashboardView'
 import { default as default_0fd855c5040c9c75d8034c9571c63b28 } from '@/components/EventsDashboardView'
-import { default as default_ba04f04a79d2b32fad9572c3ee72f7be } from '@/components/OpponentWikiView'
-import { default as default_8853ab073b7fdbf17139706839ad1c69 } from '@/components/ScoutingDashboardView'
 import { default as default_df2d7a8ae71fbbd075f0b55cfbf50c1a } from '@/components/SystemHealthHub'
 import { default as default_03160af9efa1fa5b8f41c67277172bb7 } from '@/components/AuditLogView'
 import { default as default_70c06c9f0db61e2d5f2e0b3cb36d3c0f } from '@/components/CronMonitorView'
@@ -193,7 +189,6 @@ export const importMap = {
   "@/components/FaceitLeaguesHeader#default": default_e937f5e9aab757c7fd786055646bb001,
   "@/components/CalendarEventEditor/ListRedirect#default": default_767d1573376a915d5269211110132c41,
   "@/components/StaffListRedirect#default": default_74d7ce4a5764079f398d62cb46e87ed7,
-  "@/components/ViewWikiButton#default": default_d9817958d5724d91ec10855d6e9a32a2,
   "@/components/PopulateRosterButton#default": default_dc2c323b20f6177c2131d5b0800696bc,
   "@/components/MatchActions#default": default_c23ccc3f844b47249d0225373601d9d0,
   "@/components/MatchesListColumns/TitleCell#default": default_3b0c933eeb58b8ba9e1fb354f07641f1,
@@ -237,14 +232,11 @@ export const importMap = {
   "@/Footer/RowLabel#RowLabel": RowLabel_1f6ff6ff633e3695d348f4f3c58f1466,
   "@/components/ProductionDashboardView#default": default_c68ab0b1bbf77fcff4337c949e1b628c,
   "@/components/SocialMediaDashboard#default": default_9696e71ab6d0b177b492c0a63e1b5e83,
-  "@/components/CompetitiveHub#default": default_c9a191054eb8563c26468c56f515abad,
   "@/components/DiscordServerManager/DiscordServerManagerView#default": default_3da8454779e867d95ca2718c7ead313d,
   "@/components/UnifiedCalendar/UnifiedCalendarView#default": default_69378a60ec387dcf194ebba1e8e4b127,
   "@/components/GraphicsDashboardView#default": default_7f9e3cd549c4b514317a78b827ef89f7,
   "@/components/VideoEditingDashboardView#default": default_556abb975c19a689444f28829e3cfd07,
   "@/components/EventsDashboardView#default": default_0fd855c5040c9c75d8034c9571c63b28,
-  "@/components/OpponentWikiView#default": default_ba04f04a79d2b32fad9572c3ee72f7be,
-  "@/components/ScoutingDashboardView#default": default_8853ab073b7fdbf17139706839ad1c69,
   "@/components/SystemHealthHub#default": default_df2d7a8ae71fbbd075f0b55cfbf50c1a,
   "@/components/AuditLogView#default": default_03160af9efa1fa5b8f41c67277172bb7,
   "@/components/CronMonitorView#default": default_70c06c9f0db61e2d5f2e0b3cb36d3c0f,

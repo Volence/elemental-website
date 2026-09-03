@@ -32,6 +32,12 @@ const redirects = async () => {
     permanent: true, // 301
   }))
 
+  // Scouting & Recruitment retired 2026-09: send old links to the teams page
+  const recruitmentRedirects = [
+    { source: '/recruitment', destination: '/teams', permanent: true },
+    { source: '/recruitment/:path*', destination: '/teams', permanent: true },
+  ]
+
   // Redirect for malformed URL reported in Google Search Console
   const malformedRedirects = [
     { source: '/%26', destination: '/', permanent: true }, // /& → homepage
@@ -43,6 +49,7 @@ const redirects = async () => {
     castersRedirect,
     ...deletedPlayerRedirects,
     ...malformedRedirects,
+    ...recruitmentRedirects,
   ]
 
   return redirects

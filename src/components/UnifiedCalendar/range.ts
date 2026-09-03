@@ -113,7 +113,6 @@ export function taskHref(department: Department | string | null | undefined, tas
     graphics: '/admin/collections/graphics-anchor',
     video: '/admin/collections/video-anchor',
     events: '/admin/collections/events-anchor',
-    scouting: '/admin/globals/scouting-dashboard',
     'social-media': '/admin/globals/social-media-settings',
   }
   const base = department ? boards[department] : undefined

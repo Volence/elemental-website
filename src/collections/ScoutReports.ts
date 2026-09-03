@@ -8,6 +8,8 @@ export const ScoutReports: CollectionConfig = {
     plural: 'Scout Reports',
   },
   admin: {
+    // Scouting & Recruitment retired 2026-09 (data kept). Reachable by URL for admins only.
+    hidden: () => true,
     group: 'Data',
     useAsTitle: 'title',
     defaultColumns: ['title', 'opponentTeam', 'status', 'patchVersion', 'updatedAt'],

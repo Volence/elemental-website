@@ -23,8 +23,6 @@ const routeToSectionMap: Record<string, string> = {
   '/admin/collections/invite-links': 'system',
 
   // Recruitment
-  '/admin/collections/recruitment-listings': 'recruitment',
-  '/admin/collections/recruitment-applications': 'recruitment',
 
   // Tools
   '/admin/globals/data-consistency': 'tools',

@@ -73,6 +73,8 @@ export const RecruitmentListings: CollectionConfig = {
     delete: adminOnly,
   },
   admin: {
+    // Scouting & Recruitment retired 2026-09 (data kept). Reachable by URL for admins only.
+    hidden: () => true,
     useAsTitle: 'id',
     defaultColumns: ['teamDisplay', 'roleDisplay', 'status', 'createdAt', 'actions'],
     description: 'Manage open player positions and recruitment listings.',
