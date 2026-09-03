@@ -28,17 +28,7 @@ import { default as default_06c883a0cd79fe076bd4e061efd74ab6 } from '@/component
 import { TeamUrlHelper as TeamUrlHelper_d3aadc8f7d1aa70ce78ff0cfa164a82b } from '@/components/FaceitUrlHelper'
 import { default as default_6d9e1ded9f80f1d962812e7bd12ae28d } from '@/components/FaceitSyncButton'
 import { default as default_6bf23cb42f8cd662b9483def3bfe5de8 } from '@/components/TeamLogoPreview'
-import { default as default_ec091fc5c03678bb916f265b8e19f4d7 } from '@/components/TeamsListColumns/LogoCell'
-import { default as default_ca18705bdb593eaffdc1fe803bf3471b } from '@/components/TeamsListColumns/NameCell'
-import { default as default_bbc0cc36750334a9cf7a9bc6591df9c5 } from '@/components/TeamsListColumns/RegionCell'
-import { default as default_aba483876a6b3e2fe5ef06bf166c751c } from '@/components/TeamsListColumns/RatingCell'
-import { default as default_b9a37a7290a7576fdbb06c6327f83404 } from '@/components/TeamsListColumns/StatusCell'
-import { default as default_e75f22516f51b4222afdab178f5b643b } from '@/components/TeamsListColumns/UpdatedAtCell'
-import { default as default_6fd0f10ba03248579d8362f751a831ec } from '@/components/BeforeDashboard/AssignedTeamsBanner'
-import { default as default_3be39f37c57c85dcea766fdec96c9113 } from '@/components/BeforeDashboard/TeamManagerInfo'
-import { default as default_18c292333f7a71cfdec38694246f96bb } from '@/components/BeforeDashboard/ReadOnlyStyles'
-import { default as default_1c78329ca40bdaea08398ce17076186a } from '@/components/TeamsListColumns/CellAlignmentStyles'
-import { default as default_968fcc658dcccb13544175e4426589cc } from '@/components/TeamEditor/ListRedirect'
+import { default as default_85ada37c2f018121deec10a5bc7b166d } from '@/components/TeamsList/ListRedirect'
 import { default as default_d3aadc8f7d1aa70ce78ff0cfa164a82b } from '@/components/FaceitUrlHelper'
 import { default as default_e937f5e9aab757c7fd786055646bb001 } from '@/components/FaceitLeaguesHeader'
 import { default as default_767d1573376a915d5269211110132c41 } from '@/components/CalendarEventEditor/ListRedirect'
@@ -130,6 +120,7 @@ import { default as default_34a33320fd53659dd9841f20569ef2d8 } from '@/component
 import { default as default_02977a9d4ed0ed77a8d36ceed61c4d84 } from '@/components/TeamEditor/EditRoute'
 import { default as default_a02c70ab9a91821a7f3d60a5827e5794 } from '@/components/PugDashboard/Route'
 import { default as default_e4acc2b71bfc4277b96b47632688412b } from '@/components/GameData/Route'
+import { default as default_efdf247abaad73f6306196aca7670b9b } from '@/components/TeamsList/Route'
 import { default as default_e25f49fb258f9f3dd8ba59b20d07fcd8 } from '@/components/PugSeasons/EditRoute'
 import { default as default_b65d43645901504026837c862ab8790f } from '@/components/PugPlayers/EditRoute'
 import { default as default_74fb30a58c92ffc48c7a2fbce0628372 } from '@/components/PugLeaderboard/EditRoute'
@@ -167,17 +158,7 @@ export const importMap = {
   "@/components/FaceitUrlHelper#TeamUrlHelper": TeamUrlHelper_d3aadc8f7d1aa70ce78ff0cfa164a82b,
   "@/components/FaceitSyncButton#default": default_6d9e1ded9f80f1d962812e7bd12ae28d,
   "@/components/TeamLogoPreview#default": default_6bf23cb42f8cd662b9483def3bfe5de8,
-  "@/components/TeamsListColumns/LogoCell#default": default_ec091fc5c03678bb916f265b8e19f4d7,
-  "@/components/TeamsListColumns/NameCell#default": default_ca18705bdb593eaffdc1fe803bf3471b,
-  "@/components/TeamsListColumns/RegionCell#default": default_bbc0cc36750334a9cf7a9bc6591df9c5,
-  "@/components/TeamsListColumns/RatingCell#default": default_aba483876a6b3e2fe5ef06bf166c751c,
-  "@/components/TeamsListColumns/StatusCell#default": default_b9a37a7290a7576fdbb06c6327f83404,
-  "@/components/TeamsListColumns/UpdatedAtCell#default": default_e75f22516f51b4222afdab178f5b643b,
-  "@/components/BeforeDashboard/AssignedTeamsBanner#default": default_6fd0f10ba03248579d8362f751a831ec,
-  "@/components/BeforeDashboard/TeamManagerInfo#default": default_3be39f37c57c85dcea766fdec96c9113,
-  "@/components/BeforeDashboard/ReadOnlyStyles#default": default_18c292333f7a71cfdec38694246f96bb,
-  "@/components/TeamsListColumns/CellAlignmentStyles#default": default_1c78329ca40bdaea08398ce17076186a,
-  "@/components/TeamEditor/ListRedirect#default": default_968fcc658dcccb13544175e4426589cc,
+  "@/components/TeamsList/ListRedirect#default": default_85ada37c2f018121deec10a5bc7b166d,
   "@/components/FaceitUrlHelper#default": default_d3aadc8f7d1aa70ce78ff0cfa164a82b,
   "@/components/FaceitLeaguesHeader#default": default_e937f5e9aab757c7fd786055646bb001,
   "@/components/CalendarEventEditor/ListRedirect#default": default_767d1573376a915d5269211110132c41,
@@ -269,6 +250,7 @@ export const importMap = {
   "@/components/TeamEditor/EditRoute#default": default_02977a9d4ed0ed77a8d36ceed61c4d84,
   "@/components/PugDashboard/Route#default": default_a02c70ab9a91821a7f3d60a5827e5794,
   "@/components/GameData/Route#default": default_e4acc2b71bfc4277b96b47632688412b,
+  "@/components/TeamsList/Route#default": default_efdf247abaad73f6306196aca7670b9b,
   "@/components/PugSeasons/EditRoute#default": default_e25f49fb258f9f3dd8ba59b20d07fcd8,
   "@/components/PugPlayers/EditRoute#default": default_b65d43645901504026837c862ab8790f,
   "@/components/PugLeaderboard/EditRoute#default": default_74fb30a58c92ffc48c7a2fbce0628372,

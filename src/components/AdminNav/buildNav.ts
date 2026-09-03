@@ -158,7 +158,7 @@ export function buildNavAreas({ user, collections, globals }: BuildNavInput): Na
       label: 'People',
       items: [
         when(has('people'), collection('people', 'People', 'users')),
-        when(has('teams'), collection('teams', 'Teams', 'shield')),
+        when(has('teams'), view('/teams', 'Teams', 'shield')),
         when(has('organization-staff'), collection('organization-staff', 'Organization Staff', 'badge-check')),
         when(has('production'), collection('production', 'Production Staff', 'clapperboard')),
         when(isFullAccess(user), view('/identity', 'Identity', 'fingerprint')),
@@ -219,7 +219,8 @@ export function buildNavAreas({ user, collections, globals }: BuildNavInput): Na
  * the item they belong to.
  */
 const ROUTE_ALIASES: Array<[prefix: string, canonical: string]> = [
-  ['/admin/edit-team', '/admin/collections/teams'],
+  ['/admin/edit-team', '/admin/teams'],
+  ['/admin/collections/teams', '/admin/teams'],
   ['/admin/edit-person', '/admin/collections/people'],
   ['/admin/edit-user', '/admin/collections/people'],
   ['/admin/manage-users', '/admin/collections/people'],

@@ -185,3 +185,10 @@ h1.ps-title, h2.ps-title, .ps-title {
 .game-data__thumb--empty { display: inline-block; border: 1px dashed $admin-border-normal; }
 .game-data__code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: $font-size-2xs; color: $admin-text-secondary; }
 .game-data__add { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; }
+
+// Teams list (src/components/TeamsList)
+.teams-list__team { display: inline-flex; align-items: center; gap: 10px; }
+.teams-list__name { display: flex; flex-direction: column; gap: 1px; }
+.teams-list__slug { font-size: $font-size-2xs; color: $admin-text-muted; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.teams-list__tier { display: inline-block; padding: 1px 8px; border: 1px solid; border-radius: $radius-full; font-size: $font-size-xs; font-weight: $font-weight-semibold; white-space: nowrap; }
+.teams-list__new { display: inline-flex; align-items: center; gap: 6px; }

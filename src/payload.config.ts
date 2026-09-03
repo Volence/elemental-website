@@ -224,6 +224,10 @@ const config = buildConfig({
           Component: '@/components/GameData/Route#default',
           path: '/game-data',
         },
+        teamsList: {
+          Component: '@/components/TeamsList/Route#default',
+          path: '/teams',
+        },
         editPugSeason: {
           Component: '@/components/PugSeasons/EditRoute#default',
           path: '/edit-pug-season',

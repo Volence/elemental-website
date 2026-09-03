@@ -68,7 +68,7 @@ export const Teams: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['logoPreview', 'nameCell', 'regionCell', 'ratingCell', 'status', 'updatedAtCell'],
+    defaultColumns: ['name', 'region', 'rating', 'active'],
     description: 'Manage all Elemental teams, including rosters, staff, and achievements.',
     group: 'Organization',
     hidden: ({ user }) => {
@@ -79,13 +79,8 @@ export const Teams: CollectionConfig = {
              user.role !== 'team-manager'
     },
     components: {
-      beforeList: [
-        '@/components/BeforeDashboard/AssignedTeamsBanner#default',
-        '@/components/BeforeDashboard/TeamManagerInfo#default',
-        '@/components/BeforeDashboard/ReadOnlyStyles#default',
-        '@/components/TeamsListColumns/CellAlignmentStyles#default',
-        '@/components/TeamEditor/ListRedirect#default',
-      ],
+      // The list lives at /admin/teams (src/components/TeamsList); this sends the stock list there.
+      beforeList: ['@/components/TeamsList/ListRedirect#default'],
     },
   },
   fields: [
@@ -798,67 +793,6 @@ export const Teams: CollectionConfig = {
       admin: {
         description: 'Emoji used in category name decoration',
         position: 'sidebar',
-      },
-    },
-    // UI fields for list view columns with custom cells for vertical centering
-    {
-      name: 'logoPreview',
-      type: 'ui',
-      label: 'Logo',
-      admin: {
-        components: {
-          Cell: '@/components/TeamsListColumns/LogoCell#default',
-        },
-      },
-    },
-    {
-      name: 'nameCell',
-      type: 'ui',
-      label: 'Name',
-      admin: {
-        components: {
-          Cell: '@/components/TeamsListColumns/NameCell#default',
-        },
-      },
-    },
-    {
-      name: 'regionCell',
-      type: 'ui',
-      label: 'Region',
-      admin: {
-        components: {
-          Cell: '@/components/TeamsListColumns/RegionCell#default',
-        },
-      },
-    },
-    {
-      name: 'ratingCell',
-      type: 'ui',
-      label: 'Rating',
-      admin: {
-        components: {
-          Cell: '@/components/TeamsListColumns/RatingCell#default',
-        },
-      },
-    },
-    {
-      name: 'status',
-      type: 'ui',
-      label: 'Status',
-      admin: {
-        components: {
-          Cell: '@/components/TeamsListColumns/StatusCell#default',
-        },
-      },
-    },
-    {
-      name: 'updatedAtCell',
-      type: 'ui',
-      label: 'Updated At',
-      admin: {
-        components: {
-          Cell: '@/components/TeamsListColumns/UpdatedAtCell#default',
-        },
       },
     },
   ],

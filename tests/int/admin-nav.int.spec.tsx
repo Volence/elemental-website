@@ -143,6 +143,7 @@ describe('AdminNavClient', () => {
   it('links carry stable ids so existing hooks and tests can find them', () => {
     render(<AdminNavClient areas={areas} groupPrefs={{}} logout={null} />)
     expect(document.getElementById('nav-people')?.getAttribute('href')).toBe('/admin/collections/people')
+    expect(document.getElementById('nav-view-teams')?.getAttribute('href')).toBe('/admin/teams')
     expect(document.getElementById('nav-global-system-health')?.getAttribute('href')).toBe('/admin/globals/system-health')
     expect(document.getElementById('nav-dashboard')?.getAttribute('href')).toBe('/admin')
   })

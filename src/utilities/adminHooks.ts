@@ -25,8 +25,7 @@ export interface AssignedTeam {
  * Hook to fetch assigned teams for the current user
  * 
  * Used by:
- * - AssignedTeamsDashboard (shows cards on dashboard)
- * - AssignedTeamsBanner (shows banner on Teams list page)
+ * - kept for team-manager surfaces that need the resolved team names
  * 
  * @returns Object with teams array, loading state, and error
  */
