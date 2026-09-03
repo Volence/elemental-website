@@ -1,35 +1,16 @@
-import { DefaultTemplate } from '@payloadcms/next/templates'
 import type { AdminViewServerProps } from 'payload'
 import React from 'react'
 import { redirect } from 'next/navigation'
 
-import { AccessReviewView } from '@/components/AccessReview'
-
-const AccessReviewRoute: React.FC<AdminViewServerProps> = ({
-  initPageResult,
-  params,
-  searchParams,
-}) => {
+/**
+ * Access Review lives as a tab of System Health. This route only exists so the
+ * old /admin/access-review URL keeps working for bookmarks and links.
+ */
+const AccessReviewRoute: React.FC<AdminViewServerProps> = ({ initPageResult }) => {
   const user = initPageResult.req.user
   const role = (user as any)?.role as string | undefined
   if (!user || role !== 'admin') redirect('/admin')
-
-  return (
-    <DefaultTemplate
-      i18n={initPageResult.req.i18n}
-      locale={initPageResult.locale}
-      params={params}
-      payload={initPageResult.req.payload}
-      permissions={initPageResult.permissions}
-      req={initPageResult.req}
-      searchParams={searchParams}
-      user={user}
-      viewActions={[]}
-      visibleEntities={initPageResult.visibleEntities}
-    >
-      <AccessReviewView />
-    </DefaultTemplate>
-  )
+  redirect('/admin/globals/system-health?tab=access')
 }
 
 export default AccessReviewRoute

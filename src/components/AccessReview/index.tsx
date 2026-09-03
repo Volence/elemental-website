@@ -74,7 +74,11 @@ function selectedPeopleFor(group: AccessGroup, selection: Record<string, number[
   return group.people.filter((person) => ids.includes(person.id))
 }
 
-export function AccessReviewView() {
+/**
+ * @param embedded  Rendered inside the System Health hub, which supplies the page
+ *                  shell and title; skip our own wrapper padding and h1.
+ */
+export function AccessReviewView({ embedded = false }: { embedded?: boolean } = {}) {
   const { user: currentUser } = useAuth() as { user: any }
   const [report, setReport] = useState<AccessReport | null>(null)
   const [loading, setLoading] = useState(true)
@@ -175,14 +179,18 @@ export function AccessReviewView() {
   const confirmingSelectedPeople = confirming ? selectedPeopleFor(confirming, selection) : []
 
   return (
-    <div style={{ maxWidth: 1150, margin: '0 auto', padding: '24px 20px 80px' }}>
+    <div style={embedded ? undefined : { maxWidth: 1150, margin: '0 auto', padding: '24px 20px 80px' }}>
       <style>{EDITOR_CSS + VIEW_CSS}</style>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, color: '#e2e8f0', margin: 0 }}>
-          <ShieldAlert size={22} style={{ verticalAlign: 'middle', marginRight: 10 }} />
-          Access Review
-        </h1>
+        {embedded ? (
+          <h2 className="ps-title" style={{ margin: 0 }}>Access Review</h2>
+        ) : (
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: '#e2e8f0', margin: 0 }}>
+            <ShieldAlert size={22} style={{ verticalAlign: 'middle', marginRight: 10 }} />
+            Access Review
+          </h1>
+        )}
         <button className="add-link-btn" style={{ width: 'auto' }} onClick={() => load(true)} disabled={loading}>
           <RefreshCw size={14} style={{ verticalAlign: 'middle', marginRight: 6 }} />
           Refresh
