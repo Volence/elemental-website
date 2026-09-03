@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useMemo, useEffect } from 'react'
+import { DialogA11y } from '@/admin-kit'
 import { Check, HelpCircle, Minus, XCircle, Users } from 'lucide-react'
 import { useSchedule } from './ScheduleContext'
 import './AvailabilityMatrix.css'
@@ -400,8 +401,13 @@ export function AvailabilityMatrix() {
       )}
 
       {roleModal && (
-        <div className="avail-matrix__modal-overlay" onClick={() => setRoleModal(null)}>
-          <div className="avail-matrix__modal" onClick={e => e.stopPropagation()}>
+        <div className="avail-matrix__modal-overlay" onClick={() => setRoleModal(null)} role="presentation">
+<DialogA11y onClose={() => setRoleModal(null)} />
+          <div
+ className="avail-matrix__modal"
+ role="dialog"
+ aria-modal="true"
+ onClick={(e) => e.stopPropagation()}>
             <div className="avail-matrix__modal-header">
               {roleModal.avatar && (
                 <img loading="lazy" decoding="async" src={roleModal.avatar} alt="" className="avail-matrix__modal-avatar" width={32} height={32} />

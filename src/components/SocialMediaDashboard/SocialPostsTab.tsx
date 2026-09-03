@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState, useCallback } from 'react'
+import { DialogA11y } from '@/admin-kit'
 import { useAuth } from '@payloadcms/ui'
 import Link from 'next/link'
 import { ExternalLink, Search, ChevronLeft, ChevronRight, X, Info } from 'lucide-react'
@@ -127,8 +128,13 @@ export function SocialPostsTab() {
       )}
 
       {selected && (
-        <div className="workboard-modal-overlay" onClick={() => setSelected(null)}>
-          <div className="workboard-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="workboard-modal-overlay" onClick={() => setSelected(null)} role="presentation">
+<DialogA11y onClose={() => setSelected(null)} />
+          <div
+ className="workboard-modal"
+ role="dialog"
+ aria-modal="true"
+ onClick={(e) => e.stopPropagation()}>
             <div className="workboard-modal__header">
               <div className="workboard-modal__header-title">
                 <h2>{selected.title || `Post #${selected.id}`}</h2>

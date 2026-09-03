@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
+import { DialogA11y } from '@/admin-kit'
 import { createPortal } from 'react-dom'
 import { useAuth } from '@payloadcms/ui'
 import { toast } from '@payloadcms/ui'
@@ -138,8 +139,13 @@ function SignupModal({ matchGroup, currentUserId, onClose, onSignup }: {
   }
 
   return createPortal(
-    <div className="signup-modal-overlay" onClick={onClose}>
-      <div className="signup-modal" onClick={e => e.stopPropagation()}>
+    <div className="signup-modal-overlay" onClick={onClose} role="presentation">
+<DialogA11y onClose={onClose} />
+      <div
+ className="signup-modal"
+ role="dialog"
+ aria-modal="true"
+ onClick={(e) => e.stopPropagation()}>
         <div className="signup-modal__header">
           <h3>Sign Up for Time Slot</h3>
           <button className="signup-modal__close" onClick={onClose} aria-label="Close modal"><X size={16} /></button>

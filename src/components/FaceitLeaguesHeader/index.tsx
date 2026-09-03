@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { DialogA11y } from '@/admin-kit'
 import { Button } from '@payloadcms/ui'
 import { RefreshCw, Flag, CheckCircle, AlertTriangle, Archive, RotateCcw, Pencil, Trophy, ClipboardList, Lock, Users, Zap } from 'lucide-react'
 
@@ -460,8 +461,13 @@ const FaceitLeaguesHeader: React.FC = () => {
 
       {/* Restore Confirmation Modal */}
       {showRestoreConfirm && (
-        <div className="confirm-modal-overlay" onClick={() => setShowRestoreConfirm(null)}>
-          <div className="confirm-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="confirm-modal-overlay" onClick={() => setShowRestoreConfirm(null)} role="presentation">
+<DialogA11y onClose={() => setShowRestoreConfirm(null)} />
+          <div
+ className="confirm-modal"
+ role="dialog"
+ aria-modal="true"
+ onClick={(e) => e.stopPropagation()}>
             <h3 className="confirm-modal__title"><RotateCcw size={14} /> Restore League</h3>
             <div className="confirm-modal__message">
               <p>Restore <strong>{showRestoreConfirm.name}</strong> to active status?</p>
@@ -493,8 +499,13 @@ const FaceitLeaguesHeader: React.FC = () => {
 
       {/* Team Season Restore Confirmation Modal */}
       {showRestoreSeasonConfirm && (
-        <div className="confirm-modal-overlay" onClick={() => setShowRestoreSeasonConfirm(null)}>
-          <div className="confirm-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="confirm-modal-overlay" onClick={() => setShowRestoreSeasonConfirm(null)} role="presentation">
+<DialogA11y onClose={() => setShowRestoreSeasonConfirm(null)} />
+          <div
+ className="confirm-modal"
+ role="dialog"
+ aria-modal="true"
+ onClick={(e) => e.stopPropagation()}>
             <h3 className="confirm-modal__title"><RotateCcw size={14} /> Restore Team Season</h3>
             <div className="confirm-modal__message">
               <p>Restore <strong>{typeof showRestoreSeasonConfirm.team === 'object' ? showRestoreSeasonConfirm.team?.name : 'this team'}</strong> to active status?</p>
@@ -526,8 +537,13 @@ const FaceitLeaguesHeader: React.FC = () => {
 
       {/* Sync Confirmation Modal */}
       {showSyncConfirm && (
-        <div className="confirm-modal-overlay" onClick={() => setShowSyncConfirm(false)}>
-          <div className="confirm-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="confirm-modal-overlay" onClick={() => setShowSyncConfirm(false)} role="presentation">
+<DialogA11y onClose={() => setShowSyncConfirm(false)} />
+          <div
+ className="confirm-modal"
+ role="dialog"
+ aria-modal="true"
+ onClick={(e) => e.stopPropagation()}>
             <h3 className="confirm-modal__title"><RefreshCw size={14} /> Sync All Teams</h3>
             <div className="confirm-modal__message">
               <p>This will sync data for all teams in active FaceIt leagues.</p>
@@ -557,8 +573,13 @@ const FaceitLeaguesHeader: React.FC = () => {
 
       {/* Finalize Confirmation Modal */}
       {showFinalizeConfirm && (
-        <div className="confirm-modal-overlay" onClick={() => setShowFinalizeConfirm(false)}>
-          <div className="confirm-modal confirm-modal--wide" onClick={(e) => e.stopPropagation()}>
+        <div className="confirm-modal-overlay" onClick={() => setShowFinalizeConfirm(false)} role="presentation">
+<DialogA11y onClose={() => setShowFinalizeConfirm(false)} />
+          <div
+ className="confirm-modal confirm-modal--wide"
+ role="dialog"
+ aria-modal="true"
+ onClick={(e) => e.stopPropagation()}>
             <h3 className="confirm-modal__title"><AlertTriangle size={14} /> Finalize {matchingLeagues.length} League(s)</h3>
             <div className="confirm-modal__content">
               {/* Leagues Section */}

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback, useRef } from 'react'
+import { DialogA11y } from '@/admin-kit'
 import { Search, Trash2, ChevronRight, Edit3, Users, X, BarChart3 } from 'lucide-react'
 import ScrimAnalyticsTabs from '@/components/ScrimAnalyticsTabs'
 import { ScrimBreadcrumbs } from '@/components/ScrimShared'
@@ -729,8 +730,13 @@ export default function ScrimListView() {
 
       {/* Delete confirmation modal */}
       {confirmDeleteId !== null && (
-        <div className="scrim-modal-backdrop" onClick={() => setConfirmDeleteId(null)}>
-          <div className="scrim-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="scrim-modal-backdrop" onClick={() => setConfirmDeleteId(null)} role="presentation">
+<DialogA11y onClose={() => setConfirmDeleteId(null)} />
+          <div
+ className="scrim-modal"
+ role="dialog"
+ aria-modal="true"
+ onClick={(e) => e.stopPropagation()}>
             <div className="scrim-modal__header">
               <div className="scrim-modal__icon scrim-modal__icon--danger">
                 <Trash2 size={18} />

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useMemo, useRef } from 'react'
+import { DialogA11y } from '@/admin-kit'
 import { X } from 'lucide-react'
 import { ReminderButton } from './ReminderButton'
 import { ScrimOutcomeButton } from './ScrimOutcomeButton'
@@ -281,7 +282,8 @@ export function GridView({
       </div>
 
       {openDropdown && (
-        <div className="se-grid__dropdown-overlay" onClick={() => setOpenDropdown(null)}>
+        <div className="se-grid__dropdown-overlay" onClick={() => setOpenDropdown(null)} role="presentation">
+<DialogA11y onClose={() => setOpenDropdown(null)} />
           <div
             ref={dropdownRef}
             className="se-grid__dropdown"
@@ -361,8 +363,13 @@ export function GridView({
         const isOpponentActivity = OPPONENT_ACTIVITIES.has(modalActivity)
 
         return (
-          <div className="se-grid__modal-overlay" onClick={() => setScrimModal(null)}>
-            <div className="se-grid__scrim-modal" onClick={e => e.stopPropagation()}>
+          <div className="se-grid__modal-overlay" onClick={() => setScrimModal(null)} role="presentation">
+<DialogA11y onClose={() => setScrimModal(null)} />
+            <div
+ className="se-grid__scrim-modal"
+ role="dialog"
+ aria-modal="true"
+ onClick={(e) => e.stopPropagation()}>
               <div className="se-grid__scrim-modal-header">
                 <h3>{getActivityLabel(modalActivity)} Details</h3>
                 <span>{dayName} {block.time}</span>
@@ -496,8 +503,13 @@ export function GridView({
         ]
 
         return (
-          <div className="se-grid__modal-overlay" onClick={() => setOutcomeModal(null)}>
-            <div className="se-grid__scrim-modal" onClick={e => e.stopPropagation()}>
+          <div className="se-grid__modal-overlay" onClick={() => setOutcomeModal(null)} role="presentation">
+<DialogA11y onClose={() => setOutcomeModal(null)} />
+            <div
+ className="se-grid__scrim-modal"
+ role="dialog"
+ aria-modal="true"
+ onClick={(e) => e.stopPropagation()}>
               <div className="se-grid__scrim-modal-header">
                 <h3>Scrim Outcome</h3>
                 <span>vs {opponentName} - {day.date} {block.time}</span>

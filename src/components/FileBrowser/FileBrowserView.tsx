@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback, useRef } from 'react'
+import { DialogA11y } from '@/admin-kit'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { BookOpen, CheckSquare, Download, FileText, Folder, FolderOpen, Image, Palette, Pencil, Trash2, Upload, X } from 'lucide-react'
@@ -873,8 +874,13 @@ export function FileBrowserView() {
 
       {/* New Folder Modal */}
       {showNewFolderModal && (
-        <div className="file-browser__modal-overlay" onClick={() => setShowNewFolderModal(false)}>
-          <div className="file-browser__modal" onClick={(e) => e.stopPropagation()}>
+        <div className="file-browser__modal-overlay" onClick={() => setShowNewFolderModal(false)} role="presentation">
+<DialogA11y onClose={() => setShowNewFolderModal(false)} />
+          <div
+ className="file-browser__modal"
+ role="dialog"
+ aria-modal="true"
+ onClick={(e) => e.stopPropagation()}>
             <h3>Create New Folder</h3>
             <input
               type="text"
@@ -896,8 +902,13 @@ export function FileBrowserView() {
 
       {/* Move Modal */}
       {showMoveModal && (
-        <div className="file-browser__modal-overlay" onClick={() => setShowMoveModal(false)}>
-          <div className="file-browser__modal" onClick={(e) => e.stopPropagation()}>
+        <div className="file-browser__modal-overlay" onClick={() => setShowMoveModal(false)} role="presentation">
+<DialogA11y onClose={() => setShowMoveModal(false)} />
+          <div
+ className="file-browser__modal"
+ role="dialog"
+ aria-modal="true"
+ onClick={(e) => e.stopPropagation()}>
             <h3>Move to Folder</h3>
             <div className="file-browser__folder-list">
               <button 
@@ -925,8 +936,13 @@ export function FileBrowserView() {
 
       {/* Message/Confirm Modal */}
       {messageModal.visible && (
-        <div className="file-browser__modal-overlay" onClick={closeMessageModal}>
-          <div className="file-browser__modal file-browser__modal--message" onClick={(e) => e.stopPropagation()}>
+        <div className="file-browser__modal-overlay" onClick={closeMessageModal} role="presentation">
+<DialogA11y onClose={closeMessageModal} />
+          <div
+ className="file-browser__modal file-browser__modal--message"
+ role="dialog"
+ aria-modal="true"
+ onClick={(e) => e.stopPropagation()}>
             <h3>{messageModal.title}</h3>
             <p className="file-browser__modal-message">{messageModal.message}</p>
             <div className="file-browser__modal-actions">
