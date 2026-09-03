@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useConfig } from '@payloadcms/ui'
 import { toast } from '@payloadcms/ui'
 import { ClipboardList, RefreshCw, Eye, CheckCircle, Send, ArrowUpRight, ChevronDown, ChevronRight } from 'lucide-react'
@@ -57,6 +58,13 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ department, title }) =
     hideComplete: false,
     showArchived: false,
   })
+
+  // Deep link: /board?task=<id> (used by the Organization Calendar) opens that task.
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const deepLinkTaskId = searchParams?.get('task') ?? null
+  const [deepLinkHandled, setDeepLinkHandled] = useState(false)
   
   const fetchTasks = useCallback(async () => {
     try {
@@ -128,6 +136,25 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ department, title }) =
     setRequestTarget(null)
     setIsModalOpen(true)
   }
+
+  useEffect(() => {
+    if (deepLinkHandled || !deepLinkTaskId || loading) return
+    const match = tasks.find((t) => String(t.id) === deepLinkTaskId)
+    setDeepLinkHandled(true)
+    if (match) {
+      handleTaskClick(match)
+    } else {
+      toast.error('That task is not on this board (it may be archived or belong to another department).')
+    }
+  }, [deepLinkHandled, deepLinkTaskId, loading, tasks]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const clearDeepLink = () => {
+    if (!deepLinkTaskId) return
+    const params = new URLSearchParams(searchParams?.toString() ?? '')
+    params.delete('task')
+    const qs = params.toString()
+    router.replace(`${pathname}${qs ? `?${qs}` : ''}`, { scroll: false })
+  }
   
   const handleNewTask = () => {
     setSelectedTask(null)
@@ -142,6 +169,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ department, title }) =
   }
   
   const handleCloseModal = () => {
+    clearDeepLink()
     setIsModalOpen(false)
     setRequestTarget(null)
   }

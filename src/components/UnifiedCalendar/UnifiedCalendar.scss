@@ -2,8 +2,37 @@
 // Removes all Clean Glow theme borders from cards
 
 .unified-calendar {
-  padding: 16px;
-  max-width: 100%;
+  // AdminPage owns padding and width; AdminPageHeader owns the title.
+
+  &__tz {
+    margin-left: 10px;
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.45);
+    letter-spacing: 0.02em;
+  }
+
+  &__notice {
+    margin: 0 0 12px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    background: rgba(245, 158, 11, 0.08);
+    color: #fbbf24;
+    font-size: 0.8rem;
+  }
+
+  &__body--refreshing {
+    opacity: 0.7;
+    transition: opacity 0.15s ease;
+  }
+
+  &__modal-swatch {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
 
   &__header {
     margin-bottom: 16px;
@@ -436,6 +465,14 @@
   }
 
   &__more {
+    display: block;
+    width: 100%;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    &:hover { color: rgba(255, 255, 255, 0.85); }
     color: rgba(255, 255, 255, 0.4);
     font-size: 0.65rem;
     text-align: center;
@@ -535,6 +572,12 @@
 // Aggressive overrides for Clean Glow theme
 // ============================================
 .calendar-item-card {
+  // Rendered as a <button> that opens the detail modal.
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
   // Reset ALL borders and shadows
   display: flex !important;
   align-items: flex-start !important;

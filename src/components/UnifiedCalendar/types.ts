@@ -60,16 +60,16 @@ export function getDepartmentColors(department: Department): {
   }
 }
 
-// Map departments to their dashboard/kanban board URLs
+// Department board URLs (no query string). Tasks deep-link with ?task= via range.taskHref().
 export function getDepartmentDashboardUrl(department: Department): string {
   const dashboardMap: Record<Department, string> = {
-    'graphics': '/admin/collections/graphics-anchor?limit=10',
-    'video': '/admin/collections/video-anchor?limit=10',
-    'events': '/admin/collections/events-anchor?limit=10',
-    'scouting': '/admin/globals/scouting-dashboard',
-    'production': '/admin/globals/production-dashboard',
+    graphics: '/admin/collections/graphics-anchor',
+    video: '/admin/collections/video-anchor',
+    events: '/admin/collections/events-anchor',
+    scouting: '/admin/globals/scouting-dashboard',
+    production: '/admin/globals/production-dashboard',
     'social-media': '/admin/globals/social-media-settings',
-    'competitive': '/admin/collections/global-calendar-events',
+    competitive: '/admin/collections/global-calendar-events',
   }
   return dashboardMap[department] ?? '/admin'
 }

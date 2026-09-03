@@ -2,219 +2,183 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import type { CalendarItem, Department } from './types'
-import { getDepartmentDashboardUrl } from './types'
+import { taskHref } from './range'
 
 interface UseUnifiedCalendarDataOptions {
   startDate: Date
   endDate: Date
-  departments: Department[]
 }
 
+export type CalendarLane = 'tasks' | 'matches' | 'events'
+
 interface UseUnifiedCalendarDataReturn {
+  /** Every item in range, all departments. Filter client-side; it is cheap and avoids refetching. */
   items: CalendarItem[]
   loading: boolean
+  /** Fatal: nothing could be loaded. */
   error: string | null
+  /** Lanes that answered with an error (usually 403 for a role that cannot read them). */
+  unavailable: CalendarLane[]
   refetch: () => void
 }
 
-export function useUnifiedCalendarData({
-  startDate,
-  endDate,
-  departments,
-}: UseUnifiedCalendarDataOptions): UseUnifiedCalendarDataReturn {
+async function readLane(res: Response): Promise<{ docs: any[] } | null> {
+  if (!res.ok) return null
+  try {
+    return (await res.json()) as { docs: any[] }
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Loads tasks, matches and org events for the rendered range.
+ *
+ * - One request set per range. Department filtering happens in the view.
+ * - Overlapping fetches are cancelled with AbortController, so rapid Next / Previous
+ *   never leaves stale data on screen.
+ * - A lane that fails (403 for staff outside a department, 500) is reported in
+ *   `unavailable` instead of silently rendering as "nothing scheduled".
+ * - Social posts are no longer a lane: they are planned as social-media tasks.
+ */
+export function useUnifiedCalendarData({ startDate, endDate }: UseUnifiedCalendarDataOptions): UseUnifiedCalendarDataReturn {
   const [items, setItems] = useState<CalendarItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [unavailable, setUnavailable] = useState<CalendarLane[]>([])
+  const [version, setVersion] = useState(0)
 
-  // Memoize date strings to prevent infinite loops
-  const startISO = useMemo(() => startDate.toISOString(), [startDate.getTime()])
-  const endISO = useMemo(() => endDate.toISOString(), [endDate.getTime()])
-  
-  // Memoize departments array as a string for stable comparison
-  const departmentsKey = useMemo(() => departments.sort().join(','), [departments])
+  const startISO = useMemo(() => startDate.toISOString(), [startDate])
+  const endISO = useMemo(() => endDate.toISOString(), [endDate])
+  const abortRef = useRef<AbortController | null>(null)
 
-  // Use a ref to track if we're currently fetching to prevent duplicate requests
-  const fetchingRef = useRef(false)
+  const refetch = useCallback(() => setVersion((v) => v + 1), [])
 
-  const fetchData = useCallback(async () => {
-    // Prevent duplicate requests
-    if (fetchingRef.current) return
-    fetchingRef.current = true
-    
+  useEffect(() => {
+    abortRef.current?.abort()
+    const controller = new AbortController()
+    abortRef.current = controller
+    const { signal } = controller
+
     setLoading(true)
     setError(null)
 
-    try {
-      // Fetch all data sources in parallel
-      const [tasksRes, postsRes, matchesRes, calendarEventsRes] = await Promise.all([
-        // Fetch tasks with dueDate in range
-        fetch(`/api/tasks?${new URLSearchParams({
-          where: JSON.stringify({
-            dueDate: {
-              greater_than_equal: startISO,
-              less_than: endISO,
-            },
-            archived: { not_equals: true },
-          }),
-          sort: 'dueDate',
-          limit: '200',
-          depth: '0',
-        })}`),
-        // Fetch social posts with scheduledDate in range
-        fetch(`/api/social-posts?${new URLSearchParams({
-          where: JSON.stringify({
-            scheduledDate: {
-              greater_than_equal: startISO,
-              less_than: endISO,
-            },
-          }),
-          sort: 'scheduledDate',
-          limit: '200',
-          depth: '0',
-        })}`),
-        // Fetch matches with date in range AND includeInSchedule is true
-        // Use URL-encoded bracket notation for nested field (JSON.stringify doesn't work for nested fields)
-        fetch(`/api/matches?` + 
-          `where[date][greater_than_equal]=${encodeURIComponent(startISO)}&` +
-          `where[date][less_than]=${encodeURIComponent(endISO)}&` +
-          `where[status][not_equals]=cancelled&` +
-          `where[productionWorkflow.includeInSchedule][equals]=true&` +
-          `sort=date&limit=200&depth=0`
+    const run = async () => {
+      const opts: RequestInit = { credentials: 'include', signal }
+      const [tasksRes, matchesRes, eventsRes] = await Promise.all([
+        fetch(
+          `/api/tasks?${new URLSearchParams({
+            where: JSON.stringify({
+              dueDate: { greater_than_equal: startISO, less_than: endISO },
+              archived: { not_equals: true },
+            }),
+            sort: 'dueDate',
+            limit: '500',
+            depth: '0',
+          })}`,
+          opts,
         ),
-        // Fetch global calendar events that overlap with the view range
-        // An event overlaps if: it starts before range ends AND (ends after range starts OR has no end date)
-        // This handles multi-day events that span across the view window
-        fetch(`/api/global-calendar-events?` +
-          `where[or][0][and][0][dateStart][less_than]=${encodeURIComponent(endISO)}&` +
-          `where[or][0][and][1][dateEnd][greater_than_equal]=${encodeURIComponent(startISO)}&` +
-          `where[or][1][and][0][dateStart][less_than]=${encodeURIComponent(endISO)}&` +
-          `where[or][1][and][1][dateStart][greater_than_equal]=${encodeURIComponent(startISO)}&` +
-          `where[or][1][and][2][dateEnd][exists]=false&` +
-          `sort=dateStart&limit=200&depth=0`
+        fetch(
+          `/api/matches?` +
+            `where[date][greater_than_equal]=${encodeURIComponent(startISO)}&` +
+            `where[date][less_than]=${encodeURIComponent(endISO)}&` +
+            `where[status][not_equals]=cancelled&` +
+            `sort=date&limit=500&depth=0`,
+          opts,
+        ),
+        fetch(
+          `/api/global-calendar-events?` +
+            `where[or][0][and][0][dateStart][less_than]=${encodeURIComponent(endISO)}&` +
+            `where[or][0][and][1][dateEnd][greater_than_equal]=${encodeURIComponent(startISO)}&` +
+            `where[or][1][and][0][dateStart][less_than]=${encodeURIComponent(endISO)}&` +
+            `where[or][1][and][1][dateStart][greater_than_equal]=${encodeURIComponent(startISO)}&` +
+            `where[or][1][and][2][dateEnd][exists]=false&` +
+            `sort=dateStart&limit=500&depth=0`,
+          opts,
         ),
       ])
 
-      const [tasksData, postsData, matchesData, calendarEventsData] = await Promise.all([
-        tasksRes.json(),
-        postsRes.json(),
-        matchesRes.json(),
-        calendarEventsRes.json(),
-      ])
+      const [tasks, matches, events] = await Promise.all([readLane(tasksRes), readLane(matchesRes), readLane(eventsRes)])
+      if (signal.aborted) return
 
-      const calendarItems: CalendarItem[] = []
-
-      // Normalize tasks
-      if (tasksData.docs) {
-        for (const task of tasksData.docs) {
-          if (!task.dueDate) continue
-          calendarItems.push({
-            id: String(task.id),
-            type: 'task',
-            title: task.title || 'Untitled Task',
-            date: new Date(task.dueDate),
-            department: task.department as Department,
-            status: task.status,
-            priority: task.priority,
-            href: getDepartmentDashboardUrl(task.department as Department),
-            meta: {
-              taskType: task.taskType,
-              isRequest: task.isRequest,
-            },
-          })
-        }
+      const missing: CalendarLane[] = []
+      if (!tasks) missing.push('tasks')
+      if (!matches) missing.push('matches')
+      if (!events) missing.push('events')
+      if (missing.length === 3) {
+        throw new Error(`Calendar data could not be loaded (HTTP ${tasksRes.status} / ${matchesRes.status} / ${eventsRes.status})`)
       }
 
-      // Normalize social posts
-      if (postsData.docs) {
-        for (const post of postsData.docs) {
-          if (!post.scheduledDate) continue
-          calendarItems.push({
-            id: String(post.id),
-            type: 'social-post',
-            title: post.title || post.content?.substring(0, 40) || 'Untitled Post',
-            date: new Date(post.scheduledDate),
-            department: 'social-media',
-            status: post.status,
-            href: `/admin/collections/social-posts/${post.id}`,
-            meta: {
-              postType: post.postType,
-              platform: post.platform,
-            },
-          })
-        }
+      const out: CalendarItem[] = []
+
+      for (const task of tasks?.docs ?? []) {
+        if (!task.dueDate) continue
+        out.push({
+          id: String(task.id),
+          type: 'task',
+          title: task.title || 'Untitled task',
+          date: new Date(task.dueDate),
+          department: task.department as Department,
+          status: task.status,
+          priority: task.priority,
+          href: taskHref(task.department, task.id),
+          meta: { taskType: task.taskType, isRequest: task.isRequest, postType: task.postType, platform: task.platform },
+        })
       }
 
-      // Normalize matches
-      if (matchesData.docs) {
-        for (const match of matchesData.docs) {
-          if (!match.date) continue
-          calendarItems.push({
-            id: String(match.id),
-            type: 'match',
-            title: match.title || 'Match',
-            date: new Date(match.date),
-            department: 'production',
-            status: match.status,
-            href: `/admin/collections/matches/${match.id}`,
-            meta: {
-              opponent: match.opponent,
-              league: match.league,
-              region: match.region,
-            },
-          })
-        }
+      for (const match of matches?.docs ?? []) {
+        if (!match.date) continue
+        out.push({
+          id: String(match.id),
+          type: 'match',
+          title: match.title || 'Match',
+          date: new Date(match.date),
+          department: 'production',
+          status: match.status,
+          href: `/admin/collections/matches/${match.id}`,
+          meta: { opponent: match.opponent, league: match.league, region: match.region },
+        })
       }
 
-      // Normalize global calendar events
-      if (calendarEventsData.docs) {
-        for (const event of calendarEventsData.docs) {
-          if (!event.dateStart) continue
-          calendarItems.push({
-            id: String(event.id),
-            type: 'calendar-event',
-            title: event.title || 'Event',
-            date: new Date(event.dateStart),
-            dateEnd: event.dateEnd ? new Date(event.dateEnd) : undefined,
-            department: 'competitive',
-            status: undefined,
-            href: `/admin/edit-event?id=${event.id}`,
-            meta: {
-              eventType: event.eventType,
-              internalEventType: event.internalEventType,
-              region: event.region,
-              links: event.links,
-              description: event.description,
-            },
-          })
-        }
+      for (const event of events?.docs ?? []) {
+        if (!event.dateStart) continue
+        out.push({
+          id: String(event.id),
+          type: 'calendar-event',
+          title: event.title || 'Event',
+          date: new Date(event.dateStart),
+          dateEnd: event.dateEnd ? new Date(event.dateEnd) : undefined,
+          department: 'competitive',
+          status: undefined,
+          href: `/admin/edit-event?id=${event.id}`,
+          meta: {
+            eventType: event.eventType,
+            internalEventType: event.internalEventType,
+            region: event.region,
+            links: event.links,
+            description: event.description,
+          },
+        })
       }
 
-      // Parse departments from key
-      const enabledDepartments = departmentsKey.split(',') as Department[]
-      
-      // Filter by enabled departments
-      const filtered = calendarItems.filter(item => 
-        enabledDepartments.includes(item.department)
-      )
-
-      // Sort by date
-      filtered.sort((a, b) => a.date.getTime() - b.date.getTime())
-
-      setItems(filtered)
-    } catch (err) {
-      console.error('Error fetching calendar data:', err)
-      setError(err instanceof Error ? err.message : 'Failed to fetch calendar data')
-      setItems([])
-    } finally {
-      setLoading(false)
-      fetchingRef.current = false
+      out.sort((a, b) => a.date.getTime() - b.date.getTime())
+      setItems(out)
+      setUnavailable(missing)
     }
-  }, [startISO, endISO, departmentsKey])
 
-  useEffect(() => {
-    fetchData()
-  }, [fetchData])
+    run()
+      .catch((err: unknown) => {
+        if (signal.aborted) return
+        console.error('Error fetching calendar data:', err)
+        setError(err instanceof Error ? err.message : 'Failed to fetch calendar data')
+        setItems([])
+      })
+      .finally(() => {
+        if (!signal.aborted) setLoading(false)
+      })
 
-  return { items, loading, error, refetch: fetchData }
+    return () => controller.abort()
+  }, [startISO, endISO, version])
+
+  return { items, loading, error, unavailable, refetch }
 }
-
