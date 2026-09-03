@@ -5,6 +5,15 @@ on:
     branches: [main]
   workflow_dispatch: # Allow manual trigger
 
+# Deploys share the temporary container name elemental-website-payload-new on the
+# server, so two runs in flight at once remove each other's container mid health
+# check (seen 2026-09-03: a docs push and a code push 44s apart both failed over).
+# Queue them instead. cancel-in-progress stays false so a finished build is never
+# thrown away; the newer push simply deploys after the older one.
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
 env:
   REGISTRY: ghcr.io
   # Docker requires lowercase image names

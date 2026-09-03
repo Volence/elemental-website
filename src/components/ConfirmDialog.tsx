@@ -1,15 +1,25 @@
 'use client'
 
 import React, { createContext, useCallback, useContext, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { AlertTriangle, Info, Trash2 } from 'lucide-react'
+import { AdminModal } from '@/admin-kit/AdminModal'
+
+/**
+ * Promise-based confirm / alert dialogs for the admin panel.
+ *
+ * Built on AdminModal, so every consumer of useConfirm / useAlert gets Escape
+ * to cancel, a focus trap, focus return and body scroll lock without changes.
+ * The hook API is unchanged from the previous inline implementation.
+ */
+
+type Variant = 'default' | 'danger' | 'info'
 
 interface DialogOptions {
   title?: string
   message: string
   confirmLabel?: string
   cancelLabel?: string
-  variant?: 'default' | 'danger' | 'info'
+  variant?: Variant
 }
 
 interface DialogState extends DialogOptions {
@@ -19,7 +29,7 @@ interface DialogState extends DialogOptions {
 interface AlertState {
   title?: string
   message: string
-  variant?: 'default' | 'danger' | 'info'
+  variant?: Variant
   resolve: () => void
 }
 
@@ -46,112 +56,68 @@ export function useDialog() {
   return ctx
 }
 
-function Overlay({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
-  return createPortal(
-    <div
-      style={{
-        position: 'fixed', inset: 0, zIndex: 99999,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'rgba(0, 0, 0, 0.6)', backdropFilter: 'blur(4px)',
-        animation: 'confirmFadeIn 150ms ease-out',
-      }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
-    >
-      <div
-        style={{
-          background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: 12, padding: '24px', maxWidth: 440, width: '90%',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-          animation: 'confirmSlideIn 150ms ease-out',
-        }}
-      >
-        {children}
-      </div>
-      <style>{`
-        @keyframes confirmFadeIn { from { opacity: 0 } to { opacity: 1 } }
-        @keyframes confirmSlideIn { from { opacity: 0; transform: scale(0.95) translateY(10px) } to { opacity: 1; transform: scale(1) translateY(0) } }
-      `}</style>
-    </div>,
-    document.body,
-  )
+const iconMap: Record<Variant, React.ReactNode> = {
+  default: <AlertTriangle size={20} style={{ color: 'var(--elmt-accent-warning)' }} aria-hidden="true" />,
+  danger: <Trash2 size={20} style={{ color: 'var(--elmt-accent-error)' }} aria-hidden="true" />,
+  info: <Info size={20} style={{ color: 'var(--elmt-accent-info)' }} aria-hidden="true" />,
 }
 
-const iconMap = {
-  default: <AlertTriangle size={20} style={{ color: '#f59e0b' }} />,
-  danger: <Trash2 size={20} style={{ color: '#ef4444' }} />,
-  info: <Info size={20} style={{ color: '#3b82f6' }} />,
+const confirmButtonClass: Record<Variant, string> = {
+  default: 'kit-btn kit-btn--primary',
+  danger: 'kit-btn kit-btn--danger',
+  info: 'kit-btn kit-btn--info',
 }
 
-const confirmBtnStyles: Record<string, React.CSSProperties> = {
-  default: { background: '#6366f1', color: 'white' },
-  danger: { background: '#dc2626', color: 'white' },
-  info: { background: '#3b82f6', color: 'white' },
+const DEFAULT_TITLES: Record<Variant, string> = {
+  default: 'Are you sure?',
+  danger: 'Confirm deletion',
+  info: 'Notice',
 }
 
 function ConfirmModal({ dialog, onResolve }: { dialog: DialogState; onResolve: (v: boolean) => void }) {
   const variant = dialog.variant || 'default'
   return (
-    <Overlay onClose={() => onResolve(false)}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 20 }}>
-        <div style={{ flexShrink: 0, marginTop: 2 }}>{iconMap[variant]}</div>
-        <div>
-          {dialog.title && (
-            <div style={{ fontSize: 16, fontWeight: 600, color: '#e2e8f0', marginBottom: 6 }}>{dialog.title}</div>
-          )}
-          <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{dialog.message}</div>
-        </div>
-      </div>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-        <button
-          onClick={() => onResolve(false)}
-          style={{
-            padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer',
-            background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)',
-          }}
-        >
-          {dialog.cancelLabel || 'Cancel'}
-        </button>
-        <button
-          onClick={() => onResolve(true)}
-          autoFocus
-          style={{
-            padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer',
-            border: 'none', ...confirmBtnStyles[variant],
-          }}
-        >
-          {dialog.confirmLabel || 'Confirm'}
-        </button>
-      </div>
-    </Overlay>
+    <AdminModal
+      open
+      size="sm"
+      title={dialog.title || DEFAULT_TITLES[variant]}
+      icon={iconMap[variant]}
+      onClose={() => onResolve(false)}
+      hideCloseButton
+      footer={
+        <>
+          <button type="button" className="kit-btn" onClick={() => onResolve(false)}>
+            {dialog.cancelLabel || 'Cancel'}
+          </button>
+          <button type="button" className={confirmButtonClass[variant]} onClick={() => onResolve(true)} data-autofocus>
+            {dialog.confirmLabel || 'Confirm'}
+          </button>
+        </>
+      }
+    >
+      <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{dialog.message}</p>
+    </AdminModal>
   )
 }
 
 function AlertModal({ alert: a, onClose }: { alert: AlertState; onClose: () => void }) {
   const variant = a.variant || 'info'
   return (
-    <Overlay onClose={onClose}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 20 }}>
-        <div style={{ flexShrink: 0, marginTop: 2 }}>{iconMap[variant]}</div>
-        <div>
-          {a.title && (
-            <div style={{ fontSize: 16, fontWeight: 600, color: '#e2e8f0', marginBottom: 6 }}>{a.title}</div>
-          )}
-          <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{a.message}</div>
-        </div>
-      </div>
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <button
-          onClick={onClose}
-          autoFocus
-          style={{
-            padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer',
-            border: 'none', ...confirmBtnStyles[variant],
-          }}
-        >
+    <AdminModal
+      open
+      size="sm"
+      title={a.title || DEFAULT_TITLES[variant]}
+      icon={iconMap[variant]}
+      onClose={onClose}
+      hideCloseButton
+      footer={
+        <button type="button" className={confirmButtonClass[variant]} onClick={onClose}>
           OK
         </button>
-      </div>
-    </Overlay>
+      }
+    >
+      <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{a.message}</p>
+    </AdminModal>
   )
 }
 
@@ -171,10 +137,13 @@ export function ConfirmDialogProvider({ children }: { children: React.ReactNode 
     })
   }, [])
 
-  const handleConfirmResolve = useCallback((value: boolean) => {
-    dialog?.resolve(value)
-    setDialog(null)
-  }, [dialog])
+  const handleConfirmResolve = useCallback(
+    (value: boolean) => {
+      dialog?.resolve(value)
+      setDialog(null)
+    },
+    [dialog],
+  )
 
   const handleAlertClose = useCallback(() => {
     alertState?.resolve()

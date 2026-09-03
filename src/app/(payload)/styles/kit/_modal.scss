@@ -1,0 +1,148 @@
+// ============================================
+// KIT: MODAL (src/admin-kit/AdminModal.tsx)
+// ============================================
+@import '../variables';
+
+@keyframes kit-modal-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes kit-modal-rise {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.kit-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: $z-modal;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-md;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  animation: kit-modal-fade $transition-fast $ease-out;
+}
+
+.kit-modal {
+  width: 100%;
+  max-height: calc(100vh - #{$spacing-xl});
+  display: flex;
+  flex-direction: column;
+  background: $admin-bg-elevated;
+  border: 1px solid $admin-border-default;
+  border-radius: $radius-xl;
+  box-shadow: $elevation-3;
+  color: $admin-text-primary;
+  animation: kit-modal-rise $transition-fast $ease-out;
+  outline: none;
+
+  &--sm { max-width: 25rem; }   // 400px
+  &--md { max-width: 35rem; }   // 560px
+  &--lg { max-width: 47.5rem; } // 760px
+
+  &:focus-visible {
+    box-shadow: $elevation-3, $glow-accent;
+  }
+}
+
+.kit-modal__header {
+  display: flex;
+  align-items: center;
+  gap: $gap-sm;
+  padding: $padding-lg $padding-lg $padding-sm;
+}
+
+.kit-modal__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.kit-modal__title {
+  flex: 1;
+  margin: 0;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-tight;
+  color: $admin-text-primary;
+
+  // Neutralise the global heading underline treatment inside modals.
+  &::after { display: none; }
+  padding-bottom: 0;
+}
+
+.kit-modal__close {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: $radius-sm;
+  background: transparent;
+  color: $admin-text-muted;
+  cursor: pointer;
+  transition: $transition-all-fast;
+
+  &:hover {
+    color: $admin-text-primary;
+    background: $admin-bg-hover;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: $glow-accent;
+    border-color: rgba($admin-accent-info, 0.5);
+  }
+}
+
+.kit-modal__body {
+  padding: 0 $padding-lg $padding-lg;
+  overflow-y: auto;
+  font-size: $font-size-sm;
+  line-height: $line-height-normal;
+  color: $admin-text-secondary;
+}
+
+.kit-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: $gap-xs;
+  padding: $padding-sm $padding-lg $padding-lg;
+  border-top: 1px solid $admin-border-subtle;
+}
+
+// Buttons used by the confirm/alert dialogs. Generic enough for other footers.
+.kit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  line-height: 1;
+  cursor: pointer;
+  border: 1px solid $admin-border-default;
+  background: $admin-bg-surface;
+  color: $admin-text-secondary;
+  transition: $transition-all-fast;
+
+  &:hover { background: $admin-bg-hover; color: $admin-text-primary; }
+  &:focus-visible { outline: none; box-shadow: $glow-accent; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  &--primary { border-color: transparent; background: $admin-accent-primary; color: #fff; &:hover { background: darken($admin-accent-primary, 6%); color: #fff; } }
+  &--info { border-color: transparent; background: $admin-accent-info; color: #06202a; &:hover { background: darken($admin-accent-info, 6%); color: #06202a; } }
+  &--danger { border-color: transparent; background: $admin-accent-error; color: #fff; &:hover { background: darken($admin-accent-error, 6%); color: #fff; } }
+  &--success { border-color: transparent; background: $admin-accent-success; color: #06200f; &:hover { background: darken($admin-accent-success, 6%); color: #06200f; } }
+}
+
+@media (max-width: 768px) {
+  .kit-modal__backdrop { padding: $spacing-xs; align-items: flex-end; }
+  .kit-modal { max-height: calc(100vh - #{$spacing-md}); border-radius: $radius-lg; }
+}
