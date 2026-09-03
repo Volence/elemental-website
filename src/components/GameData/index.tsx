@@ -25,7 +25,7 @@ const TABS: AdminTab[] = [
 ]
 
 type Upload = { url?: string | null; thumbnailURL?: string | null } | number | null | undefined
-type Hero = { id: number; name: string; role: 'tank' | 'dps' | 'support'; image?: Upload; active?: boolean | null; updatedAt?: string }
+type Hero = { id: number; name: string; role: 'tank' | 'dps' | 'damage' | 'support'; image?: Upload; active?: boolean | null; updatedAt?: string }
 type GameMap = {
   id: number
   name: string
@@ -39,6 +39,7 @@ type GameMap = {
 const HERO_ROLE: Record<Hero['role'], { label: string; tone: BadgeTone }> = {
   tank: { label: 'Tank', tone: 'info' },
   dps: { label: 'DPS', tone: 'danger' },
+  damage: { label: 'DPS', tone: 'danger' }, // some rows still carry the pre-rename value
   support: { label: 'Support', tone: 'success' },
 }
 const MAP_TYPE: Record<GameMap['type'], string> = {
@@ -91,7 +92,8 @@ function HeroesTab() {
 
   const visible = useMemo(() => {
     const needle = q.trim().toLowerCase()
-    return rows.filter((h) => (role === 'all' || h.role === role) && (!needle || h.name.toLowerCase().includes(needle)))
+    const roleOf = (h: Hero) => (h.role === 'damage' ? 'dps' : h.role)
+    return rows.filter((h) => (role === 'all' || roleOf(h) === role) && (!needle || h.name.toLowerCase().includes(needle)))
   }, [rows, q, role])
 
   const columns: AdminTableColumn<Hero>[] = [
