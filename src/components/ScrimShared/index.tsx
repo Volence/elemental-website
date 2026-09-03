@@ -9,40 +9,15 @@
  * which is exactly why the pages all looked different.
  */
 
-import React, { useCallback } from 'react'
+import React from 'react'
 import Link from 'next/link'
-import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import { SCRIM_COLORS } from './tokens'
 
 /* ─── URL-persisted state ─── */
 
-/**
- * useState backed by a URL search param (router.replace, no scroll reset).
- * Makes sub-tabs, filters, and selections bookmarkable and Back-safe.
- */
-export function useUrlParamState(
-  key: string,
-  defaultValue: string,
-): [string, (v: string) => void] {
-  const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
-  const value = searchParams.get(key) ?? defaultValue
-
-  const setValue = useCallback(
-    (v: string) => {
-      const params = new URLSearchParams(searchParams.toString())
-      if (v === defaultValue) params.delete(key)
-      else params.set(key, v)
-      const qs = params.toString()
-      router.replace(`${pathname}${qs ? `?${qs}` : ''}`, { scroll: false })
-    },
-    [key, defaultValue, pathname, router, searchParams],
-  )
-
-  return [value, setValue]
-}
+// Moved to the admin kit; re-exported so existing scrim imports keep working.
+export { useUrlParamState } from '@/admin-kit/hooks'
 
 /* ─── Navigation ─── */
 

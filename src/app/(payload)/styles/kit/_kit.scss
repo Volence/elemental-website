@@ -1,0 +1,406 @@
+// ============================================
+// KIT: page shell, header, tabs, cards, badges, states, search, avatar, table
+// (src/admin-kit/*). One partial so the barrel stays short.
+// ============================================
+@import '../variables';
+@import '../mixins';
+
+// ─── Page shell ──────────────────────────────
+.kit-page {
+  width: 100%;
+  margin: 0 auto;
+  padding: $spacing-lg;
+  box-sizing: border-box;
+  overflow-x: auto;
+
+  &--narrow { max-width: $container-md; }
+  &--default { max-width: $container-lg; }
+  &--wide { max-width: $container-xl; }
+  &--full { max-width: none; }
+
+  @media (max-width: 768px) { padding: $spacing-md; }
+}
+
+// ─── Page header ─────────────────────────────
+.kit-page-header {
+  margin-bottom: $spacing-lg;
+
+  &__crumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: $spacing-xs;
+    font-size: $font-size-xs;
+    color: $admin-text-muted;
+
+    a { color: $admin-text-secondary; text-decoration: none; &:hover { color: $admin-accent-info; } }
+    [aria-current='page'] { color: $admin-text-primary; }
+  }
+  &__crumb { display: inline-flex; gap: 0.35rem; align-items: center; }
+  &__crumb-sep { color: $admin-text-disabled; }
+
+  &__row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: $gap-md;
+    flex-wrap: wrap;
+  }
+  &__titles { min-width: 0; }
+
+  // The one h1 treatment: white, gradient underline from the global mixin.
+  &__title {
+    @include gradient-underline($max-width: 250px, $height: 3px);
+    display: inline-flex;
+    align-items: center;
+    gap: $gap-sm;
+    margin: 0;
+    padding-bottom: $spacing-sm;
+    font-size: $font-size-3xl;
+    font-weight: $font-weight-bold;
+    letter-spacing: $letter-spacing-tight;
+    line-height: $line-height-tight;
+    color: $admin-text-primary;
+    @media (max-width: 768px) { font-size: $font-size-2xl; }
+  }
+  &__icon { display: inline-flex; color: $admin-accent-info; }
+  &__subtitle {
+    margin: $spacing-xs 0 0;
+    font-size: $font-size-sm;
+    color: $admin-text-muted;
+    max-width: 70ch;
+  }
+  &__actions { display: flex; gap: $gap-xs; flex-wrap: wrap; align-items: center; }
+}
+
+// ─── Tabs ────────────────────────────────────
+@mixin kit-tabs-accent($color) {
+  @include dashboard-tabs($color);
+  .kit-tabs__tab { @include dashboard-tab($color); }
+  .kit-tabs__tab--active { @include dashboard-tab-active($color); }
+  .kit-tabs__tab:focus-visible { outline: none; box-shadow: inset 0 0 0 2px rgba($color, 0.6); }
+}
+
+.kit-tabs {
+  &--info { @include kit-tabs-accent($admin-accent-info); }
+  &--primary { @include kit-tabs-accent($admin-accent-primary); }
+  &--warning { @include kit-tabs-accent($admin-accent-warning); }
+  &--success { @include kit-tabs-accent($admin-accent-success); }
+
+  &__icon { display: inline-flex; }
+  &__badge {
+    margin-left: 0.35rem;
+    padding: 0 0.4rem;
+    border-radius: $radius-full;
+    font-size: $font-size-2xs;
+    background: $admin-bg-hover;
+    color: $admin-text-secondary;
+  }
+}
+
+// ─── Cards ───────────────────────────────────
+.kit-card {
+  @include modern-card;
+  margin-bottom: $spacing-md;
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: $gap-md;
+    padding: $padding-md $padding-lg 0;
+  }
+  &__heading { min-width: 0; }
+  &__title {
+    margin: 0;
+    padding: 0;
+    font-size: $font-size-md;
+    font-weight: $font-weight-semibold;
+    color: $admin-text-primary;
+    display: flex;
+    align-items: center;
+    gap: $gap-xs;
+    &::after { display: none; }
+  }
+  &__description { margin: 0.25rem 0 0; font-size: $font-size-xs; color: $admin-text-muted; }
+  &__actions { display: flex; gap: $gap-xs; flex-shrink: 0; }
+  &__body { padding: $padding-md $padding-lg $padding-lg; }
+  &--flush &__body { padding: 0; }
+  &--flush &__header { padding-bottom: $padding-md; border-bottom: 1px solid $admin-border-subtle; }
+}
+
+.kit-stat {
+  @include modern-card;
+  display: block;
+  padding: $padding-md;
+  text-decoration: none;
+  color: inherit;
+
+  &--link { @include modern-card(true); text-decoration: none; }
+
+  &__label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: $font-size-2xs;
+    font-weight: $font-weight-semibold;
+    letter-spacing: $letter-spacing-wider;
+    text-transform: uppercase;
+    color: $admin-text-muted;
+    margin-bottom: 0.4rem;
+  }
+  &__icon { display: inline-flex; color: $admin-text-secondary; }
+  &__value {
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    line-height: 1.1;
+    color: $admin-text-primary;
+    font-variant-numeric: tabular-nums;
+  }
+  &__hint { margin-top: 0.35rem; font-size: $font-size-xs; color: $admin-text-muted; }
+
+  &--info &__value { color: $admin-accent-info; }
+  &--success &__value { color: $admin-accent-success; }
+  &--warning &__value { color: $admin-accent-warning; }
+  &--danger &__value { color: $admin-accent-error; }
+  &--accent &__value { color: $admin-accent-primary; }
+}
+
+// ─── Badge ───────────────────────────────────
+@mixin kit-badge-tone($color) {
+  color: $color;
+  border-color: rgba($color, 0.45);
+  background: rgba($color, 0.08);
+  .kit-badge__dot { background: $color; box-shadow: 0 0 6px rgba($color, 0.7); }
+}
+
+.kit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid $admin-border-default;
+  border-radius: $radius-full;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  line-height: 1.4;
+  white-space: nowrap;
+  color: $admin-text-secondary;
+  background: $admin-bg-surface;
+
+  &--sm { padding: 0.05rem 0.4rem; font-size: $font-size-2xs; }
+  &--upper { text-transform: uppercase; letter-spacing: $letter-spacing-wide; font-size: $font-size-2xs; font-weight: $font-weight-semibold; }
+  &__dot { width: 6px; height: 6px; border-radius: 50%; background: $admin-text-muted; flex-shrink: 0; }
+
+  &--neutral { color: $admin-text-secondary; }
+  &--info { @include kit-badge-tone($admin-accent-info); }
+  &--success { @include kit-badge-tone($admin-accent-success); }
+  &--warning { @include kit-badge-tone($admin-accent-warning); }
+  &--danger { @include kit-badge-tone($admin-accent-error); }
+  &--accent { @include kit-badge-tone($admin-accent-primary); }
+}
+
+// ─── States ──────────────────────────────────
+.kit-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.4rem;
+  padding: $spacing-2xl $spacing-lg;
+  color: $admin-text-muted;
+
+  &__icon { color: $admin-text-disabled; }
+  &__title { font-size: $font-size-base; font-weight: $font-weight-medium; color: $admin-text-secondary; }
+  &__hint { font-size: $font-size-xs; max-width: 48ch; }
+  &__action { margin-top: $spacing-xs; }
+  &--compact { padding: $spacing-lg $spacing-md; gap: 0.25rem; }
+  &--compact &__title { font-size: $font-size-sm; }
+}
+
+@keyframes kit-shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.kit-skeleton {
+  height: 14px;
+  border-radius: $radius-xs;
+  background: linear-gradient(90deg, $admin-bg-surface 0%, $admin-bg-hover 50%, $admin-bg-surface 100%);
+  background-size: 800px 100%;
+  animation: kit-shimmer 1.4s ease-in-out infinite;
+}
+
+.kit-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: $spacing-md 0;
+
+  &--spinner {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    color: $admin-text-muted;
+    font-size: $font-size-sm;
+  }
+}
+
+@keyframes kit-spin { to { transform: rotate(360deg); } }
+.kit-spin { animation: kit-spin 1s linear infinite; }
+
+.kit-error {
+  display: flex;
+  align-items: center;
+  gap: $gap-sm;
+  padding: $padding-md;
+  border: 1px solid rgba($admin-accent-error, 0.4);
+  border-radius: $radius-md;
+  background: rgba($admin-accent-error, 0.06);
+  color: $admin-text-primary;
+  font-size: $font-size-sm;
+
+  svg { color: $admin-accent-error; flex-shrink: 0; }
+  &__message { flex: 1; }
+}
+
+// ─── Search ──────────────────────────────────
+.kit-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 28rem;
+
+  &__icon { position: absolute; left: 0.75rem; color: $admin-text-muted; pointer-events: none; }
+  &__input {
+    @include modern-input;
+    padding-left: 2.25rem;
+    padding-right: 2.25rem;
+    appearance: none;
+    &::-webkit-search-cancel-button { display: none; }
+  }
+  &--sm &__input { padding-top: 6px; padding-bottom: 6px; font-size: $font-size-xs; }
+  &--sm &__icon { left: 0.6rem; }
+  &__clear {
+    position: absolute;
+    right: 0.4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: $radius-sm;
+    background: transparent;
+    color: $admin-text-muted;
+    cursor: pointer;
+    &:hover { color: $admin-text-primary; background: $admin-bg-hover; }
+    &:focus-visible { outline: none; box-shadow: $glow-accent; }
+  }
+}
+
+// ─── Avatar ──────────────────────────────────
+.kit-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: $admin-bg-hover;
+  border: 1px solid $admin-border-default;
+  color: $admin-text-secondary;
+  font-weight: $font-weight-semibold;
+  vertical-align: middle;
+
+  img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  &__initials { font-size: 0.42em; line-height: 1; letter-spacing: 0.02em; }
+  &--20 &__initials { font-size: 9px; }
+  &--24 &__initials { font-size: 10px; }
+  &--32 &__initials { font-size: 12px; }
+  &--40 &__initials { font-size: 14px; }
+  &--56 &__initials { font-size: 20px; }
+}
+
+// ─── Table ───────────────────────────────────
+.kit-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid $admin-border-default;
+  border-radius: $radius-lg;
+  background: $admin-bg-card;
+}
+
+.kit-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: $font-size-sm;
+  color: $admin-text-secondary;
+
+  th, td { padding: 0.65rem 0.9rem; border-bottom: 1px solid $admin-border-subtle; vertical-align: middle; }
+  &--dense th, &--dense td { padding: 0.4rem 0.7rem; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  thead th {
+    font-size: $font-size-2xs;
+    font-weight: $font-weight-semibold;
+    letter-spacing: $letter-spacing-wider;
+    text-transform: uppercase;
+    color: $admin-text-muted;
+    background: $admin-bg-elevated;
+    white-space: nowrap;
+  }
+  &--sticky thead th { position: sticky; top: 0; z-index: 1; }
+
+  &__sort {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    cursor: pointer;
+    &:hover { color: $admin-text-primary; }
+    &:focus-visible { outline: none; box-shadow: $glow-accent; border-radius: $radius-xs; }
+  }
+  &__sort-idle { opacity: 0.4; }
+  th[aria-sort='ascending'] &__sort, th[aria-sort='descending'] &__sort { color: $admin-accent-info; }
+
+  &__td--num { font-variant-numeric: tabular-nums; }
+  &__th--right, &__td--num { text-align: right; }
+
+  &--interactive tbody tr { cursor: pointer; transition: background $transition-fast; }
+  &--interactive tbody tr:hover { background: $admin-bg-hover; }
+  &--interactive tbody tr:focus-visible { outline: none; box-shadow: inset 0 0 0 2px rgba($admin-accent-info, 0.5); }
+  &__row-link { color: $admin-text-primary; text-decoration: none; font-weight: $font-weight-medium; &:hover { color: $admin-accent-info; } }
+
+  &__empty { padding: 0 !important; }
+  &__skeleton-row td .kit-skeleton { width: 60%; }
+
+  tfoot td { border-top: 1px solid $admin-border-subtle; border-bottom: none; background: $admin-bg-elevated; }
+
+  @media (max-width: 768px) {
+    &__th--hide-mobile, &__td--hide-mobile { display: none; }
+  }
+}
+
+.kit-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $gap-md;
+  flex-wrap: wrap;
+  padding: $spacing-sm 0;
+  font-size: $font-size-xs;
+  color: $admin-text-muted;
+
+  &__controls { display: flex; align-items: center; gap: $gap-sm; }
+  &__page { color: $admin-text-secondary; }
+}
