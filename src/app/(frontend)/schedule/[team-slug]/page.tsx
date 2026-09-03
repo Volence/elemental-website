@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
+import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { SchedulePage } from './components/SchedulePage'
@@ -44,12 +45,7 @@ export default async function SchedulePageRoute({ params, searchParams }: PagePr
   })
 
   if (teamResult.docs.length === 0) {
-    return (
-      <div className="schedule-page schedule-page--error">
-        <h1>Team Not Found</h1>
-        <p>This team doesn't exist or is no longer active.</p>
-      </div>
-    )
+    notFound()
   }
 
   const team = teamResult.docs[0] as any
@@ -94,8 +90,12 @@ export default async function SchedulePageRoute({ params, searchParams }: PagePr
   const mondayStr = monday.toISOString().split('T')[0]
   const sundayStr = sunday.toISOString().split('T')[0]
 
+  // Only signed-in visitors trigger maintenance writes. Anonymous requests
+  // (crawlers, link previews, curl) must never create or mutate rows on GET.
+  const canMaintainCalendars = !!discordUser
+
   // Close expired active calendars for this team
-  const expiredCalendars = await payload.find({
+  const expiredCalendars = !canMaintainCalendars ? { docs: [] as any[] } : await payload.find({
     collection: 'discord-polls' as any,
     where: {
       and: [
@@ -141,6 +141,7 @@ export default async function SchedulePageRoute({ params, searchParams }: PagePr
 
     if (existing.docs.length > 0) {
       const cal = existing.docs[0] as any
+      if (!canMaintainCalendars) return cal
       const teamBlocks = team.scheduleBlocks || []
       if (teamBlocks.length > 0) {
         const currentKeys = (cal.timeSlots || []).map((s: any) => `${s.startTime}|${s.label}`).sort().join(',')
@@ -163,6 +164,8 @@ export default async function SchedulePageRoute({ params, searchParams }: PagePr
       }
       return cal
     }
+
+    if (!canMaintainCalendars) return null
 
     const monthDay = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     const scheduleBlocks = team.scheduleBlocks || []

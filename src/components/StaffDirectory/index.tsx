@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { EDITOR_CSS, styles as editorStyles } from '@/components/PersonEditor'
 import { useConfirm } from '@/components/ConfirmDialog'
+import { requestDelete } from '@/utilities/requestDelete'
 import { ORG_ROLES, ORG_REGIONS } from '@/utilities/orgRoles'
 
 // ── Types ──
@@ -285,12 +286,13 @@ export function StaffEditorView() {
       variant: 'danger',
     })
     if (!confirmed) return
-    try {
-      await fetch(`/api/${collection}/${staffId}`, { method: 'DELETE' })
-      window.location.href = '/admin/staff-directory'
-    } catch (err) {
-      console.error('Delete error:', err)
+    const deleteError = await requestDelete(`/api/${collection}/${staffId}`)
+    if (deleteError) {
+      setSaveStatus('error')
+      setErrorMsg(deleteError)
+      return
     }
+    window.location.href = '/admin/staff-directory'
   }
 
   const toggleRole = (roleVal: string) => {

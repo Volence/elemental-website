@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { EDITOR_CSS, styles as editorStyles } from '@/components/PersonEditor'
 import { useConfirm } from '@/components/ConfirmDialog'
+import { requestDelete } from '@/utilities/requestDelete'
 
 // ── Types ──
 
@@ -197,10 +198,13 @@ export function InviteEditorView() {
       variant: 'danger',
     })
     if (!confirmed) return
-    try {
-      await fetch(`/api/invite-links/${inviteId}`, { method: 'DELETE' })
-      window.location.href = '/admin/collections/invite-links'
-    } catch {}
+    const deleteError = await requestDelete(`/api/invite-links/${inviteId}`)
+    if (deleteError) {
+      setSaveStatus('error')
+      setErrorMsg(deleteError)
+      return
+    }
+    window.location.href = '/admin/collections/invite-links'
   }
 
   const copyLink = () => {

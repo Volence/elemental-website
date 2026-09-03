@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { EDITOR_CSS, styles as editorStyles } from '@/components/PersonEditor'
 import { useConfirm } from '@/components/ConfirmDialog'
+import { requestDelete } from '@/utilities/requestDelete'
 
 // ── Types ──
 
@@ -251,12 +252,13 @@ export function CalendarEventEditorView() {
 
   const handleDelete = async () => {
     if (!eventId || !await confirm({ message: 'Delete this event?', variant: 'danger' })) return
-    try {
-      await fetch(`/api/global-calendar-events/${eventId}`, { method: 'DELETE' })
-      window.location.href = '/admin/calendar'
-    } catch (err) {
-      console.error('Delete error:', err)
+    const deleteError = await requestDelete(`/api/global-calendar-events/${eventId}`)
+    if (deleteError) {
+      setSaveStatus('error')
+      setErrorMsg(deleteError)
+      return
     }
+    window.location.href = '/admin/calendar'
   }
 
   const addLink = () => setLinks(prev => [...prev, { label: '', url: '' }])

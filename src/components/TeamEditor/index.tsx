@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { EDITOR_CSS, styles as editorStyles } from '@/components/PersonEditor'
 import { useConfirm } from '@/components/ConfirmDialog'
+import { requestDelete } from '@/utilities/requestDelete'
 import { RELEASE_DAY_OPTIONS } from '@/utilities/scheduleReleaseDay'
 import DiscordMemberPicker from '@/components/DiscordMemberPicker'
 
@@ -355,10 +356,13 @@ export default function TeamEditor() {
 
   const handleDelete = async () => {
     if (!teamId || !await confirm({ message: 'Delete this team? This cannot be undone.', variant: 'danger' })) return
-    try {
-      await fetch(`/api/teams/${teamId}`, { method: 'DELETE' })
-      window.location.href = '/admin/collections/teams'
-    } catch {}
+    const deleteError = await requestDelete(`/api/teams/${teamId}`)
+    if (deleteError) {
+      setSaveStatus('error')
+      setErrorMsg(deleteError)
+      return
+    }
+    window.location.href = '/admin/collections/teams'
   }
 
   // Array helpers
