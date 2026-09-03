@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
+import { fetchAllDocs } from '@/admin-kit'
 import { useSearchParams } from 'next/navigation'
 import { useAuth } from '@payloadcms/ui'
 import {
@@ -90,10 +91,8 @@ export function UsersListView() {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const res = await fetch('/api/people?limit=200&sort=name&depth=1')
-      if (!res.ok) throw new Error('Failed to load users')
-      const data = await res.json()
-      setUsers(data.docs ?? [])
+      // Every person, paged: a single limit=200 request used to hide everyone past the first 200 by name.
+      setUsers(await fetchAllDocs<UserData>('/api/people?sort=name&depth=1'))
     } catch (err) {
       console.error('Users load error:', err)
     } finally {
@@ -265,10 +264,10 @@ export function UserEditorView() {
   const fetchData = useCallback(async () => {
     if (!userId) return
     try {
-      const [userRes, teamsRes, peopleRes] = await Promise.all([
+      const [userRes, teamsRes, allPeople] = await Promise.all([
         fetch(`/api/people/${userId}?depth=1`),
         fetch('/api/teams?limit=100&sort=name&depth=0'),
-        fetch('/api/people?limit=500&sort=name&depth=0'),
+        fetchAllDocs<any>('/api/people?sort=name&depth=0'),
       ])
 
       if (userRes.ok) {
@@ -295,10 +294,7 @@ export function UserEditorView() {
         const t = await teamsRes.json()
         setAllTeams((t.docs ?? []).map((doc: any) => ({ id: doc.id, name: doc.name })))
       }
-      if (peopleRes.ok) {
-        const p = await peopleRes.json()
-        setAllPeople((p.docs ?? []).map((doc: any) => ({ id: doc.id, name: doc.name })))
-      }
+      setAllPeople(allPeople.map((doc: any) => ({ id: doc.id, name: doc.name })))
       // Extract PUG data from person record
       if (userRes.ok) {
         const u = await userRes.clone().json()
