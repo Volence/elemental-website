@@ -24,6 +24,7 @@ export async function POST(request: Request) {
     const whereClause: any = {
       and: [
         { faceitEnabled: { equals: true } },
+        { faceitWithdrawn: { not_equals: true } },
         { currentFaceitLeague: { exists: true } },
         { faceitTeamId: { exists: true } },
       ],

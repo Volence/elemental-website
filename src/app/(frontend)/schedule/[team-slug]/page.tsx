@@ -5,7 +5,8 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { SchedulePage } from './components/SchedulePage'
 import type { SchedulePageData, ScheduleTab } from '@/components/scheduling/types'
-import { isNextWeekReleased } from '@/utilities/scheduleReleaseDay'
+import { nowInTimezone } from '@/utilities/socialMediaDigest'
+import { dateFromKey, maintainTeamCalendars, shouldReleaseNextWeek } from '@/utilities/weeklyCalendars'
 
 export const dynamic = 'force-dynamic'
 
@@ -79,140 +80,24 @@ export default async function SchedulePageRoute({ params, searchParams }: PagePr
     } catch {}
   }
 
-  // Calculate current week boundaries (Mon-Sun)
-  const now = new Date()
-  const dayOfWeek = now.getDay()
-  const monday = new Date(now)
-  monday.setDate(now.getDate() - ((dayOfWeek + 6) % 7))
-  monday.setHours(0, 0, 0, 0)
-  const sunday = new Date(monday)
-  sunday.setDate(monday.getDate() + 6)
-  const mondayStr = monday.toISOString().split('T')[0]
-  const sundayStr = sunday.toISOString().split('T')[0]
-
   // Only signed-in visitors trigger maintenance writes. Anonymous requests
   // (crawlers, link previews, curl) must never create or mutate rows on GET.
   const canMaintainCalendars = !!discordUser
 
-  // Close expired active calendars for this team
-  const expiredCalendars = !canMaintainCalendars ? { docs: [] as any[] } : await payload.find({
-    collection: 'discord-polls' as any,
-    where: {
-      and: [
-        { team: { equals: team.id } },
-        { scheduleType: { equals: 'calendar' } },
-        { status: { equals: 'active' } },
-        { 'dateRange.end': { less_than: mondayStr } },
-      ],
-    },
-    limit: 50,
-    depth: 0,
-    overrideAccess: true,
+  // Week boundaries and the next-week release are judged in the team's
+  // timezone, the same way the in-process release service does it. The
+  // service normally creates calendars first; this is the fallback for a
+  // visit before it has run.
+  const local = nowInTimezone(team.scheduleTimezone || 'America/New_York')
+  const { current: currentWeekCalendar, next: nextWeekCalendar } = await maintainTeamCalendars(payload, team, {
+    now: dateFromKey(local.dateKey),
+    releaseNextWeek: shouldReleaseNextWeek({
+      localDate: local.dateKey,
+      localTime: local.hhmm,
+      releaseDay: team.nextWeekReleaseDay,
+    }),
+    canWrite: canMaintainCalendars,
   })
-  for (const expired of expiredCalendars.docs) {
-    await payload.update({
-      collection: 'discord-polls' as any,
-      id: expired.id,
-      data: { status: 'closed' },
-      overrideAccess: true,
-    })
-  }
-
-  async function ensureCalendar(weekStart: Date, weekEnd: Date) {
-    const startStr = weekStart.toISOString().split('T')[0]
-    const endStr = weekEnd.toISOString().split('T')[0]
-
-    const existing = await payload.find({
-      collection: 'discord-polls' as any,
-      where: {
-        and: [
-          { team: { equals: team.id } },
-          { scheduleType: { equals: 'calendar' } },
-          { status: { equals: 'active' } },
-          { 'dateRange.start': { less_than_equal: endStr } },
-          { 'dateRange.end': { greater_than_equal: startStr } },
-        ],
-      },
-      limit: 1,
-      sort: '-createdAt',
-      depth: 0,
-      overrideAccess: true,
-    })
-
-    if (existing.docs.length > 0) {
-      const cal = existing.docs[0] as any
-      if (!canMaintainCalendars) return cal
-      const teamBlocks = team.scheduleBlocks || []
-      if (teamBlocks.length > 0) {
-        const currentKeys = (cal.timeSlots || []).map((s: any) => `${s.startTime}|${s.label}`).sort().join(',')
-        const teamKeys = teamBlocks.map((b: any) => `${b.startTime}|${b.label}`).sort().join(',')
-        if (currentKeys !== teamKeys) {
-          const syncedSlots = teamBlocks.map((b: any) => ({
-            id: `auto_${b.startTime}_${Date.now()}`,
-            label: b.label,
-            startTime: b.startTime,
-            endTime: b.endTime,
-          }))
-          await payload.update({
-            collection: 'discord-polls' as any,
-            id: cal.id,
-            data: { timeSlots: syncedSlots },
-            overrideAccess: true,
-          })
-          return { ...cal, timeSlots: syncedSlots }
-        }
-      }
-      return cal
-    }
-
-    if (!canMaintainCalendars) return null
-
-    const monthDay = weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    const scheduleBlocks = team.scheduleBlocks || []
-    const timeSlots = scheduleBlocks.map((b: any) => ({
-      id: `auto_${b.startTime}_${Date.now()}`,
-      label: b.label,
-      startTime: b.startTime,
-      endTime: b.endTime,
-    }))
-
-    try {
-      return await payload.create({
-        collection: 'discord-polls' as any,
-        data: {
-          pollName: `Week of ${monthDay}`,
-          team: team.id,
-          scheduleType: 'calendar',
-          status: 'active',
-          dateRange: { start: startStr, end: endStr },
-          timeSlots: timeSlots.length > 0 ? timeSlots : undefined,
-          timezone: team.scheduleTimezone || 'America/New_York',
-          createdVia: 'auto',
-          responses: [],
-          responseCount: 0,
-        },
-        overrideAccess: true,
-      })
-    } catch (err) {
-      console.error('[Schedule] Auto-create calendar error:', err)
-      return null
-    }
-  }
-
-  // Ensure current week calendar exists
-  const currentWeekCalendar = await ensureCalendar(monday, sunday)
-
-  // On the team's release day or later (default Friday), also ensure next
-  // week's calendar exists. A missed release day still releases on the next
-  // visit that week.
-  let nextWeekCalendar: any = null
-  if (isNextWeekReleased(now, team.nextWeekReleaseDay)) {
-    const nextMonday = new Date(monday)
-    nextMonday.setDate(monday.getDate() + 7)
-    const nextSunday = new Date(nextMonday)
-    nextSunday.setDate(nextMonday.getDate() + 6)
-    nextWeekCalendar = await ensureCalendar(nextMonday, nextSunday)
-  }
 
   // Recent schedules for calendar view (include both poll and calendar types for history)
   const recentResult = await payload.find({

@@ -1,5 +1,5 @@
 import type { ChatInputCommandInteraction } from 'discord.js'
-import { EmbedBuilder, MessageFlags } from 'discord.js'
+import { MessageFlags } from 'discord.js'
 
 export async function handleSchedulePoll(
   interaction: ChatInputCommandInteraction,
@@ -43,19 +43,9 @@ export async function handleSchedulePoll(
       return
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'https://elmt.gg'
-    const teamSlug = team.slug || team.name?.toLowerCase().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '')
-    const availUrl = `${siteUrl}/schedule/${teamSlug}?tab=availability`
-
-    const embed = new EmbedBuilder()
-      .setTitle(`Weekly Availability - ${team.name}`)
-      .setDescription(
-        `Submit your availability for this week so we can build the schedule.\n\n` +
-        `[Fill Out Availability](${availUrl})`
-      )
-      .setColor(0x5865f2)
-
-    await interaction.editReply({ embeds: [embed] })
+    // Same embed the automatic release posts, so the thread reads consistently
+    const { buildAvailabilityEmbed } = await import('../services/calendarRelease')
+    await interaction.editReply({ embeds: [buildAvailabilityEmbed(team)] })
   } catch (error) {
     console.error('Failed to handle schedulepoll:', error)
     await interaction.editReply({

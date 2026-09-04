@@ -1,67 +1,19 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { FACEIT_DIVISIONS, divisionFromRating } from '@/utilities/divisions'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Button, toast } from '@payloadcms/ui'
-import { AlertTriangle, CheckCircle, Clapperboard, ClipboardList, Eye, Gamepad2, Globe, Link, Lock, Megaphone, Mic, Target, Video } from 'lucide-react'
+import { AlertTriangle, CheckCircle, Clapperboard, ClipboardList, Eye, Lock, Megaphone, Mic, Send, Settings } from 'lucide-react'
+import { AdminModal, formatRelative } from '@/admin-kit'
+import { formatStaffSchedule, formatPublicSchedule, type ScheduleMatch } from '@/utilities/productionSchedulePost'
 
-interface User {
-  id: number
-  name?: string
-  email?: string
-}
-
-interface CasterInfo {
-  user: User | number
-  style?: string
-}
-
-interface Match {
-  id: number
+type Match = ScheduleMatch & {
   title: string
-  matchType: string
-  // Legacy field
-  team: any
-  // New flexible team fields
-  team1Type?: 'internal' | 'external'
-  team1Internal?: any
-  team1External?: string
-  team2Type?: 'internal' | 'external'
-  team2Internal?: any
-  team2External?: string
-  isTournamentSlot?: boolean
-  opponent: string
-  date: string
-  region: string
-  league: string
-  faceitLobby?: string
-  stream?: {
-    url?: string
-  }
-  productionWorkflow?: {
-    coverageStatus: string
-    includeInSchedule: boolean
-    assignedObserver?: User | number | null
-    assignedProducer?: User | number | null
-    assignedCasters?: CasterInfo[]
-  }
+  productionWorkflow?: ScheduleMatch['productionWorkflow'] & { coverageStatus: string }
 }
 
-// Helper to get team name from new or legacy fields
-const getTeam1Name = (match: Match): string => {
-  if (match.team1Type === 'internal' && match.team1Internal) {
-    return match.team1Internal.name || 'ELMT Team'
-  }
-  if (match.team1Type === 'external' && match.team1External) {
-    return match.team1External
-  }
-  if (match.team?.name) {
-    return match.team.name
-  }
-  if (match.isTournamentSlot) {
-    return 'Tournament Slot'
-  }
-  return 'TBD'
+interface PostInfo {
+  channels: { staff: boolean; public: boolean }
+  posted: { at: string | null; by: string | null; matchIds: number[] } | null
 }
 
 export function ScheduleBuilderView() {
@@ -69,10 +21,25 @@ export function ScheduleBuilderView() {
   const [loading, setLoading] = useState(true)
   const [copiedInternal, setCopiedInternal] = useState(false)
   const [copiedPublic, setCopiedPublic] = useState(false)
+  const [postInfo, setPostInfo] = useState<PostInfo | null>(null)
+  const [postModalOpen, setPostModalOpen] = useState(false)
+  const [posting, setPosting] = useState<'update' | 'new' | null>(null)
+
+  const fetchPostInfo = useCallback(async () => {
+    try {
+      const res = await fetch('/api/production/schedule-post', { credentials: 'include' })
+      if (!res.ok) return
+      const data = await res.json()
+      setPostInfo({ channels: data.channels, posted: data.posted })
+    } catch {
+      // The preview still works without post state
+    }
+  }, [])
 
   useEffect(() => {
     fetchMatches()
-  }, [])
+    fetchPostInfo()
+  }, [fetchPostInfo])
 
   const fetchMatches = async () => {
     try {
@@ -109,7 +76,7 @@ export function ScheduleBuilderView() {
       if (!currentValue && match.isTournamentSlot) {
         const hasTeam1 = match.team1Internal || match.team1External || match.team
         const hasTeam2 = match.team2Internal || match.team2External || match.opponent
-        
+
         if (!hasTeam1 || !hasTeam2) {
           toast.error('This slot is missing team info. Please fill in both teams before adding to schedule.')
           return
@@ -156,119 +123,6 @@ export function ScheduleBuilderView() {
     }
   }
 
-  const getUserName = (user: User | number | null | undefined): string => {
-    if (!user) return 'Unknown'
-    if (typeof user === 'number') return `User #${user}`
-    return user.name || user.email || 'Unknown'
-  }
-
-  const getFullTeamName = (teamName: string): string => {
-    // Ensure team name has "ELMT " prefix
-    // "Bug" -> "ELMT Bug", "ELMT Bug" -> "ELMT Bug"
-    if (!teamName.startsWith('ELMT ')) {
-      return `ELMT ${teamName}`
-    }
-    return teamName
-  }
-
-  const generateDiscordInternal = () => {
-    const selectedMatches = matches.filter(m => m.productionWorkflow?.includeInSchedule)
-    if (selectedMatches.length === 0) {
-      return '**No matches selected for broadcast this week.**\n\nUse the checkboxes to select matches to include in the schedule.'
-    }
-
-    let output = 'Schedule for the week!\n\n'
-
-    selectedMatches.forEach((match, index) => {
-      const pw = match.productionWorkflow!
-      const teamName = getFullTeamName(getTeam1Name(match))
-      const date = new Date(match.date)
-      const unixTimestamp = Math.floor(date.getTime() / 1000)
-      
-      // Discord timestamp with long date and short time format
-      output += `<t:${unixTimestamp}:F>:\n\n`
-      
-      // Match info
-      output += `${teamName} vs ${match.opponent}\n`
-      
-      // FACEIT Lobby
-      const faceitLink = match.faceitLobby || 'https://www.faceit.com/en/ow2/room/[TBD]'
-      output += `FACEIT Lobby: ${faceitLink}\n\n`
-      
-      // Staff assignments (with @ mentions)
-      const observer = pw.assignedObserver ? `@${getUserName(pw.assignedObserver as User)}` : 'TBD'
-      const producer = pw.assignedProducer ? `@${getUserName(pw.assignedProducer as User)}` : 'TBD'
-      const casters = pw.assignedCasters?.map(c => `@${getUserName(c.user as User)}`).join(' & ') || 'TBD'
-      
-      output += `Observer: ${observer}\n`
-      output += `Producer: ${producer}\n`
-      output += `Casters: ${casters}\n`
-      
-      // Add separator if not last match
-      if (index < selectedMatches.length - 1) {
-        output += '\n' + '-'.repeat(80) + '\n\n'
-      }
-    })
-
-    return output
-  }
-
-  const generateDiscordPublic = () => {
-    const selectedMatches = matches.filter(m => m.productionWorkflow?.includeInSchedule)
-    if (selectedMatches.length === 0) {
-      return '**No matches selected for broadcast this week.**'
-    }
-
-    let output = '📺 **This Week\'s ELMT Broadcast Schedule**\n\n'
-    output += 'Here\'s everything being casted this week, come support our teams!\n\n'
-
-    selectedMatches.forEach((match, index) => {
-      const pw = match.productionWorkflow!
-      const teamName = getFullTeamName(getTeam1Name(match))
-      const date = new Date(match.date)
-      const unixTimestamp = Math.floor(date.getTime() / 1000)
-      
-      // Add dashed separator
-      output += '─────────────────────────────────────────\n\n'
-      
-      // Match header with team icon
-      output += `## 🎮 **${teamName} vs ${match.opponent}**\n`
-      
-      // Region / Division • League
-      const region = match.team?.region || match.region || 'NA'
-      // Division from the team's rating field ("FACEIT Intermediate" -> Intermediate); numeric SR = Open
-      const division = divisionFromRating(match.team?.rating) ?? 'Open'
-      // League should be the season/league name, not the division
-      const leagueIsTier = FACEIT_DIVISIONS.some((d) => match.league?.toLowerCase() === d.toLowerCase())
-      const league = match.league && !leagueIsTier ? match.league : 'Faceit Season 7'
-      output += `🌐 ${region} / ${division} • ${league}\n`
-      
-      // Discord timestamp (automatically localized)
-      output += `🕐 <t:${unixTimestamp}:F>\n`
-      
-      // Stream
-      output += `🎬 Stream: https://twitch.tv/elmt_gg\n`
-      
-      // Observer
-      const observer = pw.assignedObserver ? getUserName(pw.assignedObserver as User) : 'TBD'
-      output += `👁️ Observer: ${observer}\n`
-      
-      // Producer
-      const producer = pw.assignedProducer ? getUserName(pw.assignedProducer as User) : 'TBD'
-      output += `📹 Producer: ${producer}\n`
-      
-      // Casters
-      const casters = pw.assignedCasters?.map(c => getUserName(c.user as User)).join(' & ') || 'TBD'
-      output += `🎙️ Casters: ${casters}\n`
-      
-      // FACEIT Lobby
-      const faceitLink = match.faceitLobby || 'https://www.faceit.com/en/ow2/room/[TBD]'
-      output += `🔗 FACEIT Lobby: ${faceitLink}\n`
-    })
-
-    return output
-  }
-
   const copyToClipboard = (text: string, type: 'internal' | 'public') => {
     navigator.clipboard.writeText(text)
     if (type === 'internal') {
@@ -281,7 +135,32 @@ export function ScheduleBuilderView() {
     toast.success('Copied to clipboard!')
   }
 
+  const handlePost = async (mode: 'update' | 'new') => {
+    setPosting(mode)
+    try {
+      const res = await fetch('/api/production/schedule-post', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ mode }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.message || 'Failed to post')
+      toast.success(data.updated ? 'Discord schedule updated' : 'Schedule posted to Discord')
+      setPostModalOpen(false)
+      fetchPostInfo()
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to post')
+    } finally {
+      setPosting(null)
+    }
+  }
+
   const selectedCount = matches.filter(m => m.productionWorkflow?.includeInSchedule).length
+  const staffPreview = formatStaffSchedule(matches, { mentionStyle: 'preview' })
+  const publicPreview = formatPublicSchedule(matches)
+  const channelsConfigured = !!postInfo && (postInfo.channels.staff || postInfo.channels.public)
+  const hasPost = !!postInfo?.posted
 
   if (loading) {
     return <div className="production-dashboard__loading">Loading matches...</div>
@@ -293,15 +172,15 @@ export function ScheduleBuilderView() {
         <div>
           <h2>Schedule Builder</h2>
           <p className="production-dashboard__subtitle">
-            Select matches with coverage to broadcast. Then export to Discord.
+            Select matches with coverage to broadcast, then post the schedule to Discord.
           </p>
           <div className="production-dashboard__instructions">
             <strong>How it works:</strong>
             <ol>
               <li>Check the boxes for matches you want to broadcast</li>
-              <li>Preview the Discord announcements on the right</li>
-              <li>Click "Copy" to copy Internal (staff) or Public (announcements) format</li>
-              <li>Paste into Discord channels</li>
+              <li>Preview the staff and public posts on the right</li>
+              <li>Click &quot;Post to Discord&quot; once the week is ready</li>
+              <li>Later changes to assignments, times or lobbies update the Discord posts on their own</li>
             </ol>
           </div>
         </div>
@@ -325,13 +204,13 @@ export function ScheduleBuilderView() {
           <div className="schedule-builder__matches">
             <h3>Available Matches</h3>
             <p className="schedule-builder__instruction">
-              <CheckCircle size={12} /> Check matches to include in this week's broadcast schedule
+              <CheckCircle size={12} /> Check matches to include in this week&apos;s broadcast schedule
             </p>
 
             <div className="schedule-builder__match-list">
               {matches.map((match) => {
                 const pw = match.productionWorkflow!
-                const isSelected = pw.includeInSchedule
+                const isSelected = !!pw.includeInSchedule
                 const isFull = pw.coverageStatus === 'full'
 
                 return (
@@ -369,36 +248,100 @@ export function ScheduleBuilderView() {
           </div>
 
           <div className="schedule-builder__export">
-            <h3>Discord Export</h3>
+            <div className="schedule-builder__post">
+              <div className="schedule-builder__post-status">
+                {postInfo && !channelsConfigured ? (
+                  <span className="schedule-builder__post-note schedule-builder__post-note--warning">
+                    <AlertTriangle size={12} /> No Discord channels configured. An admin sets them in the Settings tab.
+                  </span>
+                ) : hasPost ? (
+                  <span className="schedule-builder__post-note">
+                    <CheckCircle size={12} /> Posted {postInfo!.posted!.at ? formatRelative(postInfo!.posted!.at) : ''}
+                    {postInfo!.posted!.by ? ` by ${postInfo!.posted!.by}` : ''}. Edits update Discord automatically.
+                  </span>
+                ) : (
+                  <span className="schedule-builder__post-note">
+                    <Send size={12} /> Nothing posted yet this week.
+                  </span>
+                )}
+              </div>
+              <Button
+                onClick={() => setPostModalOpen(true)}
+                disabled={selectedCount === 0 || !channelsConfigured}
+                buttonStyle="primary"
+              >
+                <Send size={14} /> Post to Discord
+              </Button>
+            </div>
 
             <div className="schedule-builder__preview-section">
               <div className="schedule-builder__preview-header">
                 <h4><Lock size={14} /> Internal (Staff Channel)</h4>
                 <Button
-                  onClick={() => copyToClipboard(generateDiscordInternal(), 'internal')}
+                  onClick={() => copyToClipboard(staffPreview, 'internal')}
                   disabled={selectedCount === 0}
+                  buttonStyle="secondary"
                 >
                   {copiedInternal ? '✓ Copied!' : <><ClipboardList size={14} /> Copy</>}
                 </Button>
               </div>
-              <pre className="schedule-builder__preview">{generateDiscordInternal()}</pre>
+              <pre className="schedule-builder__preview">{staffPreview}</pre>
             </div>
 
             <div className="schedule-builder__preview-section">
               <div className="schedule-builder__preview-header">
                 <h4><Megaphone size={14} /> Public (Announcements)</h4>
                 <Button
-                  onClick={() => copyToClipboard(generateDiscordPublic(), 'public')}
+                  onClick={() => copyToClipboard(publicPreview, 'public')}
                   disabled={selectedCount === 0}
+                  buttonStyle="secondary"
                 >
                   {copiedPublic ? '✓ Copied!' : <><ClipboardList size={14} /> Copy</>}
                 </Button>
               </div>
-              <pre className="schedule-builder__preview">{generateDiscordPublic()}</pre>
+              <pre className="schedule-builder__preview">{publicPreview}</pre>
             </div>
           </div>
         </div>
       )}
+
+      <AdminModal
+        open={postModalOpen}
+        onClose={() => !posting && setPostModalOpen(false)}
+        title="Post broadcast schedule to Discord"
+        icon={<Send size={16} />}
+        size="sm"
+        footer={
+          <div className="schedule-builder__post-actions">
+            <Button buttonStyle="secondary" onClick={() => setPostModalOpen(false)} disabled={!!posting}>Cancel</Button>
+            {hasPost && (
+              <Button buttonStyle="secondary" onClick={() => handlePost('new')} disabled={!!posting}>
+                {posting === 'new' ? 'Posting...' : 'Start a new week'}
+              </Button>
+            )}
+            <Button buttonStyle="primary" onClick={() => handlePost(hasPost ? 'update' : 'new')} disabled={!!posting}>
+              {posting === 'update' ? 'Updating...' : posting === 'new' && !hasPost ? 'Posting...' : hasPost ? 'Update current post' : 'Post now'}
+            </Button>
+          </div>
+        }
+      >
+        <p>
+          {selectedCount} {selectedCount === 1 ? 'match' : 'matches'} will go to{' '}
+          {[postInfo?.channels.staff && 'the staff channel', postInfo?.channels.public && 'the announcements channel'].filter(Boolean).join(' and ')}.
+          Staff names in the internal post become real pings for anyone with a linked Discord account.
+        </p>
+        {hasPost ? (
+          <p>
+            <strong>Update current post</strong> edits the messages already in Discord. <strong>Start a new week</strong> leaves them
+            alone and posts fresh messages, which the schedule then follows from here on.
+          </p>
+        ) : (
+          <p>After the first post, changes to these matches update the Discord messages automatically.</p>
+        )}
+        <p className="schedule-builder__post-hint">
+          <Settings size={12} /> Channels are configured by an admin in the Settings tab.
+        </p>
+      </AdminModal>
     </div>
   )
 }

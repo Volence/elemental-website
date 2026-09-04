@@ -894,6 +894,10 @@ export interface Team {
    */
   currentFaceitLeague?: (number | null) | FaceitLeague;
   /**
+   * Team dropped out mid-season. Stops match sync and Discord posts but keeps history visible. Cleared automatically at the next rollover.
+   */
+  faceitWithdrawn?: boolean | null;
+  /**
    * Display FaceIt competitive data on team page frontend
    */
   faceitShowCompetitiveSection?: boolean | null;
@@ -3988,6 +3992,7 @@ export interface TeamsSelect<T extends boolean = true> {
   faceitEnabled?: T;
   faceitTeamId?: T;
   currentFaceitLeague?: T;
+  faceitWithdrawn?: T;
   faceitShowCompetitiveSection?: T;
   currentFaceitSeason?: T;
   rolePreset?: T;
@@ -5254,6 +5259,21 @@ export interface Footer {
 export interface ProductionDashboard {
   id: number;
   /**
+   * Discord channel that receives the internal weekly broadcast schedule (with staff pings).
+   */
+  scheduleStaffChannelId?: string | null;
+  /**
+   * Discord channel that receives the public weekly broadcast schedule.
+   */
+  schedulePublicChannelId?: string | null;
+  schedulePost?: {
+    staffMessageIds?: string | null;
+    publicMessageIds?: string | null;
+    matchIds?: string | null;
+    postedAt?: string | null;
+    postedBy?: string | null;
+  };
+  /**
    * Discord channels that receive notifications when matches are rescheduled. Add channel IDs from any Discord server the bot is in.
    */
   rescheduleNotificationChannels?:
@@ -5515,6 +5535,17 @@ export interface FooterSelect<T extends boolean = true> {
  * via the `definition` "production-dashboard_select".
  */
 export interface ProductionDashboardSelect<T extends boolean = true> {
+  scheduleStaffChannelId?: T;
+  schedulePublicChannelId?: T;
+  schedulePost?:
+    | T
+    | {
+        staffMessageIds?: T;
+        publicMessageIds?: T;
+        matchIds?: T;
+        postedAt?: T;
+        postedBy?: T;
+      };
   rescheduleNotificationChannels?:
     | T
     | {

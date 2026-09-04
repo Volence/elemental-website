@@ -44,6 +44,7 @@ export async function POST(request: Request) {
       where: {
         and: [
           { faceitEnabled: { equals: true } },
+          { faceitWithdrawn: { not_equals: true } },
           { currentFaceitLeague: { exists: true } },
           { faceitTeamId: { exists: true } },
         ],

@@ -30,14 +30,13 @@ All scheduling is now done through the **team schedule page** on the website. Th
 
 Availability is managed through the **website calendar system**. A new calendar is automatically created each Friday for the upcoming week based on your team's configured schedule blocks.
 
-### Posting the Availability Link in Discord
+### The Availability Link Posts Itself
 
-Use the `/schedulepoll` command in your team's **Element Availability** thread. This command:
-- Auto-detects your team from the thread
-- Posts a link to the website availability form for your team
-- Players click the link, log in with Discord, and mark their availability
+When next week's calendar is created (9 AM in your team's timezone on your release day, Friday by default), the bot posts the availability link in your team's **Element Availability** thread on its own. Players click the link, log in with Discord, and mark their availability.
 
-Alternatively, players can use `/availability` in the thread to get a direct link to the availability form at any time.
+Change the release day in your team's settings (Teams collection, **Scheduling** tab, "Next week release day") and the post moves with it. The thread ID must be set under **Discord Forum Threads** for the post to go out.
+
+If you ever need the link again, `/schedulepoll` in the thread posts it, and players can use `/availability` for a direct link at any time.
 
 ### How Players Fill In Availability
 
@@ -61,9 +60,9 @@ By default, availability calendars show three 2-hour blocks (6-8 PM, 8-10 PM, 10
 Changes apply to future calendars automatically.
 
 ### Tips
-- Post the availability link every **Saturday morning** in the Element Availability thread
-- Use the bot's link rather than sending the URL manually so players get the right week
-- The calendar auto-creates on Friday, so you do not need to set up anything beforehand
+- The availability link posts itself when the new calendar is created, so there is nothing to send on Saturday
+- If you repost, use the bot's link rather than sending the URL manually so players get the right week
+- The calendar auto-creates on your release day (Friday by default), so you do not need to set up anything beforehand
 - You can check who has and hasn't responded on the Availability tab
 
 ---
@@ -489,9 +488,9 @@ These are all the Discord bot commands available:
 
 ## WEEKLY FLOW
 
-1. **Saturday Morning - Post Availability Link**
-   Use `/schedulepoll` in your **Element Availability** thread.
-   Players click the link and mark availability on the website.
+1. **Release Day (Friday by default) - Availability Link Posts Itself**
+   The bot posts the link in your **Element Availability** thread when next week's calendar is created.
+   Players click the link and mark availability on the website. Nudge stragglers as needed.
 
 2. **Sunday Night - Create Weekly Schedule**
    Schedule page -> Build tab -> Check dates -> Assign players (or use Auto-Lineup) -> Publish to Discord
@@ -514,8 +513,8 @@ These are all the Discord bot commands available:
 
 ## AVAILABILITY (WEBSITE)
 
-1. Post `/schedulepoll` in your team's Availability thread on Saturday
-2. Calendar auto-creates each Friday for the upcoming week
+1. Calendar auto-creates on your release day (Friday by default) for the upcoming week
+2. The bot posts the availability link in your team's Availability thread at the same time (`/schedulepoll` reposts it if needed)
 3. Players log in with Discord and fill in availability on the website
 4. Schedule page -> Availability tab -> Check **Availability Matrix** for role breakdown
 5. Use the Calendar Tab for month/week views and absence tracking

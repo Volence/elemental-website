@@ -80,7 +80,12 @@ export async function GET(
       s.id !== playoffSeasonId && s.id !== currentSeasonId
     )
 
+    // Withdrawn mid-season: the public page shows a label instead of standings
+    const team = await payload.findByID({ collection: 'teams', id: teamId, depth: 0 }).catch(() => null)
+    const withdrawn = !!(team as any)?.faceitWithdrawn
+
     const response = {
+      withdrawn,
       currentSeason: effectiveCurrentSeason ? {
         season: effectiveCurrentSeason.seasonName,
         rank: effectiveCurrentSeason.standings?.currentRank,

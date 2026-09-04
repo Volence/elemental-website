@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { Bell, Plus, Trash2, Save, Check, Loader2, AlertCircle, Hash } from 'lucide-react'
+import { Bell, Plus, Trash2, Save, Check, Loader2, AlertCircle, Hash, Send } from 'lucide-react'
 
 type ChannelEntry = {
   id?: string
@@ -9,8 +9,12 @@ type ChannelEntry = {
   label: string
 }
 
+const CHANNEL_ID_RE = /^\d{17,20}$/
+
 export function SettingsView() {
   const [channels, setChannels] = useState<ChannelEntry[]>([])
+  const [scheduleStaffChannelId, setScheduleStaffChannelId] = useState('')
+  const [schedulePublicChannelId, setSchedulePublicChannelId] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saved' | 'error'>('idle')
@@ -22,6 +26,8 @@ export function SettingsView() {
       if (!res.ok) throw new Error('Failed to load settings')
       const data = await res.json()
       setChannels(data.rescheduleNotificationChannels ?? [])
+      setScheduleStaffChannelId(data.scheduleStaffChannelId ?? '')
+      setSchedulePublicChannelId(data.schedulePublicChannelId ?? '')
     } catch (err) {
       console.error('Settings load error:', err)
     } finally {
@@ -45,8 +51,9 @@ export function SettingsView() {
 
   const handleSave = async () => {
     // Validate
-    const invalidChannels = channels.filter(ch => ch.channelId && !/^\d{17,20}$/.test(ch.channelId))
-    if (invalidChannels.length > 0) {
+    const invalidChannels = channels.filter(ch => ch.channelId && !CHANNEL_ID_RE.test(ch.channelId))
+    const scheduleIds = [scheduleStaffChannelId.trim(), schedulePublicChannelId.trim()]
+    if (invalidChannels.length > 0 || scheduleIds.some(id => id && !CHANNEL_ID_RE.test(id))) {
       setErrorMsg('Channel IDs must be 17-20 digits')
       setSaveStatus('error')
       return
@@ -61,7 +68,9 @@ export function SettingsView() {
       const res = await fetch('/api/globals/production-dashboard', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
+          scheduleStaffChannelId: scheduleIds[0] || null,
+          schedulePublicChannelId: scheduleIds[1] || null,
           rescheduleNotificationChannels: validChannels.map((ch, idx) => ({
             ...ch,
             // Bypass Payload 3 Postgres ID mismatch bug: if no ID exists, Payload tries to 
@@ -107,6 +116,50 @@ export function SettingsView() {
         </p>
       </div>
 
+      {/* Broadcast schedule channels */}
+      <div style={{
+        background: 'var(--theme-elevation-50)',
+        border: '1px solid var(--theme-elevation-150)',
+        borderRadius: '8px',
+        padding: '1.25rem',
+        marginBottom: '1rem',
+      }}>
+        <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--theme-text)', margin: '0 0 0.25rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <Send size={16} /> Broadcast Schedule Channels
+        </h3>
+        <p style={{ fontSize: '0.8rem', color: 'var(--theme-elevation-500)', margin: '0 0 1rem' }}>
+          Where the Schedule Builder posts the weekly broadcast schedule. Leave one empty to skip that post.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          {[
+            { label: 'Staff channel (internal post with pings)', value: scheduleStaffChannelId, set: setScheduleStaffChannelId },
+            { label: 'Announcements channel (public post)', value: schedulePublicChannelId, set: setSchedulePublicChannelId },
+          ].map((field) => (
+            <label key={field.label} style={{
+              display: 'flex', gap: '0.5rem', alignItems: 'center',
+              padding: '0.5rem 0.75rem',
+              background: 'var(--theme-elevation-100)',
+              border: '1px solid var(--theme-elevation-150)',
+              borderRadius: '6px',
+            }}>
+              <Hash size={14} style={{ opacity: 0.4, flexShrink: 0 }} />
+              <span style={{ flex: 1, fontSize: '0.8rem', color: 'var(--theme-text)' }}>{field.label}</span>
+              <input
+                type="text"
+                value={field.value}
+                onChange={(e) => field.set(e.target.value)}
+                placeholder="Channel ID"
+                style={{
+                  flex: '0 0 220px', padding: '0.4rem 0.6rem', fontSize: '0.8rem',
+                  background: 'var(--theme-elevation-0)', border: '1px solid var(--theme-elevation-200)',
+                  borderRadius: '4px', color: 'var(--theme-text)', fontFamily: 'monospace',
+                }}
+              />
+            </label>
+          ))}
+        </div>
+      </div>
+
       {/* Reschedule Notification Channels */}
       <div style={{
         background: 'var(--theme-elevation-50)',
@@ -142,7 +195,7 @@ export function SettingsView() {
             background: 'var(--theme-elevation-100)', borderRadius: '6px',
             color: 'var(--theme-elevation-500)', fontSize: '0.85rem',
           }}>
-            No notification channels configured. Reschedule notifications won't be sent.
+            No notification channels configured. Reschedule notifications won&apos;t be sent.
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
