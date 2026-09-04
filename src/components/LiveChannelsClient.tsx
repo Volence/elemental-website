@@ -23,7 +23,28 @@ type StreamerData = {
     id: number
     name: string
   } | null
+  /** Team affiliation resolved on the server; the refresh endpoint does not carry it. */
+  team?: { teamName: string; teamSlug: string; role: 'Player' | 'Sub' | 'Coach' | 'Manager' } | null
   active: boolean
+}
+
+/** Team pill inside a card that is itself a link: navigates on its own, never nests an anchor. */
+function TeamTag({ team, compact }: { team: NonNullable<StreamerData['team']>; compact?: boolean }) {
+  const href = `/teams/${team.teamSlug}`
+  return (
+    <span
+      role="link"
+      tabIndex={0}
+      title={`View ${team.teamName}`}
+      onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.location.href = href }}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); window.location.href = href } }}
+      className={compact
+        ? 'text-[10px] uppercase tracking-wider text-muted-foreground/60 hover:text-purple-300 transition-colors'
+        : 'inline-flex items-center gap-1 text-xs text-muted-foreground/70 hover:text-purple-300 transition-colors'}
+    >
+      {compact ? team.teamName : `${team.role} for ${team.teamName}`}
+    </span>
+  )
 }
 
 type CategoryFilter = 'all' | 'player' | 'content-creator'
@@ -73,7 +94,11 @@ export default function LiveChannelsClient({
       const res = await fetch('/api/twitch-streamers?where[active][equals]=true&limit=100&depth=1&sort=-isLive,-viewerCount')
       if (!res.ok) return
       const data = await res.json()
-      setStreamers(data.docs ?? [])
+      // The public endpoint knows nothing about teams; keep what the page load resolved.
+      setStreamers(prev => {
+        const teams = new Map(prev.map(p => [p.id, p.team ?? null]))
+        return (data.docs ?? []).map((d: StreamerData) => ({ ...d, team: teams.get(d.id) ?? null }))
+      })
       setLastUpdated(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
     } catch {
       // Silently fail - keep showing stale data
@@ -273,8 +298,9 @@ function LiveCard({ streamer }: { streamer: StreamerData }) {
               </p>
             )}
 
-            {/* Game + Bio */}
+            {/* Game + Bio + Team */}
             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+              {streamer.team && <TeamTag team={streamer.team} />}
               {streamer.currentGame && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 text-xs font-medium border border-purple-500/20">
                   <Gamepad2 size={10} />
@@ -321,9 +347,11 @@ function OfflineCard({ streamer }: { streamer: StreamerData }) {
       <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors truncate w-full">
         {displayName}
       </span>
-      {streamer.category === 'content-creator' && (
+      {streamer.team ? (
+        <TeamTag team={streamer.team} compact />
+      ) : streamer.category === 'content-creator' ? (
         <span className="text-[10px] text-muted-foreground/40 uppercase tracking-wider">Creator</span>
-      )}
+      ) : null}
     </a>
   )
 }

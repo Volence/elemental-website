@@ -5,6 +5,7 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { ParticleBackground } from '@/components/ParticleBackground'
 import LiveChannelsClient from '@/components/LiveChannelsClient'
+import { getTeamAffiliations } from '@/utilities/teamAffiliations'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,6 +32,16 @@ export default async function LivePage() {
       sort: '-isLive',
     })
     streamers = result.docs ?? []
+    // Which team each linked person plays for, so a card can say "Player for Steel".
+    const personIds = streamers
+      .map((s: any) => (s.person && typeof s.person === 'object' ? s.person.id : null))
+      .filter((id: any): id is number => typeof id === 'number')
+    const affiliations = await getTeamAffiliations(payload, personIds)
+    streamers = streamers.map((s: any) => {
+      const pid = s.person && typeof s.person === 'object' ? s.person.id : null
+      const team = pid != null ? affiliations.get(pid) ?? null : null
+      return { ...s, team }
+    })
   } catch (error) {
     console.error('Error loading streamers for /live:', error)
   }

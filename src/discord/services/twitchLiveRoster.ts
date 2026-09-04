@@ -1,4 +1,5 @@
 import { getDiscordClient } from '../bot'
+import { getTeamAffiliations, affiliationLabel } from '@/utilities/teamAffiliations'
 import { EmbedBuilder } from 'discord.js'
 import type { TextChannel } from 'discord.js'
 import { getStreams } from '../utils/twitchAuth'
@@ -104,20 +105,16 @@ async function _runLiveRosterCheck(start: number): Promise<{ live: number; total
       liveMap.set(stream.user_login.toLowerCase(), stream)
     }
 
+    // "Player for Steel" per linked person, one teams query for the whole roster.
     const teamNameCache = new Map<string, string>()
-    for (const doc of streamers.docs) {
-      const streamer = doc as any
-      if (streamer.person && typeof streamer.person === 'object' && streamer.person.id) {
-        const personId = streamer.person.id
-        if (!teamNameCache.has(personId)) {
-          try {
-            const teamName = await getTeamNameForPerson(payload, personId)
-            if (teamName) teamNameCache.set(personId, teamName)
-          } catch {
-            // Ignore team lookup errors
-          }
-        }
-      }
+    try {
+      const personIds = streamers.docs
+        .map((d: any) => (d.person && typeof d.person === 'object' ? d.person.id : null))
+        .filter((id: any): id is number => typeof id === 'number')
+      const affiliations = await getTeamAffiliations(payload, personIds)
+      for (const [pid, a] of affiliations) teamNameCache.set(String(pid), affiliationLabel(a))
+    } catch {
+      // Ignore team lookup errors
     }
 
     const liveByCategory: Record<string, any[]> = {
@@ -133,7 +130,7 @@ async function _runLiveRosterCheck(start: number): Promise<{ live: number; total
 
       let teamName: string | null = null
       if (streamer.person && typeof streamer.person === 'object') {
-        teamName = teamNameCache.get(streamer.person.id) || null
+        teamName = teamNameCache.get(String(streamer.person.id)) || null
       }
 
       if (stream) {
@@ -233,32 +230,6 @@ function updateDiscordEmbeds(liveByCategory: Record<string, any[]>): void {
       console.error(`[Twitch] Failed to update ${category} embed:`, err),
     )
   }
-}
-
-/**
- * Look up which team a Person belongs to (first active team found)
- */
-async function getTeamNameForPerson(payload: any, personId: string | number): Promise<string | null> {
-  try {
-    const teams = await payload.find({
-      collection: 'teams',
-      where: {
-        or: [
-          { 'roster.starters.person': { equals: personId } },
-          { 'roster.substitutes.person': { equals: personId } },
-        ],
-      },
-      limit: 1,
-      depth: 0,
-    })
-
-    if (teams.docs.length > 0) {
-      return teams.docs[0].name || null
-    }
-  } catch {
-    // Ignore lookup failures
-  }
-  return null
 }
 
 /**
