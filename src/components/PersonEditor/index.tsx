@@ -528,7 +528,7 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
 
       {/* Back link for managers */}
       {isManager && (
-        <a href="/admin/collections/people" className="back-link">
+        <a href={isAdmin ? '/admin/manage-users' : '/admin/collections/people'} className="back-link">
           <ArrowLeft size={14} /> Back to People
         </a>
       )}
@@ -832,7 +832,7 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
         {/* Right column */}
         <div style={styles.rightColumn}>
           {/* Account */}
-          {(isAdmin || isSelf) && email && (
+          {(isAdmin || isSelf) && (
             <div className="profile-card" style={styles.card}>
               <h3 style={styles.cardTitle}><UserIcon size={16} /> Account</h3>
               <div style={styles.editableField}>

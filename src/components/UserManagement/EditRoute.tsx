@@ -1,35 +1,14 @@
-import { DefaultTemplate } from '@payloadcms/next/templates'
 import type { AdminViewServerProps } from 'payload'
-import React from 'react'
 import { redirect } from 'next/navigation'
 
-import { UserEditorView } from '@/components/UserManagement'
-
-const EditUserRoute: React.FC<AdminViewServerProps> = ({
-  initPageResult,
-  params,
-  searchParams,
-}) => {
-  const user = initPageResult.req.user
-  const role = (user as any)?.role as string | undefined
-  if (!user || role !== 'admin') redirect('/admin')
-
-  return (
-    <DefaultTemplate
-      i18n={initPageResult.req.i18n}
-      locale={initPageResult.locale}
-      params={params}
-      payload={initPageResult.req.payload}
-      permissions={initPageResult.permissions}
-      req={initPageResult.req}
-      searchParams={searchParams}
-      user={user}
-      viewActions={[]}
-      visibleEntities={initPageResult.visibleEntities}
-    >
-      <UserEditorView />
-    </DefaultTemplate>
-  )
+/**
+ * The Users editor was folded into the People editor (it edited the same
+ * people row with fewer cards). Old links and bookmarks land here and move on.
+ */
+const EditUserRoute = ({ searchParams }: AdminViewServerProps) => {
+  const raw = searchParams?.id
+  const id = Array.isArray(raw) ? raw[0] : raw
+  redirect(id ? `/admin/edit-person?id=${encodeURIComponent(String(id))}` : '/admin/manage-users')
 }
 
 export default EditUserRoute

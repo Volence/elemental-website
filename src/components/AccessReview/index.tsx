@@ -303,7 +303,7 @@ export function AccessReviewView({ embedded = false }: { embedded?: boolean } = 
                             : <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><UserIcon size={14} style={{ opacity: 0.3 }} /></div>}
 
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <a href={`/admin/edit-user?id=${person.id}`} style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
+                            <a href={`/admin/edit-person?id=${person.id}`} style={{ color: '#e2e8f0', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
                               {person.name}
                             </a>
                             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
