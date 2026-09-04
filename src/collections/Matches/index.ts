@@ -40,8 +40,36 @@ export const Matches: CollectionConfig = {
     },
   },
   hooks: {
-    afterChange: [createAuditLogHook('matches')],
-    afterDelete: [createAuditLogDeleteHook('matches')],
+    afterChange: [
+      createAuditLogHook('matches'),
+      // Keep the posted broadcast schedule current. The service is a no-op
+      // until a post exists for the week, and debounces bursts of saves.
+      async ({ doc, previousDoc, operation }) => {
+        if (operation !== 'update' && operation !== 'create') return doc
+        try {
+          const { schedulePostRelevantChange } = await import('@/utilities/productionSchedulePost')
+          if (!schedulePostRelevantChange(doc as any, previousDoc as any)) return doc
+          const { scheduleProductionScheduleRefresh } = await import('@/discord/services/productionSchedulePost')
+          scheduleProductionScheduleRefresh(`match ${doc.id} ${operation}`)
+        } catch (err) {
+          console.error('[Matches afterChange] schedule post refresh failed:', err)
+        }
+        return doc
+      },
+    ],
+    afterDelete: [
+      createAuditLogDeleteHook('matches'),
+      async ({ doc }) => {
+        if (!(doc as any)?.productionWorkflow?.includeInSchedule) return doc
+        try {
+          const { scheduleProductionScheduleRefresh } = await import('@/discord/services/productionSchedulePost')
+          scheduleProductionScheduleRefresh(`match ${doc.id} deleted`)
+        } catch (err) {
+          console.error('[Matches afterDelete] schedule post refresh failed:', err)
+        }
+        return doc
+      },
+    ],
     beforeChange: [
       async ({ data, operation, req }) => {
         // Auto-mark matches as complete if they're 2+ hours past their scheduled time

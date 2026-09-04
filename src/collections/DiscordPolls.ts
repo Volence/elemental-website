@@ -409,6 +409,15 @@ export const DiscordPolls: CollectionConfig = {
         const dateRange = (doc as any).dateRange
         if (!teamId || !dateRange?.start || !dateRange?.end) return doc
 
+        // New auto-created calendar for an upcoming week: drop the availability
+        // link in the team's thread so nobody has to run /schedulepoll.
+        try {
+          const { announceCalendarIfDue } = await import('../discord/services/calendarRelease')
+          await announceCalendarIfDue(req.payload, doc, req)
+        } catch (err) {
+          console.error('[DiscordPolls afterChange] Availability announce error:', err)
+        }
+
         try {
           const preAvails = await req.payload.find({
             collection: 'absences',

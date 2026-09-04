@@ -413,7 +413,13 @@ const config = buildConfig({
           const { startSocialDailyPing } = await import('./discord/services/socialDailyPing')
           startSocialDailyPing()
 
+          // Weekly availability calendars: created on each team's release day and
+          // announced in the team's availability thread.
+          const { startCalendarRelease, stopCalendarRelease } = await import('./discord/services/calendarRelease')
+          startCalendarRelease()
+
           const { serviceHealth } = await import('./discord/serviceHealth')
+          serviceHealth.register('calendar-release', 20 * 60 * 1000)
           serviceHealth.register('twitch-roster', 3 * 60 * 1000)
           serviceHealth.register('thread-keepalive', 2 * 60 * 60 * 1000)
           // Daily ping fires at most once a day; a 26h window flags a missed morning.
@@ -429,6 +435,7 @@ const config = buildConfig({
             stopTwitchLiveRoster,
             stopThreadKeepAlive,
             stopSocialDailyPing,
+            stopCalendarRelease,
             stopPollNotificationPolling,
             serviceHealth.stopStalenessChecker,
             shutdownDiscordBot,
