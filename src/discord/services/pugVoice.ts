@@ -1,10 +1,10 @@
 import {
   ChannelType,
-  PermissionFlagsBits,
   type VoiceChannel,
   type Guild,
 } from 'discord.js'
 import { ensureDiscordClient } from '../bot'
+import { PUG_VOICE_STAFF_ROLE_IDS } from '@/pug/constants'
 
 export async function createMatchVoiceChannels(
   lobbyNumber: number,
@@ -30,6 +30,19 @@ export async function createMatchVoiceChannels(
     })
 
     await channel.permissionOverwrites.edit(guild.roles.everyone, { Connect: false })
+    // Staff roles (Event Managers) can join either team channel and move players around.
+    for (const roleId of PUG_VOICE_STAFF_ROLE_IDS) {
+      try {
+        await channel.permissionOverwrites.edit(roleId, {
+          ViewChannel: true,
+          Connect: true,
+          Speak: true,
+          MoveMembers: true,
+        })
+      } catch (err) {
+        console.warn(`[PUG Voice] Could not set perms for staff role ${roleId}:`, err)
+      }
+    }
     for (const userId of allowedUserIds) {
       if (!/^\d{17,20}$/.test(userId)) continue
       try {

@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import prisma from '@/lib/prisma'
 import { loadMatchStats } from '@/components/PugMatchStats/loadMatchStats'
@@ -9,7 +10,7 @@ export default async function MatchStatsPage({ params }: { params: Promise<{ id:
   const lobbyId = Number(id)
   if (Number.isNaN(lobbyId)) notFound()
 
-  const lobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId }, select: { lobbyNumber: true, status: true, tier: true } })
+  const lobby = await prisma.pugLobby.findUnique({ where: { id: lobbyId }, select: { lobbyNumber: true, status: true, tier: true, hostUserId: true } })
   if (!lobby) notFound()
 
   const data = await loadMatchStats(lobbyId)
@@ -26,9 +27,18 @@ export default async function MatchStatsPage({ params }: { params: Promise<{ id:
             unpaired={data.unpaired}
           />
         ) : (
-          <div className="rounded-xl border border-border bg-card/40 p-8 text-center text-muted-foreground">
-            Stats aren&apos;t available for this match
-            {lobby.status !== 'COMPLETED' ? ' until it completes.' : ' - the match log was not uploaded.'}
+          <div className="rounded-xl border border-border bg-card/40 p-8 text-center text-muted-foreground space-y-3">
+            <p>
+              Stats aren&apos;t available for this match
+              {lobby.status !== 'COMPLETED'
+                ? ' until it completes.'
+                : lobby.hostUserId === -1
+                  ? ' - the match log was not uploaded.'
+                  : ' - it was hosted manually, so there is no match log to build them from.'}
+            </p>
+            <Link href={`/pugs/lobby/${lobbyId}`} className="inline-block text-sm text-primary hover:underline">
+              Back to PUG #{lobby.lobbyNumber}
+            </Link>
           </div>
         )}
       </div>

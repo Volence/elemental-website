@@ -10,6 +10,7 @@ import { calculateRatingUpdates } from './mmr'
 import { applyEscalatingBan } from './cooldownBans'
 import { processQueue } from './queueProcessor'
 import { registerTimer, cancelTimer, timerKey } from './timers'
+import { isBotEnabledForLobby } from './botMode'
 import type { QueuedPlayer, PlayerRating, MatchResult, PugRole, PugRegion } from './types'
 import {
   READY_CHECK_TIMEOUT_MS,
@@ -437,14 +438,7 @@ export async function advanceToDrafting(lobbyId: number): Promise<void> {
   await prisma.pugLobby.update({ where: { id: lobbyId }, data: { status: 'DRAFTING' } })
 
   // Fire-and-forget: tell bot to prepare OW lobby while players draft/ban/vote
-  const botEnabledForDraft = lobby.payloadSeasonId
-    ? ((await payload.findByID({
-        collection: 'pug-seasons',
-        id: lobby.payloadSeasonId,
-        overrideAccess: true,
-      }) as any)?.botEnabled !== false)
-    : true
-  if (process.env.OW_BOT_SERVICE_URL && botEnabledForDraft) {
+  if (await isBotEnabledForLobby(lobby)) {
     fetch(`${process.env.OW_BOT_SERVICE_URL}/lobby/prepare`, {
       method: 'POST',
       headers: {
@@ -784,15 +778,20 @@ async function advanceToInProgress(lobbyId: number): Promise<void> {
   }
 
   // Attempt automated lobby configuration via bot service
-  const botEnabledForInProgress = lobby.payloadSeasonId
-    ? ((await payloadInst.findByID({
-        collection: 'pug-seasons',
-        id: lobby.payloadSeasonId,
-        overrideAccess: true,
-      }) as any)?.botEnabled !== false)
-    : true
+  const botEnabledForInProgress = await isBotEnabledForLobby(lobby)
   let botHosting = false
-  if (process.env.OW_BOT_SERVICE_URL && botEnabledForInProgress) {
+  if (!botEnabledForInProgress && (lobby.hostUserId === -1 || lobby.botInstanceId)) {
+    // The bot was switched off after the draft-phase prewarm touched this lobby
+    // (or the prewarm failed and left hostUserId at the bot sentinel). Hand the
+    // lobby to a human host instead of showing a "Bot Problem" nobody can fix.
+    await freeBotInstanceForLobby(lobbyId, lobby.botInstanceId)
+    await prisma.pugLobby.update({
+      where: { id: lobbyId },
+      data: { hostUserId: null, botStatus: 'no_bot', botInstanceId: null },
+    })
+    console.log(`[PUG #${lobby.lobbyNumber}] Bot disabled - lobby handed to manual hosting`)
+  }
+  if (botEnabledForInProgress) {
     try {
       const battleTags: Record<number, string> = {}
       for (const u of allUsers.docs as any[]) {
@@ -964,7 +963,7 @@ async function advanceToInProgress(lobbyId: number): Promise<void> {
     const notifyTeam = async (teamNum: 1 | 2, channelId: string | null) => {
       const voiceLine = channelId ? `\nVoice channel: ${channelUrl(channelId)}` : ''
       const hostLine = botHosting
-        ? 'The lobby is being set up automatically — you\'ll receive an in-game invite shortly!'
+        ? 'The lobby is being set up automatically - you\'ll receive an in-game invite shortly!'
         : 'A host is needed to set up the in-game lobby — check the lobby page to volunteer or wait for an invite.'
       const msg = `Your PUG #${lobby.lobbyNumber} match is starting! You're on Team ${teamNum}.${voiceLine}\n\n${hostLine}\nLobby: ${lobbyUrl}`
       const teamPlayers = players.filter((p) => p.team === teamNum)

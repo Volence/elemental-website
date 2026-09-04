@@ -585,7 +585,7 @@ function LiveStatsPanel({ stats }: { stats: LiveStats }) {
       }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: '#60a5fa' }}>{stats.team1.name}</span>
         <span style={{ fontSize: 18, fontWeight: 800, color: '#f1f5f9', letterSpacing: '0.1em' }}>
-          {stats.team1.score} — {stats.team2.score}
+          {stats.team1.score} - {stats.team2.score}
         </span>
         <span style={{ fontSize: 13, fontWeight: 700, color: '#f87171' }}>{stats.team2.name}</span>
       </div>
@@ -626,7 +626,7 @@ function LiveStatsPanel({ stats }: { stats: LiveStats }) {
 
       {!hasPlayers && stats.eventCount > 0 && (
         <div style={{ fontSize: 12, color: '#475569', textAlign: 'center', padding: '8px 0' }}>
-          {stats.eventCount} events tracked — waiting for player data...
+          {stats.eventCount} events tracked - waiting for player data...
         </div>
       )}
     </div>
@@ -988,7 +988,7 @@ export function PugBotTestingPanel() {
                   ? 'Bot hosting: …'
                   : botHostingEnabled
                     ? <span style={{ color: '#4ade80' }}>Bot hosting: ENABLED</span>
-                    : <span style={{ color: '#f87171' }}>Bot hosting: DISABLED — manual mode</span>}
+                    : <span style={{ color: '#f87171' }}>Bot hosting: DISABLED - manual mode</span>}
               </div>
               <div style={{ fontSize: 12, color: 'var(--elmt-text-muted)', marginTop: 2 }}>
                 {botHostingEnabled === false

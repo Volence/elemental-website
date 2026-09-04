@@ -98,6 +98,7 @@ type LobbyData = {
   } | null
   linkedScrimId: number | null
   botEnabled: boolean
+  hasStats?: boolean
 }
 
 function playNotificationSound() {
@@ -184,7 +185,9 @@ export default function LobbyPage() {
   }, [fetchState])
 
   useEffect(() => {
-    if (data?.lobby?.status === 'COMPLETED') {
+    // Manual-hosted matches never have a match log, so keep them on the result
+    // page instead of bouncing to an empty stats view.
+    if (data?.lobby?.status === 'COMPLETED' && data.hasStats) {
       router.replace(`/pugs/lobby/${id}/stats`)
     }
   }, [data, id, router])
@@ -561,7 +564,6 @@ export default function LobbyPage() {
             selectedMap={selectedMap}
             players={players}
             heroes={heroes}
-            botEnabled={botEnabled}
             manualMode={manualMode}
             onHost={() => apiAction('/host', {})}
           />
@@ -1848,7 +1850,7 @@ function BotHostingPanel({
 // ── Lobby Setup Assistant ──
 
 function LobbySetupAssistant({
-  lobby, hostInfo, currentUserId, isPugAdmin, selectedMap, players, heroes, botEnabled, manualMode, onHost,
+  lobby, hostInfo, currentUserId, isPugAdmin, selectedMap, players, heroes, manualMode, onHost,
 }: {
   lobby: any
   hostInfo: LobbyData['hostInfo']
@@ -1857,21 +1859,20 @@ function LobbySetupAssistant({
   selectedMap: LobbyData['selectedMap']
   players: Player[]
   heroes: Hero[]
-  botEnabled: boolean
   manualMode: boolean
   onHost: () => void
 }) {
   if (!hostInfo) return null
 
   const isHost = hostInfo.hostUserId === currentUserId
-  const hasHost = hostInfo.hostUserId !== null
   // 'no_bot' means the bot was given up on for this lobby (no free instance, or
   // an admin/player switched it to manual) - it must not auto-re-engage even
   // though bots are globally enabled.
   const botGaveUp = lobby.botStatus === 'no_bot'
-  // In manual mode the bot is never hosting. Otherwise the bot hosts when the
-  // sentinel id (-1) is set or when no human host exists and the bot is on.
-  const isBotHosting = !manualMode && !botGaveUp && (hostInfo.hostUserId === -1 || (botEnabled && !hasHost))
+  // In manual mode the bot is never hosting. Otherwise the bot hosts only when
+  // the state machine actually engaged it (sentinel host id -1). A lobby with no
+  // host at all is waiting for a human, whatever the global switch says.
+  const isBotHosting = !manualMode && !botGaveUp && hostInfo.hostUserId === -1
   // Allow a human to take over a lobby that has no host, or a bot/errored lobby
   // (sentinel -1) while in manual mode.
   const canVolunteer = hostInfo.hostUserId === null || (manualMode && hostInfo.hostUserId === -1)

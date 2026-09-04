@@ -4,7 +4,7 @@ import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
 import { generateSettings } from '@/pug/settingsGenerator'
 import { enrichSpectators } from '@/pug/spectators'
-import { isBotEnabled } from '@/pug/botMode'
+import { isBotEnabledForLobby } from '@/pug/botMode'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -237,6 +237,13 @@ export async function GET(request: NextRequest, { params }: Params) {
       }
     }
 
+    const hasStats =
+      lobby.status === 'COMPLETED' &&
+      !!(await prisma.scrim.findFirst({
+        where: { pugLobbyId: lobbyId, maps: { some: { mapData: { some: {} } } } },
+        select: { id: true },
+      }))
+
     // Host setup data for IN_PROGRESS state
     let hostInfo: { hostUserId: number | null; hostName: string | null; settingsText: string | null; battleTags: Record<number, string | null> } | null = null
     const inProgressOrReporting = ['IN_PROGRESS', 'REPORTING'].includes(lobby.status)
@@ -359,9 +366,12 @@ export async function GET(request: NextRequest, { params }: Params) {
       hostInfo,
       linkedScrimId,
       // Bot is "enabled" only when the service is configured AND the admin
-      // kill-switch on the active season hasn't disabled it. When false the
+      // kill-switch hasn't disabled it for this lobby's season. When false the
       // lobby page falls into manual-hosting mode.
-      botEnabled: !!process.env.OW_BOT_SERVICE_URL && (await isBotEnabled()),
+      botEnabled: await isBotEnabledForLobby(lobby),
+      // Only bot-hosted matches upload a log; the lobby page sends players to
+      // the stats view only when there is something to show.
+      hasStats,
     })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })

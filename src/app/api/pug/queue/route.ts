@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import { isBotEnabled } from '@/pug/botMode'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
@@ -190,8 +191,8 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Warm up an OW instance if the bot service is configured
-    if (process.env.OW_BOT_SERVICE_URL) {
+    // Warm up an OW instance if the bot service is configured and hosting is on
+    if (process.env.OW_BOT_SERVICE_URL && (await isBotEnabled())) {
       fetch(`${process.env.OW_BOT_SERVICE_URL}/instance/warmup`, {
         method: 'POST',
         headers: {
