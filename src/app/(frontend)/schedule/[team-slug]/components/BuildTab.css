@@ -587,6 +587,13 @@
   border-left-width: 3px;
 }
 
+/* Assigned, but not on this row's availability list (sub on a main row, withdrew, stale pick). */
+.build-tab__avail-chip--off-list {
+  border-left-style: dashed;
+  background: rgba(251, 146, 60, 0.14);
+  color: #fdba74;
+}
+
 .build-tab__avail-chip--ringer {
   background: rgba(251, 191, 36, 0.1);
   font-weight: 600;

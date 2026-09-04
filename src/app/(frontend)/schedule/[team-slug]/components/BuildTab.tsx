@@ -16,6 +16,7 @@ import {
   setSlotPlayers as setBlockSlotPlayers,
   toggleSlotPlayer as toggleBlockSlotPlayer,
 } from '@/components/scheduling/lineup-roles'
+import { DialogA11y } from '@/admin-kit/DialogA11y'
 import './BuildTab.css'
 
 interface PlayerSlot {
@@ -835,12 +836,18 @@ export function BuildTab() {
   const [reminderSending, setReminderSending] = useState<string | null>(null)
   const [reminderSent, setReminderSent] = useState<Set<string>>(new Set())
 
+  // Like publish: the reminder reads the saved schedule, so unsaved edits are
+  // saved first or the ping would go out with yesterday's lineup.
   const handleSendReminder = async (dayDate: string, blockTime: string) => {
     if (!viewedCalendar) return
     const key = `${dayDate}|${blockTime}`
     setReminderSending(key)
     setError(null)
     try {
+      if (dirty) {
+        const ok = await saveSchedule()
+        if (!ok) return
+      }
       const { postScrimReminderAction } = await import('@/actions/post-scrim-reminder')
       const result = await postScrimReminderAction(Number(viewedCalendar.id), dayDate, blockTime)
       if (result?.error) throw new Error(result.error)
@@ -924,9 +931,9 @@ export function BuildTab() {
       {error && <div className="build-tab__error">{error}</div>}
 
       <div className="build-tab__legend">
-        <span className="build-tab__legend-item"><span className="build-tab__legend-swatch build-tab__legend-swatch--available" />Selected</span>
-        <span className="build-tab__legend-item"><span className="build-tab__legend-swatch build-tab__legend-swatch--maybe" />Maybe</span>
-        <span className="build-tab__legend-item"><span className="build-tab__legend-swatch build-tab__legend-swatch--unassigned" />Unselected</span>
+        <span className="build-tab__legend-item"><span className="build-tab__legend-swatch build-tab__legend-swatch--available" />On the roster</span>
+        <span className="build-tab__legend-item"><span className="build-tab__legend-swatch build-tab__legend-swatch--maybe" />Maybe available</span>
+        <span className="build-tab__legend-item"><span className="build-tab__legend-swatch build-tab__legend-swatch--unassigned" />Available, not picked</span>
         <span className="build-tab__legend-item"><span className="build-tab__legend-swatch build-tab__legend-swatch--ringer" />Ringer</span>
       </div>
 
@@ -1208,14 +1215,27 @@ export function BuildTab() {
                             )
                           })
 
-                          if (chips.length === 0 && assignedIds.size > 0) {
-                            for (const pid of assignedIds) {
-                              chips.push(
-                                <span key={pid} className={`build-tab__avail-chip build-tab__avail-chip--assigned ${isTrial ? 'build-tab__avail-chip--trial' : ''}`} style={{ borderColor: color }}>
-                                  {playerMap[pid] || 'Unknown'}
-                                </span>
-                              )
-                            }
+                          // Anyone on the slot who is not in this row's availability list
+                          // (a sub placed on a main row, a player who withdrew, an old
+                          // suggestion) still prints on the posted roster, so show them
+                          // here where the manager can see and remove them.
+                          const listed = new Set(forRole.map(a => a.personId))
+                          for (const pid of assignedIds) {
+                            if (listed.has(pid)) continue
+                            chips.push(
+                              <span
+                                key={`assigned-${pid}`}
+                                className={`build-tab__avail-chip build-tab__avail-chip--clickable build-tab__avail-chip--assigned build-tab__avail-chip--off-list ${isTrial ? 'build-tab__avail-chip--trial' : ''}`}
+                                style={{ borderColor: color }}
+                                title="On the roster but not marked available for this role and time. Click to remove."
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  toggleSlotPlayer(col.dayIdx, col.blockIdx, slotIdx, pid)
+                                }}
+                              >
+                                {playerMap[pid] || 'Unknown'}
+                              </span>
+                            )
                           }
 
                           return chips.length > 0 ? (
@@ -1543,7 +1563,8 @@ export function BuildTab() {
 
         return (
           <div className="build-tab__scrim-overlay" onClick={() => setScrimModal(null)}>
-            <div className="build-tab__scrim-modal" onClick={e => e.stopPropagation()}>
+            <div className="build-tab__scrim-modal" role="dialog" aria-modal="true" aria-label={`${getActivityLabel(modalActivity)} details`} onClick={e => e.stopPropagation()}>
+              <DialogA11y onClose={() => setScrimModal(null)} />
               <div className="build-tab__scrim-modal-header">
                 <h3 className="build-tab__scrim-modal-title">{getActivityLabel(modalActivity)} Details</h3>
                 <span className="build-tab__scrim-modal-subtitle">{dayLabel} {timeLabel}</span>
@@ -1733,7 +1754,8 @@ export function BuildTab() {
 
         return (
           <div className="build-tab__scrim-overlay" onClick={() => setOutcomeModal(null)}>
-            <div className="build-tab__outcome-modal" onClick={e => e.stopPropagation()}>
+            <div className="build-tab__outcome-modal" role="dialog" aria-modal="true" aria-label="Scrim outcome" onClick={e => e.stopPropagation()}>
+              <DialogA11y onClose={() => setOutcomeModal(null)} />
               <div className="build-tab__scrim-modal-header">
                 <ClipboardList size={18} />
                 <div>

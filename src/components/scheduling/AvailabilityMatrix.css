@@ -186,6 +186,19 @@
   flex-shrink: 0;
 }
 
+/* Initial shown when a player has no avatar or their stored Discord avatar URL has gone stale. */
+.discord-avatar--fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.18);
+  color: #cbd5e1;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
 .avail-matrix__player-name {
   font-size: 0.8rem;
   color: #e2e8f0;

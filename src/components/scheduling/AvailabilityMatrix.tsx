@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useMemo, useEffect } from 'react'
+import { DiscordAvatar } from './DiscordAvatar'
 import { DialogA11y } from '@/admin-kit'
 import { Check, HelpCircle, Minus, XCircle, Users } from 'lucide-react'
 import { useSchedule } from './ScheduleContext'
@@ -351,9 +352,7 @@ export function AvailabilityMatrix() {
                 <tr key={player.discordId} className={`avail-matrix__row ${!player.responded ? 'avail-matrix__row--no-response' : ''}`}>
                   <td className="avail-matrix__player-cell">
                     <div className="avail-matrix__player-info">
-                      {player.avatar && (
-                        <img loading="lazy" decoding="async" src={player.avatar} alt="" className="avail-matrix__player-avatar" width={20} height={20} />
-                      )}
+                      <DiscordAvatar discordId={player.discordId} avatar={player.avatar} name={player.name} size={22} className="avail-matrix__player-avatar" />
                       <span className="avail-matrix__player-name">{player.name}</span>
                       {canEditRole ? (
                         <button
@@ -409,9 +408,7 @@ export function AvailabilityMatrix() {
  aria-modal="true"
  onClick={(e) => e.stopPropagation()}>
             <div className="avail-matrix__modal-header">
-              {roleModal.avatar && (
-                <img loading="lazy" decoding="async" src={roleModal.avatar} alt="" className="avail-matrix__modal-avatar" width={32} height={32} />
-              )}
+              <DiscordAvatar discordId={roleModal.discordId} avatar={roleModal.avatar} name={roleModal.name} size={32} className="avail-matrix__modal-avatar" />
               <span className="avail-matrix__modal-name">{roleModal.name}</span>
             </div>
             <div className="avail-matrix__modal-options">

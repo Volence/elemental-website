@@ -19,12 +19,12 @@ function person(id: number, name: string) {
   return { id, name, discordId: `d${id}` }
 }
 
-function block(slots: { role: string; isTrial?: boolean; playerIds?: string[] }[], time = '8-10', startTime = '20:00') {
+function block(slots: { role: string; isTrial?: boolean; playerIds?: string[]; isRinger?: boolean; ringerName?: string }[], time = '8-10', startTime = '20:00') {
   return {
     id: `b-${time}`,
     time,
     startTime,
-    slots: slots.map(s => ({ role: s.role, playerId: s.playerIds?.[0] || null, playerIds: s.playerIds || [], isTrial: s.isTrial })),
+    slots: slots.map(s => ({ role: s.role, playerId: s.playerIds?.[0] || null, playerIds: s.playerIds || [], isTrial: s.isTrial, isRinger: s.isRinger, ringerName: s.ringerName })),
   }
 }
 
@@ -77,7 +77,7 @@ describe('suggestLineup trial handling', () => {
     expect(slots.find(s => s.role === 'Flex DPS')!.playerId).toBe('4')
   })
 
-  it('does not treat a trial slot as a duplicate of the main role when deciding multi-assignment', () => {
+  it('puts exactly one player on a main slot even when several are available', () => {
     const days = [day([block([
       { role: 'Hitscan' },
       { role: 'Hitscan', isTrial: true },
@@ -88,17 +88,36 @@ describe('suggestLineup trial handling', () => {
     ]
     const [out] = suggestLineup(days as any, roster as any, [], responses)
     const main = out.blocks[0].slots.find(s => s.role === 'Hitscan' && !s.isTrial)!
-    // Only one main Hitscan slot exists, so both candidates should be offered on it
-    expect(new Set(main.playerIds)).toEqual(new Set(['2', '3']))
+    // One seat, one player. The other Hitscan stays on the bench instead of
+    // being printed as a second name on the posted roster.
+    expect(main.playerIds).toHaveLength(1)
+    expect(['2', '3']).toContain(main.playerId)
   })
 
-  it('honours scheduleStatus=sub for a rostered player', () => {
-    const days = [day([block([{ role: 'Tank' }])])]
-    const responses = [response('d1', { scheduleStatus: 'sub' })]
+  it('prefers a main-status player over a sub for a main slot, and uses the sub when nobody else is there', () => {
+    const days = [day([block([{ role: 'Hitscan' }])])]
+    const withMain = [response('d2', { scheduleStatus: 'sub' }), response('d3')]
+    const [a] = suggestLineup(days as any, roster as any, [], withMain)
+    expect(a.blocks[0].slots[0].playerIds).toEqual(['3'])
+
+    const onlySub = [response('d1', { scheduleStatus: 'sub' })]
+    const [b] = suggestLineup([day([block([{ role: 'Tank' }])])] as any, roster as any, [], onlySub)
+    expect(b.blocks[0].slots[0].playerId).toBe('1')
+  })
+
+  it('leaves manual picks and ringer slots alone and never offers an assigned player twice', () => {
+    const days = [day([block([
+      { role: 'Tank', playerIds: ['4'] },
+      { role: 'Hitscan' },
+      { role: 'Flex DPS', isRinger: true, ringerName: 'Ringer Needed' },
+    ])])]
+    const responses = [response('d1'), response('d2'), response('d4')]
     const [out] = suggestLineup(days as any, roster as any, [], responses)
-    // Subs are still eligible for main slots when nobody else is, so status
-    // must simply not be "trial"; verify they land in the Tank slot.
-    expect(out.blocks[0].slots[0].playerId).toBe('1')
+    const [tank, hitscan, flex] = out.blocks[0].slots
+    expect(tank.playerIds).toEqual(['4'])
+    expect(hitscan.playerIds).toEqual(['2'])
+    expect(flex.playerIds ?? []).toEqual([])
+    expect(flex.isRinger).toBe(true)
   })
 })
 

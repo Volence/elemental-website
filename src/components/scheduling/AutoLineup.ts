@@ -1,5 +1,5 @@
 import type { RosterEntry } from './types'
-import { rolePrimaryMatch } from './lineup-roles'
+import { rolePrimaryMatch, getSlotPlayerIds } from './lineup-roles'
 
 interface PlayerSlot {
   role: string
@@ -149,27 +149,38 @@ export function suggestLineup(
         roleCounts[key] = (roleCounts[key] || 0) + 1
       }
 
+      // Manual picks win: anyone already on a slot stays there and is not
+      // offered again, and a slot the manager filled (or marked for a ringer)
+      // is left alone. Suggest only fills the gaps.
       const assignedIds = new Set<string>()
+      for (const s of block.slots) for (const id of getSlotPlayerIds(s)) assignedIds.add(id)
       const newSlots: PlayerSlot[] = [...block.slots]
 
       // Exact role matches only. Trial slots take trial players, main slots take everyone else.
       for (let i = 0; i < newSlots.length; i++) {
         const slot = newSlots[i]
+        if (getSlotPlayerIds(slot).length > 0) continue
+        if (slot.isRinger && slot.ringerName) continue
         const confirmed = availablePlayers.filter(
           p => !assignedIds.has(p.personId) && p.blockStatus === 'available' && rolePrimaryMatch(p.scheduleRole, slot.role)
             && (slot.isTrial ? p.status === 'trial' : p.status !== 'trial')
         )
-        if (confirmed.length > 0) {
-          const key = `${slot.isTrial ? 'trial:' : ''}${slot.role}`
-          const isUniqueRole = (roleCounts[key] || 0) <= 1
-          if (isUniqueRole) {
-            for (const m of confirmed) assignedIds.add(m.personId)
-            const ids = confirmed.map(m => m.personId)
-            newSlots[i] = { ...slot, playerId: ids[0], playerIds: ids }
-          } else {
-            assignedIds.add(confirmed[0].personId)
-            newSlots[i] = { ...slot, playerId: confirmed[0].personId, playerIds: [confirmed[0].personId] }
-          }
+        if (confirmed.length === 0) continue
+        const key = `${slot.isTrial ? 'trial:' : ''}${slot.role}`
+        const isUniqueRole = (roleCounts[key] || 0) <= 1
+        if (slot.isTrial && isUniqueRole) {
+          // A trial row is a shortlist: every tryout for that role is shown so
+          // the manager can pick who plays.
+          for (const m of confirmed) assignedIds.add(m.personId)
+          const ids = confirmed.map(m => m.personId)
+          newSlots[i] = { ...slot, playerId: ids[0], playerIds: ids }
+        } else {
+          // A main slot is one seat. The list is sorted best-first (available
+          // over maybe, main over sub, most weekly availability), so take the
+          // top candidate; the rest stay on the bench instead of being printed
+          // as extra players on the posted roster.
+          assignedIds.add(confirmed[0].personId)
+          newSlots[i] = { ...slot, playerId: confirmed[0].personId, playerIds: [confirmed[0].personId] }
         }
       }
 

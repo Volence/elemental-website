@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useCallback, useMemo } from 'react'
+import { DiscordAvatar } from './DiscordAvatar'
 import { Calendar, Check, Minus, HelpCircle, Save, CheckCircle, Loader2, XCircle, LogIn } from 'lucide-react'
 import { useSchedule } from './ScheduleContext'
 import './AvailabilityVoting.css'
@@ -272,9 +273,7 @@ function AvailabilityVotingGrid({
       </div>
 
       <div className="avail-voting__user">
-        {authState.discordUser?.avatar && (
-          <img loading="lazy" decoding="async" src={authState.discordUser.avatar} alt="" className="avail-voting__user-avatar" width={24} height={24} />
-        )}
+        <DiscordAvatar discordId={authState.discordUser?.id} avatar={authState.discordUser?.avatar} name={authState.discordUser?.username ?? ''} size={24} className="avail-voting__user-avatar" />
         <span>Filling in as <strong>{authState.discordUser?.username}</strong></span>
       </div>
 
