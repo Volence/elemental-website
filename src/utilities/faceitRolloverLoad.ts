@@ -117,3 +117,30 @@ export async function getLatestSeasonPlan(payload: Payload, refresh = false): Pr
 export function invalidateLatestSeasonPlan(): void {
   cached = null
 }
+
+/**
+ * Non-blocking variant for page loads: return whatever is cached (even if
+ * stale) and, when the cache is missing, stale, or a refresh was asked for,
+ * start one lookup in the background. `pending` tells the caller to poll.
+ */
+let background: Promise<void> | null = null
+
+export function peekLatestSeasonPlan(payload: Payload, refresh = false): { plan: RolloverPlan | null; checkedAt: string | null; pending: boolean } {
+  const fresh = !!cached && Date.now() - cached.at < REGISTRATION_TTL_MS
+  if ((!fresh || refresh) && !background) {
+    // Set synchronously so this very response can report pending: true
+    background = getLatestSeasonPlan(payload, true)
+      .then(() => undefined)
+      .catch((err) => {
+        console.error('[FaceitRolloverLoad] background registration lookup failed:', (err as Error).message)
+      })
+      .finally(() => {
+        background = null
+      })
+  }
+  return {
+    plan: cached?.plan ?? null,
+    checkedAt: cached ? new Date(cached.at).toISOString() : null,
+    pending: !!background,
+  }
+}

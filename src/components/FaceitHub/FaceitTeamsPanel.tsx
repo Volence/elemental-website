@@ -17,8 +17,12 @@ interface Overview {
   leagues: FaceitOverviewLeague[]
   teams: FaceitTeamRow[]
   registrationCheckedAt: string | null
+  registrationPending: boolean
   warnings: string[]
 }
+
+const POLL_MS = 3000
+const POLL_MAX = 30
 
 type Filter = 'attention' | 'all'
 
@@ -50,6 +54,21 @@ export default function FaceitTeamsPanel() {
   useEffect(() => {
     load()
   }, [load])
+
+  // The registration lookup runs server-side in the background; poll until it lands.
+  useEffect(() => {
+    if (!data?.registrationPending) return
+    let polls = 0
+    const timer = setInterval(() => {
+      polls += 1
+      if (polls > POLL_MAX) {
+        clearInterval(timer)
+        return
+      }
+      load()
+    }, POLL_MS)
+    return () => clearInterval(timer)
+  }, [data?.registrationPending, load])
 
   const rows = useMemo(() => {
     if (!data) return []
@@ -302,9 +321,11 @@ export default function FaceitTeamsPanel() {
       className="faceit-teams"
       title={<><Users size={16} /> Teams</>}
       description={
-        data?.registrationCheckedAt
-          ? `FACEIT registrations for Season ${data.latestSeasonNumber ?? ''} checked ${formatRelative(data.registrationCheckedAt)}.`
-          : 'FACEIT registrations not checked yet.'
+        data?.registrationPending
+          ? `Checking FACEIT registrations for Season ${data.latestSeasonNumber ?? ''}... statuses update when it finishes.`
+          : data?.registrationCheckedAt
+            ? `FACEIT registrations for Season ${data.latestSeasonNumber ?? ''} checked ${formatRelative(data.registrationCheckedAt)}.`
+            : 'FACEIT registrations not checked yet.'
       }
       actions={
         <div className="faceit-teams__toolbar">
@@ -316,8 +337,8 @@ export default function FaceitTeamsPanel() {
               All{data ? ` (${data.teams.filter((t) => t.active).length})` : ''}
             </button>
           </div>
-          <Button size="small" buttonStyle="secondary" disabled={refreshing} onClick={() => load(true)}>
-            <RefreshCw size={12} /> {refreshing ? 'Checking FACEIT...' : 'Recheck registrations'}
+          <Button size="small" buttonStyle="secondary" disabled={refreshing || !!data?.registrationPending} onClick={() => load(true)}>
+            <RefreshCw size={12} /> {refreshing || data?.registrationPending ? 'Checking FACEIT...' : 'Recheck registrations'}
           </Button>
         </div>
       }

@@ -175,7 +175,7 @@ export function buildNavAreas({ user, collections, globals }: BuildNavInput): Na
         ...teamLinks,
         when(isPugAdmin(user), view('/pug-dashboard', 'PUG Dashboard', 'gamepad')),
         when(has('discord-polls'), view('/schedules', 'Schedules', 'calendar-days')),
-        when(has('faceit-leagues'), collection('faceit-leagues', 'FaceIt Leagues', 'trophy')),
+        when(has('faceit-leagues'), collection('faceit-leagues', 'FaceIt', 'trophy')),
         // Heroes and Maps share one tabbed reference page (/admin/game-data) instead of two entries.
         when(has('heroes') || has('maps'), view('/game-data', 'Heroes & Maps', 'sparkles')),
       ],

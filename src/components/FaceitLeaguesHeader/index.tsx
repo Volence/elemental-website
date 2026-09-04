@@ -89,18 +89,20 @@ const FaceitLeaguesHeader: React.FC = () => {
 
       setInactiveLeagueWarnings(warnings)
 
-      // Store all finalized (inactive) leagues with their team seasons
-      const finalizedWithSeasons = await Promise.all(
-        inactiveLeagues.map(async (league: any) => {
-          const seasonsRes = await fetch(`/api/faceit-seasons?where[faceitLeague][equals]=${league.id}&depth=1&limit=50`)
-          const seasonsData = await seasonsRes.json()
-          return {
-            ...league,
-            teamSeasons: seasonsData.docs || [],
-          }
-        })
+      // Finalized (inactive) leagues with their team seasons: one query, grouped here
+      let seasonDocs: any[] = []
+      if (inactiveIds.length > 0) {
+        const seasonsRes = await fetch(`/api/faceit-seasons?where[faceitLeague][in]=${inactiveIds.join(',')}&depth=1&limit=1000`)
+        const seasonsData = await seasonsRes.json()
+        seasonDocs = seasonsData.docs || []
+      }
+      const seasonLeagueId = (s: any) => (typeof s.faceitLeague === 'object' ? s.faceitLeague?.id : s.faceitLeague)
+      setFinalizedLeagues(
+        inactiveLeagues.map((league: any) => ({
+          ...league,
+          teamSeasons: seasonDocs.filter((s) => seasonLeagueId(s) === league.id),
+        })),
       )
-      setFinalizedLeagues(finalizedWithSeasons)
     } catch (error) {
       console.error('Error fetching FaceIt league warnings:', error)
     } finally {

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload, type Payload } from 'payload'
 import configPromise from '@payload-config'
 import { authenticateRequest, requireAdmin } from '@/utilities/apiAuth'
-import { getLatestSeasonPlan, invalidateLatestSeasonPlan } from '@/utilities/faceitRolloverLoad'
+import { invalidateLatestSeasonPlan, peekLatestSeasonPlan } from '@/utilities/faceitRolloverLoad'
 import { syncTeamData } from '@/utilities/faceitSync'
 import type { FaceitTeamRow, FaceitOverviewLeague } from '@/utilities/faceitTeamStatus'
 
@@ -10,7 +10,11 @@ import type { FaceitTeamRow, FaceitOverviewLeague } from '@/utilities/faceitTeam
  * FACEIT teams overview: every team's FACEIT configuration in one response,
  * with FACEIT's registration picture for the latest season folded in.
  *
- * GET  ?refresh=1        -> { latestSeasonNumber, leagues, teams, registrationCheckedAt, warnings }
+ * GET  ?refresh=1        -> { latestSeasonNumber, leagues, teams, registrationCheckedAt,
+ *                            registrationPending, warnings }
+ *   The FACEIT registration lookup (14 calls) runs in the background; the
+ *   response never waits for it. While `registrationPending` is true the
+ *   client polls and the registration column fills in when it lands.
  * POST { action, teamId } -> 'sync' runs the team's sync; 'clearLeague' drops a
  *                            stale league pointer on a disabled or inactive team.
  * Admin only. Field edits go through the normal /api/teams/:id PATCH.
@@ -29,13 +33,8 @@ async function buildOverview(payload: Payload, refresh: boolean) {
   const leagueById = new Map<number, any>(leagues.docs.map((l: any) => [l.id, l]))
 
   const warnings: string[] = []
-  let registration: Awaited<ReturnType<typeof getLatestSeasonPlan>> = null
-  try {
-    registration = await getLatestSeasonPlan(payload, refresh)
-  } catch (err) {
-    warnings.push(`FACEIT registration lookup failed: ${(err as Error).message}`)
-  }
-  const plan = registration?.plan ?? null
+  const registration = peekLatestSeasonPlan(payload, refresh)
+  const plan = registration.plan
   const assignedByTeam = new Map(plan?.assignments.map((a) => [a.teamId, a]) ?? [])
   const unmatchedByTeam = new Map(plan?.unmatched.map((u) => [u.teamId, u]) ?? [])
   const conflictTeams = new Set(plan?.conflicts.map((c) => c.teamId) ?? [])
@@ -86,7 +85,8 @@ async function buildOverview(payload: Payload, refresh: boolean) {
     latestSeasonNumber: plan?.season.number ?? activeLeagues.reduce<number | null>((m, l) => (l.seasonNumber != null && (m === null || l.seasonNumber > m) ? l.seasonNumber : m), null),
     leagues: activeLeagues,
     teams: rows,
-    registrationCheckedAt: registration?.checkedAt ?? null,
+    registrationCheckedAt: registration.checkedAt,
+    registrationPending: registration.pending,
     warnings: [...warnings, ...(plan?.warnings ?? [])],
   }
 }
