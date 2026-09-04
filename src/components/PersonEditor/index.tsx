@@ -61,7 +61,6 @@ export type PersonData = {
   notes: string | null
   photo: { url: string; filename: string } | number | null
   discordId: string | null
-  showInLiveStreamers: boolean
   gameAliases: Array<{ alias: string; id?: string }> | null
   socialLinks: {
     twitter?: string | null
@@ -176,7 +175,6 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
   const [discordId, setDiscordId] = useState('')
-  const [showInLiveStreamers, setShowInLiveStreamers] = useState(false)
   const [gameAliases, setGameAliases] = useState<Array<{ alias: string }>>([])
   const [notes, setNotes] = useState('')
 
@@ -223,7 +221,6 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
       setName(data.name ?? '')
       setSlug(data.slug ?? '')
       setDiscordId(data.discordId ?? '')
-      setShowInLiveStreamers(data.showInLiveStreamers ?? false)
       setGameAliases(data.gameAliases ?? [])
       setNotes(data.notes ?? '')
 
@@ -308,7 +305,6 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
         payload.name = name
         payload.slug = slug
         payload.discordId = discordId || null
-        payload.showInLiveStreamers = showInLiveStreamers
         payload.gameAliases = gameAliases.filter(a => a.alias.trim())
         payload.notes = notes || null
         if (isAdmin) {
@@ -626,6 +622,9 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
                 </div>
               ))}
             </div>
+            <p style={styles.fieldHint}>
+              Your Twitch link also puts you on the Discord live roster and elmt.gg/live whenever you stream. Clear it to opt out.
+            </p>
             {/* Custom Links */}
             <div style={{ marginTop: 16, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 16 }}>
               <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 10 }}>Custom Links</p>
@@ -915,17 +914,6 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
                   <label style={styles.fieldLabel}>Discord ID</label>
                   <input className="profile-input" value={discordId} onChange={(e) => setDiscordId(e.target.value)} placeholder="17-19 digit Discord User ID" />
                 </div>
-                <div style={{ ...styles.readonlyField, justifyContent: 'space-between' }}>
-                  <div>
-                    <span style={styles.fieldLabel}>Show in Live Streamers</span>
-                    <p style={{ fontSize: 12, color: 'var(--elmt-text-disabled)', margin: '2px 0 0' }}>Requires a Twitch URL in Social Links</p>
-                  </div>
-                  <button
-                    className={`toggle-switch ${showInLiveStreamers ? 'on' : 'off'}`}
-                    onClick={() => setShowInLiveStreamers(!showInLiveStreamers)}
-                    type="button"
-                  />
-                </div>
               </>
             ) : (
               <>
@@ -941,12 +929,6 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
                   <span style={styles.readonlyLabel}>Discord ID</span>
                   <span style={styles.readonlyValue}>
                     {person.discordId || <span style={{ opacity: 0.3 }}>Not set</span>}
-                  </span>
-                </div>
-                <div style={styles.readonlyField}>
-                  <span style={styles.readonlyLabel}>Live Streamer</span>
-                  <span style={styles.readonlyValue}>
-                    {person.showInLiveStreamers ? '✓ Enabled' : 'Disabled'}
                   </span>
                 </div>
               </>

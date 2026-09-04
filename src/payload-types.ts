@@ -730,7 +730,7 @@ export interface Person {
    */
   mergedInto?: (number | null) | Person;
   /**
-   * Show this person in the Live Streamers section when streaming.
+   * Legacy flag. The live roster follows the Twitch social link.
    */
   showInLiveStreamers?: boolean | null;
   updatedAt: string;

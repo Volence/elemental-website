@@ -5,6 +5,7 @@ import { authenticated } from '../../access/authenticated'
 import { anyone } from '../../access/anyone'
 import { UserRole, adminOnly, isAdmin, isPugAdmin } from '../../access/roles'
 import { auditPeopleChanges } from './hooks/auditAccessChanges'
+import { syncTwitchStreamer } from './hooks/syncTwitchStreamer'
 import { createAccessAllowsData, enforceDiscordIdOnCreate } from './hooks/enforceDiscordId'
 import { createAuditLogDeleteHook } from '../../utilities/auditLogger'
 import { trackLogin, trackLogout } from '../../utilities/sessionTracker'
@@ -491,8 +492,11 @@ export const People: CollectionConfig = {
       defaultValue: false,
       access: { update: managerOnly },
       admin: {
+        // Legacy: nothing reads this any more. The live roster follows
+        // socialLinks.twitch via the syncTwitchStreamer hook.
+        hidden: true,
         position: 'sidebar',
-        description: 'Show this person in the Live Streamers section when streaming.',
+        description: 'Legacy flag. The live roster follows the Twitch social link.',
       },
     },
     {
@@ -507,7 +511,7 @@ export const People: CollectionConfig = {
     },
   ],
   hooks: {
-    afterChange: [auditPeopleChanges],
+    afterChange: [auditPeopleChanges, syncTwitchStreamer],
     afterDelete: [createAuditLogDeleteHook('people')],
     afterLogin: [
       async ({ req, user }) => {

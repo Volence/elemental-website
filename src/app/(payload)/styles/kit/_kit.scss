@@ -82,6 +82,11 @@
 }
 
 .kit-tabs {
+  // Rows with many tabs (Discord Server Manager has 13) wrap onto a second line
+  // instead of scrolling behind a hidden scrollbar, which clipped the last tabs.
+  flex-wrap: wrap;
+  overflow: visible;
+
   &--info { @include kit-tabs-accent($admin-accent-info); }
   &--primary { @include kit-tabs-accent($admin-accent-primary); }
   &--warning { @include kit-tabs-accent($admin-accent-warning); }
