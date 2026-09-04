@@ -1089,7 +1089,7 @@ export interface FolderInterface {
   createdAt: string;
 }
 /**
- * FaceIt league templates - Admin-only. Teams select from these when enabling FaceIt.
+ * FaceIt league templates - Admin-only. Created by the season rollover; teams select from these when enabling FaceIt.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "faceit-leagues".
