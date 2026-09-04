@@ -114,9 +114,16 @@ export async function applyRolloverPlan(payload: Payload, plan: RolloverPlan, ov
         plan.conflicts.find((c) => c.teamId === teamId)?.teamName ??
         `Team #${teamId}`
       const override = overrides[String(teamId)]
+      const isUnmatched = plan.unmatched.some((u) => u.teamId === teamId)
+      const isConflict = plan.conflicts.some((c) => c.teamId === teamId)
       let league: PlannedLeague | undefined
       if (override === null) {
-        report.teamsSkipped.push({ teamId, teamName: name, reason: 'Skipped by admin' })
+        const reason = isUnmatched
+          ? 'Not found in FACEIT registrations (left on Skip)'
+          : isConflict
+            ? 'Registered in more than one division (left on Skip)'
+            : 'Skipped by admin'
+        report.teamsSkipped.push({ teamId, teamName: name, reason })
         continue
       } else if (typeof override === 'string') {
         league = leagueByStage.get(override)
@@ -128,9 +135,7 @@ export async function applyRolloverPlan(payload: Payload, plan: RolloverPlan, ov
         const a = planned.get(teamId)
         league = a ? plan.leagues.find((l) => l.key === a.toKey) : undefined
         if (!league) {
-          const reason = plan.conflicts.some((c) => c.teamId === teamId)
-            ? 'Registered in more than one division'
-            : 'Not found in FACEIT registrations'
+          const reason = isConflict ? 'Registered in more than one division' : 'Not found in FACEIT registrations'
           report.teamsSkipped.push({ teamId, teamName: name, reason })
           continue
         }
@@ -145,11 +150,19 @@ export async function applyRolloverPlan(payload: Payload, plan: RolloverPlan, ov
         continue
       }
       try {
-        // The Teams beforeChange hook retires the old active season and creates the new one
+        // The Teams beforeChange hook retires the old active season and creates the
+        // new one, but only when the incoming data carries faceitEnabled and the
+        // team id, so send those along with the league.
+        const current = await payload.findByID({ collection: 'teams', id: move.teamId, depth: 0, overrideAccess: true })
         await payload.update({
           collection: 'teams',
           id: move.teamId,
-          data: { currentFaceitLeague: leagueId, faceitWithdrawn: false } as any,
+          data: {
+            faceitEnabled: true,
+            faceitTeamId: (current as any).faceitTeamId,
+            currentFaceitLeague: leagueId,
+            faceitWithdrawn: false,
+          } as any,
           overrideAccess: true,
         })
         report.teamsAssigned.push({ teamId: move.teamId, teamName: move.teamName, league: move.league.name })

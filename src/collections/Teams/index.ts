@@ -927,7 +927,7 @@ export const Teams: CollectionConfig = {
       },
     ],
     beforeChange: [
-      async ({ data, req, operation }) => {
+      async ({ data, req, operation, originalDoc }) => {
         // Preserve discordCardMessageId - this readOnly field may not be included
         // in admin form submissions, which would cause it to be cleared and
         // result in duplicate Discord cards being posted instead of edited
@@ -968,7 +968,9 @@ export const Teams: CollectionConfig = {
         
         // Auto-create/update FaceitSeason when currentFaceitLeague is selected
         // Only run on update (not create) since we need a valid team ID
-        const teamId = data.id || req.data?.id
+        // Admin form submissions carry the id in data; local API updates (the season
+        // rollover, scripts) only have it on originalDoc.
+        const teamId = data.id || req.data?.id || originalDoc?.id
         const hasValidTeamId = teamId && typeof teamId === 'number' && !isNaN(teamId)
         
         if (operation === 'update' && hasValidTeamId && data.faceitEnabled && data.currentFaceitLeague && data.faceitTeamId) {
@@ -983,7 +985,7 @@ export const Teams: CollectionConfig = {
               collection: 'faceit-seasons',
               where: {
                 and: [
-                  { team: { equals: data.id || req.data?.id } },
+                  { team: { equals: teamId } },
                   { faceitLeague: { equals: data.currentFaceitLeague } },
                 ],
               },
@@ -995,7 +997,7 @@ export const Teams: CollectionConfig = {
                 collection: 'faceit-seasons',
                 where: {
                   and: [
-                    { team: { equals: data.id || req.data?.id } },
+                    { team: { equals: teamId } },
                     { isActive: { equals: true } },
                   ],
                 },
@@ -1006,7 +1008,7 @@ export const Teams: CollectionConfig = {
               const newSeason = await req.payload.create({
                 collection: 'faceit-seasons',
                 data: {
-                  team: data.id || req.data?.id,
+                  team: teamId,
                   faceitLeague: data.currentFaceitLeague,
                   faceitTeamId: data.faceitTeamId,
                   seasonName: league.name,

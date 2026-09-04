@@ -69,7 +69,7 @@
   export function createFaceitFetchers(apiKey: string | undefined): RolloverFetchers
   ```
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```ts
 // tests/int/faceit-rollover.int.spec.ts
@@ -109,12 +109,12 @@ describe('detectSeasons', () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts tests/int/faceit-rollover.int.spec.ts`
 Expected: FAIL, "Failed to resolve import "@/utilities/faceitRollover"".
 
-- [ ] **Step 3: Write the module with types, detection, and the real fetchers**
+- [x] **Step 3: Write the module with types, detection, and the real fetchers**
 
 ```ts
 // src/utilities/faceitRollover.ts
@@ -221,12 +221,12 @@ export function normalizeRegion(codeOrName: string): RolloverRegion | null {
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `npx cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts tests/int/faceit-rollover.int.spec.ts`
 Expected: PASS (4 tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/utilities/faceitRollover.ts tests/int/faceit-rollover.int.spec.ts
@@ -261,7 +261,7 @@ git commit -m "feat(faceit): rollover planning module with season detection and 
   export function leaguesFromTree(tree: any, season: FaceitSeasonInfo, leagueId: string): PlannedLeague[]
   ```
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/int/faceit-rollover.int.spec.ts`:
 
@@ -333,12 +333,12 @@ describe('leaguesFromTree', () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts tests/int/faceit-rollover.int.spec.ts`
 Expected: FAIL, `leaguesFromTree` is not exported.
 
-- [ ] **Step 3: Implement the tree walk**
+- [x] **Step 3: Implement the tree walk**
 
 Append to `src/utilities/faceitRollover.ts`:
 
@@ -400,12 +400,12 @@ export function leaguesFromTree(tree: any, season: FaceitSeasonInfo, leagueId: s
 
 Note: `normalizeDivision('Master Relegation')` returns null because it is not an exact division name, which is what skips relegation. `normalizeDivision('OWCS')` and `'OWCS P/R'` are null too.
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `npx cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts tests/int/faceit-rollover.int.spec.ts`
 Expected: PASS (8 tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/utilities/faceitRollover.ts tests/int/faceit-rollover.int.spec.ts
@@ -443,7 +443,7 @@ git commit -m "feat(faceit): derive league templates from the FACEIT season tree
   export async function loadSubscriptions(leagues: PlannedLeague[], fetchers: RolloverFetchers, warnings: string[]): Promise<Map<string, Array<{ teamId: string; name: string }>>>
   ```
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/int/faceit-rollover.int.spec.ts`:
 
@@ -514,12 +514,12 @@ describe('buildRolloverPlan', () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts tests/int/faceit-rollover.int.spec.ts`
 Expected: FAIL, `buildRolloverPlan` is not exported.
 
-- [ ] **Step 3: Implement plan building**
+- [x] **Step 3: Implement plan building**
 
 Append to `src/utilities/faceitRollover.ts`:
 
@@ -674,12 +674,12 @@ export async function loadSubscriptions(leagues: PlannedLeague[], fetchers: Roll
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `npx cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts tests/int/faceit-rollover.int.spec.ts`
 Expected: PASS (15 tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/utilities/faceitRollover.ts tests/int/faceit-rollover.int.spec.ts
@@ -708,7 +708,7 @@ git commit -m "feat(faceit): build the rollover plan from tree, registrations an
   export async function finalizeLeague(payload: Payload, league: { id: number; name: string; stageId?: string | null; championshipId?: string | null }, deps?: FinalizeDeps): Promise<FinalizeLeagueResult>
   ```
 
-- [ ] **Step 1: Write the failing test for the pure part**
+- [x] **Step 1: Write the failing test for the pure part**
 
 ```ts
 // tests/int/faceit-finalize.int.spec.ts
@@ -744,12 +744,12 @@ describe('buildArchivedMatches', () => {
 
 Note: the second match's opponent `ft-b` is not in the names map and the pure function does not call the network, so it falls back to `BYE` exactly as the route does for unknown names. Network name lookup stays in `finalizeLeague`, which pre-resolves names before calling `buildArchivedMatches`.
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts tests/int/faceit-finalize.int.spec.ts`
 Expected: FAIL, module not found.
 
-- [ ] **Step 3: Create the utility by moving the route's helpers**
+- [x] **Step 3: Create the utility by moving the route's helpers**
 
 ```ts
 // src/utilities/faceitFinalize.ts
@@ -919,7 +919,7 @@ export async function finalizeLeague(
 }
 ```
 
-- [ ] **Step 4: Rewrite the route to use it**
+- [x] **Step 4: Rewrite the route to use it**
 
 Replace the whole body of `src/app/api/faceit/finalize-season/route.ts` with:
 
@@ -978,14 +978,14 @@ export async function POST(request: NextRequest) {
 }
 ```
 
-- [ ] **Step 5: Run tests and typecheck**
+- [x] **Step 5: Run tests and typecheck**
 
 Run: `npx cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts tests/int/faceit-finalize.int.spec.ts`
 Expected: PASS (3 tests).
 Run: `npx tsc --noEmit -p tsconfig.json`
 Expected: no output.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/utilities/faceitFinalize.ts src/app/api/faceit/finalize-season/route.ts tests/int/faceit-finalize.int.spec.ts
@@ -1008,7 +1008,7 @@ git commit -m "refactor(faceit): extract finalizeLeague so the rollover can reus
 **Interfaces:**
 - Produces: `teams.faceitWithdrawn?: boolean | null` on the Team type. Later tasks read it.
 
-- [ ] **Step 1: Add the field**
+- [x] **Step 1: Add the field**
 
 In `src/collections/Teams/index.ts`, directly after the `currentFaceitLeague` field object inside the FaceIt Integration tab, add:
 
@@ -1026,7 +1026,7 @@ In `src/collections/Teams/index.ts`, directly after the `currentFaceitLeague` fi
             },
 ```
 
-- [ ] **Step 2: Cancel future synced matches when the flag flips on**
+- [x] **Step 2: Cancel future synced matches when the flag flips on**
 
 In the Teams `afterChange` hook (the `async ({ doc, operation, previousDoc, req })` function starting near line 804), add before its final `return doc`:
 
@@ -1064,7 +1064,7 @@ In the Teams `afterChange` hook (the `async ({ doc, operation, previousDoc, req 
 
 Check the exact field name for the FACEIT flag on matches with `grep -n "syncedFromFaceit" src/collections/Matches/index.ts`; use that name.
 
-- [ ] **Step 3: Migration**
+- [x] **Step 3: Migration**
 
 ```ts
 // src/migrations/20260904_teams_faceit_withdrawn.ts
@@ -1103,7 +1103,7 @@ Apply to the dev database now:
 docker exec elemental-website-postgres-1 psql -U payload -d payload -c 'ALTER TABLE "teams" ADD COLUMN IF NOT EXISTS "faceit_withdrawn" boolean DEFAULT false;'
 ```
 
-- [ ] **Step 4: Sync guards**
+- [x] **Step 4: Sync guards**
 
 In `src/utilities/faceitSync.ts`, `syncTeamData`, right after the `if (!team.faceitEnabled)` return:
 
@@ -1131,11 +1131,11 @@ In `src/app/api/data-consistency-check/route.ts` check 5, change the filter to:
         .filter((t: any) => t.faceitEnabled && !t.faceitWithdrawn && !teamsWithActiveSeason.has(t.id))
 ```
 
-- [ ] **Step 5: Typecheck and regenerate types**
+- [x] **Step 5: Typecheck and regenerate types**
 
 Run: `npx tsc --noEmit -p tsconfig.json` (expected clean). The dev server regenerates `src/payload-types.ts` on its own; if `faceitWithdrawn` is missing from `Team` there, run `docker exec elemental-dev-3100 sh -c 'cd /home/node/app && npx payload generate:types'`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/collections/Teams/index.ts src/migrations/20260904_teams_faceit_withdrawn.ts src/migrations/index.ts src/utilities/faceitSync.ts src/app/api/cron/full-sync/route.ts src/app/api/faceit/sync-all/route.ts src/discord/services/faceitUpdates.ts src/app/api/data-consistency-check/route.ts src/payload-types.ts
@@ -1154,7 +1154,7 @@ git commit -m "feat(teams): withdrawn-from-season flag stops FACEIT sync and pos
 - Consumes: `team.faceitWithdrawn` (Task 5).
 - Produces: standings response gains `withdrawn: boolean`.
 
-- [ ] **Step 1: Include the flag in the standings response**
+- [x] **Step 1: Include the flag in the standings response**
 
 In `src/app/api/faceit/standings/[teamId]/route.ts`, the handler already loads seasons for the team. Add a team lookup after the id check and include the flag in the JSON returned (find the `NextResponse.json({ currentSeason` call and add the key):
 
@@ -1167,7 +1167,7 @@ In `src/app/api/faceit/standings/[teamId]/route.ts`, the handler already loads s
       currentSeason: ...,   // existing fields unchanged
 ```
 
-- [ ] **Step 2: Render it**
+- [x] **Step 2: Render it**
 
 In `CompetitiveSection.tsx`, store `standingsData.withdrawn` in state next to `setStanding(standingsData.currentSeason)`:
 
@@ -1191,11 +1191,11 @@ Where the current season standings block renders (the branch that shows rank and
 
 Keep the historical seasons section as is.
 
-- [ ] **Step 3: Verify in the browser**
+- [x] **Step 3: Verify in the browser**
 
 Set `faceit_withdrawn = true` on a dev team with a season (for example `update teams set faceit_withdrawn = true where id = 66;`), open `http://localhost:3100/teams/garden`, confirm the "Withdrawn" panel replaces standings and history still shows. Reset the flag afterwards.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add "src/app/api/faceit/standings/[teamId]/route.ts" "src/app/(frontend)/teams/[slug]/components/CompetitiveSection.tsx"
@@ -1229,7 +1229,7 @@ git commit -m "feat(teams): show Withdrawn instead of standings for teams that l
   export async function applyRolloverPlan(payload: Payload, plan: RolloverPlan, overrides: RolloverOverrides): Promise<RolloverReport>
   ```
 
-- [ ] **Step 1: Write the service**
+- [x] **Step 1: Write the service**
 
 ```ts
 // src/discord/services/faceitRolloverApply.ts
@@ -1452,12 +1452,12 @@ export async function applyRolloverPlan(payload: Payload, plan: RolloverPlan, ov
 
 Check `SyncResult` in `faceitSync.ts` has `matchesCreated`, `matchesUpdated`, `error`, `success` (it does; see `syncAllTeams` usage). Check the exact field names `inPlayoffs`, `currentFaceitSeason` in `FaceitSeasons` and `Teams` (both exist).
 
-- [ ] **Step 2: Typecheck**
+- [x] **Step 2: Typecheck**
 
 Run: `npx tsc --noEmit -p tsconfig.json`
 Expected: clean.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/discord/services/faceitRolloverApply.ts
@@ -1477,7 +1477,7 @@ git commit -m "feat(faceit): apply a season rollover plan and report every step"
   - `GET /api/faceit/rollover` -> `{ detection: SeasonDetection, plan: RolloverPlan | null, running: boolean }` (plan only when `?seasonId=` is given)
   - `POST /api/faceit/rollover` body `{ seasonId: string, overrides?: RolloverOverrides }` -> `RolloverReport`
 
-- [ ] **Step 1: Write the route**
+- [x] **Step 1: Write the route**
 
 ```ts
 // src/app/api/faceit/rollover/route.ts
@@ -1589,7 +1589,7 @@ export async function POST(request: NextRequest) {
 }
 ```
 
-- [ ] **Step 2: Typecheck and dry-run against dev**
+- [x] **Step 2: Typecheck and dry-run against dev**
 
 Run: `npx tsc --noEmit -p tsconfig.json` (clean).
 Then, with a dev admin cookie (mint via `docker exec elemental-dev-3100 sh -c 'cd /home/node/app && npx tsx scripts/dev-mint-session.ts 190'`):
@@ -1601,7 +1601,7 @@ curl -s -b "payload-token=$TOKEN" "http://localhost:3100/api/faceit/rollover?sea
 
 Expected: detection shows latest 10 and ours 8 (dev) with `rolloverAvailable: true`; the plan lists 13 leagues (NA and EMEA five divisions each, SA and OCE Masters and Open... count whatever the tree gives, all regular season) and assignments for dev teams whose FACEIT ids are registered.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/app/api/faceit/rollover/route.ts
@@ -1624,7 +1624,7 @@ git commit -m "feat(faceit): rollover API with dry-run plan and apply"
   export default function RolloverModal(props: RolloverModalProps): JSX.Element
   ```
 
-- [ ] **Step 1: Write the component**
+- [x] **Step 1: Write the component**
 
 ```tsx
 // src/components/FaceitLeaguesHeader/RolloverModal.tsx
@@ -1837,7 +1837,7 @@ export default function RolloverModal({ open, onClose, seasonId, seasonNumber, o
 }
 ```
 
-- [ ] **Step 2: Styles**
+- [x] **Step 2: Styles**
 
 Append to `src/app/(payload)/styles/components/_faceit-leagues-header.scss`:
 
@@ -1863,7 +1863,7 @@ Append to `src/app/(payload)/styles/components/_faceit-leagues-header.scss`:
 }
 ```
 
-- [ ] **Step 3: Typecheck and commit**
+- [x] **Step 3: Typecheck and commit**
 
 Run: `npx tsc --noEmit -p tsconfig.json` (clean).
 
@@ -1882,7 +1882,7 @@ git commit -m "feat(faceit): rollover modal with plan review, overrides and repo
 **Interfaces:**
 - Consumes: `RolloverModal` (Task 9); `GET /api/faceit/rollover` detection shape `{ detection: { latest: { id, number, start, end } | null, ours: number | null, rolloverAvailable: boolean } }` (Task 8).
 
-- [ ] **Step 1: State and detection fetch**
+- [x] **Step 1: State and detection fetch**
 
 Near the other `useState` calls add:
 
@@ -1910,7 +1910,7 @@ Add a fetch function and call it from the mount effect next to `fetchWarnings()`
 
 Import the modal at the top: `import RolloverModal from './RolloverModal'`.
 
-- [ ] **Step 2: Count only enabled, active teams in the warning**
+- [x] **Step 2: Count only enabled, active teams in the warning**
 
 In `fetchWarnings`, change the teams query line to:
 
@@ -1918,7 +1918,7 @@ In `fetchWarnings`, change the teams query line to:
         const teamsRes = await fetch(`/api/teams?where[currentFaceitLeague][in]=${inactiveIds.join(',')}&where[faceitEnabled][equals]=true&where[active][not_equals]=false&limit=500&depth=0`)
 ```
 
-- [ ] **Step 3: Replace the top row**
+- [x] **Step 3: Replace the top row**
 
 Replace everything inside `<div className="faceit-leagues-header__top">` (the `__actions` block with Sync, the Finalize input and button, the preview tags, and the `__status` badge) with:
 
@@ -1988,7 +1988,7 @@ Mount the modal right before the closing `</div>` of the component root:
       )}
 ```
 
-- [ ] **Step 4: Style the team list under the warning**
+- [x] **Step 4: Style the team list under the warning**
 
 Append to `_faceit-leagues-header.scss` inside `.faceit-leagues-header`:
 
@@ -1999,11 +1999,11 @@ Append to `_faceit-leagues-header.scss` inside `.faceit-leagues-header`:
 
 `__team-list` and `__team-link` already exist in the stylesheet from the old warnings block; adjust rather than duplicate if the existing rules conflict.
 
-- [ ] **Step 5: Verify in the browser**
+- [x] **Step 5: Verify in the browser**
 
 Typecheck, then open `http://localhost:3100/admin/collections/faceit-leagues` with the dev admin cookie. Expect: pill "On Season 8 · Season 10 available (starts Sep 7)", the Roll over button, Sync All, the warning pill with a dropdown list, no filter input, the Finalized Seasons section unchanged. Click Roll over: the modal shows leagues and teams. Do not apply yet.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/components/FaceitLeaguesHeader/index.tsx "src/app/(payload)/styles/components/_faceit-leagues-header.scss"
@@ -2017,7 +2017,7 @@ git commit -m "feat(faceit): leagues header shows season status and the rollover
 **Files:**
 - Modify: `docs/faceit/FACEIT_SEASON_TRANSITION_GUIDE.md` (rewrite), `docs/faceit/FACEIT_QUICK_START.md` (step 1 note)
 
-- [ ] **Step 1: Apply the rollover in dev**
+- [x] **Step 1: Apply the rollover in dev**
 
 In the browser modal, click "Create N leagues, move M teams". Expect a report with created leagues, moved teams, and per-team sync lines (FACEIT syncs may report 0 matches before Sep 7, which is fine). Verify:
 
@@ -2029,7 +2029,7 @@ docker exec elemental-website-postgres-1 psql -U payload -d payload -Atc "select
 
 Expect Season 10 leagues active, teams pointed at Season 10 names, active seasons equal to moved teams, playoff count 0. Reload the leagues page: pill reads "On Season 10 · current", warning pill reads "All teams on the current season" (or lists the unmatched ones).
 
-- [ ] **Step 2: Rewrite the transition guide**
+- [x] **Step 2: Rewrite the transition guide**
 
 Replace the content of `docs/faceit/FACEIT_SEASON_TRANSITION_GUIDE.md` with:
 
@@ -2095,7 +2095,7 @@ FaceIt Leagues page (see `FACEIT_SEASON_TRANSITION_GUIDE.md`). Creating one
 by hand is only needed for an unusual league outside the FACEIT season tree.
 ```
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add docs/faceit/FACEIT_SEASON_TRANSITION_GUIDE.md docs/faceit/FACEIT_QUICK_START.md
@@ -2106,7 +2106,7 @@ git commit -m "docs(faceit): season transition is one rollover action"
 
 ### Task 12: Final verification
 
-- [ ] **Step 1: Run the new specs and typecheck**
+- [x] **Step 1: Run the new specs and typecheck**
 
 ```bash
 npx cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts tests/int/faceit-rollover.int.spec.ts tests/int/faceit-finalize.int.spec.ts
@@ -2116,7 +2116,7 @@ npx eslint --quiet src/utilities/faceitRollover.ts src/utilities/faceitFinalize.
 
 Expected: all pass, no output from tsc and eslint.
 
-- [ ] **Step 2: Prod checklist (for the deploy, not this session)**
+- [x] **Step 2: Prod checklist (for the deploy, not this session)**
 
 1. Apply `ALTER TABLE "teams" ADD COLUMN IF NOT EXISTS "faceit_withdrawn" boolean DEFAULT false;` on prod (`ssh ubuntu@elmt.gg`, `docker exec elemental-website-postgres-1 psql -U payload -d payload`).
 2. Also apply the production schedule post migration from the same branch if not yet applied.
