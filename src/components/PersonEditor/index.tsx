@@ -628,7 +628,7 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
             </div>
             <p style={styles.fieldHint}>
               {isManager
-                ? 'The Twitch link feeds the live roster once "Live roster" is approved under Identity.'
+                ? 'The Twitch link feeds the live roster once "Live roster" is approved under Identity. The Content Creator department flag decides the section: on for Content Creators, off for Players.'
                 : liveRosterApproved
                   ? 'Your Twitch link puts you on the Discord live roster and elmt.gg/live whenever you stream. Clear it to opt out.'
                   : 'Add your Twitch link and a manager can approve you for the Discord live roster and elmt.gg/live.'}

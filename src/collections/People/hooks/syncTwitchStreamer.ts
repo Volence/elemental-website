@@ -8,11 +8,24 @@ import { parseTwitchUsername } from '@/discord/utils/twitchAuth'
  * `socialLinks.twitch`: set it and a row appears (or an admin-created row gets
  * linked), change it and the row follows, clear it and the row is deactivated.
  * The row is ACTIVE only while `showInLiveStreamers` (manager-only) is ticked,
- * so a random registrant cannot put themselves on the org's live feed. Never
- * throws: a Twitch hiccup must not block someone saving their bio.
+ * so a random registrant cannot put themselves on the org's live feed. Which
+ * roster section they land in follows the person's Content Creator department
+ * flag: on = Content Creators, off = Players. Never throws: a Twitch hiccup
+ * must not block someone saving their bio.
  */
 
-export type StreamerRow = { id: number | string; twitchUsername: string; active?: boolean | null; person?: number | string | { id: number | string } | null }
+export type StreamerCategory = 'player' | 'content-creator'
+export type StreamerRow = {
+  id: number | string
+  twitchUsername: string
+  active?: boolean | null
+  category?: string | null
+  person?: number | string | { id: number | string } | null
+}
+
+export function streamerCategoryFor(person: { departments?: { isContentCreator?: boolean | null } | null } | null | undefined): StreamerCategory {
+  return person?.departments?.isContentCreator === true ? 'content-creator' : 'player'
+}
 
 export type TwitchSyncAction =
   | { type: 'none' }
@@ -38,12 +51,15 @@ export function planTwitchSync(input: {
   nextLink: string | null | undefined
   /** Manager approval (people.showInLiveStreamers). The row is active only while true. */
   approved: boolean
+  /** Roster section, from the person's Content Creator flag. Defaults to player. */
+  category?: StreamerCategory
   linkedRow: StreamerRow | null
   rowForLogin: StreamerRow | null
 }): TwitchSyncAction {
   const next = twitchLoginFromLink(input.nextLink)
   const previous = twitchLoginFromLink(input.previousLink)
   const active = input.approved === true
+  const category: StreamerCategory = input.category ?? 'player'
 
   if (!next) {
     // Link removed: switch off the row this person owns, keep admin data intact.
@@ -56,14 +72,15 @@ export function planTwitchSync(input: {
   if (input.linkedRow) {
     const sameLogin = input.linkedRow.twitchUsername.toLowerCase() === next
     const rowActive = input.linkedRow.active !== false
-    if (sameLogin && rowActive === active) return { type: 'none' }
-    if (sameLogin) return { type: 'update', id: input.linkedRow.id, data: { active } }
+    const sameCategory = (input.linkedRow.category ?? 'player') === category
+    if (sameLogin && rowActive === active && sameCategory) return { type: 'none' }
+    if (sameLogin) return { type: 'update', id: input.linkedRow.id, data: { active, category } }
     if (input.rowForLogin && input.rowForLogin.id !== input.linkedRow.id) {
       // Someone (an admin) already tracks the new login: link that row instead.
-      return { type: 'update', id: input.rowForLogin.id, data: { person: input.personId, active } }
+      return { type: 'update', id: input.rowForLogin.id, data: { person: input.personId, active, category } }
     }
     // twitchUserId cleared so the collection hook re-fetches the new channel's data.
-    return { type: 'update', id: input.linkedRow.id, data: { twitchUsername: next, twitchUserId: null, active } }
+    return { type: 'update', id: input.linkedRow.id, data: { twitchUsername: next, twitchUserId: null, active, category } }
   }
 
   if (input.rowForLogin) {
@@ -73,10 +90,10 @@ export function planTwitchSync(input: {
       // Another person already claims this channel; leave it to an admin.
       return { type: 'none' }
     }
-    return { type: 'update', id: input.rowForLogin.id, data: { person: input.personId, active } }
+    return { type: 'update', id: input.rowForLogin.id, data: { person: input.personId, active, category } }
   }
 
-  return { type: 'create', data: { twitchUsername: next, category: 'player', person: input.personId, active, isLive: false } }
+  return { type: 'create', data: { twitchUsername: next, category, person: input.personId, active, isLive: false } }
 }
 
 export async function syncTwitchStreamerForPerson(
@@ -86,10 +103,11 @@ export async function syncTwitchStreamerForPerson(
   previousLink: string | null | undefined,
   nextLink: string | null | undefined,
   approval: { previous: boolean; next: boolean },
+  category: { previous: StreamerCategory; next: StreamerCategory },
 ): Promise<TwitchSyncAction> {
   const next = twitchLoginFromLink(nextLink)
   const previous = twitchLoginFromLink(previousLink)
-  if (next === previous && approval.previous === approval.next) return { type: 'none' }
+  if (next === previous && approval.previous === approval.next && category.previous === category.next) return { type: 'none' }
 
   const collection = 'twitch-streamers' as any
   const linked = await payload.find({
@@ -109,6 +127,7 @@ export async function syncTwitchStreamerForPerson(
     previousLink,
     nextLink,
     approved: approval.next,
+    category: category.next,
     linkedRow: (linked.docs[0] as StreamerRow | undefined) ?? null,
     rowForLogin: (rowForLogin.docs[0] as StreamerRow | undefined) ?? null,
   })
@@ -133,6 +152,7 @@ export const syncTwitchStreamer: CollectionAfterChangeHook = async ({ doc, previ
       previousDoc?.socialLinks?.twitch,
       doc?.socialLinks?.twitch,
       { previous: previousDoc?.showInLiveStreamers === true, next: doc?.showInLiveStreamers === true },
+      { previous: streamerCategoryFor(previousDoc), next: streamerCategoryFor(doc) },
     )
     if (action.type !== 'none') {
       req.payload.logger.info(`[TwitchSync] person ${doc.id}: ${action.type}`)
