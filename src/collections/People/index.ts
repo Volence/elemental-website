@@ -491,12 +491,11 @@ export const People: CollectionConfig = {
       type: 'checkbox',
       defaultValue: false,
       access: { update: managerOnly },
+      label: 'Approved for the live roster',
       admin: {
-        // Legacy: nothing reads this any more. The live roster follows
-        // socialLinks.twitch via the syncTwitchStreamer hook.
-        hidden: true,
         position: 'sidebar',
-        description: 'Legacy flag. The live roster follows the Twitch social link.',
+        description:
+          'Manager approval. With this on, the Twitch link in Social Links puts the person on the Discord live roster and elmt.gg/live. Off by default so registrants cannot add themselves.',
       },
     },
     {

@@ -730,7 +730,7 @@ export interface Person {
    */
   mergedInto?: (number | null) | Person;
   /**
-   * Legacy flag. The live roster follows the Twitch social link.
+   * Manager approval. With this on, the Twitch link in Social Links puts the person on the Discord live roster and elmt.gg/live. Off by default so registrants cannot add themselves.
    */
   showInLiveStreamers?: boolean | null;
   updatedAt: string;

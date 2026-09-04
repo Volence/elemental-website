@@ -61,6 +61,7 @@ export type PersonData = {
   notes: string | null
   photo: { url: string; filename: string } | number | null
   discordId: string | null
+  showInLiveStreamers?: boolean | null
   gameAliases: Array<{ alias: string; id?: string }> | null
   socialLinks: {
     twitter?: string | null
@@ -175,6 +176,7 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
   const [discordId, setDiscordId] = useState('')
+  const [liveRosterApproved, setLiveRosterApproved] = useState(false)
   const [gameAliases, setGameAliases] = useState<Array<{ alias: string }>>([])
   const [notes, setNotes] = useState('')
 
@@ -221,6 +223,7 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
       setName(data.name ?? '')
       setSlug(data.slug ?? '')
       setDiscordId(data.discordId ?? '')
+      setLiveRosterApproved(data.showInLiveStreamers === true)
       setGameAliases(data.gameAliases ?? [])
       setNotes(data.notes ?? '')
 
@@ -305,6 +308,7 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
         payload.name = name
         payload.slug = slug
         payload.discordId = discordId || null
+        payload.showInLiveStreamers = liveRosterApproved
         payload.gameAliases = gameAliases.filter(a => a.alias.trim())
         payload.notes = notes || null
         if (isAdmin) {
@@ -623,7 +627,11 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
               ))}
             </div>
             <p style={styles.fieldHint}>
-              Your Twitch link also puts you on the Discord live roster and elmt.gg/live whenever you stream. Clear it to opt out.
+              {isManager
+                ? 'The Twitch link feeds the live roster once "Live roster" is approved under Identity.'
+                : liveRosterApproved
+                  ? 'Your Twitch link puts you on the Discord live roster and elmt.gg/live whenever you stream. Clear it to opt out.'
+                  : 'Add your Twitch link and a manager can approve you for the Discord live roster and elmt.gg/live.'}
             </p>
             {/* Custom Links */}
             <div style={{ marginTop: 16, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 16 }}>
@@ -913,6 +921,25 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
                 <div style={styles.editableField}>
                   <label style={styles.fieldLabel}>Discord ID</label>
                   <input className="profile-input" value={discordId} onChange={(e) => setDiscordId(e.target.value)} placeholder="17-19 digit Discord User ID" />
+                </div>
+                <div style={{ ...styles.readonlyField, justifyContent: 'space-between' }}>
+                  <div>
+                    <span style={styles.fieldLabel}>Live roster</span>
+                    <p style={{ fontSize: 12, color: 'var(--elmt-text-disabled)', margin: '2px 0 0' }}>
+                      {liveRosterApproved
+                        ? 'Approved: their Twitch link shows on the Discord live roster and elmt.gg/live.'
+                        : socialLinks?.twitch
+                          ? 'Twitch link set, waiting for approval. Turn on to put them on the live roster.'
+                          : 'Turn on to allow their Twitch link onto the live roster.'}
+                    </p>
+                  </div>
+                  <button
+                    className={`toggle-switch ${liveRosterApproved ? 'on' : 'off'}`}
+                    onClick={() => setLiveRosterApproved(!liveRosterApproved)}
+                    type="button"
+                    aria-pressed={liveRosterApproved}
+                    aria-label="Approved for the live roster"
+                  />
                 </div>
               </>
             ) : (

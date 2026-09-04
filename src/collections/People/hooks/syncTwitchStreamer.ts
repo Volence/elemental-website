@@ -2,12 +2,14 @@ import type { CollectionAfterChangeHook, Payload, PayloadRequest } from 'payload
 import { parseTwitchUsername } from '@/discord/utils/twitchAuth'
 
 /**
- * A person's Twitch social link is the self-service way onto the live roster.
- * The Discord roster and /live read the `twitch-streamers` collection, so this
- * hook keeps one streamer row per person in step with `socialLinks.twitch`:
- * set it and a row appears (or an admin-created row gets linked), change it and
- * the row follows, clear it and the row is deactivated. Never throws: a Twitch
- * hiccup must not block someone saving their bio.
+ * A person's Twitch social link is the self-service way onto the live roster,
+ * gated by a manager. The Discord roster and /live read the `twitch-streamers`
+ * collection, so this hook keeps one streamer row per person in step with
+ * `socialLinks.twitch`: set it and a row appears (or an admin-created row gets
+ * linked), change it and the row follows, clear it and the row is deactivated.
+ * The row is ACTIVE only while `showInLiveStreamers` (manager-only) is ticked,
+ * so a random registrant cannot put themselves on the org's live feed. Never
+ * throws: a Twitch hiccup must not block someone saving their bio.
  */
 
 export type StreamerRow = { id: number | string; twitchUsername: string; active?: boolean | null; person?: number | string | { id: number | string } | null }
@@ -34,11 +36,14 @@ export function planTwitchSync(input: {
   personId: number | string
   previousLink: string | null | undefined
   nextLink: string | null | undefined
+  /** Manager approval (people.showInLiveStreamers). The row is active only while true. */
+  approved: boolean
   linkedRow: StreamerRow | null
   rowForLogin: StreamerRow | null
 }): TwitchSyncAction {
   const next = twitchLoginFromLink(input.nextLink)
   const previous = twitchLoginFromLink(input.previousLink)
+  const active = input.approved === true
 
   if (!next) {
     // Link removed: switch off the row this person owns, keep admin data intact.
@@ -50,14 +55,15 @@ export function planTwitchSync(input: {
 
   if (input.linkedRow) {
     const sameLogin = input.linkedRow.twitchUsername.toLowerCase() === next
-    if (sameLogin && input.linkedRow.active !== false) return { type: 'none' }
-    if (sameLogin) return { type: 'update', id: input.linkedRow.id, data: { active: true } }
+    const rowActive = input.linkedRow.active !== false
+    if (sameLogin && rowActive === active) return { type: 'none' }
+    if (sameLogin) return { type: 'update', id: input.linkedRow.id, data: { active } }
     if (input.rowForLogin && input.rowForLogin.id !== input.linkedRow.id) {
       // Someone (an admin) already tracks the new login: link that row instead.
-      return { type: 'update', id: input.rowForLogin.id, data: { person: input.personId, active: true } }
+      return { type: 'update', id: input.rowForLogin.id, data: { person: input.personId, active } }
     }
     // twitchUserId cleared so the collection hook re-fetches the new channel's data.
-    return { type: 'update', id: input.linkedRow.id, data: { twitchUsername: next, twitchUserId: null, active: true } }
+    return { type: 'update', id: input.linkedRow.id, data: { twitchUsername: next, twitchUserId: null, active } }
   }
 
   if (input.rowForLogin) {
@@ -67,10 +73,10 @@ export function planTwitchSync(input: {
       // Another person already claims this channel; leave it to an admin.
       return { type: 'none' }
     }
-    return { type: 'update', id: input.rowForLogin.id, data: { person: input.personId, active: true } }
+    return { type: 'update', id: input.rowForLogin.id, data: { person: input.personId, active } }
   }
 
-  return { type: 'create', data: { twitchUsername: next, category: 'player', person: input.personId, active: true, isLive: false } }
+  return { type: 'create', data: { twitchUsername: next, category: 'player', person: input.personId, active, isLive: false } }
 }
 
 export async function syncTwitchStreamerForPerson(
@@ -79,10 +85,11 @@ export async function syncTwitchStreamerForPerson(
   personId: number | string,
   previousLink: string | null | undefined,
   nextLink: string | null | undefined,
+  approval: { previous: boolean; next: boolean },
 ): Promise<TwitchSyncAction> {
   const next = twitchLoginFromLink(nextLink)
   const previous = twitchLoginFromLink(previousLink)
-  if (next === previous) return { type: 'none' }
+  if (next === previous && approval.previous === approval.next) return { type: 'none' }
 
   const collection = 'twitch-streamers' as any
   const linked = await payload.find({
@@ -101,6 +108,7 @@ export async function syncTwitchStreamerForPerson(
     personId,
     previousLink,
     nextLink,
+    approved: approval.next,
     linkedRow: (linked.docs[0] as StreamerRow | undefined) ?? null,
     rowForLogin: (rowForLogin.docs[0] as StreamerRow | undefined) ?? null,
   })
@@ -124,6 +132,7 @@ export const syncTwitchStreamer: CollectionAfterChangeHook = async ({ doc, previ
       doc.id,
       previousDoc?.socialLinks?.twitch,
       doc?.socialLinks?.twitch,
+      { previous: previousDoc?.showInLiveStreamers === true, next: doc?.showInLiveStreamers === true },
     )
     if (action.type !== 'none') {
       req.payload.logger.info(`[TwitchSync] person ${doc.id}: ${action.type}`)
