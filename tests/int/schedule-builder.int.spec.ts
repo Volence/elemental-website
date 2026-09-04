@@ -272,6 +272,25 @@ describe('formatScheduleChunks', () => {
     expect(chunks[1]).toContain('VOD Review')
   })
 
+  it('confirms the roster when every core seat is filled, ignoring empty Sub/Coach rows and ringer placeholders', () => {
+    const block = (slots: any[]) => ({ days: [{ date: 'Fri Sep 4', enabled: true, blocks: [{ id: '1', time: '8-10', activity: 'scrim', scrim: { opponent: 'PXH', host: 'us' }, slots }] }] })
+    const map = new Map([['1', 'J4COB'], ['2', 'c0met']])
+    const full = formatScheduleChunks(block([
+      { role: 'Tank', playerId: '1' },
+      { role: 'Hitscan', playerId: '2' },
+      { role: 'Sub', playerId: null },
+    ]) as any, map, 'W', '8-10').chunks[0]
+    expect(full).toContain('Roster confirmed')
+    expect(full).not.toContain('Sub ')
+
+    const placeholder = formatScheduleChunks(block([
+      { role: 'Tank', playerId: '1' },
+      { role: 'Hitscan', playerId: null, isRinger: true, ringerName: 'Ringer Needed' },
+    ]) as any, map, 'W', '8-10').chunks[0]
+    expect(placeholder).toContain('1/2 slots filled')
+    expect(placeholder).toContain('Ringer Needed')
+  })
+
   it('returns no chunks when nothing is scheduled', () => {
     const { chunks } = formatScheduleChunks({ days: [{ date: 'x', enabled: true, blocks: [{ id: '1', time: '8-10', slots: [] }] }] } as any, new Map(), 'W', '8-10')
     expect(chunks).toHaveLength(0)

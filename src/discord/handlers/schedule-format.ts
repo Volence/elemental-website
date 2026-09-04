@@ -87,10 +87,17 @@ function formatBlock(day: DaySchedule, block: TimeBlock, index: number, blockCou
     text += `${ACTIVITY_LABELS[activity] || activity}\n\n`
   }
 
-  const mainSlots = block.slots.filter(s => !s.isTrial)
+  // Sub and Coach rows are optional: they print only when filled and never
+  // count against "Roster confirmed". A "Ringer Needed" placeholder is an open
+  // seat, not a filled one.
+  const isOptionalRole = (s: PlayerSlot) => s.role === 'Sub' || s.role === 'Coach'
+  const isFilled = (s: PlayerSlot) =>
+    getPlayerIds(s).length > 0 || (!!s.isRinger && !!s.ringerName && s.ringerName !== 'Ringer Needed')
+  const mainSlots = block.slots.filter(s => !s.isTrial && (!isOptionalRole(s) || isFilled(s)))
   const trialSlots = block.slots.filter(s => s.isTrial)
-  const filledSlots = mainSlots.filter(s => getPlayerIds(s).length > 0 || (s.isRinger && s.ringerName))
-  const totalSlots = mainSlots.length
+  const coreSlots = mainSlots.filter(s => !isOptionalRole(s))
+  const filledSlots = coreSlots.filter(isFilled)
+  const totalSlots = coreSlots.length
   const maxRoleLen = Math.max(...mainSlots.map(s => (s.role || 'Role').length), 10)
 
   for (const slot of mainSlots) {

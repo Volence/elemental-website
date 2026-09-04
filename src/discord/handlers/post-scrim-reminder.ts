@@ -111,9 +111,12 @@ function createBlockEmbed(
   // Separator
   description += '\u2500'.repeat(23) + '\n'
 
-  const mainSlots = block.slots.filter(s => !s.isTrial)
-  const trialSlots = block.slots.filter(s => s.isTrial)
   const getIds = (s: PlayerSlot) => s.playerIds?.length ? s.playerIds : s.playerId ? [s.playerId] : []
+  // Optional Sub/Coach rows only appear when someone is on them.
+  const mainSlots = block.slots.filter(s =>
+    !s.isTrial && (!(s.role === 'Sub' || s.role === 'Coach') || getIds(s).length > 0 || (s.isRinger && s.ringerName)),
+  )
+  const trialSlots = block.slots.filter(s => s.isTrial)
 
   description += '**Roster**\n'
   for (const slot of mainSlots) {

@@ -316,28 +316,22 @@ export function BuildTab() {
     return groups
   }, [columns])
 
+  // The dot answers "is this lineup ready to post": every core seat has a
+  // player or a named ringer. It used to count main-status availability
+  // instead, so a block fully covered by subs or ringers showed red.
   const getSlotReadiness = useCallback((dayIdx: number, blockIdx: number): 'green' | 'yellow' | 'red' | 'none' => {
     const day = days[dayIdx]
     const block = day?.blocks[blockIdx]
     if (!day?.isoDate || !block) return 'none'
-    const availKey = `${day.isoDate}|${block.startTime || block.time}`
-    const avail = availabilityMap[availKey] || []
-    const mainAvail = avail.filter(a => a.scheduleStatus === 'main')
-    const coreRoles = roles.filter(r => r !== 'Coach' && r !== 'Sub')
-    if (coreRoles.length === 0) return 'none'
-    const slotsNeeded: Record<string, number> = {}
-    for (const role of coreRoles) slotsNeeded[role] = (slotsNeeded[role] || 0) + 1
-    let covered = 0
-    for (const [role, needed] of Object.entries(slotsNeeded)) {
-      const uniquePlayers = new Set(mainAvail.filter(a => rolePrimaryMatch(a.role, role)).map(a => a.personId))
-      covered += Math.min(uniquePlayers.size, needed)
-    }
-    if (covered >= coreRoles.length) return 'green'
-    if (covered >= coreRoles.length - 1) return 'yellow'
+    const coreSlots = block.slots.filter(s => !s.isTrial && s.role !== 'Coach' && s.role !== 'Sub')
+    if (coreSlots.length === 0) return 'none'
+    const filled = coreSlots.filter(s => getSlotPlayerIds(s).length > 0 || (s.isRinger && s.ringerName && s.ringerName !== 'Ringer Needed')).length
+    if (filled >= coreSlots.length) return 'green'
+    if (filled >= coreSlots.length - 1) return 'yellow'
     return 'red'
-  }, [days, availabilityMap, roles])
+  }, [days])
 
-  const generateBlockId = () => `block_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  const generateBlockId = () => `block_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
 
   const createDefaultBlock = useCallback((time: string, startTime?: string): TimeBlock => ({
     id: generateBlockId(),
@@ -439,9 +433,9 @@ export function BuildTab() {
 
   useEffect(() => {
     fetch('/api/opponent-teams?limit=100&sort=name')
-      .then(r => r.ok ? r.json() : null)
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then(data => { if (data?.docs) setOpponentTeams(data.docs) })
-      .catch(() => {})
+      .catch(() => setError('Could not load the opponent list. You can still type an opponent name.'))
   }, [])
 
   useEffect(() => {
@@ -1000,7 +994,7 @@ export function BuildTab() {
                     {(() => {
                       const readiness = getSlotReadiness(col.dayIdx, col.blockIdx)
                       return readiness !== 'none' ? (
-                        <span className={`build-tab__readiness-dot build-tab__readiness-dot--${readiness}`} title={readiness === 'green' ? 'All roles covered' : readiness === 'yellow' ? 'Almost full' : 'Roles missing'} />
+                        <span className={`build-tab__readiness-dot build-tab__readiness-dot--${readiness}`} title={readiness === 'green' ? 'Lineup complete' : readiness === 'yellow' ? 'One seat open' : 'Seats open'} />
                       ) : null
                     })()}
                     <input
