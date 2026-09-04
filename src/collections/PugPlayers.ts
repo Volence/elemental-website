@@ -75,6 +75,7 @@ export const PugPlayers: CollectionConfig = {
         { label: 'NA', value: 'na' },
         { label: 'EMEA', value: 'emea' },
         { label: 'Pacific', value: 'pacific' },
+        { label: 'SA', value: 'sa' },
       ],
       admin: {
         description: 'Which invite-tier regions this player has access to.',

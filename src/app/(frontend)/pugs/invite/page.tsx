@@ -3,15 +3,12 @@ import configPromise from '@payload-config'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { InviteQueuePanel } from './InviteQueuePanel'
+import { PUG_REGIONS, isPugRegion } from '@/pug/types'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'Invite Tier PUGs' }
 
-const REGIONS = [
-  { value: 'na', label: 'NA' },
-  { value: 'emea', label: 'EMEA' },
-  { value: 'pacific', label: 'Pacific' },
-]
+const REGIONS = PUG_REGIONS
 
 export default async function PugInvitePage({
   searchParams,
@@ -28,7 +25,7 @@ export default async function PugInvitePage({
   })
   const season = activeSeason.docs[0] as any
 
-  const regionKey = region === 'emea' ? 'emea' : region === 'pacific' ? 'pacific' : 'na'
+  const regionKey = isPugRegion(region) ? region : 'na'
   const queueActive = season?.regionQueueStatus?.[regionKey] === true
 
   return (

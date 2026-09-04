@@ -1,4 +1,5 @@
 import { REST, Routes } from 'discord.js'
+import { PUG_REGIONS } from '@/pug/types'
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
@@ -183,11 +184,7 @@ export function buildCommands() {
               .setName('region')
               .setDescription('Which region to queue in')
               .setRequired(true)
-              .addChoices(
-                { name: 'NA', value: 'na' },
-                { name: 'EMEA', value: 'emea' },
-                { name: 'Pacific', value: 'pacific' },
-              ),
+              .addChoices(...PUG_REGIONS.map((r) => ({ name: r.label, value: r.value }))),
           ),
       )
       .addSubcommand((sub) =>
@@ -209,6 +206,13 @@ export function buildCommands() {
                 { name: 'Open', value: 'open' },
                 { name: 'Invite', value: 'invite' },
               ),
+          )
+          .addStringOption((opt) =>
+            opt
+              .setName('region')
+              .setDescription('Which region to show (default: NA)')
+              .setRequired(false)
+              .addChoices(...PUG_REGIONS.map((r) => ({ name: r.label, value: r.value }))),
           ),
       )
       .addSubcommand((sub) =>

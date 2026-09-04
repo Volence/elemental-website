@@ -14,6 +14,7 @@ import {
 } from '@/admin-kit'
 import type { AdminTableColumn } from '@/admin-kit'
 import { pugTabHref } from '@/components/PugDashboard/tabs'
+import { VALID_REGIONS, pugRegionLabel } from '@/pug/types'
 
 type LeaderboardEntry = {
   id: number
@@ -53,7 +54,7 @@ function getSeasonName(entry: LeaderboardEntry): string {
 }
 
 const TIERS = ['open', 'invite'] as const
-const REGIONS = ['all', 'na', 'emea', 'pacific'] as const
+const REGIONS = ['all', ...VALID_REGIONS] as const
 
 // ---- List View ----
 
@@ -117,7 +118,7 @@ export function PugLeaderboardListView() {
     setLoading(true)
     setError(null)
     const params = new URLSearchParams({ tier, seasonId: String(seasonId) })
-    if (tier === 'invite' && region !== 'all') params.set('region', region)
+    if (region !== 'all') params.set('region', region)
     try {
       const res = await fetch(`/api/pug/leaderboard?${params}`, { credentials: 'include' })
       if (!res.ok) throw new Error(`Could not load leaderboard (HTTP ${res.status})`)
@@ -146,7 +147,7 @@ export function PugLeaderboardListView() {
       render: (e) => (
         <span className="pug-list__badges">
           <span>{getPlayerName(e)}</span>
-          {tier === 'invite' && e.region && <Badge uppercase size="sm">{e.region}</Badge>}
+          {e.region && <Badge uppercase size="sm">{e.region}</Badge>}
         </span>
       ),
     },
@@ -197,15 +198,13 @@ export function PugLeaderboardListView() {
             </button>
           ))}
         </div>
-        {tier === 'invite' && (
-          <div className="ps-tabs" role="group" aria-label="Region">
-            {REGIONS.map((r) => (
-              <button key={r} type="button" className={`ps-tab${region === r ? ' ps-tab-active' : ''}`} onClick={() => setParams({ region: r === 'all' ? null : r })} aria-pressed={region === r}>
-                {r === 'all' ? 'All regions' : r.toUpperCase()}
-              </button>
-            ))}
-          </div>
-        )}
+        <div className="ps-tabs" role="group" aria-label="Region">
+          {REGIONS.map((r) => (
+            <button key={r} type="button" className={`ps-tab${region === r ? ' ps-tab-active' : ''}`} onClick={() => setParams({ region: r === 'all' ? null : r })} aria-pressed={region === r}>
+              {r === 'all' ? 'All regions' : pugRegionLabel(r)}
+            </button>
+          ))}
+        </div>
         <select
           className="ps-select"
           value={seasonId ?? ''}

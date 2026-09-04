@@ -1151,7 +1151,7 @@ export async function completeMatch(lobbyId: number, result: MatchResult): Promi
               player: userId,
               season: lobby.payloadSeasonId!,
               tier: lobby.tier,
-              region: (lobby.region as 'na' | 'emea' | 'pacific' | undefined) ?? undefined,
+              region: (lobby.region as PugRegion | undefined) ?? undefined,
               rating: 1500,
               ratingDeviation: 350,
               volatility: 0.06,

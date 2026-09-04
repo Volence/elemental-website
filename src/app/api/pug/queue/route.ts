@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { isBotEnabled } from '@/pug/botMode'
+import { isPugRegion } from '@/pug/types'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
@@ -133,7 +134,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (tier === 'invite') {
-    if (!region || !['na', 'emea', 'pacific'].includes(region)) {
+    if (!isPugRegion(region)) {
       return NextResponse.json({ error: 'region required for invite tier' }, { status: 400 })
     }
     if (!person.pugTiers?.includes('invite')) {

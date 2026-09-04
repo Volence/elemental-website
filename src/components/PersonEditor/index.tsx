@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
+import { PUG_REGIONS } from '@/pug/types'
 import { useAuth } from '@payloadcms/ui'
 import { useSearchParams } from 'next/navigation'
 import {
@@ -48,11 +49,7 @@ const PUG_ROLES = [
   { key: 'main-support', label: 'Main Support' },
 ] as const
 
-const PUG_REGION_OPTIONS = [
-  { key: 'na', label: 'NA' },
-  { key: 'emea', label: 'EMEA' },
-  { key: 'pacific', label: 'Pacific' },
-] as const
+const PUG_REGION_OPTIONS = PUG_REGIONS.map((r) => ({ key: r.value, label: r.label }))
 
 const getRoleConfig = (role: string) => ROLES.find(r => r.value === role) ?? ROLES[4]
 

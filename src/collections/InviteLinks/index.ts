@@ -229,6 +229,7 @@ export const InviteLinks: CollectionConfig = {
             { label: 'NA', value: 'na' },
             { label: 'EMEA', value: 'emea' },
             { label: 'Pacific', value: 'pacific' },
+            { label: 'SA', value: 'sa' },
           ],
         },
       ],

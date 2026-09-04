@@ -224,10 +224,9 @@ export interface Config {
     'error-harvester-state': ErrorHarvesterStateSelect<false> | ErrorHarvesterStateSelect<true>;
   };
   locale: null;
-  widgets: {
-    collections: CollectionsWidget;
+  user: Person & {
+    collection: 'people';
   };
-  user: Person;
   jobs: {
     tasks: {
       schedulePublish: TaskSchedulePublish;
@@ -680,7 +679,7 @@ export interface Person {
   /**
    * Which invite-tier regions this player has access to.
    */
-  pugInviteRegions?: ('na' | 'emea' | 'pacific')[] | null;
+  pugInviteRegions?: ('na' | 'emea' | 'pacific' | 'sa')[] | null;
   /**
    * Auto-set on PUG registration.
    */
@@ -752,7 +751,6 @@ export interface Person {
       }[]
     | null;
   password?: string | null;
-  collection: 'people';
 }
 /**
  * Manage all Elemental teams, including rosters, staff, and achievements.
@@ -776,7 +774,7 @@ export interface Team {
    */
   region?: ('NA' | 'EMEA' | 'SA' | 'OCE' | 'SEA' | 'APAC' | 'China' | 'Other') | null;
   /**
-   * Team skill rating or tier (e.g., "4.5K", "FACEIT Masters", "FACEIT Expert", "FACEIT Advanced", "3.5K")
+   * Team skill rating or tier (e.g., "FACEIT Masters", "FACEIT Expert", "FACEIT Advanced", "FACEIT Intermediate", "FACEIT Open", "4.5K", "3.5K")
    */
   rating?: string | null;
   /**
@@ -2507,6 +2505,7 @@ export interface PugSeason {
     na?: boolean | null;
     emea?: boolean | null;
     pacific?: boolean | null;
+    sa?: boolean | null;
   };
   /**
    * When off, PUG lobbies skip the OW bot and use manual hosting.
@@ -2601,9 +2600,9 @@ export interface PugLeaderboard {
   season: number | PugSeason;
   tier: 'open' | 'invite';
   /**
-   * Region for invite-tier entries. Null for open tier.
+   * Region the rating belongs to. Both tiers are rated per region; legacy open entries from before regions existed have none.
    */
-  region?: ('na' | 'emea' | 'pacific') | null;
+  region?: ('na' | 'emea' | 'pacific' | 'sa') | null;
   rating?: number | null;
   ratingDeviation?: number | null;
   volatility?: number | null;
@@ -3326,7 +3325,7 @@ export interface InviteLink {
     /**
      * Which region this invite grants access to.
      */
-    region?: ('na' | 'emea' | 'pacific') | null;
+    region?: ('na' | 'emea' | 'pacific' | 'sa') | null;
   };
   /**
    * Optional: Pre-link this invite to a Person record (connects user to their BattleTags and scrim stats)
@@ -4415,6 +4414,7 @@ export interface PugSeasonsSelect<T extends boolean = true> {
         na?: T;
         emea?: T;
         pacific?: T;
+        sa?: T;
       };
   botEnabled?: T;
   updatedAt?: T;
@@ -5662,16 +5662,6 @@ export interface ErrorHarvesterStateSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "collections_widget".
- */
-export interface CollectionsWidget {
-  data?: {
-    [k: string]: unknown;
-  };
-  width: 'full';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

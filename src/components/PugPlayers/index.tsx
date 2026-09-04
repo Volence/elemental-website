@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import { PUG_REGIONS, VALID_REGIONS, pugRegionLabel } from '@/pug/types'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { ArrowLeft, Check, AlertCircle, Loader2, ShieldAlert, Users } from 'lucide-react'
 import {
@@ -41,11 +42,7 @@ const ROLE_LABELS: Record<string, string> = {
 
 const ROLE_OPTIONS = Object.entries(ROLE_LABELS).map(([value, label]) => ({ value, label }))
 
-const REGION_OPTIONS = [
-  { value: 'na', label: 'NA' },
-  { value: 'emea', label: 'EMEA' },
-  { value: 'pacific', label: 'Pacific' },
-]
+const REGION_OPTIONS = PUG_REGIONS.map((r) => ({ value: r.value, label: r.label }))
 
 const TIER_OPTIONS = [
   { value: 'open', label: 'Open' },
@@ -263,9 +260,9 @@ export function PugPlayersListView() {
           ))}
         </div>
         <div className="ps-tabs" role="group" aria-label="Region">
-          {(['all', 'na', 'emea', 'pacific'] as const).map((r) => (
+          {(['all', ...VALID_REGIONS] as const).map((r) => (
             <button key={r} type="button" className={`ps-tab${region === r ? ' ps-tab-active' : ''}`} onClick={() => setFilter(setRegion)(r)} aria-pressed={region === r}>
-              {r === 'all' ? 'All regions' : r.toUpperCase()}
+              {r === 'all' ? 'All regions' : pugRegionLabel(r)}
             </button>
           ))}
         </div>

@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import { PUG_REGION_LIST } from '@/pug/types'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
@@ -21,7 +22,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
   }
   if (!isPugRegion(region)) {
-    return NextResponse.json({ error: 'region required (na, emea, or pacific)' }, { status: 400 })
+    return NextResponse.json({ error: `region required (${PUG_REGION_LIST})` }, { status: 400 })
   }
 
   const person = user as any

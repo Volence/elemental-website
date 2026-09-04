@@ -42,6 +42,7 @@ import * as migration_20260902_identity_duplicate_report from "./20260902_identi
 import * as migration_20260903_identity_discord_id_unique from "./20260903_identity_discord_id_unique";
 import * as migration_20260903_admin_page_views from "./20260903_admin_page_views";
 import * as migration_20260903_discord_servers_workboard_channels from "./20260903_discord_servers_workboard_channels";
+import * as migration_20260903_pug_sa_region from "./20260903_pug_sa_region";
 
 export const migrations = [
   {
@@ -263,5 +264,10 @@ export const migrations = [
     up: migration_20260903_discord_servers_workboard_channels.up,
     down: migration_20260903_discord_servers_workboard_channels.down,
     name: "20260903_discord_servers_workboard_channels",
+  },
+  {
+    up: migration_20260903_pug_sa_region.up,
+    down: migration_20260903_pug_sa_region.down,
+    name: "20260903_pug_sa_region",
   },
 ];

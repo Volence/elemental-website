@@ -178,6 +178,7 @@ export const PugSeasons: CollectionConfig = {
         { name: 'na', type: 'checkbox', defaultValue: false, label: 'NA Open' },
         { name: 'emea', type: 'checkbox', defaultValue: false, label: 'EMEA Open' },
         { name: 'pacific', type: 'checkbox', defaultValue: false, label: 'Pacific Open' },
+        { name: 'sa', type: 'checkbox', defaultValue: false, label: 'SA Open' },
       ],
     },
     {

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
+import { PUG_REGIONS } from '@/pug/types'
 import { useSearchParams } from 'next/navigation'
 import {
   Save, Check, AlertCircle, Loader2, ArrowLeft, Trash2,
@@ -59,11 +60,7 @@ const PUG_ROLES = [
   { key: 'main-support', label: 'Main Support' },
 ]
 
-const PUG_REGIONS = [
-  { key: 'na', label: 'NA' },
-  { key: 'emea', label: 'EMEA' },
-  { key: 'pacific', label: 'Pacific' },
-]
+const PUG_REGION_CHIPS = PUG_REGIONS.map((r) => ({ key: r.value, label: r.label }))
 
 const getRoleConfig = (r: string) => ROLES.find(x => x.value === r) ?? ROLES[4]
 
@@ -403,7 +400,7 @@ export function InviteEditorView() {
                 <div style={{ marginBottom: 12 }}>
                   <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>Region</p>
                   <div style={{ display: 'flex', gap: 6 }}>
-                    {PUG_REGIONS.map((r) => (
+                    {PUG_REGION_CHIPS.map((r) => (
                       <button
                         key={r.key}
                         className={`team-chip ${pugRegion === r.key ? 'selected' : ''}`}

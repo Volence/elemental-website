@@ -11,7 +11,7 @@ const MAX_LIMIT = 100
  * GET /api/pug/admin/matches
  * Finished lobbies (completed, disputed, cancelled) as match-history rows, newest first.
  * Query: tier=open|invite, status=finished|completed|disputed|cancelled, season=<pug-seasons id>,
- *        region=na|emea|pacific, q=<lobby number>, page, limit (max 100).
+ *        region=na|emea|pacific|sa, q=<lobby number>, page, limit (max 100).
  */
 export async function GET(request: NextRequest) {
   const payload = await getPayload({ config: configPromise })

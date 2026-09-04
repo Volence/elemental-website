@@ -1,6 +1,7 @@
 'use client'
 
 import { startPolling } from '@/utilities/polling'
+import { PUG_REGIONS } from '@/pug/types'
 import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Gamepad2, Power, PowerOff, ExternalLink, XCircle, Loader2, Users, Clock, Trophy, SkipForward, AlertTriangle, ChevronDown, ChevronUp, UserMinus, ArrowRightLeft, Shield } from 'lucide-react'
@@ -53,11 +54,7 @@ type Lobby = {
 
 type RegionStatus = Record<string, boolean>
 
-const REGIONS = [
-  { value: 'na', label: 'NA' },
-  { value: 'emea', label: 'EMEA' },
-  { value: 'pacific', label: 'Pacific' },
-]
+const REGIONS = PUG_REGIONS
 
 const STATUS_CLASSES: Record<string, string> = {
   OPEN: 'ps-status-open',
@@ -402,7 +399,7 @@ export function PugLobbiesDashboard() {
   const router = useRouter()
   const alert = useAlert()
   const [lobbies, setLobbies] = useState<Lobby[]>([])
-  const [regionStatus, setRegionStatus] = useState<RegionStatus>({ na: false, emea: false, pacific: false })
+  const [regionStatus, setRegionStatus] = useState<RegionStatus>(Object.fromEntries(PUG_REGIONS.map((r) => [r.value, false])))
   const [inviteSeasonId, setInviteSeasonId] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [toggling, setToggling] = useState<string | null>(null)

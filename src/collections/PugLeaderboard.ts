@@ -49,10 +49,10 @@ export const PugLeaderboard: CollectionConfig = {
         { label: 'NA', value: 'na' },
         { label: 'EMEA', value: 'emea' },
         { label: 'Pacific', value: 'pacific' },
+        { label: 'SA', value: 'sa' },
       ],
       admin: {
-        description: 'Region for invite-tier entries. Null for open tier.',
-        condition: (data) => data?.tier === 'invite',
+        description: 'Region the rating belongs to. Both tiers are rated per region; legacy open entries from before regions existed have none.',
       },
     },
     {

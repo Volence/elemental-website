@@ -542,6 +542,9 @@ function getRegionColor(region: string | undefined): number {
     case 'oceania':
     case 'oce':
       return 0xf39c12 // Orange
+    case 'south america':
+    case 'sa':
+      return 0x9b59b6 // Purple
     default:
       return 0x95a5a6 // Gray
   }

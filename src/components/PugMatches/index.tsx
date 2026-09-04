@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useCallback, useEffect, useState } from 'react'
+import { VALID_REGIONS } from '@/pug/types'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import {
   AdminPagination,
@@ -40,7 +41,7 @@ const STATUSES = [
   { value: 'disputed', label: 'Disputed' },
   { value: 'cancelled', label: 'Cancelled' },
 ]
-const REGIONS = ['all', 'na', 'emea', 'pacific'] as const
+const REGIONS = ['all', ...VALID_REGIONS] as const
 
 type Season = { id: number; name: string; tier: string }
 

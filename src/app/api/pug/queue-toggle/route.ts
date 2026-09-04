@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
+import { isPugRegion } from '@/pug/types'
 import { createInviteLobby, cancelExpiredLobby, registerTimer, timerKey, INVITE_TIER_LATE_CANCEL_MS, clearQueueForRegion, processQueue } from '@/pug'
 
 export async function POST(request: NextRequest) {
@@ -15,7 +16,7 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json()
   const { region, action } = body
-  if (!region || !['na', 'emea', 'pacific'].includes(region)) {
+  if (!isPugRegion(region)) {
     return NextResponse.json({ error: 'Invalid region' }, { status: 400 })
   }
   if (!action || !['open', 'close'].includes(action)) {
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'No active invite season' }, { status: 400 })
   }
 
-  const regionField = region as 'na' | 'emea' | 'pacific'
+  const regionField = region
 
   if (action === 'open') {
     if (season.regionQueueStatus?.[regionField]) {

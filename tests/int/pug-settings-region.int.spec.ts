@@ -23,6 +23,11 @@ describe('settings generator data center by region', () => {
     expect(out).toContain('Data Center Preference: Singapore 2')
   })
 
+  it('uses Brazil for sa', () => {
+    const out = generateSettings({ ...base, region: 'sa' })
+    expect(out).toContain('Data Center Preference: Brazil')
+  })
+
   it('falls back to USA - Central when region is missing', () => {
     const out = generateSettings({ ...base })
     expect(out).toContain('Data Center Preference: USA - Central')

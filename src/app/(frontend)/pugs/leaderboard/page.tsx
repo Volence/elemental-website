@@ -3,6 +3,7 @@ import configPromise from '@payload-config'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { PageHeader, PageShell } from '@/components/PageShell'
+import { PUG_REGIONS, isPugRegion, pugRegionLabel, type PugRegion } from '@/pug/types'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'PUG Leaderboard' }
@@ -12,7 +13,8 @@ export default async function PugLeaderboardPage({
 }: {
   searchParams: Promise<{ tier?: string; seasonId?: string; region?: string }>
 }) {
-  const { tier = 'open', seasonId, region = 'na' } = await searchParams
+  const { tier = 'open', seasonId, region: regionParam } = await searchParams
+  const region: PugRegion = isPugRegion(regionParam) ? regionParam : 'na'
 
   const payload = await getPayload({ config: configPromise })
 
@@ -33,9 +35,9 @@ export default async function PugLeaderboardPage({
     { season: { equals: resolvedSeasonId } },
     { gamesPlayed: { greater_than: 0 } },
   ]
-  if (tier === 'invite' && region) {
-    leaderboardWhere.push({ region: { equals: region } })
-  }
+  // Both tiers are rated per region: a player in EMEA never meets one in NA, so
+  // the boards are not comparable and are shown one region at a time.
+  leaderboardWhere.push({ region: { equals: region } })
 
   const entries = resolvedSeasonId
     ? await payload.find({
@@ -59,7 +61,7 @@ export default async function PugLeaderboardPage({
         {['open', 'invite'].map((t) => (
           <Link
             key={t}
-            href={`/pugs/leaderboard?tier=${t}`}
+            href={`/pugs/leaderboard?tier=${t}&region=${region}`}
             className={`px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
               tier === t
                 ? t === 'invite'
@@ -73,32 +75,28 @@ export default async function PugLeaderboardPage({
         ))}
       </div>
 
-      {/* Region sub-tabs (invite tier only) */}
-      {tier === 'invite' && (
-        <div className="flex gap-1 mb-6 p-1 bg-card/50 border border-border rounded-xl w-fit">
-          {[
-            { value: 'na', label: 'NA' },
-            { value: 'emea', label: 'EMEA' },
-            { value: 'pacific', label: 'Pacific' },
-          ].map((r) => (
-            <Link
-              key={r.value}
-              href={`/pugs/leaderboard?tier=invite&region=${r.value}${seasonId ? `&seasonId=${seasonId}` : ''}`}
-              className={`px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                region === r.value
+      {/* Region sub-tabs */}
+      <div className="flex gap-1 mb-6 p-1 bg-card/50 border border-border rounded-xl w-fit">
+        {PUG_REGIONS.map((r) => (
+          <Link
+            key={r.value}
+            href={`/pugs/leaderboard?tier=${tier}&region=${r.value}${seasonId ? `&seasonId=${seasonId}` : ''}`}
+            className={`px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+              region === r.value
+                ? tier === 'invite'
                   ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-              }`}
-            >
-              {r.label}
-            </Link>
-          ))}
-        </div>
-      )}
+                  : 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+            }`}
+          >
+            {r.label}
+          </Link>
+        ))}
+      </div>
 
       {(entries as any).docs.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground border border-border rounded-xl bg-card/30">
-          <p className="text-lg font-medium text-muted-foreground">No players yet this season</p>
+          <p className="text-lg font-medium text-muted-foreground">No {pugRegionLabel(region)} players yet this season</p>
           <p className="text-sm mt-1">Play a match to appear on the leaderboard.</p>
         </div>
       ) : (

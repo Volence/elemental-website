@@ -5,6 +5,7 @@ import prisma from '@/lib/prisma'
 import { generateSettings } from '@/pug/settingsGenerator'
 import { enrichSpectators } from '@/pug/spectators'
 import { isBotEnabledForLobby } from '@/pug/botMode'
+import type { PugRegion } from '@/pug/types'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -304,7 +305,7 @@ export async function GET(request: NextRequest, { params }: Params) {
           bannedHeroes: bannedHeroNames,
           otherMapsInMode,
           hostNote,
-          region: lobby.region as ('na' | 'emea' | 'pacific') | null,
+          region: lobby.region as PugRegion | null,
         })
       }
 

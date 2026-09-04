@@ -1,3 +1,4 @@
+import type { PugRegion } from '@/pug/types'
 /**
  * Pure helpers for the PUG Players table: filtering, rating join, sorting.
  * Kept free of React and fetch so they are unit testable.
@@ -40,7 +41,7 @@ export interface RatingSummary {
 export interface PlayerFilters {
   search: string
   tier: 'all' | 'open' | 'invite'
-  region: 'all' | 'na' | 'emea' | 'pacific'
+  region: 'all' | PugRegion
   status: 'all' | 'banned' | 'unlinked'
 }
 

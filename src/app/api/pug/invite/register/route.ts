@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import type { PugRegion } from '@/pug/types'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import type { Person } from '@/payload-types'
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
   }
 
   const inviteRoles = (invite.pugInvite?.approvedRoles ?? []) as ('tank' | 'flex-dps' | 'hitscan-dps' | 'flex-support' | 'main-support')[]
-  const region = invite.pugInvite?.region as 'na' | 'emea' | 'pacific' | undefined
+  const region = invite.pugInvite?.region as PugRegion | undefined
 
   try {
     const person = user as any

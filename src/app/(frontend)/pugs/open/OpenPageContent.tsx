@@ -1,6 +1,7 @@
 'use client'
 
 import { startPolling } from '@/utilities/polling'
+import { PUG_REGIONS, PUG_REGION_LABELS } from '@/pug/types'
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -45,13 +46,8 @@ const ROLES = [
   { value: 'main_support', label: 'Main Support' },
 ]
 
-const REGIONS = [
-  { value: 'na', label: 'NA' },
-  { value: 'emea', label: 'EMEA' },
-  { value: 'pacific', label: 'Pacific' },
-] as const
-
-const REGION_LABELS: Record<string, string> = { na: 'NA', emea: 'EMEA', pacific: 'Pacific' }
+const REGIONS = PUG_REGIONS
+const REGION_LABELS: Record<string, string> = PUG_REGION_LABELS
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
   OPEN: { label: 'Open', color: 'bg-green-500/20 text-green-400 border border-green-500/30' },

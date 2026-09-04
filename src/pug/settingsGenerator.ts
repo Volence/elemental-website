@@ -23,6 +23,7 @@ const DATA_CENTER_BY_REGION: Record<PugRegion, string> = {
   na: 'USA - Central',
   emea: 'Netherlands',
   pacific: 'Singapore 2',
+  sa: 'Brazil',
 }
 
 function dataCenterFor(region: PugRegion | null | undefined): string {

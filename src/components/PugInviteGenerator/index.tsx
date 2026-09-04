@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState, useCallback } from 'react'
+import { PUG_REGIONS } from '@/pug/types'
 import { Badge } from '@/admin-kit'
 
 type InviteData = {
@@ -29,11 +30,7 @@ const PUG_ROLES = [
   { label: 'Main Support', value: 'main-support' },
 ]
 
-const REGIONS = [
-  { label: 'NA', value: 'na' },
-  { label: 'EMEA', value: 'emea' },
-  { label: 'Pacific', value: 'pacific' },
-]
+const REGIONS = PUG_REGIONS.map((r) => ({ label: r.label, value: r.value }))
 
 export const PugInviteGenerator: React.FC = () => {
   const [invites, setInvites] = useState<InviteData[]>([])

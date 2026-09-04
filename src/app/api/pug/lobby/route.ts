@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
+import { VALID_REGIONS, PUG_REGION_LIST } from '@/pug/types'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
@@ -110,11 +111,9 @@ export async function GET(request: NextRequest) {
     }
     seasonId = season.id
     if (season?.regionQueueStatus) {
-      regionQueueStatus = {
-        na: season.regionQueueStatus.na ?? false,
-        emea: season.regionQueueStatus.emea ?? false,
-        pacific: season.regionQueueStatus.pacific ?? false,
-      }
+      regionQueueStatus = Object.fromEntries(
+        VALID_REGIONS.map((r) => [r, season.regionQueueStatus[r] ?? false]),
+      )
     }
   }
 
@@ -178,7 +177,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'You must register for open tier first' }, { status: 403 })
     }
     if (!isPugRegion(region)) {
-      return NextResponse.json({ error: 'region required (na, emea, or pacific)' }, { status: 400 })
+      return NextResponse.json({ error: `region required (${PUG_REGION_LIST})` }, { status: 400 })
     }
 
     // One joinable lobby at a time per region: funnel into the existing open
