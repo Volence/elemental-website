@@ -4,30 +4,16 @@
 
 FaceIt integration has been streamlined to a simple 3-step process. All FaceIt configuration is managed through Team pages, with smart filtering to prevent configuration errors.
 
-## Step 1: Create League Template (Admin Only, One-Time Setup)
+## Step 1: League Templates (created by the season rollover)
 
-League templates store reusable FaceIt IDs (championship, league, season, stage) so you don't have to re-enter them for every team.
+League templates hold the FACEIT ids (league, season, stage, championship) for
+one division in one region. They are created by the **Roll over to Season N**
+action on the FaceIt Leagues page (`/admin/collections/faceit-leagues`), which
+reads the whole season from FACEIT and also moves every team to the division
+it registered in. See `FACEIT_SEASON_TRANSITION_GUIDE.md`.
 
-1. **Access FaceIt Leagues**: `/admin/collections/faceit-leagues/create`
-   - *Note: This collection is hidden from navigation and only accessible to admins*
-
-2. **Paste FaceIt League URL** in the URL Helper field:
-   - Example: `https://www.faceit.com/en/ow2/league/FACEIT%20League/...standings?stage=...`
-
-3. **Click "Extract IDs"** button
-   - Automatically fills: League ID, Season ID, Stage ID
-
-4. **Fill in remaining fields:**
-   - **Name**: Descriptive name (e.g., "Season 7 Advanced NA")
-   - **Season Number**: `7`
-   - **Division**: Select from dropdown (Masters, Expert, Advanced, Intermediate, Open)
-   - **Region**: Select from dropdown (NA, EMEA, SA)
-   - **Conference**: Optional (e.g., "Central")
-   - **Championship ID**: Optional - can use League ID if unknown
-
-5. **Save**
-
-**You only do this once per league season.** All teams in the same league will reference this template.
+Creating a template by hand (Create New, paste a standings URL into the URL
+helper) is only needed for an unusual league outside the FACEIT season tree.
 
 ---
 

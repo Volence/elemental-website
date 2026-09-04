@@ -894,6 +894,10 @@ export interface Team {
    */
   currentFaceitLeague?: (number | null) | FaceitLeague;
   /**
+   * Team dropped out mid-season. Stops match sync and Discord posts but keeps history visible. Cleared automatically at the next rollover.
+   */
+  faceitWithdrawn?: boolean | null;
+  /**
    * Display FaceIt competitive data on team page frontend
    */
   faceitShowCompetitiveSection?: boolean | null;
@@ -3988,6 +3992,7 @@ export interface TeamsSelect<T extends boolean = true> {
   faceitEnabled?: T;
   faceitTeamId?: T;
   currentFaceitLeague?: T;
+  faceitWithdrawn?: T;
   faceitShowCompetitiveSection?: T;
   currentFaceitSeason?: T;
   rolePreset?: T;
