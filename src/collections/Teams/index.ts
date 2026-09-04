@@ -467,6 +467,17 @@ export const Teams: CollectionConfig = {
               },
             },
             {
+              name: 'faceitWithdrawn',
+              type: 'checkbox',
+              defaultValue: false,
+              label: 'Withdrawn from current season',
+              admin: {
+                description:
+                  'Team dropped out mid-season. Stops match sync and Discord posts but keeps history visible. Cleared automatically at the next rollover.',
+                condition: (data) => data.faceitEnabled === true,
+              },
+            },
+            {
               name: 'faceitShowCompetitiveSection',
               type: 'checkbox',
               defaultValue: true,
@@ -800,6 +811,37 @@ export const Teams: CollectionConfig = {
     afterChange: [
       createAuditLogHook('teams'),
       revalidateTeamsAfterChange,
+      // Withdrawn from the current FACEIT season: pull the team's upcoming synced
+      // matches so they leave the production and public schedules.
+      async ({ doc, operation, previousDoc, req }) => {
+        if (operation !== 'update' || doc.faceitWithdrawn !== true || previousDoc?.faceitWithdrawn === true) return doc
+        try {
+          const upcoming = await req.payload.find({
+            collection: 'matches',
+            where: {
+              and: [
+                { syncedFromFaceit: { equals: true } },
+                { status: { equals: 'scheduled' } },
+                { date: { greater_than: new Date().toISOString() } },
+                { or: [{ team1Internal: { equals: doc.id } }, { team: { equals: doc.id } }] },
+              ],
+            },
+            limit: 100,
+            depth: 0,
+            overrideAccess: true,
+            req,
+          })
+          for (const match of upcoming.docs) {
+            await req.payload.update({ collection: 'matches', id: match.id, data: { status: 'cancelled' }, overrideAccess: true, req })
+          }
+          if (upcoming.docs.length > 0) {
+            console.log(`[Teams] ${doc.name} withdrawn: cancelled ${upcoming.docs.length} upcoming FACEIT matches`)
+          }
+        } catch (err) {
+          console.error('[Teams afterChange] withdraw cancel error:', err)
+        }
+        return doc
+      },
       // Update Discord team card when roster, logo, or rating changes
       async ({ doc, operation, previousDoc, req }) => {
         // Skip if this update is from Discord card system (to prevent loops)

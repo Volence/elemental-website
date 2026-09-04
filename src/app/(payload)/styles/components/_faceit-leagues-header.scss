@@ -524,3 +524,88 @@
     }
   }
 }
+
+// Season rollover modal
+.faceit-rollover {
+  &__actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    .btn { margin: 0; }
+  }
+  &__heading {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 1rem 0 0.4rem;
+    color: rgba(255, 255, 255, 0.85);
+  }
+  &__muted { font-size: 0.8rem; color: rgba(255, 255, 255, 0.55); margin: 0.25rem 0; }
+  &__warning { display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; color: #fbbf24; margin: 0.25rem 0; }
+  &__error { display: flex; align-items: center; gap: 0.35rem; font-size: 0.85rem; color: #f87171; }
+  &__ok { display: flex; align-items: center; gap: 0.35rem; color: #34d399; }
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+    th, td {
+      text-align: left;
+      padding: 0.35rem 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      vertical-align: top;
+    }
+    select {
+      width: 100%;
+      font-size: 0.8rem;
+      padding: 0.25rem;
+      background: rgba(0, 0, 0, 0.3);
+      color: inherit;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 4px;
+    }
+  }
+  &__row--existing td { color: rgba(255, 255, 255, 0.45); }
+  &__row--attention td:first-child { color: #fbbf24; }
+  &__suggestions { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.3rem; }
+  &__chip {
+    font-size: 0.72rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 100px;
+    border: 1px solid rgba(6, 182, 212, 0.4);
+    background: rgba(6, 182, 212, 0.1);
+    color: #67e8f9;
+    cursor: pointer;
+  }
+  &__list {
+    font-size: 0.8rem;
+    margin: 0.25rem 0 0 1rem;
+    padding: 0;
+    li { margin: 0.15rem 0; }
+    &--error li { color: #f87171; }
+  }
+  &__report p { font-size: 0.85rem; margin: 0.25rem 0; }
+}
+
+.faceit-leagues-header {
+  &__warning-details {
+    position: relative;
+    summary { list-style: none; cursor: pointer; }
+    summary::-webkit-details-marker { display: none; }
+  }
+  &__warning-list {
+    position: absolute;
+    right: 0;
+    z-index: 5;
+    margin: 0.35rem 0 0;
+    padding: 0.5rem 0.75rem;
+    list-style: none;
+    min-width: 260px;
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    font-size: 0.78rem;
+    li { padding: 0.15rem 0; }
+  }
+}

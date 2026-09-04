@@ -607,6 +607,10 @@ export async function syncTeamData(
       }
     }
 
+    if ((team as any).faceitWithdrawn) {
+      return { success: false, error: 'Team is withdrawn from the current season' }
+    }
+
     // 2. Fetch data from FaceIt API
     
     const [teamProfile, standingsResult, matches] = await Promise.all([
@@ -1048,6 +1052,7 @@ export async function syncAllTeams(): Promise<SyncResult[]> {
       where: {
         and: [
           { faceitEnabled: { equals: true } },
+          { faceitWithdrawn: { not_equals: true } },
           { currentFaceitLeague: { exists: true } },
         ],
       },
@@ -1135,6 +1140,7 @@ export async function syncTeamsByRegion(region: string): Promise<SyncResult[]> {
       where: {
         and: [
           { faceitEnabled: { equals: true } },
+          { faceitWithdrawn: { not_equals: true } },
           { currentFaceitLeague: { exists: true } },
           { region: { equals: region } },
         ],

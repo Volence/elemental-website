@@ -3,12 +3,24 @@
 import React, { useState, useEffect } from 'react'
 import { DialogA11y } from '@/admin-kit'
 import { Button } from '@payloadcms/ui'
-import { RefreshCw, Flag, CheckCircle, AlertTriangle, Archive, RotateCcw, Pencil, Trophy, ClipboardList, Lock, Users, Zap } from 'lucide-react'
+import { RefreshCw, CheckCircle, AlertTriangle, Archive, RotateCcw, Pencil, Trophy } from 'lucide-react'
+import RolloverModal from './RolloverModal'
 
 /**
- * Consolidated header for FaceIt Leagues list page
- * Combines sync functionality and status notifications in a clean layout
+ * Header for the FaceIt Leagues list page.
+ *
+ * Top row: which FACEIT season we are on versus the latest one FACEIT has
+ * published, the "Roll over" entry point, Sync All, and a warning pill for
+ * enabled teams still pointed at an inactive league. Below: sync results and
+ * the collapsible list of finalized seasons with restore actions.
  */
+
+interface SeasonDetection {
+  latest: { id: string; number: number; start: string | null; end: string | null } | null
+  ours: number | null
+  rolloverAvailable: boolean
+}
+
 const FaceitLeaguesHeader: React.FC = () => {
   const [syncing, setSyncing] = useState(false)
   const [results, setResults] = useState<any>(null)
@@ -16,15 +28,13 @@ const FaceitLeaguesHeader: React.FC = () => {
   const [inactiveLeagueWarnings, setInactiveLeagueWarnings] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Finalize season state
-  const [finalizing, setFinalizing] = useState(false)
-  const [finalizeFilter, setFinalizeFilter] = useState('')
-  const [finalizeResults, setFinalizeResults] = useState<any>(null)
-  const [allActiveLeagues, setAllActiveLeagues] = useState<any[]>([])
+  // Season detection + rollover
+  const [detection, setDetection] = useState<SeasonDetection | null>(null)
+  const [detectionError, setDetectionError] = useState<string | null>(null)
+  const [showRollover, setShowRollover] = useState(false)
 
   // Confirmation modal state
   const [showSyncConfirm, setShowSyncConfirm] = useState(false)
-  const [showFinalizeConfirm, setShowFinalizeConfirm] = useState(false)
   const [showRestoreConfirm, setShowRestoreConfirm] = useState<any>(null) // League to restore
   const [showRestoreSeasonConfirm, setShowRestoreSeasonConfirm] = useState<any>(null) // Team season to restore
   const [restoring, setRestoring] = useState(false)
@@ -32,16 +42,22 @@ const FaceitLeaguesHeader: React.FC = () => {
   // Finalized (inactive) leagues
   const [finalizedLeagues, setFinalizedLeagues] = useState<any[]>([])
 
-  // Compute matching leagues based on filter
-  const matchingLeagues = finalizeFilter.trim()
-    ? allActiveLeagues.filter(league =>
-        league.name.toLowerCase().includes(finalizeFilter.toLowerCase())
-      )
-    : []
-
   useEffect(() => {
     fetchWarnings()
+    fetchDetection()
   }, [])
+
+  const fetchDetection = async () => {
+    try {
+      const res = await fetch('/api/faceit/rollover', { credentials: 'include' })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || 'Could not reach FACEIT')
+      setDetection(data.detection)
+      setDetectionError(null)
+    } catch (err: any) {
+      setDetectionError(err.message)
+    }
+  }
 
   const fetchWarnings = async () => {
     try {
@@ -52,11 +68,14 @@ const FaceitLeaguesHeader: React.FC = () => {
       const leaguesData = await leaguesRes.json()
       const inactiveLeagues = leaguesData.docs.filter((l: any) => !l.isActive)
 
-      // One query for every inactive league (this used to be one request per league)
+      // Only enabled, active teams count: disabled teams keep an old pointer
+      // until the next rollover clears it, and that is not a problem.
       const warnings: any[] = []
       const inactiveIds = inactiveLeagues.map((l: any) => l.id)
       if (inactiveIds.length > 0) {
-        const teamsRes = await fetch(`/api/teams?where[currentFaceitLeague][in]=${inactiveIds.join(',')}&limit=500&depth=0`)
+        const teamsRes = await fetch(
+          `/api/teams?where[currentFaceitLeague][in]=${inactiveIds.join(',')}&where[faceitEnabled][equals]=true&where[active][not_equals]=false&limit=500&depth=0`,
+        )
         const teamsData = await teamsRes.json()
         const leagueIdOf = (t: any) =>
           typeof t.currentFaceitLeague === 'object' ? t.currentFaceitLeague?.id : t.currentFaceitLeague
@@ -82,10 +101,6 @@ const FaceitLeaguesHeader: React.FC = () => {
         })
       )
       setFinalizedLeagues(finalizedWithSeasons)
-
-      // Fetch all active leagues for finalize preview
-      const activeLeagues = leaguesData.docs.filter((l: any) => l.isActive)
-      setAllActiveLeagues(activeLeagues)
     } catch (error) {
       console.error('Error fetching FaceIt league warnings:', error)
     } finally {
@@ -135,38 +150,6 @@ const FaceitLeaguesHeader: React.FC = () => {
     }
   }
 
-  const handleFinalizeSeason = async () => {
-    if (finalizing || matchingLeagues.length === 0) return
-    setShowFinalizeConfirm(false)
-
-    try {
-      setFinalizing(true)
-      setFinalizeResults(null)
-
-      const response = await fetch('/api/faceit/finalize-season', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nameFilter: finalizeFilter }),
-      })
-
-      const data = await response.json()
-      setFinalizeResults(data)
-
-      // Refresh data after finalization
-      if (data.success) {
-        fetchWarnings()
-        setFinalizeFilter('')
-      }
-    } catch (error: any) {
-      setFinalizeResults({
-        success: false,
-        error: error.message || 'Failed to finalize',
-      })
-    } finally {
-      setFinalizing(false)
-    }
-  }
-
   const handleRestoreLeague = async () => {
     if (!showRestoreConfirm || restoring) return
 
@@ -196,6 +179,7 @@ const FaceitLeaguesHeader: React.FC = () => {
       // Refresh data
       setShowRestoreConfirm(null)
       fetchWarnings()
+      fetchDetection()
     } catch (error: any) {
       console.error('Failed to restore league:', error)
     } finally {
@@ -242,16 +226,37 @@ const FaceitLeaguesHeader: React.FC = () => {
     }
   }
 
+  const fmtStart = (iso: string | null) =>
+    iso ? new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }) : ''
+
   return (
     <div className="faceit-leagues-header">
-      {/* Top Row: Actions + Status */}
+      {/* Top Row: Season status + Actions + Warning */}
       <div className="faceit-leagues-header__top">
         <div className="faceit-leagues-header__actions">
-          <Button
-            onClick={() => setShowSyncConfirm(true)}
-            disabled={syncing}
-            buttonStyle="primary"
-          >
+          {detection && (
+            <span className={`faceit-leagues-header__badge ${detection.rolloverAvailable ? 'faceit-leagues-header__badge--warning' : 'faceit-leagues-header__badge--success'}`}>
+              <Trophy size={12} />{' '}
+              {detection.ours != null ? `On Season ${detection.ours}` : 'No season tracked'}
+              {detection.latest && detection.rolloverAvailable && (
+                <> · Season {detection.latest.number} available{detection.latest.start ? ` (starts ${fmtStart(detection.latest.start)})` : ''}</>
+              )}
+              {detection.latest && !detection.rolloverAvailable && <> · current</>}
+            </span>
+          )}
+          {detectionError && (
+            <span className="faceit-leagues-header__badge faceit-leagues-header__badge--warning">
+              <AlertTriangle size={12} /> {detectionError}
+            </span>
+          )}
+
+          {detection?.rolloverAvailable && detection.latest && (
+            <Button onClick={() => setShowRollover(true)} buttonStyle="primary">
+              <Trophy size={12} /> Roll over to Season {detection.latest.number}
+            </Button>
+          )}
+
+          <Button onClick={() => setShowSyncConfirm(true)} disabled={syncing} buttonStyle="secondary">
             {syncing ? 'Syncing...' : <><RefreshCw size={12} /> Sync All Active Leagues</>}
           </Button>
 
@@ -260,42 +265,6 @@ const FaceitLeaguesHeader: React.FC = () => {
               {progress}
             </span>
           )}
-
-          {/* Finalize Season */}
-          <div className="faceit-leagues-header__finalize">
-            <input
-              type="text"
-              placeholder="Filter leagues (e.g. '7' or '7 playoffs')"
-              value={finalizeFilter}
-              onChange={(e) => setFinalizeFilter(e.target.value)}
-              className="faceit-leagues-header__filter-input"
-              disabled={finalizing}
-            />
-            <Button
-              onClick={() => matchingLeagues.length > 0 && setShowFinalizeConfirm(true)}
-              disabled={finalizing || matchingLeagues.length === 0}
-              buttonStyle="secondary"
-            >
-              {finalizing ? 'Finalizing...' : <><Flag size={12} /> Finalize ({matchingLeagues.length})</>}
-            </Button>
-          </div>
-
-          {/* Live preview of matching leagues */}
-          {matchingLeagues.length > 0 && (
-            <div className="faceit-leagues-header__preview">
-              <span className="faceit-leagues-header__preview-label">Will finalize:</span>
-              {matchingLeagues.slice(0, 5).map(league => (
-                <span key={league.id} className="faceit-leagues-header__preview-tag">
-                  {league.name}
-                </span>
-              ))}
-              {matchingLeagues.length > 5 && (
-                <span className="faceit-leagues-header__preview-more">
-                  +{matchingLeagues.length - 5} more
-                </span>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Status Badge */}
@@ -303,57 +272,27 @@ const FaceitLeaguesHeader: React.FC = () => {
           <div className="faceit-leagues-header__status">
             {inactiveLeagueWarnings.length === 0 ? (
               <span className="faceit-leagues-header__badge faceit-leagues-header__badge--success">
-                <CheckCircle size={12} /> All leagues up to date
+                <CheckCircle size={12} /> All teams on the current season
               </span>
             ) : (
-              <span className="faceit-leagues-header__badge faceit-leagues-header__badge--warning">
-                <AlertTriangle size={12} /> {inactiveLeagueWarnings.reduce((acc, w) => acc + w.teamCount, 0)} teams on inactive leagues
-              </span>
+              <details className="faceit-leagues-header__warning-details">
+                <summary className="faceit-leagues-header__badge faceit-leagues-header__badge--warning">
+                  <AlertTriangle size={12} /> {inactiveLeagueWarnings.reduce((acc, w) => acc + w.teamCount, 0)} teams on inactive leagues
+                </summary>
+                <ul className="faceit-leagues-header__warning-list">
+                  {inactiveLeagueWarnings.flatMap((w) =>
+                    w.teams.map((t: any) => (
+                      <li key={t.id}>
+                        <a className="faceit-leagues-header__team-link" href={`/admin/collections/teams/${t.id}`}>{t.name}</a> · {w.league.name}
+                      </li>
+                    )),
+                  )}
+                </ul>
+              </details>
             )}
           </div>
         )}
       </div>
-
-      {/* Finalize Results */}
-      {finalizeResults && (
-        <div className={`faceit-leagues-header__results ${finalizeResults.success && !(finalizeResults.errors?.length > 0) ? 'faceit-leagues-header__results--success' : 'faceit-leagues-header__results--error'}`}>
-          <div className="faceit-leagues-header__results-header">
-            <span>{finalizeResults.success && !(finalizeResults.errors?.length > 0) ? <Flag size={14} /> : <AlertTriangle size={14} />}</span>
-            <span>{finalizeResults.success && !(finalizeResults.errors?.length > 0)
-              ? `Finalized ${finalizeResults.leaguesFinalized || 0} League(s)`
-              : 'Finalize Failed'}</span>
-          </div>
-
-          {finalizeResults.success && !(finalizeResults.errors?.length > 0) && (
-            <div className="faceit-leagues-header__results-stats">
-              <div className="faceit-leagues-header__stat">
-                <span className="faceit-leagues-header__stat-value">{finalizeResults.leaguesFinalized || 0}</span>
-                <span className="faceit-leagues-header__stat-label">Leagues</span>
-              </div>
-              <div className="faceit-leagues-header__stat">
-                <span className="faceit-leagues-header__stat-value">{finalizeResults.seasonsArchived || 0}</span>
-                <span className="faceit-leagues-header__stat-label">Teams</span>
-              </div>
-              <div className="faceit-leagues-header__stat">
-                <span className="faceit-leagues-header__stat-value">{finalizeResults.matchesArchived || 0}</span>
-                <span className="faceit-leagues-header__stat-label">Matches Archived</span>
-              </div>
-            </div>
-          )}
-
-          {finalizeResults.error && (
-            <div className="faceit-leagues-header__results-error">
-              {finalizeResults.error}
-            </div>
-          )}
-
-          {finalizeResults.errors?.length > 0 && (
-            <div className="faceit-leagues-header__results-error">
-              {finalizeResults.errors.join(', ')}
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Sync Results - Only show when there are results */}
       {results && (
@@ -462,12 +401,12 @@ const FaceitLeaguesHeader: React.FC = () => {
       {/* Restore Confirmation Modal */}
       {showRestoreConfirm && (
         <div className="confirm-modal-overlay" onClick={() => setShowRestoreConfirm(null)} role="presentation">
-<DialogA11y onClose={() => setShowRestoreConfirm(null)} />
+          <DialogA11y onClose={() => setShowRestoreConfirm(null)} />
           <div
- className="confirm-modal"
- role="dialog"
- aria-modal="true"
- onClick={(e) => e.stopPropagation()}>
+            className="confirm-modal"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}>
             <h3 className="confirm-modal__title"><RotateCcw size={14} /> Restore League</h3>
             <div className="confirm-modal__message">
               <p>Restore <strong>{showRestoreConfirm.name}</strong> to active status?</p>
@@ -500,17 +439,17 @@ const FaceitLeaguesHeader: React.FC = () => {
       {/* Team Season Restore Confirmation Modal */}
       {showRestoreSeasonConfirm && (
         <div className="confirm-modal-overlay" onClick={() => setShowRestoreSeasonConfirm(null)} role="presentation">
-<DialogA11y onClose={() => setShowRestoreSeasonConfirm(null)} />
+          <DialogA11y onClose={() => setShowRestoreSeasonConfirm(null)} />
           <div
- className="confirm-modal"
- role="dialog"
- aria-modal="true"
- onClick={(e) => e.stopPropagation()}>
+            className="confirm-modal"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}>
             <h3 className="confirm-modal__title"><RotateCcw size={14} /> Restore Team Season</h3>
             <div className="confirm-modal__message">
               <p>Restore <strong>{typeof showRestoreSeasonConfirm.team === 'object' ? showRestoreSeasonConfirm.team?.name : 'this team'}</strong> to active status?</p>
               <p style={{ marginTop: '0.5rem', color: 'var(--theme-elevation-500)' }}>
-                This will resume FaceIt syncing for this team's season data.
+                This will resume FaceIt syncing for this team&apos;s season data.
               </p>
             </div>
             <div className="confirm-modal__actions">
@@ -538,12 +477,12 @@ const FaceitLeaguesHeader: React.FC = () => {
       {/* Sync Confirmation Modal */}
       {showSyncConfirm && (
         <div className="confirm-modal-overlay" onClick={() => setShowSyncConfirm(false)} role="presentation">
-<DialogA11y onClose={() => setShowSyncConfirm(false)} />
+          <DialogA11y onClose={() => setShowSyncConfirm(false)} />
           <div
- className="confirm-modal"
- role="dialog"
- aria-modal="true"
- onClick={(e) => e.stopPropagation()}>
+            className="confirm-modal"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}>
             <h3 className="confirm-modal__title"><RefreshCw size={14} /> Sync All Teams</h3>
             <div className="confirm-modal__message">
               <p>This will sync data for all teams in active FaceIt leagues.</p>
@@ -571,79 +510,14 @@ const FaceitLeaguesHeader: React.FC = () => {
         </div>
       )}
 
-      {/* Finalize Confirmation Modal */}
-      {showFinalizeConfirm && (
-        <div className="confirm-modal-overlay" onClick={() => setShowFinalizeConfirm(false)} role="presentation">
-<DialogA11y onClose={() => setShowFinalizeConfirm(false)} />
-          <div
- className="confirm-modal confirm-modal--wide"
- role="dialog"
- aria-modal="true"
- onClick={(e) => e.stopPropagation()}>
-            <h3 className="confirm-modal__title"><AlertTriangle size={14} /> Finalize {matchingLeagues.length} League(s)</h3>
-            <div className="confirm-modal__content">
-              {/* Leagues Section */}
-              <div className="confirm-modal__section">
-                <div className="confirm-modal__section-header">
-                  <span className="confirm-modal__section-icon"><Trophy size={14} /></span>
-                  <span className="confirm-modal__section-title">Leagues to Finalize</span>
-                </div>
-                <div className="confirm-modal__tags">
-                  {matchingLeagues.slice(0, 8).map(league => (
-                    <span key={league.id} className="confirm-modal__tag">{league.name}</span>
-                  ))}
-                  {matchingLeagues.length > 8 && (
-                    <span className="confirm-modal__tag confirm-modal__tag--more">+{matchingLeagues.length - 8} more</span>
-                  )}
-                </div>
-              </div>
-
-              {/* Actions Section */}
-              <div className="confirm-modal__section confirm-modal__section--actions">
-                <div className="confirm-modal__section-header">
-                  <span className="confirm-modal__section-icon"><ClipboardList size={14} /></span>
-                  <span className="confirm-modal__section-title">What Will Happen</span>
-                </div>
-                <div className="confirm-modal__action-list">
-                  <div className="confirm-modal__action-item">
-                    <span className="confirm-modal__action-icon"><Archive size={14} /></span>
-                    <span>Archive all match history</span>
-                  </div>
-                  <div className="confirm-modal__action-item">
-                    <span className="confirm-modal__action-icon"><Lock size={14} /></span>
-                    <span>Mark leagues as INACTIVE</span>
-                  </div>
-                  <div className="confirm-modal__action-item">
-                    <span className="confirm-modal__action-icon"><Users size={14} /></span>
-                    <span>Mark team seasons as INACTIVE</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Warning Notice */}
-              <div className="confirm-modal__notice confirm-modal__notice--warning">
-                <span className="confirm-modal__notice-icon"><Zap size={14} /></span>
-                <span>This preserves data but <strong>stops future syncing</strong> for these leagues.</span>
-              </div>
-            </div>
-            <div className="confirm-modal__actions">
-              <button
-                type="button"
-                className="confirm-modal__btn confirm-modal__btn--cancel"
-                onClick={() => setShowFinalizeConfirm(false)}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="confirm-modal__btn confirm-modal__btn--warning"
-                onClick={handleFinalizeSeason}
-              >
-                <Flag size={12} /> Finalize Leagues
-              </button>
-            </div>
-          </div>
-        </div>
+      {detection?.latest && (
+        <RolloverModal
+          open={showRollover}
+          onClose={() => setShowRollover(false)}
+          seasonId={detection.latest.id}
+          seasonNumber={detection.latest.number}
+          onApplied={() => { fetchWarnings(); fetchDetection() }}
+        />
       )}
     </div>
   )

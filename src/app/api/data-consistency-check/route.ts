@@ -281,7 +281,7 @@ export async function GET(request: NextRequest) {
       }
 
       const faceitTeamsNoSeason = teams.docs
-        .filter((t: any) => t.faceitEnabled && !teamsWithActiveSeason.has(t.id))
+        .filter((t: any) => t.faceitEnabled && !t.faceitWithdrawn && !teamsWithActiveSeason.has(t.id))
         .map((t: any) => ({
           id: t.id,
           name: t.name,

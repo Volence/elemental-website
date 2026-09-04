@@ -54,6 +54,7 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
   const [error, setError] = useState<string | null>(null)
   const [showHistory, setShowHistory] = useState(false)
   const [showPastMatches, setShowPastMatches] = useState(false)
+  const [withdrawn, setWithdrawn] = useState(false)
 
   useEffect(() => {
     async function fetchData() {
@@ -67,6 +68,7 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
         const standingsData = await standingsRes.json()
         
         setStanding(standingsData.currentSeason)
+        setWithdrawn(!!standingsData.withdrawn)
         setPlayoff(standingsData.playoff || null)
         setHistoricalSeasons(standingsData.historicalSeasons || [])
 
@@ -132,7 +134,15 @@ export default function CompetitiveSection({ teamId }: CompetitiveSectionProps) 
         </div>
 
         {/* Current Season Standings */}
-        {standing && (
+        {standing && withdrawn && (
+        <div className="p-6">
+          <div className="p-4 bg-slate-500/10 border border-slate-500/30 rounded-lg text-sm text-slate-300">
+            <span className="font-semibold text-white">Withdrawn</span> from {standing.season}. Past seasons are below.
+          </div>
+        </div>
+        )}
+
+        {standing && !withdrawn && (
         <div className="p-6">
           <div className="grid grid-cols-2 gap-6">
             <div>

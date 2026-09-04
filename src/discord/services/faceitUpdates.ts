@@ -103,6 +103,7 @@ async function _updateFaceitChannel(): Promise<void> {
 
   for (const team of sortedTeams) {
     const teamData = team as any
+    if (teamData.faceitWithdrawn) continue
     const season = seasonByTeamId.get(team.id)
 
     if (!season) continue
