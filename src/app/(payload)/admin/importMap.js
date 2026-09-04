@@ -30,7 +30,7 @@ import { default as default_6d9e1ded9f80f1d962812e7bd12ae28d } from '@/component
 import { default as default_6bf23cb42f8cd662b9483def3bfe5de8 } from '@/components/TeamLogoPreview'
 import { default as default_85ada37c2f018121deec10a5bc7b166d } from '@/components/TeamsList/ListRedirect'
 import { default as default_d3aadc8f7d1aa70ce78ff0cfa164a82b } from '@/components/FaceitUrlHelper'
-import { default as default_e937f5e9aab757c7fd786055646bb001 } from '@/components/FaceitLeaguesHeader'
+import { default as default_5d1ecec360311ccb6480f9469e664a12 } from '@/components/FaceitHub'
 import { default as default_2c8416f4e7f33bd98807404c20406eb2 } from '@/components/CalendarEventsList/ListRedirect'
 import { default as default_74d7ce4a5764079f398d62cb46e87ed7 } from '@/components/StaffListRedirect'
 import { default as default_dc2c323b20f6177c2131d5b0800696bc } from '@/components/PopulateRosterButton'
@@ -160,7 +160,7 @@ export const importMap = {
   "@/components/TeamLogoPreview#default": default_6bf23cb42f8cd662b9483def3bfe5de8,
   "@/components/TeamsList/ListRedirect#default": default_85ada37c2f018121deec10a5bc7b166d,
   "@/components/FaceitUrlHelper#default": default_d3aadc8f7d1aa70ce78ff0cfa164a82b,
-  "@/components/FaceitLeaguesHeader#default": default_e937f5e9aab757c7fd786055646bb001,
+  "@/components/FaceitHub#default": default_5d1ecec360311ccb6480f9469e664a12,
   "@/components/CalendarEventsList/ListRedirect#default": default_2c8416f4e7f33bd98807404c20406eb2,
   "@/components/StaffListRedirect#default": default_74d7ce4a5764079f398d62cb46e87ed7,
   "@/components/PopulateRosterButton#default": default_dc2c323b20f6177c2131d5b0800696bc,

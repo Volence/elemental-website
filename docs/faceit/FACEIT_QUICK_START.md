@@ -8,7 +8,7 @@ FaceIt integration has been streamlined to a simple 3-step process. All FaceIt c
 
 League templates hold the FACEIT ids (league, season, stage, championship) for
 one division in one region. They are created by the **Roll over to Season N**
-action on the FaceIt Leagues page (`/admin/collections/faceit-leagues`), which
+action on the FaceIt page (`/admin/collections/faceit-leagues`), which
 reads the whole season from FACEIT and also moves every team to the division
 it registered in. See `FACEIT_SEASON_TRANSITION_GUIDE.md`.
 

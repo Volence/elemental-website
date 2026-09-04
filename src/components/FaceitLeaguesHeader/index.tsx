@@ -275,20 +275,9 @@ const FaceitLeaguesHeader: React.FC = () => {
                 <CheckCircle size={12} /> All teams on the current season
               </span>
             ) : (
-              <details className="faceit-leagues-header__warning-details">
-                <summary className="faceit-leagues-header__badge faceit-leagues-header__badge--warning">
-                  <AlertTriangle size={12} /> {inactiveLeagueWarnings.reduce((acc, w) => acc + w.teamCount, 0)} teams on inactive leagues
-                </summary>
-                <ul className="faceit-leagues-header__warning-list">
-                  {inactiveLeagueWarnings.flatMap((w) =>
-                    w.teams.map((t: any) => (
-                      <li key={t.id}>
-                        <a className="faceit-leagues-header__team-link" href={`/admin/collections/teams/${t.id}`}>{t.name}</a> · {w.league.name}
-                      </li>
-                    )),
-                  )}
-                </ul>
-              </details>
+              <a className="faceit-leagues-header__badge faceit-leagues-header__badge--warning" href="#faceit-teams">
+                <AlertTriangle size={12} /> {inactiveLeagueWarnings.reduce((acc, w) => acc + w.teamCount, 0)} teams on inactive leagues
+              </a>
             )}
           </div>
         )}

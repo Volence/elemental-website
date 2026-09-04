@@ -15,7 +15,7 @@ export const FaceitLeagues: CollectionConfig = {
   slug: 'faceit-leagues',
   labels: {
     singular: 'FaceIt League',
-    plural: 'FaceIt Leagues',
+    plural: 'FaceIt',
   },
   access: {
     create: adminOnly,
@@ -26,16 +26,19 @@ export const FaceitLeagues: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'division', 'region', 'seasonNumber', 'isActive'],
-    description: 'FaceIt league templates - Admin-only. Teams select from these when enabling FaceIt.',
+    description: 'FaceIt league templates - Admin-only. Created by the season rollover; teams select from these when enabling FaceIt.',
     group: 'Data',
     hidden: ({ user }) => {
       if (!user) return true
       return user.role !== 'admin' // Only admins can see this
     },
     components: {
-      beforeList: [
-        '@/components/FaceitLeaguesHeader#default',
-      ],
+      // The list page is the FaceIt hub: season rollover, teams overview, templates
+      views: {
+        list: {
+          Component: '@/components/FaceitHub#default',
+        },
+      },
     },
   },
   fields: [

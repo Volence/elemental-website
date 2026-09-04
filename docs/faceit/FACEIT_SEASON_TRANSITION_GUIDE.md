@@ -5,12 +5,12 @@
 ## When
 
 FACEIT publishes the next season a few weeks before it starts. The FaceIt
-Leagues page (`/admin/collections/faceit-leagues`) shows a status pill:
+page (`/admin/collections/faceit-leagues`) shows a status pill:
 "On Season 9 - Season 10 available (starts Sep 7)". When you see it, roll over.
 
 ## Steps
 
-1. Open **FaceIt Leagues** and click **Roll over to Season N**.
+1. Open **FaceIt** and click **Roll over to Season N**.
 2. Review the plan:
    - **Leagues**: one template per region and division, created from FACEIT's
      season tree. Nothing to paste.
