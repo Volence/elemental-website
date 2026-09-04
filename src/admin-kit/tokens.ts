@@ -22,6 +22,8 @@ export const color = {
     masters: v('tier-masters'),
     expert: v('tier-expert'),
     advanced: v('tier-advanced'),
+    intermediate: v('tier-intermediate'),
+    open: v('tier-open'),
     '4k': v('tier-4k'),
     '35k': v('tier-35k'),
     '30k': v('tier-30k'),

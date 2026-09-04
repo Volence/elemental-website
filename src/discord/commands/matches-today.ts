@@ -1,4 +1,5 @@
 import type { ChatInputCommandInteraction } from 'discord.js'
+import { FACEIT_DIVISIONS } from '@/utilities/divisions'
 import { EmbedBuilder } from 'discord.js'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
@@ -60,7 +61,7 @@ export async function handleMatchesToday(interaction: ChatInputCommandInteractio
     }
 
     // Division display order
-    const divisionOrder = ['Masters', 'Expert', 'Advanced', 'Open', 'Other']
+    const divisionOrder: string[] = [...FACEIT_DIVISIONS, 'Other']
     const sortedDivisions = Object.keys(matchesByDivision).sort(
       (a, b) => divisionOrder.indexOf(a) - divisionOrder.indexOf(b)
     )
@@ -127,7 +128,7 @@ export async function handleMatchesToday(interaction: ChatInputCommandInteractio
       }
 
       // Division header with emoji
-      const divEmoji = division === 'Masters' ? '👑' : division === 'Expert' ? '⭐' : division === 'Advanced' ? '🔷' : division === 'Open' ? '🟢' : '📋'
+      const divEmoji = division === 'Masters' ? '👑' : division === 'Expert' ? '⭐' : division === 'Advanced' ? '🔷' : division === 'Intermediate' ? '🔹' : division === 'Open' ? '🟢' : '📋'
       sections.push(`${divEmoji} **${division}** (${divMatches.length})\n${matchLines.join('\n\n')}`)
     }
 

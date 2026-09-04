@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic'
 export async function generateMetadata(): Promise<Metadata> {
   const allTeams = await getAllTeams()
   const teamCount = allTeams.length
-  const description = `Explore ${teamCount} ELMT Overwatch esports teams competing in FACEIT Expert, Advanced, Master, and Open divisions across NA, EMEA, SA, OCE, SEA, APAC, and China regions.`
+  const description = `Explore ${teamCount} ELMT Overwatch esports teams competing in FACEIT Masters, Expert, Advanced, Intermediate, and Open divisions across NA, EMEA, SA, OCE, SEA, APAC, and China regions.`
 
   return {
     title: 'Teams',

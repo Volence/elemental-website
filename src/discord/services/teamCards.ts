@@ -1,4 +1,5 @@
 import type { EmbedBuilder, TextChannel } from 'discord.js'
+import { divisionFromRating, divisionRank } from '@/utilities/divisions'
 import { ensureDiscordClient } from '../bot'
 import { buildEnhancedTeamEmbed, buildStaffEmbed } from '../utils/embeds'
 import { getPayload } from 'payload'
@@ -372,13 +373,6 @@ async function fetchAllTeamsSorted(payload: any): Promise<any[]> {
       'China': 7,
     }
 
-    // Define division order (Masters > Expert > Advanced > Open)
-    const divisionOrder = {
-      'Masters': 1,
-      'Expert': 2,
-      'Advanced': 3,
-      'Open': 4,
-    }
 
     // Sort teams by: 1) Region, 2) Division, 3) SR
     const sorted = result.docs.sort((a: any, b: any) => {
@@ -401,18 +395,14 @@ async function fetchAllTeamsSorted(payload: any): Promise<any[]> {
           return team.currentFaceitLeague.division
         }
         // Fall back to parsing rating text for FACEIT divisions
-        const rating = team.rating?.toLowerCase() || ''
-        if (rating.includes('masters')) return 'Masters'
-        if (rating.includes('expert')) return 'Expert'
-        if (rating.includes('advanced')) return 'Advanced'
-        return 'Open'
+        return divisionFromRating(team.rating) ?? 'Open'
       }
       
       const aDivision = getDivision(a)
       const bDivision = getDivision(b)
       
-      const aDivOrder = divisionOrder[aDivision as keyof typeof divisionOrder] || 999
-      const bDivOrder = divisionOrder[bDivision as keyof typeof divisionOrder] || 999
+      const aDivOrder = divisionRank(aDivision)
+      const bDivOrder = divisionRank(bDivision)
       
       if (aDivOrder !== bDivOrder) {
         return aDivOrder - bDivOrder

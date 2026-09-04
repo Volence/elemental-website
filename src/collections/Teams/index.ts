@@ -160,7 +160,7 @@ export const Teams: CollectionConfig = {
               name: 'rating',
               type: 'text',
               admin: {
-                description: 'Team skill rating or tier (e.g., "4.5K", "FACEIT Masters", "FACEIT Expert", "FACEIT Advanced", "3.5K")',
+                description: 'Team skill rating or tier (e.g., "FACEIT Masters", "FACEIT Expert", "FACEIT Advanced", "FACEIT Intermediate", "FACEIT Open", "4.5K", "3.5K")',
               },
             },
             {

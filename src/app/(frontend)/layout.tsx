@@ -46,7 +46,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               "url": "https://elmt.gg",
               "logo": "https://elmt.gg/logos/org.png",
               "sport": "Overwatch",
-              "description": "Premier Overwatch esports organization with competitive teams across Expert, Advanced, Master, and Open divisions.",
+              "description": "Premier Overwatch esports organization with competitive teams across Masters, Expert, Advanced, Intermediate, and Open divisions.",
               "sameAs": [
                 "https://x.com/ELMT_GG",
                 "https://discord.gg/elmt",

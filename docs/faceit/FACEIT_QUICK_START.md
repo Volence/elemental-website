@@ -20,7 +20,7 @@ League templates store reusable FaceIt IDs (championship, league, season, stage)
 4. **Fill in remaining fields:**
    - **Name**: Descriptive name (e.g., "Season 7 Advanced NA")
    - **Season Number**: `7`
-   - **Division**: Select from dropdown (Masters, Expert, Advanced, Open)
+   - **Division**: Select from dropdown (Masters, Expert, Advanced, Intermediate, Open)
    - **Region**: Select from dropdown (NA, EMEA, SA)
    - **Conference**: Optional (e.g., "Central")
    - **Championship ID**: Optional - can use League ID if unknown

@@ -91,6 +91,7 @@ export const FaceitLeagues: CollectionConfig = {
             { label: 'Masters', value: 'Masters' },
             { label: 'Expert', value: 'Expert' },
             { label: 'Advanced', value: 'Advanced' },
+            { label: 'Intermediate', value: 'Intermediate' },
             { label: 'Open', value: 'Open' },
           ],
         },

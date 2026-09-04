@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { FACEIT_DIVISIONS, divisionFromRating } from '@/utilities/divisions'
 import { Button, toast } from '@payloadcms/ui'
 import { AlertTriangle, CheckCircle, Clapperboard, ClipboardList, Eye, Gamepad2, Globe, Link, Lock, Megaphone, Mic, Target, Video } from 'lucide-react'
 
@@ -235,14 +236,10 @@ export function ScheduleBuilderView() {
       
       // Region / Division • League
       const region = match.team?.region || match.region || 'NA'
-      // Extract tier from team's rating field (e.g., "FACEIT Masters" -> "Masters")
-      const teamRating = match.team?.rating || ''
-      const validTiers = ['Masters', 'Expert', 'Advanced']
-      // Find which tier is contained in the rating string
-      const matchedTier = validTiers.find(tier => teamRating.toLowerCase().includes(tier.toLowerCase()))
-      const division = matchedTier || 'Open'
-      // League should be the season/league name, not the tier
-      const leagueIsTier = validTiers.some((d: string) => match.league?.toLowerCase() === d.toLowerCase())
+      // Division from the team's rating field ("FACEIT Intermediate" -> Intermediate); numeric SR = Open
+      const division = divisionFromRating(match.team?.rating) ?? 'Open'
+      // League should be the season/league name, not the division
+      const leagueIsTier = FACEIT_DIVISIONS.some((d) => match.league?.toLowerCase() === d.toLowerCase())
       const league = match.league && !leagueIsTier ? match.league : 'Faceit Season 7'
       output += `🌐 ${region} / ${division} • ${league}\n`
       

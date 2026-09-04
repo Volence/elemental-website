@@ -307,6 +307,18 @@
     text-shadow: 0 0 10px #3b82f630;
   }
 
+  /* Intermediate tier */
+  &--intermediate {
+    color: #818cf8;
+    text-shadow: 0 0 10px #818cf830;
+  }
+
+  /* Open tier */
+  &--open {
+    color: #2dd4bf;
+    text-shadow: 0 0 10px #2dd4bf30;
+  }
+
   /* 4k tier */
   &--4k {
     color: #06b6d4;

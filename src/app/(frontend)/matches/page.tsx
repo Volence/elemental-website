@@ -15,10 +15,10 @@ export const dynamic = 'force-dynamic' // Always render dynamically to fetch fre
 
 export const metadata: Metadata = {
   title: 'Matches',
-  description: 'Live scores, upcoming match schedule, and past results for all ELMT Overwatch teams. Follow our FACEIT league progress across Expert, Advanced, and Open divisions.',
+  description: 'Live scores, upcoming match schedule, and past results for all ELMT Overwatch teams. Follow our FACEIT league progress across Expert, Advanced, Intermediate, and Open divisions.',
   openGraph: mergeOpenGraph({
     title: 'ELMT Match Schedule & Results - Overwatch Esports',
-    description: 'Live scores, upcoming match schedule, and past results for all ELMT Overwatch teams. Follow our FACEIT league progress across Expert, Advanced, and Open divisions.',
+    description: 'Live scores, upcoming match schedule, and past results for all ELMT Overwatch teams. Follow our FACEIT league progress across Expert, Advanced, Intermediate, and Open divisions.',
   }),
 }
 

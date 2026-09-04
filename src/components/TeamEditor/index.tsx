@@ -475,7 +475,7 @@ export default function TeamEditor() {
             </div>
             <div style={editorStyles.editableField}>
               <label style={editorStyles.fieldLabel}>Rating</label>
-              <input className="profile-input" value={rating} onChange={e => setRating(e.target.value)} placeholder='e.g., "FACEIT Masters", "4.5K"' />
+              <input className="profile-input" value={rating} onChange={e => setRating(e.target.value)} placeholder='e.g., "FACEIT Masters", "FACEIT Intermediate", "FACEIT Open", "4.5K"' />
             </div>
             <div style={editorStyles.editableField}>
               <label style={editorStyles.fieldLabel}>Slug</label>

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { FACEIT_DIVISIONS, type FaceitDivision } from '@/utilities/divisions'
 import { toast } from '@payloadcms/ui'
 import { Calendar, X } from 'lucide-react'
 
@@ -17,7 +18,7 @@ interface BulkTournamentCreatorProps {
 
 export function BulkTournamentCreator({ onClose, onSuccess }: BulkTournamentCreatorProps) {
   const [region, setRegion] = useState<'NA' | 'EMEA' | 'SA' | 'OCE' | 'SEA' | 'APAC' | 'China'>('NA')
-  const [division, setDivision] = useState<'Masters' | 'Expert' | 'Advanced' | 'Open'>('Advanced')
+  const [division, setDivision] = useState<FaceitDivision>('Advanced')
   const [defaultTime, setDefaultTime] = useState('21:00')
   const [season, setSeason] = useState('')
   const [baseTitle, setBaseTitle] = useState('') // Base title for all slots
@@ -197,10 +198,9 @@ export function BulkTournamentCreator({ onClose, onSuccess }: BulkTournamentCrea
           <div className="bulk-tournament-creator__field">
             <label>Division</label>
             <select value={division} onChange={e => setDivision(e.target.value as any)}>
-              <option value="Masters">Masters</option>
-              <option value="Expert">Expert</option>
-              <option value="Advanced">Advanced</option>
-              <option value="Open">Open</option>
+              {FACEIT_DIVISIONS.map((d) => (
+                <option key={d} value={d}>{d}</option>
+              ))}
               {/* NOTE: 'Other' option requires database migration */}
             </select>
           </div>

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { divisionFromRating } from '@/utilities/divisions'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { redirect } from 'next/navigation'
 import React from 'react'
@@ -48,11 +49,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
     
     // Get tier name from rating if available
     const rating = team.rating || ''
-    let tierKeyword = ''
-    if (rating.toLowerCase().includes('master')) tierKeyword = 'Masters'
-    else if (rating.toLowerCase().includes('expert')) tierKeyword = 'Expert'
-    else if (rating.toLowerCase().includes('advanced')) tierKeyword = 'Advanced'
-    else if (rating.toLowerCase().includes('open')) tierKeyword = 'Open'
+    const tierKeyword = divisionFromRating(rating) ?? ''
     
     const tierSuffix = tierKeyword ? ` | FACEIT ${tierKeyword}` : ''
     const tierDesc = tierKeyword ? ` competing in FACEIT ${tierKeyword}` : ''

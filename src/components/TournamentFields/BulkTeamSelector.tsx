@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { FACEIT_DIVISIONS, divisionFromRating } from '@/utilities/divisions'
 import { useField, useFormFields } from '@payloadcms/ui'
 import { toast } from '@payloadcms/ui'
 import { ClipboardList, Target, Search, CheckSquare, XSquare } from 'lucide-react'
@@ -78,15 +79,8 @@ const BulkTeamSelector: React.FC<any> = ({ path }) => {
     setValue([])
   }
 
-  const getDivisionFromRating = (rating?: string): string => {
-    if (!rating) return 'Open'
-    // Extract division name from rating (e.g., "FACEIT Masters" -> "Masters")
-    if (rating.includes('Masters')) return 'Masters'
-    if (rating.includes('Expert')) return 'Expert'
-    if (rating.includes('Advanced')) return 'Advanced'
-    // Default to Open for anything else (including explicit "Open" or unknown divisions)
-    return 'Open'
-  }
+  // Division named in the rating ("FACEIT Intermediate" -> Intermediate); numeric SR = Open.
+  const getDivisionFromRating = (rating?: string): string => divisionFromRating(rating) ?? 'Open'
 
   const getFilteredTeams = (): Team[] => {
     return teams.filter(team => {
@@ -171,10 +165,9 @@ const BulkTeamSelector: React.FC<any> = ({ path }) => {
           className="bulk-team-selector__filter"
         >
           <option value="all">All Divisions</option>
-          <option value="Masters">Masters</option>
-          <option value="Expert">Expert</option>
-          <option value="Advanced">Advanced</option>
-          <option value="Open">Open</option>
+          {FACEIT_DIVISIONS.map((d) => (
+            <option key={d} value={d}>{d}</option>
+          ))}
         </select>
       </div>
 

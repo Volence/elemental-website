@@ -1,4 +1,5 @@
 import type { ChatInputCommandInteraction } from 'discord.js'
+import { FACEIT_DIVISIONS } from '@/utilities/divisions'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 
@@ -66,7 +67,7 @@ export async function handleDailyResults(interaction: ChatInputCommandInteractio
       matchesByDivision[division].push(match)
     }
 
-    const divisionOrder = ['Masters', 'Expert', 'Advanced', 'Open', 'Other']
+    const divisionOrder: string[] = [...FACEIT_DIVISIONS, 'Other']
     const sortedDivisions = Object.keys(matchesByDivision).sort(
       (a, b) => divisionOrder.indexOf(a) - divisionOrder.indexOf(b),
     )

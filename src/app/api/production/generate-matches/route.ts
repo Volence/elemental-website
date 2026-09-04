@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { divisionFromRating, isFaceitDivision } from '@/utilities/divisions'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 
@@ -39,11 +40,8 @@ export async function POST(req: NextRequest) {
         if (faceitLeague && typeof faceitLeague === 'object' && faceitLeague.division) {
           teamDivision = faceitLeague.division
         } else {
-          // Fallback: parse from rating string (e.g., "faceit masters")
-          const teamRating = (team.rating || '').toLowerCase()
-          if (teamRating.includes('masters')) teamDivision = 'Masters'
-          else if (teamRating.includes('expert')) teamDivision = 'Expert'
-          else if (teamRating.includes('advanced')) teamDivision = 'Advanced'
+          // Fallback: parse from rating string (e.g., "FACEIT Intermediate")
+          teamDivision = divisionFromRating(team.rating) ?? 'Open'
         }
         
         const rule = scheduleRules.find((r: any) => {
@@ -70,7 +68,7 @@ export async function POST(req: NextRequest) {
               opponent: '',
               date: matchDate.toISOString(),
               region: (team.region === 'NA' || team.region === 'EMEA' || team.region === 'SA' || team.region === 'OCE' || team.region === 'SEA' || team.region === 'APAC' || team.region === 'China') ? team.region : 'NA',
-              league: (division === 'Masters' || division === 'Expert' || division === 'Advanced' || division === 'Open') ? division : 'Open',
+              league: isFaceitDivision(division) ? division : 'Open',
               faceitLobby: '',
               season: tournament.name || '',
               status: 'scheduled',

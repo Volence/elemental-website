@@ -1,4 +1,5 @@
 import { EmbedBuilder } from 'discord.js'
+import { divisionRank } from '@/utilities/divisions'
 import { ensureDiscordClient } from '../bot'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
@@ -8,7 +9,6 @@ const FACEIT_UPDATES_CHANNEL = process.env.DISCORD_FACEIT_UPDATES_CHANNEL
 const UPDATE_TIMEOUT_MS = 3 * 60 * 1000
 
 const REGION_ORDER = ['NA', 'EMEA', 'SA', 'OCE']
-const DIVISION_ORDER = ['Masters', 'Expert', 'Advanced', 'Open']
 
 let isUpdating = false
 
@@ -90,8 +90,8 @@ async function _updateFaceitChannel(): Promise<void> {
 
     const seasonA = seasonByTeamId.get(a.id)
     const seasonB = seasonByTeamId.get(b.id)
-    const divA = DIVISION_ORDER.indexOf(seasonA?.division || 'Open')
-    const divB = DIVISION_ORDER.indexOf(seasonB?.division || 'Open')
+    const divA = divisionRank(seasonA?.division || 'Open')
+    const divB = divisionRank(seasonB?.division || 'Open')
     if (divA !== divB) return divA - divB
 
     return (a.name || '').localeCompare(b.name || '')

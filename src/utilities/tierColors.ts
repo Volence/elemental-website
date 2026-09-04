@@ -2,10 +2,13 @@
  * 7-Tier Competitive Color System
  * 
  * Maps team ratings to color gradients for visual hierarchy.
- * Tier order: Masters > Expert > Advanced > 4k-4.5k > 3.5k-3.9k > 3.0k-3.4k > Below 3k
+ * Tier order: Masters > Expert > Advanced > Intermediate > Open > 4k-4.5k > 3.5k-3.9k > 3.0k-3.4k > Below 3k
+ * The five FACEIT divisions come first; numeric SR bands are for teams outside FACEIT.
  */
 
-export type TierName = 'masters' | 'expert' | 'advanced' | 'tier4k' | 'tier35k' | 'tier30k' | 'tierBelow'
+import { divisionFromRating } from './divisions'
+
+export type TierName = 'masters' | 'expert' | 'advanced' | 'intermediate' | 'open' | 'tier4k' | 'tier35k' | 'tier30k' | 'tierBelow'
 
 export interface TierColors {
   name: string
@@ -44,6 +47,24 @@ export const tierColors: Record<TierName, TierColors> = {
     border: 'border-blue-500/30',
     borderLeft: 'border-l-4 border-l-blue-500',
     borderColor: '#3b82f6', // blue-500
+  },
+  intermediate: {
+    name: 'Intermediate',
+    gradient: 'from-indigo-400 to-violet-400',
+    bg: 'bg-indigo-400/10',
+    text: 'text-indigo-300',
+    border: 'border-indigo-400/30',
+    borderLeft: 'border-l-4 border-l-indigo-400',
+    borderColor: '#818cf8', // indigo-400
+  },
+  open: {
+    name: 'Open',
+    gradient: 'from-teal-400 to-emerald-400',
+    bg: 'bg-teal-400/10',
+    text: 'text-teal-300',
+    border: 'border-teal-400/30',
+    borderLeft: 'border-l-4 border-l-teal-400',
+    borderColor: '#2dd4bf', // teal-400
   },
   tier4k: {
     name: '4k-4.5k',
@@ -86,7 +107,7 @@ export const tierColors: Record<TierName, TierColors> = {
 /**
  * Determines tier from a team's rating string
  * 
- * @param rating - Can be a FACEIT tier ("Masters", "Expert", "Advanced") or numeric ("4.2k", "3.5k", etc.)
+ * @param rating - Can be a FACEIT division ("FACEIT Masters" ... "FACEIT Open") or numeric ("4.2k", "3.5k", etc.)
  * @returns Tier color configuration
  * 
  * @example
@@ -100,10 +121,13 @@ export function getTierFromRating(rating: string | number | null | undefined): T
 
   const ratingStr = String(rating).toLowerCase().trim()
 
-  // Handle FACEIT tiers (case-insensitive) - also handle variations
-  if (ratingStr.includes('master')) return tierColors.masters
-  if (ratingStr.includes('expert')) return tierColors.expert
-  if (ratingStr.includes('advanced') || ratingStr.includes('adv')) return tierColors.advanced
+  // Named FACEIT divisions win over any digits in the string
+  const division = divisionFromRating(ratingStr)
+  if (division === 'Masters') return tierColors.masters
+  if (division === 'Expert') return tierColors.expert
+  if (division === 'Advanced') return tierColors.advanced
+  if (division === 'Intermediate') return tierColors.intermediate
+  if (division === 'Open') return tierColors.open
 
   // Handle numeric ratings (e.g., "4.2k", "3500", "3.5k", "3.4K")
   // Remove 'k' and any non-numeric characters except decimal point

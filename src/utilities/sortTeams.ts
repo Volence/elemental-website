@@ -1,4 +1,5 @@
 import type { Team } from './getTeams'
+import { divisionFromRating, divisionRank } from './divisions'
 
 /**
  * Get region priority for sorting (lower number = higher priority)
@@ -31,12 +32,9 @@ function getRegionPriority(region?: string): number {
 function getRatingPriority(rating?: string): number {
   if (!rating) return 999 // Teams without rating go last
 
-  const upperRating = rating.toUpperCase()
-
-  // FACEIT tiers (highest priority)
-  if (upperRating.includes('FACEIT MASTERS')) return 1
-  if (upperRating.includes('FACEIT EXPERT')) return 2
-  if (upperRating.includes('FACEIT ADVANCED')) return 3
+  // FACEIT divisions (highest priority): Masters 1 ... Open 5, all above any SR number
+  const division = divisionFromRating(rating)
+  if (division) return divisionRank(division) + 1
 
   // Numeric ratings (extract number and convert to priority)
   // Higher numbers = lower priority number (so 4.5K sorts before 4.4K)

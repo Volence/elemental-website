@@ -1104,7 +1104,7 @@ export interface FaceitLeague {
    * Season number (e.g., 7)
    */
   seasonNumber: number;
-  division: 'Masters' | 'Expert' | 'Advanced' | 'Open';
+  division: 'Masters' | 'Expert' | 'Advanced' | 'Intermediate' | 'Open';
   region: 'NA' | 'EMEA' | 'SA' | 'OCE' | 'SEA' | 'APAC' | 'China';
   /**
    * Conference name (e.g., "Central") - optional
@@ -1180,7 +1180,7 @@ export interface FaceitSeason {
   /**
    * Auto-filled from league template on save
    */
-  division: 'Masters' | 'Expert' | 'Advanced' | 'Open';
+  division: 'Masters' | 'Expert' | 'Advanced' | 'Intermediate' | 'Open';
   /**
    * Auto-filled from league template on save
    */
@@ -1305,7 +1305,7 @@ export interface TournamentTemplate {
   scheduleRules?:
     | {
         region: 'NA' | 'EMEA' | 'SA' | 'OCE' | 'SEA' | 'APAC' | 'China' | 'all';
-        division: 'Masters' | 'Expert' | 'Advanced' | 'Open' | 'all';
+        division: 'Masters' | 'Expert' | 'Advanced' | 'Intermediate' | 'Open' | 'all';
         /**
          * Number of matches to auto-create per week
          */
@@ -1635,7 +1635,7 @@ export interface Match {
    */
   date: string;
   region: 'NA' | 'EMEA' | 'SA' | 'OCE' | 'SEA' | 'APAC' | 'China';
-  league: 'Masters' | 'Expert' | 'Advanced' | 'Open';
+  league: 'Masters' | 'Expert' | 'Advanced' | 'Intermediate' | 'Open';
   /**
    * Season identifier (e.g., "S7 Regular Season")
    */

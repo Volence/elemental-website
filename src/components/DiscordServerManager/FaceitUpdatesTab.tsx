@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { divisionRank } from '@/utilities/divisions'
 import { formatLocalDateTime } from '@/utilities/formatDateTime'
 import { CheckCircle, RefreshCw, Trophy, XCircle } from 'lucide-react'
 import { useConfirm } from '@/components/ConfirmDialog'
@@ -118,13 +119,12 @@ export default function FaceitUpdatesTab({ onAlert }: FaceitUpdatesTabProps) {
   }
 
   const regionOrder = ['NA', 'EMEA', 'SA', 'OCE']
-  const divisionOrder = ['Masters', 'Expert', 'Advanced', 'Open']
   const sortedTeams = [...teams].sort((a, b) => {
     const rA = regionOrder.indexOf(a.region || 'EMEA')
     const rB = regionOrder.indexOf(b.region || 'EMEA')
     if (rA !== rB) return rA - rB
-    const dA = divisionOrder.indexOf(a.division || 'Open')
-    const dB = divisionOrder.indexOf(b.division || 'Open')
+    const dA = divisionRank(a.division || 'Open')
+    const dB = divisionRank(b.division || 'Open')
     if (dA !== dB) return dA - dB
     return (a.name || '').localeCompare(b.name || '')
   })

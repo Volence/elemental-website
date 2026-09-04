@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import type { FaceitDivision } from '@/utilities/divisions'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 
@@ -10,7 +11,7 @@ interface TournamentSlot {
 
 interface BulkTournamentRequest {
   region: 'NA' | 'EMEA' | 'SA' | 'OCE' | 'SEA' | 'APAC' | 'China'
-  division: 'Masters' | 'Expert' | 'Advanced' | 'Open' // 'Other' requires migration
+  division: FaceitDivision // 'Other' requires migration
   defaultTime: string // HH:MM format
   defaultTimezone: 'CET' | 'EST' | 'BRT' | 'AEST' | 'SGT' | 'JST' | 'CST'
   season?: string // Optional season identifier

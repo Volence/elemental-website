@@ -26,6 +26,11 @@ describe('filterTeams', () => {
 describe('ratingRank and sortTeams', () => {
   it('ranks named tiers above numeric ratings and reads thousands', () => {
     expect(ratingRank('FACEIT Masters')).toBeGreaterThan(ratingRank('FACEIT Expert'))
+    expect(ratingRank('FACEIT Expert')).toBeGreaterThan(ratingRank('FACEIT Advanced'))
+    expect(ratingRank('FACEIT Advanced')).toBeGreaterThan(ratingRank('FACEIT Intermediate'))
+    expect(ratingRank('FACEIT Intermediate')).toBeGreaterThan(ratingRank('FACEIT Open'))
+    expect(ratingRank('FACEIT Open')).toBeGreaterThan(ratingRank('4.5K'))
+    expect(ratingRank('FACEIT Intermediate ')).toBe(ratingRank('faceit intermediate'))
     expect(ratingRank('FACEIT Expert')).toBeGreaterThan(ratingRank('4.5K'))
     expect(ratingRank('4.5K')).toBe(4500)
     expect(ratingRank('3.5K')).toBeLessThan(ratingRank('4.5K'))

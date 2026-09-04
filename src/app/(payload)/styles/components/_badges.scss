@@ -277,6 +277,20 @@
   color: rgba($tier-advanced, 0.95);
 }
 
+.badge--intermediate,
+.badge--tier-intermediate {
+  @include glow-badge($tier-intermediate);
+  @include glow-accent-bar($tier-intermediate, 2px, 60%);
+  color: rgba($tier-intermediate, 0.95);
+}
+
+.badge--open,
+.badge--tier-open {
+  @include glow-badge($tier-open);
+  @include glow-accent-bar($tier-open, 2px, 60%);
+  color: rgba($tier-open, 0.95);
+}
+
 .badge--4k,
 .badge--tier-4k {
   @include glow-badge($tier-4k);

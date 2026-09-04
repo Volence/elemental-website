@@ -6,6 +6,7 @@
  */
 
 import { getPayload } from 'payload'
+import { divisionFromRating } from '@/utilities/divisions'
 import configPromise from '@payload-config'
 
 const FACEIT_API_KEY = process.env.FACEIT_API_KEY
@@ -839,18 +840,12 @@ export async function syncTeamData(
         // Division priority: season record -> team's linked league template ->
         // derive from team.rating -> 'Open' as the last resort. A numeric rating
         // (e.g. "4.2K") with no division keyword means an Open-division team -
-        // named divisions (Masters/Expert/Advanced) always appear in the rating.
+        // named divisions (Masters/Expert/Advanced/Intermediate) always appear in the rating.
         let division = seasonRecord?.division || fallbackLeague?.division || ''
 
         if (!division) {
-          // Derive division from team.rating (e.g., 'FACEIT Masters' -> 'Masters')
-          if (team.rating) {
-            const ratingStr = String(team.rating)
-            if (ratingStr.includes('Masters')) division = 'Masters'
-            else if (ratingStr.includes('Expert')) division = 'Expert'
-            else if (ratingStr.includes('Advanced')) division = 'Advanced'
-          }
-          if (!division) division = 'Open'
+          // Derive division from team.rating (e.g., 'FACEIT Intermediate' -> 'Intermediate')
+          division = divisionFromRating(team.rating) ?? 'Open'
           console.warn(`[FaceIt Sync] No season/league division for team ${teamId}, using derived division: ${division}`)
         }
 
