@@ -226,6 +226,17 @@ export default function FaceitTeamsPanel() {
       render: (r) => (
         <div className="faceit-teams__status">
           <Badge tone={r.status.tone} size="sm">{r.status.label}</Badge>
+          {r.faceitEnabled && !r.faceitWithdrawn && r.registration !== 'registered' && (
+            <span className="faceit-teams__reg-note">
+              {r.registration === 'not-registered'
+                ? `FACEIT has no Season ${data?.latestSeasonNumber ?? ''} registration for this team id`
+                : r.registration === 'conflict'
+                  ? 'FACEIT lists this id in two divisions'
+                  : data?.registrationPending
+                    ? 'Checking FACEIT registrations...'
+                    : 'FACEIT registration unknown'}
+            </span>
+          )}
           {canTakeRegistered(r) && (
             <button type="button" className="faceit-rollover__chip" disabled={!!busy[r.id]} onClick={() => runAction(r, 'assignRegistered')}>
               {busy[r.id] === 'assignRegistered' ? 'Setting...' : `Set league from FACEIT: ${r.registeredLeague}`}

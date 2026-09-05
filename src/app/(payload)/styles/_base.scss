@@ -536,3 +536,18 @@ button[aria-label="Close"]:not(.hamburger__close) {
   outline: 2px solid $admin-accent-primary;
   outline-offset: 2px;
 }
+
+// The admin is dark only. Without this, native controls (select option lists,
+// date pickers, scrollbars) render in the browser's light scheme: white text
+// on a white popup. Declared once here instead of per component.
+html,
+select,
+input,
+textarea {
+  color-scheme: dark;
+}
+
+select option {
+  background: #0f172a;
+  color: #e2e8f0;
+}
