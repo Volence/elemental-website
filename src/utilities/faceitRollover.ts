@@ -64,25 +64,43 @@ export function createFaceitFetchers(apiKey: string | undefined): RolloverFetche
     },
     async fetchChampionshipTeams(championshipId) {
       if (!apiKey) throw new Error('FACEIT_API_KEY is not set')
-      const teams: Array<{ teamId: string; name: string }> = []
-      const limit = 100
-      for (let offset = 0; offset < 1000; offset += limit) {
-        const res = await fetch(`${DATA_API_BASE}/championships/${championshipId}/subscriptions?offset=${offset}&limit=${limit}`, {
-          headers: { Authorization: `Bearer ${apiKey}` },
-          signal: AbortSignal.timeout(15_000),
-        })
-        if (!res.ok) throw new Error(`FACEIT subscriptions returned ${res.status} for ${championshipId}`)
-        const data = await res.json()
-        const items: any[] = data?.items || []
-        for (const item of items) {
-          const t = item?.team
-          if (t?.team_id) teams.push({ teamId: String(t.team_id), name: String(t.name || '') })
-        }
-        if (items.length < limit) break
-      }
-      return teams
+      return fetchAllSubscriptions(championshipId, (url) =>
+        fetch(url, { headers: { Authorization: `Bearer ${apiKey}` }, signal: AbortSignal.timeout(15_000) }),
+      )
     },
   }
+}
+
+/**
+ * Walk every page of a championship's subscriptions. FACEIT serves at most
+ * 10 per page whatever `limit` says, so paging follows the returned `end`
+ * offset and stops on an empty page, not on a short one.
+ */
+export async function fetchAllSubscriptions(
+  championshipId: string,
+  doFetch: (url: string) => Promise<Response>,
+): Promise<Array<{ teamId: string; name: string }>> {
+  const teams: Array<{ teamId: string; name: string }> = []
+  const seen = new Set<string>()
+  let offset = 0
+  for (let page = 0; page < 200; page++) {
+    const res = await doFetch(`${DATA_API_BASE}/championships/${championshipId}/subscriptions?offset=${offset}&limit=100`)
+    if (!res.ok) throw new Error(`FACEIT subscriptions returned ${res.status} for ${championshipId}`)
+    const data = await res.json()
+    const items: any[] = data?.items || []
+    if (items.length === 0) break
+    for (const item of items) {
+      const t = item?.team
+      if (t?.team_id && !seen.has(String(t.team_id))) {
+        seen.add(String(t.team_id))
+        teams.push({ teamId: String(t.team_id), name: String(t.name || '') })
+      }
+    }
+    const end = typeof data?.end === 'number' ? data.end : offset + items.length
+    if (end <= offset) break
+    offset = end
+  }
+  return teams
 }
 
 // Division / region normalisation shared by the tree walk

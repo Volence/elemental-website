@@ -3,6 +3,7 @@ import {
   detectSeasons,
   leaguesFromTree,
   buildRolloverPlan,
+  fetchAllSubscriptions,
   type FaceitSeasonInfo,
   type RolloverTeamInput,
   type ExistingLeagueInput,
@@ -39,6 +40,39 @@ const TREE = {
   ],
 }
 const SEASON10: FaceitSeasonInfo = { id: 's10', number: 10, start: '2026-09-07T00:00:00Z', end: '2026-11-16T06:00:00Z' }
+
+describe('fetchAllSubscriptions', () => {
+  // FACEIT ignores limit and serves 10 per page; 43 teams means 5 pages, the last empty
+  const TOTAL = 43
+  const fakeFetch = async (url: string): Promise<Response> => {
+    const offset = Number(new URL(url).searchParams.get('offset'))
+    const items = Array.from({ length: Math.max(0, Math.min(10, TOTAL - offset)) }, (_, i) => ({
+      team: { team_id: `t-${offset + i}`, name: `Team ${offset + i}` },
+    }))
+    return { ok: true, status: 200, json: async () => ({ items, start: offset, end: offset + 10 }) } as unknown as Response
+  }
+
+  it('keeps paging past the 10-per-page cap until a page comes back empty', async () => {
+    const teams = await fetchAllSubscriptions('ch-1',fakeFetch)
+    expect(teams.length).toBe(TOTAL)
+    expect(teams[0].teamId).toBe('t-0')
+    expect(teams[TOTAL - 1].teamId).toBe(`t-${TOTAL - 1}`)
+  })
+
+  it('does not duplicate a team that appears on two pages', async () => {
+    const dup = async (url: string): Promise<Response> => {
+      const offset = Number(new URL(url).searchParams.get('offset'))
+      const items = offset < 20 ? [{ team: { team_id: 'same', name: 'Same' } }] : []
+      return { ok: true, status: 200, json: async () => ({ items, start: offset, end: offset + 10 }) } as unknown as Response
+    }
+    expect((await fetchAllSubscriptions('ch-1',dup)).length).toBe(1)
+  })
+
+  it('surfaces a non-OK response as an error', async () => {
+    const bad = async (): Promise<Response> => ({ ok: false, status: 429, json: async () => ({}) }) as unknown as Response
+    await expect(fetchAllSubscriptions('ch-1',bad)).rejects.toThrow(/429/)
+  })
+})
 
 describe('leaguesFromTree', () => {
   const leagues = leaguesFromTree(TREE, SEASON10, 'league-1')
