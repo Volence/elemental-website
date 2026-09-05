@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isAdmin } from '../../access/roles'
+import { adminOnly } from '@/access'
 
 export const ActiveSessions: CollectionConfig = {
   slug: 'active-sessions',
@@ -16,9 +16,9 @@ export const ActiveSessions: CollectionConfig = {
   },
   access: {
     // Only admins can read sessions
-    read: isAdmin,
+    read: adminOnly,
     // Admins can manually mark sessions as inactive if needed
-    update: isAdmin,
+    update: adminOnly,
     // No manual creation/deletion - system managed
     create: () => false,
     delete: () => false,

@@ -1,5 +1,5 @@
 import type { GlobalConfig } from 'payload'
-import { isGraphicsStaff } from '../access/roles'
+import { department } from '@/access'
 
 export const GraphicsDashboard: GlobalConfig = {
   slug: 'graphics-dashboard',
@@ -21,6 +21,6 @@ export const GraphicsDashboard: GlobalConfig = {
   },
   fields: [],
   access: {
-    read: isGraphicsStaff,
+    read: department('graphics'),
   },
 }

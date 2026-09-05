@@ -1,18 +1,7 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, Where } from 'payload'
 import { getPayload } from 'payload'
 import config from '@payload-config'
-import { authenticated } from '../../access/authenticated'
-import { 
-  adminOnly, 
-  UserRole,
-  isGraphicsStaff,
-  isVideoStaff,
-  isEventsStaff,
-  isScoutingStaff,
-  isProductionStaff,
-  isSocialMediaStaff,
-} from '../../access/roles'
-import type { Person } from '@/payload-types'
+import { staffManagerOrAbove, withAccess, DEPARTMENT_KEYS, type DepartmentKey, type ResolvedAccess } from '@/access'
 import { SOCIAL_POST_TYPES, SOCIAL_PLATFORMS } from '@/utilities/socialPostTypes'
 import { dueDateKey, localDateKey, weekBoundsFor } from '@/utilities/taskDueDate'
 
@@ -74,6 +63,14 @@ const ALL_TASK_TYPES = [
   ...TASK_TYPES.scouting.map(t => ({ ...t, value: `scouting-${t.value}` })),
 ]
 
+/** Tasks' `department` select uses 'social-media' where the resolved access key is 'social'; others match as-is. */
+const taskDept = (k: DepartmentKey): string => (k === 'social' ? 'social-media' : k)
+
+/** Department values (mapped to Tasks' `department` select) this person has any access to. PUG has no Tasks board. */
+function taskDepartmentsFor(a: ResolvedAccess): string[] {
+  return DEPARTMENT_KEYS.filter((k) => a.departments[k] !== 'none' && k !== 'pug').map(taskDept)
+}
+
 export const Tasks: CollectionConfig = {
   slug: 'tasks',
   labels: {
@@ -82,78 +79,40 @@ export const Tasks: CollectionConfig = {
   },
   access: {
     // Staff can read tasks for their department(s) OR requests they made to other departments
-    read: ({ req: { user } }) => {
-      if (!user) return false
-      const u = user as any
-      
-      // Admins and staff managers see all
-      if (u.role === UserRole.ADMIN || u.role === UserRole.STAFF_MANAGER) return true
-      
-      // Build list of departments user has access to
-      const departments: string[] = []
-      if (u.departments?.isGraphicsStaff) departments.push('graphics')
-      if (u.departments?.isVideoStaff) departments.push('video')
-      if (u.departments?.isEventsStaff) departments.push('events')
-      if (u.departments?.isScoutingStaff) departments.push('scouting')
-      if (u.departments?.isProductionStaff) departments.push('production')
-      if (u.departments?.isSocialMediaStaff) departments.push('social-media')
-      
+    read: withAccess((a) => {
+      if (a.canManagePeople) return true
+      const departments = taskDepartmentsFor(a)
       if (departments.length === 0) return false
-      
-      // Return query to filter by user's departments OR outgoing requests from their department
-      return {
+      const where: Where = {
         or: [
           // Tasks owned by user's departments
           { department: { in: departments } },
           // Requests made BY user's departments (so they can see outgoing requests)
           { requestedByDepartment: { in: departments } },
         ],
-      } as any
-    },
+      }
+      return where
+    }),
     // Any authenticated staff with department access can create tasks
-    create: ({ req: { user } }) => {
-      if (!user) return false
-      const u = user as any
-      if (u.role === UserRole.ADMIN || u.role === UserRole.STAFF_MANAGER) return true
-      // User must have at least one department
-      return !!(u.departments?.isGraphicsStaff || 
-                u.departments?.isVideoStaff || 
-                u.departments?.isEventsStaff || 
-                u.departments?.isScoutingStaff ||
-                u.departments?.isProductionStaff ||
-                u.departments?.isSocialMediaStaff)
-    },
+    create: withAccess((a) => a.canManagePeople || taskDepartmentsFor(a).length > 0),
     // Staff can update tasks in their department
-    update: ({ req: { user } }) => {
-      if (!user) return false
-      const u = user as any
-      if (u.role === UserRole.ADMIN || u.role === UserRole.STAFF_MANAGER) return true
-      
+    update: withAccess((a) => {
+      if (a.canManagePeople) return true
       // Same department filter as read
-      const departments: string[] = []
-      if (u.departments?.isGraphicsStaff) departments.push('graphics')
-      if (u.departments?.isVideoStaff) departments.push('video')
-      if (u.departments?.isEventsStaff) departments.push('events')
-      if (u.departments?.isScoutingStaff) departments.push('scouting')
-      if (u.departments?.isProductionStaff) departments.push('production')
-      if (u.departments?.isSocialMediaStaff) departments.push('social-media')
-      
+      const departments = taskDepartmentsFor(a)
       if (departments.length === 0) return false
-
       // Own department's tasks, plus requests this department raised elsewhere
       // (mirrors read; without this a requester got a 403 editing their own request).
-      return {
+      const where: Where = {
         or: [
           { department: { in: departments } },
           { and: [{ isRequest: { equals: true } }, { requestedByDepartment: { in: departments } }] },
         ],
-      } as any
-    },
+      }
+      return where
+    }),
     // Only admins/staff managers can delete
-    delete: ({ req: { user } }) => {
-      if (!user) return false
-      return (user as Person).role === UserRole.ADMIN || (user as Person).role === UserRole.STAFF_MANAGER
-    },
+    delete: staffManagerOrAbove,
   },
   admin: {
     useAsTitle: 'title',

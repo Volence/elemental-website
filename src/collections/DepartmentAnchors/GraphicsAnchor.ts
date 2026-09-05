@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isGraphicsStaff } from '@/access/roles'
+import { department, hideUnless } from '@/access'
 
 /**
  * Graphics Workboard - Shows Kanban board for graphics department tasks.
@@ -14,12 +14,7 @@ export const GraphicsAnchor: CollectionConfig = {
   admin: {
     group: 'Departments',
     description: 'Graphics department dashboard',
-    hidden: ({ user }) => {
-      if (!user) return true
-      const u = user as any
-      // Show to graphics staff, admins, and staff managers
-      return !(u.departments?.isGraphicsStaff || user.role === 'admin' || user.role === 'staff-manager')
-    },
+    hidden: hideUnless((a) => a.departments.graphics !== 'none'),
     components: {
       views: {
         list: {
@@ -35,7 +30,7 @@ export const GraphicsAnchor: CollectionConfig = {
     },
   ],
   access: {
-    read: isGraphicsStaff,
+    read: department('graphics'),
     create: () => false,
     update: () => false,
     delete: () => false,

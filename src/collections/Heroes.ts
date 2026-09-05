@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { UserRole, isScoutingStaff } from '@/access/roles'
+import { adminOnly, department, hasDepartment, withAccess } from '@/access'
 
 export const Heroes: CollectionConfig = {
   slug: 'heroes',
@@ -13,29 +13,11 @@ export const Heroes: CollectionConfig = {
     defaultColumns: ['name', 'role', 'active'],
   },
   access: {
-    // Only scouting staff and staff-manager+ can read
-    read: (args) => {
-      const { req: { user } } = args
-      if (!user) return false
-      const u = user as any
-      if (u.role === UserRole.ADMIN || u.role === UserRole.STAFF_MANAGER) return true
-      if (u.departments?.isPugAdmin === true) return true
-      return isScoutingStaff(args)
-    },
-    create: ({ req }) => {
-      if (!req.user) return false
-      const u = req.user as any
-      return [UserRole.ADMIN, UserRole.STAFF_MANAGER].includes(u.role as UserRole) || u.departments?.isPugAdmin === true
-    },
-    update: ({ req }) => {
-      if (!req.user) return false
-      const u = req.user as any
-      return [UserRole.ADMIN, UserRole.STAFF_MANAGER].includes(u.role as UserRole) || u.departments?.isPugAdmin === true
-    },
-    delete: ({ req }) => {
-      if (!req.user) return false
-      return req.user.role === UserRole.ADMIN
-    },
+    // Only scouting staff, PUG admins, and staff-manager+ can read
+    read: withAccess((a) => hasDepartment(a, 'pug') || hasDepartment(a, 'scouting')),
+    create: department('pug'),
+    update: department('pug'),
+    delete: adminOnly,
   },
   fields: [
     {

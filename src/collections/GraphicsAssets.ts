@@ -2,32 +2,16 @@ import type { CollectionConfig } from 'payload'
 
 import path from 'path'
 import { fileURLToPath } from 'url'
-import type { AccessArgs } from 'payload'
-import type { Person } from '@/payload-types'
-import { UserRole } from '../access/roles'
+import { anyone, department, hideUnless } from '@/access'
 
 /**
  * Hide graphics collection from users who have no business seeing it.
- * Show it to: admins, staff-managers, team-managers, and anyone with isGraphicsStaff department flag.
+ * Show it to: admins, staff-managers, and anyone with isGraphicsStaff department flag.
  * Hide from: plain users and players WITHOUT graphics department access.
+ * (The old team-manager role carve-out is dropped: team-manager is no longer a
+ * privilege-bearing role under the resolved access model - see report.)
  */
-const hideGraphicsFromNonStaff = ({ user }: { user: any }): boolean => {
-  if (!user) return false
-  const role = user.role as string
-  
-  // Always show for privileged roles
-  if (role === UserRole.ADMIN || role === UserRole.STAFF_MANAGER || role === UserRole.TEAM_MANAGER) {
-    return false
-  }
-  
-  // Show for users with graphics department flag
-  if (user.departments?.isGraphicsStaff === true) {
-    return false
-  }
-  
-  // Hide from everyone else (players, plain users without graphics access)
-  return true
-}
+const hideGraphicsFromNonStaff = hideUnless((a) => a.departments.graphics !== 'none')
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -36,24 +20,9 @@ const dirname = path.dirname(filename)
  * Access: Graphics assets are publicly readable (needed for team logos, etc.)
  * Write access restricted to graphics staff, staff managers, and admins
  */
-const canReadGraphicsAssets = (): boolean => {
-  // Allow public read access for graphics assets (team logos, etc.)
-  return true
-}
+const canReadGraphicsAssets = anyone
 
-const canWriteGraphicsAssets = ({ req: { user } }: AccessArgs<Person>): boolean => {
-  if (!user) return false
-  const u = user as Person
-  
-  // Admins and staff managers always have full access
-  if (u.role === UserRole.ADMIN || u.role === UserRole.STAFF_MANAGER) return true
-  
-  // Graphics staff can write
-  if (u.departments?.isGraphicsStaff === true) return true
-  
-  // Team managers can only read, not write
-  return false
-}
+const canWriteGraphicsAssets = department('graphics')
 
 export const GraphicsAssets: CollectionConfig = {
   slug: 'graphics-assets',

@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isVideoStaff } from '@/access/roles'
+import { department, hideUnless } from '@/access'
 
 /**
  * Video Workboard - Shows Kanban board for video department tasks.
@@ -14,12 +14,7 @@ export const VideoAnchor: CollectionConfig = {
   admin: {
     group: 'Departments',
     description: 'Video department dashboard',
-    hidden: ({ user }) => {
-      if (!user) return true
-      const u = user as any
-      // Show to video staff, admins, and staff managers
-      return !(u.departments?.isVideoStaff || user.role === 'admin' || user.role === 'staff-manager')
-    },
+    hidden: hideUnless((a) => a.departments.video !== 'none'),
     components: {
       views: {
         list: {
@@ -35,7 +30,7 @@ export const VideoAnchor: CollectionConfig = {
     },
   ],
   access: {
-    read: isVideoStaff,
+    read: department('video'),
     create: () => false,
     update: () => false,
     delete: () => false,

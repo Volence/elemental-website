@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { adminOnly } from '@/access'
 
 export const MergeSuggestions: CollectionConfig = {
   slug: 'merge-suggestions',
@@ -84,8 +85,8 @@ export const MergeSuggestions: CollectionConfig = {
   ],
   access: {
     read: () => true,
-    create: ({ req }) => req.user?.role === 'admin',
-    update: ({ req }) => req.user?.role === 'admin',
-    delete: ({ req }) => req.user?.role === 'admin',
+    create: adminOnly,
+    update: adminOnly,
+    delete: adminOnly,
   },
 }

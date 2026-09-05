@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isEventsStaff } from '@/access/roles'
+import { department, hideUnless } from '@/access'
 
 /**
  * Events Workboard - Shows Kanban board for events department tasks.
@@ -14,12 +14,7 @@ export const EventsAnchor: CollectionConfig = {
   admin: {
     group: 'Departments',
     description: 'Events department dashboard',
-    hidden: ({ user }) => {
-      if (!user) return true
-      const u = user as any
-      // Show to events staff, admins, and staff managers
-      return !(u.departments?.isEventsStaff || user.role === 'admin' || user.role === 'staff-manager')
-    },
+    hidden: hideUnless((a) => a.departments.events !== 'none'),
     components: {
       views: {
         list: {
@@ -35,7 +30,7 @@ export const EventsAnchor: CollectionConfig = {
     },
   ],
   access: {
-    read: isEventsStaff,
+    read: department('events'),
     create: () => false,
     update: () => false,
     delete: () => false,

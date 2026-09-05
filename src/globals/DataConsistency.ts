@@ -1,4 +1,5 @@
 import type { GlobalConfig } from 'payload'
+import { adminOnly } from '@/access'
 
 export const DataConsistency: GlobalConfig = {
   slug: 'data-consistency',
@@ -19,9 +20,7 @@ export const DataConsistency: GlobalConfig = {
     },
   },
   access: {
-    read: ({ req }) => {
-      return req.user?.role === 'admin'
-    },
+    read: adminOnly,
   },
   fields: [],
 }

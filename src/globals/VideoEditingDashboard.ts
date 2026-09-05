@@ -1,5 +1,5 @@
 import type { GlobalConfig } from 'payload'
-import { isVideoStaff } from '../access/roles'
+import { department } from '@/access'
 
 export const VideoEditingDashboard: GlobalConfig = {
   slug: 'video-editing-dashboard',
@@ -21,6 +21,6 @@ export const VideoEditingDashboard: GlobalConfig = {
   },
   fields: [],
   access: {
-    read: isVideoStaff,
+    read: department('video'),
   },
 }

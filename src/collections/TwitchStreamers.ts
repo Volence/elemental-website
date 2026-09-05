@@ -1,5 +1,8 @@
 import type { CollectionConfig } from 'payload'
 import { parseTwitchUsername, getTwitchUser } from '../discord/utils/twitchAuth'
+import { withAccess } from '@/access'
+
+const canManageTwitchStreamers = withAccess((a) => a.canManagePeople || a.teamIds.size > 0)
 
 export const TwitchStreamers: CollectionConfig = {
   slug: 'twitch-streamers',
@@ -43,9 +46,9 @@ export const TwitchStreamers: CollectionConfig = {
   },
   access: {
     read: () => true, // Public - powers the /live page
-    create: ({ req: { user } }) => ['admin', 'staff-manager', 'team-manager'].includes((user as any)?.role),
-    update: ({ req: { user } }) => ['admin', 'staff-manager', 'team-manager'].includes((user as any)?.role),
-    delete: ({ req: { user } }) => ['admin', 'staff-manager', 'team-manager'].includes((user as any)?.role),
+    create: canManageTwitchStreamers,
+    update: canManageTwitchStreamers,
+    delete: canManageTwitchStreamers,
   },
   fields: [
     {

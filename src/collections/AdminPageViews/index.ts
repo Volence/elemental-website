@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isAdmin } from '../../access/roles'
+import { adminOnly } from '@/access'
 
 /**
  * One row per admin page view, written by POST /api/admin-telemetry/page-view.
@@ -20,7 +20,7 @@ export const AdminPageViews: CollectionConfig = {
     hidden: () => true,
   },
   access: {
-    read: isAdmin,
+    read: adminOnly,
     create: () => false,
     update: () => false,
     delete: () => false,

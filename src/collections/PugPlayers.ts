@@ -1,6 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isPugAdmin } from '@/access/roles'
-import { authenticated } from '@/access/authenticated'
+import { authenticated, department, hasDepartment, withAccess } from '@/access'
 
 export const PugPlayers: CollectionConfig = {
   slug: 'pug-players',
@@ -17,12 +16,8 @@ export const PugPlayers: CollectionConfig = {
   access: {
     read: authenticated,
     create: authenticated,
-    update: ({ req }) => {
-      if (!req.user) return false
-      if (isPugAdmin({ req })) return true
-      return { user: { equals: req.user.id } }
-    },
-    delete: isPugAdmin,
+    update: withAccess((a, { req }) => hasDepartment(a, 'pug') || { user: { equals: req.user!.id } }),
+    delete: department('pug'),
   },
   fields: [
     {

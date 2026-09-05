@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isGraphicsStaff } from '@/access/roles'
+import { department } from '@/access'
 
 /**
  * Team Branding Guide - Visual reference and inline editor for team colors.
@@ -32,7 +32,7 @@ export const BrandingGuideAnchor: CollectionConfig = {
     },
   ],
   access: {
-    read: isGraphicsStaff,
+    read: department('graphics'),
     create: () => false,
     update: () => false,
     delete: () => false,

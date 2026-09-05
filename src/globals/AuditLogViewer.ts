@@ -1,5 +1,5 @@
 import type { GlobalConfig } from 'payload'
-import { isAdmin } from '../access/roles'
+import { adminOnly } from '@/access'
 
 export const AuditLogViewer: GlobalConfig = {
   slug: 'audit-log-viewer',
@@ -20,7 +20,7 @@ export const AuditLogViewer: GlobalConfig = {
     },
   },
   access: {
-    read: isAdmin,
+    read: adminOnly,
   },
   fields: [],
 }

@@ -1,5 +1,5 @@
 import type { GlobalConfig } from 'payload'
-import { isAdmin } from '../access/roles'
+import { adminOnly } from '@/access'
 
 export const SystemHealth: GlobalConfig = {
   slug: 'system-health',
@@ -19,7 +19,7 @@ export const SystemHealth: GlobalConfig = {
     },
   },
   access: {
-    read: isAdmin,
+    read: adminOnly,
   },
   fields: [],
 }

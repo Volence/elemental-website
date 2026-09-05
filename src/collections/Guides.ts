@@ -1,6 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { authenticated } from '../access/authenticated'
-import { isAdmin } from '../access/roles'
+import { authenticated, adminOnly } from '@/access'
 
 /**
  * In-app onboarding and reference guides ("Guides" in the Me area). One guide
@@ -9,7 +8,6 @@ import { isAdmin } from '../access/roles'
  * can correct it without a deploy. Who sees a guide is decided by `audience`
  * (see src/guides/audience.ts); admins see everything.
  */
-const adminOnly = ({ req }: { req: { user?: unknown } }) => isAdmin({ req } as any)
 
 export const Guides: CollectionConfig = {
   slug: 'guides',

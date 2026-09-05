@@ -1,8 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { authenticated } from '../../access/authenticated'
-import { anyone } from '../../access/anyone'
-import { isProductionManager } from '../../access/roles'
+import { anyone, staffManagerOrAbove } from '@/access'
 import { createAuditLogHook, createAuditLogDeleteHook } from '../../utilities/auditLogger'
 
 export const Matches: CollectionConfig = {
@@ -17,10 +15,10 @@ export const Matches: CollectionConfig = {
   access: {
     // Only production managers (admin, staff-manager) can create, update, delete matches
     // Regular production staff sign up through Production Dashboard only
-    create: isProductionManager,
-    delete: isProductionManager,
+    create: staffManagerOrAbove,
+    delete: staffManagerOrAbove,
     read: anyone, // Public can read (for frontend)
-    update: isProductionManager,
+    update: staffManagerOrAbove,
   },
   admin: {
     useAsTitle: 'title',

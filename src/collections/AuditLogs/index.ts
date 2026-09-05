@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isAdmin } from '../../access/roles'
+import { adminOnly } from '@/access'
 
 export const AuditLogs: CollectionConfig = {
   slug: 'audit-logs',
@@ -16,7 +16,7 @@ export const AuditLogs: CollectionConfig = {
   },
   access: {
     // Only admins can read audit logs
-    read: isAdmin,
+    read: adminOnly,
     // No one can manually create/update/delete - system generated only
     create: () => false,
     update: () => false,

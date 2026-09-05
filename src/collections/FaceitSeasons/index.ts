@@ -1,7 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { authenticated } from '../../access/authenticated'
-import { anyone } from '../../access/anyone'
-import { adminOnly, hideFromPlayers } from '../../access/roles'
+import { anyone, adminOnly } from '@/access'
 
 export const FaceitSeasons: CollectionConfig = {
   slug: 'faceit-seasons',

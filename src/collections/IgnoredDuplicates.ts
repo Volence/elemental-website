@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { adminOnly } from '@/access'
 
 /**
  * Collection to track duplicate person pairs that should be ignored
@@ -73,9 +74,9 @@ export const IgnoredDuplicates: CollectionConfig = {
   ],
   access: {
     read: () => true, // Anyone can read
-    create: ({ req }) => req.user?.role === 'admin', // Only admins can create
-    update: ({ req }) => req.user?.role === 'admin',
-    delete: ({ req }) => req.user?.role === 'admin',
+    create: adminOnly,
+    update: adminOnly,
+    delete: adminOnly,
   },
 }
 

@@ -1,5 +1,5 @@
 import type { GlobalConfig } from 'payload'
-import { isSocialMediaStaff } from '../access/roles'
+import { department, hideUnless } from '@/access'
 
 export const SocialMediaSettings: GlobalConfig = {
   slug: 'social-media-settings',
@@ -7,12 +7,7 @@ export const SocialMediaSettings: GlobalConfig = {
   admin: {
     description: 'Manage social media posts, content calendar, and posting schedule',
     group: 'Departments',
-    hidden: ({ user }) => {
-      if (!user) return true
-      const u = user as any
-      if (user.role === 'admin' || user.role === 'staff-manager') return false
-      return !u.departments?.isSocialMediaStaff
-    },
+    hidden: hideUnless((a) => a.departments.social !== 'none'),
     hideAPIURL: true,
     components: {
       views: {
@@ -105,10 +100,7 @@ export const SocialMediaSettings: GlobalConfig = {
     },
   ],
   access: {
-    read: isSocialMediaStaff,
-    update: ({ req: { user } }) => {
-      if (!user) return false
-      return user.role === 'admin' || user.role === 'staff-manager'
-    },
+    read: department('social'),
+    update: department('social', 'lead'),
   },
 }

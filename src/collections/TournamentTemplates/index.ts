@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { authenticated } from '../../access/authenticated'
+import { authenticated, staffManagerOrAbove, adminOnly } from '@/access'
 
 export const TournamentTemplates: CollectionConfig = {
   slug: 'tournament-templates',
@@ -15,19 +15,10 @@ export const TournamentTemplates: CollectionConfig = {
     defaultColumns: ['name', 'isActive', 'assignedTeams', 'updatedAt'],
   },
   access: {
-    create: ({ req: { user } }) => {
-      if (!user) return false
-      return user.role === 'admin' || user.role === 'staff-manager'
-    },
+    create: staffManagerOrAbove,
     read: authenticated,
-    update: ({ req: { user } }) => {
-      if (!user) return false
-      return user.role === 'admin' || user.role === 'staff-manager'
-    },
-    delete: ({ req: { user } }) => {
-      if (!user) return false
-      return user.role === 'admin'
-    },
+    update: staffManagerOrAbove,
+    delete: adminOnly,
   },
   hooks: {
     afterChange: [

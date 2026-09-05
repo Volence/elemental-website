@@ -1,7 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import type { Person } from '@/payload-types'
-
-const adminOnly = ({ req: { user } }: any) => (user as Person)?.role === 'admin'
+import { adminOnly } from '@/access'
 
 /**
  * Short-lived store of guild messages so the logging module can resolve the author and

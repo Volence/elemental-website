@@ -1,5 +1,5 @@
 import type { GlobalConfig } from 'payload'
-import { isAdmin } from '../access/roles'
+import { adminOnly } from '@/access'
 
 export const ActiveSessionsViewer: GlobalConfig = {
   slug: 'active-sessions-viewer',
@@ -20,7 +20,7 @@ export const ActiveSessionsViewer: GlobalConfig = {
     },
   },
   access: {
-    read: isAdmin,
+    read: adminOnly,
   },
   fields: [],
 }

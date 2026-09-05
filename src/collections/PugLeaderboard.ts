@@ -1,6 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isPugAdmin } from '@/access/roles'
-import { authenticated } from '@/access/authenticated'
+import { authenticated, department } from '@/access'
 
 export const PugLeaderboard: CollectionConfig = {
   slug: 'pug-leaderboard',
@@ -16,9 +15,9 @@ export const PugLeaderboard: CollectionConfig = {
   },
   access: {
     read: authenticated,
-    create: isPugAdmin,
-    update: isPugAdmin,
-    delete: isPugAdmin,
+    create: department('pug'),
+    update: department('pug'),
+    delete: department('pug'),
   },
   fields: [
     {

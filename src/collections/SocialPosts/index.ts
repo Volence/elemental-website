@@ -1,6 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { authenticated } from '../../access/authenticated'
-import type { Person } from '@/payload-types'
+import { authenticated, staffManagerOrAbove, department, withAccess, resolveAccessForReq } from '@/access'
 
 export const SocialPosts: CollectionConfig = {
   slug: 'social-posts',
@@ -10,39 +9,14 @@ export const SocialPosts: CollectionConfig = {
   },
   access: {
     admin: authenticated,
-    read: ({ req: { user } }) => {
-      if (!user) return false
-      const typedUser = user as Person
-      // Admins and staff managers see everything
-      if (typedUser.role === 'admin' || typedUser.role === 'staff-manager') return true
-      // SM staff see all posts (to view calendar and collaborate)
-      return typedUser.departments?.isSocialMediaStaff === true
-    },
+    // Admins and staff managers see everything; SM staff see all posts (to view calendar and collaborate)
+    read: department('social'),
     // Posts are now planned as workboard tasks (see the Social Media Dashboard calendar).
     // This collection is kept as a read-only archive; only admins can add to it.
-    create: ({ req: { user } }) => {
-      if (!user) return false
-      const typedUser = user as Person
-      return typedUser.role === 'admin' || typedUser.role === 'staff-manager'
-    },
-    update: ({ req: { user } }) => {
-      if (!user) return false
-      const typedUser = user as Person
-      // Admins can edit everything
-      if (typedUser.role === 'admin' || typedUser.role === 'staff-manager') return true
-      // SM staff can only update their own posts
-      return {
-        assignedTo: {
-          equals: user.id,
-        },
-      }
-    },
-    delete: ({ req: { user } }) => {
-      if (!user) return false
-      const typedUser = user as Person
-      // Only admins can delete
-      return typedUser.role === 'admin' || typedUser.role === 'staff-manager'
-    },
+    create: staffManagerOrAbove,
+    // Admins/staff managers edit everything; SM staff can only update their own posts
+    update: withAccess((a, { req }) => a.canManagePeople || { assignedTo: { equals: req.user!.id } }),
+    delete: staffManagerOrAbove,
   },
   admin: {
     defaultColumns: ['title', 'postType', 'platform', 'scheduledDate', 'status', 'assignedTo'],
@@ -137,14 +111,11 @@ export const SocialPosts: CollectionConfig = {
         },
       },
       access: {
-        update: ({ req: { user }, data }) => {
-          if (!user) return false
-          const typedUser = user as Person
-          // Admins can change status freely
-          if (typedUser.role === 'admin' || typedUser.role === 'staff-manager') return true
-          // SM staff can only move between Draft and Ready for Review
-          const allowedStatuses = ['Draft', 'Ready for Review']
-          return allowedStatuses.includes(data?.status)
+        // Admins/staff managers can change status freely; SM staff can only move between Draft and Ready for Review
+        update: async ({ req, data }) => {
+          const a = await resolveAccessForReq(req)
+          if (!a) return false
+          return a.canManagePeople || ['Draft', 'Ready for Review'].includes(data?.status)
         },
       },
     },

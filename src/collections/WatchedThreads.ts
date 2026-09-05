@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
-import { authenticated } from '../access/authenticated'
 import { hasAnyRole, UserRole } from '../access/roles'
+import { adminOnly, staffManagerOrAbove } from '@/access'
 import type { Person } from '@/payload-types'
 
 export const WatchedThreads: CollectionConfig = {
@@ -10,7 +10,9 @@ export const WatchedThreads: CollectionConfig = {
     plural: 'Watched Threads',
   },
   access: {
-    // Team managers, staff managers, and admins can view
+    // Team managers, staff managers, and admins can view.
+    // NOTE: team-manager is not modeled in the resolved access model (team access there is
+    // via team relations, not a role string) - left on roles.ts pending the team-scoped sweep.
     read: ({ req }) => {
       const user = req.user as Person | undefined
       if (!user) return false
@@ -18,22 +20,10 @@ export const WatchedThreads: CollectionConfig = {
         req: { user },
       } as any)
     },
-    create: ({ req }) => {
-      const user = req.user as Person | undefined
-      if (!user) return false
-      return user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER
-    },
-    update: ({ req }) => {
-      const user = req.user as Person | undefined
-      if (!user) return false
-      return user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER
-    },
+    create: staffManagerOrAbove,
+    update: staffManagerOrAbove,
     // Only admins can delete
-    delete: ({ req }) => {
-      const user = req.user as Person | undefined
-      if (!user) return false
-      return user.role === UserRole.ADMIN
-    },
+    delete: adminOnly,
   },
   admin: {
     useAsTitle: 'threadName',

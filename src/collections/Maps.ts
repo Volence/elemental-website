@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { UserRole, isScoutingStaff } from '@/access/roles'
+import { adminOnly, department, staffManagerOrAbove } from '@/access'
 
 export const Maps: CollectionConfig = {
   slug: 'maps',
@@ -15,19 +15,9 @@ export const Maps: CollectionConfig = {
   },
   access: {
     read: () => true,
-    create: ({ req }) => {
-      if (!req.user) return false
-      return [UserRole.ADMIN, UserRole.STAFF_MANAGER].includes(req.user.role as UserRole)
-    },
-    update: ({ req }) => {
-      if (!req.user) return false
-      const u = req.user as any
-      return [UserRole.ADMIN, UserRole.STAFF_MANAGER].includes(u.role as UserRole) || u.departments?.isPugAdmin === true
-    },
-    delete: ({ req }) => {
-      if (!req.user) return false
-      return [UserRole.ADMIN].includes(req.user.role as UserRole)
-    },
+    create: staffManagerOrAbove,
+    update: department('pug'),
+    delete: adminOnly,
   },
   fields: [
     {

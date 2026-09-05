@@ -1,5 +1,5 @@
 import type { GlobalConfig } from 'payload'
-import { isAdmin } from '../access/roles'
+import { adminOnly } from '@/access'
 
 export const ErrorDashboard: GlobalConfig = {
   slug: 'error-dashboard',
@@ -20,7 +20,7 @@ export const ErrorDashboard: GlobalConfig = {
     },
   },
   access: {
-    read: isAdmin,
+    read: adminOnly,
   },
   fields: [],
 }

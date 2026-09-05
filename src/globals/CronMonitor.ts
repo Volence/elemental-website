@@ -1,5 +1,5 @@
 import type { GlobalConfig } from 'payload'
-import { isAdmin } from '../access/roles'
+import { adminOnly } from '@/access'
 
 export const CronMonitor: GlobalConfig = {
   slug: 'cron-monitor',
@@ -20,7 +20,7 @@ export const CronMonitor: GlobalConfig = {
     },
   },
   access: {
-    read: isAdmin,
+    read: adminOnly,
   },
   fields: [],
 }

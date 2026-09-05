@@ -1,5 +1,11 @@
 import type { GlobalConfig } from 'payload'
-import { isProductionStaff, adminOnly } from '../access/roles'
+import { department, hideUnless, hasDepartment, resolveAccess } from '@/access'
+
+/** Shown only to production leads (department leads, and staff who lead every department). */
+const productionLeadCondition = (_data: any, _siblingData: any, { user }: { user: any }) => {
+  if (!user) return false
+  return hasDepartment(resolveAccess(user, []), 'production', 'lead')
+}
 
 export const ProductionDashboard: GlobalConfig = {
   slug: 'production-dashboard',
@@ -7,12 +13,7 @@ export const ProductionDashboard: GlobalConfig = {
   admin: {
     description: 'Manage weekly match coverage, staff assignments, and broadcast schedule',
     group: 'Departments',
-    hidden: ({ user }) => {
-      if (!user) return true
-      const u = user as any
-      if (user.role === 'admin' || user.role === 'staff-manager') return false
-      return !u.departments?.isProductionStaff
-    },
+    hidden: hideUnless((a) => a.departments.production !== 'none'),
     hideAPIURL: true,
     components: {
       views: {
@@ -31,7 +32,7 @@ export const ProductionDashboard: GlobalConfig = {
       label: 'Broadcast schedule: staff channel',
       admin: {
         description: 'Discord channel that receives the internal weekly broadcast schedule (with staff pings).',
-        condition: (data, siblingData, { user }) => user?.role === 'admin',
+        condition: productionLeadCondition,
       },
       validate: (value: any) => {
         if (!value) return true
@@ -45,7 +46,7 @@ export const ProductionDashboard: GlobalConfig = {
       label: 'Broadcast schedule: announcements channel',
       admin: {
         description: 'Discord channel that receives the public weekly broadcast schedule.',
-        condition: (data, siblingData, { user }) => user?.role === 'admin',
+        condition: productionLeadCondition,
       },
       validate: (value: any) => {
         if (!value) return true
@@ -73,9 +74,7 @@ export const ProductionDashboard: GlobalConfig = {
       label: 'Reschedule Notification Channels',
       admin: {
         description: 'Discord channels that receive notifications when matches are rescheduled. Add channel IDs from any Discord server the bot is in.',
-        condition: (data, siblingData, { user }) => {
-          return user?.role === 'admin'
-        },
+        condition: productionLeadCondition,
       },
       fields: [
         {
@@ -105,7 +104,7 @@ export const ProductionDashboard: GlobalConfig = {
     },
   ],
   access: {
-    read: isProductionStaff,
-    update: adminOnly,
+    read: department('production'),
+    update: department('production', 'lead'),
   },
 }

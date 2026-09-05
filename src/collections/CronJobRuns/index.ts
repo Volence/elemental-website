@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isAdmin } from '../../access/roles'
+import { adminOnly } from '@/access'
 
 export const CronJobRuns: CollectionConfig = {
   slug: 'cron-job-runs',
@@ -16,7 +16,7 @@ export const CronJobRuns: CollectionConfig = {
   },
   access: {
     // Only admins can read cron job runs
-    read: isAdmin,
+    read: adminOnly,
     // No manual create/update/delete - system generated only
     create: () => false,
     update: () => false,

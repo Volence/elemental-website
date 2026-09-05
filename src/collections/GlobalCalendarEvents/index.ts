@@ -1,7 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { authenticated } from '../../access/authenticated'
-import { isEventsStaff, hideFromPlayers } from '../../access/roles'
-import type { Person } from '@/payload-types'
+import { authenticated, department, hideUnless } from '@/access'
 
 export const GlobalCalendarEvents: CollectionConfig = {
   slug: 'global-calendar-events',
@@ -11,9 +9,9 @@ export const GlobalCalendarEvents: CollectionConfig = {
   },
   access: {
     // Staff managers, admins, and events staff can create/update/delete
-    create: isEventsStaff,
-    update: isEventsStaff,
-    delete: isEventsStaff,
+    create: department('events'),
+    update: department('events'),
+    delete: department('events'),
     // All authenticated users can read (for calendar display)
     read: authenticated,
   },
@@ -57,7 +55,7 @@ export const GlobalCalendarEvents: CollectionConfig = {
     defaultColumns: ['title', 'eventType', 'region', 'dateStart', 'dateEnd', 'publishToDiscord'],
     description: 'Global calendar events for competitive dates, tournaments, and community events',
     group: 'Organization',
-    hidden: hideFromPlayers,
+    hidden: hideUnless((a) => a.canManagePeople || Object.values(a.departments).some((l) => l !== 'none')),
     listSearchableFields: ['title', 'description'],
     components: {
       // The list lives at /admin/calendar-events (src/components/CalendarEventsList)

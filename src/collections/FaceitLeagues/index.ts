@@ -1,6 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { adminOnly } from '../../access/roles'
-import { anyone } from '../../access/anyone'
+import { adminOnly, anyone, hideUnless } from '@/access'
 
 /**
  * FaceIt Leagues Collection
@@ -28,10 +27,7 @@ export const FaceitLeagues: CollectionConfig = {
     defaultColumns: ['name', 'division', 'region', 'seasonNumber', 'isActive'],
     description: 'FaceIt league templates - Admin-only. Created by the season rollover; teams select from these when enabling FaceIt.',
     group: 'Data',
-    hidden: ({ user }) => {
-      if (!user) return true
-      return user.role !== 'admin' // Only admins can see this
-    },
+    hidden: hideUnless((a) => a.isAdmin),
     components: {
       // The list page is the FaceIt hub: season rollover, teams overview, templates
       views: {

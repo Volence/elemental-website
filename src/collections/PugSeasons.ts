@@ -1,6 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { isPugAdmin } from '@/access/roles'
-import { authenticated } from '@/access/authenticated'
+import { authenticated, department } from '@/access'
 
 export const PugSeasons: CollectionConfig = {
   slug: 'pug-seasons',
@@ -17,9 +16,9 @@ export const PugSeasons: CollectionConfig = {
   },
   access: {
     read: authenticated,
-    create: isPugAdmin,
-    update: isPugAdmin,
-    delete: isPugAdmin,
+    create: department('pug'),
+    update: department('pug'),
+    delete: department('pug'),
   },
   fields: [
     {

@@ -1,27 +1,20 @@
 import type { CollectionConfig } from 'payload'
-import { adminOnly, UserRole } from '../../access/roles'
-
-const isReviewer = (user: any) =>
-  !!user && (user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER)
+import { adminOnly, staffManagerOrAbove, withAccess, hideUnless } from '@/access'
 
 export const IdentityClaims: CollectionConfig = {
   slug: 'identity-claims',
   labels: { singular: 'Identity Claim', plural: 'Identity Claims' },
   admin: {
     group: 'Organization',
-    hidden: ({ user }) => !isReviewer(user),
+    hidden: hideUnless((a) => a.canManagePeople),
     defaultColumns: ['claimant', 'target', 'status', 'createdAt'],
     description: 'Requests from Discord-created accounts to take over a legacy person row. Reviewed on /admin/identity.',
   },
   access: {
     // Claimants create through POST /api/identity/claims (overrideAccess); nobody creates from the admin UI.
     create: () => false,
-    read: ({ req: { user } }) => {
-      if (!user) return false
-      if (isReviewer(user)) return true
-      return { claimant: { equals: user.id } }
-    },
-    update: ({ req: { user } }) => isReviewer(user),
+    read: withAccess((a, { req }) => a.canManagePeople || { claimant: { equals: req.user!.id } }),
+    update: staffManagerOrAbove,
     delete: adminOnly,
   },
   fields: [

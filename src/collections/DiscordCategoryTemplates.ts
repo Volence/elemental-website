@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import type { Person } from '@/payload-types'
+import { adminOnly } from '@/access'
 
 export const DiscordCategoryTemplates: CollectionConfig = {
   slug: 'discord-category-templates',
@@ -14,10 +14,10 @@ export const DiscordCategoryTemplates: CollectionConfig = {
     defaultColumns: ['name', 'description', 'channelCount', 'updatedAt'],
   },
   access: {
-    create: ({ req: { user } }) => (user as Person)?.role === 'admin',
-    read: ({ req: { user } }) => (user as Person)?.role === 'admin',
-    update: ({ req: { user } }) => (user as Person)?.role === 'admin',
-    delete: ({ req: { user } }) => (user as Person)?.role === 'admin',
+    create: adminOnly,
+    read: adminOnly,
+    update: adminOnly,
+    delete: adminOnly,
   },
   fields: [
     {

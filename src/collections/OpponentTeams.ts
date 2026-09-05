@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { UserRole, isScoutingStaff } from '@/access/roles'
+import { department, staffManagerOrAbove } from '@/access'
 
 export const OpponentTeams: CollectionConfig = {
   slug: 'opponent-teams',
@@ -17,31 +17,10 @@ export const OpponentTeams: CollectionConfig = {
   },
   access: {
     // Only scouting staff and staff-manager+ can read
-    read: (args) => {
-      const { req: { user } } = args
-      if (!user) return false
-      const u = user as any
-      if (u.role === UserRole.ADMIN || u.role === UserRole.STAFF_MANAGER) return true
-      return isScoutingStaff(args)
-    },
-    create: (args) => {
-      const { req: { user } } = args
-      if (!user) return false
-      const u = user as any
-      if ([UserRole.ADMIN, UserRole.STAFF_MANAGER].includes(u.role as UserRole)) return true
-      return isScoutingStaff(args)
-    },
-    update: (args) => {
-      const { req: { user } } = args
-      if (!user) return false
-      const u = user as any
-      if ([UserRole.ADMIN, UserRole.STAFF_MANAGER].includes(u.role as UserRole)) return true
-      return isScoutingStaff(args)
-    },
-    delete: ({ req }) => {
-      if (!req.user) return false
-      return [UserRole.ADMIN, UserRole.STAFF_MANAGER].includes(req.user.role as UserRole)
-    },
+    read: department('scouting'),
+    create: department('scouting'),
+    update: department('scouting'),
+    delete: staffManagerOrAbove,
   },
   fields: [
     // Wiki link button

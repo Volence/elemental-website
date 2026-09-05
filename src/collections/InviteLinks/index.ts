@@ -1,22 +1,12 @@
 import type { CollectionConfig } from 'payload'
 import { v4 as uuidv4 } from 'uuid'
-import { adminOnly } from '../../access/roles'
+import { anyDepartment } from '@/access'
 import type { Person } from '@/payload-types'
 
-const canManageInvites = ({ req: { user } }: { req: { user: any } }) => {
-  if (!user) return false
-  if (user.role === 'admin' || user.role === 'staff-manager' || user.role === 'team-manager') return true
-  
-  // Department leads (users with department flags) can also manage invites
-  if (user.departments) {
-    const deps = user.departments
-    return deps.isProductionStaff || deps.isSocialMediaStaff || deps.isGraphicsStaff || 
-           deps.isVideoStaff || deps.isEventsStaff || deps.isScoutingStaff ||
-           deps.isPugAdmin
-  }
-  
-  return false
-}
+// Staff (admin/staff-manager) and any department lead/member can manage invites.
+// NOTE: the old team-manager role carve-out is dropped here - team-manager is not modeled in
+// the resolved access model (team access there is via team relations, not a role string).
+const canManageInvites = anyDepartment()
 
 export const InviteLinks: CollectionConfig = {
   slug: 'invite-links',

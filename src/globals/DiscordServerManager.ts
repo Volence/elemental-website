@@ -1,21 +1,16 @@
 import type { GlobalConfig } from 'payload'
+import { adminOnly, hideUnless } from '@/access'
 
 export const DiscordServerManager: GlobalConfig = {
   slug: 'discord-server-manager',
   label: 'Discord Server Manager',
   access: {
-    read: ({ req: { user } }) => {
-      // Only admins can access
-      return (user as any)?.role === 'admin'
-    },
+    read: adminOnly,
   },
   admin: {
     description: 'Manage Discord server structure, channels, categories, roles, and members.',
     group: 'Data',
-    hidden: ({ user }) => {
-      // Hide from sidebar if not admin
-      return (user as any)?.role !== 'admin'
-    },
+    hidden: hideUnless((a) => a.isAdmin),
     hideAPIURL: true,
     components: {
       views: {
