@@ -14,8 +14,8 @@ import {
   ClipboardList,
   Megaphone,
 } from 'lucide-react'
-import type { OrgRoleSlug } from '@/utilities/orgRoles'
-import { ORG_ROLE_LABELS } from '@/utilities/orgRoles'
+import type { OrgRoleSlug } from '@/access/titles'
+import { ORG_ROLE_LABELS } from '@/access/titles'
 
 /**
  * Centralized role icon utilities for both game roles and organization roles

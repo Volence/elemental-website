@@ -17,7 +17,7 @@ import { getMediaUrl } from '@/utilities/getMediaUrl'
 import { getOrgRoleIcon, getOrgRoleLabel } from '@/utilities/roleIcons'
 import { getRoleColors, getTierFromRating } from '@/utilities/tierColors'
 import { ParticleBackground } from '@/components/ParticleBackground'
-import { ORG_ROLE_LABELS } from '@/utilities/orgRoles'
+import { ORG_ROLE_LABELS } from '@/access/titles'
 
 type Args = {
   params: Promise<{

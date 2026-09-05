@@ -615,6 +615,31 @@ export interface Person {
    */
   notes?: string | null;
   /**
+   * Staff titles. Each grants its department; the lead flag grants lead level. Order is display order.
+   */
+  titles?:
+    | {
+        title:
+          | 'owner'
+          | 'co-owner'
+          | 'administration'
+          | 'hr'
+          | 'region-lead'
+          | 'event-manager'
+          | 'social-manager'
+          | 'marketing'
+          | 'graphics'
+          | 'media-editor'
+          | 'caster'
+          | 'observer'
+          | 'producer'
+          | 'content-creator';
+        isLead?: boolean | null;
+        regions?: ('na' | 'emea' | 'sa' | 'oce' | 'apac' | 'sea')[] | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
    * Determines CMS access level. Only set for people who log in.
    */
   role?: ('admin' | 'staff-manager' | 'team-manager' | 'player' | 'user') | null;
@@ -627,7 +652,7 @@ export interface Person {
    */
   assignedTeams?: (number | Team)[] | null;
   /**
-   * Grant access to department-specific tools and dashboards
+   * Additive overrides. Titles already grant their departments; tick these only for access a title does not cover.
    */
   departments?: {
     /**
@@ -3953,6 +3978,14 @@ export interface PeopleSelect<T extends boolean = true> {
         id?: T;
       };
   notes?: T;
+  titles?:
+    | T
+    | {
+        title?: T;
+        isLead?: T;
+        regions?: T;
+        id?: T;
+      };
   role?: T;
   avatar?: T;
   assignedTeams?: T;

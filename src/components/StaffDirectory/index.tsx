@@ -9,7 +9,7 @@ import {
 import { EDITOR_CSS, styles as editorStyles } from '@/components/PersonEditor'
 import { useConfirm } from '@/components/ConfirmDialog'
 import { requestDelete } from '@/utilities/requestDelete'
-import { ORG_ROLES, ORG_REGIONS } from '@/utilities/orgRoles'
+import { ORG_ROLES, ORG_REGIONS } from '@/access/titles'
 
 // ── Types ──
 

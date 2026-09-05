@@ -3,7 +3,7 @@
 import React from 'react'
 import { useDocumentInfo } from '@payloadcms/ui'
 import { Swords, Briefcase, Clapperboard } from 'lucide-react'
-import { ORG_ROLE_LABELS } from '@/utilities/orgRoles'
+import { ORG_ROLE_LABELS } from '@/access/titles'
 
 /**
  * Sidebar component showing a person's team and staff positions

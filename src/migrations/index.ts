@@ -47,6 +47,7 @@ import * as migration_20260903_discord_servers_workboard_channels from "./202609
 import * as migration_20260903_pug_sa_region from "./20260903_pug_sa_region";
 import * as migration_20260903_faceit_intermediate_division from "./20260903_faceit_intermediate_division";
 import * as migration_20260905_guides from "./20260905_guides";
+import * as migration_20260905_titles_schema from "./20260905_titles_schema";
 
 export const migrations = [
   {
@@ -293,5 +294,10 @@ export const migrations = [
     up: migration_20260905_guides.up,
     down: migration_20260905_guides.down,
     name: "20260905_guides",
+  },
+  {
+    up: migration_20260905_titles_schema.up,
+    down: migration_20260905_titles_schema.down,
+    name: "20260905_titles_schema",
   },
 ];

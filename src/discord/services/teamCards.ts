@@ -5,7 +5,7 @@ import { buildEnhancedTeamEmbed, buildStaffEmbed } from '../utils/embeds'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import type { Team } from '@/payload-types'
-import { ORG_ROLE_ORDER, ORG_ROLE_GROUP_LABELS } from '@/utilities/orgRoles'
+import { ORG_ROLE_ORDER, ORG_ROLE_GROUP_LABELS } from '@/access/titles'
 
 let isRefreshing = false
 const REFRESH_TIMEOUT_MS = 5 * 60 * 1000

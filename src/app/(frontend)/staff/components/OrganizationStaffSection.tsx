@@ -9,7 +9,7 @@ import {
 } from '@/utilities/personHelpers'
 import { getOrgRoleIcon } from '@/utilities/roleIcons'
 import { formatPlayerSlug } from '@/utilities/getPlayer'
-import { ORG_ROLES, ORG_REGIONS } from '@/utilities/orgRoles'
+import { ORG_ROLES, ORG_REGIONS } from '@/access/titles'
 
 interface OrganizationStaffSectionProps {
   groupedOrgStaff: Record<string, any[]>

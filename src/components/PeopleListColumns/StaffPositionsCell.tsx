@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { getPeopleListData } from '@/utilities/peopleListDataCache'
 import { formatRole, formatProductionType } from '@/utilities/formatters'
 import { AdminBadgeGroupSkeleton } from '@/components/AdminSkeletonLoader'
-import { ORG_ROLE_LABELS } from '@/utilities/orgRoles'
+import { ORG_ROLE_LABELS } from '@/access/titles'
 
 /**
  * Custom cell component that displays all staff positions a person holds

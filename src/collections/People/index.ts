@@ -4,6 +4,7 @@ import { APIError } from 'payload'
 import { authenticated } from '../../access/authenticated'
 import { anyone } from '../../access/anyone'
 import { UserRole, adminOnly, isAdmin, isPugAdmin } from '../../access/roles'
+import { TITLES, TITLE_BY_VALUE, REGIONS, type TitleValue } from '@/access/titles'
 import { auditPeopleChanges } from './hooks/auditAccessChanges'
 import { syncTwitchStreamer } from './hooks/syncTwitchStreamer'
 import { createAccessAllowsData, enforceDiscordIdOnCreate } from './hooks/enforceDiscordId'
@@ -228,6 +229,38 @@ export const People: CollectionConfig = {
           label: 'Account',
           fields: [
             {
+              name: 'titles',
+              type: 'array',
+              label: 'Titles',
+              admin: { description: 'Staff titles. Each grants its department; the lead flag grants lead level. Order is display order.' },
+              access: {
+                read: () => true,
+                // Widened to department leads in Task 4.
+                update: ({ req }) => req.user?.role === 'admin' || req.user?.role === 'staff-manager',
+              },
+              fields: [
+                {
+                  name: 'title',
+                  type: 'select',
+                  required: true,
+                  options: TITLES.map((t) => ({ label: t.label, value: t.value })),
+                },
+                {
+                  name: 'isLead',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  admin: { condition: (_data, siblingData) => Boolean(siblingData?.title && TITLE_BY_VALUE[siblingData.title as TitleValue]?.leadLabel) },
+                },
+                {
+                  name: 'regions',
+                  type: 'select',
+                  hasMany: true,
+                  options: REGIONS.map((r) => ({ label: r.label, value: r.value })),
+                  admin: { condition: (_data, siblingData) => siblingData?.title === 'region-lead' },
+                },
+              ],
+            },
+            {
               name: 'role',
               type: 'select',
               required: false,
@@ -283,12 +316,9 @@ export const People: CollectionConfig = {
             {
               name: 'departments',
               type: 'group',
-              label: 'Department Access',
+              label: 'Extra access (beyond titles)',
               admin: {
-                description: 'Grant access to department-specific tools and dashboards',
-                // Shown for players too: coaches (often role=player) can hold
-                // department capabilities like canUploadExternalScrims.
-                condition: (data) => data.role !== UserRole.ADMIN,
+                description: 'Additive overrides. Titles already grant their departments; tick these only for access a title does not cover.',
               },
               access: {
                 // Readable by any authenticated user: these are capability
