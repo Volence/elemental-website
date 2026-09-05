@@ -60,5 +60,6 @@ describe('TITLES constant', () => {
     expect(ORG_ROLE_LABELS['region-lead']).toBe('Region Lead')
     expect(ORG_ROLE_GROUP_LABELS.owner).toBeTruthy()
     expect(ORG_REGIONS.map((r) => r.value)).toEqual(['na', 'emea', 'sa', 'oce', 'apac', 'sea'])
+    expect(ORG_REGIONS.map((r) => r.label)).toEqual(['NA', 'EMEA', 'SA', 'OCE', 'APAC', 'SEA'])
   })
 })

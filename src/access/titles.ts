@@ -133,4 +133,14 @@ export const TITLE_COLORS: Record<string, string> = {
   caster: '#a855f7', observer: '#3b82f6', producer: '#eab308', 'content-creator': '#22c55e',
 }
 export const ORG_ROLES = ORG_TITLES.map((t) => ({ value: t.value, label: t.label, color: TITLE_COLORS[t.value], groupLabel: ORG_ROLE_GROUP_LABELS[t.value] }))
-export const ORG_REGIONS = REGIONS.map((r) => ({ value: r.value, label: r.label }))
+// True compat export: the deleted orgRoles.ts used short region codes here (not REGIONS'
+// full names, which are for the new titles editor). Kept as its own literal array so the
+// two never drift into each other by accident.
+export const ORG_REGIONS = [
+  { value: 'na', label: 'NA' },
+  { value: 'emea', label: 'EMEA' },
+  { value: 'sa', label: 'SA' },
+  { value: 'oce', label: 'OCE' },
+  { value: 'apac', label: 'APAC' },
+  { value: 'sea', label: 'SEA' },
+] as const
