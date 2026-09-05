@@ -746,6 +746,23 @@ export async function syncTeamData(
           data: seasonData,
         })
       }
+    } else if (existingSeason) {
+      // No standings yet (before the first match day, or between stages): still
+      // record that the sync ran and keep the FACEIT ids current, so the admin
+      // does not read a healthy team as "never synced".
+      seasonRecord = await payload.update({
+        collection: 'faceit-seasons',
+        id: existingSeason.id,
+        data: {
+          faceitTeamId,
+          championshipId: championshipId || '',
+          leagueId: leagueId || '',
+          seasonId: seasonId || '',
+          stageId: stageId || '',
+          lastSynced: new Date().toISOString(),
+          dataSource: 'faceit',
+        } as any,
+      })
     }
 
     // 5. Generate/update matches
