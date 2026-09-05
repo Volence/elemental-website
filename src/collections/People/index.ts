@@ -5,9 +5,11 @@ import { authenticated } from '../../access/authenticated'
 import { anyone } from '../../access/anyone'
 import { UserRole, adminOnly, isAdmin, isPugAdmin } from '../../access/roles'
 import { TITLES, TITLE_BY_VALUE, REGIONS, type TitleValue } from '@/access/titles'
+import { withAccess, hideUnless, resolveAccessForReq } from '@/access'
 import { auditPeopleChanges } from './hooks/auditAccessChanges'
 import { syncTwitchStreamer } from './hooks/syncTwitchStreamer'
 import { createAccessAllowsData, enforceDiscordIdOnCreate } from './hooks/enforceDiscordId'
+import { raiseRoleForTitles, enforcePersonAccessChange, personAccessFieldUpdate } from './hooks/titlesAndRole'
 import { createAuditLogDeleteHook } from '../../utilities/auditLogger'
 import { trackLogin, trackLogout } from '../../utilities/sessionTracker'
 
@@ -65,22 +67,10 @@ export const People: CollectionConfig = {
   },
   access: {
     admin: authenticated,
-    create: ({ req: { user }, data }) => {
-      if (!user) return false
-      const allowedRole = user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER || user.role === UserRole.TEAM_MANAGER
-      if (!allowedRole) return false
-      return createAccessAllowsData(data as any)
-    },
+    create: withAccess((a, { data }) => (a.canManagePeople || a.teamIds.size > 0) && createAccessAllowsData(data as any)),
     delete: adminOnly,
     read: anyone,
-    update: ({ req: { user } }) => {
-      if (!user) return false
-      if (user.role === UserRole.ADMIN) return true
-      if (user.role === UserRole.STAFF_MANAGER) return true
-      if ((user as any).departments?.isPugAdmin === true) return true
-      if (user) return { id: { equals: user.id } }
-      return false
-    },
+    update: withAccess((a, { req }) => (a.canManagePeople || a.leadDepartments.length > 0 || a.departments.pug !== 'none' ? true : { id: { equals: req.user!.id } })),
   },
   admin: {
     useAsTitle: 'name',
@@ -91,12 +81,7 @@ export const People: CollectionConfig = {
     baseListFilter: () => {
       return {}
     },
-    hidden: ({ user }) => {
-      if (!user) return true
-      if (['admin', 'staff-manager', 'team-manager'].includes(user.role as string)) return false
-      if (user.role === 'player') return false
-      return true
-    },
+    hidden: hideUnless((a) => a.canManagePeople || a.teamIds.size > 0 || a.canPickMembers),
     components: {
       beforeList: [
         '@/components/UserManagementTabs#default',
@@ -235,8 +220,7 @@ export const People: CollectionConfig = {
               admin: { description: 'Staff titles. Each grants its department; the lead flag grants lead level. Order is display order.' },
               access: {
                 read: () => true,
-                // Widened to department leads in Task 4.
-                update: ({ req }) => req.user?.role === 'admin' || req.user?.role === 'staff-manager',
+                update: personAccessFieldUpdate,
               },
               fields: [
                 {
@@ -269,7 +253,7 @@ export const People: CollectionConfig = {
               },
               access: {
                 read: ({ req: { user } }) => Boolean(user),
-                update: ({ req }) => req.user?.role === UserRole.ADMIN,
+                update: personAccessFieldUpdate,
               },
               options: [
                 { label: 'Admin', value: UserRole.ADMIN },
@@ -310,7 +294,7 @@ export const People: CollectionConfig = {
                   if (user.role === UserRole.PLAYER || user.role === UserRole.TEAM_MANAGER) return true
                   return false
                 },
-                update: ({ req }) => req.user?.role === UserRole.ADMIN,
+                update: personAccessFieldUpdate,
               },
             },
             {
@@ -325,7 +309,7 @@ export const People: CollectionConfig = {
                 // flags that client UI (tab bars, nav) must gate on for the
                 // logged-in user themself. Updates stay admin-only.
                 read: ({ req: { user } }) => Boolean(user),
-                update: ({ req }) => req.user?.role === UserRole.ADMIN,
+                update: personAccessFieldUpdate,
               },
               fields: [
                 { name: 'isProductionStaff', type: 'checkbox', label: 'Production Staff', admin: { description: 'Grants access to Production Dashboard' } },
@@ -581,6 +565,10 @@ export const People: CollectionConfig = {
       },
     ],
     beforeChange: [
+      ({ data, originalDoc }) => {
+        if (data) raiseRoleForTitles(data, originalDoc)
+        return data
+      },
       async ({ data, operation, req, originalDoc }) => {
         // username mirrors discordId (it is what Payload logs Discord rows in with), so
         // unlinking Discord has to release the username too. A stale one would keep the unique
@@ -646,25 +634,9 @@ export const People: CollectionConfig = {
         }
 
         if (operation === 'update' && req.user && originalDoc) {
-          if (req.user.role !== UserRole.ADMIN) {
-            if (data && 'role' in data && data.role !== originalDoc.role) {
-              req.payload.logger.warn('Non-admin attempted to change role - prevented')
-              data.role = originalDoc.role
-            }
-            if (data && 'assignedTeams' in data) {
-              req.payload.logger.warn('Non-admin attempted to change assignedTeams - prevented')
-              data.assignedTeams = originalDoc.assignedTeams
-            }
-            if (data && 'departments' in data) {
-              req.payload.logger.warn('Non-admin attempted to change departments - prevented')
-              data.departments = originalDoc.departments
-            }
-            if (data) {
-              delete data.createdAt
-              delete data.updatedAt
-            }
-          }
-          const canEditPug = req.user.role === UserRole.ADMIN || req.user.departments?.isPugAdmin === true
+          await enforcePersonAccessChange({ req, data, originalDoc, operation })
+          const actorAccess = await resolveAccessForReq(req)
+          const canEditPug = actorAccess ? actorAccess.isAdmin || actorAccess.departments.pug !== 'none' : true
           if (!canEditPug && data) {
             const pugFields = ['pugTiers', 'pugApprovedRoles', 'pugInviteRegions', 'pugRegisteredDate', 'pugInvitedBy', 'pugActiveBan', 'pugBanOffenseCount'] as const
             for (const field of pugFields) {
