@@ -55,4 +55,17 @@ describe('canApplyPersonChange', () => {
     const a = { ...before, titles: [{ title: 'observer' as const }, { title: 'caster' as const }] }
     expect(canApplyPersonChange(plain, b, a).ok).toBe(true)
   })
+  it('an omitted field on `after` means unchanged, not emptied', () => {
+    const beforeWithOwner = { ...before, titles: [{ title: 'owner' as const }] }
+    expect(canApplyPersonChange(socialLead, beforeWithOwner, { ...beforeWithOwner, titles: undefined }).ok).toBe(true)
+    expect(canApplyPersonChange(socialLead, before, { ...before, departments: undefined }).ok).toBe(true)
+    // an explicit empty titles array, unlike an omitted one, is a real change and still rejected
+    // when it removes a role-implying title.
+    expect(canApplyPersonChange(socialLead, beforeWithOwner, { ...beforeWithOwner, titles: [] }).ok).toBe(false)
+  })
+  it('a department lead may not assign a title with no department, such as Content Creator', () => {
+    const r = canApplyPersonChange(marketingLead, before, { ...before, titles: [{ title: 'caster' }, { title: 'content-creator' }] })
+    expect(r.ok).toBe(false)
+    expect(r.ok === false && r.reason).toBe('Only staff managers and admins can assign Content Creator')
+  })
 })

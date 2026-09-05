@@ -103,6 +103,10 @@ describe('resolveAccess: teams', () => {
     const a = resolveAccess({ id: 10, role: 'user', teamAccess: [1] }, teams)
     expect(a.teamReasons[1]).toEqual(['manager', 'access-only'])
   })
+  it('reasons do not duplicate when the same team appears twice in teamAccess', () => {
+    const a = resolveAccess({ id: 1, role: 'user', teamAccess: [2, { id: 2 }] }, teams)
+    expect(a.teamReasons[2]).toEqual(['access-only'])
+  })
   it('canPickMembers is true for team access or any department', () => {
     expect(resolveAccess({ id: 10, role: 'user' }, teams).canPickMembers).toBe(true)
     expect(resolveAccess({ id: 1, role: 'user', titles: [{ title: 'caster' }] }, teams).canPickMembers).toBe(true)

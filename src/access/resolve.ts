@@ -118,6 +118,9 @@ export function resolveAccess(person: AccessPersonInput, teams: AccessTeamInput[
       if (flags[DEPARTMENT_FLAG[k]] === true) raise(departments, k, 'member')
     }
   }
+  // Staff (admin/staff-manager) are excluded here even though every department reads 'lead' for
+  // them: leadDepartments feeds canApplyPersonChange's department-lead grant path, which staff
+  // never go through (they already short-circuit via canManagePeople).
   const leadDepartments = DEPARTMENT_KEYS.filter((k) => departments[k] === 'lead' && !staff)
 
   // Teams.
@@ -125,7 +128,8 @@ export function resolveAccess(person: AccessPersonInput, teams: AccessTeamInput[
   const teamReasons: Record<number, TeamReason[]> = {}
   const add = (teamId: number, reason: TeamReason) => {
     teamIds.add(teamId)
-    ;(teamReasons[teamId] ??= []).push(reason)
+    const reasons = (teamReasons[teamId] ??= [])
+    if (!reasons.includes(reason)) reasons.push(reason)
   }
   if (staff) {
     for (const t of teams) add(t.id, 'staff')
@@ -201,32 +205,39 @@ function diffTitles(before: TitleEntry[], after: TitleEntry[]): { added: TitleEn
  * May `actor` turn `before` into `after`? Admin and staff-manager: anything. A department lead:
  * only member (non-lead, non-role-implying, non-region) titles whose departments are all within
  * the actor's lead departments, plus those departments' extra-access flags. Everyone else: nothing.
+ * Callers should still pass full snapshots for `before` and `after`; an `undefined` field on
+ * `after` (role, titles, departments, teamAccess) means "unchanged from `before`", distinct from
+ * an explicit empty value (e.g. `titles: []`), which is a real change to be checked.
  */
 export function canApplyPersonChange(actor: ResolvedAccess, before: PersonAccessFields, after: PersonAccessFields): { ok: true } | { ok: false; reason: string } {
   if (actor.canManagePeople) return { ok: true }
 
   const roleBefore = isRoleValue(before.role) ? before.role : 'user'
-  const roleAfter = isRoleValue(after.role) ? after.role : 'user'
+  const roleAfter = after.role === undefined ? roleBefore : isRoleValue(after.role) ? after.role : 'user'
   if (roleBefore !== roleAfter) return { ok: false, reason: 'Only staff managers and admins can change roles' }
 
   const teamsBefore = (before.teamAccess ?? []).map(relId).filter((x): x is number => x !== null).sort()
-  const teamsAfter = (after.teamAccess ?? []).map(relId).filter((x): x is number => x !== null).sort()
+  const teamsAfter = (after.teamAccess === undefined ? before.teamAccess ?? [] : after.teamAccess ?? []).map(relId).filter((x): x is number => x !== null).sort()
   if (JSON.stringify(teamsBefore) !== JSON.stringify(teamsAfter)) return { ok: false, reason: 'Only staff managers and admins can change team access' }
 
   const lead = new Set(actor.leadDepartments)
-  const { added, removed } = diffTitles(normalizeTitles(before.titles), normalizeTitles(after.titles))
+  const titlesAfter = after.titles === undefined ? before.titles : after.titles
+  const { added, removed } = diffTitles(normalizeTitles(before.titles), normalizeTitles(titlesAfter))
   for (const t of [...added, ...removed]) {
     const def = TITLE_BY_VALUE[t.title]
     if (t.isLead) return { ok: false, reason: 'Only staff managers and admins can set lead flags' }
     if (def.impliesRole) return { ok: false, reason: `Only staff managers and admins can assign ${def.label}` }
     if (t.title === 'region-lead') return { ok: false, reason: 'Only staff managers and admins can assign Region Lead' }
-    if (def.departments.length === 0 || !def.departments.every((d) => lead.has(d))) {
+    // Titles with no department (e.g. Content Creator) are not owned by any department lead;
+    // only staff managers and admins may grant or revoke them.
+    if (def.departments.length === 0) return { ok: false, reason: `Only staff managers and admins can assign ${def.label}` }
+    if (!def.departments.every((d) => lead.has(d))) {
       return { ok: false, reason: `You do not lead every department that ${def.label} grants` }
     }
   }
 
   const fb = before.departments ?? {}
-  const fa = after.departments ?? {}
+  const fa = after.departments === undefined ? fb : after.departments ?? {}
   for (const key of new Set([...Object.keys(fb), ...Object.keys(fa)])) {
     if (Boolean(fb[key]) === Boolean(fa[key])) continue
     const dept = (Object.keys(DEPARTMENT_FLAG) as DepartmentKey[]).find((d) => DEPARTMENT_FLAG[d] === key)
