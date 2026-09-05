@@ -74,6 +74,8 @@ export interface DashboardSummary {
   }
   recentScrims: ScrimLite[] | null
   attention: AttentionCounts | null
+  /** Me > Guides: how many guides fit this viewer and whether they hid the card. */
+  guides: { available: number; dismissed: boolean } | null
 }
 
 export interface DepartmentFlags {

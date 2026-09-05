@@ -46,6 +46,7 @@ import * as migration_20260903_admin_page_views from "./20260903_admin_page_view
 import * as migration_20260903_discord_servers_workboard_channels from "./20260903_discord_servers_workboard_channels";
 import * as migration_20260903_pug_sa_region from "./20260903_pug_sa_region";
 import * as migration_20260903_faceit_intermediate_division from "./20260903_faceit_intermediate_division";
+import * as migration_20260905_guides from "./20260905_guides";
 
 export const migrations = [
   {
@@ -287,5 +288,10 @@ export const migrations = [
     up: migration_20260904_teams_faceit_withdrawn.up,
     down: migration_20260904_teams_faceit_withdrawn.down,
     name: "20260904_teams_faceit_withdrawn",
+  },
+  {
+    up: migration_20260905_guides.up,
+    down: migration_20260905_guides.down,
+    name: "20260905_guides",
   },
 ];

@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@payloadcms/ui'
-import { AlertTriangle, ArrowRight, CalendarDays, ClipboardList, Inbox, Swords } from 'lucide-react'
+import { AlertTriangle, ArrowRight, CalendarDays, ClipboardList, Inbox, Swords, BookOpen } from 'lucide-react'
 import type { Person } from '@/payload-types'
 import { Badge, EmptyState, ErrorState, LoadingState, SectionCard, StatCard, formatDateTime, formatRelative } from '@/admin-kit'
 import type { BadgeTone } from '@/admin-kit'
@@ -87,6 +87,21 @@ const BeforeDashboard: React.FC = () => {
     if (user?.id) void load()
   }, [user?.id, load])
 
+  const [guideCardHidden, setGuideCardHidden] = useState(false)
+  const dismissGuideCard = async () => {
+    setGuideCardHidden(true)
+    try {
+      await fetch('/api/my-guides/progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ dismissedCard: true }),
+      })
+    } catch {
+      /* the card is hidden for this visit either way */
+    }
+  }
+
   // Same information architecture as the sidebar, read from the viewer's permissions.
   const areas = useMemo(() => {
     if (!user) return []
@@ -124,6 +139,22 @@ const BeforeDashboard: React.FC = () => {
           <CalendarDays size={14} aria-hidden /> Open calendar
         </Link>
       </header>
+
+      {summary?.guides && summary.guides.available > 0 && !summary.guides.dismissed && !guideCardHidden && (
+        <div className="dash__guide-card" role="note">
+          <BookOpen size={18} aria-hidden />
+          <div className="dash__guide-card-text">
+            <strong>New here? Start with your guides.</strong>
+            <span>
+              {summary.guides.available} guide{summary.guides.available === 1 ? '' : 's'} match your role: how the admin works, your tools, and what to do each week. They stay under Me &gt; Guides whenever you need them.
+            </span>
+          </div>
+          <div className="dash__guide-card-actions">
+            <Link href="/admin/guides" className="ps-btn ps-btn-primary">Open guides</Link>
+            <button type="button" className="ps-btn ps-btn-ghost" onClick={() => void dismissGuideCard()}>Hide</button>
+          </div>
+        </div>
+      )}
 
       {error ? (
         <ErrorState message={error} onRetry={() => void load()} />

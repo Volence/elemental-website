@@ -101,6 +101,7 @@ export interface Config {
     'discord-category-templates': DiscordCategoryTemplate;
     'discord-clone-jobs': DiscordCloneJob;
     'discord-servers': DiscordServer;
+    guides: Guide;
     'discord-member-events': DiscordMemberEvent;
     'discord-logged-messages': DiscordLoggedMessage;
     'watched-threads': WatchedThread;
@@ -161,6 +162,7 @@ export interface Config {
     'discord-category-templates': DiscordCategoryTemplatesSelect<false> | DiscordCategoryTemplatesSelect<true>;
     'discord-clone-jobs': DiscordCloneJobsSelect<false> | DiscordCloneJobsSelect<true>;
     'discord-servers': DiscordServersSelect<false> | DiscordServersSelect<true>;
+    guides: GuidesSelect<false> | GuidesSelect<true>;
     'discord-member-events': DiscordMemberEventsSelect<false> | DiscordMemberEventsSelect<true>;
     'discord-logged-messages': DiscordLoggedMessagesSelect<false> | DiscordLoggedMessagesSelect<true>;
     'watched-threads': WatchedThreadsSelect<false> | WatchedThreadsSelect<true>;
@@ -224,9 +226,10 @@ export interface Config {
     'error-harvester-state': ErrorHarvesterStateSelect<false> | ErrorHarvesterStateSelect<true>;
   };
   locale: null;
-  user: Person & {
-    collection: 'people';
+  widgets: {
+    collections: CollectionsWidget;
   };
+  user: Person;
   jobs: {
     tasks: {
       schedulePublish: TaskSchedulePublish;
@@ -733,6 +736,15 @@ export interface Person {
    * Manager approval. With this on, the Twitch link in Social Links puts the person on the Discord live roster and elmt.gg/live. Off by default so registrants cannot add themselves.
    */
   showInLiveStreamers?: boolean | null;
+  guideProgress?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
   email?: string | null;
@@ -751,6 +763,7 @@ export interface Person {
       }[]
     | null;
   password?: string | null;
+  collection: 'people';
 }
 /**
  * Manage all Elemental teams, including rosters, staff, and achievements.
@@ -2897,6 +2910,76 @@ export interface DiscordServer {
   createdAt: string;
 }
 /**
+ * Onboarding and reference guides shown under Me > Guides. Sections support **bold**, bullet lists (- item), numbered lists (1. item) and [links](https://...).
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "guides".
+ */
+export interface Guide {
+  id: number;
+  title: string;
+  /**
+   * Stable id used in links, e.g. team-manager. Lowercase letters, numbers and hyphens.
+   */
+  slug: string;
+  /**
+   * One or two sentences shown on the guide card.
+   */
+  summary?: string | null;
+  /**
+   * Lower numbers show first.
+   */
+  order?: number | null;
+  /**
+   * Unpublished guides are only visible to admins.
+   */
+  published?: boolean | null;
+  /**
+   * Who sees this guide. A person sees it when any ticked role or department matches them. Admins always see every guide.
+   */
+  audience?: {
+    everyone?: boolean | null;
+    roles?: {
+      admin?: boolean | null;
+      staffManager?: boolean | null;
+      teamManager?: boolean | null;
+      player?: boolean | null;
+      user?: boolean | null;
+    };
+    departments?: {
+      production?: boolean | null;
+      socialMedia?: boolean | null;
+      graphics?: boolean | null;
+      video?: boolean | null;
+      events?: boolean | null;
+      scouting?: boolean | null;
+      contentCreator?: boolean | null;
+      pugAdmin?: boolean | null;
+    };
+  };
+  /**
+   * Short, task-sized steps. Each can carry one screenshot and one "Go there" link.
+   */
+  sections?:
+    | {
+        heading: string;
+        /**
+         * Plain text with **bold**, - bullets, 1. numbered steps and [links](/admin/...).
+         */
+        body?: string | null;
+        linkLabel?: string | null;
+        linkHref?: string | null;
+        /**
+         * Optional screenshot.
+         */
+        image?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "discord-member-events".
  */
@@ -3628,6 +3711,10 @@ export interface PayloadLockedDocument {
         value: number | DiscordServer;
       } | null)
     | ({
+        relationTo: 'guides';
+        value: number | Guide;
+      } | null)
+    | ({
         relationTo: 'discord-member-events';
         value: number | DiscordMemberEvent;
       } | null)
@@ -3902,6 +3989,7 @@ export interface PeopleSelect<T extends boolean = true> {
   isInactive?: T;
   mergedInto?: T;
   showInLiveStreamers?: T;
+  guideProgress?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -4824,6 +4912,55 @@ export interface DiscordServersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "guides_select".
+ */
+export interface GuidesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  summary?: T;
+  order?: T;
+  published?: T;
+  audience?:
+    | T
+    | {
+        everyone?: T;
+        roles?:
+          | T
+          | {
+              admin?: T;
+              staffManager?: T;
+              teamManager?: T;
+              player?: T;
+              user?: T;
+            };
+        departments?:
+          | T
+          | {
+              production?: T;
+              socialMedia?: T;
+              graphics?: T;
+              video?: T;
+              events?: T;
+              scouting?: T;
+              contentCreator?: T;
+              pugAdmin?: T;
+            };
+      };
+  sections?:
+    | T
+    | {
+        heading?: T;
+        body?: T;
+        linkLabel?: T;
+        linkHref?: T;
+        image?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "discord-member-events_select".
  */
 export interface DiscordMemberEventsSelect<T extends boolean = true> {
@@ -5693,6 +5830,16 @@ export interface ErrorHarvesterStateSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "collections_widget".
+ */
+export interface CollectionsWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'full';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

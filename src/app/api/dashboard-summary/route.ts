@@ -10,6 +10,7 @@ import {
   type ScrimLite,
   type TaskLite,
 } from '@/components/BeforeDashboard/summary'
+import { guideMatchesViewer } from '@/guides/audience'
 
 const UPCOMING_DAYS = 14
 const LIMITED_ROLES = ['player', 'user']
@@ -141,6 +142,16 @@ export async function GET(request: NextRequest) {
     }))
   }
 
+  // Guides that fit this viewer, for the "start with your guide" card.
+  let guides: DashboardSummary['guides'] = null
+  try {
+    const all = await payload.find({ collection: 'guides' as any, where: { published: { equals: true } }, limit: 100, depth: 0, overrideAccess: true })
+    const available = (all.docs as any[]).filter((g) => guideMatchesViewer(g.audience, u)).length
+    guides = { available, dismissed: u.guideProgress?.dismissedCard === true }
+  } catch {
+    guides = null
+  }
+
   let attention: DashboardSummary['attention'] = null
   if (isAdmin) {
     const [errors, cron, overdueAll] = await Promise.all([
@@ -174,6 +185,7 @@ export async function GET(request: NextRequest) {
     },
     recentScrims,
     attention,
+    guides,
   }
 
   return NextResponse.json(summary, { headers: { 'Cache-Control': 'private, no-store' } })

@@ -48,11 +48,11 @@ describe('buildNavAreas', () => {
   it('gives an admin every area, with Media and dashboard-embedded collections left out', () => {
     const areas = labels(buildNavAreas({ user: admin, collections: ALL_COLLECTIONS, globals: ALL_GLOBALS }))
     expect(Object.keys(areas)).toEqual(['me', 'people', 'competition', 'departments', 'organization', 'system'])
-    expect(areas.me).toEqual(['My Profile', 'My Stats', 'Calendar'])
+    expect(areas.me).toEqual(['My Profile', 'Guides', 'My Stats', 'Calendar'])
     expect(areas.people).toEqual(['People', 'Teams', 'Staff', 'Identity', 'Identity Claims'])
     expect(Object.values(areas).flat()).not.toContain('Invite Links')
     expect(Object.values(areas).flat()).not.toContain('Pages')
-    expect(areas.competition).toEqual(['Scrim Analytics', 'PUG Dashboard', 'FaceIt Leagues', 'Heroes & Maps'])
+    expect(areas.competition).toEqual(['Scrim Analytics', 'PUG Dashboard', 'FaceIt', 'Heroes & Maps'])
     expect(areas.departments).toEqual(['Production', 'Social Media', 'Graphics', 'Video', 'Events', 'Files'])
     expect(areas.system).toEqual(['System Health', 'Discord Server Manager'])
     const all = Object.values(areas).flat()
@@ -64,7 +64,7 @@ describe('buildNavAreas', () => {
   it('gives a player only Me, Teams and their own scrim teams', () => {
     const areas = buildNavAreas({ user: player, collections: ['teams'], globals: [] })
     expect(labels(areas)).toEqual({
-      me: ['My Profile', 'My Stats'],
+      me: ['My Profile', 'Guides', 'My Stats'],
       people: ['Teams'],
       competition: ['Scrim Analytics', 'Fire', 'Team #4'],
     })
