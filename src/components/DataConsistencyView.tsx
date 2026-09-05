@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useAuth } from '@payloadcms/ui'
 import { useConfirm } from '@/components/ConfirmDialog'
 import type { Person } from '@/payload-types'
-import { UserRole } from '@/access/roles'
+import { useAccess } from '@/access/useAccess'
 import { LoadingState } from './DataConsistency/LoadingState'
 import { AccessDenied } from './DataConsistency/AccessDenied'
 import { DataConsistencyHeader } from './DataConsistency/DataConsistencyHeader'
@@ -29,6 +29,7 @@ interface DetailedIssue {
 
 const DataConsistencyView: React.FC = () => {
   const { user } = useAuth<Person>()
+  const { access } = useAccess()
   const confirm = useConfirm()
   const [issues, setIssues] = useState<DetailedIssue[]>([])
   const [loading, setLoading] = useState(true)
@@ -36,7 +37,7 @@ const DataConsistencyView: React.FC = () => {
   const [fixResult, setFixResult] = useState<string | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
 
-  const isAdmin = user?.role === UserRole.ADMIN
+  const isAdmin = access?.isAdmin ?? false
 
   useEffect(() => {
     // Wait for user to load

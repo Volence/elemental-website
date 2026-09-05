@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
   const isAdmin = access.isAdmin
   const limited = !access.canManagePeople
   const teamIds = [...access.teamIds]
-  const departments = departmentsFor(role, u.departments)
+  const departments = departmentsFor(access)
 
   const now = new Date()
   const nowIso = now.toISOString()

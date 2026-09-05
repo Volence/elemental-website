@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useAuth } from '@payloadcms/ui'
-import type { Person } from '@/payload-types'
+import { useAccess } from '@/access/useAccess'
 import './InviteLinksListView.scss'
 
 interface InviteLink {
@@ -78,14 +77,13 @@ function StatusDropdown({ value, onChange }: { value: string; onChange: (v: stri
 }
 
 export default function InviteLinksListView() {
-  const { user } = useAuth<Person>()
+  const { access } = useAccess()
   const [invites, setInvites] = useState<InviteLink[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
 
-  const role = (user?.role as string) ?? ''
-  const canCreate = role === 'admin' || role === 'staff-manager' || role === 'team-manager'
+  const canCreate = access?.canManagePeople ?? false
 
   useEffect(() => {
     fetchInvites()

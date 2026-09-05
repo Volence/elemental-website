@@ -6,8 +6,7 @@ import { Search, Trash2, ChevronRight, Edit3, Users, X, BarChart3 } from 'lucide
 import ScrimAnalyticsTabs from '@/components/ScrimAnalyticsTabs'
 import { ScrimBreadcrumbs } from '@/components/ScrimShared'
 import { canUploadScrims } from '@/components/ScrimAnalyticsTabs/access'
-import { useAuth } from '@payloadcms/ui'
-import type { Person } from '@/payload-types'
+import { useAccess } from '@/access/useAccess'
 
 interface ScrimMap {
   id: number
@@ -80,8 +79,8 @@ const toEntries = (scrims: Scrim[], teamId: number): ScrimEntry[] =>
  * Accessible at /admin/scrims.
  */
 export default function ScrimListView() {
-  const { user: scrimListUser } = useAuth<Person>()
-  const canUpload = canUploadScrims(scrimListUser)
+  const { access: scrimListAccess } = useAccess()
+  const canUpload = canUploadScrims(scrimListAccess)
   // Browse mode: collapsed team rows + lazily-loaded scrims per team.
   const [teams, setTeams] = useState<TeamSummary[]>([])
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set())

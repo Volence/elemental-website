@@ -1,122 +1,19 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAdminUser } from './adminAuth'
 import { extractPersonId } from './personHelpers'
+import { isTitleValue, titleLabel, TITLE_BY_VALUE, type TitleValue } from '@/access/titles'
 
 /**
  * Admin Data Fetching Hooks
- * 
+ *
  * Provides reusable hooks for fetching common data in admin components.
- * Reduces duplication across AssignedTeamsBanner and friends.
  */
 
 /**
- * Team data returned by useAssignedTeams
- */
-export interface AssignedTeam {
-  id: number
-  name: string
-  slug?: string
-  logo?: string
-}
-
-/**
- * Hook to fetch assigned teams for the current user
- * 
- * Used by:
- * - kept for team-manager surfaces that need the resolved team names
- * 
- * @returns Object with teams array, loading state, and error
- */
-export function useAssignedTeams() {
-  const user = useAdminUser()
-  const [teams, setTeams] = useState<AssignedTeam[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!user) {
-      setTeams([])
-      setLoading(false)
-      return
-    }
-
-    const fetchTeams = async () => {
-      try {
-        const userAssignedTeams = user.assignedTeams
-        
-        // If no assigned teams, return empty
-        if (!userAssignedTeams || !Array.isArray(userAssignedTeams) || userAssignedTeams.length === 0) {
-          setTeams([])
-          setLoading(false)
-          return
-        }
-
-        // Extract team IDs
-        const teamIds = userAssignedTeams
-          .map((team: any) => (typeof team === 'number' ? team : team?.id || team))
-          .filter((id): id is number => typeof id === 'number')
-
-        if (teamIds.length === 0) {
-          setTeams([])
-          setLoading(false)
-          return
-        }
-
-        // Fetch team details
-        const response = await fetch(
-          `/api/teams?where[id][in]=${teamIds.join(',')}&limit=${teamIds.length}`,
-          { credentials: 'include' }
-        )
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch assigned teams')
-        }
-
-        const data = await response.json()
-        const fetchedTeams: AssignedTeam[] = (data.docs || []).map((team: any) => {
-          // Extract logo URL from upload relationship (prefer filename for static path)
-          let logoUrl = '/logos/org.png'
-          if (team.logo) {
-            if (typeof team.logo === 'string') {
-              logoUrl = team.logo // Legacy string format
-            } else if (typeof team.logo === 'object') {
-              // Prefer filename-based static path
-              if (team.logo.filename) {
-                logoUrl = `/graphics-assets/${team.logo.filename}`
-              } else if (team.logo.url) {
-                logoUrl = team.logo.url
-              }
-            }
-          }
-          
-          return {
-            id: team.id,
-            name: team.name || 'Untitled Team',
-            slug: team.slug,
-            logo: logoUrl,
-          }
-        })
-
-        setTeams(fetchedTeams)
-      } catch (err) {
-        console.error('Error fetching assigned teams:', err)
-        setError(err instanceof Error ? err.message : 'Failed to fetch teams')
-        setTeams([])
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchTeams()
-  }, [user])
-
-  return { teams, loading, error }
-}
-
-/**
- * Person relationships data structure
+ * Person relationships data structure. `orgStaff` and `production` used to come from the
+ * now-retired organization-staff/production collections; they read `person.titles` instead,
+ * one synthesized entry per title in that group (see titles.ts for the group taxonomy).
  */
 export interface PersonRelationships {
   teams: Array<{ id: number; name: string; roles: string[] }>
@@ -126,10 +23,10 @@ export interface PersonRelationships {
 
 /**
  * Hook to fetch all relationships for a person
- * 
+ *
  * Used by:
  * - PersonRelationships component (shows on People edit page)
- * 
+ *
  * @param personId - The ID of the person to fetch relationships for
  * @returns Object with relationships, loading state, and error
  */
@@ -153,20 +50,17 @@ export function usePersonRelationships(personId: number | string | null | undefi
       try {
         const id = typeof personId === 'string' ? parseInt(personId, 10) : personId
 
-        // Fetch all teams and check if this person is in them
-        const [teamsResponse, orgStaffResponse, productionResponse] = await Promise.all([
+        const [teamsResponse, personResponse] = await Promise.all([
           fetch(`/api/teams?limit=1000`, { credentials: 'include' }),
-          fetch(`/api/organization-staff?where[person][equals]=${id}&limit=1000`, { credentials: 'include' }),
-          fetch(`/api/production?where[person][equals]=${id}&limit=1000`, { credentials: 'include' }),
+          fetch(`/api/people/${id}?depth=0`, { credentials: 'include' }),
         ])
 
         const teamsData = teamsResponse.ok ? await teamsResponse.json() : { docs: [] }
-        const orgStaffData = orgStaffResponse.ok ? await orgStaffResponse.json() : { docs: [] }
-        const productionData = productionResponse.ok ? await productionResponse.json() : { docs: [] }
+        const person = personResponse.ok ? await personResponse.json() : null
 
         // Process teams
         const personTeams: Array<{ id: number; name: string; roles: string[] }> = []
-        
+
         teamsData.docs.forEach((team: any) => {
           const roles: string[] = []
 
@@ -186,17 +80,16 @@ export function usePersonRelationships(personId: number | string | null | undefi
           }
         })
 
-        // Process org staff
-        const orgStaff = orgStaffData.docs.map((staff: any) => ({
-          id: staff.id,
-          roles: staff.roles || [],
-        }))
-
-        // Process production
-        const production = productionData.docs.map((prod: any) => ({
-          id: prod.id,
-          type: prod.type || 'Unknown',
-        }))
+        // Titles in the 'organization' or 'department' groups read as org staff, one
+        // synthesized row per title (no separate collection id any more, so index-based).
+        const titles = ((person?.titles ?? []) as Array<{ title?: string | null; isLead?: boolean | null }>)
+          .filter((t): t is { title: TitleValue; isLead?: boolean | null } => isTitleValue(t.title))
+        const orgStaff = titles
+          .filter((t) => TITLE_BY_VALUE[t.title].group === 'organization' || TITLE_BY_VALUE[t.title].group === 'department')
+          .map((t, i) => ({ id: i, roles: [titleLabel({ title: t.title, isLead: t.isLead })] }))
+        const production = titles
+          .filter((t) => TITLE_BY_VALUE[t.title].group === 'production')
+          .map((t, i) => ({ id: i, type: titleLabel({ title: t.title, isLead: t.isLead }) }))
 
         setRelationships({
           teams: personTeams,
@@ -229,8 +122,8 @@ export interface DashboardStats {
   teams: number
   people: number
   matches: number
-  orgStaff: number
-  production: number
+  /** People with at least one title (replaces the old organization-staff + production counts). */
+  peopleWithTitles: number
   upcomingMatches: number
 }
 
@@ -243,19 +136,17 @@ export function useDashboardStats() {
     const fetchStats = async () => {
       try {
         // Fetch all stats in parallel
-        const [teamsRes, peopleRes, matchesRes, orgStaffRes, productionRes] = await Promise.all([
+        const [teamsRes, peopleRes, matchesRes, titledRes] = await Promise.all([
           fetch('/api/teams?limit=1', { credentials: 'include' }),
           fetch('/api/people?limit=1', { credentials: 'include' }),
           fetch('/api/matches?limit=1', { credentials: 'include' }),
-          fetch('/api/organization-staff?limit=1', { credentials: 'include' }),
-          fetch('/api/production?limit=1', { credentials: 'include' }),
+          fetch('/api/people?where[titles.title][exists]=true&limit=1', { credentials: 'include' }),
         ])
 
         const teamsData = teamsRes.ok ? await teamsRes.json() : { totalDocs: 0 }
         const peopleData = peopleRes.ok ? await peopleRes.json() : { totalDocs: 0 }
         const matchesData = matchesRes.ok ? await matchesRes.json() : { totalDocs: 0 }
-        const orgStaffData = orgStaffRes.ok ? await orgStaffRes.json() : { totalDocs: 0 }
-        const productionData = productionRes.ok ? await productionRes.json() : { totalDocs: 0 }
+        const titledData = titledRes.ok ? await titledRes.json() : { totalDocs: 0 }
 
         // Get upcoming matches count
         let upcomingMatches = 0
@@ -275,8 +166,7 @@ export function useDashboardStats() {
           teams: teamsData.totalDocs || 0,
           people: peopleData.totalDocs || 0,
           matches: matchesData.totalDocs || 0,
-          orgStaff: orgStaffData.totalDocs || 0,
-          production: productionData.totalDocs || 0,
+          peopleWithTitles: titledData.totalDocs || 0,
           upcomingMatches,
         })
       } catch (err) {

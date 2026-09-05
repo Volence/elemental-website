@@ -1,36 +1,29 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { useAuth, useField } from '@payloadcms/ui'
-import { UserRole } from '@/access/roles'
+import { useField } from '@payloadcms/ui'
+import { useAccess } from '@/access/useAccess'
 
 export const TeamRelationshipField: React.FC<any> = (props) => {
-  const { user } = useAuth()
+  const { access } = useAccess()
   const { value, setValue } = useField({ path: props.path })
   const [teams, setTeams] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (!access) return
     const fetchTeams = async () => {
       try {
         const response = await fetch('/api/teams?limit=100')
         const data = await response.json()
-        
+
         let filteredTeams = data.docs || []
-        
-        // Team managers can only see their assigned teams
-        if (user?.role === UserRole.TEAM_MANAGER) {
-          const assignedTeams = user.assignedTeams
-          if (assignedTeams && Array.isArray(assignedTeams)) {
-            const teamIds = assignedTeams.map((team: any) =>
-              typeof team === 'number' ? team : team?.id || team,
-            )
-            filteredTeams = filteredTeams.filter((team: any) => teamIds.includes(team.id))
-          } else {
-            filteredTeams = []
-          }
+
+        // Team-scoped (non-staff) people can only see their own teams
+        if (!access.canManagePeople && access.teamIds.size > 0) {
+          filteredTeams = filteredTeams.filter((team: any) => access.teamIds.has(Number(team.id)))
         }
-        
+
         setTeams(filteredTeams)
       } catch (error) {
         console.error('Error fetching teams:', error)
@@ -40,7 +33,7 @@ export const TeamRelationshipField: React.FC<any> = (props) => {
     }
 
     fetchTeams()
-  }, [user])
+  }, [access])
 
   if (loading) {
     return <div>Loading teams...</div>

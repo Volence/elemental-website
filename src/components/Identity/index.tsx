@@ -2,8 +2,7 @@
 
 import React, { lazy, Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { useAuth } from '@payloadcms/ui'
-import type { Person } from '@/payload-types'
+import { useAccess } from '@/access/useAccess'
 import UnlinkedTab from './UnlinkedTab'
 import ClaimsTab from './ClaimsTab'
 
@@ -18,8 +17,8 @@ const ALL_TABS: Array<{ id: TabId; label: string }> = [
 
 export const IdentityView: React.FC = () => {
   const params = useSearchParams()
-  const { user } = useAuth<Person>()
-  const isAdmin = (user as any)?.role === 'admin'
+  const { access } = useAccess()
+  const isAdmin = access?.isAdmin ?? false
   const TABS = isAdmin ? ALL_TABS : ALL_TABS.filter((t) => t.id !== 'merge')
   const [tab, setTab] = useState<TabId>('unlinked')
   const [merge, setMerge] = useState<{ targetId?: number; sourceId?: number }>({})

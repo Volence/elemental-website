@@ -1,8 +1,10 @@
 /**
  * Shared types and pure helpers for the admin dashboard. The API route builds a
  * DashboardSummary in one request; the dashboard renders it. No React or Payload
- * imports here so the helpers are unit-testable.
+ * imports here so the helpers are unit-testable. `DEPARTMENT_KEYS`/`DepartmentKey` are
+ * plain-data imports from `@/access/titles` (also React/Payload-free).
  */
+import { DEPARTMENT_KEYS, type DepartmentKey } from '@/access/titles'
 
 export type Department = 'production' | 'social-media' | 'graphics' | 'video' | 'events' | 'scouting'
 
@@ -78,28 +80,30 @@ export interface DashboardSummary {
   guides: { available: number; dismissed: boolean } | null
 }
 
-export interface DepartmentFlags {
-  isProductionStaff?: boolean | null
-  isSocialMediaStaff?: boolean | null
-  isGraphicsStaff?: boolean | null
-  isVideoStaff?: boolean | null
-  isEventsStaff?: boolean | null
-  isScoutingStaff?: boolean | null
+/** The slice of ResolvedAccess this needs - kept structural so this stays a pure, dependency-light module. */
+export interface DepartmentAccessLike {
+  canManagePeople: boolean
+  departments: Record<DepartmentKey, 'none' | 'member' | 'lead'>
 }
 
-const FLAG_TO_DEPARTMENT: Array<[keyof DepartmentFlags, Department]> = [
-  ['isProductionStaff', 'production'],
-  ['isSocialMediaStaff', 'social-media'],
-  ['isGraphicsStaff', 'graphics'],
-  ['isVideoStaff', 'video'],
-  ['isEventsStaff', 'events'],
-  ['isScoutingStaff', 'scouting'],
-]
+// DEPARTMENT_KEYS (the access model) -> this dashboard's task department names. 'pug' has no
+// task department here.
+const DEPT_KEY_TO_TASK_DEPARTMENT: Partial<Record<DepartmentKey, Department>> = {
+  production: 'production',
+  social: 'social-media',
+  graphics: 'graphics',
+  video: 'video',
+  events: 'events',
+  scouting: 'scouting',
+}
 
 /** Departments whose request queue this person should see. Managers see every department. */
-export function departmentsFor(role: string | null | undefined, flags: DepartmentFlags | null | undefined): Department[] {
-  if (role === 'admin' || role === 'staff-manager') return [...ALL_DEPARTMENTS]
-  return FLAG_TO_DEPARTMENT.filter(([flag]) => flags?.[flag] === true).map(([, dept]) => dept)
+export function departmentsFor(access: DepartmentAccessLike | null | undefined): Department[] {
+  if (!access) return []
+  if (access.canManagePeople) return [...ALL_DEPARTMENTS]
+  return DEPARTMENT_KEYS.filter((k) => access.departments[k] !== 'none')
+    .map((k) => DEPT_KEY_TO_TASK_DEPARTMENT[k])
+    .filter((d): d is Department => d !== undefined)
 }
 
 /**

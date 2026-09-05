@@ -1,13 +1,13 @@
 import { DefaultTemplate } from '@payloadcms/next/templates'
 import type { AdminViewServerProps } from 'payload'
-import React from 'react'
 import { redirect } from 'next/navigation'
 import { IdentityView } from '@/components/Identity'
+import { accessForAdminRoute } from '@/access/serverAccess'
 
-const IdentityRoute: React.FC<AdminViewServerProps> = ({ initPageResult, params, searchParams }) => {
+const IdentityRoute = async ({ initPageResult, params, searchParams }: AdminViewServerProps) => {
   const user = initPageResult.req.user
-  const role = (user as any)?.role as string | undefined
-  if (!user || (role !== 'admin' && role !== 'staff-manager')) redirect('/admin')
+  const access = await accessForAdminRoute(initPageResult)
+  if (!user || !access?.canManagePeople) redirect('/admin')
 
   return (
     <DefaultTemplate

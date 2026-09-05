@@ -2,7 +2,8 @@ import React from 'react'
 import type { PayloadRequest, ServerProps } from 'payload'
 import { PREFERENCE_KEYS } from 'payload/shared'
 import { Logout } from '@payloadcms/ui'
-import { buildNavAreas, type NavUserLike } from './buildNav'
+import { resolveAccessForUser } from '@/access'
+import { buildNavAreas } from './buildNav'
 import { AdminNavClient } from './AdminNavClient'
 
 type VisibleEntitiesLike = { collections?: string[]; globals?: string[] }
@@ -36,7 +37,9 @@ export default async function AdminNav(props: AdminNavProps) {
       .filter(([, p]) => p?.read)
       .map(([slug]) => slug)
 
-  const areas = buildNavAreas({ user: user as unknown as NavUserLike, collections, globals })
+  const access = await resolveAccessForUser(payload, user as any)
+  if (!access) return null
+  const areas = buildNavAreas({ access, collections, globals })
 
   let groupPrefs: Record<string, { open?: boolean } | undefined> = {}
   try {

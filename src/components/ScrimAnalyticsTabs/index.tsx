@@ -3,10 +3,10 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useAuth } from '@payloadcms/ui'
 import { BarChart3, Upload, Users, Shield, Flag, LayoutDashboard } from 'lucide-react'
-import type { Person } from '@/payload-types'
+import { useAccess } from '@/access/useAccess'
 import { resolveScrimTab, SCRIM_TAB_HREFS, type ScrimTab } from './resolve'
+import { canUploadScrims } from './access'
 
 export type { ScrimTab } from './resolve'
 
@@ -21,13 +21,9 @@ interface ScrimAnalyticsTabsProps {
  */
 export default function ScrimAnalyticsTabs(_props: ScrimAnalyticsTabsProps) {
   const pathname = usePathname()
-  const { user } = useAuth<Person>()
-  const role = (user?.role as string) ?? ''
+  const { access } = useAccess()
   // Must match ScrimUpload/Route.tsx's guard - a tab that redirects away is worse than none
-  const canUpload =
-    ['admin', 'staff-manager', 'team-manager'].includes(role) ||
-    (user as { departments?: { canUploadExternalScrims?: boolean | null } | null } | null)?.departments
-      ?.canUploadExternalScrims === true
+  const canUpload = canUploadScrims(access)
 
   const active = resolveScrimTab(pathname)
 

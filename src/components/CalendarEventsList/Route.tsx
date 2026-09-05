@@ -1,14 +1,14 @@
 import { DefaultTemplate } from '@payloadcms/next/templates'
 import type { AdminViewServerProps } from 'payload'
-import React from 'react'
 import { redirect } from 'next/navigation'
 import CalendarEventsListView from '@/components/CalendarEventsList'
+import { accessForAdminRoute } from '@/access/serverAccess'
 
 /** /admin/calendar-events: the org calendar's event list. Hidden from players, like the collection. */
-const CalendarEventsListRoute: React.FC<AdminViewServerProps> = ({ initPageResult, params, searchParams }) => {
+const CalendarEventsListRoute = async ({ initPageResult, params, searchParams }: AdminViewServerProps) => {
   const user = initPageResult.req.user
-  const role = (user as { role?: string } | null)?.role ?? ''
-  if (!user || role === 'player' || role === 'user') redirect('/admin')
+  const access = await accessForAdminRoute(initPageResult)
+  if (!user || !access?.canManagePeople) redirect('/admin')
 
   return (
     <DefaultTemplate

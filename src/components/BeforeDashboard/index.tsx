@@ -8,6 +8,7 @@ import type { Person } from '@/payload-types'
 import { Badge, EmptyState, ErrorState, LoadingState, SectionCard, StatCard, formatDateTime, formatRelative } from '@/admin-kit'
 import type { BadgeTone } from '@/admin-kit'
 import { buildNavAreas, type NavArea } from '@/components/AdminNav/buildNav'
+import { useAccess } from '@/access/useAccess'
 import { taskHref } from '@/components/UnifiedCalendar/range'
 import { DEPARTMENT_LABEL, greeting, isOverdue, mergeUpcoming, type DashboardSummary, type Department, type TaskLite } from './summary'
 
@@ -64,6 +65,7 @@ function AreasGrid({ areas }: { areas: NavArea[] }) {
  */
 const BeforeDashboard: React.FC = () => {
   const { user, permissions } = useAuth<Person>()
+  const { access } = useAccess()
   const [summary, setSummary] = useState<DashboardSummary | null>(null)
   const [error, setError] = useState<string | null>(null)
   // Viewer-local hour, known only after mount (see greeting()).
@@ -104,19 +106,19 @@ const BeforeDashboard: React.FC = () => {
 
   // Same information architecture as the sidebar, read from the viewer's permissions.
   const areas = useMemo(() => {
-    if (!user) return []
+    if (!access) return []
     const readable = (map: Record<string, { read?: unknown } | undefined> | undefined) =>
       Object.entries(map ?? {})
         .filter(([, p]) => Boolean(p?.read))
         .map(([slug]) => slug)
     return buildNavAreas({
-      user: user as any,
+      access,
       collections: readable(permissions?.collections as any),
       globals: readable(permissions?.globals as any),
     }).filter((a) => a.id !== 'me')
-  }, [user, permissions])
+  }, [access, permissions])
 
-  if (!user) return null
+  if (!user || !access) return null
 
   const upcoming = summary ? mergeUpcoming(summary.upcoming.matches, summary.upcoming.events) : []
 

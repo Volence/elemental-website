@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react'
 import { DialogA11y } from '@/admin-kit'
-import { useAuth } from '@payloadcms/ui'
+import { useAccess } from '@/access/useAccess'
 import Link from 'next/link'
 import { ExternalLink, Search, ChevronLeft, ChevronRight, X, Info } from 'lucide-react'
 import { getPostTypeColor } from '@/utilities/socialPostTypes'
@@ -28,8 +28,8 @@ const personName = (p: SocialPost['assignedTo']) =>
  * as workboard tasks and show up on the calendar.
  */
 export function SocialPostsTab() {
-  const { user } = useAuth()
-  const isAdmin = user?.role === 'admin' || user?.role === 'staff-manager'
+  const { access } = useAccess()
+  const isAdmin = access?.departments.social === 'lead'
   const [posts, setPosts] = useState<SocialPost[]>([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)

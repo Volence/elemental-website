@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { useDocumentInfo, useAuth } from '@payloadcms/ui'
+import { useAccess } from '@/access/useAccess'
 
 /**
  * UI field component shown on User edit pages.
@@ -12,13 +13,14 @@ import { useDocumentInfo, useAuth } from '@payloadcms/ui'
 const LinkDiscordButton: React.FC = () => {
   const { id } = useDocumentInfo()
   const { user: currentUser } = useAuth()
-  
+  const { access } = useAccess()
+
   const [discordId, setDiscordId] = React.useState<string | null>(null)
   const [loading, setLoading] = React.useState(true)
 
-  // Only show on your own profile (non-admins) or always for admins viewing any profile
+  // Only show on your own profile, or always for staff viewing any profile
   const isOwnProfile = currentUser?.id === id
-  const isAdmin = (currentUser as any)?.role === 'admin'
+  const isAdmin = access?.canManagePeople ?? false
 
   React.useEffect(() => {
     const fetchUser = async () => {

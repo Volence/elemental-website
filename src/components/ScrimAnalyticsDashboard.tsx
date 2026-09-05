@@ -17,6 +17,7 @@ import type { Person } from '@/payload-types'
 import ScrimAnalyticsTabs from '@/components/ScrimAnalyticsTabs'
 import { LoadingCard, EmptyCard, StatCard, ScrimBreadcrumbs } from '@/components/ScrimShared'
 import { canUploadScrims } from '@/components/ScrimAnalyticsTabs/access'
+import { useAccess } from '@/access/useAccess'
 import { SCRIM_COLORS } from '@/components/ScrimShared/tokens'
 
 interface TeamRow {
@@ -38,6 +39,7 @@ interface RecentScrim {
 
 export default function ScrimAnalyticsDashboard() {
   const { user } = useAuth<Person>()
+  const { access } = useAccess()
   const [teams, setTeams] = useState<TeamRow[] | null>(null)
   const [recent, setRecent] = useState<RecentScrim[] | null>(null)
 
@@ -86,7 +88,7 @@ export default function ScrimAnalyticsDashboard() {
             <EmptyCard
               message="No scrims in your scope yet"
               hint={
-                canUploadScrims(user)
+                canUploadScrims(access)
                   ? 'Upload a log from the Upload tab to get started'
                   : 'Scrims appear here once your team manager uploads a log'
               }

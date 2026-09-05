@@ -2,9 +2,8 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { useAuth } from '@payloadcms/ui'
 import { CalendarRange, Plus } from 'lucide-react'
-import type { Person } from '@/payload-types'
+import { useAccess } from '@/access/useAccess'
 import {
   AdminPage,
   AdminPageHeader,
@@ -48,7 +47,7 @@ const teamName = (t: ScheduleRow['team']) => (typeof t === 'object' && t ? t.nam
  * list and the "my teams / all teams" dropdown with a plain toggle.
  */
 export default function SchedulesListView() {
-  const { user } = useAuth<Person>()
+  const { access } = useAccess()
   const [rows, setRows] = useState<ScheduleRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -58,12 +57,8 @@ export default function SchedulesListView() {
   const [team, setTeam] = useUrlParamState('team', 'all')
   const [mineParam, setMine] = useUrlParamState('mine', '0')
 
-  const role = (user?.role as string) ?? ''
-  const canCreate = ['admin', 'staff-manager', 'team-manager'].includes(role)
-  const assignedIds = useMemo(
-    () => ((user?.assignedTeams ?? []) as Array<number | { id: number }>).map((t) => (typeof t === 'object' ? t.id : t)),
-    [user?.assignedTeams],
-  )
+  const canCreate = access?.canManagePeople ?? false
+  const assignedIds = useMemo(() => (access ? [...access.teamIds] : []), [access])
   const mine = mineParam === '1'
 
   const load = useCallback(async () => {

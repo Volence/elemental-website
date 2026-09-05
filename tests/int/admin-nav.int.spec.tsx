@@ -1,7 +1,8 @@
 import React from 'react'
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen, cleanup } from '@testing-library/react'
-import { buildNavAreas, resolveActiveItemId, DASHBOARD_ITEM, type NavUserLike } from '@/components/AdminNav/buildNav'
+import { buildNavAreas, resolveActiveItemId, DASHBOARD_ITEM } from '@/components/AdminNav/buildNav'
+import { resolveAccess } from '@/access'
 
 let pathname = '/admin'
 let search = ''
@@ -37,16 +38,20 @@ const ALL_COLLECTIONS = [
 ]
 const ALL_GLOBALS = ['production-dashboard', 'social-media-settings', 'discord-server-manager', 'system-health']
 
-const admin: NavUserLike = { id: 1, role: 'admin' }
-const player: NavUserLike = { id: 7, role: 'player', assignedTeams: [{ id: 3, name: 'Fire' }, 4] }
-const staffManager: NavUserLike = { id: 2, role: 'staff-manager' }
+// Real resolver output, not hand-rolled fixtures: buildNavAreas is exercised the same way
+// the app calls it, off a ResolvedAccess.
+const adminAccess = resolveAccess({ id: 1, role: 'admin' }, [])
+const staffManagerAccess = resolveAccess({ id: 2, role: 'staff-manager' }, [])
+// No manager/coach/captain/region-lead standing - just the plain teamAccess list, the only
+// way a non-staff person gets team-scoped access in the resolved model.
+const teamAccessPerson = resolveAccess({ id: 7, role: 'user', teamAccess: [3, 4] }, [])
 
 const labels = (areas: ReturnType<typeof buildNavAreas>) =>
   Object.fromEntries(areas.map((a) => [a.id, a.items.map((i) => i.label)]))
 
 describe('buildNavAreas', () => {
   it('gives an admin every area, with Media and dashboard-embedded collections left out', () => {
-    const areas = labels(buildNavAreas({ user: admin, collections: ALL_COLLECTIONS, globals: ALL_GLOBALS }))
+    const areas = labels(buildNavAreas({ access: adminAccess, collections: ALL_COLLECTIONS, globals: ALL_GLOBALS }))
     expect(Object.keys(areas)).toEqual(['me', 'people', 'competition', 'departments', 'organization', 'system'])
     expect(areas.me).toEqual(['My Profile', 'Guides', 'My Stats', 'Calendar'])
     expect(areas.people).toEqual(['People', 'Teams', 'Staff', 'Identity', 'Identity Claims'])
@@ -61,38 +66,40 @@ describe('buildNavAreas', () => {
     expect(all).not.toContain('Social Posts')
   })
 
-  it('gives a player only Me, Teams and their own scrim teams', () => {
-    const areas = buildNavAreas({ user: player, collections: ['teams'], globals: [] })
+  it('gives a team-access (non-staff) person only Me, Teams and their own scrim teams', () => {
+    const areas = buildNavAreas({ access: teamAccessPerson, collections: ['teams'], globals: [] })
     expect(labels(areas)).toEqual({
-      me: ['My Profile', 'Guides', 'My Stats'],
+      me: ['My Profile', 'Guides', 'My Stats', 'Calendar'],
       people: ['Teams'],
-      competition: ['Scrim Analytics', 'Fire', 'Team #4'],
+      // Team names are not part of the resolved access model; team links fall back to their id.
+      competition: ['Scrim Analytics', 'Team #3', 'Team #4'],
     })
-    const fire = areas.find((a) => a.id === 'competition')!.items[1]
-    expect(fire.href).toBe('/admin/scrim-team?teamId=3')
+    const firstTeamLink = areas.find((a) => a.id === 'competition')!.items[1]
+    expect(firstTeamLink.href).toBe('/admin/scrim-team?teamId=3')
   })
 
   it('respects visibility: no entry for a collection Payload hides', () => {
-    const areas = labels(buildNavAreas({ user: staffManager, collections: ['people'], globals: [] }))
-    expect(areas.people).toEqual(['People', 'Identity'])
-    expect(buildNavAreas({ user: staffManager, collections: ['people'], globals: [] })[1].items[0].href).toBe('/admin/collections/people')
+    const areas = labels(buildNavAreas({ access: staffManagerAccess, collections: ['people'], globals: [] }))
+    // Staff and Identity show for any canManagePeople person regardless of collection visibility.
+    expect(areas.people).toEqual(['People', 'Staff', 'Identity'])
+    expect(buildNavAreas({ access: staffManagerAccess, collections: ['people'], globals: [] })[1].items[0].href).toBe('/admin/collections/people')
     expect(areas.system).toBeUndefined()
     expect(areas.departments).toBeUndefined()
   })
 
   it('shows the PUG dashboard to department PUG admins who are not admins', () => {
-    const user: NavUserLike = { id: 9, role: 'team-manager', departments: { isPugAdmin: true } }
-    const areas = labels(buildNavAreas({ user, collections: [], globals: [] }))
+    const access = resolveAccess({ id: 9, role: 'user', departments: { isPugAdmin: true } }, [])
+    const areas = labels(buildNavAreas({ access, collections: [], globals: [] }))
     expect(areas.competition).toContain('PUG Dashboard')
   })
 
   it('returns nothing for a signed-out user', () => {
-    expect(buildNavAreas({ user: null, collections: ALL_COLLECTIONS, globals: ALL_GLOBALS })).toEqual([])
+    expect(buildNavAreas({ access: null, collections: ALL_COLLECTIONS, globals: ALL_GLOBALS })).toEqual([])
   })
 })
 
 describe('resolveActiveItemId', () => {
-  const areas = buildNavAreas({ user: admin, collections: ALL_COLLECTIONS, globals: ALL_GLOBALS })
+  const areas = buildNavAreas({ access: adminAccess, collections: ALL_COLLECTIONS, globals: ALL_GLOBALS })
   const idOf = (label: string) => areas.flatMap((a) => a.items).find((i) => i.label === label)!.id
   const q = (s: string) => new URLSearchParams(s)
 
@@ -129,7 +136,7 @@ describe('resolveActiveItemId', () => {
 })
 
 describe('AdminNavClient', () => {
-  const areas = buildNavAreas({ user: admin, collections: ALL_COLLECTIONS, globals: ALL_GLOBALS })
+  const areas = buildNavAreas({ access: adminAccess, collections: ALL_COLLECTIONS, globals: ALL_GLOBALS })
 
   it('renders every area as a group with coloured wrapper and marks the active link', () => {
     pathname = '/admin/edit-team'

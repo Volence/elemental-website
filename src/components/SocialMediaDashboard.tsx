@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect } from 'react'
-import { useAuth } from '@payloadcms/ui'
+import { useAccess } from '@/access/useAccess'
 import { Calendar, LayoutList, Archive, Settings } from 'lucide-react'
 import { AdminTabs, tabPanelProps, useUrlParamState } from '@/admin-kit'
 import type { AdminTab } from '@/admin-kit'
@@ -16,8 +16,8 @@ const DEFAULT_TAB = 'calendar'
 const TAB_IDS = ['calendar', 'workboard', 'posts', 'settings']
 
 export default function SocialMediaDashboard() {
-  const { user } = useAuth()
-  const isAdmin = user?.role === 'admin' || user?.role === 'staff-manager'
+  const { access } = useAccess()
+  const isAdmin = access?.departments.social === 'lead'
   const [tabParam, setTab] = useUrlParamState('tab', DEFAULT_TAB)
 
   // Sidebar links carry no ?tab=, so a fresh visit reopens the tab this browser used last.

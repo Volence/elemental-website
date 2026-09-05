@@ -1,16 +1,14 @@
 import { DefaultTemplate } from '@payloadcms/next/templates'
 import type { AdminViewServerProps } from 'payload'
-import React from 'react'
 import { redirect } from 'next/navigation'
 import TeamsListView from '@/components/TeamsList'
-
-const TEAM_ROLES = ['admin', 'staff-manager', 'team-manager']
+import { accessForAdminRoute } from '@/access/serverAccess'
 
 /** /admin/teams: the Teams list. Same audience as the collection's sidebar visibility. */
-const TeamsListRoute: React.FC<AdminViewServerProps> = ({ initPageResult, params, searchParams }) => {
+const TeamsListRoute = async ({ initPageResult, params, searchParams }: AdminViewServerProps) => {
   const user = initPageResult.req.user
-  const role = (user as { role?: string } | null)?.role ?? ''
-  if (!user || !TEAM_ROLES.includes(role)) redirect('/admin')
+  const access = await accessForAdminRoute(initPageResult)
+  if (!user || !access || (!access.canManagePeople && access.teamIds.size === 0)) redirect('/admin')
 
   return (
     <DefaultTemplate

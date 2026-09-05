@@ -2,11 +2,12 @@ import { DefaultTemplate } from '@payloadcms/next/templates'
 import type { AdminViewServerProps } from 'payload'
 import { redirect } from 'next/navigation'
 import PugDashboard from '.'
+import { accessForAdminRoute } from '@/access/serverAccess'
 
-const PugDashboardRoute: React.FC<AdminViewServerProps> = ({ initPageResult, params, searchParams }) => {
-  const user = initPageResult.req.user as any
-  const isPugAdmin = user?.departments?.isPugAdmin === true || user?.role === 'admin'
-  if (!user || !isPugAdmin) redirect('/admin')
+const PugDashboardRoute = async ({ initPageResult, params, searchParams }: AdminViewServerProps) => {
+  const user = initPageResult.req.user
+  const access = await accessForAdminRoute(initPageResult)
+  if (!user || !access || access.departments.pug === 'none') redirect('/admin')
 
   return (
     <DefaultTemplate

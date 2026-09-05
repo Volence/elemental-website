@@ -1,23 +1,23 @@
 import { DefaultTemplate } from '@payloadcms/next/templates'
 import type { AdminViewServerProps } from 'payload'
-import React from 'react'
 import { redirect } from 'next/navigation'
 
 import ScrimUploadView from '@/components/ScrimUpload'
+import { accessForAdminRoute, hasScrimAccess } from '@/access/serverAccess'
 
-const ScrimUploadRoute: React.FC<AdminViewServerProps> = ({
+const ScrimUploadRoute = async ({
   initPageResult,
   params,
   searchParams,
-}) => {
+}: AdminViewServerProps) => {
   const user = initPageResult.req.user
-  const role = (user as any)?.role as string | undefined
+  const access = await accessForAdminRoute(initPageResult)
 
-  // Admin, staff-manager, team-manager - or a flagged external-scrim coach
-  const canUpload = role === 'admin' || role === 'staff-manager' || role === 'team-manager'
-  const canUploadExternal =
-    (user as any)?.departments?.canUploadExternalScrims === true
-  if (!user || (!canUpload && !canUploadExternal)) {
+  // Staff or team-access people upload for the org; a flagged external-scrim coach uploads
+  // as external only.
+  const canUpload = !!access && (access.canManagePeople || access.teamIds.size > 0)
+  const canUploadExternal = !!access?.canUploadExternalScrims
+  if (!user || !hasScrimAccess(access)) {
     redirect('/admin')
   }
 

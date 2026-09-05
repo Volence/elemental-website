@@ -11,6 +11,7 @@ import {
 import { EDITOR_CSS, styles as editorStyles } from '@/components/PersonEditor'
 import { useConfirm } from '@/components/ConfirmDialog'
 import { requestDelete } from '@/utilities/requestDelete'
+import { EXTRA_FLAGS } from '@/access/titles'
 
 // ── Types ──
 
@@ -40,17 +41,19 @@ const ROLES = [
   { value: 'user', label: 'User', icon: '👤', color: '#6b7280', desc: 'Basic department access' },
 ]
 
-const DEPARTMENTS = [
-  { key: 'isProductionStaff', label: 'Production', icon: '🎬' },
-  { key: 'isSocialMediaStaff', label: 'Social Media', icon: '📱' },
-  { key: 'isGraphicsStaff', label: 'Graphics', icon: '🎨' },
-  { key: 'isVideoStaff', label: 'Video', icon: '🎥' },
-  { key: 'isEventsStaff', label: 'Events', icon: '🎉' },
-  { key: 'isScoutingStaff', label: 'Scouting', icon: '🔍' },
-  { key: 'isContentCreator', label: 'Content Creator', icon: '📺' },
-  { key: 'isPugAdmin', label: 'PUG Admin', icon: '🎮' },
-  { key: 'canUploadExternalScrims', label: 'External Scrims', icon: '📤' },
-]
+// Icons keyed the same as EXTRA_FLAGS, the source of truth for which flags exist and their labels.
+const DEPARTMENT_ICON: Record<string, string> = {
+  isProductionStaff: '🎬',
+  isSocialMediaStaff: '📱',
+  isGraphicsStaff: '🎨',
+  isVideoStaff: '🎥',
+  isEventsStaff: '🎉',
+  isScoutingStaff: '🔍',
+  isContentCreator: '📺',
+  isPugAdmin: '🎮',
+  canUploadExternalScrims: '📤',
+}
+const DEPARTMENTS = EXTRA_FLAGS.map((f) => ({ key: f.key, label: f.label, icon: DEPARTMENT_ICON[f.key] ?? '•' }))
 
 const PUG_ROLES = [
   { key: 'tank', label: 'Tank' },

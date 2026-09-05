@@ -2,15 +2,17 @@
 
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '@payloadcms/ui'
+import { useAccess } from '@/access/useAccess'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Calendar, ClipboardList, Clock, FileEdit, User } from 'lucide-react'
 
 export default function QuickFilters() {
   const { user } = useAuth()
+  const { access } = useAccess()
   const searchParams = useSearchParams()
-  
-  const isAdmin = user?.role === 'admin' || user?.role === 'staff-manager'
+
+  const isAdmin = access?.departments.social === 'lead'
   const userId = user?.id || ''
   
   // Use state to track active filters (client-side only to avoid hydration mismatch)

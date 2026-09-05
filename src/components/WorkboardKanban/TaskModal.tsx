@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useConfig, useAuth } from '@payloadcms/ui'
 import { toast } from '@payloadcms/ui'
+import { useAccess } from '@/access/useAccess'
 import { ConfirmModal } from './ConfirmModal'
 import type { Task, Person, Media } from '@/payload-types'
 import { Calendar, Download, Paperclip, Save, Send, Trash2, Upload, X } from 'lucide-react'
@@ -51,9 +52,10 @@ export const TaskModal: React.FC<TaskModalProps> = ({
 }) => {
   const { config } = useConfig()
   const { user: currentUser } = useAuth()
+  const { access } = useAccess()
   const serverURL = config?.serverURL || ''
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const canDelete = currentUser?.role === 'admin' || currentUser?.role === 'staff-manager'
+  const canDelete = access?.canManagePeople ?? false
   const [comments, setComments] = useState<NonNullable<Task['comments']>>([])
   const [newComment, setNewComment] = useState('')
   const [postingComment, setPostingComment] = useState(false)

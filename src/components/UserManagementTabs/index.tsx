@@ -1,9 +1,8 @@
 'use client'
 
 import React, { useState, lazy, Suspense } from 'react'
-import { useAuth } from '@payloadcms/ui'
 import { Users, Link as LinkIcon } from 'lucide-react'
-import type { Person } from '@/payload-types'
+import { useAccess } from '@/access/useAccess'
 import './index.scss'
 
 const InviteLinksListView = lazy(() => import('./InviteLinksListView'))
@@ -11,12 +10,11 @@ const InviteLinksListView = lazy(() => import('./InviteLinksListView'))
 type Tab = 'people' | 'invite-links'
 
 export default function UserManagementTabs() {
-  const { user } = useAuth<Person>()
+  const { access } = useAccess()
   const [activeTab, setActiveTab] = useState<Tab>('people')
 
-  const role = (user?.role as string) ?? ''
-  const canSeePeople = role === 'admin'
-  const canSeeInvites = role === 'admin' || role === 'staff-manager' || role === 'team-manager'
+  const canSeePeople = access?.canManagePeople ?? false
+  const canSeeInvites = access?.canManagePeople ?? false
 
   // Build tab definitions
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = []

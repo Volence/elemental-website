@@ -2,18 +2,24 @@
 
 import React from 'react'
 import { Clapperboard, Mic, Palette, PartyPopper, Search, Smartphone } from 'lucide-react'
+import { EXTRA_FLAGS } from '@/access/titles'
 
 interface DepartmentsCellProps {
   rowData?: {
-    departments?: {
-      isProductionStaff?: boolean
-      isSocialMediaStaff?: boolean
-      isGraphicsStaff?: boolean
-      isVideoStaff?: boolean
-      isEventsStaff?: boolean
-      isScoutingStaff?: boolean
-    }
+    departments?: Record<string, boolean | null | undefined>
   }
+}
+
+// Icon and colour per flag, for the subset EXTRA_FLAGS carries that this cell shows
+// (organization/production-only flags like isContentCreator or isPugAdmin are not staff
+// "departments" in the sense this column is about, so they are left out here).
+const BADGE: Record<string, { icon: React.ReactNode; color: string }> = {
+  isProductionStaff: { icon: <Mic size={12} />, color: 'info' },
+  isSocialMediaStaff: { icon: <Smartphone size={12} />, color: 'success' },
+  isGraphicsStaff: { icon: <Palette size={12} />, color: 'warning' },
+  isVideoStaff: { icon: <Clapperboard size={12} />, color: 'error' },
+  isEventsStaff: { icon: <PartyPopper size={12} />, color: 'success' },
+  isScoutingStaff: { icon: <Search size={12} />, color: 'info' },
 }
 
 export default function DepartmentsCell({ rowData }: DepartmentsCellProps) {
@@ -23,31 +29,9 @@ export default function DepartmentsCell({ rowData }: DepartmentsCellProps) {
     return <span style={{ color: 'var(--theme-elevation-500)', fontSize: '0.85rem' }}>None</span>
   }
 
-  const departmentBadges: Array<{ name: string; icon: React.ReactNode; color: string }> = []
-
-  if (departments.isProductionStaff) {
-    departmentBadges.push({ name: 'Production', icon: <Mic size={12} />, color: 'info' })
-  }
-
-  if (departments.isSocialMediaStaff) {
-    departmentBadges.push({ name: 'Social Media', icon: <Smartphone size={12} />, color: 'success' })
-  }
-
-  if (departments.isGraphicsStaff) {
-    departmentBadges.push({ name: 'Graphics', icon: <Palette size={12} />, color: 'warning' })
-  }
-
-  if (departments.isVideoStaff) {
-    departmentBadges.push({ name: 'Video', icon: <Clapperboard size={12} />, color: 'error' })
-  }
-
-  if (departments.isEventsStaff) {
-    departmentBadges.push({ name: 'Events', icon: <PartyPopper size={12} />, color: 'success' })
-  }
-
-  if (departments.isScoutingStaff) {
-    departmentBadges.push({ name: 'Scouting', icon: <Search size={12} />, color: 'info' })
-  }
+  const departmentBadges = EXTRA_FLAGS
+    .filter((f) => f.key in BADGE && departments[f.key])
+    .map((f) => ({ name: f.label, icon: BADGE[f.key].icon, color: BADGE[f.key].color }))
 
   if (departmentBadges.length === 0) {
     return <span style={{ color: 'var(--theme-elevation-500)', fontSize: '0.85rem' }}>None</span>

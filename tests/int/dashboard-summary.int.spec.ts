@@ -1,14 +1,22 @@
 import { describe, it, expect } from 'vitest'
 import { departmentsFor, greeting, isOverdue, mergeUpcoming } from '@/components/BeforeDashboard/summary'
+import { resolveAccess } from '@/access'
 
 describe('departmentsFor', () => {
   it('managers see every department queue', () => {
-    expect(departmentsFor('admin', null)).toHaveLength(6)
-    expect(departmentsFor('staff-manager', { isGraphicsStaff: true })).toHaveLength(6)
+    expect(departmentsFor(resolveAccess({ id: 1, role: 'admin' }, []))).toHaveLength(6)
+    expect(departmentsFor(resolveAccess({ id: 2, role: 'staff-manager' }, []))).toHaveLength(6)
   })
-  it('staff see only the departments they are flagged for', () => {
-    expect(departmentsFor('team-manager', { isProductionStaff: true, isEventsStaff: true, isVideoStaff: false })).toEqual(['production', 'events'])
-    expect(departmentsFor('player', null)).toEqual([])
+  it('non-managers see only the departments they are flagged for (by title or checkbox)', () => {
+    const flagged = resolveAccess(
+      { id: 3, role: 'user', departments: { isProductionStaff: true, isEventsStaff: true, isVideoStaff: false } },
+      [],
+    )
+    expect(departmentsFor(flagged)).toEqual(['production', 'events'])
+    expect(departmentsFor(resolveAccess({ id: 4, role: 'user' }, []))).toEqual([])
+  })
+  it('returns nothing when access has not resolved yet', () => {
+    expect(departmentsFor(null)).toEqual([])
   })
 })
 

@@ -1,8 +1,7 @@
 import { DefaultTemplate } from '@payloadcms/next/templates'
 import type { AdminViewServerProps } from 'payload'
-import React from 'react'
 import { redirect } from 'next/navigation'
-import { hasScrimAccess } from '@/access/scrimScope'
+import { accessForAdminRoute, hasScrimAccess } from '@/access/serverAccess'
 
 import ScrimListView from '@/components/ScrimList'
 
@@ -10,13 +9,14 @@ import ScrimListView from '@/components/ScrimList'
  * Server component wrapper that renders ScrimList inside Payload's DefaultTemplate.
  * This ensures the admin sidebar/nav is visible on the scrim list page.
  */
-const ScrimListRoute: React.FC<AdminViewServerProps> = ({
+const ScrimListRoute = async ({
   initPageResult,
   params,
   searchParams,
-}) => {
+}: AdminViewServerProps) => {
   const user = initPageResult.req.user
-  if (!user || !hasScrimAccess(user as any)) redirect('/admin')
+  const access = await accessForAdminRoute(initPageResult)
+  if (!user || !hasScrimAccess(access)) redirect('/admin')
 
   return (
     <DefaultTemplate

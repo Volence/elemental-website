@@ -2,14 +2,15 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { fetchAllDocs } from '@/admin-kit'
-import { useAuth } from '@payloadcms/ui'
+import type { LucideIcon } from 'lucide-react'
 import {
-  Users, Search, Shield, ShieldCheck, Crown, Gamepad2, User as UserIcon,
+  Users, Search, ShieldCheck, Crown, User as UserIcon,
   Loader2, ChevronRight, ShieldAlert,
 } from 'lucide-react'
 import { EDITOR_CSS, styles as editorStyles } from '@/components/PersonEditor'
 import DiscordMemberPicker from '@/components/DiscordMemberPicker'
-import { canPickMembers } from '@/identity/permissions'
+import { useAccess } from '@/access/useAccess'
+import { ROLE_VALUES, ROLE_LABELS, type RoleValue } from '@/access/titles'
 
 // ── Types ──
 
@@ -33,26 +34,29 @@ type UserData = {
     canUploadExternalScrims?: boolean
   } | null
   avatar?: { url: string } | number | null
+  /** Not yet on the People schema (Task 9); when present it supersedes assignedTeams. */
+  teamAccess?: Array<{ id: number; name: string } | number> | null
   createdAt?: string
   updatedAt?: string
 }
 
-const ROLES = [
-  { value: 'admin', label: 'Admin', icon: Crown, color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)', border: 'rgba(245, 158, 11, 0.25)' },
-  { value: 'staff-manager', label: 'Staff Manager', icon: ShieldCheck, color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)', border: 'rgba(139, 92, 246, 0.25)' },
-  { value: 'team-manager', label: 'Team Manager', icon: Shield, color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.1)', border: 'rgba(6, 182, 212, 0.25)' },
-  { value: 'player', label: 'Player', icon: Gamepad2, color: '#34d399', bg: 'rgba(52, 211, 153, 0.1)', border: 'rgba(52, 211, 153, 0.25)' },
-  { value: 'user', label: 'User', icon: UserIcon, color: '#94a3b8', bg: 'rgba(148, 163, 184, 0.1)', border: 'rgba(148, 163, 184, 0.25)' },
-]
+const ROLE_STYLE: Record<RoleValue, { icon: LucideIcon; color: string; bg: string; border: string }> = {
+  admin: { icon: Crown, color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)', border: 'rgba(245, 158, 11, 0.25)' },
+  'staff-manager': { icon: ShieldCheck, color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)', border: 'rgba(139, 92, 246, 0.25)' },
+  user: { icon: UserIcon, color: '#94a3b8', bg: 'rgba(148, 163, 184, 0.1)', border: 'rgba(148, 163, 184, 0.25)' },
+}
+const ROLES = ROLE_VALUES.map((value) => ({ value, label: ROLE_LABELS[value], ...ROLE_STYLE[value] }))
 
-const getRoleConfig = (role: string) => ROLES.find(r => r.value === role) ?? ROLES[4]
+// A person predating the role cleanup may still carry a role string (e.g. the old
+// team-manager/player values) that ROLE_VALUES no longer lists; fall back to the User style.
+const getRoleConfig = (role: string) => ROLES.find(r => r.value === role) ?? ROLES[ROLES.length - 1]
 
 // ── Users List View ──
 // The per-user editor that used to live here was folded into PersonEditor
 // (/admin/edit-person), which edits the same people row with more cards.
 
 export function UsersListView() {
-  const { user: currentUser } = useAuth() as { user: any }
+  const { access } = useAccess()
   const [users, setUsers] = useState<UserData[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -103,7 +107,7 @@ export function UsersListView() {
           Users
           <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--elmt-text-disabled)', marginLeft: 8 }}>({users.length})</span>
         </h1>
-        {canPickMembers(currentUser) && (
+        {access?.canPickMembers && (
           <div style={{ marginLeft: 'auto', minWidth: 320 }}>
             <DiscordMemberPicker value={null} onChange={(id) => { if (id) window.location.href = `/admin/edit-person?id=${id}` }} placeholder="New person: search Discord..." />
           </div>
@@ -159,7 +163,7 @@ export function UsersListView() {
             const roleConf = getRoleConfig(u.role)
             const linkedName = null
             const avatarUrl = u.avatar && typeof u.avatar === 'object' ? u.avatar.url : null
-            const teamCount = (u.assignedTeams ?? []).length
+            const teamCount = (u.teamAccess ?? u.assignedTeams ?? []).length
 
             return (
               <a key={u.id} href={`/admin/edit-person?id=${u.id}`} className="user-card">

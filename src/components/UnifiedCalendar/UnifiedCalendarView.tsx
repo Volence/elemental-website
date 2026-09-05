@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
-import { useAuth } from '@payloadcms/ui'
 import { Calendar, FileEdit, Globe, Link as LinkIcon, ChevronLeft, ChevronRight, RefreshCw, Plus, ExternalLink } from 'lucide-react'
 import { AdminModal, AdminPage, AdminPageHeader, Badge, ErrorState, LoadingState, useUrlParamState } from '@/admin-kit'
-import type { Person } from '@/payload-types'
+import { useAccess } from '@/access/useAccess'
+import { DEPARTMENT_KEYS, type DepartmentKey } from '@/access/titles'
+import type { ResolvedAccess } from '@/access/resolve'
 import type { Department, CalendarItem } from './types'
 import { DEPARTMENTS, getDepartmentColor, getDepartmentColors } from './types'
 import { useUnifiedCalendarData } from './useUnifiedCalendarData'
@@ -27,15 +28,21 @@ import './UnifiedCalendar.scss'
 const STORAGE_KEY = 'unifiedCalendar_enabledDepartments'
 const ALL_DEPARTMENTS: Department[] = DEPARTMENTS.map((d) => d.value)
 
-function getUserDepartments(user: Person | null | undefined): Department[] {
-  if (!user?.departments) return []
-  const deps: Department[] = []
-  if (user.departments.isGraphicsStaff) deps.push('graphics')
-  if (user.departments.isVideoStaff) deps.push('video')
-  if (user.departments.isEventsStaff) deps.push('events')
-  if (user.departments.isScoutingStaff) deps.push('scouting')
-  if (user.departments.isProductionStaff) deps.push('production')
-  if (user.departments.isSocialMediaStaff) deps.push('social-media')
+// DEPARTMENT_KEYS -> this calendar's task department names. 'pug' has no calendar lane.
+const DEPT_KEY_TO_CALENDAR: Partial<Record<DepartmentKey, Department>> = {
+  production: 'production',
+  social: 'social-media',
+  graphics: 'graphics',
+  video: 'video',
+  events: 'events',
+  scouting: 'scouting',
+}
+
+function getUserDepartments(access: ResolvedAccess | null | undefined): Department[] {
+  if (!access) return []
+  const deps: Department[] = DEPARTMENT_KEYS.filter((k) => access.departments[k] !== 'none')
+    .map((k) => DEPT_KEY_TO_CALENDAR[k])
+    .filter((d): d is Department => d !== undefined)
   // Org-wide events are relevant to everyone.
   deps.push('competitive')
   return deps
@@ -61,7 +68,7 @@ const LANE_LABELS: Record<string, string> = {
 }
 
 export default function UnifiedCalendarView() {
-  const { user } = useAuth<Person>()
+  const { access } = useAccess()
 
   // View and date live in the URL: reload, back button and shared links all keep them.
   const [viewParam, setViewParam] = useUrlParamState('view', 'week')
@@ -77,15 +84,14 @@ export default function UnifiedCalendarView() {
   const [enabledDepartments, setEnabledDepartments] = useState<Department[]>(() => readSavedDepartments() ?? ALL_DEPARTMENTS)
   const [appliedDefault, setAppliedDefault] = useState(() => readSavedDepartments() !== null)
   useEffect(() => {
-    if (appliedDefault || !user) return
-    const defaults =
-      user.role === 'admin' || user.role === 'staff-manager' ? ALL_DEPARTMENTS : (() => {
-        const mine = getUserDepartments(user)
-        return mine.length > 1 ? mine : ALL_DEPARTMENTS
-      })()
+    if (appliedDefault || !access) return
+    const defaults = access.canManagePeople ? ALL_DEPARTMENTS : (() => {
+      const mine = getUserDepartments(access)
+      return mine.length > 1 ? mine : ALL_DEPARTMENTS
+    })()
     setEnabledDepartments(defaults)
     setAppliedDefault(true)
-  }, [user, appliedDefault])
+  }, [access, appliedDefault])
 
   const updateDepartments = useCallback((next: Department[]) => {
     setEnabledDepartments(next)
@@ -463,7 +469,7 @@ export default function UnifiedCalendarView() {
             <button type="button" className="kit-btn" onClick={refetch} disabled={loading} aria-label="Refresh calendar">
               <RefreshCw size={14} className={loading ? 'kit-spin' : undefined} /> Refresh
             </button>
-            {(user?.role === 'admin' || user?.role === 'staff-manager' || user?.role === 'team-manager') && (
+            {(access?.canManagePeople || (access?.teamIds.size ?? 0) > 0) && (
               <Link href="/admin/edit-event" className="kit-btn kit-btn--primary">
                 <Plus size={14} /> New event
               </Link>

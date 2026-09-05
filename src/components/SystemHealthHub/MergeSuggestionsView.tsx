@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { AlertTriangle, Check, GitMerge, Loader2, X, User, ChevronDown, ChevronRight } from 'lucide-react'
 import { useConfirm, useAlert } from '@/components/ConfirmDialog'
+import { roleRank } from '@/access/resolve'
 
 interface PersonRecord {
   id: number
@@ -49,10 +50,9 @@ function pickTargetAndSource(a: PersonRecord, b: PersonRecord): { target: Person
   if (aPlaceholder && !bPlaceholder) return { target: b, source: a }
   if (bPlaceholder && !aPlaceholder) return { target: a, source: b }
 
-  const ROLE_PRIORITY = ['admin', 'staff-manager', 'team-manager', 'player', 'user']
-  const aIdx = ROLE_PRIORITY.indexOf(a.role ?? 'user')
-  const bIdx = ROLE_PRIORITY.indexOf(b.role ?? 'user')
-  if (aIdx !== bIdx) return aIdx < bIdx ? { target: a, source: b } : { target: b, source: a }
+  const aRank = roleRank(a.role)
+  const bRank = roleRank(b.role)
+  if (aRank !== bRank) return aRank > bRank ? { target: a, source: b } : { target: b, source: a }
 
   return a.id < b.id ? { target: a, source: b } : { target: b, source: a }
 }

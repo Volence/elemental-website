@@ -1,18 +1,18 @@
 import { DefaultTemplate } from '@payloadcms/next/templates'
 import type { AdminViewServerProps } from 'payload'
-import React from 'react'
 import { redirect } from 'next/navigation'
-import { hasScrimAccess } from '@/access/scrimScope'
+import { accessForAdminRoute, hasScrimAccess } from '@/access/serverAccess'
 
 import ScrimMapDetailView from '@/components/ScrimMapDetail'
 
-const ScrimMapDetailRoute: React.FC<AdminViewServerProps> = ({
+const ScrimMapDetailRoute = async ({
   initPageResult,
   params,
   searchParams,
-}) => {
+}: AdminViewServerProps) => {
   const user = initPageResult.req.user
-  if (!user || !hasScrimAccess(user as any)) redirect('/admin')
+  const access = await accessForAdminRoute(initPageResult)
+  if (!user || !hasScrimAccess(access)) redirect('/admin')
 
   return (
     <DefaultTemplate

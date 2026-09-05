@@ -3,7 +3,7 @@
 import React, { lazy, Suspense } from 'react'
 import { AdminTabs, LoadingState, tabPanelProps, useUrlParamState } from '@/admin-kit'
 import type { AdminTab } from '@/admin-kit'
-import { useAuth } from '@payloadcms/ui'
+import { useAccess } from '@/access/useAccess'
 import { Calendar, PlusSquare, Users, ClipboardList, Building, BarChart3, Swords, FileText, Tv, Settings, KanbanSquare } from 'lucide-react'
 
 // Each tab is its own chunk; the dashboard used to ship all eleven views to open one.
@@ -22,11 +22,11 @@ const KanbanBoard = lazy(() => import('./WorkboardKanban').then((m) => ({ defaul
 const TABS_ID = 'production'
 
 export default function ProductionDashboardView() {
-  const { user } = useAuth()
+  const { access } = useAccess()
 
-  // Check if user is a production manager (admin or staff-manager)
-  const isProductionManager = user?.role === 'admin' || user?.role === 'staff-manager'
-  const isAdmin = user?.role === 'admin'
+  // Production lead (department lead or staff, who read as 'lead' for every department)
+  const isProductionManager = access?.departments.production === 'lead'
+  const isAdmin = access?.isAdmin ?? false
 
   // Default tab: 'signups' for regular staff, 'weekly' for managers. The active tab lives in ?tab=
   // so it survives reloads and can be deep-linked (workboard task pings use ?tab=workboard&task=).

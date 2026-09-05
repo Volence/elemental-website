@@ -2,9 +2,8 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { useAuth } from '@payloadcms/ui'
 import { Plus, Shield } from 'lucide-react'
-import type { Person } from '@/payload-types'
+import { useAccess } from '@/access/useAccess'
 import {
   AdminPage,
   AdminPageHeader,
@@ -32,7 +31,7 @@ const PAGE_SIZE = 50
  * alignment fixes and a click interceptor that rewrote row links).
  */
 export default function TeamsListView() {
-  const { user } = useAuth<Person>()
+  const { access } = useAccess()
   const [teams, setTeams] = useState<TeamRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -44,12 +43,8 @@ export default function TeamsListView() {
   const [sortKey, setSortKey] = useUrlParamState('sort', 'name')
   const [sortDir, setSortDir] = useUrlParamState('dir', 'asc')
 
-  const role = (user?.role as string) ?? ''
-  const canCreate = role === 'admin' || role === 'staff-manager'
-  const assignedIds = useMemo(
-    () => ((user?.assignedTeams ?? []) as Array<number | { id: number }>).map((t) => (typeof t === 'object' ? t.id : t)),
-    [user?.assignedTeams],
-  )
+  const canCreate = access?.canManagePeople ?? false
+  const assignedIds = useMemo(() => (access ? [...access.teamIds] : []), [access])
   const mine = mineParam === '1'
 
   const load = useCallback(async () => {

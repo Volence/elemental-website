@@ -1,18 +1,18 @@
 import { DefaultTemplate } from '@payloadcms/next/templates'
 import type { AdminViewServerProps } from 'payload'
-import React from 'react'
 import { redirect } from 'next/navigation'
 
 import { StaffDirectoryView } from '@/components/StaffDirectory'
+import { accessForAdminRoute } from '@/access/serverAccess'
 
-const StaffDirectoryRoute: React.FC<AdminViewServerProps> = ({
+const StaffDirectoryRoute = async ({
   initPageResult,
   params,
   searchParams,
-}) => {
+}: AdminViewServerProps) => {
   const user = initPageResult.req.user
-  const role = (user as any)?.role as string | undefined
-  if (!user || !role || !['admin', 'staff-manager'].includes(role)) redirect('/admin')
+  const access = await accessForAdminRoute(initPageResult)
+  if (!user || !access?.canManagePeople) redirect('/admin')
 
   return (
     <DefaultTemplate

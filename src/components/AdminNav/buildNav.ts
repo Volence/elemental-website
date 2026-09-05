@@ -7,8 +7,10 @@
  * only appear when Payload says the user can see them (`visibleEntities`),
  * custom views are gated by the same role and department rules the views use.
  *
- * Pure module: no React, no Payload imports, so it is unit-tested directly.
+ * Pure module: no React, no Payload imports, so it is unit-tested directly. `ResolvedAccess`
+ * and `SerializedAccess` are plain-data types from `@/access/resolve`, not Payload imports.
  */
+import type { ResolvedAccess, SerializedAccess } from '@/access/resolve'
 
 export type NavAreaId = 'me' | 'people' | 'competition' | 'departments' | 'organization' | 'system'
 
@@ -62,15 +64,8 @@ export interface NavArea {
   items: NavItem[]
 }
 
-export interface NavUserLike {
-  id: number | string
-  role?: string | null
-  departments?: Record<string, boolean | null | undefined> | null
-  assignedTeams?: Array<number | string | { id: number | string; name?: string | null }> | null
-}
-
 export interface BuildNavInput {
-  user: NavUserLike | null | undefined
+  access: SerializedAccess | ResolvedAccess | null
   /** Collection slugs Payload considers visible to this user. */
   collections: readonly string[]
   /** Global slugs Payload considers visible to this user. */
@@ -79,27 +74,18 @@ export interface BuildNavInput {
 
 export const ADMIN = '/admin'
 
-const FULL_ACCESS_ROLES = ['admin', 'staff-manager']
-const SCRIM_VIEWER_ROLES = ['admin', 'staff-manager', 'team-manager', 'player']
-const LIMITED_ROLES = ['player', 'user']
-
-function role(user: NavUserLike): string {
-  return user.role ?? ''
+/** `teamIds` is a `Set` on `ResolvedAccess` (server) and a plain array once serialized for the client. */
+function teamIdsOf(access: SerializedAccess | ResolvedAccess): number[] {
+  return Array.isArray(access.teamIds) ? access.teamIds : [...access.teamIds]
 }
-function isAdmin(user: NavUserLike): boolean {
-  return role(user) === 'admin'
+function isLimited(access: SerializedAccess | ResolvedAccess): boolean {
+  return !access.canManagePeople && teamIdsOf(access).length === 0
 }
-function isFullAccess(user: NavUserLike): boolean {
-  return FULL_ACCESS_ROLES.includes(role(user))
+function isScrimViewer(access: SerializedAccess | ResolvedAccess): boolean {
+  return access.canManagePeople || access.canUploadExternalScrims || teamIdsOf(access).length > 0
 }
-function isLimited(user: NavUserLike): boolean {
-  return LIMITED_ROLES.includes(role(user))
-}
-function isScrimViewer(user: NavUserLike): boolean {
-  return SCRIM_VIEWER_ROLES.includes(role(user))
-}
-function isPugAdmin(user: NavUserLike): boolean {
-  return isAdmin(user) || user.departments?.isPugAdmin === true
+function isPugAdmin(access: SerializedAccess | ResolvedAccess): boolean {
+  return access.departments.pug !== 'none'
 }
 
 const collection = (slug: string, label: string, icon: NavIconName): NavItem => ({
@@ -125,20 +111,19 @@ const view = (path: string, label: string, icon: NavIconName, matchQuery?: Recor
 /** The Dashboard link sits above the areas and is always present. */
 export const DASHBOARD_ITEM: NavItem = { id: 'nav-dashboard', label: 'Dashboard', href: ADMIN, icon: 'home' }
 
-export function buildNavAreas({ user, collections, globals }: BuildNavInput): NavArea[] {
-  if (!user) return []
+export function buildNavAreas({ access, collections, globals }: BuildNavInput): NavArea[] {
+  if (!access) return []
   const has = (slug: string) => collections.includes(slug)
   const hasGlobal = (slug: string) => globals.includes(slug)
   const when = (cond: boolean, item: NavItem): NavItem | null => (cond ? item : null)
 
   const teamLinks: NavItem[] = []
-  if (isScrimViewer(user)) {
-    // Managers reach every team from the Scrim Analytics dashboard itself.
-    if (!isFullAccess(user)) {
-      for (const team of user.assignedTeams ?? []) {
-        const id = typeof team === 'object' ? team.id : team
-        const name = typeof team === 'object' && team.name ? team.name : `Team #${id}`
-        teamLinks.push(view('/scrim-team', name, 'users', { teamId: String(id) }))
+  if (isScrimViewer(access)) {
+    // Managers reach every team from the Scrim Analytics dashboard itself. Team names are
+    // not part of the resolved access model, so team-scoped links fall back to their id.
+    if (!access.canManagePeople) {
+      for (const id of teamIdsOf(access)) {
+        teamLinks.push(view('/scrim-team', `Team #${id}`, 'users', { teamId: String(id) }))
       }
     }
   }
@@ -150,8 +135,8 @@ export function buildNavAreas({ user, collections, globals }: BuildNavInput): Na
       items: [
         view('/my-profile', 'My Profile', 'user'),
         view('/guides', 'Guides', 'book-open'),
-        when(isScrimViewer(user), view('/scrim-player-detail', 'My Stats', 'chart', { personId: String(user.id) })),
-        when(!isLimited(user), view('/calendar', 'Calendar', 'calendar')),
+        when(isScrimViewer(access), view('/scrim-player-detail', 'My Stats', 'chart', { personId: String(access.personId) })),
+        when(!isLimited(access), view('/calendar', 'Calendar', 'calendar')),
       ],
     },
     {
@@ -159,13 +144,11 @@ export function buildNavAreas({ user, collections, globals }: BuildNavInput): Na
       label: 'People',
       items: [
         // Admins get the people manager view; others the collection list they already had.
-        when(has('people'), isAdmin(user) ? view('/manage-users', 'People', 'users') : collection('people', 'People', 'users')),
+        when(has('people'), access.isAdmin ? view('/manage-users', 'People', 'users') : collection('people', 'People', 'users')),
         when(has('teams'), view('/teams', 'Teams', 'shield')),
-        // The staff directory covers organization and production staff in one place.
-        when(isFullAccess(user) && (has('organization-staff') || has('production')), view('/staff-directory', 'Staff', 'contact')),
-        when(!isFullAccess(user) && has('organization-staff'), collection('organization-staff', 'Organization Staff', 'contact')),
-        when(!isFullAccess(user) && has('production'), collection('production', 'Production Staff', 'clapperboard')),
-        when(isFullAccess(user), view('/identity', 'Identity', 'fingerprint')),
+        // The staff directory now reads titles off People directly; no more organization-staff/production fallback.
+        when(access.canManagePeople, view('/staff-directory', 'Staff', 'contact')),
+        when(access.canManagePeople, view('/identity', 'Identity', 'fingerprint')),
         when(has('identity-claims'), collection('identity-claims', 'Identity Claims', 'user-check')),
       ],
     },
@@ -173,9 +156,9 @@ export function buildNavAreas({ user, collections, globals }: BuildNavInput): Na
       id: 'competition',
       label: 'Competition',
       items: [
-        when(isScrimViewer(user), view('/scrim-dashboard', 'Scrim Analytics', 'swords')),
+        when(isScrimViewer(access), view('/scrim-dashboard', 'Scrim Analytics', 'swords')),
         ...teamLinks,
-        when(isPugAdmin(user), view('/pug-dashboard', 'PUG Dashboard', 'gamepad')),
+        when(isPugAdmin(access), view('/pug-dashboard', 'PUG Dashboard', 'gamepad')),
         when(has('discord-polls'), view('/schedules', 'Schedules', 'calendar-days')),
         when(has('faceit-leagues'), collection('faceit-leagues', 'FaceIt', 'trophy')),
         // Heroes and Maps share one tabbed reference page (/admin/game-data) instead of two entries.
@@ -205,7 +188,7 @@ export function buildNavAreas({ user, collections, globals }: BuildNavInput): Na
       id: 'system',
       label: 'System',
       items: [
-        when(isAdmin(user) && hasGlobal('system-health'), global('system-health', 'System Health', 'activity')),
+        when(access.isAdmin && hasGlobal('system-health'), global('system-health', 'System Health', 'activity')),
         // Server plumbing, not a department's daily work.
         when(hasGlobal('discord-server-manager'), global('discord-server-manager', 'Discord Server Manager', 'message')),
       ],

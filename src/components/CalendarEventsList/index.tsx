@@ -2,9 +2,8 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { useAuth } from '@payloadcms/ui'
 import { CalendarDays, Plus } from 'lucide-react'
-import type { Person } from '@/payload-types'
+import { useAccess } from '@/access/useAccess'
 import {
   AdminPage,
   AdminPageHeader,
@@ -32,7 +31,7 @@ const PAGE_SIZE = 60
 
 /** Calendar Events list on the kit; replaces the stock list and its click interceptor. */
 export default function CalendarEventsListView() {
-  const { user } = useAuth<Person>()
+  const { access } = useAccess()
   const [events, setEvents] = useState<CalendarEventRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -42,8 +41,7 @@ export default function CalendarEventsListView() {
   const [when, setWhen] = useUrlParamState('when', 'upcoming')
   const [region, setRegion] = useUrlParamState('region', 'all')
 
-  const role = (user?.role as string) ?? ''
-  const canCreate = role === 'admin' || role === 'staff-manager'
+  const canCreate = access?.canManagePeople ?? false
 
   const load = useCallback(async () => {
     setLoading(true)
