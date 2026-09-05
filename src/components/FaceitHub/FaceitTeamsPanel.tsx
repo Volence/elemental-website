@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Button, toast } from '@payloadcms/ui'
-import { AlertTriangle, CheckCircle, ExternalLink, RefreshCw, Users } from 'lucide-react'
+import { AlertTriangle, CheckCircle, ExternalLink, Link2, RefreshCw, Settings2, Users } from 'lucide-react'
 import { AdminTable, Badge, SectionCard, formatRelative, type AdminTableColumn } from '@/admin-kit'
 import { parseFaceitUrl, isValidFaceitId } from '@/utilities/faceitUrlParser'
 import { faceitTeamStatus, needsAttention, type FaceitOverviewLeague, type FaceitTeamRow } from '@/utilities/faceitTeamStatus'
@@ -117,15 +117,24 @@ export default function FaceitTeamsPanel() {
     }
   }
 
-  const saveFaceitId = (row: FaceitTeamRow) => {
-    const draft = (idDrafts[row.id] ?? '').trim()
+  /** A FACEIT team id, from a bare id or the team's FACEIT page URL. */
+  const teamIdFrom = (value: string): string | null => {
+    const v = value.trim()
+    if (!v) return null
+    if (isValidFaceitId(v)) return v
+    const parsed = parseFaceitUrl(v)
+    return parsed.teamId && isValidFaceitId(parsed.teamId) ? parsed.teamId : null
+  }
+
+  const saveFaceitId = (row: FaceitTeamRow, value?: string) => {
+    const draft = (value ?? idDrafts[row.id] ?? '').trim()
     if (!draft || draft === row.faceitTeamId) return
-    const parsed = parseFaceitUrl(draft)
-    const id = parsed.teamId && isValidFaceitId(parsed.teamId) ? parsed.teamId : isValidFaceitId(draft) ? draft : null
+    const id = teamIdFrom(draft)
     if (!id) {
-      toast.error('That is not a FACEIT team id or team URL')
+      toast.error('Paste the team page URL from faceit.com (faceit.com/en/teams/...) or the team id')
       return
     }
+    if (id === row.faceitTeamId) return
     withBusy(row.id, 'id', async () => {
       // Sending the enable flag and league with the id lets the season hook run
       await patchTeam(row.id, { faceitTeamId: id, faceitEnabled: true, currentFaceitLeague: row.league?.id ?? null })
@@ -164,7 +173,7 @@ export default function FaceitTeamsPanel() {
       await load()
     })
 
-  const runAction = (row: FaceitTeamRow, action: 'sync' | 'clearLeague') =>
+  const runAction = (row: FaceitTeamRow, action: 'sync' | 'clearLeague' | 'assignRegistered') =>
     withBusy(row.id, action, async () => {
       const res = await fetch('/api/faceit/teams-overview', {
         method: 'POST',
@@ -175,9 +184,16 @@ export default function FaceitTeamsPanel() {
       const json = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(json.error || 'Action failed')
       if (action === 'sync') toast.success(`${row.name}: synced (${json.matchesCreated ?? 0} created, ${json.matchesUpdated ?? 0} updated)`)
-      else toast.success(`${row.name}: league cleared`)
+      else if (action === 'assignRegistered') {
+        toast.success(`${row.name}: now in ${json.league}${json.leagueCreated ? ' (template created)' : ''}`)
+        if (json.sync && !json.sync.ok) toast.error(`${row.name}: sync failed, ${json.sync.error}`)
+      } else toast.success(`${row.name}: league cleared`)
       await load()
     })
+
+  /** FACEIT knows the division; the team is not on it yet. */
+  const canTakeRegistered = (row: FaceitTeamRow) =>
+    row.faceitEnabled && !row.faceitWithdrawn && row.registration === 'registered' && !!row.registeredLeague && row.league?.name !== row.registeredLeague
 
   const applySuggestion = (row: FaceitTeamRow, s: FaceitTeamRow['suggestions'][number]) =>
     withBusy(row.id, 'suggest', async () => {
@@ -210,6 +226,11 @@ export default function FaceitTeamsPanel() {
       render: (r) => (
         <div className="faceit-teams__status">
           <Badge tone={r.status.tone} size="sm">{r.status.label}</Badge>
+          {canTakeRegistered(r) && (
+            <button type="button" className="faceit-rollover__chip" disabled={!!busy[r.id]} onClick={() => runAction(r, 'assignRegistered')}>
+              {busy[r.id] === 'assignRegistered' ? 'Setting...' : `Set league from FACEIT: ${r.registeredLeague}`}
+            </button>
+          )}
           {r.suggestions.length > 0 && (
             <div className="faceit-teams__suggestions">
               {r.suggestions.map((s) => (
@@ -238,19 +259,38 @@ export default function FaceitTeamsPanel() {
     },
     {
       key: 'faceitTeamId',
-      header: 'FACEIT team id or URL',
+      header: 'FACEIT team (paste page URL)',
       render: (r) => (
-        <input
-          type="text"
-          className="faceit-teams__input faceit-teams__input--id"
-          value={idDrafts[r.id] ?? r.faceitTeamId ?? ''}
-          placeholder="Paste team URL or id"
-          disabled={!!busy[r.id]}
-          onChange={(e) => setIdDrafts((d) => ({ ...d, [r.id]: e.target.value }))}
-          onBlur={() => saveFaceitId(r)}
-          onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
-          aria-label={`FACEIT team id for ${r.name}`}
-        />
+        <div className="faceit-teams__id-cell">
+          <input
+            type="text"
+            className="faceit-teams__input faceit-teams__input--id"
+            value={idDrafts[r.id] ?? r.faceitTeamId ?? ''}
+            placeholder="Paste faceit.com/en/teams/... URL"
+            disabled={!!busy[r.id]}
+            onChange={(e) => {
+              const value = e.target.value
+              setIdDrafts((d) => ({ ...d, [r.id]: value }))
+              // A pasted team page URL saves straight away; a bare id waits for blur or Enter
+              if (/faceit\.com\//i.test(value) && teamIdFrom(value)) saveFaceitId(r, value)
+            }}
+            onBlur={() => saveFaceitId(r)}
+            onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+            aria-label={`FACEIT team for ${r.name}`}
+          />
+          {r.faceitTeamId && (
+            <a
+              className="faceit-teams__icon-link"
+              href={`https://www.faceit.com/en/teams/${r.faceitTeamId}`}
+              target="_blank"
+              rel="noreferrer"
+              title="Open this team on FACEIT to check it is the right one"
+              aria-label={`Open ${r.name} on FACEIT`}
+            >
+              <ExternalLink size={13} />
+            </a>
+          )}
+        </div>
       ),
     },
     {
@@ -301,6 +341,9 @@ export default function FaceitTeamsPanel() {
       align: 'right',
       render: (r) => (
         <div className="faceit-teams__actions">
+          <a className="faceit-teams__icon-link" href={`/admin/collections/teams/${r.id}`} title="Open the team page" aria-label={`Open ${r.name} team page`}>
+            <Settings2 size={13} />
+          </a>
           {r.status.code === 'stale-pointer' ? (
             <Button size="small" buttonStyle="secondary" disabled={!!busy[r.id]} onClick={() => runAction(r, 'clearLeague')}>
               Clear league
@@ -359,7 +402,7 @@ export default function FaceitTeamsPanel() {
         emptyHint={filter === 'attention' ? <><CheckCircle size={12} /> Switch to All to see the full list.</> : undefined}
         footer={
           <span className="faceit-teams__footer">
-            <ExternalLink size={12} /> Team pages carry the full FaceIt tab; this table saves as you go.
+            <Link2 size={12} /> To fix a team id, open the team on faceit.com and paste its page URL into the box; the id is pulled out and saved. The arrow next to an id opens that team on FACEIT so you can check it.
           </span>
         }
       />

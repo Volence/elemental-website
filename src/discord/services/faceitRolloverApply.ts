@@ -36,6 +36,80 @@ export function isRolloverRunning(): boolean {
   return running
 }
 
+/** Reuse the template that matches this planned league, or create it. Returns its id. */
+export async function ensureLeagueTemplate(payload: Payload, league: PlannedLeague): Promise<{ id: number; created: boolean }> {
+  if (league.existingId) return { id: league.existingId, created: false }
+  const existing = await payload.find({
+    collection: 'faceit-leagues',
+    where: { and: [{ seasonId: { equals: league.seasonId } }, { stageId: { equals: league.stageId } }] },
+    limit: 1,
+    depth: 0,
+    overrideAccess: true,
+  })
+  if (existing.docs[0]) return { id: existing.docs[0].id as number, created: false }
+  const created = await payload.create({
+    collection: 'faceit-leagues',
+    data: {
+      name: league.name,
+      isActive: true,
+      seasonNumber: league.seasonNumber,
+      division: league.division,
+      region: league.region,
+      conference: league.conference,
+      leagueId: league.leagueId,
+      seasonId: league.seasonId,
+      stageId: league.stageId,
+      championshipId: league.championshipId,
+      notes: `Created by season rollover on ${new Date().toISOString().slice(0, 10)}`,
+    },
+    overrideAccess: true,
+  })
+  return { id: created.id as number, created: true }
+}
+
+/**
+ * Point one team at a league template. Sends faceitEnabled and the team id
+ * along so the Teams beforeChange hook creates the season record.
+ */
+export async function moveTeamToLeague(payload: Payload, teamId: number, leagueId: number): Promise<void> {
+  const current = await payload.findByID({ collection: 'teams', id: teamId, depth: 0, overrideAccess: true })
+  await payload.update({
+    collection: 'teams',
+    id: teamId,
+    data: {
+      faceitEnabled: true,
+      faceitTeamId: (current as any).faceitTeamId,
+      currentFaceitLeague: leagueId,
+      faceitWithdrawn: false,
+    } as any,
+    overrideAccess: true,
+  })
+}
+
+/**
+ * Per-team version of the rollover: put the team in the division FACEIT
+ * says it registered for, creating the template if needed, then sync.
+ */
+export async function assignTeamFromRegistration(
+  payload: Payload,
+  plan: RolloverPlan,
+  teamId: number,
+): Promise<{ league: string; leagueCreated: boolean; sync: { ok: boolean; matchesCreated: number; matchesUpdated: number; error?: string } }> {
+  const assignment = plan.assignments.find((a) => a.teamId === teamId)
+  if (!assignment) throw new Error('FACEIT lists no registration for this team in the latest season')
+  const league = plan.leagues.find((l) => l.key === assignment.toKey)
+  if (!league) throw new Error(`Planned league ${assignment.toName} not found`)
+  const { id, created } = await ensureLeagueTemplate(payload, league)
+  await moveTeamToLeague(payload, teamId, id)
+  const team = await payload.findByID({ collection: 'teams', id: teamId, depth: 0, overrideAccess: true })
+  const r = await syncTeamData(teamId, (team as any).faceitTeamId || '', league.championshipId, league.leagueId, league.seasonId, league.stageId)
+  return {
+    league: league.name,
+    leagueCreated: created,
+    sync: { ok: r.success, matchesCreated: r.matchesCreated || 0, matchesUpdated: r.matchesUpdated || 0, error: r.success ? undefined : r.error },
+  }
+}
+
 export async function applyRolloverPlan(payload: Payload, plan: RolloverPlan, overrides: RolloverOverrides): Promise<RolloverReport> {
   if (running) throw new Error('A rollover is already running')
   running = true

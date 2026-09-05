@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload, type Payload } from 'payload'
 import configPromise from '@payload-config'
 import { authenticateRequest, requireAdmin } from '@/utilities/apiAuth'
-import { invalidateLatestSeasonPlan, peekLatestSeasonPlan } from '@/utilities/faceitRolloverLoad'
+import { getLatestSeasonPlan, invalidateLatestSeasonPlan, peekLatestSeasonPlan } from '@/utilities/faceitRolloverLoad'
 import { syncTeamData } from '@/utilities/faceitSync'
+import { assignTeamFromRegistration } from '@/discord/services/faceitRolloverApply'
 import type { FaceitTeamRow, FaceitOverviewLeague } from '@/utilities/faceitTeamStatus'
 
 /**
@@ -16,7 +17,9 @@ import type { FaceitTeamRow, FaceitOverviewLeague } from '@/utilities/faceitTeam
  *   response never waits for it. While `registrationPending` is true the
  *   client polls and the registration column fills in when it lands.
  * POST { action, teamId } -> 'sync' runs the team's sync; 'clearLeague' drops a
- *                            stale league pointer on a disabled or inactive team.
+ *                            stale league pointer on a disabled or inactive team;
+ *                            'assignRegistered' puts the team in the division FACEIT
+ *                            says it registered for (creating the template if needed).
  * Admin only. Field edits go through the normal /api/teams/:id PATCH.
  */
 
@@ -131,6 +134,14 @@ export async function POST(request: NextRequest) {
         league.stageId || '',
       )
       return NextResponse.json(result, { status: result.success ? 200 : 400 })
+    }
+
+    if (action === 'assignRegistered') {
+      const latest = await getLatestSeasonPlan(payload)
+      if (!latest) return NextResponse.json({ error: 'FACEIT has no published season' }, { status: 502 })
+      const result = await assignTeamFromRegistration(payload, latest.plan, teamId)
+      invalidateLatestSeasonPlan()
+      return NextResponse.json(result)
     }
 
     if (action === 'clearLeague') {

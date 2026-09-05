@@ -69,7 +69,13 @@ export function faceitTeamStatus(row: FaceitTeamRow, latestSeasonNumber: number 
   }
   if (row.faceitWithdrawn) return { code: 'withdrawn', label: 'Withdrawn this season', tone: 'neutral' }
   if (!row.faceitTeamId) return { code: 'no-id', label: 'No FACEIT team id', tone: 'danger' }
-  if (!row.league) return { code: 'no-league', label: 'No league', tone: 'danger' }
+  if (!row.league) {
+    return {
+      code: 'no-league',
+      label: row.registeredLeague ? `No league (FACEIT: ${row.registeredLeague})` : 'No league',
+      tone: 'danger',
+    }
+  }
   if (!row.league.isActive || (latestSeasonNumber != null && (row.league.seasonNumber ?? 0) < latestSeasonNumber)) {
     return { code: 'old-season', label: `On ${row.league.name}`, tone: 'warning' }
   }
