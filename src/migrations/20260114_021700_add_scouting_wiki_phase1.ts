@@ -1,5 +1,5 @@
 import type { MigrateUpArgs, MigrateDownArgs } from '@payloadcms/db-postgres'
-import { sql } from 'drizzle-orm'
+import { sql } from '@payloadcms/db-postgres'
 
 export async function up({ payload }: MigrateUpArgs): Promise<void> {
   // Create Heroes table
