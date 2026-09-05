@@ -3,7 +3,7 @@ import { PUG_REGION_LIST } from '@/pug/types'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
-import { joinLobby, getActiveBan, isPugRegion, createOpenLobby } from '@/pug'
+import { joinLobby, getActiveBan, isPugRegion, createOpenLobby, findActiveLobbyForUser, blocksNewLobby } from '@/pug'
 
 const VALID_ROLES = ['tank', 'flex_dps', 'hitscan_dps', 'flex_support', 'main_support']
 
@@ -63,6 +63,17 @@ export async function POST(request: NextRequest) {
     } catch {
       // This lobby didn't work (role conflict, full, etc.) - try next
     }
+  }
+
+  // Every open lobby refused the player. That is usually "all full / role conflict", but it
+  // is also what a player still sitting in an active lobby sees, and for them a fresh lobby
+  // is wrong: they cannot join it either, so each click would strand an empty lobby.
+  const activeLobby = await findActiveLobbyForUser(user.id)
+  if (blocksNewLobby(activeLobby)) {
+    return NextResponse.json(
+      { error: `You are still in PUG #${activeLobby!.lobbyNumber}. Finish or leave it before queuing again.` },
+      { status: 409 },
+    )
   }
 
   // No joinable lobby exists (none open, or all full / role-conflicting) -
