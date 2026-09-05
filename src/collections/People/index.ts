@@ -220,6 +220,7 @@ export const People: CollectionConfig = {
               admin: { description: 'Staff titles. Each grants its department; the lead flag grants lead level. Order is display order.' },
               access: {
                 read: () => true,
+                create: personAccessFieldUpdate,
                 update: personAccessFieldUpdate,
               },
               fields: [
@@ -253,6 +254,7 @@ export const People: CollectionConfig = {
               },
               access: {
                 read: ({ req: { user } }) => Boolean(user),
+                create: personAccessFieldUpdate,
                 update: personAccessFieldUpdate,
               },
               options: [
@@ -294,6 +296,7 @@ export const People: CollectionConfig = {
                   if (user.role === UserRole.PLAYER || user.role === UserRole.TEAM_MANAGER) return true
                   return false
                 },
+                create: personAccessFieldUpdate,
                 update: personAccessFieldUpdate,
               },
             },
@@ -309,6 +312,7 @@ export const People: CollectionConfig = {
                 // flags that client UI (tab bars, nav) must gate on for the
                 // logged-in user themself. Updates stay admin-only.
                 read: ({ req: { user } }) => Boolean(user),
+                create: personAccessFieldUpdate,
                 update: personAccessFieldUpdate,
               },
               fields: [
@@ -633,8 +637,11 @@ export const People: CollectionConfig = {
           }
         }
 
-        if (operation === 'update' && req.user && originalDoc) {
+        if (req.user && (operation === 'create' || originalDoc)) {
           await enforcePersonAccessChange({ req, data, originalDoc, operation })
+        }
+
+        if (operation === 'update' && originalDoc) {
           const actorAccess = await resolveAccessForReq(req)
           const canEditPug = actorAccess ? actorAccess.isAdmin || actorAccess.departments.pug !== 'none' : true
           if (!canEditPug && data) {

@@ -22,11 +22,18 @@ export function raiseRoleForTitles(data: { role?: string | null; titles?: any[] 
 export async function enforcePersonAccessChange(args: { req: PayloadRequest; data: any; originalDoc: any; operation: 'create' | 'update' }): Promise<void> {
   const { req, data, originalDoc, operation } = args
   if (!req.user || !data) return
-  if (!ACCESS_FIELDS.some((f) => f in data)) return
 
   const actor = await resolveAccessForReq(req)
   if (!actor) return
-  if (actor.canManagePeople) return
+
+  // A non-staff actor's write is never trusted with the client-supplied timestamps, whether
+  // or not this particular write touches an access field (e.g. a plain profile edit).
+  if (!actor.canManagePeople) {
+    delete data.createdAt
+    delete data.updatedAt
+  }
+
+  if (!ACCESS_FIELDS.some((f) => f in data)) return
 
   const before: PersonAccessFields = operation === 'create'
     ? { role: 'user', titles: [], departments: {}, teamAccess: [] }

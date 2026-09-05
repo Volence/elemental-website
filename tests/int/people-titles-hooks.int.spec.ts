@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { raiseRoleForTitles, enforcePersonAccessChange } from '@/collections/People/hooks/titlesAndRole'
+import { invalidateTeamsCache } from '@/access/teamsCache'
 
 describe('raiseRoleForTitles', () => {
   it('raises user to admin when an Owner title is present', () => {
@@ -30,6 +31,15 @@ describe('enforcePersonAccessChange', () => {
   const reqFor = (user: any) => ({ user, payload, context: {} }) as any
   const original = { id: 50, role: 'user', titles: [{ title: 'caster' }], departments: {}, teamAccess: [] }
 
+  // A team manager: no titles/departments of their own, but manages a team (grants create
+  // access and picker access, not canManagePeople or any department lead).
+  const teamManagerPayload = { find: async () => ({ docs: [{ id: 9, manager: [{ person: 3 }], coaches: [], captain: [] }] }) }
+  const reqForTeamManager = (user: any) => ({ user, payload: teamManagerPayload, context: {} }) as any
+
+  beforeEach(() => {
+    invalidateTeamsCache()
+  })
+
   it('lets an admin change anything', async () => {
     await expect(enforcePersonAccessChange({ req: reqFor({ id: 1, role: 'admin' }), data: { role: 'admin', titles: [] }, originalDoc: original, operation: 'update' })).resolves.toBeUndefined()
   })
@@ -47,5 +57,43 @@ describe('enforcePersonAccessChange', () => {
   })
   it('skips when there is no user (internal/local API with overrideAccess)', async () => {
     await expect(enforcePersonAccessChange({ req: reqFor(null), data: { role: 'admin' }, originalDoc: original, operation: 'update' })).resolves.toBeUndefined()
+  })
+
+  it('rejects a team manager granting Owner on create with a 403 APIError', async () => {
+    const req = reqForTeamManager({ id: 3, role: 'user' })
+    await expect(enforcePersonAccessChange({
+      req,
+      data: { name: 'X', discordId: '111111111111111111', titles: [{ title: 'owner' }] },
+      originalDoc: undefined,
+      operation: 'create',
+    })).rejects.toMatchObject({ status: 403 })
+  })
+
+  it('lets a team manager create a person with no access fields', async () => {
+    const req = reqForTeamManager({ id: 3, role: 'user' })
+    await expect(enforcePersonAccessChange({
+      req,
+      data: { name: 'X', discordId: '111111111111111111' },
+      originalDoc: undefined,
+      operation: 'create',
+    })).resolves.toBeUndefined()
+  })
+
+  it('lets an admin create a person with an Owner title', async () => {
+    const req = reqFor({ id: 1, role: 'admin' })
+    await expect(enforcePersonAccessChange({
+      req,
+      data: { name: 'X', discordId: '111111111111111111', titles: [{ title: 'owner' }] },
+      originalDoc: undefined,
+      operation: 'create',
+    })).resolves.toBeUndefined()
+  })
+
+  it('strips client-supplied timestamps on a non-staff write', async () => {
+    const req = reqFor({ id: 50, role: 'user' })
+    const data: any = { bio: 'x', createdAt: '2020-01-01', updatedAt: '2020-01-01' }
+    await expect(enforcePersonAccessChange({ req, data, originalDoc: original, operation: 'update' })).resolves.toBeUndefined()
+    expect('createdAt' in data).toBe(false)
+    expect('updatedAt' in data).toBe(false)
   })
 })
