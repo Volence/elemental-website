@@ -1,6 +1,8 @@
 export {
   createOpenLobby,
   createInviteLobby,
+  blocksNewLobby,
+  findActiveLobbyForUser,
   joinLobby,
   leaveLobby,
   makeDraftPick,

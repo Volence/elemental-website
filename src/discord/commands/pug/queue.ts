@@ -8,7 +8,7 @@ import {
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
-import { joinLobby, createOpenLobby, getActiveBan } from '@/pug'
+import { joinLobby, createOpenLobby, getActiveBan, findActiveLobbyForUser, blocksNewLobby } from '@/pug'
 
 const OPEN_ROLES = [
   { label: 'Tank', value: 'tank' },
@@ -97,6 +97,16 @@ export async function handlePugQueue(interaction: ChatInputCommandInteraction): 
     })
 
     if (!lobby) {
+      // A player still in an active lobby cannot join whatever we make, so making it
+      // would just leave an empty lobby behind on every attempt.
+      const activeLobby = await findActiveLobbyForUser(user.id)
+      if (blocksNewLobby(activeLobby)) {
+        await interaction.editReply({
+          content: `❌ You are still in PUG #${activeLobby!.lobbyNumber}. Finish or leave it before queuing again.`,
+          components: [],
+        })
+        return
+      }
       lobby = await createOpenLobby(user.id, season.id, region)
     }
 

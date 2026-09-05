@@ -3,7 +3,7 @@ import { VALID_REGIONS, PUG_REGION_LIST } from '@/pug/types'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
-import { createOpenLobby, isPugRegion } from '@/pug'
+import { createOpenLobby, isPugRegion, findActiveLobbyForUser, blocksNewLobby } from '@/pug'
 import { enrichSpectators } from '@/pug/spectators'
 
 export async function GET(request: NextRequest) {
@@ -189,6 +189,16 @@ export async function POST(request: NextRequest) {
     })
     if (existing && existing._count.players < 10) {
       return NextResponse.json({ lobby: existing, created: false }, { status: 200 })
+    }
+
+    // Same guard as quick-join: a player who already sits in an active lobby cannot use
+    // a new one, so let them find that out instead of leaving an empty lobby behind.
+    const activeLobby = await findActiveLobbyForUser(user.id)
+    if (blocksNewLobby(activeLobby)) {
+      return NextResponse.json(
+        { error: `You are still in PUG #${activeLobby!.lobbyNumber}. Finish or leave it before queuing again.` },
+        { status: 409 },
+      )
     }
 
     const lobby = await createOpenLobby(user.id, payloadSeasonId, region)
