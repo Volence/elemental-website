@@ -24,6 +24,7 @@ import prisma from '@/lib/prisma'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { resolveAccessForUser } from '@/access'
+import { authError } from '@/utilities/apiAuth'
 
 export async function POST(request: Request) {
   try {
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
     const { user } = await payload.auth({ headers: request.headers })
 
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return authError(401, 'Unauthorized')
     }
     // Scrims are still owned by an email string; Discord-only accounts get a synthetic key.
     const creatorEmail = scrimOwnerKey(user as { email?: string | null; discordId?: string | null })
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
     const userRole = (user as { role?: string }).role
     const access = await resolveAccessForUser(payload, user as any)
     if (!access) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return authError(401, 'Unauthorized')
     }
 
     const formData = await request.formData()
@@ -80,7 +81,7 @@ export async function POST(request: Request) {
       externalTeamName,
     })
     if (targetError) {
-      return NextResponse.json({ error: targetError }, { status: 403 })
+      return authError(403, targetError)
     }
 
     // Malformed mappings are a hard error: proceeding without them silently
@@ -102,10 +103,7 @@ export async function POST(request: Request) {
       .filter((n) => !isNaN(n))
     const outOfScope = teamIdsOutsideScope(access, requestedTeamIds)
     if (outOfScope.length > 0) {
-      return NextResponse.json(
-        { error: 'You can only upload scrims for your assigned teams.' },
-        { status: 403 },
-      )
+      return authError(403, 'You can only upload scrims for your assigned teams.')
     }
 
     if (!files.length) {

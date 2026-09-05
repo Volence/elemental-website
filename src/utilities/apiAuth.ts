@@ -18,6 +18,14 @@ export interface AuthenticatedContext {
 }
 
 /**
+ * Build an auth-failure JSON body. Carries both `error` and `message` (same text) so callers
+ * that read either key get the real reason instead of degrading to a generic fallback.
+ */
+export function authError(status: number, text: string): NextResponse {
+  return NextResponse.json({ success: false, error: text, message: text }, { status })
+}
+
+/**
  * Authenticate API request and return payload + user
  * 
  * @returns Success object with payload and user, or error response
@@ -46,10 +54,7 @@ export async function authenticateRequest(): Promise<
     if (!user) {
       return {
         success: false,
-        response: NextResponse.json(
-          { success: false, error: 'Authentication required' },
-          { status: 403 },
-        ),
+        response: authError(403, 'Authentication required'),
       }
     }
 
@@ -60,10 +65,7 @@ export async function authenticateRequest(): Promise<
   } catch (error) {
     return {
       success: false,
-      response: NextResponse.json(
-        { success: false, error: 'Authentication failed' },
-        { status: 500 },
-      ),
+      response: authError(500, 'Authentication failed'),
     }
   }
 }
@@ -152,10 +154,7 @@ export function isAdmin(user: Person): boolean {
  */
 export function requireAdmin(user: Person): NextResponse | undefined {
   if (!isAdmin(user)) {
-    return NextResponse.json(
-      { success: false, error: 'Admin access required' },
-      { status: 403 },
-    )
+    return authError(403, 'Admin access required')
   }
   return undefined
 }
@@ -184,10 +183,7 @@ export async function authenticateWithAccess(): Promise<
   if (!access) {
     return {
       success: false,
-      response: NextResponse.json(
-        { success: false, error: 'Authentication required' },
-        { status: 403 },
-      ),
+      response: authError(403, 'Authentication required'),
     }
   }
   return { success: true, data: { payload, user, access } }
@@ -196,7 +192,7 @@ export async function authenticateWithAccess(): Promise<
 /** 403 JSON response when access is not admin, undefined otherwise. */
 export function requireAdminAccess(access: ResolvedAccess): NextResponse | undefined {
   if (!access.isAdmin) {
-    return NextResponse.json({ success: false, error: 'Admin access required' }, { status: 403 })
+    return authError(403, 'Admin access required')
   }
   return undefined
 }
@@ -204,7 +200,7 @@ export function requireAdminAccess(access: ResolvedAccess): NextResponse | undef
 /** 403 JSON response when access is below staff-manager, undefined otherwise. */
 export function requireStaffManagerAccess(access: ResolvedAccess): NextResponse | undefined {
   if (!access.canManagePeople) {
-    return NextResponse.json({ success: false, error: 'Staff manager access required' }, { status: 403 })
+    return authError(403, 'Staff manager access required')
   }
   return undefined
 }
@@ -212,7 +208,7 @@ export function requireStaffManagerAccess(access: ResolvedAccess): NextResponse 
 /** 403 JSON response when access does not hold `key` at `level` (default member), undefined otherwise. */
 export function requireDepartment(access: ResolvedAccess, key: DepartmentKey, level: Level = 'member'): NextResponse | undefined {
   if (!hasDepartment(access, key, level)) {
-    return NextResponse.json({ success: false, error: 'Department access required' }, { status: 403 })
+    return authError(403, 'Department access required')
   }
   return undefined
 }

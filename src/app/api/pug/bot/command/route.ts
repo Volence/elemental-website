@@ -1,12 +1,12 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import prisma from '@/lib/prisma'
-import { authenticateWithAccess } from '@/utilities/apiAuth'
+import { authenticateWithAccess, authError } from '@/utilities/apiAuth'
 import { hasDepartment } from '@/access'
 
 const COMMANDS = ['pause', 'unpause', 'end_draw', 'end_team1', 'end_team2'] as const
 type BotCommand = (typeof COMMANDS)[number]
 
-async function requirePugAdmin(_request: NextRequest) {
+async function requirePugAdmin(_request: NextRequest): Promise<{ error: string; status: number } | { user: any }> {
   const auth = await authenticateWithAccess()
   if (!auth.success) return { error: 'Unauthorized', status: 401 }
   const { user, access } = auth.data
@@ -16,7 +16,7 @@ async function requirePugAdmin(_request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const auth = await requirePugAdmin(request)
-  if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status })
+  if ('error' in auth) return authError(auth.status, auth.error)
 
   if (!process.env.OW_BOT_SERVICE_URL) {
     return NextResponse.json({ error: 'Bot service not configured' }, { status: 503 })

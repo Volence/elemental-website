@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { authenticateWithAccess } from '@/utilities/apiAuth'
+import { authenticateWithAccess, authError } from '@/utilities/apiAuth'
 import { claimTier, canReviewClaim } from '@/identity/claims'
 import { mergePeople } from '@/identity/merge'
 
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const hasStaffTitle = (target.titles ?? []).length > 0
   const tier = claimTier(target, hasStaffTitle)
   if (!canReviewClaim({ reviewer: { id: user.id as number, canManagePeople: access.canManagePeople, isAdmin: access.isAdmin }, tier, targetTeamManagerIds: [...managerIds] })) {
-    return NextResponse.json({ error: tier === 'admin' ? `Only an admin can ${action} this claim` : `Only this team's manager or staff can ${action}` }, { status: 403 })
+    return authError(403, tier === 'admin' ? `Only an admin can ${action} this claim` : `Only this team's manager or staff can ${action}`)
   }
 
   const decide = (status: 'approved' | 'declined' | 'pending') =>

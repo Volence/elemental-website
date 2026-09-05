@@ -1,11 +1,11 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { hasDepartment } from '@/access'
-import { authenticateWithAccess } from '@/utilities/apiAuth'
+import { authenticateWithAccess, authError } from '@/utilities/apiAuth'
 import { addSpectator, removeSpectator } from '@/pug/spectators'
 
 type Params = { params: Promise<{ id: string }> }
 
-async function gate(request: NextRequest) {
+async function gate(request: NextRequest): Promise<{ error: string; status: 401 | 403 } | { user: any }> {
   const auth = await authenticateWithAccess()
   if (!auth.success) return { error: 'Unauthorized', status: 401 as const }
   const { user, access } = auth.data
@@ -17,7 +17,7 @@ async function gate(request: NextRequest) {
 
 export async function POST(request: NextRequest, { params }: Params) {
   const g = await gate(request)
-  if ('error' in g) return NextResponse.json({ error: g.error }, { status: g.status })
+  if ('error' in g) return authError(g.status, g.error)
 
   const { id } = await params
   const lobbyId = parseInt(id, 10)
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest, { params }: Params) {
 
 export async function DELETE(request: NextRequest, { params }: Params) {
   const g = await gate(request)
-  if ('error' in g) return NextResponse.json({ error: g.error }, { status: g.status })
+  if ('error' in g) return authError(g.status, g.error)
 
   const { id } = await params
   const lobbyId = parseInt(id, 10)

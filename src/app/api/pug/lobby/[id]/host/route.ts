@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import prisma from '@/lib/prisma'
 import { freeBotInstanceForLobby } from '@/pug/lobbyStateMachine'
-import { authenticateWithAccess } from '@/utilities/apiAuth'
+import { authenticateWithAccess, authError } from '@/utilities/apiAuth'
 import { hasDepartment } from '@/access'
 
 type Params = { params: Promise<{ id: string }> }
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     const isPlayer = lobby.players.some((p) => p.userId === user.id)
 
     if (!isPlayer && !isPugAdmin) {
-      return NextResponse.json({ error: 'Only players or PUG admins can host' }, { status: 403 })
+      return authError(403, 'Only players or PUG admins can host')
     }
 
     if (action === 'switchToManual') {

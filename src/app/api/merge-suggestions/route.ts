@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { headers } from 'next/headers'
 import { resolveAccess } from '@/access'
+import { authError } from '@/utilities/apiAuth'
 
 async function getAdminWithDrizzle() {
   const payload = await getPayload({ config: configPromise })
@@ -17,7 +18,7 @@ async function getAdminWithDrizzle() {
 
 export async function GET() {
   const ctx = await getAdminWithDrizzle()
-  if (!ctx) return NextResponse.json({ error: 'Admin required' }, { status: 403 })
+  if (!ctx) return authError(403, 'Admin required')
   const { drizzle, sql } = ctx
 
   try {
@@ -54,7 +55,7 @@ export async function GET() {
 
 export async function PATCH(request: NextRequest) {
   const ctx = await getAdminWithDrizzle()
-  if (!ctx) return NextResponse.json({ error: 'Admin required' }, { status: 403 })
+  if (!ctx) return authError(403, 'Admin required')
   const { drizzle, sql } = ctx
 
   const body = await request.json()

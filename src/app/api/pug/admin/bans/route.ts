@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { authenticateWithAccess } from '@/utilities/apiAuth'
+import { authenticateWithAccess, authError } from '@/utilities/apiAuth'
 import { hasDepartment } from '@/access'
 
-async function requirePugAdmin(_request: NextRequest) {
+async function requirePugAdmin(_request: NextRequest): Promise<{ error: string; status: number } | { payload: any; user: any }> {
   const auth = await authenticateWithAccess()
   if (!auth.success) return { error: 'Unauthorized', status: 401 }
   const { payload, user, access } = auth.data
@@ -12,7 +12,7 @@ async function requirePugAdmin(_request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   const auth = await requirePugAdmin(request)
-  if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status })
+  if ('error' in auth) return authError(auth.status, auth.error)
   const { payload } = auth
 
   const url = new URL(request.url)
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const auth = await requirePugAdmin(request)
-  if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status })
+  if ('error' in auth) return authError(auth.status, auth.error)
   const { payload } = auth
 
   const body = await request.json()

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { resolveAccessForUser, canManageTeam } from '@/access'
+import { authError } from '@/utilities/apiAuth'
 
 async function getDiscordIdentity(request: NextRequest, payload: any) {
   const payloadToken = request.cookies.get('payload-token')?.value
@@ -238,7 +239,7 @@ export async function PATCH(
 
     const discordUser = await getDiscordIdentity(request, payload)
     if (!discordUser) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+      return authError(401, 'Not authenticated')
     }
 
     const teamResult = await payload.find({
@@ -258,7 +259,7 @@ export async function PATCH(
 
     if (body.action === 'saveSchedule') {
       if (!isManagerUser) {
-        return NextResponse.json({ error: 'Only managers can save schedules' }, { status: 403 })
+        return authError(403, 'Only managers can save schedules')
       }
 
       const { calendarId, schedule } = body
@@ -297,10 +298,10 @@ export async function PATCH(
     const { discordId, scheduleRole, scheduleStatus, calendarId } = body
     const isSelf = discordUser.id === discordId
     if (!isSelf && !isManagerUser) {
-      return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
+      return authError(403, 'Not authorized')
     }
     if (scheduleStatus !== undefined && !isManagerUser) {
-      return NextResponse.json({ error: 'Only managers can set player status' }, { status: 403 })
+      return authError(403, 'Only managers can set player status')
     }
 
     let calendar: any = null

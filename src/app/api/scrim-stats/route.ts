@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getUserScope } from '@/access/scrimScope'
-import { authenticateWithAccess } from '@/utilities/apiAuth'
+import { authenticateWithAccess, authError } from '@/utilities/apiAuth'
 import { getFinalRoundStats } from '@/lib/scrim-parser/data-access'
 import { groupKillsIntoFights, round } from '@/lib/scrim-parser/utils'
 import { sumStatByRound } from '@/lib/scrim-parser/round-stats'
@@ -143,7 +143,7 @@ async function resolveMapDisplayNames(mapId: number): Promise<DisplayNames> {
 export async function GET(req: NextRequest) {
   const authScope = await getUserScope()
   if (!authScope) {
-    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    return authError(401, 'Not authenticated')
   }
 
   const url = new URL(req.url)

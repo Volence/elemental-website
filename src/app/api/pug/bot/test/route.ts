@@ -3,13 +3,13 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
 import { completeMatch } from '@/pug/lobbyStateMachine'
-import { authenticateWithAccess } from '@/utilities/apiAuth'
+import { authenticateWithAccess, authError } from '@/utilities/apiAuth'
 import { hasDepartment } from '@/access'
 
 const BOT_URL = () => process.env.OW_BOT_SERVICE_URL
 const BOT_SECRET = () => process.env.OW_BOT_SECRET ?? ''
 
-async function requirePugAdmin(_request: NextRequest) {
+async function requirePugAdmin(_request: NextRequest): Promise<{ error: string; status: number } | { user: any }> {
   const auth = await authenticateWithAccess()
   if (!auth.success) return { error: 'Unauthorized', status: 401 }
   const { user, access } = auth.data
@@ -555,7 +555,7 @@ async function handleFillAndAdvance() {
 
 export async function POST(request: NextRequest) {
   const auth = await requirePugAdmin(request)
-  if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status })
+  if ('error' in auth) return authError(auth.status, auth.error)
 
   const body = await request.json()
   const { action } = body

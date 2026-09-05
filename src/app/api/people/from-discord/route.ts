@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { authenticateWithAccess } from '@/utilities/apiAuth'
+import { authenticateWithAccess, authError } from '@/utilities/apiAuth'
 import { getGuildGateway } from '@/identity/guild'
 import { DISCORD_ID_RE } from '@/identity/config'
 import { findPersonByDiscordId, createPersonFromDiscord } from '@/identity/people'
@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
   const auth = await authenticateWithAccess()
   if (!auth.success) return auth.response
   const { payload, user, access } = auth.data
-  if (!access.canPickMembers) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!access.canPickMembers) return authError(403, 'Forbidden')
 
   const body = await request.json().catch(() => ({}))
   const discordId = String(body?.discordId ?? '')

@@ -4,6 +4,7 @@ import configPromise from '@payload-config'
 import { headers } from 'next/headers'
 import { mergePeople } from '@/identity/merge'
 import { resolveAccess } from '@/access'
+import { authError } from '@/utilities/apiAuth'
 
 async function getAdmin() {
   const payload = await getPayload({ config: configPromise })
@@ -16,7 +17,7 @@ async function getAdmin() {
 export async function GET(request: NextRequest) {
   try {
     const payload = await getAdmin()
-    if (!payload) return NextResponse.json({ error: 'Admin required' }, { status: 403 })
+    if (!payload) return authError(403, 'Admin required')
 
     const url = new URL(request.url)
     const targetId = parseInt(url.searchParams.get('targetId') ?? '', 10)
@@ -129,7 +130,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const payload = await getAdmin()
-  if (!payload) return NextResponse.json({ error: 'Admin required' }, { status: 403 })
+  if (!payload) return authError(403, 'Admin required')
   const reqHeaders = await headers()
   const { user } = await payload.auth({ headers: reqHeaders })
 

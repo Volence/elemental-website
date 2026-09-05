@@ -12,10 +12,11 @@
  *   const { user, payload, access } = auth
  */
 
-import { NextResponse, type NextRequest } from 'next/server'
+import type { NextRequest } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { resolveAccessForUser, hasDepartment, type DepartmentKey, type Level } from '@/access'
+import { authError } from '@/utilities/apiAuth'
 
 export async function requireAuth(request: NextRequest, opts?: { department?: DepartmentKey; level?: Level }) {
   const payload = await getPayload({ config: configPromise })
@@ -23,7 +24,7 @@ export async function requireAuth(request: NextRequest, opts?: { department?: De
 
   const access = user ? await resolveAccessForUser(payload, user as any) : null
   if (!user || !access) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return authError(401, 'Unauthorized')
   }
 
   const allowed = opts?.department
@@ -31,7 +32,7 @@ export async function requireAuth(request: NextRequest, opts?: { department?: De
     : access.canManagePeople
 
   if (!allowed) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return authError(401, 'Unauthorized')
   }
 
   return { user, payload, access }
