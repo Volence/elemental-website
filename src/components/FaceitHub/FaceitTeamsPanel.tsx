@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Button, toast } from '@payloadcms/ui'
-import { AlertTriangle, CheckCircle, ExternalLink, Link2, RefreshCw, Settings2, Users } from 'lucide-react'
+import { AlertTriangle, CheckCircle, ExternalLink, Link2, RefreshCw, Settings2, Trophy, Users } from 'lucide-react'
 import { AdminTable, Badge, SectionCard, formatRelative, type AdminTableColumn } from '@/admin-kit'
 import { parseFaceitUrl, isValidFaceitId } from '@/utilities/faceitUrlParser'
 import { faceitTeamStatus, needsAttention, type FaceitOverviewLeague, type FaceitTeamRow } from '@/utilities/faceitTeamStatus'
@@ -24,6 +24,12 @@ interface Overview {
 const POLL_MS = 3000
 const POLL_MAX = 30
 
+/** Fired after any team change so the header (season pill, warning count) refreshes. */
+export const FACEIT_TEAMS_CHANGED = 'faceit:teams-changed'
+const notifyChanged = () => {
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(FACEIT_TEAMS_CHANGED))
+}
+
 type Filter = 'attention' | 'all'
 
 export default function FaceitTeamsPanel() {
@@ -31,7 +37,10 @@ export default function FaceitTeamsPanel() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [filter, setFilter] = useState<Filter>('attention')
+  // Default to everything, problems first: a row that gets fixed stays visible
+  // (flipping to OK) instead of vanishing from a filtered list.
+  const [filter, setFilter] = useState<Filter>('all')
+  const [bulkRunning, setBulkRunning] = useState(false)
   const [busy, setBusy] = useState<Record<number, string>>({})
   const [idDrafts, setIdDrafts] = useState<Record<number, string>>({})
 
@@ -93,6 +102,7 @@ export default function FaceitTeamsPanel() {
     setBusy((b) => ({ ...b, [teamId]: what }))
     try {
       await fn()
+      notifyChanged()
     } catch (err: any) {
       toast.error(err.message || 'Failed')
     } finally {
@@ -185,7 +195,7 @@ export default function FaceitTeamsPanel() {
       if (!res.ok) throw new Error(json.error || 'Action failed')
       if (action === 'sync') toast.success(`${row.name}: synced (${json.matchesCreated ?? 0} created, ${json.matchesUpdated ?? 0} updated)`)
       else if (action === 'assignRegistered') {
-        toast.success(`${row.name}: now in ${json.league}${json.leagueCreated ? ' (template created)' : ''}`)
+        toast.success(`${row.name}: now in ${json.league}${json.leagueCreated ? ' (template created)' : ''} and synced`)
         if (json.sync && !json.sync.ok) toast.error(`${row.name}: sync failed, ${json.sync.error}`)
       } else toast.success(`${row.name}: league cleared`)
       await load()
@@ -194,6 +204,31 @@ export default function FaceitTeamsPanel() {
   /** FACEIT knows the division; the team is not on it yet. */
   const canTakeRegistered = (row: FaceitTeamRow) =>
     row.faceitEnabled && !row.faceitWithdrawn && row.registration === 'registered' && !!row.registeredLeague && row.league?.name !== row.registeredLeague
+
+  const bulkCount = useMemo(() => (data ? data.teams.filter((t) => t.active && canTakeRegistered(t)).length : 0), [data])
+
+  const assignAll = async () => {
+    setBulkRunning(true)
+    try {
+      const res = await fetch('/api/faceit/teams-overview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ action: 'assignAllRegistered' }),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(json.error || 'Bulk update failed')
+      const failed = (json.results || []).filter((r: any) => !r.ok || r.error)
+      toast.success(`${json.moved} team${json.moved === 1 ? '' : 's'} moved to the division FACEIT lists`)
+      for (const f of failed) toast.error(`${f.teamName}: ${f.error}`)
+      await load()
+      notifyChanged()
+    } catch (err: any) {
+      toast.error(err.message || 'Bulk update failed')
+    } finally {
+      setBulkRunning(false)
+    }
+  }
 
   const applySuggestion = (row: FaceitTeamRow, s: FaceitTeamRow['suggestions'][number]) =>
     withBusy(row.id, 'suggest', async () => {
@@ -391,6 +426,11 @@ export default function FaceitTeamsPanel() {
               All{data ? ` (${data.teams.filter((t) => t.active).length})` : ''}
             </button>
           </div>
+          {bulkCount > 0 && (
+            <Button size="small" buttonStyle="primary" disabled={bulkRunning || Object.keys(busy).length > 0} onClick={assignAll}>
+              <Trophy size={12} /> {bulkRunning ? 'Moving teams...' : `Set all ${bulkCount} from FACEIT`}
+            </Button>
+          )}
           <Button size="small" buttonStyle="secondary" disabled={refreshing || !!data?.registrationPending} onClick={() => load(true)}>
             <RefreshCw size={12} /> {refreshing || data?.registrationPending ? 'Checking FACEIT...' : 'Recheck registrations'}
           </Button>

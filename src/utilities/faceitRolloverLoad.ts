@@ -53,11 +53,25 @@ export async function loadRolloverInputs(payload: Payload): Promise<RolloverInpu
   return { teamInputs, leagueInputs, ourLatest }
 }
 
-export async function detectFaceitSeasons(payload: Payload): Promise<SeasonDetection> {
+export interface SeasonDetectionWithTeams extends SeasonDetection {
+  /** Enabled, active teams not yet on the latest season (no league, or an older one) */
+  teamsBehind: number
+}
+
+export async function detectFaceitSeasons(payload: Payload): Promise<SeasonDetectionWithTeams> {
   const fetchers = createFaceitFetchers(process.env.FACEIT_API_KEY)
   const seasons = await fetchers.fetchSeasons(FACEIT_LEAGUE_ID)
-  const { ourLatest } = await loadRolloverInputs(payload)
-  return detectSeasons(seasons, ourLatest)
+  const { ourLatest, teamInputs, leagueInputs } = await loadRolloverInputs(payload)
+  const detection = detectSeasons(seasons, ourLatest)
+  const latestNumber = detection.latest?.number ?? null
+  const seasonOfLeague = new Map(leagueInputs.map((l) => [l.id, l.seasonNumber]))
+  const teamsBehind = teamInputs.filter((t) => {
+    if (!t.active || !t.faceitEnabled) return false
+    if (t.currentFaceitLeague == null) return true
+    const season = seasonOfLeague.get(t.currentFaceitLeague) ?? null
+    return latestNumber != null && (season ?? 0) < latestNumber
+  }).length
+  return { ...detection, teamsBehind }
 }
 
 /** Full dry-run plan for one FACEIT season. Reads FACEIT live. */

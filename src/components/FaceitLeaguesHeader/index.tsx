@@ -19,6 +19,8 @@ interface SeasonDetection {
   latest: { id: string; number: number; start: string | null; end: string | null } | null
   ours: number | null
   rolloverAvailable: boolean
+  /** Enabled, active teams not yet on the latest season */
+  teamsBehind: number
 }
 
 const FaceitLeaguesHeader: React.FC = () => {
@@ -45,6 +47,13 @@ const FaceitLeaguesHeader: React.FC = () => {
   useEffect(() => {
     fetchWarnings()
     fetchDetection()
+    // The teams panel below edits teams; keep the pill and warning count honest
+    const onChanged = () => {
+      fetchWarnings()
+      fetchDetection()
+    }
+    window.addEventListener('faceit:teams-changed', onChanged)
+    return () => window.removeEventListener('faceit:teams-changed', onChanged)
   }, [])
 
   const fetchDetection = async () => {
@@ -236,25 +245,33 @@ const FaceitLeaguesHeader: React.FC = () => {
       {/* Top Row: Season status + Actions + Warning */}
       <div className="faceit-leagues-header__top">
         <div className="faceit-leagues-header__actions">
-          {detection && (
-            <span className={`faceit-leagues-header__badge ${detection.rolloverAvailable ? 'faceit-leagues-header__badge--warning' : 'faceit-leagues-header__badge--success'}`}>
-              <Trophy size={12} />{' '}
-              {detection.ours != null ? `On Season ${detection.ours}` : 'No season tracked'}
-              {detection.latest && detection.rolloverAvailable && (
-                <> · Season {detection.latest.number} available{detection.latest.start ? ` (starts ${fmtStart(detection.latest.start)})` : ''}</>
-              )}
-              {detection.latest && !detection.rolloverAvailable && <> · current</>}
-            </span>
-          )}
+          {detection && (() => {
+            const behind = detection.teamsBehind ?? 0
+            const needsWork = detection.rolloverAvailable || behind > 0
+            return (
+              <span className={`faceit-leagues-header__badge ${needsWork ? 'faceit-leagues-header__badge--warning' : 'faceit-leagues-header__badge--success'}`}>
+                <Trophy size={12} />{' '}
+                {detection.ours != null ? `On Season ${detection.ours}` : 'No season tracked'}
+                {detection.latest && detection.rolloverAvailable && (
+                  <> · Season {detection.latest.number} available{detection.latest.start ? ` (starts ${fmtStart(detection.latest.start)})` : ''}</>
+                )}
+                {detection.latest && !detection.rolloverAvailable && behind > 0 && <> · {behind} team{behind === 1 ? '' : 's'} still to move</>}
+                {detection.latest && !detection.rolloverAvailable && behind === 0 && <> · all teams on it</>}
+              </span>
+            )
+          })()}
           {detectionError && (
             <span className="faceit-leagues-header__badge faceit-leagues-header__badge--warning">
               <AlertTriangle size={12} /> {detectionError}
             </span>
           )}
 
-          {detection?.rolloverAvailable && detection.latest && (
+          {detection?.latest && (detection.rolloverAvailable || (detection.teamsBehind ?? 0) > 0) && (
             <Button onClick={() => setShowRollover(true)} buttonStyle="primary">
-              <Trophy size={12} /> Roll over to Season {detection.latest.number}
+              <Trophy size={12} />{' '}
+              {detection.rolloverAvailable
+                ? `Roll over to Season ${detection.latest.number}`
+                : `Move ${detection.teamsBehind} team${detection.teamsBehind === 1 ? '' : 's'} to Season ${detection.latest.number}`}
             </Button>
           )}
 

@@ -118,7 +118,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}))
     const teamId = Number(body?.teamId)
     const action = String(body?.action || '')
-    if (!Number.isFinite(teamId) || teamId <= 0) return NextResponse.json({ error: 'teamId is required' }, { status: 400 })
+    if (action !== 'assignAllRegistered' && (!Number.isFinite(teamId) || teamId <= 0)) {
+      return NextResponse.json({ error: 'teamId is required' }, { status: 400 })
+    }
     const payload = await getPayload({ config: configPromise })
 
     if (action === 'sync') {
@@ -134,6 +136,28 @@ export async function POST(request: NextRequest) {
         league.stageId || '',
       )
       return NextResponse.json(result, { status: result.success ? 200 : 400 })
+    }
+
+    if (action === 'assignAllRegistered') {
+      // Every enabled team FACEIT places in a division it is not on yet, in one go
+      const latest = await getLatestSeasonPlan(payload)
+      if (!latest) return NextResponse.json({ error: 'FACEIT has no published season' }, { status: 502 })
+      const teams = await payload.find({ collection: 'teams', limit: 500, depth: 1, overrideAccess: true })
+      const results: Array<{ teamId: number; teamName: string; ok: boolean; league?: string; error?: string }> = []
+      for (const a of latest.plan.assignments) {
+        const team = teams.docs.find((t: any) => t.id === a.teamId) as any
+        if (!team || team.faceitEnabled !== true || team.active === false || team.faceitWithdrawn === true) continue
+        const currentName = typeof team.currentFaceitLeague === 'object' ? team.currentFaceitLeague?.name : null
+        if (currentName === a.toName) continue
+        try {
+          const r = await assignTeamFromRegistration(payload, latest.plan, a.teamId)
+          results.push({ teamId: a.teamId, teamName: a.teamName, ok: true, league: r.league, error: r.sync.ok ? undefined : `sync: ${r.sync.error}` })
+        } catch (err) {
+          results.push({ teamId: a.teamId, teamName: a.teamName, ok: false, error: (err as Error).message })
+        }
+      }
+      invalidateLatestSeasonPlan()
+      return NextResponse.json({ moved: results.filter((r) => r.ok).length, results })
     }
 
     if (action === 'assignRegistered') {
