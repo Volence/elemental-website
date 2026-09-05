@@ -2,6 +2,8 @@
  * Validation guards for the scrim-upload route.
  */
 
+import type { ResolvedAccess } from '@/access'
+
 /**
  * Parse a player_name → Person id mapping from its JSON form value.
  *
@@ -31,28 +33,27 @@ export function parsePlayerMappings(str: string | null): Record<string, number> 
 }
 
 /**
- * Validate who may upload what: org-team scrims need a manager role;
+ * Validate who may upload what: org-team scrims need staff or team access;
  * external-team scrims (free-text team, no org link) additionally need the
- * canUploadExternalScrims department flag - which also lets non-manager
- * coaches upload, but ONLY external scrims. Returns an error message or null.
+ * canUploadExternalScrims flag - which also lets non-manager coaches upload,
+ * but ONLY external scrims. Returns an error message or null.
  */
 export function validateUploadTarget(opts: {
-  role: string | undefined
-  canUploadExternalScrims: boolean
+  access: ResolvedAccess
   teamId: number | null
   externalTeamName: string | null
 }): string | null {
-  const isManager =
-    opts.role === 'admin' || opts.role === 'staff-manager' || opts.role === 'team-manager'
-  const isFullAccess = opts.role === 'admin' || opts.role === 'staff-manager'
+  const { access } = opts
+  const isManager = access.canManagePeople || access.teamIds.size > 0
+  const isFullAccess = access.canManagePeople
 
-  if (!isManager && !opts.canUploadExternalScrims) {
+  if (!isManager && !access.canUploadExternalScrims) {
     return 'Insufficient permissions. Only admins, staff managers, and team managers can upload scrims.'
   }
   if (opts.teamId != null && opts.externalTeamName) {
     return 'A scrim cannot be linked to both an org team and an external team name.'
   }
-  if (opts.externalTeamName && !isFullAccess && !opts.canUploadExternalScrims) {
+  if (opts.externalTeamName && !isFullAccess && !access.canUploadExternalScrims) {
     return 'External-team uploads require the external scrim uploader permission.'
   }
   if (!isManager) {
@@ -69,14 +70,10 @@ export function validateUploadTarget(opts: {
 
 /**
  * Which of the requested team ids fall outside the caller's upload scope.
- * Admin/staff-manager have full access; team-managers are limited to their
- * assigned teams (matching the scrim-rename / scrim-score-override rules).
+ * Staff (canManagePeople) have full access; everyone else is limited to their
+ * resolved team access (matching the scrim-rename / scrim-score-override rules).
  */
-export function teamIdsOutsideScope(
-  role: string | undefined,
-  assignedTeamIds: number[],
-  requestedTeamIds: number[],
-): number[] {
-  if (role === 'admin' || role === 'staff-manager') return []
-  return requestedTeamIds.filter((id) => !assignedTeamIds.includes(id))
+export function teamIdsOutsideScope(access: ResolvedAccess, requestedTeamIds: number[]): number[] {
+  if (access.canManagePeople) return []
+  return requestedTeamIds.filter((id) => !access.teamIds.has(id))
 }

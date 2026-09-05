@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import type { Metadata } from 'next'
 import OpenPageContent from './OpenPageContent'
+import { resolveAccessForUser, hasDepartment } from '@/access'
 
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'Open Tier PUGs' }
@@ -32,8 +33,8 @@ async function getPageState() {
     }
 
     const isRegistered = (user as any).pugTiers?.includes('open') ?? false
-    const u = user as any
-    const isPugAdmin = u.departments?.isPugAdmin === true || u.role === 'admin'
+    const access = await resolveAccessForUser(payload, user as any)
+    const isPugAdmin = access ? hasDepartment(access, 'pug') : false
 
     return {
       currentUser: { id: user.id as number, name: (user as any).name ?? null, email: user.email ?? undefined, battleTag: (user as any).pugBattleTag ?? null },

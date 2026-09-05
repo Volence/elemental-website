@@ -1,17 +1,15 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
-import { isPugAdmin, isProductionStaff } from '@/access/roles'
+import { hasDepartment } from '@/access'
+import { authenticateWithAccess } from '@/utilities/apiAuth'
 import { inviteSpectatorById } from '@/pug/spectators'
 
 type Params = { params: Promise<{ id: string; specId: string }> }
 
 export async function POST(request: NextRequest, { params }: Params) {
-  const payload = await getPayload({ config: configPromise })
-  const { user } = await payload.auth({ headers: request.headers })
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const args = { req: { user } } as any
-  if (!isPugAdmin(args) && !isProductionStaff(args)) {
+  const auth = await authenticateWithAccess()
+  if (!auth.success) return auth.response
+  const { access } = auth.data
+  if (!hasDepartment(access, 'pug') && !hasDepartment(access, 'production')) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
-import type { Person } from '@/payload-types'
 import { finalizeLeague } from '@/utilities/faceitFinalize'
+import { authenticateWithAccess, requireAdminAccess } from '@/utilities/apiAuth'
 
 /**
  * Finalize Season API
@@ -13,11 +11,11 @@ import { finalizeLeague } from '@/utilities/faceitFinalize'
  */
 export async function POST(request: NextRequest) {
   try {
-    const payload = await getPayload({ config: configPromise })
-    const { user } = await payload.auth({ headers: request.headers })
-    if (!user || (user as Person).role !== 'admin') {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
-    }
+    const auth = await authenticateWithAccess()
+    if (!auth.success) return auth.response
+    const { payload, access } = auth.data
+    const adminCheck = requireAdminAccess(access)
+    if (adminCheck) return adminCheck
 
     const body = await request.json()
     const { nameFilter } = body

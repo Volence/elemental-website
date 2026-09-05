@@ -141,8 +141,7 @@ export async function POST(request: Request): Promise<Response> {
       ? (invite.linkedPerson as any)?.id
       : invite.linkedPerson
 
-    const isPugAdminInvite = (invite.departments as any)?.isPugAdmin === true
-    const userRole = isPugAdminInvite ? 'staff-manager' : invite.role
+    const userRole = invite.role
 
     const departments = {
       isProductionStaff: invite.departments?.isProductionStaff || false,

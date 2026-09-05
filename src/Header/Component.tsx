@@ -4,6 +4,7 @@ import React from 'react'
 import { cookies } from 'next/headers'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
+import { resolveAccessForUser, hasDepartment } from '@/access'
 
 import type { Header } from '@/payload-types'
 
@@ -18,10 +19,11 @@ async function getCurrentUser(): Promise<NavUser | null> {
     const { user } = await payload.auth({ headers: new Headers({ Authorization: `JWT ${token}` }) })
     if (!user) return null
     const u = user as any
+    const access = await resolveAccessForUser(payload, user as any)
     return {
       name: u.name ?? null,
       email: u.email,
-      isAdmin: u.departments?.isPugAdmin === true || u.role === 'admin',
+      isAdmin: access ? hasDepartment(access, 'pug') : false,
     }
   } catch {
     return null

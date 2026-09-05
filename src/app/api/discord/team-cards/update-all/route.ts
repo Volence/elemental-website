@@ -1,46 +1,23 @@
 import { NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
-import { authenticateRequest, requireAdmin } from '@/utilities/apiAuth'
+import { authenticateWithAccess, requireAdminAccess } from '@/utilities/apiAuth'
 
 /**
  * POST /api/discord/team-cards/update-all
- * 
+ *
  * Soft refresh: Updates each team card in-place without deleting.
  * Only reposts if the original message is missing.
- * 
+ *
  * This is a safe operation that preserves card positions when possible.
  */
 export async function POST(request: Request) {
-  const auth = await authenticateRequest()
+  const auth = await authenticateWithAccess()
   if (!auth.success) return auth.response
-  const adminCheck = requireAdmin(auth.data.user)
+  const adminCheck = requireAdminAccess(auth.data.access)
   if (adminCheck) return adminCheck
 
   try {
-    // Verify authentication
-    const payload = await getPayload({ config: configPromise })
-    
-    // Get auth from cookies
-    const cookieHeader = request.headers.get('cookie') || ''
-    
-    // Simple auth check - verify user is admin
-    const authResponse = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'}/api/people/me`, {
-      headers: {
-        'Cookie': cookieHeader,
-      },
-    })
-    
-    if (!authResponse.ok) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    
-    const userData = await authResponse.json()
-    if (userData.user?.role !== 'admin') {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
-    }
-    
-    
+    const { payload } = auth.data
+
     // Fetch all teams
     const teams = await payload.find({
       collection: 'teams',

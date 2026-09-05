@@ -10,7 +10,9 @@
  * 2. An authenticated user with role `admin`.
  */
 
-type SeedUser = { role?: string | null } | null | undefined
+import { resolveAccess, type AccessPersonInput } from '@/access'
+
+type SeedUser = AccessPersonInput | null | undefined
 
 type SeedEnv = { NODE_ENV?: string; ALLOW_DB_SEED?: string }
 
@@ -20,7 +22,7 @@ export function canRunSeed(user: SeedUser, env: SeedEnv = process.env): SeedGuar
   if (env.NODE_ENV === 'production' && env.ALLOW_DB_SEED !== 'true') {
     return { ok: false, status: 404, reason: 'Seeding is disabled in production.' }
   }
-  if (!user || user.role !== 'admin') {
+  if (!user || !resolveAccess(user, []).isAdmin) {
     return { ok: false, status: 403, reason: 'Action forbidden.' }
   }
   return { ok: true }

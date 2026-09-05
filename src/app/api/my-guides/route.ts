@@ -1,19 +1,18 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
 import { guideMatchesViewer } from '@/guides/audience'
 import { DEFAULT_GUIDES, installMissingDefaultGuides, restoreDefaultGuide } from '@/guides/defaults'
+import { authenticateWithAccess, requireAdminAccess } from '@/utilities/apiAuth'
 
 /**
  * GET  /api/my-guides         guides for the signed-in person (admins: all, incl. unpublished) + their progress
  * POST /api/my-guides         admin only: { action: 'install-missing' } | { action: 'restore', slug }
  */
 export async function GET(request: NextRequest) {
-  const payload = await getPayload({ config: configPromise })
-  const { user } = await payload.auth({ headers: request.headers })
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = await authenticateWithAccess()
+  if (!auth.success) return auth.response
+  const { payload, user, access } = auth.data
   const u = user as any
-  const isAdmin = u.role === 'admin'
+  const isAdmin = access.isAdmin
 
   // First admin visit on an empty collection seeds the shipped guides.
   let installed: string[] = []
@@ -60,10 +59,11 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const payload = await getPayload({ config: configPromise })
-  const { user } = await payload.auth({ headers: request.headers })
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  if ((user as any).role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const auth = await authenticateWithAccess()
+  if (!auth.success) return auth.response
+  const { payload, access } = auth.data
+  const adminCheck = requireAdminAccess(access)
+  if (adminCheck) return adminCheck
   const body = await request.json().catch(() => ({}))
   if (body?.action === 'install-missing') {
     const installed = await installMissingDefaultGuides(payload as any, DEFAULT_GUIDES)

@@ -1,18 +1,14 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
 import { completeMatch, cancelLobby } from '@/pug'
-import { isPugAdmin } from '@/access/roles'
+import { authenticateWithAccess, requireDepartment } from '@/utilities/apiAuth'
 
 type Params = { params: Promise<{ id: string }> }
 
 export async function POST(request: NextRequest, { params }: Params) {
-  const payload = await getPayload({ config: configPromise })
-  const { user } = await payload.auth({ headers: request.headers })
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  if (!isPugAdmin({ req: { user } } as any)) {
-    return NextResponse.json({ error: 'Admin only' }, { status: 403 })
-  }
+  const auth = await authenticateWithAccess()
+  if (!auth.success) return auth.response
+  const deptCheck = requireDepartment(auth.data.access, 'pug')
+  if (deptCheck) return deptCheck
 
   const { id } = await params
   const lobbyId = parseInt(id, 10)

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createLocalReq } from 'payload'
 
-import { authenticateRequest, requireAdmin } from '@/utilities/apiAuth'
+import { authenticateWithAccess, requireAdminAccess } from '@/utilities/apiAuth'
 import { buildReport } from '@/accessReview/compute'
 import type { AccessReport } from '@/accessReview/types'
 import { resolveMutation } from '@/accessReview/mutate'
@@ -46,9 +46,9 @@ async function fetchGuildMemberIds(): Promise<{ ids: Set<string> | null; guildId
 }
 
 export async function GET(request: NextRequest) {
-  const auth = await authenticateRequest()
+  const auth = await authenticateWithAccess()
   if (!auth.success) return auth.response
-  const adminCheck = requireAdmin(auth.data.user)
+  const adminCheck = requireAdminAccess(auth.data.access)
   if (adminCheck) return adminCheck
 
   const refresh = request.nextUrl.searchParams.get('refresh') === '1'
@@ -106,9 +106,9 @@ export async function GET(request: NextRequest) {
  * produces one precise audit entry.
  */
 export async function PATCH(request: NextRequest) {
-  const auth = await authenticateRequest()
+  const auth = await authenticateWithAccess()
   if (!auth.success) return auth.response
-  const adminCheck = requireAdmin(auth.data.user)
+  const adminCheck = requireAdminAccess(auth.data.access)
   if (adminCheck) return adminCheck
 
   const { payload, user } = auth.data

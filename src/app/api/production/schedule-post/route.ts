@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import config from '@payload-config'
 import { buildProductionSchedule, postProductionSchedule } from '@/discord/services/productionSchedulePost'
+import { authenticateWithAccess, requireStaffManagerAccess } from '@/utilities/apiAuth'
 
 /**
  * Weekly broadcast schedule post.
@@ -13,21 +12,20 @@ import { buildProductionSchedule, postProductionSchedule } from '@/discord/servi
  * Production managers only (admin or staff-manager).
  */
 
-async function authorize(request: NextRequest) {
-  const payload = await getPayload({ config })
-  const { user } = await payload.auth({ headers: request.headers })
-  if (!user) return { payload, user: null, response: NextResponse.json({ message: 'Unauthorized' }, { status: 401 }) }
-  const role = (user as any).role
-  if (role !== 'admin' && role !== 'staff-manager') {
-    return { payload, user: null, response: NextResponse.json({ message: 'Forbidden' }, { status: 403 }) }
-  }
-  return { payload, user, response: null }
+async function authorize(_request: NextRequest) {
+  const auth = await authenticateWithAccess()
+  if (!auth.success) return { ok: false as const, response: auth.response }
+  const { payload, user, access } = auth.data
+  const staffCheck = requireStaffManagerAccess(access)
+  if (staffCheck) return { ok: false as const, response: staffCheck }
+  return { ok: true as const, payload, user }
 }
 
 export async function GET(request: NextRequest): Promise<Response> {
   try {
-    const { payload, response } = await authorize(request)
-    if (response) return response
+    const authz = await authorize(request)
+    if (!authz.ok) return authz.response
+    const { payload } = authz
     const build = await buildProductionSchedule(payload, 'preview')
     return NextResponse.json({
       staff: build.posts.staff,
@@ -46,8 +44,9 @@ export async function GET(request: NextRequest): Promise<Response> {
 
 export async function POST(request: NextRequest): Promise<Response> {
   try {
-    const { payload, user, response } = await authorize(request)
-    if (response || !user) return response!
+    const authz = await authorize(request)
+    if (!authz.ok) return authz.response
+    const { payload, user } = authz
     const body = await request.json().catch(() => ({}))
     const mode = body?.mode === 'new' ? 'new' : 'update'
     const result = await postProductionSchedule(payload, {

@@ -7,6 +7,7 @@ import { SchedulePage } from './components/SchedulePage'
 import type { SchedulePageData, ScheduleTab } from '@/components/scheduling/types'
 import { nowInTimezone } from '@/utilities/socialMediaDigest'
 import { dateFromKey, maintainTeamCalendars, shouldReleaseNextWeek } from '@/utilities/weeklyCalendars'
+import { resolveAccessForUser, canManageTeam, type ResolvedAccess } from '@/access'
 
 export const dynamic = 'force-dynamic'
 
@@ -57,12 +58,13 @@ export default async function SchedulePageRoute({ params, searchParams }: PagePr
 
   const payloadToken = cookieStore.get('payload-token')?.value
   let isSiteAdmin = false
+  let viewerAccess: ResolvedAccess | null = null
   if (payloadToken) {
     try {
       const { user } = await payload.auth({ headers: new Headers({ Authorization: `JWT ${payloadToken}` }) })
       if (user) {
-        const role = (user as any).role || ''
-        isSiteAdmin = role === 'admin' || role === 'staff-manager' || role === 'team-manager'
+        viewerAccess = await resolveAccessForUser(payload, user as any)
+        isSiteAdmin = viewerAccess?.canManagePeople ?? false
         if ((user as any).discordId) {
           discordUser = {
             id: (user as any).discordId,
@@ -146,21 +148,7 @@ export default async function SchedulePageRoute({ params, searchParams }: PagePr
       }
     }
 
-    const staffArrays = [team.manager || [], team.coaches || [], team.captain || []]
-    for (const arr of staffArrays) {
-      for (const entry of arr) {
-        const person = typeof entry === 'object' ? entry : null
-        if (person?.discordId === discordUser.id) { isManager = true; break }
-      }
-      if (isManager) break
-    }
-    if (!isManager && team.coCaptain) {
-      const co = typeof team.coCaptain === 'object' ? team.coCaptain : null
-      if (co?.discordId === discordUser.id) isManager = true
-    }
-    if (!isManager && isSiteAdmin) {
-      isManager = true
-    }
+    isManager = viewerAccess ? (viewerAccess.canManagePeople || canManageTeam(viewerAccess, team.id)) : false
   }
 
   // Build roster data

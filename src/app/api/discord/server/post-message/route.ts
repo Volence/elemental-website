@@ -1,10 +1,9 @@
 'use server'
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
 import { TextChannel, EmbedBuilder, ChannelType } from 'discord.js'
 import { getDiscordClient } from '@/discord/bot'
+import { authenticateWithAccess, requireStaffManagerAccess } from '@/utilities/apiAuth'
 
 interface EmbedField {
   name: string
@@ -31,19 +30,10 @@ interface PostMessageRequest {
 export async function POST(req: NextRequest) {
   try {
     // Check authentication
-    const payload = await getPayload({ config: configPromise })
-    const { user } = await payload.auth({ headers: req.headers })
-    
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Check for admin or staff-manager role
-    const userRole = (user as any).role
-    const isAdmin = userRole === 'admin' || userRole === 'staff-manager'
-    if (!isAdmin) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
-    }
+    const auth = await authenticateWithAccess()
+    if (!auth.success) return auth.response
+    const staffCheck = requireStaffManagerAccess(auth.data.access)
+    if (staffCheck) return staffCheck
 
     const body: PostMessageRequest = await req.json()
     const { channelId, content, embed } = body

@@ -3,12 +3,13 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { headers } from 'next/headers'
 import { mergePeople } from '@/identity/merge'
+import { resolveAccess } from '@/access'
 
 async function getAdmin() {
   const payload = await getPayload({ config: configPromise })
   const reqHeaders = await headers()
   const { user } = await payload.auth({ headers: reqHeaders })
-  if (!user || (user as any).role !== 'admin') return null
+  if (!user || !resolveAccess(user as any, []).isAdmin) return null
   return payload
 }
 

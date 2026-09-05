@@ -1,15 +1,15 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
 import { makeDraftPick } from '@/pug'
 import prisma from '@/lib/prisma'
+import { authenticateWithAccess } from '@/utilities/apiAuth'
+import { hasDepartment } from '@/access'
 
 type Params = { params: Promise<{ id: string }> }
 
 export async function POST(request: NextRequest, { params }: Params) {
-  const payload = await getPayload({ config: configPromise })
-  const { user } = await payload.auth({ headers: request.headers })
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = await authenticateWithAccess()
+  if (!auth.success) return auth.response
+  const { user, access } = auth.data
 
   const { id } = await params
   const lobbyId = parseInt(id, 10)
@@ -19,8 +19,7 @@ export async function POST(request: NextRequest, { params }: Params) {
   const { pickedUserId } = body
   if (!pickedUserId) return NextResponse.json({ error: 'pickedUserId required' }, { status: 400 })
 
-  const u = user as any
-  const isPugAdmin = u?.departments?.isPugAdmin === true || u?.role === 'admin'
+  const isPugAdmin = hasDepartment(access, 'pug')
 
   let actingUserId = user.id
   if (isPugAdmin) {

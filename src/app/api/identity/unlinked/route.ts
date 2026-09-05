@@ -1,15 +1,13 @@
 import { NextResponse } from 'next/server'
-import { authenticateRequest } from '@/utilities/apiAuth'
+import { authenticateWithAccess } from '@/utilities/apiAuth'
 import { getGuildGateway } from '@/identity/guild'
 import { rankCandidates } from '@/identity/match'
 
-const isReviewer = (u: any) => u?.role === 'admin' || u?.role === 'staff-manager'
-
 export async function GET() {
-  const auth = await authenticateRequest()
+  const auth = await authenticateWithAccess()
   if (!auth.success) return auth.response
-  const { payload, user } = auth.data
-  if (!isReviewer(user)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const { payload, access } = auth.data
+  if (!access.canManagePeople) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const [people, teams, sessions, gateway] = await Promise.all([
     payload.find({ collection: 'people', where: { isInactive: { not_equals: true } }, limit: 0, depth: 0, overrideAccess: true, showHiddenFields: true, select: { name: true, role: true, discordId: true, hash: true, gameAliases: true, pugBattleTag: true } }),

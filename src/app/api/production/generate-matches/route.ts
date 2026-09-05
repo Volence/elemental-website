@@ -1,18 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { divisionFromRating, isFaceitDivision } from '@/utilities/divisions'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { authenticateWithAccess, requireStaffManagerAccess } from '@/utilities/apiAuth'
 
 export async function POST(req: NextRequest) {
   try {
-    const payload = await getPayload({ config })
-    
-    // Authenticate user
-    const { user } = await payload.auth({ headers: req.headers })
-    
-    if (!user || (user.role !== 'admin' && user.role !== 'staff-manager')) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
-    }
+    const auth = await authenticateWithAccess()
+    if (!auth.success) return auth.response
+    const { payload, access } = auth.data
+    const staffCheck = requireStaffManagerAccess(access)
+    if (staffCheck) return staffCheck
 
     // 1. Fetch all teams with activeTournaments
     const teams = await payload.find({

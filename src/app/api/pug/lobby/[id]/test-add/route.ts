@@ -1,21 +1,18 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
 import { joinLobby } from '@/pug'
 import prisma from '@/lib/prisma'
+import { authenticateWithAccess, requireDepartment } from '@/utilities/apiAuth'
 
 type Params = { params: Promise<{ id: string }> }
 
 const DUMMY_COUNT = 9
 
 export async function POST(request: NextRequest, { params }: Params) {
-  const payload = await getPayload({ config: configPromise })
-  const { user } = await payload.auth({ headers: request.headers })
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const u = user as any
-  const isPugAdmin = u.departments?.isPugAdmin === true || u.role === 'admin'
-  if (!isPugAdmin) return NextResponse.json({ error: 'PUG admin only' }, { status: 403 })
+  const auth = await authenticateWithAccess()
+  if (!auth.success) return auth.response
+  const { payload, access } = auth.data
+  const deptCheck = requireDepartment(access, 'pug')
+  if (deptCheck) return deptCheck
 
   const { id } = await params
   const lobbyId = parseInt(id, 10)

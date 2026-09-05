@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
+import { authenticateWithAccess, requireDepartment } from '@/utilities/apiAuth'
 
 // The kill-switch is GLOBAL: there can be multiple active seasons (e.g. open +
 // invite tiers) and the lobby state machine reads each lobby's OWN season, so
@@ -27,13 +28,12 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const { payload, seasons } = await getActiveSeasons()
-  const { user } = await payload.auth({ headers: request.headers })
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const u = user as any
-  const isPugAdmin = u.departments?.isPugAdmin === true || u.role === 'admin'
-  if (!isPugAdmin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const { seasons } = await getActiveSeasons()
+  const auth = await authenticateWithAccess()
+  if (!auth.success) return auth.response
+  const { payload, access } = auth.data
+  const deptCheck = requireDepartment(access, 'pug')
+  if (deptCheck) return deptCheck
 
   if (seasons.length === 0) {
     return NextResponse.json({ error: 'No active season' }, { status: 400 })

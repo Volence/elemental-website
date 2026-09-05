@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { authenticateRequest, apiErrorResponse, apiSuccessResponse } from '@/utilities/apiAuth'
+import { authenticateWithAccess, requireAdminAccess, apiErrorResponse, apiSuccessResponse } from '@/utilities/apiAuth'
 
 /**
  * POST /api/ignore-duplicate
@@ -9,20 +9,16 @@ import { authenticateRequest, apiErrorResponse, apiSuccessResponse } from '@/uti
 export async function POST(request: NextRequest) {
   try {
     // Authenticate the request
-    const authResult = await authenticateRequest()
+    const authResult = await authenticateWithAccess()
     if (!authResult.success) {
       return authResult.response
     }
 
-    const { payload, user } = authResult.data
+    const { payload, user, access } = authResult.data
 
     // Only admins can ignore duplicates
-    if (user.role !== 'admin') {
-      return NextResponse.json(
-        { success: false, error: 'Forbidden: Admin access required' },
-        { status: 403 }
-      )
-    }
+    const adminCheck = requireAdminAccess(access)
+    if (adminCheck) return adminCheck
 
     const body = await request.json()
     const { person1Id, person2Id } = body

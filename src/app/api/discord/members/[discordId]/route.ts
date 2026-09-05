@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { authenticateRequest } from '@/utilities/apiAuth'
-import { canPickMembers } from '@/identity/permissions'
+import { authenticateWithAccess } from '@/utilities/apiAuth'
 import { getGuildGateway } from '@/identity/guild'
 import { attachPeople } from '@/identity/memberLookup'
 import { DISCORD_ID_RE } from '@/identity/config'
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ discordId: string }> }) {
-  const auth = await authenticateRequest()
+  const auth = await authenticateWithAccess()
   if (!auth.success) return auth.response
-  if (!canPickMembers(auth.data.user)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!auth.data.access.canPickMembers) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const { discordId } = await params
   if (!DISCORD_ID_RE.test(discordId)) return NextResponse.json({ error: 'Discord ID must be 17-19 digits' }, { status: 400 })

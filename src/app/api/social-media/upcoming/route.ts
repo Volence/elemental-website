@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { authenticateWithAccess, requireDepartment } from '@/utilities/apiAuth'
 
 export interface UpcomingItem {
   id: string
@@ -29,12 +28,11 @@ function matchTitle(m: any): string {
  */
 export async function GET(request: NextRequest): Promise<Response> {
   try {
-    const payload = await getPayload({ config })
-    const { user } = await payload.auth({ headers: request.headers })
-    if (!user) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
-    const u = user as any
-    const allowed = u.role === 'admin' || u.role === 'staff-manager' || u.departments?.isSocialMediaStaff === true
-    if (!allowed) return NextResponse.json({ message: 'Forbidden' }, { status: 403 })
+    const auth = await authenticateWithAccess()
+    if (!auth.success) return auth.response
+    const { payload, access } = auth.data
+    const deptCheck = requireDepartment(access, 'social')
+    if (deptCheck) return deptCheck
 
     // No ?days= means everything upcoming; the social team plans further out than two weeks.
     const daysParam = request.nextUrl.searchParams.get('days')

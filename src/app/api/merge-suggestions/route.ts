@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { headers } from 'next/headers'
+import { resolveAccess } from '@/access'
 
 async function getAdminWithDrizzle() {
   const payload = await getPayload({ config: configPromise })
   const reqHeaders = await headers()
   const { user } = await payload.auth({ headers: reqHeaders })
-  if (!user || (user as any).role !== 'admin') return null
+  if (!user || !resolveAccess(user as any, []).isAdmin) return null
   const drizzle = (payload as any).db?.drizzle
   if (!drizzle) return null
   const { sql } = await import('drizzle-orm')

@@ -3,6 +3,7 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { headers } from 'next/headers'
 import type { Person } from '@/payload-types'
+import { resolveAccessForUser, resolveAccess, hasDepartment, type ResolvedAccess, type DepartmentKey, type Level } from '@/access'
 
 /**
  * API Authentication and Error Handling Utilities
@@ -122,28 +123,30 @@ export function apiSuccessResponse<T = any>(
 
 /**
  * Check if user has admin role
- * 
+ *
  * @param user - User object from authentication
  * @returns True if user is admin
+ * @deprecated use authenticateWithAccess
  */
 export function isAdmin(user: Person): boolean {
-  return user.role === 'admin'
+  return resolveAccess(user as any, []).isAdmin
 }
 
 /**
  * Require admin role, return error response if not admin
- * 
+ *
  * @param user - User object from authentication
  * @returns Error response if not admin, undefined if admin
- * 
+ * @deprecated use authenticateWithAccess + requireAdminAccess
+ *
  * @example
  * ```typescript
  * const auth = await authenticateRequest()
  * if (!auth.success) return auth.response
- * 
+ *
  * const adminCheck = requireAdmin(auth.data.user)
  * if (adminCheck) return adminCheck // Returns error if not admin
- * 
+ *
  * // User is admin, continue...
  * ```
  */
@@ -153,6 +156,63 @@ export function requireAdmin(user: Person): NextResponse | undefined {
       { success: false, error: 'Admin access required' },
       { status: 403 },
     )
+  }
+  return undefined
+}
+
+/**
+ * Authenticate the request and resolve the caller's access in one step.
+ *
+ * @example
+ * ```typescript
+ * const auth = await authenticateWithAccess()
+ * if (!auth.success) return auth.response
+ *
+ * const { payload, user, access } = auth.data
+ * const adminCheck = requireAdminAccess(access)
+ * if (adminCheck) return adminCheck
+ * ```
+ */
+export async function authenticateWithAccess(): Promise<
+  | { success: true; data: { payload: any; user: Person; access: ResolvedAccess } }
+  | { success: false; response: NextResponse }
+> {
+  const auth = await authenticateRequest()
+  if (!auth.success) return auth
+  const { payload, user } = auth.data
+  const access = await resolveAccessForUser(payload, user as any)
+  if (!access) {
+    return {
+      success: false,
+      response: NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 403 },
+      ),
+    }
+  }
+  return { success: true, data: { payload, user, access } }
+}
+
+/** 403 JSON response when access is not admin, undefined otherwise. */
+export function requireAdminAccess(access: ResolvedAccess): NextResponse | undefined {
+  if (!access.isAdmin) {
+    return NextResponse.json({ success: false, error: 'Admin access required' }, { status: 403 })
+  }
+  return undefined
+}
+
+/** 403 JSON response when access is below staff-manager, undefined otherwise. */
+export function requireStaffManagerAccess(access: ResolvedAccess): NextResponse | undefined {
+  if (!access.canManagePeople) {
+    return NextResponse.json({ success: false, error: 'Staff manager access required' }, { status: 403 })
+  }
+  return undefined
+}
+
+/** 403 JSON response when access does not hold `key` at `level` (default member), undefined otherwise. */
+export function requireDepartment(access: ResolvedAccess, key: DepartmentKey, level: Level = 'member'): NextResponse | undefined {
+  if (!hasDepartment(access, key, level)) {
+    return NextResponse.json({ success: false, error: 'Department access required' }, { status: 403 })
   }
   return undefined
 }

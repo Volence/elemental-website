@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getUserScope } from '@/access/scrimScope'
+import { authenticateWithAccess } from '@/utilities/apiAuth'
 
 /**
  * PATCH /api/scrim-score-override
@@ -15,8 +16,9 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Only admin, staff-manager, team-manager can edit scores
-    const canEdit = ['admin', 'staff-manager', 'team-manager'].includes(scope.role)
+    // Only staff, or anyone with resolved team access, can edit scores
+    const auth = await authenticateWithAccess()
+    const canEdit = auth.success && (auth.data.access.canManagePeople || auth.data.access.teamIds.size > 0)
     if (!canEdit) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }

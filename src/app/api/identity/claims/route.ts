@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { authenticateRequest } from '@/utilities/apiAuth'
+import { authenticateRequest, authenticateWithAccess } from '@/utilities/apiAuth'
 import { findClaimCandidates, discordNamesOf } from '@/identity/people'
 import { claimTier, canReviewClaim } from '@/identity/claims'
 import { getGuildGateway, snowflakeCreatedAt } from '@/identity/guild'
@@ -23,20 +23,6 @@ function teamsOfPerson(teams: any[], personId: number): { names: string[]; manag
 async function loadTeams(payload: any): Promise<any[]> {
   const teams = await payload.find({ collection: 'teams', limit: 500, depth: 0, overrideAccess: true, select: { name: true, roster: true, subs: true, manager: true } })
   return teams.docs
-}
-
-/** Person ids with any organization-staff or production row, loaded once per request. */
-async function loadStaffPersonIds(payload: any): Promise<Set<number>> {
-  const [org, prod] = await Promise.all([
-    payload.find({ collection: 'organization-staff', limit: 2000, depth: 0, overrideAccess: true, select: { person: true } }),
-    payload.find({ collection: 'production', limit: 2000, depth: 0, overrideAccess: true, select: { person: true } }),
-  ])
-  const ids = new Set<number>()
-  for (const d of [...org.docs, ...prod.docs] as any[]) {
-    const id = pid(d)
-    if (id) ids.add(id)
-  }
-  return ids
 }
 
 /** File a claim: "the logged-in person is really <target>". Target must be a current candidate. */
@@ -81,26 +67,25 @@ export async function POST(request: NextRequest) {
 
 /** List claims for the Identity page, decorated with tier and whether the caller may review each. */
 export async function GET(request: NextRequest) {
-  const auth = await authenticateRequest()
+  const auth = await authenticateWithAccess()
   if (!auth.success) return auth.response
-  const { payload, user } = auth.data
+  const { payload, user, access } = auth.data
   const status = request.nextUrl.searchParams.get('status') ?? 'pending'
 
-  const [res, teams, staffPersonIds] = await Promise.all([
+  const [res, teams] = await Promise.all([
     payload.find({ collection: 'identity-claims', where: { status: { equals: status } }, sort: '-createdAt', limit: 200, depth: 1, overrideAccess: true }),
     loadTeams(payload),
-    loadStaffPersonIds(payload),
   ])
   const claims = []
   for (const c of res.docs as any[]) {
     const target = c.target
     const claimant = c.claimant
     if (!target || !claimant) continue
-    const hasStaff = staffPersonIds.has(target.id)
+    const hasStaffTitle = (target.titles ?? []).length > 0
     const teamsInfo = teamsOfPerson(teams, target.id)
-    const tier = claimTier(target, hasStaff)
-    const canReview = canReviewClaim({ reviewer: { id: user.id as number, role: (user as any).role }, tier, targetTeamManagerIds: teamsInfo.managerIds })
-    if (!canReview && (user as any).role !== 'admin' && (user as any).role !== 'staff-manager') continue
+    const tier = claimTier(target, hasStaffTitle)
+    const canReview = canReviewClaim({ reviewer: { id: user.id as number, canManagePeople: access.canManagePeople, isAdmin: access.isAdmin }, tier, targetTeamManagerIds: teamsInfo.managerIds })
+    if (!canReview && !access.canManagePeople) continue
     claims.push({
       id: c.id,
       status: c.status,

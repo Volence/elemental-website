@@ -1,17 +1,17 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
-import { isPugAdmin, isProductionStaff } from '@/access/roles'
+import { hasDepartment } from '@/access'
+import { authenticateWithAccess } from '@/utilities/apiAuth'
 import { addSpectator, removeSpectator } from '@/pug/spectators'
 
 type Params = { params: Promise<{ id: string }> }
 
 async function gate(request: NextRequest) {
-  const payload = await getPayload({ config: configPromise })
-  const { user } = await payload.auth({ headers: request.headers })
-  if (!user) return { error: 'Unauthorized', status: 401 as const }
-  const args = { req: { user } } as any
-  if (!isPugAdmin(args) && !isProductionStaff(args)) return { error: 'Forbidden', status: 403 as const }
+  const auth = await authenticateWithAccess()
+  if (!auth.success) return { error: 'Unauthorized', status: 401 as const }
+  const { user, access } = auth.data
+  if (!hasDepartment(access, 'pug') && !hasDepartment(access, 'production')) {
+    return { error: 'Forbidden', status: 403 as const }
+  }
   return { user }
 }
 

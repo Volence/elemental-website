@@ -1,28 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
-import { isAdmin } from '@/access/roles'
+import { authenticateWithAccess, requireAdminAccess } from '@/utilities/apiAuth'
 
 /**
  * Backfill team fields for existing matches
- * 
+ *
  * This API updates matches that have the legacy `team` field populated
  * but are missing the new `team1Internal` field (introduced for flexible team support).
- * 
+ *
  * POST /api/production/backfill-team-fields
  */
 export async function POST(request: NextRequest) {
   try {
-    const payload = await getPayload({ config: configPromise })
-
-    // Authenticate user and check admin role
-    const { user } = await payload.auth({ headers: request.headers })
-    if (!user) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-    }
-    if (user.role !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const auth = await authenticateWithAccess()
+    if (!auth.success) return auth.response
+    const { payload, access } = auth.data
+    const adminCheck = requireAdminAccess(access)
+    if (adminCheck) return adminCheck
 
     // Find all matches where team exists but team1Internal is empty
     const matchesToBackfill = await payload.find({

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getUserScope } from '@/access/scrimScope'
+import { authenticateWithAccess } from '@/utilities/apiAuth'
 
 /**
  * PATCH /api/scrim-rename
@@ -13,8 +14,9 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Only uploaders (admin, staff-manager, team-manager) can rename
-  const canEdit = ['admin', 'staff-manager', 'team-manager'].includes(scope.role)
+  // Only uploaders (staff, or anyone with resolved team access) can rename
+  const auth = await authenticateWithAccess()
+  const canEdit = auth.success && (auth.data.access.canManagePeople || auth.data.access.teamIds.size > 0)
   if (!canEdit) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }

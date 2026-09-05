@@ -1,18 +1,15 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
 import { isPugRegion } from '@/pug/types'
 import { createInviteLobby, cancelExpiredLobby, registerTimer, timerKey, INVITE_TIER_LATE_CANCEL_MS, clearQueueForRegion, processQueue } from '@/pug'
+import { authenticateWithAccess, requireDepartment } from '@/utilities/apiAuth'
 
 export async function POST(request: NextRequest) {
-  const payload = await getPayload({ config: configPromise })
-  const { user } = await payload.auth({ headers: request.headers })
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const u = user as any
-  const isPugAdmin = u.departments?.isPugAdmin === true || u.role === 'admin'
-  if (!isPugAdmin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const auth = await authenticateWithAccess()
+  if (!auth.success) return auth.response
+  const { payload, access } = auth.data
+  const deptCheck = requireDepartment(access, 'pug')
+  if (deptCheck) return deptCheck
 
   const body = await request.json()
   const { region, action } = body

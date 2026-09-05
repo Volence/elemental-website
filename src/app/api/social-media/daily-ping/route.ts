@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { authenticateWithAccess, requireDepartment } from '@/utilities/apiAuth'
 import { nowInTimezone, buildDailyPing } from '@/utilities/socialMediaDigest'
 import { fetchDigestTasks, parseDayKey } from '@/discord/services/socialDigest'
 import { sendDailyPing } from '@/discord/services/socialDailyPing'
@@ -13,13 +12,11 @@ import { sendDailyPing } from '@/discord/services/socialDailyPing'
  */
 export async function POST(request: NextRequest): Promise<Response> {
   try {
-    const payload = await getPayload({ config })
-    const { user } = await payload.auth({ headers: request.headers })
-    if (!user) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
-    const u = user as any
-    if (u.role !== 'admin' && u.role !== 'staff-manager') {
-      return NextResponse.json({ message: 'Forbidden' }, { status: 403 })
-    }
+    const auth = await authenticateWithAccess()
+    if (!auth.success) return auth.response
+    const { payload, access } = auth.data
+    const deptCheck = requireDepartment(access, 'social', 'lead')
+    if (deptCheck) return deptCheck
 
     const body = await request.json().catch(() => ({}))
     const settings = (await payload.findGlobal({ slug: 'social-media-settings', depth: 0 })) as any

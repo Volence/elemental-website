@@ -1,6 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { getPayload, type Where } from 'payload'
-import configPromise from '@payload-config'
+import type { Where } from 'payload'
 import prisma from '@/lib/prisma'
 import {
   departmentsFor,
@@ -11,16 +10,9 @@ import {
   type TaskLite,
 } from '@/components/BeforeDashboard/summary'
 import { guideMatchesViewer } from '@/guides/audience'
+import { authenticateWithAccess } from '@/utilities/apiAuth'
 
 const UPCOMING_DAYS = 14
-const LIMITED_ROLES = ['player', 'user']
-const SCRIM_VIEWER_ROLES = ['admin', 'staff-manager', 'team-manager', 'player']
-
-function relId(v: unknown): number | null {
-  if (typeof v === 'number') return v
-  if (v && typeof v === 'object' && 'id' in v) return Number((v as { id: unknown }).id)
-  return null
-}
 
 function matchTitle(m: any): string {
   if (m.title && String(m.title).trim()) return m.title
@@ -47,15 +39,15 @@ const toTask = (t: any): TaskLite => ({
  * for scrim viewers, and admin-only attention counts.
  */
 export async function GET(request: NextRequest) {
-  const payload = await getPayload({ config: configPromise })
-  const { user } = await payload.auth({ headers: request.headers })
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = await authenticateWithAccess()
+  if (!auth.success) return auth.response
+  const { payload, user, access } = auth.data
 
   const u = user as any
   const role: string | null = u.role ?? null
-  const isAdmin = role === 'admin'
-  const limited = LIMITED_ROLES.includes(role ?? '') || role === 'team-manager'
-  const teamIds = ((u.assignedTeams ?? []) as unknown[]).map(relId).filter((id): id is number => id !== null)
+  const isAdmin = access.isAdmin
+  const limited = !access.canManagePeople
+  const teamIds = [...access.teamIds]
   const departments = departmentsFor(role, u.departments)
 
   const now = new Date()
@@ -118,7 +110,7 @@ export async function GET(request: NextRequest) {
   ])
 
   let recentScrims: ScrimLite[] | null = null
-  if (SCRIM_VIEWER_ROLES.includes(role ?? '')) {
+  if (access.teamIds.size > 0 || access.canUploadExternalScrims) {
     const scrims =
       limited && teamIds.length === 0
         ? []

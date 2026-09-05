@@ -1,18 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { authenticateRequest } from '@/utilities/apiAuth'
+import { authenticateWithAccess } from '@/utilities/apiAuth'
 import { DISCORD_ID_RE } from '@/identity/config'
 import { getGuildGateway } from '@/identity/guild'
 import { findPersonByDiscordId, setDiscordIdentity } from '@/identity/people'
 import { createAuditLog } from '@/utilities/auditLogger'
 
-const isReviewer = (u: any) => u?.role === 'admin' || u?.role === 'staff-manager'
-
 /** Attach a Discord ID to a legacy person. Conflicts are sent to the merge tool, never resolved here. */
 export async function POST(request: NextRequest) {
-  const auth = await authenticateRequest()
+  const auth = await authenticateWithAccess()
   if (!auth.success) return auth.response
-  const { payload, user } = auth.data
-  if (!isReviewer(user)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const { payload, user, access } = auth.data
+  if (!access.canManagePeople) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const body = await request.json().catch(() => ({}))
   const personId = parseInt(body?.personId, 10)

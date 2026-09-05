@@ -6,6 +6,7 @@ import { generateSettings } from '@/pug/settingsGenerator'
 import { enrichSpectators } from '@/pug/spectators'
 import { isBotEnabledForLobby } from '@/pug/botMode'
 import type { PugRegion } from '@/pug/types'
+import { resolveAccessForUser, hasDepartment } from '@/access'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -214,8 +215,8 @@ export async function GET(request: NextRequest, { params }: Params) {
     const blockedRoles = allRoles.filter((r) => spotsAvailable[r] === 0)
     const neededSlots = computeNeededSlots(playerRoles)
 
-    const u = user as any
-    const isPugAdmin = u?.departments?.isPugAdmin === true || u?.role === 'admin'
+    const access = user ? await resolveAccessForUser(payload, user as any) : null
+    const isPugAdmin = access ? hasDepartment(access, 'pug') : false
     const guildId = process.env.DISCORD_GUILD_ID ?? null
 
     let approvedRoles: string[] | null = null

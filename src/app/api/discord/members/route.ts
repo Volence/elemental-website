@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { authenticateRequest } from '@/utilities/apiAuth'
-import { canPickMembers } from '@/identity/permissions'
+import { authenticateWithAccess } from '@/utilities/apiAuth'
 import { getGuildGateway } from '@/identity/guild'
 import { attachPeople } from '@/identity/memberLookup'
 
 export async function GET(request: NextRequest) {
-  const auth = await authenticateRequest()
+  const auth = await authenticateWithAccess()
   if (!auth.success) return auth.response
-  if (!canPickMembers(auth.data.user)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!auth.data.access.canPickMembers) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const q = (request.nextUrl.searchParams.get('q') ?? '').trim()
   if (q.length < 2) return NextResponse.json({ results: [] })

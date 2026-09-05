@@ -1,14 +1,12 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
+import { authenticateWithAccess } from '@/utilities/apiAuth'
+import { hasDepartment } from '@/access'
 
-async function requirePugAdmin(request: NextRequest) {
-  const payload = await getPayload({ config: configPromise })
-  const { user } = await payload.auth({ headers: request.headers })
-  if (!user) return { error: 'Unauthorized', status: 401 }
-  const u = user as any
-  const isPugAdmin = u.departments?.isPugAdmin === true || u.role === 'admin'
-  if (!isPugAdmin) return { error: 'Forbidden', status: 403 }
+async function requirePugAdmin(_request: NextRequest) {
+  const auth = await authenticateWithAccess()
+  if (!auth.success) return { error: 'Unauthorized', status: 401 }
+  const { payload, user, access } = auth.data
+  if (!hasDepartment(access, 'pug')) return { error: 'Forbidden', status: 403 }
   return { payload, user }
 }
 

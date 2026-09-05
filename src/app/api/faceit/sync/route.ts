@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { syncAllTeams } from '@/utilities/faceitSync'
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
+import { authenticateWithAccess, requireStaffManagerAccess } from '@/utilities/apiAuth'
 
 /**
  * POST /api/faceit/sync
@@ -19,12 +18,11 @@ export async function POST(request: Request) {
     if (cronSecret && cronSecret === process.env.CRON_SECRET) {
       // Authenticated via cron secret
     } else {
-      // Verify admin authentication via Payload
-      const payload = await getPayload({ config: configPromise })
-      const { user } = await payload.auth({ headers: request.headers as any })
-      if (!user || !['admin', 'staff-manager'].includes(user.role || '')) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-      }
+      // Verify staff-manager-or-above authentication via the resolver
+      const auth = await authenticateWithAccess()
+      if (!auth.success) return auth.response
+      const staffCheck = requireStaffManagerAccess(auth.data.access)
+      if (staffCheck) return staffCheck
     }
     
     // Run sync

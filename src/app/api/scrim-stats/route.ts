@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { getUserScope } from '@/access/scrimScope'
+import { authenticateWithAccess } from '@/utilities/apiAuth'
 import { getFinalRoundStats } from '@/lib/scrim-parser/data-access'
 import { groupKillsIntoFights, round } from '@/lib/scrim-parser/utils'
 import { sumStatByRound } from '@/lib/scrim-parser/round-stats'
@@ -333,8 +334,8 @@ export async function GET(req: NextRequest) {
   // Check if current user can edit scores
   let canEditScore = false
   try {
-    const scope = await getUserScope()
-    if (scope && ['admin', 'staff-manager', 'team-manager'].includes(scope.role)) {
+    const auth = await authenticateWithAccess()
+    if (auth.success && (auth.data.access.canManagePeople || auth.data.access.teamIds.size > 0)) {
       canEditScore = true
     }
   } catch { /* not logged in or error - leave as false */ }

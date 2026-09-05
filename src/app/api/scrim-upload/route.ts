@@ -23,6 +23,7 @@ import { scrimOwnerKey } from '@/lib/scrim-analytics/ownerKey'
 import prisma from '@/lib/prisma'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
+import { resolveAccessForUser } from '@/access'
 
 export async function POST(request: Request) {
   try {
@@ -42,9 +43,10 @@ export async function POST(request: Request) {
     // Role/flag gating happens in validateUploadTarget below, once we know
     // whether this is an org-team or external-team upload.
     const userRole = (user as { role?: string }).role
-    const canUploadExternal =
-      (user as { departments?: { canUploadExternalScrims?: boolean | null } | null }).departments
-        ?.canUploadExternalScrims === true
+    const access = await resolveAccessForUser(payload, user as any)
+    if (!access) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     const formData = await request.formData()
     const files = formData.getAll('files') as File[]
@@ -73,8 +75,7 @@ export async function POST(request: Request) {
     const teamId2Str = formData.get('teamId2') as string | null
 
     const targetError = validateUploadTarget({
-      role: userRole,
-      canUploadExternalScrims: canUploadExternal,
+      access,
       teamId: teamIdStr ? parseInt(teamIdStr, 10) : null,
       externalTeamName,
     })
@@ -93,15 +94,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid player mappings payload (team 2)' }, { status: 400 })
     }
 
-    // Team-managers may only attribute scrims to their assigned teams
+    // Non-staff may only attribute scrims to teams within their resolved access
     // (same rule scrim-rename and scrim-score-override already enforce).
-    const assignedTeamIds = ((user as { assignedTeams?: Array<number | { id: number }> }).assignedTeams ?? [])
-      .map((t) => (typeof t === 'number' ? t : t.id))
     const requestedTeamIds = [teamIdStr, teamId2Str]
       .filter((s): s is string => Boolean(s))
       .map((s) => parseInt(s, 10))
       .filter((n) => !isNaN(n))
-    const outOfScope = teamIdsOutsideScope(userRole, assignedTeamIds, requestedTeamIds)
+    const outOfScope = teamIdsOutsideScope(access, requestedTeamIds)
     if (outOfScope.length > 0) {
       return NextResponse.json(
         { error: 'You can only upload scrims for your assigned teams.' },

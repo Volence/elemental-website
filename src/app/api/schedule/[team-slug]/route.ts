@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
+import { resolveAccessForUser, canManageTeam } from '@/access'
 
 async function getDiscordIdentity(request: NextRequest, payload: any) {
   const payloadToken = request.cookies.get('payload-token')?.value
@@ -8,14 +9,16 @@ async function getDiscordIdentity(request: NextRequest, payload: any) {
   try {
     const { user } = await payload.auth({ headers: new Headers({ Authorization: `JWT ${payloadToken}` }) })
     if (!user) return null
-    const role = (user as any).role || ''
-    const isSiteAdmin = role === 'admin' || role === 'staff-manager' || role === 'team-manager'
+    const access = await resolveAccessForUser(payload, user as any)
+    if (!access) return null
+    const isSiteAdmin = access.canManagePeople
     if ((user as any).discordId) {
       return {
-        id: (user as any).discordId,
+        id: (user as any).discordId as string,
         username: (user as any).name || (user as any).email,
         avatar: null,
         isSiteAdmin,
+        access,
       }
     }
     if (isSiteAdmin) {
@@ -24,25 +27,11 @@ async function getDiscordIdentity(request: NextRequest, payload: any) {
         username: (user as any).name || (user as any).email,
         avatar: null,
         isSiteAdmin,
+        access,
       }
     }
   } catch {}
   return null
-}
-
-async function isUserManager(team: any, discordId: string): Promise<boolean> {
-  const staffArrays = [team.manager || [], team.coaches || [], team.captain || []]
-  for (const staffArray of staffArrays) {
-    for (const entry of staffArray) {
-      const person = typeof entry === 'object' ? entry : null
-      if (person && person.discordId === discordId) return true
-    }
-  }
-  if (team.coCaptain) {
-    const coCaptain = typeof team.coCaptain === 'object' ? team.coCaptain : null
-    if (coCaptain && coCaptain.discordId === discordId) return true
-  }
-  return false
 }
 
 export async function GET(
@@ -177,32 +166,7 @@ export async function GET(
         }
       }
 
-      const staffArrays = [
-        team.manager || [],
-        team.coaches || [],
-        team.captain || [],
-      ]
-      for (const staffArray of staffArrays) {
-        for (const entry of staffArray) {
-          const person = typeof entry === 'object' ? entry : null
-          if (person && person.discordId === discordUser.id) {
-            isManager = true
-            break
-          }
-        }
-        if (isManager) break
-      }
-
-      if (!isManager && team.coCaptain) {
-        const coCaptain = typeof team.coCaptain === 'object' ? team.coCaptain : null
-        if (coCaptain && coCaptain.discordId === discordUser.id) {
-          isManager = true
-        }
-      }
-
-      if (!isManager && discordUser.isSiteAdmin) {
-        isManager = true
-      }
+      isManager = discordUser.access.canManagePeople || canManageTeam(discordUser.access, team.id)
     }
 
     const roster = (team.roster || []).map((entry: any) => ({
@@ -290,7 +254,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Team not found' }, { status: 404 })
     }
 
-    const isManagerUser = discordUser.isSiteAdmin || (await isUserManager(team, discordUser.id))
+    const isManagerUser = discordUser.access.canManagePeople || canManageTeam(discordUser.access, team.id)
 
     if (body.action === 'saveSchedule') {
       if (!isManagerUser) {

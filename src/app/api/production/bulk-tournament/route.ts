@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import type { FaceitDivision } from '@/utilities/divisions'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { authenticateWithAccess, requireStaffManagerAccess } from '@/utilities/apiAuth'
 
 interface TournamentSlot {
   date: string // ISO date string
@@ -21,14 +20,11 @@ interface BulkTournamentRequest {
 
 export async function POST(req: NextRequest) {
   try {
-    const payload = await getPayload({ config })
-    
-    // Authenticate user
-    const { user } = await payload.auth({ headers: req.headers })
-    
-    if (!user || (user.role !== 'admin' && user.role !== 'staff-manager')) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
-    }
+    const auth = await authenticateWithAccess()
+    if (!auth.success) return auth.response
+    const { payload, access } = auth.data
+    const staffCheck = requireStaffManagerAccess(access)
+    if (staffCheck) return staffCheck
 
     const body: BulkTournamentRequest = await req.json()
     const { region, division, defaultTime, defaultTimezone, season, baseTitle, slots } = body

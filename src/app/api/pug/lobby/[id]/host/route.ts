@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
 import { freeBotInstanceForLobby } from '@/pug/lobbyStateMachine'
+import { authenticateWithAccess } from '@/utilities/apiAuth'
+import { hasDepartment } from '@/access'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -17,9 +17,9 @@ type Params = { params: Promise<{ id: string }> }
  * volunteer-host UI appears for everyone.
  */
 export async function POST(request: NextRequest, { params }: Params) {
-  const payload = await getPayload({ config: configPromise })
-  const { user } = await payload.auth({ headers: request.headers })
-  if (!user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+  const auth = await authenticateWithAccess()
+  if (!auth.success) return auth.response
+  const { user, access } = auth.data
 
   const { id } = await params
   const lobbyId = parseInt(id, 10)
@@ -43,8 +43,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: 'Lobby is not in progress' }, { status: 400 })
     }
 
-    const u = user as any
-    const isPugAdmin = u?.departments?.isPugAdmin === true || u?.role === 'admin'
+    const isPugAdmin = hasDepartment(access, 'pug')
     const isPlayer = lobby.players.some((p) => p.userId === user.id)
 
     if (!isPlayer && !isPugAdmin) {

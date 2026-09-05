@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from 'drizzle-orm'
-import { authenticateRequest } from '@/utilities/apiAuth'
+import { authenticateWithAccess } from '@/utilities/apiAuth'
 import { createAuditLog } from '@/utilities/auditLogger'
 
-const isReviewer = (u: any) => u?.role === 'admin' || u?.role === 'staff-manager'
-
 export async function POST(request: NextRequest) {
-  const auth = await authenticateRequest()
+  const auth = await authenticateWithAccess()
   if (!auth.success) return auth.response
-  const { payload, user } = auth.data
-  if (!isReviewer(user)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const { payload, user, access } = auth.data
+  if (!access.canManagePeople) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const body = await request.json().catch(() => ({}))
   const personId = parseInt(body?.personId, 10)

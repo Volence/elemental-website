@@ -3,17 +3,17 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
 import { completeMatch } from '@/pug/lobbyStateMachine'
+import { authenticateWithAccess } from '@/utilities/apiAuth'
+import { hasDepartment } from '@/access'
 
 const BOT_URL = () => process.env.OW_BOT_SERVICE_URL
 const BOT_SECRET = () => process.env.OW_BOT_SECRET ?? ''
 
-async function requirePugAdmin(request: NextRequest) {
-  const payload = await getPayload({ config: configPromise })
-  const { user } = await payload.auth({ headers: request.headers })
-  if (!user) return { error: 'Unauthorized', status: 401 }
-  const u = user as any
-  const isPugAdmin = u.departments?.isPugAdmin === true || u.role === 'admin'
-  if (!isPugAdmin) return { error: 'Forbidden', status: 403 }
+async function requirePugAdmin(_request: NextRequest) {
+  const auth = await authenticateWithAccess()
+  if (!auth.success) return { error: 'Unauthorized', status: 401 }
+  const { user, access } = auth.data
+  if (!hasDepartment(access, 'pug')) return { error: 'Forbidden', status: 403 }
   return { user }
 }
 

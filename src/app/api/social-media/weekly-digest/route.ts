@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import config from '@payload-config'
 import { buildWeeklyDigestForRange, postWeeklyDigest } from '@/discord/services/socialDigest'
+import { authenticateWithAccess, requireDepartment } from '@/utilities/apiAuth'
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
 
@@ -15,13 +14,11 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
  */
 export async function POST(request: NextRequest): Promise<Response> {
   try {
-    const payload = await getPayload({ config })
-    const { user } = await payload.auth({ headers: request.headers })
-    if (!user) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
-
-    const u = user as any
-    const allowed = u.role === 'admin' || u.role === 'staff-manager' || u.departments?.isSocialMediaStaff === true
-    if (!allowed) return NextResponse.json({ message: 'Forbidden' }, { status: 403 })
+    const auth = await authenticateWithAccess()
+    if (!auth.success) return auth.response
+    const { payload, user, access } = auth.data
+    const deptCheck = requireDepartment(access, 'social')
+    if (deptCheck) return deptCheck
 
     const body = await request.json().catch(() => ({}))
     const { start, end, footer, send, text, mode } = body as {

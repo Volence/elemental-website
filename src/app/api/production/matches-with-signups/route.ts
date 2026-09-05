@@ -1,20 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getPayload } from 'payload'
-import config from '@payload-config'
+import { authenticateWithAccess, requireDepartment } from '@/utilities/apiAuth'
 
 export async function GET(req: NextRequest) {
   try {
-    const payload = await getPayload({ config })
-
-    // Authenticate user and check admin/staff-manager role
-    const { user } = await payload.auth({ headers: req.headers })
-    if (!user) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-    }
-    const u = user as any
-    if (user.role !== 'admin' && user.role !== 'staff-manager' && !u.departments?.isProductionStaff) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const auth = await authenticateWithAccess()
+    if (!auth.success) return auth.response
+    const { payload, access } = auth.data
+    const deptCheck = requireDepartment(access, 'production')
+    if (deptCheck) return deptCheck
 
     const today = new Date()
     today.setHours(0, 0, 0, 0)

@@ -1,8 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
 import prisma from '@/lib/prisma'
-import { isPugAdmin } from '@/access/roles'
+import { authenticateWithAccess, requireDepartment } from '@/utilities/apiAuth'
 import { buildMatchRows, parseStatusFilter } from '@/pug/matchHistory'
 
 const MAX_LIMIT = 100
@@ -14,10 +12,11 @@ const MAX_LIMIT = 100
  *        region=na|emea|pacific|sa, q=<lobby number>, page, limit (max 100).
  */
 export async function GET(request: NextRequest) {
-  const payload = await getPayload({ config: configPromise })
-  const { user } = await payload.auth({ headers: request.headers })
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  if (!isPugAdmin({ req: { user } } as any)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const auth = await authenticateWithAccess()
+  if (!auth.success) return auth.response
+  const { payload, access } = auth.data
+  const deptCheck = requireDepartment(access, 'pug')
+  if (deptCheck) return deptCheck
 
   const url = new URL(request.url)
   const tier = url.searchParams.get('tier')
