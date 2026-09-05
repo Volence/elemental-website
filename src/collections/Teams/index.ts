@@ -6,6 +6,7 @@ import { anyone } from '../../access/anyone'
 import { adminOnly, hasAnyRole, UserRole } from '../../access/roles'
 import type { Person } from '@/payload-types'
 import { createAuditLogHook, createAuditLogDeleteHook } from '../../utilities/auditLogger'
+import { invalidateTeamsCache } from '@/access/teamsCache'
 
 const formatSlug = (value: string): string => {
   return value
@@ -899,6 +900,7 @@ export const Teams: CollectionConfig = {
           }
         }
       },
+      () => { invalidateTeamsCache() },
     ],
     afterDelete: [
       revalidateTeamsAfterDelete,
@@ -916,6 +918,7 @@ export const Teams: CollectionConfig = {
           })
         }
       },
+      () => { invalidateTeamsCache() },
     ],
     beforeValidate: [
       async ({ data, operation }) => {
