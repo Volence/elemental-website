@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { adminOnly, staffManagerOrAbove, department, anyDepartment, teamManager, teamScoped, withAccess, hideUnless } from '@/access'
+import { getTeamsForAccess, invalidateTeamsCache } from '@/access/teamsCache'
 
 const teams = [{ id: 1, region: 'NA', manager: [{ person: 10 }] }, { id: 2, region: 'EMEA' }]
 const payload = { find: vi.fn(async () => ({ docs: teams })) } as any
@@ -43,5 +44,19 @@ describe('access wrappers', () => {
     expect(hidden({ user: { id: 1, role: 'user' } })).toBe(true)
     expect(hidden({ user: { id: 1, role: 'user', titles: [{ title: 'hr' }] } })).toBe(false)
     expect(hidden({ user: null })).toBe(true)
+  })
+  it('getTeamsForAccess recovers after a rejected fetch', async () => {
+    invalidateTeamsCache()
+    const flaky = {
+      find: vi.fn()
+        .mockRejectedValueOnce(new Error('db down'))
+        .mockResolvedValueOnce({ docs: teams }),
+    } as any
+    await expect(getTeamsForAccess(flaky)).rejects.toThrow('db down')
+    await expect(getTeamsForAccess(flaky)).resolves.toEqual([
+      { id: 1, region: 'NA', manager: [{ person: 10 }], coaches: [], captain: [] },
+      { id: 2, region: 'EMEA', manager: [], coaches: [], captain: [] },
+    ])
+    expect(flaky.find).toHaveBeenCalledTimes(2)
   })
 })

@@ -10,27 +10,33 @@ export async function getTeamsForAccess(payload: Payload): Promise<AccessTeamInp
   if (cache && Date.now() - cache.at < TTL_MS) return cache.teams
   if (inflight) return inflight
   inflight = (async () => {
-    const res = await payload.find({
-      collection: 'teams',
-      limit: 0,
-      depth: 0,
-      overrideAccess: true,
-      select: { region: true, manager: true, coaches: true, captain: true },
-    })
-    const teams: AccessTeamInput[] = (res.docs as any[]).map((t) => ({
-      id: Number(t.id),
-      region: t.region ?? null,
-      manager: t.manager ?? [],
-      coaches: t.coaches ?? [],
-      captain: t.captain ?? [],
-    }))
-    cache = { at: Date.now(), teams }
-    inflight = null
-    return teams
+    try {
+      const res = await payload.find({
+        collection: 'teams',
+        limit: 0,
+        depth: 0,
+        overrideAccess: true,
+        select: { region: true, manager: true, coaches: true, captain: true },
+      })
+      const teams: AccessTeamInput[] = (res.docs as any[]).map((t) => ({
+        id: Number(t.id),
+        region: t.region ?? null,
+        manager: t.manager ?? [],
+        coaches: t.coaches ?? [],
+        captain: t.captain ?? [],
+      }))
+      cache = { at: Date.now(), teams }
+      return teams
+    } finally {
+      // Always clear, success or failure, so a rejected fetch doesn't wedge every
+      // later call behind a dead promise forever.
+      inflight = null
+    }
   })()
   return inflight
 }
 
 export function invalidateTeamsCache(): void {
   cache = null
+  inflight = null
 }
