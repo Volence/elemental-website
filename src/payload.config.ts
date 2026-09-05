@@ -59,6 +59,7 @@ import { DiscordServerManager } from './globals/DiscordServerManager'
 import { DiscordCategoryTemplates } from './collections/DiscordCategoryTemplates'
 import { DiscordCloneJobs } from './collections/DiscordCloneJobs'
 import { DiscordServers } from './collections/DiscordServers'
+import { Guides } from './collections/Guides'
 import { DiscordMemberEvents } from './collections/DiscordMemberEvents'
 import { DiscordLoggedMessages } from './collections/DiscordLoggedMessages'
 import { TwitchStreamers } from './collections/TwitchStreamers'
@@ -174,6 +175,10 @@ const config = buildConfig({
         myProfile: {
           Component: '@/components/MyProfile/Route#default',
           path: '/my-profile',
+        },
+        guides: {
+          Component: '@/components/Guides/Route#default',
+          path: '/guides',
         },
         editPerson: {
           Component: '@/components/EditPerson/Route#default',
@@ -314,6 +319,7 @@ const config = buildConfig({
     DiscordCategoryTemplates,
     DiscordCloneJobs,
     DiscordServers,
+    Guides,
     DiscordMemberEvents,
     DiscordLoggedMessages,
     WatchedThreads,

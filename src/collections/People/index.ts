@@ -499,6 +499,14 @@ export const People: CollectionConfig = {
       },
     },
     {
+      // Me > Guides: which sections this person ticked off and whether they
+      // dismissed the dashboard card. Written only through /api/my-guides/progress.
+      name: 'guideProgress',
+      type: 'json',
+      access: { update: ({ req, doc }: any) => req.user?.role === 'admin' || (req.user && doc && String(req.user.id) === String(doc.id)) },
+      admin: { hidden: true },
+    },
+    {
       name: 'staffPositions',
       type: 'ui',
       admin: { components: { Cell: '@/components/PeopleListColumns/StaffPositionsCell' } },

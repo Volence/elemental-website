@@ -106,6 +106,7 @@ import { default as default_ddd2842e99d7eefc935ddf1f43a96c52 } from '@/component
 import { default as default_fcc5c38e7b961a7b6570d53be1c36a5a } from '@/components/ScrimHeroDetail/Route'
 import { default as default_98b6712c58ca2e7b5e536cb59bfe5bea } from '@/components/ScrimAnalyticsDashboard.route'
 import { default as default_c0e212a6fc0613f2da7f153f1882a461 } from '@/components/MyProfile/Route'
+import { default as default_a429791211cb98327a6435b6f75e643f } from '@/components/Guides/Route'
 import { default as default_80cc054fdf7fed9b9d2ce8c632d827c8 } from '@/components/EditPerson/Route'
 import { default as default_2b59f5602e11928e4ba9ab4b4faab23a } from '@/components/UserManagement/ListRoute'
 import { default as default_ea389f9e3de40ca350dbffeb0d1a4a49 } from '@/components/AccessReview/ListRoute'
@@ -236,6 +237,7 @@ export const importMap = {
   "@/components/ScrimHeroDetail/Route#default": default_fcc5c38e7b961a7b6570d53be1c36a5a,
   "@/components/ScrimAnalyticsDashboard.route#default": default_98b6712c58ca2e7b5e536cb59bfe5bea,
   "@/components/MyProfile/Route#default": default_c0e212a6fc0613f2da7f153f1882a461,
+  "@/components/Guides/Route#default": default_a429791211cb98327a6435b6f75e643f,
   "@/components/EditPerson/Route#default": default_80cc054fdf7fed9b9d2ce8c632d827c8,
   "@/components/UserManagement/ListRoute#default": default_2b59f5602e11928e4ba9ab4b4faab23a,
   "@/components/AccessReview/ListRoute#default": default_ea389f9e3de40ca350dbffeb0d1a4a49,

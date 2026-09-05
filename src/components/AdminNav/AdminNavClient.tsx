@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from 'next/navigation'
 import { Hamburger, Link, NavGroup, useNav } from '@payloadcms/ui'
 import {
   Activity,
+  BookOpen,
   Contact,
   UserCheck,
   BarChart3,
@@ -63,6 +64,7 @@ const ICONS: Record<NavIconName, React.ComponentType<{ size?: number; 'aria-hidd
   folder: Folder,
   message: MessageCircle,
   'calendar-days': CalendarDays,
+  'book-open': BookOpen,
   'file-text': FileText,
   activity: Activity,
 }

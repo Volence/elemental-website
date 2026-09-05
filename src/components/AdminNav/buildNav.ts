@@ -38,6 +38,7 @@ export type NavIconName =
   | 'folder'
   | 'message'
   | 'calendar-days'
+  | 'book-open'
   | 'file-text'
   | 'activity'
 
@@ -148,6 +149,7 @@ export function buildNavAreas({ user, collections, globals }: BuildNavInput): Na
       label: 'Me',
       items: [
         view('/my-profile', 'My Profile', 'user'),
+        view('/guides', 'Guides', 'book-open'),
         when(isScrimViewer(user), view('/scrim-player-detail', 'My Stats', 'chart', { personId: String(user.id) })),
         when(!isLimited(user), view('/calendar', 'Calendar', 'calendar')),
       ],
