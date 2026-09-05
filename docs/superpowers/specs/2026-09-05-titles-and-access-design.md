@@ -29,7 +29,7 @@ Every new staffer needs edits in two or three of those, and the answer to "why c
 - **Observer has no lead label**; the only production leads are Lead Caster and Lead Producer.
 - **Scout is not a title.** The scouting department stays hidden; its flag survives only as extra access.
 - **PUG Admin is not a title.** Event Manager grants PUG admin access. The existing `isPugAdmin` flag survives as extra access.
-- **Content Creator stays a title** with no access grants, because it is a public-facing role. (Carried from the first mapping table; remove during review if unwanted.)
+- **Content Creator stays a title** with no dashboard access. It marks the people who appear in the "who's live" surfaces (live streamers section, Twitch live roster), replacing the `isContentCreator` flag as the source for those lists; the flag survives only as extra access for anyone without the title.
 - **No data deletion.** Old tables are renamed to `_archived`, never dropped.
 
 ## Section 1: Data model
@@ -57,7 +57,7 @@ The allowed titles and their grants live in `src/access/titles.ts`, replacing `s
 | Production | Caster (`caster`) | production member | Lead Caster |
 | Production | Observer (`observer`) | production member | none |
 | Production | Producer (`producer`) | production member | Lead Producer |
-| Community | Content Creator (`content-creator`) | none | none |
+| Community | Content Creator (`content-creator`) | none (drives the who's-live surfaces) | none |
 
 Each constant entry carries: `value`, `label`, `group`, `departments` (list), `leadLabel` (or null), `impliesRole` (admin, staff-manager, or null). `ORG_ROLE_ORDER`, labels, and group labels currently exported from `orgRoles.ts` are re-exported from the new constant so the Discord card and public page code keep one import.
 
