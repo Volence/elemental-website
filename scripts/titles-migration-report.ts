@@ -19,7 +19,7 @@ const prod = await rows(sql`SELECT pr.person_id, p.name, pr.type FROM production
 console.log(`\n== production types -> titles (${prod.length})`)
 for (const r of prod) console.log(`${r.name} (#${r.person_id}): ${r.type} -> ${productionTypeToTitles(r.type).join(' + ')}`)
 
-const losing = await rows(sql`
+const losingRaw = await rows(sql`
   SELECT p.id, p.name FROM people p
   WHERE p.role = 'team-manager'
     AND NOT EXISTS (SELECT 1 FROM teams_manager tm WHERE tm.person_id = p.id)
@@ -27,12 +27,19 @@ const losing = await rows(sql`
     AND NOT EXISTS (SELECT 1 FROM teams_captain tk WHERE tk.person_id = p.id)
     AND NOT EXISTS (SELECT 1 FROM people_rels pr WHERE pr.parent_id = p.id AND pr.path IN ('teamAccess','assignedTeams'))
   ORDER BY p.name`)
-console.log(`\n== team-managers who would lose team rights (${losing.length})`)
-for (const r of losing) console.log(`${r.name} (#${r.id})`)
 
 const byPerson = new Map<number, string[]>()
 for (const r of org) { const t = orgRoleToTitle(r.role); if (t) byPerson.set(r.person_id, [...(byPerson.get(r.person_id) ?? []), t]) }
 for (const r of prod) byPerson.set(r.person_id, [...(byPerson.get(r.person_id) ?? []), ...productionTypeToTitles(r.type)])
+
+// Keep in sync with migration B's `losing` query: a team-manager about to receive a
+// region-lead title does not lose team rights, so exclude anyone whose incoming titles
+// include region-lead (the migration checks the same via people_titles after insert;
+// here that data doesn't exist yet, so we check the titles this preview computed above).
+const losing = losingRaw.filter((r) => !(byPerson.get(Number(r.id)) ?? []).includes('region-lead'))
+console.log(`\n== team-managers who would lose team rights (${losing.length})`)
+for (const r of losing) console.log(`${r.name} (#${r.id})`)
+
 console.log(`\n== department flags that would be cleared as implied by titles`)
 for (const [id, titles] of byPerson) {
   const flags = impliedFlagsForTitles(titles as any)

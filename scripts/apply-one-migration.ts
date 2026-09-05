@@ -13,6 +13,11 @@ if (!migration) {
   process.exit(1)
 }
 const payload = await getPayload({ config })
-await migration.up({ payload, db: payload.db.drizzle, req: {} as any })
+try {
+  await migration.up({ payload, db: payload.db.drizzle, req: {} as any })
+} catch (err) {
+  console.error(`[apply-one-migration] ${name} failed:`, err)
+  process.exit(1)
+}
 console.log(`[apply-one-migration] ${name} up() finished`)
 process.exit(0)
