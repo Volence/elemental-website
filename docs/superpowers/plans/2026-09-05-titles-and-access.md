@@ -286,24 +286,30 @@ const ORG_TITLES = TITLES.filter((t) => t.group === 'organization' || t.group ==
 export type OrgRoleSlug = (typeof ORG_TITLES)[number]['value']
 export const ORG_ROLE_ORDER: OrgRoleSlug[] = ORG_TITLES.map((t) => t.value) as OrgRoleSlug[]
 export const ORG_ROLE_LABELS: Record<string, string> = Object.fromEntries(ORG_TITLES.map((t) => [t.value, t.label]))
-// Copy the groupLabel strings from the old orgRoles.ts here, one per title, unchanged.
+// Discord card group headings, carried over from the old orgRoles.ts unchanged.
 export const ORG_ROLE_GROUP_LABELS: Record<string, string> = {
-  owner: '<copy from orgRoles.ts>',
-  'co-owner': '<copy from orgRoles.ts>',
-  administration: '<copy from orgRoles.ts>',
-  hr: '<copy from orgRoles.ts>',
-  'region-lead': '<copy from orgRoles.ts>',
-  'event-manager': '<copy from orgRoles.ts>',
-  'social-manager': '<copy from orgRoles.ts>',
-  marketing: '<copy from orgRoles.ts>',
-  graphics: '<copy from orgRoles.ts>',
-  'media-editor': '<copy from orgRoles.ts>',
+  owner: 'Owner',
+  'co-owner': 'Co-Owner',
+  administration: 'Administration',
+  hr: 'HR Staff',
+  'region-lead': 'Region Leads',
+  'event-manager': 'Event Manager',
+  'social-manager': 'Social Manager',
+  marketing: 'Marketing',
+  graphics: 'Graphics Staff',
+  'media-editor': 'Media Editor Staff',
 }
-export const ORG_ROLES = ORG_TITLES.map((t) => ({ value: t.value, label: t.label, groupLabel: ORG_ROLE_GROUP_LABELS[t.value] }))
+/** Accent colours the old constant carried; kept for the staff directory and public sections. */
+export const TITLE_COLORS: Record<string, string> = {
+  owner: '#f59e0b', 'co-owner': '#f59e0b', administration: '#8b5cf6', hr: '#ec4899', 'region-lead': '#14b8a6',
+  'event-manager': '#06b6d4', 'social-manager': '#3b82f6', marketing: '#d946ef', graphics: '#f97316', 'media-editor': '#ef4444',
+  caster: '#a855f7', observer: '#3b82f6', producer: '#eab308', 'content-creator': '#22c55e',
+}
+export const ORG_ROLES = ORG_TITLES.map((t) => ({ value: t.value, label: t.label, color: TITLE_COLORS[t.value], groupLabel: ORG_ROLE_GROUP_LABELS[t.value] }))
 export const ORG_REGIONS = REGIONS.map((r) => ({ value: r.value, label: r.label }))
 ```
 
-The `'<copy from orgRoles.ts>'` strings are the one thing you must fill from the old file before the test passes (the last test asserts `ORG_ROLE_GROUP_LABELS.owner` is truthy; a placeholder string would pass, so replace them for real and delete the placeholder text).
+Before deleting `src/utilities/orgRoles.ts`, diff its `ORG_ROLES` entries against `ORG_ROLE_GROUP_LABELS` and `TITLE_COLORS` above; they were copied on 2026-09-05 and must match exactly.
 
 - [ ] **Step 5: Repoint the orgRoles importers and delete the old file**
 
