@@ -204,10 +204,6 @@ const config = buildConfig({
           Component: '@/components/StaffDirectory/ListRoute#default',
           path: '/staff-directory',
         },
-        editStaff: {
-          Component: '@/components/StaffDirectory/EditRoute#default',
-          path: '/edit-staff',
-        },
         editEvent: {
           Component: '@/components/CalendarEventEditor/EditRoute#default',
           path: '/edit-event',

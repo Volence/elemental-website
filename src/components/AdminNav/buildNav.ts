@@ -210,7 +210,6 @@ const ROUTE_ALIASES: Array<[prefix: string, canonical: string]> = [
   ['/admin/edit-person', '/admin/manage-users'],
   ['/admin/edit-user', '/admin/manage-users'],
   ['/admin/collections/people', '/admin/manage-users'],
-  ['/admin/edit-staff', '/admin/staff-directory'],
   ['/admin/collections/organization-staff', '/admin/staff-directory'],
   ['/admin/collections/production', '/admin/staff-directory'],
   ['/admin/edit-event', '/admin/calendar-events'],

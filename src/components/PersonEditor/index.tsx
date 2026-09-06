@@ -10,6 +10,13 @@ import {
   Youtube, X, ArrowLeft, StickyNote, Eye, Plus, Trash2, Monitor, KeyRound,
 } from 'lucide-react'
 import type { Person } from '@/payload-types'
+import { useAccess } from '@/access/useAccess'
+import { ROLE_VALUES, ROLE_LABELS, TITLE_BY_VALUE, titleLabel } from '@/access/titles'
+import { impliedRole, roleRank, type TitleEntry } from '@/access/resolve'
+import TitlesSection from './TitlesSection'
+import ExtraAccessSection from './ExtraAccessSection'
+import TeamAccessSection from './TeamAccessSection'
+import EffectiveAccessPanel from './EffectiveAccessPanel'
 
 // ── Shared styles & constants ──
 
@@ -21,25 +28,13 @@ export const SOCIAL_PLATFORMS = [
   { key: 'tiktok', label: 'TikTok', icon: Gamepad2, placeholder: 'https://tiktok.com/@username' },
 ] as const
 
-export const ROLES = [
-  { value: 'admin', label: 'Admin', icon: Crown, color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)', border: 'rgba(245, 158, 11, 0.25)' },
-  { value: 'staff-manager', label: 'Staff Manager', icon: ShieldCheck, color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)', border: 'rgba(139, 92, 246, 0.25)' },
-  { value: 'team-manager', label: 'Team Manager', icon: Shield, color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.1)', border: 'rgba(6, 182, 212, 0.25)' },
-  { value: 'player', label: 'Player', icon: Gamepad2, color: '#34d399', bg: 'rgba(52, 211, 153, 0.1)', border: 'rgba(52, 211, 153, 0.25)' },
-  { value: 'user', label: 'User', icon: UserIcon, color: '#94a3b8', bg: 'rgba(148, 163, 184, 0.1)', border: 'rgba(148, 163, 184, 0.25)' },
-] as const
-
-const DEPARTMENTS = [
-  { key: 'isProductionStaff', label: 'Production' },
-  { key: 'isSocialMediaStaff', label: 'Social Media' },
-  { key: 'isGraphicsStaff', label: 'Graphics' },
-  { key: 'isVideoStaff', label: 'Video Editing' },
-  { key: 'isEventsStaff', label: 'Events' },
-  { key: 'isScoutingStaff', label: 'Scouting' },
-  { key: 'isContentCreator', label: 'Content Creator' },
-  { key: 'isPugAdmin', label: 'PUG Admin' },
-  { key: 'canUploadExternalScrims', label: 'External Scrim Uploader' },
-] as const
+// Role badge colors for the read-only display; ROLE_VALUES/ROLE_LABELS (@/access/titles) are
+// the source of truth for which roles exist and what they're called.
+const ROLE_BADGE: Record<string, { icon: typeof Crown; color: string; bg: string; border: string }> = {
+  admin: { icon: Crown, color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)', border: 'rgba(245, 158, 11, 0.25)' },
+  'staff-manager': { icon: ShieldCheck, color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)', border: 'rgba(139, 92, 246, 0.25)' },
+  user: { icon: UserIcon, color: '#94a3b8', bg: 'rgba(148, 163, 184, 0.1)', border: 'rgba(148, 163, 184, 0.25)' },
+}
 
 const PUG_ROLES = [
   { key: 'tank', label: 'Tank' },
@@ -51,7 +46,11 @@ const PUG_ROLES = [
 
 const PUG_REGION_OPTIONS = PUG_REGIONS.map((r) => ({ key: r.value, label: r.label }))
 
-const getRoleConfig = (role: string) => ROLES.find(r => r.value === role) ?? ROLES[4]
+const getRoleConfig = (role: string) => ROLE_BADGE[role] ?? ROLE_BADGE.user
+// Legacy labels for role values the People schema still allows (team-manager, player) but the
+// titles system no longer assigns; ROLE_LABELS (@/access/titles) covers the three current ones.
+const LEGACY_ROLE_LABELS: Record<string, string> = { 'team-manager': 'Team Manager', player: 'Player' }
+const roleLabel = (role: string): string => (ROLE_LABELS as Record<string, string>)[role] ?? LEGACY_ROLE_LABELS[role] ?? role
 
 export type PersonData = {
   id: number
@@ -183,6 +182,8 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
   // Account & role fields
   const [email, setEmail] = useState('')
   const [role, setRole] = useState('user')
+  const [titles, setTitles] = useState<TitleEntry[]>([])
+  const [initialTitles, setInitialTitles] = useState<TitleEntry[]>([])
   const [teamAccess, setTeamAccess] = useState<number[]>([])
   const [initialTeamAccess, setInitialTeamAccess] = useState<number[]>([])
   const [allTeams, setAllTeams] = useState<Array<{ id: number; name: string }>>([])
@@ -201,9 +202,10 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
 
   // Resolve person ID and access level
   const resolvedPersonId = propPersonId ?? (user?.id ?? null)
-  const isAdmin = user?.role === 'admin'
+  const { access: actor } = useAccess()
+  const isAdmin = actor?.isAdmin === true
   const isSelf = user?.id != null && String(user.id) === String(resolvedPersonId)
-  const canEditPug = isAdmin || (user as any)?.departments?.isPugAdmin === true
+  const canEditPug = actor ? actor.isAdmin || actor.departments.pug !== 'none' : false
 
   // Fetch person data
   const fetchPerson = useCallback(async () => {
@@ -230,6 +232,9 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
       // Account & role fields
       setEmail(data.email ?? '')
       setRole(data.role ?? 'user')
+      const loadedTitles: TitleEntry[] = (data.titles ?? []).map((t: any) => ({ title: t.title, isLead: Boolean(t.isLead), regions: t.regions ?? undefined }))
+      setTitles(loadedTitles)
+      setInitialTitles(loadedTitles)
       const teamIds = (data.teamAccess ?? []).map((t: any) => typeof t === 'object' ? t.id : t)
       setTeamAccess(teamIds)
       setInitialTeamAccess(teamIds)
@@ -312,7 +317,6 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
         payload.gameAliases = gameAliases.filter(a => a.alias.trim())
         payload.notes = notes || null
         if (isAdmin) {
-          payload.role = role
           // Payload runs ensureUsernameOrEmail before any hook: an update carrying an empty
           // email for a row with no username fails with "Username or email is required".
           // Send the key only when it has a value, or when an admin is deliberately clearing
@@ -322,11 +326,29 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
           const hasUsername = Boolean((person as any)?.username)
           if (trimmedEmail) payload.email = trimmedEmail
           else if (storedEmail && hasUsername) payload.email = null
+        }
+        // Titles and extra access: staff can change anyone's; a department lead can change
+        // theirs within their lead departments (the server enforces the exact boundary via
+        // canApplyPersonChange - this is only about what to send). Titles only sent when
+        // changed, so a lead editing an unrelated field never trips the server's title diff.
+        if (actor?.canManagePeople || (actor?.leadDepartments.length ?? 0) > 0) {
+          const titlesChanged = JSON.stringify(titles) !== JSON.stringify(initialTitles)
+          if (titlesChanged) {
+            payload.titles = titles.map((t) => ({
+              title: t.title,
+              isLead: t.isLead ?? false,
+              ...(t.title === 'region-lead' ? { regions: t.regions ?? [] } : {}),
+            }))
+          }
+          payload.departments = departments
+        }
+        // Role and team access: staff (admin/staff-manager) only.
+        if (actor?.canManagePeople) {
+          payload.role = role
           const teamsChanged = JSON.stringify([...teamAccess].sort()) !== JSON.stringify([...initialTeamAccess].sort())
           if (teamsChanged) {
             payload.teamAccess = teamAccess.length > 0 ? teamAccess : null
           }
-          payload.departments = departments
         }
       }
 
@@ -345,6 +367,8 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
       if (isManager && person) {
         setPerson({ ...person, name, slug })
       }
+      setInitialTitles(titles)
+      setInitialTeamAccess(teamAccess)
 
       setSaveStatus('saved')
       setTimeout(() => setSaveStatus('idle'), 2500)
@@ -396,13 +420,7 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
     setGameAliases(prev => prev.map((a, idx) => idx === i ? { alias: value } : a))
   }
 
-  // Team/dept/PUG toggles
-  const toggleTeam = (teamId: number) => {
-    setTeamAccess(prev => prev.includes(teamId) ? prev.filter(t => t !== teamId) : [...prev, teamId])
-  }
-  const toggleDept = (key: string) => {
-    setDepartments(prev => ({ ...prev, [key]: !prev[key] }))
-  }
+  // PUG toggles
   const togglePugTier = (tier: string) => {
     setPugTiers(prev => prev.includes(tier) ? prev.filter(t => t !== tier) : [...prev, tier])
   }
@@ -664,64 +682,57 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
             </div>
           )}
 
-          {/* Role (admin editable, others read-only) */}
-          {(isAdmin || role) && (
-            <div className="profile-card" style={styles.card}>
-              <h3 style={styles.cardTitle}><Shield size={16} /> Role</h3>
-              {isAdmin ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  {ROLES.map(r => (
-                    <div
-                      key={r.value}
-                      className={`role-option ${role === r.value ? 'selected' : ''}`}
-                      style={{ color: r.color }}
-                      onClick={() => setRole(r.value)}
-                    >
-                      <r.icon size={18} />
-                      <span style={{ fontWeight: role === r.value ? 600 : 400 }}>{r.label}</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (() => {
-                const rc = getRoleConfig(role)
-                return (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, border: `2px solid ${rc.border}`, background: rc.bg }}>
-                    <rc.icon size={18} color={rc.color} />
-                    <span style={{ fontWeight: 600, color: rc.color }}>{rc.label}</span>
-                  </div>
-                )
-              })()}
-            </div>
-          )}
+          {/* Titles */}
+          {isManager && <TitlesSection value={titles} onChange={setTitles} actor={actor} />}
 
-          {/* Assigned Teams */}
-          {isAdmin ? (
-            <div className="profile-card" style={styles.card}>
-              <h3 style={styles.cardTitle}><Gamepad2 size={16} /> Assigned Teams</h3>
-              <p style={styles.fieldHint}>Click to toggle. Determines scrim data access for players/managers.</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
-                {allTeams.map(t => (
-                  <button
-                    key={t.id}
-                    className={`team-chip ${teamAccess.includes(t.id) ? 'selected' : ''}`}
-                    onClick={() => toggleTeam(t.id)}
-                  >
-                    {teamAccess.includes(t.id) && <Check size={12} />}
-                    {t.name}
-                  </button>
-                ))}
+          {/* Role (admin editable, others read-only) */}
+          {(isAdmin || role) && (() => {
+            const implied = impliedRole(titles)
+            const raisedBy = implied && roleRank(implied) > roleRank(role)
+              ? titles.find((t) => TITLE_BY_VALUE[t.title].impliesRole === implied)
+              : undefined
+            return (
+              <div className="profile-card" style={styles.card}>
+                <h3 style={styles.cardTitle}><Shield size={16} /> Role</h3>
+                {isAdmin ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {ROLE_VALUES.map(r => (
+                      <label key={r} className={`role-option ${role === r ? 'selected' : ''}`} style={{ color: getRoleConfig(r).color }}>
+                        <input type="radio" name="role" value={r} checked={role === r} onChange={() => setRole(r)} style={{ marginRight: 4 }} />
+                        <span style={{ fontWeight: role === r ? 600 : 400 }}>{ROLE_LABELS[r]}</span>
+                      </label>
+                    ))}
+                  </div>
+                ) : (() => {
+                  const rc = getRoleConfig(role)
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, border: `2px solid ${rc.border}`, background: rc.bg }}>
+                      <rc.icon size={18} color={rc.color} />
+                      <span style={{ fontWeight: 600, color: rc.color }}>{roleLabel(role)}</span>
+                    </div>
+                  )
+                })()}
+                {raisedBy && (
+                  <p style={styles.fieldHint}>Raised by {titleLabel(raisedBy)}.</p>
+                )}
               </div>
-            </div>
-          ) : teamAccess.length > 0 ? (
+            )
+          })()}
+
+          {/* Access-only teams (staff only) */}
+          {isAdmin && (
+            <TeamAccessSection value={teamAccess} onChange={setTeamAccess} allTeams={allTeams} actor={actor} />
+          )}
+          {!isAdmin && teamAccess.length > 0 && (
             <div className="profile-card" style={styles.card}>
-              <h3 style={styles.cardTitle}><Gamepad2 size={16} /> Assigned Teams</h3>
+              <h3 style={styles.cardTitle}><Gamepad2 size={16} /> Access-only teams</h3>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                 {allTeams.filter(t => teamAccess.includes(t.id)).map(t => (
                   <span key={t.id} className="team-chip selected">{t.name}</span>
                 ))}
               </div>
             </div>
-          ) : null}
+          )}
 
           {/* PUG Status (admin/pug-admin manages, others see read-only) */}
           {(canEditPug || pugRegistered) && (
@@ -962,6 +973,14 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
             )}
           </div>
 
+          {/* Effective access preview - reflects in-progress edits, not just saved state */}
+          {isManager && resolvedPersonId != null && (
+            <EffectiveAccessPanel
+              person={{ id: Number(resolvedPersonId), role, titles, departments, teamAccess }}
+              teamNames={Object.fromEntries(allTeams.map((t) => [t.id, t.name]))}
+            />
+          )}
+
           {/* Game Aliases */}
           <div className="profile-card" style={styles.card}>
             <h3 style={styles.cardTitle}>
@@ -1004,43 +1023,8 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
             )}
           </div>
 
-          {/* Department Access */}
-          {(() => {
-            // matches People.departments condition: players (coaches) can hold dept flags
-            const showDepts = role !== 'admin'
-            if (!showDepts) return null
-            if (isAdmin) {
-              return (
-                <div className="profile-card" style={styles.card}>
-                  <h3 style={styles.cardTitle}><Monitor size={16} /> Department Access</h3>
-                  {DEPARTMENTS.map(d => (
-                    <div className="dept-toggle" key={d.key}>
-                      <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>{d.label}</span>
-                      <button
-                        className={`toggle-switch ${departments[d.key] ? 'on' : 'off'}`}
-                        onClick={() => toggleDept(d.key)}
-                        type="button"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )
-            }
-            const activeDepts = DEPARTMENTS.filter(d => departments[d.key])
-            if (activeDepts.length === 0) return null
-            return (
-              <div className="profile-card" style={styles.card}>
-                <h3 style={styles.cardTitle}><Monitor size={16} /> Department Access</h3>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                  {activeDepts.map(d => (
-                    <span key={d.key} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, fontSize: 13, background: 'rgba(52, 211, 153, 0.08)', border: '1px solid rgba(52, 211, 153, 0.3)', color: '#34d399' }}>
-                      {d.label}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )
-          })()}
+          {/* Extra access (beyond titles) */}
+          {isManager && <ExtraAccessSection value={departments} onChange={setDepartments} titles={titles} actor={actor} />}
 
           {/* Quick Links */}
           <div className="profile-card" style={styles.card}>
