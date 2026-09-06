@@ -89,7 +89,11 @@ export async function enforcePersonAccessChange(args: { req: PayloadRequest; dat
     departments: 'departments' in data ? data.departments : before.departments,
     teamAccess: 'teamAccess' in data ? data.teamAccess : before.teamAccess,
   }
-  const verdict = canApplyPersonChange(actor, before, after)
+  // targetId lets the resolver reject a non-admin raising their own access; a create has no
+  // target yet (and can never be the actor's own row).
+  const verdict = canApplyPersonChange(actor, before, after, {
+    targetId: operation === 'create' ? undefined : originalDoc?.id,
+  })
   if (!verdict.ok) throw new APIError(verdict.reason, 403, undefined, true)
 }
 

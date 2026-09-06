@@ -12,9 +12,12 @@ const plain = resolveAccess({ id: 6, role: 'user' }, noTeams)
 const before = { role: 'user', titles: [{ title: 'caster' as const }], departments: { isGraphicsStaff: false }, teamAccess: [] }
 
 describe('canApplyPersonChange', () => {
-  it('admin and staff-manager may change anything', () => {
+  it('an admin may change anything', () => {
     const after = { role: 'admin', titles: [{ title: 'owner' as const, isLead: false }], departments: { isGraphicsStaff: true }, teamAccess: [1] }
     expect(canApplyPersonChange(admin, before, after).ok).toBe(true)
+  })
+  it('a staff-manager may change anything except admin escalations', () => {
+    const after = { role: 'user', titles: [{ title: 'caster' as const }, { title: 'hr' as const }], departments: { isGraphicsStaff: true }, teamAccess: [1] }
     expect(canApplyPersonChange(staff, before, after).ok).toBe(true)
   })
   it('no change is always fine', () => {
@@ -63,6 +66,25 @@ describe('canApplyPersonChange', () => {
     // when it removes a role-implying title.
     expect(canApplyPersonChange(socialLead, beforeWithOwner, { ...beforeWithOwner, titles: [] }).ok).toBe(false)
   })
+  // I4: two escalations are admin-only even for a staff manager.
+  it('only an admin may grant the admin role or an admin-implying title', () => {
+    expect(canApplyPersonChange(staff, before, { ...before, role: 'admin' }).ok).toBe(false)
+    expect(canApplyPersonChange(staff, before, { ...before, titles: [{ title: 'caster' }, { title: 'owner' }] }).ok).toBe(false)
+    expect(canApplyPersonChange(admin, before, { ...before, role: 'admin' }).ok).toBe(true)
+    expect(canApplyPersonChange(admin, before, { ...before, titles: [{ title: 'caster' }, { title: 'owner' }] }).ok).toBe(true)
+  })
+  it('only an admin may change their own access', () => {
+    const self = { targetId: staff.personId }
+    expect(canApplyPersonChange(staff, before, { ...before, titles: [{ title: 'caster' }, { title: 'graphics' }] }, self).ok).toBe(false)
+    expect(canApplyPersonChange(staff, before, { ...before, departments: { isGraphicsStaff: true } }, self).ok).toBe(false)
+    expect(canApplyPersonChange(staff, before, { ...before, teamAccess: [1] }, self).ok).toBe(false)
+    // Someone else's titles are still fine, and an admin may edit their own.
+    expect(canApplyPersonChange(staff, before, { ...before, titles: [{ title: 'caster' }, { title: 'graphics' }] }, { targetId: 99 }).ok).toBe(true)
+    expect(canApplyPersonChange(admin, before, { ...before, titles: [{ title: 'caster' }, { title: 'graphics' }] }, { targetId: admin.personId }).ok).toBe(true)
+    // A self-edit that touches no access field is untouched by this rule.
+    expect(canApplyPersonChange(staff, before, { ...before }, self).ok).toBe(true)
+  })
+
   it('a department lead may not assign a title with no department, such as Content Creator', () => {
     const r = canApplyPersonChange(marketingLead, before, { ...before, titles: [{ title: 'caster' }, { title: 'content-creator' }] })
     expect(r.ok).toBe(false)

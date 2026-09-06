@@ -202,27 +202,62 @@ function diffTitles(before: TitleEntry[], after: TitleEntry[]): { added: TitleEn
 }
 
 /**
- * May `actor` turn `before` into `after`? Admin and staff-manager: anything. A department lead:
- * only member (non-lead, non-role-implying, non-region) titles whose departments are all within
- * the actor's lead departments, plus those departments' extra-access flags. Everyone else: nothing.
+ * May `actor` turn `before` into `after`? Admin: anything. Staff-manager: anything except
+ * granting the admin role or an admin-implying title, and except changing their own access.
+ * A department lead: only member (non-lead, non-role-implying, non-region) titles whose
+ * departments are all within the actor's lead departments, plus those departments' extra-access
+ * flags. Everyone else: nothing.
  * Callers should still pass full snapshots for `before` and `after`; an `undefined` field on
  * `after` (role, titles, departments, teamAccess) means "unchanged from `before`", distinct from
  * an explicit empty value (e.g. `titles: []`), which is a real change to be checked.
+ * `opts.targetId` is the person being edited; pass it so the self-escalation check can run.
  */
-export function canApplyPersonChange(actor: ResolvedAccess, before: PersonAccessFields, after: PersonAccessFields): { ok: true } | { ok: false; reason: string } {
-  if (actor.canManagePeople) return { ok: true }
-
+export function canApplyPersonChange(
+  actor: ResolvedAccess,
+  before: PersonAccessFields,
+  after: PersonAccessFields,
+  opts?: { targetId?: number | string },
+): { ok: true } | { ok: false; reason: string } {
   const roleBefore = isRoleValue(before.role) ? before.role : 'user'
   const roleAfter = after.role === undefined ? roleBefore : isRoleValue(after.role) ? after.role : 'user'
-  if (roleBefore !== roleAfter) return { ok: false, reason: 'Only staff managers and admins can change roles' }
 
   const teamsBefore = (before.teamAccess ?? []).map(relId).filter((x): x is number => x !== null).sort()
   const teamsAfter = (after.teamAccess === undefined ? before.teamAccess ?? [] : after.teamAccess ?? []).map(relId).filter((x): x is number => x !== null).sort()
-  if (JSON.stringify(teamsBefore) !== JSON.stringify(teamsAfter)) return { ok: false, reason: 'Only staff managers and admins can change team access' }
+  const teamsChanged = JSON.stringify(teamsBefore) !== JSON.stringify(teamsAfter)
 
-  const lead = new Set(actor.leadDepartments)
   const titlesAfter = after.titles === undefined ? before.titles : after.titles
   const { added, removed } = diffTitles(normalizeTitles(before.titles), normalizeTitles(titlesAfter))
+
+  const flagsBefore = before.departments ?? {}
+  const flagsAfter = after.departments === undefined ? flagsBefore : after.departments ?? {}
+  const changedFlags = [...new Set([...Object.keys(flagsBefore), ...Object.keys(flagsAfter)])]
+    .filter((k) => Boolean(flagsBefore[k]) !== Boolean(flagsAfter[k]))
+
+  // Escalations only an admin may perform, checked before the staff-manager short-circuit:
+  // handing out the admin role (directly or through a title that implies it), and raising
+  // one's own access. Deviation from the spec's "staff manager can change anything about
+  // people" - recorded in the spec's Implementation notes.
+  if (!actor.isAdmin) {
+    if (roleAfter === 'admin' && roleBefore !== 'admin') {
+      return { ok: false, reason: 'Only admins can grant the admin role' }
+    }
+    const adminTitle = added.find((t) => TITLE_BY_VALUE[t.title].impliesRole === 'admin')
+    if (adminTitle) {
+      return { ok: false, reason: `Only admins can assign ${TITLE_BY_VALUE[adminTitle.title].label}` }
+    }
+    if (opts?.targetId !== undefined && opts.targetId !== null && String(opts.targetId) === String(actor.personId)) {
+      if (roleBefore !== roleAfter || added.length > 0 || removed.length > 0 || teamsChanged || changedFlags.length > 0) {
+        return { ok: false, reason: 'Only an admin can change your own role, titles, extra access or team access' }
+      }
+    }
+  }
+
+  if (actor.canManagePeople) return { ok: true }
+
+  if (roleBefore !== roleAfter) return { ok: false, reason: 'Only staff managers and admins can change roles' }
+  if (teamsChanged) return { ok: false, reason: 'Only staff managers and admins can change team access' }
+
+  const lead = new Set(actor.leadDepartments)
   for (const t of [...added, ...removed]) {
     const def = TITLE_BY_VALUE[t.title]
     if (t.isLead) return { ok: false, reason: 'Only staff managers and admins can set lead flags' }
@@ -236,10 +271,7 @@ export function canApplyPersonChange(actor: ResolvedAccess, before: PersonAccess
     }
   }
 
-  const fb = before.departments ?? {}
-  const fa = after.departments === undefined ? fb : after.departments ?? {}
-  for (const key of new Set([...Object.keys(fb), ...Object.keys(fa)])) {
-    if (Boolean(fb[key]) === Boolean(fa[key])) continue
+  for (const key of changedFlags) {
     const dept = (Object.keys(DEPARTMENT_FLAG) as DepartmentKey[]).find((d) => DEPARTMENT_FLAG[d] === key)
     if (!dept || !lead.has(dept)) return { ok: false, reason: `You cannot change ${key}` }
   }
