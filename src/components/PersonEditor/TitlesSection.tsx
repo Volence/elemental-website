@@ -1,7 +1,7 @@
 'use client'
 import React, { useState } from 'react'
 import { Plus, X, Star } from 'lucide-react'
-import { TITLES, TITLE_BY_VALUE, TITLE_GROUP_LABELS, REGIONS, titleLabel, type TitleValue } from '@/access/titles'
+import { TITLES, TITLE_BY_VALUE, REGIONS, titleLabel, type TitleValue } from '@/access/titles'
 import type { ResolvedAccess, TitleEntry } from '@/access/resolve'
 
 interface Props { value: TitleEntry[]; onChange: (v: TitleEntry[]) => void; actor: ResolvedAccess | null }
@@ -52,7 +52,7 @@ export default function TitlesSection({ value, onChange, actor }: Props) {
         const editable = canRemoveEntry(actor, entry)
         return (
           <div key={entry.title} data-testid={`title-row-${entry.title}`} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-            <span style={{ flex: 1, fontWeight: 600 }}>{titleLabel(entry)} <span style={{ opacity: 0.5, fontWeight: 400, fontSize: 12 }}>{TITLE_GROUP_LABELS[def.group]}</span></span>
+            <span style={{ flex: 1, fontWeight: 600 }}>{titleLabel(entry)}</span>
             {def.leadLabel && (
               <label style={{ fontSize: 12, display: 'flex', gap: 6, alignItems: 'center' }}>
                 <input type="checkbox" aria-label={`Lead: ${def.leadLabel}`} checked={Boolean(entry.isLead)} disabled={!canSetLead} onChange={(e) => update(i, { isLead: e.target.checked })} />

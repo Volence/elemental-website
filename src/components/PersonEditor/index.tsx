@@ -713,6 +713,14 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
           {/* Titles */}
           {isManager && <TitlesSection value={titles} onChange={setTitles} actor={actor} />}
 
+          {/* Effective access preview - reflects in-progress edits, not just saved state */}
+          {isManager && resolvedPersonId != null && (
+            <EffectiveAccessPanel
+              person={{ id: Number(resolvedPersonId), role, titles, departments, teamAccess }}
+              teamNames={Object.fromEntries(allTeams.map((t) => [t.id, t.name]))}
+            />
+          )}
+
           {/* Role (admin editable, others read-only) */}
           {(isAdmin || role) && (() => {
             const implied = impliedRole(titles)
@@ -747,19 +755,9 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
             )
           })()}
 
-          {/* Access-only teams (staff only) */}
-          {canManageStaff && (
+          {/* Access-only teams: staff edit via the picker, others see their chips read-only */}
+          {(canManageStaff || teamAccess.length > 0) && (
             <TeamAccessSection value={teamAccess} onChange={setTeamAccess} allTeams={allTeams} actor={actor} />
-          )}
-          {!canManageStaff && teamAccess.length > 0 && (
-            <div className="profile-card" style={styles.card}>
-              <h3 style={styles.cardTitle}><Gamepad2 size={16} /> Access-only teams</h3>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {allTeams.filter(t => teamAccess.includes(t.id)).map(t => (
-                  <span key={t.id} className="team-chip selected">{t.name}</span>
-                ))}
-              </div>
-            </div>
           )}
 
           {/* PUG Status (admin/pug-admin manages, others see read-only) */}
@@ -1000,14 +998,6 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
               </>
             )}
           </div>
-
-          {/* Effective access preview - reflects in-progress edits, not just saved state */}
-          {isManager && resolvedPersonId != null && (
-            <EffectiveAccessPanel
-              person={{ id: Number(resolvedPersonId), role, titles, departments, teamAccess }}
-              teamNames={Object.fromEntries(allTeams.map((t) => [t.id, t.name]))}
-            />
-          )}
 
           {/* Game Aliases */}
           <div className="profile-card" style={styles.card}>

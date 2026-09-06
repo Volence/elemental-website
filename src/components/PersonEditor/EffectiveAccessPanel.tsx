@@ -67,7 +67,8 @@ export default function EffectiveAccessPanel({ person, teamNames }: Props) {
       </div>
 
       <div style={{ marginTop: 8 }}>
-        {DEPARTMENT_KEYS.map((k) => {
+        {/* Scouting is retired from the public site; only list it when the flag is explicitly on. */}
+        {DEPARTMENT_KEYS.filter((k) => k !== 'scouting' || person.departments?.isScoutingStaff).map((k) => {
           const level = access.departments[k]
           return (
             <div key={k} data-testid={`effective-department-${k}`} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: 13 }}>
