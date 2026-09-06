@@ -37,9 +37,9 @@ export const Teams: CollectionConfig = {
     defaultColumns: ['name', 'region', 'rating', 'active'],
     description: 'Manage all Elemental teams, including rosters, staff, and achievements.',
     group: 'Organization',
-    // Team-only managers reach their team through /admin/teams (TeamsList) and
-    // /admin/edit-team, not the raw collection nav item.
-    hidden: hideUnless((a) => a.canManagePeople),
+    // Anyone with team access reaches their team through /admin/teams (TeamsList) and
+    // /admin/edit-team; the nav entry is built from this gate, so it has to admit them too.
+    hidden: hideUnless((a) => a.canManagePeople || a.teamIds.size > 0),
     components: {
       // The list lives at /admin/teams (src/components/TeamsList); this sends the stock list there.
       beforeList: ['@/components/TeamsList/ListRedirect#default'],

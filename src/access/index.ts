@@ -1,7 +1,7 @@
 import type { Access, AccessArgs, AccessResult, Payload, PayloadRequest, Where } from 'payload'
 import { resolveAccess, type AccessPersonInput, type ResolvedAccess, type Level } from './resolve'
 import type { DepartmentKey } from './titles'
-import { getTeamsForAccess } from './teamsCache'
+import { getTeamsForAccess, peekTeams } from './teamsCache'
 
 export { anyone } from './anyone'
 export { authenticated } from './authenticated'
@@ -65,12 +65,15 @@ export function teamScoped(field: string): Access {
 }
 
 /**
- * For admin.hidden and field conditions, which are synchronous and have no teams list.
- * Resolves with an empty teams list, so only role/title/department checks are meaningful here.
+ * For admin.hidden and field conditions, which are synchronous and cannot await a fetch.
+ * Resolves against the teams list last fetched by `getTeamsForAccess` (warmed by every
+ * `resolveAccessForReq`), so manager/coach/captain and Region Lead standing counts here too;
+ * before the first fetch of a process the list is empty and only role/title/department checks
+ * are meaningful.
  */
 export function hideUnless(check: (a: ResolvedAccess) => boolean): (args: { user: any }) => boolean {
   return ({ user }) => {
     if (!user) return true
-    return !check(resolveAccess(user as AccessPersonInput, []))
+    return !check(resolveAccess(user as AccessPersonInput, peekTeams()))
   }
 }

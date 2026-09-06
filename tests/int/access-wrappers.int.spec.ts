@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { adminOnly, staffManagerOrAbove, department, anyDepartment, teamManager, teamScoped, withAccess, hideUnless } from '@/access'
-import { getTeamsForAccess, invalidateTeamsCache } from '@/access/teamsCache'
+import { getTeamsForAccess, invalidateTeamsCache, peekTeams } from '@/access/teamsCache'
 
 const teams = [{ id: 1, region: 'NA', manager: [{ person: 10 }] }, { id: 2, region: 'EMEA' }]
 const payload = { find: vi.fn(async () => ({ docs: teams })) } as any
@@ -50,6 +50,22 @@ describe('access wrappers', () => {
     expect(hidden({ user: { id: 1, role: 'user', titles: [{ title: 'hr' }] } })).toBe(false)
     expect(hidden({ user: null })).toBe(true)
   })
+  // I3: the synchronous gates read the last known teams list, so a team manager is not
+  // treated as having no teams at all (which used to hide Teams from their nav).
+  it('hideUnless sees team membership once the cache has been warmed', async () => {
+    await getTeamsForAccess(payload)
+    const hidden = hideUnless((a) => a.teamIds.size > 0)
+    expect(hidden({ user: { id: 10, role: 'user' } })).toBe(false)
+    expect(hidden({ user: { id: 11, role: 'user' } })).toBe(true)
+    // The peek list survives an invalidation; only a fresh fetch replaces it.
+    invalidateTeamsCache()
+    expect(peekTeams()).toEqual([
+      { id: 1, region: 'NA', manager: [{ person: 10 }], coaches: [], captain: [] },
+      { id: 2, region: 'EMEA', manager: [], coaches: [], captain: [] },
+    ])
+    expect(hidden({ user: { id: 10, role: 'user' } })).toBe(false)
+  })
+
   it('getTeamsForAccess recovers after a rejected fetch', async () => {
     invalidateTeamsCache()
     const flaky = {

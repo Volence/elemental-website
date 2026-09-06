@@ -93,6 +93,28 @@ describe('buildNavAreas', () => {
     expect(areas.competition).toContain('PUG Dashboard')
   })
 
+  // I3: the nav is built from the collections Payload says are visible, which comes from each
+  // collection's own `admin.hidden`. Run those real gates rather than hand-picking slugs.
+  it('a manager by team array gets Teams from the real admin.hidden gates', async () => {
+    const [{ Teams }, { People }, { getTeamsForAccess, invalidateTeamsCache }] = await Promise.all([
+      import('@/collections/Teams'),
+      import('@/collections/People'),
+      import('@/access/teamsCache'),
+    ])
+    invalidateTeamsCache()
+    const payload = { find: async () => ({ docs: [{ id: 5, manager: [{ person: 12 }], coaches: [], captain: [] }] }) } as any
+    const teams = await getTeamsForAccess(payload)
+
+    const user = { id: 12, role: 'user' }
+    const access = resolveAccess(user, teams)
+    const configs: Array<[string, any]> = [['people', People], ['teams', Teams]]
+    const collections = configs.filter(([, c]) => c.admin.hidden({ user }) === false).map(([slug]) => slug)
+
+    expect(collections).toContain('teams')
+    const areas = labels(buildNavAreas({ access, collections, globals: [] }))
+    expect(areas.people).toContain('Teams')
+  })
+
   it('returns nothing for a signed-out user', () => {
     expect(buildNavAreas({ access: null, collections: ALL_COLLECTIONS, globals: ALL_GLOBALS })).toEqual([])
   })
