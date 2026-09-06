@@ -362,6 +362,32 @@ export async function mergePeople(
     for (const { table, column } of PRISMA_FK_COLUMNS) {
       await repointColumn(tx, table, column, column, sourceId, targetId, log)
     }
+    // Titles live in an array table keyed by _parent_id, not in a relationship column, so the
+    // FK sweep above never touches them and they would be archived with the source. Move each
+    // one across: a title the target already holds only contributes its lead flag (and its
+    // source row stays behind, archived); the rest change parent, taking their regions with
+    // them (people_titles_regions points at the title row's id, which does not change).
+    const titleResult = await tx.execute(sql.raw(`SELECT id, title, is_lead, _order FROM people_titles WHERE _parent_id = ${sourceId}`))
+    const titleRows: any[] = (titleResult as any).rows ?? titleResult ?? []
+    let titlesMoved = 0
+    let titlesMerged = 0
+    for (const row of titleRows) {
+      const title = String(row.title).replace(/'/g, "''")
+      const isLead = row.is_lead === true ? 'true' : 'false'
+      const dupe = await tx.execute(sql.raw(`SELECT 1 FROM people_titles WHERE _parent_id = ${targetId} AND title = '${title}'`))
+      const dupeRows: any[] = (dupe as any).rows ?? dupe ?? []
+      if (dupeRows.length > 0) {
+        await tx.execute(sql.raw(`UPDATE people_titles SET is_lead = (COALESCE(is_lead, false) OR ${isLead}) WHERE _parent_id = ${targetId} AND title = '${title}'`))
+        titlesMerged++
+      } else {
+        await tx.execute(sql.raw(`UPDATE people_titles SET _parent_id = ${targetId}, _order = (SELECT COALESCE(MAX(_order), 0) + 1 FROM people_titles WHERE _parent_id = ${targetId}) WHERE id = ${idLiteral(row.id)}`))
+        titlesMoved++
+      }
+    }
+    if (titlesMoved > 0 || titlesMerged > 0) {
+      log.push(`Moved ${titlesMoved} title(s) and folded ${titlesMerged} duplicate title(s) into #${targetId}`)
+    }
+
     // Anyone previously merged into the source now points at the target.
     await tx.execute(sql`UPDATE people SET merged_into_id = ${targetId} WHERE merged_into_id = ${sourceId}`)
     // Archive the source. Never delete.

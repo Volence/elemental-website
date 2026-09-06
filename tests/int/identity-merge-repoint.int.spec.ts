@@ -106,8 +106,16 @@ describe('repointColumn', () => {
   })
 })
 
-/** A payload double: one transaction session, every statement recorded. */
-function fakePayload(people: Record<number, any>) {
+/**
+ * A payload double: one transaction session, every statement recorded.
+ * `titles` is what `people_titles` holds for the source, and `targetTitles` which of them the
+ * target already has (so the duplicate-check SELECT can answer).
+ */
+function fakePayload(
+  people: Record<number, any>,
+  titles: Array<{ id: string; title: string; is_lead: boolean; _order: number }> = [],
+  targetTitles: string[] = [],
+) {
   const statements: string[] = []
   const created: any[] = []
   const updated: any[] = []
@@ -116,6 +124,11 @@ function fakePayload(people: Record<number, any>) {
     async execute(query: any) {
       const text = statementText(query)
       statements.push(text)
+      if (text.startsWith('SELECT id, title, is_lead, _order FROM people_titles')) return { rows: titles }
+      if (text.startsWith('SELECT 1 FROM people_titles')) {
+        const m = /title = '(.+)'$/.exec(text)
+        return { rows: m && targetTitles.includes(m[1]) ? [{ '?column?': 1 }] : [] }
+      }
       if (text.startsWith('SELECT id FROM')) return { rows: [] }
       if (text.includes('identity_claims') && text.includes("status = 'declined'")) return { rows: [], rowCount: 2 }
       return { rows: [], rowCount: 0 }
@@ -168,6 +181,33 @@ describe('mergePeople', () => {
       email: null,
       username: '111111111111111111',
     })
+  })
+
+  it('moves the source titles to the target and folds duplicates into the lead flag', async () => {
+    const { payload, statements } = fakePayload(
+      { 10: source, 20: target },
+      [
+        { id: 't1', title: 'caster', is_lead: true, _order: 1 },
+        { id: 't2', title: 'graphics', is_lead: false, _order: 2 },
+      ],
+      ['caster'],
+    )
+    const { log } = await mergePeople(payload, { targetId: 20, sourceId: 10, actorId: null })
+
+    expect(statements).toContain('SELECT id, title, is_lead, _order FROM people_titles WHERE _parent_id = 10')
+    // Already held by the target: only the lead flag is folded in, the source row stays put.
+    expect(statements).toContain("UPDATE people_titles SET is_lead = (COALESCE(is_lead, false) OR true) WHERE _parent_id = 20 AND title = 'caster'")
+    expect(statements.some((s) => s.includes("_parent_id = 20") && s.includes("WHERE id = 't1'"))).toBe(false)
+    // Not held by the target: the row itself moves, taking its regions with it.
+    expect(statements).toContain(
+      "UPDATE people_titles SET _parent_id = 20, _order = (SELECT COALESCE(MAX(_order), 0) + 1 FROM people_titles WHERE _parent_id = 20) WHERE id = 't2'",
+    )
+    expect(log).toContain('Moved 1 title(s) and folded 1 duplicate title(s) into #20')
+    // The titles move before the source row is archived.
+    const moveAt = statements.findIndex((s) => s.includes('UPDATE people_titles SET _parent_id = 20'))
+    const archiveAt = statements.findIndex((s) => s.includes('is_inactive = true'))
+    expect(moveAt).toBeGreaterThan(-1)
+    expect(moveAt).toBeLessThan(archiveAt)
   })
 
   it('rolls the whole merge back when a statement fails', async () => {
