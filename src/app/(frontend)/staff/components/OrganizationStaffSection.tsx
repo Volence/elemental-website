@@ -1,26 +1,18 @@
 import React from 'react'
 import { StaffMemberCard } from './StaffMemberCard'
-import {
-  getPersonNameFromRelationship,
-  isPopulatedPerson,
-  getSocialLinksFromPerson,
-  getPhotoUrlFromPerson,
-  getPersonSlugFromRelationship,
-} from '@/utilities/personHelpers'
+import { getSocialLinksFromPerson, getPhotoUrlFromPerson, getPersonSlugFromRelationship } from '@/utilities/personHelpers'
 import { getOrgRoleIcon } from '@/utilities/roleIcons'
 import { formatPlayerSlug } from '@/utilities/getPlayer'
-import { ORG_ROLES, ORG_REGIONS } from '@/access/titles'
+import { ORG_ROLE_GROUP_LABELS, ORG_REGIONS } from '@/access/titles'
+import type { StaffGroup } from '@/utilities/staffFromTitles'
 
 interface OrganizationStaffSectionProps {
-  groupedOrgStaff: Record<string, any[]>
-  getStaffName: (staff: any) => string
+  groups: StaffGroup[]
 }
 
 const REGION_LABELS: Record<string, string> = Object.fromEntries(
   ORG_REGIONS.map((r) => [r.value, r.label]),
 )
-
-const roleOrder = ORG_ROLES.map((r) => r.label)
 
 const colorMap: Record<string, string> = {
   Owner: 'bg-gradient-to-r from-[hsl(var(--accent-gold))] to-yellow-500',
@@ -114,30 +106,26 @@ const sectionBgMap: Record<string, string> = {
   'Media Editor': 'bg-red-500/5',
 }
 
-export function OrganizationStaffSection({
-  groupedOrgStaff,
-  getStaffName,
-}: OrganizationStaffSectionProps) {
+export function OrganizationStaffSection({ groups }: OrganizationStaffSectionProps) {
   return (
     <>
-      {roleOrder.map((role) => {
-        const staff = groupedOrgStaff[role]
-        if (!staff || staff.length === 0) return null
+      {groups.map(({ title, label, members }) => {
+        if (members.length === 0) return null
 
-        const Icon = getOrgRoleIcon(role, 'md')
-        const displayName = ORG_ROLES.find((r) => r.label === role)?.groupLabel ?? role
+        const Icon = getOrgRoleIcon(title, 'md')
+        const displayName = ORG_ROLE_GROUP_LABELS[title] ?? label
 
-        const underlineColor = colorMap[role] || 'bg-primary'
-        const avatarColors = avatarColorMap[role] || {
+        const underlineColor = colorMap[label] || 'bg-primary'
+        const avatarColors = avatarColorMap[label] || {
           from: 'from-primary/20',
           to: 'to-primary/10',
           text: 'text-primary',
           ring: 'ring-primary/20',
         }
-        const sectionBg = sectionBgMap[role] || 'bg-muted/10'
+        const sectionBg = sectionBgMap[label] || 'bg-muted/10'
 
         return (
-          <div key={role} className={`p-6 rounded-2xl ${sectionBg}`}>
+          <div key={title} className={`p-6 rounded-2xl ${sectionBg}`}>
             <div className="mb-6">
               <h2 className="text-3xl md:text-4xl font-bold mb-2 tracking-tight flex items-center gap-4">
                 {Icon}
@@ -147,27 +135,21 @@ export function OrganizationStaffSection({
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {staff.map((member) => {
-                const name = getStaffName(member)
-                const photoUrl = getPhotoUrlFromPerson(member.person)
+              {members.map(({ person, isLead, regions }) => {
+                const photoUrl = getPhotoUrlFromPerson(person)
+                const socialLinks = getSocialLinksFromPerson(person)
 
-                const socialLinks = getSocialLinksFromPerson(member.person, {
-                  twitter: member.twitter,
-                  twitch: member.twitch,
-                  youtube: member.youtube,
-                  instagram: member.instagram,
-                })
-
-                const regionSubtitle = role === 'Region Lead' && member.regions?.length > 0
-                  ? member.regions.map((r: string) => REGION_LABELS[r] || r.toUpperCase()).join(', ')
+                const regionSubtitle = title === 'region-lead' && regions.length > 0
+                  ? regions.map((r) => REGION_LABELS[r] || r.toUpperCase()).join(', ')
                   : undefined
 
                 return (
                   <StaffMemberCard
-                    key={member.id}
-                    name={name}
-                    slug={getPersonSlugFromRelationship(member.person) || formatPlayerSlug(name)}
+                    key={person.id}
+                    name={person.name}
+                    slug={getPersonSlugFromRelationship(person) || formatPlayerSlug(person.name)}
                     subtitle={regionSubtitle}
+                    lead={isLead}
                     photoUrl={photoUrl}
                     socialLinks={socialLinks}
                     avatarColors={avatarColors}
@@ -181,4 +163,3 @@ export function OrganizationStaffSection({
     </>
   )
 }
-

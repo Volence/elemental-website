@@ -14,10 +14,11 @@ import { TeamLogo } from '@/components/TeamLogo'
 import { formatPlayerSlug } from '@/utilities/getPlayer'
 import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { getMediaUrl } from '@/utilities/getMediaUrl'
-import { getOrgRoleIcon, getOrgRoleLabel } from '@/utilities/roleIcons'
+import { getOrgRoleIcon } from '@/utilities/roleIcons'
 import { getRoleColors, getTierFromRating } from '@/utilities/tierColors'
 import { ParticleBackground } from '@/components/ParticleBackground'
-import { ORG_ROLE_LABELS } from '@/access/titles'
+import { TITLE_BY_VALUE, type TitleValue } from '@/access/titles'
+import type { PlayerInfo } from '@/utilities/getPlayer'
 
 type Args = {
   params: Promise<{
@@ -25,23 +26,20 @@ type Args = {
   }>
 }
 
-const getRoleLabel = (role: string) => {
-  const roleMap: Record<string, string> = {
-    ...ORG_ROLE_LABELS,
-    'caster': 'Caster',
-    'observer': 'Observer',
-    'producer': 'Producer',
-    'observer-producer': 'Observer/Producer',
-    'observer-producer-caster': 'Observer/Producer/Caster',
-  }
-  return roleMap[role] || role
+const getProductionIcon = (title: TitleValue) => {
+  if (title === 'observer') return <Eye className="w-5 h-5" />
+  if (title === 'producer') return <Video className="w-5 h-5" />
+  return <Mic className="w-5 h-5" />
 }
 
-const getProductionIcon = (type: string) => {
-  if (type === 'observer') return <Eye className="w-5 h-5" />
-  if (type === 'producer') return <Video className="w-5 h-5" />
-  if (type === 'observer-producer' || type === 'observer-producer-caster') return <Video className="w-5 h-5" />
-  return <Mic className="w-5 h-5" />
+/** Splits a player's titles into the organization/department group and the production group. */
+function splitTitles(titles: PlayerInfo['titles']) {
+  const organization = titles.filter((t) => {
+    const group = TITLE_BY_VALUE[t.title].group
+    return group === 'organization' || group === 'department'
+  })
+  const production = titles.filter((t) => TITLE_BY_VALUE[t.title].group === 'production')
+  return { organization, production }
 }
 
 // Skip static generation during build - pages will be generated on-demand
@@ -92,15 +90,10 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
       }
     }
     
-    const roles: string[] = []
-    if (player.staffRoles.organization && player.staffRoles.organization.length > 0) {
-      roles.push(...player.staffRoles.organization.map(getRoleLabel))
-    }
-    if (player.staffRoles.production) {
-      roles.push(getRoleLabel(player.staffRoles.production))
-    }
-    
-    const roleDescription = roles.length > 0 ? roles.join(', ') : 
+    const { organization, production } = splitTitles(player.titles)
+    const roles: string[] = [...organization.map((t) => t.label), ...production.map((t) => t.label)]
+
+    const roleDescription = roles.length > 0 ? roles.join(', ') :
                            player.teams.length > 0 ? `Player for ${player.teams.map(t => t.teamName).join(', ')}` :
                            'Player'
     
@@ -169,13 +162,15 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
       .slice(0, 2)
   }
 
+  const { organization, production } = splitTitles(player.titles)
+
   // Get primary role for subtitle
   const getPrimaryRole = () => {
-    if (player.staffRoles.organization && player.staffRoles.organization.length > 0) {
-      return getRoleLabel(player.staffRoles.organization[0])
+    if (organization.length > 0) {
+      return organization[0].label
     }
-    if (player.staffRoles.production) {
-      return getRoleLabel(player.staffRoles.production)
+    if (production.length > 0) {
+      return production[0].label
     }
     if (player.teams.length > 0 && player.teams[0].role) {
       return player.teams[0].role.charAt(0).toUpperCase() + player.teams[0].role.slice(1)
@@ -248,14 +243,14 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
                       </span>
                     </div>
                   )}
-                  {(player.staffRoles.organization && player.staffRoles.organization.length > 0) && (
+                  {organization.length > 0 && (
                     <div className="px-4 py-2 rounded-lg bg-accent-gold/10 border border-accent-gold/20">
                       <span className="text-sm font-semibold text-[hsl(var(--accent-gold))]">
                         Organization Staff
                       </span>
                     </div>
                   )}
-                  {player.staffRoles.production && (
+                  {production.length > 0 && (
                     <div className="px-4 py-2 rounded-lg bg-accent-blue/10 border border-accent-blue/20">
                       <span className="text-sm font-semibold text-[hsl(var(--accent-blue))]">
                         Production Staff
@@ -289,7 +284,7 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
             )}
 
             {/* Staff Roles */}
-            {(player.staffRoles.organization && player.staffRoles.organization.length > 0) || player.staffRoles.production ? (
+            {organization.length > 0 || production.length > 0 ? (
               <div className="p-6 md:p-8 rounded-2xl border-2 border-border bg-gradient-to-br from-card to-card/50 shadow-lg backdrop-blur-sm hover:border-border/80 transition-all">
                 <div className="mb-6">
                   <h2 className="text-2xl font-black mb-2 flex items-center gap-2">
@@ -299,42 +294,63 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
                   <div className="w-20 h-1 bg-gradient-to-r from-cyan-400 via-pink-500 to-purple-500 rounded-full shadow-[0_0_12px_rgba(236,72,153,0.4)]"></div>
                 </div>
                 <div className="space-y-6">
-                  {player.staffRoles.organization && player.staffRoles.organization.length > 0 && (
+                  {organization.length > 0 && (
                     <div>
                       <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
                         <Crown className="w-4 h-4" />
                         Organization Staff
                       </h3>
                       <div className="grid sm:grid-cols-2 gap-4">
-                        {player.staffRoles.organization.map((role) => {
-                          const roleIcon = getOrgRoleIcon(role, 'md')
+                        {organization.map((t) => {
+                          const roleIcon = getOrgRoleIcon(t.title, 'md')
                           return (
-                            <div 
-                              key={role} 
+                            <div
+                              key={t.title}
                               className="flex items-center gap-4 px-4 py-3 rounded-lg bg-gradient-to-br from-accent-gold/10 to-accent-gold/5 border border-accent-gold/20 hover:border-accent-gold/40 transition-all hover:scale-[1.02]"
                             >
                               <div className="w-8 h-8 rounded-lg bg-accent-gold/20 flex items-center justify-center flex-shrink-0">
                                 {roleIcon}
                               </div>
-                              <span className="font-semibold">{getRoleLabel(role)}</span>
+                              <span className="font-semibold flex items-center gap-2">
+                                {t.label}
+                                {t.isLead && (
+                                  <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/15 text-primary">
+                                    Lead
+                                  </span>
+                                )}
+                              </span>
                             </div>
                           )
                         })}
                       </div>
                     </div>
                   )}
-                  
-                  {player.staffRoles.production && (
+
+                  {production.length > 0 && (
                     <div>
                       <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-2">
                         <Video className="w-4 h-4" />
                         Production Staff
                       </h3>
-                      <div className="flex items-center gap-4 px-4 py-3 rounded-lg bg-gradient-to-br from-accent-blue/10 to-accent-blue/5 border border-accent-blue/20 hover:border-accent-blue/40 transition-all hover:scale-[1.02] w-fit">
-                        <div className="w-8 h-8 rounded-lg bg-accent-blue/20 flex items-center justify-center flex-shrink-0">
-                          {getProductionIcon(player.staffRoles.production)}
-                        </div>
-                        <span className="font-semibold">{getRoleLabel(player.staffRoles.production)}</span>
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        {production.map((t) => (
+                          <div
+                            key={t.title}
+                            className="flex items-center gap-4 px-4 py-3 rounded-lg bg-gradient-to-br from-accent-blue/10 to-accent-blue/5 border border-accent-blue/20 hover:border-accent-blue/40 transition-all hover:scale-[1.02]"
+                          >
+                            <div className="w-8 h-8 rounded-lg bg-accent-blue/20 flex items-center justify-center flex-shrink-0">
+                              {getProductionIcon(t.title)}
+                            </div>
+                            <span className="font-semibold flex items-center gap-2">
+                              {t.label}
+                              {t.isLead && (
+                                <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/15 text-primary">
+                                  Lead
+                                </span>
+                              )}
+                            </span>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}
@@ -457,13 +473,13 @@ export default async function PlayerPage({ params: paramsPromise }: Args) {
                   <span className="text-sm text-muted-foreground">Teams</span>
                   <span className="font-bold">{player.teams.length}</span>
                 </div>
-                {player.staffRoles.organization && player.staffRoles.organization.length > 0 && (
+                {organization.length > 0 && (
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Org Roles</span>
-                    <span className="font-bold">{player.staffRoles.organization.length}</span>
+                    <span className="font-bold">{organization.length}</span>
                   </div>
                 )}
-                {player.staffRoles.production && (
+                {production.length > 0 && (
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Production</span>
                     <span className="font-bold">Yes</span>

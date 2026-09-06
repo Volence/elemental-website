@@ -14,10 +14,6 @@ const routeToSectionMap: Record<string, string> = {
   '/admin/collections/matches': 'matches',
   '/admin/collections/tournament-templates': 'matches',
 
-  // Staff
-  '/admin/collections/organization-staff': 'staff',
-  '/admin/collections/production': 'staff',
-
   // System
   '/admin/collections/ignored-duplicates': 'system',
   '/admin/collections/invite-links': 'system',
@@ -31,7 +27,6 @@ const routeToSectionMap: Record<string, string> = {
   // Custom editor routes (mirror their collection counterparts above)
   '/admin/edit-team': 'teams',
   '/admin/edit-person': 'people',
-  '/admin/edit-staff': 'staff',
   '/admin/staff-directory': 'staff',
   '/admin/edit-invite': 'system',
   '/admin/manage-users': 'people',

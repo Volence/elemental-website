@@ -13,8 +13,11 @@ import {
   Globe,
   ClipboardList,
   Megaphone,
+  Mic,
+  Eye,
+  Video,
 } from 'lucide-react'
-import type { OrgRoleSlug } from '@/access/titles'
+import type { TitleValue } from '@/access/titles'
 import { ORG_ROLE_LABELS } from '@/access/titles'
 
 /**
@@ -23,7 +26,7 @@ import { ORG_ROLE_LABELS } from '@/access/titles'
  */
 
 export type GameRole = 'tank' | 'dps' | 'support'
-export type OrgRole = OrgRoleSlug
+export type OrgRole = TitleValue
 export type IconSize = 'sm' | 'md' | 'lg'
 
 const sizeClasses: Record<IconSize, string> = {
@@ -72,6 +75,9 @@ export function getOrgRoleIcon(role: string, size: IconSize = 'sm'): React.React
     'marketing': Megaphone,
     'graphics': Image,
     'media-editor': Film,
+    'caster': Mic,
+    'observer': Eye,
+    'producer': Video,
   }
 
   const Icon = iconMap[roleLower] || Users

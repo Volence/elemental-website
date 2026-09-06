@@ -47,8 +47,10 @@ describe('planTwitchSync', () => {
   })
 
   it('puts Content Creator department members in the creators section and re-buckets on change', () => {
-    expect(streamerCategoryFor({ departments: { isContentCreator: true } })).toBe('content-creator')
-    expect(streamerCategoryFor({ departments: {} })).toBe('player')
+    expect(streamerCategoryFor({ id: 1, departments: { isContentCreator: true } })).toBe('content-creator')
+    expect(streamerCategoryFor({ id: 1, departments: {} })).toBe('player')
+    expect(streamerCategoryFor({ id: 1, titles: [{ title: 'content-creator' }] })).toBe('content-creator')
+    expect(streamerCategoryFor({ id: 1, titles: [{ title: 'caster' }] })).toBe('player')
     expect(streamerCategoryFor(null)).toBe('player')
     const created = planTwitchSync({ personId: person, previousLink: null, nextLink: 'j4cob', approved: true, category: 'content-creator', linkedRow: null, rowForLogin: null })
     expect(created).toEqual({ type: 'create', data: { twitchUsername: 'j4cob', category: 'content-creator', person, active: true, isLive: false } })

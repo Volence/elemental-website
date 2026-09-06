@@ -1,5 +1,6 @@
 import type { CollectionAfterChangeHook, Payload, PayloadRequest } from 'payload'
 import { parseTwitchUsername } from '@/discord/utils/twitchAuth'
+import { resolveAccess, type AccessPersonInput } from '@/access/resolve'
 
 /**
  * A person's Twitch social link is the self-service way onto the live roster,
@@ -23,8 +24,10 @@ export type StreamerRow = {
   person?: number | string | { id: number | string } | null
 }
 
-export function streamerCategoryFor(person: { departments?: { isContentCreator?: boolean | null } | null } | null | undefined): StreamerCategory {
-  return person?.departments?.isContentCreator === true ? 'content-creator' : 'player'
+export function streamerCategoryFor(person: Pick<AccessPersonInput, 'id' | 'titles' | 'departments'> | null | undefined): StreamerCategory {
+  if (!person) return 'player'
+  const isContentCreator = resolveAccess({ id: person.id ?? 0, titles: person.titles, departments: person.departments }, []).isContentCreator
+  return isContentCreator ? 'content-creator' : 'player'
 }
 
 export type TwitchSyncAction =

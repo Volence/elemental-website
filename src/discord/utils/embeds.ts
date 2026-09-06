@@ -345,40 +345,35 @@ export function getStaffRoleIcon(departmentName: string): string {
 }
 
 /**
- * Build a Discord embed for staff department card
+ * Build a Discord embed for a staff department card. `members` is a groupPeopleByTitle()
+ * group's `members` array (or the merged Caster/Production lists teamCards.ts builds from
+ * several such groups) - `{ person, isLead, regions }`, one row per person, lead names
+ * starred.
  */
-export function buildStaffEmbed(departmentName: string, staff: any[]): EmbedBuilder {
+export function buildStaffEmbed(departmentName: string, members: Array<{ person: { name?: string | null } | null | undefined; isLead?: boolean; regions?: string[] }>): EmbedBuilder {
   const icon = getStaffRoleIcon(departmentName)
-  
+
   const embed = new EmbedBuilder()
     .setTitle(`${icon} ${departmentName}`)
     .setColor(getStaffDepartmentColor(departmentName))
 
-  // Extract staff names from person relationships
+  // Extract staff names, lead first (starred) then everyone else
   const staffNames: string[] = []
-  
+
   const regionLabels: Record<string, string> = {
     na: 'NA', emea: 'EMEA', sa: 'SA', oce: 'OCE', apac: 'APAC', sea: 'SEA',
   }
 
-  for (const staffMember of staff) {
-    let name = ''
-    if (staffMember.person) {
-      name = typeof staffMember.person === 'object' && staffMember.person.name
-        ? staffMember.person.name
-        : staffMember.displayName || 'Unknown'
-    } else if (staffMember.displayName) {
-      name = staffMember.displayName
-    }
+  for (const member of members) {
+    const name = member.person?.name
     if (!name) continue
 
-    const regions = staffMember.regions as string[] | undefined
-    if (regions && regions.length > 0) {
-      const regionStr = regions.map((r: string) => regionLabels[r] || r.toUpperCase()).join(', ')
-      staffNames.push(`• ${name} (${regionStr})`)
-    } else {
-      staffNames.push(`• ${name}`)
-    }
+    const regions = member.regions
+    const regionStr = regions && regions.length > 0
+      ? ` (${regions.map((r: string) => regionLabels[r] || r.toUpperCase()).join(', ')})`
+      : ''
+    const prefix = member.isLead ? '⭐' : '•'
+    staffNames.push(`${prefix} ${name}${regionStr}`)
   }
 
   // Display names one per line with bullet points

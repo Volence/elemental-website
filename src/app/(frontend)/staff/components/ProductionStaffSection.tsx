@@ -1,60 +1,38 @@
 import React from 'react'
-import { Users, Mic, Eye, Video } from 'lucide-react'
+import { Users } from 'lucide-react'
 import { StaffMemberCard } from './StaffMemberCard'
 import { getSocialLinksFromPerson, getPhotoUrlFromPerson, getPersonSlugFromRelationship } from '@/utilities/personHelpers'
 import { formatPlayerSlug } from '@/utilities/getPlayer'
+import { getOrgRoleIcon } from '@/utilities/roleIcons'
+import type { StaffGroup } from '@/utilities/staffFromTitles'
 
 interface ProductionStaffSectionProps {
-  groupedProduction: Record<string, any[]>
-  getStaffName: (staff: any) => string
+  groups: StaffGroup[]
 }
 
-const productionColors: Record<string, { from: string; to: string; text: string; ring: string }> =
-  {
-    Caster: {
-      from: 'from-purple-500/20',
-      to: 'to-purple-600/10',
-      text: 'text-purple-500',
-      ring: 'ring-purple-500/20',
-    },
-    Observer: {
-      from: 'from-blue-500/20',
-      to: 'to-blue-600/10',
-      text: 'text-blue-500',
-      ring: 'ring-blue-500/20',
-    },
-    Producer: {
-      from: 'from-yellow-500/20',
-      to: 'to-yellow-600/10',
-      text: 'text-yellow-500',
-      ring: 'ring-yellow-500/20',
-    },
-    'Observer/Producer': {
-      from: 'from-cyan-500/20',
-      to: 'to-blue-600/10',
-      text: 'text-cyan-500',
-      ring: 'ring-cyan-500/20',
-    },
-    'Observer/Producer/Caster': {
-      from: 'from-pink-500/20',
-      to: 'to-purple-600/10',
-      text: 'text-pink-500',
-      ring: 'ring-pink-500/20',
-    },
-  }
-
-function getTypeIcon(type: string) {
-  if (type === 'Observer') return Eye
-  if (type === 'Producer') return Video
-  if (type === 'Observer/Producer' || type === 'Observer/Producer/Caster') return Video
-  return Mic // Default to Mic for Caster
+const productionColors: Record<string, { from: string; to: string; text: string; ring: string }> = {
+  Caster: {
+    from: 'from-purple-500/20',
+    to: 'to-purple-600/10',
+    text: 'text-purple-500',
+    ring: 'ring-purple-500/20',
+  },
+  Observer: {
+    from: 'from-blue-500/20',
+    to: 'to-blue-600/10',
+    text: 'text-blue-500',
+    ring: 'ring-blue-500/20',
+  },
+  Producer: {
+    from: 'from-yellow-500/20',
+    to: 'to-yellow-600/10',
+    text: 'text-yellow-500',
+    ring: 'ring-yellow-500/20',
+  },
 }
 
-export function ProductionStaffSection({
-  groupedProduction,
-  getStaffName,
-}: ProductionStaffSectionProps) {
-  const hasAnyProduction = Object.values(groupedProduction).some((staff) => staff.length > 0)
+export function ProductionStaffSection({ groups }: ProductionStaffSectionProps) {
+  const hasAnyProduction = groups.some((g) => g.members.length > 0)
 
   if (!hasAnyProduction) {
     return null
@@ -71,11 +49,11 @@ export function ProductionStaffSection({
       </div>
 
       <div className="space-y-8">
-        {Object.entries(groupedProduction).map(([type, staff]) => {
-          if (staff.length === 0) return null
+        {groups.map(({ title, label, members }) => {
+          if (members.length === 0) return null
 
-          const Icon = getTypeIcon(type)
-          const avatarColors = productionColors[type] || {
+          const Icon = getOrgRoleIcon(title, 'sm')
+          const avatarColors = productionColors[label] || {
             from: 'from-primary/20',
             to: 'to-primary/10',
             text: 'text-primary',
@@ -83,27 +61,22 @@ export function ProductionStaffSection({
           }
 
           return (
-            <div key={type} className="space-y-4">
+            <div key={title} className="space-y-4">
               <h3 className="text-xl font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                <Icon className="w-5 h-5" />
-                {type}
+                {Icon}
+                {label}
               </h3>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {staff.map((member) => {
-                  const name = getStaffName(member)
-                  const photoUrl = getPhotoUrlFromPerson(member.person)
-                  const socialLinks = getSocialLinksFromPerson(member.person, {
-                    twitter: member.twitter,
-                    twitch: member.twitch,
-                    youtube: member.youtube,
-                    instagram: member.instagram,
-                  })
+                {members.map(({ person, isLead }) => {
+                  const photoUrl = getPhotoUrlFromPerson(person)
+                  const socialLinks = getSocialLinksFromPerson(person)
 
                   return (
                     <StaffMemberCard
-                      key={member.id}
-                      name={name}
-                      slug={getPersonSlugFromRelationship(member.person) || formatPlayerSlug(name)}
+                      key={person.id}
+                      name={person.name}
+                      slug={getPersonSlugFromRelationship(person) || formatPlayerSlug(person.name)}
+                      lead={isLead}
                       photoUrl={photoUrl}
                       socialLinks={socialLinks}
                       avatarColors={avatarColors}
@@ -118,4 +91,3 @@ export function ProductionStaffSection({
     </div>
   )
 }
-

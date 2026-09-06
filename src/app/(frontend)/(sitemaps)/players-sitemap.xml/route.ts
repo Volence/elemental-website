@@ -2,13 +2,14 @@ import { getServerSideSitemap } from 'next-sitemap'
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { unstable_cache } from 'next/cache'
+import { findPeopleWithTitles } from '@/utilities/staffFromTitles'
 
 /**
  * Players sitemap - only includes people who are:
  * - On a team roster
  * - A team manager
  * - A team coach
- * - Organization staff
+ * - Staff (anyone with a title)
  *
  * This excludes opponents and other random people entries.
  */
@@ -73,20 +74,11 @@ const getPlayersSitemap = unstable_cache(
       }
     }
 
-    // 2. Get organization staff
-    const orgStaff = await payload.find({
-      collection: 'organization-staff',
-      depth: 1,
-      limit: 1000,
-      pagination: false,
-      select: {
-        person: true,
-      },
-    })
-
-    for (const staff of orgStaff.docs) {
-      const personId = typeof staff.person === 'number' ? staff.person : (staff.person as any)?.id
-      if (personId) validPersonIds.add(personId)
+    // 2. Get everyone with a title (replaces the old organization-staff-only lookup, which
+    // omitted production-only staff)
+    const titledPeople = await findPeopleWithTitles(payload, 0)
+    for (const person of titledPeople) {
+      if (person.id) validPersonIds.add(person.id)
     }
 
     // 3. If no valid people found, return empty sitemap

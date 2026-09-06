@@ -46,8 +46,6 @@ export default function AdminProviders({ children }: { children: React.ReactNode
       { pattern: /\/admin\/collections\/invite-links\/(\d+)(?:$|[?#])/, to: (id) => `/admin/edit-invite?id=${id}` },
       { pattern: /\/admin\/collections\/people\/(\d+)(?:$|[?#])/, to: (id) => `/admin/edit-person?id=${id}` },
       { pattern: /\/admin\/collections\/teams\/(\d+)(?:$|[?#])/, to: (id) => `/admin/edit-team?id=${id}` },
-      { pattern: /\/admin\/collections\/organization-staff\/(\d+)(?:$|[?#])/, to: (id) => `/admin/edit-staff?type=org&id=${id}` },
-      { pattern: /\/admin\/collections\/production\/(\d+)(?:$|[?#])/, to: (id) => `/admin/edit-staff?type=production&id=${id}` },
       { pattern: /\/admin\/collections\/global-calendar-events\/(\d+)(?:$|[?#])/, to: (id) => `/admin/edit-event?id=${id}` },
     ]
 

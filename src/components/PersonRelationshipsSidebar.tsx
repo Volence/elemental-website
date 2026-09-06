@@ -3,23 +3,22 @@
 import React from 'react'
 import { useDocumentInfo } from '@payloadcms/ui'
 import { Swords, Briefcase, Clapperboard } from 'lucide-react'
-import { ORG_ROLE_LABELS } from '@/access/titles'
+import { titlesOf, type TitledPerson } from '@/utilities/staffFromTitles'
+import { TITLE_BY_VALUE } from '@/access/titles'
 
 /**
- * Sidebar component showing a person's team and staff positions
- * Helps quickly identify who a person is and their roles
+ * Sidebar component showing a person's team and staff positions.
+ * Helps quickly identify who a person is and their roles.
+ * Staff positions come straight from the loaded person's `titles` field (already on the
+ * document - no separate fetch); only team membership still needs its own request.
  */
 const PersonRelationshipsSidebar: React.FC = () => {
-  const { id } = useDocumentInfo()
-  const [relationships, setRelationships] = React.useState<{
-    teams: Array<{ teamId: number; teamName: string; role: string }>
-    orgStaff: Array<{ position: string }>
-    prodStaff: Array<{ position: string }>
-  }>({ teams: [], orgStaff: [], prodStaff: [] })
+  const { id, data } = useDocumentInfo()
+  const [teams, setTeams] = React.useState<Array<{ teamId: number; teamName: string; role: string }>>([])
   const [loading, setLoading] = React.useState(true)
 
   React.useEffect(() => {
-    const fetchRelationships = async () => {
+    const fetchTeams = async () => {
       if (!id) return
 
       try {
@@ -27,19 +26,11 @@ const PersonRelationshipsSidebar: React.FC = () => {
         const teamsRes = await fetch(`/api/teams?limit=100&depth=1`)
         const teamsData = await teamsRes.json()
 
-        // Fetch organization staff (depth 0 to get role field)
-        const orgStaffRes = await fetch(`/api/organization-staff?where[person][equals]=${id}&limit=100&depth=0`)
-        const orgStaffData = await orgStaffRes.json()
-
-        // Fetch production staff (depth 0 to get role field)
-        const prodStaffRes = await fetch(`/api/production?where[person][equals]=${id}&limit=100&depth=0`)
-        const prodStaffData = await prodStaffRes.json()
-
         // Process teams to determine roles
         const teamRoles: Array<{ teamId: number; teamName: string; role: string }> = []
         for (const team of teamsData.docs || []) {
           const roles: string[] = []
-          
+
           // Check roster (array of {person, role} objects)
           if (team.roster && Array.isArray(team.roster)) {
             const rosterRoles: string[] = []
@@ -54,7 +45,7 @@ const PersonRelationshipsSidebar: React.FC = () => {
               roles.push(...rosterRoles)
             }
           }
-          
+
           // Check subs
           if (team.subs && Array.isArray(team.subs)) {
             team.subs.forEach((item: any) => {
@@ -64,7 +55,7 @@ const PersonRelationshipsSidebar: React.FC = () => {
               }
             })
           }
-          
+
           // Check captain
           if (team.captain && Array.isArray(team.captain)) {
             team.captain.forEach((item: any) => {
@@ -74,7 +65,7 @@ const PersonRelationshipsSidebar: React.FC = () => {
               }
             })
           }
-          
+
           // Check coaches
           if (team.coaches && Array.isArray(team.coaches)) {
             team.coaches.forEach((item: any) => {
@@ -84,7 +75,7 @@ const PersonRelationshipsSidebar: React.FC = () => {
               }
             })
           }
-          
+
           // Check manager
           if (team.manager && Array.isArray(team.manager)) {
             team.manager.forEach((item: any) => {
@@ -94,7 +85,7 @@ const PersonRelationshipsSidebar: React.FC = () => {
               }
             })
           }
-          
+
           // Check coCaptain
           if (team.coCaptain) {
             if (Array.isArray(team.coCaptain)) {
@@ -121,53 +112,25 @@ const PersonRelationshipsSidebar: React.FC = () => {
           }
         }
 
-        // Helper function to format production type labels
-        const formatProductionType = (type: string): string => {
-          const typeMap: Record<string, string> = {
-            'caster': 'Caster',
-            'observer': 'Observer',
-            'producer': 'Producer',
-            'observer-producer': 'Observer/Producer',
-            'caster-observer': 'Caster/Observer',
-            'caster-producer': 'Caster/Producer',
-          }
-          return typeMap[type] || type
-        }
-
-        // Helper function to format organization role labels
-        const formatOrgRole = (role: string): string => {
-          return ORG_ROLE_LABELS[role] || role
-        }
-
-        // Process organization staff roles
-        const orgStaffList: Array<{ position: string }> = []
-        for (const staff of orgStaffData.docs || []) {
-          if (staff.roles && Array.isArray(staff.roles)) {
-            staff.roles.forEach((role: string) => {
-              orgStaffList.push({ position: formatOrgRole(role) })
-            })
-          }
-        }
-
-        // Process production staff
-        const prodStaffList: Array<{ position: string }> = (prodStaffData.docs || []).map((s: any) => ({
-          position: formatProductionType(s.type || 'Production'),
-        }))
-
-        setRelationships({
-          teams: teamRoles,
-          orgStaff: orgStaffList,
-          prodStaff: prodStaffList,
-        })
-        setLoading(false)
+        setTeams(teamRoles)
       } catch (error) {
         console.error('Error fetching relationships:', error)
+      } finally {
         setLoading(false)
       }
     }
 
-    fetchRelationships()
+    fetchTeams()
   }, [id])
+
+  // Titles are already on the loaded document - split into the same two sections the old
+  // organization-staff / production collections used to populate.
+  const titles = titlesOf((data ?? {}) as TitledPerson)
+  const orgStaff = titles.filter((t) => {
+    const group = TITLE_BY_VALUE[t.title].group
+    return group === 'organization' || group === 'department'
+  })
+  const prodStaff = titles.filter((t) => TITLE_BY_VALUE[t.title].group === 'production')
 
   if (loading) {
     return (
@@ -177,10 +140,7 @@ const PersonRelationshipsSidebar: React.FC = () => {
     )
   }
 
-  const hasAnyRelationships = 
-    relationships.teams.length > 0 || 
-    relationships.orgStaff.length > 0 || 
-    relationships.prodStaff.length > 0
+  const hasAnyRelationships = teams.length > 0 || orgStaff.length > 0 || prodStaff.length > 0
 
   if (!hasAnyRelationships) {
     return (
@@ -201,12 +161,12 @@ const PersonRelationshipsSidebar: React.FC = () => {
         Relationships
       </h4>
 
-      {relationships.teams.length > 0 && (
+      {teams.length > 0 && (
         <div className="person-relationships__section">
           <p className="person-relationships__label person-relationships__label--teams">
             <Swords size={10} className="person-relationships__label-icon" /> Teams
           </p>
-          {relationships.teams.map((team, idx) => (
+          {teams.map((team, idx) => (
             <div key={idx} className="person-relationships__team-card">
               <a
                 href={`/admin/edit-team?id=${team.teamId}`}
@@ -222,30 +182,30 @@ const PersonRelationshipsSidebar: React.FC = () => {
         </div>
       )}
 
-      {relationships.orgStaff.length > 0 && (
+      {orgStaff.length > 0 && (
         <div className="person-relationships__section">
           <p className="person-relationships__label person-relationships__label--org">
             <Briefcase size={10} className="person-relationships__label-icon" /> Organization Staff
           </p>
-          {relationships.orgStaff.map((staff, idx) => (
+          {orgStaff.map((t, idx) => (
             <div key={idx} className="admin-badge--warning person-relationships__staff-card">
               <p className="admin-text--small person-relationships__staff-name person-relationships__staff-name--org">
-                {staff.position}
+                {t.label}
               </p>
             </div>
           ))}
         </div>
       )}
 
-      {relationships.prodStaff.length > 0 && (
+      {prodStaff.length > 0 && (
         <div className="person-relationships__section">
           <p className="person-relationships__label person-relationships__label--prod">
             <Clapperboard size={10} className="person-relationships__label-icon" /> Production Staff
           </p>
-          {relationships.prodStaff.map((staff, idx) => (
+          {prodStaff.map((t, idx) => (
             <div key={idx} className="admin-badge person-relationships__staff-card">
               <p className="admin-text--small person-relationships__staff-name person-relationships__staff-name--prod">
-                {staff.position}
+                {t.label}
               </p>
             </div>
           ))}

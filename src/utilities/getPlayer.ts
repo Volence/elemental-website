@@ -1,7 +1,9 @@
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { getAllTeams } from './getTeams'
-import { isPopulatedPerson, getPersonIdFromRelationship, getSocialLinksFromPerson, getPhotoIdFromPerson, getPhotoUrlFromPerson } from './personHelpers'
+import { isPopulatedPerson, getSocialLinksFromPerson, getPhotoIdFromPerson, getPhotoUrlFromPerson } from './personHelpers'
+import { titlesOf, findPeopleWithTitles } from './staffFromTitles'
+import type { TitleValue } from '@/access/titles'
 
 export const formatPlayerSlug = (name: string): string => {
   return name
@@ -29,10 +31,7 @@ export interface PlayerInfo {
   photo?: number | null
   photoUrl?: string | null
   teams: PlayerTeamInfo[]
-  staffRoles: {
-    organization?: string[]
-    production?: string
-  }
+  titles: Array<{ title: TitleValue; isLead: boolean; label: string }>
   socialLinks: {
     twitter?: string
     twitch?: string
@@ -56,17 +55,13 @@ export async function getPlayerByName(name: string, personSlug?: string): Promis
   try {
     const allTeams = await getAllTeams()
     const payload = await getPayload({ config: configPromise })
-  
+
   const slug = personSlug || formatSlug(name)
   const teams: PlayerTeamInfo[] = []
-  const staffRoles: PlayerInfo['staffRoles'] = {
-    organization: [],
-    production: undefined,
-  }
-  
+
   // Merge social links from all sources
   const socialLinks: PlayerInfo['socialLinks'] = {}
-  
+
   // Helper function to get or create team entry and add position
   const getOrCreateTeam = (teamSlug: string, teamName: string, teamLogo: string) => {
     let teamEntry = teams.find((t) => t.teamSlug === teamSlug)
@@ -117,7 +112,7 @@ export async function getPlayerByName(name: string, personSlug?: string): Promis
       addPosition(teamEntry, 'player')
       Object.assign(socialLinks, rosterPlayer)
     }
-    
+
     // Check subs
     const subPlayer = team.subs?.find((s) => matchesTeamEntry(s))
     if (subPlayer) {
@@ -125,7 +120,7 @@ export async function getPlayerByName(name: string, personSlug?: string): Promis
       addPosition(teamEntry, 'sub')
       Object.assign(socialLinks, subPlayer)
     }
-    
+
     // Check captain
     const captain = team.captain?.find((c) => matchesTeamEntry(c))
     if (captain) {
@@ -133,7 +128,7 @@ export async function getPlayerByName(name: string, personSlug?: string): Promis
       addPosition(teamEntry, 'captain')
       Object.assign(socialLinks, captain)
     }
-    
+
     // Check co-captain (transformed data has coCaptain as string name or null)
     if (team.coCaptain && typeof team.coCaptain === 'string') {
       if (team.coCaptain.toLowerCase() === name.toLowerCase()) {
@@ -141,7 +136,7 @@ export async function getPlayerByName(name: string, personSlug?: string): Promis
         addPosition(teamEntry, 'co-captain')
       }
     }
-    
+
     // Check manager
     const manager = team.manager?.find((m) => matchesTeamEntry(m))
     if (manager) {
@@ -149,7 +144,7 @@ export async function getPlayerByName(name: string, personSlug?: string): Promis
       addPosition(teamEntry, 'manager')
       Object.assign(socialLinks, manager)
     }
-    
+
     // Check coaches
     const coach = team.coaches?.find((c) => matchesTeamEntry(c))
     if (coach) {
@@ -158,155 +153,13 @@ export async function getPlayerByName(name: string, personSlug?: string): Promis
       Object.assign(socialLinks, coach)
     }
   })
-  
-  // Helper to normalize names for comparison
-  const normalizeName = (name: string): string => {
-    return name.trim().toLowerCase()
-  }
 
-  // Helper to get person name from entry (handles both populated and unpopulated relationships)
-  const getPersonName = async (entry: any): Promise<string | null> => {
-    if (!entry.person) {
-      return null
-    }
-    
-    // Handle populated person object with name
-    if (isPopulatedPerson(entry.person)) {
-      return entry.person.name
-    }
-    
-    // Handle case where person is just an ID - fetch it manually
-    const personId = getPersonIdFromRelationship(entry.person)
-    
-    if (personId) {
-      try {
-        const person = await payload.findByID({
-          collection: 'people',
-          id: personId,
-          depth: 0,
-        })
-        return person?.name || null
-      } catch (error) {
-        // Silently fail - person may not exist or database unavailable
-        return null
-      }
-    }
-    
-    return null
-  }
-
-  // Helper to check if a staff entry matches the name (uses People relationship)
-  const matchesName = async (entry: any, searchName: string): Promise<boolean> => {
-    const normalizedSearch = normalizeName(searchName)
-    
-    // Get person name (handles both populated and unpopulated)
-    const personName = await getPersonName(entry)
-    if (personName) {
-      return normalizeName(personName) === normalizedSearch
-    }
-    
-    // Fallback 1: If person is null but entry has a slug, try to find the person by slug
-    if (!entry.person && entry.slug) {
-      try {
-        const peopleResult = await payload.find({
-          collection: 'people',
-          where: {
-            slug: {
-              equals: entry.slug,
-            },
-          },
-          limit: 1,
-          depth: 0,
-        })
-        if (peopleResult.docs.length > 0) {
-          const foundPerson = peopleResult.docs[0]
-          if (foundPerson.name && normalizeName(foundPerson.name) === normalizedSearch) {
-            return true
-          }
-        }
-      } catch (error) {
-        // Silently fail - person may not exist or database unavailable
-      }
-    }
-    
-    // Fallback 2: Match search name directly to entry slug (if slug matches the name)
-    if (entry.slug && typeof entry.slug === 'string') {
-      const normalizedSlug = normalizeName(entry.slug)
-      if (normalizedSlug === normalizedSearch) {
-        return true
-      }
-    }
-    
-    // Fallback 3: check if entry has a direct name field (legacy support)
-    if (entry.name && typeof entry.name === 'string') {
-      return normalizeName(entry.name) === normalizedSearch
-    }
-    
-    return false
-  }
-
-  // Check organization staff (case-insensitive, supports both People relationship and legacy name)
-  const orgStaffResult = await payload.find({
-    collection: 'organization-staff',
-    limit: 1000,
-    pagination: false,
-    depth: 1, // Populate person relationship
-  })
-  
-  // Use Promise.all to check all staff entries in parallel
-  const orgStaffMatches = await Promise.all(
-    orgStaffResult.docs.map(async (staff) => ({
-      staff,
-      matches: await matchesName(staff, name),
-    }))
-  )
-  const orgStaffMatch = orgStaffMatches.find((m) => m.matches)?.staff
-  
-  if (orgStaffMatch) {
-    const roles = Array.isArray(orgStaffMatch.roles) ? orgStaffMatch.roles : []
-    staffRoles.organization = roles
-    
-    // Social links are now only in the People collection
-    const personSocialLinks = getSocialLinksFromPerson(orgStaffMatch.person)
-    Object.assign(socialLinks, personSocialLinks)
-  }
-  
-  // Check production staff (case-insensitive, supports both People relationship and legacy name)
-  const productionResult = await payload.find({
-    collection: 'production',
-    limit: 1000,
-    pagination: false,
-    depth: 1, // Populate person relationship
-  })
-  
-  // Only log if there are production staff entries with null person relationships (data issue)
-  const staffWithNullPerson = productionResult.docs.filter((staff) => !staff.person)
-  if (staffWithNullPerson.length > 0 && process.env.NODE_ENV === 'development') {
-    console.warn(`[getPlayer] Warning: Found ${staffWithNullPerson.length} production staff entries without person relationships. Run "Fix Staff Relationships" to link them.`)
-  }
-  
-  // Use Promise.all to check all staff entries in parallel
-  const productionMatches = await Promise.all(
-    productionResult.docs.map(async (staff) => ({
-      staff,
-      matches: await matchesName(staff, name),
-    }))
-  )
-  const productionMatch = productionMatches.find((m) => m.matches)?.staff
-  
-  if (productionMatch) {
-    staffRoles.production = productionMatch.type
-    
-    // Social links are now only in the People collection
-    const personSocialLinks = getSocialLinksFromPerson(productionMatch.person)
-    Object.assign(socialLinks, personSocialLinks)
-  }
-  
-  // Fetch person's bio and photo from People collection
+  // Fetch person's bio, photo, and titles from the People collection
   let bio: string | undefined = undefined
   let photo: number | null | undefined = undefined
   let photoUrl: string | null = null
-  
+  let titles: PlayerInfo['titles'] = []
+
   try {
     // Try to find person by slug first (most reliable)
     const personBySlug = await payload.find({
@@ -319,15 +172,9 @@ export async function getPlayerByName(name: string, personSlug?: string): Promis
       limit: 1,
       depth: 1, // Populate photo relationship
     })
-    
-    if (personBySlug.docs.length > 0) {
-      const person = personBySlug.docs[0]
-      if (isPopulatedPerson(person)) {
-        bio = person.bio || undefined
-        photo = getPhotoIdFromPerson(person)
-        photoUrl = getPhotoUrlFromPerson(person)
-      }
-    } else {
+
+    let person = personBySlug.docs[0]
+    if (!person) {
       // Fallback: try to find by name (case-insensitive)
       const personByName = await payload.find({
         collection: 'people',
@@ -339,20 +186,23 @@ export async function getPlayerByName(name: string, personSlug?: string): Promis
         limit: 1,
         depth: 1, // Populate photo relationship
       })
-      
-      if (personByName.docs.length > 0) {
-        const person = personByName.docs[0]
-        if (isPopulatedPerson(person)) {
-          bio = person.bio || undefined
-          photo = getPhotoIdFromPerson(person)
-          photoUrl = getPhotoUrlFromPerson(person)
-        }
-      }
+      person = personByName.docs[0]
+    }
+
+    if (person && isPopulatedPerson(person)) {
+      bio = person.bio || undefined
+      photo = getPhotoIdFromPerson(person)
+      photoUrl = getPhotoUrlFromPerson(person)
+      titles = titlesOf(person as any)
+      // Social links are only stored on the People collection; team entries already carry a
+      // copy for players/subs/captains/managers/coaches, but a staff-only person (no team) has
+      // no other source, so merge theirs in here too.
+      Object.assign(socialLinks, getSocialLinksFromPerson(person))
     }
   } catch (error) {
     // Silently fail - person may not exist or database unavailable
   }
-  
+
     // Return player info even if they only have staff roles (no teams)
     // This ensures all staff members can have player pages
     return {
@@ -362,7 +212,7 @@ export async function getPlayerByName(name: string, personSlug?: string): Promis
       photo,
       photoUrl,
       teams,
-      staffRoles,
+      titles,
       socialLinks,
     }
   } catch (_error) {
@@ -373,7 +223,8 @@ export async function getPlayerByName(name: string, personSlug?: string): Promis
 }
 
 /**
- * Get all unique player names from all teams, organization staff, production staff, and People collection
+ * Get all unique player names from all teams and the People collection (anyone with a title
+ * counts as staff and gets a player page, plus everyone else already in People)
  */
 export async function getAllPlayerNames(): Promise<string[]> {
   // Skip database operations during build
@@ -385,7 +236,7 @@ export async function getAllPlayerNames(): Promise<string[]> {
     const allTeams = await getAllTeams()
     const payload = await getPayload({ config: configPromise })
     const playerNames = new Set<string>()
-    
+
     // Add names from teams (already transformed, so names are extracted)
     allTeams.forEach((team) => {
       team.roster?.forEach((p) => playerNames.add(p.name))
@@ -402,33 +253,13 @@ export async function getAllPlayerNames(): Promise<string[]> {
       team.manager?.forEach((m) => playerNames.add(m.name))
       team.coaches?.forEach((c) => playerNames.add(c.name))
     })
-    
-    // Add names from organization staff (supports both People relationship and legacy name)
-    const orgStaffResult = await payload.find({
-      collection: 'organization-staff',
-      limit: 1000,
-      pagination: false,
-      depth: 1, // Populate person relationship
+
+    // Add names of everyone with a title (replaces the old organization-staff/production lookups)
+    const titledPeople = await findPeopleWithTitles(payload, 0)
+    titledPeople.forEach((person) => {
+      if (person.name) playerNames.add(person.name)
     })
-    orgStaffResult.docs.forEach((staff) => {
-      const personName = isPopulatedPerson(staff.person) ? staff.person.name : null
-      // Name is now only in the person relationship (removed from OrganizationStaff)
-      if (personName) playerNames.add(personName)
-    })
-    
-    // Add names from production staff (supports both People relationship and legacy name)
-    const productionResult = await payload.find({
-      collection: 'production',
-      limit: 1000,
-      pagination: false,
-      depth: 1, // Populate person relationship
-    })
-    productionResult.docs.forEach((staff) => {
-      const personName = isPopulatedPerson(staff.person) ? staff.person.name : null
-      // Name is now only in the person relationship
-      if (personName) playerNames.add(personName)
-    })
-    
+
     // Add names from People collection (for any people not yet linked)
     const peopleResult = await payload.find({
       collection: 'people',
@@ -439,7 +270,7 @@ export async function getAllPlayerNames(): Promise<string[]> {
     peopleResult.docs.forEach((person) => {
       if (person.name) playerNames.add(person.name)
     })
-    
+
     return Array.from(playerNames).sort()
   } catch (error) {
     // During Docker build, database may not be available

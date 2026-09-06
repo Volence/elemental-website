@@ -5,7 +5,8 @@ import { buildEnhancedTeamEmbed, buildStaffEmbed } from '../utils/embeds'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import type { Team } from '@/payload-types'
-import { ORG_ROLE_ORDER, ORG_ROLE_GROUP_LABELS } from '@/access/titles'
+import { ORG_ROLE_GROUP_LABELS } from '@/access/titles'
+import { findPeopleWithTitles, groupPeopleByTitle } from '@/utilities/staffFromTitles'
 
 let isRefreshing = false
 const REFRESH_TIMEOUT_MS = 5 * 60 * 1000
@@ -271,75 +272,45 @@ async function deleteAllTeamCardMessages(channel: TextChannel, payload: any): Pr
 }
 
 /**
- * Post staff department cards
+ * Post staff department cards. Reads titles on People (the retired organization-staff /
+ * production collections are no longer consulted).
  */
 async function postStaffCards(channel: TextChannel, payload: any): Promise<void> {
   try {
-    // Get all organization staff with populated person relationships
-    const orgStaff = await payload.find({
-      collection: 'organization-staff',
-      limit: 200,
-      depth: 1,
-    })
+    const people = await findPeopleWithTitles(payload, 1)
+    const groups = groupPeopleByTitle(people)
 
-    // Group staff by role (canonical order from shared constants)
-    const roleGroups: Record<string, any[]> = Object.fromEntries(
-      ORG_ROLE_ORDER.map((r) => [r, []]),
-    )
+    // One card per organization/department title group, in TITLES order.
+    for (const g of groups) {
+      if (g.group !== 'organization' && g.group !== 'department') continue
+      const embed = buildStaffEmbed(ORG_ROLE_GROUP_LABELS[g.title] || g.label, g.members)
+      await channel.send({ embeds: [embed] })
 
-    // Group staff members by their roles
-    for (const staff of orgStaff.docs) {
-      if (staff.roles && Array.isArray(staff.roles)) {
-        for (const role of staff.roles) {
-          if (role in roleGroups) {
-            roleGroups[role].push(staff)
-          }
-        }
-      }
+      // Small delay to avoid rate limiting
+      await new Promise((resolve) => setTimeout(resolve, 300))
     }
 
-    // Post each role group as a separate card (only if non-empty)
-    for (const [role, staffMembers] of Object.entries(roleGroups)) {
-      if (staffMembers.length > 0) {
-        const embed = buildStaffEmbed(ORG_ROLE_GROUP_LABELS[role] || role, staffMembers)
-        await channel.send({ embeds: [embed] })
-        
-        // Small delay to avoid rate limiting
-        await new Promise((resolve) => setTimeout(resolve, 300))
-      }
-    }
-
-    // Get all production staff with populated person relationships
-    const productionStaff = await payload.find({
-      collection: 'production',
-      limit: 200,
-      depth: 1,
-    })
-
-    // Group production staff: Casters separate, all others as "Production"
-    const casters: any[] = []
-    const production: any[] = []
-    
-    for (const staff of productionStaff.docs) {
-      const type = staff.type || 'Other'
-      if (type.toLowerCase() === 'caster') {
-        casters.push(staff)
-      } else {
-        // All others (Observer, Producer, Observer/Producer, etc.)
-        production.push(staff)
-      }
-    }
-
-    // Post Caster card
-    if (casters.length > 0) {
-      const embed = buildStaffEmbed('Caster', casters)
+    // Production: Caster gets its own card; Observer + Producer merge into one "Production"
+    // card, deduped by person (someone can hold both titles).
+    const casterGroup = groups.find((g) => g.title === 'caster')
+    if (casterGroup && casterGroup.members.length > 0) {
+      const embed = buildStaffEmbed('Caster', casterGroup.members)
       await channel.send({ embeds: [embed] })
       await new Promise((resolve) => setTimeout(resolve, 300))
     }
 
-    // Post Production card (all other production roles)
-    if (production.length > 0) {
-      const embed = buildStaffEmbed('Production', production)
+    const productionMembers = new Map<number, (typeof groups)[number]['members'][number]>()
+    for (const g of groups) {
+      if (g.title !== 'observer' && g.title !== 'producer') continue
+      for (const m of g.members) {
+        const existing = productionMembers.get(m.person.id)
+        // Keep the lead flag if either title carries it.
+        if (!existing || (m.isLead && !existing.isLead)) productionMembers.set(m.person.id, m)
+      }
+    }
+    if (productionMembers.size > 0) {
+      const merged = [...productionMembers.values()].sort((a, b) => Number(b.isLead) - Number(a.isLead))
+      const embed = buildStaffEmbed('Production', merged)
       await channel.send({ embeds: [embed] })
       await new Promise((resolve) => setTimeout(resolve, 300))
     }

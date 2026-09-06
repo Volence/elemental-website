@@ -7,6 +7,7 @@ interface StaffMemberCardProps {
   name: string
   slug: string
   subtitle?: string
+  lead?: boolean
   photoUrl?: string | null
   socialLinks: {
     twitter?: string
@@ -26,6 +27,7 @@ export function StaffMemberCard({
   name,
   slug,
   subtitle,
+  lead,
   photoUrl,
   socialLinks,
   avatarColors,
@@ -57,9 +59,14 @@ export function StaffMemberCard({
       <div className="flex-1 min-w-0">
         <Link
           href={`/players/${slug}`}
-          className="block text-sm font-bold group-hover:text-primary transition-colors truncate mb-1"
+          className="flex items-center gap-2 text-sm font-bold group-hover:text-primary transition-colors mb-1"
         >
-          {name}
+          <span className="truncate">{name}</span>
+          {lead && (
+            <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/15 text-primary">
+              Lead
+            </span>
+          )}
         </Link>
         {subtitle && (
           <span className="block text-xs text-muted-foreground mb-1">{subtitle}</span>

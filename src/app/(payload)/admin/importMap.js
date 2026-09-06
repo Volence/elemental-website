@@ -32,7 +32,6 @@ import { default as default_85ada37c2f018121deec10a5bc7b166d } from '@/component
 import { default as default_d3aadc8f7d1aa70ce78ff0cfa164a82b } from '@/components/FaceitUrlHelper'
 import { default as default_5d1ecec360311ccb6480f9469e664a12 } from '@/components/FaceitHub'
 import { default as default_2c8416f4e7f33bd98807404c20406eb2 } from '@/components/CalendarEventsList/ListRedirect'
-import { default as default_74d7ce4a5764079f398d62cb46e87ed7 } from '@/components/StaffListRedirect'
 import { default as default_dc2c323b20f6177c2131d5b0800696bc } from '@/components/PopulateRosterButton'
 import { default as default_c23ccc3f844b47249d0225373601d9d0 } from '@/components/MatchActions'
 import { default as default_3b0c933eeb58b8ba9e1fb354f07641f1 } from '@/components/MatchesListColumns/TitleCell'
@@ -162,7 +161,6 @@ export const importMap = {
   "@/components/FaceitUrlHelper#default": default_d3aadc8f7d1aa70ce78ff0cfa164a82b,
   "@/components/FaceitHub#default": default_5d1ecec360311ccb6480f9469e664a12,
   "@/components/CalendarEventsList/ListRedirect#default": default_2c8416f4e7f33bd98807404c20406eb2,
-  "@/components/StaffListRedirect#default": default_74d7ce4a5764079f398d62cb46e87ed7,
   "@/components/PopulateRosterButton#default": default_dc2c323b20f6177c2131d5b0800696bc,
   "@/components/MatchActions#default": default_c23ccc3f844b47249d0225373601d9d0,
   "@/components/MatchesListColumns/TitleCell#default": default_3b0c933eeb58b8ba9e1fb354f07641f1,

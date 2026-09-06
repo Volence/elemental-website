@@ -23,14 +23,6 @@ const collectionLabels = {
     plural: 'Projects',
     singular: 'Project',
   },
-  production: {
-    plural: 'Production Staff',
-    singular: 'Production Staff',
-  },
-  'organization-staff': {
-    plural: 'Organization Staff',
-    singular: 'Organization Staff',
-  },
 }
 
 const Title: React.FC = () => <span>Dashboard</span>

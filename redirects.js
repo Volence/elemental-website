@@ -24,6 +24,29 @@ const redirects = async () => {
     permanent: true,
   }
 
+  // Organization Staff / Production collections and their public detail pages retired 2026-09
+  // in favor of titles on People; every profile now lives at /players/:slug.
+  const organizationStaffRedirect = {
+    source: '/organization-staff',
+    destination: '/staff',
+    permanent: true,
+  }
+  const organizationStaffProfileRedirect = {
+    source: '/organization-staff/:slug',
+    destination: '/players/:slug',
+    permanent: true,
+  }
+  const productionRedirect = {
+    source: '/production',
+    destination: '/staff',
+    permanent: true,
+  }
+  const productionProfileRedirect = {
+    source: '/production/:slug',
+    destination: '/players/:slug',
+    permanent: true,
+  }
+
   // Redirects for deleted player pages (reported in Google Search Console)
   const deletedPlayerRedirects = [
     '/players/fat-xaph',
@@ -53,6 +76,10 @@ const redirects = async () => {
     internetExplorerRedirect,
     castersRedirect,
     casterProfileRedirect,
+    organizationStaffRedirect,
+    organizationStaffProfileRedirect,
+    productionRedirect,
+    productionProfileRedirect,
     ...deletedPlayerRedirects,
     ...malformedRedirects,
     ...recruitmentRedirects,

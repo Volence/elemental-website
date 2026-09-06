@@ -4,8 +4,7 @@ import React from 'react'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { getAllTeams } from '@/utilities/getTeams'
-import { getPersonNameFromRelationship } from '@/utilities/personHelpers'
-import { ORG_ROLES } from '@/access/titles'
+import { groupPeopleByTitle, findPeopleWithTitles } from '@/utilities/staffFromTitles'
 import { StaffHeader } from './components/StaffHeader'
 import { OrganizationStaffSection } from './components/OrganizationStaffSection'
 import { ProductionStaffSection } from './components/ProductionStaffSection'
@@ -58,86 +57,6 @@ function deduplicateStaff(staff: StaffMember[]): StaffMember[] {
   return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name))
 }
 
-// Helper to extract name from person relationship
-function getStaffName(staff: any): string {
-  const personName = getPersonNameFromRelationship(staff.person)
-  if (personName) {
-    return personName
-  }
-  // Fallback for legacy data or if person not populated
-  return staff.name || staff.slug || 'Unknown'
-}
-
-// Group production staff by type
-function groupProductionStaff(productionStaff: any[]) {
-  const grouped: Record<string, any[]> = {
-    Caster: [],
-    Observer: [],
-    Producer: [],
-    'Observer/Producer': [],
-    'Observer/Producer/Caster': [],
-  }
-
-  const typeLabels: Record<string, string> = {
-    caster: 'Caster',
-    observer: 'Observer',
-    producer: 'Producer',
-    'observer-producer': 'Observer/Producer',
-    'observer-producer-caster': 'Observer/Producer/Caster',
-  }
-
-  productionStaff.forEach((staff) => {
-    const typeLabel = typeLabels[staff.type] || staff.type
-    if (grouped[typeLabel]) {
-      grouped[typeLabel].push(staff)
-    } else {
-      grouped[typeLabel] = [staff]
-    }
-  })
-
-  // Sort each group by name (extracted from person relationship)
-  Object.keys(grouped).forEach((key) => {
-    grouped[key].sort((a, b) => getStaffName(a).localeCompare(getStaffName(b)))
-  })
-
-  return grouped
-}
-
-// Group organization staff by role
-function groupOrganizationStaff(orgStaff: any[]) {
-  const grouped: Record<string, any[]> = Object.fromEntries(
-    ORG_ROLES.map((r) => [r.label, []]),
-  )
-
-  const roleLabels: Record<string, string> = Object.fromEntries(
-    ORG_ROLES.map((r) => [r.value, r.label]),
-  )
-
-  orgStaff.forEach((staff) => {
-    // Handle both single role (old data) and multiple roles (new data)
-    const roles = Array.isArray(staff.roles) ? staff.roles : staff.role ? [staff.role] : []
-
-    roles.forEach((role: string) => {
-      const roleLabel = roleLabels[role] || role
-      if (grouped[roleLabel]) {
-        // Only add if not already in the group (avoid duplicates)
-        if (!grouped[roleLabel].find((s: any) => s.id === staff.id)) {
-          grouped[roleLabel].push(staff)
-        }
-      } else {
-        grouped[roleLabel] = [staff]
-      }
-    })
-  })
-
-  // Sort each group by name (extracted from person relationship)
-  Object.keys(grouped).forEach((key) => {
-    grouped[key].sort((a, b) => getStaffName(a).localeCompare(getStaffName(b)))
-  })
-
-  return grouped
-}
-
 export default async function StaffPage() {
   // Page is force-dynamic, so it always renders at runtime with fresh data
   try {
@@ -171,47 +90,25 @@ export default async function StaffPage() {
     const coaches = deduplicateStaff(validCoaches)
     const captains = deduplicateStaff(validCaptains)
 
-    // Fetch production staff (with person relationship populated)
-    const productionResult = await payload.find({
-      collection: 'production',
-      limit: 1000,
-      pagination: false,
-      depth: 2, // Populate person relationship and nested photo relationship
-    })
-
-    const productionStaff = productionResult.docs
-    const groupedProduction = groupProductionStaff(productionStaff)
-
-    // Fetch organization staff (with person relationship populated)
-    const orgStaffResult = await payload.find({
-      collection: 'organization-staff',
-      limit: 1000,
-      pagination: false,
-      depth: 2, // Populate person relationship and nested photo relationship
-    })
-
-    const orgStaff = orgStaffResult.docs
-    const groupedOrgStaff = groupOrganizationStaff(orgStaff)
+    // Titled people, grouped by title (organization + department -> OrganizationStaffSection,
+    // production -> ProductionStaffSection; content-creator is not shown on /staff)
+    const groups = groupPeopleByTitle(await findPeopleWithTitles(payload, 2))
+    const orgGroups = groups.filter((g) => g.group === 'organization' || g.group === 'department')
+    const productionGroups = groups.filter((g) => g.group === 'production')
 
     return (
       <div className="relative pt-8 pb-24 min-h-screen animate-fade-in overflow-hidden">
         {/* Subtle background effects */}
         <ParticleBackground particleCount={25} />
-        
+
         <StaffHeader />
 
         <div className="container space-y-10 relative z-10">
           {/* Organization Staff Sections */}
-          <OrganizationStaffSection
-            groupedOrgStaff={groupedOrgStaff}
-            getStaffName={getStaffName}
-          />
+          <OrganizationStaffSection groups={orgGroups} />
 
           {/* Production Staff */}
-          <ProductionStaffSection
-            groupedProduction={groupedProduction}
-            getStaffName={getStaffName}
-          />
+          <ProductionStaffSection groups={productionGroups} />
 
           {/* Esports Staff */}
           <EsportsStaffSection
