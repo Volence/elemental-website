@@ -54,3 +54,6 @@ export const personAccessFieldUpdate: FieldAccess = async ({ req }) => {
   if (!actor) return false
   return actor.canManagePeople || actor.leadDepartments.length > 0
 }
+
+/** Field-level read access: any authenticated user (not the public / anonymous API caller). */
+export const authenticatedRead: FieldAccess = ({ req: { user } }) => Boolean(user)

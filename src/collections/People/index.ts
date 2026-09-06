@@ -9,7 +9,7 @@ import { withAccess, hideUnless, resolveAccessForReq, adminOnly } from '@/access
 import { auditPeopleChanges } from './hooks/auditAccessChanges'
 import { syncTwitchStreamer } from './hooks/syncTwitchStreamer'
 import { createAccessAllowsData, enforceDiscordIdOnCreate } from './hooks/enforceDiscordId'
-import { raiseRoleForTitles, enforcePersonAccessChange, personAccessFieldUpdate } from './hooks/titlesAndRole'
+import { raiseRoleForTitles, enforcePersonAccessChange, personAccessFieldUpdate, authenticatedRead } from './hooks/titlesAndRole'
 import { createAuditLogDeleteHook } from '../../utilities/auditLogger'
 import { trackLogin, trackLogout } from '../../utilities/sessionTracker'
 
@@ -290,6 +290,7 @@ export const People: CollectionConfig = {
                 description: 'Grants manager rights on these teams without showing the person on the site. Membership (roster, staff slots) is set on the team.',
               },
               access: {
+                read: authenticatedRead,
                 update: personAccessFieldUpdate,
               },
             },

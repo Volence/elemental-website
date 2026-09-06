@@ -246,3 +246,14 @@ export function canApplyPersonChange(actor: ResolvedAccess, before: PersonAccess
 
   return { ok: true }
 }
+
+/**
+ * Who may see the scrim admin surfaces: staff, anyone with team access, or an external-scrim
+ * uploader. Pure and dependency-free (no next/headers, no payload) so it is safe to import
+ * from a 'use client' component - scrimScope.ts, serverAccess.ts, and
+ * ScrimAnalyticsTabs/access.ts all re-export/import this single definition rather than keeping
+ * their own copies.
+ */
+export function hasScrimAccess(a: ResolvedAccess | null | undefined): boolean {
+  return !!a && (a.canManagePeople || a.teamIds.size > 0 || a.canUploadExternalScrims)
+}

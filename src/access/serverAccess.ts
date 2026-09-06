@@ -14,6 +14,6 @@ export async function accessForAdminRoute(
 }
 
 // Who may see the scrim admin surfaces: staff, anyone with team access, or an external
-// scrim uploader. Defined in scrimScope.ts; re-exported here so this stays a stable
-// import for the *.Route.tsx server components below.
-export { hasScrimAccess } from './scrimScope'
+// scrim uploader. Single definition in resolve.ts (pure, client-safe); re-exported here so
+// this stays a stable import for the *.Route.tsx server components below.
+export { hasScrimAccess } from './resolve'

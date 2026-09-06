@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { raiseRoleForTitles, enforcePersonAccessChange } from '@/collections/People/hooks/titlesAndRole'
+import { raiseRoleForTitles, enforcePersonAccessChange, authenticatedRead } from '@/collections/People/hooks/titlesAndRole'
 import { invalidateTeamsCache } from '@/access/teamsCache'
 
 describe('raiseRoleForTitles', () => {
@@ -95,5 +95,38 @@ describe('enforcePersonAccessChange', () => {
     await expect(enforcePersonAccessChange({ req, data, originalDoc: original, operation: 'update' })).resolves.toBeUndefined()
     expect('createdAt' in data).toBe(false)
     expect('updatedAt' in data).toBe(false)
+  })
+})
+
+describe('authenticatedRead', () => {
+  it('is false with no user and true for any authenticated user', () => {
+    expect(authenticatedRead({ req: { user: null } } as any)).toBe(false)
+    expect(authenticatedRead({ req: { user: { id: 1 } } } as any)).toBe(true)
+  })
+})
+
+describe('People.teamAccess field access', () => {
+  it('read is gated to authenticated users (regression: was public via collection default)', async () => {
+    const { People } = await import('@/collections/People')
+    const findField = (fields: any[]): any => {
+      for (const f of fields) {
+        if (f.name === 'teamAccess') return f
+        if (f.fields) {
+          const nested = findField(f.fields)
+          if (nested) return nested
+        }
+        if (f.tabs) {
+          for (const tab of f.tabs) {
+            const nested = findField(tab.fields)
+            if (nested) return nested
+          }
+        }
+      }
+      return null
+    }
+    const teamAccessField = findField(People.fields as any[])
+    expect(teamAccessField).toBeTruthy()
+    expect(await teamAccessField.access.read({ req: { user: null } } as any)).toBe(false)
+    expect(await teamAccessField.access.read({ req: { user: { id: 1 } } } as any)).toBe(true)
   })
 })

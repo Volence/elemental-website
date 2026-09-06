@@ -5,9 +5,14 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { headers as nextHeaders } from 'next/headers'
-import { resolveAccessForUser, type ResolvedAccess } from '@/access'
+import { resolveAccessForUser } from '@/access'
 import type { Person } from '@/payload-types'
 import { scrimOwnerKey } from '@/lib/scrim-analytics/ownerKey'
+
+// Single definition lives in resolve.ts (pure, no next/headers) so client-reachable code
+// (ScrimAnalyticsTabs/access.ts) can import it without dragging this file's next/headers
+// dependency into a 'use client' bundle.
+export { hasScrimAccess } from './resolve'
 
 export type UserScope = {
   userId: number
@@ -50,15 +55,6 @@ export async function getUserScope(): Promise<UserScope | null> {
   } catch {
     return null
   }
-}
-
-/**
- * Whether a user may view the scrim admin surfaces: staff, anyone with team access, or an
- * external-scrim uploader.
- */
-export function hasScrimAccess(access: ResolvedAccess | null | undefined): boolean {
-  if (!access) return false
-  return access.canManagePeople || access.teamIds.size > 0 || access.canUploadExternalScrims
 }
 
 /**
