@@ -1,18 +1,40 @@
 import { describe, it, expect } from 'vitest'
 import { guideMatchesViewer, toggleSectionDone, sectionsDone } from '@/guides/audience'
 import { parseBlocks, parseInlines } from '@/guides/markdown'
+import { resolveAccess } from '@/access/resolve'
 
+// guideMatchesViewer takes the same ResolvedAccess every other permission decision uses, not a
+// raw role string - team-manager/player are no longer People.role values (role collapsed to
+// three: admin, staff-manager, user), so these audiences are read off access.teamIds/canManagePeople.
 describe('guideMatchesViewer', () => {
-  const manager = { role: 'team-manager', departments: {} }
-  const social = { role: 'user', departments: { isSocialMediaStaff: true } }
-  it('matches by role, department, everyone, and admins see all', () => {
-    expect(guideMatchesViewer({ roles: { teamManager: true } }, manager)).toBe(true)
-    expect(guideMatchesViewer({ roles: { player: true } }, manager)).toBe(false)
+  const teamAccessPerson = resolveAccess({ id: 1, role: 'user', teamAccess: [3] }, [])
+  const plainUser = resolveAccess({ id: 2, role: 'user' }, [])
+  const social = resolveAccess({ id: 3, role: 'user', departments: { isSocialMediaStaff: true } }, [])
+  const admin = resolveAccess({ id: 4, role: 'admin' }, [])
+
+  it('a team-access person matches the team-manager audience, not the player one', () => {
+    expect(guideMatchesViewer({ roles: { teamManager: true } }, teamAccessPerson)).toBe(true)
+    expect(guideMatchesViewer({ roles: { player: true } }, teamAccessPerson)).toBe(false)
+  })
+
+  it('a plain user matches the player audience, not the team-manager one', () => {
+    expect(guideMatchesViewer({ roles: { player: true } }, plainUser)).toBe(true)
+    expect(guideMatchesViewer({ roles: { teamManager: true } }, plainUser)).toBe(false)
+  })
+
+  it('an admin matches admin-audience guides, and every other audience too', () => {
+    expect(guideMatchesViewer({ roles: { admin: true } }, admin)).toBe(true)
+    expect(guideMatchesViewer({ roles: { player: true } }, admin)).toBe(true)
+  })
+
+  it('matches by department and everyone', () => {
     expect(guideMatchesViewer({ departments: { socialMedia: true } }, social)).toBe(true)
     expect(guideMatchesViewer({ departments: { graphics: true } }, social)).toBe(false)
     expect(guideMatchesViewer({ everyone: true }, social)).toBe(true)
-    expect(guideMatchesViewer({ roles: { player: true } }, { role: 'admin' })).toBe(true)
-    expect(guideMatchesViewer(null, manager)).toBe(false)
+  })
+
+  it('returns false with no audience or no access', () => {
+    expect(guideMatchesViewer(null, teamAccessPerson)).toBe(false)
     expect(guideMatchesViewer({ everyone: true }, null)).toBe(false)
   })
 })

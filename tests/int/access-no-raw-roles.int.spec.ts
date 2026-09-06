@@ -3,10 +3,12 @@ import { execFileSync } from 'node:child_process'
 
 /**
  * Every permission decision goes through src/access. A raw role string comparison anywhere else
- * is a regression. Allowed: src/access/**, the titles migration mapping, generated payload-types.
+ * is a regression. Allowed: src/access/**, the titles migration mapping. (payload-types.ts and
+ * identity/merge.ts no longer match the pattern at all - roleRank replaced their raw checks - so
+ * they were dropped from this list; keeping them would hide a real future regression there.)
  */
 const PATTERN = String.raw`role\s*(===|!==|==|!=)\s*['"](admin|staff-manager|team-manager|player|user)['"]|\[['"]admin['"],\s*['"]staff-manager['"]|UserRole\.`
-const ALLOW = [/^src\/access\//, /^src\/payload-types\.ts$/, /^src\/migrations\//, /^src\/identity\/merge\.ts$/]
+const ALLOW = [/^src\/access\//, /^src\/migrations\//]
 
 describe('no raw role checks outside src/access', () => {
   it('finds none', () => {

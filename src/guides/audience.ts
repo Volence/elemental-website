@@ -1,8 +1,10 @@
-import { roleRank } from '@/access/resolve'
+import { hasDepartment, roleRank, type ResolvedAccess } from '@/access/resolve'
 
 /**
  * Who sees which guide. Pure so it is unit-testable and shared by the API
- * route (server) and the dashboard card (client).
+ * route (server) and the dashboard card (client). Evaluated against the same
+ * ResolvedAccess every other permission decision in the app uses, not a raw
+ * role string - a guide's audience is a policy decision, same as anything else.
  */
 export type GuideAudience = {
   everyone?: boolean | null
@@ -10,49 +12,46 @@ export type GuideAudience = {
   departments?: Partial<Record<'production' | 'socialMedia' | 'graphics' | 'video' | 'events' | 'scouting' | 'contentCreator' | 'pugAdmin', boolean | null>> | null
 }
 
-export type GuideViewer = {
-  role?: string | null
-  departments?: {
-    isProductionStaff?: boolean | null
-    isSocialMediaStaff?: boolean | null
-    isGraphicsStaff?: boolean | null
-    isVideoStaff?: boolean | null
-    isEventsStaff?: boolean | null
-    isScoutingStaff?: boolean | null
-    isContentCreator?: boolean | null
-    isPugAdmin?: boolean | null
-  } | null
+type RoleAudienceKey = keyof NonNullable<GuideAudience['roles']>
+type DeptAudienceKey = keyof NonNullable<GuideAudience['departments']>
+
+/**
+ * `teamManager` and `player` are no longer People.role values (the role field collapsed to
+ * three: admin, staff-manager, user - see the titles-and-access design doc). They stay as
+ * audience keys because "has team access" and "plain roster member, no team access" are still
+ * meaningful audiences; they just aren't a stored role string any more, so they read off the
+ * resolved access shape instead.
+ */
+const ROLE_MATCH: Record<RoleAudienceKey, (a: ResolvedAccess) => boolean> = {
+  admin: (a) => a.isAdmin,
+  staffManager: (a) => a.isStaffManager,
+  teamManager: (a) => a.teamIds.size > 0,
+  player: (a) => !a.canManagePeople && a.teamIds.size === 0,
+  user: (a) => roleRank(a.role) === roleRank('user'),
 }
 
-const ROLE_KEY: Record<string, keyof NonNullable<GuideAudience['roles']>> = {
-  admin: 'admin',
-  'staff-manager': 'staffManager',
-  'team-manager': 'teamManager',
-  player: 'player',
-  user: 'user',
-}
-
-const DEPT_FLAG: Record<keyof NonNullable<GuideAudience['departments']>, keyof NonNullable<GuideViewer['departments']>> = {
-  production: 'isProductionStaff',
-  socialMedia: 'isSocialMediaStaff',
-  graphics: 'isGraphicsStaff',
-  video: 'isVideoStaff',
-  events: 'isEventsStaff',
-  scouting: 'isScoutingStaff',
-  contentCreator: 'isContentCreator',
-  pugAdmin: 'isPugAdmin',
+const DEPT_MATCH: Record<DeptAudienceKey, (a: ResolvedAccess) => boolean> = {
+  production: (a) => hasDepartment(a, 'production'),
+  socialMedia: (a) => hasDepartment(a, 'social'),
+  graphics: (a) => hasDepartment(a, 'graphics'),
+  video: (a) => hasDepartment(a, 'video'),
+  events: (a) => hasDepartment(a, 'events'),
+  scouting: (a) => hasDepartment(a, 'scouting'),
+  contentCreator: (a) => a.isContentCreator,
+  pugAdmin: (a) => hasDepartment(a, 'pug'),
 }
 
 /** True when the guide is meant for this viewer. Admins are never filtered. */
-export function guideMatchesViewer(audience: GuideAudience | null | undefined, viewer: GuideViewer | null | undefined): boolean {
-  if (!viewer) return false
-  if (roleRank(viewer.role) === roleRank('admin')) return true
+export function guideMatchesViewer(audience: GuideAudience | null | undefined, access: ResolvedAccess | null | undefined): boolean {
+  if (!access) return false
+  if (access.isAdmin) return true
   if (!audience) return false
   if (audience.everyone) return true
-  const roleKey = viewer.role ? ROLE_KEY[viewer.role] : undefined
-  if (roleKey && audience.roles?.[roleKey]) return true
-  for (const [deptKey, flag] of Object.entries(DEPT_FLAG) as Array<[keyof typeof DEPT_FLAG, keyof NonNullable<GuideViewer['departments']>]>) {
-    if (audience.departments?.[deptKey] && viewer.departments?.[flag]) return true
+  for (const key of Object.keys(ROLE_MATCH) as RoleAudienceKey[]) {
+    if (audience.roles?.[key] && ROLE_MATCH[key](access)) return true
+  }
+  for (const key of Object.keys(DEPT_MATCH) as DeptAudienceKey[]) {
+    if (audience.departments?.[key] && DEPT_MATCH[key](access)) return true
   }
   return false
 }

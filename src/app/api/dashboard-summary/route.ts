@@ -138,7 +138,7 @@ export async function GET(request: NextRequest) {
   let guides: DashboardSummary['guides'] = null
   try {
     const all = await payload.find({ collection: 'guides' as any, where: { published: { equals: true } }, limit: 100, depth: 0, overrideAccess: true })
-    const available = (all.docs as any[]).filter((g) => guideMatchesViewer(g.audience, u)).length
+    const available = (all.docs as any[]).filter((g) => guideMatchesViewer(g.audience, access)).length
     guides = { available, dismissed: u.guideProgress?.dismissedCard === true }
   } catch {
     guides = null

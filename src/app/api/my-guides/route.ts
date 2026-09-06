@@ -29,8 +29,12 @@ export async function GET(request: NextRequest) {
     depth: 1,
     overrideAccess: true,
   })
+  // Admins see every guide regardless of audience; "for you" (below) marks which ones would
+  // match them anyway if they weren't specially admin-bypassed, using their real departments
+  // and team access but with the admin/staff-manager short-circuits switched off.
+  const nonAdminAccess = { ...access, isAdmin: false, isStaffManager: false, canManagePeople: false }
   const guides = (res.docs as any[])
-    .filter((g) => guideMatchesViewer(g.audience, u))
+    .filter((g) => guideMatchesViewer(g.audience, access))
     .map((g) => ({
       id: g.id,
       slug: g.slug,
@@ -38,8 +42,7 @@ export async function GET(request: NextRequest) {
       summary: g.summary ?? null,
       order: g.order ?? 100,
       published: g.published !== false,
-      // Admins see every guide; "for you" marks the ones that would match them anyway.
-      forViewer: isAdmin ? g.audience?.roles?.admin === true || guideMatchesViewer(g.audience, { role: null, departments: u.departments }) : true,
+      forViewer: isAdmin ? g.audience?.roles?.admin === true || guideMatchesViewer(g.audience, nonAdminAccess) : true,
       audience: g.audience ?? null,
       hasDefault: DEFAULT_GUIDES.some((d) => d.slug === g.slug),
       sections: (g.sections ?? []).map((s: any) => ({
