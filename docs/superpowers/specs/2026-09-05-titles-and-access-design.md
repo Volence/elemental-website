@@ -1,7 +1,7 @@
 # Titles and Access - Design
 
 **Date:** 2026-09-05
-**Status:** Approved in brainstorming, awaiting implementation plan
+**Status:** Implemented on branch `feat/titles-and-access` (Tasks 1-13). Migrations A and B applied in dev only; both must still be applied to prod by hand per the rollout checklist below, and migration C runs only after a quiet day post-deploy. See "Implementation notes (deviations)" below.
 **Program:** Identity consolidation, step 2 of 3 (step 1: `2026-09-02-identity-foundation-design.md`, shipped 2026-09-02)
 
 ## Why
@@ -222,3 +222,17 @@ Removing password login for non-admins; deleting invite-links, PugPlayers, Merge
 - Exact list of files with raw role comparisons (the step 1 audit counted 111 `role === 'admin'` sites; the plan enumerates them).
 - Whether `useAccess()` should be served by an API route or embedded in the Payload `me` response via an `afterMe` hook.
 - Whether the Discord staff-card refresh needs a one-time run after deploy so cards re-render from titles.
+
+## Implementation notes (deviations)
+
+Recorded during Tasks 1-13. None change the decisions above; they are implementation-level facts worth knowing before rollout.
+
+- `people_titles_regions.id` is `varchar` with a `gen_random_uuid()::text` default, not the `_order`/`_parent_id` shape used by `people_titles`; it is a plain hasMany-select join table, not an array field.
+- `ORG_REGIONS` (in `src/access/titles.ts`) keeps the legacy short region labels used by the old organization-staff editor (na, emea, ...); `REGIONS` is the new full-name list used by the titles UI. Both exist; callers must use the one matching their surface.
+- `hasScrimAccess` lives in `src/access/resolve.ts` alongside `resolveAccess` and `canApplyPersonChange`, not in a separate scrim-specific module.
+- Matches' production-manager access maps to staff-manager-or-above under the new resolver, not to a "production lead" concept (there is no single production lead role - Lead Caster and Lead Producer are separate lead labels on separate titles).
+- `src/components/PugPlayers/` and the `editPugPlayer` admin view are kept as-is; they back the live PUG dashboard's Players tab and are out of scope for this step (deletion of dead identity files is step 3 scope, and these are not dead).
+- Content Creator is staff-grantable only: there is no self-serve way for a person to add the title to themselves.
+- `useAccess()` is a client-only hook by construction (it calls `GET /api/access/me` from the browser); there is no server-side equivalent with the same name; server code calls `resolveAccessForUser` directly.
+- The `teamAccess` field is readable only when the requesting user is authenticated (it is access-only and intentionally not part of any public People response).
+- Migration B's dev run flagged 7 team-managers who would lose team rights under the new model. That list is dev data only; the prod-equivalent report (`scripts/titles-migration-report.ts`) must be read and each person fixed or accepted before migration B runs on prod (see rollout checklist and `docs/guides/IDENTITY.md`).

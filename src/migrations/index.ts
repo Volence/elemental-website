@@ -49,6 +49,7 @@ import * as migration_20260903_faceit_intermediate_division from "./20260903_fac
 import * as migration_20260905_guides from "./20260905_guides";
 import * as migration_20260905_titles_schema from "./20260905_titles_schema";
 import * as migration_20260905_titles_data from "./20260905_titles_data";
+import * as migration_20260906_titles_archive_staff_tables from "./20260906_titles_archive_staff_tables";
 
 export const migrations = [
   {
@@ -305,5 +306,10 @@ export const migrations = [
     up: migration_20260905_titles_data.up,
     down: migration_20260905_titles_data.down,
     name: "20260905_titles_data",
+  },
+  {
+    up: migration_20260906_titles_archive_staff_tables.up,
+    down: migration_20260906_titles_archive_staff_tables.down,
+    name: "20260906_titles_archive_staff_tables",
   },
 ];
