@@ -175,6 +175,29 @@ describe('enforcePersonAccessChange', () => {
       await expect(createAs(req, mergedCreateDoc())).resolves.toBeUndefined()
     })
 
+    // These four keys are Payload-injected defaults (false/false/0/0) that must pass silently,
+    // but they are NOT hard-ignored regardless of value: a real, non-default value smuggled into
+    // one of them alongside the rest of the merged doc must still 403.
+    it('rejects showInLiveStreamers: true smuggled in alongside the defaults', async () => {
+      const req = reqForTeamManager({ id: 3, role: 'user' })
+      await expect(createAs(req, { ...mergedCreateDoc(), showInLiveStreamers: true })).rejects.toMatchObject({ status: 403 })
+    })
+
+    it('rejects isInactive: true smuggled in alongside the defaults', async () => {
+      const req = reqForTeamManager({ id: 3, role: 'user' })
+      await expect(createAs(req, { ...mergedCreateDoc(), isInactive: true })).rejects.toMatchObject({ status: 403 })
+    })
+
+    it('rejects pugBanOffenseCount: 3 smuggled in alongside the defaults', async () => {
+      const req = reqForTeamManager({ id: 3, role: 'user' })
+      await expect(createAs(req, { ...mergedCreateDoc(), pugBanOffenseCount: 3 })).rejects.toMatchObject({ status: 403 })
+    })
+
+    it('still resolves for the realistic merged doc with all four at their Payload defaults', async () => {
+      const req = reqForTeamManager({ id: 3, role: 'user' })
+      await expect(createAs(req, mergedCreateDoc())).resolves.toBeUndefined()
+    })
+
     it('still rejects a real titles change smuggled in alongside the defaults', async () => {
       const req = reqForTeamManager({ id: 3, role: 'user' })
       await expect(createAs(req, { ...mergedCreateDoc(), titles: [{ title: 'owner' }] })).rejects.toMatchObject({ status: 403 })

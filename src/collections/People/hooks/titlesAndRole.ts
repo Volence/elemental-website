@@ -19,12 +19,17 @@ const IGNORED_KEYS = new Set(['id', 'createdAt', 'updatedAt'])
  * empty groups into `data` before this hook runs (e.g. `socialLinks: {}`, `pugActiveBan: {}`,
  * `pugBanOffenseCount: 0`, `isInactive: false`, `loginAttempts: 0`, a fully-false `departments`
  * group) - none of that is a change the caller made, so it must never be treated as one. These
- * keys are never a real edit regardless of value, on top of the generic "empty default" filter.
+ * keys are hard-ignored regardless of value: they are pure Payload/auth plumbing with no
+ * legitimate non-empty value a create request should ever carry. Fields that a non-staff actor
+ * could genuinely try to smuggle a real value into on create - `isInactive`,
+ * `showInLiveStreamers`, `pugBanOffenseCount`, `loginAttempts` - are deliberately NOT hard-ignored;
+ * they fall through to the generic `isEmptyDefault` check below instead, so their Payload defaults
+ * (false/0) still pass silently but a real non-default value (e.g. `pugBanOffenseCount: 100`)
+ * still trips the 403.
  */
 const CREATE_IGNORED_KEYS = new Set([
-  'id', 'createdAt', 'updatedAt', 'loginAttempts', 'lockUntil', 'sessions', 'salt', 'hash',
-  'resetPasswordToken', 'resetPasswordExpiration', 'slug', 'isInactive', 'showInLiveStreamers',
-  'pugBanOffenseCount',
+  'id', 'createdAt', 'updatedAt', 'lockUntil', 'sessions', 'salt', 'hash',
+  'resetPasswordToken', 'resetPasswordExpiration', 'slug',
 ])
 
 /** Always allowed on create for a non-staff actor: identity fields plus titles/departments (below). */
@@ -40,6 +45,7 @@ const IDENTITY_CREATE_FIELDS = ['email', 'password'] as const
  */
 function isEmptyDefault(value: unknown): boolean {
   if (value === undefined || value === null || value === '' || value === false || value === 0) return true
+  if (value instanceof Date) return false // a real date/timestamp is never a default, whatever its value
   if (Array.isArray(value)) return value.every(isEmptyDefault) // e.g. [] is empty; any real element makes it a change
   if (typeof value === 'object') return Object.values(value as Record<string, unknown>).every(isEmptyDefault)
   return false
