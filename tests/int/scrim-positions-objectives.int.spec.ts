@@ -15,11 +15,12 @@ import prisma from '@/lib/prisma'
 
 vi.mock('@/access/scrimScope', () => ({
   getUserScope: vi.fn(async () => ({
-    role: 'admin',
     userId: 1,
-    assignedTeamIds: [],
-    linkedPersonId: null,
+    ownerKey: null,
+    teamIds: [],
     isFullAccess: true,
+    canUploadExternalScrims: false,
+    personId: 1,
   })),
 }))
 

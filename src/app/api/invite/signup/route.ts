@@ -165,9 +165,9 @@ export async function POST(request: Request): Promise<Response> {
         role: userRole,
         departments,
       }
-      const inviteTeams = invite.assignedTeams as any[] | null | undefined
+      const inviteTeams = invite.teamAccess as any[] | null | undefined
       if (inviteTeams && inviteTeams.length > 0) {
-        updateData.assignedTeams = inviteTeams
+        updateData.teamAccess = inviteTeams
       }
       newUser = await payload.update({
         collection: 'people',
@@ -182,7 +182,7 @@ export async function POST(request: Request): Promise<Response> {
         email: email.toLowerCase(),
         password,
         role: userRole,
-        assignedTeams: invite.assignedTeams,
+        teamAccess: invite.teamAccess,
         departments,
       }
       try {

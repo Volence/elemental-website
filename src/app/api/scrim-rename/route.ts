@@ -39,8 +39,8 @@ export async function PATCH(req: NextRequest) {
 
   // Team scoping: non-full-access users can only rename scrims for their teams
   if (!scope.isFullAccess) {
-    const hasAccess = (scrim.payloadTeamId && scope.assignedTeamIds.includes(scrim.payloadTeamId))
-      || (scrim.payloadTeamId2 && scope.assignedTeamIds.includes(scrim.payloadTeamId2))
+    const hasAccess = (scrim.payloadTeamId && scope.teamIds.includes(scrim.payloadTeamId))
+      || (scrim.payloadTeamId2 && scope.teamIds.includes(scrim.payloadTeamId2))
     if (!hasAccess) {
       return authError(403, 'Forbidden')
     }

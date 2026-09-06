@@ -93,7 +93,7 @@ export async function GET(req: NextRequest) {
   let scopedScrimIds: number[] | null = null
   if (!scope.isFullAccess) {
     const teamScrimIds =
-      scope.assignedTeamIds.length > 0 ? await getScopedScrimIds(scope.assignedTeamIds) : []
+      scope.teamIds.length > 0 ? await getScopedScrimIds(scope.teamIds) : []
     // Flagged coaches also see the external-team scrims they uploaded
     const externalIds = scope.canUploadExternalScrims
       ? (
@@ -110,11 +110,11 @@ export async function GET(req: NextRequest) {
   }
   // For non-full-access users, restrict to teammates only (competitive integrity)
   let allowedPersonIds: Set<number> | null = null
-  if (scope && !scope.isFullAccess && scope.assignedTeamIds.length > 0) {
+  if (scope && !scope.isFullAccess && scope.teamIds.length > 0) {
     const rosterRows = await prisma.$queryRaw<Array<{ person_id: number }>>`
       SELECT DISTINCT tr.person_id
       FROM teams_roster tr
-      WHERE tr."_parent_id" = ANY(${scope.assignedTeamIds}::int[])
+      WHERE tr."_parent_id" = ANY(${scope.teamIds}::int[])
     `
     allowedPersonIds = new Set(rosterRows.map(r => r.person_id))
   }

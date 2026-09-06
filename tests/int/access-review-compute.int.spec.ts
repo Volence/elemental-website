@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { relId, activeDepartments, isElevated, buildTeamStandingIndex, latestSessionByPerson, latestAccessChangeByPerson } from '@/accessReview/compute'
+import { relId, activeDepartments, isElevated, personTitleLabels, buildTeamStandingIndex, latestSessionByPerson, latestAccessChangeByPerson } from '@/accessReview/compute'
 
 describe('relId', () => {
   it('reads an id from a number, an object, or neither', () => {
@@ -37,9 +37,27 @@ describe('isElevated', () => {
   })
 
   it('includes a plain user with team data access', () => {
-    expect(isElevated({ id: 1, role: 'user', assignedTeams: [{ id: 3, name: 'Hydrus' }] })).toBe(
+    expect(isElevated({ id: 1, role: 'user', teamAccess: [{ id: 3, name: 'Hydrus' }] })).toBe(
       true,
     )
+  })
+
+  it('includes a plain user holding a title', () => {
+    expect(isElevated({ id: 1, role: 'user', titles: [{ title: 'caster' }] })).toBe(true)
+  })
+})
+
+describe('personTitleLabels', () => {
+  it('labels titles, using the lead label when isLead is set', () => {
+    expect(personTitleLabels({ id: 1, titles: [{ title: 'caster' }, { title: 'social-manager', isLead: true }] })).toEqual([
+      'Caster',
+      'Social Media Lead',
+    ])
+  })
+
+  it('drops unknown title values and returns an empty list when there are none', () => {
+    expect(personTitleLabels({ id: 1, titles: [{ title: 'not-a-real-title' }] })).toEqual([])
+    expect(personTitleLabels({ id: 1 })).toEqual([])
   })
 })
 

@@ -1,6 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { UserRole } from '../access/roles'
-import type { Person } from '@/payload-types'
+import { staffManagerOrAbove, teamScoped, resolveAccessForReq } from '@/access'
 
 export const DiscordPolls: CollectionConfig = {
   slug: 'discord-polls',
@@ -9,72 +8,14 @@ export const DiscordPolls: CollectionConfig = {
     plural: 'Schedules',
   },
   access: {
-    // Team managers see only their team's polls, admins/staff managers see all
-    read: ({ req }) => {
-      const user = req.user as Person | undefined
-      if (!user) return false
-      
-      // Admins and Staff Managers can see all polls
-      if (user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER) {
-        return true
-      }
-      
-      // Team Managers can only see polls for their assigned teams
-      if (user.role === UserRole.TEAM_MANAGER) {
-        const assignedTeams = user.assignedTeams
-        if (!assignedTeams || !Array.isArray(assignedTeams) || assignedTeams.length === 0) {
-          return false // No assigned teams = no polls visible
-        }
-        
-        // Extract team IDs (handles both populated objects and raw IDs)
-        const teamIds = assignedTeams.map((team: any) =>
-          typeof team === 'number' ? team : (team?.id || team)
-        )
-        
-        // Return a where clause that filters to only their teams' polls
-        return {
-          team: { in: teamIds },
-        }
-      }
-      
-      return false
-    },
+    // Staff see all polls; team-access people see only their teams' polls.
+    read: teamScoped('team'),
     // Only the system can create (via Discord commands)
     create: () => true,
     // Allow updates for schedule editing in admin panel (same access as read)
-    update: ({ req }) => {
-      const user = req.user as Person | undefined
-      if (!user) return false
-      
-      // Admins and Staff Managers can update all polls
-      if (user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER) {
-        return true
-      }
-      
-      // Team Managers can update polls for their assigned teams
-      if (user.role === UserRole.TEAM_MANAGER) {
-        const assignedTeams = user.assignedTeams
-        if (!assignedTeams || !Array.isArray(assignedTeams) || assignedTeams.length === 0) {
-          return false
-        }
-        
-        const teamIds = assignedTeams.map((team: any) =>
-          typeof team === 'number' ? team : (team?.id || team)
-        )
-        
-        return {
-          team: { in: teamIds },
-        }
-      }
-      
-      return false
-    },
+    update: teamScoped('team'),
     // Admins and staff managers can delete
-    delete: ({ req }) => {
-      const user = req.user as Person | undefined
-      if (!user) return false
-      return user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER
-    },
+    delete: staffManagerOrAbove,
   },
   admin: {
     useAsTitle: 'pollName',
@@ -122,19 +63,13 @@ export const DiscordPolls: CollectionConfig = {
         position: 'sidebar',
         description: 'Team this schedule belongs to',
       },
-      // Filter to assigned teams for team managers
-      filterOptions: ({ user }) => {
+      // Filter to team-access teams for non-staff
+      filterOptions: async ({ req }) => {
         // Server-side operations (no user) - allow all teams
-        if (!user) return true
-        if (user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER) {
-          return true
-        }
-        if (user.role === UserRole.TEAM_MANAGER && (user as any).assignedTeams?.length) {
-          const teamIds = ((user as any).assignedTeams as any[]).map((t) =>
-            typeof t === 'object' ? t.id : t,
-          )
-          return { id: { in: teamIds } }
-        }
+        const access = await resolveAccessForReq(req)
+        if (!access) return true
+        if (access.canManagePeople) return true
+        if (access.teamIds.size > 0) return { id: { in: [...access.teamIds] } }
         return false
       },
     },

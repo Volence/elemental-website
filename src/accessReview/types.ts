@@ -61,6 +61,8 @@ export interface AccessPerson {
   role: string | null
   /** Only the department keys currently set to true. */
   departments: DepartmentKey[]
+  /** Title labels (lead label when isLead), in the order the person holds them. */
+  titles: string[]
   teams: TeamAccess[]
   lastLoginAt: string | null
   lastActivityAt: string | null
@@ -90,7 +92,8 @@ export interface RawPerson {
   discordId?: string | null
   avatar?: Relationship<{ url?: string | null }>
   departments?: Record<string, boolean | null | undefined> | null
-  assignedTeams?: Array<Relationship<{ id: number; name?: string | null }>> | null
+  titles?: Array<{ title: string; isLead?: boolean | null }> | null
+  teamAccess?: Array<Relationship<{ id: number; name?: string | null }>> | null
   updatedAt?: string | null
 }
 

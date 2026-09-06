@@ -38,9 +38,9 @@ export function diffAccessFields(before: any, after: any): AccessFieldChange[] {
     if (from !== to) changes.push({ field: `departments.${key}`, from, to })
   }
 
-  const from = teamIds(before.assignedTeams)
-  const to = teamIds(after.assignedTeams)
-  if (from.join(',') !== to.join(',')) changes.push({ field: 'assignedTeams', from, to })
+  const from = teamIds(before.teamAccess)
+  const to = teamIds(after.teamAccess)
+  if (from.join(',') !== to.join(',')) changes.push({ field: 'teamAccess', from, to })
 
   return changes
 }

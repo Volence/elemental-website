@@ -648,9 +648,9 @@ export interface Person {
    */
   avatar?: (number | null) | Media;
   /**
-   * For Team Managers & Players: Determines which team's scrim data they can access.
+   * Grants manager rights on these teams without showing the person on the site. Membership (roster, staff slots) is set on the team.
    */
-  assignedTeams?: (number | Team)[] | null;
+  teamAccess?: (number | Team)[] | null;
   /**
    * Additive overrides. Titles already grant their departments; tick these only for access a title does not cover.
    */
@@ -3384,7 +3384,7 @@ export interface InviteLink {
   /**
    * Teams the new user will have access to (only applicable for Team Managers and Staff Managers)
    */
-  assignedTeams?: (number | Team)[] | null;
+  teamAccess?: (number | Team)[] | null;
   /**
    * Which departments this user will have access to (mainly for User role)
    */
@@ -3988,7 +3988,7 @@ export interface PeopleSelect<T extends boolean = true> {
       };
   role?: T;
   avatar?: T;
-  assignedTeams?: T;
+  teamAccess?: T;
   departments?:
     | T
     | {
@@ -5151,7 +5151,7 @@ export interface IgnoredDuplicatesSelect<T extends boolean = true> {
 export interface InviteLinksSelect<T extends boolean = true> {
   token?: T;
   role?: T;
-  assignedTeams?: T;
+  teamAccess?: T;
   departments?:
     | T
     | {

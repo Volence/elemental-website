@@ -43,7 +43,6 @@ export async function POST(request: Request) {
 
     // Role/flag gating happens in validateUploadTarget below, once we know
     // whether this is an org-team or external-team upload.
-    const userRole = (user as { role?: string }).role
     const access = await resolveAccessForUser(payload, user as any)
     if (!access) {
       return authError(401, 'Unauthorized')
@@ -56,14 +55,10 @@ export async function POST(request: Request) {
     let teamIdStr = formData.get('teamId') as string | null
     const externalTeamName = (formData.get('externalTeamName') as string | null)?.trim() || null
 
-    // For team-managers: auto-set team to their first assigned team if not specified
-    // (not for external uploads - those must stay unlinked)
-    if (!teamIdStr && !externalTeamName && userRole === 'team-manager') {
-      const typedUser = user as { assignedTeams?: Array<number | { id: number }> }
-      if (typedUser.assignedTeams?.length) {
-        const firstTeam = typedUser.assignedTeams[0]
-        teamIdStr = String(typeof firstTeam === 'number' ? firstTeam : firstTeam.id)
-      }
+    // For team-access (non-staff) uploaders: auto-set team to their first team if not
+    // specified (not for external uploads - those must stay unlinked)
+    if (!teamIdStr && !externalTeamName && !access.canManagePeople && access.teamIds.size > 0) {
+      teamIdStr = String([...access.teamIds][0])
     }
 
     // Form keys are 'mappings'/'mappings2' (set by ScrimUpload). These carry the

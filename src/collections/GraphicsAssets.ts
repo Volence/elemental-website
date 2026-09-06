@@ -6,12 +6,11 @@ import { anyone, department, hideUnless } from '@/access'
 
 /**
  * Hide graphics collection from users who have no business seeing it.
- * Show it to: admins, staff-managers, and anyone with isGraphicsStaff department flag.
- * Hide from: plain users and players WITHOUT graphics department access.
- * (The old team-manager role carve-out is dropped: team-manager is no longer a
- * privilege-bearing role under the resolved access model - see report.)
+ * Show it to: admins, staff-managers, anyone with isGraphicsStaff department flag, and
+ * anyone with team access (the old team-manager role carve-out, translated to teamIds).
+ * Hide from: plain users and players WITHOUT graphics department or team access.
  */
-const hideGraphicsFromNonStaff = hideUnless((a) => a.departments.graphics !== 'none')
+const hideGraphicsFromNonStaff = hideUnless((a) => a.departments.graphics !== 'none' || a.teamIds.size > 0)
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)

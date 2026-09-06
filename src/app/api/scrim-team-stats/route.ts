@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
   }
   if (!scope.isFullAccess) {
-    if (!scope.assignedTeamIds.includes(teamId)) {
+    if (!scope.teamIds.includes(teamId)) {
       return NextResponse.json({ error: 'Access denied - you can only view your own team stats' }, { status: 403 })
     }
   }

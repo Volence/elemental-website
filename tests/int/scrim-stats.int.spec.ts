@@ -17,13 +17,12 @@ vi.mock('@/access/scrimScope', async (importOriginal) => {
   return {
     ...actual,
     getUserScope: vi.fn(async () => ({
-      role: 'admin',
       userId: 1,
-      email: 'test-admin@example.com',
-      assignedTeamIds: [],
-      linkedPersonId: null,
+      ownerKey: 'test-admin@example.com',
+      teamIds: [],
       isFullAccess: true,
       canUploadExternalScrims: false,
+      personId: 1,
     })),
   }
 })

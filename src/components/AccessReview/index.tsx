@@ -312,6 +312,9 @@ export function AccessReviewView({ embedded = false }: { embedded?: boolean } = 
                                   {team.standing ? STANDING_LABELS[team.standing] : 'not on roster'}
                                 </span>
                               )}
+                              {person.titles.map((title) => (
+                                <span className="ar-chip ar-chip-mute" key={title}>{title}</span>
+                              ))}
                               {person.flags.filter((f) => !(group.band === 'team' && f === 'team-without-roster')).map((f) => (
                                 <span className="ar-chip ar-chip-warn" key={f}>{FLAG_LABELS[f]}</span>
                               ))}

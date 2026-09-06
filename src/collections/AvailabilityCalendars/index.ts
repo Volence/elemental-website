@@ -1,6 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { UserRole } from '../../access/roles'
-import type { Person } from '@/payload-types'
+import { withAccess, staffManagerOrAbove, teamScoped, resolveAccessForReq } from '@/access'
 
 export const AvailabilityCalendars: CollectionConfig = {
   slug: 'availability-calendars',
@@ -9,56 +8,11 @@ export const AvailabilityCalendars: CollectionConfig = {
     plural: 'Availability Calendars',
   },
   access: {
-    // Team managers see only their team's calendars, admins/staff see all
-    read: ({ req }) => {
-      const user = req.user as Person | undefined
-      if (!user) return false
-
-      if (user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER) {
-        return true
-      }
-
-      if (user.role === UserRole.TEAM_MANAGER) {
-        const assignedTeams = user.assignedTeams
-        if (!assignedTeams || !Array.isArray(assignedTeams) || assignedTeams.length === 0) {
-          return false
-        }
-        const teamIds = assignedTeams.map((team: any) =>
-          typeof team === 'number' ? team : (team?.id || team)
-        )
-        return { team: { in: teamIds } }
-      }
-
-      return false
-    },
-    create: ({ req }) => {
-      const user = req.user as Person | undefined
-      if (!user) return false
-      return (
-        user.role === UserRole.ADMIN ||
-        user.role === UserRole.STAFF_MANAGER ||
-        user.role === UserRole.TEAM_MANAGER
-      )
-    },
-    update: ({ req }) => {
-      const user = req.user as Person | undefined
-      if (!user) return false
-      if (user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER) return true
-      if (user.role === UserRole.TEAM_MANAGER) {
-        const assignedTeams = user.assignedTeams
-        if (!assignedTeams || !Array.isArray(assignedTeams) || assignedTeams.length === 0) return false
-        const teamIds = assignedTeams.map((team: any) =>
-          typeof team === 'number' ? team : (team?.id || team)
-        )
-        return { team: { in: teamIds } }
-      }
-      return false
-    },
-    delete: ({ req }) => {
-      const user = req.user as Person | undefined
-      if (!user) return false
-      return user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER
-    },
+    // Staff see all calendars; team-access people see only their teams' calendars.
+    read: teamScoped('team'),
+    create: withAccess((a) => a.canManagePeople || a.teamIds.size > 0),
+    update: teamScoped('team'),
+    delete: staffManagerOrAbove,
   },
   admin: {
     useAsTitle: 'title',
@@ -139,15 +93,11 @@ export const AvailabilityCalendars: CollectionConfig = {
         position: 'sidebar',
         description: 'Team this calendar belongs to',
       },
-      filterOptions: ({ user }) => {
-        if (!user) return true
-        if (user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER) return true
-        if (user.role === UserRole.TEAM_MANAGER && (user as any).assignedTeams?.length) {
-          const teamIds = ((user as any).assignedTeams as any[]).map((t) =>
-            typeof t === 'object' ? t.id : t,
-          )
-          return { id: { in: teamIds } }
-        }
+      filterOptions: async ({ req }) => {
+        const access = await resolveAccessForReq(req)
+        if (!access) return true
+        if (access.canManagePeople) return true
+        if (access.teamIds.size > 0) return { id: { in: [...access.teamIds] } }
         return false
       },
     },

@@ -31,12 +31,12 @@ describe('diffAccessFields', () => {
 
   it('reports team access changes as sorted id lists', () => {
     expect(
-      diffAccessFields({ id: 1, assignedTeams: [{ id: 11 }, 10] }, { id: 1, assignedTeams: [10] }),
-    ).toEqual([{ field: 'assignedTeams', from: [10, 11], to: [10] }])
+      diffAccessFields({ id: 1, teamAccess: [{ id: 11 }, 10] }, { id: 1, teamAccess: [10] }),
+    ).toEqual([{ field: 'teamAccess', from: [10, 11], to: [10] }])
   })
 
   it('ignores reordering of the same teams', () => {
-    expect(diffAccessFields({ id: 1, assignedTeams: [10, 11] }, { id: 1, assignedTeams: [11, 10] })).toEqual([])
+    expect(diffAccessFields({ id: 1, teamAccess: [10, 11] }, { id: 1, teamAccess: [11, 10] })).toEqual([])
   })
 
   it('returns nothing when there is no previous document', () => {

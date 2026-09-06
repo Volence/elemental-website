@@ -1,26 +1,24 @@
 /**
- * Auth helpers for API routes to read the current user's role and team scope.
- * Used for data scoping - players and team managers only see their teams' data.
+ * Auth helpers for API routes to read the current user's resolved access and team scope.
+ * Used for data scoping - players and team-access people only see their teams' data.
  */
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import { headers as nextHeaders } from 'next/headers'
-import { UserRole } from '@/access/roles'
-import type { Person, Team } from '@/payload-types'
+import { resolveAccessForUser, type ResolvedAccess } from '@/access'
+import type { Person } from '@/payload-types'
 import { scrimOwnerKey } from '@/lib/scrim-analytics/ownerKey'
 
 export type UserScope = {
-  role: UserRole
   userId: number
-  email: string
   /** How this user's uploads are keyed in scrim_scrims.creatorEmail (null when neither an
-   * email nor a Discord ID is on the account). Always compare against this, not `email`. */
+   * email nor a Discord ID is on the account). Always compare against this, not an email. */
   ownerKey: string | null
-  assignedTeamIds: number[]
-  linkedPersonId: number | null
+  teamIds: number[]
   isFullAccess: boolean // admin or staff-manager - no scoping
   /** departments.canUploadExternalScrims - may upload/view external-team scrims they created */
   canUploadExternalScrims: boolean
+  personId: number
 }
 
 /**
@@ -38,34 +36,16 @@ export async function getUserScope(): Promise<UserScope | null> {
 
     if (!user) return null
 
-    const role = (user.role as UserRole) ?? UserRole.USER
-    const isFullAccess = role === UserRole.ADMIN || role === UserRole.STAFF_MANAGER
-
-    // Resolve assigned team IDs (may be populated objects or plain IDs)
-    const assignedTeamIds: number[] = []
-    if (user.assignedTeams && Array.isArray(user.assignedTeams)) {
-      for (const t of user.assignedTeams) {
-        if (typeof t === 'number') {
-          assignedTeamIds.push(t)
-        } else if (t && typeof t === 'object' && 'id' in t) {
-          assignedTeamIds.push((t as Team).id)
-        }
-      }
-    }
-
-    const linkedPersonId: number = user.id
-
-    const departments = (user as { departments?: { canUploadExternalScrims?: boolean | null } | null }).departments
+    const access = await resolveAccessForUser(payload, user as never)
+    if (!access) return null
 
     return {
-      role,
       userId: user.id,
-      email: user.email ?? '',
       ownerKey: scrimOwnerKey(user as { email?: string | null; discordId?: string | null }),
-      assignedTeamIds,
-      linkedPersonId,
-      isFullAccess,
-      canUploadExternalScrims: departments?.canUploadExternalScrims === true,
+      teamIds: [...access.teamIds],
+      isFullAccess: access.canManagePeople,
+      canUploadExternalScrims: access.canUploadExternalScrims,
+      personId: user.id,
     }
   } catch {
     return null
@@ -73,33 +53,12 @@ export async function getUserScope(): Promise<UserScope | null> {
 }
 
 /**
- * Check if the user is a scrim viewer (can access scrim analytics pages).
+ * Whether a user may view the scrim admin surfaces: staff, anyone with team access, or an
+ * external-scrim uploader.
  */
-export function isScrimViewerRole(role: UserRole): boolean {
-  return [UserRole.ADMIN, UserRole.STAFF_MANAGER, UserRole.TEAM_MANAGER, UserRole.PLAYER].includes(role)
-}
-
-/**
- * Check if the user can upload scrims (admin, staff-manager, or team-manager).
- */
-export function canUploadScrims(role: UserRole): boolean {
-  return [UserRole.ADMIN, UserRole.STAFF_MANAGER, UserRole.TEAM_MANAGER].includes(role)
-}
-
-/**
- * Whether a user may view the scrim analytics pages: the standard scrim
- * roles, plus flagged external-scrim coaches (whatever their role).
- * Takes the raw Payload user doc so server components can call it directly.
- */
-export function hasScrimAccess(
-  user:
-    | { role?: string | null; departments?: { canUploadExternalScrims?: boolean | null } | null }
-    | null
-    | undefined,
-): boolean {
-  if (!user?.role) return false
-  if (['admin', 'staff-manager', 'team-manager', 'player'].includes(user.role)) return true
-  return user.departments?.canUploadExternalScrims === true
+export function hasScrimAccess(access: ResolvedAccess | null | undefined): boolean {
+  if (!access) return false
+  return access.canManagePeople || access.teamIds.size > 0 || access.canUploadExternalScrims
 }
 
 /**

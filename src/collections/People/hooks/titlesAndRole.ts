@@ -2,7 +2,7 @@ import { APIError, type FieldAccess, type PayloadRequest } from 'payload'
 import { impliedRole, roleRank, canApplyPersonChange, type PersonAccessFields } from '@/access/resolve'
 import { resolveAccessForReq } from '@/access'
 
-const ACCESS_FIELDS = ['role', 'titles', 'departments', 'teamAccess', 'assignedTeams'] as const
+const ACCESS_FIELDS = ['role', 'titles', 'departments', 'teamAccess'] as const
 
 /** Titles raise the stored role and never lower it (spec Section 2). */
 export function raiseRoleForTitles(data: { role?: string | null; titles?: any[] | null }, originalDoc?: { role?: string | null } | null): void {
@@ -37,12 +37,12 @@ export async function enforcePersonAccessChange(args: { req: PayloadRequest; dat
 
   const before: PersonAccessFields = operation === 'create'
     ? { role: 'user', titles: [], departments: {}, teamAccess: [] }
-    : { role: originalDoc?.role, titles: originalDoc?.titles, departments: originalDoc?.departments, teamAccess: originalDoc?.teamAccess ?? originalDoc?.assignedTeams }
+    : { role: originalDoc?.role, titles: originalDoc?.titles, departments: originalDoc?.departments, teamAccess: originalDoc?.teamAccess }
   const after: PersonAccessFields = {
     role: 'role' in data ? data.role : before.role,
     titles: 'titles' in data ? data.titles : before.titles,
     departments: 'departments' in data ? data.departments : before.departments,
-    teamAccess: 'teamAccess' in data ? data.teamAccess : 'assignedTeams' in data ? data.assignedTeams : before.teamAccess,
+    teamAccess: 'teamAccess' in data ? data.teamAccess : before.teamAccess,
   }
   const verdict = canApplyPersonChange(actor, before, after)
   if (!verdict.ok) throw new APIError(verdict.reason, 403, undefined, true)

@@ -31,6 +31,11 @@ describe('access wrappers', () => {
     expect(await teamScoped('team')({ req: req({ id: 10, role: 'user' }) } as any)).toEqual({ team: { in: [1] } })
     expect(await teamScoped('team')({ req: req({ id: 1, role: 'user' }) } as any)).toBe(false)
   })
+  it('teamScoped supports a nested field path, as RecruitmentApplications uses for listing.team', async () => {
+    expect(await teamScoped('listing.team')({ req: req({ id: 1, role: 'admin' }) } as any)).toBe(true)
+    expect(await teamScoped('listing.team')({ req: req({ id: 10, role: 'user' }) } as any)).toEqual({ 'listing.team': { in: [1] } })
+    expect(await teamScoped('listing.team')({ req: req({ id: 1, role: 'user' }) } as any)).toBe(false)
+  })
   it('withAccess passes the resolved access and memoizes per request', async () => {
     const r = req({ id: 10, role: 'user' })
     const seen: any[] = []

@@ -1,8 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { authenticated } from '../../access/authenticated'
-import { anyone } from '../../access/anyone'
-import { adminOnly, hasAnyRole, UserRole } from '../../access/roles'
-import type { Person } from '@/payload-types'
+import { anyone, adminOnly, withAccess, teamScoped, resolveAccessForReq } from '@/access'
 
 export const RecruitmentListings: CollectionConfig = {
   slug: 'recruitment-listings',
@@ -13,62 +10,10 @@ export const RecruitmentListings: CollectionConfig = {
   access: {
     // Anyone can read listings (public)
     read: anyone,
-    // Team Managers, Staff Managers, and Admins can create listings
-    create: ({ req }) => {
-      const user = req.user as Person | undefined
-      if (!user) return false
-      return [UserRole.ADMIN, UserRole.TEAM_MANAGER, UserRole.STAFF_MANAGER].includes(
-        user.role as UserRole,
-      )
-    },
-    // Creator, assigned team managers, and admins can update
-    update: async ({ req, id }) => {
-      const user = req.user as Person | undefined
-      if (!user) return false
-
-      // Admins can update everything
-      if (user.role === UserRole.ADMIN) return true
-
-      if (!id) return false
-
-      // Fetch the listing to check ownership and team
-      const listing = await req.payload.findByID({
-        collection: 'recruitment-listings',
-        id,
-        depth: 0,
-      })
-
-      if (!listing) return false
-
-      // Staff managers can update all listings
-      if (user.role === UserRole.STAFF_MANAGER) return true
-
-      // Creator can update their own listings
-      if (
-        typeof listing.createdBy === 'object' && listing.createdBy !== null
-          ? listing.createdBy.id === user.id
-          : listing.createdBy === user.id
-      ) {
-        return true
-      }
-
-      // Team managers can update listings for their assigned teams
-      if (user.role === UserRole.TEAM_MANAGER) {
-        const assignedTeams = user.assignedTeams
-        if (!assignedTeams || !Array.isArray(assignedTeams)) return false
-
-        const teamIds = assignedTeams.map((team: any) =>
-          typeof team === 'number' ? team : team?.id || team,
-        )
-
-        const listingTeamId =
-          typeof listing.team === 'number' ? listing.team : listing.team?.id
-
-        return teamIds.includes(Number(listingTeamId))
-      }
-
-      return false
-    },
+    // Staff and anyone with team access can create listings
+    create: withAccess((a) => a.canManagePeople || a.teamIds.size > 0),
+    // Staff update all listings; team-access people update the ones for their teams
+    update: teamScoped('team'),
     // Only admins can delete
     delete: adminOnly,
   },
@@ -114,37 +59,15 @@ export const RecruitmentListings: CollectionConfig = {
           Field: '@/components/RecruitmentFields/TeamRelationshipField#default',
         },
       },
-      filterOptions: ({ user, relationTo, siblingData }) => {
-        const currentUser = user as Person | undefined
-        if (!currentUser) return false
+      filterOptions: async ({ req }) => {
+        const access = await resolveAccessForReq(req)
+        if (!access) return false
 
-        // Admins and Staff Managers can see all teams
-        if (
-          currentUser.role === UserRole.ADMIN ||
-          currentUser.role === UserRole.STAFF_MANAGER
-        ) {
-          return true // Return all teams
-        }
+        // Staff can see all teams
+        if (access.canManagePeople) return true
 
-        // Team Managers can only see their assigned teams
-        if (currentUser.role === UserRole.TEAM_MANAGER) {
-          const assignedTeams = currentUser.assignedTeams
-          if (!assignedTeams || !Array.isArray(assignedTeams)) {
-            return false // No teams assigned, show nothing
-          }
-
-          // Extract team IDs (handle both number and object references)
-          const teamIds = assignedTeams.map((team: any) =>
-            typeof team === 'number' ? team : team?.id || team,
-          )
-
-          // Filter to only show teams in the user's assigned list
-          return {
-            id: {
-              in: teamIds,
-            },
-          }
-        }
+        // Team-access people can only see their own teams
+        if (access.teamIds.size > 0) return { id: { in: [...access.teamIds] } }
 
         return false // Default: show nothing
       },
@@ -264,33 +187,25 @@ export const RecruitmentListings: CollectionConfig = {
   hooks: {
     beforeChange: [
       async ({ data, req, operation }) => {
-        const user = req.user as Person | undefined
+        const user = req.user
 
         // Set createdBy on create
         if (operation === 'create' && user) {
           data.createdBy = user.id
 
-          // Validate team manager restrictions
-          if (user.role === UserRole.TEAM_MANAGER) {
-            // Team managers cannot create org-staff listings
+          // Validate team-access (non-staff) restrictions
+          const access = await resolveAccessForReq(req)
+          if (access && !access.canManagePeople && access.teamIds.size > 0) {
+            // Team-access people cannot create org-staff listings
             if (data.category === 'org-staff') {
               throw new Error('Team managers cannot create organization-wide positions')
             }
 
-            // Team managers can only create listings for their assigned teams
+            // Team-access people can only create listings for their own teams
             if (data.team) {
-              const assignedTeams = user.assignedTeams
-              if (!assignedTeams || !Array.isArray(assignedTeams)) {
-                throw new Error('No teams assigned to this team manager')
-              }
-
-              const teamIds = assignedTeams.map((team: any) =>
-                typeof team === 'number' ? team : team?.id || team,
-              )
-
               const teamId = typeof data.team === 'number' ? data.team : data.team?.id
 
-              if (!teamIds.includes(Number(teamId))) {
+              if (!access.teamIds.has(Number(teamId))) {
                 throw new Error('You can only create listings for your assigned teams')
               }
             }

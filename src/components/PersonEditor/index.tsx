@@ -183,8 +183,8 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
   // Account & role fields
   const [email, setEmail] = useState('')
   const [role, setRole] = useState('user')
-  const [assignedTeams, setAssignedTeams] = useState<number[]>([])
-  const [initialAssignedTeams, setInitialAssignedTeams] = useState<number[]>([])
+  const [teamAccess, setTeamAccess] = useState<number[]>([])
+  const [initialTeamAccess, setInitialTeamAccess] = useState<number[]>([])
   const [allTeams, setAllTeams] = useState<Array<{ id: number; name: string }>>([])
   const [departments, setDepartments] = useState<Record<string, boolean>>({})
   const [newPassword, setNewPassword] = useState('')
@@ -230,9 +230,9 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
       // Account & role fields
       setEmail(data.email ?? '')
       setRole(data.role ?? 'user')
-      const teamIds = (data.assignedTeams ?? []).map((t: any) => typeof t === 'object' ? t.id : t)
-      setAssignedTeams(teamIds)
-      setInitialAssignedTeams(teamIds)
+      const teamIds = (data.teamAccess ?? []).map((t: any) => typeof t === 'object' ? t.id : t)
+      setTeamAccess(teamIds)
+      setInitialTeamAccess(teamIds)
       setDepartments({
         isProductionStaff: data.departments?.isProductionStaff ?? false,
         isSocialMediaStaff: data.departments?.isSocialMediaStaff ?? false,
@@ -322,9 +322,9 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
           const hasUsername = Boolean((person as any)?.username)
           if (trimmedEmail) payload.email = trimmedEmail
           else if (storedEmail && hasUsername) payload.email = null
-          const teamsChanged = JSON.stringify([...assignedTeams].sort()) !== JSON.stringify([...initialAssignedTeams].sort())
+          const teamsChanged = JSON.stringify([...teamAccess].sort()) !== JSON.stringify([...initialTeamAccess].sort())
           if (teamsChanged) {
-            payload.assignedTeams = assignedTeams.length > 0 ? assignedTeams : null
+            payload.teamAccess = teamAccess.length > 0 ? teamAccess : null
           }
           payload.departments = departments
         }
@@ -398,7 +398,7 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
 
   // Team/dept/PUG toggles
   const toggleTeam = (teamId: number) => {
-    setAssignedTeams(prev => prev.includes(teamId) ? prev.filter(t => t !== teamId) : [...prev, teamId])
+    setTeamAccess(prev => prev.includes(teamId) ? prev.filter(t => t !== teamId) : [...prev, teamId])
   }
   const toggleDept = (key: string) => {
     setDepartments(prev => ({ ...prev, [key]: !prev[key] }))
@@ -703,20 +703,20 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
                 {allTeams.map(t => (
                   <button
                     key={t.id}
-                    className={`team-chip ${assignedTeams.includes(t.id) ? 'selected' : ''}`}
+                    className={`team-chip ${teamAccess.includes(t.id) ? 'selected' : ''}`}
                     onClick={() => toggleTeam(t.id)}
                   >
-                    {assignedTeams.includes(t.id) && <Check size={12} />}
+                    {teamAccess.includes(t.id) && <Check size={12} />}
                     {t.name}
                   </button>
                 ))}
               </div>
             </div>
-          ) : assignedTeams.length > 0 ? (
+          ) : teamAccess.length > 0 ? (
             <div className="profile-card" style={styles.card}>
               <h3 style={styles.cardTitle}><Gamepad2 size={16} /> Assigned Teams</h3>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {allTeams.filter(t => assignedTeams.includes(t.id)).map(t => (
+                {allTeams.filter(t => teamAccess.includes(t.id)).map(t => (
                   <span key={t.id} className="team-chip selected">{t.name}</span>
                 ))}
               </div>

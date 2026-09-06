@@ -167,7 +167,7 @@ export async function PATCH(request: NextRequest) {
         id: updated.id,
         role: updated.role ?? null,
         departments: updated.departments ?? {},
-        assignedTeams: (updated.assignedTeams ?? []).map((entry: any) =>
+        teamAccess: (updated.teamAccess ?? []).map((entry: any) =>
           typeof entry === 'number' ? entry : entry?.id,
         ),
       },

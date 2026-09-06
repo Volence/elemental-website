@@ -22,7 +22,7 @@ const healthy = {
   name: 'Rostered Coach',
   role: 'player',
   discordId: '111',
-  assignedTeams: [{ id: 10, name: 'Hydrus' }],
+  teamAccess: [{ id: 10, name: 'Hydrus' }],
 }
 
 const healthyInput = (over: Partial<BuildReportInput> = {}): BuildReportInput =>

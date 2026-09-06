@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { UserRole } from '@/access/roles'
+import { withAccess, staffManagerOrAbove, teamScoped, resolveAccessForReq } from '@/access'
 
 export const ScrimOutcomes: CollectionConfig = {
   slug: 'scrim-outcomes',
@@ -14,37 +14,11 @@ export const ScrimOutcomes: CollectionConfig = {
     description: 'Post-scrim feedback and ratings per team',
   },
   access: {
-    read: ({ req }) => {
-      if (!req.user) return false
-      // Admins and staff managers see all
-      if ([UserRole.ADMIN, UserRole.STAFF_MANAGER].includes(req.user.role as UserRole)) {
-        return true
-      }
-      // Team managers only see their team's outcomes
-      if (req.user.role === UserRole.TEAM_MANAGER && req.user.assignedTeams?.length) {
-        const teamIds = (req.user.assignedTeams as any[]).map((t) =>
-          typeof t === 'object' ? t.id : t,
-        )
-        return { yourTeam: { in: teamIds } }
-      }
-      return false
-    },
-    create: ({ req }) => {
-      if (!req.user) return false
-      return [UserRole.ADMIN, UserRole.STAFF_MANAGER, UserRole.TEAM_MANAGER].includes(
-        req.user.role as UserRole,
-      )
-    },
-    update: ({ req }) => {
-      if (!req.user) return false
-      return [UserRole.ADMIN, UserRole.STAFF_MANAGER, UserRole.TEAM_MANAGER].includes(
-        req.user.role as UserRole,
-      )
-    },
-    delete: ({ req }) => {
-      if (!req.user) return false
-      return [UserRole.ADMIN, UserRole.STAFF_MANAGER].includes(req.user.role as UserRole)
-    },
+    // Staff see all outcomes; team-access people see only their teams' outcomes.
+    read: teamScoped('yourTeam'),
+    create: withAccess((a) => a.canManagePeople || a.teamIds.size > 0),
+    update: withAccess((a) => a.canManagePeople || a.teamIds.size > 0),
+    delete: staffManagerOrAbove,
   },
   fields: [
     // Virtual title
@@ -109,18 +83,12 @@ export const ScrimOutcomes: CollectionConfig = {
         position: 'sidebar',
         description: 'Which of your teams played',
       },
-      // Filter to only show assigned teams for team managers
-      filterOptions: ({ user }) => {
-        if (!user) return false
-        if ([UserRole.ADMIN, UserRole.STAFF_MANAGER].includes(user.role as UserRole)) {
-          return true
-        }
-        if (user.role === UserRole.TEAM_MANAGER && user.assignedTeams?.length) {
-          const teamIds = (user.assignedTeams as any[]).map((t) =>
-            typeof t === 'object' ? t.id : t,
-          )
-          return { id: { in: teamIds } }
-        }
+      // Filter to only show team-access teams for non-staff
+      filterOptions: async ({ req }) => {
+        const access = await resolveAccessForReq(req)
+        if (!access) return false
+        if (access.canManagePeople) return true
+        if (access.teamIds.size > 0) return { id: { in: [...access.teamIds] } }
         return false
       },
     },

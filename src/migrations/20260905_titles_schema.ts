@@ -3,7 +3,7 @@ import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-postgres'
 /**
  * Titles and access, migration A (schema, additive):
  * - people_titles array table (+ people_titles_regions hasMany select)
- * - people_rels.path 'assignedTeams' -> 'teamAccess' (statement added in Task 9)
+ * - people_rels.path 'assignedTeams' -> 'teamAccess'
  * Apply by hand before deploying the titles build. organization_staff / production untouched.
  */
 export async function up({ payload }: MigrateUpArgs): Promise<void> {
@@ -45,9 +45,15 @@ export async function up({ payload }: MigrateUpArgs): Promise<void> {
     CREATE INDEX IF NOT EXISTS "people_titles_regions_order_idx" ON "people_titles_regions" USING btree ("order");
     CREATE INDEX IF NOT EXISTS "people_titles_regions_parent_idx" ON "people_titles_regions" USING btree ("parent_id");
   `)
+  await payload.db.drizzle.execute(sql`
+    UPDATE "people_rels" SET "path" = 'teamAccess' WHERE "path" = 'assignedTeams';
+  `)
 }
 
 export async function down({ payload }: MigrateDownArgs): Promise<void> {
+  await payload.db.drizzle.execute(sql`
+    UPDATE "people_rels" SET "path" = 'assignedTeams' WHERE "path" = 'teamAccess';
+  `)
   await payload.db.drizzle.execute(sql`
     DROP TABLE IF EXISTS "people_titles_regions";
     DROP TABLE IF EXISTS "people_titles";

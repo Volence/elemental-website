@@ -51,12 +51,12 @@ export async function GET(req: NextRequest) {
       Object.assign(where, external, { externalTeamName: externalTeam })
     } else {
       const or: Record<string, unknown>[] = []
-      if (scope.assignedTeamIds.length > 0) {
+      if (scope.teamIds.length > 0) {
         // If a specific (allowed) team is requested, narrow to it; else show all assigned.
         const ids =
-          teamId && !isNaN(teamId) && scope.assignedTeamIds.includes(teamId)
+          teamId && !isNaN(teamId) && scope.teamIds.includes(teamId)
             ? [teamId]
-            : scope.assignedTeamIds
+            : scope.teamIds
         or.push({ payloadTeamId: { in: ids } }, { payloadTeamId2: { in: ids } })
       }
       if (external && !(teamId && !isNaN(teamId))) or.push(external)

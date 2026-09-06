@@ -1,12 +1,11 @@
 import type { CollectionConfig } from 'payload'
 import { v4 as uuidv4 } from 'uuid'
-import { anyDepartment } from '@/access'
+import { withAccess, resolveAccessForReq } from '@/access'
 import type { Person } from '@/payload-types'
 
-// Staff (admin/staff-manager) and any department lead/member can manage invites.
-// NOTE: the old team-manager role carve-out is dropped here - team-manager is not modeled in
-// the resolved access model (team access there is via team relations, not a role string).
-const canManageInvites = anyDepartment()
+// Staff (admin/staff-manager), anyone with team access, and any department lead/member can
+// manage invites.
+const canManageInvites = withAccess((a) => a.teamIds.size > 0 || Object.values(a.departments).some((l) => l !== 'none'))
 
 export const InviteLinks: CollectionConfig = {
   slug: 'invite-links',
@@ -21,7 +20,7 @@ export const InviteLinks: CollectionConfig = {
     delete: canManageInvites,
   },
   admin: {
-    defaultColumns: ['token', 'role', 'assignedTeams', 'departmentsDisplay', 'expiresAt', 'status', 'usedAt'],
+    defaultColumns: ['token', 'role', 'teamAccess', 'departmentsDisplay', 'expiresAt', 'status', 'usedAt'],
     useAsTitle: 'token',
     description: 'Generate invite links for new users with pre-configured permissions.',
     group: 'System',
@@ -81,7 +80,7 @@ export const InviteLinks: CollectionConfig = {
       ],
     },
     {
-      name: 'assignedTeams',
+      name: 'teamAccess',
       type: 'relationship',
       relationTo: 'teams',
       hasMany: true,
@@ -342,19 +341,16 @@ export const InviteLinks: CollectionConfig = {
           if (userRole === 'user' && data.role !== 'user') {
             throw new Error('Department Leads can only create invite links for the User role')
           }
-          // Team managers: auto-scope assignedTeams to their own teams
-          if (userRole === 'team-manager' && operation === 'create') {
-            const creatorTeams = (req.user as Person).assignedTeams
-            if (creatorTeams && Array.isArray(creatorTeams)) {
-              // Only allow teams the manager is assigned to
-              const managerTeamIds = creatorTeams.map((t: any) => typeof t === 'object' ? t.id : t)
-              if (data.assignedTeams && Array.isArray(data.assignedTeams)) {
-                data.assignedTeams = data.assignedTeams.filter((t: any) => {
-                  const id = typeof t === 'object' ? t.id : t
-                  return managerTeamIds.includes(id)
-                })
-              }
-            }
+        }
+
+        // Team-access (non-staff) creators: auto-scope teamAccess to their own teams.
+        if (operation === 'create' && data?.teamAccess && Array.isArray(data.teamAccess)) {
+          const access = await resolveAccessForReq(req)
+          if (access && !access.canManagePeople && access.teamIds.size > 0) {
+            data.teamAccess = data.teamAccess.filter((t: any) => {
+              const id = typeof t === 'object' ? t.id : t
+              return access.teamIds.has(Number(id))
+            })
           }
         }
 

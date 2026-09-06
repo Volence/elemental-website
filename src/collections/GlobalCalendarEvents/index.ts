@@ -55,7 +55,7 @@ export const GlobalCalendarEvents: CollectionConfig = {
     defaultColumns: ['title', 'eventType', 'region', 'dateStart', 'dateEnd', 'publishToDiscord'],
     description: 'Global calendar events for competitive dates, tournaments, and community events',
     group: 'Organization',
-    hidden: hideUnless((a) => a.canManagePeople || Object.values(a.departments).some((l) => l !== 'none')),
+    hidden: hideUnless((a) => a.canManagePeople || a.teamIds.size > 0 || Object.values(a.departments).some((l) => l !== 'none')),
     listSearchableFields: ['title', 'description'],
     components: {
       // The list lives at /admin/calendar-events (src/components/CalendarEventsList)

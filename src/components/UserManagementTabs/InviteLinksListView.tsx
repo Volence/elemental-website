@@ -14,7 +14,7 @@ interface InviteLink {
   usedAt?: string
   usedBy?: any
   createdBy?: any
-  assignedTeams?: any[]
+  teamAccess?: any[]
   departments?: {
     isTeamManager?: boolean
     isProductionStaff?: boolean

@@ -16,7 +16,7 @@ export type MutationResult =
 
 function currentTeamIds(person: RawPerson): number[] {
   const ids: number[] = []
-  for (const entry of person.assignedTeams ?? []) {
+  for (const entry of person.teamAccess ?? []) {
     const id = relId(entry)
     if (id !== null) ids.push(id)
   }
@@ -68,7 +68,7 @@ export function resolveMutation(input: MutationInput): MutationResult {
           ? current
           : [...current, teamId]
         : current.filter((id) => id !== teamId)
-    return { ok: true, data: { assignedTeams: next } }
+    return { ok: true, data: { teamAccess: next } }
   }
 
   return { ok: false, status: 400, error: `Unknown mutation kind: ${String(kind)}` }

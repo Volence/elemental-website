@@ -22,8 +22,8 @@ export async function GET(req: NextRequest) {
         opponentName: { not: null },
         ...(scope.isFullAccess ? {} : {
           OR: [
-            { payloadTeamId: { in: scope.assignedTeamIds } },
-            { payloadTeamId2: { in: scope.assignedTeamIds } },
+            { payloadTeamId: { in: scope.teamIds } },
+            { payloadTeamId2: { in: scope.teamIds } },
           ],
         }),
       },
@@ -32,8 +32,8 @@ export async function GET(req: NextRequest) {
     })
 
     // 2. Get raw team names from match starts (both team_1 and team_2)
-    const teamIdFilter = !scope.isFullAccess && scope.assignedTeamIds.length > 0
-      ? scope.assignedTeamIds
+    const teamIdFilter = !scope.isFullAccess && scope.teamIds.length > 0
+      ? scope.teamIds
       : null
 
     let rawNames: Array<{ name: string }> = []

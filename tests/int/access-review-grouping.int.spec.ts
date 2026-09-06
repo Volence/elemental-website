@@ -10,6 +10,7 @@ const person = (over: Partial<AccessPerson>): AccessPerson => ({
   discordId: null,
   role: 'user',
   departments: [],
+  titles: [],
   teams: [],
   lastLoginAt: null,
   lastActivityAt: null,

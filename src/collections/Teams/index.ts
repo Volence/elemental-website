@@ -1,10 +1,7 @@
 import { revalidateTeamsAfterChange, revalidateTeamsAfterDelete } from './hooks/revalidateTeams'
 import type { CollectionConfig } from 'payload'
 
-import { authenticated } from '../../access/authenticated'
-import { anyone } from '../../access/anyone'
-import { adminOnly, hasAnyRole, UserRole } from '../../access/roles'
-import type { Person } from '@/payload-types'
+import { anyone, withAccess, staffManagerOrAbove, teamManager, hideUnless } from '@/access'
 import { createAuditLogHook, createAuditLogDeleteHook } from '../../utilities/auditLogger'
 import { invalidateTeamsCache } from '@/access/teamsCache'
 
@@ -24,61 +21,25 @@ export const Teams: CollectionConfig = {
     plural: 'Teams',
   },
   access: {
-    // Admins, staff managers, and team managers can create teams
-    create: ({ req }) => {
-      const user = req.user as Person | undefined
-      if (!user) return false
-      return user.role === UserRole.ADMIN || 
-             user.role === UserRole.TEAM_MANAGER || 
-             user.role === UserRole.STAFF_MANAGER
-    },
+    // Admins, staff managers, and anyone with team access (manager/coach/captain/region-lead/
+    // access-only) can create teams.
+    create: withAccess((a) => a.canManagePeople || a.teamIds.size > 0),
     // Admins and staff managers can delete teams
-    delete: ({ req }) => {
-      const user = req.user as Person | undefined
-      if (!user) return false
-      return user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER
-    },
+    delete: staffManagerOrAbove,
     // Anyone can read teams (public)
     read: anyone,
-    // Admins and staff managers can update all teams, team managers can only update their assigned teams
-    update: async ({ req, id }) => {
-      const user = req.user as Person | undefined
-      if (!user) return false
-      
-      // Admins and staff managers can update everything
-      if (user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER) return true
-      
-      // Team managers can only update their assigned teams
-      if (user.role === UserRole.TEAM_MANAGER) {
-        if (!id) return false
-        
-        // Check if the team ID is in the user's assignedTeams array
-        const assignedTeams = user.assignedTeams
-        if (!assignedTeams || !Array.isArray(assignedTeams)) return false
-        
-        // assignedTeams can be an array of IDs (numbers) or populated objects with id property
-        const teamIds = assignedTeams.map((team: any) => 
-          typeof team === 'number' ? team : (team?.id || team)
-        )
-        
-        return teamIds.includes(Number(id))
-      }
-      
-      return false
-    },
+    // Admins and staff managers can update all teams; team-access people can only update
+    // the teams they have access to. The document id is the team id.
+    update: teamManager(),
   },
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'region', 'rating', 'active'],
     description: 'Manage all Elemental teams, including rosters, staff, and achievements.',
     group: 'Organization',
-    hidden: ({ user }) => {
-      if (!user) return true
-      // Hide from regular users - only show to managers and admins
-      return user.role !== 'admin' && 
-             user.role !== 'staff-manager' && 
-             user.role !== 'team-manager'
-    },
+    // Team-only managers reach their team through /admin/teams (TeamsList) and
+    // /admin/edit-team, not the raw collection nav item.
+    hidden: hideUnless((a) => a.canManagePeople),
     components: {
       // The list lives at /admin/teams (src/components/TeamsList); this sends the stock list there.
       beforeList: ['@/components/TeamsList/ListRedirect#default'],
@@ -1051,34 +1012,10 @@ export const Teams: CollectionConfig = {
     ],
     afterRead: [
       async ({ doc, req }) => {
-        // Add metadata to indicate if this item is read-only for the current user
-        const user = req.user as Person | undefined
-        if (!user) {
-          return { ...doc, _isReadOnly: true }
-        }
-        
-        // Admins can edit everything
-        if (user.role === UserRole.ADMIN) {
-          return { ...doc, _isReadOnly: false }
-        }
-        
-        // Team managers can only edit their assigned teams
-        if (user.role === UserRole.TEAM_MANAGER) {
-          const assignedTeams = user.assignedTeams
-          if (!assignedTeams || !Array.isArray(assignedTeams)) {
-            return { ...doc, _isReadOnly: true }
-          }
-          
-          const teamIds = assignedTeams.map((team: any) => 
-            typeof team === 'number' ? team : (team?.id || team)
-          )
-          
-          const canEdit = teamIds.includes(Number(doc.id))
-          return { ...doc, _isReadOnly: !canEdit }
-        }
-        
-        // Other roles can't edit teams
-        return { ...doc, _isReadOnly: true }
+        // Add metadata to indicate if this item is read-only for the current user.
+        // Reuses the collection's own update-access check (staff, or team access on this id).
+        const canEdit = await teamManager()({ req, id: doc.id } as never)
+        return { ...doc, _isReadOnly: canEdit !== true }
       },
       async ({ doc, req }) => {
         // DISABLED: This hook was overwriting correctly populated Person names

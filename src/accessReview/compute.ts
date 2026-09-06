@@ -1,3 +1,4 @@
+import { isTitleValue, titleLabel } from '@/access/titles'
 import {
   DEPARTMENT_KEYS,
   type AccessChangeRecord,
@@ -30,15 +31,26 @@ export function activeDepartments(person: RawPerson): DepartmentKey[] {
   return DEPARTMENT_KEYS.filter((key) => departments[key] === true)
 }
 
+/** Title labels (lead label when isLead), in the order the person holds them. */
+export function personTitleLabels(person: RawPerson): string[] {
+  const out: string[] = []
+  for (const t of person.titles ?? []) {
+    if (!t || !isTitleValue(t.title)) continue
+    out.push(titleLabel({ title: t.title, isLead: t.isLead }))
+  }
+  return out
+}
+
 /**
- * In scope for the report: any role other than `user`, any department flag, or any team
- * data access. Players are deliberately included - a stale assignedTeams entry on a Player
- * is the scrim-data leak this page exists to find.
+ * In scope for the report: any role other than `user`, any title, any department flag, or
+ * any team data access. Players are deliberately included - a stale teamAccess entry on a
+ * Player is the scrim-data leak this page exists to find.
  */
 export function isElevated(person: RawPerson): boolean {
   if (person.role && person.role !== 'user') return true
+  if ((person.titles ?? []).length > 0) return true
   if (activeDepartments(person).length > 0) return true
-  return (person.assignedTeams ?? []).length > 0
+  return (person.teamAccess ?? []).length > 0
 }
 
 /** Highest first. A person holding two positions is reported as the more senior one. */
@@ -181,7 +193,7 @@ export function buildReport(input: BuildReportInput): AccessReport {
     if (!isElevated(person)) continue
 
     const teams: TeamAccess[] = []
-    for (const entry of person.assignedTeams ?? []) {
+    for (const entry of person.teamAccess ?? []) {
       const teamId = relId(entry)
       if (teamId === null) continue
       const embeddedName =
@@ -219,6 +231,7 @@ export function buildReport(input: BuildReportInput): AccessReport {
       discordId: person.discordId ?? null,
       role: person.role ?? null,
       departments: activeDepartments(person),
+      titles: personTitleLabels(person),
       teams,
       lastLoginAt: session.lastLoginAt,
       lastActivityAt: session.lastActivityAt,

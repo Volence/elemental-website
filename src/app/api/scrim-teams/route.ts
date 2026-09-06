@@ -30,15 +30,15 @@ export async function GET(req: NextRequest) {
   let restrictTeamIds: number[] | null = null
   const external = scope ? externalScrimWhere(scope) : null
   if (scope && !scope.isFullAccess) {
-    if (scope.assignedTeamIds.length === 0 && !external) {
+    if (scope.teamIds.length === 0 && !external) {
       return NextResponse.json({ teams: [], total: 0 })
     }
-    restrictTeamIds = scope.assignedTeamIds
+    restrictTeamIds = scope.teamIds
     const or: Record<string, unknown>[] = []
-    if (scope.assignedTeamIds.length > 0) {
+    if (scope.teamIds.length > 0) {
       or.push(
-        { payloadTeamId: { in: scope.assignedTeamIds } },
-        { payloadTeamId2: { in: scope.assignedTeamIds } },
+        { payloadTeamId: { in: scope.teamIds } },
+        { payloadTeamId2: { in: scope.teamIds } },
       )
     }
     if (external) or.push(external)

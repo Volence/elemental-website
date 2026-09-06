@@ -18,8 +18,8 @@ export const canAccessTeam = async ({ req, id }: AccessArgs<Person> & { id?: num
   // Team managers can only access their assigned teams
   if (user.role === UserRole.TEAM_MANAGER) {
     if (!id) return false // Need team ID to check
-    const assignedTeams = user.assignedTeams || []
-    const teamIds = assignedTeams.map((team: any) => 
+    const teamAccess = user.teamAccess || []
+    const teamIds = teamAccess.map((team: any) =>
       typeof team === 'number' ? team : (team?.id || team)
     )
     return teamIds.includes(Number(id))

@@ -21,7 +21,6 @@ type UserData = {
   role: string
   discordId?: string | null
   linkedPerson?: { id: number; name: string } | number | null
-  assignedTeams?: Array<{ id: number; name: string } | number> | null
   departments?: {
     isProductionStaff?: boolean
     isSocialMediaStaff?: boolean
@@ -34,7 +33,6 @@ type UserData = {
     canUploadExternalScrims?: boolean
   } | null
   avatar?: { url: string } | number | null
-  /** Not yet on the People schema (Task 9); when present it supersedes assignedTeams. */
   teamAccess?: Array<{ id: number; name: string } | number> | null
   createdAt?: string
   updatedAt?: string
@@ -163,7 +161,7 @@ export function UsersListView() {
             const roleConf = getRoleConfig(u.role)
             const linkedName = null
             const avatarUrl = u.avatar && typeof u.avatar === 'object' ? u.avatar.url : null
-            const teamCount = (u.teamAccess ?? u.assignedTeams ?? []).length
+            const teamCount = (u.teamAccess ?? []).length
 
             return (
               <a key={u.id} href={`/admin/edit-person?id=${u.id}`} className="user-card">

@@ -313,10 +313,10 @@ export async function mergePeople(
   } else if (!empty(s.pugRegisteredDate)) {
     conflicts.push('pug profile (kept target)')
   }
-  const tTeams = (t.assignedTeams ?? []).map((x: any) => (typeof x === 'object' ? x.id : x))
-  const sTeams = (s.assignedTeams ?? []).map((x: any) => (typeof x === 'object' ? x.id : x))
+  const tTeams = (t.teamAccess ?? []).map((x: any) => (typeof x === 'object' ? x.id : x))
+  const sTeams = (s.teamAccess ?? []).map((x: any) => (typeof x === 'object' ? x.id : x))
   const union = [...new Set([...tTeams, ...sTeams])]
-  if (union.length > tTeams.length) data.assignedTeams = union
+  if (union.length > tTeams.length) data.teamAccess = union
   if (ROLE_PRIORITY.indexOf(s.role ?? 'user') < ROLE_PRIORITY.indexOf(t.role ?? 'user')) data.role = s.role
   if (s.departments && Object.values(s.departments).some((v) => v === true)) {
     data.departments = { ...(t.departments ?? {}) }

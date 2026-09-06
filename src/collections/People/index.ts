@@ -281,22 +281,15 @@ export const People: CollectionConfig = {
               },
             },
             {
-              name: 'assignedTeams',
+              name: 'teamAccess',
               type: 'relationship',
               relationTo: 'teams',
               hasMany: true,
+              label: 'Access-only teams',
               admin: {
-                description: 'For Team Managers & Players: Determines which team\'s scrim data they can access.',
-                condition: (data) => data.role === UserRole.ADMIN || data.role === UserRole.TEAM_MANAGER || data.role === UserRole.STAFF_MANAGER || data.role === UserRole.PLAYER,
+                description: 'Grants manager rights on these teams without showing the person on the site. Membership (roster, staff slots) is set on the team.',
               },
               access: {
-                read: ({ req: { user } }) => {
-                  if (!user) return false
-                  if (user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER) return true
-                  if (user.role === UserRole.PLAYER || user.role === UserRole.TEAM_MANAGER) return true
-                  return false
-                },
-                create: personAccessFieldUpdate,
                 update: personAccessFieldUpdate,
               },
             },

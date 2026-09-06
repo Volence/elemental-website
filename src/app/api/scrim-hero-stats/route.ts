@@ -162,7 +162,7 @@ export async function GET(req: NextRequest) {
     let scopedScrimIds: number[] | null = null
     if (!scope.isFullAccess) {
       const teamScrimIds =
-        scope.assignedTeamIds.length > 0 ? await getScrimIdsForTeams(scope.assignedTeamIds) : []
+        scope.teamIds.length > 0 ? await getScrimIdsForTeams(scope.teamIds) : []
       // Flagged coaches also see the external-team scrims they uploaded
       const externalIds = scope.canUploadExternalScrims
         ? (
@@ -196,7 +196,7 @@ async function getHeroList(range: string, team: string, scopedScrimIds: number[]
 
   // For scoped users, filter team list to only their own teams
   const teams = (scope && !scope.isFullAccess)
-    ? allTeams.filter(t => t.isOurTeam && t.payloadTeamId !== null && scope.assignedTeamIds.includes(t.payloadTeamId))
+    ? allTeams.filter(t => t.isOurTeam && t.payloadTeamId !== null && scope.teamIds.includes(t.payloadTeamId))
     : allTeams
 
   // Pre-compute eligible mapDataIds based on range, team, and scope filters

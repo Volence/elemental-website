@@ -19,7 +19,7 @@ type InviteLink = {
   id: number
   token: string
   role: string
-  assignedTeams?: any[]
+  teamAccess?: any[]
   departments?: Record<string, boolean>
   linkedPerson?: any
   email?: string
@@ -89,7 +89,7 @@ export function InviteEditorView() {
 
   const [token, setToken] = useState('')
   const [role, setRole] = useState('player')
-  const [assignedTeams, setAssignedTeams] = useState<number[]>([])
+  const [teamAccess, setTeamAccess] = useState<number[]>([])
   const [departments, setDepartments] = useState<Record<string, boolean>>({})
   const [email, setEmail] = useState('')
   const [expiresAt, setExpiresAt] = useState('')
@@ -127,7 +127,7 @@ export function InviteEditorView() {
         const inv = await res.json()
         setToken(inv.token ?? '')
         setRole(inv.role ?? 'player')
-        setAssignedTeams((inv.assignedTeams ?? []).map((t: any) => typeof t === 'object' ? t.id : t))
+        setTeamAccess((inv.teamAccess ?? []).map((t: any) => typeof t === 'object' ? t.id : t))
         setDepartments(inv.departments ?? {})
         setEmail(inv.email ?? '')
         setExpiresAt(inv.expiresAt ? inv.expiresAt.slice(0, 16) : '')
@@ -159,7 +159,7 @@ export function InviteEditorView() {
         expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
         departments,
       }
-      if (showTeams) payload.assignedTeams = assignedTeams
+      if (showTeams) payload.teamAccess = teamAccess
       payload.pugInvite = {
         isForPug: pugIsForPug,
         approvedRoles: pugIsForPug ? pugApprovedRoles : [],
@@ -216,7 +216,7 @@ export function InviteEditorView() {
   }
 
   const toggleTeam = (id: number) => {
-    setAssignedTeams(prev => prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id])
+    setTeamAccess(prev => prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id])
   }
 
   const toggleDept = (key: string) => {
@@ -372,7 +372,7 @@ export function InviteEditorView() {
                 {teams.map(t => (
                   <button
                     key={t.id}
-                    className={`team-chip ${assignedTeams.includes(t.id) ? 'selected' : ''}`}
+                    className={`team-chip ${teamAccess.includes(t.id) ? 'selected' : ''}`}
                     onClick={() => !isUsed && toggleTeam(t.id)}
                     disabled={isUsed}
                   >

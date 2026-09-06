@@ -1,7 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { hasAnyRole, UserRole } from '../access/roles'
-import { adminOnly, staffManagerOrAbove } from '@/access'
-import type { Person } from '@/payload-types'
+import { adminOnly, staffManagerOrAbove, withAccess } from '@/access'
 
 export const WatchedThreads: CollectionConfig = {
   slug: 'watched-threads',
@@ -10,16 +8,8 @@ export const WatchedThreads: CollectionConfig = {
     plural: 'Watched Threads',
   },
   access: {
-    // Team managers, staff managers, and admins can view.
-    // NOTE: team-manager is not modeled in the resolved access model (team access there is
-    // via team relations, not a role string) - left on roles.ts pending the team-scoped sweep.
-    read: ({ req }) => {
-      const user = req.user as Person | undefined
-      if (!user) return false
-      return hasAnyRole(UserRole.ADMIN, UserRole.TEAM_MANAGER, UserRole.STAFF_MANAGER)({
-        req: { user },
-      } as any)
-    },
+    // Staff and anyone with team access can view.
+    read: withAccess((a) => a.canManagePeople || a.teamIds.size > 0),
     create: staffManagerOrAbove,
     update: staffManagerOrAbove,
     // Only admins can delete

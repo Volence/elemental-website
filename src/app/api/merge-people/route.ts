@@ -71,12 +71,12 @@ export async function GET(request: NextRequest) {
     checkField('gameAliases', t.gameAliases, s.gameAliases)
     checkField('showInLiveStreamers', t.showInLiveStreamers, s.showInLiveStreamers)
 
-    // assignedTeams: show union preview
-    const tTeamIds = (t.assignedTeams || []).map((x: any) => typeof x === 'object' ? x.id : x)
-    const sTeamIds = (s.assignedTeams || []).map((x: any) => typeof x === 'object' ? x.id : x)
+    // teamAccess: show union preview
+    const tTeamIds = (t.teamAccess || []).map((x: any) => typeof x === 'object' ? x.id : x)
+    const sTeamIds = (s.teamAccess || []).map((x: any) => typeof x === 'object' ? x.id : x)
     const newTeams = sTeamIds.filter((id: number) => !tTeamIds.includes(id))
     if (newTeams.length > 0) {
-      fieldsToMerge.push({ field: 'assignedTeams', targetValue: t.assignedTeams, sourceValue: s.assignedTeams, willCopy: true })
+      fieldsToMerge.push({ field: 'teamAccess', targetValue: t.teamAccess, sourceValue: s.teamAccess, willCopy: true })
     }
 
     const allTeams = await payload.find({

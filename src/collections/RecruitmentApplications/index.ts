@@ -1,7 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { authenticated } from '../../access/authenticated'
-import { adminOnly, UserRole } from '../../access/roles'
-import type { Person } from '@/payload-types'
+import { adminOnly, teamScoped } from '@/access'
 
 export const RecruitmentApplications: CollectionConfig = {
   slug: 'recruitment-applications',
@@ -10,80 +8,13 @@ export const RecruitmentApplications: CollectionConfig = {
     plural: 'Recruitment Applications',
   },
   access: {
-    // Team managers see only their team's applications, admins see all
-    read: async ({ req }) => {
-      const user = req.user as Person | undefined
-      if (!user) return false
-
-      // Admins can see everything
-      if (user.role === UserRole.ADMIN) return true
-
-      // Staff managers can see everything
-      if (user.role === UserRole.STAFF_MANAGER) return true
-
-      // Team managers can only see applications for their assigned teams
-      if (user.role === UserRole.TEAM_MANAGER) {
-        const assignedTeams = user.assignedTeams
-        if (!assignedTeams || !Array.isArray(assignedTeams)) return false
-
-        const teamIds = assignedTeams.map((team: any) =>
-          typeof team === 'number' ? team : team?.id || team,
-        )
-
-        // Return a where query to filter by team
-        return {
-          'listing.team': {
-            in: teamIds,
-          },
-        }
-      }
-
-      return false
-    },
+    // Staff see all applications; team-access people see only their teams' applications
+    // (via the listing's team).
+    read: teamScoped('listing.team'),
     // Public API endpoint handles creation (see /api/recruitment/apply)
     create: () => false,
-    // Team managers (for their teams) and admins can update
-    update: async ({ req, id }) => {
-      const user = req.user as Person | undefined
-      if (!user) return false
-
-      // Admins can update everything
-      if (user.role === UserRole.ADMIN) return true
-
-      // Staff managers can update everything
-      if (user.role === UserRole.STAFF_MANAGER) return true
-
-      if (!id) return false
-
-      // Fetch the application to check the team
-      const application = await req.payload.findByID({
-        collection: 'recruitment-applications',
-        id,
-        depth: 1,
-      })
-
-      if (!application || !application.listing) return false
-
-      // Team managers can update applications for their assigned teams
-      if (user.role === UserRole.TEAM_MANAGER) {
-        const assignedTeams = user.assignedTeams
-        if (!assignedTeams || !Array.isArray(assignedTeams)) return false
-
-        const teamIds = assignedTeams.map((team: any) =>
-          typeof team === 'number' ? team : team?.id || team,
-        )
-
-        const listing =
-          typeof application.listing === 'object' ? application.listing : null
-        if (!listing || !listing.team) return false
-
-        const teamId = typeof listing.team === 'object' && listing.team !== null ? listing.team.id : listing.team
-
-        return teamIds.includes(Number(teamId))
-      }
-
-      return false
-    },
+    // Team-access people (for their teams) and staff can update
+    update: teamScoped('listing.team'),
     // Only admins can delete
     delete: adminOnly,
   },

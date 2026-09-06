@@ -5,7 +5,7 @@ const person = {
   id: 5,
   role: 'staff-manager',
   departments: { isGraphicsStaff: true, isEventsStaff: false },
-  assignedTeams: [{ id: 10 }, 11],
+  teamAccess: [{ id: 10 }, 11],
 }
 
 describe('resolveMutation - role', () => {
@@ -74,16 +74,16 @@ describe('resolveMutation - team', () => {
       actorId: 1,
       adminCount: 2,
     })
-    expect(result).toEqual({ ok: true, data: { assignedTeams: [11] } })
+    expect(result).toEqual({ ok: true, data: { teamAccess: [11] } })
   })
 
   it('adds a team without duplicating an existing one', () => {
     expect(
       resolveMutation({ person, body: { kind: 'team', teamId: 12, value: true }, actorId: 1, adminCount: 2 }),
-    ).toEqual({ ok: true, data: { assignedTeams: [10, 11, 12] } })
+    ).toEqual({ ok: true, data: { teamAccess: [10, 11, 12] } })
     expect(
       resolveMutation({ person, body: { kind: 'team', teamId: 11, value: true }, actorId: 1, adminCount: 2 }),
-    ).toEqual({ ok: true, data: { assignedTeams: [10, 11] } })
+    ).toEqual({ ok: true, data: { teamAccess: [10, 11] } })
   })
 
   it('rejects a non-numeric team id', () => {
