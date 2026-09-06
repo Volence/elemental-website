@@ -21,12 +21,23 @@ export default function ExtraAccessSection({ value, onChange, titles, actor }: P
   const lead = new Set(actor?.leadDepartments ?? [])
   const toggle = (key: string) => onChange({ ...value, [key]: !value[key] })
 
+  // Per-flag: staff, or a lead of that flag's department, gets an editable toggle. Everyone
+  // else (including a non-manager viewing their own profile) sees a read-only badge, but only
+  // for a flag that is actually on - an inactive flag they can't edit isn't worth a row. The
+  // whole card disappears when there's nothing to edit and nothing active to show.
+  const rows = EXTRA_FLAGS.map((flag) => ({
+    flag,
+    editable: actor?.canManagePeople === true || (flag.department !== null && lead.has(flag.department)),
+    active: Boolean(value[flag.key]),
+  })).filter((r) => r.editable || r.active)
+
+  if (rows.length === 0) return null
+
   return (
     <div className="profile-card" data-testid="extra-access-section">
       <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Monitor size={16} /> Extra access</h3>
       <p style={{ fontSize: 12, opacity: 0.6 }}>Additive overrides. Titles already grant their departments; tick these only for access a title does not cover.</p>
-      {EXTRA_FLAGS.map((flag) => {
-        const editable = actor?.canManagePeople === true || (flag.department !== null && lead.has(flag.department))
+      {rows.map(({ flag, editable, active }) => {
         const granter = grantingTitle(titles, flag.department)
         return (
           <div className="dept-toggle" key={flag.key} data-testid={`extra-flag-${flag.key}`}>
@@ -36,14 +47,19 @@ export default function ExtraAccessSection({ value, onChange, titles, actor }: P
                 <p style={{ fontSize: 11, opacity: 0.5, margin: '2px 0 0' }}>Granted by {titleLabel(granter)}</p>
               )}
             </div>
-            <button
-              className={`toggle-switch ${value[flag.key] ? 'on' : 'off'}`}
-              onClick={editable ? () => toggle(flag.key) : undefined}
-              disabled={!editable}
-              type="button"
-              aria-label={flag.label}
-              aria-pressed={Boolean(value[flag.key])}
-            />
+            {editable ? (
+              <button
+                className={`toggle-switch ${active ? 'on' : 'off'}`}
+                onClick={() => toggle(flag.key)}
+                type="button"
+                aria-label={flag.label}
+                aria-pressed={active}
+              />
+            ) : (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '3px 10px', borderRadius: 8, fontSize: 12, background: 'rgba(52, 211, 153, 0.08)', border: '1px solid rgba(52, 211, 153, 0.3)', color: '#34d399' }}>
+                On
+              </span>
+            )}
           </div>
         )
       })}

@@ -21,17 +21,21 @@ const TEAMS_URL = '/api/teams?limit=0&depth=0&select[region]=true&select[manager
 
 export default function EffectiveAccessPanel({ person, teamNames }: Props) {
   const [teams, setTeams] = useState<AccessTeamInput[] | null>(null)
+  const [teamsError, setTeamsError] = useState(false)
 
   useEffect(() => {
     let live = true
     fetch(TEAMS_URL)
-      .then((r) => (r.ok ? r.json() : { docs: [] }))
-      .then((data) => { if (live) setTeams(data.docs ?? []) })
-      .catch(() => { if (live) setTeams([]) })
+      .then((r) => {
+        if (!r.ok) throw new Error(`teams fetch failed: ${r.status}`)
+        return r.json()
+      })
+      .then((data) => { if (live) { setTeams(data.docs ?? []); setTeamsError(false) } })
+      .catch(() => { if (live) { setTeams([]); setTeamsError(true) } })
     return () => { live = false }
   }, [])
 
-  if (!teams) {
+  if (teams === null) {
     return (
       <div className="profile-card" data-testid="effective-access">
         <h3 style={{ display: 'flex', alignItems: 'center', gap: 8 }}><ShieldCheck size={16} /> Effective access</h3>
@@ -40,6 +44,10 @@ export default function EffectiveAccessPanel({ person, teamNames }: Props) {
     )
   }
 
+  // Role and department levels only depend on the person's own titles/flags, never on the
+  // teams list, so they're safe to compute (and display) even when the teams fetch failed.
+  // Team access genuinely can't be known without that list, so it gets an error line instead
+  // of a silently-wrong "no team access" derived from an empty array.
   const access = resolveAccess(person, teams)
   const storedRole = isRoleValue(person.role) ? person.role : 'user'
   const raisedBy = access.role !== storedRole
@@ -71,7 +79,11 @@ export default function EffectiveAccessPanel({ person, teamNames }: Props) {
 
       <div style={{ marginTop: 12 }}>
         <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>Teams</span>
-        {access.canManagePeople ? (
+        {teamsError ? (
+          <p style={{ fontSize: 13, color: '#f87171', marginTop: 4 }} data-testid="effective-access-teams-error">
+            Could not load teams; team access below may be incomplete.
+          </p>
+        ) : access.canManagePeople ? (
           <p style={{ fontSize: 13, marginTop: 4 }}>Every team (staff)</p>
         ) : teamEntries.length === 0 ? (
           <p style={{ fontSize: 13, opacity: 0.4, marginTop: 4 }}>No team access</p>

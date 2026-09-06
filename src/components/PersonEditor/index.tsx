@@ -204,6 +204,10 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
   const resolvedPersonId = propPersonId ?? (user?.id ?? null)
   const { access: actor } = useAccess()
   const isAdmin = actor?.isAdmin === true
+  // Role and team access are staff-only server-side (canApplyPersonChange rejects a lead's
+  // attempt to change either, even though the field-level access check allows leads through);
+  // gate the editable UI on the same canManagePeople the save payload already uses, not isAdmin.
+  const canManageStaff = actor?.canManagePeople === true
   const isSelf = user?.id != null && String(user.id) === String(resolvedPersonId)
   const canEditPug = actor ? actor.isAdmin || actor.departments.pug !== 'none' : false
 
@@ -694,7 +698,7 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
             return (
               <div className="profile-card" style={styles.card}>
                 <h3 style={styles.cardTitle}><Shield size={16} /> Role</h3>
-                {isAdmin ? (
+                {canManageStaff ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {ROLE_VALUES.map(r => (
                       <label key={r} className={`role-option ${role === r ? 'selected' : ''}`} style={{ color: getRoleConfig(r).color }}>
@@ -720,10 +724,10 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
           })()}
 
           {/* Access-only teams (staff only) */}
-          {isAdmin && (
+          {canManageStaff && (
             <TeamAccessSection value={teamAccess} onChange={setTeamAccess} allTeams={allTeams} actor={actor} />
           )}
-          {!isAdmin && teamAccess.length > 0 && (
+          {!canManageStaff && teamAccess.length > 0 && (
             <div className="profile-card" style={styles.card}>
               <h3 style={styles.cardTitle}><Gamepad2 size={16} /> Access-only teams</h3>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -1023,8 +1027,9 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
             )}
           </div>
 
-          {/* Extra access (beyond titles) */}
-          {isManager && <ExtraAccessSection value={departments} onChange={setDepartments} titles={titles} actor={actor} />}
+          {/* Extra access (beyond titles) - always mounted; it decides per-flag whether to
+              show an editable toggle, a read-only badge (self-view included), or nothing. */}
+          <ExtraAccessSection value={departments} onChange={setDepartments} titles={titles} actor={actor} />
 
           {/* Quick Links */}
           <div className="profile-card" style={styles.card}>

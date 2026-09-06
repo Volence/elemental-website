@@ -14,6 +14,18 @@ export function grantableTitles(actor: ResolvedAccess | null): TitleValue[] {
   return TITLES.filter((t) => !t.impliesRole && t.value !== 'region-lead' && t.departments.length > 0 && t.departments.every((d) => lead.has(d))).map((t) => t.value)
 }
 
+/**
+ * May this actor remove this specific entry? Being able to grant a title (grantableTitles)
+ * is necessary but not sufficient: a department lead may only add/remove the plain (non-lead)
+ * form of a title they lead - canApplyPersonChange rejects any lead-flag change from a
+ * non-staff actor, so a lead-capable title that already has isLead:true can only be removed
+ * by staff, even though the title itself is otherwise in their grantable set.
+ */
+export function canRemoveEntry(actor: ResolvedAccess | null, entry: TitleEntry): boolean {
+  if (!grantableTitles(actor).includes(entry.title)) return false
+  return actor?.canManagePeople === true || !entry.isLead
+}
+
 export default function TitlesSection({ value, onChange, actor }: Props) {
   const [adding, setAdding] = useState(false)
   const grantable = new Set(grantableTitles(actor))
@@ -37,7 +49,7 @@ export default function TitlesSection({ value, onChange, actor }: Props) {
       {value.length === 0 && <p style={{ fontSize: 13, opacity: 0.6 }}>No titles.</p>}
       {value.map((entry, i) => {
         const def = TITLE_BY_VALUE[entry.title]
-        const editable = grantable.has(entry.title)
+        const editable = canRemoveEntry(actor, entry)
         return (
           <div key={entry.title} data-testid={`title-row-${entry.title}`} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
             <span style={{ flex: 1, fontWeight: 600 }}>{titleLabel(entry)} <span style={{ opacity: 0.5, fontWeight: 400, fontSize: 12 }}>{TITLE_GROUP_LABELS[def.group]}</span></span>
