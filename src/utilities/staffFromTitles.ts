@@ -73,6 +73,23 @@ export function productionRoster(groups: StaffGroup[]): ProductionRosterRow[] {
     .sort((a, b) => firstIndex(a) - firstIndex(b) || Number(b.isLead) - Number(a.isLead) || a.person.name.localeCompare(b.person.name))
 }
 
+/**
+ * The public Production section shows casters apart from the broadcast crew (observers and
+ * producers), who are combined per person. Someone holding titles on both sides appears in
+ * both lists, each time with only the titles that belong to that list.
+ */
+export function splitProductionRoster(rows: ProductionRosterRow[]): { casters: ProductionRosterRow[]; crew: ProductionRosterRow[] } {
+  const narrow = (keep: (t: TitleValue) => boolean): ProductionRosterRow[] =>
+    rows.flatMap((r) => {
+      const titles = r.titles.filter((t) => keep(t.title))
+      return titles.length === 0 ? [] : [{ ...r, titles, isLead: titles.some((t) => t.isLead) }]
+    })
+  return {
+    casters: narrow((t) => t === 'caster'),
+    crew: narrow((t) => t === 'observer' || t === 'producer'),
+  }
+}
+
 export async function findPeopleWithTitles(payload: Payload, depth = 1): Promise<TitledPerson[]> {
   const res = await payload.find({
     collection: 'people',

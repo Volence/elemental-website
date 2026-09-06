@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { groupPeopleByTitle, titlesOf } from '@/utilities/staffFromTitles'
+import { groupPeopleByTitle, titlesOf, splitProductionRoster, type ProductionRosterRow } from '@/utilities/staffFromTitles'
+import { titleLabel, type TitleValue } from '@/access/titles'
 
 const people = [
   { id: 1, name: 'Ana', titles: [{ title: 'caster' as const }, { title: 'graphics' as const, isLead: true }] },
@@ -37,5 +38,30 @@ describe('productionRoster', () => {
     expect(roster.map((r) => r.isLead)).toEqual([true, false, true, false])
     expect(roster.find((r) => r.person.name === 'Dan')!.titles.map((t) => t.label)).toEqual(['Observer', 'Lead Producer'])
     expect(roster.find((r) => r.person.name === 'Ana')!.titles.map((t) => t.label)).toEqual(['Caster'])
+  })
+})
+
+describe('splitProductionRoster', () => {
+  const row = (id: number, name: string, titles: Array<[TitleValue, boolean]>): ProductionRosterRow => ({
+    person: { id, name } as any,
+    titles: titles.map(([title, isLead]) => ({ title, label: titleLabel({ title, isLead }), isLead })),
+    isLead: titles.some(([, l]) => l),
+  })
+
+  it('casters stand apart, observers and producers stay combined, and a person on both sides appears in each with only that side\'s titles', () => {
+    const rows = [
+      row(1, 'Ana', [['caster', false]]),
+      row(2, 'Dan', [['observer', false], ['producer', true]]),
+      row(3, 'Kim', [['caster', true], ['observer', false]]),
+    ]
+    const { casters, crew } = splitProductionRoster(rows)
+    expect(casters.map((r) => [r.person.name, r.titles.map((t) => t.label), r.isLead])).toEqual([
+      ['Ana', ['Caster'], false],
+      ['Kim', ['Lead Caster'], true],
+    ])
+    expect(crew.map((r) => [r.person.name, r.titles.map((t) => t.label), r.isLead])).toEqual([
+      ['Dan', ['Observer', 'Lead Producer'], true],
+      ['Kim', ['Observer'], false],
+    ])
   })
 })
