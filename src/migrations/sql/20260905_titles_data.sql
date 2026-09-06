@@ -11,6 +11,9 @@
 -- team rights" list and fix or accept each person), then deploy, then the writes.
 -- Re-runnable: every insert is guarded by NOT EXISTS on (_parent_id, title), and the flag
 -- clearing and role conversion are idempotent. Nothing is deleted.
+-- The Region Lead regions insert is deduped per person: someone with more than one
+-- organization_staff row contributes each distinct region once per inserted title, not once
+-- per source staff row.
 
 \set ON_ERROR_STOP on
 
@@ -135,12 +138,21 @@ inserted AS (
   RETURNING id, _parent_id, title
 ),
 inserted_regions AS (
+  -- Deduped per person: someone with more than one organization_staff row (e.g. two
+  -- region-lead rows both scoped to 'emea') gets each distinct region once per inserted
+  -- title, not once per source staff row.
   INSERT INTO people_titles_regions ("order", parent_id, value)
-  SELECT r."order", i.id, r.value::text::enum_people_titles_regions
-  FROM inserted i
-  JOIN organization_staff os ON os.person_id = i._parent_id
-  JOIN organization_staff_regions r ON r.parent_id = os.id
-  WHERE i.title::text = 'region-lead'
+  SELECT row_number() OVER (PARTITION BY x.title_id ORDER BY x.min_order) AS "order",
+         x.title_id,
+         x.value::text::enum_people_titles_regions
+  FROM (
+    SELECT i.id AS title_id, r.value, min(r."order") AS min_order
+    FROM inserted i
+    JOIN organization_staff os ON os.person_id = i._parent_id
+    JOIN organization_staff_regions r ON r.parent_id = os.id
+    WHERE i.title::text = 'region-lead'
+    GROUP BY i.id, r.value
+  ) x
   RETURNING id
 )
 SELECT (SELECT count(*) FROM inserted) AS titles_inserted,
