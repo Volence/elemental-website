@@ -9,6 +9,7 @@ import { auditPeopleChanges } from './hooks/auditAccessChanges'
 import { syncTwitchStreamer } from './hooks/syncTwitchStreamer'
 import { createAccessAllowsData, enforceDiscordIdOnCreate } from './hooks/enforceDiscordId'
 import { raiseRoleForTitles, enforcePersonAccessChange, personAccessFieldUpdate, authenticatedRead } from './hooks/titlesAndRole'
+import { formatSlug } from './slug'
 import { createAuditLogDeleteHook } from '../../utilities/auditLogger'
 import { trackLogin, trackLogout } from '../../utilities/sessionTracker'
 
@@ -36,15 +37,6 @@ const adminOrPugAdmin = async ({ req }: any): Promise<boolean> => {
   const access = await resolveAccessForReq(req)
   if (!access) return false
   return access.canManagePeople || hasDepartment(access, 'pug')
-}
-
-const formatSlug = (value: string): string => {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/[\s_-]+/g, '-')
-    .replace(/^-+|-+$/g, '')
 }
 
 export const People: CollectionConfig = {

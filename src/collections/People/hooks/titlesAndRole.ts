@@ -1,6 +1,7 @@
 import { APIError, type FieldAccess, type PayloadRequest } from 'payload'
 import { impliedRole, roleRank, canApplyPersonChange, type PersonAccessFields, type ResolvedAccess } from '@/access/resolve'
 import { resolveAccessForReq } from '@/access'
+import { formatSlug } from '@/collections/People/slug'
 
 const ACCESS_FIELDS = ['role', 'titles', 'departments', 'teamAccess'] as const
 
@@ -10,11 +11,39 @@ const PUG_ADMIN_FIELDS = [
   'pugInvitedBy', 'pugActiveBan', 'pugBanOffenseCount',
 ] as const
 
-/** Payload plumbing that is never a real edit and is stripped or ignored downstream. */
+/** Payload plumbing that is never a real edit and is stripped or ignored downstream (update path). */
 const IGNORED_KEYS = new Set(['id', 'createdAt', 'updatedAt'])
 
-/** Only the identity picker (`createPersonFromDiscord`) may seed these on a brand new row. */
-const IDENTITY_CREATE_FIELDS = ['name', 'slug', 'discordId', 'discordUsername', 'discordAvatar', 'username', 'password'] as const
+/**
+ * On create, Payload's field-level `beforeValidate` pass has already injected field defaults and
+ * empty groups into `data` before this hook runs (e.g. `socialLinks: {}`, `pugActiveBan: {}`,
+ * `pugBanOffenseCount: 0`, `isInactive: false`, `loginAttempts: 0`, a fully-false `departments`
+ * group) - none of that is a change the caller made, so it must never be treated as one. These
+ * keys are never a real edit regardless of value, on top of the generic "empty default" filter.
+ */
+const CREATE_IGNORED_KEYS = new Set([
+  'id', 'createdAt', 'updatedAt', 'loginAttempts', 'lockUntil', 'sessions', 'salt', 'hash',
+  'resetPasswordToken', 'resetPasswordExpiration', 'slug', 'isInactive', 'showInLiveStreamers',
+  'pugBanOffenseCount',
+])
+
+/** Always allowed on create for a non-staff actor: identity fields plus titles/departments (below). */
+const CREATE_ALWAYS_FIELDS = ['name', 'discordId', 'discordUsername', 'discordAvatar'] as const
+
+/** Only the identity picker (`createPersonFromDiscord`) or an explicit identity-create context may seed these. */
+const IDENTITY_CREATE_FIELDS = ['email', 'password'] as const
+
+/**
+ * True for `undefined`/`null`/`''`/`false`/`0`/`[]`/`{}`, and for any object or array whose own
+ * values are all empty defaults by the same rule - so a `departments` group with every flag false
+ * counts as empty, but one with any flag true, or a non-empty string/array, does not.
+ */
+function isEmptyDefault(value: unknown): boolean {
+  if (value === undefined || value === null || value === '' || value === false || value === 0) return true
+  if (Array.isArray(value)) return value.every(isEmptyDefault) // e.g. [] is empty; any real element makes it a change
+  if (typeof value === 'object') return Object.values(value as Record<string, unknown>).every(isEmptyDefault)
+  return false
+}
 
 /**
  * A non-staff actor writing to somebody else's row may only touch the handful of fields their
@@ -23,10 +52,11 @@ const IDENTITY_CREATE_FIELDS = ['name', 'slug', 'discordId', 'discordUsername', 
  * access at all - password, email, mergedInto - so the boundary is enforced here over the whole
  * payload: any field whose value actually changes and is not on the allow-list is a 403.
  *
- * `data` in People's `beforeValidate` is the *merged* document (every field, with the fields the
- * caller may not update already reverted to their stored values), so the check is a diff against
- * `originalDoc`, not a test of which keys are present. On create there is no original, so every
- * value counts as a change.
+ * `data` in People's `beforeValidate` is the *merged* document. On `update` that means every
+ * field, with the fields the caller may not update already reverted to their stored values, so the
+ * check is a diff against `originalDoc`. On `create` there is no original to diff against - instead
+ * a value only counts as a change when it is not one of Payload's injected defaults (see
+ * `isEmptyDefault`) and not one of the bookkeeping keys above.
  */
 function assertAllowedOnOtherPerson(
   actor: Pick<ResolvedAccess, 'departments'>,
@@ -37,14 +67,28 @@ function assertAllowedOnOtherPerson(
 ): void {
   const allowed = new Set<string>(['titles', 'departments'])
   if (actor.departments.pug !== 'none') for (const f of PUG_ADMIN_FIELDS) allowed.add(f)
+
   if (operation === 'create') {
+    for (const f of CREATE_ALWAYS_FIELDS) allowed.add(f)
     if (context?.identityCreate === true) for (const f of IDENTITY_CREATE_FIELDS) allowed.add(f)
-    else { allowed.add('name'); allowed.add('discordId') }
+    for (const [key, value] of Object.entries(data)) {
+      if (CREATE_IGNORED_KEYS.has(key)) continue
+      if (key === 'username' && value === data.discordId) continue // Payload's identity convention, not a real change
+      if (isEmptyDefault(value)) continue
+      if (allowed.has(key)) continue
+      throw new APIError(`You may not change ${key} on another person`, 403, undefined, true)
+    }
+    return
   }
+
   const original = originalDoc ?? {}
   for (const [key, value] of Object.entries(data)) {
     if (value === undefined || IGNORED_KEYS.has(key) || allowed.has(key)) continue
-    if (JSON.stringify(value) === JSON.stringify(original[key])) continue
+    // People's beforeValidate normalises data.slug with formatSlug() before this hook runs, so a
+    // stored slug that predates the current normal form (different case, stray punctuation, ...)
+    // must not look like a change on its own - compare against the normalised original.
+    const originalValue = key === 'slug' && typeof original.slug === 'string' ? formatSlug(original.slug) : original[key]
+    if (JSON.stringify(value) === JSON.stringify(originalValue)) continue
     throw new APIError(`You may not change ${key} on another person`, 403, undefined, true)
   }
 }

@@ -145,6 +145,62 @@ describe('enforcePersonAccessChange', () => {
     })
   })
 
+  // C3: Payload's field-level beforeValidate pass injects field defaults and empty groups into
+  // the merged create doc before the collection hook runs - a team manager POSTing
+  // { name, discordId } through the stock admin form actually reaches the hook looking like this.
+  // None of that is a change the caller made, so it must not be treated as one.
+  describe('non-staff create ignores Payload-injected defaults', () => {
+    const defaultDepartments = {
+      isProductionStaff: false, isSocialMediaStaff: false, isGraphicsStaff: false, isVideoStaff: false,
+      isEventsStaff: false, isScoutingStaff: false, isContentCreator: false, isPugAdmin: false,
+      canUploadExternalScrims: false,
+    }
+    const mergedCreateDoc = () => ({
+      name: 'X',
+      discordId: '111111111111111111',
+      username: '111111111111111111',
+      socialLinks: {},
+      pugActiveBan: {},
+      pugBanOffenseCount: 0,
+      isInactive: false,
+      showInLiveStreamers: false,
+      loginAttempts: 0,
+      departments: { ...defaultDepartments },
+    })
+    const createAs = (req: any, data: any) =>
+      enforcePersonAccessChange({ req, data, originalDoc: undefined, operation: 'create' })
+
+    it('lets a team manager create a person through the stock form despite the injected defaults', async () => {
+      const req = reqForTeamManager({ id: 3, role: 'user' })
+      await expect(createAs(req, mergedCreateDoc())).resolves.toBeUndefined()
+    })
+
+    it('still rejects a real titles change smuggled in alongside the defaults', async () => {
+      const req = reqForTeamManager({ id: 3, role: 'user' })
+      await expect(createAs(req, { ...mergedCreateDoc(), titles: [{ title: 'owner' }] })).rejects.toMatchObject({ status: 403 })
+    })
+
+    it('still rejects a password set outside identityCreate context', async () => {
+      const req = reqForTeamManager({ id: 3, role: 'user' })
+      await expect(createAs(req, { ...mergedCreateDoc(), password: 'x' })).rejects.toMatchObject({ status: 403 })
+    })
+
+    it('still rejects an email set outside identityCreate context', async () => {
+      const req = reqForTeamManager({ id: 3, role: 'user' })
+      await expect(createAs(req, { ...mergedCreateDoc(), email: 'a@b.c' })).rejects.toMatchObject({ status: 403 })
+    })
+
+    it('rejects a department flag from a plain team manager, but lets a matching department lead set it', async () => {
+      const doc = { ...mergedCreateDoc(), departments: { ...defaultDepartments, isGraphicsStaff: true } }
+
+      const managerReq = reqForTeamManager({ id: 3, role: 'user' })
+      await expect(createAs(managerReq, doc)).rejects.toMatchObject({ status: 403 })
+
+      const graphicsLeadReq = reqForTeamManager({ id: 3, role: 'user', titles: [{ title: 'graphics', isLead: true }] })
+      await expect(createAs(graphicsLeadReq, doc)).resolves.toBeUndefined()
+    })
+  })
+
   it('strips client-supplied timestamps on a non-staff write', async () => {
     const req = reqFor({ id: 50, role: 'user' })
     const data: any = { bio: 'x', createdAt: '2020-01-01', updatedAt: '2020-01-01' }
