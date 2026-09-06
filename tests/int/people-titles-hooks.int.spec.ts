@@ -112,6 +112,15 @@ describe('enforcePersonAccessChange', () => {
       await expect(patch(pugReq(), { password: 'hunter2' })).rejects.toMatchObject({ status: 403 })
     })
 
+    // People's beforeValidate gets the merged document, not just the changed keys, so the
+    // check has to be a diff: unchanged fields must not trip it.
+    it('ignores the untouched fields of a merged document and catches only the changed one', async () => {
+      const stored = { ...original, name: 'Kaz', email: null, bio: null, salt: 's', hash: 'h', avatar: 3, gameAliases: [{ alias: 'kaz' }] }
+      const send = (data: any) => enforcePersonAccessChange({ req: leadReq(), data, originalDoc: stored, operation: 'update' })
+      await expect(send({ ...stored, titles: [{ title: 'caster' }, { title: 'social-manager' }] })).resolves.toBeUndefined()
+      await expect(send({ ...stored, email: 'new@example.com' })).rejects.toMatchObject({ status: 403 })
+    })
+
     it('leaves self-edits alone: a plain user may change their own bio and password', async () => {
       const req = reqFor({ id: 50, role: 'user' })
       await expect(enforcePersonAccessChange({ req, data: { bio: 'hi', password: 'hunter2' }, originalDoc: original, operation: 'update' })).resolves.toBeUndefined()

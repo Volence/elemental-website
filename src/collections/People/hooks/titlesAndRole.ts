@@ -18,14 +18,20 @@ const IDENTITY_CREATE_FIELDS = ['name', 'slug', 'discordId', 'discordUsername', 
 
 /**
  * A non-staff actor writing to somebody else's row may only touch the handful of fields their
- * standing covers. Field-level access cannot express this (it never sees the whole document, and
- * a lead or PUG admin legitimately holds `update` on People), so the allow-list is enforced here
- * over the whole payload: anything outside it - password, email, mergedInto, roster flags - is a
- * 403 rather than a silent write.
+ * standing covers. Field-level access cannot express this (it never sees a whole document, and a
+ * lead or PUG admin legitimately holds `update` on People), and several fields carry no field
+ * access at all - password, email, mergedInto - so the boundary is enforced here over the whole
+ * payload: any field whose value actually changes and is not on the allow-list is a 403.
+ *
+ * `data` in People's `beforeValidate` is the *merged* document (every field, with the fields the
+ * caller may not update already reverted to their stored values), so the check is a diff against
+ * `originalDoc`, not a test of which keys are present. On create there is no original, so every
+ * value counts as a change.
  */
 function assertAllowedOnOtherPerson(
   actor: Pick<ResolvedAccess, 'departments'>,
   data: Record<string, any>,
+  originalDoc: Record<string, any> | null | undefined,
   operation: 'create' | 'update',
   context: Record<string, any> | undefined,
 ): void {
@@ -35,9 +41,11 @@ function assertAllowedOnOtherPerson(
     if (context?.identityCreate === true) for (const f of IDENTITY_CREATE_FIELDS) allowed.add(f)
     else { allowed.add('name'); allowed.add('discordId') }
   }
+  const original = originalDoc ?? {}
   for (const [key, value] of Object.entries(data)) {
-    if (value === undefined || IGNORED_KEYS.has(key)) continue
-    if (!allowed.has(key)) throw new APIError(`You may not change ${key} on another person`, 403, undefined, true)
+    if (value === undefined || IGNORED_KEYS.has(key) || allowed.has(key)) continue
+    if (JSON.stringify(value) === JSON.stringify(original[key])) continue
+    throw new APIError(`You may not change ${key} on another person`, 403, undefined, true)
   }
 }
 
@@ -75,7 +83,7 @@ export async function enforcePersonAccessChange(args: { req: PayloadRequest; dat
   // (profile fields are the person's own to change).
   const isSelf = operation === 'update' && String(originalDoc?.id) === String(req.user.id)
   if (!actor.canManagePeople && !isSelf) {
-    assertAllowedOnOtherPerson(actor, data, operation, req.context as any)
+    assertAllowedOnOtherPerson(actor, data, originalDoc, operation, req.context as any)
   }
 
   if (!ACCESS_FIELDS.some((f) => f in data)) return

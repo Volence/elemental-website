@@ -215,6 +215,8 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
   // access and the PUG panel - the server rejects the rest (enforcePersonAccessChange), so the
   // editor shows those fields read-only rather than offering a save that 403s.
   const canEditProfileFields = isManager && (canManageStaff || isSelf)
+  /** Manager view on somebody else's row without staff rights: profile fields are display only. */
+  const profileReadOnly = isManager && !canEditProfileFields
 
   // Fetch person data
   const fetchPerson = useCallback(async () => {
@@ -631,20 +633,27 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
         <div style={styles.leftColumn}>
           {/* Bio */}
           <div className="profile-card" style={styles.card}>
-            <h3 style={styles.cardTitle}><MessageSquare size={16} /> About</h3>
+            <h3 style={styles.cardTitle}>
+              <MessageSquare size={16} /> About
+              {profileReadOnly && <span className="readonly-badge"><Shield size={10} /> Managed</span>}
+            </h3>
             <textarea
               className="profile-input profile-textarea"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               placeholder="Tell people a bit about yourself..."
               style={{ minHeight: 120 }}
+              disabled={profileReadOnly}
             />
             <p style={styles.fieldHint}>This bio appears on the public player page.</p>
           </div>
 
           {/* Social Links */}
           <div className="profile-card" style={styles.card}>
-            <h3 style={styles.cardTitle}><LinkIcon size={16} /> Social Links</h3>
+            <h3 style={styles.cardTitle}>
+              <LinkIcon size={16} /> Social Links
+              {profileReadOnly && <span className="readonly-badge"><Shield size={10} /> Managed</span>}
+            </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {SOCIAL_PLATFORMS.map(({ key, label, icon: Icon, placeholder }) => (
                 <div className="social-row" key={key}>
@@ -658,6 +667,7 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
                     value={(socialLinks as any)?.[key] ?? ''}
                     onChange={(e) => updateSocialLink(key, e.target.value)}
                     placeholder={placeholder}
+                    disabled={profileReadOnly}
                   />
                 </div>
               ))}
@@ -675,12 +685,12 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {customLinks.map((link, i) => (
                   <div className="custom-link-row" key={i}>
-                    <input className="profile-input" type="text" value={link.label} onChange={(e) => updateCustomLink(i, 'label', e.target.value)} placeholder="Label" />
-                    <input className="profile-input" type="url" value={link.url} onChange={(e) => updateCustomLink(i, 'url', e.target.value)} placeholder="https://..." />
-                    <button className="remove-btn" onClick={() => removeCustomLink(i)}>✕</button>
+                    <input className="profile-input" type="text" value={link.label} onChange={(e) => updateCustomLink(i, 'label', e.target.value)} placeholder="Label" disabled={profileReadOnly} />
+                    <input className="profile-input" type="url" value={link.url} onChange={(e) => updateCustomLink(i, 'url', e.target.value)} placeholder="https://..." disabled={profileReadOnly} />
+                    {!profileReadOnly && <button className="remove-btn" onClick={() => removeCustomLink(i)}>✕</button>}
                   </div>
                 ))}
-                <button className="add-link-btn" onClick={addCustomLink}>+ Add Custom Link</button>
+                {!profileReadOnly && <button className="add-link-btn" onClick={addCustomLink}>+ Add Custom Link</button>}
               </div>
             </div>
           </div>
