@@ -210,6 +210,11 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
   const canManageStaff = actor?.canManagePeople === true
   const isSelf = user?.id != null && String(user.id) === String(resolvedPersonId)
   const canEditPug = actor ? actor.isAdmin || actor.departments.pug !== 'none' : false
+  // Profile fields (name, slug, notes, aliases, photo, bio, links) belong to the person and to
+  // staff. A department lead or PUG admin editing somebody else may only touch titles, extra
+  // access and the PUG panel - the server rejects the rest (enforcePersonAccessChange), so the
+  // editor shows those fields read-only rather than offering a save that 403s.
+  const canEditProfileFields = isManager && (canManageStaff || isSelf)
 
   // Fetch person data
   const fetchPerson = useCallback(async () => {
@@ -304,16 +309,18 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
     setErrorMsg('')
 
     try {
-      const payload: Record<string, any> = {
-        bio: bio || null,
-        socialLinks: {
+      const payload: Record<string, any> = {}
+      // Profile fields only when they are the actor's to change (own row, or staff).
+      if (!isManager || canEditProfileFields) {
+        payload.bio = bio || null
+        payload.socialLinks = {
           ...(socialLinks ?? {}),
           customLinks: customLinks.filter(l => l.label.trim() && l.url.trim()),
-        },
+        }
       }
 
       // Manager fields
-      if (isManager) {
+      if (canEditProfileFields) {
         payload.name = name
         payload.slug = slug
         payload.discordId = discordId || null
@@ -331,6 +338,9 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
           if (trimmedEmail) payload.email = trimmedEmail
           else if (storedEmail && hasUsername) payload.email = null
         }
+      }
+
+      if (isManager) {
         // Titles and extra access: staff can change anyone's; a department lead can change
         // theirs within their lead departments (the server enforces the exact boundary via
         // canApplyPersonChange - this is only about what to send). Titles only sent when
@@ -570,13 +580,17 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
                 <UserIcon size={40} style={{ opacity: 0.3 }} />
               </div>
             )}
-            <label className="photo-overlay" htmlFor="photo-upload">
-              <Camera size={20} color="white" />
-            </label>
-            <input id="photo-upload" type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: 'none' }} />
+            {(!isManager || canEditProfileFields) && (
+              <>
+                <label className="photo-overlay" htmlFor="photo-upload">
+                  <Camera size={20} color="white" />
+                </label>
+                <input id="photo-upload" type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: 'none' }} />
+              </>
+            )}
           </div>
           <div>
-            {isManager ? (
+            {canEditProfileFields ? (
               <input
                 className="profile-input"
                 style={styles.nameInput}
@@ -672,7 +686,7 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
           </div>
 
           {/* Notes (manager only) */}
-          {isManager && (
+          {canEditProfileFields && (
             <div className="profile-card" style={styles.card}>
               <h3 style={styles.cardTitle}><StickyNote size={16} /> Internal Notes</h3>
               <textarea
@@ -921,13 +935,13 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
             <h3 style={styles.cardTitle}>
               <UserIcon size={16} />
               Identity
-              {!isManager && <span className="readonly-badge"><Shield size={10} /> Managed</span>}
+              {!canEditProfileFields && <span className="readonly-badge"><Shield size={10} /> Managed</span>}
             </h3>
-            {!isManager && (
+            {!canEditProfileFields && (
               <p style={styles.fieldHint}>These fields are managed by team staff and cannot be edited directly.</p>
             )}
 
-            {isManager ? (
+            {canEditProfileFields ? (
               <>
                 <div style={styles.editableField}>
                   <label style={styles.fieldLabel}>Slug</label>
@@ -990,9 +1004,9 @@ export default function PersonEditor({ personId: propPersonId, isManager = false
             <h3 style={styles.cardTitle}>
               <Gamepad2 size={16} />
               Game Aliases
-              {!isManager && <span className="readonly-badge"><Shield size={10} /> Managed</span>}
+              {!canEditProfileFields && <span className="readonly-badge"><Shield size={10} /> Managed</span>}
             </h3>
-            {isManager ? (
+            {canEditProfileFields ? (
               <>
                 <p style={styles.fieldHint}>In-game names matched against scrim logs for stat attribution.</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 10 }}>

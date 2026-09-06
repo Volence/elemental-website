@@ -89,6 +89,53 @@ describe('enforcePersonAccessChange', () => {
     })).resolves.toBeUndefined()
   })
 
+  // C1: a non-staff actor editing somebody else is limited to an allow-list over the whole
+  // document, not just the four access fields.
+  describe('whole-document allow-list for non-staff actors', () => {
+    const leadReq = () => reqFor({ id: 2, role: 'user', titles: [{ title: 'social-manager', isLead: true }] })
+    const pugReq = () => reqFor({ id: 4, role: 'user', departments: { isPugAdmin: true } })
+    const patch = (req: any, data: any) =>
+      enforcePersonAccessChange({ req, data, originalDoc: original, operation: 'update' })
+
+    it('rejects a lead setting another person password, email or mergedInto', async () => {
+      await expect(patch(leadReq(), { password: 'hunter2' })).rejects.toMatchObject({ status: 403 })
+      await expect(patch(leadReq(), { email: 'x@example.com' })).rejects.toMatchObject({ status: 403 })
+      await expect(patch(leadReq(), { mergedInto: 99 })).rejects.toMatchObject({ status: 403 })
+    })
+
+    it('lets a lead send titles alone', async () => {
+      await expect(patch(leadReq(), { titles: [{ title: 'caster' }, { title: 'social-manager' }] })).resolves.toBeUndefined()
+    })
+
+    it('lets a PUG admin set PUG fields but not a password', async () => {
+      await expect(patch(pugReq(), { pugTiers: ['invite'], pugApprovedRoles: ['tank'] })).resolves.toBeUndefined()
+      await expect(patch(pugReq(), { password: 'hunter2' })).rejects.toMatchObject({ status: 403 })
+    })
+
+    it('leaves self-edits alone: a plain user may change their own bio and password', async () => {
+      const req = reqFor({ id: 50, role: 'user' })
+      await expect(enforcePersonAccessChange({ req, data: { bio: 'hi', password: 'hunter2' }, originalDoc: original, operation: 'update' })).resolves.toBeUndefined()
+    })
+
+    it('limits a non-picker create to name and discordId, and lets the picker seed identity fields', async () => {
+      const req = reqForTeamManager({ id: 3, role: 'user' })
+      await expect(enforcePersonAccessChange({
+        req,
+        data: { name: 'X', discordId: '111111111111111111', email: 'x@example.com' },
+        originalDoc: undefined,
+        operation: 'create',
+      })).rejects.toMatchObject({ status: 403 })
+
+      const pickerReq = { ...reqForTeamManager({ id: 3, role: 'user' }), context: { identityCreate: true } } as any
+      await expect(enforcePersonAccessChange({
+        req: pickerReq,
+        data: { name: 'X', discordId: '111111111111111111', username: '111111111111111111', password: 'random', discordUsername: 'x', discordAvatar: null },
+        originalDoc: undefined,
+        operation: 'create',
+      })).resolves.toBeUndefined()
+    })
+  })
+
   it('strips client-supplied timestamps on a non-staff write', async () => {
     const req = reqFor({ id: 50, role: 'user' })
     const data: any = { bio: 'x', createdAt: '2020-01-01', updatedAt: '2020-01-01' }
