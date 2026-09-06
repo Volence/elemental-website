@@ -89,6 +89,17 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
   }
 
+  // A signed-in person with no scrim access at all (no team, not an external uploader) still
+  // owns their own stats page. They may read exactly one thing: themselves.
+  const hasScrimAccess = scope.isFullAccess || scope.teamIds.length > 0 || scope.canUploadExternalScrims
+  if (!hasScrimAccess) {
+    const selfId = personIdStr ? parseInt(personIdStr) : NaN
+    if (!isNaN(selfId) && selfId === scope.personId) {
+      return getPlayerDetailByPerson(selfId, range, null)
+    }
+    return NextResponse.json({ error: 'Access denied - you can only view your own stats' }, { status: 403 })
+  }
+
   // Pre-compute scoped scrim IDs (parameterized, no string interpolation)
   let scopedScrimIds: number[] | null = null
   if (!scope.isFullAccess) {

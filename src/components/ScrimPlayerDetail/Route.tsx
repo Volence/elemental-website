@@ -12,7 +12,12 @@ const ScrimPlayerDetailRoute = async ({
 }: AdminViewServerProps) => {
   const user = initPageResult.req.user
   const access = await accessForAdminRoute(initPageResult)
-  if (!user || !hasScrimAccess(access)) redirect('/admin')
+  // Everyone may read their own stats page ("My Stats" in the nav); seeing anyone else's
+  // needs scrim access. The API applies the same rule to the data itself.
+  const idParam = searchParams?.personId
+  const requestedPersonId = Array.isArray(idParam) ? idParam[0] : idParam
+  const isSelf = !!user && requestedPersonId !== undefined && String(requestedPersonId) === String(user.id)
+  if (!user || (!hasScrimAccess(access) && !isSelf)) redirect('/admin')
 
   return (
     <DefaultTemplate

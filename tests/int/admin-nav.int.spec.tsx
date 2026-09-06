@@ -87,6 +87,15 @@ describe('buildNavAreas', () => {
     expect(areas.departments).toBeUndefined()
   })
 
+  // I6: a roster player with no team access keeps their own stats page.
+  it('gives every signed-in person My Stats, pointed at themselves', () => {
+    const plain = resolveAccess({ id: 42, role: 'user' }, [])
+    const areas = buildNavAreas({ access: plain, collections: [], globals: [] })
+    expect(labels(areas)).toEqual({ me: ['My Profile', 'Guides', 'My Stats'] })
+    const myStats = areas[0].items.find((i) => i.label === 'My Stats')!
+    expect(myStats.href).toBe('/admin/scrim-player-detail?personId=42')
+  })
+
   it('shows the PUG dashboard to department PUG admins who are not admins', () => {
     const access = resolveAccess({ id: 9, role: 'user', departments: { isPugAdmin: true } }, [])
     const areas = labels(buildNavAreas({ access, collections: [], globals: [] }))

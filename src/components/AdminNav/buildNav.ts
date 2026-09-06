@@ -135,7 +135,9 @@ export function buildNavAreas({ access, collections, globals }: BuildNavInput): 
       items: [
         view('/my-profile', 'My Profile', 'user'),
         view('/guides', 'Guides', 'book-open'),
-        when(isScrimViewer(access), view('/scrim-player-detail', 'My Stats', 'chart', { personId: String(access.personId) })),
+        // Everyone gets their own stats page: a roster player with no team access still owns
+        // their numbers (the route and the API allow personId === their own id).
+        view('/scrim-player-detail', 'My Stats', 'chart', { personId: String(access.personId) }),
         when(!isLimited(access), view('/calendar', 'Calendar', 'calendar')),
       ],
     },
