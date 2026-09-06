@@ -7,8 +7,12 @@ import { execFileSync } from 'node:child_process'
  * identity/merge.ts no longer match the pattern at all - roleRank replaced their raw checks - so
  * they were dropped from this list; keeping them would hide a real future regression there.)
  */
-const PATTERN = String.raw`role\s*(===|!==|==|!=)\s*['"](admin|staff-manager|team-manager|player|user)['"]|\[['"]admin['"],\s*['"]staff-manager['"]|UserRole\.`
+// The second alternative catches any identifier ending in `Role` (userRole, personRole, ...)
+// compared against a literal, which is how the raw checks kept sneaking back in.
+const PATTERN = String.raw`role\s*(===|!==|==|!=)\s*['"](admin|staff-manager|team-manager|player|user)['"]|Role\s*(===|!==)\s*['"]|\[['"]admin['"],\s*['"]staff-manager['"]|UserRole\.`
 const ALLOW = [/^src\/access\//, /^src\/migrations\//]
+// `typeof scheduleRole === 'string'` is a type guard, not a permission check.
+const NOT_A_ROLE_CHECK = /typeof\s+\w*[Rr]ole\s*(===|!==)/
 
 describe('no raw role checks outside src/access', () => {
   it('finds none', () => {
@@ -19,7 +23,9 @@ describe('no raw role checks outside src/access', () => {
       // /bin/sh (dash) precisely because the pattern contains literal ' and " characters.
       out = execFileSync('grep', ['-rnE', PATTERN, 'src', '--include=*.ts', '--include=*.tsx'], { encoding: 'utf8' })
     } catch (e: any) { out = e.stdout ?? '' }
-    const offenders = out.split('\n').filter(Boolean).filter((line) => !ALLOW.some((re) => re.test(line.split(':')[0])))
+    const offenders = out.split('\n').filter(Boolean)
+      .filter((line) => !ALLOW.some((re) => re.test(line.split(':')[0])))
+      .filter((line) => !NOT_A_ROLE_CHECK.test(line))
     expect(offenders, offenders.join('\n')).toEqual([])
   })
 })

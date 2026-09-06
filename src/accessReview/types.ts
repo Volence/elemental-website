@@ -25,17 +25,21 @@ export const DEPARTMENT_LABELS: Record<DepartmentKey, string> = {
 
 export { ROLE_VALUES, ROLE_LABELS, type RoleValue } from '@/access/titles'
 
-/** Position a person actually holds on a team. null means they hold none. */
-export type TeamStanding = 'manager' | 'coach' | 'captain' | 'co-captain' | 'roster' | 'sub'
+/**
+ * Position a person holds on a team. 'access-only' is a real, supported state: an explicit
+ * `teamAccess` grant with no roster or staff slot, which is how staff hand out team data
+ * access without putting someone on the public roster.
+ */
+export type TeamStanding = 'manager' | 'coach' | 'captain' | 'co-captain' | 'roster' | 'sub' | 'access-only'
 
 export interface TeamAccess {
   teamId: number
   teamName: string
-  /** null when the person has data access to this team without holding any position on it. */
-  standing: TeamStanding | null
+  /** 'access-only' when the person has data access to this team without holding a position. */
+  standing: TeamStanding
 }
 
-export type AccessFlag = 'team-without-roster' | 'not-in-discord' | 'dormant' | 'no-review-record'
+export type AccessFlag = 'not-in-discord' | 'dormant' | 'no-review-record'
 
 export interface AccessChangeRecord {
   at: string

@@ -42,6 +42,7 @@ const STANDING_LABELS: Record<TeamStanding, string> = {
   'co-captain': 'Co-captain',
   roster: 'Roster',
   sub: 'Sub',
+  'access-only': 'Access only',
 }
 
 function relativeDays(iso: string | null, now: number): string {
@@ -308,14 +309,14 @@ export function AccessReviewView({ embedded = false }: { embedded?: boolean } = 
                             </a>
                             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
                               {team && (
-                                <span className={`ar-chip ${team.standing ? 'ar-chip-ok' : 'ar-chip-warn'}`}>
-                                  {team.standing ? STANDING_LABELS[team.standing] : 'not on roster'}
+                                <span className={`ar-chip ${team.standing === 'access-only' ? 'ar-chip-mute' : 'ar-chip-ok'}`}>
+                                  {STANDING_LABELS[team.standing]}
                                 </span>
                               )}
                               {person.titles.map((title) => (
                                 <span className="ar-chip ar-chip-mute" key={title}>{title}</span>
                               ))}
-                              {person.flags.filter((f) => !(group.band === 'team' && f === 'team-without-roster')).map((f) => (
+                              {person.flags.map((f) => (
                                 <span className="ar-chip ar-chip-warn" key={f}>{FLAG_LABELS[f]}</span>
                               ))}
                               <span className="ar-chip ar-chip-mute">

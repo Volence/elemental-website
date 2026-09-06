@@ -40,6 +40,9 @@ export const adminOnly: Access = withAccess((a) => a.isAdmin)
 export const staffManagerOrAbove: Access = withAccess((a) => a.canManagePeople)
 
 export function department(key: DepartmentKey, level: Level = 'member'): Access {
+  // 'none' is not a grant level; asking for it would read as "member or better" and quietly
+  // hand the department to everyone. Fail at config time, not at request time.
+  if (level === 'none') throw new Error(`department('${key}') requires level 'member' or 'lead'`)
   return withAccess((a) => a.departments[key] === 'lead' || (level === 'member' && a.departments[key] === 'member'))
 }
 export function anyDepartment(level: Level = 'member'): Access {

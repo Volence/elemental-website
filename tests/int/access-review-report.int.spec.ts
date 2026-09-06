@@ -62,10 +62,10 @@ describe('buildReport flags', () => {
     expect(buildReport(healthyInput()).people[0].flags).toEqual([])
   })
 
-  it('flags team access without a roster spot', () => {
+  it('marks team access without a roster spot as access-only, and does not flag it', () => {
     const report = buildReport(healthyInput({ teams: [{ id: 10, name: 'Hydrus' }] }))
-    expect(report.people[0].flags).toContain('team-without-roster')
-    expect(report.people[0].teams[0].standing).toBe(null)
+    expect(report.people[0].teams[0].standing).toBe('access-only')
+    expect(report.people[0].flags).toEqual([])
   })
 
   it('flags someone who is not in the guild', () => {

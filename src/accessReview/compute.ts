@@ -202,7 +202,7 @@ export function buildReport(input: BuildReportInput): AccessReport {
       teams.push({
         teamId,
         teamName: embeddedName ?? teamNames.get(teamId) ?? `Team #${teamId}`,
-        standing: standingIndex.get(teamId)?.get(person.id) ?? null,
+        standing: standingIndex.get(teamId)?.get(person.id) ?? 'access-only',
       })
     }
 
@@ -215,7 +215,6 @@ export function buildReport(input: BuildReportInput): AccessReport {
         : input.discordMemberIds.has(person.discordId)
 
     const flags: AccessFlag[] = []
-    if (teams.some((team) => team.standing === null)) flags.push('team-without-roster')
     if (inDiscord === false) flags.push('not-in-discord')
     // Logins are only recorded at sign-in and tokens refresh silently, so a person can work
     // daily without a new login event. Admin page views touch lastActivity; use the newer.

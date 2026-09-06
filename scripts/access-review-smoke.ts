@@ -65,15 +65,15 @@ console.log('[smoke] flag counts:', counts)
 const withTeams = report.people.filter((p) => p.teams.length)
 console.log('[smoke] people with team access:', withTeams.length)
 
-const stale = report.people.filter((p) => p.flags.includes('team-without-roster'))
-console.log('[smoke] sample team-access-without-roster (up to 10):')
-for (const person of stale.slice(0, 10)) {
-  const bad = person.teams.filter((t) => t.standing === null).map((t) => t.teamName)
-  console.log(`  - ${person.name} (${person.role ?? 'no role'}) -> ${bad.join(', ')}`)
+const accessOnly = report.people.filter((p) => p.teams.some((t) => t.standing === 'access-only'))
+console.log('[smoke] sample access-only team grants (up to 10):')
+for (const person of accessOnly.slice(0, 10)) {
+  const teams = person.teams.filter((t) => t.standing === 'access-only').map((t) => t.teamName)
+  console.log(`  - ${person.name} (${person.role ?? 'no role'}) -> ${teams.join(', ')}`)
 }
 
-console.log('[smoke] sample rostered access (up to 5), standing must be non-null:')
-for (const person of withTeams.filter((p) => p.teams.some((t) => t.standing)).slice(0, 5)) {
+console.log('[smoke] sample rostered access (up to 5):')
+for (const person of withTeams.filter((p) => p.teams.some((t) => t.standing !== 'access-only')).slice(0, 5)) {
   console.log(`  - ${person.name}: ${person.teams.map((t) => `${t.teamName}=${t.standing}`).join(', ')}`)
 }
 

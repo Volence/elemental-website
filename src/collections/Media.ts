@@ -10,6 +10,7 @@ import { fileURLToPath } from 'url'
 
 import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
+import { hideUnless } from '../access'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -29,12 +30,9 @@ export const Media: CollectionConfig = {
   admin: {
     description: 'Upload and manage images, videos, and other media files used across the website.',
     group: 'System',
-    hidden: ({ user }) => {
-      if (!user) return true
-      // Show to admins only in sidebar, but still accessible via upload fields for all users
-      const userRole = (user as any).role
-      return userRole !== 'admin'
-    },
+    // Sidebar entry for admins only; the collection stays reachable through upload fields
+    // for everyone (this hides the nav item, not the API).
+    hidden: hideUnless((a) => a.isAdmin),
   },
   fields: [
     {

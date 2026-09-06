@@ -36,7 +36,7 @@ describe('buildGroups', () => {
           name: 'Multi',
           role: 'staff-manager',
           departments: ['isGraphicsStaff'],
-          teams: [{ teamId: 10, teamName: 'Hydrus', standing: null }],
+          teams: [{ teamId: 10, teamName: 'Hydrus', standing: 'access-only' }],
         }),
       ]),
       { search: '', flag: null },
@@ -109,7 +109,6 @@ describe('countFlags', () => {
     )
     expect(counts.dormant).toBe(2)
     expect(counts['not-in-discord']).toBe(1)
-    expect(counts['team-without-roster']).toBe(0)
     expect(counts['no-review-record']).toBe(0)
   })
 })

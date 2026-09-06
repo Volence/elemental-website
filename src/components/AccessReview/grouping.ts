@@ -30,14 +30,12 @@ export interface GroupFilter {
 }
 
 export const ALL_FLAGS: AccessFlag[] = [
-  'team-without-roster',
   'not-in-discord',
   'dormant',
   'no-review-record',
 ]
 
 export const FLAG_LABELS: Record<AccessFlag, string> = {
-  'team-without-roster': 'Team access without roster spot',
   'not-in-discord': 'Not in the Discord server',
   dormant: 'No recorded activity in 90 days',
   'no-review-record': 'No access review on record',
@@ -108,7 +106,6 @@ export function buildGroups(report: AccessReport, filter: GroupFilter): AccessGr
 
 export function countFlags(report: AccessReport): Record<AccessFlag, number> {
   const counts = {
-    'team-without-roster': 0,
     'not-in-discord': 0,
     dormant: 0,
     'no-review-record': 0,

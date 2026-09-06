@@ -283,6 +283,7 @@ export const People: CollectionConfig = {
               },
               access: {
                 read: authenticatedRead,
+                create: personAccessFieldUpdate,
                 update: personAccessFieldUpdate,
               },
             },
