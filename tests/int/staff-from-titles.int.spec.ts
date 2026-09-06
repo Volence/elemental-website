@@ -21,3 +21,21 @@ describe('groupPeopleByTitle', () => {
     expect(titlesOf(people[0] as any).map((t) => t.label)).toEqual(['Caster', 'Graphics Lead'])
   })
 })
+
+describe('productionRoster', () => {
+  it('lists each production person once, casters first, leads first, with title labels', async () => {
+    const { groupPeopleByTitle, productionRoster } = await import('@/utilities/staffFromTitles')
+    const prod = [
+      { id: 10, name: 'Dan', titles: [{ title: 'observer' as const }, { title: 'producer' as const, isLead: true }] },
+      { id: 11, name: 'Gobbi', titles: [{ title: 'observer' as const }, { title: 'producer' as const }] },
+      { id: 12, name: 'Bo', titles: [{ title: 'caster' as const, isLead: true }] },
+      { id: 13, name: 'Ana', titles: [{ title: 'caster' as const }, { title: 'graphics' as const, isLead: true }] },
+      { id: 14, name: 'Zed', titles: [{ title: 'hr' as const }] },
+    ]
+    const roster = productionRoster(groupPeopleByTitle(prod as any))
+    expect(roster.map((r) => r.person.name)).toEqual(['Bo', 'Ana', 'Dan', 'Gobbi'])
+    expect(roster.map((r) => r.isLead)).toEqual([true, false, true, false])
+    expect(roster.find((r) => r.person.name === 'Dan')!.titles.map((t) => t.label)).toEqual(['Observer', 'Lead Producer'])
+    expect(roster.find((r) => r.person.name === 'Ana')!.titles.map((t) => t.label)).toEqual(['Caster'])
+  })
+})

@@ -44,6 +44,35 @@ export function groupPeopleByTitle(people: TitledPerson[]): StaffGroup[] {
   })
 }
 
+export interface ProductionRosterRow {
+  person: TitledPerson
+  titles: Array<{ title: TitleValue; label: string; isLead: boolean }>
+  isLead: boolean
+}
+
+/**
+ * One row per person holding any production title, for the public staff page: casters first,
+ * then leads, then by name. A person with several production titles appears once with all of
+ * them as labels (Observer, Lead Producer) instead of once per title group.
+ */
+export function productionRoster(groups: StaffGroup[]): ProductionRosterRow[] {
+  const order = new Map(TITLES.map((t, i) => [t.value, i]))
+  const rows = new Map<number, ProductionRosterRow>()
+  for (const g of groups) {
+    if (g.group !== 'production') continue
+    for (const m of g.members) {
+      const row = rows.get(m.person.id) ?? { person: m.person, titles: [], isLead: false }
+      row.titles.push({ title: g.title, label: titleLabel({ title: g.title, isLead: m.isLead }), isLead: m.isLead })
+      row.isLead = row.isLead || m.isLead
+      rows.set(m.person.id, row)
+    }
+  }
+  const firstIndex = (r: ProductionRosterRow) => Math.min(...r.titles.map((t) => order.get(t.title) ?? 99))
+  return [...rows.values()]
+    .map((r) => ({ ...r, titles: r.titles.sort((a, b) => (order.get(a.title) ?? 99) - (order.get(b.title) ?? 99)) }))
+    .sort((a, b) => firstIndex(a) - firstIndex(b) || Number(b.isLead) - Number(a.isLead) || a.person.name.localeCompare(b.person.name))
+}
+
 export async function findPeopleWithTitles(payload: Payload, depth = 1): Promise<TitledPerson[]> {
   const res = await payload.find({
     collection: 'people',

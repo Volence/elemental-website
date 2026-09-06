@@ -3,8 +3,7 @@ import { Users } from 'lucide-react'
 import { StaffMemberCard } from './StaffMemberCard'
 import { getSocialLinksFromPerson, getPhotoUrlFromPerson, getPersonSlugFromRelationship } from '@/utilities/personHelpers'
 import { formatPlayerSlug } from '@/utilities/getPlayer'
-import { getOrgRoleIcon } from '@/utilities/roleIcons'
-import type { StaffGroup } from '@/utilities/staffFromTitles'
+import { productionRoster, type StaffGroup } from '@/utilities/staffFromTitles'
 
 interface ProductionStaffSectionProps {
   groups: StaffGroup[]
@@ -32,9 +31,11 @@ const productionColors: Record<string, { from: string; to: string; text: string;
 }
 
 export function ProductionStaffSection({ groups }: ProductionStaffSectionProps) {
-  const hasAnyProduction = groups.some((g) => g.members.length > 0)
+  // One card per person: someone who is both Observer and Producer appears once, with both
+  // titles under their name, instead of once per title group.
+  const roster = productionRoster(groups)
 
-  if (!hasAnyProduction) {
+  if (roster.length === 0) {
     return null
   }
 
@@ -48,12 +49,12 @@ export function ProductionStaffSection({ groups }: ProductionStaffSectionProps) 
         <div className="w-24 h-1 bg-gradient-to-r from-[hsl(var(--accent-blue))] via-purple-500 to-[hsl(var(--accent-gold))] shadow-lg" />
       </div>
 
-      <div className="space-y-8">
-        {groups.map(({ title, label, members }) => {
-          if (members.length === 0) return null
-
-          const Icon = getOrgRoleIcon(title, 'sm')
-          const avatarColors = productionColors[label] || {
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {roster.map(({ person, titles, isLead }) => {
+          const photoUrl = getPhotoUrlFromPerson(person)
+          const socialLinks = getSocialLinksFromPerson(person)
+          const primaryLabel = titles[0]?.label.replace(/^Lead /, '') ?? ''
+          const avatarColors = productionColors[primaryLabel] || {
             from: 'from-primary/20',
             to: 'to-primary/10',
             text: 'text-primary',
@@ -61,30 +62,16 @@ export function ProductionStaffSection({ groups }: ProductionStaffSectionProps) 
           }
 
           return (
-            <div key={title} className="space-y-4">
-              <h3 className="text-xl font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                {Icon}
-                {label}
-              </h3>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {members.map(({ person, isLead }) => {
-                  const photoUrl = getPhotoUrlFromPerson(person)
-                  const socialLinks = getSocialLinksFromPerson(person)
-
-                  return (
-                    <StaffMemberCard
-                      key={person.id}
-                      name={person.name}
-                      slug={getPersonSlugFromRelationship(person) || formatPlayerSlug(person.name)}
-                      lead={isLead}
-                      photoUrl={photoUrl}
-                      socialLinks={socialLinks}
-                      avatarColors={avatarColors}
-                    />
-                  )
-                })}
-              </div>
-            </div>
+            <StaffMemberCard
+              key={person.id}
+              name={person.name}
+              slug={getPersonSlugFromRelationship(person) || formatPlayerSlug(person.name)}
+              subtitle={titles.map((t) => t.label).join(' / ')}
+              lead={isLead}
+              photoUrl={photoUrl}
+              socialLinks={socialLinks}
+              avatarColors={avatarColors}
+            />
           )
         })}
       </div>
