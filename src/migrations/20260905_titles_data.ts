@@ -66,6 +66,12 @@ export async function up({ payload }: MigrateUpArgs): Promise<void> {
   }
   log(`inserted ${inserted} title rows`)
 
+  // Rows with no person are unmigratable by definition; say so rather than losing them silently.
+  const [skipped] = await rows(sql`
+    SELECT (SELECT count(*) FROM organization_staff WHERE person_id IS NULL) AS org,
+           (SELECT count(*) FROM production WHERE person_id IS NULL) AS prod`)
+  log(`REPORT skipped ${Number(skipped?.org ?? 0)} organization_staff row(s) and ${Number(skipped?.prod ?? 0)} production row(s) with null person_id`)
+
   // 2. Roles
   const losing = await rows(sql`
     SELECT p.id, p.name FROM people p

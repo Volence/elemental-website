@@ -19,6 +19,11 @@ const prod = await rows(sql`SELECT pr.person_id, p.name, pr.type FROM production
 console.log(`\n== production types -> titles (${prod.length})`)
 for (const r of prod) console.log(`${r.name} (#${r.person_id}): ${r.type} -> ${productionTypeToTitles(r.type).join(' + ')}`)
 
+const [skipped] = await rows(sql`
+  SELECT (SELECT count(*) FROM organization_staff WHERE person_id IS NULL) AS org,
+         (SELECT count(*) FROM production WHERE person_id IS NULL) AS prod`)
+console.log(`\nREPORT skipped ${Number(skipped?.org ?? 0)} organization_staff row(s) and ${Number(skipped?.prod ?? 0)} production row(s) with null person_id`)
+
 const losingRaw = await rows(sql`
   SELECT p.id, p.name FROM people p
   WHERE p.role = 'team-manager'
