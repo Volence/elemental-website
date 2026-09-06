@@ -42,4 +42,28 @@ describe('diffAccessFields', () => {
   it('returns nothing when there is no previous document', () => {
     expect(diffAccessFields(null, { id: 1, role: 'admin' })).toEqual([])
   })
+
+  it('reports an added title', () => {
+    expect(
+      diffAccessFields({ id: 1, titles: [] }, { id: 1, titles: [{ title: 'caster' }] }),
+    ).toEqual([{ field: 'titles', from: [], to: ['caster|0|'] }])
+  })
+
+  it('reports a title gaining the lead flag', () => {
+    expect(
+      diffAccessFields(
+        { id: 1, titles: [{ title: 'caster', isLead: false }] },
+        { id: 1, titles: [{ title: 'caster', isLead: true }] },
+      ),
+    ).toEqual([{ field: 'titles', from: ['caster|0|'], to: ['caster|1|'] }])
+  })
+
+  it('ignores reordering of the same titles', () => {
+    expect(
+      diffAccessFields(
+        { id: 1, titles: [{ title: 'caster' }, { title: 'observer' }] },
+        { id: 1, titles: [{ title: 'observer' }, { title: 'caster' }] },
+      ),
+    ).toEqual([])
+  })
 })

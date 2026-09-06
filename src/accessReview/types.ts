@@ -23,16 +23,7 @@ export const DEPARTMENT_LABELS: Record<DepartmentKey, string> = {
   isPugAdmin: 'PUG Admin',
 }
 
-export const ROLE_VALUES = ['admin', 'staff-manager', 'team-manager', 'player', 'user'] as const
-export type RoleValue = (typeof ROLE_VALUES)[number]
-
-export const ROLE_LABELS: Record<RoleValue, string> = {
-  admin: 'Admin',
-  'staff-manager': 'Staff Manager',
-  'team-manager': 'Team Manager',
-  player: 'Player',
-  user: 'User',
-}
+export { ROLE_VALUES, ROLE_LABELS, type RoleValue } from '@/access/titles'
 
 /** Position a person actually holds on a team. null means they hold none. */
 export type TeamStanding = 'manager' | 'coach' | 'captain' | 'co-captain' | 'roster' | 'sub'

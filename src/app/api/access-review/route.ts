@@ -5,6 +5,7 @@ import { authenticateWithAccess, requireAdminAccess } from '@/utilities/apiAuth'
 import { buildReport } from '@/accessReview/compute'
 import type { AccessReport } from '@/accessReview/types'
 import { resolveMutation } from '@/accessReview/mutate'
+import { roleRank } from '@/access/resolve'
 import { getDiscordClient } from '@/discord/bot'
 import { resolveGuildId } from '@/discord/serverRegistry'
 import { isRosterComplete } from '@/accessReview/discordRoster'
@@ -134,7 +135,7 @@ export async function PATCH(request: NextRequest) {
 
   // Only counted when a role change could remove an admin, to keep the common path cheap.
   let adminCount = Number.POSITIVE_INFINITY
-  if (body.kind === 'role' && person.role === 'admin' && body.value !== 'admin') {
+  if (body.kind === 'role' && roleRank(person.role) === roleRank('admin') && body.value !== 'admin') {
     const counted = await payload.count({
       collection: 'people',
       where: { role: { equals: 'admin' } },

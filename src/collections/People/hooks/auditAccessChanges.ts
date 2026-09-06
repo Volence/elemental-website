@@ -20,6 +20,14 @@ function teamIds(value: unknown): number[] {
   return ids.sort((a, b) => a - b)
 }
 
+/** Normalized `title|isLead|regions` key for one titles-array row, order-insensitive. */
+function titleKeys(value: unknown): string[] {
+  if (!Array.isArray(value)) return []
+  return value
+    .map((t: any) => `${t?.title ?? ''}|${t?.isLead ? 1 : 0}|${((t?.regions ?? []) as string[]).slice().sort().join(',')}`)
+    .sort()
+}
+
 /**
  * Which access fields changed between two versions of a person. Drives the "last reviewed"
  * signal on the access review page - a bio edit must not read as an access review.
@@ -41,6 +49,12 @@ export function diffAccessFields(before: any, after: any): AccessFieldChange[] {
   const from = teamIds(before.teamAccess)
   const to = teamIds(after.teamAccess)
   if (from.join(',') !== to.join(',')) changes.push({ field: 'teamAccess', from, to })
+
+  const titlesBefore = titleKeys(before.titles)
+  const titlesAfter = titleKeys(after.titles)
+  if (titlesBefore.join(';') !== titlesAfter.join(';')) {
+    changes.push({ field: 'titles', from: titlesBefore, to: titlesAfter })
+  }
 
   return changes
 }

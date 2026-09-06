@@ -3,9 +3,8 @@ import { APIError } from 'payload'
 
 import { authenticated } from '../../access/authenticated'
 import { anyone } from '../../access/anyone'
-import { UserRole } from '../../access/roles'
-import { TITLES, TITLE_BY_VALUE, REGIONS, type TitleValue } from '@/access/titles'
-import { withAccess, hideUnless, resolveAccessForReq, adminOnly } from '@/access'
+import { TITLES, TITLE_BY_VALUE, REGIONS, ROLE_VALUES, ROLE_LABELS, type TitleValue } from '@/access/titles'
+import { withAccess, hideUnless, resolveAccessForReq, adminOnly, hasDepartment } from '@/access'
 import { auditPeopleChanges } from './hooks/auditAccessChanges'
 import { syncTwitchStreamer } from './hooks/syncTwitchStreamer'
 import { createAccessAllowsData, enforceDiscordIdOnCreate } from './hooks/enforceDiscordId'
@@ -13,31 +12,30 @@ import { raiseRoleForTitles, enforcePersonAccessChange, personAccessFieldUpdate,
 import { createAuditLogDeleteHook } from '../../utilities/auditLogger'
 import { trackLogin, trackLogout } from '../../utilities/sessionTracker'
 
-const isAdminOrManager = (user: any): boolean => {
-  if (!user) return false
-  return user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER || user.role === UserRole.TEAM_MANAGER
-}
-
 const isOwner = (user: any, docId: any): boolean => {
   if (!user || !docId) return false
   return String(user.id) === String(docId)
 }
 
-const ownerOrManager = ({ req, doc }: any) => {
+/** Admin or staff-manager: the resolver already grants staff full lead access everywhere. */
+const managerOnly = async ({ req }: any): Promise<boolean> => {
   if (!req.user) return false
-  if (isAdminOrManager(req.user)) return true
-  return isOwner(req.user, doc?.id)
+  const access = await resolveAccessForReq(req)
+  return access?.canManagePeople ?? false
 }
 
-const managerOnly = ({ req }: any) => {
+const ownerOrManager = async ({ req, doc }: any): Promise<boolean> => {
   if (!req.user) return false
-  return isAdminOrManager(req.user)
+  if (isOwner(req.user, doc?.id)) return true
+  const access = await resolveAccessForReq(req)
+  return access?.canManagePeople ?? false
 }
 
-const adminOrPugAdmin = ({ req }: any): boolean => {
+const adminOrPugAdmin = async ({ req }: any): Promise<boolean> => {
   if (!req.user) return false
-  if (req.user.role === UserRole.ADMIN) return true
-  return req.user.departments?.isPugAdmin === true
+  const access = await resolveAccessForReq(req)
+  if (!access) return false
+  return access.canManagePeople || hasDepartment(access, 'pug')
 }
 
 const formatSlug = (value: string): string => {
@@ -257,13 +255,7 @@ export const People: CollectionConfig = {
                 create: personAccessFieldUpdate,
                 update: personAccessFieldUpdate,
               },
-              options: [
-                { label: 'Admin', value: UserRole.ADMIN },
-                { label: 'Staff Manager', value: UserRole.STAFF_MANAGER },
-                { label: 'Team Manager', value: UserRole.TEAM_MANAGER },
-                { label: 'Player', value: UserRole.PLAYER },
-                { label: 'User', value: UserRole.USER },
-              ],
+              options: ROLE_VALUES.map((value) => ({ label: ROLE_LABELS[value], value })),
             },
             {
               name: 'avatar',
@@ -333,9 +325,9 @@ export const People: CollectionConfig = {
               type: 'text',
               label: 'Battle Tag',
               access: {
-                update: ({ req, doc }) => {
+                update: async ({ req, doc }) => {
                   if (!req.user) return false
-                  if (adminOrPugAdmin({ req })) return true
+                  if (await adminOrPugAdmin({ req })) return true
                   return isOwner(req.user, doc?.id)
                 },
               },
@@ -444,11 +436,7 @@ export const People: CollectionConfig = {
       type: 'text',
       index: true,
       access: {
-        update: ({ req }) => {
-          if (!req.user) return false
-          if (req.user.role === UserRole.ADMIN) return true
-          return isAdminOrManager(req.user)
-        },
+        update: managerOnly,
       },
       admin: {
         position: 'sidebar',
@@ -515,7 +503,14 @@ export const People: CollectionConfig = {
       // dismissed the dashboard card. Written only through /api/my-guides/progress.
       name: 'guideProgress',
       type: 'json',
-      access: { update: ({ req, doc }: any) => req.user?.role === 'admin' || (req.user && doc && String(req.user.id) === String(doc.id)) },
+      access: {
+        update: async ({ req, doc }: any) => {
+          if (!req.user) return false
+          if (doc && String(req.user.id) === String(doc.id)) return true
+          const access = await resolveAccessForReq(req)
+          return access?.isAdmin ?? false
+        },
+      },
       admin: { hidden: true },
     },
     {

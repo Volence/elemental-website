@@ -1,3 +1,5 @@
+import { roleRank } from '@/access/resolve'
+
 export type ClaimTier = 'admin' | 'manager'
 
 /** Anything beyond plain roster membership needs an admin. */
@@ -5,8 +7,7 @@ export function claimTier(
   target: { role?: string | null; departments?: Record<string, unknown> | null },
   hasStaffTitle: boolean,
 ): ClaimTier {
-  const role = target.role ?? 'user'
-  if (role !== 'user' && role !== 'player') return 'admin'
+  if (roleRank(target.role) > 0) return 'admin'
   if (Object.values(target.departments ?? {}).some((v) => v === true)) return 'admin'
   if (hasStaffTitle) return 'admin'
   return 'manager'

@@ -73,7 +73,6 @@ export interface Config {
     teams: Team;
     'faceit-leagues': FaceitLeague;
     'global-calendar-events': GlobalCalendarEvent;
-    'organization-staff': OrganizationStaff;
     heroes: Hero;
     maps: Map;
     'opponent-teams': OpponentTeam;
@@ -86,7 +85,6 @@ export interface Config {
     'pug-matches': PugMatch;
     'pug-leaderboard': PugLeaderboard;
     'social-posts': SocialPost;
-    production: Production;
     'recruitment-listings': RecruitmentListing;
     'recruitment-applications': RecruitmentApplication;
     'discord-polls': DiscordPoll;
@@ -134,7 +132,6 @@ export interface Config {
     teams: TeamsSelect<false> | TeamsSelect<true>;
     'faceit-leagues': FaceitLeaguesSelect<false> | FaceitLeaguesSelect<true>;
     'global-calendar-events': GlobalCalendarEventsSelect<false> | GlobalCalendarEventsSelect<true>;
-    'organization-staff': OrganizationStaffSelect<false> | OrganizationStaffSelect<true>;
     heroes: HeroesSelect<false> | HeroesSelect<true>;
     maps: MapsSelect<false> | MapsSelect<true>;
     'opponent-teams': OpponentTeamsSelect<false> | OpponentTeamsSelect<true>;
@@ -147,7 +144,6 @@ export interface Config {
     'pug-matches': PugMatchesSelect<false> | PugMatchesSelect<true>;
     'pug-leaderboard': PugLeaderboardSelect<false> | PugLeaderboardSelect<true>;
     'social-posts': SocialPostsSelect<false> | SocialPostsSelect<true>;
-    production: ProductionSelect<false> | ProductionSelect<true>;
     'recruitment-listings': RecruitmentListingsSelect<false> | RecruitmentListingsSelect<true>;
     'recruitment-applications': RecruitmentApplicationsSelect<false> | RecruitmentApplicationsSelect<true>;
     'discord-polls': DiscordPollsSelect<false> | DiscordPollsSelect<true>;
@@ -642,7 +638,7 @@ export interface Person {
   /**
    * Determines CMS access level. Only set for people who log in.
    */
-  role?: ('admin' | 'staff-manager' | 'team-manager' | 'player' | 'user') | null;
+  role?: ('admin' | 'staff-manager' | 'user') | null;
   /**
    * Profile picture for your account
    */
@@ -1957,45 +1953,6 @@ export interface RecruitmentListing {
   createdAt: string;
 }
 /**
- * Manage organization staff members (owners, administration, HR, region leads, marketing, managers, etc.). Staff can have multiple roles.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "organization-staff".
- */
-export interface OrganizationStaff {
-  id: number;
-  /**
-   * Link to a person in the People collection. Social links are managed in the People collection.
-   */
-  person: number | Person;
-  displayName?: string | null;
-  /**
-   * Auto-populated from the linked person's slug. This field is automatically set when you select a person.
-   */
-  slug?: string | null;
-  /**
-   * Select all roles this staff member holds. They can have multiple roles.
-   */
-  roles: (
-    | 'owner'
-    | 'co-owner'
-    | 'administration'
-    | 'hr'
-    | 'region-lead'
-    | 'event-manager'
-    | 'social-manager'
-    | 'marketing'
-    | 'graphics'
-    | 'media-editor'
-  )[];
-  /**
-   * Which region(s) this staff member leads. Only applies to Region Lead role.
-   */
-  regions?: ('na' | 'emea' | 'sa' | 'oce' | 'apac' | 'sea')[] | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "heroes".
  */
@@ -2652,30 +2609,6 @@ export interface PugLeaderboard {
   losses?: number | null;
   draws?: number | null;
   gamesPlayed?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * Manage production staff (casters, observers, producers) who work on match broadcasts.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "production".
- */
-export interface Production {
-  id: number;
-  /**
-   * Link to a person in the People collection. Social links are managed in the People collection.
-   */
-  person: number | Person;
-  displayName?: string | null;
-  /**
-   * Auto-populated from the linked person's slug. This field is automatically set when you select a person.
-   */
-  slug?: string | null;
-  /**
-   * Production role. Select the combination that best describes their role(s).
-   */
-  type: 'caster' | 'observer' | 'producer' | 'observer-producer' | 'observer-producer-caster';
   updatedAt: string;
   createdAt: string;
 }
@@ -3380,9 +3313,9 @@ export interface InviteLink {
   /**
    * The role the new user will be assigned when they sign up
    */
-  role: 'admin' | 'staff-manager' | 'team-manager' | 'player' | 'user';
+  role: 'admin' | 'staff-manager' | 'user';
   /**
-   * Teams the new user will have access to (only applicable for Team Managers and Staff Managers)
+   * Teams the new user will have access to (only applicable for Staff Managers)
    */
   teamAccess?: (number | Team)[] | null;
   /**
@@ -3624,10 +3557,6 @@ export interface PayloadLockedDocument {
         value: number | FaceitLeague;
       } | null)
     | ({
-        relationTo: 'organization-staff';
-        value: number | OrganizationStaff;
-      } | null)
-    | ({
         relationTo: 'heroes';
         value: number | Hero;
       } | null)
@@ -3674,10 +3603,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'social-posts';
         value: number | SocialPost;
-      } | null)
-    | ({
-        relationTo: 'production';
-        value: number | Production;
       } | null)
     | ({
         relationTo: 'recruitment-listings';
@@ -4194,19 +4119,6 @@ export interface GlobalCalendarEventsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "organization-staff_select".
- */
-export interface OrganizationStaffSelect<T extends boolean = true> {
-  person?: T;
-  displayName?: T;
-  slug?: T;
-  roles?: T;
-  regions?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "heroes_select".
  */
 export interface HeroesSelect<T extends boolean = true> {
@@ -4638,18 +4550,6 @@ export interface SocialPostsSelect<T extends boolean = true> {
         id?: T;
       };
   notes?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "production_select".
- */
-export interface ProductionSelect<T extends boolean = true> {
-  person?: T;
-  displayName?: T;
-  slug?: T;
-  type?: T;
   updatedAt?: T;
   createdAt?: T;
 }

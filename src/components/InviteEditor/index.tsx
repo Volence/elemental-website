@@ -36,8 +36,6 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 const ROLES = [
   { value: 'admin', label: 'Admin', icon: '👑', color: '#f59e0b', desc: 'Full system access' },
   { value: 'staff-manager', label: 'Staff Manager', icon: '⚙️', color: '#34d399', desc: 'Manage staff & teams' },
-  { value: 'team-manager', label: 'Team Manager', icon: '🎯', color: '#8b5cf6', desc: 'Manage assigned teams' },
-  { value: 'player', label: 'Player', icon: '🎮', color: '#3b82f6', desc: 'Team roster member' },
   { value: 'user', label: 'User', icon: '👤', color: '#6b7280', desc: 'Basic department access' },
 ]
 
@@ -65,7 +63,7 @@ const PUG_ROLES = [
 
 const PUG_REGION_CHIPS = PUG_REGIONS.map((r) => ({ key: r.value, label: r.label }))
 
-const getRoleConfig = (r: string) => ROLES.find(x => x.value === r) ?? ROLES[4]
+const getRoleConfig = (r: string) => ROLES.find(x => x.value === r) ?? ROLES[ROLES.length - 1]
 
 const getInviteStatus = (invite: InviteLink) => {
   if (invite.usedAt) return { label: 'Used', color: '#6b7280', icon: CheckCircle }
@@ -88,7 +86,7 @@ export function InviteEditorView() {
   const [copied, setCopied] = useState(false)
 
   const [token, setToken] = useState('')
-  const [role, setRole] = useState('player')
+  const [role, setRole] = useState('user')
   const [teamAccess, setTeamAccess] = useState<number[]>([])
   const [departments, setDepartments] = useState<Record<string, boolean>>({})
   const [email, setEmail] = useState('')
@@ -126,7 +124,7 @@ export function InviteEditorView() {
       if (res.ok) {
         const inv = await res.json()
         setToken(inv.token ?? '')
-        setRole(inv.role ?? 'player')
+        setRole(inv.role ?? 'user')
         setTeamAccess((inv.teamAccess ?? []).map((t: any) => typeof t === 'object' ? t.id : t))
         setDepartments(inv.departments ?? {})
         setEmail(inv.email ?? '')
@@ -147,7 +145,7 @@ export function InviteEditorView() {
 
   useEffect(() => { fetchTeams(); fetchInvite() }, [fetchTeams, fetchInvite])
 
-  const showTeams = ['team-manager', 'staff-manager', 'player'].includes(role)
+  const showTeams = ['staff-manager'].includes(role)
 
   const handleSave = async () => {
     setSaveStatus('saving')

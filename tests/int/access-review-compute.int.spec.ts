@@ -27,9 +27,13 @@ describe('isElevated', () => {
     expect(isElevated({ id: 1, role: 'user' })).toBe(false)
   })
 
-  it('includes any role other than user', () => {
-    expect(isElevated({ id: 1, role: 'player' })).toBe(true)
+  it('includes any of the three roles other than user', () => {
+    expect(isElevated({ id: 1, role: 'staff-manager' })).toBe(true)
     expect(isElevated({ id: 2, role: 'admin' })).toBe(true)
+  })
+
+  it('excludes an unrecognized/legacy role value with no other elevating field', () => {
+    expect(isElevated({ id: 1, role: 'player' })).toBe(false)
   })
 
   it('includes a plain user holding a department flag', () => {

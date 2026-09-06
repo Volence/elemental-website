@@ -1,4 +1,5 @@
 import { isTitleValue, titleLabel } from '@/access/titles'
+import { roleRank } from '@/access/resolve'
 import {
   DEPARTMENT_KEYS,
   type AccessChangeRecord,
@@ -42,12 +43,12 @@ export function personTitleLabels(person: RawPerson): string[] {
 }
 
 /**
- * In scope for the report: any role other than `user`, any title, any department flag, or
- * any team data access. Players are deliberately included - a stale teamAccess entry on a
- * Player is the scrim-data leak this page exists to find.
+ * In scope for the report: any role above `user` (admin or staff-manager), any title, any
+ * department flag, or any team data access. A stale teamAccess entry on an otherwise plain
+ * user is the scrim-data leak this page exists to find, and is independently caught below.
  */
 export function isElevated(person: RawPerson): boolean {
-  if (person.role && person.role !== 'user') return true
+  if (roleRank(person.role) > 0) return true
   if ((person.titles ?? []).length > 0) return true
   if (activeDepartments(person).length > 0) return true
   return (person.teamAccess ?? []).length > 0

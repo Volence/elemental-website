@@ -22,7 +22,7 @@ describe('access review constants', () => {
     }
   })
 
-  it('lists the five person roles', () => {
-    expect(ROLE_VALUES).toEqual(['admin', 'staff-manager', 'team-manager', 'player', 'user'])
+  it('lists the three person roles', () => {
+    expect(ROLE_VALUES).toEqual(['admin', 'staff-manager', 'user'])
   })
 })

@@ -9,6 +9,7 @@ import {
   type DepartmentKey,
   type RoleValue,
 } from '@/accessReview/types'
+import { roleRank } from '@/access/resolve'
 
 export type GroupBand = 'role' | 'department' | 'team'
 
@@ -62,7 +63,7 @@ export function buildGroups(report: AccessReport, filter: GroupFilter): AccessGr
   const groups: AccessGroup[] = []
 
   for (const role of ROLE_VALUES) {
-    if (role === 'user') continue
+    if (roleRank(role) === 0) continue
     const members = people.filter((person) => person.role === role)
     if (members.length) {
       groups.push({ key: `role:${role}`, band: 'role', role, label: ROLE_LABELS[role], people: members })

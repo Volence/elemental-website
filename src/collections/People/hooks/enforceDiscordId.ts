@@ -1,5 +1,6 @@
 import { APIError } from 'payload'
 import { requireDiscordIdOnCreate, DISCORD_ID_RE } from '@/identity/config'
+import { roleRank } from '@/access/resolve'
 
 /**
  * Create-time rule: a new person must carry a Discord ID. Payload evaluates create access
@@ -24,7 +25,7 @@ export async function enforceDiscordIdOnCreate(args: {
   if (typeof id === 'string' && DISCORD_ID_RE.test(id)) return
 
   // First-run bootstrap: /api/create-admin on an empty table.
-  if (args.data?.role === 'admin' && (await args.countPeople()) === 0) return
+  if (roleRank(args.data?.role) === roleRank('admin') && (await args.countPeople()) === 0) return
 
   if (id) throw new APIError('Discord ID must be 17-19 digits', 400, undefined, true)
   throw new APIError('New people must be created from a Discord member (Discord ID is required)', 400, undefined, true)

@@ -6,8 +6,9 @@ import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
 
-import { Production } from './collections/Production'
-import { OrganizationStaff } from './collections/OrganizationStaff'
+// OrganizationStaff and Production collections unregistered - titles live on People now
+// (see docs/superpowers/specs/2026-09-05-titles-and-access-design.md). Files kept until a
+// later step deletes them.
 import { Matches } from './collections/Matches'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
@@ -75,7 +76,6 @@ import { GraphicsAnchor, BrandingGuideAnchor, VideoAnchor, EventsAnchor } from '
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
-import { UserRole } from './access/roles'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -281,8 +281,7 @@ const config = buildConfig({
     Teams,
     FaceitLeagues,
     GlobalCalendarEvents,
-    OrganizationStaff,
-    
+
     // ── DATA: Shared data collections ──
     Heroes,
     Maps,
@@ -296,7 +295,6 @@ const config = buildConfig({
     PugMatches,
     PugLeaderboard,
     SocialPosts,
-    Production,          // Production staff roster
     RecruitmentListings,
     RecruitmentApplications,
     DiscordPolls,

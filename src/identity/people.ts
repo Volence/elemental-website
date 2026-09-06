@@ -116,8 +116,7 @@ export async function personHasReferences(payload: Payload, personId: number): P
     UNION ALL SELECT 1 FROM teams_coaches WHERE person_id = ${personId}
     UNION ALL SELECT 1 FROM teams_manager WHERE person_id = ${personId}
     UNION ALL SELECT 1 FROM teams WHERE co_captain_id = ${personId}
-    UNION ALL SELECT 1 FROM organization_staff WHERE person_id = ${personId}
-    UNION ALL SELECT 1 FROM production WHERE person_id = ${personId}
+    UNION ALL SELECT 1 FROM people_titles WHERE _parent_id = ${personId}
     LIMIT 1
   `)
   const rows = res?.rows ?? res

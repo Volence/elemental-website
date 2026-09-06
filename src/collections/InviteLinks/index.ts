@@ -1,6 +1,8 @@
 import type { CollectionConfig } from 'payload'
 import { v4 as uuidv4 } from 'uuid'
 import { withAccess, resolveAccessForReq } from '@/access'
+import { ROLE_VALUES, ROLE_LABELS } from '@/access/titles'
+import { roleRank } from '@/access/resolve'
 import type { Person } from '@/payload-types'
 
 // Staff (admin/staff-manager), anyone with team access, and any department lead/member can
@@ -56,28 +58,7 @@ export const InviteLinks: CollectionConfig = {
           Field: '@/components/InviteLinkFields/RoleSelectField',
         },
       },
-      options: [
-        {
-          label: 'Admin',
-          value: 'admin',
-        },
-        {
-          label: 'Staff Manager',
-          value: 'staff-manager',
-        },
-        {
-          label: 'Team Manager',
-          value: 'team-manager',
-        },
-        {
-          label: 'Player',
-          value: 'player',
-        },
-        {
-          label: 'User',
-          value: 'user',
-        },
-      ],
+      options: ROLE_VALUES.map((value) => ({ label: ROLE_LABELS[value], value })),
     },
     {
       name: 'teamAccess',
@@ -85,8 +66,8 @@ export const InviteLinks: CollectionConfig = {
       relationTo: 'teams',
       hasMany: true,
       admin: {
-        description: 'Teams the new user will have access to (only applicable for Team Managers and Staff Managers)',
-        condition: (data) => data.role === 'team-manager' || data.role === 'staff-manager' || data.role === 'player',
+        description: 'Teams the new user will have access to (only applicable for Staff Managers)',
+        condition: (data) => roleRank(data?.role) === roleRank('staff-manager'),
       },
     },
     {
@@ -327,18 +308,16 @@ export const InviteLinks: CollectionConfig = {
           data.createdBy = req.user.id
         }
 
-        // Enforce role restrictions based on creator's role
+        // Enforce role restrictions based on creator's role, by rank rather than by exact
+        // value so this keeps working however many roles the resolver ever recognizes.
         if (data?.role && req.user) {
-          const userRole = (req.user as Person).role
-          if (userRole === 'staff-manager' && (data.role === 'admin' || data.role === 'staff-manager')) {
+          const actorRank = roleRank((req.user as Person).role)
+          const targetRank = roleRank(data.role)
+          if (actorRank === roleRank('staff-manager') && targetRank >= roleRank('staff-manager')) {
             throw new Error('Staff Managers cannot create invite links for Admin or Staff Manager roles')
           }
-          // Team managers can ONLY create player invites
-          if (userRole === 'team-manager' && data.role !== 'player') {
-            throw new Error('Team Managers can only create invite links for the Player role')
-          }
           // Department leads (user role) can ONLY create user invites
-          if (userRole === 'user' && data.role !== 'user') {
+          if (actorRank === roleRank('user') && targetRank > roleRank('user')) {
             throw new Error('Department Leads can only create invite links for the User role')
           }
         }

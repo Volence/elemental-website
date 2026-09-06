@@ -1,3 +1,5 @@
+import { roleRank } from '@/access/resolve'
+
 /**
  * Who sees which guide. Pure so it is unit-testable and shared by the API
  * route (server) and the dashboard card (client).
@@ -44,7 +46,7 @@ const DEPT_FLAG: Record<keyof NonNullable<GuideAudience['departments']>, keyof N
 /** True when the guide is meant for this viewer. Admins are never filtered. */
 export function guideMatchesViewer(audience: GuideAudience | null | undefined, viewer: GuideViewer | null | undefined): boolean {
   if (!viewer) return false
-  if (viewer.role === 'admin') return true
+  if (roleRank(viewer.role) === roleRank('admin')) return true
   if (!audience) return false
   if (audience.everyone) return true
   const roleKey = viewer.role ? ROLE_KEY[viewer.role] : undefined

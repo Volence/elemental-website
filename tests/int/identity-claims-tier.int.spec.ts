@@ -4,10 +4,12 @@ import { claimTier, canReviewClaim } from '@/identity/claims'
 describe('claimTier', () => {
   it('is manager for a plain roster person', () => {
     expect(claimTier({ role: 'user', departments: { isPugAdmin: false } }, false)).toBe('manager')
+  })
+  it('is manager for an unrecognized/legacy role value (roleRank falls back to user)', () => {
     expect(claimTier({ role: 'player' }, false)).toBe('manager')
+    expect(claimTier({ role: 'team-manager' }, false)).toBe('manager')
   })
   it('is admin when the target has any elevated role', () => {
-    expect(claimTier({ role: 'team-manager' }, false)).toBe('admin')
     expect(claimTier({ role: 'staff-manager' }, false)).toBe('admin')
     expect(claimTier({ role: 'admin' }, false)).toBe('admin')
   })

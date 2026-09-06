@@ -1,5 +1,6 @@
 import { relId } from './compute'
 import { DEPARTMENT_KEYS, ROLE_VALUES, type RawPerson } from './types'
+import { roleRank } from '@/access/resolve'
 
 export interface MutationInput {
   person: RawPerson & { role?: string | null }
@@ -39,7 +40,7 @@ export function resolveMutation(input: MutationInput): MutationResult {
     if (String(actorId) === String(person.id)) {
       return { ok: false, status: 403, error: 'You cannot change your own role' }
     }
-    if (person.role === 'admin' && value !== 'admin' && adminCount <= 1) {
+    if (roleRank(person.role) === roleRank('admin') && value !== 'admin' && adminCount <= 1) {
       return { ok: false, status: 409, error: 'Refusing to remove the last remaining Admin' }
     }
     return { ok: true, data: { role: value } }

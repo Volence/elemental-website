@@ -1,9 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
-import { authenticated } from '../../access/authenticated'
 import { anyone } from '../../access/anyone'
-import { adminOnly, UserRole } from '../../access/roles'
-import type { Person } from '@/payload-types'
+import { adminOnly, staffManagerOrAbove, hideUnless } from '@/access'
 
 const formatSlug = (value: string): string => {
   return value
@@ -22,32 +20,21 @@ export const Production: CollectionConfig = {
   },
   access: {
     // Only admins and staff managers can create production staff
-    create: ({ req }) => {
-      const user = req.user as Person | undefined
-      if (!user) return false
-      return user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER
-    },
+    create: staffManagerOrAbove,
     // Only admins can delete production staff
     delete: adminOnly,
     // Anyone can read production staff (public)
     read: anyone,
     // Admins and staff managers can update production staff
-    update: ({ req }) => {
-      const user = req.user as Person | undefined
-      if (!user) return false
-      return user.role === UserRole.ADMIN || user.role === UserRole.STAFF_MANAGER
-    },
+    update: staffManagerOrAbove,
   },
   admin: {
     useAsTitle: 'displayName',
     defaultColumns: ['displayName', 'type', 'updatedAt'],
-    description: 'Manage production staff (casters, observers, producers) who work on match broadcasts.',
+    description: 'Unregistered: production staff now live as titles on People. Kept only until this file is deleted (see the identity-consolidation design doc).',
     group: 'Organization',
-    hidden: ({ user }) => {
-      if (!user) return true
-      // Only admins and staff managers can see staff collections
-      return user.role !== 'admin' && user.role !== 'staff-manager'
-    },
+    // Only admins and staff managers could see staff collections when this was registered.
+    hidden: hideUnless((a) => a.canManagePeople),
   },
   fields: [
     {

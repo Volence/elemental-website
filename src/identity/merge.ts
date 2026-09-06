@@ -1,6 +1,7 @@
 import type { Payload, CollectionConfig, Field } from 'payload'
 import { sql } from 'drizzle-orm'
 import { createAuditLog } from '@/utilities/auditLogger'
+import { roleRank } from '@/access/resolve'
 
 /**
  * Every column that can point at people.id. Adding a relationTo:'people' field anywhere
@@ -27,8 +28,6 @@ export const PEOPLE_FK_COLUMNS: Array<{ table: string; column: string }> = [
   { table: 'assigned_c', column: 'user_id' },
   { table: 'opponent_teams_current_roster', column: 'person_id' },
   { table: 'opponent_teams_previous_roster', column: 'person_id' },
-  { table: 'organization_staff', column: 'person_id' },
-  { table: 'production', column: 'person_id' },
   { table: 'people', column: 'pug_invited_by_id' },
   { table: 'people', column: 'merged_into_id' },
   { table: 'pug_leaderboard', column: 'player_id' },
@@ -92,7 +91,6 @@ export const COVERED_PEOPLE_FIELDS: Record<string, string> = {
   'teams.coCaptain': 'teams.co_captain_id',
   'teams.roster.person': 'teams_roster.person_id',
   'teams.subs.person': 'teams_subs.person_id',
-  'organization-staff.person': 'organization_staff.person_id',
   'opponent-teams.currentRoster.person': 'opponent_teams_current_roster.person_id',
   'opponent-teams.previousRoster.person': 'opponent_teams_previous_roster.person_id',
   'scout-reports.reportedBy': 'scout_reports.reported_by_id',
@@ -111,7 +109,6 @@ export const COVERED_PEOPLE_FIELDS: Record<string, string> = {
   'pug-leaderboard.player': 'pug_leaderboard.player_id',
   'social-posts.assignedTo': 'social_posts.assigned_to_id',
   'social-posts.approvedBy': 'social_posts.approved_by_id',
-  'production.person': 'production.person_id',
   'recruitment-listings.filledBy': 'recruitment_listings.filled_by_id',
   'recruitment-listings.createdBy': 'recruitment_listings.created_by_id',
   'discord-polls.createdBy': 'discord_polls.created_by_id',
@@ -183,7 +180,6 @@ const stripRowIds = <T,>(value: T): T => {
 
 const PROFILE_FIELDS = ['discordId', 'discordUsername', 'discordAvatar', 'email', 'bio', 'photo', 'avatar', 'socialLinks', 'gameAliases', 'showInLiveStreamers', 'pronouns', 'pronunciation']
 const PUG_FIELDS = ['pugTiers', 'pugApprovedRoles', 'pugInviteRegions', 'pugBattleTag', 'pugRegisteredDate', 'pugBanOffenseCount', 'pugInvitedBy']
-const ROLE_PRIORITY = ['admin', 'staff-manager', 'team-manager', 'player', 'user']
 
 // A row's `id` column is either a Postgres integer or a Payload-generated varchar (hex) id.
 // Render it as a safe SQL literal for interpolation into a raw statement.
@@ -317,7 +313,7 @@ export async function mergePeople(
   const sTeams = (s.teamAccess ?? []).map((x: any) => (typeof x === 'object' ? x.id : x))
   const union = [...new Set([...tTeams, ...sTeams])]
   if (union.length > tTeams.length) data.teamAccess = union
-  if (ROLE_PRIORITY.indexOf(s.role ?? 'user') < ROLE_PRIORITY.indexOf(t.role ?? 'user')) data.role = s.role
+  if (roleRank(s.role) > roleRank(t.role)) data.role = s.role
   if (s.departments && Object.values(s.departments).some((v) => v === true)) {
     data.departments = { ...(t.departments ?? {}) }
     for (const [k, v] of Object.entries(s.departments)) if (v === true) data.departments[k] = true

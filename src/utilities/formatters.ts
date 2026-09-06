@@ -6,47 +6,6 @@
  */
 
 /**
- * Format a role string with proper capitalization
- * Converts kebab-case to Title Case
- * 
- * Examples:
- * - "event-manager" → "Event Manager"
- * - "co-owner" → "Co Owner" (Note: can be enhanced for special cases)
- * - "hr" → "Hr" (Note: use getOrgRoleLabel from roleIcons.tsx for proper labels)
- * 
- * @param role - The role string to format (usually kebab-case)
- * @returns Formatted role string
- */
-export function formatRole(role: string | undefined | null): string {
-  if (!role) return ''
-  
-  return role
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
-}
-
-/**
- * Format a production type with slashes instead of spaces
- * Used for combined production roles like "Observer/Producer/Caster"
- * 
- * Examples:
- * - "observer-producer" → "Observer/Producer"
- * - "observer-producer-caster" → "Observer/Producer/Caster"
- * 
- * @param type - The production type string (kebab-case)
- * @returns Formatted type string with slashes
- */
-export function formatProductionType(type: string | undefined | null): string {
-  if (!type) return ''
-  
-  return type
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join('/')
-}
-
-/**
  * Format a person type/category for display
  * 
  * Examples:

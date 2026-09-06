@@ -179,49 +179,8 @@ export async function mergePeople(keepPersonId: number | string, mergePersonIds:
     }
   }
 
-  // Update organization staff
-  const orgStaff = await payload.find({
-    collection: 'organization-staff',
-    limit: 1000,
-    pagination: false,
-    depth: 0,
-  })
-
-  for (const staff of orgStaff.docs) {
-    const personId = getPersonId(staff.person as any)
-    const numPersonId = typeof personId === 'string' ? parseInt(personId, 10) : personId
-    if (numPersonId !== null && normalizedMergeIds.includes(numPersonId)) {
-      await payload.update({
-        collection: 'organization-staff',
-        id: staff.id,
-        data: {
-          person: normalizedKeepId,
-        },
-      })
-    }
-  }
-
-  // Update production staff
-  const productionStaff = await payload.find({
-    collection: 'production',
-    limit: 1000,
-    pagination: false,
-    depth: 0,
-  })
-
-  for (const staff of productionStaff.docs) {
-    const personId = getPersonId(staff.person as any)
-    const numPersonId = typeof personId === 'string' ? parseInt(personId, 10) : personId
-    if (numPersonId !== null && normalizedMergeIds.includes(numPersonId)) {
-      await payload.update({
-        collection: 'production',
-        id: staff.id,
-        data: {
-          person: normalizedKeepId,
-        },
-      })
-    }
-  }
+  // Titles now live directly on the person row (People.titles), so they move with the person
+  // automatically - there is no separate staff collection to repoint here any more.
 
   // Delete merged people
   for (const mergeId of mergePersonIds) {
