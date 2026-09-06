@@ -72,12 +72,18 @@ A lead may add or remove their own department's member-level titles and toggle t
 
 ### Rollout order (step 2)
 
-1. Prod: run `scripts/titles-migration-report.ts` (read-only) first and read the "would lose team rights" list; fix each person (add them to the team's manager array, or accept the loss) before running migration B.
-2. Prod psql: migration A (schema, includes the `people_rels` path rename `assignedTeams` -> `teamAccess`).
-3. Migration B (data copy) via `scripts/apply-one-migration.ts` inside the prod app container - it is procedural, not a plain SQL script. Save both reports (the report script's output and migration B's own log output).
-4. Merge and deploy. Check `/staff`, refresh one Discord staff card (`/api/discord/team-cards/refresh-all`), `/admin/edit-person` for a staffer, a caster's and a social staffer's dashboards, a team manager's `/admin/edit-team`.
-5. Set the lead flag in the editor for the current leads: Media Editor Lead, Lead Producer, Lead Caster, Social Media Lead, Graphics Lead, Events Lead, Marketing Lead.
-6. After a quiet day, migration C (archive) in prod psql.
+1. **Prod psql: migration A** (schema, additive, safe before the deploy). Includes the `people_rels` path rename `assignedTeams` -> `teamAccess`. Statements below.
+2. **Prod psql: the read-only reports** at the top of `src/migrations/sql/20260905_titles_data.sql` (everything above its `BEGIN`). Read the "would lose team rights" list and fix each person (add them to the team's manager array, or accept the loss) before the writes run. Save the output.
+3. **Merge and deploy.** The new image reads titles off People; `organization-staff` and `production` are gone from the admin.
+4. **Immediately after the new image is live: prod psql, the writes** in `src/migrations/sql/20260905_titles_data.sql` (its `BEGIN ... COMMIT` block; running the whole file is fine, the reports just print again). `/staff`, the Discord staff cards and every title-derived department stay empty until this runs, so keep the gap short. Save the output.
+5. **Set the lead flags** in the person editor for the current leads: Media Editor Lead, Lead Producer, Lead Caster, Social Media Lead, Graphics Lead, Events Lead, Marketing Lead.
+6. **After a quiet day, migration C** (archive) in prod psql.
+
+Then check `/staff`, refresh one Discord staff card (`/api/discord/team-cards/refresh-all`), `/admin/edit-person` for a staffer, a caster's and a social staffer's dashboards, and a team manager's `/admin/edit-team`.
+
+Migration B is a plain SQL file because the production image is a standalone Next build with no Payload CLI: `npx payload run` only works in dev, where `src/migrations/20260905_titles_data.ts` and `scripts/titles-migration-report.ts` remain the way to run and preview it. The two are kept in step; the SQL file's inserts were verified to produce byte-identical rows (same person, title and `_order`) to the TS migration's dev run.
+
+New access can take up to 45 seconds to appear for its owner: the server caches the teams list for 30 seconds and the client caches its resolved access for another 15. A hard refresh does not shorten it; wait it out before concluding a grant did not work.
 
 Rollback before C: redeploy the previous image and reverse the `people_rels` path rename. After C: rename the archived tables back.
 
@@ -125,15 +131,24 @@ CREATE INDEX IF NOT EXISTS "people_titles_regions_parent_idx" ON "people_titles_
 UPDATE "people_rels" SET "path" = 'teamAccess' WHERE "path" = 'assignedTeams';
 ```
 
-Migration B (data, copies only) is procedural (loops over rows, prints reports); run it via the migration runner script, not raw SQL, from inside the prod app container:
+Migration B (data, copies only) runs as plain SQL from `src/migrations/sql/20260905_titles_data.sql`. Copy the file onto the server (or paste it into the psql session) and run the reports first, then the writes:
 
 ```bash
 ssh ubuntu@elmt.gg
-docker exec -w /app elemental-website-payload-1 npx payload run scripts/titles-migration-report.ts   # read-only preview first
-docker exec -w /app elemental-website-payload-1 npx payload run scripts/apply-one-migration.ts 20260905_titles_data
+# Step 2 of the rollout - reports only (everything above the file's BEGIN):
+sed '/^BEGIN;$/,$d' 20260905_titles_data.sql | docker exec -i elemental-website-postgres-1 psql -U payload -d payload
+# Step 4, right after the new image is live - the whole file (reports print again, then the writes):
+docker exec -i elemental-website-postgres-1 psql -U payload -d payload < 20260905_titles_data.sql
 ```
 
-Confirm the container name and working directory (`/app`) against the running container before using them; they follow the dev pattern in `scripts/apply-one-migration.ts`'s header comment. Save both reports' full output for the record.
+The whole file is safe to run repeatedly: the inserts are guarded by `NOT EXISTS (_parent_id, title)`, and the role conversion and flag clearing are idempotent. Nothing is deleted. Save the full output for the record.
+
+In dev the same migration is available through the Payload runner, which prod does not have:
+
+```bash
+docker exec -w /home/node/app elemental-dev-3100 node_modules/.bin/payload run scripts/titles-migration-report.ts
+docker exec -w /home/node/app elemental-dev-3100 node_modules/.bin/payload run scripts/apply-one-migration.ts 20260905_titles_data
+```
 
 Migration C (archive, only after a quiet day post-deploy):
 
@@ -145,3 +160,5 @@ ALTER TABLE IF EXISTS "production" RENAME TO "_production_archived";
 ALTER TABLE "payload_locked_documents_rels" DROP COLUMN IF EXISTS "organization_staff_id";
 ALTER TABLE "payload_locked_documents_rels" DROP COLUMN IF EXISTS "production_id";
 ```
+
+The two `DROP COLUMN` statements are the only part of the whole rollout that removes anything: they are Payload's lock bookkeeping for the two retired collections, hold no organization data, and are not restored by migration C's `down` (the renamed tables are). Rerunning `payload migrate:create` against the new config would drop them anyway.
