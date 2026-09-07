@@ -10,7 +10,7 @@ import { Calendar, Download, Paperclip, Save, Send, Trash2, Upload, X } from 'lu
 import { dueDateInputValue, dueTimeInputValue, composeDueDate } from '@/utilities/taskDueDate'
 import { lexicalToPlainText, plainTextToLexical } from '@/utilities/lexicalText'
 import { formatRelative, getPersonLabel } from '@/admin-kit'
-import { DEPT_NAMES, STATUS_OPTIONS, PRIORITY_OPTIONS } from './constants'
+import { DEPT_NAMES, STATUS_OPTIONS, PRIORITY_OPTIONS, assignablePeopleQuery } from './constants'
 import { SOCIAL_POST_TYPES, SOCIAL_PLATFORMS } from '@/utilities/socialPostTypes'
 
 interface TaskModalProps {
@@ -137,25 +137,13 @@ export const TaskModal: React.FC<TaskModalProps> = ({
     // Fetch users for assignment - filtered by department
     const fetchUsers = async () => {
       try {
-        // Map department to the corresponding staff field
-        const departmentFieldMap: Record<string, string> = {
-          'graphics': 'departments.isGraphicsStaff',
-          'video': 'departments.isVideoStaff',
-          'events': 'departments.isEventsStaff',
-          'scouting': 'departments.isScoutingStaff',
-          'production': 'departments.isProductionStaff',
-          'social-media': 'departments.isSocialMediaStaff',
-        }
-
         // An existing task keeps its owning department even when opened from the requester's board.
         const assigneeDepartment = task ? (task.department as string) : department
-        const staffField = departmentFieldMap[assigneeDepartment]
-        let url = `${serverURL}/api/people?limit=100`
-
-        // Add department filter if we have a mapping
-        if (staffField) {
-          url += `&where[${encodeURIComponent(staffField)}][equals]=true`
-        }
+        // Titles grant departments too, so this cannot filter on the extra-access flag alone -
+        // a Social Media Lead has the department without departments.isSocialMediaStaff set.
+        const filter = assignablePeopleQuery(assigneeDepartment)
+        let url = `${serverURL}/api/people?limit=100&sort=name`
+        if (filter) url += `&${filter}`
 
         const res = await fetch(url, {
           credentials: 'include',

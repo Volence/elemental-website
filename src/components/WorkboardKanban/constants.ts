@@ -3,6 +3,8 @@
  * TaskModal and KanbanColumn separately (and drifting).
  */
 
+import { DEPARTMENT_FLAG, titlesGranting, type DepartmentKey } from '@/access/titles'
+
 export const DEPT_NAMES: Record<string, string> = {
   graphics: 'Graphics',
   video: 'Video',
@@ -10,6 +12,33 @@ export const DEPT_NAMES: Record<string, string> = {
   scouting: 'Scouting',
   production: 'Production',
   'social-media': 'Social Media',
+}
+
+/** Tasks' `department` values mapped to the access DepartmentKey (only 'social-media' differs). */
+export const DEPT_ACCESS_KEY: Record<string, DepartmentKey> = {
+  graphics: 'graphics',
+  video: 'video',
+  events: 'events',
+  scouting: 'scouting',
+  production: 'production',
+  'social-media': 'social',
+}
+
+/**
+ * Query string selecting the people in a department: the extra-access flag OR any title that
+ * grants the department. Titles alone are enough - a Social Media Lead holds the department
+ * through the title and has no isSocialMediaStaff flag ticked, and filtering on the flag alone
+ * kept them (and everyone like them) out of their own board's assignee list. Admins and staff
+ * managers resolve to lead everywhere but are deliberately not listed here; they show up only
+ * when they hold a title or flag for the department.
+ */
+export function assignablePeopleQuery(taskDepartment: string): string {
+  const key = DEPT_ACCESS_KEY[taskDepartment]
+  if (!key) return ''
+  const titles = titlesGranting(key)
+  const clauses = [`where[or][0][departments.${DEPARTMENT_FLAG[key]}][equals]=true`]
+  if (titles.length > 0) clauses.push(`where[or][1][titles.title][in]=${titles.join(',')}`)
+  return clauses.join('&')
 }
 
 export const STATUS_OPTIONS = [

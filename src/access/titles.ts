@@ -78,6 +78,11 @@ export const DEPARTMENT_FLAG = {
 } as const satisfies Record<DepartmentKey, string>
 export type DepartmentFlag = (typeof DEPARTMENT_FLAG)[DepartmentKey]
 
+/** Titles that grant `dept` on their own - holding one is department access without the flag. */
+export function titlesGranting(dept: DepartmentKey): TitleValue[] {
+  return TITLES.filter((t) => t.departments.includes(dept)).map((t) => t.value)
+}
+
 /** Every departments.* checkbox, in editor order. `department` is null for the two standalone flags. */
 export const EXTRA_FLAGS: Array<{ key: string; label: string; department: DepartmentKey | null }> = [
   { key: 'isProductionStaff', label: 'Production', department: 'production' },
