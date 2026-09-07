@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { resolveAccess, impliedRole, hasDepartment, canManageTeam, serializeAccess, deserializeAccess } from '@/access/resolve'
+import { DEPARTMENT_KEYS } from '@/access/titles'
 
 const teams = [
   { id: 1, region: 'NA', manager: [{ person: 10 }], coaches: [{ person: { id: 11 } }], captain: [{ person: 12 }] },
@@ -37,10 +38,15 @@ describe('resolveAccess: roles', () => {
 
 describe('resolveAccess: departments', () => {
   it('a title grants member level in its departments only', () => {
-    const a = resolveAccess({ id: 1, role: 'user', titles: [{ title: 'marketing' }] }, teams)
-    expect(a.departments.social).toBe('member')
-    expect(a.departments.graphics).toBe('member')
+    const a = resolveAccess({ id: 1, role: 'user', titles: [{ title: 'event-manager' }] }, teams)
+    expect(a.departments.events).toBe('member')
+    expect(a.departments.pug).toBe('member')
     expect(a.departments.video).toBe('none')
+    expect(a.leadDepartments).toEqual([])
+  })
+  it('a title with no departments (marketing) grants none', () => {
+    const a = resolveAccess({ id: 1, role: 'user', titles: [{ title: 'marketing', isLead: true }] }, teams)
+    expect(DEPARTMENT_KEYS.every((k) => a.departments[k] === 'none')).toBe(true)
     expect(a.leadDepartments).toEqual([])
   })
   it('the lead flag raises that title\'s departments to lead', () => {

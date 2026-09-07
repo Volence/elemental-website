@@ -31,25 +31,26 @@ describe('matchTeams', () => {
 })
 
 describe('extraAccessRows', () => {
-  const marketingTitles = [{ title: 'marketing' as const, isLead: true }]
+  // Two titles that between them cover Social Media and Graphics.
+  const coveringTitles = [{ title: 'social-manager' as const, isLead: true }, { title: 'graphics' as const, isLead: false }]
 
   it('a title-covered department renders as a locked granted pill when the flag is off', () => {
-    const rows = extraAccessRows({}, marketingTitles, admin)
+    const rows = extraAccessRows({}, coveringTitles, admin)
     const social = rows.find((r) => r.flag.key === 'isSocialMediaStaff')!
     const graphics = rows.find((r) => r.flag.key === 'isGraphicsStaff')!
     const production = rows.find((r) => r.flag.key === 'isProductionStaff')!
     expect(social.control).toBe('granted')
-    expect(social.granter?.title).toBe('marketing')
+    expect(social.granter?.title).toBe('social-manager')
     expect(graphics.control).toBe('granted')
     expect(production.control).toBe('toggle')
   })
 
   it('a redundant flag that is on keeps its toggle so it can be cleared', () => {
-    const rows = extraAccessRows({ isSocialMediaStaff: true }, marketingTitles, admin)
+    const rows = extraAccessRows({ isSocialMediaStaff: true }, coveringTitles, admin)
     const social = rows.find((r) => r.flag.key === 'isSocialMediaStaff')!
     expect(social.control).toBe('toggle')
     expect(social.active).toBe(true)
-    expect(social.granter?.title).toBe('marketing')
+    expect(social.granter?.title).toBe('social-manager')
   })
 
   it('hides the retired Scouting flag unless it is on', () => {

@@ -15,8 +15,10 @@ describe('access wrappers', () => {
     expect(await staffManagerOrAbove({ req: req(null) } as any)).toBe(false)
   })
   it('department wrappers honor levels and flags', async () => {
-    expect(await department('social')({ req: req({ id: 1, role: 'user', titles: [{ title: 'marketing' }] }) } as any)).toBe(true)
-    expect(await department('social', 'lead')({ req: req({ id: 1, role: 'user', titles: [{ title: 'marketing' }] }) } as any)).toBe(false)
+    expect(await department('social')({ req: req({ id: 1, role: 'user', titles: [{ title: 'social-manager' }] }) } as any)).toBe(true)
+    expect(await department('social', 'lead')({ req: req({ id: 1, role: 'user', titles: [{ title: 'social-manager' }] }) } as any)).toBe(false)
+    // Marketing is its own department with no tools yet; it grants no other department.
+    expect(await department('social')({ req: req({ id: 1, role: 'user', titles: [{ title: 'marketing', isLead: true }] }) } as any)).toBe(false)
     expect(await department('pug')({ req: req({ id: 1, role: 'user', departments: { isPugAdmin: true } }) } as any)).toBe(true)
     expect(await anyDepartment()({ req: req({ id: 1, role: 'user' }) } as any)).toBe(false)
   })

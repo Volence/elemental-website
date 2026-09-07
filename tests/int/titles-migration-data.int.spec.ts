@@ -13,7 +13,8 @@ describe('titles data mapping', () => {
     expect(orgRoleToTitle('moderator')).toBeNull()
   })
   it('lists the flags a title set makes redundant', () => {
-    expect(impliedFlagsForTitles(['marketing'])).toEqual(['isSocialMediaStaff', 'isGraphicsStaff'])
+    // Marketing granted social + graphics when this migration ran; it now grants no department.
+    expect(impliedFlagsForTitles(['marketing'])).toEqual([])
     expect(impliedFlagsForTitles(['event-manager'])).toEqual(['isEventsStaff', 'isPugAdmin'])
     expect(impliedFlagsForTitles(['owner'])).toEqual([])
   })

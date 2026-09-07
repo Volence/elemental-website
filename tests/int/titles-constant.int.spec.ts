@@ -16,7 +16,7 @@ describe('TITLES constant', () => {
     const d = (v: keyof typeof TITLE_BY_VALUE) => TITLE_BY_VALUE[v].departments
     expect(d('event-manager')).toEqual(['events', 'pug'])
     expect(d('social-manager')).toEqual(['social'])
-    expect(d('marketing')).toEqual(['social', 'graphics'])
+    expect(d('marketing')).toEqual([])
     expect(d('graphics')).toEqual(['graphics'])
     expect(d('media-editor')).toEqual(['video'])
     for (const v of ['caster', 'observer', 'producer'] as const) expect(d(v)).toEqual(['production'])

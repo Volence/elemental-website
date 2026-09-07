@@ -5,7 +5,9 @@ const noTeams: any[] = []
 const admin = resolveAccess({ id: 1, role: 'admin' }, noTeams)
 const staff = resolveAccess({ id: 2, role: 'staff-manager' }, noTeams)
 const socialLead = resolveAccess({ id: 3, role: 'user', titles: [{ title: 'social-manager', isLead: true }] }, noTeams)
-const marketingLead = resolveAccess({ id: 4, role: 'user', titles: [{ title: 'marketing', isLead: true }] }, noTeams)
+// Events Lead leads two departments (events + pug); marketing now leads none.
+const eventsLead = resolveAccess({ id: 4, role: 'user', titles: [{ title: 'event-manager', isLead: true }] }, noTeams)
+const marketingLead = resolveAccess({ id: 7, role: 'user', titles: [{ title: 'marketing', isLead: true }] }, noTeams)
 const caster = resolveAccess({ id: 5, role: 'user', titles: [{ title: 'caster' }] }, noTeams)
 const plain = resolveAccess({ id: 6, role: 'user' }, noTeams)
 
@@ -33,13 +35,18 @@ describe('canApplyPersonChange', () => {
     const r = canApplyPersonChange(socialLead, before, { ...before, departments: { isGraphicsStaff: true } })
     expect(r.ok).toBe(false)
   })
-  it('a lead of two departments (marketing) may grant either', () => {
-    expect(canApplyPersonChange(marketingLead, before, { ...before, titles: [{ title: 'caster' }, { title: 'graphics' }] }).ok).toBe(true)
-    expect(canApplyPersonChange(marketingLead, before, { ...before, departments: { isSocialMediaStaff: true } }).ok).toBe(true)
+  it('a lead of two departments (event manager) may grant either', () => {
+    expect(canApplyPersonChange(eventsLead, before, { ...before, titles: [{ title: 'caster' }, { title: 'event-manager' }] }).ok).toBe(true)
+    expect(canApplyPersonChange(eventsLead, before, { ...before, departments: { isEventsStaff: true } }).ok).toBe(true)
+    expect(canApplyPersonChange(eventsLead, before, { ...before, departments: { isPugAdmin: true } }).ok).toBe(true)
+  })
+  it('a Marketing Lead leads no department, so grants nothing', () => {
+    expect(canApplyPersonChange(marketingLead, before, { ...before, titles: [{ title: 'caster' }, { title: 'social-manager' }] }).ok).toBe(false)
+    expect(canApplyPersonChange(marketingLead, before, { ...before, departments: { isSocialMediaStaff: true } }).ok).toBe(false)
   })
   it('a lead may not add a title outside their department, nor one that spans another department', () => {
     expect(canApplyPersonChange(socialLead, before, { ...before, titles: [{ title: 'caster' }, { title: 'graphics' }] }).ok).toBe(false)
-    // marketing grants social AND graphics; a social-only lead cannot grant it
+    // marketing belongs to no department, so no department lead owns it - staff only
     expect(canApplyPersonChange(socialLead, before, { ...before, titles: [{ title: 'caster' }, { title: 'marketing' }] }).ok).toBe(false)
   })
   it('a lead may not set lead flags, regions, roles, role-implying titles, or team access', () => {
@@ -86,7 +93,7 @@ describe('canApplyPersonChange', () => {
   })
 
   it('a department lead may not assign a title with no department, such as Content Creator', () => {
-    const r = canApplyPersonChange(marketingLead, before, { ...before, titles: [{ title: 'caster' }, { title: 'content-creator' }] })
+    const r = canApplyPersonChange(eventsLead, before, { ...before, titles: [{ title: 'caster' }, { title: 'content-creator' }] })
     expect(r.ok).toBe(false)
     expect(r.ok === false && r.reason).toBe('Only staff managers and admins can assign Content Creator')
   })

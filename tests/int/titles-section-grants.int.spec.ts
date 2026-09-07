@@ -7,6 +7,7 @@ const noTeams: any[] = []
 const admin = resolveAccess({ id: 1, role: 'admin' }, noTeams)
 const socialLead = resolveAccess({ id: 2, role: 'user', titles: [{ title: 'social-manager', isLead: true }] }, noTeams)
 const marketingLead = resolveAccess({ id: 3, role: 'user', titles: [{ title: 'marketing', isLead: true }] }, noTeams)
+const eventsLead = resolveAccess({ id: 5, role: 'user', titles: [{ title: 'event-manager', isLead: true }] }, noTeams)
 const plain = resolveAccess({ id: 4, role: 'user' }, noTeams)
 
 describe('grantableTitles', () => {
@@ -19,12 +20,16 @@ describe('grantableTitles', () => {
     expect(grantableTitles(admin)).toHaveLength(14)
   })
 
-  it('a social lead gets only social-manager - marketing spans graphics too, so it is excluded', () => {
+  it('a social lead gets only social-manager', () => {
     expect(grantableTitles(socialLead)).toEqual(['social-manager'])
   })
 
-  it('a marketing lead (social + graphics) gets social-manager, marketing, and graphics', () => {
-    expect(grantableTitles(marketingLead)).toEqual(['social-manager', 'marketing', 'graphics'])
+  it('a lead of two departments gets every title inside both', () => {
+    expect(grantableTitles(eventsLead)).toEqual(['event-manager'])
+  })
+
+  it('a Marketing Lead leads no department, so gets nothing', () => {
+    expect(grantableTitles(marketingLead)).toEqual([])
   })
 
   it('a plain member with no lead departments gets nothing', () => {

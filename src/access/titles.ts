@@ -31,7 +31,9 @@ export const TITLES: readonly TitleDef[] = [
   { value: 'region-lead', label: 'Region Lead', group: 'organization', departments: [], leadLabel: null, impliesRole: null },
   { value: 'event-manager', label: 'Event Manager', group: 'department', departments: ['events', 'pug'], leadLabel: 'Events Lead', impliesRole: null },
   { value: 'social-manager', label: 'Social Manager', group: 'department', departments: ['social'], leadLabel: 'Social Media Lead', impliesRole: null },
-  { value: 'marketing', label: 'Marketing', group: 'department', departments: ['social', 'graphics'], leadLabel: 'Marketing Lead', impliesRole: null },
+  // Marketing is its own department; it has no tools yet, so it grants none. It stood in for
+  // ['social', 'graphics'] while those were the only boards, which put marketing staff on both.
+  { value: 'marketing', label: 'Marketing', group: 'department', departments: [], leadLabel: 'Marketing Lead', impliesRole: null },
   { value: 'graphics', label: 'Graphics', group: 'department', departments: ['graphics'], leadLabel: 'Graphics Lead', impliesRole: null },
   { value: 'media-editor', label: 'Media Editor', group: 'department', departments: ['video'], leadLabel: 'Media Editor Lead', impliesRole: null },
   { value: 'caster', label: 'Caster', group: 'production', departments: ['production'], leadLabel: 'Lead Caster', impliesRole: null },
