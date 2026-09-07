@@ -17,7 +17,7 @@ describe('grantableTitles', () => {
 
   it('admin (staff) gets every title', () => {
     expect(grantableTitles(admin)).toEqual(TITLES.map((t) => t.value))
-    expect(grantableTitles(admin)).toHaveLength(14)
+    expect(grantableTitles(admin)).toHaveLength(15)
   })
 
   it('a social lead gets only social-manager', () => {

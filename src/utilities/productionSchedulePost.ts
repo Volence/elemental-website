@@ -46,8 +46,9 @@ export interface ScheduleMatch {
   productionWorkflow?: {
     includeInSchedule?: boolean | null
     coverageStatus?: string | null
-    assignedObserver?: SchedulePerson | number | null
-    assignedProducer?: SchedulePerson | number | null
+    assignedObservers?: Array<SchedulePerson | number | null> | null
+    assignedProducers?: Array<SchedulePerson | number | null> | null
+    assignedDirectors?: Array<SchedulePerson | number | null> | null
     assignedCasters?: Array<{ user?: SchedulePerson | number | null }> | null
   } | null
 }
@@ -88,6 +89,21 @@ function mention(person: SchedulePerson | number | null | undefined, style: Ment
     return `<@${person.discordId}>`
   }
   return `@${personName(person)}`
+}
+
+/**
+ * One "Role: name & name" line. Every production role is a list now, so the label follows the
+ * count: one observer reads "Observer", several read "Observers".
+ */
+function roleLine(
+  label: string,
+  people: Array<SchedulePerson | number | null> | null | undefined,
+  render: (p: SchedulePerson | number) => string,
+  fallback: string | null = 'TBD',
+): string | null {
+  const names = (people ?? []).filter((p): p is SchedulePerson | number => p != null).map(render)
+  if (names.length === 0) return fallback === null ? null : `${label}: ${fallback}`
+  return `${names.length > 1 ? label + 's' : label}: ${names.join(' & ')}`
 }
 
 /** The ELMT side of the match, from the new fields, then the legacy one. */
@@ -138,11 +154,15 @@ function staffSection(match: ScheduleMatch, style: MentionStyle): string {
     `${withOrgPrefix(homeTeamName(match))} vs ${opponentName(match)}`,
     `FACEIT Lobby: ${match.faceitLobby || LOBBY_PLACEHOLDER}`,
     '',
-    `Observer: ${mention(pw.assignedObserver, style)}`,
-    `Producer: ${mention(pw.assignedProducer, style)}`,
+    roleLine('Observer', pw.assignedObservers, (p) => mention(p, style)),
+    roleLine('Producer', pw.assignedProducers, (p) => mention(p, style)),
+    // Director is optional: no line at all rather than a standing TBD.
+    roleLine('Director', pw.assignedDirectors, (p) => mention(p, style), null),
     `Casters: ${casters && casters.length > 0 ? casters.join(' & ') : 'TBD'}`,
     '',
-  ].join('\n')
+  ]
+    .filter((line): line is string => line !== null)
+    .join('\n')
 }
 
 const STAFF_HEADER = 'Schedule for the week!\n\n'
@@ -173,8 +193,9 @@ function publicSection(match: ScheduleMatch, defaultLeague: string): string {
     `🌐 ${region} / ${division} • ${league}`,
     `🕐 ${discordTimestamp(match.date)}`,
     `🎬 Stream: ${STREAM_URL}`,
-    `👁️ Observer: ${pw.assignedObserver ? personName(pw.assignedObserver) : 'TBD'}`,
-    `📹 Producer: ${pw.assignedProducer ? personName(pw.assignedProducer) : 'TBD'}`,
+    `👁️ ${roleLine('Observer', pw.assignedObservers, personName)}`,
+    `📹 ${roleLine('Producer', pw.assignedProducers, personName)}`,
+    ...(roleLine('Director', pw.assignedDirectors, personName, null) ? [`🎛️ ${roleLine('Director', pw.assignedDirectors, personName, null)}`] : []),
     `🎙️ Casters: ${casters && casters.length > 0 ? casters.join(' & ') : 'TBD'}`,
     `🔗 FACEIT Lobby: ${match.faceitLobby || LOBBY_PLACEHOLDER}`,
     '',
@@ -225,8 +246,15 @@ function relId(value: { id: number } | number | null | undefined): number | null
 
 function assignmentKey(match: ScheduleMatch): string {
   const pw = match.productionWorkflow ?? {}
+  const ids = (list: Array<{ id: number } | number | null> | null | undefined) =>
+    (list ?? []).map((p) => relId(p)).join(',')
   const casters = (pw.assignedCasters ?? []).map((c) => relId(c.user ?? null)).join(',')
-  return `${relId(pw.assignedObserver)}|${relId(pw.assignedProducer)}|${casters}`
+  return [
+    ids(pw.assignedObservers as any),
+    ids(pw.assignedProducers as any),
+    ids(pw.assignedDirectors as any),
+    casters,
+  ].join('|')
 }
 
 function sideKey(match: ScheduleMatch): string {

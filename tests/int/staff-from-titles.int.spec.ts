@@ -64,4 +64,10 @@ describe('splitProductionRoster', () => {
       ['Kim', ['Observer'], false],
     ])
   })
+
+  it('counts directors as broadcast crew, not casters', () => {
+    const { casters, crew } = splitProductionRoster([row(4, 'Rae', [['director', true]])])
+    expect(casters).toEqual([])
+    expect(crew.map((r) => [r.person.name, r.titles.map((t) => t.label)])).toEqual([['Rae', ['Lead Director']]])
+  })
 })

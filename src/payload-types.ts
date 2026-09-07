@@ -629,6 +629,7 @@ export interface Person {
           | 'caster'
           | 'observer'
           | 'producer'
+          | 'director'
           | 'content-creator';
         isLead?: boolean | null;
         regions?: ('na' | 'emea' | 'sa' | 'oce' | 'apac' | 'sea')[] | null;
@@ -1752,15 +1753,19 @@ export interface Match {
         }[]
       | null;
     /**
-     * CONFIRMED observer who WILL work this match (1 max)
+     * CONFIRMED observers who WILL work this match (in game)
      */
-    assignedObserver?: (number | null) | Person;
+    assignedObservers?: (number | Person)[] | null;
     /**
-     * CONFIRMED producer who WILL work this match (1 max)
+     * CONFIRMED producers who WILL work this match
      */
-    assignedProducer?: (number | null) | Person;
+    assignedProducers?: (number | Person)[] | null;
     /**
-     * CONFIRMED casters who WILL work this match (2 max)
+     * CONFIRMED directors, who call which observer view goes out. Optional, and drawn from the producer signups - nobody may produce and direct the same match.
+     */
+    assignedDirectors?: (number | Person)[] | null;
+    /**
+     * CONFIRMED casters who WILL work this match (2 for full coverage)
      */
     assignedCasters?:
       | {
@@ -4313,8 +4318,9 @@ export interface MatchesSelect<T extends boolean = true> {
               style?: T;
               id?: T;
             };
-        assignedObserver?: T;
-        assignedProducer?: T;
+        assignedObservers?: T;
+        assignedProducers?: T;
+        assignedDirectors?: T;
         assignedCasters?:
           | T
           | {

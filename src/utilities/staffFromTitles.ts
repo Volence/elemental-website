@@ -86,7 +86,7 @@ export function splitProductionRoster(rows: ProductionRosterRow[]): { casters: P
     })
   return {
     casters: narrow((t) => t === 'caster'),
-    crew: narrow((t) => t === 'observer' || t === 'producer'),
+    crew: narrow((t) => t === 'observer' || t === 'producer' || t === 'director'),
   }
 }
 

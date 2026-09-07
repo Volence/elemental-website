@@ -5,11 +5,11 @@ import {
 } from '@/access/titles'
 
 describe('TITLES constant', () => {
-  it('has the 14 agreed titles in display order', () => {
+  it('has the 15 agreed titles in display order', () => {
     expect(TITLE_VALUES).toEqual([
       'owner', 'co-owner', 'administration', 'hr', 'region-lead',
       'event-manager', 'social-manager', 'marketing', 'graphics', 'media-editor',
-      'caster', 'observer', 'producer', 'content-creator',
+      'caster', 'observer', 'producer', 'director', 'content-creator',
     ])
   })
   it('grants exactly the agreed departments', () => {
@@ -19,7 +19,7 @@ describe('TITLES constant', () => {
     expect(d('marketing')).toEqual([])
     expect(d('graphics')).toEqual(['graphics'])
     expect(d('media-editor')).toEqual(['video'])
-    for (const v of ['caster', 'observer', 'producer'] as const) expect(d(v)).toEqual(['production'])
+    for (const v of ['caster', 'observer', 'producer', 'director'] as const) expect(d(v)).toEqual(['production'])
     for (const v of ['owner', 'co-owner', 'administration', 'hr', 'region-lead', 'content-creator'] as const) expect(d(v)).toEqual([])
   })
   it('implies roles only for the four organization titles', () => {
@@ -39,6 +39,7 @@ describe('TITLES constant', () => {
       'media-editor': 'Media Editor Lead',
       caster: 'Lead Caster',
       producer: 'Lead Producer',
+      director: 'Lead Director',
     })
   })
   it('renders lead labels', () => {

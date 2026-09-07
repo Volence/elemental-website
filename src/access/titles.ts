@@ -7,7 +7,7 @@
 export type TitleValue =
   | 'owner' | 'co-owner' | 'administration' | 'hr' | 'region-lead'
   | 'event-manager' | 'social-manager' | 'marketing' | 'graphics' | 'media-editor'
-  | 'caster' | 'observer' | 'producer'
+  | 'caster' | 'observer' | 'producer' | 'director'
   | 'content-creator'
 
 export type DepartmentKey = 'production' | 'social' | 'graphics' | 'video' | 'events' | 'pug' | 'scouting'
@@ -39,6 +39,8 @@ export const TITLES: readonly TitleDef[] = [
   { value: 'caster', label: 'Caster', group: 'production', departments: ['production'], leadLabel: 'Lead Caster', impliesRole: null },
   { value: 'observer', label: 'Observer', group: 'production', departments: ['production'], leadLabel: null, impliesRole: null },
   { value: 'producer', label: 'Producer', group: 'production', departments: ['production'], leadLabel: 'Lead Producer', impliesRole: null },
+  // Directors call which observer's view goes out, so they are broadcast crew, not in-game.
+  { value: 'director', label: 'Director', group: 'production', departments: ['production'], leadLabel: 'Lead Director', impliesRole: null },
   { value: 'content-creator', label: 'Content Creator', group: 'community', departments: [], leadLabel: null, impliesRole: null },
 ]
 
@@ -137,7 +139,7 @@ export const ORG_ROLE_GROUP_LABELS: Record<string, string> = {
 export const TITLE_COLORS: Record<string, string> = {
   owner: '#f59e0b', 'co-owner': '#f59e0b', administration: '#8b5cf6', hr: '#ec4899', 'region-lead': '#14b8a6',
   'event-manager': '#06b6d4', 'social-manager': '#3b82f6', marketing: '#d946ef', graphics: '#f97316', 'media-editor': '#ef4444',
-  caster: '#a855f7', observer: '#3b82f6', producer: '#eab308', 'content-creator': '#22c55e',
+  caster: '#a855f7', observer: '#3b82f6', producer: '#eab308', director: '#f43f5e', 'content-creator': '#22c55e',
 }
 export const ORG_ROLES = ORG_TITLES.map((t) => ({ value: t.value, label: t.label, color: TITLE_COLORS[t.value], groupLabel: ORG_ROLE_GROUP_LABELS[t.value] }))
 // True compat export: the deleted orgRoles.ts used short region codes here (not REGIONS'

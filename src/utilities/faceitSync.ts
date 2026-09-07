@@ -960,14 +960,10 @@ export async function syncTeamData(
               const id = typeof c.user === 'number' ? c.user : c.user?.id
               if (id) affectedStaffIds.add(id)
             })
-            if (pw.assignedObserver) {
-              const id = typeof pw.assignedObserver === 'number' ? pw.assignedObserver : pw.assignedObserver?.id
+            ;[...(pw.assignedObservers || []), ...(pw.assignedProducers || []), ...(pw.assignedDirectors || [])].forEach((u: any) => {
+              const id = typeof u === 'number' ? u : u?.id
               if (id) affectedStaffIds.add(id)
-            }
-            if (pw.assignedProducer) {
-              const id = typeof pw.assignedProducer === 'number' ? pw.assignedProducer : pw.assignedProducer?.id
-              if (id) affectedStaffIds.add(id)
-            }
+            })
             ;(pw.assignedCasters || []).forEach((c: any) => {
               const id = typeof c.user === 'number' ? c.user : c.user?.id
               if (id) affectedStaffIds.add(id)
@@ -979,8 +975,9 @@ export async function syncTeamData(
               observerSignups: [],
               producerSignups: [],
               casterSignups: [],
-              assignedObserver: null,
-              assignedProducer: null,
+              assignedObservers: [],
+              assignedProducers: [],
+              assignedDirectors: [],
               assignedCasters: [],
               coverageStatus: 'none',
               dateChanged: true,

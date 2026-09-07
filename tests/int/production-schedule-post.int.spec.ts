@@ -11,6 +11,8 @@ import {
 const observer = { id: 1, name: 'Obs One', discordId: '111111111111111111' }
 const producer = { id: 2, name: 'Prod Two', discordId: null }
 const caster = { id: 3, name: 'Cast Three', discordId: '333333333333333333' }
+const observerTwo = { id: 4, name: 'Obs Four', discordId: '444444444444444444' }
+const director = { id: 5, name: 'Dir Five', discordId: '555555555555555555' }
 
 function match(overrides: Partial<ScheduleMatch> = {}): ScheduleMatch {
   return {
@@ -26,8 +28,8 @@ function match(overrides: Partial<ScheduleMatch> = {}): ScheduleMatch {
     productionWorkflow: {
       includeInSchedule: true,
       coverageStatus: 'full',
-      assignedObserver: observer,
-      assignedProducer: producer,
+      assignedObservers: [observer],
+      assignedProducers: [producer],
       assignedCasters: [{ user: caster }],
     },
     ...overrides,
@@ -45,6 +47,24 @@ describe('formatStaffSchedule', () => {
     // No Discord ID linked: fall back to the name so the post still reads
     expect(text).toContain('Producer: @Prod Two')
     expect(text).toContain('Casters: <@333333333333333333>')
+  })
+
+  it('lists every observer on one line', () => {
+    const text = formatStaffSchedule(
+      [match({ productionWorkflow: { includeInSchedule: true, assignedObservers: [observer, observerTwo] } })],
+      { mentionStyle: 'preview' },
+    )
+    expect(text).toContain('Observers: @Obs One & @Obs Four')
+  })
+
+  it('adds a Director line only when one is assigned', () => {
+    const withDirector = formatStaffSchedule(
+      [match({ productionWorkflow: { includeInSchedule: true, assignedProducers: [producer], assignedDirectors: [director] } })],
+      { mentionStyle: 'preview' },
+    )
+    expect(withDirector).toContain('Director: @Dir Five')
+    // Director is optional, so an unstaffed match must not carry a TBD line for it.
+    expect(formatStaffSchedule([match()], { mentionStyle: 'preview' })).not.toContain('Director')
   })
 
   it('uses plain @names in preview mode', () => {
@@ -85,6 +105,19 @@ describe('formatPublicSchedule', () => {
     expect(text).toContain('🎬 Stream: https://twitch.tv/elmt_gg')
     expect(text).toContain('👁️ Observer: Obs One')
     expect(text).toContain('🎙️ Casters: Cast Three')
+  })
+
+  it('lists every observer and any director in the public post', () => {
+    const text = formatPublicSchedule([match({
+      productionWorkflow: {
+        includeInSchedule: true,
+        assignedObservers: [observer, observerTwo],
+        assignedProducers: [producer],
+        assignedDirectors: [director],
+      },
+    })])
+    expect(text).toContain('Observers: Obs One & Obs Four')
+    expect(text).toContain('Director: Dir Five')
   })
 
   it('never puts a Discord mention in the public post', () => {
@@ -138,14 +171,19 @@ describe('schedulePostRelevantChange', () => {
     expect(schedulePostRelevantChange(match({ opponent: 'Other' }), base)).toBe(true)
     expect(schedulePostRelevantChange(match({ status: 'cancelled' } as any), base)).toBe(true)
     const reassigned = match({
-      productionWorkflow: { ...base.productionWorkflow!, assignedProducer: { id: 9, name: 'New Prod' } },
+      productionWorkflow: { ...base.productionWorkflow!, assignedProducers: [{ id: 9, name: 'New Prod' }] },
     })
     expect(schedulePostRelevantChange(reassigned, base)).toBe(true)
   })
+  it('fires when the director changes', () => {
+    const after = { ...base, productionWorkflow: { ...base.productionWorkflow!, assignedDirectors: [director] } }
+    expect(schedulePostRelevantChange(base, after)).toBe(true)
+  })
+
   it('stays quiet for unrelated edits on a scheduled match', () => {
     expect(schedulePostRelevantChange(match({ title: 'Renamed' }), base)).toBe(false)
     const sameIds = match({
-      productionWorkflow: { ...base.productionWorkflow!, assignedProducer: 2 },
+      productionWorkflow: { ...base.productionWorkflow!, assignedProducers: [2] },
     })
     // Populated object vs bare id for the same person is not a change
     expect(schedulePostRelevantChange(sameIds, base)).toBe(false)

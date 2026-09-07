@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { toast } from '@payloadcms/ui'
-import { AlertTriangle, CheckCircle, Globe, XCircle, ChevronDown, ChevronRight, X, Eye, Clapperboard, Mic, Users } from 'lucide-react'
+import { AlertTriangle, CheckCircle, Globe, XCircle, ChevronDown, ChevronRight, X, Eye, Clapperboard, Focus, Mic, Users } from 'lucide-react'
 
 interface User {
   id: number
@@ -38,12 +38,23 @@ interface Match {
     observerSignups?: (User | number)[]
     producerSignups?: (User | number)[]
     casterSignups?: CasterSignup[]
-    assignedObserver?: User | number | null
-    assignedProducer?: User | number | null
+    assignedObservers?: (User | number)[]
+    assignedProducers?: (User | number)[]
+    assignedDirectors?: (User | number)[]
     assignedCasters?: CasterSignup[]
     dateChanged?: boolean
     previousDate?: string
   }
+}
+
+/** Every production role is a list. Director has no signup list of its own - it draws from the
+ * producer signups, because producer and director are both off-game jobs. */
+type RoleKey = 'observer' | 'producer' | 'director' | 'caster'
+
+const ROLE_FIELD: Record<Exclude<RoleKey, 'caster'>, 'assignedObservers' | 'assignedProducers' | 'assignedDirectors'> = {
+  observer: 'assignedObservers',
+  producer: 'assignedProducers',
+  director: 'assignedDirectors',
 }
 
 interface MatchGroup {
@@ -59,6 +70,9 @@ const getUserId = (user: User | number | null | undefined): number | null => {
   return typeof user === 'number' ? user : user.id
 }
 
+const assignedIds = (list: (User | number)[] | null | undefined): number[] =>
+  (list ?? []).map(getUserId).filter((id): id is number => id !== null)
+
 const getUserName = (user: User | number | null | undefined): string => {
   if (!user) return '-'
   if (typeof user === 'number') return `User #${user}`
@@ -67,31 +81,35 @@ const getUserName = (user: User | number | null | undefined): string => {
 
 // ─── Compact Role Row ───
 
-function RoleRow({ matchId, roleName, roleKey, roleIcon, maxSlots, signups, assigned, onAssign, onUnassign }: {
+function RoleRow({ matchId, roleName, roleKey, roleIcon, minSlots, signups, assigned, blockedIds = [], onAssign, onUnassign }: {
   matchId: number
   roleName: string
-  roleKey: 'observer' | 'producer' | 'caster'
+  roleKey: RoleKey
   roleIcon: React.ReactNode
-  maxSlots: number
+  /** How many this role needs for full coverage. There is no maximum - a match can carry as
+   * many observers as sign up - so the count reads "2/2" only as a target, never as a cap. */
+  minSlots: number
   signups: (User | number)[] | CasterSignup[]
-  assigned: (User | number | null) | CasterSignup[]
-  onAssign: (matchId: number, role: 'observer' | 'producer' | 'caster', userId: number, style?: string) => void
-  onUnassign: (matchId: number, role: 'observer' | 'producer' | 'caster', idx?: number) => void
+  assigned: (User | number)[] | CasterSignup[]
+  /** People who cannot take this role on this match because they already hold the paired one
+   * (producer and director run at the same time, so nobody may hold both). */
+  blockedIds?: number[]
+  onAssign: (matchId: number, role: RoleKey, userId: number, style?: string) => void
+  onUnassign: (matchId: number, role: RoleKey, target: { userId?: number; index?: number }) => void
 }) {
   const isCaster = roleKey === 'caster'
   const assignedList: { user: User | number | null; style?: string }[] = isCaster
-    ? (assigned as CasterSignup[] || []).map(c => ({ user: c.user, style: c.style }))
-    : assigned ? [{ user: assigned as User | number }] : []
+    ? ((assigned as CasterSignup[]) || []).map(c => ({ user: c.user, style: c.style }))
+    : ((assigned as (User | number)[]) || []).map(u => ({ user: u }))
   const slotsFilled = assignedList.length
-  const slotsAvailable = maxSlots - slotsFilled
 
   return (
     <div className="assignment-v2__role-row">
       <div className="assignment-v2__role-label">
         {roleIcon}
         <span>{roleName}</span>
-        <span className={`assignment-v2__slot-count ${slotsFilled >= maxSlots ? 'assignment-v2__slot-count--full' : ''}`}>
-          {slotsFilled}/{maxSlots}
+        <span className={`assignment-v2__slot-count ${slotsFilled >= minSlots ? 'assignment-v2__slot-count--full' : ''}`}>
+          {slotsFilled >= minSlots ? slotsFilled : `${slotsFilled}/${minSlots}`}
         </span>
       </div>
 
@@ -103,7 +121,7 @@ function RoleRow({ matchId, roleName, roleKey, roleIcon, maxSlots, signups, assi
             {getUserName(item.user)}
             {item.style && <em>({item.style})</em>}
             <button
-              onClick={() => onUnassign(matchId, roleKey, isCaster ? idx : undefined)}
+              onClick={() => onUnassign(matchId, roleKey, isCaster ? { index: idx } : { userId: getUserId(item.user) ?? undefined })}
               className="assignment-v2__person-remove"
               title="Unassign"
             ><X size={10} /></button>
@@ -118,14 +136,15 @@ function RoleRow({ matchId, roleName, roleKey, roleIcon, maxSlots, signups, assi
           const style = isCaster ? (signup as CasterSignup).style : undefined
           const isAlreadyAssigned = assignedList.some(a => getUserId(a.user) === userId)
           if (isAlreadyAssigned) return null
+          // Hidden rather than disabled: a producer is not a candidate for director at all.
+          if (userId !== null && blockedIds.includes(userId)) return null
 
           return (
             <button
               key={`s-${idx}`}
               onClick={() => userId && onAssign(matchId, roleKey, userId, style)}
               className="assignment-v2__person-pill assignment-v2__person-pill--available"
-              disabled={slotsAvailable <= 0}
-              title={slotsAvailable <= 0 ? 'All slots filled' : `Assign ${name}`}
+              title={`Assign ${name}`}
             >
               {name}
               {style && <em>({style})</em>}
@@ -145,8 +164,8 @@ function RoleRow({ matchId, roleName, roleKey, roleIcon, maxSlots, signups, assi
 
 function MatchCard({ match, onAssign, onUnassign }: {
   match: Match
-  onAssign: (matchId: number, role: 'observer' | 'producer' | 'caster', userId: number, style?: string) => void
-  onUnassign: (matchId: number, role: 'observer' | 'producer' | 'caster', idx?: number) => void
+  onAssign: (matchId: number, role: RoleKey, userId: number, style?: string) => void
+  onUnassign: (matchId: number, role: RoleKey, target: { userId?: number; index?: number }) => void
 }) {
   const pw = match.productionWorkflow || {} as NonNullable<Match['productionWorkflow']>
   const totalSignups = (pw.observerSignups?.length || 0) + (pw.producerSignups?.length || 0) + (pw.casterSignups?.length || 0)
@@ -174,17 +193,24 @@ function MatchCard({ match, onAssign, onUnassign }: {
       <div className="assignment-v2__roles">
         <RoleRow
           matchId={match.id} roleName="Observer" roleKey="observer" roleIcon={<Eye size={12} />}
-          maxSlots={1} signups={pw.observerSignups || []} assigned={pw.assignedObserver ?? null}
+          minSlots={1} signups={pw.observerSignups || []} assigned={pw.assignedObservers || []}
           onAssign={onAssign} onUnassign={onUnassign}
         />
         <RoleRow
           matchId={match.id} roleName="Producer" roleKey="producer" roleIcon={<Clapperboard size={12} />}
-          maxSlots={1} signups={pw.producerSignups || []} assigned={pw.assignedProducer ?? null}
+          minSlots={1} signups={pw.producerSignups || []} assigned={pw.assignedProducers || []}
+          blockedIds={assignedIds(pw.assignedDirectors)}
+          onAssign={onAssign} onUnassign={onUnassign}
+        />
+        <RoleRow
+          matchId={match.id} roleName="Director" roleKey="director" roleIcon={<Focus size={12} />}
+          minSlots={0} signups={pw.producerSignups || []} assigned={pw.assignedDirectors || []}
+          blockedIds={assignedIds(pw.assignedProducers)}
           onAssign={onAssign} onUnassign={onUnassign}
         />
         <RoleRow
           matchId={match.id} roleName="Casters" roleKey="caster" roleIcon={<Mic size={12} />}
-          maxSlots={2} signups={pw.casterSignups || []} assigned={pw.assignedCasters || []}
+          minSlots={2} signups={pw.casterSignups || []} assigned={pw.assignedCasters || []}
           onAssign={onAssign} onUnassign={onUnassign}
         />
       </div>
@@ -197,8 +223,8 @@ function MatchCard({ match, onAssign, onUnassign }: {
 function TimeSlotGroup({ group, defaultOpen, onAssign, onUnassign }: {
   group: MatchGroup
   defaultOpen: boolean
-  onAssign: (matchId: number, role: 'observer' | 'producer' | 'caster', userId: number, style?: string) => void
-  onUnassign: (matchId: number, role: 'observer' | 'producer' | 'caster', idx?: number) => void
+  onAssign: (matchId: number, role: RoleKey, userId: number, style?: string) => void
+  onUnassign: (matchId: number, role: RoleKey, target: { userId?: number; index?: number }) => void
 }) {
   const [expanded, setExpanded] = useState(defaultOpen)
 
@@ -210,8 +236,9 @@ function TimeSlotGroup({ group, defaultOpen, onAssign, onUnassign }: {
     pw.observerSignups?.forEach((u: any) => { const id = getUserId(u); if (id) totalSignups.add(id) })
     pw.producerSignups?.forEach((u: any) => { const id = getUserId(u); if (id) totalSignups.add(id) })
     pw.casterSignups?.forEach((c: any) => { const id = getUserId(c.user); if (id) totalSignups.add(id) })
-    if (pw.assignedObserver) { const id = getUserId(pw.assignedObserver); if (id) totalAssigned.add(id) }
-    if (pw.assignedProducer) { const id = getUserId(pw.assignedProducer); if (id) totalAssigned.add(id) }
+    assignedIds(pw.assignedObservers).forEach(id => totalAssigned.add(id))
+    assignedIds(pw.assignedProducers).forEach(id => totalAssigned.add(id))
+    assignedIds(pw.assignedDirectors).forEach(id => totalAssigned.add(id))
     pw.assignedCasters?.forEach((c: any) => { const id = getUserId(c.user); if (id) totalAssigned.add(id) })
   })
 
@@ -273,17 +300,18 @@ export function AssignmentView() {
     }
   }
 
-  const assignStaff = async (matchId: number, role: 'observer' | 'producer' | 'caster', userId: number, casterStyle?: string) => {
+  const assignStaff = async (matchId: number, role: RoleKey, userId: number, casterStyle?: string) => {
     try {
       const match = matches.find(m => m.id === matchId)
       if (!match) return
       const pw = match.productionWorkflow || {} as NonNullable<Match['productionWorkflow']>
       let updateData: any = {}
 
-      if (role === 'observer') {
-        updateData.productionWorkflow = { ...pw, assignedObserver: userId }
-      } else if (role === 'producer') {
-        updateData.productionWorkflow = { ...pw, assignedProducer: userId }
+      if (role !== 'caster') {
+        const field = ROLE_FIELD[role]
+        const current = assignedIds(pw[field])
+        if (current.includes(userId)) return
+        updateData.productionWorkflow = { ...pw, [field]: [...current, userId] }
       } else if (role === 'caster') {
         updateData.productionWorkflow = {
           ...pw,
@@ -311,17 +339,17 @@ export function AssignmentView() {
     }
   }
 
-  const unassignStaff = async (matchId: number, role: 'observer' | 'producer' | 'caster', casterIndex?: number) => {
+  const unassignStaff = async (matchId: number, role: RoleKey, target: { userId?: number; index?: number }) => {
     try {
       const match = matches.find(m => m.id === matchId)
       if (!match) return
       const pw = match.productionWorkflow || {} as NonNullable<Match['productionWorkflow']>
       let updateData: any = {}
+      const casterIndex = target.index
 
-      if (role === 'observer') {
-        updateData.productionWorkflow = { ...pw, assignedObserver: null }
-      } else if (role === 'producer') {
-        updateData.productionWorkflow = { ...pw, assignedProducer: null }
+      if (role !== 'caster') {
+        const field = ROLE_FIELD[role]
+        updateData.productionWorkflow = { ...pw, [field]: assignedIds(pw[field]).filter(id => id !== target.userId) }
       } else if (role === 'caster' && casterIndex !== undefined) {
         updateData.productionWorkflow = {
           ...pw,
@@ -378,8 +406,9 @@ export function AssignmentView() {
     g.matches.forEach(m => {
       const pw = m.productionWorkflow
       if (!pw) return
-      if (pw.assignedObserver) { const id = getUserId(pw.assignedObserver); if (id) counted.obs.add(id) }
-      if (pw.assignedProducer) { const id = getUserId(pw.assignedProducer); if (id) counted.prod.add(id) }
+      assignedIds(pw.assignedObservers).forEach(id => counted.obs.add(id))
+      assignedIds(pw.assignedProducers).forEach(id => counted.prod.add(id))
+      assignedIds(pw.assignedDirectors).forEach(id => counted.prod.add(id))
       pw.assignedCasters?.forEach(c => { const id = getUserId(c.user); if (id) counted.cast.add(id) })
     })
     return counted.obs.size >= 1 && counted.prod.size >= 1 && counted.cast.size >= 2

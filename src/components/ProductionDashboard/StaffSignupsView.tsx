@@ -31,8 +31,9 @@ interface Match {
     observerSignups?: (User | number)[]
     producerSignups?: (User | number)[]
     casterSignups?: CasterSignup[]
-    assignedObserver?: User | number
-    assignedProducer?: User | number
+    assignedObservers?: (User | number)[]
+    assignedProducers?: (User | number)[]
+    assignedDirectors?: (User | number)[]
     assignedCasters?: CasterSignup[]
     includeInSchedule?: boolean
     dateChanged?: boolean
@@ -268,13 +269,17 @@ export function StaffSignupsView() {
     )
   }
 
+  const holdsRole = (list: (User | number)[] | null | undefined, userId: number | null): boolean =>
+    !!userId && (list ?? []).some(u => getUserId(u) === userId)
+
   const isUserAssigned = (match: Match, userId: number | null): boolean => {
     if (!userId) return false
     const pw = match.productionWorkflow
     if (!pw) return false
     return !!(
-      getUserId(pw.assignedObserver) === userId ||
-      getUserId(pw.assignedProducer) === userId ||
+      holdsRole(pw.assignedObservers, userId) ||
+      holdsRole(pw.assignedProducers, userId) ||
+      holdsRole(pw.assignedDirectors, userId) ||
       pw.assignedCasters?.some(c => getUserId(c.user) === userId)
     )
   }
@@ -283,8 +288,9 @@ export function StaffSignupsView() {
     if (!userId) return false
     const pw = match.productionWorkflow
     if (!pw) return false
-    if (role === 'observer') return getUserId(pw.assignedObserver) === userId
-    if (role === 'producer') return getUserId(pw.assignedProducer) === userId
+    if (role === 'observer') return holdsRole(pw.assignedObservers, userId)
+    // Producer signups feed both the producer and the director slot.
+    if (role === 'producer') return holdsRole(pw.assignedProducers, userId) || holdsRole(pw.assignedDirectors, userId)
     if (role === 'caster') return pw.assignedCasters?.some(c => getUserId(c.user) === userId) || false
     return false
   }
@@ -306,8 +312,9 @@ export function StaffSignupsView() {
     const pw = match.productionWorkflow
     if (!pw) return []
     const roles: string[] = []
-    if (getUserId(pw.assignedObserver) === userId) roles.push('Observer')
-    if (getUserId(pw.assignedProducer) === userId) roles.push('Producer')
+    if (holdsRole(pw.assignedObservers, userId)) roles.push('Observer')
+    if (holdsRole(pw.assignedProducers, userId)) roles.push('Producer')
+    if (holdsRole(pw.assignedDirectors, userId)) roles.push('Director')
     const caster = pw.assignedCasters?.find(c => getUserId(c.user) === userId)
     if (caster) roles.push(caster.style ? `Caster (${caster.style})` : 'Caster')
     return roles

@@ -15,8 +15,9 @@ interface Match {
   date: string
   productionWorkflow?: {
     coverageStatus: string
-    assignedObserver?: User | number | null
-    assignedProducer?: User | number | null
+    assignedObservers?: (User | number)[] | null
+    assignedProducers?: (User | number)[] | null
+    assignedDirectors?: (User | number)[] | null
     assignedCasters?: Array<{ user: User | number }>
     includeInSchedule: boolean
   }
@@ -89,37 +90,25 @@ export function SummaryView() {
     const pw = match.productionWorkflow
     if (!pw) return
 
-    // Observer
-    const observerId = getUserId(pw.assignedObserver)
-    if (observerId) {
-      const existing = staffWorkloadMap.get(observerId) || {
-        userId: observerId,
-        userName: getUserName(pw.assignedObserver as User),
+    // Observers, producers and directors are lists; a director's shift counts as producing.
+    const bump = (person: User | number, key: 'observerCount' | 'producerCount') => {
+      const id = getUserId(person)
+      if (!id) return
+      const existing = staffWorkloadMap.get(id) || {
+        userId: id,
+        userName: getUserName(person as User),
         observerCount: 0,
         producerCount: 0,
         casterCount: 0,
         totalCount: 0
       }
-      existing.observerCount++
+      existing[key]++
       existing.totalCount++
-      staffWorkloadMap.set(observerId, existing)
+      staffWorkloadMap.set(id, existing)
     }
-
-    // Producer
-    const producerId = getUserId(pw.assignedProducer)
-    if (producerId) {
-      const existing = staffWorkloadMap.get(producerId) || {
-        userId: producerId,
-        userName: getUserName(pw.assignedProducer as User),
-        observerCount: 0,
-        producerCount: 0,
-        casterCount: 0,
-        totalCount: 0
-      }
-      existing.producerCount++
-      existing.totalCount++
-      staffWorkloadMap.set(producerId, existing)
-    }
+    ;(pw.assignedObservers ?? []).forEach(p => bump(p, 'observerCount'))
+    ;(pw.assignedProducers ?? []).forEach(p => bump(p, 'producerCount'))
+    ;(pw.assignedDirectors ?? []).forEach(p => bump(p, 'producerCount'))
 
     // Casters
     pw.assignedCasters?.forEach(caster => {

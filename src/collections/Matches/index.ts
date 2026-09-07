@@ -1,6 +1,8 @@
 import type { CollectionConfig } from 'payload'
+import { APIError } from 'payload'
 
 import { anyone, staffManagerOrAbove } from '@/access'
+import { computeCoverageStatus, producerDirectorOverlap } from '@/utilities/productionCoverage'
 import { createAuditLogHook, createAuditLogDeleteHook } from '../../utilities/auditLogger'
 
 export const Matches: CollectionConfig = {
@@ -240,20 +242,18 @@ export const Matches: CollectionConfig = {
         return data
       },
       async ({ data }) => {
-        // Auto-calculate coverage status for Production Workflow
+        // Coverage and the producer/director rule live in utilities/productionCoverage so the
+        // dashboard and the tests read the same definition this hook writes.
         if (data && data.productionWorkflow) {
           const pw = data.productionWorkflow
-          const hasObserver = !!pw.assignedObserver
-          const hasProducer = !!pw.assignedProducer
-          const casterCount = pw.assignedCasters?.length || 0
-          
-          if (hasObserver && hasProducer && casterCount >= 2) {
-            pw.coverageStatus = 'full'
-          } else if (hasObserver || hasProducer || casterCount > 0) {
-            pw.coverageStatus = 'partial'
-          } else {
-            pw.coverageStatus = 'none'
+          const both = producerDirectorOverlap(pw)
+          if (both.length > 0) {
+            throw new APIError(
+              'A person cannot be both Producer and Director on the same match - the two jobs run at the same time.',
+              400,
+            )
           }
+          pw.coverageStatus = computeCoverageStatus(pw)
         }
         return data
       },
@@ -648,32 +648,43 @@ export const Matches: CollectionConfig = {
                 },
                 // ASSIGNMENTS: Staff who are CONFIRMED to work this match
                 {
-                  name: 'assignedObserver',
+                  name: 'assignedObservers',
                   type: 'relationship',
                   relationTo: 'people',
-                  label: '✅ Assigned Observer',
-                  admin: { 
-                    description: 'CONFIRMED observer who WILL work this match (1 max)'
+                  hasMany: true,
+                  label: '✅ Assigned Observers',
+                  admin: {
+                    description: 'CONFIRMED observers who WILL work this match (in game)'
                   },
                 },
                 {
-                  name: 'assignedProducer',
+                  name: 'assignedProducers',
                   type: 'relationship',
                   relationTo: 'people',
-                  label: '✅ Assigned Producer',
-                  admin: { 
-                    description: 'CONFIRMED producer who WILL work this match (1 max)'
+                  hasMany: true,
+                  label: '✅ Assigned Producers',
+                  admin: {
+                    description: 'CONFIRMED producers who WILL work this match'
+                  },
+                },
+                {
+                  name: 'assignedDirectors',
+                  type: 'relationship',
+                  relationTo: 'people',
+                  hasMany: true,
+                  label: '✅ Assigned Directors',
+                  admin: {
+                    description: 'CONFIRMED directors, who call which observer view goes out. Optional, and drawn from the producer signups - nobody may produce and direct the same match.'
                   },
                 },
                 {
                   name: 'assignedCasters',
                   type: 'array',
                   minRows: 0,
-                  maxRows: 2,
                   dbName: 'assigned_c',
                   label: '✅ Assigned Casters',
                   admin: {
-                    description: 'CONFIRMED casters who WILL work this match (2 max)'
+                    description: 'CONFIRMED casters who WILL work this match (2 for full coverage)'
                   },
                   fields: [
                     {

@@ -1,5 +1,7 @@
 import * as migration_20251217_055734 from "./20251217_055734";
 import * as migration_20260904_production_schedule_post from "./20260904_production_schedule_post";
+import * as migration_20260907_production_roles_multi from "./20260907_production_roles_multi";
+import * as migration_20260907_production_roles_drop_columns from "./20260907_production_roles_drop_columns";
 import * as migration_20260904_teams_faceit_withdrawn from "./20260904_teams_faceit_withdrawn";
 import * as migration_20251218_130100 from "./20251218_130100";
 import * as migration_20251222_190839_add_recruitment_collections from "./20251222_190839_add_recruitment_collections";
@@ -311,5 +313,15 @@ export const migrations = [
     up: migration_20260906_titles_archive_staff_tables.up,
     down: migration_20260906_titles_archive_staff_tables.down,
     name: "20260906_titles_archive_staff_tables",
+  },
+  {
+    up: migration_20260907_production_roles_multi.up,
+    down: migration_20260907_production_roles_multi.down,
+    name: "20260907_production_roles_multi",
+  },
+  {
+    up: migration_20260907_production_roles_drop_columns.up,
+    down: migration_20260907_production_roles_drop_columns.down,
+    name: "20260907_production_roles_drop_columns",
   },
 ];

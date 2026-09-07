@@ -16,6 +16,7 @@ import {
   Mic,
   Eye,
   Video,
+  Focus,
 } from 'lucide-react'
 import type { TitleValue } from '@/access/titles'
 import { ORG_ROLE_LABELS } from '@/access/titles'
@@ -73,6 +74,7 @@ export function getOrgRoleIcon(role: string, size: IconSize = 'sm'): React.React
     'event-manager': Calendar,
     'social-manager': Share2,
     'marketing': Megaphone,
+    'director': Focus,
     'graphics': Image,
     'media-editor': Film,
     'caster': Mic,

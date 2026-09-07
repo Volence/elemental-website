@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { Button, toast } from '@payloadcms/ui'
-import { AlertTriangle, CheckCircle, Clapperboard, ClipboardList, Eye, Lock, Megaphone, Mic, Send, Settings } from 'lucide-react'
+import { AlertTriangle, CheckCircle, Clapperboard, ClipboardList, Eye, Lock, Megaphone, Mic, Send, Settings, Focus } from 'lucide-react'
 import { AdminModal, formatRelative } from '@/admin-kit'
 import { formatStaffSchedule, formatPublicSchedule, type ScheduleMatch } from '@/utilities/productionSchedulePost'
 
@@ -235,7 +235,9 @@ export function ScheduleBuilderView() {
                         <div className="schedule-builder__match-meta">
                           <span>{new Date(match.date).toLocaleString()}</span>
                           <span>
-                            {pw.assignedObserver && pw.assignedProducer ? <><Eye size={14} /><Clapperboard size={14} /></> : ''}{' '}
+                            {pw.assignedObservers?.length ? <><Eye size={14} />×{pw.assignedObservers.length}</> : ''}{' '}
+                            {pw.assignedProducers?.length ? <><Clapperboard size={14} />×{pw.assignedProducers.length}</> : ''}{' '}
+                            {pw.assignedDirectors?.length ? <><Focus size={14} />×{pw.assignedDirectors.length}</> : ''}{' '}
                             {pw.assignedCasters?.length ? <><Mic size={14} />×{pw.assignedCasters.length}</> : ''}
                           </span>
                         </div>
