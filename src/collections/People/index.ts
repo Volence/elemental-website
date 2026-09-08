@@ -69,7 +69,11 @@ export const People: CollectionConfig = {
     group: 'Organization',
     listSearchableFields: ['name', 'slug', 'email'],
     baseListFilter: () => {
-      return {}
+      // Rows a merge archived are husks: their identity was released to the person they were
+      // merged into. They stay in the database so anything still pointing at them reads, but
+      // they are not people any more, so they do not belong in the list. The merge tool's
+      // "archived rows" panel is where they are reviewed and removed.
+      return { mergedInto: { exists: false } }
     },
     hidden: hideUnless((a) => a.canManagePeople || a.teamIds.size > 0 || a.canPickMembers),
     components: {

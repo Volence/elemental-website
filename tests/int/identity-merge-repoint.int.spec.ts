@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { repointColumn, mergePeople } from '@/identity/merge'
+import { repointColumn, mergePeople, blockingReferences, removeMergedPerson } from '@/identity/merge'
 
 const SOURCE = 10
 const TARGET = 20
@@ -265,5 +265,117 @@ describe('mergePeople', () => {
     payload.update = async () => { throw new Error('target update failed') }
     await expect(mergePeople(payload, { targetId: 20, sourceId: 10, actorId: null })).rejects.toThrow('target update failed')
     expect(events).toEqual(['begin', 'rollback'])
+  })
+})
+
+/**
+ * A transaction double for the catalog-driven reference scan: `fks` is what pg_constraint
+ * reports, `counts` how many rows each table.column holds for the person being checked.
+ */
+function fakeCatalogTx(fks: Array<[string, string]>, counts: Record<string, number> = {}) {
+  const statements: string[] = []
+  return {
+    statements,
+    async execute(query: any) {
+      const text = statementText(query)
+      statements.push(text)
+      if (text.includes('pg_constraint')) return { rows: fks.map(([tbl, col]) => ({ tbl, col })) }
+      const m = /SELECT count\(\*\)[\s\S]*FROM "([^"]+)" WHERE "([^"]+)"/.exec(text)
+      if (m) return { rows: [{ count: String(counts[`${m[1]}.${m[2]}`] ?? 0) }] }
+      return { rows: [] }
+    },
+  }
+}
+
+describe('blockingReferences', () => {
+  it('reads the live catalog, so a table no hand-written list knows about still blocks', async () => {
+    // production is an unregistered legacy collection: it is in no FK list in this file, but it
+    // has a NOT NULL person_id on production, which is exactly what stopped a delete.
+    const tx = fakeCatalogTx(
+      [['teams_roster', 'person_id'], ['production', 'person_id']],
+      { 'production.person_id': 1 },
+    )
+    expect(await blockingReferences(tx, 10)).toEqual([{ table: 'production', column: 'person_id', count: 1 }])
+  })
+
+  it('ignores the row\'s own sub-tables and Payload\'s bookkeeping', async () => {
+    const tx = fakeCatalogTx(
+      [
+        ['people_titles', '_parent_id'],
+        ['people_rels', 'parent_id'],
+        ['payload_locked_documents_rels', 'people_id'],
+        ['payload_preferences_rels', 'people_id'],
+      ],
+      {
+        'people_titles._parent_id': 3,
+        'people_rels.parent_id': 2,
+        'payload_locked_documents_rels.people_id': 1,
+        'payload_preferences_rels.people_id': 1,
+      },
+    )
+    expect(await blockingReferences(tx, 10)).toEqual([])
+  })
+
+  it('catches a column that carries no foreign key at all', async () => {
+    // audit_logs.user_id and the teams_* family have no FK constraint in some databases, so the
+    // catalog cannot see them. The merge's own list can.
+    const tx = fakeCatalogTx([], { 'audit_logs.user_id': 4 })
+    expect(await blockingReferences(tx, 10)).toEqual([{ table: 'audit_logs', column: 'user_id', count: 4 }])
+  })
+
+  it('skips a table or column this database has not got', async () => {
+    const tx = {
+      async execute(query: any) {
+        const text = statementText(query)
+        if (text.includes('pg_constraint')) return { rows: [] }
+        throw { cause: { code: text.includes('teams_roster') ? '42703' : '42P01' } }
+      },
+    }
+    expect(await blockingReferences(tx, 10)).toEqual([])
+  })
+
+  it('reports every table that still points at the row', async () => {
+    const tx = fakeCatalogTx(
+      [['teams_roster', 'person_id'], ['audit_logs', 'user_id'], ['tasks', 'requested_by_id']],
+      { 'teams_roster.person_id': 2, 'audit_logs.user_id': 7 },
+    )
+    expect(await blockingReferences(tx, 10)).toEqual([
+      { table: 'audit_logs', column: 'user_id', count: 7 },
+      { table: 'teams_roster', column: 'person_id', count: 2 },
+    ])
+  })
+})
+
+describe('removeMergedPerson', () => {
+  const merged = { id: 10, name: 'Old Volence', mergedInto: 20 }
+
+  function removalPayload(person: any, fks: Array<[string, string]>, counts: Record<string, number> = {}) {
+    const tx = fakeCatalogTx(fks, counts)
+    const created: any[] = []
+    const payload: any = {
+      db: { drizzle: tx },
+      async findByID({ id }: any) { return id === person?.id ? person : null },
+      async create(args: any) { created.push(args); return { id: 1 } },
+    }
+    return { payload, tx, created }
+  }
+
+  it('refuses a person who was never merged away', async () => {
+    const { payload, tx } = removalPayload({ id: 10, name: 'Volence', mergedInto: null }, [])
+    await expect(removeMergedPerson(payload, { personId: 10, actorId: null })).rejects.toThrow(/was not merged/i)
+    expect(tx.statements.some((s) => s.startsWith('DELETE'))).toBe(false)
+  })
+
+  it('refuses while anything still points at the row, and names what', async () => {
+    const { payload, tx } = removalPayload(merged, [['production', 'person_id']], { 'production.person_id': 1 })
+    await expect(removeMergedPerson(payload, { personId: 10, actorId: null })).rejects.toThrow(/production\.person_id \(1\)/)
+    expect(tx.statements.some((s) => s.startsWith('DELETE'))).toBe(false)
+  })
+
+  it('deletes the row once nothing points at it, and records it', async () => {
+    const { payload, tx, created } = removalPayload(merged, [['teams_roster', 'person_id']])
+    await removeMergedPerson(payload, { personId: 10, actorId: 3 })
+    expect(tx.statements).toContain('DELETE FROM people WHERE id = 10')
+    expect(created[0].data.metadata).toMatchObject({ identity: 'remove-merged', personId: 10, mergedInto: 20 })
   })
 })

@@ -63,7 +63,7 @@ export function UsersListView() {
   const fetchUsers = useCallback(async () => {
     try {
       // Every person, paged: a single limit=200 request used to hide everyone past the first 200 by name.
-      setUsers(await fetchAllDocs<UserData>('/api/people?sort=name&depth=1'))
+      setUsers(await fetchAllDocs<UserData>('/api/people?sort=name&depth=1&where[mergedInto][exists]=false'))
     } catch (err) {
       console.error('Users load error:', err)
     } finally {

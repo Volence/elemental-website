@@ -324,6 +324,115 @@ async function repointColumnRowByRow(
 }
 
 /**
+ * Tables whose rows belong to the person rather than referencing them: Payload's array and
+ * relationship sub-tables (people_titles, people_rels, ...) go with the row, and Payload's own
+ * lock/preference bookkeeping is regenerated. Everything else pointing at a person is real data
+ * and has to be dealt with before the row can go.
+ */
+function ownedByThePerson(table: string, column: string): boolean {
+  if (table.startsWith('people_') && (column === 'parent_id' || column === '_parent_id')) return true
+  return table === 'payload_locked_documents_rels' || table === 'payload_preferences_rels'
+}
+
+export type PersonReference = { table: string; column: string; count: number }
+
+/**
+ * Everything that still points at `personId`. Two sources, because neither is complete on its
+ * own: the live foreign-key catalog knows about tables no hand-written list here does
+ * (`production` and `organization_staff` from the unregistered legacy collections, and the
+ * pre-merge `users`/`pug_players` tables, all of which carry NOT NULL person columns on
+ * production), while the merge's own lists cover columns that carry no FK constraint at all in
+ * some databases - `audit_logs.user_id` and the whole `teams_*` family have none in dev. A
+ * table or column this database has not got is skipped, the same way the merge sweep skips it.
+ */
+export async function blockingReferences(tx: any, personId: number): Promise<PersonReference[]> {
+  const seen = new Set<string>()
+  const candidates: Array<{ table: string; column: string; quoted: string }> = []
+  const add = (table: string, column: string, quoted: string) => {
+    const key = `${table}.${column}`
+    if (seen.has(key)) return
+    seen.add(key)
+    candidates.push({ table, column, quoted })
+  }
+
+  const fks = await tx.execute(sql.raw(`
+    SELECT c.conrelid::regclass::text AS tbl, a.attname AS col
+    FROM pg_constraint c
+    JOIN unnest(c.conkey) WITH ORDINALITY AS k(attnum, ord) ON true
+    JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = k.attnum
+    WHERE c.contype = 'f' AND c.confrelid = 'people'::regclass
+  `))
+  for (const row of ((fks as any).rows ?? fks ?? []) as any[]) {
+    const table = String(row.tbl).replace(/^public\./, '')
+    const column = String(row.col)
+    add(table, column, `"${column}"`)
+  }
+  for (const { table, column } of PEOPLE_FK_COLUMNS) add(table, column, `"${column}"`)
+  for (const { table, column } of PRISMA_FK_COLUMNS) add(table, column.replace(/"/g, ''), column)
+
+  const found: PersonReference[] = []
+  for (const { table, column, quoted } of candidates) {
+    if (ownedByThePerson(table, column)) continue
+    let res: any
+    try {
+      res = await tx.execute(sql.raw(`SELECT count(*) AS count FROM "${table}" WHERE ${quoted} = ${personId}`))
+    } catch (e: any) {
+      const code = pgErrorCode(e)
+      if (code === UNDEFINED_TABLE || code === UNDEFINED_COLUMN) continue
+      throw e
+    }
+    const count = Number(((res as any).rows ?? res ?? [])[0]?.count ?? 0)
+    if (count > 0) found.push({ table, column, count })
+  }
+  return found.sort((a, b) => `${a.table}.${a.column}`.localeCompare(`${b.table}.${b.column}`))
+}
+
+/**
+ * Delete a row that a merge already emptied out. A merge archives rather than deletes, because
+ * a merge can legitimately leave references behind - identity claims keep pointing at the row
+ * the claim was filed about. So removal is a separate, deliberate step and only goes ahead when
+ * nothing points at the row any more; the person's own sub-table rows cascade with it.
+ */
+export async function removeMergedPerson(
+  payload: Payload,
+  args: { personId: number; actorId: number | null },
+): Promise<{ removed: number; name: string }> {
+  const { personId, actorId } = args
+  const person = (await payload.findByID({
+    collection: 'people', id: personId, depth: 0, overrideAccess: true,
+  })) as any
+  if (!person) throw new Error(`Person #${personId} not found`)
+  const mergedInto = typeof person.mergedInto === 'object' ? person.mergedInto?.id : person.mergedInto
+  if (!mergedInto) {
+    throw new Error(`Person #${personId} was not merged into anyone, so there is nothing to clean up. Merge them first.`)
+  }
+
+  const tx = (payload as any).db.drizzle
+  const blocking = await blockingReferences(tx, personId)
+  if (blocking.length > 0) {
+    const what = blocking.map((b) => `${b.table}.${b.column} (${b.count})`).join(', ')
+    throw new Error(`#${personId} still has references and was not removed: ${what}`)
+  }
+
+  await tx.execute(sql.raw(`DELETE FROM people WHERE id = ${personId}`))
+
+  try {
+    await createAuditLog(payload, {
+      user: actorId,
+      action: 'delete',
+      collection: 'people',
+      documentId: personId,
+      documentTitle: person.name,
+      metadata: { identity: 'remove-merged', personId, mergedInto },
+    })
+  } catch (e) {
+    console.error('[removeMergedPerson] audit log failed:', e)
+  }
+
+  return { removed: personId, name: person.name }
+}
+
+/**
  * Merge source into target. Target keeps its id. Nothing is deleted except the source's
  * sessions and junction rows that would duplicate ones the target already has.
  *

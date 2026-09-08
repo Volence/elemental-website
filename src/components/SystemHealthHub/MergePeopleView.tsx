@@ -1,13 +1,15 @@
 'use client'
 
 import React, { useState, useCallback, useEffect } from 'react'
-import { Search, ArrowRight, Check, AlertTriangle, Loader2, User, Trash2, Shield } from 'lucide-react'
+import { Search, ArrowRight, Check, AlertTriangle, Loader2, User, Trash2, Shield, Archive } from 'lucide-react'
 import { useConfirm } from '@/components/ConfirmDialog'
 
 type PersonResult = { id: number; name: string; email?: string; discordId?: string; role?: string; photoUrl?: string | null }
 type MergeField = { field: string; targetValue: any; sourceValue: any; willCopy: boolean }
 type TeamRef = { teamId: number; teamName: string; roles: string[] }
 type PreviewData = { target: PersonResult; source: PersonResult; fieldsToMerge: MergeField[]; targetTeamRefs: TeamRef[]; sourceTeamRefs: TeamRef[] }
+type PersonReference = { table: string; column: string; count: number }
+type ArchivedRow = { id: number; name: string; mergedInto: number; blocking: PersonReference[] }
 
 function PersonSearchBox({ label, selected, onSelect }: {
   label: string
@@ -22,7 +24,7 @@ function PersonSearchBox({ label, selected, onSelect }: {
     if (q.length < 2) { setResults([]); return }
     setSearching(true)
     try {
-      const res = await fetch(`/api/people?where[name][like]=${encodeURIComponent(q)}&limit=10&depth=1`)
+      const res = await fetch(`/api/people?where[name][like]=${encodeURIComponent(q)}&where[mergedInto][exists]=false&limit=10&depth=1`)
       if (res.ok) {
         const data = await res.json()
         setResults((data.docs ?? []).map((d: any) => ({
@@ -117,6 +119,10 @@ export default function MergePeopleView({ initialTargetId, initialSourceId }: { 
   const [previewError, setPreviewError] = useState<string | null>(null)
   const [merging, setMerging] = useState(false)
   const [mergeResult, setMergeResult] = useState<{ success: boolean; message: string; log?: string[] } | null>(null)
+  const [archived, setArchived] = useState<ArchivedRow[]>([])
+  const [archivedLoading, setArchivedLoading] = useState(false)
+  const [removing, setRemoving] = useState<number | null>(null)
+  const [removeError, setRemoveError] = useState<string | null>(null)
 
   useEffect(() => {
     const loadInitial = async () => {
@@ -151,9 +157,40 @@ export default function MergePeopleView({ initialTargetId, initialSourceId }: { 
     } finally { setPreviewLoading(false) }
   }
 
+  const loadArchived = useCallback(async () => {
+    setArchivedLoading(true)
+    try {
+      const res = await fetch('/api/merge-people/archived')
+      const data = await res.json()
+      if (res.ok) setArchived(data.rows ?? [])
+    } catch {
+      // The panel is a cleanup aid; a failed load should not take the merge tool with it.
+    } finally { setArchivedLoading(false) }
+  }, [])
+
+  useEffect(() => { loadArchived() }, [loadArchived])
+
+  const removeArchived = async (row: ArchivedRow) => {
+    if (!await confirm({ message: `Permanently remove #${row.id} (${row.name})? Nothing points at it any more. This cannot be undone.`, variant: 'danger' })) return
+    setRemoving(row.id)
+    setRemoveError(null)
+    try {
+      const res = await fetch('/api/merge-people/archived', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: row.id }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      await loadArchived()
+    } catch (e: any) {
+      setRemoveError(e.message)
+    } finally { setRemoving(null) }
+  }
+
   const executeMerge = async () => {
     if (!target || !source) return
-    if (!await confirm({ message: `This will merge "${source.name}" (#${source.id}) into "${target.name}" (#${target.id}) and DELETE person #${source.id}. This cannot be undone. Continue?`, variant: 'danger' })) return
+    if (!await confirm({ message: `This will merge "${source.name}" (#${source.id}) into "${target.name}" (#${target.id}) and archive person #${source.id}. This cannot be undone. Continue?`, variant: 'danger' })) return
     setMerging(true)
     try {
       const res = await fetch('/api/merge-people', {
@@ -166,6 +203,7 @@ export default function MergePeopleView({ initialTargetId, initialSourceId }: { 
       setMergeResult({ success: true, message: data.message, log: data.log })
       setPreview(null)
       setSource(null)
+      loadArchived()
     } catch (e: any) {
       setMergeResult({ success: false, message: e.message })
     } finally { setMerging(false) }
@@ -174,7 +212,7 @@ export default function MergePeopleView({ initialTargetId, initialSourceId }: { 
   return (
     <div style={{ maxWidth: 800 }}>
       <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 20 }}>
-        Merge two person records into one. The <strong style={{ color: '#34d399' }}>target</strong> is kept, the <strong style={{ color: '#f87171' }}>source</strong> is merged in and deleted. Fields only copy if the target's field is empty.
+        Merge two person records into one. The <strong style={{ color: '#34d399' }}>target</strong> is kept, the <strong style={{ color: '#f87171' }}>source</strong> is merged in and archived. Fields only copy if the target's field is empty.
         All references (teams, matches, lobbies, etc.) are repointed automatically.
       </p>
 
@@ -183,7 +221,7 @@ export default function MergePeopleView({ initialTargetId, initialSourceId }: { 
         <div style={{ display: 'flex', alignItems: 'center', paddingTop: 24 }}>
           <ArrowRight size={20} style={{ color: 'rgba(255,255,255,0.2)' }} />
         </div>
-        <PersonSearchBox label="Source (merge in & delete)" selected={source} onSelect={setSource} />
+        <PersonSearchBox label="Source (merge in & archive)" selected={source} onSelect={setSource} />
       </div>
 
       {target && source && (
@@ -284,14 +322,14 @@ export default function MergePeopleView({ initialTargetId, initialSourceId }: { 
 
           <div style={{ padding: '12px 14px', background: 'rgba(239, 68, 68, 0.03)', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ fontSize: 12, color: 'var(--elmt-text-disabled)' }}>
-              All references to <strong style={{ color: '#f87171' }}>#{source?.id}</strong> will be repointed to <strong style={{ color: '#34d399' }}>#{target?.id}</strong>, then <strong style={{ color: '#f87171' }}>#{source?.id}</strong> will be deleted.
+              All references to <strong style={{ color: '#f87171' }}>#{source?.id}</strong> will be repointed to <strong style={{ color: '#34d399' }}>#{target?.id}</strong>, then <strong style={{ color: '#f87171' }}>#{source?.id}</strong> is archived - an empty row you can remove below once nothing points at it.
             </div>
             <button
               onClick={executeMerge}
               disabled={merging}
               style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 20px', borderRadius: 8, border: 'none', background: '#dc2626', color: 'white', cursor: 'pointer', fontSize: 13, fontWeight: 600, flexShrink: 0 }}
             >
-              {merging ? <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Merging...</> : <><Trash2 size={14} /> Merge & delete source</>}
+              {merging ? <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Merging...</> : <><Archive size={14} /> Merge & archive source</>}
             </button>
           </div>
         </div>
@@ -318,6 +356,65 @@ export default function MergePeopleView({ initialTargetId, initialSourceId }: { 
           )}
         </div>
       )}
+
+      <div style={{ marginTop: 28, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+          <Archive size={14} style={{ color: 'var(--elmt-text-disabled)' }} />
+          <h3 style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Archived rows from past merges
+          </h3>
+          {archivedLoading && <Loader2 size={13} style={{ animation: 'spin 1s linear infinite', opacity: 0.4 }} />}
+        </div>
+        <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', marginTop: 0, marginBottom: 12 }}>
+          A merge keeps the source row so anything still pointing at it stays readable. Once nothing does, it is safe to remove.
+        </p>
+
+        {removeError && (
+          <div style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(239, 68, 68, 0.3)', background: 'rgba(239, 68, 68, 0.05)', color: '#f87171', fontSize: 13, marginBottom: 12 }}>
+            <AlertTriangle size={13} style={{ verticalAlign: -2, marginRight: 6 }} />{removeError}
+          </div>
+        )}
+
+        {!archivedLoading && archived.length === 0 && (
+          <div style={{ fontSize: 13, color: 'var(--elmt-text-disabled)' }}>Nothing left over - every merged row has been cleaned up.</div>
+        )}
+
+        {archived.map((row) => {
+          const blocked = row.blocking.length > 0
+          return (
+            <div
+              key={row.id}
+              style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', marginBottom: 8, borderRadius: 8, border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)' }}
+            >
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 14, color: '#e2e8f0' }}>
+                  {row.name} <span style={{ color: 'var(--elmt-text-disabled)' }}>#{row.id}</span>
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--elmt-text-disabled)' }}>
+                  merged into #{row.mergedInto}
+                  {blocked && ` - still referenced by ${row.blocking.map((b) => `${b.table}.${b.column} (${b.count})`).join(', ')}`}
+                </div>
+              </div>
+              <button
+                onClick={() => removeArchived(row)}
+                disabled={blocked || removing === row.id}
+                title={blocked ? 'Something still points at this row - repoint or clear it first' : `Permanently remove #${row.id}`}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 8, flexShrink: 0,
+                  border: '1px solid rgba(239, 68, 68, 0.3)',
+                  background: blocked ? 'rgba(255,255,255,0.03)' : 'rgba(239, 68, 68, 0.08)',
+                  color: blocked ? 'var(--elmt-text-disabled)' : '#f87171',
+                  cursor: blocked ? 'not-allowed' : 'pointer', fontSize: 12, fontWeight: 500,
+                }}
+              >
+                {removing === row.id
+                  ? <><Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> Removing...</>
+                  : <><Trash2 size={13} /> Remove</>}
+              </button>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
