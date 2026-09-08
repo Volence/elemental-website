@@ -92,6 +92,37 @@ describe('repointColumn', () => {
     expect(log).toEqual(['Repointed tasks_rels.people_id'])
   })
 
+  it('skips a missing column instead of failing the merge', async () => {
+    // Prod can be a migration behind: the table is there but the FK column is not yet.
+    const tx = {
+      async execute(query: any) {
+        const text = statementText(query)
+        if (text.startsWith('UPDATE')) throw { cause: { code: '42703' } }
+        return { rows: [] }
+      },
+    }
+    const log: string[] = []
+    await repointColumn(tx, 'availability_calendars', 'created_by_id', '"created_by_id"', SOURCE, TARGET, log)
+    expect(log).toEqual(['Skipped availability_calendars.created_by_id: column missing'])
+  })
+
+  it('reports the real failure, not the savepoint, when the transaction is already gone', async () => {
+    // 25P01: the statements are landing outside any transaction, so the savepoint dance fails
+    // too. The savepoint error says nothing useful - the UPDATE's error is the story.
+    const tx = {
+      async execute(query: any) {
+        const text = statementText(query)
+        if (text.startsWith('UPDATE')) throw { cause: { code: '42703', message: 'column "created_by_id" does not exist' } }
+        if (text.startsWith('ROLLBACK TO SAVEPOINT')) throw { cause: { code: '25P01' } }
+        return { rows: [] }
+      },
+    }
+    const log: string[] = []
+    await expect(
+      repointColumn(tx, 'availability_calendars', 'created_by_id', '"created_by_id"', SOURCE, TARGET, log),
+    ).rejects.toThrow(/transaction .*no longer open.*column "created_by_id" does not exist/s)
+  })
+
   it('skips a missing table instead of failing the merge', async () => {
     const tx = {
       async execute(query: any) {
@@ -208,6 +239,25 @@ describe('mergePeople', () => {
     const archiveAt = statements.findIndex((s) => s.includes('is_inactive = true'))
     expect(moveAt).toBeGreaterThan(-1)
     expect(moveAt).toBeLessThan(archiveAt)
+  })
+
+  it('stops when a Payload hook silently rolled the transaction back', async () => {
+    // Payload's killTransaction rolls our transaction back whenever an operation sharing the
+    // merge's `req` fails - and a hook that swallows that error (the Twitch sync, the audit
+    // logger) lets payload.update return as if nothing happened. Carrying on would run the
+    // rest of the merge on a pooled connection, outside any transaction.
+    const { payload, statements, events } = fakePayload({ 10: source, 20: target })
+    const update = payload.update
+    payload.update = async (args: any) => {
+      delete payload.db.sessions['tx-1']
+      return update(args)
+    }
+    await expect(mergePeople(payload, { targetId: 20, sourceId: 10, actorId: null })).rejects.toThrow(
+      /transaction .*no longer open/i,
+    )
+    expect(events).toEqual(['begin', 'rollback'])
+    // Nothing was repointed on a connection we no longer own.
+    expect(statements.some((s) => s.startsWith('SAVEPOINT'))).toBe(false)
   })
 
   it('rolls the whole merge back when a statement fails', async () => {

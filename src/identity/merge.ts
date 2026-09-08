@@ -21,8 +21,6 @@ export const PEOPLE_FK_COLUMNS: Array<{ table: string; column: string }> = [
   { table: 'invite_links', column: 'created_by_id' },
   { table: 'invite_links', column: 'used_by_id' },
   { table: 'invite_links', column: 'linked_person_id' },
-  { table: 'matches', column: 'production_workflow_assigned_observer_id' },
-  { table: 'matches', column: 'production_workflow_assigned_producer_id' },
   { table: 'matches_rels', column: 'people_id' },
   { table: 'caster_su', column: 'user_id' },
   { table: 'assigned_c', column: 'user_id' },
@@ -199,6 +197,43 @@ function pgErrorIsUnique(e: any): boolean {
   return pgErrorCode(e) === '23505' || Boolean(e?.message?.includes('unique')) || Boolean(e?.cause?.message?.includes('unique'))
 }
 
+/** The Postgres error codes this file reasons about. */
+const UNDEFINED_TABLE = '42P01'
+const UNDEFINED_COLUMN = '42703'
+
+const pgErrorText = (e: any): string => e?.cause?.message ?? e?.message ?? String(e)
+
+/**
+ * A savepoint statement only fails when the surrounding transaction is not there any more
+ * (25P01), which means the statements are landing on a pooled connection we no longer own.
+ * Whatever Postgres says about the savepoint is noise; the failure that got us here is the
+ * story, so keep that as the message and the cause.
+ */
+function transactionGoneError(savepointErr: any, table: string, column: string, original: any): Error {
+  const why = original ? ` The failure that got us here: ${pgErrorText(original)}` : ''
+  return new Error(
+    `Merge transaction is no longer open (Postgres ${pgErrorCode(savepointErr) ?? '?'}) while repointing ${table}.${column}.${why}`,
+    { cause: original ?? savepointErr },
+  )
+}
+
+/**
+ * Payload rolls a transaction back from under us whenever an operation sharing the merge's `req`
+ * fails: its error handler calls killTransaction, which ends the transaction and hands the
+ * connection back to the pool. A hook that swallows that error (the Twitch sync and the audit
+ * logger both do, deliberately) lets payload.update return as if nothing had happened, and the
+ * merge would carry on issuing statements on a connection it no longer owns - committing half a
+ * merge outside any transaction, and firing SAVEPOINT/ROLLBACK into whatever request picked that
+ * connection up next. The session disappearing from the adapter is the signal that happened.
+ */
+function assertTransactionOpen(db: any, tid: unknown, step: string): void {
+  if (!db.sessions?.[String(tid)]) {
+    throw new Error(
+      `Merge transaction is no longer open after ${step} - a Payload hook rolled it back and swallowed the error. No changes were made.`,
+    )
+  }
+}
+
 /**
  * Repoint every row in `table.column` (or `quotedColumn`, already-quoted for Prisma-style
  * camelCase columns) from sourceId to targetId, inside transaction `tx`. Tries a single
@@ -222,18 +257,30 @@ export async function repointColumn(
   // A failed statement poisons the rest of the transaction in Postgres unless it ran inside a
   // savepoint, so the initial set-based attempt needs one too, not just the per-row fallback -
   // otherwise the fallback's own SELECT would immediately fail with "transaction is aborted".
-  await tx.execute(sql.raw(`SAVEPOINT sp_col`))
+  try {
+    await tx.execute(sql.raw(`SAVEPOINT sp_col`))
+  } catch (savepointErr: any) {
+    throw transactionGoneError(savepointErr, table, column, null)
+  }
   try {
     await tx.execute(sql.raw(`UPDATE "${table}" SET ${quotedColumn} = ${targetId} WHERE ${quotedColumn} = ${sourceId}`))
     await tx.execute(sql.raw(`RELEASE SAVEPOINT sp_col`))
     log.push(`Repointed ${table}.${column}`)
   } catch (e: any) {
-    await tx.execute(sql.raw(`ROLLBACK TO SAVEPOINT sp_col`))
-    await tx.execute(sql.raw(`RELEASE SAVEPOINT sp_col`))
+    try {
+      await tx.execute(sql.raw(`ROLLBACK TO SAVEPOINT sp_col`))
+      await tx.execute(sql.raw(`RELEASE SAVEPOINT sp_col`))
+    } catch (savepointErr: any) {
+      throw transactionGoneError(savepointErr, table, column, e)
+    }
     if (pgErrorIsUnique(e)) {
       await repointColumnRowByRow(tx, table, column, quotedColumn, sourceId, targetId, log)
-    } else if (pgErrorCode(e) === '42P01') {
+    } else if (pgErrorCode(e) === UNDEFINED_TABLE) {
       log.push(`Skipped ${table}.${column}: table missing`)
+    } else if (pgErrorCode(e) === UNDEFINED_COLUMN) {
+      // The table is there but this database is a migration behind on the column. Nothing can
+      // reference the source through a column that does not exist, so there is nothing to move.
+      log.push(`Skipped ${table}.${column}: column missing`)
     } else {
       throw e
     }
@@ -349,6 +396,7 @@ export async function mergePeople(
       if (data.email) released.push('email = NULL')
       await tx.execute(sql.raw(`UPDATE people SET ${released.join(', ')} WHERE id = ${sourceId}`))
       await payload.update({ collection: 'people', id: targetId, data: stripRowIds(data) as any, overrideAccess: true, req })
+      assertTransactionOpen(db, tid, 'the field merge onto the target')
       log.push(`Merged fields into target: ${Object.keys(data).join(', ')}`)
     }
 
