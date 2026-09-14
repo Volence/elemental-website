@@ -6,6 +6,7 @@
  * Two flavours: the staff post (internal channel, real pings) and the public
  * post (announcements, names only).
  */
+import type { Where } from 'payload'
 import { FACEIT_DIVISIONS, divisionFromRating } from './divisions'
 
 export const DISCORD_MESSAGE_LIMIT = 2000
@@ -137,6 +138,36 @@ export function withOrgPrefix(name: string): string {
 export function discordTimestamp(date: string): string {
   const unix = Math.floor(new Date(date).getTime() / 1000)
   return `<t:${unix}:F>`
+}
+
+/**
+ * Which matches the posted schedule is built from: upcoming matches ticked for it, plus any
+ * match already in this week's post. The second half keeps a played match in the post instead
+ * of dropping it once its date passes or it is marked complete - only unticking or cancelling
+ * a match takes it out. `keepIds` is empty when a fresh week's post is being made.
+ */
+export function scheduleMatchesWhere(since: Date, keepIds: number[]): Where {
+  const upcoming: Where = {
+    and: [
+      { date: { greater_than_equal: since.toISOString() } },
+      { 'productionWorkflow.includeInSchedule': { equals: true } },
+      { 'productionWorkflow.isArchived': { not_equals: true } },
+      { status: { not_in: ['complete', 'cancelled'] } },
+    ],
+  }
+  if (keepIds.length === 0) return upcoming
+  return {
+    or: [
+      upcoming,
+      {
+        and: [
+          { id: { in: keepIds } },
+          { 'productionWorkflow.includeInSchedule': { equals: true } },
+          { status: { not_equals: 'cancelled' } },
+        ],
+      },
+    ],
+  }
 }
 
 function selectedMatches(matches: ScheduleMatch[]): ScheduleMatch[] {

@@ -3629,6 +3629,12 @@
         cursor: not-allowed;
       }
     }
+
+    // Signed up for the slot but already working another match in it
+    &--busy {
+      border-style: dashed;
+      color: rgba(255, 255, 255, 0.45);
+    }
   }
 
   &__person-remove {

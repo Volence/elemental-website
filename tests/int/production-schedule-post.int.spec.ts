@@ -5,8 +5,40 @@ import {
   formatPublicSchedule,
   splitAtBoundaries,
   schedulePostRelevantChange,
+  scheduleMatchesWhere,
   type ScheduleMatch,
 } from '@/utilities/productionSchedulePost'
+
+describe('scheduleMatchesWhere', () => {
+  const since = new Date('2026-09-14T00:00:00.000Z')
+
+  it('asks for upcoming, ticked, live matches when nothing is posted', () => {
+    expect(scheduleMatchesWhere(since, [])).toEqual({
+      and: [
+        { date: { greater_than_equal: '2026-09-14T00:00:00.000Z' } },
+        { 'productionWorkflow.includeInSchedule': { equals: true } },
+        { 'productionWorkflow.isArchived': { not_equals: true } },
+        { status: { not_in: ['complete', 'cancelled'] } },
+      ],
+    })
+  })
+
+  it('keeps matches already in the post once they are played, archived or complete', () => {
+    const where = scheduleMatchesWhere(since, [11, 12])
+    expect(where).toEqual({
+      or: [
+        scheduleMatchesWhere(since, []),
+        {
+          and: [
+            { id: { in: [11, 12] } },
+            { 'productionWorkflow.includeInSchedule': { equals: true } },
+            { status: { not_equals: 'cancelled' } },
+          ],
+        },
+      ],
+    })
+  })
+})
 
 const observer = { id: 1, name: 'Obs One', discordId: '111111111111111111' }
 const producer = { id: 2, name: 'Prod Two', discordId: null }

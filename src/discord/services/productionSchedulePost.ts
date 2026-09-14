@@ -6,6 +6,7 @@ import { ensureDiscordClient, getDiscordClient } from '../bot'
 import { parseMessageIds, syncScheduleMessages } from '../handlers/publish-schedule'
 import {
   buildSchedulePosts,
+  scheduleMatchesWhere,
   type MentionStyle,
   type ScheduleMatch,
   type SchedulePosts,
@@ -63,20 +64,16 @@ export function readChannels(global: any): SchedulePostChannels {
   }
 }
 
-/** Upcoming matches with coverage that are ticked for the schedule. */
-export async function fetchScheduleMatches(payload: Payload): Promise<ScheduleMatch[]> {
+/**
+ * Matches with coverage that are ticked for the schedule: the upcoming ones, plus `keepIds` (the
+ * matches already in the post) even once they have been played.
+ */
+export async function fetchScheduleMatches(payload: Payload, keepIds: number[] = []): Promise<ScheduleMatch[]> {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const result = await payload.find({
     collection: 'matches',
-    where: {
-      and: [
-        { date: { greater_than_equal: today.toISOString() } },
-        { 'productionWorkflow.includeInSchedule': { equals: true } },
-        { 'productionWorkflow.isArchived': { not_equals: true } },
-        { status: { not_in: ['complete', 'cancelled'] } },
-      ],
-    },
+    where: scheduleMatchesWhere(today, keepIds),
     sort: 'date',
     limit: 100,
     depth: 2,
@@ -88,16 +85,24 @@ export async function fetchScheduleMatches(payload: Payload): Promise<ScheduleMa
   })
 }
 
-export async function buildProductionSchedule(payload: Payload, mentionStyle: MentionStyle): Promise<ScheduleBuild> {
-  const [global, matches] = await Promise.all([
-    payload.findGlobal({ slug: GLOBAL_SLUG, depth: 0, overrideAccess: true }),
-    fetchScheduleMatches(payload),
-  ])
+export interface BuildOptions {
+  /** Keep matches already in the week's post after they are played. Off only for a fresh week's post. */
+  keepPosted?: boolean
+}
+
+export async function buildProductionSchedule(
+  payload: Payload,
+  mentionStyle: MentionStyle,
+  { keepPosted = true }: BuildOptions = {},
+): Promise<ScheduleBuild> {
+  const global = await payload.findGlobal({ slug: GLOBAL_SLUG, depth: 0, overrideAccess: true })
+  const state = readState(global)
+  const matches = await fetchScheduleMatches(payload, keepPosted ? state.matchIds : [])
   return {
     posts: buildSchedulePosts(matches, { mentionStyle }),
     matches,
     channels: readChannels(global),
-    state: readState(global),
+    state,
   }
 }
 
@@ -143,7 +148,7 @@ export interface PostScheduleResult {
  * post is skipped; at least one must be configured.
  */
 export async function postProductionSchedule(payload: Payload, { mode, postedBy }: PostScheduleArgs): Promise<PostScheduleResult> {
-  const build = await buildProductionSchedule(payload, 'discord')
+  const build = await buildProductionSchedule(payload, 'discord', { keepPosted: mode === 'update' })
   if (!build.channels.staff && !build.channels.public) {
     throw new Error('No Discord channels configured for the broadcast schedule')
   }

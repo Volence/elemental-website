@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { toast } from '@payloadcms/ui'
 import { AlertTriangle, CheckCircle, Globe, XCircle, ChevronDown, ChevronRight, X, Eye, Clapperboard, Focus, Mic, Users } from 'lucide-react'
+import { slotSignups, assignedElsewhere, type SlotSignups } from '@/utilities/productionSignups'
 
 interface User {
   id: number
@@ -12,7 +13,7 @@ interface User {
 
 interface CasterSignup {
   user: User | number
-  style?: string
+  style?: string | null
 }
 
 interface Match {
@@ -51,11 +52,8 @@ interface Match {
  * producer signups, because producer and director are both off-game jobs. */
 type RoleKey = 'observer' | 'producer' | 'director' | 'caster'
 
-const ROLE_FIELD: Record<Exclude<RoleKey, 'caster'>, 'assignedObservers' | 'assignedProducers' | 'assignedDirectors'> = {
-  observer: 'assignedObservers',
-  producer: 'assignedProducers',
-  director: 'assignedDirectors',
-}
+type AssignFn = (matchId: number, role: RoleKey, userId: number, style?: string | null) => void
+type UnassignFn = (matchId: number, role: RoleKey, userId: number) => void
 
 interface MatchGroup {
   dateTime: string
@@ -79,9 +77,12 @@ const getUserName = (user: User | number | null | undefined): string => {
   return user.name || user.email || 'Unknown'
 }
 
+/** "ELMT Stellar vs ThreeTwoOne" -> "Stellar", for the short "on ..." hint. */
+const shortMatchLabel = (title: string): string => title.replace(/^ELMT\s+/, '').split(' vs ')[0].trim() || title
+
 // ─── Compact Role Row ───
 
-function RoleRow({ matchId, roleName, roleKey, roleIcon, minSlots, signups, assigned, blockedIds = [], onAssign, onUnassign }: {
+function RoleRow({ matchId, roleName, roleKey, roleIcon, minSlots, signups, assigned, blockedIds = [], busyElsewhere, onAssign, onUnassign }: {
   matchId: number
   roleName: string
   roleKey: RoleKey
@@ -94,11 +95,14 @@ function RoleRow({ matchId, roleName, roleKey, roleIcon, minSlots, signups, assi
   /** People who cannot take this role on this match because they already hold the paired one
    * (producer and director run at the same time, so nobody may hold both). */
   blockedIds?: number[]
-  onAssign: (matchId: number, role: RoleKey, userId: number, style?: string) => void
-  onUnassign: (matchId: number, role: RoleKey, target: { userId?: number; index?: number }) => void
+  /** People already working another match in this time slot, with that match's title. They stay
+   * clickable - the lead decides - but are marked so nobody is double-booked by accident. */
+  busyElsewhere?: Map<number, string>
+  onAssign: AssignFn
+  onUnassign: UnassignFn
 }) {
   const isCaster = roleKey === 'caster'
-  const assignedList: { user: User | number | null; style?: string }[] = isCaster
+  const assignedList: { user: User | number | null; style?: string | null }[] = isCaster
     ? ((assigned as CasterSignup[]) || []).map(c => ({ user: c.user, style: c.style }))
     : ((assigned as (User | number)[]) || []).map(u => ({ user: u }))
   const slotsFilled = assignedList.length
@@ -115,18 +119,21 @@ function RoleRow({ matchId, roleName, roleKey, roleIcon, minSlots, signups, assi
 
       <div className="assignment-v2__role-people">
         {/* Assigned */}
-        {assignedList.map((item, idx) => (
-          <span key={`a-${idx}`} className="assignment-v2__person-pill assignment-v2__person-pill--assigned">
-            <CheckCircle size={10} />
-            {getUserName(item.user)}
-            {item.style && <em>({item.style})</em>}
-            <button
-              onClick={() => onUnassign(matchId, roleKey, isCaster ? { index: idx } : { userId: getUserId(item.user) ?? undefined })}
-              className="assignment-v2__person-remove"
-              title="Unassign"
-            ><X size={10} /></button>
-          </span>
-        ))}
+        {assignedList.map((item, idx) => {
+          const userId = getUserId(item.user)
+          return (
+            <span key={`a-${idx}`} className="assignment-v2__person-pill assignment-v2__person-pill--assigned">
+              <CheckCircle size={10} />
+              {getUserName(item.user)}
+              {item.style && <em>({item.style})</em>}
+              <button
+                onClick={() => userId !== null && onUnassign(matchId, roleKey, userId)}
+                className="assignment-v2__person-remove"
+                title="Unassign"
+              ><X size={10} /></button>
+            </span>
+          )
+        })}
 
         {/* Available (not yet assigned) */}
         {signups.map((signup, idx) => {
@@ -138,16 +145,18 @@ function RoleRow({ matchId, roleName, roleKey, roleIcon, minSlots, signups, assi
           if (isAlreadyAssigned) return null
           // Hidden rather than disabled: a producer is not a candidate for director at all.
           if (userId !== null && blockedIds.includes(userId)) return null
+          const busyOn = userId !== null ? busyElsewhere?.get(userId) : undefined
 
           return (
             <button
               key={`s-${idx}`}
               onClick={() => userId && onAssign(matchId, roleKey, userId, style)}
-              className="assignment-v2__person-pill assignment-v2__person-pill--available"
-              title={`Assign ${name}`}
+              className={`assignment-v2__person-pill assignment-v2__person-pill--available${busyOn ? ' assignment-v2__person-pill--busy' : ''}`}
+              title={busyOn ? `Assign ${name} (already on ${busyOn})` : `Assign ${name}`}
             >
               {name}
               {style && <em>({style})</em>}
+              {busyOn && <em>· on {shortMatchLabel(busyOn)}</em>}
             </button>
           )
         })}
@@ -162,13 +171,16 @@ function RoleRow({ matchId, roleName, roleKey, roleIcon, minSlots, signups, assi
 
 // ─── Match Card (compact) ───
 
-function MatchCard({ match, onAssign, onUnassign }: {
+function MatchCard({ match, signups, busyElsewhere, onAssign, onUnassign }: {
   match: Match
-  onAssign: (matchId: number, role: RoleKey, userId: number, style?: string) => void
-  onUnassign: (matchId: number, role: RoleKey, target: { userId?: number; index?: number }) => void
+  /** The time slot's signups: a signup covers every match at that time, so each match offers them all. */
+  signups: SlotSignups<User | number>
+  busyElsewhere: Map<number, string>
+  onAssign: AssignFn
+  onUnassign: UnassignFn
 }) {
   const pw = match.productionWorkflow || {} as NonNullable<Match['productionWorkflow']>
-  const totalSignups = (pw.observerSignups?.length || 0) + (pw.producerSignups?.length || 0) + (pw.casterSignups?.length || 0)
+  const totalSignups = signups.observers.length + signups.producers.length + signups.casters.length
   const isFullyCovered = pw.coverageStatus === 'full'
 
   return (
@@ -193,24 +205,26 @@ function MatchCard({ match, onAssign, onUnassign }: {
       <div className="assignment-v2__roles">
         <RoleRow
           matchId={match.id} roleName="Observer" roleKey="observer" roleIcon={<Eye size={12} />}
-          minSlots={1} signups={pw.observerSignups || []} assigned={pw.assignedObservers || []}
+          minSlots={1} signups={signups.observers} assigned={pw.assignedObservers || []}
+          busyElsewhere={busyElsewhere}
           onAssign={onAssign} onUnassign={onUnassign}
         />
         <RoleRow
           matchId={match.id} roleName="Producer" roleKey="producer" roleIcon={<Clapperboard size={12} />}
-          minSlots={1} signups={pw.producerSignups || []} assigned={pw.assignedProducers || []}
-          blockedIds={assignedIds(pw.assignedDirectors)}
+          minSlots={1} signups={signups.producers} assigned={pw.assignedProducers || []}
+          blockedIds={assignedIds(pw.assignedDirectors)} busyElsewhere={busyElsewhere}
           onAssign={onAssign} onUnassign={onUnassign}
         />
         <RoleRow
           matchId={match.id} roleName="Director" roleKey="director" roleIcon={<Focus size={12} />}
-          minSlots={0} signups={pw.producerSignups || []} assigned={pw.assignedDirectors || []}
-          blockedIds={assignedIds(pw.assignedProducers)}
+          minSlots={0} signups={signups.producers} assigned={pw.assignedDirectors || []}
+          blockedIds={assignedIds(pw.assignedProducers)} busyElsewhere={busyElsewhere}
           onAssign={onAssign} onUnassign={onUnassign}
         />
         <RoleRow
           matchId={match.id} roleName="Casters" roleKey="caster" roleIcon={<Mic size={12} />}
-          minSlots={2} signups={pw.casterSignups || []} assigned={pw.assignedCasters || []}
+          minSlots={2} signups={signups.casters as CasterSignup[]} assigned={pw.assignedCasters || []}
+          busyElsewhere={busyElsewhere}
           onAssign={onAssign} onUnassign={onUnassign}
         />
       </div>
@@ -223,19 +237,20 @@ function MatchCard({ match, onAssign, onUnassign }: {
 function TimeSlotGroup({ group, defaultOpen, onAssign, onUnassign }: {
   group: MatchGroup
   defaultOpen: boolean
-  onAssign: (matchId: number, role: RoleKey, userId: number, style?: string) => void
-  onUnassign: (matchId: number, role: RoleKey, target: { userId?: number; index?: number }) => void
+  onAssign: AssignFn
+  onUnassign: UnassignFn
 }) {
   const [expanded, setExpanded] = useState(defaultOpen)
 
+  const signups = slotSignups<User | number>(group.matches)
   const totalSignups = new Set<number>()
   const totalAssigned = new Set<number>()
+  signups.observers.forEach(u => { const id = getUserId(u); if (id) totalSignups.add(id) })
+  signups.producers.forEach(u => { const id = getUserId(u); if (id) totalSignups.add(id) })
+  signups.casters.forEach(c => { const id = getUserId(c.user); if (id) totalSignups.add(id) })
   group.matches.forEach(m => {
     const pw = m.productionWorkflow
     if (!pw) return
-    pw.observerSignups?.forEach((u: any) => { const id = getUserId(u); if (id) totalSignups.add(id) })
-    pw.producerSignups?.forEach((u: any) => { const id = getUserId(u); if (id) totalSignups.add(id) })
-    pw.casterSignups?.forEach((c: any) => { const id = getUserId(c.user); if (id) totalSignups.add(id) })
     assignedIds(pw.assignedObservers).forEach(id => totalAssigned.add(id))
     assignedIds(pw.assignedProducers).forEach(id => totalAssigned.add(id))
     assignedIds(pw.assignedDirectors).forEach(id => totalAssigned.add(id))
@@ -267,7 +282,14 @@ function TimeSlotGroup({ group, defaultOpen, onAssign, onUnassign }: {
       {expanded && (
         <div className="assignment-v2__slot-matches">
           {group.matches.map(match => (
-            <MatchCard key={match.id} match={match} onAssign={onAssign} onUnassign={onUnassign} />
+            <MatchCard
+              key={match.id}
+              match={match}
+              signups={signups}
+              busyElsewhere={assignedElsewhere<User | number>(group.matches, match.id)}
+              onAssign={onAssign}
+              onUnassign={onUnassign}
+            />
           ))}
         </div>
       )}
@@ -300,82 +322,40 @@ export function AssignmentView() {
     }
   }
 
-  const assignStaff = async (matchId: number, role: RoleKey, userId: number, casterStyle?: string) => {
+  /**
+   * One role change on one match. The server reads the match fresh and changes only that role's
+   * list, so signups that arrived after this page loaded are kept.
+   */
+  const changeAssignment = async (
+    action: 'assign' | 'unassign',
+    matchId: number,
+    role: RoleKey,
+    userId: number,
+    style?: string | null,
+  ) => {
     try {
-      const match = matches.find(m => m.id === matchId)
-      if (!match) return
-      const pw = match.productionWorkflow || {} as NonNullable<Match['productionWorkflow']>
-      let updateData: any = {}
-
-      if (role !== 'caster') {
-        const field = ROLE_FIELD[role]
-        const current = assignedIds(pw[field])
-        if (current.includes(userId)) return
-        updateData.productionWorkflow = { ...pw, [field]: [...current, userId] }
-      } else if (role === 'caster') {
-        updateData.productionWorkflow = {
-          ...pw,
-          assignedCasters: [...(pw.assignedCasters || []), { user: userId, style: casterStyle || 'both' }],
-        }
-      }
-
-      const response = await fetch(`/api/matches/${matchId}`, {
-        method: 'PATCH',
+      const response = await fetch('/api/production/assignment', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updateData),
+        body: JSON.stringify({ action, matchId, role, userId, style }),
       })
-
-      if (response.ok) {
-        const matchResponse = await fetch(`/api/matches/${matchId}?depth=2`)
-        const matchData = await matchResponse.json()
-        setMatches(matches.map(m => m.id === matchId ? matchData : m))
-        toast.success('Staff assigned!')
-      } else {
-        toast.error('Failed to assign staff')
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        toast.error(data.message || (action === 'assign' ? 'Failed to assign staff' : 'Failed to unassign'))
+        return
       }
+      setMatches(prev => prev.map(m => m.id === matchId ? data : m))
+      toast.success(action === 'assign' ? 'Staff assigned!' : 'Staff unassigned!')
     } catch (error) {
-      console.error('Error assigning staff:', error)
-      toast.error('Error assigning staff')
+      console.error(`Error (${action}) staff:`, error)
+      toast.error(action === 'assign' ? 'Error assigning staff' : 'Error unassigning staff')
     }
   }
 
-  const unassignStaff = async (matchId: number, role: RoleKey, target: { userId?: number; index?: number }) => {
-    try {
-      const match = matches.find(m => m.id === matchId)
-      if (!match) return
-      const pw = match.productionWorkflow || {} as NonNullable<Match['productionWorkflow']>
-      let updateData: any = {}
-      const casterIndex = target.index
-
-      if (role !== 'caster') {
-        const field = ROLE_FIELD[role]
-        updateData.productionWorkflow = { ...pw, [field]: assignedIds(pw[field]).filter(id => id !== target.userId) }
-      } else if (role === 'caster' && casterIndex !== undefined) {
-        updateData.productionWorkflow = {
-          ...pw,
-          assignedCasters: (pw.assignedCasters || []).filter((_: CasterSignup, idx: number) => idx !== casterIndex),
-        }
-      }
-
-      const response = await fetch(`/api/matches/${matchId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updateData),
-      })
-
-      if (response.ok) {
-        const matchResponse = await fetch(`/api/matches/${matchId}?depth=2`)
-        const matchData = await matchResponse.json()
-        setMatches(matches.map(m => m.id === matchId ? matchData : m))
-        toast.success('Staff unassigned!')
-      } else {
-        toast.error('Failed to unassign')
-      }
-    } catch (error) {
-      console.error('Error unassigning staff:', error)
-      toast.error('Error unassigning staff')
-    }
-  }
+  const assignStaff: AssignFn = (matchId, role, userId, style) =>
+    changeAssignment('assign', matchId, role, userId, style)
+  const unassignStaff: UnassignFn = (matchId, role, userId) =>
+    changeAssignment('unassign', matchId, role, userId)
 
   if (loading) {
     return <div className="production-dashboard__loading">Loading matches...</div>

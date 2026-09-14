@@ -98,6 +98,8 @@ function SignupModal({ matchGroup, currentUserId, onClose, onSignup }: {
 }) {
   const [roles, setRoles] = useState<SignupRoles>({ observer: false, producer: false, caster: false })
   const [submitting, setSubmitting] = useState(false)
+  // Guards the submit synchronously; the `submitting` state only disables the button after a render.
+  const submittingRef = useRef(false)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -130,13 +132,18 @@ function SignupModal({ matchGroup, currentUserId, onClose, onSignup }: {
       toast.error('Please select at least one role')
       return
     }
+    if (submittingRef.current) return
+    submittingRef.current = true
     setSubmitting(true)
     try {
       await onSignup(matchGroup.matches.map(m => m.id), roles)
       toast.success(`Signed up for ${matchGroup.matches.length} match${matchGroup.matches.length > 1 ? 'es' : ''}!`)
       onClose()
     } catch { toast.error('Failed to sign up') }
-    finally { setSubmitting(false) }
+    finally {
+      submittingRef.current = false
+      setSubmitting(false)
+    }
   }
 
   return createPortal(
@@ -228,30 +235,32 @@ export function StaffSignupsView() {
     }
   }
 
+  // One request per time slot: the server writes the slot's matches one at a time. Firing a
+  // request per match at once raced other signups for the same slot and scattered them.
   const handleSignup = async (matchIds: number[], roles: SignupRoles) => {
-    const promises = matchIds.map(matchId =>
-      fetch('/api/production/staff-signup', {
+    try {
+      const response = await fetch('/api/production/staff-signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ matchId, roles }),
+        body: JSON.stringify({ matchIds, roles }),
       })
-    )
-    const results = await Promise.all(promises)
-    if (results.some(r => !r.ok)) throw new Error('Failed to sign up for some matches')
-    await fetchMatches()
+      if (!response.ok) throw new Error('Failed to sign up for some matches')
+    } finally {
+      await fetchMatches()
+    }
   }
 
-  const handleRemoveSignup = async (matchId: number, role: 'observer' | 'producer' | 'caster') => {
+  const handleRemoveSignup = async (matchIds: number[], role: 'observer' | 'producer' | 'caster') => {
     try {
       const response = await fetch('/api/production/staff-signup', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ matchId, role }),
+        body: JSON.stringify({ matchIds, role }),
       })
       if (!response.ok) throw new Error('Failed to remove signup')
       toast.success('Signup removed')
-      await fetchMatches()
     } catch { toast.error('Failed to remove signup') }
+    finally { await fetchMatches() }
   }
 
   // ─── Grouping & filtering logic ───
@@ -445,9 +454,7 @@ export function StaffSignupsView() {
                           ) : (
                             <button
                               className="staff-signups-v2__role-remove"
-                              onClick={async () => {
-                                await Promise.all(matchIds.map(id => handleRemoveSignup(id, key)))
-                              }}
+                              onClick={() => handleRemoveSignup(matchIds, key)}
                               title="Remove signup"
                             >
                               <X size={10} />
