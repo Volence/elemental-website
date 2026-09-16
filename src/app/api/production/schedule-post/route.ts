@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { buildProductionSchedule, postProductionSchedule } from '@/discord/services/productionSchedulePost'
+import { postIsFromEarlierWeek } from '@/utilities/productionSchedulePost'
 import { authenticateWithAccess, requireStaffManagerAccess } from '@/utilities/apiAuth'
 
 /**
@@ -27,13 +28,19 @@ export async function GET(request: NextRequest): Promise<Response> {
     if (!authz.ok) return authz.response
     const { payload } = authz
     const build = await buildProductionSchedule(payload, 'preview')
+    const firstId = build.state.staffMessageIds[0] ?? build.state.publicMessageIds[0]
     return NextResponse.json({
       staff: build.posts.staff,
       public: build.posts.public,
       matchIds: build.posts.matchIds,
       channels: { staff: !!build.channels.staff, public: !!build.channels.public },
       posted: build.state.staffMessageIds.length > 0 || build.state.publicMessageIds.length > 0
-        ? { at: build.state.postedAt, by: build.state.postedBy, matchIds: build.state.matchIds }
+        ? {
+            at: build.state.postedAt,
+            by: build.state.postedBy,
+            matchIds: build.state.matchIds,
+            fromEarlierWeek: !!firstId && postIsFromEarlierWeek(firstId),
+          }
         : null,
     })
   } catch (error) {

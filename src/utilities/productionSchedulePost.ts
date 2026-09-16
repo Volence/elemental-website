@@ -366,3 +366,46 @@ export function formatStreamAnnouncement(match: ScheduleMatch, streamUrl: string
   const text = `We're LIVE with ${withOrgPrefix(homeTeamName(match))} vs. ${opponentName(match)} on ${streamUrl}`
   return pingRoleId ? `<@&${pingRoleId}> ${text}` : text
 }
+
+/*
+ * Weekly fresh post. Refreshes edit the week's messages in place, so by the end of a week the
+ * public post sits under every "we're live" message. From Monday morning Eastern the schedule
+ * goes out as new messages instead. The age of the post comes from its first Discord message
+ * id (a snowflake carries its creation time), so no extra state is stored.
+ */
+
+const WEEK_TIMEZONE = 'America/New_York'
+export const NEW_WEEK_TIME = '10:00'
+const DISCORD_EPOCH = 1420070400000n
+
+export function snowflakeTime(id: string): Date {
+  return new Date(Number((BigInt(id) >> 22n) + DISCORD_EPOCH))
+}
+
+function localParts(date: Date): { dateKey: string; hhmm: string; weekday: number } {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: WEEK_TIMEZONE, hourCycle: 'h23', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
+  }).formatToParts(date)
+  const get = (type: string) => parts.find((p) => p.type === type)?.value || '00'
+  const dateKey = `${get('year')}-${get('month')}-${get('day')}`
+  return { dateKey, hhmm: `${get('hour')}:${get('minute')}`, weekday: new Date(`${dateKey}T00:00:00Z`).getUTCDay() }
+}
+
+/** The Monday (Eastern) of the week `date` falls in, as YYYY-MM-DD. */
+function mondayKey(date: Date): string {
+  const { dateKey, weekday } = localParts(date)
+  const monday = new Date(`${dateKey}T00:00:00Z`)
+  monday.setUTCDate(monday.getUTCDate() - ((weekday + 6) % 7))
+  return monday.toISOString().slice(0, 10)
+}
+
+export function postIsFromEarlierWeek(firstMessageId: string, now: Date = new Date()): boolean {
+  return mondayKey(snowflakeTime(firstMessageId)) < mondayKey(now)
+}
+
+/** A post exists, it belongs to an earlier week, and this week is past Monday 10:00 Eastern. */
+export function shouldStartNewWeek(firstMessageId: string | null | undefined, now: Date = new Date()): boolean {
+  if (!firstMessageId || !postIsFromEarlierWeek(firstMessageId, now)) return false
+  const { weekday, hhmm } = localParts(now)
+  return weekday !== 1 || hhmm >= NEW_WEEK_TIME
+}

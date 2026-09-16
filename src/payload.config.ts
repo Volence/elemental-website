@@ -422,6 +422,10 @@ const config = buildConfig({
           const { startCalendarChannelRefresh, stopCalendarChannelRefresh } = await import('./discord/commands/calendar')
           startCalendarChannelRefresh()
 
+          // Broadcast schedule: fresh messages each week from Monday 10:00 Eastern.
+          const { startWeeklySchedulePost, stopWeeklySchedulePost } = await import('./discord/services/productionSchedulePost')
+          startWeeklySchedulePost()
+
           const { serviceHealth } = await import('./discord/serviceHealth')
           serviceHealth.register('calendar-release', 20 * 60 * 1000)
           serviceHealth.register('twitch-roster', 3 * 60 * 1000)
@@ -441,6 +445,7 @@ const config = buildConfig({
             stopSocialDailyPing,
             stopCalendarRelease,
             stopCalendarChannelRefresh,
+            stopWeeklySchedulePost,
             stopPollNotificationPolling,
             serviceHealth.stopStalenessChecker,
             shutdownDiscordBot,

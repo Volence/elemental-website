@@ -8,6 +8,9 @@ import {
   scheduleMatchesWhere,
   announceButtonLabel,
   formatStreamAnnouncement,
+  postIsFromEarlierWeek,
+  shouldStartNewWeek,
+  snowflakeTime,
   type ScheduleMatch,
 } from '@/utilities/productionSchedulePost'
 
@@ -276,5 +279,37 @@ describe('formatStreamAnnouncement', () => {
     expect(formatStreamAnnouncement(match(), 'https://www.twitch.tv/elmt_gg', null)).toBe(
       "We're LIVE with ELMT Dragon vs. Rivals on https://www.twitch.tv/elmt_gg",
     )
+  })
+})
+
+describe('weekly fresh post', () => {
+  // 1546568286790090983 is the staff post made on Sunday 2026-09-07 17:10 UTC.
+  const sept7Post = '1546568286790090983'
+  // A snowflake for Monday 2026-09-14 15:00 UTC (11:00 Eastern).
+  const snowflakeAt = (iso: string) => ((BigInt(Date.parse(iso)) - 1420070400000n) << 22n).toString()
+
+  it('reads the creation time out of a Discord message id', () => {
+    expect(snowflakeTime(sept7Post).toISOString()).toBe('2026-09-07T17:10:13.420Z')
+  })
+
+  it('knows a post from an earlier week', () => {
+    expect(postIsFromEarlierWeek(sept7Post, new Date('2026-09-16T19:00:00Z'))).toBe(true)
+    expect(postIsFromEarlierWeek(snowflakeAt('2026-09-14T15:00:00Z'), new Date('2026-09-16T19:00:00Z'))).toBe(false)
+  })
+
+  it('treats Sunday night Eastern as the end of the week, not the start of the next', () => {
+    // Sunday 2026-09-13 23:30 Eastern is Monday 03:30 UTC.
+    expect(postIsFromEarlierWeek(snowflakeAt('2026-09-14T03:30:00Z'), new Date('2026-09-14T15:00:00Z'))).toBe(true)
+  })
+
+  it('starts a new week from Monday 10:00 Eastern', () => {
+    expect(shouldStartNewWeek(sept7Post, new Date('2026-09-14T13:59:00Z'))).toBe(false) // Mon 09:59 EDT
+    expect(shouldStartNewWeek(sept7Post, new Date('2026-09-14T14:00:00Z'))).toBe(true) // Mon 10:00 EDT
+    expect(shouldStartNewWeek(sept7Post, new Date('2026-09-16T19:00:00Z'))).toBe(true) // later in the week
+  })
+
+  it('does nothing once this week has its post, or when nothing was ever posted', () => {
+    expect(shouldStartNewWeek(snowflakeAt('2026-09-14T14:00:05Z'), new Date('2026-09-16T19:00:00Z'))).toBe(false)
+    expect(shouldStartNewWeek(null, new Date('2026-09-16T19:00:00Z'))).toBe(false)
   })
 })

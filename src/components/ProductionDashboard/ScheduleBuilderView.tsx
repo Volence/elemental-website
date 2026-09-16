@@ -13,7 +13,7 @@ type Match = ScheduleMatch & {
 
 interface PostInfo {
   channels: { staff: boolean; public: boolean }
-  posted: { at: string | null; by: string | null; matchIds: number[] } | null
+  posted: { at: string | null; by: string | null; matchIds: number[]; fromEarlierWeek?: boolean } | null
 }
 
 export function ScheduleBuilderView() {
@@ -160,7 +160,9 @@ export function ScheduleBuilderView() {
   const staffPreview = formatStaffSchedule(matches, { mentionStyle: 'preview' })
   const publicPreview = formatPublicSchedule(matches)
   const channelsConfigured = !!postInfo && (postInfo.channels.staff || postInfo.channels.public)
-  const hasPost = !!postInfo?.posted
+  // A post from an earlier week is not offered for updating: it sits under a week of other
+  // messages, so this week's schedule goes out fresh (the bot also does this from Monday 10:00 ET).
+  const hasPost = !!postInfo?.posted && !postInfo.posted.fromEarlierWeek
 
   if (loading) {
     return <div className="production-dashboard__loading">Loading matches...</div>
@@ -261,6 +263,10 @@ export function ScheduleBuilderView() {
                     <CheckCircle size={12} /> Posted {postInfo!.posted!.at ? formatRelative(postInfo!.posted!.at) : ''}
                     {postInfo!.posted!.by ? ` by ${postInfo!.posted!.by}` : ''}. Edits update Discord automatically.
                   </span>
+                ) : postInfo?.posted?.fromEarlierWeek ? (
+                  <span className="schedule-builder__post-note">
+                    <Send size={12} /> The Discord post is from last week. This week&apos;s goes out automatically Monday 10:00 AM Eastern, or post it now.
+                  </span>
                 ) : (
                   <span className="schedule-builder__post-note">
                     <Send size={12} /> Nothing posted yet this week.
@@ -322,7 +328,7 @@ export function ScheduleBuilderView() {
               </Button>
             )}
             <Button buttonStyle="primary" onClick={() => handlePost(hasPost ? 'update' : 'new')} disabled={!!posting}>
-              {posting === 'update' ? 'Updating...' : posting === 'new' && !hasPost ? 'Posting...' : hasPost ? 'Update current post' : 'Post now'}
+              {posting === 'update' ? 'Updating...' : posting === 'new' && !hasPost ? 'Posting...' : hasPost ? 'Update current post' : postInfo?.posted?.fromEarlierWeek ? "Post this week's schedule" : 'Post now'}
             </Button>
           </div>
         }

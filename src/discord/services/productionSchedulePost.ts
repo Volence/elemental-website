@@ -8,6 +8,7 @@ import {
   announceButtonLabel,
   buildSchedulePosts,
   scheduleMatchesWhere,
+  shouldStartNewWeek,
   type MentionStyle,
   type ScheduleMatch,
   type SchedulePosts,
@@ -246,6 +247,52 @@ async function runRefresh(reason: string): Promise<void> {
     await refreshProductionSchedule()
   } catch (err) {
     console.error(`[ProductionSchedulePost] refresh failed (${reason}):`, (err as Error).message)
+  } finally {
+    refreshRunning = false
+    if (refreshQueued) {
+      refreshQueued = false
+      void runRefresh('queued')
+    }
+  }
+}
+
+/*
+ * Weekly fresh post: from Monday 10:00 Eastern, a post left over from an earlier week is replaced
+ * by new messages (as if a lead pressed Start a new week), so the schedule is the newest thing in
+ * the announcements channel again. Only runs once someone has posted at least once, and waits
+ * while no match is ticked for the new week rather than announcing an empty schedule.
+ */
+
+const WEEKLY_CHECK_INTERVAL_MS = 10 * 60 * 1000
+let weeklyTimer: NodeJS.Timeout | null = null
+
+export function startWeeklySchedulePost(): void {
+  if (weeklyTimer) return
+  weeklyTimer = setInterval(() => void runWeeklySchedulePostCheck(), WEEKLY_CHECK_INTERVAL_MS)
+}
+
+export function stopWeeklySchedulePost(): void {
+  if (weeklyTimer) {
+    clearInterval(weeklyTimer)
+    weeklyTimer = null
+  }
+}
+
+export async function runWeeklySchedulePostCheck(now: Date = new Date()): Promise<void> {
+  if (!getDiscordClient() || refreshRunning) return
+  refreshRunning = true
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const global = await payload.findGlobal({ slug: GLOBAL_SLUG, depth: 0, overrideAccess: true })
+    const state = readState(global)
+    const firstId = state.staffMessageIds[0] ?? state.publicMessageIds[0]
+    if (!shouldStartNewWeek(firstId, now)) return
+    const build = await buildProductionSchedule(payload, 'discord', { keepPosted: false })
+    if (build.posts.matchIds.length === 0) return
+    const result = await postProductionSchedule(payload, { mode: 'new', postedBy: 'Weekly auto-post' })
+    console.log(`[ProductionSchedulePost] new week posted (${result.matchCount} matches)`)
+  } catch (err) {
+    console.error('[ProductionSchedulePost] weekly post failed:', (err as Error).message)
   } finally {
     refreshRunning = false
     if (refreshQueued) {
