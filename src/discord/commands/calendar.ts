@@ -489,3 +489,37 @@ export async function updateCalendarChannel(): Promise<void> {
   }
 }
 
+
+// The channel post only changes when something rebuilds it. Match saves and an
+// hourly tick both rebuild it, so new broadcasts appear and finished ones drop off.
+const CALENDAR_REFRESH_DEBOUNCE_MS = 8_000
+const CALENDAR_REFRESH_INTERVAL_MS = 60 * 60 * 1000
+
+let calendarRefreshTimer: NodeJS.Timeout | null = null
+let calendarIntervalTimer: NodeJS.Timeout | null = null
+
+/** Debounced rebuild; a burst of match saves collapses into one Discord edit. */
+export function scheduleCalendarChannelRefresh(): void {
+  if (calendarRefreshTimer) clearTimeout(calendarRefreshTimer)
+  calendarRefreshTimer = setTimeout(() => {
+    calendarRefreshTimer = null
+    void updateCalendarChannel()
+  }, CALENDAR_REFRESH_DEBOUNCE_MS)
+}
+
+export function startCalendarChannelRefresh(): void {
+  if (calendarIntervalTimer) return
+  void updateCalendarChannel()
+  calendarIntervalTimer = setInterval(() => void updateCalendarChannel(), CALENDAR_REFRESH_INTERVAL_MS)
+}
+
+export function stopCalendarChannelRefresh(): void {
+  if (calendarIntervalTimer) {
+    clearInterval(calendarIntervalTimer)
+    calendarIntervalTimer = null
+  }
+  if (calendarRefreshTimer) {
+    clearTimeout(calendarRefreshTimer)
+    calendarRefreshTimer = null
+  }
+}

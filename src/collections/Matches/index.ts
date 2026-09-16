@@ -51,6 +51,9 @@ export const Matches: CollectionConfig = {
           if (!schedulePostRelevantChange(doc as any, previousDoc as any)) return doc
           const { scheduleProductionScheduleRefresh } = await import('@/discord/services/productionSchedulePost')
           scheduleProductionScheduleRefresh(`match ${doc.id} ${operation}`)
+          // The #calendar post lists the same broadcasts.
+          const { scheduleCalendarChannelRefresh } = await import('@/discord/commands/calendar')
+          scheduleCalendarChannelRefresh()
         } catch (err) {
           console.error('[Matches afterChange] schedule post refresh failed:', err)
         }

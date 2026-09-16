@@ -418,6 +418,10 @@ const config = buildConfig({
           const { startCalendarRelease, stopCalendarRelease } = await import('./discord/services/calendarRelease')
           startCalendarRelease()
 
+          // #calendar post: rebuilt hourly so finished matches drop off.
+          const { startCalendarChannelRefresh, stopCalendarChannelRefresh } = await import('./discord/commands/calendar')
+          startCalendarChannelRefresh()
+
           const { serviceHealth } = await import('./discord/serviceHealth')
           serviceHealth.register('calendar-release', 20 * 60 * 1000)
           serviceHealth.register('twitch-roster', 3 * 60 * 1000)
@@ -436,6 +440,7 @@ const config = buildConfig({
             stopThreadKeepAlive,
             stopSocialDailyPing,
             stopCalendarRelease,
+            stopCalendarChannelRefresh,
             stopPollNotificationPolling,
             serviceHealth.stopStalenessChecker,
             shutdownDiscordBot,
